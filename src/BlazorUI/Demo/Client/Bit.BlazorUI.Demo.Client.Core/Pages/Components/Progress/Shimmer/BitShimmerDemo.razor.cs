@@ -6,12 +6,33 @@ public partial class BitShimmerDemo
     [
         new()
         {
-            Name = "Animation",
-            Type = "BitShimmerAnimation",
-            DefaultValue = "BitShimmerAnimation.Wave",
-            Description = "The animation of the shimmer",
+            Name = "AnimationDelay",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The animation delay value in ms.",
+        },
+        new()
+        {
+            Name = "AnimationDuration",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The animation duration value in ms.",
+        },
+        new()
+        {
+            Name = "BackgroundColor",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The color of the animated part of the shimmer.",
             LinkType = LinkType.Link,
-            Href = "#shimmer-animation-enum",
+            Href = "#color-enum"
+        },
+        new()
+        {
+            Name = "Pulse",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Changes the animation type of the shimmer to pulse.",
         },
         new()
         {
@@ -52,12 +73,10 @@ public partial class BitShimmerDemo
         },
         new()
         {
-            Name = "Shape",
-            Type = "BitShimmerShape",
-            DefaultValue = "BitShimmerShape.TopRight",
-            Description = "The shape of the shimmer.",
-            LinkType = LinkType.Link,
-            Href = "#shimmer-shape-enum"
+            Name = "Circle",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Changes the shape of the shimmer to circle."
         },
         new()
         {
@@ -77,57 +96,19 @@ public partial class BitShimmerDemo
         },
         new()
         {
+            Name = "WaveColor",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The color of the animated part of the shimmer.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum"
+        },
+        new()
+        {
             Name = "Width",
             Type = "string?",
             DefaultValue = "null",
             Description = "The shimmer width value."
-        }
-    ];
-
-    private readonly List<ComponentSubEnum> componentSubEnums =
-    [
-        new()
-        {
-            Id = "shimmer-animation-enum",
-            Name = "BitShimmerAnimation",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Wave",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Pulse",
-                    Value="1",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "shimmer-shape-enum",
-            Name = "BitShimmerShape",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name = "Line",
-                    Value = "0"
-                },
-                new()
-                {
-                    Name = "Circle",
-                    Value = "1"
-                },
-                new()
-                {
-                    Name = "Rectangle",
-                    Value = "2"
-                }
-            ]
         }
     ];
 
@@ -171,23 +152,143 @@ public partial class BitShimmerDemo
         }
     ];
 
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        new()
+        {
+            Id = "color-enum",
+            Name = "BitColor",
+            Description = "Defines the general colors available in the bit BlazorUI.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Primary",
+                    Description="Info Primary general color.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Secondary",
+                    Description="Secondary general color.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Tertiary",
+                    Description="Tertiary general color.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Info",
+                    Description="Info general color.",
+                    Value="3",
+                },
+                new()
+                {
+                    Name= "Success",
+                    Description="Success general color.",
+                    Value="4",
+                },
+                new()
+                {
+                    Name= "Warning",
+                    Description="Warning general color.",
+                    Value="5",
+                },
+                new()
+                {
+                    Name= "SevereWarning",
+                    Description="SevereWarning general color.",
+                    Value="6",
+                },
+                new()
+                {
+                    Name= "Error",
+                    Description="Error general color.",
+                    Value="7",
+                },
+                new()
+                {
+                    Name= "PrimaryBackground",
+                    Description="Primary background color.",
+                    Value="8",
+                },
+                new()
+                {
+                    Name= "SecondaryBackground",
+                    Description="Secondary background color.",
+                    Value="9",
+                },
+                new()
+                {
+                    Name= "TertiaryBackground",
+                    Description="Tertiary background color.",
+                    Value="10",
+                },
+                new()
+                {
+                    Name= "PrimaryForeground",
+                    Description="Primary foreground color.",
+                    Value="11",
+                },
+                new()
+                {
+                    Name= "SecondaryForeground",
+                    Description="Secondary foreground color.",
+                    Value="12",
+                },
+                new()
+                {
+                    Name= "TertiaryForeground",
+                    Description="Tertiary foreground color.",
+                    Value="13",
+                },
+                new()
+                {
+                    Name= "PrimaryBorder",
+                    Description="Primary border color.",
+                    Value="14",
+                },
+                new()
+                {
+                    Name= "SecondaryBorder",
+                    Description="Secondary border color.",
+                    Value="15",
+                },
+                new()
+                {
+                    Name= "TertiaryBorder",
+                    Description="Tertiary border color.",
+                    Value="16",
+                }
+            ]
+        },
+    ];
+
+
+
+    private bool isDataLoaded;
+
+    private bool isContentLoaded;
+
 
 
     private readonly string example1RazorCode = @"
 <BitShimmer Height=""1.5rem"" />";
 
     private readonly string example2RazorCode = @"
-<BitShimmer Height=""1.5rem"" />
-
-<BitShimmer Shape=""BitShimmerShape.Circle"" Height=""2.7rem"" />
-
-<BitShimmer Shape=""BitShimmerShape.Rectangle"" Height=""2.7rem"" />";
+<BitShimmer Height=""3rem"" />
+<BitShimmer Circle Height=""3rem"" />";
 
     private readonly string example3RazorCode = @"
-<BitShimmer Height=""1.5rem"" />
+<BitShimmer Height=""4rem"" AnimationDuration=""5000"" AnimationDelay=""1000"" />
 
-<BitShimmer Animation=""BitShimmerAnimation.Pulse"" Shape=""BitShimmerShape.Circle"" Height=""3.5rem"" />
-<BitShimmer Animation=""BitShimmerAnimation.Pulse"" Shape=""BitShimmerShape.Rectangle"" Height=""2.7rem"" Width=""100%"" />";
+<BitStack Horizontal>
+    <BitShimmer Pulse Circle Height=""4rem"" AnimationDuration=""3000"" AnimationDelay=""1000"" />
+    <BitShimmer Pulse Height=""4rem"" Width=""100%"" AnimationDuration=""3000"" AnimationDelay=""1000"" />
+</BitStack>";
 
     private readonly string example4RazorCode = @"
 <BitShimmer IsDataLoaded=""@isDataLoaded"" AriaLabel=""Loading content"" Height=""1.5rem"">
@@ -199,10 +300,76 @@ public partial class BitShimmerDemo
 private bool isDataLoaded;";
 
     private readonly string example5RazorCode = @"
+<BitShimmer IsDataLoaded=""@isContentLoaded"" AriaLabel=""Loading content"" Width=""15.1rem"">
+    <Content>
+        <BitImage Height=""8rem"" Alt=""bit logo""
+                  Src=""_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png"" />
+        <br />
+        <BitPersona PrimaryText=""Annie Lindqvist""
+                    SecondaryText=""Software Engineer""
+                    Size=""@BitPersonaSize.Size56""
+                    Presence=""@BitPersonaPresence.Online""
+                    ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
+    </Content>
+    <ShimmerTemplate>
+        <BitShimmer Height=""8rem"" />
+        <br />
+        <BitStack Horizontal>
+            <BitShimmer Circle Height=""3.5rem"" />
+            <BitStack>
+                <BitShimmer Height=""1.25rem"" Width=""8.5rem"" />
+                <BitShimmer Height=""0.75rem"" Width=""7rem"" />
+            </BitStack>
+        </BitStack>
+    </ShimmerTemplate>
+</BitShimmer>
+
+<BitToggleButton @bind-IsChecked=""@isContentLoaded"" Text=""Toggle shimmer"" />";
+    private readonly string example5CsharpCode = @"
+private bool isContentLoaded;";
+
+    private readonly string example6RazorCode = @"
+<BitShimmer Height=""1rem"" WaveColor=""BitColor.Primary"" />
+<BitShimmer Height=""1rem"" WaveColor=""BitColor.Secondary"" />
+<BitShimmer Height=""1rem"" WaveColor=""BitColor.Tertiary"" />
+<BitShimmer Height=""1rem"" WaveColor=""BitColor.Info"" />
+<BitShimmer Height=""1rem"" WaveColor=""BitColor.Success"" />
+<BitShimmer Height=""1rem"" WaveColor=""BitColor.Warning"" />
+<BitShimmer Height=""1rem"" WaveColor=""BitColor.SevereWarning"" />
+<BitShimmer Height=""1rem"" WaveColor=""BitColor.Error"" />
+<BitShimmer Height=""1rem"" WaveColor=""BitColor.PrimaryBackground"" />
+<BitShimmer Height=""1rem"" WaveColor=""BitColor.SecondaryBackground"" />
+<BitShimmer Height=""1rem"" WaveColor=""BitColor.TertiaryBackground"" />
+<BitShimmer Height=""1rem"" WaveColor=""BitColor.PrimaryForeground"" />
+<BitShimmer Height=""1rem"" WaveColor=""BitColor.SecondaryForeground"" />
+<BitShimmer Height=""1rem"" WaveColor=""BitColor.TertiaryForeground"" />
+<BitShimmer Height=""1rem"" WaveColor=""BitColor.PrimaryBorder"" />
+<BitShimmer Height=""1rem"" WaveColor=""BitColor.SecondaryBorder"" />
+<BitShimmer Height=""1rem"" WaveColor=""BitColor.TertiaryBorder"" />";
+
+    private readonly string example7RazorCode = @"
+<BitShimmer Height=""2rem"" BackgroundColor=""BitColor.Primary"" />
+<BitShimmer Height=""2rem"" BackgroundColor=""BitColor.Secondary"" />
+<BitShimmer Height=""2rem"" BackgroundColor=""BitColor.Tertiary"" />
+<BitShimmer Height=""2rem"" BackgroundColor=""BitColor.Info"" />
+<BitShimmer Height=""2rem"" BackgroundColor=""BitColor.Success"" />
+<BitShimmer Height=""2rem"" BackgroundColor=""BitColor.Warning"" />
+<BitShimmer Height=""2rem"" BackgroundColor=""BitColor.SevereWarning"" />
+<BitShimmer Height=""2rem"" BackgroundColor=""BitColor.Error"" />
+<BitShimmer Height=""2rem"" BackgroundColor=""BitColor.PrimaryBackground"" />
+<BitShimmer Height=""2rem"" BackgroundColor=""BitColor.SecondaryBackground"" />
+<BitShimmer Height=""2rem"" BackgroundColor=""BitColor.TertiaryBackground"" />
+<BitShimmer Height=""2rem"" BackgroundColor=""BitColor.PrimaryForeground"" />
+<BitShimmer Height=""2rem"" BackgroundColor=""BitColor.SecondaryForeground"" />
+<BitShimmer Height=""2rem"" BackgroundColor=""BitColor.TertiaryForeground"" />
+<BitShimmer Height=""2rem"" BackgroundColor=""BitColor.PrimaryBorder"" />
+<BitShimmer Height=""2rem"" BackgroundColor=""BitColor.SecondaryBorder"" />
+<BitShimmer Height=""2rem"" BackgroundColor=""BitColor.TertiaryBorder"" />";
+
+    private readonly string example8RazorCode = @"
 <style>
     .custom-class {
-        border-radius: 1rem;
-        box-shadow: aqua 0 0 1rem;
+        box-shadow: aqua 0 0 1rem 0.5rem;
     }
 
     .custom-root {
@@ -220,69 +387,12 @@ private bool isDataLoaded;";
 </style>
 
 
-<BitShimmer Height=""2.7rem""
-            Class=""custom-class""
-            Shape=""BitShimmerShape.Rectangle"" />
+<BitShimmer Height=""2.7rem"" Style=""border:2px solid gray"" />
+<BitShimmer Height=""2.7rem"" Class=""custom-class"" />
 
-
-<BitShimmer Height=""2.7rem""
-            Shape=""BitShimmerShape.Rectangle""
-            Styles=""@(new() { Shimmer=""background-color: darkgoldenrod;"",
-                              ShimmerWrapper = ""background-color: darkgoldenrod;"" })"" />
-
-<BitShimmer Height=""2.7rem""
-            Shape=""BitShimmerShape.Rectangle""
-            Classes=""@(new() { Root = ""custom-root"",
-                               Shimmer=""custom-shimmer"",
-                               ShimmerWrapper = ""custom-wrapper"" })"" />";
-
-    private readonly string example6RazorCode = @"
-<style>
-    .custom-content {
-        gap: 1.7rem;
-        width: 100%;
-        display: flex;
-        align-items: center;
-    }
-
-    .custom-content .column {
-        gap: 0.5rem;
-        flex-flow: column;
-        align-items: start;
-    }
-</style>
-
-
-<BitShimmer IsDataLoaded=""@isContentLoaded"" AriaLabel=""Loading content"" Width=""15.1rem"">
-    <Content>
-        <BitImage Height=""8rem""
-                  Alt=""bit logo""
-                  Src=""_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png"" />
-        <br />
-        <BitPersona PrimaryText=""Annie Lindqvist""
-                    SecondaryText=""Software Engineer""
-                    Size=""@BitPersonaSize.Size56""
-                    Presence=""@BitPersonaPresence.Online""
-                    ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
-        <br />
-    </Content>
-    <ShimmerTemplate>
-        <div>
-            <BitShimmer Shape=""BitShimmerShape.Rectangle"" Height=""8rem"" />
-            <br />
-            <div class=""custom-content"">
-                <BitShimmer Shape=""BitShimmerShape.Circle"" Height=""3.5rem"" />
-                <div class=""custom-content column"">
-                    <BitShimmer Height=""1.25rem"" Width=""8.5rem"" />
-                    <BitShimmer Height=""0.75rem"" Width=""7rem"" />
-                </div>
-            </div>
-            <br />
-        </div>
-    </ShimmerTemplate>
-</BitShimmer>
-
-<BitToggleButton @bind-IsChecked=""@isContentLoaded"" Text=""Toggle shimmer"" />";
-    private readonly string example6CsharpCode = @"
-private bool isContentLoaded;";
+<BitShimmer Height=""2.7rem"" Styles=""@(new() { Shimmer=""background-color: darkgoldenrod;"",
+                                                ShimmerWrapper = ""background-color: darkgoldenrod;"" })"" />
+<BitShimmer Height=""2.7rem"" Classes=""@(new() { Root = ""custom-root"",
+                                                 Shimmer=""custom-shimmer"",
+                                                 ShimmerWrapper = ""custom-wrapper"" })"" />";
 }

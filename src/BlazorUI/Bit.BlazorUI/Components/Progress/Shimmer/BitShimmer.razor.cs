@@ -6,10 +6,27 @@
 public partial class BitShimmer : BitComponentBase
 {
     /// <summary>
-    /// The animation of the shimmer.
+    /// The animation delay value in ms.
+    /// </summary>
+    [Parameter]
+    public int? AnimationDelay { get; set; }
+
+    /// <summary>
+    /// The animation duration value in ms.
+    /// </summary>
+    [Parameter]
+    public int? AnimationDuration { get; set; }
+
+    /// <summary>
+    /// The color of the animated part of the shimmer.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public BitShimmerAnimation Animation { get; set; }
+    public BitColor? BackgroundColor { get; set; }
+
+    /// <summary>
+    /// Changes the animation type of the shimmer to pulse.
+    /// </summary>
+    [Parameter] public bool Pulse { get; set; }
 
     /// <summary>
     /// Child content of component, the content that the shimmer will apply to.
@@ -29,7 +46,8 @@ public partial class BitShimmer : BitComponentBase
     /// <summary>
     /// The shimmer height value.
     /// </summary>
-    [Parameter] public string? Height { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public string? Height { get; set; }
 
     /// <summary>
     /// Controls when the shimmer is swapped with actual data through an animated transition.
@@ -37,10 +55,9 @@ public partial class BitShimmer : BitComponentBase
     [Parameter] public bool IsDataLoaded { get; set; }
 
     /// <summary>
-    /// The shape of the shimmer.
+    /// Changes the shape of the shimmer to circle.
     /// </summary>
-    [Parameter, ResetClassBuilder]
-    public BitShimmerShape Shape { get; set; }
+    [Parameter] public bool Circle { get; set; }
 
     /// <summary>
     /// The template of the shimmer.
@@ -51,20 +68,21 @@ public partial class BitShimmer : BitComponentBase
     /// Custom CSS styles for different parts of the BitShimmer.
     /// </summary>
     [Parameter] public BitShimmerClassStyles? Styles { get; set; }
+    /// <summary>
+    /// The color of the animated part of the shimmer.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColor? WaveColor { get; set; }
 
     /// <summary>
     /// The shimmer width value.
     /// </summary>
-    [Parameter] public string? Width { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public string? Width { get; set; }
 
 
 
     protected override string RootElementClass => "bit-smr";
-
-    protected override void RegisterCssClasses()
-    {
-        ClassBuilder.Register(() => Classes?.Root);
-    }
 
     protected override void RegisterCssStyles()
     {
@@ -74,20 +92,71 @@ public partial class BitShimmer : BitComponentBase
         StyleBuilder.Register(() => Height.HasValue() ? $"height:{Height}" : string.Empty);
     }
 
-
-
-    private string GetShapesClass() => Shape switch
+    protected override void RegisterCssClasses()
     {
-        BitShimmerShape.Line => "bit-smr-lin",
-        BitShimmerShape.Circle => "bit-smr-crl",
-        BitShimmerShape.Rectangle => "bit-smr-rct",
-        _ => "bit-smr-lin"
-    };
+        ClassBuilder.Register(() => Classes?.Root);
 
-    private string GetAnimationClass() => Animation switch
+        ClassBuilder.Register(() => WaveColor switch
+        {
+            BitColor.Primary => "bit-smr-pri",
+            BitColor.Secondary => "bit-smr-sec",
+            BitColor.Tertiary => "bit-smr-ter",
+            BitColor.Info => "bit-smr-inf",
+            BitColor.Success => "bit-smr-suc",
+            BitColor.Warning => "bit-smr-wrn",
+            BitColor.SevereWarning => "bit-smr-swr",
+            BitColor.Error => "bit-smr-err",
+            BitColor.PrimaryBackground => "bit-smr-pbg",
+            BitColor.SecondaryBackground => "bit-smr-sbg",
+            BitColor.TertiaryBackground => "bit-smr-tbg",
+            BitColor.PrimaryForeground => "bit-smr-pfg",
+            BitColor.SecondaryForeground => "bit-smr-sfg",
+            BitColor.TertiaryForeground => "bit-smr-tfg",
+            BitColor.PrimaryBorder => "bit-smr-pbr",
+            BitColor.SecondaryBorder => "bit-smr-sbr",
+            BitColor.TertiaryBorder => "bit-smr-tbr",
+            _ => "bit-smr-tbg"
+        });
+    }
+
+
+
+    private string GetWrapperClass()
     {
-        BitShimmerAnimation.Wave => "bit-smr-wav",
-        BitShimmerAnimation.Pulse => "bit-smr-pul",
-        _ => "bit-smr-wav"
-    };
+        var shapeClass = Circle ? "bit-smr-crl" : "bit-smr-lin";
+
+        var colorClass = BackgroundColor switch
+        {
+            BitColor.Primary => "bit-smr-bpri",
+            BitColor.Secondary => "bit-smr-bsec",
+            BitColor.Tertiary => "bit-smr-bter",
+            BitColor.Info => "bit-smr-binf",
+            BitColor.Success => "bit-smr-bsuc",
+            BitColor.Warning => "bit-smr-bwrn",
+            BitColor.SevereWarning => "bit-smr-bswr",
+            BitColor.Error => "bit-smr-berr",
+            BitColor.PrimaryBackground => "bit-smr-bpbg",
+            BitColor.SecondaryBackground => "bit-smr-bsbg",
+            BitColor.TertiaryBackground => "bit-smr-btbg",
+            BitColor.PrimaryForeground => "bit-smr-bpfg",
+            BitColor.SecondaryForeground => "bit-smr-bsfg",
+            BitColor.TertiaryForeground => "bit-smr-btfg",
+            BitColor.PrimaryBorder => "bit-smr-bpbr",
+            BitColor.SecondaryBorder => "bit-smr-bsbr",
+            BitColor.TertiaryBorder => "bit-smr-btbr",
+            _ => "bit-smr-bsbg"
+        };
+
+        return $"{shapeClass} {colorClass}";
+    }
+
+    private string GetAnimationClass() => Pulse ? "bit-smr-pul" : "bit-smr-wav";
+
+    private string GetAnimationStyle()
+    {
+        var delay = AnimationDelay.HasValue ? $"animation-delay:{AnimationDelay}ms" : string.Empty;
+        var duration = AnimationDuration.HasValue ? $"animation-duration:{AnimationDuration}ms" : string.Empty;
+
+        return string.Join(';', [delay, duration]).Trim(';').Trim();
+    }
 }
