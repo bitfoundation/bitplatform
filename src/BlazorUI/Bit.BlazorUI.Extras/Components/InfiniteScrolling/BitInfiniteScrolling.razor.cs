@@ -83,7 +83,8 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase, IAsyncDispo
     {
         if (Preload && ItemsProvider is not null)
         {
-            _currentItems.AddRange(await ItemsProvider(new(0, CancellationToken.None)));
+            var items = await ItemsProvider(new(0, CancellationToken.None));
+            _currentItems.AddRange(items);
         }
 
         await base.OnInitializedAsync();
