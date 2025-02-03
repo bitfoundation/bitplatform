@@ -13,42 +13,54 @@
         <ExamplePreview>
             <div>Explore the fundamental use of the BitShimmer.</div>
             <br />
-            <BitShimmer Height="1.5rem" />
+            <BitShimmer />
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Shapes" RazorCode="@example2RazorCode" Id="example2">
+    <ComponentExampleBox Title="Size" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
-            <div>Explore different shapes of BitShimmer for varied visual effects.</div>
-            <br /><br />
-            <div>Line (default)</div>
-            <BitShimmer Height="3rem" />
+            <div>The BitShimmer can be customized using the Height and Width parameters.</div>
             <br />
-            <div>Circle</div>
-            <BitShimmer Circle Height="3rem" />
+            <div>Height</div>
+            <BitShimmer Height="5rem" />
+            <br />
+            <div>Width</div>
+            <BitShimmer Width="10rem" />
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Animations" RazorCode="@example3RazorCode" Id="example3">
+    <ComponentExampleBox Title="Circle" RazorCode="@example3RazorCode" Id="example3">
+        <ExamplePreview>
+            <div>The BitShimmer can be rendered in Circle shape instead of a rectangle.</div>
+            <br /><br />
+            <div>Height</div>
+            <BitShimmer Circle Height="3rem" />
+            <br />
+            <div>Width</div>
+            <BitShimmer Circle Width="4rem" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Animation" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
             <div>Discover various animation options of BitShimmer for different effects.</div>
             <br /><br />
             <div>Wave (default)</div>
-            <BitShimmer Height="4rem" AnimationDuration="5000" AnimationDelay="1000" />
+            <BitShimmer Height="4rem" Duration="5000" Delay="1000" />
             <br /><br />
             <div>Pulse</div>
             <BitStack Horizontal>
-                <BitShimmer Pulse Circle Height="4rem" AnimationDuration="3000" AnimationDelay="1000" />
-                <BitShimmer Pulse Height="4rem" Width="100%" AnimationDuration="3000" AnimationDelay="1000" />
+                <BitShimmer Pulse Circle Height="4rem" Duration="3000" Delay="1000" />
+                <BitShimmer Pulse Height="4rem" Width="100%" Duration="3000" Delay="1000" />
             </BitStack>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="IsDataLoaded" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <ComponentExampleBox Title="Loaded" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <ExamplePreview>
-            <div>Utilize BitShimmer's IsDataLoaded feature, displaying content when data is loaded.</div>
+            <div>Utilize BitShimmer's Loaded feature, displaying content when data is loaded.</div>
             <br /><br />
-            <BitShimmer IsDataLoaded="@isDataLoaded" AriaLabel="Loading content" Height="1.5rem">
+            <BitShimmer Loaded="@isDataLoaded" AriaLabel="Loading content" Height="1.5rem">
                 Content loaded successfully.
             </BitShimmer>
             <br />
@@ -56,11 +68,11 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Advanced" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ComponentExampleBox Title="Advanced" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <ExamplePreview>
             <div>Explore advanced usage of BitShimmer, including template, content and nested shimmers.</div>
             <br /><br />
-            <BitShimmer IsDataLoaded="@isContentLoaded" AriaLabel="Loading content" Width="15.1rem">
+            <BitShimmer Loaded="@isContentLoaded" AriaLabel="Loading content" Width="15rem" Height="unset">
                 <Content>
                     <BitImage Height="8rem" Alt="bit logo"
                               Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
@@ -71,138 +83,138 @@
                                 Presence="@BitPersonaPresence.Online"
                                 ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png" />
                 </Content>
-                <ShimmerTemplate>
+                <Template>
                     <BitShimmer Height="8rem" />
                     <br />
-                    <BitStack Horizontal>
+                    <BitStack Horizontal Alignment="BitAlignment.Center">
                         <BitShimmer Circle Height="3.5rem" />
                         <BitStack>
                             <BitShimmer Height="1.25rem" Width="8.5rem" />
                             <BitShimmer Height="0.75rem" Width="7rem" />
                         </BitStack>
                     </BitStack>
-                </ShimmerTemplate>
+                </Template>
             </BitShimmer>
             <br />
             <BitToggleButton @bind-IsChecked="@isContentLoaded" Text="Toggle shimmer" />
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="WaveColor" RazorCode="@example6RazorCode" Id="example6">
+    <ComponentExampleBox Title="Color" RazorCode="@example7RazorCode" Id="example7">
         <ExamplePreview>
             <div>Customize the BitShimmer using different colors available in bit BlazorUI.</div>
             <br /><br />
             <div>Primary</div>
-            <BitShimmer Height="1rem" WaveColor="BitColor.Primary" />
+            <BitShimmer Height="1rem" Color="BitColor.Primary" />
             <br />
             <div>Secondary</div>
-            <BitShimmer Height="1rem" WaveColor="BitColor.Secondary" />
+            <BitShimmer Height="1rem" Color="BitColor.Secondary" />
             <br />
             <div>Tertiary</div>
-            <BitShimmer Height="1rem" WaveColor="BitColor.Tertiary" />
+            <BitShimmer Height="1rem" Color="BitColor.Tertiary" />
             <br />
             <div>Info</div>
-            <BitShimmer Height="1rem" WaveColor="BitColor.Info" />
+            <BitShimmer Height="1rem" Color="BitColor.Info" />
             <br />
             <div>Success</div>
-            <BitShimmer Height="1rem" WaveColor="BitColor.Success" />
+            <BitShimmer Height="1rem" Color="BitColor.Success" />
             <br />
             <div>Warning</div>
-            <BitShimmer Height="1rem" WaveColor="BitColor.Warning" />
+            <BitShimmer Height="1rem" Color="BitColor.Warning" />
             <br />
             <div>SevereWarning</div>
-            <BitShimmer Height="1rem" WaveColor="BitColor.SevereWarning" />
+            <BitShimmer Height="1rem" Color="BitColor.SevereWarning" />
             <br />
             <div>Error</div>
-            <BitShimmer Height="1rem" WaveColor="BitColor.Error" />
+            <BitShimmer Height="1rem" Color="BitColor.Error" />
             <br />
             <div>PrimaryBackground</div>
-            <BitShimmer Height="1rem" WaveColor="BitColor.PrimaryBackground" />
+            <BitShimmer Height="1rem" Color="BitColor.PrimaryBackground" />
             <br />
             <div>SecondaryBackground</div>
-            <BitShimmer Height="1rem" WaveColor="BitColor.SecondaryBackground" />
+            <BitShimmer Height="1rem" Color="BitColor.SecondaryBackground" />
             <br />
             <div>TertiaryBackground (default)</div>
-            <BitShimmer Height="1rem" WaveColor="BitColor.TertiaryBackground" />
+            <BitShimmer Height="1rem" Color="BitColor.TertiaryBackground" />
             <br />
             <div>PrimaryForeground</div>
-            <BitShimmer Height="1rem" WaveColor="BitColor.PrimaryForeground" />
+            <BitShimmer Height="1rem" Color="BitColor.PrimaryForeground" />
             <br />
             <div>SecondaryForeground</div>
-            <BitShimmer Height="1rem" WaveColor="BitColor.SecondaryForeground" />
+            <BitShimmer Height="1rem" Color="BitColor.SecondaryForeground" />
             <br />
             <div>TertiaryForeground</div>
-            <BitShimmer Height="1rem" WaveColor="BitColor.TertiaryForeground" />
+            <BitShimmer Height="1rem" Color="BitColor.TertiaryForeground" />
             <br />
             <div>PrimaryBorder</div>
-            <BitShimmer Height="1rem" WaveColor="BitColor.PrimaryBorder" />
+            <BitShimmer Height="1rem" Color="BitColor.PrimaryBorder" />
             <br />
             <div>SecondaryBorder</div>
-            <BitShimmer Height="1rem" WaveColor="BitColor.SecondaryBorder" />
+            <BitShimmer Height="1rem" Color="BitColor.SecondaryBorder" />
             <br />
             <div>TertiaryBorder</div>
-            <BitShimmer Height="1rem" WaveColor="BitColor.TertiaryBorder" />
+            <BitShimmer Height="1rem" Color="BitColor.TertiaryBorder" />
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BackgroundColor" RazorCode="@example7RazorCode" Id="example7">
+    <ComponentExampleBox Title="BackgroundColor" RazorCode="@example8RazorCode" Id="example8">
         <ExamplePreview>
             <div>Customize the BitShimmer using different colors available in bit BlazorUI.</div>
             <br /><br />
             <div>Primary</div>
-            <BitShimmer Height="2rem" BackgroundColor="BitColor.Primary" />
+            <BitShimmer Height="2rem" Background="BitColor.Primary" />
             <br />
             <div>Secondary</div>
-            <BitShimmer Height="2rem" BackgroundColor="BitColor.Secondary" />
+            <BitShimmer Height="2rem" Background="BitColor.Secondary" />
             <br />
             <div>Tertiary</div>
-            <BitShimmer Height="2rem" BackgroundColor="BitColor.Tertiary" />
+            <BitShimmer Height="2rem" Background="BitColor.Tertiary" />
             <br />
             <div>Info</div>
-            <BitShimmer Height="2rem" BackgroundColor="BitColor.Info" />
+            <BitShimmer Height="2rem" Background="BitColor.Info" />
             <br />
             <div>Success</div>
-            <BitShimmer Height="2rem" BackgroundColor="BitColor.Success" />
+            <BitShimmer Height="2rem" Background="BitColor.Success" />
             <br />
             <div>Warning</div>
-            <BitShimmer Height="2rem" BackgroundColor="BitColor.Warning" />
+            <BitShimmer Height="2rem" Background="BitColor.Warning" />
             <br />
             <div>SevereWarning</div>
-            <BitShimmer Height="2rem" BackgroundColor="BitColor.SevereWarning" />
+            <BitShimmer Height="2rem" Background="BitColor.SevereWarning" />
             <br />
             <div>Error</div>
-            <BitShimmer Height="2rem" BackgroundColor="BitColor.Error" />
+            <BitShimmer Height="2rem" Background="BitColor.Error" />
             <br />
             <div>PrimaryBackground</div>
-            <BitShimmer Height="2rem" BackgroundColor="BitColor.PrimaryBackground" />
+            <BitShimmer Height="2rem" Background="BitColor.PrimaryBackground" />
             <br />
             <div>SecondaryBackground (default)</div>
-            <BitShimmer Height="2rem" BackgroundColor="BitColor.SecondaryBackground" />
+            <BitShimmer Height="2rem" Background="BitColor.SecondaryBackground" />
             <br />
             <div>TertiaryBackground</div>
-            <BitShimmer Height="2rem" BackgroundColor="BitColor.TertiaryBackground" />
+            <BitShimmer Height="2rem" Background="BitColor.TertiaryBackground" />
             <br />
             <div>PrimaryForeground</div>
-            <BitShimmer Height="2rem" BackgroundColor="BitColor.PrimaryForeground" />
+            <BitShimmer Height="2rem" Background="BitColor.PrimaryForeground" />
             <br />
             <div>SecondaryForeground</div>
-            <BitShimmer Height="2rem" BackgroundColor="BitColor.SecondaryForeground" />
+            <BitShimmer Height="2rem" Background="BitColor.SecondaryForeground" />
             <br />
             <div>TertiaryForeground</div>
-            <BitShimmer Height="2rem" BackgroundColor="BitColor.TertiaryForeground" />
+            <BitShimmer Height="2rem" Background="BitColor.TertiaryForeground" />
             <br />
             <div>PrimaryBorder</div>
-            <BitShimmer Height="2rem" BackgroundColor="BitColor.PrimaryBorder" />
+            <BitShimmer Height="2rem" Background="BitColor.PrimaryBorder" />
             <br />
             <div>SecondaryBorder</div>
-            <BitShimmer Height="2rem" BackgroundColor="BitColor.SecondaryBorder" />
+            <BitShimmer Height="2rem" Background="BitColor.SecondaryBorder" />
             <br />
             <div>TertiaryBorder</div>
-            <BitShimmer Height="2rem" BackgroundColor="BitColor.TertiaryBorder" />
+            <BitShimmer Height="2rem" Background="BitColor.TertiaryBorder" />
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example9RazorCode" Id="example9">
         <ExamplePreview>
             <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
             <br /><br />

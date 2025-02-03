@@ -5,7 +5,7 @@
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    @if (IsDataLoaded)
+    @if (Loaded)
     {
         <div style="@Styles?.Content" class="bit-smr-cnt @Classes?.Content">
             @(ChildContent ?? Content)
@@ -13,9 +13,9 @@
     }
     else
     {
-        @if (ShimmerTemplate is not null)
+        @if (Template is not null)
         {
-            @ShimmerTemplate
+            @Template
         }
         else
         {

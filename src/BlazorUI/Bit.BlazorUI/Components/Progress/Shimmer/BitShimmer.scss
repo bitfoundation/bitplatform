@@ -35,6 +35,22 @@
     }
 }
 
+.bit-smr-lin {
+    width: 100%;
+    height: 2rem;
+
+    .bit-smr-wrp {
+        border-radius: spacing(0.5);
+    }
+}
+
+.bit-smr-crl {
+    .bit-smr-wrp {
+        aspect-ratio: 1;
+        border-radius: 50%;
+    }
+}
+
 .bit-smr-cnt {
     animation-fill-mode: both;
     animation-duration: 0.367s;
@@ -51,15 +67,6 @@
     background-color: $clr-bg-sec;
     animation-timing-function: ease;
     animation-name: bit-smr-anim-opacity;
-}
-
-.bit-smr-lin {
-    border-radius: spacing(0.5);
-}
-
-.bit-smr-crl {
-    aspect-ratio: 1;
-    border-radius: 50%;
 }
 
 .bit-smr-anm {
