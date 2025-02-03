@@ -4,8 +4,15 @@ using Microsoft.AspNetCore.OutputCaching;
 
 namespace Boilerplate.Server.Api.Services;
 
+/// <summary>
+/// An implementation of this interface can update how the current request is cached.
+/// </summary>
 public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
 {
+    /// <summary>
+    /// Updates the <see cref="OutputCacheContext"/> before the cache middleware is invoked.
+    /// At that point the cache middleware can still be enabled or disabled for the request.
+    /// </summary>
     public async ValueTask CacheRequestAsync(OutputCacheContext context, CancellationToken cancellation)
     {
         var responseCacheAtt = context.HttpContext.GetResponseCacheAttribute();
@@ -35,6 +42,7 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
         if (env.IsDevelopment())
         {
             // To enhance the developer experience, return from here to make it easier for developers to debug cacheable responses.
+            edgeCacheTtl = -1;
             outputCacheTtl = -1;
             browserCacheTtl = -1;
         }
@@ -76,7 +84,7 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
         }
 
         // ASP.NET Core Output Cache
-        if (outputCacheTtl != -1)
+        if (outputCacheTtl > 0)
         {
             context.Tags.Add(requestUrl);
             context.AllowCacheLookup = true;
@@ -84,14 +92,25 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
             context.ResponseExpirationTimeSpan = TimeSpan.FromSeconds(outputCacheTtl);
         }
 
+        //#if (api == "Integrated")
+        context.HttpContext.Items["AppResponseCachePolicy__DisableStreamPrerendering"] = outputCacheTtl > 0 || edgeCacheTtl > 0;
+        //#endif
         context.HttpContext.Response.Headers.TryAdd("App-Cache-Response", FormattableString.Invariant($"Output:{outputCacheTtl},Edge:{edgeCacheTtl},Browser:{browserCacheTtl}"));
     }
 
+    /// <summary>
+    /// Updates the <see cref="OutputCacheContext"/> before the cached response is used.
+    /// At that point the freshness of the cached response can be updated.
+    /// </summary>
     public async ValueTask ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellation)
     {
 
     }
 
+    /// <summary>
+    /// Updates the <see cref="OutputCacheContext"/> before the response is served and can be cached.
+    /// At that point cacheability of the response can be updated.
+    /// </summary>
     public async ValueTask ServeResponseAsync(OutputCacheContext context, CancellationToken cancellation)
     {
         var response = context.HttpContext.Response;

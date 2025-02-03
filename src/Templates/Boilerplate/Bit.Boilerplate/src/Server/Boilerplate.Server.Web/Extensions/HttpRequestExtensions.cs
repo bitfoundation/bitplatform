@@ -28,6 +28,14 @@ public static partial class HttpRequestExtensions
         return new Uri($"{request.Scheme}://{((!request.Host.HasValue) ? "UNKNOWN-HOST" : ((request.Host.Value.IndexOf(',') > 0) ? "MULTIPLE-HOST" : request.Host.Value))}{(request.PathBase.HasValue ? request.PathBase.Value : string.Empty)}{(request.Path.HasValue ? request.Path.Value : string.Empty)}{(request.QueryString.HasValue ? request.QueryString.Value : string.Empty)}");
     }
 
+    public static bool DisableStreamPrerendering(this HttpRequest request)
+    {
+        if (request.HttpContext.Items.TryGetValue("AppResponseCachePolicy__DisableStreamPrerendering", out var val) && val is true)
+            return true;  // The response from streaming pre-rendering is not suitable for caching in ASP.NET Core's output caching mechanism or on CDN edge servers.
+
+        return request.IsCrawlerClient();
+    }
+
     public static bool IsCrawlerClient(this HttpRequest request)
     {
         var agent = GetLoweredUserAgent(request);
