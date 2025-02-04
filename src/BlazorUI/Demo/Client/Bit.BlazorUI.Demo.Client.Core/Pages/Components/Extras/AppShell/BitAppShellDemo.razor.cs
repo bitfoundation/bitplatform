@@ -6,6 +6,13 @@ public partial class BitAppShellDemo
     [
          new()
          {
+            Name = "AutoGoToTop",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables auto-scroll to the top of the main container on navigation.",
+         },
+         new()
+         {
             Name = "CascadingValues",
             Type = "IEnumerable<BitCascadingValue>?",
             DefaultValue = "null",
@@ -40,8 +47,22 @@ public partial class BitAppShellDemo
          },
     ];
 
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "GoToTop",
+            Type = "Func<BitScrollBehavior, Task>",
+            DefaultValue = "",
+            Description = "Scrolls the main container to top.",
+            LinkType = LinkType.Link,
+            Href = "#scroll-behavior-enum"
+        },
+    ];
+
     private readonly List<ComponentSubClass> componentSubClasses =
-    [new()
+    [
+        new()
         {
             Id = "cascading-value",
             Title = "BitCascadingValue",
@@ -130,4 +151,34 @@ public partial class BitAppShellDemo
         }
     ];
 
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        new()
+        {
+            Id = "scroll-behavior-enum",
+            Name = "BitScrollBehavior",
+            Description = "Determines whether scrolling is instant or animates smoothly.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Smooth",
+                    Description="Scrolling should animate smoothly.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Instant",
+                    Description="Scrolling should happen instantly in a single jump.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Auto",
+                    Description="Scroll behavior is determined by the computed value of scroll-behavior.",
+                    Value="2",
+                }
+            ]
+        },
+    ];
 }

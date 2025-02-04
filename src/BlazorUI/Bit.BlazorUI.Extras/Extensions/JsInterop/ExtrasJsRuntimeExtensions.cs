@@ -7,9 +7,9 @@ internal static class ExtrasJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.Extras.applyRootClasses", cssClasses, cssVariables);
     }
 
-    internal static ValueTask BitExtrasGoToTop(this IJSRuntime jsRuntime, ElementReference element)
+    internal static ValueTask BitExtrasGoToTop(this IJSRuntime jsRuntime, ElementReference element, BitScrollBehavior? behavior = null)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Extras.goToTop", element);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Extras.goToTop", element, behavior?.ToString().ToLowerInvariant());
     }
 
     internal static ValueTask BitExtrasScrollBy(this IJSRuntime jsRuntime, ElementReference element, decimal x, decimal y)
