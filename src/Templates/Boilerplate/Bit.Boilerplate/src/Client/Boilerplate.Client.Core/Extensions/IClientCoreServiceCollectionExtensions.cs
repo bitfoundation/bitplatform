@@ -92,10 +92,6 @@ public static partial class IClientCoreServiceCollectionExtensions
         });
 
         //#if (offlineDb == true)
-        if (AppPlatform.IsBrowser)
-        {
-            AppContext.SetSwitch("Microsoft.EntityFrameworkCore.Issue31751", true);
-        }
         services.AddBesqlDbContextFactory<OfflineDbContext>((sp, optionsBuilder) =>
         {
             var isRunningInsideDocker = Directory.Exists("/container_volume"); // Blazor Server - Docker (It's supposed to be a mounted volume named /container_volume)
@@ -122,7 +118,7 @@ public static partial class IClientCoreServiceCollectionExtensions
             optionsBuilder.EnableSensitiveDataLogging(AppEnvironment.IsDev())
                     .EnableDetailedErrors(AppEnvironment.IsDev());
 
-        }, dbContextInitializer: async (sp, dbContext) => await dbContext.Database.MigrateAsync());
+        }, dbContextInitializer: async (sp, dbContext) => await Task.Run(async () => await dbContext.Database.MigrateAsync()));
         //#endif
 
         //#if (appInsights == true)
