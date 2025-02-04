@@ -5,11 +5,14 @@
     width: fit-content;
     font-family: $tg-font-family;
     --bit-chb-ico-opa: 0;
+    --bit-chb-ico-clr: #{var(--bit-chb-txt-clr)};
+    --bit-chb-box-clr-brd: #{var(--bit-chb-brd-clr)};
 
     @media (hover: hover) {
         &:hover {
             --bit-chb-ico-opa: 1;
             --bit-chb-box-clr-bg: transparent;
+            --bit-chb-box-clr-brd: #{var(--bit-chb-brd-clr-hover)};
         }
     }
 
@@ -53,19 +56,19 @@
     overflow: hidden;
     position: relative;
     align-items: center;
-    width: var(--bit-chb-box-size);
-    height: var(--bit-chb-box-size);
     box-sizing: border-box;
-    min-width: var(--bit-chb-box-size);
     justify-content: center;
     transition-duration: 200ms;
+    width: var(--bit-chb-box-size);
+    height: var(--bit-chb-box-size);
     border-style: $shp-border-style;
     border-width: $shp-border-width;
     border-radius: $shp-border-radius;
-    transition-property: background, border, border-color;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
+    min-width: var(--bit-chb-box-size);
     border-color: var(--bit-chb-box-clr-brd);
     background-color: var(--bit-chb-box-clr-bg);
+    transition-property: background, border, border-color;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
 
     .bit-chb-ico {
         display: flex;
@@ -106,23 +109,35 @@
 
 
 .bit-chb-ckd {
+    --bit-chb-box-clr-bg: #{var(--bit-chb-ckd-clr-bg)};
+    --bit-chb-box-clr-brd: #{var(--bit-chb-ckd-clr-brd)};
     --bit-chb-ico-opa: 1;
+    --bit-chb-ico-clr: #{var(--bit-chb-ckd-ico-clr)};
 
     @media (hover: hover) {
         &:hover {
+            --bit-chb-box-clr-bg: #{var(--bit-chb-ckd-clr-bg-hover)};
+            --bit-chb-box-clr-brd: #{var(--bit-chb-ckd-clr-brd-hover)};
             --bit-chb-ico-opa: 1;
+            --bit-chb-ico-clr: #{var(--bit-chb-ckd-ico-clr-hover)};
         }
     }
 }
 
 .bit-chb-ind {
-    --bit-chb-ico-opa: 1;
     --bit-chb-box-clr-bg: transparent;
+    --bit-chb-box-clr-brd: #{var(--bit-chb-ind-clr-brd)};
+    --bit-chb-ico-opa: 1;
+    --bit-chb-ico-clr: #{var(--bit-chb-ind-ico-clr)};
+    --bit-chb-ico-clr-bg: #{var(--bit-chb-ind-ico-clr-bg)};
 
     @media (hover: hover) {
         &:hover {
-            --bit-chb-ico-opa: 1;
             --bit-chb-box-clr-bg: transparent;
+            --bit-chb-box-clr-brd: #{var(--bit-chb-ind-clr-brd-hover)};
+            --bit-chb-ico-opa: 1;
+            --bit-chb-ico-clr: #{var(--bit-chb-ind-ico-clr-hover)};
+            --bit-chb-ico-clr-bg: #{var(--bit-chb-ind-ico-clr-bg-hover)};
         }
     }
 
@@ -143,668 +158,310 @@
 }
 
 .bit-chb-pri {
-    --bit-chb-ico-clr: #{$clr-fg-pri};
-    --bit-chb-box-clr-brd: #{$clr-brd-pri};
-
-    @media (hover: hover) {
-        &:hover {
-            --bit-chb-box-clr-brd: #{$clr-brd-pri};
-        }
-    }
-
-    &.bit-chb-ckd {
-        --bit-chb-box-clr-bg: #{$clr-pri};
-        --bit-chb-box-clr-brd: #{$clr-pri};
-        --bit-chb-ico-clr: #{$clr-pri-text};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-bg: #{$clr-pri-hover};
-                --bit-chb-box-clr-brd: #{$clr-pri-hover};
-                --bit-chb-ico-clr: #{$clr-pri-text};
-            }
-        }
-    }
-
-    &.bit-chb-ind {
-        --bit-chb-box-clr-brd: #{$clr-pri};
-        --bit-chb-ico-clr: #{$clr-pri-text};
-        --bit-chb-ico-clr-bg: #{$clr-pri};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-brd: #{$clr-pri-hover};
-                --bit-chb-ico-clr: #{$clr-pri-text};
-                --bit-chb-ico-clr-bg: #{$clr-pri-hover};
-            }
-        }
-    }
+    --bit-chb-txt-clr: #{$clr-fg-sec};
+    --bit-chb-brd-clr: #{$clr-brd-pri};
+    --bit-chb-brd-clr-hover: #{$clr-brd-pri};
+    --bit-chb-ckd-clr-bg: #{$clr-pri};
+    --bit-chb-ckd-clr-brd: #{$clr-pri};
+    --bit-chb-ckd-ico-clr: #{$clr-pri-text};
+    --bit-chb-ckd-clr-bg-hover: #{$clr-pri-hover};
+    --bit-chb-ckd-clr-brd-hover: #{$clr-pri-hover};
+    --bit-chb-ckd-ico-clr-hover: #{$clr-pri-text};
+    --bit-chb-ind-clr-brd: #{$clr-pri};
+    --bit-chb-ind-ico-clr: #{$clr-pri-text};
+    --bit-chb-ind-ico-clr-bg: #{$clr-pri};
+    --bit-chb-ind-clr-brd-hover: #{$clr-pri-hover};
+    --bit-chb-ind-ico-clr-hover: #{$clr-pri-text};
+    --bit-chb-ind-ico-clr-bg-hover: #{$clr-pri-hover};
 }
 
 .bit-chb-sec {
-    --bit-chb-ico-clr: #{$clr-fg-sec};
-    --bit-chb-box-clr-brd: #{$clr-brd-sec};
-
-    @media (hover: hover) {
-        &:hover {
-            --bit-chb-box-clr-brd: #{$clr-brd-sec};
-        }
-    }
-
-    &.bit-chb-ckd {
-        --bit-chb-box-clr-bg: #{$clr-sec};
-        --bit-chb-box-clr-brd: #{$clr-sec};
-        --bit-chb-ico-clr: #{$clr-sec-text};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-bg: #{$clr-sec-hover};
-                --bit-chb-box-clr-brd: #{$clr-sec-hover};
-                --bit-chb-ico-clr: #{$clr-sec-text};
-            }
-        }
-    }
-
-    &.bit-chb-ind {
-        --bit-chb-box-clr-brd: #{$clr-sec};
-        --bit-chb-ico-clr: #{$clr-sec-text};
-        --bit-chb-ico-clr-bg: #{$clr-sec};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-brd: #{$clr-sec-hover};
-                --bit-chb-ico-clr: #{$clr-sec-text};
-                --bit-chb-ico-clr-bg: #{$clr-sec-hover};
-            }
-        }
-    }
+    --bit-chb-txt-clr: #{$clr-fg-sec};
+    --bit-chb-brd-clr: #{$clr-brd-sec};
+    --bit-chb-brd-clr-hover: #{$clr-brd-sec};
+    --bit-chb-ckd-clr-bg: #{$clr-sec};
+    --bit-chb-ckd-clr-brd: #{$clr-sec};
+    --bit-chb-ckd-ico-clr: #{$clr-sec-text};
+    --bit-chb-ckd-clr-bg-hover: #{$clr-sec-hover};
+    --bit-chb-ckd-clr-brd-hover: #{$clr-sec-hover};
+    --bit-chb-ckd-ico-clr-hover: #{$clr-sec-text};
+    --bit-chb-ind-clr-brd: #{$clr-sec};
+    --bit-chb-ind-ico-clr: #{$clr-sec-text};
+    --bit-chb-ind-ico-clr-bg: #{$clr-sec};
+    --bit-chb-ind-clr-brd-hover: #{$clr-sec-hover};
+    --bit-chb-ind-ico-clr-hover: #{$clr-sec-text};
+    --bit-chb-ind-ico-clr-bg-hover: #{$clr-sec-hover};
 }
 
 .bit-chb-ter {
-    --bit-chb-ico-clr: #{$clr-fg-ter};
-    --bit-chb-box-clr-brd: #{$clr-brd-ter};
-
-    @media (hover: hover) {
-        &:hover {
-            --bit-chb-box-clr-brd: #{$clr-brd-ter};
-        }
-    }
-
-    &.bit-chb-ckd {
-        --bit-chb-box-clr-bg: #{$clr-ter};
-        --bit-chb-box-clr-brd: #{$clr-ter};
-        --bit-chb-ico-clr: #{$clr-ter-text};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-bg: #{$clr-ter-hover};
-                --bit-chb-box-clr-brd: #{$clr-ter-hover};
-                --bit-chb-ico-clr: #{$clr-ter-text};
-            }
-        }
-    }
-
-    &.bit-chb-ind {
-        --bit-chb-box-clr-brd: #{$clr-ter};
-        --bit-chb-ico-clr: #{$clr-ter-text};
-        --bit-chb-ico-clr-bg: #{$clr-ter};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-brd: #{$clr-ter-hover};
-                --bit-chb-ico-clr: #{$clr-ter-text};
-                --bit-chb-ico-clr-bg: #{$clr-ter-hover};
-            }
-        }
-    }
+    --bit-chb-txt-clr: #{$clr-fg-ter};
+    --bit-chb-brd-clr: #{$clr-brd-ter};
+    --bit-chb-brd-clr-hover: #{$clr-brd-ter};
+    --bit-chb-ckd-clr-bg: #{$clr-ter};
+    --bit-chb-ckd-clr-brd: #{$clr-ter};
+    --bit-chb-ckd-ico-clr: #{$clr-ter-text};
+    --bit-chb-ckd-clr-bg-hover: #{$clr-ter-hover};
+    --bit-chb-ckd-clr-brd-hover: #{$clr-ter-hover};
+    --bit-chb-ckd-ico-clr-hover: #{$clr-ter-text};
+    --bit-chb-ind-clr-brd: #{$clr-ter};
+    --bit-chb-ind-ico-clr: #{$clr-ter-text};
+    --bit-chb-ind-ico-clr-bg: #{$clr-ter};
+    --bit-chb-ind-clr-brd-hover: #{$clr-ter-hover};
+    --bit-chb-ind-ico-clr-hover: #{$clr-ter-text};
+    --bit-chb-ind-ico-clr-bg-hover: #{$clr-ter-hover};
 }
 
 .bit-chb-inf {
-    --bit-chb-ico-clr: #{$clr-inf};
-    --bit-chb-box-clr-brd: #{$clr-inf};
-
-    @media (hover: hover) {
-        &:hover {
-            --bit-chb-box-clr-brd: #{$clr-inf};
-        }
-    }
-
-    &.bit-chb-ckd {
-        --bit-chb-box-clr-bg: #{$clr-inf};
-        --bit-chb-box-clr-brd: #{$clr-inf};
-        --bit-chb-ico-clr: #{$clr-inf-text};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-bg: #{$clr-inf-hover};
-                --bit-chb-box-clr-brd: #{$clr-inf-hover};
-                --bit-chb-ico-clr: #{$clr-inf-text};
-            }
-        }
-    }
-
-    &.bit-chb-ind {
-        --bit-chb-box-clr-brd: #{$clr-inf};
-        --bit-chb-ico-clr: #{$clr-inf-text};
-        --bit-chb-ico-clr-bg: #{$clr-inf};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-brd: #{$clr-inf-hover};
-                --bit-chb-ico-clr: #{$clr-inf-text};
-                --bit-chb-ico-clr-bg: #{$clr-inf-hover};
-            }
-        }
-    }
+    --bit-chb-txt-clr: #{$clr-inf};
+    --bit-chb-brd-clr: #{$clr-inf};
+    --bit-chb-brd-clr-hover: #{$clr-inf-hover};
+    --bit-chb-ckd-clr-bg: #{$clr-inf};
+    --bit-chb-ckd-clr-brd: #{$clr-inf};
+    --bit-chb-ckd-ico-clr: #{$clr-inf-text};
+    --bit-chb-ckd-clr-bg-hover: #{$clr-inf-hover};
+    --bit-chb-ckd-clr-brd-hover: #{$clr-inf-hover};
+    --bit-chb-ckd-ico-clr-hover: #{$clr-inf-text};
+    --bit-chb-ind-clr-brd: #{$clr-inf};
+    --bit-chb-ind-ico-clr: #{$clr-inf-text};
+    --bit-chb-ind-ico-clr-bg: #{$clr-inf};
+    --bit-chb-ind-clr-brd-hover: #{$clr-inf-hover};
+    --bit-chb-ind-ico-clr-hover: #{$clr-inf-text};
+    --bit-chb-ind-ico-clr-bg-hover: #{$clr-inf-hover};
 }
 
 .bit-chb-suc {
-    --bit-chb-ico-clr: #{$clr-suc};
-    --bit-chb-box-clr-brd: #{$clr-suc};
-
-    @media (hover: hover) {
-        &:hover {
-            --bit-chb-box-clr-brd: #{$clr-suc};
-        }
-    }
-
-    &.bit-chb-ckd {
-        --bit-chb-box-clr-bg: #{$clr-suc};
-        --bit-chb-box-clr-brd: #{$clr-suc};
-        --bit-chb-ico-clr: #{$clr-suc-text};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-bg: #{$clr-suc-hover};
-                --bit-chb-box-clr-brd: #{$clr-suc-hover};
-                --bit-chb-ico-clr: #{$clr-suc-text};
-            }
-        }
-    }
-
-    &.bit-chb-ind {
-        --bit-chb-box-clr-brd: #{$clr-suc};
-        --bit-chb-ico-clr: #{$clr-suc-text};
-        --bit-chb-ico-clr-bg: #{$clr-suc};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-brd: #{$clr-suc-hover};
-                --bit-chb-ico-clr: #{$clr-suc-text};
-                --bit-chb-ico-clr-bg: #{$clr-suc-hover};
-            }
-        }
-    }
+    --bit-chb-txt-clr: #{$clr-suc};
+    --bit-chb-brd-clr: #{$clr-suc};
+    --bit-chb-brd-clr-hover: #{$clr-suc-hover};
+    --bit-chb-ckd-clr-bg: #{$clr-suc};
+    --bit-chb-ckd-clr-brd: #{$clr-suc};
+    --bit-chb-ckd-ico-clr: #{$clr-suc-text};
+    --bit-chb-ckd-clr-bg-hover: #{$clr-suc-hover};
+    --bit-chb-ckd-clr-brd-hover: #{$clr-suc-hover};
+    --bit-chb-ckd-ico-clr-hover: #{$clr-suc-text};
+    --bit-chb-ind-clr-brd: #{$clr-suc};
+    --bit-chb-ind-ico-clr: #{$clr-suc-text};
+    --bit-chb-ind-ico-clr-bg: #{$clr-suc};
+    --bit-chb-ind-clr-brd-hover: #{$clr-suc-hover};
+    --bit-chb-ind-ico-clr-hover: #{$clr-suc-text};
+    --bit-chb-ind-ico-clr-bg-hover: #{$clr-suc-hover};
 }
 
 .bit-chb-wrn {
-    --bit-chb-ico-clr: #{$clr-wrn};
-    --bit-chb-box-clr-brd: #{$clr-wrn};
-
-    @media (hover: hover) {
-        &:hover {
-            --bit-chb-box-clr-brd: #{$clr-wrn};
-        }
-    }
-
-    &.bit-chb-ckd {
-        --bit-chb-box-clr-bg: #{$clr-wrn};
-        --bit-chb-box-clr-brd: #{$clr-wrn};
-        --bit-chb-ico-clr: #{$clr-wrn-text};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-bg: #{$clr-wrn-hover};
-                --bit-chb-box-clr-brd: #{$clr-wrn-hover};
-                --bit-chb-ico-clr: #{$clr-wrn-text};
-            }
-        }
-    }
-
-    &.bit-chb-ind {
-        --bit-chb-box-clr-brd: #{$clr-wrn};
-        --bit-chb-ico-clr: #{$clr-wrn-text};
-        --bit-chb-ico-clr-bg: #{$clr-wrn};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-brd: #{$clr-wrn-hover};
-                --bit-chb-ico-clr: #{$clr-wrn-text};
-                --bit-chb-ico-clr-bg: #{$clr-wrn-hover};
-            }
-        }
-    }
+    --bit-chb-txt-clr: #{$clr-wrn};
+    --bit-chb-brd-clr: #{$clr-wrn};
+    --bit-chb-brd-clr-hover: #{$clr-wrn-hover};
+    --bit-chb-ckd-clr-bg: #{$clr-wrn};
+    --bit-chb-ckd-clr-brd: #{$clr-wrn};
+    --bit-chb-ckd-ico-clr: #{$clr-wrn-text};
+    --bit-chb-ckd-clr-bg-hover: #{$clr-wrn-hover};
+    --bit-chb-ckd-clr-brd-hover: #{$clr-wrn-hover};
+    --bit-chb-ckd-ico-clr-hover: #{$clr-wrn-text};
+    --bit-chb-ind-clr-brd: #{$clr-wrn};
+    --bit-chb-ind-ico-clr: #{$clr-wrn-text};
+    --bit-chb-ind-ico-clr-bg: #{$clr-wrn};
+    --bit-chb-ind-clr-brd-hover: #{$clr-wrn-hover};
+    --bit-chb-ind-ico-clr-hover: #{$clr-wrn-text};
+    --bit-chb-ind-ico-clr-bg-hover: #{$clr-wrn-hover};
 }
 
 .bit-chb-swr {
-    --bit-chb-ico-clr: #{$clr-swr};
-    --bit-chb-box-clr-brd: #{$clr-swr};
-
-    @media (hover: hover) {
-        &:hover {
-            --bit-chb-box-clr-brd: #{$clr-swr};
-        }
-    }
-
-    &.bit-chb-ckd {
-        --bit-chb-box-clr-bg: #{$clr-swr};
-        --bit-chb-box-clr-brd: #{$clr-swr};
-        --bit-chb-ico-clr: #{$clr-swr-text};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-bg: #{$clr-swr-hover};
-                --bit-chb-box-clr-brd: #{$clr-swr-hover};
-                --bit-chb-ico-clr: #{$clr-swr-text};
-            }
-        }
-    }
-
-    &.bit-chb-ind {
-        --bit-chb-box-clr-brd: #{$clr-swr};
-        --bit-chb-ico-clr: #{$clr-swr-text};
-        --bit-chb-ico-clr-bg: #{$clr-swr};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-brd: #{$clr-swr-hover};
-                --bit-chb-ico-clr: #{$clr-swr-text};
-                --bit-chb-ico-clr-bg: #{$clr-swr-hover};
-            }
-        }
-    }
+    --bit-chb-txt-clr: #{$clr-swr};
+    --bit-chb-brd-clr: #{$clr-swr};
+    --bit-chb-brd-clr-hover: #{$clr-swr-hover};
+    --bit-chb-ckd-clr-bg: #{$clr-swr};
+    --bit-chb-ckd-clr-brd: #{$clr-swr};
+    --bit-chb-ckd-ico-clr: #{$clr-swr-text};
+    --bit-chb-ckd-clr-bg-hover: #{$clr-swr-hover};
+    --bit-chb-ckd-clr-brd-hover: #{$clr-swr-hover};
+    --bit-chb-ckd-ico-clr-hover: #{$clr-swr-text};
+    --bit-chb-ind-clr-brd: #{$clr-swr};
+    --bit-chb-ind-ico-clr: #{$clr-swr-text};
+    --bit-chb-ind-ico-clr-bg: #{$clr-swr};
+    --bit-chb-ind-clr-brd-hover: #{$clr-swr-hover};
+    --bit-chb-ind-ico-clr-hover: #{$clr-swr-text};
+    --bit-chb-ind-ico-clr-bg-hover: #{$clr-swr-hover};
 }
 
 .bit-chb-err {
-    --bit-chb-ico-clr: #{$clr-err};
-    --bit-chb-box-clr-brd: #{$clr-err};
-
-    @media (hover: hover) {
-        &:hover {
-            --bit-chb-box-clr-brd: #{$clr-err};
-        }
-    }
-
-    &.bit-chb-ckd {
-        --bit-chb-box-clr-bg: #{$clr-err};
-        --bit-chb-box-clr-brd: #{$clr-err};
-        --bit-chb-ico-clr: #{$clr-err-text};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-bg: #{$clr-err-hover};
-                --bit-chb-box-clr-brd: #{$clr-err-hover};
-                --bit-chb-ico-clr: #{$clr-err-text};
-            }
-        }
-    }
-
-    &.bit-chb-ind {
-        --bit-chb-box-clr-brd: #{$clr-err};
-        --bit-chb-ico-clr: #{$clr-err-text};
-        --bit-chb-ico-clr-bg: #{$clr-err};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-brd: #{$clr-err-hover};
-                --bit-chb-ico-clr: #{$clr-err-text};
-                --bit-chb-ico-clr-bg: #{$clr-err-hover};
-            }
-        }
-    }
+    --bit-chb-txt-clr: #{$clr-err};
+    --bit-chb-brd-clr: #{$clr-err};
+    --bit-chb-brd-clr-hover: #{$clr-err-hover};
+    --bit-chb-ckd-clr-bg: #{$clr-err};
+    --bit-chb-ckd-clr-brd: #{$clr-err};
+    --bit-chb-ckd-ico-clr: #{$clr-err-text};
+    --bit-chb-ckd-clr-bg-hover: #{$clr-err-hover};
+    --bit-chb-ckd-clr-brd-hover: #{$clr-err-hover};
+    --bit-chb-ckd-ico-clr-hover: #{$clr-err-text};
+    --bit-chb-ind-clr-brd: #{$clr-err};
+    --bit-chb-ind-ico-clr: #{$clr-err-text};
+    --bit-chb-ind-ico-clr-bg: #{$clr-err};
+    --bit-chb-ind-clr-brd-hover: #{$clr-err-hover};
+    --bit-chb-ind-ico-clr-hover: #{$clr-err-text};
+    --bit-chb-ind-ico-clr-bg-hover: #{$clr-err-hover};
 }
 
 .bit-chb-pbg {
-    --bit-chb-ico-clr: #{$clr-bg-pri};
-    --bit-chb-box-clr-brd: #{$clr-bg-pri};
-
-    @media (hover: hover) {
-        &:hover {
-            --bit-chb-box-clr-brd: #{$clr-bg-pri};
-        }
-    }
-
-    &.bit-chb-ckd {
-        --bit-chb-box-clr-bg: #{$clr-bg-pri};
-        --bit-chb-box-clr-brd: #{$clr-bg-pri};
-        --bit-chb-ico-clr: #{$clr-fg-pri};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-bg: #{$clr-bg-pri-hover};
-                --bit-chb-box-clr-brd: #{$clr-bg-pri-hover};
-                --bit-chb-ico-clr: #{$clr-fg-pri-hover};
-            }
-        }
-    }
-
-    &.bit-chb-ind {
-        --bit-chb-box-clr-brd: #{$clr-bg-pri};
-        --bit-chb-ico-clr: #{$clr-bg-pri};
-        --bit-chb-ico-clr-bg: #{$clr-bg-pri};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-brd: #{$clr-bg-pri-hover};
-                --bit-chb-ico-clr: #{$clr-bg-pri-hover};
-                --bit-chb-ico-clr-bg: #{$clr-bg-pri-hover};
-            }
-        }
-    }
+    --bit-chb-txt-clr: #{$clr-bg-pri};
+    --bit-chb-brd-clr: #{$clr-bg-pri};
+    --bit-chb-brd-clr-hover: #{$clr-bg-pri-hover};
+    --bit-chb-ckd-clr-bg: #{$clr-bg-pri};
+    --bit-chb-ckd-clr-brd: #{$clr-bg-pri};
+    --bit-chb-ckd-ico-clr: #{$clr-fg-pri};
+    --bit-chb-ckd-clr-bg-hover: #{$clr-bg-pri-hover};
+    --bit-chb-ckd-clr-brd-hover: #{$clr-bg-pri-hover};
+    --bit-chb-ckd-ico-clr-hover: #{$clr-fg-pri-hover};
+    --bit-chb-ind-clr-brd: #{$clr-bg-pri};
+    --bit-chb-ind-ico-clr: #{$clr-bg-pri};
+    --bit-chb-ind-ico-clr-bg: #{$clr-bg-pri};
+    --bit-chb-ind-clr-brd-hover: #{$clr-bg-pri-hover};
+    --bit-chb-ind-ico-clr-hover: #{$clr-bg-pri-hover};
+    --bit-chb-ind-ico-clr-bg-hover: #{$clr-bg-pri-hover};
 }
 
 .bit-chb-sbg {
-    --bit-chb-ico-clr: #{$clr-bg-sec};
-    --bit-chb-box-clr-brd: #{$clr-bg-sec};
-
-    @media (hover: hover) {
-        &:hover {
-            --bit-chb-box-clr-brd: #{$clr-bg-sec};
-        }
-    }
-
-    &.bit-chb-ckd {
-        --bit-chb-box-clr-bg: #{$clr-bg-sec};
-        --bit-chb-box-clr-brd: #{$clr-bg-sec};
-        --bit-chb-ico-clr: #{$clr-fg-sec};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-bg: #{$clr-bg-sec-hover};
-                --bit-chb-box-clr-brd: #{$clr-bg-sec-hover};
-                --bit-chb-ico-clr: #{$clr-fg-sec-hover};
-            }
-        }
-    }
-
-    &.bit-chb-ind {
-        --bit-chb-box-clr-brd: #{$clr-bg-sec};
-        --bit-chb-ico-clr: #{$clr-bg-sec};
-        --bit-chb-ico-clr-bg: #{$clr-bg-sec};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-brd: #{$clr-bg-sec-hover};
-                --bit-chb-ico-clr: #{$clr-bg-sec-hover};
-                --bit-chb-ico-clr-bg: #{$clr-bg-sec-hover};
-            }
-        }
-    }
+    --bit-chb-txt-clr: #{$clr-bg-sec};
+    --bit-chb-brd-clr: #{$clr-bg-sec};
+    --bit-chb-brd-clr-hover: #{$clr-bg-sec-hover};
+    --bit-chb-ckd-clr-bg: #{$clr-bg-sec};
+    --bit-chb-ckd-clr-brd: #{$clr-bg-sec};
+    --bit-chb-ckd-ico-clr: #{$clr-fg-sec};
+    --bit-chb-ckd-clr-bg-hover: #{$clr-bg-sec-hover};
+    --bit-chb-ckd-clr-brd-hover: #{$clr-bg-sec-hover};
+    --bit-chb-ckd-ico-clr-hover: #{$clr-fg-sec-hover};
+    --bit-chb-ind-clr-brd: #{$clr-bg-sec};
+    --bit-chb-ind-ico-clr: #{$clr-bg-sec};
+    --bit-chb-ind-ico-clr-bg: #{$clr-bg-sec};
+    --bit-chb-ind-clr-brd-hover: #{$clr-bg-sec-hover};
+    --bit-chb-ind-ico-clr-hover: #{$clr-bg-sec-hover};
+    --bit-chb-ind-ico-clr-bg-hover: #{$clr-bg-sec-hover};
 }
 
 .bit-chb-tbg {
-    --bit-chb-ico-clr: #{$clr-bg-ter};
-    --bit-chb-box-clr-brd: #{$clr-bg-ter};
-
-    @media (hover: hover) {
-        &:hover {
-            --bit-chb-box-clr-brd: #{$clr-bg-ter};
-        }
-    }
-
-    &.bit-chb-ckd {
-        --bit-chb-box-clr-bg: #{$clr-bg-ter};
-        --bit-chb-box-clr-brd: #{$clr-bg-ter};
-        --bit-chb-ico-clr: #{$clr-fg-ter};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-bg: #{$clr-bg-ter-hover};
-                --bit-chb-box-clr-brd: #{$clr-bg-ter-hover};
-                --bit-chb-ico-clr: #{$clr-fg-ter-hover};
-            }
-        }
-    }
-
-    &.bit-chb-ind {
-        --bit-chb-box-clr-brd: #{$clr-bg-ter};
-        --bit-chb-ico-clr: #{$clr-bg-ter};
-        --bit-chb-ico-clr-bg: #{$clr-bg-ter};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-brd: #{$clr-bg-ter-hover};
-                --bit-chb-ico-clr: #{$clr-bg-ter-hover};
-                --bit-chb-ico-clr-bg: #{$clr-bg-ter-hover};
-            }
-        }
-    }
+    --bit-chb-txt-clr: #{$clr-bg-ter};
+    --bit-chb-brd-clr: #{$clr-bg-ter};
+    --bit-chb-brd-clr-hover: #{$clr-bg-ter-hover};
+    --bit-chb-ckd-clr-bg: #{$clr-bg-ter};
+    --bit-chb-ckd-clr-brd: #{$clr-bg-ter};
+    --bit-chb-ckd-ico-clr: #{$clr-fg-ter};
+    --bit-chb-ckd-clr-bg-hover: #{$clr-bg-ter-hover};
+    --bit-chb-ckd-clr-brd-hover: #{$clr-bg-ter-hover};
+    --bit-chb-ckd-ico-clr-hover: #{$clr-fg-ter-hover};
+    --bit-chb-ind-clr-brd: #{$clr-bg-ter};
+    --bit-chb-ind-ico-clr: #{$clr-bg-ter};
+    --bit-chb-ind-ico-clr-bg: #{$clr-bg-ter};
+    --bit-chb-ind-clr-brd-hover: #{$clr-bg-ter-hover};
+    --bit-chb-ind-ico-clr-hover: #{$clr-bg-ter-hover};
+    --bit-chb-ind-ico-clr-bg-hover: #{$clr-bg-ter-hover};
 }
 
 .bit-chb-pfg {
-    --bit-chb-ico-clr: #{$clr-fg-pri};
-    --bit-chb-box-clr-brd: #{$clr-fg-pri};
-
-    @media (hover: hover) {
-        &:hover {
-            --bit-chb-box-clr-brd: #{$clr-fg-pri};
-        }
-    }
-
-    &.bit-chb-ckd {
-        --bit-chb-box-clr-bg: #{$clr-fg-pri};
-        --bit-chb-box-clr-brd: #{$clr-fg-pri};
-        --bit-chb-ico-clr: #{$clr-bg-pri};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-bg: #{$clr-fg-pri-hover};
-                --bit-chb-box-clr-brd: #{$clr-fg-pri-hover};
-                --bit-chb-ico-clr: #{$clr-bg-pri-hover};
-            }
-        }
-    }
-
-    &.bit-chb-ind {
-        --bit-chb-box-clr-brd: #{$clr-fg-pri};
-        --bit-chb-ico-clr: #{$clr-fg-pri};
-        --bit-chb-ico-clr-bg: #{$clr-fg-pri};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-brd: #{$clr-fg-pri-hover};
-                --bit-chb-ico-clr: #{$clr-fg-pri-hover};
-                --bit-chb-ico-clr-bg: #{$clr-fg-pri-hover};
-            }
-        }
-    }
+    --bit-chb-txt-clr: #{$clr-fg-pri};
+    --bit-chb-brd-clr: #{$clr-fg-pri};
+    --bit-chb-brd-clr-hover: #{$clr-fg-pri-hover};
+    --bit-chb-ckd-clr-bg: #{$clr-fg-pri};
+    --bit-chb-ckd-clr-brd: #{$clr-fg-pri};
+    --bit-chb-ckd-ico-clr: #{$clr-bg-pri};
+    --bit-chb-ckd-clr-bg-hover: #{$clr-fg-pri-hover};
+    --bit-chb-ckd-clr-brd-hover: #{$clr-fg-pri-hover};
+    --bit-chb-ckd-ico-clr-hover: #{$clr-bg-pri-hover};
+    --bit-chb-ind-clr-brd: #{$clr-fg-pri};
+    --bit-chb-ind-ico-clr: #{$clr-fg-pri};
+    --bit-chb-ind-ico-clr-bg: #{$clr-fg-pri};
+    --bit-chb-ind-clr-brd-hover: #{$clr-fg-pri-hover};
+    --bit-chb-ind-ico-clr-hover: #{$clr-fg-pri-hover};
+    --bit-chb-ind-ico-clr-bg-hover: #{$clr-fg-pri-hover};
 }
 
 .bit-chb-sfg {
-    --bit-chb-ico-clr: #{$clr-fg-sec};
-    --bit-chb-box-clr-brd: #{$clr-fg-sec};
-
-    @media (hover: hover) {
-        &:hover {
-            --bit-chb-box-clr-brd: #{$clr-fg-sec};
-        }
-    }
-
-    &.bit-chb-ckd {
-        --bit-chb-box-clr-bg: #{$clr-fg-sec};
-        --bit-chb-box-clr-brd: #{$clr-fg-sec};
-        --bit-chb-ico-clr: #{$clr-bg-sec};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-bg: #{$clr-fg-sec-hover};
-                --bit-chb-box-clr-brd: #{$clr-fg-sec-hover};
-                --bit-chb-ico-clr: #{$clr-bg-sec-hover};
-            }
-        }
-    }
-
-    &.bit-chb-ind {
-        --bit-chb-box-clr-brd: #{$clr-fg-sec};
-        --bit-chb-ico-clr: #{$clr-fg-sec};
-        --bit-chb-ico-clr-bg: #{$clr-fg-sec};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-brd: #{$clr-fg-sec-hover};
-                --bit-chb-ico-clr: #{$clr-fg-sec-hover};
-                --bit-chb-ico-clr-bg: #{$clr-fg-sec-hover};
-            }
-        }
-    }
+    --bit-chb-txt-clr: #{$clr-fg-sec};
+    --bit-chb-brd-clr: #{$clr-fg-sec};
+    --bit-chb-brd-clr-hover: #{$clr-fg-sec-hover};
+    --bit-chb-ckd-clr-bg: #{$clr-fg-sec};
+    --bit-chb-ckd-clr-brd: #{$clr-fg-sec};
+    --bit-chb-ckd-ico-clr: #{$clr-bg-sec};
+    --bit-chb-ckd-clr-bg-hover: #{$clr-fg-sec-hover};
+    --bit-chb-ckd-clr-brd-hover: #{$clr-fg-sec-hover};
+    --bit-chb-ckd-ico-clr-hover: #{$clr-bg-sec-hover};
+    --bit-chb-ind-clr-brd: #{$clr-fg-sec};
+    --bit-chb-ind-ico-clr: #{$clr-fg-sec};
+    --bit-chb-ind-ico-clr-bg: #{$clr-fg-sec};
+    --bit-chb-ind-clr-brd-hover: #{$clr-fg-sec-hover};
+    --bit-chb-ind-ico-clr-hover: #{$clr-fg-sec-hover};
+    --bit-chb-ind-ico-clr-bg-hover: #{$clr-fg-sec-hover};
 }
 
 .bit-chb-tfg {
-    --bit-chb-ico-clr: #{$clr-fg-ter};
-    --bit-chb-box-clr-brd: #{$clr-fg-ter};
-
-    @media (hover: hover) {
-        &:hover {
-            --bit-chb-box-clr-brd: #{$clr-fg-ter};
-        }
-    }
-
-    &.bit-chb-ckd {
-        --bit-chb-box-clr-bg: #{$clr-fg-ter};
-        --bit-chb-box-clr-brd: #{$clr-fg-ter};
-        --bit-chb-ico-clr: #{$clr-bg-ter};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-bg: #{$clr-fg-ter-hover};
-                --bit-chb-box-clr-brd: #{$clr-fg-ter-hover};
-                --bit-chb-ico-clr: #{$clr-bg-ter-hover};
-            }
-        }
-    }
-
-    &.bit-chb-ind {
-        --bit-chb-box-clr-brd: #{$clr-fg-ter};
-        --bit-chb-ico-clr: #{$clr-fg-ter};
-        --bit-chb-ico-clr-bg: #{$clr-fg-ter};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-brd: #{$clr-fg-ter-hover};
-                --bit-chb-ico-clr: #{$clr-fg-ter-hover};
-                --bit-chb-ico-clr-bg: #{$clr-fg-ter-hover};
-            }
-        }
-    }
+    --bit-chb-txt-clr: #{$clr-fg-ter};
+    --bit-chb-brd-clr: #{$clr-fg-ter};
+    --bit-chb-brd-clr-hover: #{$clr-fg-ter-hover};
+    --bit-chb-ckd-clr-bg: #{$clr-fg-ter};
+    --bit-chb-ckd-clr-brd: #{$clr-fg-ter};
+    --bit-chb-ckd-ico-clr: #{$clr-bg-ter};
+    --bit-chb-ckd-clr-bg-hover: #{$clr-fg-ter-hover};
+    --bit-chb-ckd-clr-brd-hover: #{$clr-fg-ter-hover};
+    --bit-chb-ckd-ico-clr-hover: #{$clr-bg-ter-hover};
+    --bit-chb-ind-clr-brd: #{$clr-fg-ter};
+    --bit-chb-ind-ico-clr: #{$clr-fg-ter};
+    --bit-chb-ind-ico-clr-bg: #{$clr-fg-ter};
+    --bit-chb-ind-clr-brd-hover: #{$clr-fg-ter-hover};
+    --bit-chb-ind-ico-clr-hover: #{$clr-fg-ter-hover};
+    --bit-chb-ind-ico-clr-bg-hover: #{$clr-fg-ter-hover};
 }
 
 .bit-chb-pbr {
-    --bit-chb-ico-clr: #{$clr-brd-pri};
-    --bit-chb-box-clr-brd: #{$clr-brd-pri};
-
-    @media (hover: hover) {
-        &:hover {
-            --bit-chb-box-clr-brd: #{$clr-brd-pri};
-        }
-    }
-
-    &.bit-chb-ckd {
-        --bit-chb-box-clr-bg: #{$clr-brd-pri};
-        --bit-chb-box-clr-brd: #{$clr-brd-pri};
-        --bit-chb-ico-clr: #{$clr-fg-pri};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-bg: #{$clr-brd-pri-hover};
-                --bit-chb-box-clr-brd: #{$clr-brd-pri-hover};
-                --bit-chb-ico-clr: #{$clr-fg-pri-hover};
-            }
-        }
-    }
-
-    &.bit-chb-ind {
-        --bit-chb-box-clr-brd: #{$clr-brd-pri};
-        --bit-chb-ico-clr: #{$clr-brd-pri};
-        --bit-chb-ico-clr-bg: #{$clr-brd-pri};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-brd: #{$clr-brd-pri-hover};
-                --bit-chb-ico-clr: #{$clr-brd-pri-hover};
-                --bit-chb-ico-clr-bg: #{$clr-brd-pri-hover};
-            }
-        }
-    }
+    --bit-chb-txt-clr: #{$clr-brd-pri};
+    --bit-chb-brd-clr: #{$clr-brd-pri};
+    --bit-chb-brd-clr-hover: #{$clr-brd-pri-hover};
+    --bit-chb-ckd-clr-bg: #{$clr-brd-pri};
+    --bit-chb-ckd-clr-brd: #{$clr-brd-pri};
+    --bit-chb-ckd-ico-clr: #{$clr-fg-pri};
+    --bit-chb-ckd-clr-bg-hover: #{$clr-brd-pri-hover};
+    --bit-chb-ckd-clr-brd-hover: #{$clr-brd-pri-hover};
+    --bit-chb-ckd-ico-clr-hover: #{$clr-fg-pri-hover};
+    --bit-chb-ind-clr-brd: #{$clr-brd-pri};
+    --bit-chb-ind-ico-clr: #{$clr-brd-pri};
+    --bit-chb-ind-ico-clr-bg: #{$clr-brd-pri};
+    --bit-chb-ind-clr-brd-hover: #{$clr-brd-pri-hover};
+    --bit-chb-ind-ico-clr-hover: #{$clr-brd-pri-hover};
+    --bit-chb-ind-ico-clr-bg-hover: #{$clr-brd-pri-hover};
 }
 
 .bit-chb-sbr {
-    --bit-chb-ico-clr: #{$clr-brd-sec};
-    --bit-chb-box-clr-brd: #{$clr-brd-sec};
-
-    @media (hover: hover) {
-        &:hover {
-            --bit-chb-box-clr-brd: #{$clr-brd-sec};
-        }
-    }
-
-    &.bit-chb-ckd {
-        --bit-chb-box-clr-bg: #{$clr-brd-sec};
-        --bit-chb-box-clr-brd: #{$clr-brd-sec};
-        --bit-chb-ico-clr: #{$clr-fg-pri};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-bg: #{$clr-brd-sec-hover};
-                --bit-chb-box-clr-brd: #{$clr-brd-sec-hover};
-                --bit-chb-ico-clr: #{$clr-fg-pri-hover};
-            }
-        }
-    }
-
-    &.bit-chb-ind {
-        --bit-chb-box-clr-brd: #{$clr-brd-sec};
-        --bit-chb-ico-clr: #{$clr-brd-sec};
-        --bit-chb-ico-clr-bg: #{$clr-brd-sec};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-brd: #{$clr-brd-sec-hover};
-                --bit-chb-ico-clr: #{$clr-brd-sec-hover};
-                --bit-chb-ico-clr-bg: #{$clr-brd-sec-hover};
-            }
-        }
-    }
+    --bit-chb-txt-clr: #{$clr-brd-sec};
+    --bit-chb-brd-clr: #{$clr-brd-sec};
+    --bit-chb-brd-clr-hover: #{$clr-brd-sec-hover};
+    --bit-chb-ckd-clr-bg: #{$clr-brd-sec};
+    --bit-chb-ckd-clr-brd: #{$clr-brd-sec};
+    --bit-chb-ckd-ico-clr: #{$clr-fg-sec};
+    --bit-chb-ckd-clr-bg-hover: #{$clr-brd-sec-hover};
+    --bit-chb-ckd-clr-brd-hover: #{$clr-brd-sec-hover};
+    --bit-chb-ckd-ico-clr-hover: #{$clr-fg-sec-hover};
+    --bit-chb-ind-clr-brd: #{$clr-brd-sec};
+    --bit-chb-ind-ico-clr: #{$clr-brd-sec};
+    --bit-chb-ind-ico-clr-bg: #{$clr-brd-sec};
+    --bit-chb-ind-clr-brd-hover: #{$clr-brd-sec-hover};
+    --bit-chb-ind-ico-clr-hover: #{$clr-brd-sec-hover};
+    --bit-chb-ind-ico-clr-bg-hover: #{$clr-brd-sec-hover};
 }
 
 .bit-chb-tbr {
-    --bit-chb-ico-clr: #{$clr-brd-ter};
-    --bit-chb-box-clr-brd: #{$clr-brd-ter};
-
-    @media (hover: hover) {
-        &:hover {
-            --bit-chb-box-clr-brd: #{$clr-brd-ter};
-        }
-    }
-
-    &.bit-chb-ckd {
-        --bit-chb-box-clr-bg: #{$clr-brd-ter};
-        --bit-chb-box-clr-brd: #{$clr-brd-ter};
-        --bit-chb-ico-clr: #{$clr-fg-pri};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-bg: #{$clr-brd-ter-hover};
-                --bit-chb-box-clr-brd: #{$clr-brd-ter-hover};
-                --bit-chb-ico-clr: #{$clr-fg-pri-hover};
-            }
-        }
-    }
-
-    &.bit-chb-ind {
-        --bit-chb-box-clr-brd: #{$clr-brd-ter};
-        --bit-chb-ico-clr: #{$clr-brd-ter};
-        --bit-chb-ico-clr-bg: #{$clr-brd-ter};
-
-        @media (hover: hover) {
-            &:hover {
-                --bit-chb-box-clr-brd: #{$clr-brd-ter-hover};
-                --bit-chb-ico-clr: #{$clr-brd-ter-hover};
-                --bit-chb-ico-clr-bg: #{$clr-brd-ter-hover};
-            }
-        }
-    }
+    --bit-chb-txt-clr: #{$clr-brd-ter};
+    --bit-chb-brd-clr: #{$clr-brd-ter};
+    --bit-chb-brd-clr-hover: #{$clr-brd-ter-hover};
+    --bit-chb-ckd-clr-bg: #{$clr-brd-ter};
+    --bit-chb-ckd-clr-brd: #{$clr-brd-ter};
+    --bit-chb-ckd-ico-clr: #{$clr-fg-ter};
+    --bit-chb-ckd-clr-bg-hover: #{$clr-brd-ter-hover};
+    --bit-chb-ckd-clr-brd-hover: #{$clr-brd-ter-hover};
+    --bit-chb-ckd-ico-clr-hover: #{$clr-fg-ter-hover};
+    --bit-chb-ind-clr-brd: #{$clr-brd-ter};
+    --bit-chb-ind-ico-clr: #{$clr-brd-ter};
+    --bit-chb-ind-ico-clr-bg: #{$clr-brd-ter};
+    --bit-chb-ind-clr-brd-hover: #{$clr-brd-ter-hover};
+    --bit-chb-ind-ico-clr-hover: #{$clr-brd-ter-hover};
+    --bit-chb-ind-ico-clr-bg-hover: #{$clr-brd-ter-hover};
 }
-
 
 .bit-chb-sm {
     --bit-chb-box-size: #{spacing(1.75)};
