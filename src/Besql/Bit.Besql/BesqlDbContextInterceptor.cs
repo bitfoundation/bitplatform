@@ -48,7 +48,7 @@ public class BesqlDbContextInterceptor(IBesqlStorage storage) : IDbCommandInterc
         return result;
     }
 
-    private bool IsTargetedCommand(string sql)
+    protected virtual bool IsTargetedCommand(string sql)
     {
         var keywords = new[] { "INSERT", "UPDATE", "DELETE", "CREATE", "ALTER", "DROP" };
         return keywords.Any(k => sql.Contains(k, StringComparison.OrdinalIgnoreCase));

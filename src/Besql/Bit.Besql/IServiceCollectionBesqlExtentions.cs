@@ -19,13 +19,17 @@ public static class IServiceCollectionBesqlExtentions
 
         services.AddSingleton(dbContextInitializer);
 
+        if (OperatingSystem.IsAndroid() || OperatingSystem.IsBrowser())
+        {
+            AppContext.SetSwitch("Microsoft.EntityFrameworkCore.Issue31751", true);
+        }
+
         if (OperatingSystem.IsBrowser())
         {
             services.AddSingleton<BesqlDbContextInterceptor>();
             services.TryAddSingleton<IBesqlStorage, BrowserCacheBesqlStorage>();
             // To make optimized db context work in blazor wasm: https://github.com/dotnet/efcore/issues/31751
             // https://learn.microsoft.com/en-us/ef/core/performance/advanced-performance-topics?tabs=with-di%2Cexpression-api-with-constant#compiled-models
-            AppContext.SetSwitch("Microsoft.EntityFrameworkCore.Issue31751", true);
             services.AddDbContextFactory<TDbContext, BesqlPooledDbContextFactory<TDbContext>>((serviceProvider, options) =>
             {
                 options.AddInterceptors(serviceProvider.GetRequiredService<BesqlDbContextInterceptor>());
