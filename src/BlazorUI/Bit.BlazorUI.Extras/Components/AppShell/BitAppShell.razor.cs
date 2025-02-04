@@ -97,11 +97,8 @@ public partial class BitAppShell : BitComponentBase, IDisposable
     {
         if (disposing is false || _disposed) return;
 
-        if (AutoGoToTop)
-        {
-            _navManager.LocationChanged -= LocationChanged;
-        }
-        
+        _navManager.LocationChanged -= LocationChanged;
+
         _disposed = true;
     }
 }
