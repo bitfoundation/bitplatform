@@ -4,11 +4,11 @@
     cursor: pointer;
     gap: spacing(0.5);
     text-align: start;
+    align-items: center;
     flex-direction: row;
     display: inline-flex;
     text-decoration: none;
     box-sizing: border-box;
-    align-items: flex-start;
     justify-content: center;
     color: var(--bit-btn-clr-txt);
     font-family: $tg-font-family;
@@ -36,6 +36,10 @@
             transform: rotate(360deg);
         }
     }
+}
+
+.bit-btn-hsc {
+    align-items: flex-start;
 }
 
 .bit-btn-tcn {
