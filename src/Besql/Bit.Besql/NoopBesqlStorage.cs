@@ -11,4 +11,13 @@ internal class NoopBesqlStorage : IBesqlStorage
     {
         return Task.CompletedTask;
     }
+
+    public void PauseSync()
+    {
+    }
+
+    public Task ResumeSync()
+    {
+        return Task.CompletedTask;
+    }
 }

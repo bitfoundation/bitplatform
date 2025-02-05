@@ -7,6 +7,16 @@ namespace Bit.Besql;
 
 public class BesqlDbContextInterceptor(IBesqlStorage storage) : IDbCommandInterceptor, ISingletonInterceptor
 {
+    private string[] keywords = ["INSERT", "UPDATE", "DELETE", "CREATE", "ALTER", "DROP"];
+
+    public DbDataReader ReaderExecuted(
+        DbCommand command,
+        CommandExecutedEventData eventData,
+        DbDataReader result)
+    {
+        throw new BesqlNonAsyncOperationException();
+    }
+
     public async ValueTask<DbDataReader> ReaderExecutedAsync(
         DbCommand command,
         CommandExecutedEventData eventData,
@@ -21,6 +31,14 @@ public class BesqlDbContextInterceptor(IBesqlStorage storage) : IDbCommandInterc
         return result;
     }
 
+    public int NonQueryExecuted(
+        DbCommand command,
+        CommandExecutedEventData eventData,
+        int result)
+    {
+        throw new BesqlNonAsyncOperationException();
+    }
+
     public async ValueTask<int> NonQueryExecutedAsync(
         DbCommand command,
         CommandExecutedEventData eventData,
@@ -33,6 +51,14 @@ public class BesqlDbContextInterceptor(IBesqlStorage storage) : IDbCommandInterc
         }
 
         return result;
+    }
+
+    public object? ScalarExecuted(
+        DbCommand command,
+        CommandExecutedEventData eventData,
+        object? result)
+    {
+        throw new BesqlNonAsyncOperationException();
     }
 
     public async ValueTask<object?> ScalarExecutedAsync(
@@ -50,7 +76,6 @@ public class BesqlDbContextInterceptor(IBesqlStorage storage) : IDbCommandInterc
 
     protected virtual bool IsTargetedCommand(string sql)
     {
-        var keywords = new[] { "INSERT", "UPDATE", "DELETE", "CREATE", "ALTER", "DROP" };
         return keywords.Any(k => sql.Contains(k, StringComparison.OrdinalIgnoreCase));
     }
 
