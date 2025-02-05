@@ -30,7 +30,7 @@ public sealed class BrowserCacheBesqlStorage(IJSRuntime jsRuntime) : IBesqlStora
     public async Task ResumeSync()
     {
         if (pausedFilesList is null)
-            throw new InvalidOperationException("Besql storage is not paused.");
+            throw new InvalidOperationException("bit Besql storage is not paused.");
 
         var files = pausedFilesList;
         pausedFilesList = null;
