@@ -27,6 +27,8 @@ public partial class CategoryController : AppControllerBase, ICategoryController
     [HttpGet]
     public async Task<PagedResult<CategoryDto>> GetCategories(ODataQueryOptions<CategoryDto> odataQuery, CancellationToken cancellationToken)
     {
+        await Task.Delay(5_000, cancellationToken);
+
         var query = (IQueryable<CategoryDto>)odataQuery.ApplyTo(Get(), ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
 
         var totalCount = await query.LongCountAsync(cancellationToken);
