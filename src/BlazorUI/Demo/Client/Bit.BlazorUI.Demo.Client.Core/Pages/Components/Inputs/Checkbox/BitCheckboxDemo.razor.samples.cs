@@ -102,17 +102,17 @@ private bool customContentValue;
 private bool customContentIndeterminate = true;";
 
     private readonly string example9RazorCode = @"
-<BitCheckbox Size=""BitSize.Small"" Label=""Small"" />
-<BitCheckbox Size=""BitSize.Small"" Label=""Small"" Indeterminate />
-<BitCheckbox Size=""BitSize.Small"" Label=""Small"" Value />
+<BitCheckbox Size=""BitSize.Small"" Label=""Checkbox"" />
+<BitCheckbox Size=""BitSize.Small"" Label=""Checkbox"" Indeterminate />
+<BitCheckbox Size=""BitSize.Small"" Label=""Checkbox"" Value />
                 
-<BitCheckbox Size=""BitSize.Medium"" Label=""Medium"" />
-<BitCheckbox Size=""BitSize.Medium"" Label=""Medium"" Indeterminate />
-<BitCheckbox Size=""BitSize.Medium"" Label=""Medium"" Value />
+<BitCheckbox Size=""BitSize.Medium"" Label=""Checkbox"" />
+<BitCheckbox Size=""BitSize.Medium"" Label=""Checkbox"" Indeterminate />
+<BitCheckbox Size=""BitSize.Medium"" Label=""Checkbox"" Value />
                 
-<BitCheckbox Size=""BitSize.Large"" Label=""Large"" />
-<BitCheckbox Size=""BitSize.Large"" Label=""Large"" Indeterminate />
-<BitCheckbox Size=""BitSize.Large"" Label=""Large"" Value />";
+<BitCheckbox Size=""BitSize.Large"" Label=""Checkbox"" />
+<BitCheckbox Size=""BitSize.Large"" Label=""Checkbox"" Indeterminate />
+<BitCheckbox Size=""BitSize.Large"" Label=""Checkbox"" Value />";
 
     private readonly string example10RazorCode = @"
 <BitCheckbox Color=""BitColor.Primary"" Label=""Primary"" />
