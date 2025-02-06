@@ -285,18 +285,18 @@ private double gap = 1;
     <BitToggle @bind-Value=""isReversed"" Text=""Reversed"" />
 </BitStack>
 
-<BitChoiceGroup Label=""Direction""
-                @bind-Value=""direction""
-                LayoutFlow=""@BitLayoutFlow.Horizontal""
+<BitChoiceGroup @bind-Value=""direction""
+                Horizontal
+                Label=""Direction""
                 TItem=""BitChoiceGroupOption<BitDir>"" TValue=""BitDir"">
     <BitChoiceGroupOption Text=""LTR"" Value=""BitDir.Ltr"" />
     <BitChoiceGroupOption Text=""RTL"" Value=""BitDir.Rtl"" />
     <BitChoiceGroupOption Text=""Auto"" Value=""BitDir.Auto"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup Label=""Horizontal Align""
-                @bind-Value=""horizontalAlign""
-                LayoutFlow=""@BitLayoutFlow.Horizontal""
+<BitChoiceGroup @bind-Value=""horizontalAlign""
+                Horizontal
+                Label=""Horizontal Align""
                 TItem=""BitChoiceGroupOption<BitAlignment>"" TValue=""BitAlignment"">
     <BitChoiceGroupOption Text=""Start"" Value=""BitAlignment.Start"" />
     <BitChoiceGroupOption Text=""Center"" Value=""BitAlignment.Center"" />
@@ -308,9 +308,9 @@ private double gap = 1;
     <BitChoiceGroupOption Text=""Stretch"" Value=""BitAlignment.Stretch"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup Label=""Vertical Align""
-                @bind-Value=""verticalAlign""
-                LayoutFlow=""@BitLayoutFlow.Horizontal""
+<BitChoiceGroup @bind-Value=""verticalAlign""
+                Horizontal
+                Label=""Vertical Align""
                 TItem=""BitChoiceGroupOption<BitAlignment>"" TValue=""BitAlignment"">
     <BitChoiceGroupOption Text=""Start"" Value=""BitAlignment.Start"" />
     <BitChoiceGroupOption Text=""Center"" Value=""BitAlignment.Center"" />
@@ -322,12 +322,12 @@ private double gap = 1;
     <BitChoiceGroupOption Text=""Stretch"" Value=""BitAlignment.Stretch"" />
 </BitChoiceGroup>
 
-<BitStack Style=""background:#71afe5;height:15rem""
-          Dir=""direction""
-          Reversed=""isReversed""
-          Horizontal=""isHorizontal""
-          VerticalAlign=""verticalAlign""
-          HorizontalAlign=""horizontalAlign"">
+<BitStack Dir=""direction""
+            Reversed=""isReversed""
+            Horizontal=""isHorizontal""
+            VerticalAlign=""verticalAlign""
+            HorizontalAlign=""horizontalAlign""
+            Style=""background:#71afe5;height:15rem"">
     <div class=""item"">Item 1</div>
     <div class=""item"">Item 2</div>
     <div class=""item"">Item 3</div>
@@ -387,7 +387,6 @@ private double stackHeight = 15;
     </BitStack>
 </BitStack>
 
-<br /><br />
 
 <BitStack Gap=""0.5rem"" Style=""background:#71afe5;height:15rem"">
     <BitStack Class=""item"" AutoHeight
@@ -408,7 +407,6 @@ private double stackHeight = 15;
     </BitStack>
 </BitStack>
 
-<br /><br />
 
 <BitStack Horizontal
           Gap=""0.5rem""

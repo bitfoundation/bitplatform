@@ -281,22 +281,22 @@ private readonly List<Order> iconCustoms =
 
     private readonly string example4RazorCode = @"
 <BitChoiceGroup Label=""Basic""
+                Horizontal
                 DefaultValue=""@(""A"")""
                 Items=""basicCustoms""
-                LayoutFlow=""BitLayoutFlow.Horizontal""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
 <BitChoiceGroup Label=""Disabled""
+                Horizontal
                 IsEnabled=""false""
                 DefaultValue=""@(""A"")""
                 Items=""basicCustoms""
-                LayoutFlow=""BitLayoutFlow.Horizontal""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name }, Value = { Selector = i => i.ItemValue } })"" />
 
 <BitChoiceGroup Label=""Image""
+                Horizontal
                 DefaultValue=""@(""Bar"")""
                 Items=""imageCustoms""
-                LayoutFlow=""BitLayoutFlow.Horizontal""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) },
                                          Value = { Name = nameof(Order.ItemValue) },
                                          ImageSrc = { Name = nameof(Order.ImageAddress) },
@@ -305,9 +305,9 @@ private readonly List<Order> iconCustoms =
                                          SelectedImageSrc = { Name = nameof(Order.SelectedImageAddress) }})"" />
 
 <BitChoiceGroup Label=""Icon""
+                Horizontal
                 DefaultValue=""@(""Day"")""
                 Items=""iconCustoms""
-                LayoutFlow=""BitLayoutFlow.Horizontal""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
                                          Value = { Selector = i => i.ItemValue },
                                          IconName = { Selector = i => i.IconName },

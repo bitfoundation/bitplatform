@@ -306,9 +306,9 @@ public partial class BitGridDemo
 </style>
 
 
-<BitChoiceGroup Label=""Horizontal Align""
-                @bind-Value=""horizontalAlign""
-                LayoutFlow=""@BitLayoutFlow.Horizontal""
+<BitChoiceGroup @bind-Value=""horizontalAlign""
+                Horizontal
+                Label=""Horizontal Align""
                 TItem=""BitChoiceGroupOption<BitAlignment>"" TValue=""BitAlignment"">
     <BitChoiceGroupOption Text=""Start"" Value=""BitAlignment.Start"" />
     <BitChoiceGroupOption Text=""Center"" Value=""BitAlignment.Center"" />
