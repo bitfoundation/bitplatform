@@ -110,9 +110,9 @@
         <ComponentExampleBox Title="Overflow" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <ExamplePreview>
                 <div style="max-width: 19rem;">
-                    <BitChoiceGroup Label="Overflow"
+                    <BitChoiceGroup @bind-Value="overflow"
                                     Horizontal
-                                    @bind-Value="overflow"
+                                    Label="Overflow"
                                     TItem="BitChoiceGroupOption<BitOverflow>" TValue="BitOverflow">
                         <BitChoiceGroupOption Text="Auto" Value="BitOverflow.Auto" />
                         <BitChoiceGroupOption Text="Hidden" Value="BitOverflow.Hidden" />
@@ -136,9 +136,9 @@
         <ComponentExampleBox Title="Scrollbar gutter" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <ExamplePreview>
                 <div style="max-width: 19rem;">
-                    <BitChoiceGroup Label="Scrollbar gutter"
+                    <BitChoiceGroup @bind-Value="gutter"
                                     Horizontal
-                                    @bind-Value="gutter"
+                                    Label="Scrollbar gutter"
                                     TItem="BitChoiceGroupOption<BitScrollbarGutter>" TValue="BitScrollbarGutter">
                         <BitChoiceGroupOption Text="Auto" Value="BitScrollbarGutter.Auto" />
                         <BitChoiceGroupOption Text="Stable" Value="BitScrollbarGutter.Stable" />

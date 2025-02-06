@@ -263,9 +263,9 @@ public partial class BitScrollablePaneDemo
     }
 </style>
                     
-<BitChoiceGroup Label=""Overflow""
-                @bind-Value=""overflow""
-                LayoutFlow=""BitLayoutFlow.Horizontal""
+<BitChoiceGroup @bind-Value=""overflow""
+                Horizontal
+                Label=""Overflow""
                 TItem=""BitChoiceGroupOption<BitOverflow>"" TValue=""BitOverflow"">
     <BitChoiceGroupOption Text=""Auto"" Value=""BitOverflow.Auto"" />
     <BitChoiceGroupOption Text=""Hidden"" Value=""BitOverflow.Hidden"" />
@@ -303,9 +303,9 @@ private BitOverflow overflow;
     }
 </style>
                     
-<BitChoiceGroup Label=""Scrollbar gutter""
-                @bind-Value=""gutter""
-                LayoutFlow=""BitLayoutFlow.Horizontal""
+<BitChoiceGroup @bind-Value=""gutter""
+                Horizontal
+                Label=""Scrollbar gutter""
                 TItem=""BitChoiceGroupOption<BitScrollbarGutter>"" TValue=""BitScrollbarGutter"">
     <BitChoiceGroupOption Text=""Auto"" Value=""BitScrollbarGutter.Auto"" />
     <BitChoiceGroupOption Text=""Stable"" Value=""BitScrollbarGutter.Stable"" />
