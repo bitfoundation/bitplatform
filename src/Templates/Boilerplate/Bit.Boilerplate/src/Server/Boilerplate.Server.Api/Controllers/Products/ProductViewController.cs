@@ -16,7 +16,7 @@ public partial class ProductViewController : AppControllerBase, IProductViewCont
     [HttpGet, AppResponseCache(MaxAge = 60 * 5, SharedMaxAge = 0, UserAgnostic = true)]
     public async Task<List<ProductDto>> GetHomeCarouselProducts(CancellationToken cancellationToken)
     {
-        return await Get().Take(10).ToListAsync(cancellationToken);
+        return await Get().Take(6).ToListAsync(cancellationToken);
     }
 
     [HttpGet("{id}")]

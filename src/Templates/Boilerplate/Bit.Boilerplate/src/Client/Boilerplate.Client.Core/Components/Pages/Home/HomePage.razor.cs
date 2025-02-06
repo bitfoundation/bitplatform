@@ -1,11 +1,8 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Shared.Dtos.Statistics;
 using Boilerplate.Shared.Controllers.Statistics;
-//#if(module == "Sales")
-using Boilerplate.Shared.Dtos.Products;
-using Boilerplate.Shared.Controllers.Products;
-//#endif
-namespace Boilerplate.Client.Core.Components.Pages;
+using Boilerplate.Shared.Dtos.Statistics;
+
+namespace Boilerplate.Client.Core.Components.Pages.Home;
 
 public partial class HomePage
 {
@@ -24,19 +21,10 @@ public partial class HomePage
     private NugetStatsDto? nugetStats;
     //#endif
 
-    //#if(module == "Sales")
-    [AutoInject] private IProductViewController productViewController = default!;
-    private IEnumerable<ProductDto>? carouselProducts;
-    //#endif
-
 
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();
-
-        //#if(module == "Sales")
-        carouselProducts = await productViewController.GetHomeCarouselProducts(CurrentCancellationToken);
-        //#endif
 
         //#if(module != "Sales")
         // If required, you should typically manage the authorization header for external APIs in **AuthDelegatingHandler.cs**
@@ -88,24 +76,5 @@ public partial class HomePage
             StateHasChanged();
         }
     }
-    //#endif
-
-    //#if(module == "Sales")
-    private async ValueTask<IEnumerable<ProductDto>> LoadProducts(BitInfiniteScrollingItemsProviderRequest request)
-    {
-        try
-        {
-            return await productViewController
-                .WithQueryString(new ODataQuery { Top = 10, Skip = request.Skip })
-                .Get(request.CancellationToken);
-        }
-        catch (Exception exp)
-        {
-            ExceptionHandler.Handle(exp);
-            return [];
-        }
-    }
-
-    private string? GetProductImageUrl(ProductDto product) => product.GetProductImageUrl(AbsoluteServerAddress);
     //#endif
 }

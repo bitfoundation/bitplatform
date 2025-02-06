@@ -1,0 +1,27 @@
+@inherits AppComponentBase
+
+<BitInfiniteScrolling ItemsProvider="LoadProducts" Class="products-inf-scr" ScrollerSelector="body" LastElementHeight="96px" Preload>
+    <ItemTemplate Context="product">
+        <BitLink Href="@($"/product/{product.Id}")" NoUnderline Class="product-item">
+            <BitCard FullSize>
+                <BitStack Class="product-stack">
+                    <ProductImage Src="@GetProductImageUrl(product)" Width="100%" />
+                    <BitText>@product.Name</BitText>
+                    <BitText Typography="BitTypography.Body2">@product.Description</BitText>
+                    <BitText Typography="BitTypography.H6">@product.FormattedPrice</BitText>
+                </BitStack>
+            </BitCard>
+        </BitLink>
+    </ItemTemplate>
+    <LoadingTemplate>
+        <BitCard FullSize Class="product-item">
+            <BitStack Class="product-stack">
+                <ProductImage Width="100%" />
+                <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
+                <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
+                <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
+                <BitShimmer Height="2rem" Width="100%" Background="BitColor.PrimaryBackground" />
+            </BitStack>
+        </BitCard>
+    </LoadingTemplate>
+</BitInfiniteScrolling>
