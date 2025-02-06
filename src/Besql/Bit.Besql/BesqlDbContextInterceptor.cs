@@ -7,14 +7,19 @@ namespace Bit.Besql;
 
 public class BesqlDbContextInterceptor(IBesqlStorage storage) : IDbCommandInterceptor, ISingletonInterceptor
 {
-    private string[] keywords = ["INSERT", "UPDATE", "DELETE", "CREATE", "ALTER", "DROP"];
+    private readonly string[] keywords = ["INSERT", "UPDATE", "DELETE", "CREATE", "ALTER", "DROP"];
 
     public DbDataReader ReaderExecuted(
         DbCommand command,
         CommandExecutedEventData eventData,
         DbDataReader result)
     {
-        throw new BesqlNonAsyncOperationException();
+        if (IsTargetedCommand(command.CommandText))
+        {
+            _ = ThrottledSync(eventData.Context!.Database.GetDbConnection().DataSource).ConfigureAwait(false);
+        }
+
+        return result;
     }
 
     public async ValueTask<DbDataReader> ReaderExecutedAsync(
@@ -36,7 +41,12 @@ public class BesqlDbContextInterceptor(IBesqlStorage storage) : IDbCommandInterc
         CommandExecutedEventData eventData,
         int result)
     {
-        throw new BesqlNonAsyncOperationException();
+        if (IsTargetedCommand(command.CommandText))
+        {
+            _ = ThrottledSync(eventData.Context!.Database.GetDbConnection().DataSource).ConfigureAwait(false);
+        }
+
+        return result;
     }
 
     public async ValueTask<int> NonQueryExecutedAsync(
@@ -58,7 +68,11 @@ public class BesqlDbContextInterceptor(IBesqlStorage storage) : IDbCommandInterc
         CommandExecutedEventData eventData,
         object? result)
     {
-        throw new BesqlNonAsyncOperationException();
+        if (IsTargetedCommand(command.CommandText))
+        {
+            _ = ThrottledSync(eventData.Context!.Database.GetDbConnection().DataSource).ConfigureAwait(false);
+        }
+        return result;
     }
 
     public async ValueTask<object?> ScalarExecutedAsync(
