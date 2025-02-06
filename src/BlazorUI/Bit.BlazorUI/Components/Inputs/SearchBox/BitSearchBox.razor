@@ -56,7 +56,7 @@
         </button>
     }
 
-    @if ((SuggestItems?.Any() ?? false) || SuggestItemProvider is not null)
+    @if ((SuggestItems?.Any() ?? false) || SuggestItemsProvider is not null)
     {
         <div @onclick="CloseCallout"
              style="display:@(_isOpen ? "block" : "none");@Styles?.Overlay"
