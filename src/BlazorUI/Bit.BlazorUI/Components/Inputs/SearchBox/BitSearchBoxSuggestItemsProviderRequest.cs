@@ -1,4 +1,5 @@
 ﻿namespace Bit.BlazorUI;
+
 public class BitSearchBoxSuggestItemsProviderRequest(string? searchTerm, int take, CancellationToken cancellationToken)
 {
     public string? SearchTerm { get; } = searchTerm;
