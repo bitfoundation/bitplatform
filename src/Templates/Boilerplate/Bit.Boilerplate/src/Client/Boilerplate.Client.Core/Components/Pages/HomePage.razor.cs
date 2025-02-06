@@ -93,9 +93,17 @@ public partial class HomePage
     //#if(module == "Sales")
     private async ValueTask<IEnumerable<ProductDto>> LoadProducts(BitInfiniteScrollingItemsProviderRequest request)
     {
-        return await productViewController
-            .WithQueryString(new ODataQuery { Top = 10, Skip = request.Skip })
-            .Get(CurrentCancellationToken);
+        try
+        {
+            return await productViewController
+                .WithQueryString(new ODataQuery { Top = 10, Skip = request.Skip })
+                .Get(request.CancellationToken);
+        }
+        catch (Exception exp)
+        {
+            ExceptionHandler.Handle(exp);
+            return [];
+        }
     }
 
     private string? GetProductImageUrl(ProductDto product) => product.GetProductImageUrl(AbsoluteServerAddress);
