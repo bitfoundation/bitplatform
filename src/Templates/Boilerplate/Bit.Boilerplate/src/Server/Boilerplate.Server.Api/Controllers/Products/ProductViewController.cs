@@ -10,13 +10,7 @@ public partial class ProductViewController : AppControllerBase, IProductViewCont
     [HttpGet, EnableQuery, AppResponseCache(MaxAge = 60 * 5, SharedMaxAge = 0, UserAgnostic = true)]
     public IQueryable<ProductDto> Get()
     {
-        return DbContext.Products.OrderByDescending(p => p.Name).Project();
-    }
-
-    [HttpGet, AppResponseCache(MaxAge = 60 * 5, SharedMaxAge = 0, UserAgnostic = true)]
-    public async Task<List<ProductDto>> GetHomeCarouselProducts(CancellationToken cancellationToken)
-    {
-        return await Get().Take(6).ToListAsync(cancellationToken);
+        return DbContext.Products.Project();
     }
 
     [HttpGet("{id}")]
@@ -31,24 +25,20 @@ public partial class ProductViewController : AppControllerBase, IProductViewCont
 
 
     // This method needs to be implemented based on the logic required in each business.
-    [HttpGet("{id}")]
-    public async Task<List<ProductDto>> GetSimilar(Guid id, CancellationToken cancellationToken)
+    [EnableQuery, HttpGet("{id}")]
+    public IQueryable<ProductDto> GetSimilar(Guid id)
     {
-        var similarProducts = (await Get().ToListAsync(cancellationToken))
-                              .OrderBy(p => Guid.NewGuid())
-                              .Where(p => p.Id != id)
-                              .Take(10)
-                              .ToList();
+        var similarProducts = Get()
+                              .OrderBy(p => EF.Functions.Random())
+                              .Where(p => p.Id != id);
 
         return similarProducts;
     }
 
     [HttpGet("{id}")]
-    public async Task<List<ProductDto>> GetSiblings(Guid id, CancellationToken cancellationToken)
+    public IQueryable<ProductDto> GetSiblings(Guid id)
     {
-        var siblings = await Get().Where(t => t.CategoryId == id)
-                                  .Take(10)
-                                  .ToListAsync(cancellationToken);
+        var siblings = Get().Where(t => t.CategoryId == id);
 
         return siblings;
     }

@@ -14,7 +14,7 @@ public partial class ProductsCarousel
 
     protected override async Task OnInitAsync()
     {
-        carouselProducts = await productViewController.GetHomeCarouselProducts(CurrentCancellationToken);
+        carouselProducts = await productViewController.WithQueryString(new ODataQuery { Top = 6, OrderBy = nameof(ProductDto.Name) }).Get(CurrentCancellationToken);
 
         await base.OnInitAsync();
     }

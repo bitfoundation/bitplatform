@@ -52,5 +52,5 @@ public partial class ProductDto
         return $"${Price:N2}";
     }
 
-    public string PageUrl => $"{Urls.ProductPage}/{Id}/{Name}";
+    public string PageUrl => $"{Urls.ProductPage}/{Id}/{Name}"; // Does it need encoding?
 }
