@@ -1,5 +1,4 @@
 ﻿using System.Data.Common;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
@@ -36,11 +35,6 @@ public class BesqlPooledDbContextFactory<TDbContext> : PooledDbContextFactoryBas
         {
             await _storage.Load(_fileName).ConfigureAwait(false);
         }
-        await using var connection = new SqliteConnection(_connectionString);
-        await connection.OpenAsync().ConfigureAwait(false);
-        await using var command = connection.CreateCommand();
-        command.CommandText = "PRAGMA synchronous = FULL;";
-        await command.ExecuteNonQueryAsync().ConfigureAwait(false);
 
         await base.InitializeDbContext().ConfigureAwait(false);
     }

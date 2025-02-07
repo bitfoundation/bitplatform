@@ -15,6 +15,7 @@
 <button class="btn btn-primary" @onclick="DeleteSomeForecastsSample">Delete some forecasts</button>
 <button class="btn btn-primary" @onclick="PauseResumeSyncSample">Pause / resume sync</button>
 <button class="btn btn-primary" @onclick="UsePrePopulatedDatabaseSample">Use pre populated database</button>
+<button class="btn btn-primary" @onclick="ReCreateDatabase">Re-create database</button>
 
 <h1>@forecastsCount</h1>
 
@@ -83,8 +84,9 @@
 
     private async Task UsePrePopulatedDatabaseSample()
     {
-        // This functionality can also be implemented as an API that dynamically populates a SQLite database.
-        // Important: Ensure the SQLite database is created with `PRAGMA synchronous = FULL` from the start.
+        // This feature can alternatively be implemented as an API that dynamically fills a SQLite database.
+        // Note: If the `dbContext` used to populate the SQLite database file is not instantiated by `bit Besql`,
+        // you must manually call `dbContext.Database.ConfigureSqliteSynchronous()`.
         await using var prePopulatedDatabase = await HttpClient.GetStreamAsync("https://localhost:5050/Pre-Populated-Offline-Client.db");
 
         var fileName = "Offline-Client.db";
@@ -95,5 +97,18 @@
         await BitBesqlStorage.Persist(fileName);
 
         await ReadDataSample();
+    }
+
+    private async Task ReCreateDatabase()
+    {
+        await using var dbContext = await DbContextFactory.CreateDbContextAsync();
+
+        await dbContext.Database.EnsureDeletedAsync();
+
+        // This method is automatically invoked by Besql the first time the app runs.
+        // If you need to drop and recreate the database multiple times within the same app session, you must call this method manually.
+        await dbContext.Database.ConfigureSqliteSynchronous();
+
+        await dbContext.Database.MigrateAsync();
     }
 }
