@@ -17,7 +17,11 @@ public static class IServiceCollectionBesqlExtentions
         optionsAction ??= (_, _) => { };
         dbContextInitializer ??= async (_, _) => { };
 
-        services.AddSingleton(dbContextInitializer);
+        services.AddSingleton(async (IServiceProvider sp, TDbContext dbContext) =>
+        {
+            await dbContext.Database.ConfigureSqliteSynchronous();
+            await dbContextInitializer(sp, dbContext);
+        });
 
         if (OperatingSystem.IsAndroid() || OperatingSystem.IsBrowser())
         {
