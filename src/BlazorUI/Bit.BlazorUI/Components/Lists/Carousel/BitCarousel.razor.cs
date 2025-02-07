@@ -284,6 +284,7 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
 
     private async Task Go(bool isNext = false, int scrollCount = 0)
     {
+        if (_disposed) return;
         if (_othersIndices.Length == 0) return;
 
         if (scrollCount < 1)
@@ -432,6 +433,8 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
     {
         if (_disposed || disposing is false) return;
 
+        _disposed = true;
+
         if (_autoPlayTimer is not null)
         {
             _autoPlayTimer.Elapsed -= AutoPlayTimerElapsed;
@@ -447,7 +450,5 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
-
-        _disposed = true;
     }
 }
