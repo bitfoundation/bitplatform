@@ -1,5 +1,5 @@
-﻿using Boilerplate.Shared.Controllers.Products;
-using Boilerplate.Shared.Dtos.Products;
+﻿using Boilerplate.Shared.Dtos.Products;
+using Boilerplate.Shared.Controllers.Products;
 
 namespace Boilerplate.Client.Core.Components.Pages.Home;
 

@@ -1,6 +1,6 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Shared.Controllers.Statistics;
 using Boilerplate.Shared.Dtos.Statistics;
+using Boilerplate.Shared.Controllers.Statistics;
 
 namespace Boilerplate.Client.Core.Components.Pages.Home;
 
