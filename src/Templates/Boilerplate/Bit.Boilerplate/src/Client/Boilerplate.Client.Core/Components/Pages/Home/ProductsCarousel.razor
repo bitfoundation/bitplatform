@@ -25,7 +25,7 @@ else
             @foreach (var product in carouselProducts)
             {
                 <BitCarouselItem>
-                    <BitLink Href="@($"/product/{product.Id}")" NoUnderline Style="color:unset">
+                    <BitLink Href="@product.PageUrl" NoUnderline Style="color:unset">
                         <BitStack Horizontal Class="carousel-stack">
                             <ProductImage Src="@GetProductImageUrl(product)" Width="50%" />
                             <BitStack AutoHeight>

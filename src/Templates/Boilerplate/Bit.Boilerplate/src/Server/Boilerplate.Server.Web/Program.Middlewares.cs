@@ -238,7 +238,7 @@ public static partial class Program
         {
             var baseUrl = context.Request.GetBaseUrl();
             var products = await controller.WithQueryString(new ODataQuery() { Select = nameof(ProductDto.Id) }).Get(context.RequestAborted);
-            var productsUrls = products.Select(p => $"{Urls.ProductPage}/{p.Id}").ToArray();
+            var productsUrls = products.Select(p => p.PageUrl).ToArray();
 
             productsUrls = CultureInfoManager.MultilingualEnabled
                 ? productsUrls.Union(CultureInfoManager.SupportedCultures.SelectMany(sc => productsUrls.Select(url => $"{sc.Culture.Name}{url}"))).ToArray()

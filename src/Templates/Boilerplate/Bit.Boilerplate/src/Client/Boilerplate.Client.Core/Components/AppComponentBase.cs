@@ -224,8 +224,11 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     /// </summary>
     protected void Abort()
     {
-        cts.Cancel();
-        cts.Dispose();
+        if (cts.IsCancellationRequested is false)
+        {
+            cts.Cancel();
+            cts.Dispose();
+        }
         cts = new();
     }
 

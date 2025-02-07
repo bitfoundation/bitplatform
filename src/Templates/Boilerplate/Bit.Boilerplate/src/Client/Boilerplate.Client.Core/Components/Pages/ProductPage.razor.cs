@@ -10,6 +10,7 @@ public partial class ProductPage
 
 
     [Parameter] public Guid Id { get; set; }
+    [Parameter] public string? Name { get; set; }
 
 
     [AutoInject] private IProductViewController productViewController = default!;
