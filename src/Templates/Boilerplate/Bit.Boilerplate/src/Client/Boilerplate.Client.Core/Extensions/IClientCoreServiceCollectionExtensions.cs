@@ -96,8 +96,8 @@ public static partial class IClientCoreServiceCollectionExtensions
         {
             var isRunningInsideDocker = Directory.Exists("/container_volume"); // Blazor Server - Docker (It's supposed to be a mounted volume named /container_volume)
             var dirPath = isRunningInsideDocker ? "/container_volume"
-                                                : AppPlatform.IsBlazorHybridOrBrowser ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AC87AA5B-4B37-4E52-8468-2D5DF24AF256")
-                                                : Directory.GetCurrentDirectory(); // Blazor server (Non docker Linux, macOS or Windows)
+                                                : AppPlatform.IsBlazorHybrid ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AC87AA5B-4B37-4E52-8468-2D5DF24AF256")
+                                                : Directory.GetCurrentDirectory(); // Blazor server (Non docker Linux, macOS or Windows) OR Blazor WASM
 
             dirPath = Path.Combine(dirPath, "App_Data");
 

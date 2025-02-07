@@ -6,10 +6,17 @@ The usage of `Bit.Besql` is exactly the same as the regular usage of `Microsoft.
 
 In order to download sqlite db file from browser cache storage in blazor WebAssembly run the followings in browser console:
 ```js
-const cache = await caches.open('Bit-Besql');
-const resp = await cache.match('/data/cache/Boilerplate-ClientDb.db');
+const cache = await caches.open('bit-Besql');
+const resp = await cache.match('/data/cache/App_Data/Offline.db');
 const blob = await resp.blob();
-URL.createObjectURL(blob);
+const urlToDownload = URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = urlToDownload;
+a.download = 'Offline.db';
+a.click();
+URL.revokeObjectURL(urlToDownload);
+
+https://inloop.github.io/sqlite-viewer/
 ```
 
 **Migration**
