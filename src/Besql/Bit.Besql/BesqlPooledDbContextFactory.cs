@@ -1,5 +1,4 @@
 ﻿using System.Data.Common;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
@@ -9,11 +8,11 @@ public class BesqlPooledDbContextFactory<TDbContext> : PooledDbContextFactoryBas
     where TDbContext : DbContext
 {
     private readonly string _fileName;
-    private readonly IBesqlStorage _storage;
+    private readonly IBitBesqlStorage _storage;
     private readonly string _connectionString;
 
     public BesqlPooledDbContextFactory(
-        IBesqlStorage storage,
+        IBitBesqlStorage storage,
         DbContextOptions<TDbContext> options,
         Func<IServiceProvider, TDbContext, Task> dbContextInitializer)
         : base(options, dbContextInitializer)
@@ -32,12 +31,10 @@ public class BesqlPooledDbContextFactory<TDbContext> : PooledDbContextFactoryBas
 
     protected override async Task InitializeDbContext()
     {
-        await _storage.Init(_fileName).ConfigureAwait(false);
-        await using var connection = new SqliteConnection(_connectionString);
-        await connection.OpenAsync().ConfigureAwait(false);
-        await using var command = connection.CreateCommand();
-        command.CommandText = "PRAGMA synchronous = FULL;";
-        await command.ExecuteNonQueryAsync().ConfigureAwait(false);
+        if (File.Exists(_fileName) is false)
+        {
+            await _storage.Load(_fileName).ConfigureAwait(false);
+        }
 
         await base.InitializeDbContext().ConfigureAwait(false);
     }

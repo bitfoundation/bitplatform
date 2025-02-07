@@ -160,10 +160,10 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
-            Name = "SuggestItemProvider",
-            Type = "Func<string?, int, Task<ICollection<string>>>?",
+            Name = "SuggestItemsProvider",
+            Type = "BitSearchBoxSuggestItemsProvider?",
             DefaultValue = "null",
-            Description = "The function providing suggest items.",
+            Description = "The item provider function providing suggest items.",
         },
         new()
         {
@@ -414,7 +414,7 @@ public partial class BitSearchBoxDemo
         return itemText.StartsWith(searchText, StringComparison.OrdinalIgnoreCase);
     };
 
-    private async Task<ICollection<string>> LoadItems(string? search, int count)
+    private async ValueTask<IEnumerable<string>> LoadItems(BitSearchBoxSuggestItemsProviderRequest request)
     {
         try
         {
@@ -422,19 +422,19 @@ public partial class BitSearchBoxDemo
 
             var query = new Dictionary<string, object?>()
             {
-                { "$top", count < 1 ? 5 : count },
+                { "$top", request.Take < 1 ? 5 : request.Take },
             };
 
-            if (string.IsNullOrEmpty(search) is false)
+            if (string.IsNullOrEmpty(request.SearchTerm) is false)
             {
-                query.Add("$filter", $"contains(Name,'{search}')");
+                query.Add("$filter", $"contains(toupper(Name),'{request.SearchTerm.ToUpper()}')");
             }
 
             var url = NavManager.GetUriWithQueryParameters("Products/GetProducts", query);
 
-            var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
+            var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto, request.CancellationToken);
 
-            return data!.Items!.Select(i => i.Name)!.ToList()!;
+            return data!.Items!.Select(i => i.Name)!;
         }
         catch
         {
@@ -623,7 +623,7 @@ private ValidationSearchBoxModel validationBoxModel = new();";
 <BitSearchBox @bind-Value=""@searchValueWithItemsProvider""
               Immediate
               Placeholder=""e.g. Pro""
-              SuggestItemProvider=""LoadItems"" />
+              SuggestItemsProvider=""LoadItems"" />
 <div>SearchValue: @searchValueWithItemsProvider</div>";
     private readonly string example10CsharpCode = @"
 private string searchValue;
@@ -654,25 +654,25 @@ private Func<string, string, bool> SearchFunc = (string searchText, string itemT
     return itemText.StartsWith(searchText, StringComparison.OrdinalIgnoreCase);
 };
 
-private async Task<ICollection<string>> LoadItems(string? search, int count)
+private async ValueTask<IEnumerable<string>> LoadItems(BitSearchBoxSuggestItemsProviderRequest request)
 {
     try
     {
         var query = new Dictionary<string, object?>()
         {
-            { ""$top"", count < 1 ? 5 : count },
+            { ""$top"", request.Take < 1 ? 5 : request.Take },
         };
 
-        if (string.IsNullOrEmpty(search) is false)
+        if (string.IsNullOrEmpty(request.SearchTerm) is false)
         {
-            query.Add(""$filter"", $""contains(Name,'{search}')"");
+            query.Add(""$filter"", $""contains(toupper(Name),'{request.SearchTerm.ToUpper()}')"");
         }
 
         var url = NavManager.GetUriWithQueryParameters(""Products/GetProducts"", query);
 
-        var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
+        var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto, request.CancellationToken);
 
-        return data!.Items.Select(i => i.Name).ToList();
+        return data!.Items!.Select(i => i.Name)!;
     }
     catch
     {

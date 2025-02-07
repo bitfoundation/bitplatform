@@ -5,10 +5,9 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// A search box (SearchBox) provides an input field for searching content within a site or app to find specific items.
 /// </summary>
-public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
+public partial class BitSearchBox : BitTextInputBase<string?>
 {
     private bool _isOpen;
-    private bool _disposed;
     private string? _inputMode;
     private bool _inputHasFocus;
     private int _selectedIndex = -1;
@@ -16,7 +15,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
     private List<string> _searchItems = [];
     private string _calloutId = string.Empty;
     private string _scrollContainerId = string.Empty;
-    private CancellationTokenSource _cancellationTokenSource = new();
+    private CancellationTokenSource? _cancellationTokenSource;
     private DotNetObjectReference<BitSearchBox> _dotnetObj = default!;
 
 
@@ -137,9 +136,9 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
     [Parameter] public IEnumerable<string>? SuggestItems { get; set; }
 
     /// <summary>
-    /// The function providing suggest items.
+    /// The item provider function providing suggest items.
     /// </summary>
-    [Parameter] public Func<string?, int, Task<ICollection<string>>>? SuggestItemProvider { get; set; }
+    [Parameter] public BitSearchBoxSuggestItemsProvider? SuggestItemsProvider { get; set; }
 
     /// <summary>
     /// The custom template for rendering the suggest items of the BitSearchBox.
@@ -349,17 +348,20 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
         {
             _searchItems = [];
         }
-        else if (SuggestItemProvider is not null)
+        else if (SuggestItemsProvider is not null)
         {
-            _searchItems = [.. (await SuggestItemProvider.Invoke(CurrentValue, MaxSuggestCount)).Take(MaxSuggestCount)];
+            _cancellationTokenSource?.Cancel();
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource = new();
+            _searchItems = [.. (await SuggestItemsProvider(new(CurrentValue, MaxSuggestCount, _cancellationTokenSource.Token))).Take(MaxSuggestCount)];
         }
         else if (SuggestItems is not null)
         {
-            _searchItems = SuggestItems
+            _searchItems = [.. SuggestItems
                             .Where(i => SuggestFilterFunction is not null
                                         ? SuggestFilterFunction.Invoke(CurrentValue, i)
                                         : (i?.Contains(CurrentValue!, StringComparison.OrdinalIgnoreCase) ?? false))
-                            .Take(MaxSuggestCount).ToList();
+                            .Take(MaxSuggestCount)];
         }
         else
         {
@@ -381,6 +383,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
             {
                 _isOpen = true;
                 await ToggleCallout();
+                StateHasChanged();
             }
         }
         else
@@ -454,31 +457,26 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
 
 
 
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await DisposeAsync(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual async ValueTask DisposeAsync(bool disposing)
-    {
-        if (_disposed || disposing is false) return;
-
-        if (_dotnetObj is not null)
+        if (disposing)
         {
-            _dotnetObj.Dispose();
-
-            try
+            if (_dotnetObj is not null)
             {
-                await _js.BitCalloutClearCallout(_calloutId);
+                _dotnetObj.Dispose();
+
+                try
+                {
+                    await _js.BitCalloutClearCallout(_calloutId);
+                }
+                catch (JSDisconnectedException) { } // we can ignore this exception here
             }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
+
+            _cancellationTokenSource?.Dispose();
+
+            OnValueChanged -= HandleOnValueChanged;
         }
 
-        _cancellationTokenSource?.Dispose();
-
-        OnValueChanged -= HandleOnValueChanged;
-
-        _disposed = true;
+        base.Dispose(disposing);
     }
 }
