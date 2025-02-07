@@ -35,7 +35,7 @@ public partial class ProductViewController : AppControllerBase, IProductViewCont
         return similarProducts;
     }
 
-    [HttpGet("{id}")]
+    [EnableQuery, HttpGet("{id}")]
     public IQueryable<ProductDto> GetSiblings(Guid id)
     {
         var siblings = Get().Where(t => t.CategoryId == id);

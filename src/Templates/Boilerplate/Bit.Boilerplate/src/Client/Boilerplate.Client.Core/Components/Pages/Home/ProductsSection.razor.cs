@@ -13,7 +13,7 @@ public partial class ProductsSection
         try
         {
             return await productViewController
-                            .WithQueryString(new ODataQuery { Top = 10, Skip = request.Skip, OrderBy = nameof(ProductDto.Name) })
+                            .WithQuery(new ODataQuery { Top = 10, Skip = request.Skip, OrderBy = nameof(ProductDto.Name) })
                             .Get(request.CancellationToken);
         }
         catch (Exception exp)

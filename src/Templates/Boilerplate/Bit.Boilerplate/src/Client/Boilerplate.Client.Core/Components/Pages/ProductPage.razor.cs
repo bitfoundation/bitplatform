@@ -73,7 +73,7 @@ public partial class ProductPage
 
         try
         {
-            siblingProducts = await productViewController.WithQueryString(new ODataQuery { Filter = $"{nameof(ProductDto.Id)} ne {product.Id}" }).GetSiblings(product.CategoryId.Value, CurrentCancellationToken);
+            siblingProducts = await productViewController.WithQuery(new ODataQuery { Filter = $"{nameof(ProductDto.Id)} ne {product.Id}" }).GetSiblings(product.CategoryId.Value, CurrentCancellationToken);
         }
         finally
         {
