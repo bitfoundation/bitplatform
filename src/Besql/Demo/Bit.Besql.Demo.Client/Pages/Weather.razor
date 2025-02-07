@@ -4,34 +4,31 @@
 @using Microsoft.EntityFrameworkCore
 @using Bit.Besql.Demo.Client.Data
 
-@inject IBesqlStorage BesqlStorage;
+@inject HttpClient HttpClient;
+@inject IBitBesqlStorage BitBesqlStorage;
 @inject IDbContextFactory<OfflineDbContext> DbContextFactory
 
-<PageTitle>Weather</PageTitle>
+<PageTitle>Bit Besql weather forecast sample</PageTitle>
 
-<h1>Weather</h1>
+<button class="btn btn-primary" @onclick="ReadDataSample">Read data sample</button>
+<button class="btn btn-primary" @onclick="AddWeatherForecastSample">Add weather forecast</button>
+<button class="btn btn-primary" @onclick="DeleteSomeForecastsSample">Delete some forecasts</button>
+<button class="btn btn-primary" @onclick="PauseResumeSyncSample">Pause / resume sync</button>
+<button class="btn btn-primary" @onclick="UsePrePopulatedDatabaseSample">Use pre populated database</button>
 
-<p>This component demonstrates showing data.</p>
-
-@if (forecastsCount == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <button class="btn btn-primary" @onclick="AddWeatherForecast">Add weather forecast</button>
-    <button class="btn btn-primary" @onclick="DeleteSomeForecasts">Delete some forecasts</button>
-    <button class="btn btn-primary" @onclick="PauseResumeSync">Pause / resume sync</button>
-    <button class="btn btn-primary" @onclick="SyncVersionTest">Sync version (Not recommended at all)</button>
-
-    <h1>@forecastsCount</h1>
-}
+<h1>@forecastsCount</h1>
 
 @code {
 
     private int? forecastsCount;
 
-    private async Task AddWeatherForecast()
+    private async Task ReadDataSample()
+    {
+        await using var dbContext = await DbContextFactory.CreateDbContextAsync();
+        forecastsCount = await dbContext.WeatherForecasts.CountAsync();
+    }
+
+    private async Task AddWeatherForecastSample()
     {
         await using var dbContext = await DbContextFactory.CreateDbContextAsync();
         await dbContext.WeatherForecasts.AddAsync(new()
@@ -47,10 +44,11 @@ else
             TemperatureC = Random.Shared.Next(1, 30)
         });
         await dbContext.SaveChangesAsync();
-        forecastsCount += 2;
+
+        await ReadDataSample();
     }
 
-    private async Task DeleteSomeForecasts()
+    private async Task DeleteSomeForecastsSample()
     {
         await using var dbContext = await DbContextFactory.CreateDbContextAsync();
         var deletedCount = await dbContext.WeatherForecasts
@@ -59,51 +57,43 @@ else
         deletedCount += await dbContext.WeatherForecasts
             .Where(w => w.TemperatureC % 3 == 0)
             .ExecuteDeleteAsync();
-        forecastsCount -= deletedCount;
+
+        await ReadDataSample();
     }
 
-    private async Task PauseResumeSync()
+    private async Task PauseResumeSyncSample()
     {
-        BesqlStorage.PauseSync();
+        BitBesqlStorage.PauseAutomaticPersistent();
 
         try
         {
-            await AddWeatherForecast();
+            await AddWeatherForecastSample();
 
             await Task.Delay(5_000);
 
-            await AddWeatherForecast();
+            await AddWeatherForecastSample();
         }
         finally
         {
-            await BesqlStorage.ResumeSync();
+            await BitBesqlStorage.ResumeAutomaticPersistent();
         }
+
+        await ReadDataSample();
     }
 
-    private void SyncVersionTest()
+    private async Task UsePrePopulatedDatabaseSample()
     {
-        using var dbContext = DbContextFactory.CreateDbContext();
-        dbContext.WeatherForecasts.Add(new()
-        {
-            Date = new DateTimeOffset(2024, 1, 4, 10, 10, 10, TimeSpan.Zero),
-            Summary = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y zA B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y zA B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y zA B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y zA B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y zA B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y zA B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y zA B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y zA B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z ",
-            TemperatureC = Random.Shared.Next(1, 30)
-        });
-        dbContext.WeatherForecasts.Add(new()
-        {
-            Date = new DateTimeOffset(2024, 1, 4, 10, 10, 10, TimeSpan.Zero),
-            Summary = "Test",
-            TemperatureC = Random.Shared.Next(1, 30)
-        });
-        dbContext.SaveChanges();
-        forecastsCount += 2;
-    }
+        // This functionality can also be implemented as an API that dynamically populates a SQLite database.
+        // Important: Ensure the SQLite database is created with `PRAGMA synchronous = FULL` from the start.
+        await using var prePopulatedDatabase = await HttpClient.GetStreamAsync("https://localhost:5050/Pre-Populated-Offline-Client.db");
 
-    protected override async Task OnInitializedAsync()
-    {
-        await using var dbContext = await DbContextFactory.CreateDbContextAsync();
-        forecastsCount = await dbContext.WeatherForecasts.CountAsync();
+        var fileName = "Offline-Client.db";
+        await using (var fileStream = new FileStream(fileName, FileMode.Create, FileAccess.Write))
+        {
+            await prePopulatedDatabase.CopyToAsync(fileStream);
+        }
+        await BitBesqlStorage.Persist(fileName);
 
-        await base.OnInitializedAsync();
+        await ReadDataSample();
     }
 }

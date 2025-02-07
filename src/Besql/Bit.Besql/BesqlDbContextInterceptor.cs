@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Bit.Besql;
 
-public class BesqlDbContextInterceptor(IBesqlStorage storage) : IDbCommandInterceptor, ISingletonInterceptor
+public class BesqlDbContextInterceptor(IBitBesqlStorage storage) : IDbCommandInterceptor, ISingletonInterceptor
 {
     private readonly string[] keywords = ["INSERT", "UPDATE", "DELETE", "CREATE", "ALTER", "DROP"];
 

@@ -15,6 +15,8 @@ public static class ServiceCollectionExtensions
                 .UseSqlite($"Data Source=Offline-Client.db");
         }, dbContextInitializer: async (sp, dbContext) => await dbContext.Database.MigrateAsync());
 
+        services.AddScoped(sp => new HttpClient());
+
         return services;
     }
 }

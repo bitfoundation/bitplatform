@@ -18,8 +18,9 @@ Note: Do NOT use `IDbContextFactory` in `OnInitialized` method because it relies
 
 In order to download sqlite db file from browser cache storage in blazor WebAssembly run the followings in browser console:
 ```js
-const cache = await caches.open('bit-besql');
-const resp = await cache.match('/data/cache/MyDb.db');
+const cache = await caches.open('bit-Besql');
+const resp = await cache.match('/data/cache/Offline-Client.db');
 const blob = await resp.blob();
 const urlToDownload = URL.createObjectURL(blob);
+window.open(urlToDownload);
 ```
