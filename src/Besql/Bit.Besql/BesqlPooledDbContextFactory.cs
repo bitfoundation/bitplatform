@@ -9,11 +9,11 @@ public class BesqlPooledDbContextFactory<TDbContext> : PooledDbContextFactoryBas
     where TDbContext : DbContext
 {
     private readonly string _fileName;
-    private readonly IBesqlStorage _storage;
+    private readonly IBitBesqlStorage _storage;
     private readonly string _connectionString;
 
     public BesqlPooledDbContextFactory(
-        IBesqlStorage storage,
+        IBitBesqlStorage storage,
         DbContextOptions<TDbContext> options,
         Func<IServiceProvider, TDbContext, Task> dbContextInitializer)
         : base(options, dbContextInitializer)
@@ -34,7 +34,7 @@ public class BesqlPooledDbContextFactory<TDbContext> : PooledDbContextFactoryBas
     {
         if (File.Exists(_fileName) is false)
         {
-            await _storage.SyncFromBrowserCacheStorageToDotNet(_fileName).ConfigureAwait(false);
+            await _storage.Load(_fileName).ConfigureAwait(false);
         }
         await using var connection = new SqliteConnection(_connectionString);
         await connection.OpenAsync().ConfigureAwait(false);

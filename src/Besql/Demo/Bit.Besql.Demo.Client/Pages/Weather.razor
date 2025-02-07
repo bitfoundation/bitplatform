@@ -5,7 +5,7 @@
 @using Bit.Besql.Demo.Client.Data
 
 @inject HttpClient HttpClient;
-@inject IBesqlStorage BesqlStorage;
+@inject IBitBesqlStorage BitBesqlStorage;
 @inject IDbContextFactory<OfflineDbContext> DbContextFactory
 
 <PageTitle>Bit Besql weather forecast sample</PageTitle>
@@ -63,7 +63,7 @@
 
     private async Task PauseResumeSyncSample()
     {
-        BesqlStorage.PauseSyncFromDotNetToBrowserCacheStorage();
+        BitBesqlStorage.PauseAutomaticPersistent();
 
         try
         {
@@ -75,7 +75,7 @@
         }
         finally
         {
-            await BesqlStorage.ResumeSyncFromDotNetToBrowserCacheStorage();
+            await BitBesqlStorage.ResumeAutomaticPersistent();
         }
 
         await ReadDataSample();
@@ -92,7 +92,7 @@
         {
             await prePopulatedDatabase.CopyToAsync(fileStream);
         }
-        await BesqlStorage.SyncFromDotNetToBrowserCacheStorage(fileName);
+        await BitBesqlStorage.Persist(fileName);
 
         await ReadDataSample();
     }

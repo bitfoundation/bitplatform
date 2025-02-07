@@ -1,27 +1,10 @@
 ﻿var BitBesql = window.BitBesql || {};
 BitBesql.version = window['bit-besql version'] = '9.4.0-pre-03';
 
-BitBesql.syncFromBrowserCacheStorageToDotNet = async function init(fileName) {
-    const sqliteFilePath = `/${fileName}`;
-    const cacheStorageFilePath = `/data/cache/${fileName}`;
-
-    BitBesql.dbCache = await caches.open('Bit-Besql');
-
-    const dbCache = BitBesql.dbCache;
-
-    const resp = await dbCache.match(cacheStorageFilePath);
-    if (resp && resp.ok) {
-        const res = await resp.arrayBuffer();
-        if (res) {
-            window.Blazor.runtime.Module.FS.writeFile(sqliteFilePath, new Uint8Array(res));
-        }
-    }
-}
-
-BitBesql.syncFromDotNetToBrowserCacheStorage = async function persist(fileName) {
+BitBesql.persist = async function persist(fileName) {
 
     if (BitBesql.dbCache == null) {
-        BitBesql.dbCache = await caches.open('Bit-Besql');
+        BitBesql.dbCache = await caches.open('bit-Besql');
     }
 
     const dbCache = BitBesql.dbCache;
@@ -48,4 +31,21 @@ BitBesql.syncFromDotNetToBrowserCacheStorage = async function persist(fileName) 
     });
 
     await dbCache.put(cacheStorageFilePath, response);
+}
+
+BitBesql.load = async function init(fileName) {
+    const sqliteFilePath = `/${fileName}`;
+    const cacheStorageFilePath = `/data/cache/${fileName}`;
+
+    BitBesql.dbCache = await caches.open('bit-Besql');
+
+    const dbCache = BitBesql.dbCache;
+
+    const resp = await dbCache.match(cacheStorageFilePath);
+    if (resp && resp.ok) {
+        const res = await resp.arrayBuffer();
+        if (res) {
+            window.Blazor.runtime.Module.FS.writeFile(sqliteFilePath, new Uint8Array(res));
+        }
+    }
 }
