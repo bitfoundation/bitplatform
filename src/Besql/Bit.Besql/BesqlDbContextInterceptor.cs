@@ -105,6 +105,6 @@ public class BesqlDbContextInterceptor(IBesqlStorage storage) : IDbCommandInterc
         if (localLastSyncId != filesSyncIds[fileName])
             return;
 
-        await storage.Persist(fileName).ConfigureAwait(false);
+        await storage.SyncFromDotNetToBrowserCacheStorage(fileName).ConfigureAwait(false);
     }
 }

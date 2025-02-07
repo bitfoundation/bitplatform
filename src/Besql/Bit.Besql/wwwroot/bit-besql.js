@@ -1,7 +1,7 @@
 ﻿var BitBesql = window.BitBesql || {};
 BitBesql.version = window['bit-besql version'] = '9.4.0-pre-03';
 
-BitBesql.init = async function init(fileName) {
+BitBesql.syncFromBrowserCacheStorageToDotNet = async function init(fileName) {
     const sqliteFilePath = `/${fileName}`;
     const cacheStorageFilePath = `/data/cache/${fileName}`;
 
@@ -18,7 +18,11 @@ BitBesql.init = async function init(fileName) {
     }
 }
 
-BitBesql.persist = async function persist(fileName) {
+BitBesql.syncFromDotNetToBrowserCacheStorage = async function persist(fileName) {
+
+    if (BitBesql.dbCache == null) {
+        BitBesql.dbCache = await caches.open('Bit-Besql');
+    }
 
     const dbCache = BitBesql.dbCache;
 

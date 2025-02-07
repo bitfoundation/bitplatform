@@ -32,7 +32,10 @@ public class BesqlPooledDbContextFactory<TDbContext> : PooledDbContextFactoryBas
 
     protected override async Task InitializeDbContext()
     {
-        await _storage.Init(_fileName).ConfigureAwait(false);
+        if (File.Exists(_fileName) is false)
+        {
+            await _storage.SyncFromBrowserCacheStorageToDotNet(_fileName).ConfigureAwait(false);
+        }
         await using var connection = new SqliteConnection(_connectionString);
         await connection.OpenAsync().ConfigureAwait(false);
         await using var command = connection.CreateCommand();

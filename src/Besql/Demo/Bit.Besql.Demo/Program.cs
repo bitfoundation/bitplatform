@@ -1,7 +1,5 @@
-﻿using Bit.Besql.Demo.Client.Data;
+﻿using Bit.Besql.Demo.Components;
 using Bit.Besql.Demo.Client.Pages;
-using Bit.Besql.Demo.Components;
-using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,7 +26,10 @@ else
 
 app.UseHttpsRedirection();
 
-app.UseStaticFiles();
+app.UseStaticFiles(options: new()
+{
+    ServeUnknownFileTypes = true
+});
 app.UseAntiforgery();
 
 app.MapStaticAssets();

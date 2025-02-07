@@ -1,22 +1,25 @@
 ﻿namespace Bit.Besql;
 
+/// <summary>
+/// <inheritdoc cref="IBesqlStorage"/>
+/// </summary>
 internal class NoopBesqlStorage : IBesqlStorage
 {
-    public Task Init(string filename)
+    public Task SyncFromBrowserCacheStorageToDotNet(string filename)
     {
         return Task.CompletedTask;
     }
 
-    public Task Persist(string filename)
+    public Task SyncFromDotNetToBrowserCacheStorage(string filename)
     {
         return Task.CompletedTask;
     }
 
-    public void PauseSync()
+    public void PauseSyncFromDotNetToBrowserCacheStorage()
     {
     }
 
-    public Task ResumeSync()
+    public Task ResumeSyncFromDotNetToBrowserCacheStorage()
     {
         return Task.CompletedTask;
     }
