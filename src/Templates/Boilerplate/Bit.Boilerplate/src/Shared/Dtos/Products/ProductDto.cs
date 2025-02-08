@@ -1,4 +1,5 @@
-﻿namespace Boilerplate.Shared.Dtos.Products;
+﻿//+:cnd:noEmit
+namespace Boilerplate.Shared.Dtos.Products;
 
 [DtoResourceType(typeof(AppStrings))]
 public partial class ProductDto
@@ -52,5 +53,7 @@ public partial class ProductDto
         return $"${Price:N2}";
     }
 
+    //#if (module == "Sales")
     public string PageUrl => $"{Urls.ProductPage}/{Id}/{Uri.EscapeDataString(Name!)}";
+    //#endif
 }
