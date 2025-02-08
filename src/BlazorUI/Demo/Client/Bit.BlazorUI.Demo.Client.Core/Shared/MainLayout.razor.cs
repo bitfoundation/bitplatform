@@ -10,6 +10,7 @@ public partial class MainLayout : IDisposable
     private Action _unsubscribe = default!;
     private BitAppShell _appShellRef = default!;
 
+
     [AutoInject] private IPubSubService _pubSubService = default!;
     [AutoInject] private IExceptionHandler _exceptionHandler = default!;
     [AutoInject] private NavigationManager _navigationManager = default!;
@@ -53,12 +54,6 @@ public partial class MainLayout : IDisposable
     {
         var url = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
         _isHomePage = url == "/";
-    }
-
-    private async Task HandleOnNavItemClick()
-    {
-        await Task.Delay(1);
-        await _appShellRef.GoToTop();
     }
 
 

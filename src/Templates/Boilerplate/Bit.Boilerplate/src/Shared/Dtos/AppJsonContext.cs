@@ -1,10 +1,13 @@
 ﻿//+:cnd:noEmit
-//#if (sample == "Todo")
+//#if (sample == true)
 using Boilerplate.Shared.Dtos.Todo;
-//#elif (sample == "Admin")
-using Boilerplate.Shared.Dtos.Categories;
+//#endif
+//#if (module == "Admin")
 using Boilerplate.Shared.Dtos.Dashboard;
+//#endif
+//#if (module == "Admin" || module == "Sales")
 using Boilerplate.Shared.Dtos.Products;
+using Boilerplate.Shared.Dtos.Categories;
 //#endif
 //#if (notification == true)
 using Boilerplate.Shared.Dtos.PushNotification;
@@ -20,26 +23,29 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(Dictionary<string, JsonElement>))]
 [JsonSerializable(typeof(Dictionary<string, string?>))]
 [JsonSerializable(typeof(string[]))]
-[JsonSerializable(typeof(RestErrorInfo))]
 [JsonSerializable(typeof(GitHubStats))]
 [JsonSerializable(typeof(NugetStatsDto))]
+[JsonSerializable(typeof(AppProblemDetails))]
 //#if (notification == true)
 [JsonSerializable(typeof(PushNotificationSubscriptionDto))]
 //#endif
-//#if (sample == "Todo")
+//#if (sample == true)
 [JsonSerializable(typeof(TodoItemDto))]
 [JsonSerializable(typeof(PagedResult<TodoItemDto>))]
 [JsonSerializable(typeof(List<TodoItemDto>))]
-//#elif (sample == "Admin")
+//#endif
+//#if (module == "Admin" || module == "Sales")
+[JsonSerializable(typeof(CategoryDto))]
+[JsonSerializable(typeof(List<CategoryDto>))]
+[JsonSerializable(typeof(PagedResult<CategoryDto>))]
+[JsonSerializable(typeof(ProductDto))]
+[JsonSerializable(typeof(List<ProductDto>))]
+[JsonSerializable(typeof(PagedResult<ProductDto>))]
+//#endif
+//#if (module == "Admin")
 [JsonSerializable(typeof(List<ProductsCountPerCategoryResponseDto>))]
 [JsonSerializable(typeof(OverallAnalyticsStatsDataResponseDto))]
 [JsonSerializable(typeof(List<ProductPercentagePerCategoryResponseDto>))]
-[JsonSerializable(typeof(ProductDto))]
-[JsonSerializable(typeof(PagedResult<ProductDto>))]
-[JsonSerializable(typeof(List<ProductDto>))]
-[JsonSerializable(typeof(CategoryDto))]
-[JsonSerializable(typeof(PagedResult<CategoryDto>))]
-[JsonSerializable(typeof(List<CategoryDto>))]
 //#endif
 public partial class AppJsonContext : JsonSerializerContext
 {

@@ -13,7 +13,9 @@ public static class ServiceCollectionExtensions
             optionsBuilder
                 .UseModel(OfflineDbContextModel.Instance) // use generated compiled model in order to make db context optimized
                 .UseSqlite($"Data Source=Offline-Client.db");
-        });
+        }, dbContextInitializer: async (sp, dbContext) => await dbContext.Database.MigrateAsync());
+
+        services.AddScoped(sp => new HttpClient());
 
         return services;
     }

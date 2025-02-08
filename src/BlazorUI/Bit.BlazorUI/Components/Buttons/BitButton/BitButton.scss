@@ -4,11 +4,11 @@
     cursor: pointer;
     gap: spacing(0.5);
     text-align: start;
+    align-items: center;
     flex-direction: row;
     display: inline-flex;
     text-decoration: none;
     box-sizing: border-box;
-    align-items: flex-start;
     justify-content: center;
     color: var(--bit-btn-clr-txt);
     font-family: $tg-font-family;
@@ -36,6 +36,10 @@
             transform: rotate(360deg);
         }
     }
+}
+
+.bit-btn-hsc {
+    align-items: flex-start;
 }
 
 .bit-btn-tcn {
@@ -307,7 +311,7 @@
 
 .bit-btn-sm {
     --bit-btn-spn-size: #{spacing(1.75)};
-    --bit-btn-lbl-fontsize: #{spacing(1.75)};
+    --bit-btn-lbl-fontsize: #{spacing(1.25)};
     --bit-btn-prt-fontsize: #{spacing(1.50)};
     --bit-btn-sct-fontsize: #{spacing(1.25)};
     --bit-btn-icn-fontsize: #{spacing(1.50)};

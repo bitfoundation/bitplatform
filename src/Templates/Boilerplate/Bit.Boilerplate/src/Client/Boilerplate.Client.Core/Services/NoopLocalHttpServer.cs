@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Client.Core.Services;
 
-public partial class NoopLocalHttpServer : ILocalHttpServer
+public partial class NoOpLocalHttpServer : ILocalHttpServer
 {
     public int Start(CancellationToken cancellationToken) => throw new NotImplementedException();
 

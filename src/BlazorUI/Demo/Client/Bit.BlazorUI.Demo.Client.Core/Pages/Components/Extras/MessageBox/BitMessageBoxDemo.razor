@@ -1,4 +1,4 @@
-@page "/components/messagebox"
+﻿@page "/components/messagebox"
 
 <PageOutlet Url="components/messagebox"
             Title="MessageBox"
@@ -53,6 +53,18 @@
                     <BitMessageBox Title="It's a title"
                                    Body="It's a body."
                                    Classes="@(new() { Root = "custom-msg", OkButton = new() { Root = "custom-msg-btn" } })" />
+                </BitCard>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RTL" RazorCode="@example6RazorCode" Id="example6">
+        <ExamplePreview>
+            <div>Use BitMessageBox in right-to-left (RTL).</div>
+            <br /><br />
+            <div dir="rtl">
+                <BitCard Style="padding:0">
+                    <BitMessageBox Dir="BitDir.Rtl" Title="عنوان پیام" Body="متن تست پیام..." OkText="تایید" />
                 </BitCard>
             </div>
         </ExamplePreview>

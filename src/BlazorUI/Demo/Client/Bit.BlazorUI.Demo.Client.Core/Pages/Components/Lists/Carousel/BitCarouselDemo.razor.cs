@@ -34,6 +34,29 @@ public partial class BitCarouselDemo
         },
         new()
         {
+            Name = "Classes",
+            Type = "BitCarouselClassStyles?",
+            DefaultValue = "null",
+            Description = "The custom CSS classes for the different parts of the carousel.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles"
+        },
+        new()
+        {
+            Name = "GoLeftIcon",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom icon name for the go to left button at the right side of the carousel."
+        },
+        new()
+        {
+            Name = "GoRightIcon",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom icon name for the go to right button at the left side of the carousel."
+        },
+        new()
+        {
             Name = "HideDots",
             Type = "bool",
             DefaultValue = "false",
@@ -68,10 +91,102 @@ public partial class BitCarouselDemo
         },
         new()
         {
+            Name = "Styles",
+            Type = "BitCarouselClassStyles?",
+            DefaultValue = "null",
+            Description = "The custom CSS styles for the different parts of the carousel.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles"
+        },
+        new()
+        {
             Name = "VisibleItemsCount",
             Type = "int",
             DefaultValue = "1",
             Description = "Number of items that is visible in the carousel."
+        }
+    ];
+
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
+        new()
+        {
+            Id = "class-styles",
+            Title = "BitTimelineClassStyles",
+            Description = "The custom CSS classes and styles of the different parts of the BitCarousel.",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Root",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the root element of the BitCarousel."
+               },
+               new()
+               {
+                   Name = "Container",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the container of the BitCarousel."
+               },
+               new()
+               {
+                   Name = "Buttons",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the next/prev buttons of the BitCarousel."
+               },
+               new()
+               {
+                   Name = "GoLeftButton",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the go to left button of the BitCarousel."
+               },
+               new()
+               {
+                   Name = "GoLeftButtonIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the icon of the go to left button of the BitCarousel."
+               },
+               new()
+               {
+                   Name = "GoRightButton",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the go to right button of the BitCarousel."
+               },
+               new()
+               {
+                   Name = "GoRightButtonIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the icon of the go to right button of the BitCarousel."
+               },
+               new()
+               {
+                   Name = "DotsContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the dots container of the BitCarousel."
+               },
+               new()
+               {
+                   Name = "Dots",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the dot elements of the BitCarousel."
+               },
+               new()
+               {
+                   Name = "CurrectDot",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the current dot element of the BitCarousel."
+               }
+            ]
         }
     ];
 
@@ -102,19 +217,19 @@ public partial class BitCarouselDemo
     private int index;
     private BitCarousel carousel = default!;
 
-    private void GoNext()
+    private async Task GoNext()
     {
-        carousel.GoNext();
+        await carousel.GoNext();
     }
 
-    private void GoPrev()
+    private async Task GoPrev()
     {
-        carousel.GoPrev();
+        await carousel.GoPrev();
     }
 
-    private void GoTo()
+    private async Task GoTo()
     {
-        carousel.GoTo(index);
+        await carousel.GoTo(index);
     }
 
 
@@ -339,19 +454,19 @@ public partial class BitCarouselDemo
 private int index;
 private BitCarousel carousel;
 
-private void GoNext()
+private async Task GoNext()
 {
-    carousel.GoNext();
+    await carousel.GoNext();
 }
 
-private void GoPrev()
+private async Task GoPrev()
 {
-    carousel.GoPrev();
+    await carousel.GoPrev();
 }
 
-private void GoTo()
+private async Task GoTo()
 {
-    carousel.GoTo(index);
+    await carousel.GoTo(index);
 }";
 
     private readonly string example5RazorCode = @"

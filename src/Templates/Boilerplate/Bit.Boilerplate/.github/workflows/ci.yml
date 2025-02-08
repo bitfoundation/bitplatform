@@ -25,7 +25,7 @@ jobs:
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 22
+        node-version: 23
 
     - name: Build
       run: dotnet build Boilerplate.sln -c Release

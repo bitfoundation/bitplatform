@@ -25,7 +25,7 @@ public static partial class IClientCoreServiceCollectionExtensions
         // Services being registered here can get injected in client side (Web, Android, iOS, Windows, macOS) and server side (during pre rendering)
         services.AddSharedProjectServices(configuration);
 
-        services.AddTransient<IPrerenderStateService, NoopPrerenderStateService>();
+        services.AddTransient<IPrerenderStateService, NoOpPrerenderStateService>();
 
         services.AddScoped<ThemeService>();
         services.AddScoped<CultureService>();
@@ -42,8 +42,7 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddSessioned<PubSubService>();
         services.AddSessioned<PromptService>();
         services.AddSessioned<SnackBarService>();
-        services.AddSessioned<MessageBoxService>();
-        services.AddSessioned<ILocalHttpServer, NoopLocalHttpServer>();
+        services.AddSessioned<ILocalHttpServer, NoOpLocalHttpServer>();
         services.AddSessioned<ITelemetryContext, AppTelemetryContext>();
         services.AddSessioned<AuthenticationStateProvider>(sp =>
         {
@@ -93,16 +92,12 @@ public static partial class IClientCoreServiceCollectionExtensions
         });
 
         //#if (offlineDb == true)
-        if (AppPlatform.IsBrowser)
-        {
-            AppContext.SetSwitch("Microsoft.EntityFrameworkCore.Issue31751", true);
-        }
-        services.AddBesqlDbContextFactory<OfflineDbContext>((optionsBuilder) =>
+        services.AddBesqlDbContextFactory<OfflineDbContext>((sp, optionsBuilder) =>
         {
             var isRunningInsideDocker = Directory.Exists("/container_volume"); // Blazor Server - Docker (It's supposed to be a mounted volume named /container_volume)
             var dirPath = isRunningInsideDocker ? "/container_volume"
-                                                : AppPlatform.IsBlazorHybridOrBrowser ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AC87AA5B-4B37-4E52-8468-2D5DF24AF256")
-                                                : Directory.GetCurrentDirectory(); // Blazor server (Non docker Linux, macOS or Windows)
+                                                : AppPlatform.IsBlazorHybrid ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AC87AA5B-4B37-4E52-8468-2D5DF24AF256")
+                                                : Directory.GetCurrentDirectory(); // Blazor server (Non docker Linux, macOS or Windows) OR Blazor WASM
 
             dirPath = Path.Combine(dirPath, "App_Data");
 
@@ -122,7 +117,8 @@ public static partial class IClientCoreServiceCollectionExtensions
 
             optionsBuilder.EnableSensitiveDataLogging(AppEnvironment.IsDev())
                     .EnableDetailedErrors(AppEnvironment.IsDev());
-        });
+
+        }, dbContextInitializer: async (sp, dbContext) => await Task.Run(async () => await dbContext.Database.MigrateAsync()));
         //#endif
 
         //#if (appInsights == true)

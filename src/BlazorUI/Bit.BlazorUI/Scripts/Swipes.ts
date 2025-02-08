@@ -7,6 +7,7 @@
             trigger: number,
             position: BitSwipePosition,
             isRtl: boolean,
+            orientationLock: BitSwipeOrientation,
             dotnetObj: DotNetObject,
             isResponsive: boolean) {
             if (isResponsive) {
@@ -22,6 +23,7 @@
             let startX = -1;
             let startY = -1;
             let originalTransform: string;
+            let orientation = BitSwipeOrientation.None;
             const bcr = element.getBoundingClientRect();
             const isTouchDevice = Utils.isTouchDevice();
 
@@ -44,9 +46,36 @@
                 diffX = getX(e) - startX;
                 diffY = getY(e) - startY;
 
-                if (e.cancelable) {
-                    e.preventDefault();
-                    e.stopPropagation();
+                const absX = Math.abs(diffX);
+                const absY = Math.abs(diffY);
+                const thresX = absX > 5;
+                const thresY = absY > 5;
+
+
+                if (orientation === BitSwipeOrientation.None) {
+                    if (thresX && !thresY) {
+                        orientation = BitSwipeOrientation.Horizontal;
+                    } else if (!thresX && thresY) {
+                        orientation = BitSwipeOrientation.Vertical;
+                    }
+                }
+
+                if (orientationLock === BitSwipeOrientation.Horizontal) {
+                    if (orientation === BitSwipeOrientation.Horizontal) {
+                        cancel();
+                        diffY = 0;
+                    } else {
+                        diffX = 0;
+                    }
+                } else if (orientationLock === BitSwipeOrientation.Vertical) {
+                    if (orientation === BitSwipeOrientation.Vertical) {
+                        cancel();
+                        diffX = 0;
+                    } else {
+                        diffY = 0;
+                    }
+                } else if ((thresX || thresY)) {
+                    cancel();
                 }
 
                 if ((!isRtl && position === BitSwipePosition.Start) || (isRtl && position === BitSwipePosition.End)) {
@@ -82,6 +111,13 @@
                 }
 
                 await dotnetObj.invokeMethodAsync('OnMove', diffX, diffY);
+
+                function cancel() {
+                    if (e.cancelable) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                }
             };
 
             const onEnd = async (e: TouchEvent | PointerEvent): Promise<void> => {
@@ -117,6 +153,7 @@
                 } finally {
                     await dotnetObj.invokeMethodAsync('OnEnd', diffX, diffY);
                     diffX = diffY = 0;
+                    orientation = BitSwipeOrientation.None;
                 }
             };
 
@@ -125,6 +162,7 @@
 
                 startX = startY = -1;
                 diffX = diffY = 0;
+                orientation = BitSwipeOrientation.None;
                 element.style.transitionDuration = '';
                 element.style.transform = originalTransform;
             }
@@ -193,5 +231,11 @@
         End = 1,
         Top = 2,
         Bottom = 3,
+    }
+
+    enum BitSwipeOrientation {
+        None,
+        Horizontal,
+        Vertical
     }
 }

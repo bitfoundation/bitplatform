@@ -1,7 +1,5 @@
-﻿using Bit.Besql.Demo.Client.Data;
+﻿using Bit.Besql.Demo.Components;
 using Bit.Besql.Demo.Client.Pages;
-using Bit.Besql.Demo.Components;
-using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,7 +26,10 @@ else
 
 app.UseHttpsRedirection();
 
-app.UseStaticFiles();
+app.UseStaticFiles(options: new()
+{
+    ServeUnknownFileTypes = true
+});
 app.UseAntiforgery();
 
 app.MapStaticAssets();
@@ -36,17 +37,5 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Counter).Assembly);
-
-// To Create database and apply migrations
-await using (var scope = app.Services.CreateAsyncScope())
-{
-    // Create db context
-    await using var dbContext = await scope.ServiceProvider
-        .GetRequiredService<IDbContextFactory<OfflineDbContext>>()
-        .CreateDbContextAsync();
-
-    // migrate database
-    await dbContext.Database.MigrateAsync();
-}
 
 app.Run();

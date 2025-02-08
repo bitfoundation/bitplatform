@@ -288,5 +288,5 @@ public partial class ComponentDemo
 
 
 
-    private readonly List<string> _extraComponents = ["DataGrid", "Chart", "PdfReader", "ModalService"];
+    private readonly List<string> _notInheritedComponents = ["DataGrid", "Chart", "ModalService"];
 }

@@ -2,13 +2,13 @@
 using System.Net;
 using System.Net.Mail;
 using System.IO.Compression;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Net.Http.Headers;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.ResponseCompression;
+using System.Security.Cryptography.X509Certificates;
 using Twilio;
 using PhoneNumbers;
 using FluentStorage;
@@ -90,9 +90,17 @@ public static partial class Program
         services.AddScoped<PushNotificationService>();
         //#endif
 
-        services.AddExceptionHandler<ServerExceptionHandler>();
+        services.AddSingleton<IProblemDetailsWriter, ServerExceptionHandler>();
+        services.AddProblemDetails();
 
-        services.AddResponseCaching();
+        services.AddOutputCache(options =>
+        {
+            options.AddPolicy("AppResponseCachePolicy", policy =>
+            {
+                var builder = policy.AddPolicy<AppResponseCachePolicy>();
+            }, excludeDefaultPolicy: true);
+        });
+        services.AddMemoryCache();
 
         services.AddHttpContextAccessor();
 
@@ -125,17 +133,32 @@ public static partial class Program
                 policy.SetIsOriginAllowed(origin => settings.IsAllowedOrigin(new Uri(origin)))
                       .AllowAnyHeader()
                       .AllowAnyMethod()
-                      .WithExposedHeaders(HeaderNames.RequestId);
+                      .WithExposedHeaders(HeaderNames.RequestId, "Age", "App-Cache-Response");
             });
         });
 
         services.AddAntiforgery();
 
+        services.AddSingleton(sp =>
+        {
+            JsonSerializerOptions options = new JsonSerializerOptions(AppJsonContext.Default.Options);
+
+            options.TypeInfoResolverChain.Add(IdentityJsonContext.Default);
+            options.TypeInfoResolverChain.Add(ServerJsonContext.Default);
+
+            return options;
+        });
+
         services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.AddRange([AppJsonContext.Default, IdentityJsonContext.Default, ServerJsonContext.Default]));
 
         services
             .AddControllers()
-            .AddJsonOptions(options => options.JsonSerializerOptions.TypeInfoResolverChain.AddRange([AppJsonContext.Default, IdentityJsonContext.Default, ServerJsonContext.Default]))
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                options.JsonSerializerOptions.TypeInfoResolverChain.AddRange([AppJsonContext.Default, IdentityJsonContext.Default, ServerJsonContext.Default]);
+            })
             //#if (api == "Integrated")
             .AddApplicationPart(typeof(AppControllerBase).Assembly)
             //#endif
@@ -256,15 +279,20 @@ public static partial class Program
         }
 
         //#if (captcha == "reCaptcha")
-        services.AddHttpClient<GoogleRecaptchaHttpClient>(c =>
+        services.AddHttpClient<GoogleRecaptchaService>(c =>
         {
             c.BaseAddress = new Uri("https://www.google.com/recaptcha/");
         });
         //#endif
 
-        services.AddHttpClient<NugetStatisticsHttpClient>(c =>
+        services.AddHttpClient<NugetStatisticsService>(c =>
         {
             c.BaseAddress = new Uri("https://azuresearch-usnc.nuget.org");
+        });
+
+        services.AddHttpClient<ResponseCacheService>(c =>
+        {
+            c.BaseAddress = new Uri("https://api.cloudflare.com/client/v4/zones/");
         });
     }
 
@@ -280,10 +308,12 @@ public static partial class Program
         var certificatePath = Path.Combine(AppContext.BaseDirectory, "DataProtectionCertificate.pfx");
         var certificate = new X509Certificate2(certificatePath, appSettings.DataProtectionCertificatePassword, AppPlatform.IsWindows ? X509KeyStorageFlags.EphemeralKeySet : X509KeyStorageFlags.DefaultKeySet);
 
+        if (env.IsDevelopment() is false && (DateTimeOffset.UtcNow < certificate.NotBefore || DateTimeOffset.UtcNow > certificate.NotAfter))
+            throw new InvalidOperationException($"The Data Protection certificate is invalid. Current UTC time: {DateTimeOffset.UtcNow}, Certificate valid from: {certificate.NotBefore.ToUniversalTime()}, Certificate valid until: {certificate.NotAfter.ToUniversalTime()}.");
+
         services.AddDataProtection()
             .PersistKeysToDbContext<AppDbContext>()
             .ProtectKeysWithCertificate(certificate);
-
 
         services.AddIdentity<User, Role>()
             .AddEntityFrameworkStores<AppDbContext>()
@@ -310,7 +340,7 @@ public static partial class Program
                 ClockSkew = TimeSpan.Zero,
                 RequireSignedTokens = true,
 
-                ValidateIssuerSigningKey = true,
+                ValidateIssuerSigningKey = env.IsDevelopment() is false,
                 IssuerSigningKey = new X509SecurityKey(certificate),
 
                 RequireExpirationTime = true,

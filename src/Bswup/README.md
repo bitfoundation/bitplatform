@@ -27,13 +27,13 @@ app.UseStaticFiles(new StaticFileOptions
 });
 ```
 
-3. In the default document (`index.html`, `_Host.cshtml`, or `_Layout.cshtml`), add `autostart="false"` to the script tag for the Blazor script:
+3. In the default document (`index.html`, `App.razor`), add `autostart="false"` to the script tag for the Blazor script:
 
 ```html
 <script src="_framework/blazor.webassembly.js" autostart="false"></script>
 ```
 
-4. Also In the default document (`index.html`, `_Host.cshtml`, or `_Layout.cshtml`), add the  `bit-bswup.js` script tag after the Blazor script tag with needed options:
+4. Also In the default document (`index.html`, `App.razor`), add the  `bit-bswup.js` script tag after the Blazor script tag with needed options:
 
 ```html
 <script src="_content/Bit.Bswup/bit-bswup.js"

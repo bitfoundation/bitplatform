@@ -34,7 +34,6 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
                         });
     }
 
-
     [HttpGet]
     public async Task<List<ProductPercentagePerCategoryResponseDto>> GetProductsPercentagePerCategoryStats(CancellationToken cancellationToken)
     {

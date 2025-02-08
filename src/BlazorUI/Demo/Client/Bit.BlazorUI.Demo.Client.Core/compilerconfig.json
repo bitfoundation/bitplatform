@@ -72,6 +72,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Extras/InfiniteScrolling/BitInfiniteScrollingDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/InfiniteScrolling/BitInfiniteScrollingDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Extras/MessageBox/BitMessageBoxDemo.razor.css",
         "inputFile": "Pages/Components/Extras/MessageBox/BitMessageBoxDemo.razor.scss",
         "minify": { "enabled": false },
@@ -360,6 +366,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Surfaces/Collapse/BitCollapseDemo.razor.css",
+        "inputFile": "Pages/Components/Surfaces/Collapse/BitCollapseDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Surfaces/Dialog/BitDialogDemo.razor.css",
         "inputFile": "Pages/Components/Surfaces/Dialog/BitDialogDemo.razor.scss",
         "minify": { "enabled": false },
@@ -536,12 +548,6 @@
     {
         "outputFile": "Shared/NotFoundComponent.razor.css",
         "inputFile": "Shared/NotFoundComponent.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Shared/MessageBox.razor.css",
-        "inputFile": "Shared/MessageBox.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

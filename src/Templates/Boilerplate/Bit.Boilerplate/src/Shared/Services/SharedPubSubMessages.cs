@@ -8,7 +8,7 @@ namespace Boilerplate.Shared.Services;
 /// </summary>
 public partial class SharedPubSubMessages
 {
-    //#if (sample == "Admin")
+    //#if (module == "Admin")
     public const string DASHBOARD_DATA_CHANGED = nameof(DASHBOARD_DATA_CHANGED);
     //#endif
 

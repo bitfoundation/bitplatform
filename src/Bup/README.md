@@ -7,7 +7,7 @@ To use bit Bup, please follow these steps:
 dotnet add package Bit.Bup
 ```
 
-2. In the default document (`index.html`, `_Host.cshtml`, or `_Layout.cshtml`), add an `autostart="false"` attribute and value to the script tag of the Blazor script.
+2. In the default document (`index.html`, `App.razor`), add an `autostart="false"` attribute and value to the script tag of the Blazor script.
 
 ```html
 
@@ -15,7 +15,7 @@ dotnet add package Bit.Bup
 
 ```
 
-3. Also In the default document (`index.html`, `_Host.cshtml`, or `_Layout.cshtml`), add the `Bit.Bup` reference after the script tag of the Blazor script.
+3. Also In the default document (`index.html`, `App.razor`), add the `Bit.Bup` reference after the script tag of the Blazor script.
 
 ```html
 

@@ -13,7 +13,7 @@
     "short_name": "bit BlazorUI Demo",
     "prefer_related_applications": false,
     "display_override": [ "window-controls-overlay" ],
-    "description": "bit BlazorUI components are native, easy-to-customize, and work seamlessly in all Blazor modes (WASM, Server, Hybrid, pre-rendering), saving you time and making development enjoyable.",
+    "description": "bit BlazorUI components are native, easy-to-customize, and work seamlessly in all interactive Blazor modes (WASM, Server, Hybrid, pre-rendering), saving you time and making development enjoyable.",
     "features": [
         "Cross Platform",
         "fast",

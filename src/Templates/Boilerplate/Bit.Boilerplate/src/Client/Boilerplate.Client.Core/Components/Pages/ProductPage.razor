@@ -1,0 +1,196 @@
+﻿@attribute [Route(Urls.ProductPage + "/{Id:guid}")]
+@attribute [Route(Urls.ProductPage + "/{Id:guid}/{Name}")]
+@attribute [Route("{culture?}" + Urls.ProductPage + "/{Id:guid}")]
+@attribute [Route("{culture?}" + Urls.ProductPage + "/{Id:guid}/{Name}")]
+@attribute [AppResponseCache(SharedMaxAge = 3600 * 24)]
+@inherits AppPageBase
+
+<PageTitle>@product?.Name</PageTitle>
+
+<section>
+    <BitStack Gap="2rem" Class="root-stack">
+
+        <BitLink NoUnderline Href="@Urls.HomePage">
+            <BitStack Horizontal Gap="0.5rem" VerticalAlign="BitAlignment.Center">
+                <BitIcon IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)" Size="BitSize.Small" />
+                <BitText Typography="BitTypography.Body2">@Localizer[nameof(AppStrings.BackToHome)]</BitText>
+            </BitStack>
+        </BitLink>
+
+        @if (isLoadingProduct)
+        {
+            <BitCard FullWidth Background="BitColorKind.Tertiary" Style="padding:3rem 1rem;">
+                <BitStack Horizontal HorizontalAlign="BitAlignment.Center" Gap="2rem">
+                    <ProductImage Width="30%" />
+                    <BitStack AutoHeight Grows>
+                        <BitShimmer Height="6rem" Width="100%" />
+                        <BitShimmer Height="1rem" Width="100%" />
+                        <BitShimmer Height="1rem" Width="100%" />
+                        <BitShimmer Height="1rem" Width="100%" />
+                        <BitShimmer Height="3rem" Width="100%" />
+                    </BitStack>
+                </BitStack>
+            </BitCard>
+
+            <br />
+
+            <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.AboutTitle)]</BitText>
+
+            <BitCard FullWidth>
+                <BitStack AutoHeight Grows>
+                    <BitShimmer Height="1rem" Width="100%" />
+                    <BitShimmer Height="1rem" Width="100%" />
+                    <BitShimmer Height="1rem" Width="100%" />
+                    <BitShimmer Height="1rem" Width="100%" />
+                    <BitShimmer Height="1rem" Width="100%" />
+                </BitStack>
+            </BitCard>
+        }
+        else
+        {
+            if (product is null)
+            {
+                <NotFoundPage />
+            }
+            else
+            {
+                <BitCard FullWidth Style="padding:3rem 1rem;">
+                    <BitStack Horizontal HorizontalAlign="BitAlignment.Center" Gap="2rem">
+                        <ProductImage Src="@GetProductImageUrl(product)" Width="30%" />
+                        <BitStack AutoWidth Grows>
+                            <BitText Typography="BitTypography.H2">@product.Name</BitText>
+                            <BitText Color="BitColor.Info">@product.CategoryName</BitText>
+                            <BitText Typography="BitTypography.H6">@product.Description</BitText>
+                            <BitText Typography="BitTypography.H4">@product.FormattedPrice</BitText>
+                        </BitStack>
+                    </BitStack>
+                </BitCard>
+
+                <br />
+
+                <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.AboutTitle)]</BitText>
+
+                <BitCard FullWidth>
+                    <BitText>
+                        A <b>standard car</b> is designed with a focus on <b>functionality</b>, and <b>performance</b>.
+                        It generally features a four-cylinder <b>internal combustion engine</b>, although some models come with six or eight-cylinder engines for added power.
+                        The car's engine is paired with either an automatic or manual transmission to control gear shifts.
+                        <br /><br />
+                        The exterior includes features like <b>headlights</b>, <b>tail lights</b>, and <b>side mirrors</b> to ensure visibility and safety.
+                        Inside, you'll find a seating capacity for four to five passengers, with seats typically upholstered in fabric or leather.
+                        The dashboard is equipped with various controls, including an infotainment system that often supports Bluetooth connectivity,
+                        a touchscreen display, and sometimes a GPS navigation system.
+                        <br /><br />
+                        For safety, standard cars are fitted with <b>airbags</b>, anti-lock braking systems (<b>ABS</b>), and electronic stability control (<b>ESC</b>).
+                        The suspension system, including shock absorbers and struts, ensures a smooth ride by absorbing road irregularities.
+                        <br /><br />
+                        Fuel efficiency varies, but a typical car might offer around <b>25-30</b> miles per gallon (<b>mpg</b>) in combined city and highway driving.
+                        Additionally, trunk space provides adequate room for luggage and groceries, making it a practical choice for <b>everyday use</b>.
+                        <br /><br />
+                        In summary, a generic car is designed to balance:
+                        <ul>
+                            <li>performance</li>
+                            <li>comfort</li>
+                            <li>safety</li>
+                        </ul>
+                        making it a reliable and convenient mode of transportation for daily activities.
+                    </BitText>
+                </BitCard>
+            }
+        }
+
+        <br />
+        <br />
+
+        @if (isLoadingSimilarProducts)
+        {
+            <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.SimilarProducts)]</BitText>
+
+            <BitScrollablePane Width="100%" Style="padding:0.5rem 1.5px">
+                <BitStack Horizontal FitWidth Style="align-items:unset">
+                    @foreach (var itm in Enumerable.Range(0, 10))
+                    {
+                        <BitCard FullSize Style="width:250px">
+                            <BitStack>
+                                <ProductImage Width="100%" />
+                                <BitShimmer Height="3rem" Width="100%" />
+                                <BitShimmer Height="1rem" Width="100%" />
+                                <BitShimmer Height="1rem" Width="100%" />
+                                <BitShimmer Height="2rem" Width="100%" />
+                            </BitStack>
+                        </BitCard>
+                    }
+                </BitStack>
+            </BitScrollablePane>
+        }
+        else if (similarProducts is not null)
+        {
+            <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.SimilarProducts)]</BitText>
+
+            <BitScrollablePane Width="100%" Style="padding:0.5rem 1.5px">
+                <BitStack Horizontal FitWidth Style="align-items:unset">
+                    @foreach (var prd in similarProducts)
+                    {
+                        <BitLink Href="@prd.PageUrl" NoUnderline Style="width:250px">
+                            <BitCard FullSize>
+                                <BitStack>
+                                    <ProductImage Src="@GetProductImageUrl(prd)" Width="100%" />
+                                    <BitText>@prd.Name</BitText>
+                                    <BitText Typography="BitTypography.Body2">@prd.Description</BitText>
+                                    <BitText Typography="BitTypography.H6">@prd.FormattedPrice</BitText>
+                                </BitStack>
+                            </BitCard>
+                        </BitLink>
+                    }
+                </BitStack>
+            </BitScrollablePane>
+        }
+
+        <br />
+
+        @if (isLoadingSiblingProducts)
+        {
+            <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.SiblingProducts)]</BitText>
+
+            <BitScrollablePane Width="100%" Style="padding:0.5rem 1.5px">
+                <BitStack Horizontal FitWidth Style="align-items:unset">
+                    @foreach (var itm in Enumerable.Range(0, 10))
+                    {
+                        <BitCard FullSize Style="width:250px">
+                            <BitStack>
+                                <ProductImage Width="100%" />
+                                <BitShimmer Height="3rem" Width="100%" />
+                                <BitShimmer Height="1rem" Width="100%" />
+                                <BitShimmer Height="1rem" Width="100%" />
+                                <BitShimmer Height="2rem" Width="100%" />
+                            </BitStack>
+                        </BitCard>
+                    }
+                </BitStack>
+            </BitScrollablePane>
+        }
+        else if (siblingProducts is not null)
+        {
+            <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.SiblingProducts)]</BitText>
+
+            <BitScrollablePane Width="100%" Style="padding:0.5rem">
+                <BitStack Horizontal FitWidth Style="align-items:unset">
+                    @foreach (var prd in siblingProducts)
+                    {
+                        <BitLink Href="@prd.PageUrl" NoUnderline Style="width:250px">
+                            <BitCard FullSize>
+                                <BitStack>
+                                    <ProductImage Src="@GetProductImageUrl(prd)" Width="100%" />
+                                    <BitText>@prd.Name</BitText>
+                                    <BitText Typography="BitTypography.Body2">@prd.Description</BitText>
+                                    <BitText Typography="BitTypography.H6">@prd.FormattedPrice</BitText>
+                                </BitStack>
+                            </BitCard>
+                        </BitLink>
+                    }
+                </BitStack>
+            </BitScrollablePane>
+        }
+
+    </BitStack>
+</section>

@@ -1,8 +1,9 @@
 ﻿//+:cnd:noEmit
-//#if (sample == "Admin")
-using Boilerplate.Server.Api.Models.Categories;
+//#if (module == "Admin" || module == "Sales")
 using Boilerplate.Server.Api.Models.Products;
-//#elif (sample == "Todo")
+using Boilerplate.Server.Api.Models.Categories;
+//#endif
+//#if (sample == true)
 using Boilerplate.Server.Api.Models.Todo;
 //#endif
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -22,9 +23,10 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<UserSession> UserSessions { get; set; } = default!;
 
-    //#if (sample == "Todo")
+    //#if (sample == true)
     public DbSet<TodoItem> TodoItems { get; set; } = default!;
-    //#elif (sample == "Admin")
+    //#endif
+    //#if (module == "Admin" || module == "Sales")
     public DbSet<Category> Categories { get; set; } = default!;
     public DbSet<Product> Products { get; set; } = default!;
     //#endif
@@ -41,7 +43,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         ConfigureIdentityTableNames(modelBuilder);
 
         //#if (database != "Sqlite")
-        ConcurrencyStamp(modelBuilder);
+        ConfigureConcurrencyStamp(modelBuilder);
         //#endif
     }
 
@@ -167,7 +169,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     }
 
     //#if (database != "Sqlite")
-    private void ConcurrencyStamp(ModelBuilder modelBuilder)
+    private void ConfigureConcurrencyStamp(ModelBuilder modelBuilder)
     {
         //#if (IsInsideProjectTemplate == true)
         if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))

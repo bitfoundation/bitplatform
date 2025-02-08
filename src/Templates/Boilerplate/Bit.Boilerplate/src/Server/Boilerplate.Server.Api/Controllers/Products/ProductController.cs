@@ -3,18 +3,21 @@
 using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.SignalR;
 //#endif
+using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Server.Api.Models.Products;
 using Boilerplate.Shared.Controllers.Products;
 
 namespace Boilerplate.Server.Api.Controllers.Products;
 
-[ApiController, Route("api/[controller]/[action]"), Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+[ApiController, Route("api/[controller]/[action]")]
+[Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
 public partial class ProductController : AppControllerBase, IProductController
 {
     //#if (signalR == true)
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
+    [AutoInject] private ResponseCacheService responseCacheService = default!;
 
     [HttpGet, EnableQuery]
     public IQueryable<ProductDto> Get()
@@ -75,6 +78,8 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
+        await responseCacheService.PurgeCache("/", $"product/{dto.Id}", $"api/ProductView/Get/{dto.Id}" /*You can also use Url.Action to build urls.*/);
+
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
         //#endif
@@ -88,6 +93,8 @@ public partial class ProductController : AppControllerBase, IProductController
         DbContext.Products.Remove(new() { Id = id, ConcurrencyStamp = Convert.FromHexString(concurrencyStamp) });
 
         await DbContext.SaveChangesAsync(cancellationToken);
+
+        await responseCacheService.PurgeCache("/", $"product/{id}", $"api/ProductView/Get/{id}" /*You can also use Url.Action to build urls.*/);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);

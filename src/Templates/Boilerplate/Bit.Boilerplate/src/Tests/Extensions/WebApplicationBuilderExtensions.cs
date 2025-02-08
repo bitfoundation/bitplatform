@@ -16,7 +16,7 @@ public static partial class WebApplicationBuilderExtensions
         //#if (advancedTests == true)
         services.AddTransient<PhoneService, FakePhoneService>();
         //#if (captcha == "reCaptcha")
-        services.AddTransient<GoogleRecaptchaHttpClient, FakeGoogleRecaptchaHttpClient>();
+        services.AddTransient<GoogleRecaptchaService, FakeGoogleRecaptchaService>();
         //#endif
         //#endif
 

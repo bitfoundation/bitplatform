@@ -1,0 +1,74 @@
+﻿//+:cnd:noEmit
+@import '../../../Styles/abstracts/_media-queries.scss';
+
+section {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+::deep {
+    .root-stack {
+        max-width: 60rem;
+    }
+    //#if(module == "Sales")
+
+    .carousel {
+        height: 350px;
+
+        @include lt-sm {
+            height: 500px;
+        }
+    }
+
+    .carousel-stack {
+        display: flex !important;
+
+        @include lt-sm {
+            flex-direction: column !important;
+
+            .carousel-desc {
+                overflow: hidden;
+                max-height: 60px;
+            }
+        }
+    }
+
+    .carousel-buttons {
+        bottom: 1rem;
+        position: absolute;
+        inset-inline-end: 1rem;
+
+        @include lt-sm {
+            display: none !important;
+        }
+    }
+
+    .products-inf-scr {
+        gap: 1rem;
+        width: 100%;
+        padding: 3px;
+        display: flex;
+        flex-wrap: wrap;
+        position: relative;
+    }
+
+    .product-item {
+        width: calc(25% - 0.75rem);
+
+        @include lt-md {
+            width: calc(33% - 0.67rem);
+        }
+
+        @include lt-sm {
+            width: calc(50% - 0.5rem);
+        }
+    }
+    //#endif
+
+    .bit-products-stack {
+        @include lt-sm {
+            flex-wrap: wrap;
+        }
+    }
+}

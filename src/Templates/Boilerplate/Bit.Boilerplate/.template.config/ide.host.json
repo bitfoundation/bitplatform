@@ -24,13 +24,25 @@
             "id": "api"
         },
         {
-            "id": "captcha"
-        },
-        {
             "id": "pipeline"
         },
         {
+            "id": "module"
+        },
+        {
+            "id": "captcha"
+        },
+        {
+            "id": "notification"
+        },
+        {
             "id": "sample"
+        },
+        {
+            "id": "sentry"
+        },
+        {
+            "id": "appInsights"
         },
         {
             "id": "signalR"
@@ -39,16 +51,10 @@
             "id": "offlineDb"
         },
         {
+            "id": "cloudflare"
+        },
+        {
             "id": "windows"
-        },
-        {
-            "id": "appInsights"
-        },
-        {
-            "id": "sentry"
-        },
-        {
-            "id": "notification"
         },
         {
             "id": "apiServerUrl",

@@ -1,0 +1,38 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+@typeparam TItem
+
+@{
+    var template = ItemTemplate ?? ChildContent;
+}
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @if (template is not null)
+    {
+        foreach (var item in _currentItems)
+        {
+            @template(item)
+        }
+
+    }
+
+    <div @ref="_lastElementRef"
+         style="@(_isLoading ? "height:0;width:0" : $"height:{(LastElementHeight is null ? "1px" : LastElementHeight)};width:100%")">
+    </div>
+
+    @if (_isLoading)
+    {
+        @if (LoadingTemplate is null)
+        {
+            <div class="bit-isc-ldg">Loading...</div>
+        }
+        else
+        {
+            @LoadingTemplate
+        }
+    }
+</div>

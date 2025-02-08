@@ -5,6 +5,7 @@ using FluentStorage.Blobs;
 using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.SignalR;
 //#endif
+using Boilerplate.Shared.Controllers;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
 
@@ -12,7 +13,7 @@ namespace Boilerplate.Server.Api.Controllers;
 
 [Route("api/[controller]/[action]")]
 [ApiController]
-public partial class AttachmentController : AppControllerBase
+public partial class AttachmentController : AppControllerBase, IAttachmentController
 {
     [AutoInject] private IBlobStorage blobStorage = default!;
     [AutoInject] private UserManager<User> userManager = default!;
@@ -104,7 +105,7 @@ public partial class AttachmentController : AppControllerBase
 
     [AllowAnonymous]
     [HttpGet("{userId}")]
-    [ResponseCache(Duration = 7 * 24 * 3600, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new string[] { "*" })]
+    [AppResponseCache(MaxAge = 3600 * 24 * 7, UserAgnostic = true)]
     public async Task<IActionResult> GetProfileImage(Guid userId, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(userId.ToString());
@@ -130,6 +131,26 @@ public partial class AttachmentController : AppControllerBase
         .Select(us => us.SignalRConnectionId!)
             .ToArrayAsync(cancellationToken);
         await appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId).SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.PROFILE_UPDATED, user, cancellationToken);
+    }
+    //#endif
+
+    //#if (module == "Sales")
+    [AllowAnonymous]
+    [HttpGet("{productId}")]
+    [AppResponseCache(MaxAge = 3600 * 24 * 7, UserAgnostic = true)]
+    public async Task<IActionResult> GetProductImage(Guid productId, CancellationToken cancellationToken)
+    {
+        var product = await DbContext.Products.FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
+
+        if (product?.ImageFileName is null)
+            throw new ResourceNotFoundException();
+
+        var filePath = $"{AppSettings.ProductImagesDir}{product.ImageFileName}";
+
+        if (await blobStorage.ExistsAsync(filePath, cancellationToken) is false)
+            return new EmptyResult();
+
+        return File(await blobStorage.OpenReadAsync(filePath, cancellationToken), "image/webp", enableRangeProcessing: true);
     }
     //#endif
 }

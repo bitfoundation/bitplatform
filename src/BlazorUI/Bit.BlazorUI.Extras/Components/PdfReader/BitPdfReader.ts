@@ -1,25 +1,11 @@
-declare type PdfJsLib = {
-    getDocument: (src?: string | URL | TypedArray | ArrayBuffer | DocumentInitParameters) => PDFDocumentLoadingTask;
-    GlobalWorkerOptions: GlobalWorkerOptions
-}
-
-declare type BitPdfReaderConfig = {
-    id: string;
-    url: string;
-    scale: number;
-    autoScale: boolean;
-    pdfDoc?: PDFDocumentProxy;
-    isRendering: boolean[];
-}
-
 namespace BitBlazorUI {
-    export class BitPdfReader {
+    export class PdfReader {
         private static _initPromise?: Promise<unknown>;
         private static _bitPdfReaders = new Map<string, BitPdfReaderConfig>();
 
         public static async init(scripts: string[]) {
-            if (BitPdfReader._initPromise) {
-                await BitPdfReader._initPromise;
+            if (PdfReader._initPromise) {
+                await PdfReader._initPromise;
             }
 
             const allScripts = Array.from(document.scripts).map(s => s.src);
@@ -35,7 +21,7 @@ namespace BitBlazorUI {
                     reject(e);
                 }
             });
-            BitPdfReader._initPromise = promise;
+            PdfReader._initPromise = promise;
             return promise;
 
             async function addScript(url: string) {
@@ -57,24 +43,24 @@ namespace BitBlazorUI {
             const pdfDoc = await loadingTask.promise;
             config.pdfDoc = pdfDoc;
             config.isRendering = [];
-            BitPdfReader._bitPdfReaders.set(config.id, config);
+            PdfReader._bitPdfReaders.set(config.id, config);
 
             return pdfDoc.numPages;
         }
 
         public static async refreshPage(config: BitPdfReaderConfig, pageNumber: number) {
-            let oldConfig = BitPdfReader._bitPdfReaders.get(config.id);
+            let oldConfig = PdfReader._bitPdfReaders.get(config.id);
             if (oldConfig) {
-                BitPdfReader._bitPdfReaders.set(config.id, Object.assign(oldConfig, config));
+                PdfReader._bitPdfReaders.set(config.id, Object.assign(oldConfig, config));
             } else {
-                BitPdfReader.setup(config);
+                PdfReader.setup(config);
             }
 
-            await BitPdfReader.renderPage(config.id, pageNumber);
+            await PdfReader.renderPage(config.id, pageNumber);
         }
 
         public static async renderPage(id: string, pageNumber: number) {
-            const config = BitPdfReader._bitPdfReaders.get(id);
+            const config = PdfReader._bitPdfReaders.get(id);
 
             if (!config || !config.pdfDoc) return;
 
@@ -116,5 +102,27 @@ namespace BitBlazorUI {
                 config.isRendering[pageNumber] = false;
             }
         }
+
+        public static dispose(id: string) {
+            const config = PdfReader._bitPdfReaders.get(id);
+            if (!config) return;
+
+            config.pdfDoc?.destroy();
+            PdfReader._bitPdfReaders.delete(id);
+        }
     }
+}
+
+declare type PdfJsLib = {
+    getDocument: (src?: string | URL | TypedArray | ArrayBuffer | DocumentInitParameters) => PDFDocumentLoadingTask;
+    GlobalWorkerOptions: GlobalWorkerOptions
+}
+
+declare type BitPdfReaderConfig = {
+    id: string;
+    url: string;
+    scale: number;
+    autoScale: boolean;
+    pdfDoc?: PDFDocumentProxy;
+    isRendering: boolean[];
 }

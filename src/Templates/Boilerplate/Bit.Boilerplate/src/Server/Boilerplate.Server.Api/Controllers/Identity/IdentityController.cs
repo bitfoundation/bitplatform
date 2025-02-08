@@ -34,7 +34,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     //#endif
 
     //#if (captcha == "reCaptcha")
-    [AutoInject] private GoogleRecaptchaHttpClient googleRecaptchaHttpClient = default!;
+    [AutoInject] private GoogleRecaptchaService googleRecaptchaService = default!;
     //#endif
 
     /// <summary>
@@ -46,7 +46,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
         //#if (captcha == "reCaptcha")
-        if (await googleRecaptchaHttpClient.Verify(request.GoogleRecaptchaResponse, cancellationToken) is false)
+        if (await googleRecaptchaService.Verify(request.GoogleRecaptchaResponse, cancellationToken) is false)
             throw new BadRequestException(Localizer[nameof(AppStrings.InvalidGoogleRecaptchaResponse)]);
         //#endif
 
@@ -388,6 +388,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     [HttpGet]
+    [AppResponseCache(SharedMaxAge = 3600 * 24 * 7)]
     public async Task<ActionResult> SocialSignedIn()
     {
         var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>

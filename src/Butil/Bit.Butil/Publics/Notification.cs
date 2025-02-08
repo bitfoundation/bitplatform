@@ -16,7 +16,7 @@ public class Notification(IJSRuntime js)
     /// </summary>
     public async ValueTask<bool> IsSupported()
     {
-        return await js.InvokeAsync<bool>("BitButil.notification.isSupported");
+        return await js.FastInvokeAsync<bool>("BitButil.notification.isSupported");
     }
 
     /// <summary>
@@ -26,7 +26,7 @@ public class Notification(IJSRuntime js)
     /// </summary>
     public async ValueTask<NotificationPermission> GetPermission()
     {
-        var permission = await js.InvokeAsync<string>("BitButil.notification.getPermission");
+        var permission = await js.FastInvokeAsync<string>("BitButil.notification.getPermission");
 
         return permission switch
         {
@@ -70,6 +70,6 @@ public class Notification(IJSRuntime js)
             opts = new(options);
         }
 
-        await js.InvokeVoidAsync("BitButil.notification.show", title, opts);
+        await js.FastInvokeVoidAsync("BitButil.notification.show", title, opts);
     }
 }

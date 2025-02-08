@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-//#if (sample == "Todo")
+//#if (sample == true)
 using Boilerplate.Server.Api.Models.Todo;
 //#endif
 
@@ -41,7 +41,7 @@ public partial class User : IdentityUser<Guid>
 
     public List<UserSession> Sessions { get; set; } = [];
 
-    //#if (sample == "Todo")
+    //#if (sample == true)
     public List<TodoItem> TodoItems { get; set; } = [];
     //#endif
 }

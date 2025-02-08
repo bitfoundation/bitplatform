@@ -1,0 +1,36 @@
+@page "/components/infinitescrolling"
+
+<PageOutlet Url="components/infinitescrolling"
+            Title="InfiniteScrolling"
+            Description="infinitescrolling component of the bit BlazorUI components" />
+
+<div>
+    <ComponentDemo ComponentName="InfiniteScrolling"
+                   ComponentDescription="BitInfiniteScrolling is a container that enables scrolling through a list of items infinitely as long as there are items to fetch and render."
+                   Notes="To use this component, you need to install the `Bit.BlazorUI.Extras` nuget package, as described in the Optional steps of the Getting started page."
+                   ComponentParameters="componentParameters"
+                   ComponentPublicMembers="componentPublicMembers">
+        <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <ExamplePreview>
+                <BitInfiniteScrolling ItemsProvider="LoadBasicItems" Class="basic" Context="item">
+                    <div>Item @item</div>
+                </BitInfiniteScrolling>
+            </ExamplePreview>
+        </ComponentExampleBox>
+
+        <ComponentExampleBox Title="Advanced" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <ExamplePreview>
+                <BitInfiniteScrolling ItemsProvider="LoadAdvancedItems" Class="advanced" LastElementHeight="96px">
+                    <ItemTemplate Context="item">
+                        <div class="item">Item @item</div>
+                    </ItemTemplate>
+                    <LoadingTemplate>
+                        <div class="loading">
+                            <BitEllipsisLoading />
+                        </div>
+                    </LoadingTemplate>
+                </BitInfiniteScrolling>
+            </ExamplePreview>
+        </ComponentExampleBox>
+    </ComponentDemo>
+</div>

@@ -1023,7 +1023,7 @@
     <data name="NothingFound" xml:space="preserve">
     <value>چیزی پیدا نشد!</value>
   </data>
-    <!--#if (sample == "Todo") -->
+    <!--#if (sample == true) -->
     <data name="TodoAddPlaceholder" xml:space="preserve">
     <value>افزودن یک کار</value>
   </data>
@@ -1045,7 +1045,19 @@
     <data name="DeleteTodoItem" xml:space="preserve">
     <value>حذف کار</value>
   </data>
-    <!--#elif (sample == "Admin") -->
+    <!--#endif -->
+    <!--#if (module == "Admin" || module == "Sales") -->
+    <data name="CategoryCouldNotBeFound" xml:space="preserve">
+    <value>دسته مورد نظر پیدا نشد</value>
+  </data>
+    <data name="ProductCouldNotBeFound" xml:space="preserve">
+    <value>محصول پیدا نشد</value>
+  </data>
+    <data name="Category" xml:space="preserve">
+    <value>دسته</value>
+  </data>
+    <!--#endif -->
+    <!--#if (module == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
     <value>پنل ادمین</value>
   </data>
@@ -1139,9 +1151,6 @@
     <data name="Products" xml:space="preserve">
     <value>محصولات</value>
   </data>
-    <data name="ProductCouldNotBeFound" xml:space="preserve">
-    <value>محصول پیدا نشد</value>
-  </data>
     <data name="CategoryNotEmpty" xml:space="preserve">
     <value>این دسته دارای محصول است، بنابراین نمی توانید ان را حذف کنید</value>
   </data>
@@ -1156,12 +1165,6 @@
   </data>
     <data name="DeleteProduct" xml:space="preserve">
     <value>حذف محصول</value>
-  </data>
-    <data name="CategoryCouldNotBeFound" xml:space="preserve">
-    <value>دسته مورد نظر پیدا نشد</value>
-  </data>
-    <data name="Category" xml:space="preserve">
-    <value>دسته</value>
   </data>
     <data name="DefaultColorPicker" xml:space="preserve">
     <value>انتخاب کننده رنگ پیش فرض</value>
@@ -1191,6 +1194,14 @@
   </data>
     <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
     <value>شما باید چالش گوگل ریکپچا را به سرانجام برسانید.</value>
+  </data>
+    <!--#endif -->
+    <!--#if (module == "Sales") -->
+    <data name="SimilarProducts" xml:space="preserve">
+    <value>محصولات مشابه</value>
+  </data>
+    <data name="SiblingProducts" xml:space="preserve">
+    <value>محصولات در همین دسته</value>
   </data>
     <!--#endif -->
 </root>

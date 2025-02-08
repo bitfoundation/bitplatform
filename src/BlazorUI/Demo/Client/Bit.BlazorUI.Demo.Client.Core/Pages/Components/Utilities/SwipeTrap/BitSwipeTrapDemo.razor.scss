@@ -84,8 +84,8 @@
 }
 
 .mobile-frame {
-    width: 375px;
-    height: 712px;
+    height: 500px;
+    max-width: 375px;
     overflow: hidden;
     position: relative;
     border-radius: 36px;
@@ -98,43 +98,63 @@
         height: 100%;
         overflow: auto;
     }
-}
 
-::deep {
-    .panel-adv-container {
-        cursor: grab;
-        overflow: hidden;
+    .layout {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .header {
+        gap: 1rem;
+        width: 100%;
+        height: 66px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--bit-clr-bg-sec);
+    }
+
+    .main {
+        flex-grow: 1;
         position: relative;
+    }
 
-        .panel-adv {
-            color: black;
-            cursor: grab;
-            inset-block: 0;
-            user-select: none;
-            position: absolute;
-            background-color: lightgray;
+    .main-text {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-            &.left {
-                left: 0;
-                width: 200px;
-                transform: translateX(-100%);
-            }
+    .panel {
+        color: black;
+        cursor: grab;
+        inset-block: 0;
+        user-select: none;
+        position: absolute;
+        background-color: lightgray;
 
-            &.right {
-                right: 0;
-                width: 200px;
-                transform: translateX(100%);
-            }
+        &.left {
+            left: 0;
+            width: 200px;
+            transform: translateX(-100%);
+        }
 
-            .panel-adv-trap {
-                gap: 1rem;
-                height: 100%;
-                display: flex;
-                padding-top: 0.2rem;
-                padding-left: 0.8rem;
-                flex-direction: column;
-                background-color: gray;
-            }
+        &.right {
+            right: 0;
+            width: 200px;
+            transform: translateX(100%);
+        }
+
+        .panel-trap {
+            gap: 1rem;
+            height: 100%;
+            display: flex;
+            padding-top: 0.2rem;
+            padding-left: 0.8rem;
+            flex-direction: column;
+            background-color: gray;
         }
     }
 }

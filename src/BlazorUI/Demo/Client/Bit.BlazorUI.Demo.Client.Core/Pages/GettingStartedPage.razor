@@ -11,19 +11,19 @@
         <BitText Typography="BitTypography.H4" Class="subtitle">1. Install</BitText>
 
         <BitText Typography="BitTypography.Body1" Gutter>
-            bit BlazorUI components are distributed as the <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI/" Target="_blank">Bit.BlazorUI</BitLink> NuGet package. You can add them to your project in one of the following ways:
+            <b>bit BlazorUI</b> components are distributed as the <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI/" Target="_blank">Bit.BlazorUI</BitLink> NuGet package. You can add them to your project in one of the following ways:
         </BitText>
-
+        <br/>
         <BitText Typography="BitTypography.Body1">
             Install the package from command line by running this command:
         </BitText>
         <div class="code-box">dotnet add package Bit.BlazorUI</div>
-
+        <br/>
         <BitText Typography="BitTypography.Body1">
             Or install the package from Package Manager Console by running this command:
         </BitText>
         <div class="code-box">Install-Package Bit.BlazorUI</div>
-
+        <br/>
         <BitText Typography="BitTypography.Body1">
             Or add the package to the project from the Visual Studio's Nuget Package Manager.
         </BitText>
@@ -65,13 +65,11 @@
         <BitText Typography="BitTypography.H4" Class="subtitle">3. Styles and Scripts</BitText>
 
         <BitText Typography="BitTypography.Body1">
-            Open the <span class="txt--blue">_Host.cshtml</span> file, <span class="txt--blue">_Layout.cshtml</span> file, or <span class="txt--blue">wwwroot/index.html</span> file and include a CSS file by adding this snippet:
+            Open the <span class="txt--blue">App.razor</span>, or <span class="txt--blue">wwwroot/index.html</span> file and add the CSS file reference:
         </BitText>
         <div class="code-box">&lt;link href="_content/Bit.BlazorUI/styles/bit.blazorui.css" rel="stylesheet" /></div>
 
-        <BitText Typography="BitTypography.Body1">
-            then include the script file by adding this snippet:
-        </BitText>
+        <BitText Typography="BitTypography.Body1">then add the JS file file reference:</BitText>
         <div class="code-box">&lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js">&lt;/script></div>
 
         <br />

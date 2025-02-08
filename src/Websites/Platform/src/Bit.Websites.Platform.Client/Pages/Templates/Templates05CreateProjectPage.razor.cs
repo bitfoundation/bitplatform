@@ -7,6 +7,8 @@ public partial class Templates05CreateProjectPage
     private string name = "MyFirstProject";
 
     private Parameter<bool> windows = new() { Value = true, Default = true };
+    private Parameter<bool> cloudflare = new() { Value = true, Default = true };
+    private Parameter<bool> sample = new() { Value = false, Default = false };
     private Parameter<bool> sentry = new() { Value = false, Default = false };
     private Parameter<bool> offlineDb = new() { Value = false, Default = false };
     private Parameter<bool> notification = new() { Value = false, Default = false };
@@ -47,7 +49,7 @@ public partial class Templates05CreateProjectPage
         ]
     };
 
-    private Parameter<string> sample = new()
+    private Parameter<string> module = new()
     {
         Value = "None",
         Default = "None",
@@ -55,7 +57,7 @@ public partial class Templates05CreateProjectPage
         [
             new() { Text = "None", Value = "None" },
             new() { Text = "Admin", Value = "Admin" },
-            new() { Text = "Todo", Value = "Todo" },
+            new() { Text = "Sales", Value = "Sales" },
         ]
     };
 
@@ -100,14 +102,14 @@ public partial class Templates05CreateProjectPage
     {
         StringBuilder finalCommand = new($"dotnet new bit-bp {GetNameCommand()}");
 
-        if (captcha.IsModified)
-        {
-            finalCommand.Append(GetCaptchaCommand());
-        }
-
         if (dotnetVersion.IsModified)
         {
             finalCommand.Append(GetDotNetVersionCommand());
+        }
+
+        if (captcha.IsModified)
+        {
+            finalCommand.Append(GetCaptchaCommand());
         }
 
         if (pipeline.IsModified)
@@ -120,39 +122,24 @@ public partial class Templates05CreateProjectPage
             finalCommand.Append(GetSampleCommand());
         }
 
+        if (module.IsModified)
+        {
+            finalCommand.Append(GetModuleCommand());
+        }
+
         if (windows.IsModified)
         {
             finalCommand.Append(GetWindowsCommand());
         }
 
+        if (cloudflare.IsModified)
+        {
+            finalCommand.Append(GetCloudflareCommand());
+        }
+
         if (sentry.IsModified)
         {
             finalCommand.Append(GetSentryCommand());
-        }
-
-        if (database.IsModified)
-        {
-            finalCommand.Append(GetDatabaseCommand());
-        }
-
-        if (fileStorage.IsModified)
-        {
-            finalCommand.Append(GetFileStorageCommand());
-        }
-
-        if (api.IsModified)
-        {
-            finalCommand.Append(GetApiCommand());
-        }
-
-        if (offlineDb.IsModified)
-        {
-            finalCommand.Append(GetOfflineDbCommand());
-        }
-
-        if (notification.IsModified)
-        {
-            finalCommand.Append(GetNotificationCommand());
         }
 
         if (appInsight.IsModified)
@@ -163,6 +150,31 @@ public partial class Templates05CreateProjectPage
         if (signalR.IsModified)
         {
             finalCommand.Append(GetSignalRCommand());
+        }
+
+        if (fileStorage.IsModified)
+        {
+            finalCommand.Append(GetFileStorageCommand());
+        }
+
+        if (offlineDb.IsModified)
+        {
+            finalCommand.Append(GetOfflineDbCommand());
+        }
+
+        if (database.IsModified)
+        {
+            finalCommand.Append(GetDatabaseCommand());
+        }
+
+        if (notification.IsModified)
+        {
+            finalCommand.Append(GetNotificationCommand());
+        }
+
+        if (api.IsModified)
+        {
+            finalCommand.Append(GetApiCommand());
         }
 
         return finalCommand.ToString();
@@ -188,19 +200,29 @@ public partial class Templates05CreateProjectPage
         return $"--pipeline {pipeline.Value} ";
     }
 
-    private string GetSampleCommand()
+    private string GetModuleCommand()
     {
-        return $"--sample {sample.Value} ";
+        return $"--module {module.Value} ";
     }
 
     private string GetWindowsCommand()
     {
-        return $"--windows {windows.Value.ToString().ToLowerInvariant()} ";
+        return $"--windows{(windows.Value ? string.Empty : " false")} ";
+    }
+
+    private string GetCloudflareCommand()
+    {
+        return $"--cloudflare{(cloudflare.Value ? string.Empty : " false")} ";
+    }
+
+    private string GetSampleCommand()
+    {
+        return $"--sample{(sample.Value ? string.Empty : " false")} ";
     }
 
     private string GetSentryCommand()
     {
-        return $"--sentry {sentry.Value.ToString().ToLowerInvariant()} ";
+        return $"--sentry{(sentry.Value ? string.Empty : " false")} ";
     }
 
     private string GetDatabaseCommand()
@@ -220,22 +242,22 @@ public partial class Templates05CreateProjectPage
 
     private string GetOfflineDbCommand()
     {
-        return $"--offlineDb {offlineDb.Value.ToString().ToLowerInvariant()} ";
+        return $"--offlineDb{(offlineDb.Value ? string.Empty : " false")} ";
     }
 
     private string GetNotificationCommand()
     {
-        return $"--notification {notification.Value.ToString().ToLowerInvariant()} ";
+        return $"--notification{(notification.Value ? string.Empty : " false")} ";
     }
 
     private string GetAppInsightsCommand()
     {
-        return $"--appInsights {appInsight.Value.ToString().ToLowerInvariant()} ";
+        return $"--appInsights{(appInsight.Value ? string.Empty : " false")} ";
     }
 
     private string GetSignalRCommand()
     {
-        return $"--signalR {signalR.Value.ToString().ToLowerInvariant()} ";
+        return $"--signalR{(signalR.Value ? string.Empty : " false")} ";
     }
 
     private class Parameter<T>

@@ -1,0 +1,26 @@
+.item {
+    padding: 1rem;
+    border: 1px solid gray;
+}
+
+.loading {
+    width: 100%;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+::deep {
+    .basic {
+        max-height: 300px;
+    }
+
+    .advanced {
+        gap: 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        max-height: 20rem;
+        position: relative;
+    }
+}

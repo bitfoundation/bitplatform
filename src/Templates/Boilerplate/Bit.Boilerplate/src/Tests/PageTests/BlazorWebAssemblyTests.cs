@@ -44,7 +44,7 @@ public partial class DownloadSizeTests : PageTestBase
     public override Uri WebAppServerAddress => new("http://localhost:5000/");
     public override bool EnableBlazorWasmCaching => false;
 
-    //#if (sample == "Todo")
+    //#if (sample == true)
     [TestMethod]
     [AutoAuthenticate]
     [AutoStartTestServer(false)]
@@ -52,7 +52,8 @@ public partial class DownloadSizeTests : PageTestBase
     {
         await AssertDownloadSize(new IdentityHomePage(Page, WebAppServerAddress), expectedTotalSizeKB: 3_200, expectedWasmSizeKB: 2_700);
     }
-    //#elif (sample == "Admin")
+    //#endif
+    //#if (module == "Admin")
     [TestMethod]
     [AutoAuthenticate]
     [AutoStartTestServer(false)]

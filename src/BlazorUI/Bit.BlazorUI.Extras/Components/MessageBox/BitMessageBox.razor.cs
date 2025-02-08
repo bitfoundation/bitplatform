@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// BitMessageBox is a pre-implemented box for showing messages with title and body.
 /// </summary>
-public partial class BitMessageBox
+public partial class BitMessageBox : BitComponentBase
 {
     /// <summary>
     /// The body of the message box.
@@ -36,6 +36,20 @@ public partial class BitMessageBox
     /// The title of the message box.
     /// </summary>
     [Parameter] public string? Title { get; set; }
+
+
+
+    protected override string RootElementClass => "bit-msb";
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+    }
 
 
 

@@ -41,6 +41,11 @@ public partial class BitLayout : BitComponentBase
     [Parameter] public int NavPanelWidth { get; set; }
 
     /// <summary>
+    /// Reverses the position of the nav panel inside the main container.
+    /// </summary>
+    [Parameter] public bool ReverseNavPanel { get; set; }
+
+    /// <summary>
     /// Enables sticky positioning of the footer at the bottom of the viewport.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -61,16 +66,16 @@ public partial class BitLayout : BitComponentBase
 
     protected override string RootElementClass => "bit-lyt";
 
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+    }
+
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
 
         ClassBuilder.Register(() => StickyHeader ? "bit-lyt-shd" : string.Empty);
         ClassBuilder.Register(() => StickyFooter ? "bit-lyt-sft" : string.Empty);
-    }
-
-    protected override void RegisterCssStyles()
-    {
-        StyleBuilder.Register(() => Styles?.Root);
     }
 }
