@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
 
 section {
     width: 100%;
@@ -34,9 +34,20 @@ section {
         }
     }
 
+    .carousel-buttons {
+        bottom: 1rem;
+        position: absolute;
+        inset-inline-end: 1rem;
+
+        @include lt-sm {
+            display: none !important;
+        }
+    }
+
     .products-inf-scr {
         gap: 1rem;
         width: 100%;
+        padding: 3px;
         display: flex;
         flex-wrap: wrap;
         position: relative;

@@ -10,6 +10,7 @@ public partial class ProductPage
 
 
     [Parameter] public Guid Id { get; set; }
+    [Parameter] public string? Name { get; set; }
 
 
     [AutoInject] private IProductViewController productViewController = default!;
@@ -72,7 +73,7 @@ public partial class ProductPage
 
         try
         {
-            siblingProducts = await productViewController.GetSiblings(product.CategoryId.Value, CurrentCancellationToken);
+            siblingProducts = await productViewController.WithQuery(new ODataQuery { Filter = $"{nameof(ProductDto.Id)} ne {product.Id}" }).GetSiblings(product.CategoryId.Value, CurrentCancellationToken);
         }
         finally
         {

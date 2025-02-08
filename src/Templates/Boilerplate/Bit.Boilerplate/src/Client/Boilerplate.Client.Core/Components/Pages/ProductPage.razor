@@ -1,5 +1,7 @@
 ﻿@attribute [Route(Urls.ProductPage + "/{Id:guid}")]
+@attribute [Route(Urls.ProductPage + "/{Id:guid}/{Name}")]
 @attribute [Route("{culture?}" + Urls.ProductPage + "/{Id:guid}")]
+@attribute [Route("{culture?}" + Urls.ProductPage + "/{Id:guid}/{Name}")]
 @attribute [AppResponseCache(SharedMaxAge = 3600 * 24)]
 @inherits AppPageBase
 
@@ -129,7 +131,7 @@
                 <BitStack Horizontal FitWidth Style="align-items:unset">
                     @foreach (var prd in similarProducts)
                     {
-                        <BitLink Href="@($"/product/{prd.Id}")" NoUnderline Style="width:250px">
+                        <BitLink Href="@prd.PageUrl" NoUnderline Style="width:250px">
                             <BitCard FullSize>
                                 <BitStack>
                                     <ProductImage Src="@GetProductImageUrl(prd)" Width="100%" />
@@ -175,7 +177,7 @@
                 <BitStack Horizontal FitWidth Style="align-items:unset">
                     @foreach (var prd in siblingProducts)
                     {
-                        <BitLink Href="@($"/product/{prd.Id}")" NoUnderline Style="width:250px">
+                        <BitLink Href="@prd.PageUrl" NoUnderline Style="width:250px">
                             <BitCard FullSize>
                                 <BitStack>
                                     <ProductImage Src="@GetProductImageUrl(prd)" Width="100%" />
