@@ -1,19 +1,20 @@
-﻿### bit BlazorUI is a native high performance components for Blazor
+﻿# bit BlazorUI: Native High-Performance Library for Blazor
 [![NuGet Version](https://img.shields.io/nuget/v/Bit.BlazorUI.svg?style=flat)](https://www.nuget.org/packages/Bit.BlazorUI/) ![Nuget](https://img.shields.io/nuget/dt/Bit.BlazorUI.svg)
 
-bit BlazorUI is a set of native and high performance Blazor UI controls. This is implemented in C# and this does not depend on or wrap existing JavaScript frameworks or libraries.
+**bit BlazorUI** offers a comprehensive set of native, high-performance UI controls for Blazor. Developed in C#, it stands independent of external JavaScript frameworks or libraries, ensuring seamless and efficient integration.
 
 **Why choose bit BlazorUI Components?**
-- bit BlazorUI components are free
-- bit BlazorUI components are open source
-- bit BlazorUI components have a high performance
-- bit BlazorUI components are Blazor native components
-- bit BlazorUI components are supported in all Blazor modes (**Server**, **WASM**, and **Hybrid**)
+- **Free and Open Source**: Bit BlazorUI components come at no cost and are open to the community for contributions and improvements.
+- **High Performance**: Built for optimal speed and performance.
+- **Blazor Native**: Specifically designed as native Blazor components, ensuring a consistent development experience.
+- **Universal Support**: Compatible with all interactive Blazor modes — **Server**, **WASM**, and **Hybrid**.
 
-To use the bit BlazorUI components, please follow these steps:
+### Getting Started
 
-1. Install the `Bit.BlazorUI` nuget package
-2. In the default document (`App.razor` or `index.html`), add the `Bit.BlazorUI` css file reference in the head section.
+To use Bit BlazorUI components, follow these steps:
+
+1. Install the `Bit.BlazorUI` nuget package.
+2. In the default document (`App.razor` or `index.html`), add the `Bit.BlazorUI` CSS file reference:
 
 ```html
 
@@ -21,7 +22,7 @@ To use the bit BlazorUI components, please follow these steps:
 
 ```
 
-3. In the default document (`App.razor` or `index.html`), add the `Bit.BlazorUI` js file reference at the end of the body section.
+3. In the default document (`App.razor` or `index.html`), add the `Bit.BlazorUI` JS file reference:
 
 ```html
 
@@ -36,3 +37,5 @@ To use the bit BlazorUI components, please follow these steps:
 @using Bit.BlazorUI;
 
 ```
+
+5. Start using BlazorUI components in pages/components following its documents: https://blazorui.bitplatform.dev
