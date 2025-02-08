@@ -24,6 +24,11 @@
                 <div class="video-container">
                     <video src="@VideoUrl" controls />
                 </div>
+                @if (VideoDescription.HasValue())
+                {
+                    <br />
+                    <BitText Typography="BitTypography.Body2">@VideoDescription</BitText>
+                }
             </section>
         }
 
