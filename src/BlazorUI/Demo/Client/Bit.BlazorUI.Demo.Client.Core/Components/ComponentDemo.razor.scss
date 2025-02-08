@@ -10,16 +10,29 @@
     flex-direction: row;
 }
 
-::deep {
-    .page-container.example {
+.page-container.example {
+    width: 80%;
+    flex-grow: 1;
+}
+
+.page-section {
+    scroll-margin: rem2(80px);
+}
+
+.video-container {
+    display: flex;
+    justify-content: center;
+
+    video {
         width: 80%;
-        flex-grow: 1;
+        border-width: $bit-shape-border-width;
+        border-style: $bit-shape-border-style;
+        border-radius: $bit-shape-border-radius;
+        border-color: $bit-color-border-tertiary;
     }
+}
 
-    .page-section {
-        scroll-margin: rem2(80px);
-    }
-
+::deep {
     .sec-con {
         scroll-margin: rem2(80px);
     }

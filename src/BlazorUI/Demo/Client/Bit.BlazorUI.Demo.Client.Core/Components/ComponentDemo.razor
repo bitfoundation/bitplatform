@@ -17,6 +17,16 @@
             </section>
         }
 
+        @if (VideoUrl.HasValue())
+        {
+            <section id="video-section" class="page-section">
+                <BitText Typography="BitTypography.H4" Class="subtitle">Introduction video</BitText>
+                <div class="video-container">
+                    <video src="@VideoUrl" controls />
+                </div>
+            </section>
+        }
+
         <section id="usage-section" class="page-section">
             <BitText Typography="BitTypography.H4" Class="subtitle">Usage</BitText>
             @ChildContent
