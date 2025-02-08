@@ -22,17 +22,16 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
         return result;
     }
 
-    [HttpGet]
-    public async Task<List<ProductsCountPerCategoryResponseDto>> GetProductsCountPerCategoryStats(CancellationToken cancellationToken)
+    [HttpGet, EnableQuery]
+    public IQueryable<ProductsCountPerCategoryResponseDto> GetProductsCountPerCategoryStats()
     {
-        return await DbContext.Categories
+        return DbContext.Categories
                         .Select(c => new ProductsCountPerCategoryResponseDto()
                         {
                             CategoryName = c.Name,
                             CategoryColor = c.Color,
                             ProductCount = c.Products!.Count()
-                        })
-                        .ToListAsync(cancellationToken);
+                        });
     }
 
     [HttpGet]

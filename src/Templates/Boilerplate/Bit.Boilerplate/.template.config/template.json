@@ -361,7 +361,9 @@
             ],
             "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
             "args": {
-                "files": [ "Boilerplate.Web.slnf" ]
+                "files": [
+                    "Boilerplate.Web.slnf"
+                ]
             },
             "continueOnError": true
         },
@@ -439,7 +441,10 @@
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Controllers/Products/ProductViewController.cs",
                         "src/Shared/Controllers/Products/IProductViewController.cs",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/ProductPage.*"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Home/ProductsCarousel.*",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Home/ProductsSection.*",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/ProductPage.*",
+                        "src/Client/Boilerplate.Client.Core/wwwroot/images/product-placeholder.svg"
                     ]
                 },
                 {

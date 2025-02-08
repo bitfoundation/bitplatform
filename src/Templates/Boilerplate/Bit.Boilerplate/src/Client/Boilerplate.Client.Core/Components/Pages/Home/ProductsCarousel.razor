@@ -1,0 +1,47 @@
+@inherits AppComponentBase
+
+@if (carouselProducts is null)
+{
+    <BitCard FullWidth>
+        <BitStack HorizontalAlign="BitAlignment.Center">
+            <BitStack Horizontal Class="carousel-stack">
+                <ProductImage Width="50%" />
+                <BitStack AutoHeight>
+                    <br />
+                    <BitShimmer Height="5rem" Width="100%" Background="BitColor.PrimaryBackground" />
+                    <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
+                    <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
+                    <BitShimmer Height="2rem" Width="100%" Background="BitColor.PrimaryBackground" />
+                </BitStack>
+            </BitStack>
+            <BitShimmer Height="1.5rem" Width="15rem" Background="BitColor.PrimaryBackground" />
+        </BitStack>
+    </BitCard>
+}
+else
+{
+    <BitCard FullWidth Style="position:relative">
+        <BitCarousel @ref="carouselRef" Class="carousel" AutoPlay AutoPlayInterval="5000" HideNextPrev InfiniteScrolling>
+            @foreach (var product in carouselProducts)
+            {
+                <BitCarouselItem>
+                    <BitLink Href="@product.PageUrl" NoUnderline Style="color:unset">
+                        <BitStack Horizontal Class="carousel-stack">
+                            <ProductImage Src="@GetProductImageUrl(product)" Width="50%" />
+                            <BitStack AutoHeight>
+                                <br />
+                                <BitText Typography="BitTypography.H1" Color="BitColor.Secondary">@product.Name</BitText>
+                                <BitText Typography="BitTypography.H6" Class="carousel-desc" Color="BitColor.SecondaryForeground">@product.Description</BitText>
+                                <BitButton Color="BitColor.Tertiary">Buy</BitButton>
+                            </BitStack>
+                        </BitStack>
+                    </BitLink>
+                </BitCarouselItem>
+            }
+        </BitCarousel>
+        <BitStack Horizontal FitSize Class="carousel-buttons">
+            <BitButton Size="BitSize.Small" Color="BitColor.Tertiary" IconName="@BitIconName.ChevronLeft" IconOnly OnClick="() => carouselRef.GoPrev()"></BitButton>
+            <BitButton Size="BitSize.Small" Color="BitColor.Tertiary" IconName="@BitIconName.ChevronRight" IconOnly OnClick="() => carouselRef.GoNext()"></BitButton>
+        </BitStack>
+    </BitCard>
+}

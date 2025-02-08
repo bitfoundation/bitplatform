@@ -21,70 +21,9 @@
         <br />
 
         @*#if (module == "Sales")*@
-        @if (carouselProducts is null)
-        {
-            <BitCard FullWidth Background="BitColorKind.Tertiary">
-                <BitStack Horizontal Class="carousel-stack">
-                    <ProductImage Width="50%" />
-                    <BitStack AutoHeight>
-                        <BitShimmer Height="5rem" Width="100%" />
-                        <BitShimmer Height="1rem" Width="100%" />
-                        <BitShimmer Height="1rem" Width="100%" />
-                        <BitShimmer Height="3rem" Width="100%" />
-                    </BitStack>
-                </BitStack>
-            </BitCard>
-        }
-        else
-        {
-            <BitCard FullWidth>
-                <BitCarousel Class="carousel" AutoPlay AutoPlayInterval="5000" HideNextPrev InfiniteScrolling>
-                    @foreach (var product in carouselProducts)
-                    {
-                        <BitCarouselItem>
-                            <BitStack Horizontal Class="carousel-stack">
-                                <ProductImage Src="@GetProductImageUrl(product)" Width="50%" />
-                                <BitStack AutoHeight>
-                                    <BitLink Href="@($"/product/{product.Id}")" NoUnderline>
-                                        <BitText Typography="BitTypography.H1">@product.Name</BitText>
-                                    </BitLink>
-                                    <BitText Typography="BitTypography.H6" Class="carousel-desc">@product.Description</BitText>
-                                    <BitText Typography="BitTypography.H4">@product.FormattedPrice</BitText>
-
-                                </BitStack>
-                            </BitStack>
-                        </BitCarouselItem>
-                    }
-                </BitCarousel>
-            </BitCard>
-        }
+        <ProductsCarousel />
         <br />
-        <BitInfiniteScrolling ItemsProvider="LoadProducts" Class="products-inf-scr" ScrollerSelector="body" LastElementHeight="96px" Preload>
-            <ItemTemplate Context="product">
-                <BitLink Href="@($"/product/{product.Id}")" NoUnderline Class="product-item">
-                    <BitCard FullSize>
-                        <BitStack Class="product-stack">
-                            <ProductImage Src="@GetProductImageUrl(product)" Width="100%" />
-                            <BitText>@product.Name</BitText>
-                            <BitText Typography="BitTypography.Body2">@product.Description</BitText>
-                            <BitText Typography="BitTypography.H6">@product.FormattedPrice</BitText>
-                        </BitStack>
-                    </BitCard>
-                </BitLink>
-            </ItemTemplate>
-            <LoadingTemplate>
-                <BitStack>
-                    <BitCard FullSize Class="product-item">
-                        <BitStack Class="product-stack">
-                            <ProductImage Width="100%" />
-                            <BitShimmer Height="1rem" Width="100%" />
-                            <BitShimmer Height="1rem" Width="100%" />
-                            <BitShimmer Height="2rem" Width="100%" />
-                        </BitStack>
-                    </BitCard>
-                </BitStack>
-            </LoadingTemplate>
-        </BitInfiniteScrolling>
+        <ProductsSection />
         @*#endif*@
 
         @*#if (module != "Sales")*@
@@ -222,6 +161,5 @@
                 </BitStack>
             </BitCard>
         </BitStack>
-        @*#endif*@
     </BitStack>
 </section>

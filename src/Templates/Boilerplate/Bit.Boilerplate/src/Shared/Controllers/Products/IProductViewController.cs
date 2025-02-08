@@ -8,15 +8,12 @@ public interface IProductViewController : IAppController
     [HttpGet]
     Task<List<ProductDto>> Get(CancellationToken cancellationToken) => default!;
 
-    [HttpGet]
-    Task<List<ProductDto>> GetHomeCarouselProducts(CancellationToken cancellationToken);
-
     [HttpGet("{id}")]
     Task<ProductDto> Get(Guid id, CancellationToken cancellationToken);
 
     [HttpGet("{id}")]
-    Task<List<ProductDto>> GetSimilar(Guid id, CancellationToken cancellationToken);
+    Task<List<ProductDto>> GetSimilar(Guid id, CancellationToken cancellationToken) => default!;
 
     [HttpGet("{id}")]
-    Task<List<ProductDto>> GetSiblings(Guid id, CancellationToken cancellationToken);
+    Task<List<ProductDto>> GetSiblings(Guid id, CancellationToken cancellationToken) => default!;
 }
