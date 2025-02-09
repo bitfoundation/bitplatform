@@ -2,18 +2,34 @@
 
 <div class="example-page">
     <div class="page-container example">
-        <BitText Typography="BitTypography.H3" Class="title">@ComponentName</BitText>
-        <section id="overview-section" class="page-section">
-            <BitText Typography="BitTypography.Subtitle1">
-                @ComponentDescription
-            </BitText>
-        </section>
+        <BitText Typography="BitTypography.H3" Class="title">@Name</BitText>
 
-        @if (Notes.HasValue())
+        @if (Description.HasValue() || DescriptionTemplate is not null)
+        {
+            <section id="overview-section" class="page-section">
+                @if (DescriptionTemplate is not null)
+                {
+                    @DescriptionTemplate
+                }
+                else
+                {
+                    <BitText>@Description</BitText>
+                }
+            </section>
+        }
+
+        @if (Notes.HasValue() || NotesTemplate is not null)
         {
             <section id="notes-section" class="page-section">
                 <BitText Typography="BitTypography.H4" Class="subtitle">Notes</BitText>
-                @Notes
+                @if (NotesTemplate is not null)
+                {
+                    @NotesTemplate
+                }
+                else
+                {
+                    @Notes
+                }
             </section>
         }
 
@@ -24,10 +40,17 @@
                 <div class="video-container">
                     <video src="@VideoUrl" controls />
                 </div>
-                @if (VideoDescription.HasValue())
+                @if (VideoDescription.HasValue() || VideoDescriptionTemplate is not null)
                 {
                     <br />
-                    <BitText Typography="BitTypography.Body2">@VideoDescription</BitText>
+                    @if (VideoDescriptionTemplate is not null)
+                    {
+                        @VideoDescriptionTemplate
+                    }
+                    else
+                    {
+                        <BitText Typography="BitTypography.Body2">@VideoDescription</BitText>
+                    }
                 }
             </section>
         }
@@ -40,37 +63,37 @@
         <section id="api-section" class="page-section">
             <BitText Typography="BitTypography.H4" Class="subtitle">API</BitText>
 
-            <ComponentParametersTable Name="@($"Bit{ComponentName}")" Parameters="ComponentParameters" />
+            <ComponentParametersTable Name="@($"Bit{Name}")" Parameters="Parameters" />
 
-            @if (ComponentPublicMembers.Any())
+            @if (PublicMembers.Any())
             {
-                <ComponentParametersTable Name="@($"Bit{ComponentName}")" NameSuffix="public members" Parameters="ComponentPublicMembers" />
+                <ComponentParametersTable Name="@($"Bit{Name}")" NameSuffix="public members" Parameters="PublicMembers" />
             }
 
-            @if (_textInputComponents.Contains(ComponentName))
+            @if (_textInputComponents.Contains(Name))
             {
                 <ComponentParametersTable Name="BitTextInputBase" Parameters="_textInputBaseParameters" />
             }
 
-            @if (_inputComponents.Contains(ComponentName))
+            @if (_inputComponents.Contains(Name))
             {
                 <ComponentParametersTable Name="BitInputBase" Parameters="_inputBaseParameters" />
 
                 <ComponentParametersTable Name="BitInputBase" NameSuffix="public members" Parameters="_inputBasePublicMembers" />
             }
 
-            @if (_notInheritedComponents.Contains(ComponentName) is false)
+            @if (_notInheritedComponents.Contains(Name) is false)
             {
                 <ComponentParametersTable Name="BitComponentBase" Parameters="_componentBaseParameters" />
 
                 <ComponentParametersTable Name="BitComponentBase" NameSuffix="public members" Parameters="_componentBasePublicMembers" />
             }
 
-            <ComponentClassesTable Classes="ComponentSubClasses" />
+            <ComponentClassesTable Classes="SubClasses" />
 
-            <ComponentEnumsTable Enums="ComponentSubEnums" />
+            <ComponentEnumsTable Enums="SubEnums" />
 
-            @if (_notInheritedComponents.Contains(ComponentName) is false)
+            @if (_notInheritedComponents.Contains(Name) is false)
             {
                 <ComponentEnumsTable Enums="_componentBaseSubEnums" />
             }

@@ -50,3 +50,7 @@ p {
         top: calc(rem2(75px) + env(safe-area-inset-top));
     }
 }
+
+#components-reconnect-modal {
+    color: black;
+}

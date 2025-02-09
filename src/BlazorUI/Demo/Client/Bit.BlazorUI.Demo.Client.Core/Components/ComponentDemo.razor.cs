@@ -2,16 +2,20 @@
 
 public partial class ComponentDemo
 {
-    [Parameter] public string ComponentName { get; set; } = default!;
-    [Parameter] public string? ComponentDescription { get; set; }
+    [Parameter] public string Name { get; set; } = default!;
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
     [Parameter] public string? Notes { get; set; }
+    [Parameter] public RenderFragment? NotesTemplate { get; set; }
     [Parameter] public string? VideoUrl { get; set; }
     [Parameter] public string? VideoDescription { get; set; }
+    [Parameter] public RenderFragment? VideoDescriptionTemplate { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
-    [Parameter] public List<ComponentParameter> ComponentParameters { get; set; } = [];
-    [Parameter] public List<ComponentSubClass> ComponentSubClasses { get; set; } = [];
-    [Parameter] public List<ComponentSubEnum> ComponentSubEnums { get; set; } = [];
-    [Parameter] public List<ComponentParameter> ComponentPublicMembers { get; set; } = [];
+    [Parameter] public RenderFragment? Examples { get; set; }
+    [Parameter] public List<ComponentParameter> Parameters { get; set; } = [];
+    [Parameter] public List<ComponentSubClass> SubClasses { get; set; } = [];
+    [Parameter] public List<ComponentSubEnum> SubEnums { get; set; } = [];
+    [Parameter] public List<ComponentParameter> PublicMembers { get; set; } = [];
 
 
 

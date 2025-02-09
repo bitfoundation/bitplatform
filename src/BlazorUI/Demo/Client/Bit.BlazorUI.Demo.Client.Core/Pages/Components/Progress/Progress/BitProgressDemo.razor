@@ -7,8 +7,8 @@
             Title="Progress"
             Description="progress component of the bit BlazorUI components" />
 
-<ComponentDemo ComponentName="Progress"
-               ComponentDescription="BitProgress is used to show the completion status of an operation lasting more than 2 seconds.
+<ComponentDemo Name="Progress"
+               Description="BitProgress is used to show the completion status of an operation lasting more than 2 seconds.
 If the state of progress cannot be determined, use a Spinner instead.
 Progresss can appear in a new panel, a flyout, under the UI initiating the operation, or even replace the initiating UI,
 as long as the UI can return if the operation is canceled or is stopped. Real-world examples include copying files to a storage location, saving edits to a file, and more.
@@ -16,8 +16,8 @@ Use units that are informative and relevant to give the best idea to users of ho
 Avoid time units as they are rarely accurate enough to be trustworthy. Also, combine steps of a complex operation into one total bar to avoid “rewinding” the bar.
 Instead, change the operation description to reflect the change if necessary.
 Bars moving backward reduce confidence in the service."
-               ComponentSubClasses="componentSubClasses"
-               ComponentParameters="componentParameters">
+               SubClasses="componentSubClasses"
+               Parameters="componentParameters">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
             <BitProgress Label="Basic Progress"
