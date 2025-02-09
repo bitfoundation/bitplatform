@@ -136,10 +136,8 @@ jobs:
       WebAppName: '$(APP_SERVICE_NAME)'
       packageForLinux: '.'
 
-#if (windows == true)
 - job: build_blazor_hybrid_windows
   displayName: 'build blazor hybrid (windows)'
-#endif
 
   pool:
     vmImage: 'windows-2022'

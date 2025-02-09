@@ -46,13 +46,11 @@
       <Build Solution="Debug-BlazorServer|*" Project="false" />
       <Build Solution="Debug-BlazorWindows|*" Project="false" />
     </Project>
-#if (windows == true)
     <Project Path="src/Client/Boilerplate.Client.Windows/Boilerplate.Client.Windows.csproj">
 		<Build Solution="Debug-BlazorMaui|*" Project="false" />
 		<Build Solution="Debug-BlazorServer|*" Project="false" />
 		<Build Solution="Debug-BlazorWasm|*" Project="false" />
 	</Project>
-#endif
   </Folder>
   <Folder Name="/Server/">
     <Project Path="src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj" />

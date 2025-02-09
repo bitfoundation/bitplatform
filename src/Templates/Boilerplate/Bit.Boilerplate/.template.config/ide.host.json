@@ -54,9 +54,6 @@
             "id": "cloudflare"
         },
         {
-            "id": "windows"
-        },
-        {
             "id": "apiServerUrl",
             "isVisible": false
         },
