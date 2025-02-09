@@ -31,6 +31,10 @@
     <File Path=".github/workflows/ci.yml" />
   </Folder>
 #endif
+  <Folder Name="/Server/">
+	<Project Path="src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj" />
+    <Project Path="src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj" />
+  </Folder>
   <Folder Name="/Client/">
     <Project Path="src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj" />
     <Project Path="src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj">
@@ -51,10 +55,6 @@
 		<Build Solution="Debug-BlazorServer|*" Project="false" />
 		<Build Solution="Debug-BlazorWasm|*" Project="false" />
 	</Project>
-  </Folder>
-  <Folder Name="/Server/">
-    <Project Path="src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj" />
-    <Project Path="src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj" />
   </Folder>
   <Folder Name="/Shared/">
     <Project Path="src/Shared/Boilerplate.Shared.csproj" />
