@@ -1,0 +1,72 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Debug-BlazorServer" />
+	<BuildType Name="Debug-BlazorWasm" />
+	<BuildType Name="Debug-BlazorMaui" />
+	<BuildType Name="Debug-BlazorWindows" />
+    <BuildType Name="Release" />
+  </Configurations>
+  <Folder Name="/.SolutionItems/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path=".vsconfig" />
+    <File Path="Clean.bat" />
+    <File Path="global.json" />
+    <File Path="README.md" />
+    <File Path="settings.VisualStudio.json" />
+    <File Path="src/Directory.Build.props" />
+    <File Path="src/Directory.Packages.props" />
+  </Folder>
+#if (pipeline == "Azure")
+  <Folder Name="/.SolutionItems/.azure-devops/" Id="3f1dd063-d3a3-f428-24f8-626958d189fb" />
+  <Folder Name="/.SolutionItems/.azure-devops/workflows/" Id="d5673a47-b807-7464-ee0f-fd95c5542ac5">
+    <File Path=".azure-devops/workflows/cd.yml" />
+    <File Path=".azure-devops/workflows/ci.yml" />
+  </Folder>
+#elif (pipeline == "GitHub")
+  <Folder Name="/.SolutionItems/.github/" Id="351df30f-2daa-a858-be55-4affc8d70af2" />
+  <Folder Name="/.SolutionItems/.github/workflows/" Id="c0ca9c70-aac5-bd27-2f07-59fab982d30d">
+    <File Path=".github/workflows/cd.yml" />
+    <File Path=".github/workflows/ci.yml" />
+  </Folder>
+#endif
+  <Folder Name="/Client/">
+    <Project Path="src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj" />
+    <Project Path="src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj">
+      <Build Solution="Debug-BlazorServer|*" Project="false" />
+      <Build Solution="Debug-BlazorWasm|*" Project="false" />
+      <Build Solution="Debug-BlazorWindows|*" Project="false" />
+      <Deploy Solution="Debug-BlazorMaui|*" />
+      <Deploy Solution="Debug|*" />
+      <Deploy Solution="Release|*" />
+    </Project>
+    <Project Path="src/Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj">
+      <Build Solution="Debug-BlazorMaui|*" Project="false" />
+      <Build Solution="Debug-BlazorServer|*" Project="false" />
+      <Build Solution="Debug-BlazorWindows|*" Project="false" />
+    </Project>
+#if (windows == true)
+    <Project Path="src/Client/Boilerplate.Client.Windows/Boilerplate.Client.Windows.csproj">
+		<Build Solution="Debug-BlazorMaui|*" Project="false" />
+		<Build Solution="Debug-BlazorServer|*" Project="false" />
+		<Build Solution="Debug-BlazorWasm|*" Project="false" />
+	</Project>
+#endif
+  </Folder>
+  <Folder Name="/Server/">
+    <Project Path="src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj" />
+    <Project Path="src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj" />
+  </Folder>
+  <Folder Name="/Shared/">
+    <Project Path="src/Shared/Boilerplate.Shared.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="src/Tests/Boilerplate.Tests.csproj">
+      <Build Solution="Debug-BlazorMaui|*" Project="false" />
+      <Build Solution="Debug-BlazorServer|*" Project="false" />
+      <Build Solution="Debug-BlazorWasm|*" Project="false" />
+      <Build Solution="Debug-BlazorWindows|*" Project="false" />
+    </Project>
+  </Folder>
+</Solution>
