@@ -4,15 +4,13 @@
             Title="ErrorBoundary"
             Description="errorboundary component of the bit BlazorUI components" />
 
-<ComponentDemo Name="ErrorBoundary"
-               Description="BitErrorBoundary is a simple error boundary to handle exceptions happening in its children."
-               Notes="To use this component, you need to install the `Bit.BlazorUI.Extras` nuget package, as described in the Optional steps of the Getting started page."
-               Parameters="componentParameters">
-    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-        <ExamplePreview>
-            <BitErrorBoundary>
-                <BitButton OnClick="ThrowException">Throw an exception</BitButton>
-            </BitErrorBoundary>
-        </ExamplePreview>
-    </ComponentExampleBox>
-</ComponentDemo>
+<DemoPage Name="ErrorBoundary"
+          Description="BitErrorBoundary is a simple error boundary to handle exceptions happening in its children."
+          Notes="To use this component, you need to install the `Bit.BlazorUI.Extras` nuget package, as described in the Optional steps of the Getting started page."
+          Parameters="componentParameters">
+    <DemoSection Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+        <BitErrorBoundary>
+            <BitButton OnClick="ThrowException">Throw an exception</BitButton>
+        </BitErrorBoundary>
+    </DemoSection>
+</DemoPage>

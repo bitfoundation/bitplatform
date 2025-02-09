@@ -1,6 +1,6 @@
 ﻿@inherits AppComponentBase
 
-<div class="example-page">
+<div class="demo-page">
     <div class="page-container example">
         <BitText Typography="BitTypography.H3" Class="title">@Name</BitText>
 
@@ -63,39 +63,39 @@
         <section id="api-section" class="page-section">
             <BitText Typography="BitTypography.H4" Class="subtitle">API</BitText>
 
-            <ComponentParametersTable Name="@($"Bit{Name}")" Parameters="Parameters" />
+            <DemoParametersTable Name="@($"Bit{Name}")" Parameters="Parameters" />
 
             @if (PublicMembers.Any())
             {
-                <ComponentParametersTable Name="@($"Bit{Name}")" NameSuffix="public members" Parameters="PublicMembers" />
+                <DemoParametersTable Name="@($"Bit{Name}")" NameSuffix="public members" Parameters="PublicMembers" />
             }
 
             @if (_textInputComponents.Contains(Name))
             {
-                <ComponentParametersTable Name="BitTextInputBase" Parameters="_textInputBaseParameters" />
+                <DemoParametersTable Name="BitTextInputBase" Parameters="_textInputBaseParameters" />
             }
 
             @if (_inputComponents.Contains(Name))
             {
-                <ComponentParametersTable Name="BitInputBase" Parameters="_inputBaseParameters" />
+                <DemoParametersTable Name="BitInputBase" Parameters="_inputBaseParameters" />
 
-                <ComponentParametersTable Name="BitInputBase" NameSuffix="public members" Parameters="_inputBasePublicMembers" />
+                <DemoParametersTable Name="BitInputBase" NameSuffix="public members" Parameters="_inputBasePublicMembers" />
             }
 
             @if (_notInheritedComponents.Contains(Name) is false)
             {
-                <ComponentParametersTable Name="BitComponentBase" Parameters="_componentBaseParameters" />
+                <DemoParametersTable Name="BitComponentBase" Parameters="_componentBaseParameters" />
 
-                <ComponentParametersTable Name="BitComponentBase" NameSuffix="public members" Parameters="_componentBasePublicMembers" />
+                <DemoParametersTable Name="BitComponentBase" NameSuffix="public members" Parameters="_componentBasePublicMembers" />
             }
 
-            <ComponentClassesTable Classes="SubClasses" />
+            <DemoSubClassesTable Classes="SubClasses" />
 
-            <ComponentEnumsTable Enums="SubEnums" />
+            <DemoSubEnumsTable Enums="SubEnums" />
 
             @if (_notInheritedComponents.Contains(Name) is false)
             {
-                <ComponentEnumsTable Enums="_componentBaseSubEnums" />
+                <DemoSubEnumsTable Enums="_componentBaseSubEnums" />
             }
         </section>
     </div>

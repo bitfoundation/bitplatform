@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Components;
 
-public partial class ComponentDemo
+public partial class DemoPage
 {
     [Parameter] public string Name { get; set; } = default!;
     [Parameter] public string? Description { get; set; }

@@ -4,224 +4,300 @@
             Title="Pivot"
             Description="pivot component of the bit BlazorUI components" />
 
-<ComponentDemo Name="Pivot"
-               Description="The Pivot control and related tabs pattern are used for navigating frequently accessed, distinct content categories. Pivots allow for navigation between two or more contentviews and relies on text headers to articulate the different sections of content. Tapping on a pivot item header navigates to that header's section content. Tabs are a visual variant of Pivot that use a combination of icons and textor just icons to articulate section content."
-               Parameters="componentParameters"
-               SubClasses="componentSubClasses"
-               SubEnums="componentSubEnums">
-    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <ExamplePreview>
-            <BitPivot>
+<DemoPage Name="Pivot"
+          Description="The Pivot control and related tabs pattern are used for navigating frequently accessed, distinct content categories. Pivots allow for navigation between two or more contentviews and relies on text headers to articulate the different sections of content. Tapping on a pivot item header navigates to that header's section content. Tabs are a visual variant of Pivot that use a combination of icons and textor just icons to articulate section content."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums">
+    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <BitPivot>
+            <BitPivotItem HeaderText="File">
+                <h3>Pivot #1</h3>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Shared with me">
+                <h3>Pivot #2</h3>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Recent">
+                <h3>Pivot #3</h3>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+            </BitPivotItem>
+        </BitPivot>
+    </DemoSection>
+
+    <DemoSection Title="Icon and Count" RazorCode="@example2RazorCode" Id="example2">
+        <BitPivot>
+            <BitPivotItem HeaderText="Files" IconName="@BitIconName.Info">
+                <h1>Pivot #1: Files</h1>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Shared with me" ItemCount="32">
+                <h1>Pivot #2: Shared with me</h1>
+                <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Recent" IconName="@BitIconName.Info" ItemCount="12">
+                <h1>Pivot #3: Recent</h1>
+                <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
+            </BitPivotItem>
+        </BitPivot>
+    </DemoSection>
+
+    <DemoSection Title="Size" RazorCode="@example3RazorCode" Id="example3">
+        <BitPivot Size="@BitSize.Large">
+            <BitPivotItem HeaderText="Large File">
+                <h1>Pivot #1: Large File</h1>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Large Shared with me">
+                <h1>Pivot #2: Large Shared with me</h1>
+                <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Large Recent">
+                <h1>Pivot #3: Large Recent</h1>
+                <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
+            </BitPivotItem>
+        </BitPivot>
+    </DemoSection>
+
+    <DemoSection Title="HeaderType" RazorCode="@example4RazorCode" Id="example4">
+        <BitPivot HeaderType="@BitPivotHeaderType.Tab">
+            <BitPivotItem HeaderText="File tab">
+                <h1>Pivot #1: File tab</h1>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Shared with me tab">
+                <h1>Pivot #2: Shared with me tab</h1>
+                <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Recent tab">
+                <h1>Pivot #3: Recent tab</h1>
+                <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
+            </BitPivotItem>
+        </BitPivot>
+    </DemoSection>
+
+    <DemoSection Title="Binding" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <BitPivot @bind-SelectedKey="selectedKey">
+            <BitPivotItem Key="1" HeaderText="Samples">
+                <h1>Pivot #1: Samples</h1>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+            </BitPivotItem>
+            <BitPivotItem Key="2" HeaderText="Files">
+                <h1>Pivot #2: Files</h1>
+                <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
+            </BitPivotItem>
+            <BitPivotItem Key="3" HeaderText="Recent">
+                <h1>Pivot #3: Recent</h1>
+                <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
+            </BitPivotItem>
+            <BitPivotItem Key="4" HeaderText="Last">
+                <h1>Pivot #4: Last</h1>
+                <p>Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi.</p>
+            </BitPivotItem>
+        </BitPivot>
+        <br /><br />
+        <BitButton Variant="BitVariant.Outline"
+                   IconName="@BitIconName.CaretSolidLeft"
+                   IsEnabled="@(selectedKey != "1")"
+                   OnClick="(() => selectedKey = (int.Parse(selectedKey) - 1).ToString())">
+            Prev
+        </BitButton>
+        <BitButton Variant="BitVariant.Outline"
+                   IconName="@BitIconName.CaretSolidRight"
+                   IsEnabled="@(selectedKey != "4")"
+                   OnClick="(() => selectedKey = (int.Parse(selectedKey) + 1).ToString())">
+            Next
+        </BitButton>
+    </DemoSection>
+
+    <DemoSection Title="Detached" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <div style="border:1px solid gray;padding:10px;">
+            @if (detachedSelectedKey == "Foo")
+            {
+                <div>Hello I am Fooooooooooooo</div>
+            }
+            else if (detachedSelectedKey == "Bar")
+            {
+                <div>Hello I am Barrrrrrrrrrrr</div>
+            }
+            else if (detachedSelectedKey == "Bas")
+            {
+                <div>Hello I am Bassssssssssss</div>
+            }
+            else if (detachedSelectedKey == "Biz")
+            {
+                <div>Hello I am Bizzzzzzzzzzzz</div>
+            }
+        </div>
+        <br />
+        <hr />
+        <br />
+        <BitPivot HeaderOnly="true"
+                  DefaultSelectedKey="Foo"
+                  OnItemClick="@(item => detachedSelectedKey = item?.Key)">
+            <BitPivotItem HeaderText="Foo" Key="Foo"></BitPivotItem>
+            <BitPivotItem HeaderText="Bar" Key="Bar"></BitPivotItem>
+            <BitPivotItem HeaderText="Bas" Key="Bas"></BitPivotItem>
+            <BitPivotItem HeaderText="Biz" Key="Biz"></BitPivotItem>
+        </BitPivot>
+    </DemoSection>
+
+    <DemoSection Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <BitPivot OnItemClick="@(item => selectedPivotItem = item)">
+            <BitPivotItem HeaderText="Foo">
+                <h1>Pivot #1: Foo</h1>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Bar">
+                <h1>Pivot #2: Bar</h1>
+                <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Bas">
+                <h1>Pivot #3: Bas</h1>
+                <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Biz">
+                <h1>Pivot #4: Biz</h1>
+                <p>Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan.</p>
+            </BitPivotItem>
+        </BitPivot>
+        <br /><br />
+        <div>Last header clicked: <b>@selectedPivotItem?.HeaderText</b></div>
+    </DemoSection>
+
+    <DemoSection Title="Templates" RazorCode="@example8RazorCode" Id="example8">
+        <BitPivot>
+            <BitPivotItem>
+                <Header>
+                    <span style="color:red">Header #1</span>
+                </Header>
+                <Body>
+                    <h1>Pivot #1</h1>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+                </Body>
+            </BitPivotItem>
+            <BitPivotItem ItemCount="99">
+                <Header>
+                    <i style="color:green" class="bit-icon bit-icon--HeartFill"></i>
+                    <span style="color:blue">Header #2</span>
+                    <i style="color:green" class="bit-icon bit-icon--HeartFill"></i>
+                </Header>
+                <Body>
+                    <h1>Pivot #2</h1>
+                    <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
+                </Body>
+            </BitPivotItem>
+            <BitPivotItem IconName="@BitIconName.Inbox">
+                <Header>
+                    <span style="color:rebeccapurple">Header <i style="color:purple" class="bit-icon bit-icon--HeartFill"></i> #3</span>
+                </Header>
+                <Body>
+                    <h1>Pivot #3</h1>
+                    <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
+                </Body>
+            </BitPivotItem>
+        </BitPivot>
+    </DemoSection>
+
+    <DemoSection Title="Alignment" RazorCode="@example9RazorCode" Id="example9">
+        <BitPivot Alignment="BitAlignment.Center">
+            <BitPivotItem HeaderText="File">
+                <h1>Pivot #1</h1>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. </p>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Shared with me">
+                <h2>Pivot #2</h2>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Recent">
+                <h3>Pivot #3</h3>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. </p>
+            </BitPivotItem>
+        </BitPivot>
+    </DemoSection>
+
+    <DemoSection Title="Position" RazorCode="@example10RazorCode" Id="example10">
+        <div>Pivot Position: <b>Top</b></div><br />
+        <div class="box">
+            <BitPivot Position="BitPivotPosition.Top">
                 <BitPivotItem HeaderText="File">
-                    <h3>Pivot #1</h3>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+                    <h1>Pivot #1: File</h1>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. </p>
                 </BitPivotItem>
-                <BitPivotItem HeaderText="Shared with me">
-                    <h3>Pivot #2</h3>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+                <BitPivotItem HeaderText="Shared">
+                    <h1>Pivot #2: Shared</h1>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet.</p>
                 </BitPivotItem>
                 <BitPivotItem HeaderText="Recent">
-                    <h3>Pivot #3</h3>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+                    <h1>Pivot #3: Recent</h1>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. </p>
                 </BitPivotItem>
             </BitPivot>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Icon and Count" RazorCode="@example2RazorCode" Id="example2">
-        <ExamplePreview>
-            <BitPivot>
-                <BitPivotItem HeaderText="Files" IconName="@BitIconName.Info">
-                    <h1>Pivot #1: Files</h1>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        </div>
+        <br /><br /><br />
+        <div>Pivot Position: <b>Bottom</b></div><br />
+        <div class="box">
+            <BitPivot Position="BitPivotPosition.Bottom">
+                <BitPivotItem HeaderText="File">
+                    <h1>Pivot #1: File</h1>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. </p>
                 </BitPivotItem>
-                <BitPivotItem HeaderText="Shared with me" ItemCount="32">
+                <BitPivotItem HeaderText="Shared">
+                    <h1>Pivot #2: Shared</h1>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet.</p>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Recent">
+                    <h1>Pivot #3: Recent</h1>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. </p>
+                </BitPivotItem>
+            </BitPivot>
+        </div>
+        <br /><br /><br />
+        <div>Pivot Position: <b>Left</b></div><br />
+        <div class="box">
+            <BitPivot Position="BitPivotPosition.Left">
+                <BitPivotItem HeaderText="File">
+                    <h1>Pivot #1: File</h1>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. </p>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Shared with me" Style="width:130px">
                     <h1>Pivot #2: Shared with me</h1>
-                    <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet.</p>
                 </BitPivotItem>
-                <BitPivotItem HeaderText="Recent" IconName="@BitIconName.Info" ItemCount="12">
+                <BitPivotItem HeaderText="Recent">
                     <h1>Pivot #3: Recent</h1>
-                    <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. </p>
                 </BitPivotItem>
             </BitPivot>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Size" RazorCode="@example3RazorCode" Id="example3">
-        <ExamplePreview>
-            <BitPivot Size="@BitSize.Large">
-                <BitPivotItem HeaderText="Large File">
-                    <h1>Pivot #1: Large File</h1>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        </div>
+        <br /><br /><br />
+        <div>Pivot Position: <b>Right</b></div><br />
+        <div class="box">
+            <BitPivot Position="BitPivotPosition.Right">
+                <BitPivotItem HeaderText="File">
+                    <h1>Pivot #1: File</h1>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. </p>
                 </BitPivotItem>
-                <BitPivotItem HeaderText="Large Shared with me">
-                    <h1>Pivot #2: Large Shared with me</h1>
-                    <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
+                <BitPivotItem HeaderText="Shared with me" Style="width:130px">
+                    <h1>Pivot #2: Shared with me</h1>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet.</p>
                 </BitPivotItem>
-                <BitPivotItem HeaderText="Large Recent">
-                    <h1>Pivot #3: Large Recent</h1>
-                    <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
-                </BitPivotItem>
-            </BitPivot>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="HeaderType" RazorCode="@example4RazorCode" Id="example4">
-        <ExamplePreview>
-            <BitPivot HeaderType="@BitPivotHeaderType.Tab">
-                <BitPivotItem HeaderText="File tab">
-                    <h1>Pivot #1: File tab</h1>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Shared with me tab">
-                    <h1>Pivot #2: Shared with me tab</h1>
-                    <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Recent tab">
-                    <h1>Pivot #3: Recent tab</h1>
-                    <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
-                </BitPivotItem>
-            </BitPivot>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Binding" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-        <ExamplePreview>
-            <BitPivot @bind-SelectedKey="selectedKey">
-                <BitPivotItem Key="1" HeaderText="Samples">
-                    <h1>Pivot #1: Samples</h1>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
-                </BitPivotItem>
-                <BitPivotItem Key="2" HeaderText="Files">
-                    <h1>Pivot #2: Files</h1>
-                    <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
-                </BitPivotItem>
-                <BitPivotItem Key="3" HeaderText="Recent">
+                <BitPivotItem HeaderText="Recent">
                     <h1>Pivot #3: Recent</h1>
-                    <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
-                </BitPivotItem>
-                <BitPivotItem Key="4" HeaderText="Last">
-                    <h1>Pivot #4: Last</h1>
-                    <p>Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi.</p>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. </p>
                 </BitPivotItem>
             </BitPivot>
-            <br /><br />
-            <BitButton Variant="BitVariant.Outline"
-                       IconName="@BitIconName.CaretSolidLeft"
-                       IsEnabled="@(selectedKey != "1")"
-                       OnClick="(() => selectedKey = (int.Parse(selectedKey) - 1).ToString())">
-                Prev
-            </BitButton>
-            <BitButton Variant="BitVariant.Outline"
-                       IconName="@BitIconName.CaretSolidRight"
-                       IsEnabled="@(selectedKey != "4")"
-                       OnClick="(() => selectedKey = (int.Parse(selectedKey) + 1).ToString())">
-                Next
-            </BitButton>
-        </ExamplePreview>
-    </ComponentExampleBox>
+        </div>
+    </DemoSection>
 
-    <ComponentExampleBox Title="Detached" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-        <ExamplePreview>
-            <div style="border:1px solid gray;padding:10px;">
-                @if (detachedSelectedKey == "Foo")
-                {
-                    <div>Hello I am Fooooooooooooo</div>
-                }
-                else if (detachedSelectedKey == "Bar")
-                {
-                    <div>Hello I am Barrrrrrrrrrrr</div>
-                }
-                else if (detachedSelectedKey == "Bas")
-                {
-                    <div>Hello I am Bassssssssssss</div>
-                }
-                else if (detachedSelectedKey == "Biz")
-                {
-                    <div>Hello I am Bizzzzzzzzzzzz</div>
-                }
-            </div>
-            <br />
-            <hr />
-            <br />
-            <BitPivot HeaderOnly="true"
-                      DefaultSelectedKey="Foo"
-                      OnItemClick="@(item => detachedSelectedKey = item?.Key)">
-                <BitPivotItem HeaderText="Foo" Key="Foo"></BitPivotItem>
-                <BitPivotItem HeaderText="Bar" Key="Bar"></BitPivotItem>
-                <BitPivotItem HeaderText="Bas" Key="Bas"></BitPivotItem>
-                <BitPivotItem HeaderText="Biz" Key="Biz"></BitPivotItem>
-            </BitPivot>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-        <ExamplePreview>
-            <BitPivot OnItemClick="@(item => selectedPivotItem = item)">
-                <BitPivotItem HeaderText="Foo">
-                    <h1>Pivot #1: Foo</h1>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Bar">
-                    <h1>Pivot #2: Bar</h1>
-                    <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Bas">
-                    <h1>Pivot #3: Bas</h1>
-                    <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Biz">
-                    <h1>Pivot #4: Biz</h1>
-                    <p>Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan.</p>
-                </BitPivotItem>
-            </BitPivot>
-            <br /><br />
-            <div>Last header clicked: <b>@selectedPivotItem?.HeaderText</b></div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Templates" RazorCode="@example8RazorCode" Id="example8">
-        <ExamplePreview>
-            <BitPivot>
-                <BitPivotItem>
-                    <Header>
-                        <span style="color:red">Header #1</span>
-                    </Header>
-                    <Body>
-                        <h1>Pivot #1</h1>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
-                    </Body>
-                </BitPivotItem>
-                <BitPivotItem ItemCount="99">
-                    <Header>
-                        <i style="color:green" class="bit-icon bit-icon--HeartFill"></i>
-                        <span style="color:blue">Header #2</span>
-                        <i style="color:green" class="bit-icon bit-icon--HeartFill"></i>
-                    </Header>
-                    <Body>
-                        <h1>Pivot #2</h1>
-                        <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
-                    </Body>
-                </BitPivotItem>
-                <BitPivotItem IconName="@BitIconName.Inbox">
-                    <Header>
-                        <span style="color:rebeccapurple">Header <i style="color:purple" class="bit-icon bit-icon--HeartFill"></i> #3</span>
-                    </Header>
-                    <Body>
-                        <h1>Pivot #3</h1>
-                        <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
-                    </Body>
-                </BitPivotItem>
-            </BitPivot>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Alignment" RazorCode="@example9RazorCode" Id="example9">
-        <ExamplePreview>
-            <BitPivot Alignment="BitAlignment.Center">
+    <DemoSection Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
+        <div>
+            <div>Component's Style & Class:</div><br />
+            <BitPivot Style="border: 1px solid tomato;">
                 <BitPivotItem HeaderText="File">
                     <h1>Pivot #1</h1>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. </p>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.</p>
                 </BitPivotItem>
                 <BitPivotItem HeaderText="Shared with me">
                     <h2>Pivot #2</h2>
@@ -229,175 +305,75 @@
                 </BitPivotItem>
                 <BitPivotItem HeaderText="Recent">
                     <h3>Pivot #3</h3>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. </p>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
                 </BitPivotItem>
             </BitPivot>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Position" RazorCode="@example10RazorCode" Id="example10">
-        <ExamplePreview>
-            <div>Pivot Position: <b>Top</b></div><br />
-            <div class="box">
-                <BitPivot Position="BitPivotPosition.Top">
-                    <BitPivotItem HeaderText="File">
-                        <h1>Pivot #1: File</h1>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. </p>
-                    </BitPivotItem>
-                    <BitPivotItem HeaderText="Shared">
-                        <h1>Pivot #2: Shared</h1>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet.</p>
-                    </BitPivotItem>
-                    <BitPivotItem HeaderText="Recent">
-                        <h1>Pivot #3: Recent</h1>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. </p>
-                    </BitPivotItem>
-                </BitPivot>
-            </div>
-            <br /><br /><br />
-            <div>Pivot Position: <b>Bottom</b></div><br />
-            <div class="box">
-                <BitPivot Position="BitPivotPosition.Bottom">
-                    <BitPivotItem HeaderText="File">
-                        <h1>Pivot #1: File</h1>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. </p>
-                    </BitPivotItem>
-                    <BitPivotItem HeaderText="Shared">
-                        <h1>Pivot #2: Shared</h1>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet.</p>
-                    </BitPivotItem>
-                    <BitPivotItem HeaderText="Recent">
-                        <h1>Pivot #3: Recent</h1>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. </p>
-                    </BitPivotItem>
-                </BitPivot>
-            </div>
-            <br /><br /><br />
-            <div>Pivot Position: <b>Left</b></div><br />
-            <div class="box">
-                <BitPivot Position="BitPivotPosition.Left">
-                    <BitPivotItem HeaderText="File">
-                        <h1>Pivot #1: File</h1>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. </p>
-                    </BitPivotItem>
-                    <BitPivotItem HeaderText="Shared with me" Style="width:130px">
-                        <h1>Pivot #2: Shared with me</h1>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet.</p>
-                    </BitPivotItem>
-                    <BitPivotItem HeaderText="Recent">
-                        <h1>Pivot #3: Recent</h1>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. </p>
-                    </BitPivotItem>
-                </BitPivot>
-            </div>
-            <br /><br /><br />
-            <div>Pivot Position: <b>Right</b></div><br />
-            <div class="box">
-                <BitPivot Position="BitPivotPosition.Right">
-                    <BitPivotItem HeaderText="File">
-                        <h1>Pivot #1: File</h1>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. </p>
-                    </BitPivotItem>
-                    <BitPivotItem HeaderText="Shared with me" Style="width:130px">
-                        <h1>Pivot #2: Shared with me</h1>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet.</p>
-                    </BitPivotItem>
-                    <BitPivotItem HeaderText="Recent">
-                        <h1>Pivot #3: Recent</h1>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. </p>
-                    </BitPivotItem>
-                </BitPivot>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
-        <ExamplePreview>
-            <div>
-                <div>Component's Style & Class:</div><br />
-                <BitPivot Style="border: 1px solid tomato;">
-                    <BitPivotItem HeaderText="File">
-                        <h1>Pivot #1</h1>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.</p>
-                    </BitPivotItem>
-                    <BitPivotItem HeaderText="Shared with me">
-                        <h2>Pivot #2</h2>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
-                    </BitPivotItem>
-                    <BitPivotItem HeaderText="Recent">
-                        <h3>Pivot #3</h3>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
-                    </BitPivotItem>
-                </BitPivot>
-                <br /><br />
-                <BitPivot Class="custom-class">
-                    <BitPivotItem HeaderText="File">
-                        <h1>Pivot #1</h1>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.</p>
-                    </BitPivotItem>
-                    <BitPivotItem HeaderText="Shared with me">
-                        <h2>Pivot #2</h2>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
-                    </BitPivotItem>
-                    <BitPivotItem HeaderText="Recent">
-                        <h3>Pivot #3</h3>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
-                    </BitPivotItem>
-                </BitPivot>
-                <br /><br /><br /><br />
-                <div><b>Styles</b> & <b>Classes</b>:</div><br />
-                <BitPivot Styles="@(new() { HeaderIcon = "color: tomato;", HeaderText = "color: purple;" })">
-                    <BitPivotItem HeaderText="File" IconName="Info">
-                        <h1>Pivot #1</h1>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.</p>
-                    </BitPivotItem>
-                    <BitPivotItem HeaderText="Shared with me">
-                        <h2>Pivot #2</h2>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
-                    </BitPivotItem>
-                    <BitPivotItem HeaderText="Recent">
-                        <h3>Pivot #3</h3>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
-                    </BitPivotItem>
-                </BitPivot>
-                <br /><br /><br />
-                <BitPivot Classes="@(new() { Body = "custom-body", SelectedItem = "custom-selected-item", Header = "custom-header" })">
-                    <BitPivotItem HeaderText="File">
-                        <h1>Pivot #1</h1>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.</p>
-                    </BitPivotItem>
-                    <BitPivotItem HeaderText="Shared with me">
-                        <h2>Pivot #2</h2>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
-                    </BitPivotItem>
-                    <BitPivotItem HeaderText="Recent">
-                        <h3>Pivot #3</h3>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
-                    </BitPivotItem>
-                </BitPivot>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="RTL" RazorCode="@example12RazorCode" Id="example12">
-        <ExamplePreview>
-            <BitPivot Dir="BitDir.Rtl" OverflowBehavior="@BitPivotOverflowBehavior.Scroll">
-                <BitPivotItem HeaderText="اسناد" IconName="@BitIconName.Info">
-                    <p>
-                        لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
-                    </p>
+            <br /><br />
+            <BitPivot Class="custom-class">
+                <BitPivotItem HeaderText="File">
+                    <h1>Pivot #1</h1>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.</p>
                 </BitPivotItem>
-                <BitPivotItem HeaderText="آخرین ها" ItemCount="8">
-                    <p>
-                        چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
-                    </p>
+                <BitPivotItem HeaderText="Shared with me">
+                    <h2>Pivot #2</h2>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
                 </BitPivotItem>
-                <BitPivotItem HeaderText="شخصی" IconName="@BitIconName.Info" ItemCount="6">
-                    <p>
-                        کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
-                    </p>
+                <BitPivotItem HeaderText="Recent">
+                    <h3>Pivot #3</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
                 </BitPivotItem>
             </BitPivot>
-        </ExamplePreview>
-    </ComponentExampleBox>
-</ComponentDemo>
+            <br /><br /><br /><br />
+            <div><b>Styles</b> & <b>Classes</b>:</div><br />
+            <BitPivot Styles="@(new() { HeaderIcon = "color: tomato;", HeaderText = "color: purple;" })">
+                <BitPivotItem HeaderText="File" IconName="Info">
+                    <h1>Pivot #1</h1>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.</p>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Shared with me">
+                    <h2>Pivot #2</h2>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Recent">
+                    <h3>Pivot #3</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
+                </BitPivotItem>
+            </BitPivot>
+            <br /><br /><br />
+            <BitPivot Classes="@(new() { Body = "custom-body", SelectedItem = "custom-selected-item", Header = "custom-header" })">
+                <BitPivotItem HeaderText="File">
+                    <h1>Pivot #1</h1>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.</p>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Shared with me">
+                    <h2>Pivot #2</h2>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Recent">
+                    <h3>Pivot #3</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
+                </BitPivotItem>
+            </BitPivot>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="RTL" RazorCode="@example12RazorCode" Id="example12">
+        <BitPivot Dir="BitDir.Rtl" OverflowBehavior="@BitPivotOverflowBehavior.Scroll">
+            <BitPivotItem HeaderText="اسناد" IconName="@BitIconName.Info">
+                <p>
+                    لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
+                </p>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="آخرین ها" ItemCount="8">
+                <p>
+                    چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
+                </p>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="شخصی" IconName="@BitIconName.Info" ItemCount="6">
+                <p>
+                    کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
+                </p>
+            </BitPivotItem>
+        </BitPivot>
+    </DemoSection>
+</DemoPage>

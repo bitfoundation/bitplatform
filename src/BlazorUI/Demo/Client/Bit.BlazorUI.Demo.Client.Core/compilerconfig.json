@@ -1,13 +1,13 @@
 ﻿[
     {
-        "outputFile": "Components/ComponentDemo.razor.css",
-        "inputFile": "Components/ComponentDemo.razor.scss",
+        "outputFile": "Components/DemoPage.razor.css",
+        "inputFile": "Components/DemoPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/ComponentExampleBox.razor.css",
-        "inputFile": "Components/ComponentExampleBox.razor.scss",
+        "outputFile": "Components/DemoSection.razor.css",
+        "inputFile": "Components/DemoSection.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

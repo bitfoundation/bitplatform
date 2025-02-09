@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Components;
 
-public partial class ComponentExampleBox
+public partial class DemoSection
 {
     private bool showCode;
 
@@ -8,7 +8,7 @@ public partial class ComponentExampleBox
     [Parameter] public string Id { get; set; } = default!;
     [Parameter] public string RazorCode { get; set; } = default!;
     [Parameter] public string CsharpCode { get; set; } = default!;
-    [Parameter] public RenderFragment ExamplePreview { get; set; } = default!;
+    [Parameter] public RenderFragment ChildContent { get; set; } = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
