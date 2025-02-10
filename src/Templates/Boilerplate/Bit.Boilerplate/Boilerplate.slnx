@@ -1,10 +1,10 @@
 <Solution>
   <Configurations>
     <BuildType Name="Debug" />
-    <BuildType Name="Debug-BlazorServer" />
-	<BuildType Name="Debug-BlazorWasm" />
-	<BuildType Name="Debug-BlazorMaui" />
-	<BuildType Name="Debug-BlazorWindows" />
+    <BuildType Name="DebugBlazorServer" />
+	<BuildType Name="DebugBlazorWasm" />
+	<BuildType Name="DebugBlazorHybridMaui" />
+	<BuildType Name="DebugBlazorHybridWindows" />
     <BuildType Name="Release" />
   </Configurations>
   <Folder Name="/.SolutionItems/">
@@ -38,22 +38,22 @@
   <Folder Name="/Client/">
     <Project Path="src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj" />
     <Project Path="src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj">
-      <Build Solution="Debug-BlazorServer|*" Project="false" />
-      <Build Solution="Debug-BlazorWasm|*" Project="false" />
-      <Build Solution="Debug-BlazorWindows|*" Project="false" />
-      <Deploy Solution="Debug-BlazorMaui|*" />
+      <Build Solution="DebugBlazorServer|*" Project="false" />
+      <Build Solution="DebugBlazorWasm|*" Project="false" />
+      <Build Solution="DebugBlazorHybridWindows|*" Project="false" />
+      <Deploy Solution="DebugBlazorHybridMaui|*" />
       <Deploy Solution="Debug|*" />
       <Deploy Solution="Release|*" />
     </Project>
     <Project Path="src/Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj">
-      <Build Solution="Debug-BlazorMaui|*" Project="false" />
-      <Build Solution="Debug-BlazorServer|*" Project="false" />
-      <Build Solution="Debug-BlazorWindows|*" Project="false" />
+      <Build Solution="DebugBlazorHybridMaui|*" Project="false" />
+      <Build Solution="DebugBlazorServer|*" Project="false" />
+      <Build Solution="DebugBlazorHybridWindows|*" Project="false" />
     </Project>
     <Project Path="src/Client/Boilerplate.Client.Windows/Boilerplate.Client.Windows.csproj">
-		<Build Solution="Debug-BlazorMaui|*" Project="false" />
-		<Build Solution="Debug-BlazorServer|*" Project="false" />
-		<Build Solution="Debug-BlazorWasm|*" Project="false" />
+		<Build Solution="DebugBlazorHybridMaui|*" Project="false" />
+		<Build Solution="DebugBlazorServer|*" Project="false" />
+		<Build Solution="DebugBlazorWasm|*" Project="false" />
 	</Project>
   </Folder>
   <Folder Name="/Shared/">
@@ -61,10 +61,10 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="src/Tests/Boilerplate.Tests.csproj">
-      <Build Solution="Debug-BlazorMaui|*" Project="false" />
-      <Build Solution="Debug-BlazorServer|*" Project="false" />
-      <Build Solution="Debug-BlazorWasm|*" Project="false" />
-      <Build Solution="Debug-BlazorWindows|*" Project="false" />
+      <Build Solution="DebugBlazorHybridMaui|*" Project="false" />
+      <Build Solution="DebugBlazorServer|*" Project="false" />
+      <Build Solution="DebugBlazorWasm|*" Project="false" />
+      <Build Solution="DebugBlazorHybridWindows|*" Project="false" />
     </Project>
   </Folder>
 </Solution>
