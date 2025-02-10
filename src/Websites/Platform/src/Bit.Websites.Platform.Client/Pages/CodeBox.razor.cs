@@ -5,7 +5,7 @@ namespace Bit.Websites.Platform.Client.Pages;
 public partial class CodeBox
 {
     private bool isCodeCopied = false;
-    private string codeIcon = BitIconName.Copy;
+    private string codeIcon = "CalendarMirrored";
     private string copyCodeMessage = "Copy code";
     private ElementReference preElementRefrence = default!;
 
@@ -24,7 +24,7 @@ public partial class CodeBox
         var codeSample = await preElementRefrence.GetInnerText();
         await clipboard.WriteText(codeSample.Trim());
 
-        codeIcon = BitIconName.CheckMark;
+        codeIcon = "Accept";
         copyCodeMessage = "Code copied!";
         isCodeCopied = true;
 
@@ -32,7 +32,7 @@ public partial class CodeBox
 
         await Task.Delay(1000);
         isCodeCopied = false;
-        codeIcon = BitIconName.Copy;
+        codeIcon = "CalendarMirrored";
         copyCodeMessage = "Copy code";
 
         StateHasChanged();

@@ -3,7 +3,7 @@
     <BitAccordion Class="@($"accordion{(_boilerplateExpanded ? " expanded" : "")}")" @bind-IsExpanded="_boilerplateExpanded">
         <HeaderTemplate Context="isExpanded">
             <div class="header-container">
-                <BitIcon Class="header-icon" IconName="@(isExpanded ? BitIconName.ChevronDown : BitIconName.ChevronRight)" />
+                <BitIcon Class="header-icon" IconName="ChevronRight" Style="@(isExpanded ? "transform:rotate(90deg)" : "")" />
                 <div>
                     <BitText Typography="BitTypography.H4" Class="header-title">Boilerplate</BitText>
                     <BitText Typography="BitTypography.H5" Class="header-subtitle">Feature-rich .NET project template</BitText>
@@ -17,7 +17,7 @@
                     for PWA/SSR enabled websites and Android, iOS, macOS, Windows apps.
                 </BitText>
                 <div class="template-terminal">
-                    <BitIcon IconName="@BitIconName.ChevronRightSmall" /> <span>dotnet</span> <span>new</span> <span>bit-bp</span>
+                    <BitIcon IconName="ChevronRight" /> <span>dotnet</span> <span>new</span> <span>bit-bp</span>
                     <span>--database</span>
                     <span class="animation-container"><span class="animated a-2">sqlite&nbsp;&nbsp;&nbsp;</span> <span class="animated a-2 delayed d-2">sqlserver</span></span>
                     <span>--pipeline</span>
@@ -36,7 +36,7 @@
     <BitAccordion Class="@($"accordion{(_butilExpanded ? " expanded" : "")}")" @bind-IsExpanded="_butilExpanded">
         <HeaderTemplate Context="isExpanded">
             <div class="header-container">
-                <BitIcon Class="header-icon" IconName="@(isExpanded ? BitIconName.ChevronDown : BitIconName.ChevronRight)" />
+                <BitIcon Class="header-icon" IconName="ChevronRight" Style="@(isExpanded ? "transform:rotate(90deg)" : "")" />
                 <div>
                     <BitText Typography="BitTypography.H4" Class="header-title">Butil</BitText>
                     <BitText Typography="BitTypography.H5" Class="header-subtitle">
@@ -51,11 +51,13 @@
                     bit Butil helps C# developers to access the browser APIs that are only accessible through JavaScript in C#.
                 </BitText>
                 <div>
-                    <CodeBox HideCopyButton>@@inject Bit.Butil.Crypto crypto
+                    <CodeBox HideCopyButton>
+                        @@inject Bit.Butil.Crypto crypto
 
-@@code {
-    var encryptedBytes = await crypto.Encrypt(CryptoAlgorithm.AesCbc, key, textAsUtf8Bytes, iv: iv);
-}</CodeBox>
+                        @@code {
+                        var encryptedBytes = await crypto.Encrypt(CryptoAlgorithm.AesCbc, key, textAsUtf8Bytes, iv: iv);
+                        }
+                    </CodeBox>
                 </div>
                 <a class="template-link" href="@Urls.Butil">
                     Learn more <span class="template-link-arrow"></span>
@@ -67,7 +69,7 @@
     <BitAccordion Class="@($"accordion{(_bswupExpanded ? " expanded" : "")}")" @bind-IsExpanded="_bswupExpanded">
         <HeaderTemplate Context="isExpanded">
             <div class="header-container">
-                <BitIcon Class="header-icon" IconName="@(isExpanded ? BitIconName.ChevronDown : BitIconName.ChevronRight)" />
+                <BitIcon Class="header-icon" IconName="ChevronRight" Style="@(isExpanded ? "transform:rotate(90deg)" : "")" />
                 <div>
                     <BitText Typography="BitTypography.H4" Class="header-title">Bswup</BitText>
                     <BitText Typography="BitTypography.H5" Class="header-subtitle">
@@ -82,7 +84,7 @@
                     bit Bswup is a set of tools that assists developers in making the most out of the Service Worker when building apps with Blazor.
                 </BitText>
                 <br />
-                <div>
+                <div style="text-align:center">
                     <img src="/images/home/bswup.webp" style="max-width:100%;" />
                 </div>
                 <br />
@@ -96,7 +98,7 @@
     <BitAccordion Class="@($"accordion{(_besqlExpanded ? " expanded" : "")}")" @bind-IsExpanded="_besqlExpanded">
         <HeaderTemplate Context="isExpanded">
             <div class="header-container">
-                <BitIcon Class="header-icon" IconName="@(isExpanded ? BitIconName.ChevronDown : BitIconName.ChevronRight)" />
+                <BitIcon Class="header-icon" IconName="ChevronRight" Style="@(isExpanded ? "transform:rotate(90deg)" : "")" />
                 <div>
                     <BitText Typography="BitTypography.H4" Class="header-title">Besql</BitText>
                     <BitText Typography="BitTypography.H5" Class="header-subtitle">Blazor Entity Framework Sqlite</BitText>
@@ -121,7 +123,7 @@
     <BitAccordion Class="@($"accordion{(_blazoruiExpanded ? " expanded" : "")}")" @bind-IsExpanded="_blazoruiExpanded">
         <HeaderTemplate Context="isExpanded">
             <div class="header-container">
-                <BitIcon Class="header-icon" IconName="@(isExpanded ? BitIconName.ChevronDown : BitIconName.ChevronRight)" />
+                <BitIcon Class="header-icon" IconName="ChevronRight" Style="@(isExpanded ? "transform:rotate(90deg)" : "")" />
                 <div>
                     <BitText Typography="BitTypography.H4" Class="header-title">BlazorUI</BitText>
                     <BitText Typography="BitTypography.H5" Class="header-subtitle">Native Blazor UI components</BitText>
@@ -135,12 +137,14 @@
                     saving you time and making development enjoyable.
                 </BitText>
                 <div>
-                    <CodeBox HideCopyButton>&lt;BitDropdown @@bind-Values="comboValues"
-             Label="Multi select combo box"
-             Placeholder="Select options"
-             Items="comboBoxItems"
-             Combo Chips Dynamic
-             OnDynamicAdd="(BitDropdownItem&lt;string> item) => HandleOnDynamicAdd(item)" /></CodeBox>
+                    <CodeBox HideCopyButton>
+                        &lt;BitDropdown @@bind-Values="comboValues"
+                        Label="Multi select combo box"
+                        Placeholder="Select options"
+                        Items="comboBoxItems"
+                        Combo Chips Dynamic
+                        OnDynamicAdd="(BitDropdownItem&lt;string> item) => HandleOnDynamicAdd(item)" />
+                    </CodeBox>
                 </div>
                 <a class="template-link" href="@Urls.BlazorUI" target="_blank">
                     Learn more <span class="template-link-arrow"></span>

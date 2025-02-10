@@ -8,7 +8,7 @@
                 <BitButton Class="header-menu-btn"
                            Variant="BitVariant.Text"
                            OnClick=@WrapHandled(ToggleMenu)
-                           IconName="@BitIconName.CollapseMenu" />
+                           IconName="More" />
             }
             <a class="header-logo" href="@Urls.HomePage" aria-label="Home page" />
             <div class="header-link header-ps-btn @(isDocsRoute ? "header-link--active" : null)">
@@ -85,9 +85,10 @@
     </div>
 
     <div class="header-second-row">
-        <BitActionButton Class="header-action-button"
-                         IconName="@(isHeaderMenuOpen ? BitIconName.ChevronUp : BitIconName.ChevronDown)"
-                         OnClick="@WrapHandled(ToggleHeaderMenu)">
+        <BitActionButton IconName="ChevronRight"
+                         Class="header-action-button"
+                         OnClick="@WrapHandled(ToggleHeaderMenu)"
+                         Styles="@(new() { Icon = isHeaderMenuOpen ? "transform:rotate(-90deg)" : "transform:rotate(90deg)" })">
             @GetActiveRouteName()
         </BitActionButton>
     </div>
@@ -96,9 +97,9 @@
 @if (isHeaderMenuOpen)
 {
     <nav class="header-nav">
-        <BitButton Class="header-nav-close-btn"
+        <BitButton IconName="Cancel"
                    Variant="BitVariant.Text"
-                   IconName="@BitIconName.Cancel"
+                   Class="header-nav-close-btn"
                    OnClick="@WrapHandled(ToggleHeaderMenu)" />
         <div class="header-nav-link header-ps-btn @(IsProductsServicesActive() ? "header-nav-link--active" : null)">
             Products

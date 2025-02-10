@@ -47,7 +47,7 @@
                     </BitStack>
                     <br /><br />
                     <BitText Typography="BitTypography.H5" Gutter>Installation Script</BitText>
-                    <BitButton IconName="@BitIconName.Copy" OnClick="CopyCommandsToClipboard">@copyButtonText</BitButton>
+                    <BitButton IconName="ChevronRight" OnClick="CopyCommandsToClipboard">@copyButtonText</BitButton>
                     <CodeBox MaxHeight="300px" HideCopyButton>@GetDisplayableSelectedCommands()</CodeBox>
                     @if (installVs)
                     {
