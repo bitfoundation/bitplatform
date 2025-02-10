@@ -4,6 +4,7 @@
         <TargetFramework>net9.0</TargetFramework>
         <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+        <InvariantTimezone>true</InvariantTimezone>
         <InvariantGlobalization>true</InvariantGlobalization>
         <ResolveStaticWebAssetsInputsDependsOn>
             BeforeBuildTasks;
