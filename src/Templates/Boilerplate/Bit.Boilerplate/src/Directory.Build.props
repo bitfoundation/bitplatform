@@ -17,9 +17,12 @@
         <MultilingualEnabled>true</MultilingualEnabled>
         <PwaEnabled>false</PwaEnabled>
 
+        <!-- Additional configurations were added to optimize build times for those using the SLNX solution file. -->
+        <Configurations>Debug;Release;DebugBlazorServer;DebugBlazorWasm;DebugBlazorHybridMaui;DebugBlazorHybridWindows</Configurations>
+
         <!-- See Boilerplate.Shared.AppEnvironment for more info. -->
-        <Environment Condition="'$(Environment)' == '' AND '$(Configuration)' == 'Debug'">Development</Environment>
         <Environment Condition="'$(Environment)' == '' AND '$(Configuration)' == 'Release'">Production</Environment>
+        <Environment Condition="'$(Environment)' == '' AND  $(Configuration.Contains('Debug'))">Development</Environment>
 
         <DefineConstants Condition="  $(TargetFramework.Contains('-android')) ">$(DefineConstants);Android</DefineConstants>
         <DefineConstants Condition="  $(TargetFramework.Contains('-ios')) ">$(DefineConstants);iOS</DefineConstants>
@@ -27,7 +30,7 @@
         <DefineConstants Condition="  $(TargetFramework.Contains('-mac')) ">$(DefineConstants);Mac</DefineConstants>
         <DefineConstants Condition=" '$(MultilingualEnabled)' == 'true' ">$(DefineConstants);MultilingualEnabled</DefineConstants>
         <DefineConstants Condition=" '$(PwaEnabled)' == 'true' ">$(DefineConstants);PwaEnabled</DefineConstants>
-        <DefineConstants>$(DefineConstants);$(Environment)</DefineConstants>
+        <DefineConstants>$(DefineConstants);$(Environment);$(Configuration)</DefineConstants>
     </PropertyGroup>
     <!--/+:msbuild-conditional:noEmit -->
 
