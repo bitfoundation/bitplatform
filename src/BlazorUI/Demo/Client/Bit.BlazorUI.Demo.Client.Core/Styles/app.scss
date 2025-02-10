@@ -44,9 +44,13 @@ p {
     padding: 0.25rem 0.5rem;
     box-shadow: $bit-box-shadow-callout;
     background-color: $bit-color-background-secondary;
-    top: calc(rem2(75px) + var(--bit-status-bar-height));
+    top: calc(rem2(75px) + var(--bit-env-inset-top));
 
     .bit-ios & {
         top: calc(rem2(75px) + env(safe-area-inset-top));
     }
+}
+
+#components-reconnect-modal {
+    color: black;
 }

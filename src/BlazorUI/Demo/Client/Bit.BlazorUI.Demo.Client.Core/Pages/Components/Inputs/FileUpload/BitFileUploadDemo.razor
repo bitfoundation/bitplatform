@@ -5,181 +5,157 @@
             Title="FileUpload"
             Description="fileupload component of the bit BlazorUI components" />
 
-<ComponentDemo ComponentName="FileUpload"
-               ComponentDescription="BitFileUpload component wraps the HTML file input element(s) and uploads them to a given URL. The files can be removed by specifying the URL they have been uploaded. Moreover, it provides several other options including single or multiple or automatic file uploading. By automatic, it means the files can be automatically uploaded after being selected. It is possible to specify a maximum size for each file if need be. Additionally, by specifying file extensions, the files can be restricted to certain types."
-               ComponentParameters="componentParameters"
-               ComponentSubClasses="componentSubClasses"
-               ComponentSubEnums="componentSubEnums"
-               ComponentPublicMembers="componentPublicMembers">
+<DemoPage Name="FileUpload"
+          Description="BitFileUpload component wraps the HTML file input element(s) and uploads them to a given URL. The files can be removed by specifying the URL they have been uploaded. Moreover, it provides several other options including single or multiple or automatic file uploading. By automatic, it means the files can be automatically uploaded after being selected. It is possible to specify a maximum size for each file if need be. Additionally, by specifying file extensions, the files can be restricted to certain types."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          PublicMembers="componentPublicMembers">
 
-    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-        <ExamplePreview>
-            <div>Files can be uploaded after selecting them.</div><br />
-            <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" />
-        </ExamplePreview>
-    </ComponentExampleBox>
+    <DemoSection Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+        <div>Files can be uploaded after selecting them.</div><br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" />
+    </DemoSection>
 
-    <ComponentExampleBox Title="Multiple" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-        <ExamplePreview>
-            <div>Multiple files can be selected.</div><br />
-            <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" Multiple />
-        </ExamplePreview>
-    </ComponentExampleBox>
+    <DemoSection Title="Multiple" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <div>Multiple files can be selected.</div><br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" Multiple />
+    </DemoSection>
 
-    <ComponentExampleBox Title="AutoUpload" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-        <ExamplePreview>
-            <div>The BitFileUpload can automatically starts the upload after file selection is done.</div><br />
-            <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" AutoUpload />
-        </ExamplePreview>
-    </ComponentExampleBox>
+    <DemoSection Title="AutoUpload" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <div>The BitFileUpload can automatically starts the upload after file selection is done.</div><br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" AutoUpload />
+    </DemoSection>
 
-    <ComponentExampleBox Title="AutoReset" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-        <ExamplePreview>
-            <div>Automatically resets the BitFileUpload state each time before browsing files.</div><br />
-            <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" AutoReset />
-        </ExamplePreview>
-    </ComponentExampleBox>
+    <DemoSection Title="AutoReset" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <div>Automatically resets the BitFileUpload state each time before browsing files.</div><br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" AutoReset />
+    </DemoSection>
 
-    <ComponentExampleBox Title="MaxSize" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-        <ExamplePreview>
-            <div>The file size can be limited using the MaxSize parameter.</div><br />
-            <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" MaxSize="1024 * 1024 * 1" />
-        </ExamplePreview>
-    </ComponentExampleBox>
+    <DemoSection Title="MaxSize" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <div>The file size can be limited using the MaxSize parameter.</div><br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" MaxSize="1024 * 1024 * 1" />
+    </DemoSection>
 
-    <ComponentExampleBox Title="AllowedExtensions" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-        <ExamplePreview>
-            <div>Limits file browsing by the provided file extensions.</div><br />
-            <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl"
-                           AllowedExtensions="@(new List<string> { ".gif",".jpg",".mp4" })" />
-        </ExamplePreview>
-    </ComponentExampleBox>
+    <DemoSection Title="AllowedExtensions" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <div>Limits file browsing by the provided file extensions.</div><br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl"
+                       AllowedExtensions="@(new List<string> { ".gif",".jpg",".mp4" })" />
+    </DemoSection>
 
-    <ComponentExampleBox Title="Removable" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-        <ExamplePreview>
-            <div>Enables the remove functionality of the BitFileUpload.</div><br />
-            <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl"
-                           ShowRemoveButton RemoveUrl="@RemoveUrl" />
-        </ExamplePreview>
-    </ComponentExampleBox>
+    <DemoSection Title="Removable" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <div>Enables the remove functionality of the BitFileUpload.</div><br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl"
+                       ShowRemoveButton RemoveUrl="@RemoveUrl" />
+    </DemoSection>
 
-    <ComponentExampleBox Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-        <ExamplePreview>
-            <div>Different events can be configured for the upload process.</div><br />
-            <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl"
-                           OnAllUploadsComplete="@(() => onAllUploadsCompleteText = "All File Uploaded")"
-                           OnUploading="@(info => info.HttpHeaders = new Dictionary<string, string> { {"key1", "value1"} })" />
-            <div>@onAllUploadsCompleteText</div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+    <DemoSection Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div>Different events can be configured for the upload process.</div><br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl"
+                       OnAllUploadsComplete="@(() => onAllUploadsCompleteText = "All File Uploaded")"
+                       OnUploading="@(info => info.HttpHeaders = new Dictionary<string, string> { {"key1", "value1"} })" />
+        <div>@onAllUploadsCompleteText</div>
+    </DemoSection>
 
-    <ComponentExampleBox Title="Http requests" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-        <ExamplePreview>
-            <div>The http requests of Upload and Remove can be customized with http headers and query strings.</div><br />
-            <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" RemoveUrl="@RemoveUrl"
-                           UploadRequestQueryStrings="@(new Dictionary<string, string>{ {"qs1", "qsValue1" } })"
-                           UploadRequestHttpHeaders="@(new Dictionary<string, string>{ {"header1", "value1" } })"
-                           RemoveRequestQueryStrings="@(new Dictionary<string, string>{ {"qs2", "qsValue2" } })"
-                           RemoveRequestHttpHeaders="@(new Dictionary<string, string>{ {"header2", "value2" } })" />
-        </ExamplePreview>
-    </ComponentExampleBox>
+    <DemoSection Title="Http requests" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>The http requests of Upload and Remove can be customized with http headers and query strings.</div><br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" RemoveUrl="@RemoveUrl"
+                       UploadRequestQueryStrings="@(new Dictionary<string, string>{ {"qs1", "qsValue1" } })"
+                       UploadRequestHttpHeaders="@(new Dictionary<string, string>{ {"header1", "value1" } })"
+                       RemoveRequestQueryStrings="@(new Dictionary<string, string>{ {"qs2", "qsValue2" } })"
+                       RemoveRequestHttpHeaders="@(new Dictionary<string, string>{ {"header2", "value2" } })" />
+    </DemoSection>
 
-    <ComponentExampleBox Title="Chunked" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
-        <ExamplePreview>
-            <div>Files can be uploaded in chunks.</div><br />
-            <BitFileUpload Label="Select or drag and drop files" UploadUrl="@ChunkedUploadUrl" ChunkedUpload />
-        </ExamplePreview>
-    </ComponentExampleBox>
+    <DemoSection Title="Chunked" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>Files can be uploaded in chunks.</div><br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@ChunkedUploadUrl" ChunkedUpload />
+    </DemoSection>
 
-    <ComponentExampleBox Title="Templates" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
-        <ExamplePreview>
-            <div>The BitFileUpload can be further customized using templates.</div><br />
-            <BitFileUpload @ref="bitFileUpload" UploadUrl="@UploadUrl" RemoveUrl="@RemoveUrl">
-                <LabelTemplate>
-                    @if (FileUploadIsEmpty())
-                    {
-                        <div class="browse-file" @onclick="() => bitFileUpload.Browse()">
-                            <div class="browse-file-header">
-                                <i class="bit-icon bit-icon--CloudUpload" />
-                                <div>
-                                    Drag and drop or
-                                </div>
-                                <div>
-                                    <strong>
-                                        Browse file
-                                    </strong>
-                                </div>
+    <DemoSection Title="Templates" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <div>The BitFileUpload can be further customized using templates.</div><br />
+        <BitFileUpload @ref="bitFileUpload" UploadUrl="@UploadUrl" RemoveUrl="@RemoveUrl">
+            <LabelTemplate>
+                @if (FileUploadIsEmpty())
+                {
+                    <div class="browse-file" @onclick="() => bitFileUpload.Browse()">
+                        <div class="browse-file-header">
+                            <i class="bit-icon bit-icon--CloudUpload" />
+                            <div>
+                                Drag and drop or
                             </div>
-
-                            <div class="browse-file-footer">
-                                <div>
-                                    Max file size: 2 MB
-                                </div>
-                                <div>
-                                    Supported file types: jpg, jpeg, png, bpm
-                                </div>
+                            <div>
+                                <strong>
+                                    Browse file
+                                </strong>
                             </div>
                         </div>
-                    }
-                </LabelTemplate>
-                <FileViewTemplate Context="file">
-                    @if (file.Status != BitFileUploadStatus.Removed)
-                    {
-                        <div class="file-list">
-                            <div class="file-info">
-                                <div class="file-info-ico">
-                                    <i class="bit-icon bit-icon--FileImage" />
-                                </div>
-                                <div class="file-info-data">
-                                    <div class="file-info-title">
-                                        <div class="file-info-name">@file.Name</div>
-                                        <div class="file-info-btns">
-                                            <label for="@bitFileUpload.InputId"><i class="bit-icon bit-icon--CloudUpload upload-ico" /></label>
-                                            <i class="bit-icon bit-icon--ChromeClose remove-ico" @onclick="HandleRemoveOnClick" />
-                                        </div>
+
+                        <div class="browse-file-footer">
+                            <div>
+                                Max file size: 2 MB
+                            </div>
+                            <div>
+                                Supported file types: jpg, jpeg, png, bpm
+                            </div>
+                        </div>
+                    </div>
+                }
+            </LabelTemplate>
+            <FileViewTemplate Context="file">
+                @if (file.Status != BitFileUploadStatus.Removed)
+                {
+                    <div class="file-list">
+                        <div class="file-info">
+                            <div class="file-info-ico">
+                                <i class="bit-icon bit-icon--FileImage" />
+                            </div>
+                            <div class="file-info-data">
+                                <div class="file-info-title">
+                                    <div class="file-info-name">@file.Name</div>
+                                    <div class="file-info-btns">
+                                        <label for="@bitFileUpload.InputId"><i class="bit-icon bit-icon--CloudUpload upload-ico" /></label>
+                                        <i class="bit-icon bit-icon--ChromeClose remove-ico" @onclick="HandleRemoveOnClick" />
                                     </div>
-                                    @if (file.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Pending)
-                                    {
-                                        var fileUploadPercent = GetFileUploadPercent(file);
-                                        <div class="file-info-subtitle">@GetFileUploadSize(file) - @fileUploadPercent%</div>
-                                        <div class="file-info-progressbar-container">
-                                            <div class="file-info-progressbar" role="progressbar" style="width:@fileUploadPercent%;" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@fileUploadPercent"></div>
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <div class="@(file.Status == BitFileUploadStatus.Completed ? "file-info-s-msg" : "file-info-e-msg")">@GetUploadMessageStr(file)</div>
-                                    }
                                 </div>
-                            </div>
-
-                            <div class="file-list-footer">
-                                <div>
-                                    Max file size: 2 MB
-                                </div>
-                                <div>
-                                    Supported file types: jpg, jpeg, png, bpm
-                                </div>
+                                @if (file.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Pending)
+                                {
+                                    var fileUploadPercent = GetFileUploadPercent(file);
+                                    <div class="file-info-subtitle">@GetFileUploadSize(file) - @fileUploadPercent%</div>
+                                    <div class="file-info-progressbar-container">
+                                        <div class="file-info-progressbar" role="progressbar" style="width:@fileUploadPercent%;" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@fileUploadPercent"></div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="@(file.Status == BitFileUploadStatus.Completed ? "file-info-s-msg" : "file-info-e-msg")">@GetUploadMessageStr(file)</div>
+                                }
                             </div>
                         </div>
-                    }
-                </FileViewTemplate>
-            </BitFileUpload>
-            <br />
-            <BitButton OnClick="HandleUploadOnClick">Upload</BitButton>
-        </ExamplePreview>
-    </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Public API" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
-        <ExamplePreview>
-            <div>Use a custom method for the open file selection dialog.</div><br />
-            <BitFileUpload @ref="bitFileUploadWithBrowseFile"
-                           Label=""
-                           UploadUrl="@UploadUrl"
-                           RemoveUrl="@RemoveUrl" />
-            <br />
-            <BitButton OnClick="HandleBrowseFileOnClick">Browse file</BitButton>
-        </ExamplePreview>
-    </ComponentExampleBox>
+                        <div class="file-list-footer">
+                            <div>
+                                Max file size: 2 MB
+                            </div>
+                            <div>
+                                Supported file types: jpg, jpeg, png, bpm
+                            </div>
+                        </div>
+                    </div>
+                }
+            </FileViewTemplate>
+        </BitFileUpload>
+        <br />
+        <BitButton OnClick="HandleUploadOnClick">Upload</BitButton>
+    </DemoSection>
 
-</ComponentDemo>
+    <DemoSection Title="Public API" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <div>Use a custom method for the open file selection dialog.</div><br />
+        <BitFileUpload @ref="bitFileUploadWithBrowseFile"
+                       Label=""
+                       UploadUrl="@UploadUrl"
+                       RemoveUrl="@RemoveUrl" />
+        <br />
+        <BitButton OnClick="HandleBrowseFileOnClick">Browse file</BitButton>
+    </DemoSection>
+
+</DemoPage>

@@ -4,165 +4,153 @@
             Title="Overlay"
             Description="overlay component of the bit BlazorUI components" />
 
-<ComponentDemo ComponentName="Overlay"
-               ComponentDescription="The Overlay component is used to provide emphasis on a particular element or parts of it. It signals to the user of a state change within the application and can be used for creating loaders, dialogs and more."
-               ComponentParameters="componentParameters">
-    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-        <ExamplePreview>
-            <div>
-                <BitButton OnClick="() => BasicIsOpen = true">Show Overlay</BitButton>
-                <BitOverlay @bind-IsOpen="BasicIsOpen" Class="overlay">
-                    <BitProgress Circular Indeterminate Thickness="10" />
-                </BitOverlay>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+<DemoPage Name="Overlay"
+          Description="The Overlay component is used to provide emphasis on a particular element or parts of it. It signals to the user of a state change within the application and can be used for creating loaders, dialogs and more."
+          Parameters="componentParameters">
+    <DemoSection Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+        <div>
+            <BitButton OnClick="() => BasicIsOpen = true">Show Overlay</BitButton>
+            <BitOverlay @bind-IsOpen="BasicIsOpen" Class="overlay">
+                <BitProgress Circular Indeterminate Thickness="10" />
+            </BitOverlay>
+        </div>
+    </DemoSection>
 
-    <ComponentExampleBox Title="Disabled AutoClose" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-        <ExamplePreview>
-            <div>Use BitOverlay with NoAutoClose to disable automatic closing when clicking outside the overlay.</div>
-            <br />
-            <div>
-                <BitButton OnClick="() => AutoCloseIsOpen = true">Show Overlay</BitButton>
-                <BitOverlay @bind-IsOpen="AutoCloseIsOpen" Class="overlay" NoAutoClose>
-                    <div class="content">
-                        <BitButton Class="close-button" Variant="BitVariant.Text" OnClick=@(() => AutoCloseIsOpen = false) IconName="@BitIconName.ChromeClose" Title="Close" />
-                        <h3>Lorem Ipsum</h3>
-                        <p>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-                            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-                            turpis. In hac habitasse platea dictumst.
-                        </p>
-                    </div>
-                </BitOverlay>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+    <DemoSection Title="Disabled AutoClose" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <div>Use BitOverlay with NoAutoClose to disable automatic closing when clicking outside the overlay.</div>
+        <br />
+        <div>
+            <BitButton OnClick="() => AutoCloseIsOpen = true">Show Overlay</BitButton>
+            <BitOverlay @bind-IsOpen="AutoCloseIsOpen" Class="overlay" NoAutoClose>
+                <div class="content">
+                    <BitButton Class="close-button" Variant="BitVariant.Text" OnClick=@(() => AutoCloseIsOpen = false) IconName="@BitIconName.ChromeClose" Title="Close" />
+                    <h3>Lorem Ipsum</h3>
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                        turpis. In hac habitasse platea dictumst.
+                    </p>
+                </div>
+            </BitOverlay>
+        </div>
+    </DemoSection>
 
-    <ComponentExampleBox Title="Absolute Positioning" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-        <ExamplePreview>
-            <div>Overlay can be positioned abosolutely inside a conainter with a relative position.</div>
-            <br />
-            <div class="container">
-                <BitButton Class="show-button" OnClick="() => AbsoluteIsOpen = true">Show Overlay</BitButton>
-                <BitOverlay @bind-IsOpen="AbsoluteIsOpen"
-                            Class="overlay"
-                            AbsolutePosition>
-                    <BitProgress Circular Indeterminate Thickness="10" />
-                </BitOverlay>
-                <h3>This is Container</h3>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+    <DemoSection Title="Absolute Positioning" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <div>Overlay can be positioned abosolutely inside a conainter with a relative position.</div>
+        <br />
+        <div class="container">
+            <BitButton Class="show-button" OnClick="() => AbsoluteIsOpen = true">Show Overlay</BitButton>
+            <BitOverlay @bind-IsOpen="AbsoluteIsOpen"
+                        Class="overlay"
+                        AbsolutePosition>
+                <BitProgress Circular Indeterminate Thickness="10" />
+            </BitOverlay>
+            <h3>This is Container</h3>
+        </div>
+    </DemoSection>
 
-    <ComponentExampleBox Title="AutoToggleScroll" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-        <ExamplePreview>
-            <div>Scrolling cannot be left enabled behind the Overlay</div>
-            <br />
-            <div>
-                <BitButton OnClick="() => AutoToggleIsOpen = true">Show Overlay</BitButton>
-                <BitOverlay @bind-IsOpen="AutoToggleIsOpen"
-                            Class="overlay"
-                            AutoToggleScroll>
-                    <BitStack Alignment="BitAlignment.Center">
-                        <BitText Style="color: dodgerblue;" Typography="BitTypography.H3">Please wait...</BitText>
-                        <BitProgress Indeterminate Thickness="10" Style="width: 19rem;"/>
-                    </BitStack>
-                </BitOverlay>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+    <DemoSection Title="AutoToggleScroll" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <div>Scrolling cannot be left enabled behind the Overlay</div>
+        <br />
+        <div>
+            <BitButton OnClick="() => AutoToggleIsOpen = true">Show Overlay</BitButton>
+            <BitOverlay @bind-IsOpen="AutoToggleIsOpen"
+                        Class="overlay"
+                        AutoToggleScroll>
+                <BitStack Alignment="BitAlignment.Center">
+                    <BitText Style="color: dodgerblue;" Typography="BitTypography.H3">Please wait...</BitText>
+                    <BitProgress Indeterminate Thickness="10" Style="width: 19rem;" />
+                </BitStack>
+            </BitOverlay>
+        </div>
+    </DemoSection>
 
-    <ComponentExampleBox Title="Scroller Selector" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-        <ExamplePreview>
-            <div>Set specific scroller element to toggle the scrollbar.</div>
-            <br />
-            <div class="btn-container">
+    <DemoSection Title="Scroller Selector" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <div>Set specific scroller element to toggle the scrollbar.</div>
+        <br />
+        <div class="btn-container">
 
-                <BitButton OnClick="() => EnabledScrollerIsOpen = true">Show with Enabled scrolling</BitButton>
-                <BitButton OnClick="() => DisabledScrollerIsOpen = true">Show with Disabled scrolling</BitButton>
-            </div>
+            <BitButton OnClick="() => EnabledScrollerIsOpen = true">Show with Enabled scrolling</BitButton>
+            <BitButton OnClick="() => DisabledScrollerIsOpen = true">Show with Disabled scrolling</BitButton>
+        </div>
 
-            <div class="scroller">
-                <BitOverlay @bind-IsOpen="EnabledScrollerIsOpen"
-                            Class="overlay"
-                            Style="background-color:unset"
-                            ScrollerSelector=".scroller"
-                            AbsolutePosition>
-                    <div class="content">
-                        <h3>Lorem Ipsum</h3>
-                        <p>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-                            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-                            turpis. In hac habitasse platea dictumst.
-                        </p>
-                    </div>
-                </BitOverlay>
+        <div class="scroller">
+            <BitOverlay @bind-IsOpen="EnabledScrollerIsOpen"
+                        Class="overlay"
+                        Style="background-color:unset"
+                        ScrollerSelector=".scroller"
+                        AbsolutePosition>
+                <div class="content">
+                    <h3>Lorem Ipsum</h3>
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                        turpis. In hac habitasse platea dictumst.
+                    </p>
+                </div>
+            </BitOverlay>
 
-                <BitOverlay @bind-IsOpen="DisabledScrollerIsOpen"
-                            Class="overlay"
-                            ScrollerSelector=".scroller"
-                            AbsolutePosition
-                            AutoToggleScroll>
-                    <BitProgress Circular Indeterminate Thickness="10" />
-                </BitOverlay>
+            <BitOverlay @bind-IsOpen="DisabledScrollerIsOpen"
+                        Class="overlay"
+                        ScrollerSelector=".scroller"
+                        AbsolutePosition
+                        AutoToggleScroll>
+                <BitProgress Circular Indeterminate Thickness="10" />
+            </BitOverlay>
 
-                <h3>Lorem Ipsum</h3>
-                <p>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-                    amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-                    sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-                    turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-                    ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-                    Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-                    Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-                    efficitur.
-                </p>
-                <p>
-                    Mauris at nunc eget lectus lobortis facilisis et eget magna. Vestibulum venenatis augue sapien, rhoncus
-                    faucibus magna semper eget. Proin rutrum libero sagittis sapien aliquet auctor. Suspendisse tristique a
-                    magna at facilisis. Duis rhoncus feugiat magna in rutrum. Suspendisse semper, dolor et vestibulum lacinia,
-                    nunc felis malesuada ex, nec hendrerit justo ex et massa. Quisque quis mollis nulla. Nam commodo est ornare,
-                    rhoncus odio eu, pharetra tellus. Nunc sed velit mi.
-                </p>
-                <p>
-                    Sed condimentum ultricies turpis convallis pharetra. Sed sagittis quam pharetra luctus porttitor. Cras vel
-                    consequat lectus. Sed nec fringilla urna, a aliquet libero. Aenean sed nisl purus. Vivamus vulputate felis
-                    et odio efficitur suscipit. Ut volutpat dictum lectus, ac rutrum massa accumsan at. Sed pharetra auctor
-                    finibus. In augue libero, commodo vitae nisi non, sagittis convallis ante. Phasellus malesuada eleifend
-                    mollis. Curabitur ultricies leo ac metus venenatis elementum.
-                </p>
-                <p>
-                    Nam id mi justo. Nam vehicula vulputate augue, ac pretium enim rutrum ultricies. Sed aliquet accumsan
-                    varius. Quisque ac auctor ligula. Fusce fringilla, odio et dignissim iaculis, est lacus ultrices risus,
-                    vitae condimentum enim urna eu nunc. In risus est, mattis non suscipit at, mattis ut ante. Maecenas
-                    consectetur urna vel erat maximus, non molestie massa consequat. Duis a feugiat nibh. Sed a hendrerit diam,
-                    a mattis est. In augue dolor, faucibus vel metus at, convallis rhoncus dui.
-                </p>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+            <h3>Lorem Ipsum</h3>
+            <p>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                efficitur.
+            </p>
+            <p>
+                Mauris at nunc eget lectus lobortis facilisis et eget magna. Vestibulum venenatis augue sapien, rhoncus
+                faucibus magna semper eget. Proin rutrum libero sagittis sapien aliquet auctor. Suspendisse tristique a
+                magna at facilisis. Duis rhoncus feugiat magna in rutrum. Suspendisse semper, dolor et vestibulum lacinia,
+                nunc felis malesuada ex, nec hendrerit justo ex et massa. Quisque quis mollis nulla. Nam commodo est ornare,
+                rhoncus odio eu, pharetra tellus. Nunc sed velit mi.
+            </p>
+            <p>
+                Sed condimentum ultricies turpis convallis pharetra. Sed sagittis quam pharetra luctus porttitor. Cras vel
+                consequat lectus. Sed nec fringilla urna, a aliquet libero. Aenean sed nisl purus. Vivamus vulputate felis
+                et odio efficitur suscipit. Ut volutpat dictum lectus, ac rutrum massa accumsan at. Sed pharetra auctor
+                finibus. In augue libero, commodo vitae nisi non, sagittis convallis ante. Phasellus malesuada eleifend
+                mollis. Curabitur ultricies leo ac metus venenatis elementum.
+            </p>
+            <p>
+                Nam id mi justo. Nam vehicula vulputate augue, ac pretium enim rutrum ultricies. Sed aliquet accumsan
+                varius. Quisque ac auctor ligula. Fusce fringilla, odio et dignissim iaculis, est lacus ultrices risus,
+                vitae condimentum enim urna eu nunc. In risus est, mattis non suscipit at, mattis ut ante. Maecenas
+                consectetur urna vel erat maximus, non molestie massa consequat. Duis a feugiat nibh. Sed a hendrerit diam,
+                a mattis est. In augue dolor, faucibus vel metus at, convallis rhoncus dui.
+            </p>
+        </div>
+    </DemoSection>
 
-    <ComponentExampleBox Title="Events" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-        <ExamplePreview>
-            <div>Use BitOverlay with event handlers to handle custom actions on user interactions, such as clicking outside to close.</div>
-            <br />
-            <div>
-                <BitButton OnClick="() => EventOnCloseIsOpen = true">Show Overlay</BitButton>
-                <BitOverlay @bind-IsOpen="EventOnCloseIsOpen" Class="overlay" OnClick=@(() => EventOnCloseIsOpen = false) NoAutoClose>
-                    <div class="content">
-                        <h3>Lorem Ipsum</h3>
-                        <p>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-                            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-                            turpis. In hac habitasse platea dictumst.
-                        </p>
-                    </div>
-                </BitOverlay>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-</ComponentDemo>
+    <DemoSection Title="Events" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <div>Use BitOverlay with event handlers to handle custom actions on user interactions, such as clicking outside to close.</div>
+        <br />
+        <div>
+            <BitButton OnClick="() => EventOnCloseIsOpen = true">Show Overlay</BitButton>
+            <BitOverlay @bind-IsOpen="EventOnCloseIsOpen" Class="overlay" OnClick=@(() => EventOnCloseIsOpen = false) NoAutoClose>
+                <div class="content">
+                    <h3>Lorem Ipsum</h3>
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                        turpis. In hac habitasse platea dictumst.
+                    </p>
+                </div>
+            </BitOverlay>
+        </div>
+    </DemoSection>
+</DemoPage>

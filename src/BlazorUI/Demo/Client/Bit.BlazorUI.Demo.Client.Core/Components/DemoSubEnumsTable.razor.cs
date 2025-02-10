@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Components;
 
-public partial class ComponentEnumsTable
+public partial class DemoSubEnumsTable
 {
     [Parameter] public List<ComponentSubEnum> Enums { get; set; } = new();
 }
