@@ -276,7 +276,7 @@ private void ResetList()
     private readonly string example4RazorCode = @"
 <style>
     .mobile-frame {
-        height: 500px;
+        height: 666px;
         max-width: 375px;
         overflow: hidden;
         position: relative;
@@ -289,7 +289,6 @@ private void ResetList()
     .mobile-frame .screen {
         width: 100%;
         height: 100%;
-        overflow: auto;
     }
 
     .mobile-frame .layout {

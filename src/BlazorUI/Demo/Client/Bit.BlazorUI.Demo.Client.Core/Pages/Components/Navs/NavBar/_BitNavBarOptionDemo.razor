@@ -174,36 +174,32 @@
     <br /><br />
     <div class="mobile-frame">
         <div class="screen">
-            <BitLayout>
-                <Header>
-                    <BitCard FullWidth>
-                        <BitStack Horizontal HorizontalAlign="BitAlignment.Center" VerticalAlign="BitAlignment.Center">
-                            <BitImage Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" Width="50" />
-                            <BitText Typography="BitTypography.H4" Color="BitColor.Info">
-                                bit BlazorUI
-                            </BitText>
-                        </BitStack>
-                    </BitCard>
-                </Header>
-                <Main>
-                    <BitStack HorizontalAlign="BitAlignment.Center" VerticalAlign="BitAlignment.Center">
-                        <BitText Typography="BitTypography.H4" Color="BitColor.PrimaryForeground">
-                            <BitIcon IconName="@advancedSelectedOption?.IconName" Color="BitColor.PrimaryForeground" Size="BitSize.Large" />
-                            <span>@advancedSelectedOption?.Text</span>
+            <BitSticky Top="0">
+                <BitCard FullWidth>
+                    <BitStack Horizontal HorizontalAlign="BitAlignment.Center" VerticalAlign="BitAlignment.Center">
+                        <BitImage Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" Width="50" />
+                        <BitText Typography="BitTypography.H4" Color="BitColor.Info">
+                            bit BlazorUI
                         </BitText>
                     </BitStack>
-                </Main>
-                <Footer>
-                    <div class="nav-menu">
-                        <BitNavBar TItem="BitNavBarOption" Mode="BitNavMode.Manual" @bind-SelectedItem="advancedSelectedOption">
-                            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
-                            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
-                            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
-                            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
-                        </BitNavBar>
-                    </div>
-                </Footer>
-            </BitLayout>
+                </BitCard>
+            </BitSticky>
+            <BitStack Alignment="BitAlignment.Center" AutoHeight Grows>
+                <BitText Typography="BitTypography.H4" Color="BitColor.PrimaryForeground">
+                    <BitIcon IconName="@advancedSelectedOption?.IconName" Color="BitColor.PrimaryForeground" Size="BitSize.Large" />
+                    <span>@advancedSelectedOption?.Text</span>
+                </BitText>
+            </BitStack>
+            <BitSticky Bottom="0">
+                <BitCard FullWidth Style="padding:2px">
+                    <BitNavBar TItem="BitNavBarOption" Mode="BitNavMode.Manual" @bind-SelectedItem="advancedSelectedOption">
+                        <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+                        <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+                        <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+                        <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+                    </BitNavBar>
+                </BitCard>
+            </BitSticky>
         </div>
     </div>
 </DemoSection>
