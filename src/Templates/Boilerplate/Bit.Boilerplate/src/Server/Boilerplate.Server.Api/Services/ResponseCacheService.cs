@@ -21,7 +21,7 @@ public partial class ResponseCacheService
 
     public async Task PurgeCache(params string[] relativePaths)
     {
-        relativePaths = relativePaths.Select(path => Uri.EscapeDataString(path)).ToArray();
+        relativePaths = relativePaths.Select(path => UriUtils.Escape(path)).ToArray();
 
         foreach (var relativePath in relativePaths)
         {

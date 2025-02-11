@@ -28,7 +28,7 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
             context.CacheVaryByRules.VaryByValues.Add("Culture", CultureInfo.CurrentUICulture.Name);
         }
 
-        var requestUrl = Uri.EscapeDataString(new Uri(context.HttpContext.Request.GetUri().GetUrlWithoutCulture()).PathAndQuery);
+        var requestUrl = UriUtils.Escape(new Uri(context.HttpContext.Request.GetUri().GetUrlWithoutCulture()).PathAndQuery);
 
         if (responseCacheAtt.SharedMaxAge == -1)
         {

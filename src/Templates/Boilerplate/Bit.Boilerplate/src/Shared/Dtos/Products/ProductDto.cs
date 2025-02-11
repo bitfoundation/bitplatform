@@ -54,6 +54,6 @@ public partial class ProductDto
     }
 
     //#if (module == "Sales")
-    public string PageUrl => $"{Urls.ProductPage}/{Id}/{Uri.EscapeDataString(Name!)}";
+    public string PageUrl => $"{Urls.ProductPage}/{Id}/{UriUtils.Escape(Name!)}";
     //#endif
 }

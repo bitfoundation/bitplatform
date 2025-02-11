@@ -44,7 +44,7 @@ public partial class NotAuthorizedPage
     {
         await AuthManager.SignOut(CurrentCancellationToken);
         var returnUrl = ReturnUrl ?? NavigationManager.GetRelativePath();
-        NavigationManager.NavigateTo(Urls.SignInPage + (string.IsNullOrEmpty(returnUrl) ? string.Empty : $"?return-url={Uri.EscapeDataString(returnUrl)}"));
+        NavigationManager.NavigateTo(Urls.SignInPage + (string.IsNullOrEmpty(returnUrl) ? string.Empty : $"?return-url={UriUtils.Escape(returnUrl)}"));
     }
 }
 
@@ -58,6 +58,6 @@ public partial class RedirectToSignInPage : AppComponentBase
 
         await AuthManager.SignOut(CurrentCancellationToken);
         var returnUrl = ReturnUrl ?? NavigationManager.GetRelativePath();
-        NavigationManager.NavigateTo(Urls.SignInPage + (string.IsNullOrEmpty(returnUrl) ? string.Empty : $"?return-url={Uri.EscapeDataString(returnUrl)}"));
+        NavigationManager.NavigateTo(Urls.SignInPage + (string.IsNullOrEmpty(returnUrl) ? string.Empty : $"?return-url={UriUtils.Escape(returnUrl)}"));
     }
 }
