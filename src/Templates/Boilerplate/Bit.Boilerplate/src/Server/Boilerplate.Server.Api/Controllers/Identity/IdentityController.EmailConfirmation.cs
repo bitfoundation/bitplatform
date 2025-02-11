@@ -78,7 +78,7 @@ public partial class IdentityController
 
         var email = user.Email!;
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"VerifyEmail:{email},{user.EmailTokenRequestedOn?.ToUniversalTime()}"));
-        var link = new Uri(HttpContext.Request.GetWebAppUrl(), $"{Urls.ConfirmPage}?email={Uri.EscapeDataString(email)}&emailToken={Uri.EscapeDataString(token)}&culture={CultureInfo.CurrentUICulture.Name}&return-url={returnUrl}");
+        var link = new Uri(HttpContext.Request.GetWebAppUrl(), $"{Urls.ConfirmPage}?email={Uri.EscapeDataString(email)}&emailToken={Uri.EscapeDataString(token)}&culture={CultureInfo.CurrentUICulture.Name}&return-url={Uri.EscapeDataString(returnUrl)}");
 
         await emailService.SendEmailToken(user, email, token, link, cancellationToken);
     }
