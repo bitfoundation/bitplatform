@@ -55,7 +55,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             });
             TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
             TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
-            TelemetryContext.PageUrl = NavigationManager.Uri;
+            TelemetryContext.PageUrl = HttpUtility.UrlDecode(NavigationManager.Uri);
             if (AppPlatform.IsBlazorHybrid is false)
             {
                 var userAgentData = await userAgent.Extract();

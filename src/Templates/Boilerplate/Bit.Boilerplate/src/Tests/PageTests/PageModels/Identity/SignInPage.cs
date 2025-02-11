@@ -121,7 +121,7 @@ public partial class SignInPage(IPage page, Uri serverAddress)
         if (ReturnUrl is null)
             await Assertions.Expect(Page).ToHaveURLAsync(new Uri(WebAppServerAddress, Urls.SignInPage).ToString());
         else
-            await Assertions.Expect(Page).ToHaveURLAsync(new Uri(WebAppServerAddress, $"{Urls.SignInPage}?return-url={UriUtils.Escape(ReturnUrl)}").ToString());
+            await Assertions.Expect(Page).ToHaveURLAsync(new Uri(WebAppServerAddress, $"{Urls.SignInPage}?return-url={Uri.EscapeDataString(ReturnUrl)}").ToString());
     }
 
     private void AssertReturnUrl()
