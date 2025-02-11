@@ -78,7 +78,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await responseCacheService.PurgeCache("/", $"/product/{dto.Id}", $"/api/ProductView/Get/{dto.Id}" /*You can also use Url.Action to build urls.*/);
+        await responseCacheService.PurgeCache("/", $"/product/{dto.Id}/{dto.Name}", $"/api/ProductView/Get/{dto.Id}" /*You can also use Url.Action to build urls.*/);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
