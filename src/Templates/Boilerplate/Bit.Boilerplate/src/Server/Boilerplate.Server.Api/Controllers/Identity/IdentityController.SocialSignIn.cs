@@ -91,7 +91,7 @@ public partial class IdentityController
         catch (Exception exp)
         {
             LogSocialSignInCallbackFailed(logger, exp, info?.LoginProvider, info?.Principal?.GetDisplayName());
-            url = $"{Urls.SignInPage}?error={UriUtils.Escape(exp is KnownException ? Localizer[exp.Message] : Localizer[nameof(AppStrings.UnknownException)])}";
+            url = $"{Urls.SignInPage}?error={Uri.EscapeDataString(exp is KnownException ? Localizer[exp.Message] : Localizer[nameof(AppStrings.UnknownException)])}";
         }
         finally
         {

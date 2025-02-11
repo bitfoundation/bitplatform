@@ -171,7 +171,7 @@ public partial class UserController : AppControllerBase, IUserController
 
         var link = new Uri(
             HttpContext.Request.GetWebAppUrl(),
-            $"{Urls.SettingsPage}/{Urls.SettingsSections.Account}?email={UriUtils.Escape(request.Email!)}&emailToken={UriUtils.Escape(token)}&culture={CultureInfo.CurrentUICulture.Name}");
+            $"{Urls.SettingsPage}/{Urls.SettingsSections.Account}?email={Uri.EscapeDataString(request.Email!)}&emailToken={Uri.EscapeDataString(token)}&culture={CultureInfo.CurrentUICulture.Name}");
 
         await emailService.SendEmailToken(user, request.Email!, token, link, cancellationToken);
     }
