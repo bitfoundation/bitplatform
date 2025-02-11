@@ -42,7 +42,7 @@ public static class UriUtils
         var segments = uri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
         for (int i = 0; i < segments.Length; i++)
         {
-            segments[i] = Uri.EscapeDataString(segments[i]);
+            segments[i] = Uri.UnescapeDataString(Uri.EscapeDataString(segments[i]));
         }
         builder.Path = "/" + string.Join("/", segments);
 
