@@ -20,7 +20,7 @@
         <PackageVersion Include="Microsoft.Maui.Controls" Version="8.0.100" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="8.0.100" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="8.0.100" />
-        <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2957.106" />
+        <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.3065.39" />
         <PackageVersion Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
         <PackageVersion Include="Velopack" Version="0.0.1053" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="8.0.1" />
@@ -50,7 +50,7 @@
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="AdsPush" Version="2.0.0" />
         <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="9.4.1" />
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.12" />
-        <PackageVersion Condition="'$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Azure.SignalR" Version="1.30.0" />
+        <PackageVersion Condition="'$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Azure.SignalR" Version="1.30.1" />
         <PackageVersion Condition="'$(module)' == 'Admin' OR '$(module)' == ''" Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.22.0" />
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="BlazorApplicationInsights" Version="3.1.0" />
@@ -79,7 +79,7 @@
         <PackageVersion Include="Swashbuckle.AspNetCore" Version="7.2.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.12" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="8.0.12" />
-		<PackageVersion Include="AspNet.Security.OAuth.Apple" Version="8.3.0" />
+        <PackageVersion Include="AspNet.Security.OAuth.Apple" Version="8.3.0" />
         <PackageVersion Include="AspNet.Security.OAuth.GitHub" Version="8.3.0" />
         <PackageVersion Include="Riok.Mapperly" Version="4.1.1" />
         <PackageVersion Include="Twilio" Version="7.8.3" />
@@ -90,11 +90,11 @@
         <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.2" />
         <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
         <PackageVersion Include="System.Text.Json" Version="8.0.5" />
-        <PackageVersion Include="coverlet.collector" Version="6.0.2" />
+        <PackageVersion Include="coverlet.collector" Version="6.0.4" />
         <PackageVersion Include="FakeItEasy" Version="8.3.0" />
-        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-        <PackageVersion Include="Microsoft.Playwright.MSTest" Version="1.49.0" />
-        <PackageVersion Include="MSTest.TestAdapter" Version="3.7.0" />
-        <PackageVersion Include="MSTest.TestFramework" Version="3.7.0" />
+        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+        <PackageVersion Include="Microsoft.Playwright.MSTest" Version="1.50.0" />
+        <PackageVersion Include="MSTest.TestAdapter" Version="3.7.3" />
+        <PackageVersion Include="MSTest.TestFramework" Version="3.7.3" />
     </ItemGroup>
 </Project>
