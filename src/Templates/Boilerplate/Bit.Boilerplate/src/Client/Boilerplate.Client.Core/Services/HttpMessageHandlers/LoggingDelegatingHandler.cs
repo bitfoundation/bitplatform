@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Web;
+using System.Diagnostics;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
@@ -23,7 +24,7 @@ internal class LoggingDelegatingHandler(ILogger<HttpClient> logger, HttpMessageH
 
             using var scope = logger.BeginScope(logScopeData);
             logger.Log(logLevel, "Received HTTP response for {Uri} after {Duration}ms",
-                request.RequestUri,
+                HttpUtility.UrlDecode(request.RequestUri!.ToString()),
                 stopwatch.ElapsedMilliseconds.ToString("N0"));
         }
     }
