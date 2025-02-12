@@ -28,16 +28,16 @@ public partial class ODataQuery
 
     public override string ToString()
     {
-        var qs = new QueryStringCollection();
+        var qs = new Dictionary<string, string>();
 
         if (Top is not null)
         {
-            qs.Add("$top", Top.ToString());
+            qs.Add("$top", Top.ToString()!);
         }
 
         if (Skip is not null)
         {
-            qs.Add("$skip", Skip.ToString());
+            qs.Add("$skip", Skip.ToString()!);
         }
 
         if (string.IsNullOrEmpty(Filter) is false)
