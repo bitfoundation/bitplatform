@@ -56,7 +56,14 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 
 
     private CancellationTokenSource cts = new();
-    protected CancellationToken CurrentCancellationToken => cts.Token;
+    protected CancellationToken CurrentCancellationToken
+    {
+        get
+        {
+            cts.Token.ThrowIfCancellationRequested();
+            return cts.Token;
+        }
+    }
 
     protected bool InPrerenderSession => AppPlatform.IsBlazorHybrid is false && JSRuntime.IsInitialized() is false;
 
@@ -224,11 +231,8 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     /// </summary>
     protected void Abort()
     {
-        if (cts.IsCancellationRequested is false)
-        {
-            cts.Cancel();
-            cts.Dispose();
-        }
+        cts.Cancel();
+        cts.Dispose();
         cts = new();
     }
 
