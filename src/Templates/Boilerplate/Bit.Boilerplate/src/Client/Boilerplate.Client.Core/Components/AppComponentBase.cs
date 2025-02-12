@@ -229,11 +229,11 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     /// <summary>
     /// Cancells running codes inside current component.
     /// </summary>
-    protected void Abort()
+    protected async Task Abort()
     {
         if (cts.IsCancellationRequested is false)
         {
-            cts.Cancel();
+            await cts.CancelAsync();
         }
         cts.Dispose();
         cts = new();

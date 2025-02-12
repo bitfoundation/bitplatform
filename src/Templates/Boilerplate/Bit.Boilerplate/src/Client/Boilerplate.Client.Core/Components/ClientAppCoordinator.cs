@@ -104,7 +104,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             var userId = isAuthenticated ? user.GetUserId() : (Guid?)null;
             if (lastPropagatedUserId == userId)
                 return;
-            Abort(); // Cancels ongoing user id propagation, because the new authentication state is available.
+            await Abort(); // Cancels ongoing user id propagation, because the new authentication state is available.
             lastPropagatedUserId = userId;
             TelemetryContext.UserId = userId;
             TelemetryContext.UserSessionId = isAuthenticated ? user.GetSessionId() : null;
