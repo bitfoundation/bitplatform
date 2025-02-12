@@ -63,6 +63,11 @@
     margin-top: var(--bit-btn-icn-margintop);
 }
 
+.bit-btn-icnu {
+    width: var(--bit-btn-icn-size);
+    height: var(--bit-btn-icn-size);
+}
+
 .bit-btn-rvi {
     flex-direction: row-reverse;
 }
@@ -318,6 +323,7 @@
     --bit-btn-icn-margintop: #{spacing(0.2)};
     --bit-btn-pad-ntx: #{spacing(0.5)};
     --bit-btn-padding: #{spacing(0.5)} #{spacing(1.5)};
+    --bit-btn-icn-size: #{spacing(1.5)};
 }
 
 .bit-btn-md {
@@ -329,6 +335,7 @@
     --bit-btn-icn-margintop: #{spacing(0.25)};
     --bit-btn-pad-ntx: #{spacing(0.75)};
     --bit-btn-padding: #{spacing(0.75)} #{spacing(2.0)};
+    --bit-btn-icn-size: #{spacing(2)};
 }
 
 .bit-btn-lg {
@@ -340,6 +347,7 @@
     --bit-btn-icn-margintop: #{spacing(0.5)};
     --bit-btn-pad-ntx: #{spacing(1.0)};
     --bit-btn-padding: #{spacing(1.0)} #{spacing(2.5)};
+    --bit-btn-icn-size: #{spacing(2.5)};
 }
 
 

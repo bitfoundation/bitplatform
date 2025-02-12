@@ -116,6 +116,11 @@ public partial class BitButton : BitComponentBase
     [Parameter] public bool IconOnly { get; set; }
 
     /// <summary>
+    /// The url of the custom icon to render inside the button.
+    /// </summary>
+    [Parameter] public string? IconUrl { get; set; }
+
+    /// <summary>
     /// Determines whether the button is in loading mode or not.
     /// </summary>
     [Parameter, TwoWayBound]
