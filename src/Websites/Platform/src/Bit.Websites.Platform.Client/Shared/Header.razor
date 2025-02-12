@@ -5,10 +5,9 @@
         <div class="header-content-container">
             @if (isDocsRoute)
             {
-                <BitButton Class="header-menu-btn"
-                           Variant="BitVariant.Text"
+                <BitButton Class="header-menu-btn" FixedColor
                            OnClick=@WrapHandled(ToggleMenu)
-                           IconName="More" />
+                           IconUrl="/images/menu.svg" />
             }
             <a class="header-logo" href="@Urls.HomePage" aria-label="Home page" />
             <div class="header-link header-ps-btn @(isDocsRoute ? "header-link--active" : null)">

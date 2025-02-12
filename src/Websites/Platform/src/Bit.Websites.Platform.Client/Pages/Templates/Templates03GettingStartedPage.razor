@@ -94,7 +94,7 @@
                         Step-by-step instructions for:
                     </BitText>
                     <BitStack Horizontal HorizontalAlign="BitAlignment.Start">
-                        <BitPivot HeaderOnly OnItemClick="@(item => devOS = item?.Key)">
+                        <BitPivot HeaderOnly OnItemClick="@(item => devOS = item.Key!)">
                             <BitPivotItem HeaderText="Windows" Key="Windows"></BitPivotItem>
                             <BitPivotItem HeaderText="macOS" Key="macOS"></BitPivotItem>
                             <BitPivotItem HeaderText="Linux" Key="Linux"></BitPivotItem>
@@ -174,8 +174,8 @@ rm $HOME/dotnet.tar.gz</CodeBox>
                             }
                         </li>
                         <li>
-                            <div style="margin-bottom:8px">Install <a href="https://www.nuget.org/packages/Bit.Boilerplate/9.4.1" target="_blank">Bit Boilerplate</a> project template</div>
-                            <CodeBox>dotnet new install Bit.Boilerplate::9.4.1</CodeBox>
+                            <div style="margin-bottom:8px">Install <a href="https://www.nuget.org/packages/Bit.Boilerplate/9.4.2-pre-01" target="_blank">Bit Boilerplate</a> project template</div>
+                            <CodeBox>dotnet new install Bit.Boilerplate::9.4.2-pre-01</CodeBox>
                         </li>
                         @if (showCrossPlatform && devOS is "Windows")
                         {
