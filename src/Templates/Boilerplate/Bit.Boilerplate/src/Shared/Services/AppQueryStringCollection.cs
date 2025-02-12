@@ -7,8 +7,11 @@ namespace System;
 /// </summary>
 public class AppQueryStringCollection() : Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
 {
-    public override string ToString()
+    public override string? ToString()
     {
+        if (Count == 0)
+            return null;
+
         return string.Join("&", this.Select(kv => $"{Uri.EscapeDataString(Uri.UnescapeDataString(kv.Key))}={Uri.EscapeDataString(Uri.UnescapeDataString(kv.Value?.ToString() ?? ""))}"));
     }
 
@@ -29,8 +32,8 @@ public class AppQueryStringCollection() : Dictionary<string, object?>(StringComp
         {
             // Split the pair into key and value using '='.
             var parts = pair.Split(['='], 2);
-            string key = parts[0];
-            string value = parts.Length > 1 ? parts[1] : string.Empty;
+            string key = parts.ElementAt(0);
+            string value = parts.ElementAtOrDefault(1) ?? string.Empty;
             qsCollection.Add(key, value);
         }
 
