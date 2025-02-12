@@ -1,6 +1,4 @@
-﻿using System.Web;
-
-namespace Boilerplate.Client.Core.Services;
+﻿namespace Boilerplate.Client.Core.Services;
 
 /// <summary>
 /// https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
@@ -30,41 +28,41 @@ public partial class ODataQuery
 
     public override string ToString()
     {
-        var qs = HttpUtility.ParseQueryString(string.Empty);
+        var qs = QueryStringCollection.Parse(string.Empty);
 
         if (Top is not null)
         {
-            qs.Add("$top", Top.ToString());
+            qs.Set("$top", Top.ToString());
         }
 
         if (Skip is not null)
         {
-            qs.Add("$skip", Skip.ToString());
+            qs.Set("$skip", Skip.ToString());
         }
 
         if (string.IsNullOrEmpty(Filter) is false)
         {
-            qs.Add("$filter", Filter);
+            qs.Set("$filter", Filter);
         }
 
         if (string.IsNullOrEmpty(OrderBy) is false)
         {
-            qs.Add("$orderby", OrderBy);
+            qs.Set("$orderby", OrderBy);
         }
 
         if (string.IsNullOrEmpty(Select) is false)
         {
-            qs.Add("$select", Select);
+            qs.Set("$select", Select);
         }
 
         if (string.IsNullOrEmpty(Expand) is false)
         {
-            qs.Add("$expand", Expand);
+            qs.Set("$expand", Expand);
         }
 
         if (string.IsNullOrEmpty(Search) is false)
         {
-            qs.Add("$search", Search);
+            qs.Set("$search", Search);
         }
 
         return qs.ToString()!;

@@ -1,6 +1,5 @@
 ﻿//+:cnd:noEmit
 using System.Net;
-using System.Web;
 using System.Reflection;
 using System.Runtime.Loader;
 using Microsoft.AspNetCore.Mvc;
@@ -296,7 +295,7 @@ public static partial class Program
                 {
                     bool is403 = httpContext.Response.StatusCode is 403;
 
-                    var qs = HttpUtility.ParseQueryString(httpContext.Request.QueryString.Value ?? string.Empty);
+                    var qs = QueryStringCollection.Parse(httpContext.Request.QueryString.Value ?? string.Empty);
                     qs.Remove("try_refreshing_token");
                     var returnUrl = UriHelper.BuildRelative(httpContext.Request.PathBase, httpContext.Request.Path, new QueryString($"?{qs}"));
                     httpContext.Response.Redirect($"{Urls.NotAuthorizedPage}?return-url={returnUrl}&isForbidden={(is403 ? "true" : "false")}");

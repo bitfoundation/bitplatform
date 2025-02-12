@@ -65,7 +65,6 @@
     </ItemGroup>
     
     <ItemGroup>
-        <Using Include="System.Web" />
         <Using Include="System.Net.Http" />
         <Using Include="System.Text.Json" />
         <Using Include="System.Resources" />
