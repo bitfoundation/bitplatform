@@ -65,7 +65,7 @@ public partial class ODataQuery
             qs.Add("$search", Search);
         }
 
-        return qs.ToString()!;
+        return string.Join('&', qs.Select(kv => $"{kv.Key}={kv.Value}"));
     }
 
     public static implicit operator string(ODataQuery query) => query.ToString();
