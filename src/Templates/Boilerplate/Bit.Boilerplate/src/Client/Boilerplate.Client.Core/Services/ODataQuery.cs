@@ -26,7 +26,7 @@ public partial class ODataQuery
     public string? Expand { get; set; }
     public string? Search { get; set; }
 
-    public override string ToString()
+    public override string? ToString()
     {
         var qs = new AppQueryStringCollection();
 
@@ -68,5 +68,5 @@ public partial class ODataQuery
         return qs.ToString();
     }
 
-    public static implicit operator string(ODataQuery query) => query.ToString();
+    public static implicit operator string?(ODataQuery query) => query.ToString();
 }
