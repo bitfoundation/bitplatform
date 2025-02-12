@@ -9,7 +9,7 @@ public static partial class UriExtensions
 
         string pagePathWithoutQueryString = uri.GetLeftPart(UriPartial.Path);
 
-        return qsCollection.IsEmpty is false
+        return qsCollection is not { Count: > 0 } 
             ? $"{pagePathWithoutQueryString}?{qsCollection}"
             : pagePathWithoutQueryString;
     }
@@ -23,11 +23,9 @@ public static partial class UriExtensions
     {
         if (CultureInfoManager.MultilingualEnabled is false)
             return null;
-        
-        var culture = AppQueryStringCollection.Parse(uri.Query)["culture"];
 
-        if (string.IsNullOrEmpty(culture) is false)
-            return culture;
+        if (AppQueryStringCollection.Parse(uri.Query).TryGetValue("culture", out var culture))
+            return culture?.ToString();
 
         foreach (var segment in uri.Segments.Take(2))
         {

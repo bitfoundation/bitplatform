@@ -107,12 +107,7 @@ public static class IHttpClientServiceCollectionExtensions
 
 internal class AppControllerBase
 {{
-    QueryStringCollection queryString = new QueryStringCollection();
-
-    public void AddQueryString(string existingQueryString)
-    {{
-        queryString.Add(QueryStringCollection.Parse(existingQueryString));
-    }}
+    AppQueryStringCollection queryString = [];
 
     public void AddQueryString(string key, object? value)
     {{
@@ -129,8 +124,6 @@ internal class AppControllerBase
 
     protected string? GetDynamicQueryString()
     {{
-        if (queryString.IsEmpty)
-            return null;
 
         var result = queryString.ToString();
 
