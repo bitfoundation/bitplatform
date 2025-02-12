@@ -231,7 +231,10 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     /// </summary>
     protected void Abort()
     {
-        cts.Cancel();
+        if (cts.IsCancellationRequested is false)
+        {
+            cts.Cancel();
+        }
         cts.Dispose();
         cts = new();
     }
@@ -248,7 +251,10 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
         if (disposing)
         {
             await PrerenderStateService.DisposeAsync();
-            cts.Cancel();
+            if (cts.IsCancellationRequested is false)
+            {
+                cts.Cancel();
+            }
             cts.Dispose();
         }
     }
