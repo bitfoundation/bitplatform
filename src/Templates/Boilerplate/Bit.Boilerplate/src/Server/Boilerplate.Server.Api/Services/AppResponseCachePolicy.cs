@@ -39,7 +39,7 @@ public class AppResponseCachePolicy(ServerApiSettings settings) : IOutputCachePo
         var edgeCacheTtl = responseCacheAtt.SharedMaxAge;
         var outputCacheTtl = responseCacheAtt.SharedMaxAge;
 
-        if (settings.ResponseCaching.EnableCDNsEdgeCaching is false)
+        if (settings.ResponseCaching.EnableCdnEdgeCaching is false)
         {
             edgeCacheTtl = -1;
         }

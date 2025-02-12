@@ -223,7 +223,7 @@ public class ResponseCachingOptions
     public bool EnableOutputCaching { get; set; }
 
     /// <summary>
-    /// Enables CDNs' edge servers caching
+    /// Enables CDN's edge servers caching
     /// </summary>
-    public bool EnableCDNsEdgeCaching { get; set; }
+    public bool EnableCdnEdgeCaching { get; set; }
 }

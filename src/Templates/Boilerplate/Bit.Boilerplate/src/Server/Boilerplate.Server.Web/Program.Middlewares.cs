@@ -87,7 +87,7 @@ public static partial class Program
             {
                 if (env.IsDevelopment() is false)
                 {
-                    // Caching static files on the Browser and CDNs' edge servers.
+                    // Caching static files on the Browser and CDN's edge servers.
                     if (context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase)) &&
                         env.WebRootFileProvider.GetFileInfo(context.Request.Path).Exists)
                     {
