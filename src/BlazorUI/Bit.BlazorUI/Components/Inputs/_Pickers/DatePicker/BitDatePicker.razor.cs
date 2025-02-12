@@ -501,6 +501,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>, IAsyncDispos
         ClassBuilder.Register(() => Standalone ? "bit-dtp-sta" : string.Empty);
 
         ClassBuilder.Register(() => _hasFocus ? $"bit-dtp-foc {Classes?.Focused}" : string.Empty);
+
+        ClassBuilder.Register(() => IsEnabled && Required ? "bit-dtp-req" : string.Empty);
     }
 
     protected override void RegisterCssStyles()

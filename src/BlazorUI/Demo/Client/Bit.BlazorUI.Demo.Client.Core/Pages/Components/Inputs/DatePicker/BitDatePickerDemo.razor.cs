@@ -938,6 +938,7 @@ public partial class BitDatePickerDemo
     private readonly string example1RazorCode = @"
 <BitDatePicker Label=""Basic DatePicker"" />
 <BitDatePicker Label=""Disabled"" IsEnabled=""false"" />
+<BitDatePicker Label=""Required"" Required />
 <BitDatePicker Label=""PlaceHolder"" Placeholder=""Select a date"" />
 <BitDatePicker Label=""Week numbers"" ShowWeekNumbers />
 <BitDatePicker Label=""Highlight months"" HighlightCurrentMonth HighlightSelectedMonth />
