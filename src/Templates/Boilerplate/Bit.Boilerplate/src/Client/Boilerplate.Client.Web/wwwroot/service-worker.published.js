@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-// bit version: 9.4.1
+// bit version: 9.4.2-pre-01
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 //#if (notification == true)
