@@ -1,6 +1,4 @@
-﻿using System.Web;
-
-namespace Boilerplate.Client.Core.Services;
+﻿namespace Boilerplate.Client.Core.Services;
 
 /// <summary>
 /// https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
@@ -30,7 +28,7 @@ public partial class ODataQuery
 
     public override string ToString()
     {
-        var qs = HttpUtility.ParseQueryString(string.Empty);
+        var qs = new QueryStringCollection();
 
         if (Top is not null)
         {

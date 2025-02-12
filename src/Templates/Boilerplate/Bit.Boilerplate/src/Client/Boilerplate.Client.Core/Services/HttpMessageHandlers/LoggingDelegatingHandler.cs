@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Web;
+using System.Diagnostics;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
@@ -7,7 +8,7 @@ internal class LoggingDelegatingHandler(ILogger<HttpClient> logger, HttpMessageH
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Sending HTTP request {Method} {Uri}", request.Method, request.RequestUri);
+        logger.LogInformation("Sending HTTP request {Method} {Uri}", request.Method, HttpUtility.UrlDecode(request.RequestUri?.ToString()));
         request.Options.Set(new(RequestOptionNames.LogLevel), LogLevel.Warning);
         request.Options.Set(new(RequestOptionNames.LogScopeData), new Dictionary<string, object?>());
 
@@ -23,7 +24,7 @@ internal class LoggingDelegatingHandler(ILogger<HttpClient> logger, HttpMessageH
 
             using var scope = logger.BeginScope(logScopeData);
             logger.Log(logLevel, "Received HTTP response for {Uri} after {Duration}ms",
-                request.RequestUri,
+                HttpUtility.UrlDecode(request.RequestUri!.ToString()),
                 stopwatch.ElapsedMilliseconds.ToString("N0"));
         }
     }

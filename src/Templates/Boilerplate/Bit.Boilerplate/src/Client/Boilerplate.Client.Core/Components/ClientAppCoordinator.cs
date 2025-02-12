@@ -1,4 +1,5 @@
 ﻿//+:cnd:noEmit
+using System.Web;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -54,7 +55,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             });
             TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
             TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
-            TelemetryContext.PageUrl = NavigationManager.Uri;
+            TelemetryContext.PageUrl = HttpUtility.UrlDecode(NavigationManager.Uri);
             if (AppPlatform.IsBlazorHybrid is false)
             {
                 var userAgentData = await userAgent.Extract();
@@ -86,8 +87,8 @@ public partial class ClientAppCoordinator : AppComponentBase
 
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
     {
-        TelemetryContext.PageUrl = e.Location;
-        navigatorLogger.LogInformation("Navigator's location changed to {Location}", e.Location);
+        TelemetryContext.PageUrl = HttpUtility.UrlDecode(e.Location);
+        navigatorLogger.LogInformation("Navigator's location changed to {Location}", TelemetryContext.PageUrl);
     }
 
     private Guid? lastPropagatedUserId = Guid.Empty;
