@@ -107,7 +107,7 @@ public static class IHttpClientServiceCollectionExtensions
 
 internal class AppControllerBase
 {{
-    QueryStringCollection queryString = QueryStringCollection.Parse(string.Empty);
+    QueryStringCollection queryString = new QueryStringCollection();
 
     public void AddQueryString(string existingQueryString)
     {{
@@ -116,7 +116,7 @@ internal class AppControllerBase
 
     public void AddQueryString(string key, object? value)
     {{
-        queryString.Set(key, value?.ToString());
+        queryString.Add(key, value?.ToString());
     }}
 
     public void AddQueryStrings(Dictionary<string, object?> queryString)

@@ -28,41 +28,41 @@ public partial class ODataQuery
 
     public override string ToString()
     {
-        var qs = QueryStringCollection.Parse(string.Empty);
+        var qs = new QueryStringCollection();
 
         if (Top is not null)
         {
-            qs.Set("$top", Top.ToString());
+            qs.Add("$top", Top.ToString());
         }
 
         if (Skip is not null)
         {
-            qs.Set("$skip", Skip.ToString());
+            qs.Add("$skip", Skip.ToString());
         }
 
         if (string.IsNullOrEmpty(Filter) is false)
         {
-            qs.Set("$filter", Filter);
+            qs.Add("$filter", Filter);
         }
 
         if (string.IsNullOrEmpty(OrderBy) is false)
         {
-            qs.Set("$orderby", OrderBy);
+            qs.Add("$orderby", OrderBy);
         }
 
         if (string.IsNullOrEmpty(Select) is false)
         {
-            qs.Set("$select", Select);
+            qs.Add("$select", Select);
         }
 
         if (string.IsNullOrEmpty(Expand) is false)
         {
-            qs.Set("$expand", Expand);
+            qs.Add("$expand", Expand);
         }
 
         if (string.IsNullOrEmpty(Search) is false)
         {
-            qs.Set("$search", Search);
+            qs.Add("$search", Search);
         }
 
         return qs.ToString()!;

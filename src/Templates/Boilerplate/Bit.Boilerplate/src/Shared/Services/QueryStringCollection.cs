@@ -4,7 +4,7 @@ public class QueryStringCollection
 {
     private readonly Dictionary<string, string> keyValues = [];
 
-    public QueryStringCollection Set(string key, string? value)
+    public QueryStringCollection Add(string key, string? value)
     {
         keyValues[Uri.EscapeDataString(Uri.UnescapeDataString(key))] = Uri.EscapeDataString(Uri.UnescapeDataString(value ?? ""));
 
@@ -45,7 +45,7 @@ public class QueryStringCollection
                 return value;
             return null;
         }
-        set => Set(key, value);
+        set => Add(key, value);
     }
 
     public override string ToString()
@@ -72,7 +72,7 @@ public class QueryStringCollection
             var parts = pair.Split(['='], 2);
             string key = parts[0];
             string value = parts.Length > 1 ? parts[1] : string.Empty;
-            qsCollection.Set(key, value);
+            qsCollection.Add(key, value);
         }
 
         return qsCollection;
