@@ -412,7 +412,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (string.IsNullOrEmpty(returnUrl) is false)
         {
-            qs += $"&return-url={Uri.EscapeDataString(Uri.EscapeDataString(returnUrl))}";
+            qs += $"&return-url={Uri.EscapeDataString(returnUrl)}";
         }
 
         var url = $"{Urls.SignInPage}?otp={Uri.EscapeDataString(token)}&{qs}&culture={CultureInfo.CurrentUICulture.Name}";

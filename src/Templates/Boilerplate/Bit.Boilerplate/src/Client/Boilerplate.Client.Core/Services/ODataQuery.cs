@@ -1,6 +1,4 @@
-﻿using System.Web;
-
-namespace Boilerplate.Client.Core.Services;
+﻿namespace Boilerplate.Client.Core.Services;
 
 /// <summary>
 /// https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
@@ -30,16 +28,16 @@ public partial class ODataQuery
 
     public override string ToString()
     {
-        var qs = HttpUtility.ParseQueryString(string.Empty);
+        var qs = new Dictionary<string, string>();
 
         if (Top is not null)
         {
-            qs.Add("$top", Top.ToString());
+            qs.Add("$top", Top.ToString()!);
         }
 
         if (Skip is not null)
         {
-            qs.Add("$skip", Skip.ToString());
+            qs.Add("$skip", Skip.ToString()!);
         }
 
         if (string.IsNullOrEmpty(Filter) is false)
@@ -67,7 +65,7 @@ public partial class ODataQuery
             qs.Add("$search", Search);
         }
 
-        return qs.ToString()!;
+        return string.Join('&', qs.Select(kv => $"{kv.Key}={kv.Value}"));
     }
 
     public static implicit operator string(ODataQuery query) => query.ToString();
