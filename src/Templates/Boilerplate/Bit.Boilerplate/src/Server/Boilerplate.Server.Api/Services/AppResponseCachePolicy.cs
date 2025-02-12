@@ -7,7 +7,7 @@ namespace Boilerplate.Server.Api.Services;
 /// <summary>
 /// An implementation of this interface can update how the current request is cached.
 /// </summary>
-public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
+public class AppResponseCachePolicy(ServerApiSettings settings) : IOutputCachePolicy
 {
     /// <summary>
     /// Updates the <see cref="OutputCacheContext"/> before the cache middleware is invoked.
@@ -39,12 +39,13 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
         var edgeCacheTtl = responseCacheAtt.SharedMaxAge;
         var outputCacheTtl = responseCacheAtt.SharedMaxAge;
 
-        if (env.IsDevelopment())
+        if (settings.ResponseCaching.EnableCDNsEdgeCaching is false)
         {
-            // To enhance the developer experience, return from here to make it easier for developers to debug cacheable responses.
             edgeCacheTtl = -1;
+        }
+        if (settings.ResponseCaching.EnableOutputCaching is false)
+        {
             outputCacheTtl = -1;
-            browserCacheTtl = -1;
         }
 
         if (context.HttpContext.User.IsAuthenticated() && responseCacheAtt.UserAgnostic is false)
