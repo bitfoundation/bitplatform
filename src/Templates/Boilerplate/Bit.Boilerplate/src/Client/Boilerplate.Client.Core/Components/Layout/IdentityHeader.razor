@@ -4,10 +4,10 @@
     <BitStack Horizontal Gap="0.5rem" VerticalAlign="BitAlignment.Center">
         @if (isCrossLayoutPage is true)
         {
-            <BitButton Href="@($"{Urls.SignUpPage}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")">
+            <BitButton Href="@($"{Urls.SignUpPage}?return-url={HttpUtility.UrlEncode(NavigationManager.GetRelativePath())}")">
                 @Localizer[nameof(AppStrings.SignUp)]
             </BitButton>
-            <BitButton Href="@($"{Urls.SignInPage}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")" Variant="BitVariant.Text" Color="BitColor.Tertiary">
+            <BitButton Href="@($"{Urls.SignInPage}?return-url={HttpUtility.UrlEncode(NavigationManager.GetRelativePath())}")" Variant="BitVariant.Text" Color="BitColor.Tertiary">
                 @Localizer[nameof(AppStrings.SignIn)]
             </BitButton>
         }

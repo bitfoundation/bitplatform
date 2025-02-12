@@ -408,14 +408,14 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"Otp_{originalAuthenticationMethod},{user.OtpRequestedOn?.ToUniversalTime()}"));
 
-        var qs = $"userName={Uri.EscapeDataString(user.UserName!)}";
+        var qs = $"userName={HttpUtility.UrlEncode(user.UserName!)}";
 
         if (string.IsNullOrEmpty(returnUrl) is false)
         {
-            qs += $"&return-url={Uri.EscapeDataString(returnUrl)}";
+            qs += $"&return-url={HttpUtility.UrlEncode(returnUrl)}";
         }
 
-        var url = $"{Urls.SignInPage}?otp={Uri.EscapeDataString(token)}&{qs}&culture={CultureInfo.CurrentUICulture.Name}";
+        var url = $"{Urls.SignInPage}?otp={HttpUtility.UrlEncode(token)}&{qs}&culture={CultureInfo.CurrentUICulture.Name}";
 
         return (token, url);
     }
