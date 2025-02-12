@@ -129,18 +129,14 @@
     .icon-container {
         height: 100%;
         display: flex;
+        padding-top: 1px;
         flex-wrap: nowrap;
         align-items: center;
         justify-content: center;
 
-        .bit-icon {
-            margin: 0 rem2(4px);
-        }
-    }
-
-    &.dark-theme {
-        .icon-container {
-            padding: 2px 0px 0 1px;
+        img {
+            width: 20px;
+            height: 20px;
         }
     }
 }
@@ -207,7 +203,8 @@
     }
 
     .header-menu-btn {
-        margin-right: rem2(16px);
+        padding: rem2(4px);
+        margin-right: rem2(8px);
 
         @include gt-md {
             display: none;

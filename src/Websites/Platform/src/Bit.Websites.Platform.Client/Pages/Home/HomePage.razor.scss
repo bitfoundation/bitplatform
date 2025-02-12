@@ -44,22 +44,21 @@
         width: 100%;
         margin: auto;
         padding: 1rem;
-        display: none;
         max-width: rem2(800px);
     }
 }
 
-//.bit-theme-dark {
-//    .dark-theme {
-//        display: unset;
-//    }
-//}
+.bit-theme-dark {
+    .dark-theme {
+        display: unset;
+    }
+}
 
-//.bit-theme-light {
-//    .light-theme {
-//        display: unset;
-//    }
-//}
+.bit-theme-light {
+    .light-theme {
+        display: unset;
+    }
+}
 
 .highlight-1 {
     background-clip: text;

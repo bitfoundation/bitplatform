@@ -41,8 +41,8 @@
     }
 
     &::-webkit-scrollbar-thumb:hover {
-        background-color: $Gray2;
         border-radius: rem2(8px);
+        background-color: $Gray2;
         border: rem2(4px) solid $Gray2;
     }
 
@@ -58,7 +58,7 @@
     width: rem2(32px);
     height: rem2(32px);
     position: absolute;
-    padding-left: rem2(8px);
+    padding-left: rem2(4px);
     transition: width 0.2s ease-in-out;
 
     &:hover {
