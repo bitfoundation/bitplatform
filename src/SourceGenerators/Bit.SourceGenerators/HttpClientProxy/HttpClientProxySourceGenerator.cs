@@ -116,7 +116,7 @@ internal class AppControllerBase
 
     public void AddQueryString(string key, object? value)
     {{
-        queryString.Add(key, value?.ToString());
+        queryString.Set(key, value?.ToString());
     }}
 
     public void AddQueryStrings(Dictionary<string, object?> queryString)
