@@ -1,5 +1,10 @@
-﻿namespace System;
+﻿using System.Web;
 
+namespace System;
+
+/// <summary>  
+/// An alternative to <see cref="HttpUtility.ParseQueryString(string)"/> that utilizes <see cref="Uri.EscapeDataString(string)"/> instead of <see cref="HttpUtility.UrlEncode(string?)"/>.  
+/// </summary>
 public class QueryStringCollection
 {
     private readonly Dictionary<string, string> keyValues = [];
