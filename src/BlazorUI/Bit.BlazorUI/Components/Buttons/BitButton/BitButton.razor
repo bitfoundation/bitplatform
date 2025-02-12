@@ -9,17 +9,17 @@
 @if (Href.HasNoValue())
 {
     <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
-    id="@_Id"
-    style="@StyleBuilder.Value"
-    class="@ClassBuilder.Value"
-    type="@_buttonType.GetValue()"
-    dir="@Dir?.ToString().ToLower()"
-    disabled="@(IsEnabled is false)"
-    title="@Title"
-    tabindex="@_tabIndex"
-    aria-label="@AriaLabel"
-    aria-hidden="@AriaHidden"
-    aria-describedby="@AriaDescription">
+            id="@_Id"
+            style="@StyleBuilder.Value"
+            class="@ClassBuilder.Value"
+            type="@_buttonType.GetValue()"
+            dir="@Dir?.ToString().ToLower()"
+            disabled="@(IsEnabled is false)"
+            title="@Title"
+            tabindex="@_tabIndex"
+            aria-label="@AriaLabel"
+            aria-hidden="@AriaHidden"
+            aria-describedby="@AriaDescription">
         @if (IsLoading is false)
         {
             @if (IconName.HasValue())

@@ -135,7 +135,7 @@ public partial class BitButtonDemo
         {
             Name = "IconUrl",
             Type = "string?",
-            DefaultValue = "false",
+            DefaultValue = "null",
             Description = "The url of the custom icon to render inside the button."
         },
         new()
