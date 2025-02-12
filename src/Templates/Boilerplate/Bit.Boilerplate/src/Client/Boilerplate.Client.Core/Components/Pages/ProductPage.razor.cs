@@ -58,7 +58,9 @@ public partial class ProductPage
 
         try
         {
-            similarProducts = await productViewController.GetSimilar(product.Id, CurrentCancellationToken);
+            similarProducts = await productViewController
+                .WithQuery(new ODataQuery { Top = 10 })
+                .GetSimilar(product.Id, CurrentCancellationToken);
         }
         finally
         {
@@ -73,7 +75,9 @@ public partial class ProductPage
 
         try
         {
-            siblingProducts = await productViewController.WithQuery(new ODataQuery { Filter = $"{nameof(ProductDto.Id)} ne {product.Id}" }).GetSiblings(product.CategoryId.Value, CurrentCancellationToken);
+            siblingProducts = await productViewController
+                .WithQuery(new ODataQuery { Top = 10, Filter = $"{nameof(ProductDto.Id)} ne {product.Id}" })
+                .GetSiblings(product.CategoryId.Value, CurrentCancellationToken);
         }
         finally
         {
