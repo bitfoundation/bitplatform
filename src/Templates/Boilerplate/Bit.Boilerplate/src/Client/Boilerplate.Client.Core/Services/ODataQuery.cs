@@ -28,7 +28,7 @@ public partial class ODataQuery
 
     public override string ToString()
     {
-        var qs = new Dictionary<string, string>();
+        var qs = new AppQueryStringCollection();
 
         if (Top is not null)
         {
@@ -65,7 +65,7 @@ public partial class ODataQuery
             qs.Add("$search", Search);
         }
 
-        return string.Join('&', qs.Select(kv => $"{kv.Key}={kv.Value}"));
+        return qs.ToString();
     }
 
     public static implicit operator string(ODataQuery query) => query.ToString();

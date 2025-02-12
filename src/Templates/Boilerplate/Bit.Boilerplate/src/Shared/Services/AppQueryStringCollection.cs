@@ -5,57 +5,11 @@ namespace System;
 /// <summary>  
 /// An alternative to <see cref="HttpUtility.ParseQueryString(string)"/> that utilizes <see cref="Uri.EscapeDataString(string)"/> instead of <see cref="HttpUtility.UrlEncode(string?)"/>.  
 /// </summary>
-public class AppQueryStringCollection
+public class AppQueryStringCollection() : Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
 {
-    private readonly Dictionary<string, string> keyValues = [];
-
-    public AppQueryStringCollection Add(string key, string? value)
-    {
-        keyValues[Uri.EscapeDataString(Uri.UnescapeDataString(key))] = Uri.EscapeDataString(Uri.UnescapeDataString(value ?? ""));
-
-        return this;
-    }
-
-    public AppQueryStringCollection Add(AppQueryStringCollection queryStringCollection)
-    {
-        foreach (var kv in queryStringCollection.keyValues)
-        {
-            keyValues[kv.Key] = kv.Value;
-        }
-
-        return this;
-    }
-
-    public AppQueryStringCollection Remove(string key)
-    {
-        keyValues.Remove(Uri.EscapeDataString(Uri.UnescapeDataString(key)));
-
-        return this;
-    }
-
-    public AppQueryStringCollection Clear()
-    {
-        keyValues.Clear();
-        return this;
-    }
-
-    public bool IsEmpty => keyValues.Any() is false;
-
-    public string? this[string key]
-    {
-        get
-        {
-            key = Uri.EscapeDataString(Uri.UnescapeDataString(key));
-            if (keyValues.TryGetValue(key, out var value))
-                return value;
-            return null;
-        }
-        set => Add(key, value);
-    }
-
     public override string ToString()
     {
-        return string.Join("&", keyValues.Select(kv => $"{kv.Key}={kv.Value}"));
+        return string.Join("&", this.Select(kv => $"{Uri.EscapeDataString(Uri.UnescapeDataString(kv.Key))}={Uri.EscapeDataString(Uri.UnescapeDataString(kv.Value?.ToString() ?? ""))}"));
     }
 
     public static AppQueryStringCollection Parse(string query)
