@@ -9,7 +9,7 @@ public static partial class UriExtensions
 
         string pagePathWithoutQueryString = uri.GetLeftPart(UriPartial.Path);
 
-        return qsCollection is not { Count: > 0 } 
+        return qsCollection is { Count: > 0 } 
             ? $"{pagePathWithoutQueryString}?{qsCollection}"
             : pagePathWithoutQueryString;
     }
