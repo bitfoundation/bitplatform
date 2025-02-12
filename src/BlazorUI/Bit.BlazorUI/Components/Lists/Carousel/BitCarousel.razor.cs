@@ -317,6 +317,7 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
 
         if (AutoPlay) _autoPlayTimer.Stop();
         await Task.Delay(50);
+        if (_disposed) return;
         if (AutoPlay) _autoPlayTimer.Start();
 
         offset = isNext ? VisibleItemsCount - scrollCount : 0;

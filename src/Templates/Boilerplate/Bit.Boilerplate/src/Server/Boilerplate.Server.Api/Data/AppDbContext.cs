@@ -91,7 +91,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         //#endif
         ChangeTracker.DetectChanges();
 
-        foreach (var entityEntry in ChangeTracker.Entries().Where(e => e.State is EntityState.Modified))
+        foreach (var entityEntry in ChangeTracker.Entries().Where(e => e.State is EntityState.Modified or EntityState.Deleted))
         {
             if (entityEntry.CurrentValues.TryGetValue<object>("ConcurrencyStamp", out var currentConcurrencyStamp) is false
                 || currentConcurrencyStamp is not byte[])

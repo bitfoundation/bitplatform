@@ -27,6 +27,7 @@ namespace Boilerplate.Shared
             controller.AddQueryString(key, value);
             return controller;
         }
+
         public static TAppController WithQuery<TAppController>(this TAppController controller, Dictionary<string, object?> queryString)
             where TAppController : IAppController
         {
