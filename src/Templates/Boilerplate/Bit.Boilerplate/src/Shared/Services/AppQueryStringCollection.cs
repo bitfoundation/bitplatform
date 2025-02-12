@@ -5,18 +5,18 @@ namespace System;
 /// <summary>  
 /// An alternative to <see cref="HttpUtility.ParseQueryString(string)"/> that utilizes <see cref="Uri.EscapeDataString(string)"/> instead of <see cref="HttpUtility.UrlEncode(string?)"/>.  
 /// </summary>
-public class QueryStringCollection
+public class AppQueryStringCollection
 {
     private readonly Dictionary<string, string> keyValues = [];
 
-    public QueryStringCollection Add(string key, string? value)
+    public AppQueryStringCollection Add(string key, string? value)
     {
         keyValues[Uri.EscapeDataString(Uri.UnescapeDataString(key))] = Uri.EscapeDataString(Uri.UnescapeDataString(value ?? ""));
 
         return this;
     }
 
-    public QueryStringCollection Add(QueryStringCollection queryStringCollection)
+    public AppQueryStringCollection Add(AppQueryStringCollection queryStringCollection)
     {
         foreach (var kv in queryStringCollection.keyValues)
         {
@@ -26,14 +26,14 @@ public class QueryStringCollection
         return this;
     }
 
-    public QueryStringCollection Remove(string key)
+    public AppQueryStringCollection Remove(string key)
     {
         keyValues.Remove(Uri.EscapeDataString(Uri.UnescapeDataString(key)));
 
         return this;
     }
 
-    public QueryStringCollection Clear()
+    public AppQueryStringCollection Clear()
     {
         keyValues.Clear();
         return this;
@@ -58,9 +58,9 @@ public class QueryStringCollection
         return string.Join("&", keyValues.Select(kv => $"{kv.Key}={kv.Value}"));
     }
 
-    public static QueryStringCollection Parse(string query)
+    public static AppQueryStringCollection Parse(string query)
     {
-        var qsCollection = new QueryStringCollection();
+        var qsCollection = new AppQueryStringCollection();
 
         if (string.IsNullOrWhiteSpace(query))
             return qsCollection;

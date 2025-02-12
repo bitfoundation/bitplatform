@@ -4,7 +4,7 @@ public static partial class UriExtensions
 {
     public static string GetUrlWithoutQueryParameter(this Uri uri, string key)
     {
-        var qsCollection = QueryStringCollection.Parse(uri.Query);
+        var qsCollection = AppQueryStringCollection.Parse(uri.Query);
         qsCollection.Remove(key);
 
         string pagePathWithoutQueryString = uri.GetLeftPart(UriPartial.Path);
@@ -24,7 +24,7 @@ public static partial class UriExtensions
         if (CultureInfoManager.MultilingualEnabled is false)
             return null;
         
-        var culture = QueryStringCollection.Parse(uri.Query)["culture"];
+        var culture = AppQueryStringCollection.Parse(uri.Query)["culture"];
 
         if (string.IsNullOrEmpty(culture) is false)
             return culture;
