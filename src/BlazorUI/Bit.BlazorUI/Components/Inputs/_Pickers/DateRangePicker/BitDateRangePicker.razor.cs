@@ -564,6 +564,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         ClassBuilder.Register(() => Standalone ? "bit-dtrp-sta" : string.Empty);
 
         ClassBuilder.Register(() => _hasFocus ? $"bit-dtrp-foc {Classes?.Focused}" : string.Empty);
+
+        ClassBuilder.Register(() => IsEnabled && Required ? "bit-dtrp-req" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
