@@ -575,6 +575,7 @@ public partial class BitCircularTimePickerDemo
     private readonly string example1RazorCode = @"
 <BitCircularTimePicker Label=""Basic CircularTimePicker"" />
 <BitCircularTimePicker Label=""Disabled"" IsEnabled=""false"" />
+<BitCircularTimePicker Label=""Required"" Required />
 <BitCircularTimePicker Label=""PlaceHolder"" Placeholder=""Select a time"" />
 <BitCircularTimePicker Label=""TimeFormat (AM/PM)"" TimeFormat=""BitTimeFormat.TwelveHours"" />
 <BitCircularTimePicker Label=""Custom icon"" IconName=""@BitIconName.Airplane"" />";
