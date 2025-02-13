@@ -278,6 +278,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
         ClassBuilder.Register(() => Standalone ? "bit-ctp-sta" : string.Empty);
 
         ClassBuilder.Register(() => _hasFocus ? $"bit-ctp-foc {Classes?.Focused}" : string.Empty);
+
+        ClassBuilder.Register(() => IsEnabled && Required ? "bit-ctp-req" : string.Empty);
     }
 
     protected override void RegisterCssStyles()

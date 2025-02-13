@@ -390,6 +390,14 @@
     }
 }
 
+.bit-ctp-req {
+    .bit-ctp-lbl::after {
+        content: "*";
+        color: $clr-req;
+        margin-left: spacing(0.625);
+    }
+}
+
 .bit-ctp-res {
     @include lt-sm {
         top: 0;
