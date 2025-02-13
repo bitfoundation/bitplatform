@@ -4,10 +4,10 @@ namespace Bit.Websites.Platform.Client.Pages;
 
 public partial class CodeBox
 {
+    private string? codeIcon;
     private bool isCodeCopied = false;
-    private string codeIcon = BitIconName.Copy;
     private string copyCodeMessage = "Copy code";
-    private ElementReference preElementRefrence = default!;
+    private ElementReference preElementRef = default!;
 
 
     [AutoInject] private Clipboard clipboard = default!;
@@ -21,10 +21,10 @@ public partial class CodeBox
 
     private async Task CopyCodeToClipboard()
     {
-        var codeSample = await preElementRefrence.GetInnerText();
+        var codeSample = await preElementRef.GetInnerText();
         await clipboard.WriteText(codeSample.Trim());
 
-        codeIcon = BitIconName.CheckMark;
+        codeIcon = "Accept";
         copyCodeMessage = "Code copied!";
         isCodeCopied = true;
 
@@ -32,7 +32,7 @@ public partial class CodeBox
 
         await Task.Delay(1000);
         isCodeCopied = false;
-        codeIcon = BitIconName.Copy;
+        codeIcon = null;
         copyCodeMessage = "Copy code";
 
         StateHasChanged();

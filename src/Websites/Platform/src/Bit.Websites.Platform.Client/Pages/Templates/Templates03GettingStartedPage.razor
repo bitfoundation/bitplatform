@@ -47,7 +47,7 @@
                     </BitStack>
                     <br /><br />
                     <BitText Typography="BitTypography.H5" Gutter>Installation Script</BitText>
-                    <BitButton IconName="@BitIconName.Copy" OnClick="CopyCommandsToClipboard">@copyButtonText</BitButton>
+                    <BitButton IconName="ChevronRight" OnClick="CopyCommandsToClipboard">@copyButtonText</BitButton>
                     <CodeBox MaxHeight="300px" HideCopyButton>@GetDisplayableSelectedCommands()</CodeBox>
                     @if (installVs)
                     {
@@ -94,7 +94,7 @@
                         Step-by-step instructions for:
                     </BitText>
                     <BitStack Horizontal HorizontalAlign="BitAlignment.Start">
-                        <BitPivot HeaderOnly OnItemClick="@(item => devOS = item?.Key)">
+                        <BitPivot HeaderOnly OnItemClick="@(item => devOS = item.Key!)">
                             <BitPivotItem HeaderText="Windows" Key="Windows"></BitPivotItem>
                             <BitPivotItem HeaderText="macOS" Key="macOS"></BitPivotItem>
                             <BitPivotItem HeaderText="Linux" Key="Linux"></BitPivotItem>
@@ -111,7 +111,7 @@
                                 <BitAccordion Title="Ubuntu instructions">
                                     @if (dotnetVersion is "net9.0")
                                     {
-                                        <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/0e717d01-aad7-475a-8b67-50c59cf043b1/6eaa1c636e15ec8e1b97b3438360c770/dotnet-sdk-9.0.102-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
+                                        <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/3606de37-1325-4f5f-bbe9-1bc44b3c1c7f/91872629e9f0c205cace9c462d5e89a4/dotnet-sdk-9.0.200-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
 mkdir -p $HOME/.dotnet
 tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
 echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
@@ -120,7 +120,7 @@ rm $HOME/dotnet.tar.gz</CodeBox>
                                     }
                                     else
                                     {
-                                        <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/a91ddad4-a3c2-4303-9efc-1ca6b7af850c/be1763df9211599df1cf1c6f504b3c41/dotnet-sdk-8.0.405-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
+                                        <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/d2abdb4c-a96e-4123-9351-e4dd2ea20905/e8010ae2688786ffc1ebca4ebb52f41b/dotnet-sdk-8.0.406-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
 mkdir -p $HOME/.dotnet
 tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
 echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc

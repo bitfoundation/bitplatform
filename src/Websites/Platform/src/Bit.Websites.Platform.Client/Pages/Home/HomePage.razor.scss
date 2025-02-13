@@ -44,7 +44,6 @@
         width: 100%;
         margin: auto;
         padding: 1rem;
-        display: none;
         max-width: rem2(800px);
     }
 }
@@ -310,10 +309,6 @@
 
     .csharp-item {
         background-image: url('/images/home/tech/csharp-logo.webp');
-    }
-
-    .dotnet-item {
-        background-image: url('/images/home/tech/dotnet-logo.webp');
     }
 
     .sass-item {

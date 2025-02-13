@@ -15,7 +15,8 @@ function goToTop() {
 declare class BitTheme { static init(options: any): void; };
 
 BitTheme.init({
-    system: true,
+    //system: true,
+    default: 'dark',
     onChange: (newTheme: string, oldThem: string) => {
         if (newTheme === 'dark') {
             document.body.classList.add('bit-theme-dark');
