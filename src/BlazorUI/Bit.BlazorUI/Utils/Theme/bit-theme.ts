@@ -2,6 +2,7 @@ type onThemeChangeType = (newThemeName: string, oldThemeName: string) => void;
 
 class BitTheme {
     private static THEME_ATTRIBUTE = 'bit-theme';
+    private static THEME_SOTRAGE_KEY = 'bit-theme';
 
     private static currentTheme = 'light';
     private static onThemeChange: onThemeChangeType = () => { };
@@ -11,6 +12,10 @@ class BitTheme {
             this.currentTheme = this.isSystemDark() ? 'dark' : 'light';
         } else if (options.default) {
             this.currentTheme = options.default;
+        }
+
+        if (options.persist) {
+            this.currentTheme = localStorage.getItem(this.THEME_SOTRAGE_KEY) || this.currentTheme;
         }
 
         this.onThemeChange = options.onChange;
@@ -35,6 +40,7 @@ class BitTheme {
 
     public static set(themeName: string) {
         this.currentTheme = themeName;
+        localStorage.setItem(this.THEME_SOTRAGE_KEY, themeName);
         const oldTheme = document.documentElement.getAttribute(this.THEME_ATTRIBUTE) || '';
 
         document.documentElement.setAttribute(this.THEME_ATTRIBUTE, themeName);
