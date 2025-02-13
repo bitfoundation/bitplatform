@@ -6,24 +6,31 @@
             id: string,
             dotnetReference: DotNetObject,
             inputElement: HTMLInputElement,
+            append: boolean,
             uploadEndpointUrl: string,
             headers: Record<string, string>) {
 
-            FileUpload.clear(id);
+            if (!append) {
+                FileUpload.clear(id);
+            }
 
+            const lastIndex = append ? FileUpload._fileUploaders.length : 0;
             const files = Array.from(inputElement.files!).map((file, index) => ({
                 name: file.name,
                 size: file.size,
                 type: file.type,
                 fileId: Utils.uuidv4(),
-                index
+                file: file,
+                index: (index + lastIndex)
             }));
 
-            files.forEach((f, index) => {
+            files.forEach((f) => {
                 const h = { ...headers, ...{ 'BIT_FILE_ID': f.fileId } };
-                const uploader = new BitFileUploader(id, dotnetReference, inputElement, uploadEndpointUrl, h, index);
+                const uploader = new BitFileUploader(id, dotnetReference, f.file, uploadEndpointUrl, h, f.index);
                 FileUpload._fileUploaders.push(uploader);
             });
+
+            inputElement.value = '';
 
             return files;
         }
@@ -108,17 +115,17 @@
     class BitFileUploader {
         id: string;
         dotnetReference: DotNetObject;
-        inputElement: HTMLInputElement;
+        file: File;
         uploadUrl: string;
         headers: Record<string, string>;
         index: number;
 
         private xhr: XMLHttpRequest = new XMLHttpRequest();
 
-        constructor(id: string, dotnetReference: DotNetObject, inputElement: HTMLInputElement, uploadEndpointUrl: string, headers: Record<string, string>, index: number) {
+        constructor(id: string, dotnetReference: DotNetObject, file: File, uploadEndpointUrl: string, headers: Record<string, string>, index: number) {
             this.id = id;
             this.dotnetReference = dotnetReference;
-            this.inputElement = inputElement;
+            this.file = file;
             this.uploadUrl = uploadEndpointUrl;
             this.headers = headers;
             this.index = index;
@@ -140,10 +147,9 @@
         }
 
         upload(from: number, to: number, uploadUrl: string, headers: Record<string, string>): void {
-            const files = this.inputElement.files;
-            if (files === null) return;
+            const file = this.file;
+            if (file === null) return;
 
-            const file = files[this.index];
             const data: FormData = new FormData();
             const chunk = file.slice(from, to);
             data.append('file', chunk, file.name);

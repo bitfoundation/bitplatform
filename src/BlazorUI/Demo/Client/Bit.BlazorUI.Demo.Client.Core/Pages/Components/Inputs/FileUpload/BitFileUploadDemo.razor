@@ -32,24 +32,29 @@
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" AutoReset />
     </DemoSection>
 
-    <DemoSection Title="MaxSize" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoSection Title="Append" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <div>When selected, additional files will be appended to the existing list without overwriting previous selections.</div><br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" Append />
+    </DemoSection>
+
+    <DemoSection Title="MaxSize" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>The file size can be limited using the MaxSize parameter.</div><br />
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" MaxSize="1024 * 1024 * 1" />
     </DemoSection>
 
-    <DemoSection Title="AllowedExtensions" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <DemoSection Title="AllowedExtensions" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>Limits file browsing by the provided file extensions.</div><br />
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl"
                        AllowedExtensions="@(new List<string> { ".gif",".jpg",".mp4" })" />
     </DemoSection>
 
-    <DemoSection Title="Removable" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <DemoSection Title="Removable" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <div>Enables the remove functionality of the BitFileUpload.</div><br />
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl"
                        ShowRemoveButton RemoveUrl="@RemoveUrl" />
     </DemoSection>
 
-    <DemoSection Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoSection Title="Events" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>Different events can be configured for the upload process.</div><br />
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl"
                        OnAllUploadsComplete="@(() => onAllUploadsCompleteText = "All File Uploaded")"
@@ -57,7 +62,7 @@
         <div>@onAllUploadsCompleteText</div>
     </DemoSection>
 
-    <DemoSection Title="Http requests" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoSection Title="Http requests" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>The http requests of Upload and Remove can be customized with http headers and query strings.</div><br />
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" RemoveUrl="@RemoveUrl"
                        UploadRequestQueryStrings="@(new Dictionary<string, string>{ {"qs1", "qsValue1" } })"
@@ -66,12 +71,12 @@
                        RemoveRequestHttpHeaders="@(new Dictionary<string, string>{ {"header2", "value2" } })" />
     </DemoSection>
 
-    <DemoSection Title="Chunked" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <DemoSection Title="Chunked" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>Files can be uploaded in chunks.</div><br />
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@ChunkedUploadUrl" ChunkedUpload />
     </DemoSection>
 
-    <DemoSection Title="Templates" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoSection Title="Templates" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>The BitFileUpload can be further customized using templates.</div><br />
         <BitFileUpload @ref="bitFileUpload" UploadUrl="@UploadUrl" RemoveUrl="@RemoveUrl">
             <LabelTemplate>
@@ -148,7 +153,7 @@
         <BitButton OnClick="HandleUploadOnClick">Upload</BitButton>
     </DemoSection>
 
-    <DemoSection Title="Public API" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <DemoSection Title="Public API" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>Use a custom method for the open file selection dialog.</div><br />
         <BitFileUpload @ref="bitFileUploadWithBrowseFile"
                        Label=""
