@@ -38,7 +38,7 @@ public readonly struct BitChartBubblePoint : IEquatable<BitChartBubblePoint>
         Radius = radius;
     }
 
-    public override bool Equals(object obj) => obj is BitChartBubblePoint point && Equals(point);
+    public override bool Equals(object? obj) => obj is BitChartBubblePoint point && Equals(point);
     public bool Equals(BitChartBubblePoint other) => X == other.X && Y == other.Y && Radius == other.Radius;
     public override int GetHashCode() => HashCode.Combine(X, Y, Radius);
 

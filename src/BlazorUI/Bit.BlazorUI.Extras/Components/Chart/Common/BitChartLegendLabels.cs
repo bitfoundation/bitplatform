@@ -18,13 +18,13 @@ public class BitChartLegendLabels
     /// <summary>
     /// Gets or sets the font style for the labels text.
     /// </summary>
-    public BitChartFontStyle FontStyle { get; set; }
+    public BitChartFontStyle? FontStyle { get; set; }
 
     /// <summary>
     /// Gets or sets the color of the text.
     /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
     /// </summary>
-    public string FontColor { get; set; }
+    public string? FontColor { get; set; }
 
     /// <summary>
     /// Gets or sets the padding between rows of colored boxes.
@@ -36,7 +36,7 @@ public class BitChartLegendLabels
     /// Default implementation returns the text + styling for the color box.
     /// <para>See <see cref="BitChartJavascriptHandler{T}"/> and <see cref="BitChartDelegateHandler{T}"/>.</para>
     /// </summary>
-    public IBitChartMethodHandler<BitChartLegendLabelsGenerator> GenerateLabels { get; set; }
+    public IBitChartMethodHandler<BitChartLegendLabelsGenerator>? GenerateLabels { get; set; }
 
     /// <summary>
     /// Gets or sets the callback to filter legend items out of the legend.
@@ -44,7 +44,7 @@ public class BitChartLegendLabels
     /// consider applying a <see cref="BitChartIgnoreCallbackValueAttribute"/> if you don't use the value.
     /// <para>See <see cref="BitChartJavascriptHandler{T}"/> and <see cref="BitChartDelegateHandler{T}"/>.</para>
     /// </summary>
-    public IBitChartMethodHandler<BitChartLegendLabelFilter> Filter { get; set; }
+    public IBitChartMethodHandler<BitChartLegendLabelFilter>? Filter { get; set; }
 
     /// <summary>
     /// Label style will match corresponding point style (size is based on <see cref="FontSize"/>, <see cref="BoxWidth"/> is not used in this case).

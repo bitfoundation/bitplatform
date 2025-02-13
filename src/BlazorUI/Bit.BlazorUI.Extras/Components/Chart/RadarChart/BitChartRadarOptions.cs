@@ -8,7 +8,7 @@ public class BitChartRadarOptions : BitChartBaseConfigOptions
     /// <summary>
     /// Gets or sets the scale configuration for this chart.
     /// </summary>
-    public BitChartLinearRadialAxis Scale { get; set; }
+    public BitChartLinearRadialAxis? Scale { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether or not line gaps (by NaN data) will be spanned.

@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// <param name="value">The value. It's usually a <see cref="double"/>
 /// but can also be other types like <see cref="string"/> (e.g. in a category axis).</param>
 /// <param name="index">The index of the tick mark.</param>
-/// <param name="values">An array of labels. Normally those are just strings but in a <see cref="Axes.TimeAxis"/>
+/// <param name="values">An array of labels. Normally those are just strings but in a <see cref="BitChartTimeAxis"/>
 /// they have a 'label' (<see cref="string"/>) and a 'major' (<see cref="bool"/>) field.</param>
 /// <returns>The new value of the tick mark or <see langword="null"/> if you want to hide that grid line.</returns>
 public delegate string BitChartAxisTickCallback(JValue value, int index, JArray values);

@@ -9,8 +9,8 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
 {
     private double _lastX;
     private bool _disposed;
-    private int _pagesCount;
-    private int _currentPage;
+    //private int _pagesCount;
+    //private int _currentPage;
     private double _lastDiffX;
     private double _translateX;
     private double _rootWidth;

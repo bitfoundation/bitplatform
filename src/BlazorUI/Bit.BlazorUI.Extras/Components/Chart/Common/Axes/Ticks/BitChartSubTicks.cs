@@ -9,12 +9,12 @@ public abstract class BitChartSubTicks
     /// Gets or sets the font color for a tick's label.
     /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
     /// </summary>
-    public string FontColor { get; set; }
+    public string? FontColor { get; set; }
 
     /// <summary>
     /// Gets or sets the font family for a tick's label.
     /// </summary>
-    public string FontFamily { get; set; }
+    public string? FontFamily { get; set; }
 
     /// <summary>
     /// Gets or sets the font size for a tick's label.
@@ -24,7 +24,7 @@ public abstract class BitChartSubTicks
     /// <summary>
     /// Gets or sets the font style for a tick's label.
     /// </summary>
-    public BitChartFontStyle FontStyle { get; set; }
+    public BitChartFontStyle? FontStyle { get; set; }
 
     /// <summary>
     /// Gets or sets the height of an individual line of text.

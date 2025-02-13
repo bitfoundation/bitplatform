@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents a point on a plane with an X and a Y-value where the
 /// X-value is represented by a <see cref="DateTime"/>.
-/// <para>Should be used together with a <see cref="Axes.TimeAxis"/>.</para>
+/// <para>Should be used together with a <see cref="BitChartTimeAxis"/>.</para>
 /// </summary>
 public readonly struct BitChartTimePoint : IEquatable<BitChartTimePoint>
 {
@@ -30,7 +30,7 @@ public readonly struct BitChartTimePoint : IEquatable<BitChartTimePoint>
         Y = y;
     }
 
-    public override bool Equals(object obj) => obj is BitChartTimePoint point && Equals(point);
+    public override bool Equals(object? obj) => obj is BitChartTimePoint point && Equals(point);
     public bool Equals(BitChartTimePoint other) => Time == other.Time && Y == other.Y;
     public override int GetHashCode() => HashCode.Combine(Time, Y);
 

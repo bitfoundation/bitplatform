@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.BlazorUI;
@@ -18,6 +19,7 @@ internal static class AsyncQueryExecutorSupplier
 
     private static readonly ConcurrentDictionary<Type, bool> IsEntityFrameworkProviderTypeCache = new();
 
+    [SuppressMessage("Trimming", "IL2111:Method with parameters or return value with `DynamicallyAccessedMembersAttribute` is accessed via reflection. Trimmer can't guarantee availability of the requirements of the method.", Justification = "<Pending>")]
     public static IAsyncQueryExecutor? GetAsyncQueryExecutor<T>(IServiceProvider services, IQueryable<T>? queryable)
     {
         if (queryable is not null)
@@ -46,6 +48,6 @@ internal static class AsyncQueryExecutorSupplier
     // We have to do this via reflection because the whole point is to avoid any static dependency on EF unless you
     // reference the adapter. Trimming won't cause us any problems because this is only a way of detecting misconfiguration
     // so it's sufficient if it can detect the misconfiguration in development.
-    private static bool IsEntityFrameworkProviderType(Type queryableProviderType)
+    private static bool IsEntityFrameworkProviderType([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type queryableProviderType)
         => queryableProviderType.GetInterfaces().Any(x => string.Equals(x.FullName, "Microsoft.EntityFrameworkCore.Query.IAsyncQueryProvider")) == true;
 }

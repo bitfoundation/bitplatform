@@ -72,7 +72,7 @@ public abstract class BitChartConfigBase<TOptions, TData> : BitChartConfigBase
     /// <summary>
     /// Gets or sets the options subconfig for this chart.
     /// </summary>
-    public TOptions Options { get; set; }
+    public TOptions? Options { get; set; }
 
     /// <summary>
     /// Gets the data subconfig for this chart.

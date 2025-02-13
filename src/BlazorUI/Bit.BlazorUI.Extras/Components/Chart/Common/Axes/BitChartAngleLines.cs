@@ -15,7 +15,7 @@ public class BitChartAngleLines
     /// Gets or sets the color of the angled lines.
     /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
     /// </summary>
-    public string Color { get; set; }
+    public string? Color { get; set; }
 
     /// <summary>
     /// Gets or sets the width of the angled lines.
@@ -26,7 +26,7 @@ public class BitChartAngleLines
     /// Gets or sets the length and spacing of dashes of the angled lines.
     /// <para>As per documentation <a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/setLineDash">here (MDN)</a>.</para>
     /// </summary>
-    public int[] BorderDash { get; set; }
+    public int[]? BorderDash { get; set; }
 
     /// <summary>
     /// Gets or sets the offset for line dashes.

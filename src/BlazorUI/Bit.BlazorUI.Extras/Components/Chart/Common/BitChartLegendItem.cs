@@ -30,13 +30,13 @@ public class BitChartLegendItem
     /// <summary>
     /// Gets or sets the label-text that will be displayed.
     /// </summary>
-    public string Text { get; set; }
+    public string? Text { get; set; }
 
     /// <summary>
     /// Gets or sets the color (style) of the legend box.
-    /// <para>See <see cref="Util.ColorUtil"/> for working with colors.</para>
+    /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
     /// </summary>
-    public string FillStyle { get; set; }
+    public string? FillStyle { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether or not this legend-item represents a
@@ -47,14 +47,14 @@ public class BitChartLegendItem
     /// <summary>
     /// Gets or sets the <see cref="BitChartBorderCapStyle"/> for the legend box border.
     /// </summary>
-    public BitChartBorderCapStyle LineCap { get; set; }
+    public BitChartBorderCapStyle? LineCap { get; set; }
 
     /// <summary>
     /// Gets or sets the line dash segments for the legend box border.
     /// Details on
     /// <a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/setLineDash"/>.
     /// </summary>
-    public double[] LineDash { get; set; }
+    public double[]? LineDash { get; set; }
 
     /// <summary>
     /// Gets or sets the line dash offset.
@@ -66,7 +66,7 @@ public class BitChartLegendItem
     /// <summary>
     /// Gets or sets the <see cref="BitChartBorderJoinStyle"/> of the legend box border.
     /// </summary>
-    public BitChartBorderJoinStyle LineJoin { get; set; }
+    public BitChartBorderJoinStyle? LineJoin { get; set; }
 
     /// <summary>
     /// Gets or sets the width of the box border.
@@ -75,15 +75,15 @@ public class BitChartLegendItem
 
     /// <summary>
     /// Gets or sets the color (style) of the legend box border.
-    /// <para>See <see cref="Util.ColorUtil"/> for working with colors.</para>
+    /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
     /// </summary>
-    public string StrokeStyle { get; set; }
+    public string? StrokeStyle { get; set; }
 
     /// <summary>
-    /// Gets or sets the <see cref="Enums.PointStyle"/> of the legend box
+    /// Gets or sets the <see cref="BitChartPointStyle"/> of the legend box
     /// (only used if <see cref="BitChartLegendLabels.UsePointStyle"/> is <see langword="true"/>).
     /// </summary>
-    public BitChartPointStyle PointStyle { get; set; }
+    public BitChartPointStyle? PointStyle { get; set; }
 
     /// <summary>
     /// Gets or sets the rotation of the point in degrees

@@ -23,7 +23,7 @@ public struct BitDataGridItemsProviderResult<TGridItem>
     /// Constructs an instance of <see cref="BitDataGridItemsProviderResult{TGridItem}"/>.
     /// </summary>
     /// <param name="items">The items being supplied.</param>
-    /// <param name="totalItemCount">The total numer of items that exist. See <see cref="TotalItemCount"/> for details.</param>
+    /// <param name="totalItemCount">The total number of items that exist. See <see cref="TotalItemCount"/> for details.</param>
     public BitDataGridItemsProviderResult(ICollection<TGridItem> items, int totalItemCount)
     {
         Items = items;
@@ -43,8 +43,7 @@ public static class BitDataGridItemsProviderResult
     /// </summary>
     /// <typeparam name="TGridItem">The type of data represented by each row in the grid.</typeparam>
     /// <param name="items">The items being supplied.</param>
-    /// <param name="totalItemCount">The total numer of items that exist. See <see cref="TotalItemCount"/> for details.</param>
+    /// <param name="totalItemCount">The total number of items that exist. See <see cref="BitDataGridItemsProviderResult{TGridItem}.TotalItemCount"/> for details.</param>
     /// <returns>An instance of <see cref="BitDataGridItemsProviderResult{TGridItem}"/>.</returns>
-    public static BitDataGridItemsProviderResult<TGridItem> From<TGridItem>(ICollection<TGridItem> items, int totalItemCount)
-        => new BitDataGridItemsProviderResult<TGridItem>(items, totalItemCount);
+    public static BitDataGridItemsProviderResult<TGridItem> From<TGridItem>(ICollection<TGridItem> items, int totalItemCount) => new(items, totalItemCount);
 }

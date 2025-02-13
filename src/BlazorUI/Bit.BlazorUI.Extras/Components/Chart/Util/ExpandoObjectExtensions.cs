@@ -24,18 +24,18 @@ internal static class ExpandoObjectExtensions
         if (path.HasNoValue()) return value;
 
         string[] segments = path.Split('.');
-        IDictionary<string, object> source = value;
+        IDictionary<string, object> source = value!;
         for (int i = 0; i < segments.Length; i++)
         {
             string segment = segments[i];
-            IDictionary<string, object> newSource;
-            if (source.TryGetValue(segment, out object val))
+            IDictionary<string, object>? newSource;
+            if (source.TryGetValue(segment, out object? val))
             {
                 newSource = val as IDictionary<string, object>;
             }
             else
             {
-                newSource = new ExpandoObject();
+                newSource = new ExpandoObject() as IDictionary<string, object>;
                 source[segment] = newSource;
             }
 
@@ -87,13 +87,13 @@ internal static class ExpandoObjectExtensions
             throw new ArgumentException("The path cannot be null or whitespace.");
 
         string[] segments = path.Split('.');
-        IDictionary<string, object> source = value;
+        IDictionary<string, object> source = value!;
         foreach (string segment in segments)
         {
-            object x = null;
+            object? x = null;
             try
             {
-                x = source[segment];
+                x = source![segment];
             }
             catch (Exception e) when (e is KeyNotFoundException || e is NullReferenceException)
             {
@@ -101,7 +101,7 @@ internal static class ExpandoObjectExtensions
             }
 
             if (x is null) yield break;
-            source = x as IDictionary<string, object>;
+            source = (x as IDictionary<string, object>)!;
 
             yield return x;
         }
@@ -118,7 +118,7 @@ internal static class ExpandoObjectExtensions
         if (!value.PathExists(path, out object[] values))
             throw new ArgumentException($"The path '{path}' could not be followed (entirely). {values.Length} parts of the path were followed.");
 
-        return values[values.Length - 1];
+        return values[^1];
     }
 
     /// <summary>
@@ -135,13 +135,13 @@ internal static class ExpandoObjectExtensions
             throw new ArgumentException("The path cannot be null or whitespace.");
 
         string[] segments = path.Split('.');
-        IDictionary<string, object> source = expando.EnsurePathExists(path);
+        IDictionary<string, object> source = expando.EnsurePathExists(path)!;
         for (int i = 0; i < segments.Length - 1; i++)
         {
-            source = source[segments[i]] as IDictionary<string, object>;
+            source = (source[segments[i]] as IDictionary<string, object>)!;
         }
 
-        source[segments[segments.Length - 1]] = value;
+        source[segments[^1]] = value;
 
         return expando;
     }

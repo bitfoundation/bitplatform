@@ -43,7 +43,7 @@ public partial class BitDropMenu : BitComponentBase, IAsyncDisposable
     /// <summary>
     /// Determines the opening state of the callout of the drop menu.
     /// </summary>
-    [Parameter, CallOnSet(nameof(ToggleCallout))]
+    [Parameter, CallOnSet(nameof(OnSetIsOpen))]
     [ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
     public bool IsOpen { get; set; }
 
@@ -199,6 +199,11 @@ public partial class BitDropMenu : BitComponentBase, IAsyncDisposable
                                 "",
                                 "",
                                 false);
+    }
+
+    private void OnSetIsOpen()
+    {
+        _ = ToggleCallout();
     }
 
     private async Task DismissCallout()

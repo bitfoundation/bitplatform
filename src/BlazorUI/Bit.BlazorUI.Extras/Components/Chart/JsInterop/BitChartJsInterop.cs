@@ -25,7 +25,7 @@ internal static class BitChartJsInterop
         return jsRuntime.InvokeVoid("BitBlazorUI.BitChart.initChartJs", scripts);
     }
 
-    public static ValueTask BitChartJsRemoveChart(this IJSRuntime jsRuntime, string canvasId)
+    public static ValueTask BitChartJsRemoveChart(this IJSRuntime jsRuntime, string? canvasId)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.BitChart.removeChart", canvasId);
     }
@@ -39,7 +39,7 @@ internal static class BitChartJsInterop
     public static ValueTask<bool> BitChartJsSetupChart(this IJSRuntime jsRuntime, BitChartConfigBase chartConfig)
     {
         var dynParam = StripNulls(chartConfig);
-        Dictionary<string, object> param = ConvertExpandoObjectToDictionary(dynParam);
+        Dictionary<string, object> param = ConvertExpandoObjectToDictionary(dynParam!);
         return jsRuntime.Invoke<bool>("BitBlazorUI.BitChart.setupChart", param);
     }
 
@@ -52,7 +52,7 @@ internal static class BitChartJsInterop
     public static ValueTask<bool> BitChartJsUpdateChart(this IJSRuntime jsRuntime, BitChartConfigBase chartConfig)
     {
         var dynParam = StripNulls(chartConfig);
-        Dictionary<string, object> param = ConvertExpandoObjectToDictionary(dynParam);
+        var param = ConvertExpandoObjectToDictionary(dynParam!);
         return jsRuntime.Invoke<bool>("BitBlazorUI.BitChart.updateChart", param);
     }
 
@@ -63,7 +63,7 @@ internal static class BitChartJsInterop
     /// </summary>
     /// <param name="expando">The <see cref="ExpandoObject"/> to convert.</param>
     /// <returns>The fully converted <see cref="ExpandoObject"/>.</returns>
-    private static Dictionary<string, object> ConvertExpandoObjectToDictionary(ExpandoObject expando) => RecursivelyConvertIDictToDict(expando);
+    private static Dictionary<string, object> ConvertExpandoObjectToDictionary(ExpandoObject expando) => RecursivelyConvertIDictToDict(expando!);
 
     /// <summary>
     /// This method takes an <c>IDictionary&lt;string, object&gt;</c> and recursively converts it to a <c>Dictionary&lt;string, object&gt;</c>.
@@ -113,45 +113,46 @@ internal static class BitChartJsInterop
     /// </summary>
     /// <param name="chartConfig">The config you want to strip of null members.</param>
     /// <returns></returns>
-    private static ExpandoObject StripNulls(BitChartConfigBase chartConfig)
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    private static ExpandoObject? StripNulls(BitChartConfigBase chartConfig)
     {
         // Serializing with the custom serializer settings remove null members
         string cleanChartConfigStr = JsonConvert.SerializeObject(chartConfig, JsonSerializerSettings);
 
         // Get back an ExpandoObject dynamic with the clean config - having an ExpandoObject allows us to add/replace members regardless of type
-        ExpandoObject cleanChartConfig = JsonConvert.DeserializeObject<ExpandoObject>(cleanChartConfigStr, new ExpandoObjectConverter());
+        var cleanChartConfig = JsonConvert.DeserializeObject<ExpandoObject>(cleanChartConfigStr, new ExpandoObjectConverter());
 
         // Restore any .net refs that need to be passed intact
         // TODO Find a way to do this dynamically. Maybe with attributes or something like that?
-        dynamic dynamicChartConfig = (dynamic)chartConfig;
+        dynamic dynamicChartConfig = chartConfig;
         if (dynamicChartConfig?.Options?.OnClick is IBitChartMethodHandler chartOnClick)
         {
-            cleanChartConfig.SetValue(path: "options.onClick", chartOnClick);
+            cleanChartConfig?.SetValue(path: "options.onClick", chartOnClick);
         }
 
         if (dynamicChartConfig?.Options?.OnHover is IBitChartMethodHandler chartOnHover)
         {
-            cleanChartConfig.SetValue(path: "options.onHover", chartOnHover);
+            cleanChartConfig?.SetValue(path: "options.onHover", chartOnHover);
         }
 
         if (dynamicChartConfig?.Options?.Legend?.OnClick is IBitChartMethodHandler legendOnClick)
         {
-            cleanChartConfig.SetValue(path: "options.legend.onClick", legendOnClick);
+            cleanChartConfig?.SetValue(path: "options.legend.onClick", legendOnClick);
         }
 
         if (dynamicChartConfig?.Options?.Legend?.OnHover is IBitChartMethodHandler legendOnHover)
         {
-            cleanChartConfig.SetValue(path: "options.legend.onHover", legendOnHover);
+            cleanChartConfig?.SetValue(path: "options.legend.onHover", legendOnHover);
         }
 
         if (dynamicChartConfig?.Options?.Legend?.Labels?.GenerateLabels is IBitChartMethodHandler generateLabels)
         {
-            cleanChartConfig.SetValue(path: "options.legend.labels.generateLabels", generateLabels);
+            cleanChartConfig?.SetValue(path: "options.legend.labels.generateLabels", generateLabels);
         }
 
         if (dynamicChartConfig?.Options?.Legend?.Labels?.Filter is IBitChartMethodHandler filter)
         {
-            cleanChartConfig.SetValue(path: "options.legend.labels.filter", filter);
+            cleanChartConfig?.SetValue(path: "options.legend.labels.filter", filter);
         }
 
         // Ticks callback need special handling because it can be either a single scale or two arrays of scales (xAxes and yAxes)
@@ -160,7 +161,7 @@ internal static class BitChartJsInterop
         {
             if (dynamicChartConfig?.Options?.Scale?.Callback is IBitChartMethodHandler singleScaleTickCallback)
             {
-                cleanChartConfig.SetValue(path: "options.scale.callback", singleScaleTickCallback);
+                cleanChartConfig?.SetValue(path: "options.scale.callback", singleScaleTickCallback);
             }
         }
         catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException) // happens when the options don't have a Scale property
@@ -185,9 +186,9 @@ internal static class BitChartJsInterop
 
         void AssignAxes(IEnumerable<object> axes, string axesPath)
         {
-            IEnumerable<object> axesInDynamic = cleanChartConfig.GetValue(axesPath) as IEnumerable<object>;
+            var axesInDynamic = cleanChartConfig?.GetValue(axesPath) as IEnumerable<object>;
 
-            foreach ((object axis, ExpandoObject axisInDynamic) in axes.Zip(axesInDynamic, (axis, axisInDynamic) => (axis, (ExpandoObject)axisInDynamic)))
+            foreach ((object axis, ExpandoObject axisInDynamic) in axes.Zip(axesInDynamic!, (axis, axisInDynamic) => (axis, (ExpandoObject)axisInDynamic)))
             {
                 if (((dynamic)axis)?.Ticks?.Callback is IBitChartMethodHandler axisTickCallback)
                 {

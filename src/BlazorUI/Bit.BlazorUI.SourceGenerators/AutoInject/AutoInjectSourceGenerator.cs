@@ -14,12 +14,12 @@ namespace Bit.BlazorUI.SourceGenerators.AutoInject;
 public class AutoInjectSourceGenerator : ISourceGenerator
 {
     private static int counter;
-    private static readonly DiagnosticDescriptor NonPartialClassError = new DiagnosticDescriptor(id: "BITGEN001",
-                                                                                              title: "The class needs to be partial",
-                                                                                              messageFormat: "{0} is not partial. The AutoInject attribute needs to be used only in partial classes.",
-                                                                                              category: "Bit.SourceGenerators",
-                                                                                              DiagnosticSeverity.Error,
-                                                                                              isEnabledByDefault: true);
+    private static readonly DiagnosticDescriptor NonPartialClassError = new(id: "BITGEN001",
+                                                                            title: "The class needs to be partial",
+                                                                            messageFormat: "{0} is not partial. The AutoInject attribute needs to be used only in partial classes.",
+                                                                            category: "Bit.SourceGenerators",
+                                                                            DiagnosticSeverity.Error,
+                                                                            isEnabledByDefault: true);
 
     public void Initialize(GeneratorInitializationContext context)
     {

@@ -9,8 +9,8 @@ internal class FloatingBarPointConverter : JsonConverter<BitChartFloatingBarPoin
         if (reader.TokenType != JsonToken.StartArray)
             throw new JsonReaderException();
 
-        double[] arr = serializer.Deserialize<double[]>(reader);
-        if (arr.Length != 2)
+        var arr = serializer.Deserialize<double[]>(reader);
+        if (arr is null || arr.Length != 2)
             throw new JsonReaderException();
 
         return new BitChartFloatingBarPoint(arr[0], arr[1]);

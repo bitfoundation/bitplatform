@@ -106,7 +106,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     /// <summary>
     /// The function for generating value in a custom item when a new item is on added Dynamic ComboBox mode.
     /// </summary>
-    [Parameter] public Func<TItem, TValue>? DynamicValueGenerator { get; set; }
+    [Parameter] public Func<TItem?, TValue>? DynamicValueGenerator { get; set; }
 
     /// <summary>
     /// Custom search function to be used in place of the default search algorithm for checking existing an item in selected items in the ComboBox mode.
@@ -138,7 +138,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     /// Determines the opening state of the callout. (two-way bound)
     /// </summary>
     [Parameter, TwoWayBound]
-    [CallOnSet(nameof(ClearSearchBox))]
+    [CallOnSet(nameof(OnSetIsOpen))]
     public bool IsOpen { get; set; }
 
     /// <summary>
@@ -215,7 +215,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     /// <summary>
     /// The callback that called when selected items change.
     /// </summary>
-    [Parameter] public EventCallback<IEnumerable<TValue>> OnValuesChange { get; set; }
+    [Parameter] public EventCallback<IEnumerable<TValue?>> OnValuesChange { get; set; }
 
     /// <summary>
     /// Alias of ChildContent.
@@ -948,7 +948,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
         }
 
         SetIsSelectedForSelectedItems();
-        await OnValuesChange.InvokeAsync([.. Values ?? []]);
+        await OnValuesChange.InvokeAsync([.. (Values ?? [])!]);
     }
 
     private void UpdateSelectedItemsFromValues()
@@ -1051,6 +1051,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
 
         await OnSearch.InvokeAsync(_searchText);
         await SearchVirtualized();
+    }
+
+    private void OnSetIsOpen()
+    {
+        _ = ClearSearchBox();
     }
 
     private async ValueTask FocusOnSearchBox()

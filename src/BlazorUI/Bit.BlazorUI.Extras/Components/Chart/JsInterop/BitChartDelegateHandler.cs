@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -11,7 +12,7 @@ namespace Bit.BlazorUI;
 /// <typeparam name="T">The type of the delegate you want to invoke from JavaScript.</typeparam>
 // This class will be serialized by System.Text.Json in the end since we restore the objects
 // before passing them to IJsRuntime. Therefore fields to serialize have to be public properties.
-public sealed class BitChartDelegateHandler<T> : IBitChartMethodHandler<T>, IDisposable
+public sealed class BitChartDelegateHandler<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T> : IBitChartMethodHandler<T>, IDisposable
     where T : Delegate
 {
     private static readonly ParameterInfo[] _delegateParameters;
@@ -47,7 +48,7 @@ public sealed class BitChartDelegateHandler<T> : IBitChartMethodHandler<T>, IDis
     static BitChartDelegateHandler()
     {
         // https://stackoverflow.com/a/429564/10883465
-        MethodInfo internalDelegateMethod = typeof(T).GetMethod("Invoke");
+        var internalDelegateMethod = typeof(T).GetMethod("Invoke")!;
 
         _delegateParameters = internalDelegateMethod.GetParameters();
         _delegateHasReturnValue = internalDelegateMethod.ReturnType != typeof(void);
@@ -82,7 +83,7 @@ public sealed class BitChartDelegateHandler<T> : IBitChartMethodHandler<T>, IDis
     /// This array can contain ANYTHING, do not trust its values.
     /// </param>
     [JSInvokable]
-    public object Invoke(params string[] jsonArgs)
+    public object? Invoke(params string[] jsonArgs)
     {
         if (_delegateParameters.Length != jsonArgs.Length)
             throw new ArgumentException($"The function expects {_delegateParameters.Length} arguments but found {jsonArgs.Length}.");
@@ -90,7 +91,7 @@ public sealed class BitChartDelegateHandler<T> : IBitChartMethodHandler<T>, IDis
         if (_delegateParameters.Length == 0)
             return _function.DynamicInvoke(null);
 
-        object[] invokationArgs = new object[_delegateParameters.Length];
+        object?[] invokationArgs = new object[_delegateParameters.Length];
         for (int i = 0; i < _delegateParameters.Length; i++)
         {
             if (_ignoredIndices.Contains(i))

@@ -9,12 +9,12 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitChart : IAsyncDisposable
 {
-    [Inject] private IJSRuntime _js { get; set; }
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
     /// <summary>
     /// The configuration of the chart.
     /// </summary>
-    [Parameter] public BitChartConfigBase Config { get; set; }
+    [Parameter] public BitChartConfigBase? Config { get; set; }
 
     /// <summary>
     /// The height of the canvas HTML element. 
@@ -124,11 +124,16 @@ public partial class BitChart : IAsyncDisposable
 
             await _js.BitChartJsInitChartJs(scripts);
 
-            await _js.BitChartJsSetupChart(Config);
+            if (Config is not null)
+            {
+                await _js.BitChartJsSetupChart(Config);
+            }
 
             await SetupCompletedCallback.InvokeAsync(this);
+            return;
         }
-        else
+
+        if (Config is not null)
         {
             await _js.BitChartJsSetupChart(Config);
         }
@@ -142,6 +147,8 @@ public partial class BitChart : IAsyncDisposable
     /// </summary>
     public Task Update()
     {
+        if (Config is null) return Task.CompletedTask;
+
         return _js.BitChartJsUpdateChart(Config).AsTask();
     }
 

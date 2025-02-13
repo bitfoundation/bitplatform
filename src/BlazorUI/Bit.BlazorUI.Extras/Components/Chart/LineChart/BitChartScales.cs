@@ -11,11 +11,11 @@ public class BitChartScales
     /// Gets or sets the configurations for the x-axes.
     /// </summary>
     [JsonProperty("xAxes")]
-    public List<BitChartCartesianAxis> XAxes { get; set; }
+    public List<BitChartCartesianAxis>? XAxes { get; set; }
 
     /// <summary>
     /// Gets or sets the configurations for the y-axes.
     /// </summary>
     [JsonProperty("yAxes")]
-    public List<BitChartCartesianAxis> YAxes { get; set; }
+    public List<BitChartCartesianAxis>? YAxes { get; set; }
 }

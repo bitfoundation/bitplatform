@@ -55,7 +55,7 @@ public partial class BitCallout : BitComponentBase, IAsyncDisposable
     /// Determines the opening state of the callout.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(ToggleCallout))]
+    [CallOnSet(nameof(OnSetIsOpen))]
     [ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
     public bool IsOpen { get; set; }
 
@@ -164,6 +164,11 @@ public partial class BitCallout : BitComponentBase, IAsyncDisposable
                                 false);
 
         await OnToggle.InvokeAsync(IsOpen);
+    }
+
+    private void OnSetIsOpen()
+    {
+        _ = ToggleCallout();
     }
 
 
