@@ -45,6 +45,8 @@ public partial class ServerApiSettings : SharedSettings
     public CloudflareOptions? Cloudflare { get; set; }
     //#endif
 
+    public ResponseCachingOptions ResponseCaching { get; set; } = default!;
+
     /// <summary>
     /// Defines the list of origins permitted for CORS access to the API. These origins are also valid for use as return URLs after social sign-ins and for generating URLs in emails.
     /// </summary>
@@ -81,6 +83,7 @@ public partial class ServerApiSettings : SharedSettings
         {
             Validator.TryValidateObject(ForwardedHeaders, new ValidationContext(ForwardedHeaders), validationResults, true);
         }
+        Validator.TryValidateObject(ResponseCaching, new ValidationContext(ResponseCaching), validationResults, true);
 
         if (AppEnvironment.IsDev() is false)
         {
@@ -210,4 +213,17 @@ public partial class SmsOptions
     public bool Configured => string.IsNullOrEmpty(FromPhoneNumber) is false &&
                               string.IsNullOrEmpty(TwilioAccountSid) is false &&
                               string.IsNullOrEmpty(TwilioAutoToken) is false;
+}
+
+public class ResponseCachingOptions
+{
+    /// <summary>
+    /// Enables ASP.NET Core's response output caching
+    /// </summary>
+    public bool EnableOutputCaching { get; set; }
+
+    /// <summary>
+    /// Enables CDN's edge servers caching
+    /// </summary>
+    public bool EnableCdnEdgeCaching { get; set; }
 }

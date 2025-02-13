@@ -87,7 +87,7 @@ public static partial class Program
             {
                 if (env.IsDevelopment() is false)
                 {
-                    // Caching static files on the Browser and CDNs' edge servers.
+                    // Caching static files on the Browser and CDN's edge servers.
                     if (context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase)) &&
                         env.WebRootFileProvider.GetFileInfo(context.Request.Path).Exists)
                     {
@@ -297,7 +297,7 @@ public static partial class Program
 
                     var qs = AppQueryStringCollection.Parse(httpContext.Request.QueryString.Value ?? string.Empty);
                     qs.Remove("try_refreshing_token");
-                    var returnUrl = UriHelper.BuildRelative(httpContext.Request.PathBase, httpContext.Request.Path, new QueryString($"?{qs}"));
+                    var returnUrl = UriHelper.BuildRelative(httpContext.Request.PathBase, httpContext.Request.Path, new QueryString(qs.ToString()));
                     httpContext.Response.Redirect($"{Urls.NotAuthorizedPage}?return-url={returnUrl}&isForbidden={(is403 ? "true" : "false")}");
                 }
                 else if (httpContext.Response.StatusCode is 404 &&
