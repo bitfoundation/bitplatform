@@ -2,13 +2,13 @@
     <DataAnnotationsValidator />
 
     <BitToggle IsEnabled="IsEnabled"
-               @bind-Value="@TestModel.Value"
-               Inline="IsInlineLabel"
-               OnText="@OnText"
-               OffText="@OffText"
-               AriaLabel="@AriaLabel"
-               Role="@Role"
-               Label="@Label">
+    @bind-Value="@TestModel.Value"
+    Inline="IsInlineLabel"
+    OnText="@OnText"
+    OffText="@OffText"
+    AriaLabel="@AriaLabel"
+    Role="@Role"
+    Label="@Label">
         <LabelTemplate>
             @LabelTemplate
         </LabelTemplate>
@@ -19,14 +19,14 @@
 @code {
     [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public bool IsInlineLabel { get; set; }
-    [Parameter] public string OnText { get; set; }
-    [Parameter] public string OffText { get; set; }
-    [Parameter] public string DefaultText { get; set; }
-    [Parameter] public string AriaLabel { get; set; }
-    [Parameter] public string Role { get; set; }
-    [Parameter] public string Label { get; set; }
-    [Parameter] public RenderFragment LabelTemplate { get; set; }
-    [Parameter] public BitToggleTestModel TestModel { get; set; }
+    [Parameter] public string? OnText { get; set; }
+    [Parameter] public string? OffText { get; set; }
+    [Parameter] public string? DefaultText { get; set; }
+    [Parameter] public string? AriaLabel { get; set; }
+    [Parameter] public string? Role { get; set; }
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
+    [Parameter] public BitToggleTestModel TestModel { get; set; } = new();
 
     public int ValidCount { get; set; }
     public int InvalidCount { get; set; }

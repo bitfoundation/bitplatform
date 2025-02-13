@@ -91,6 +91,6 @@ public class BitChartBaseConfigOptions
     /// This method tells json.net to only serialize the plugin options when
     /// there are plugin options, don't call it directly.
     /// </summary>
-    //[Obsolete("Only for json.net, don't call it.", true)]
+    [Obsolete("Only for json.net, don't call it.", true)]
     public bool ShouldSerializePlugins() => Plugins.Count > 0;
 }

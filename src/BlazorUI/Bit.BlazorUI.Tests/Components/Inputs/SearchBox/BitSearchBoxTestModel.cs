@@ -6,5 +6,5 @@ public class BitSearchBoxTestModel
 {
     [Required]
     [EmailAddress]
-    public string Value { get; set; }
+    public string? Value { get; set; }
 }

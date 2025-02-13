@@ -54,7 +54,7 @@ public class BitBasicListTests : BunitTestContext
             //When actualRenderedItemCount is smaller than expectedRenderedItemCount, so show all items in viewport then actualRenderedItemCount equals total items count
             if (actualRenderedItemCount < expectedRenderedItemCount)
             {
-                Assert.AreEqual(component.Instance.Items.Count, actualRenderedItemCount);
+                Assert.AreEqual(component?.Instance?.Items?.Count, actualRenderedItemCount);
             }
             else
             {
@@ -64,7 +64,7 @@ public class BitBasicListTests : BunitTestContext
         else
         {
             var actualRenderedItemCount = bitList.GetElementsByClassName("list-item").Length;
-            Assert.AreEqual(component.Instance.Items.Count, actualRenderedItemCount);
+            Assert.AreEqual(component?.Instance?.Items?.Count, actualRenderedItemCount);
         }
     }
 

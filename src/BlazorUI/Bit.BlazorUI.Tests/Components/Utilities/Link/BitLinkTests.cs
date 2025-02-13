@@ -377,7 +377,8 @@ public class BitLinkTests : BunitTestContext
         {
             BitVisibility.Visible => null,
             BitVisibility.Hidden => @"style=""visibility: hidden;""",
-            BitVisibility.Collapsed => @"style=""display: none;"""
+            BitVisibility.Collapsed => @"style=""display: none;""",
+            _ => null
         };
 
         if (href.HasValue())
@@ -660,5 +661,5 @@ public class BitLinkTests : BunitTestContext
         }
     }
 
-    private string GetHrefAttribute(string href) => href.StartsWith('#') ? null : @$"href=""{href}""";
+    private string? GetHrefAttribute(string href) => (href?.StartsWith('#') ?? false) ? null : @$"href=""{href}""";
 }

@@ -35,10 +35,8 @@ internal class IndexableOptionConverter : JsonConverter
             // if the indexable option was not initialized, this will throw an InvalidOperationException wrapped in a TargetInvocationException
             var toWrite = prop?.GetValue(value);
 
-            if (toWrite is null) return;
-
             // write the property
-            JToken.FromObject(toWrite).WriteTo(writer);
+            JToken.FromObject(toWrite!).WriteTo(writer);
         }
         catch (TargetInvocationException oex)
             when (oex.InnerException is InvalidOperationException iex)

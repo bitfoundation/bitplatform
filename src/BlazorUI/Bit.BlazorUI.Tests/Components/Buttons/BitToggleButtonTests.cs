@@ -130,7 +130,7 @@ public class BitToggleButtonTests : BunitTestContext
 
         if (hasTabindexAttr)
         {
-            Assert.IsTrue(bitButton.GetAttribute("tabindex").Equals("-1"));
+            Assert.IsTrue(bitButton?.GetAttribute("tabindex")?.Equals("-1"));
         }
     }
 

@@ -187,7 +187,7 @@ public class BitChoiceGroupTests : BunitTestContext
         });
 
         var bitChoiceGroup = component.Find(".bit-chg");
-        Assert.IsTrue(bitChoiceGroup.GetAttribute("style").Contains(customStyle));
+        Assert.IsTrue(bitChoiceGroup?.GetAttribute("style")?.Contains(customStyle));
     }
 
     [DataTestMethod,
@@ -226,10 +226,10 @@ public class BitChoiceGroupTests : BunitTestContext
                 Assert.IsFalse(bitChoiceGroup.HasAttribute("style"));
                 break;
             case BitVisibility.Hidden:
-                Assert.IsTrue(bitChoiceGroup.GetAttribute("style").Contains("visibility:hidden"));
+                Assert.IsTrue(bitChoiceGroup?.GetAttribute("style")?.Contains("visibility:hidden"));
                 break;
             case BitVisibility.Collapsed:
-                Assert.IsTrue(bitChoiceGroup.GetAttribute("style").Contains("display:none"));
+                Assert.IsTrue(bitChoiceGroup?.GetAttribute("style")?.Contains("display:none"));
                 break;
         }
     }

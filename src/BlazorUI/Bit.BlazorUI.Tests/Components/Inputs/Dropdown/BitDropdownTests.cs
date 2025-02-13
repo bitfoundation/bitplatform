@@ -4,14 +4,15 @@ using System.Text;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 
 namespace Bit.BlazorUI.Tests.Components.Inputs.Dropdown;
 
 [TestClass]
 public class BitDropdownTests : BunitTestContext
 {
-    private string _bitDropdownValue;
-    private IEnumerable<string> _bitDropdownValues;
+    private string? _bitDropdownValue;
+    private IEnumerable<string?>? _bitDropdownValues;
 
     [DataTestMethod,
       DataRow(true),
@@ -216,7 +217,7 @@ public class BitDropdownTests : BunitTestContext
         });
 
         var textSpan = component.Find(".bit-drp-tcn");
-        var expectedText = items.Find(i => i.Value == defaultValue && i.ItemType == BitDropdownItemType.Normal).Text;
+        var expectedText = items?.Find(i => i.Value == defaultValue && i.ItemType == BitDropdownItemType.Normal)?.Text;
 
         Assert.AreEqual(expectedText, textSpan.InnerHtml);
     }
@@ -272,7 +273,7 @@ public class BitDropdownTests : BunitTestContext
         });
 
         var textSpan = component.Find(".bit-drp-tcn");
-        var expectedText = items.Find(i => i.Value == value && i.ItemType == BitDropdownItemType.Normal).Text;
+        var expectedText = items?.Find(i => i.Value == value && i.ItemType == BitDropdownItemType.Normal)?.Text;
 
         Assert.AreEqual(expectedText, textSpan.InnerHtml);
     }
@@ -359,7 +360,7 @@ public class BitDropdownTests : BunitTestContext
         {
             if (value is not null)
             {
-                expectedText.Append(items.Find(i => i.Value == value).Text);
+                expectedText.Append(items?.Find(i => i.Value == value)?.Text);
             }
             else
             {
@@ -539,9 +540,9 @@ public class BitDropdownTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var isOpen = true;
 
-        _bitDropdownValues = values.Split(",").ToArray();
+        _bitDropdownValues = [.. values.Split(",")];
         var initialValuesCount = _bitDropdownValues.Count();
-        var items = BitDropdownTests.GetShortDropdownItems();
+        var items = GetShortDropdownItems();
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.IsOpen, isOpen);
@@ -557,7 +558,7 @@ public class BitDropdownTests : BunitTestContext
         drpItems[3].Children[0].Children[0].Click();
 
         int expectedResult;
-        if (values.Contains(items[3].Value))
+        if (values.Contains(items[3].Value!))
         {
             expectedResult = initialValuesCount - 1;
         }
@@ -622,7 +623,7 @@ public class BitDropdownTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
         _bitDropdownValues = values.HasValue() ? values.Split(",").ToArray() : null;
-        var items = BitDropdownTests.GetShortDropdownItems();
+        var items = GetShortDropdownItems();
         var component = RenderComponent<BitDropdownMultiSelectValidationTest>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, true);
@@ -867,7 +868,7 @@ public class BitDropdownTests : BunitTestContext
         var searchInput = component.Find(".bit-drp-sin");
         searchInput.Input(search);
 
-        var itemCount = string.IsNullOrEmpty(search) ? items.Count : items.Count(i => i.Text.Contains(search, StringComparison.OrdinalIgnoreCase));
+        var itemCount = string.IsNullOrEmpty(search) ? items.Count : items.Count(item => item.Text?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false);
         Assert.AreEqual(itemCount, drpItems.Count);
 
         if (string.IsNullOrEmpty(search) is false)
@@ -1035,7 +1036,7 @@ public class BitDropdownTests : BunitTestContext
         _bitDropdownValue = value;
     }
 
-    private void HandleValuesChanged(IEnumerable<string> values)
+    private void HandleValuesChanged(IEnumerable<string?>? values)
     {
         _bitDropdownValues = values;
     }

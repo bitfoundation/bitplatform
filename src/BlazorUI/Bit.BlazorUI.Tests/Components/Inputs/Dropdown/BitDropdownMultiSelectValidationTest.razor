@@ -2,22 +2,22 @@
     <DataAnnotationsValidator />
 
     <BitDropdown @bind-Values="TestModel.Values"
-                 IsEnabled="IsEnabled"
-                 OnClick="HandleClick"
-                 MultiSelect="IsMultiSelect"
-                 IsOpen="IsOpen"
-                 Items="Items"
-                 MultiSelectDelimiter="@MultiSelectDelimiter"
-                 DefaultValues="DefaultValues"
-                 DefaultValue="@DefaultValue"
-                 Placeholder="@Placeholder"
-                 Label="@Label"
-                 Title="@Title"
-                 Reselectable="IsReselectable"
-                 OnSelectItem="HandleSelectItem"
-                 Required="Required"
-                 TItem="BitDropdownItem<string>" 
-                 TValue="string">
+    IsEnabled="IsEnabled"
+    OnClick="HandleClick"
+    MultiSelect="IsMultiSelect"
+    IsOpen="IsOpen"
+    Items="Items"
+    MultiSelectDelimiter="@MultiSelectDelimiter"
+    DefaultValues="DefaultValues"
+    DefaultValue="@DefaultValue"
+    Placeholder="@Placeholder"
+    Label="@Label"
+    Title="@Title"
+    Reselectable="IsReselectable"
+    OnSelectItem="HandleSelectItem"
+    Required="Required"
+    TItem="BitDropdownItem<string>" 
+    TValue="string">
         <LabelTemplate>
             @LabelTemplate
         </LabelTemplate>
@@ -31,17 +31,17 @@
     [Parameter] public bool Required { get; set; }
     [Parameter] public bool IsOpen { get; set; }
     [Parameter] public List<BitDropdownItem<string>> Items { get; set; } = new();
-    [Parameter] public BitDropdownMultiSelectTestModel TestModel { get; set; }
+    [Parameter] public BitDropdownMultiSelectTestModel TestModel { get; set; } = new();
     [Parameter] public List<string> DefaultValues { get; set; } = new List<string>();
-    [Parameter] public string DefaultValue { get; set; }
-    [Parameter] public string Placeholder { get; set; }
-    [Parameter] public string Label { get; set; }
-    [Parameter] public string Title { get; set; }
-    [Parameter] public string MultiSelectDelimiter { get; set; } = ", ";
+    [Parameter] public string? DefaultValue { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? MultiSelectDelimiter { get; set; } = ", ";
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
     [Parameter] public EventCallback<BitDropdownItem<string>> OnSelectItem { get; set; }
     [Parameter] public bool IsReselectable { get; set; } = false;
-    [Parameter] public RenderFragment LabelTemplate { get; set; }
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     public int Counter { get; set; }
     public int SelectItemCounter { get; set; }
