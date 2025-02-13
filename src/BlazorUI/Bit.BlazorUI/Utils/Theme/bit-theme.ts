@@ -2,58 +2,58 @@ type onThemeChangeType = (newThemeName: string, oldThemeName: string) => void;
 
 class BitTheme {
     private static THEME_ATTRIBUTE = 'bit-theme';
-    private static THEME_SOTRAGE_KEY = 'bit-theme';
+    private static THEME_STORAGE_KEY = 'bit-current-theme';
 
     private static currentTheme = 'light';
     private static onThemeChange: onThemeChangeType = () => { };
 
     public static init(options: any) {
         if (options.system) {
-            this.currentTheme = this.isSystemDark() ? 'dark' : 'light';
+            BitTheme.currentTheme = BitTheme.isSystemDark() ? 'dark' : 'light';
         } else if (options.default) {
-            this.currentTheme = options.default;
+            BitTheme.currentTheme = options.default;
         }
 
         if (options.persist) {
-            this.currentTheme = localStorage.getItem(this.THEME_SOTRAGE_KEY) || this.currentTheme;
+            BitTheme.currentTheme = localStorage.getItem(BitTheme.THEME_STORAGE_KEY) || BitTheme.currentTheme;
         }
 
-        this.onThemeChange = options.onChange;
+        BitTheme.onThemeChange = options.onChange;
 
-        this.set(this.currentTheme);
+        BitTheme.set(BitTheme.currentTheme);
     }
 
     public static onChange(fn: onThemeChangeType) {
-        this.onThemeChange = fn;
+        BitTheme.onThemeChange = fn;
     }
 
     public static useSystem() {
-        this.currentTheme = this.isSystemDark() ? 'dark' : 'light';
-        this.set(this.currentTheme);
+        BitTheme.currentTheme = BitTheme.isSystemDark() ? 'dark' : 'light';
+        BitTheme.set(BitTheme.currentTheme);
     }
 
     public static get() {
-        this.currentTheme = document.documentElement.getAttribute(this.THEME_ATTRIBUTE) || '';
+        BitTheme.currentTheme = document.documentElement.getAttribute(BitTheme.THEME_ATTRIBUTE) || '';
 
-        return this.currentTheme;
+        return BitTheme.currentTheme;
     }
 
     public static set(themeName: string) {
-        this.currentTheme = themeName;
-        localStorage.setItem(this.THEME_SOTRAGE_KEY, themeName);
-        const oldTheme = document.documentElement.getAttribute(this.THEME_ATTRIBUTE) || '';
+        BitTheme.currentTheme = themeName;
+        localStorage.setItem(BitTheme.THEME_STORAGE_KEY, themeName);
+        const oldTheme = document.documentElement.getAttribute(BitTheme.THEME_ATTRIBUTE) || '';
 
-        document.documentElement.setAttribute(this.THEME_ATTRIBUTE, themeName);
+        document.documentElement.setAttribute(BitTheme.THEME_ATTRIBUTE, themeName);
 
-        this.onThemeChange?.(themeName, oldTheme);
+        BitTheme.onThemeChange?.(themeName, oldTheme);
     }
 
     public static toggleDarkLight() {
-        this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
+        BitTheme.currentTheme = BitTheme.currentTheme === 'light' ? 'dark' : 'light';
 
-        this.set(this.currentTheme);
+        BitTheme.set(BitTheme.currentTheme);
 
-        return this.currentTheme;
+        return BitTheme.currentTheme;
     }
 
     public static applyBitTheme(theme: any, element?: HTMLElement) {
