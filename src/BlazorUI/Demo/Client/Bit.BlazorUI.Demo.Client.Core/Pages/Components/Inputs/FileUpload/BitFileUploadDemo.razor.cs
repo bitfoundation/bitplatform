@@ -20,10 +20,10 @@ public partial class BitFileUploadDemo
         },
         new()
         {
-            Name = "Appended",
+            Name = "Append",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Additional files are selected they will be appended to the existing list."
+            Description = "Enables the append mode that appends any additional selected file(s) to the current file list."
         },
         new()
         {
@@ -576,7 +576,7 @@ private string UploadUrl = $""/Upload"";";
 private string UploadUrl = $""/Upload"";";
 
     private readonly string example5RazorCode = @"
-<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Appended />";
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Append />";
     private readonly string example5CsharpCode = @"
 private string UploadUrl = $""/Upload"";";
 

@@ -6,15 +6,15 @@
             id: string,
             dotnetReference: DotNetObject,
             inputElement: HTMLInputElement,
-            appended: boolean,
+            append: boolean,
             uploadEndpointUrl: string,
             headers: Record<string, string>) {
 
-            if (!appended) {
+            if (!append) {
                 FileUpload.clear(id);
             }
 
-            const lastIndex = appended ? FileUpload._fileUploaders.length : 0;
+            const lastIndex = append ? FileUpload._fileUploaders.length : 0;
             const files = Array.from(inputElement.files!).map((file, index) => ({
                 name: file.name,
                 size: file.size,

@@ -39,9 +39,9 @@ public partial class BitFileUpload : BitComponentBase, IAsyncDisposable
     [Parameter] public IReadOnlyCollection<string> AllowedExtensions { get; set; } = ["*"];
 
     /// <summary>
-    /// Additional files are selected they will be appended to the existing list.
+    /// Enables the append mode that appends any additional selected file(s) to the current file list.
     /// </summary>
-    [Parameter] public bool Appended { get; set; }
+    [Parameter] public bool Append { get; set; }
 
     /// <summary>
     /// Calculate the chunk size dynamically based on the user's Internet speed between 512 KB and 10 MB.
@@ -438,12 +438,12 @@ public partial class BitFileUpload : BitComponentBase, IAsyncDisposable
     {
         var url = AddQueryString(UploadUrl, UploadRequestQueryStrings);
 
-        if (Appended is false)
+        if (Append is false)
         {
             _files.Clear();
         }
 
-        _files.AddRange(await _js.BitFileUploadSetup(UniqueId, _dotnetObj, _inputRef, Appended, url, UploadRequestHttpHeaders));
+        _files.AddRange(await _js.BitFileUploadSetup(UniqueId, _dotnetObj, _inputRef, Append, url, UploadRequestHttpHeaders));
 
         if (_files.Any() is false) return;
 
