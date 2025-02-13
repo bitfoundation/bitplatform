@@ -84,7 +84,7 @@ public partial class BitInfiniteScrollingDemo
     <div>Item @item</div>
 </BitInfiniteScrolling>";
     private readonly string example1CsharpCode = @"
-private async Task<IEnumerable<int>> LoadBasicItems(BitInfiniteScrollingItemsProviderRequest request)
+private async ValueTask<IEnumerable<int>> LoadBasicItems(BitInfiniteScrollingItemsProviderRequest request)
 {
     await Task.Delay(1000);
     return Enumerable.Range(request.Skip, 20);
@@ -125,7 +125,7 @@ private async Task<IEnumerable<int>> LoadBasicItems(BitInfiniteScrollingItemsPro
     </LoadingTemplate>
 </BitInfiniteScrolling>";
     private readonly string example2CsharpCode = @"
-private async Task<IEnumerable<int>> LoadAdvancedItems(BitInfiniteScrollingItemsProviderRequest request)
+private async ValueTask<IEnumerable<int>> LoadAdvancedItems(BitInfiniteScrollingItemsProviderRequest request)
 {
     await Task.Delay(1000);
     return Enumerable.Range(request.Skip, 50);
