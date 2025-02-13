@@ -4,13 +4,13 @@
     <DataAnnotationsValidator />
 
     <BitDatePicker IsEnabled="IsEnabled"
-    Culture="Culture"
-    @bind-Value="@TestModel.Value"
-    Placeholder="@Placeholder"
-    GoToTodayTitle="@GoToToday"
-    @bind-IsOpen="IsOpen"
-    OnClick="HandleOnClick"
-    OnSelectDate="HandleSelectDate">
+                   Culture="Culture"
+                   @bind-Value="@TestModel.Value"
+                   Placeholder="@Placeholder"
+                   GoToTodayTitle="@GoToToday"
+                   @bind-IsOpen="IsOpen"
+                   OnClick="HandleOnClick"
+                   OnChange="HandleSelectDate">
         <LabelTemplate>
             @LabelTemplate
         </LabelTemplate>

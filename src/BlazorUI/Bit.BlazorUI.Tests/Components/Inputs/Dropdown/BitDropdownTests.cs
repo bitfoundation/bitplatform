@@ -4,7 +4,6 @@ using System.Text;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
-using Microsoft.AspNetCore.Components;
 
 namespace Bit.BlazorUI.Tests.Components.Inputs.Dropdown;
 

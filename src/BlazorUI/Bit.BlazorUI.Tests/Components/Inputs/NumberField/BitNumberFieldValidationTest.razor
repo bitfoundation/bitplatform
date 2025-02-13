@@ -2,33 +2,32 @@
     <DataAnnotationsValidator />
 
     <BitNumberField Min="@Min"
-    Max="@Max"
-    Step="@Step"
-    @bind-Value="@TestModel.Value"
-    IsEnabled="@IsEnabled"
-    AriaDescription="@AriaDescription"
-    AriaPositionInSet="@AriaPositionInSet"
-    AriaSetSize="@AriaSetSize"
-    AriaValueNow="@AriaValueNow"
-    AriaValueText="@AriaValueText"
-    AriaLabel="@AriaLabel"
-    Suffix="@Suffix"
-    InlineLabel="@InlineLabel"
-    IconName="@IconName"
-    IconAriaLabel="@IconAriaLabel"
-    DecrementIconName="@DecrementIconName"
-    IncrementIconName="@IncrementIconName"
-    DecrementAriaLabel="@DecrementAriaLabel"
-    IncrementAriaLabel="@IncrementAriaLabel"
-    Label="@Label"
-    Placeholder="@Placeholder"
-    InputHtmlAttributes="@InputHtmlAttributes"
-    Title="@Title"
-    Precision="@Precision"
-    DefaultValue="@DefaultValue"
-    OnChange="(int? value) => OnChangeEventValue = value"
-    OnBlur="@HandleBlur"
-    OnFocus="@HandleFocus">
+                    Max="@Max"
+                    Step="@Step"
+                    @bind-Value="@TestModel.Value"
+                    IsEnabled="@IsEnabled"
+                    AriaDescription="@AriaDescription"
+                    AriaPositionInSet="@AriaPositionInSet"
+                    AriaSetSize="@AriaSetSize"
+                    AriaValueNow="@AriaValueNow"
+                    AriaValueText="@AriaValueText"
+                    AriaLabel="@AriaLabel"
+                    Suffix="@Suffix"
+                    InlineLabel="@InlineLabel"
+                    IconName="@IconName"
+                    IconAriaLabel="@IconAriaLabel"
+                    DecrementIconName="@DecrementIconName"
+                    IncrementIconName="@IncrementIconName"
+                    DecrementAriaLabel="@DecrementAriaLabel"
+                    IncrementAriaLabel="@IncrementAriaLabel"
+                    Label="@Label"
+                    Placeholder="@Placeholder"
+                    InputHtmlAttributes="@InputHtmlAttributes"
+                    Title="@Title"
+                    DefaultValue="@DefaultValue"
+                    OnChange="(int? value) => OnChangeEventValue = value"
+                    OnBlur="@HandleBlur"
+                    OnFocus="@HandleFocus">
         <LabelTemplate>
             @LabelTemplate
         </LabelTemplate>
@@ -55,7 +54,6 @@
     [Parameter] public string? Placeholder { get; set; }
     [Parameter] public Dictionary<string, object>? InputHtmlAttributes { get; set; }
     [Parameter] public string? Title { get; set; }
-    [Parameter] public int? Precision { get; set; }
     [Parameter] public string? DecrementIconName { get; set; }
     [Parameter] public string? IncrementIconName { get; set; }
     [Parameter] public int DefaultValue { get; set; }

@@ -2,21 +2,21 @@
     <DataAnnotationsValidator />
 
     <BitCheckbox IsEnabled="@IsEnabled"
-    AriaLabel="@AriaLabel"
-    CheckmarkIconName="@CheckmarkIconName"
-    AriaDescription="@AriaDescription"
-    AriaLabelledby="@AriaLabelledby"
-    AriaPositionInSet="@AriaPositionInSet"
-    AriaSetSize="@AriaSetSize"
-    Name="@Name"
-    Title="@Title"
-    DefaultValue="@DefaultValue"
-    @bind-Value="@TestModel.Value"
-    CheckIconAriaLabel="@CheckIconAriaLabel"
-    Reversed="@Reversed"
-    DefaultIndeterminate="@DefaultIndeterminate"
-    OnClick="HandleOnClick"
-    OnChange="HandleOnChange">
+                 AriaLabel="@AriaLabel"
+                 CheckIconName="@CheckIconName"
+                 AriaDescription="@AriaDescription"
+                 AriaLabelledby="@AriaLabelledby"
+                 AriaPositionInSet="@AriaPositionInSet"
+                 AriaSetSize="@AriaSetSize"
+                 Name="@Name"
+                 Title="@Title"
+                 DefaultValue="@DefaultValue"
+                 @bind-Value="@TestModel.Value"
+                 CheckIconAriaLabel="@CheckIconAriaLabel"
+                 Reversed="@Reversed"
+                 DefaultIndeterminate="@DefaultIndeterminate"
+                 OnClick="HandleOnClick"
+                 OnChange="HandleOnChange">
         <ChildContent>
             @ChildContent
         </ChildContent>
@@ -28,7 +28,7 @@
     [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public bool IsIndeterminate { get; set; }
     [Parameter] public string? AriaLabel { get; set; }
-    [Parameter] public string? CheckmarkIconName { get; set; }
+    [Parameter] public string? CheckIconName { get; set; }
     [Parameter] public string? CheckIconAriaLabel { get; set; }
     [Parameter] public string? AriaDescription { get; set; }
     [Parameter] public string? AriaLabelledby { get; set; }
