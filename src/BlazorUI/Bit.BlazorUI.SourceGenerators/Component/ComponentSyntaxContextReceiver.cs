@@ -12,15 +12,24 @@ public class ComponentSyntaxContextReceiver : ISyntaxContextReceiver
 
     public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
     {
-        if (context.Node is not PropertyDeclarationSyntax propertyDeclarationSyntax || !propertyDeclarationSyntax.AttributeLists.Any()) return;
+        if (context.Node is not PropertyDeclarationSyntax propertyDeclarationSyntax || 
+            propertyDeclarationSyntax.AttributeLists.Any() is false) return;
 
         var parent = propertyDeclarationSyntax.Parent;
 
         if (parent is null || parent.IsKind(SyntaxKind.ClassDeclaration) is false) return;
 
-        var classDeclarationSyntax = (ClassDeclarationSyntax?)parent;
+        var classDeclarationSyntax = (ClassDeclarationSyntax)parent;
 
-        if (classDeclarationSyntax?.Modifiers.Any(k => k.IsKind(SyntaxKind.PartialKeyword)) is false) return;
+        if (classDeclarationSyntax.Modifiers.Any(k => k.IsKind(SyntaxKind.PartialKeyword)) is false) return;
+
+        var namespaceParent = classDeclarationSyntax.Parent;
+
+        if (namespaceParent is null) return;
+
+        var namespaceDeclarationSyntax = (BaseNamespaceDeclarationSyntax)namespaceParent;
+
+        if (namespaceDeclarationSyntax.Name.ToString().StartsWith("Bit.BlazorUI") is false) return;
 
         var propertySymbol = context.SemanticModel.GetDeclaredSymbol(propertyDeclarationSyntax);
 

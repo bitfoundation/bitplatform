@@ -42,117 +42,116 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-namespace {namespaceName}
+namespace {namespaceName};
+
+public partial class {className}
 {{
-    public partial class {className}
-    {{
 ");
         foreach (var par in twoWayParameters)
         {
             var sym = par.PropertySymbol;
-            builder.AppendLine($"        private bool {sym.Name}HasBeenSet;");
-            builder.AppendLine($"        [Parameter] public EventCallback<{sym.Type.ToDisplayString()}> {sym.Name}Changed {{ get; set; }}");
+            builder.AppendLine($"    private bool {sym.Name}HasBeenSet;");
+            builder.AppendLine($"    [Parameter] public EventCallback<{sym.Type.ToDisplayString()}> {sym.Name}Changed {{ get; set; }}");
         }
         if (twoWayParameters.Length > 0) builder.AppendLine("");
-        builder.AppendLine($@"        [global::System.Diagnostics.DebuggerNonUserCode]
-        [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-        public override Task SetParametersAsync(ParameterView parameters)
-        {{");
+        builder.AppendLine($@"    [global::System.Diagnostics.DebuggerNonUserCode]
+    [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+    public override Task SetParametersAsync(ParameterView parameters)
+    {{");
         foreach (var par in twoWayParameters)
         {
-            builder.AppendLine($"            {par.PropertySymbol.Name}HasBeenSet = false;");
+            builder.AppendLine($"        {par.PropertySymbol.Name}HasBeenSet = false;");
         }
-        builder.AppendLine("            var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;");
-        builder.AppendLine("            foreach (var parameter in parametersDictionary!)");
+        builder.AppendLine("        var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;");
+        builder.AppendLine("        foreach (var parameter in parametersDictionary!)");
+        builder.AppendLine("        {");
+        builder.AppendLine("            switch (parameter.Key)");
         builder.AppendLine("            {");
-        builder.AppendLine("                switch (parameter.Key)");
-        builder.AppendLine("                {");
         foreach (var par in parameters)
         {
             var sym = par.PropertySymbol;
             var paramName = sym.Name;
             var varName = $"@{paramName.ToLower()}";
             var paramType = sym.Type.ToDisplayString();
-            builder.AppendLine($"                    case nameof({paramName}):");
+            builder.AppendLine($"                case nameof({paramName}):");
             if (par.IsTwoWayBound)
             {
-                builder.AppendLine($"                       {paramName}HasBeenSet = true;");
+                builder.AppendLine($"                    {paramName}HasBeenSet = true;");
             }
-            builder.AppendLine($"                       var {varName} = parameter.Value is null ? default! : ({paramType})parameter.Value;");
+            builder.AppendLine($"                    var {varName} = parameter.Value is null ? default! : ({paramType})parameter.Value;");
             if (par.ResetClassBuilder || par.ResetStyleBuilder || string.IsNullOrWhiteSpace(par.CallOnSetMethodName) is false)
             {
-                builder.AppendLine($"                       var notEquals{paramName} = EqualityComparer<{paramType}>.Default.Equals({paramName}, {varName}) is false;");
+                builder.AppendLine($"                    var notEquals{paramName} = EqualityComparer<{paramType}>.Default.Equals({paramName}, {varName}) is false;");
             }
-            builder.AppendLine($"                       {paramName} = {varName};");
+            builder.AppendLine($"                    {paramName} = {varName};");
             if (par.ResetClassBuilder)
             {
-                builder.AppendLine($"                       if (notEquals{paramName}) ClassBuilder.Reset();");
+                builder.AppendLine($"                    if (notEquals{paramName}) ClassBuilder.Reset();");
             }
             if (par.ResetStyleBuilder)
             {
-                builder.AppendLine($"                       if (notEquals{paramName}) StyleBuilder.Reset();");
+                builder.AppendLine($"                    if (notEquals{paramName}) StyleBuilder.Reset();");
             }
             if (string.IsNullOrWhiteSpace(par.CallOnSetMethodName) is false)
             {
-                builder.AppendLine($"                       if (notEquals{paramName}) {par.CallOnSetMethodName}();");
+                builder.AppendLine($"                    if (notEquals{paramName}) {par.CallOnSetMethodName}();");
             }
-            builder.AppendLine("                       parametersDictionary.Remove(parameter.Key);");
-            builder.AppendLine("                       break;");
+            builder.AppendLine("                    parametersDictionary.Remove(parameter.Key);");
+            builder.AppendLine("                    break;");
             if (par.IsTwoWayBound)
             {
                 paramName = $"{paramName}Changed";
                 varName = $"@{paramName.ToLower()}";
-                builder.AppendLine($"                    case nameof({paramName}):");
-                builder.AppendLine($"                       var {varName} = parameter.Value is null ? default! : (EventCallback<{sym.Type.ToDisplayString()}>)parameter.Value;");
-                builder.AppendLine($"                       {paramName} = {varName};");
-                builder.AppendLine("                       parametersDictionary.Remove(parameter.Key);");
-                builder.AppendLine("                       break;");
+                builder.AppendLine($"                case nameof({paramName}):");
+                builder.AppendLine($"                    var {varName} = parameter.Value is null ? default! : (EventCallback<{sym.Type.ToDisplayString()}>)parameter.Value;");
+                builder.AppendLine($"                    {paramName} = {varName};");
+                builder.AppendLine("                    parametersDictionary.Remove(parameter.Key);");
+                builder.AppendLine("                    break;");
             }
         }
-        builder.AppendLine("                }");
         builder.AppendLine("            }");
+        builder.AppendLine("        }");
         if (isBaseTypeComponentBase)
         {
-            builder.AppendLine("            return base.SetParametersAsync(ParameterView.Empty);");
+            builder.AppendLine("        return base.SetParametersAsync(ParameterView.Empty);");
         }
         else
         {
-            builder.AppendLine("            return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary as IDictionary<string, object?>));");
+            builder.AppendLine("        return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary as IDictionary<string, object?>));");
         }
-        builder.AppendLine(@"        }");
+        builder.AppendLine("    }");
 
         if (twoWayParameters.Length > 0) builder.AppendLine("");
         foreach (var par in twoWayParameters)
         {
             var paramName = par.PropertySymbol.Name;
             var paramType = par.PropertySymbol.Type.ToDisplayString();
-            builder.AppendLine($@"        [global::System.Diagnostics.DebuggerNonUserCode]
-        [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-        public async Task<bool> Assign{paramName}({paramType} value)
-        {{");
-            builder.AppendLine($"            if ({paramName}HasBeenSet && {paramName}Changed.HasDelegate is false) return false;");
-            builder.AppendLine($"            if (EqualityComparer<{paramType}>.Default.Equals({paramName}, value) is false)");
-            builder.AppendLine("            {");
-            builder.AppendLine($"                {paramName} = value;");
-            builder.AppendLine($"                await {paramName}Changed.InvokeAsync(value);");
+            builder.AppendLine($@"    [global::System.Diagnostics.DebuggerNonUserCode]
+    [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+    public async Task<bool> Assign{paramName}({paramType} value)
+    {{");
+            builder.AppendLine($"        if ({paramName}HasBeenSet && {paramName}Changed.HasDelegate is false) return false;");
+            builder.AppendLine($"        if (EqualityComparer<{paramType}>.Default.Equals({paramName}, value) is false)");
+            builder.AppendLine("        {");
+            builder.AppendLine($"            {paramName} = value;");
+            builder.AppendLine($"            await {paramName}Changed.InvokeAsync(value);");
             if (par.ResetClassBuilder)
             {
-                builder.AppendLine($"                ClassBuilder.Reset();");
+                builder.AppendLine("            ClassBuilder.Reset();");
             }
             if (par.ResetStyleBuilder)
             {
-                builder.AppendLine($"                StyleBuilder.Reset();");
+                builder.AppendLine("            StyleBuilder.Reset();");
             }
             if (string.IsNullOrWhiteSpace(par.CallOnSetMethodName) is false)
             {
-                builder.AppendLine($"                {par.CallOnSetMethodName}();");
+                builder.AppendLine($"            {par.CallOnSetMethodName}();");
             }
-            builder.AppendLine("            }");
-            builder.AppendLine($"            return true;");
             builder.AppendLine("        }");
+            builder.AppendLine("        return true;");
+            builder.AppendLine("    }");
         }
 
-        builder.AppendLine("    }");
         builder.AppendLine("}");
 
         return builder.ToString();
