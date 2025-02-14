@@ -375,6 +375,14 @@
     }
 }
 
+.bit-tpc-req {
+    .bit-tpc-lbl::after {
+        content: "*";
+        color: $clr-req;
+        margin-inline-start: spacing(0.625);
+    }
+}
+
 .bit-tpc-res {
     @include lt-sm {
         top: 0;
