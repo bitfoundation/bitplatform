@@ -20,7 +20,7 @@ public static partial class ISharedServiceCollectionExtensions
             configuration.Bind(settings);
             return settings;
         });
-        services.AddSingleton(sp =>
+        services.TryAddSingleton(sp =>
         {
             JsonSerializerOptions options = new JsonSerializerOptions(AppJsonContext.Default.Options);
 

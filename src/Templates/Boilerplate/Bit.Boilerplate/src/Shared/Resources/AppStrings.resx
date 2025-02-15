@@ -1023,7 +1023,7 @@
     <data name="NothingFound" xml:space="preserve">
     <value>Nothing found!</value>
   </data>
-    <!--#if (sample == "Todo") -->
+    <!--#if (sample == true) -->
     <data name="TodoAddPlaceholder" xml:space="preserve">
     <value>Add a todo</value>
   </data>
@@ -1045,7 +1045,19 @@
     <data name="DeleteTodoItem" xml:space="preserve">
     <value>Delete todo item</value>
   </data>
-    <!--#elif (sample == "Admin") -->
+    <!--#endif -->
+    <!--#if (module == "Admin" || module == "Sales") -->
+    <data name="CategoryCouldNotBeFound" xml:space="preserve">
+    <value>Category entity could not be found</value>
+  </data>
+    <data name="ProductCouldNotBeFound" xml:space="preserve">
+    <value>Product entity could not be found</value>
+  </data>
+    <data name="Category" xml:space="preserve">
+    <value>Category</value>
+  </data>
+    <!--#endif -->
+    <!--#if (module == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
     <value>Admin panel</value>
   </data>
@@ -1139,9 +1151,6 @@
     <data name="Products" xml:space="preserve">
     <value>Products</value>
   </data>
-    <data name="ProductCouldNotBeFound" xml:space="preserve">
-    <value>Product entity could not be found</value>
-  </data>
     <data name="CategoryNotEmpty" xml:space="preserve">
     <value>This category contain some products, so you can't delete it</value>
   </data>
@@ -1157,17 +1166,17 @@
     <data name="DeleteProduct" xml:space="preserve">
     <value>Delete product</value>
   </data>
-    <data name="CategoryCouldNotBeFound" xml:space="preserve">
-    <value>Category entity could not be found</value>
-  </data>
-    <data name="Category" xml:space="preserve">
-    <value>Category</value>
-  </data>
     <data name="DefaultColorPicker" xml:space="preserve">
     <value>Default color picker</value>
   </data>
     <data name="EditProduct" xml:space="preserve">
     <value>Edit product</value>
+  </data>
+    <data name="DuplicateProductName" xml:space="preserve">
+    <value>Duplicate product name</value>
+  </data>
+    <data name="DuplicateCategoryName" xml:space="preserve">
+    <value>Duplicate category name</value>
   </data>
     <data name="DashboardPageTitle" xml:space="preserve">
     <value>Dashboard</value>
@@ -1185,6 +1194,14 @@
   </data>
     <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
     <value>You need to pass the Google reCAPTCHA challenge.</value>
+  </data>
+    <!--#endif -->
+    <!--#if (module == "Sales") -->
+    <data name="SimilarProducts" xml:space="preserve">
+    <value>Similar products</value>
+  </data>
+    <data name="SiblingProducts" xml:space="preserve">
+    <value>Products in the same category</value>
   </data>
     <!--#endif -->
 </root>

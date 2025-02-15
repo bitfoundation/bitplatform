@@ -112,7 +112,7 @@
     </section>
 
     <BitModal IsOpen=@isBuyModalOpen Classes="@(new() { Content = "modal-container" })">
-        <BitButton Class="close-btn" OnClick=@WrapHandled(CloseModal) IconName="@BitIconName.ChromeClose" Variant="BitVariant.Text" />
+        <BitButton Class="close-btn" OnClick=@WrapHandled(CloseModal) IconName="Cancel" Variant="BitVariant.Text" />
         @if (isSent)
         {
             <div class="modal-message-container">

@@ -33,6 +33,9 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
 
                 b.HasKey("Id");
 
+                b.HasIndex("Name")
+                    .IsUnique();
+
                 b.ToTable("Categories");
 
                 b.HasData(
@@ -291,9 +294,15 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.Property<decimal>("Price")
                     .HasColumnType("TEXT");
 
+                b.Property<string>("ImageFileName")
+                    .HasColumnType("TEXT");
+
                 b.HasKey("Id");
 
                 b.HasIndex("CategoryId");
+
+                b.HasIndex("Name")
+                    .IsUnique();
 
                 b.ToTable("Products");
 
@@ -394,7 +403,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CategoryId = new Guid("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306466648064000000L,
-                        Description = "",
+                        Description = "Subcompact luxury crossover SUV",
                         Name = "H247",
                         Price = 54950m
                     },
@@ -404,7 +413,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CategoryId = new Guid("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306457800704000000L,
-                        Description = "",
+                        Description = "Battery-electric full-size luxury liftback",
                         Name = "V297",
                         Price = 103360m
                     },
@@ -414,7 +423,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CategoryId = new Guid("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306422411264000000L,
-                        Description = "",
+                        Description = "Ultra-rare and powerful sports car",
                         Name = "R50",
                         Price = 2000000m
                     },
@@ -424,7 +433,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306466648064000000L,
-                        Description = "",
+                        Description = "A powerful, sporty variant of the BMW 5 Series",
                         Name = "M550i",
                         Price = 77790m
                     },
@@ -434,7 +443,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306457800704000000L,
-                        Description = "",
+                        Description = "Luxurious and powerful sedan that combines elegant design with impressive performance",
                         Name = "540i",
                         Price = 60945m
                     },
@@ -444,7 +453,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306448953344000000L,
-                        Description = "",
+                        Description = "Combines class, spaciousness, and a well-built cabin",
                         Name = "530e",
                         Price = 56545m
                     },
@@ -454,7 +463,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306440105984000000L,
-                        Description = "",
+                        Description = "Zippy and fuel-efficient powertrain, and sure-footed handling",
                         Name = "530i",
                         Price = 55195m
                     },
@@ -464,7 +473,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306431258624000000L,
-                        Description = "",
+                        Description = "A Beastly coupe, powered by a fine-tuned 523-horsepower V8 engine",
                         Name = "M850i",
                         Price = 100045m
                     },
@@ -474,7 +483,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306422411264000000L,
-                        Description = "",
+                        Description = "A full-size luxury crossover SUV that combines innovative design, an expansive presence, and a range of powerful engines",
                         Name = "X7",
                         Price = 77980m
                     },
@@ -484,7 +493,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306413563904000000L,
-                        Description = "",
+                        Description = "Luxury crossover SUV that combines cutting-edge technology",
                         Name = "IX",
                         Price = 87000m
                     },
@@ -494,7 +503,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306466648064000000L,
-                        Description = "rapid acceleration and dynamic handling",
+                        Description = "Rapid acceleration and dynamic handling",
                         Name = "Model 3",
                         Price = 61990m
                     },
@@ -504,7 +513,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306457800704000000L,
-                        Description = "finishes near the top of our luxury electric car rankings.",
+                        Description = "Finishes near the top of our luxury electric car rankings.",
                         Name = "Model S",
                         Price = 135000m
                     },
@@ -524,7 +533,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306422411264000000L,
-                        Description = "extensive driving range, lots of standard safety features",
+                        Description = "Extensive driving range, lots of standard safety features",
                         Name = "Model Y",
                         Price = 67790m
                     });

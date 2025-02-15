@@ -5,283 +5,257 @@
             Title="TextField"
             Description="textfield component of the bit BlazorUI components" />
 
-<ComponentDemo ComponentName="TextField"
-               ComponentDescription="Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required."
-               ComponentParameters="componentParameters"
-               ComponentSubClasses="componentSubClasses"
-               ComponentSubEnums="componentSubEnums"
-               ComponentPublicMembers="componentPublicMembers">
-    <ComponentExampleBox Title="Basics" RazorCode="@example1RazorCode" Id="example1">
-        <ExamplePreview>
-            <div>Displays various basic configurations for the BitTextField, including placeholders, disabled state, read-only mode, descriptions, and required fields.</div>
+<DemoPage Name="TextField"
+          Description="Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          PublicMembers="componentPublicMembers">
+    <DemoSection Title="Basics" RazorCode="@example1RazorCode" Id="example1">
+        <div>Displays various basic configurations for the BitTextField, including placeholders, disabled state, read-only mode, descriptions, and required fields.</div>
+        <br />
+        <div class="example-box">
+            <BitTextField Label="Basic" />
             <br />
-            <div class="example-box">
-                <BitTextField Label="Basic" />
-                <br />
-                <BitTextField Label="Placeholder" Placeholder="Enter a text..." />
-                <br />
-                <BitTextField Label="Disabled" IsEnabled="false" />
-                <br />
-                <BitTextField Label="ReadOnly" ReadOnly DefaultValue="This is ReadOnly" />
-                <br />
-                <BitTextField Label="Description" Description="This is Description" />
-                <br />
-                <BitTextField Label="Required" Required />
-                <br />
-                <BitTextField Label="MaxLength: 5" MaxLength="5" />
-                <br />
-                <BitTextField Label="Auto focused" AutoFocus />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Underlined" RazorCode="@example2RazorCode" Id="example2">
-        <ExamplePreview>
-            <div>Showcases the BitTextField with an underlined style, including variations with placeholders, disabled state, and required fields.</div>
+            <BitTextField Label="Placeholder" Placeholder="Enter a text..." />
             <br />
-            <div class="example-box">
-                <BitTextField Label="Basic" Underlined />
-                <br />
-                <BitTextField Label="Placeholder" Underlined Placeholder="Enter a text..." />
-                <br />
-                <BitTextField Label="Disabled" Underlined IsEnabled="false" />
-                <br />
-                <BitTextField Label="Required" Underlined Required />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="No border" RazorCode="@example3RazorCode" Id="example3">
-        <ExamplePreview>
-            <div>Demonstrates BitTextField without borders, including variations for disabled and required fields.</div>
+            <BitTextField Label="Disabled" IsEnabled="false" />
             <br />
-            <div class="example-box">
-                <BitTextField Label="Basic" Placeholder="Enter a text..." NoBorder />
-                <br />
-                <BitTextField Label="Disabled" Placeholder="Enter a text..." NoBorder IsEnabled="false" />
-                <br />
-                <BitTextField Label="Required" Placeholder="Enter a text..." NoBorder Required />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Multiline" RazorCode="@example4RazorCode" Id="example4">
-        <ExamplePreview>
-            <div>Displays BitTextField in multiline mode with options for resizable and fixed sizes, as well as setting the number of rows.</div>
+            <BitTextField Label="ReadOnly" ReadOnly DefaultValue="This is ReadOnly" />
             <br />
-            <div class="example-box">
-                <BitTextField Label="Multiline" Multiline />
-                <br />
-                <BitTextField Label="Resizable" Multiline Resizable />
-                <br />
-                <BitTextField Label="Rows = 10" Multiline Rows="10" />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Icon" RazorCode="@example5RazorCode" Id="example5">
-        <ExamplePreview>
-            <div>Shows how to add icons to the BitTextField component, including examples with different icon names.</div>
+            <BitTextField Label="Description" Description="This is Description" />
             <br />
-            <div class="example-box">
-                <BitTextField Label="Email" IconName="@BitIconName.EditMail" />
-                <br />
-                <BitTextField Label="Calendar" IconName="@BitIconName.Calendar" />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Prefix & Suffix" RazorCode="@example6RazorCode" Id="example6">
-        <ExamplePreview>
-            <div>Use prefixes and suffixes in BitTextField, including combinations and the disabled state.</div>
+            <BitTextField Label="Required" Required />
             <br />
-            <div class="example-box">
-                <BitTextField Label="Prefix" Prefix="https://" />
-                <br />
-                <BitTextField Label="Suffix" Suffix=".com" />
-                <br />
-                <BitTextField Label="Prefix and Suffix" Prefix="https://" Suffix=".com" />
-                <br />
-                <BitTextField Label="Disabled" Prefix="https://" Suffix=".com" IsEnabled="false" />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Templates" RazorCode="@example7RazorCode" Id="example7">
-        <ExamplePreview>
-            <div>Demonstrates the use of custom templates for labels, descriptions, prefixes, and suffixes in BitTextField.</div>
+            <BitTextField Label="MaxLength: 5" MaxLength="5" />
             <br />
-            <div class="example-box">
-                <BitTextField>
-                    <LabelTemplate>
-                        <BitLabel Style="color:coral">Custom Label</BitLabel>
-                    </LabelTemplate>
-                </BitTextField>
-                <br />
-                <BitTextField Label="Custom Description">
-                    <DescriptionTemplate>
-                        <BitLabel Style="color:coral">Description</BitLabel>
-                    </DescriptionTemplate>
-                </BitTextField>
-                <br />
-                <BitTextField Label="Custom Prefix">
-                    <PrefixTemplate>
-                        <BitLabel Style="color:coral;margin:0 5px">Prefix</BitLabel>
-                    </PrefixTemplate>
-                </BitTextField>
-                <br />
-                <BitTextField Label="Custom Suffix">
-                    <SuffixTemplate>
-                        <BitLabel Style="color:coral;margin:0 5px">Suffix</BitLabel>
-                    </SuffixTemplate>
-                </BitTextField>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+            <BitTextField Label="Auto focused" AutoFocus />
+        </div>
+    </DemoSection>
 
-    <ComponentExampleBox Title="Password" RazorCode="@example8RazorCode" Id="example8">
-        <ExamplePreview>
-            <div>Shows BitTextField configured for password entry, including an option to reveal the password.</div>
+    <DemoSection Title="Underlined" RazorCode="@example2RazorCode" Id="example2">
+        <div>Showcases the BitTextField with an underlined style, including variations with placeholders, disabled state, and required fields.</div>
+        <br />
+        <div class="example-box">
+            <BitTextField Label="Basic" Underlined />
             <br />
-            <div class="example-box">
-                <BitTextField Label="Password" Type="BitInputType.Password" />
-                <br />
-                <BitTextField Label="Reveal Password" Type="BitInputType.Password" CanRevealPassword />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Binding" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-        <ExamplePreview>
-            <div>Demonstrates various binding scenarios with BitTextField, including one-way, two-way, on-change events, and immediate, debounce, and throttle options.</div>
+            <BitTextField Label="Placeholder" Underlined Placeholder="Enter a text..." />
             <br />
-            <div class="example-box">
-                <BitTextField Label="One-way" Value="@oneWayValue" />
-                <div>Value: [@oneWayValue]</div>
-                <BitOtpInput Length="5" Style="margin-top: 5px;" @bind-Value="oneWayValue" />
-                <br />
-                <BitTextField Label="Two-way" @bind-Value="twoWayValue" />
-                <div>Value: [@twoWayValue]</div>
-                <BitOtpInput Length="5" Style="margin-top: 5px;" @bind-Value="twoWayValue" />
-                <br />
-                <BitTextField Label="OnChange" OnChange="(v) => onChangeValue = v" />
-                <BitLabel>Value: [@onChangeValue]</BitLabel>
-                <br />
-                <BitTextField Label="Immediate" @bind-Value="@immediateValue" Immediate />
-                <div>Value: [@immediateValue]</div>
-                <br />
-                <BitTextField Label="Debounce" @bind-Value="@debounceValue" Immediate DebounceTime="300" />
-                <div>Value: [@debounceValue]</div>
-                <br />
-                <BitTextField Label="Throttle" @bind-Value="@throttleValue" Immediate ThrottleTime="300" />
-                <div>Value: [@throttleValue]</div>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Trim" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
-        <ExamplePreview>
-            <div>Demonstrates various binding scenarios with BitTextField, including one-way, two-way, on-change events, and immediate, debounce, and throttle options.</div>
+            <BitTextField Label="Disabled" Underlined IsEnabled="false" />
             <br />
-            <div class="example-box">
-                <BitTextField Label="Trimmed" Trim @bind-Value="trimmedValue" />
-                <br />
-                <pre>[@trimmedValue]</pre>
-                <br /><br /><br />
-                <BitTextField Label="Not Trimmed" @bind-Value="notTrimmedValue" />
-                <br />
-                <pre>[@notTrimmedValue]</pre>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+            <BitTextField Label="Required" Underlined Required />
+        </div>
+    </DemoSection>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
-        <ExamplePreview>
-            <div>Explores styling and class customization for BitTextField, including component styles, custom classes, and detailed style options.</div>
-            <br /><br />
-            <div class="example-box">
-                <div>Component's Style & Class:</div>
-                <br />
-                <BitTextField Style="box-shadow: aqua 0 0 1rem; margin-inline: 1rem;" />
-                <br />
-                <BitTextField Class="custom-class" />
-                <br /><br /><br />
-                <div>Styles & Classes:</div>
-                <br />
-                <BitTextField Label="Styles"
-                              Styles="@(new() { Root = "margin-inline: 1rem;",
+    <DemoSection Title="No border" RazorCode="@example3RazorCode" Id="example3">
+        <div>Demonstrates BitTextField without borders, including variations for disabled and required fields.</div>
+        <br />
+        <div class="example-box">
+            <BitTextField Label="Basic" Placeholder="Enter a text..." NoBorder />
+            <br />
+            <BitTextField Label="Disabled" Placeholder="Enter a text..." NoBorder IsEnabled="false" />
+            <br />
+            <BitTextField Label="Required" Placeholder="Enter a text..." NoBorder Required />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Multiline" RazorCode="@example4RazorCode" Id="example4">
+        <div>Displays BitTextField in multiline mode with options for resizable and fixed sizes, as well as setting the number of rows.</div>
+        <br />
+        <div class="example-box">
+            <BitTextField Label="Multiline" Multiline />
+            <br />
+            <BitTextField Label="Resizable" Multiline Resizable />
+            <br />
+            <BitTextField Label="Rows = 10" Multiline Rows="10" />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Icon" RazorCode="@example5RazorCode" Id="example5">
+        <div>Shows how to add icons to the BitTextField component, including examples with different icon names.</div>
+        <br />
+        <div class="example-box">
+            <BitTextField Label="Email" IconName="@BitIconName.EditMail" />
+            <br />
+            <BitTextField Label="Calendar" IconName="@BitIconName.Calendar" />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Prefix & Suffix" RazorCode="@example6RazorCode" Id="example6">
+        <div>Use prefixes and suffixes in BitTextField, including combinations and the disabled state.</div>
+        <br />
+        <div class="example-box">
+            <BitTextField Label="Prefix" Prefix="https://" />
+            <br />
+            <BitTextField Label="Suffix" Suffix=".com" />
+            <br />
+            <BitTextField Label="Prefix and Suffix" Prefix="https://" Suffix=".com" />
+            <br />
+            <BitTextField Label="Disabled" Prefix="https://" Suffix=".com" IsEnabled="false" />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Templates" RazorCode="@example7RazorCode" Id="example7">
+        <div>Demonstrates the use of custom templates for labels, descriptions, prefixes, and suffixes in BitTextField.</div>
+        <br />
+        <div class="example-box">
+            <BitTextField>
+                <LabelTemplate>
+                    <BitLabel Style="color:coral">Custom Label</BitLabel>
+                </LabelTemplate>
+            </BitTextField>
+            <br />
+            <BitTextField Label="Custom Description">
+                <DescriptionTemplate>
+                    <BitLabel Style="color:coral">Description</BitLabel>
+                </DescriptionTemplate>
+            </BitTextField>
+            <br />
+            <BitTextField Label="Custom Prefix">
+                <PrefixTemplate>
+                    <BitLabel Style="color:coral;margin:0 5px">Prefix</BitLabel>
+                </PrefixTemplate>
+            </BitTextField>
+            <br />
+            <BitTextField Label="Custom Suffix">
+                <SuffixTemplate>
+                    <BitLabel Style="color:coral;margin:0 5px">Suffix</BitLabel>
+                </SuffixTemplate>
+            </BitTextField>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Password" RazorCode="@example8RazorCode" Id="example8">
+        <div>Shows BitTextField configured for password entry, including an option to reveal the password.</div>
+        <br />
+        <div class="example-box">
+            <BitTextField Label="Password" Type="BitInputType.Password" />
+            <br />
+            <BitTextField Label="Reveal Password" Type="BitInputType.Password" CanRevealPassword />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Binding" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>Demonstrates various binding scenarios with BitTextField, including one-way, two-way, on-change events, and immediate, debounce, and throttle options.</div>
+        <br />
+        <div class="example-box">
+            <BitTextField Label="One-way" Value="@oneWayValue" />
+            <div>Value: [@oneWayValue]</div>
+            <BitOtpInput Length="5" Style="margin-top: 5px;" @bind-Value="oneWayValue" />
+            <br />
+            <BitTextField Label="Two-way" @bind-Value="twoWayValue" />
+            <div>Value: [@twoWayValue]</div>
+            <BitOtpInput Length="5" Style="margin-top: 5px;" @bind-Value="twoWayValue" />
+            <br />
+            <BitTextField Label="OnChange" OnChange="(v) => onChangeValue = v" />
+            <BitLabel>Value: [@onChangeValue]</BitLabel>
+            <br />
+            <BitTextField Label="Immediate" @bind-Value="@immediateValue" Immediate />
+            <div>Value: [@immediateValue]</div>
+            <br />
+            <BitTextField Label="Debounce" @bind-Value="@debounceValue" Immediate DebounceTime="300" />
+            <div>Value: [@debounceValue]</div>
+            <br />
+            <BitTextField Label="Throttle" @bind-Value="@throttleValue" Immediate ThrottleTime="300" />
+            <div>Value: [@throttleValue]</div>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Trim" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>Demonstrates various binding scenarios with BitTextField, including one-way, two-way, on-change events, and immediate, debounce, and throttle options.</div>
+        <br />
+        <div class="example-box">
+            <BitTextField Label="Trimmed" Trim @bind-Value="trimmedValue" />
+            <br />
+            <pre>[@trimmedValue]</pre>
+            <br /><br /><br />
+            <BitTextField Label="Not Trimmed" @bind-Value="notTrimmedValue" />
+            <br />
+            <pre>[@notTrimmedValue]</pre>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Style & Class" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <div>Explores styling and class customization for BitTextField, including component styles, custom classes, and detailed style options.</div>
+        <br /><br />
+        <div class="example-box">
+            <div>Component's Style & Class:</div>
+            <br />
+            <BitTextField Style="box-shadow: aqua 0 0 1rem; margin-inline: 1rem;" />
+            <br />
+            <BitTextField Class="custom-class" />
+            <br /><br /><br />
+            <div>Styles & Classes:</div>
+            <br />
+            <BitTextField Label="Styles"
+                          Styles="@(new() { Root = "margin-inline: 1rem;",
                                                 Focused = "--focused-background: #b2b2b25a;",
                                                 FieldGroup = "background: var(--focused-background);",
                                                 Label = "text-shadow: aqua 0 0 1rem; font-weight: 900; font-size: 1.25rem;",
                                                 Input = "padding: 0.5rem;" })" />
-                <br />
-                <BitTextField @bind-Value="classesValue"
-                              Label="Classes"
-                              Classes="@(new() { Root = "custom-root",
+            <br />
+            <BitTextField @bind-Value="classesValue"
+                          Label="Classes"
+                          Classes="@(new() { Root = "custom-root",
                                                  FieldGroup = "custom-field",
                                                  Focused = "custom-focus",
                                                  Input = "custom-input",
                                                  Label = $"custom-label{(string.IsNullOrEmpty(classesValue) ? string.Empty : " custom-label-top")}" })" />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+        </div>
+    </DemoSection>
 
-    <ComponentExampleBox Title="Validation" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
-        <ExamplePreview>
-            <div>Demonstrates how validation can be applied to BitTextField, including required fields, numeric input, character constraints, email validation, and range validation.</div>
-            <br />
+    <DemoSection Title="Validation" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <div>Demonstrates how validation can be applied to BitTextField, including required fields, numeric input, character constraints, email validation, and range validation.</div>
+        <br />
+        <div class="example-box">
+            @if (formIsValidSubmit is false)
+            {
+                <EditForm Model="validationTextFieldModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit" novalidate>
+                    <DataAnnotationsValidator />
+                    <BitTextField Label="Required" Required @bind-Value="validationTextFieldModel.Text" />
+                    <ValidationMessage For="() => validationTextFieldModel.Text" />
+                    <br />
+                    <BitTextField Label="Numeric" @bind-Value="validationTextFieldModel.NumericText" />
+                    <ValidationMessage For="() => validationTextFieldModel.NumericText" />
+                    <br />
+                    <BitTextField Label="Only chars" @bind-Value="validationTextFieldModel.CharacterText" />
+                    <ValidationMessage For="() => validationTextFieldModel.CharacterText" />
+                    <br />
+                    <BitTextField Label="Email" @bind-Value="validationTextFieldModel.EmailText" />
+                    <ValidationMessage For="() => validationTextFieldModel.EmailText" />
+                    <br />
+                    <BitTextField Label="3 < Length < 5" @bind-Value="validationTextFieldModel.RangeText" />
+                    <ValidationMessage For="() => validationTextFieldModel.RangeText" />
+                    <br />
+                    <BitButton ButtonType="BitButtonType.Submit">
+                        Submit
+                    </BitButton>
+                </EditForm>
+            }
+            else
+            {
+                <BitMessage Color="BitColor.Success">
+                    The form is successfully submitted.
+                </BitMessage>
+            }
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="RTL" RazorCode="@example13RazorCode" Id="example13">
+        <div>Use BitTextField in right-to-left (RTL).</div>
+        <br />
+        <div dir="rtl">
             <div class="example-box">
-                @if (formIsValidSubmit is false)
-                {
-                    <EditForm Model="validationTextFieldModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit" novalidate>
-                        <DataAnnotationsValidator />
-                        <BitTextField Label="Required" Required @bind-Value="validationTextFieldModel.Text" />
-                        <ValidationMessage For="() => validationTextFieldModel.Text" />
-                        <br />
-                        <BitTextField Label="Numeric" @bind-Value="validationTextFieldModel.NumericText" />
-                        <ValidationMessage For="() => validationTextFieldModel.NumericText" />
-                        <br />
-                        <BitTextField Label="Only chars" @bind-Value="validationTextFieldModel.CharacterText" />
-                        <ValidationMessage For="() => validationTextFieldModel.CharacterText" />
-                        <br />
-                        <BitTextField Label="Email" @bind-Value="validationTextFieldModel.EmailText" />
-                        <ValidationMessage For="() => validationTextFieldModel.EmailText" />
-                        <br />
-                        <BitTextField Label="3 < Length < 5" @bind-Value="validationTextFieldModel.RangeText" />
-                        <ValidationMessage For="() => validationTextFieldModel.RangeText" />
-                        <br />
-                        <BitButton ButtonType="BitButtonType.Submit">
-                            Submit
-                        </BitButton>
-                    </EditForm>
-                }
-                else
-                {
-                    <BitMessage Color="BitColor.Success">
-                        The form is successfully submitted.
-                    </BitMessage>
-                }
+                <BitTextField Dir="BitDir.Rtl"
+                              Placeholder="پست الکترونیکی"
+                              IconName="@BitIconName.EditMail" />
+                <br />
+                <br />
+                <BitTextField Underlined
+                              Label="تقویم"
+                              Dir="BitDir.Rtl"
+                              IconName="@BitIconName.Calendar" />
             </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="RTL" RazorCode="@example13RazorCode" Id="example13">
-        <ExamplePreview>
-            <div>Use BitTextField in right-to-left (RTL).</div>
-            <br />
-            <div dir="rtl">
-                <div class="example-box">
-                    <BitTextField Dir="BitDir.Rtl"
-                                  Placeholder="پست الکترونیکی"
-                                  IconName="@BitIconName.EditMail" />
-                    <br />
-                    <br />
-                    <BitTextField Underlined
-                                  Label="تقویم"
-                                  Dir="BitDir.Rtl"
-                                  IconName="@BitIconName.Calendar" />
-                </div>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-</ComponentDemo>
+        </div>
+    </DemoSection>
+</DemoPage>

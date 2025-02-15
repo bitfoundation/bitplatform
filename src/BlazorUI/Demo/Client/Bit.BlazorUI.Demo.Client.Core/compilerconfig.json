@@ -1,13 +1,13 @@
 ﻿[
     {
-        "outputFile": "Components/ComponentDemo.razor.css",
-        "inputFile": "Components/ComponentDemo.razor.scss",
+        "outputFile": "Components/DemoPage.razor.css",
+        "inputFile": "Components/DemoPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/ComponentExampleBox.razor.css",
-        "inputFile": "Components/ComponentExampleBox.razor.scss",
+        "outputFile": "Components/DemoSection.razor.css",
+        "inputFile": "Components/DemoSection.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -62,6 +62,24 @@
     {
         "outputFile": "Pages/Components/Extras/DataGrid/BitDataGridDemo.razor.css",
         "inputFile": "Pages/Components/Extras/DataGrid/BitDataGridDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Extras/ErrorBoundary/BitErrorBoundaryDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/ErrorBoundary/BitErrorBoundaryDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Extras/InfiniteScrolling/BitInfiniteScrollingDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/InfiniteScrolling/BitInfiniteScrollingDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Extras/MessageBox/BitMessageBoxDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/MessageBox/BitMessageBoxDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -348,6 +366,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Surfaces/Collapse/BitCollapseDemo.razor.css",
+        "inputFile": "Pages/Components/Surfaces/Collapse/BitCollapseDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Surfaces/Dialog/BitDialogDemo.razor.css",
         "inputFile": "Pages/Components/Surfaces/Dialog/BitDialogDemo.razor.scss",
         "minify": { "enabled": false },
@@ -504,12 +528,6 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Shared/AppErrorBoundary.razor.css",
-        "inputFile": "Shared/AppErrorBoundary.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Shared/AppFooter.razor.css",
         "inputFile": "Shared/AppFooter.razor.scss",
         "minify": { "enabled": false },
@@ -530,12 +548,6 @@
     {
         "outputFile": "Shared/NotFoundComponent.razor.css",
         "inputFile": "Shared/NotFoundComponent.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Shared/MessageBox.razor.css",
-        "inputFile": "Shared/MessageBox.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

@@ -3,6 +3,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// A BitTimePicker offers a drop-down control that’s optimized for picking a single time from a clock view where contextual information like the day of the week or fullness of the calendar is important.
+/// </summary>
 public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
 {
     private bool _hasFocus;
@@ -345,7 +348,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
         if (firstRender is false) return;
         if (Responsive is false) return;
 
-        await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, _dotnetObj);
+        await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, BitSwipeOrientation.Vertical, _dotnetObj);
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TimeSpan? result, [NotNullWhen(false)] out string? validationErrorMessage)

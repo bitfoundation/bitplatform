@@ -2,6 +2,9 @@
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// A SwipeTrap is a component that traps swipe actions and triggers corresponding events.
+/// </summary>
 public partial class BitSwipeTrap : BitComponentBase, IAsyncDisposable
 {
     private bool _disposed;
@@ -36,6 +39,11 @@ public partial class BitSwipeTrap : BitComponentBase, IAsyncDisposable
     /// The event callback for when the swipe action triggers based on the Trigger constraint.
     /// </summary>
     [Parameter] public EventCallback<BitSwipeTrapTriggerArgs> OnTrigger { get; set; }
+
+    /// <summary>
+    /// Specifies the orientation lock in which the swipe trap allows to trap the swipe actions.
+    /// </summary>
+    [Parameter] public BitSwipeOrientation? OrientationLock { get; set; }
 
     /// <summary>
     /// The threshold in pixel for swiping distance that starts the swipe process process which stops the default behavior.
@@ -93,7 +101,14 @@ public partial class BitSwipeTrap : BitComponentBase, IAsyncDisposable
         if (firstRender)
         {
             var dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitSwipeTrapSetup(UniqueId, RootElement, Trigger ?? 0.25m, Threshold ?? 0, Throttle ?? 0, dotnetObj);
+            await _js.BitSwipeTrapSetup(
+                UniqueId, 
+                RootElement, 
+                Trigger ?? 0.25m, 
+                Threshold ?? 0, 
+                Throttle ?? 0, 
+                OrientationLock ?? BitSwipeOrientation.None, 
+                dotnetObj);
         }
 
         await base.OnAfterRenderAsync(firstRender);

@@ -5,186 +5,311 @@
             Title="Checkbox"
             Description="Checkbox component of the bit BlazorUI components" />
 
-<ComponentDemo ComponentName="Checkbox"
-               ComponentDescription="BitCheckbox is a component that permits the user to make a binary choice, a choice between one of two possible mutually exclusive options. For example, the user may have to answer 'yes' or 'no' on a simple yes/no question. Checkboxes by default are shown as ☐ when unchecked and ☑ when checked."
-               ComponentParameters="componentParameters"
-               ComponentSubClasses="componentSubClasses">
-    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <ExamplePreview>
-            <div>Basic usage of BitCheckbox with enabled and disabled states.</div>
-            <br />
-            <BitCheckbox Label="Basic checkbox" />
-            <br />
-            <BitCheckbox Label="Disable checkbox" IsEnabled="false" />
-            <br />
-            <BitCheckbox Label="Disable checked checkbox" IsEnabled="false" Value="true" />
-        </ExamplePreview>
-    </ComponentExampleBox>
+<DemoPage Name="Checkbox"
+          Description="BitCheckbox is a component that permits the user to make a binary choice, a choice between one of two possible mutually exclusive options. For example, the user may have to answer 'yes' or 'no' on a simple yes/no question. Checkboxes by default are shown as ☐ when unchecked and ☑ when checked."
+          Parameters="componentParameters"
+          SubEnums="componentSubEnums"
+          SubClasses="componentSubClasses">
+    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <div>Basic usage of BitCheckbox with enabled and disabled states.</div>
+        <br />
+        <BitCheckbox Label="Basic checkbox" />
+        <br />
+        <BitCheckbox Label="Disable checkbox" IsEnabled="false" />
+        <br />
+        <BitCheckbox Label="Disable checked checkbox" IsEnabled="false" Value="true" />
+    </DemoSection>
 
-    <ComponentExampleBox Title="Check icon" RazorCode="@example2RazorCode" Id="example2">
-        <ExamplePreview>
-            <div>Customize the check icon of BitCheckbox.</div>
-            <br />
-            <BitCheckbox Label="Custom check icon" CheckIconName="@BitIconName.Heart" />
-            <br />
-            <BitCheckbox Label="Disabled custom check icon" CheckIconName="@BitIconName.WavingHand" Value="true" IsEnabled="false" />
-        </ExamplePreview>
-    </ComponentExampleBox>
+    <DemoSection Title="Check icon" RazorCode="@example2RazorCode" Id="example2">
+        <div>Customize the check icon of BitCheckbox.</div>
+        <br />
+        <BitCheckbox Label="Custom check icon" CheckIconName="@BitIconName.Heart" />
+        <br />
+        <BitCheckbox Label="Disabled custom check icon" CheckIconName="@BitIconName.WavingHand" Value="true" IsEnabled="false" />
+    </DemoSection>
 
-    <ComponentExampleBox Title="Reversed" RazorCode="@example3RazorCode" Id="example3">
-        <ExamplePreview>
-            <div>Adjust the label position of BitCheckbox to be reversed.</div>
-            <br />
-            <BitCheckbox Label="Reversed" Reversed />
-            <br />
-            <BitCheckbox Label="Reversed - Disabled" Reversed IsEnabled="false" />
-            <br />
-            <BitCheckbox Label="Reversed - Disable Checked" Reversed IsEnabled="false" Value="true" />
-        </ExamplePreview>
-    </ComponentExampleBox>
+    <DemoSection Title="Reversed" RazorCode="@example3RazorCode" Id="example3">
+        <div>Adjust the label position of BitCheckbox to be reversed.</div>
+        <br />
+        <BitCheckbox Label="Reversed" Reversed />
+        <br />
+        <BitCheckbox Label="Reversed - Disabled" Reversed IsEnabled="false" />
+        <br />
+        <BitCheckbox Label="Reversed - Disable Checked" Reversed IsEnabled="false" Value="true" />
+    </DemoSection>
 
-    <ComponentExampleBox Title="LabelTemplate" RazorCode="@example4RazorCode" Id="example4">
-        <ExamplePreview>
-            <div>Customizing the label of BitCheckbox using a template.</div>
-            <br />
-            <BitCheckbox>
-                <LabelTemplate>
-                    <BitTag Color="BitColor.Success">Label Template</BitTag>
-                </LabelTemplate>
-            </BitCheckbox>
-        </ExamplePreview>
-    </ComponentExampleBox>
+    <DemoSection Title="LabelTemplate" RazorCode="@example4RazorCode" Id="example4">
+        <div>Customizing the label of BitCheckbox using a template.</div>
+        <br />
+        <BitCheckbox>
+            <LabelTemplate>
+                <BitTag Color="BitColor.Success">Label Template</BitTag>
+            </LabelTemplate>
+        </BitCheckbox>
+    </DemoSection>
 
-    <ComponentExampleBox Title="Indeterminate" RazorCode="@example5RazorCode" Id="example5">
-        <ExamplePreview>
-            <div>Display BitCheckbox in an indeterminate state.</div>
-            <br />
-            <BitCheckbox Label="Indeterminate checkbox" Indeterminate />
-            <br />
-            <BitCheckbox Label="Disabled indeterminate checkbox" Indeterminate IsEnabled="false" />
-        </ExamplePreview>
-    </ComponentExampleBox>
+    <DemoSection Title="Indeterminate" RazorCode="@example5RazorCode" Id="example5">
+        <div>Display BitCheckbox in an indeterminate state.</div>
+        <br />
+        <BitCheckbox Label="Indeterminate checkbox" Indeterminate />
+        <br />
+        <BitCheckbox Label="Disabled indeterminate checkbox" Indeterminate IsEnabled="false" />
+    </DemoSection>
 
-    <ComponentExampleBox Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-        <ExamplePreview>
-            <div>Demonstrates one-way and two-way data binding with BitCheckbox.</div>
-            <br /><br />
-            <div><b>Value</b>:</div><br />
-            <BitCheckbox Label="One-way checked (Fixed)" Value="true" />
-            <br />
-            <div class="example-box">
-                <BitCheckbox Label="One-way" Value="oneWayValue" />
-                <BitToggleButton @bind-IsChecked="oneWayValue" Text="Toggle" />
-            </div>
-            <br />
-            <div class="example-box">
-                <BitCheckbox Label="Two-way controlled checkbox" @bind-Value="twoWayValue" />
-                <BitToggleButton @bind-IsChecked="twoWayValue" Text="Toggle" />
-            </div>
-            <br /><br /><br /><br />
-            <div><b>Indeterminate</b>:</div><br />
-            <BitCheckbox Label="One-way indeterminate (Fixed)" Indeterminate />
-            <br />
-            <div class="example-box">
-                <BitCheckbox Label="One-way indeterminate" Indeterminate="oneWayIndeterminate" />
-                <BitToggleButton @bind-IsChecked="oneWayIndeterminate" Text="Toggle" />
-            </div>
-            <br />
-            <div class="example-box">
-                <BitCheckbox Label="Two-way indeterminate" @bind-Indeterminate="twoWayIndeterminate" />
-                <BitToggleButton @bind-IsChecked="twoWayIndeterminate" Text="Toggle" />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+    <DemoSection Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <div>Demonstrates one-way and two-way data binding with BitCheckbox.</div>
+        <br /><br />
+        <div><b>Value</b>:</div><br />
+        <BitCheckbox Label="One-way checked (Fixed)" Value="true" />
+        <br />
+        <div class="example-box">
+            <BitCheckbox Label="One-way" Value="oneWayValue" />
+            <BitToggleButton @bind-IsChecked="oneWayValue" Text="Toggle" />
+        </div>
+        <br />
+        <div class="example-box">
+            <BitCheckbox Label="Two-way controlled checkbox" @bind-Value="twoWayValue" />
+            <BitToggleButton @bind-IsChecked="twoWayValue" Text="Toggle" />
+        </div>
+        <br /><br /><br /><br />
+        <div><b>Indeterminate</b>:</div><br />
+        <BitCheckbox Label="One-way indeterminate (Fixed)" Indeterminate />
+        <br />
+        <div class="example-box">
+            <BitCheckbox Label="One-way indeterminate" Indeterminate="oneWayIndeterminate" />
+            <BitToggleButton @bind-IsChecked="oneWayIndeterminate" Text="Toggle" />
+        </div>
+        <br />
+        <div class="example-box">
+            <BitCheckbox Label="Two-way indeterminate" @bind-Indeterminate="twoWayIndeterminate" />
+            <BitToggleButton @bind-IsChecked="twoWayIndeterminate" Text="Toggle" />
+        </div>
+    </DemoSection>
 
-    <ComponentExampleBox Title="Custom content" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-        <ExamplePreview>
-            <div>Create a custom checkbox with unique content and style.</div>
-            <br />
-            <BitCheckbox @bind-Value="customCheckboxValue">
+    <DemoSection Title="Validation" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <div>Use data annotations to validate the BitCheckbox component.</div>
+        <br />
+        <div>
+            @if (string.IsNullOrEmpty(SuccessMessage))
+            {
+                <EditForm Model="validationModel"
+                          OnValidSubmit="HandleValidSubmit"
+                          OnInvalidSubmit="HandleInvalidSubmit">
+                    <DataAnnotationsValidator />
+                    <BitCheckbox Label="I agree with the terms and conditions."
+                                 @bind-Value="validationModel.TermsAgreement" />
+                    <ValidationMessage For="@(() => validationModel.TermsAgreement)" />
+                    <br />
+                    <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+                </EditForm>
+            }
+            else
+            {
+                <BitMessage Color="BitColor.Success">@SuccessMessage</BitMessage>
+            }
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Custom content" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div>Create a custom checkbox with unique content and style.</div>
+        <br />
+        <BitCheckbox @bind-Value="customCheckboxValue">
+            <BitIcon Style="border:1px solid gray;width:22px;height:22px"
+                     IconName="@(customCheckboxValue ? BitIconName.Accept : null)" />
+            <span>Custom basic checkbox</span>
+        </BitCheckbox>
+        <br />
+        <div class="example-box">
+            <BitCheckbox @bind-Value="customContentValue" @bind-Indeterminate="customContentIndeterminate">
                 <BitIcon Style="border:1px solid gray;width:22px;height:22px"
-                         IconName="@(customCheckboxValue ? BitIconName.Accept : null)" />
-                <span>Custom basic checkbox</span>
+                         IconName="@(customContentIndeterminate ? BitIconName.Fingerprint : (customContentValue ? BitIconName.Accept : null))" />
+                <span>Custom indeterminate checkbox</span>
             </BitCheckbox>
+            <BitButton OnClick="() => customContentIndeterminate = true">Make Indeterminate</BitButton>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Size" RazorCode="@example9RazorCode" Id="example9">
+        <div>Varying sizes for checkboxes tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.</div>
+        <br />
+        <div>
+            <div><b>Small</b>:</div>
             <br />
             <div class="example-box">
-                <BitCheckbox @bind-Value="customContentValue" @bind-Indeterminate="customContentIndeterminate">
-                    <BitIcon Style="border:1px solid gray;width:22px;height:22px"
-                             IconName="@(customContentIndeterminate ? BitIconName.Fingerprint : (customContentValue ? BitIconName.Accept : null))" />
-                    <span>Custom indeterminate checkbox</span>
-                </BitCheckbox>
-                <BitButton OnClick="() => customContentIndeterminate = true">Make Indeterminate</BitButton>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
-        <ExamplePreview>
-            <div>Explore styling and class customization for BitCheckbox, including component styles, custom classes, and detailed styles.</div>
-            <br /><br />
-            <div>Component's Style & Class:</div>
-            <br />
-            <div class="example-content">
-                <BitCheckbox Label="Styled checkbox" Style="color: dodgerblue; text-shadow: lightskyblue 0 0 1rem;" />
-                <br />
-                <BitCheckbox Label="Classed checkbox" Class="custom-class" />
+                <BitCheckbox Size="BitSize.Small" Label="Checkbox" />
+                <BitCheckbox Size="BitSize.Small" Label="Checkbox" Indeterminate />
+                <BitCheckbox Size="BitSize.Small" Label="Checkbox" Value />
             </div>
             <br /><br /><br />
-            <div><b>Styles</b> & <b>Classes</b>:</div>
+            <div><b>Medium</b>:</div>
             <br />
-            <div class="example-content">
-                <BitCheckbox Label="Styles"
-                             Styles="@(new() { Checked = "--check-color: deeppink; --icon-color: white;",
+            <div class="example-box">
+                <BitCheckbox Size="BitSize.Medium" Label="Checkbox" />
+                <BitCheckbox Size="BitSize.Medium" Label="Checkbox" Indeterminate />
+                <BitCheckbox Size="BitSize.Medium" Label="Checkbox" Value />
+            </div>
+            <br /><br /><br />
+            <div><b>Large</b>:</div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox Size="BitSize.Large" Label="Checkbox" />
+                <BitCheckbox Size="BitSize.Large" Label="Checkbox" Indeterminate />
+                <BitCheckbox Size="BitSize.Large" Label="Checkbox" Value />
+            </div>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Color" RazorCode="@example10RazorCode" Id="example10">
+        <div>Offering a range of specialized color variants with Primary being the default, providing visual cues for specific actions or states within your application.</div>
+        <br />
+        <div>
+            <div class="example-box">
+                <BitCheckbox Color="BitColor.Primary" Label="Primary" />
+                <BitCheckbox Color="BitColor.Primary" Label="Primary" Indeterminate />
+                <BitCheckbox Color="BitColor.Primary" Label="Primary" Value />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox Color="BitColor.Secondary" Label="Secondary" />
+                <BitCheckbox Color="BitColor.Secondary" Label="Secondary" Indeterminate />
+                <BitCheckbox Color="BitColor.Secondary" Label="Secondary" Value />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox Color="BitColor.Tertiary" Label="Tertiary" />
+                <BitCheckbox Color="BitColor.Tertiary" Label="Tertiary" Indeterminate />
+                <BitCheckbox Color="BitColor.Tertiary" Label="Tertiary" Value />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox Color="BitColor.Info" Label="Info" />
+                <BitCheckbox Color="BitColor.Info" Label="Info" Indeterminate />
+                <BitCheckbox Color="BitColor.Info" Label="Info" Value />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox Color="BitColor.Success" Label="Success" />
+                <BitCheckbox Color="BitColor.Success" Label="Success" Indeterminate />
+                <BitCheckbox Color="BitColor.Success" Label="Success" Value />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox Color="BitColor.Warning" Label="Warning" />
+                <BitCheckbox Color="BitColor.Warning" Label="Warning" Indeterminate />
+                <BitCheckbox Color="BitColor.Warning" Label="Warning" Value />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox Color="BitColor.SevereWarning" Label="SevereWarning" />
+                <BitCheckbox Color="BitColor.SevereWarning" Label="SevereWarning" Indeterminate />
+                <BitCheckbox Color="BitColor.SevereWarning" Label="SevereWarning" Value />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox Color="BitColor.Error" Label="Error" />
+                <BitCheckbox Color="BitColor.Error" Label="Error" Indeterminate />
+                <BitCheckbox Color="BitColor.Error" Label="Error" Value />
+            </div>
+            <br /><br />
+            <div style="background:var(--bit-clr-fg-sec);color:var(--bit-clr-bg-sec);padding:1rem">
+                <div class="example-box">
+                    <BitCheckbox Color="BitColor.PrimaryBackground" Label="PrimaryBackground" />
+                    <BitCheckbox Color="BitColor.PrimaryBackground" Label="PrimaryBackground" Indeterminate />
+                    <BitCheckbox Color="BitColor.PrimaryBackground" Label="PrimaryBackground" Value />
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitCheckbox Color="BitColor.SecondaryBackground" Label="SecondaryBackground" />
+                    <BitCheckbox Color="BitColor.SecondaryBackground" Label="SecondaryBackground" Indeterminate />
+                    <BitCheckbox Color="BitColor.SecondaryBackground" Label="SecondaryBackground" Value />
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitCheckbox Color="BitColor.TertiaryBackground" Label="TertiaryBackground" />
+                    <BitCheckbox Color="BitColor.TertiaryBackground" Label="TertiaryBackground" Indeterminate />
+                    <BitCheckbox Color="BitColor.TertiaryBackground" Label="TertiaryBackground" Value />
+                </div>
+            </div>
+            <br />
+            <div style="padding:1rem">
+                <div class="example-box">
+                    <BitCheckbox Color="BitColor.PrimaryForeground" Label="PrimaryForeground" />
+                    <BitCheckbox Color="BitColor.PrimaryForeground" Label="PrimaryForeground" Indeterminate />
+                    <BitCheckbox Color="BitColor.PrimaryForeground" Label="PrimaryForeground" Value />
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitCheckbox Color="BitColor.SecondaryForeground" Label="SecondaryForeground" />
+                    <BitCheckbox Color="BitColor.SecondaryForeground" Label="SecondaryForeground" Indeterminate />
+                    <BitCheckbox Color="BitColor.SecondaryForeground" Label="SecondaryForeground" Value />
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitCheckbox Color="BitColor.TertiaryForeground" Label="TertiaryForeground" />
+                    <BitCheckbox Color="BitColor.TertiaryForeground" Label="TertiaryForeground" Indeterminate />
+                    <BitCheckbox Color="BitColor.TertiaryForeground" Label="TertiaryForeground" Value />
+                </div>
+            </div>
+            <br />
+            <div style="padding:1rem">
+                <div class="example-box">
+                    <BitCheckbox Color="BitColor.PrimaryBorder" Label="PrimaryBorder" />
+                    <BitCheckbox Color="BitColor.PrimaryBorder" Label="PrimaryBorder" Indeterminate />
+                    <BitCheckbox Color="BitColor.PrimaryBorder" Label="PrimaryBorder" Value />
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitCheckbox Color="BitColor.SecondaryBorder" Label="SecondaryBorder" />
+                    <BitCheckbox Color="BitColor.SecondaryBorder" Label="SecondaryBorder" Indeterminate />
+                    <BitCheckbox Color="BitColor.SecondaryBorder" Label="SecondaryBorder" Value />
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitCheckbox Color="BitColor.TertiaryBorder" Label="TertiaryBorder" />
+                    <BitCheckbox Color="BitColor.TertiaryBorder" Label="TertiaryBorder" Indeterminate />
+                    <BitCheckbox Color="BitColor.TertiaryBorder" Label="TertiaryBorder" Value />
+                </div>
+            </div>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
+        <div>Explore styling and class customization for BitCheckbox, including component styles, custom classes, and detailed styles.</div>
+        <br /><br />
+        <div>Component's Style & Class:</div>
+        <br />
+        <div class="example-content">
+            <BitCheckbox Label="Styled checkbox" Style="color: dodgerblue; text-shadow: lightskyblue 0 0 1rem;" />
+            <br />
+            <BitCheckbox Label="Classed checkbox" Class="custom-class" />
+        </div>
+        <br /><br /><br />
+        <div><b>Styles</b> & <b>Classes</b>:</div>
+        <br />
+        <div class="example-content">
+            <BitCheckbox Label="Styles"
+                         Styles="@(new() { Checked = "--check-color: deeppink; --icon-color: white;",
                                                Label = "color: var(--check-color);",
                                                Box = "border-radius: 50%; border-color: var(--check-color); background-color: var(--check-color);",
                                                Icon = "color: var(--icon-color);" })" />
-                <br />
-                <BitCheckbox Label="Classes"
-                             Classes="@(new() { Checked = "custom-checked",
+            <br />
+            <BitCheckbox Label="Classes"
+                         Classes="@(new() { Checked = "custom-checked",
                                                 Icon = "custom-icon",
                                                 Label="custom-label",
                                                 Box="custom-box" })" />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+        </div>
+    </DemoSection>
 
-    <ComponentExampleBox Title="Validation" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-        <ExamplePreview>
-            <div>Use data annotations to validate the BitCheckbox component.</div>
+    <DemoSection Title="RTL" RazorCode="@example12RazorCode" Id="example12">
+        <div>Use BitCheckbox in right-to-left (RTL).</div>
+        <br />
+        <div dir="rtl">
+            <BitCheckbox Dir="BitDir.Rtl" Label="چکباکس راست به چپ" />
             <br />
-            <div>
-                @if (string.IsNullOrEmpty(SuccessMessage))
-                {
-                    <EditForm Model="validationModel"
-                              OnValidSubmit="HandleValidSubmit"
-                              OnInvalidSubmit="HandleInvalidSubmit">
-                        <DataAnnotationsValidator />
-                        <BitCheckbox Label="I agree with the terms and conditions."
-                                     @bind-Value="validationModel.TermsAgreement" />
-                        <ValidationMessage For="@(() => validationModel.TermsAgreement)" />
-                        <br />
-                        <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
-                    </EditForm>
-                }
-                else
-                {
-                    <BitMessage Color="BitColor.Success">@SuccessMessage</BitMessage>
-                }
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="RTL" RazorCode="@example10RazorCode" Id="example10">
-        <ExamplePreview>
-            <div>Use BitCheckbox in right-to-left (RTL).</div>
+            <BitCheckbox Dir="BitDir.Rtl" Label="چکباکس غیرفعال" IsEnabled="false" />
             <br />
-            <div dir="rtl">
-                <BitCheckbox Dir="BitDir.Rtl" Label="چکباکس راست به چپ" />
-                <br />
-                <BitCheckbox Dir="BitDir.Rtl" Label="چکباکس غیرفعال" IsEnabled="false" />
-                <br />
-                <BitCheckbox Dir="BitDir.Rtl" Label="چکباکس غیرفعال چک شده" IsEnabled="false" Value="true" />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-</ComponentDemo>
+            <BitCheckbox Dir="BitDir.Rtl" Label="چکباکس غیرفعال چک شده" IsEnabled="false" Value="true" />
+        </div>
+    </DemoSection>
+</DemoPage>

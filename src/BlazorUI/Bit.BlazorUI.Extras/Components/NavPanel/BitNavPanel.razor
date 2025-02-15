@@ -21,7 +21,8 @@
                   Throttle="10"
                   OnMove="HandleOnSwipeMove"
                   OnEnd="HandleOnSwipeEnd"
-                  OnTrigger="HandleOnSwipeTrigger">
+                  OnTrigger="HandleOnSwipeTrigger"
+                  OrientationLock="BitSwipeOrientation.Horizontal">
         <div style="@Styles?.Container" class="bit-npn-cnt @Classes?.Container">
             @if (Header is not null)
             {

@@ -2,9 +2,16 @@
 
 namespace Boilerplate.Shared.Controllers.Products;
 
-[Route("api/[controller]/[action]/"), AuthorizedApi]
+[Route("api/[controller]/[action]/")]
+[AuthorizedApi]
 public interface IProductController : IAppController
 {
+    [HttpGet]
+    Task<List<ProductDto>> Get(CancellationToken cancellationToken) => default!;
+
+    [HttpGet]
+    Task<PagedResult<ProductDto>> GetProducts(CancellationToken cancellationToken) => default!;
+
     [HttpGet("{id}")]
     Task<ProductDto> Get(Guid id, CancellationToken cancellationToken);
 
@@ -16,10 +23,4 @@ public interface IProductController : IAppController
 
     [HttpDelete("{id}/{concurrencyStamp}")]
     Task Delete(Guid id, string concurrencyStamp, CancellationToken cancellationToken);
-
-    [HttpGet]
-    Task<PagedResult<ProductDto>> GetProducts(CancellationToken cancellationToken) => default!;
-
-    [HttpGet]
-    Task<List<ProductDto>> Get(CancellationToken cancellationToken) => default!;
 }

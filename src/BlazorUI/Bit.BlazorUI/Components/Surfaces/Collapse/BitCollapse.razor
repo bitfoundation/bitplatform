@@ -1,0 +1,16 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()"
+     aria-label="@AriaLabel">
+    <div role="region"
+         style="@Styles?.Content"
+         class="bit-col-con @(Expanded ? "bit-col-cex" : "bit-col-cco") @Classes?.Content"
+         tabindex="@(IsEnabled ? 0 : -1)">
+        @ChildContent
+    </div>
+</div>

@@ -4,6 +4,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// A BitDatePicker offers a drop-down control that’s optimized for picking a single date from a calendar view where contextual information like the day of the week or fullness of the calendar is important.
+/// </summary>
 public partial class BitDatePicker : BitInputBase<DateTimeOffset?>, IAsyncDisposable
 {
     private const int MAX_WIDTH = 470;
@@ -498,6 +501,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>, IAsyncDispos
         ClassBuilder.Register(() => Standalone ? "bit-dtp-sta" : string.Empty);
 
         ClassBuilder.Register(() => _hasFocus ? $"bit-dtp-foc {Classes?.Focused}" : string.Empty);
+
+        ClassBuilder.Register(() => IsEnabled && Required ? "bit-dtp-req" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -530,7 +535,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>, IAsyncDispos
         if (firstRender is false) return;
         if (Responsive is false) return;
 
-        await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, _dotnetObj);
+        await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, BitSwipeOrientation.Vertical, _dotnetObj);
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out DateTimeOffset? result, [NotNullWhen(false)] out string? validationErrorMessage)

@@ -2,6 +2,9 @@
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// The PullToRefresh component is used to add the pull down to refresh feature to a page or a specific element.
+/// </summary>
 public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
 {
     private decimal _diff;

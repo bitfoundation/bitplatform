@@ -1,4 +1,5 @@
-﻿namespace Boilerplate.Shared.Dtos.Products;
+﻿//+:cnd:noEmit
+namespace Boilerplate.Shared.Dtos.Products;
 
 [DtoResourceType(typeof(AppStrings))]
 public partial class ProductDto
@@ -27,4 +28,32 @@ public partial class ProductDto
     public string? CategoryName { get; set; }
 
     public byte[] ConcurrencyStamp { get; set; } = [];
+
+    public string? ImageFileName { get; set; }
+
+
+    public string? GetProductImageUrl(Uri absoluteServerAddress)
+    {
+        return ImageFileName is null
+            ? null
+            : new Uri(absoluteServerAddress, $"/api/Attachment/GetProductImage/{Id}?v={ConcurrencyStamp}").ToString();
+    }
+
+    public string FormattedPrice => FormatPrice();
+
+    private string FormatPrice()
+    {
+        if (CultureInfoManager.MultilingualEnabled)
+        {
+            return CultureInfo.CurrentCulture.TextInfo.IsRightToLeft
+                    ? $"{Price:N0} {CultureInfo.CurrentCulture.NumberFormat.CurrencySymbol}"
+                    : Price.ToString("C");
+        }
+
+        return $"${Price:N2}";
+    }
+
+    //#if (module == "Sales")
+    public string PageUrl => $"{Urls.ProductPage}/{Id}/{Uri.EscapeDataString(Name!)}";
+    //#endif
 }

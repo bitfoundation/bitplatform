@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-// bit version: 9.2.1-pre-02
+// bit version: 9.4.2-pre-01
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 //#if (notification == true)
@@ -52,6 +52,10 @@ self.serverHandledUrls = [
     /\/signin-/,
     /\/.well-known/,
     /\/sitemap.xml/,
+    //#if (module == "Sales")
+    /\/products.xml/,
+    //#endif
+    /\/sitemap_index.xml/
 ];
 
 self.defaultUrl = "/";

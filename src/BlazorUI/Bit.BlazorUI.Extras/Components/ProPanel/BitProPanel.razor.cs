@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// ProPanel is an advanced version of normal Panel with additional features that tailored to more usual use-cases.
+/// </summary>
 public partial class BitProPanel : BitComponentBase
 {
     /// <summary>

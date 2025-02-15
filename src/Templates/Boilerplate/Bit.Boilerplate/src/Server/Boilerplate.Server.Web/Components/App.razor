@@ -65,7 +65,7 @@
         <LoadingComponent @rendermode="null" />
     }
 
-    @if (HttpContext.Request.IsCrawlerClient())
+    @if (HttpContext.Request.DisableStreamPrerendering())
     {
         // For StreamRenderingDisabledContainer, read comments in App.razor.cs
         <StreamRenderingDisabledContainer>

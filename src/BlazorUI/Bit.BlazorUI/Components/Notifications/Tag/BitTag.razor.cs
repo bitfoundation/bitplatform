@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// Tag component provides a visual representation of an attribute, person, or asset.
+/// </summary>
 public partial class BitTag : BitComponentBase
 {
     /// <summary>

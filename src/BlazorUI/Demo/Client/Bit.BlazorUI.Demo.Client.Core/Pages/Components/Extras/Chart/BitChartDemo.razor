@@ -1,6 +1,5 @@
 ﻿@page "/components/chart"
 
-@inherits AppComponentBase
 <PageOutlet Url="components/chart"
             Title="Chart"
             Description="Chart component of the bit BlazorUI components" />
@@ -12,11 +11,11 @@
     }
     else
     {
-        <ComponentDemo ComponentName="Chart"
-                       ComponentDescription="Simple and flexible charting component for data visualization, which supports eight chart types: bar, line, area, pie, bubble, radar, polar, and scatter."
+        <DemoPage Name="Chart"
+                       Description="Simple and flexible charting component for data visualization, which supports eight chart types: bar, line, area, pie, bubble, radar, polar, and scatter."
                        Notes="To use this component, you need to install the `Bit.BlazorUI.Extras` nuget package, as described in the Optional steps of the Getting started page."
-                       ComponentParameters="componentParameters"
-                       ComponentSubClasses="componentSubClasses">
+                       Parameters="componentParameters"
+                       SubClasses="componentSubClasses">
             <_BitChartBarDemo />
 
             <_BitChartHorizontalBarDemo />
@@ -38,6 +37,6 @@
             <_BitChartBubbleDemo />
 
             <_BitChartRadarDemo />
-        </ComponentDemo>
+        </DemoPage>
     }
 </div>

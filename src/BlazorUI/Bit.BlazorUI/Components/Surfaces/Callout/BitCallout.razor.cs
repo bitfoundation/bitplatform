@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// A callout is an anchored tip that can be used to teach people or guide them through the app without blocking them.
+/// </summary>
 public partial class BitCallout : BitComponentBase, IAsyncDisposable
 {
     private bool _disposed;

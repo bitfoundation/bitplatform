@@ -1,0 +1,42 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    <div style="@Styles?.Container" class="bit-msb-con @Classes?.Container">
+        <div style="@Styles?.Header" class="bit-msb-hdr @Classes?.Header">
+            <BitText Typography="BitTypography.H5" 
+                     Color="BitColor.Tertiary"
+                     Style="@(Styles?.Title)"
+                     Class="@(Classes?.Title)">
+                @Title
+            </BitText>
+
+            <BitSpacer Style="@(Styles?.Spacer)" Class="@(Classes?.Spacer)" />
+
+            <BitButton OnClick="CloseModal"
+                       IconName="ChromeClose" 
+                       Color="BitColor.Tertiary"
+                       Variant="BitVariant.Text"
+                       Styles="@Styles?.CloseButton"
+                       Classes="@Classes?.CloseButton" />
+        </div>
+
+        <div style="@Styles?.Body" class="bit-msb-bdy @Classes?.Body">
+            @Body
+        </div>
+
+        <div style="@Styles?.Footer" class="bit-msb-ftr @Classes?.Footer">
+            <BitButton OnClick="OnOkClick" 
+                       Color="BitColor.Tertiary"
+                       Styles="@Styles?.OkButton"
+                       Classes="@Classes?.OkButton">
+                @(OkText ?? "Ok")
+            </BitButton>
+        </div>
+    </div>
+</div>

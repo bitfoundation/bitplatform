@@ -3,17 +3,21 @@
 using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.SignalR;
 //#endif
+using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Products;
+using Boilerplate.Server.Api.Models.Products;
 using Boilerplate.Shared.Controllers.Products;
 
 namespace Boilerplate.Server.Api.Controllers.Products;
 
-[ApiController, Route("api/[controller]/[action]"), Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+[ApiController, Route("api/[controller]/[action]")]
+[Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
 public partial class ProductController : AppControllerBase, IProductController
 {
     //#if (signalR == true)
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
+    [AutoInject] private ResponseCacheService responseCacheService = default!;
 
     [HttpGet, EnableQuery]
     public IQueryable<ProductDto> Get()
@@ -51,6 +55,8 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.Products.AddAsync(entityToAdd, cancellationToken);
 
+        await Validate(entityToAdd, cancellationToken);
+
         await DbContext.SaveChangesAsync(cancellationToken);
 
         //#if (signalR == true)
@@ -63,11 +69,16 @@ public partial class ProductController : AppControllerBase, IProductController
     [HttpPut]
     public async Task<ProductDto> Update(ProductDto dto, CancellationToken cancellationToken)
     {
-        var entityToUpdate = dto.Map();
+        var entityToUpdate = await DbContext.Products.FindAsync([dto.Id], cancellationToken)
+            ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
 
-        DbContext.Update(entityToUpdate);
+        dto.Patch(entityToUpdate);
+
+        await Validate(entityToUpdate, cancellationToken);
 
         await DbContext.SaveChangesAsync(cancellationToken);
+
+        await responseCacheService.PurgeCache("/", $"/product/{dto.Id}/{Uri.EscapeDataString(dto.Name!)}", $"/api/ProductView/Get/{dto.Id}" /*You can also use Url.Action to build urls.*/);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -79,9 +90,16 @@ public partial class ProductController : AppControllerBase, IProductController
     [HttpDelete("{id}/{concurrencyStamp}")]
     public async Task Delete(Guid id, string concurrencyStamp, CancellationToken cancellationToken)
     {
-        DbContext.Products.Remove(new() { Id = id, ConcurrencyStamp = Convert.FromBase64String(Uri.UnescapeDataString(concurrencyStamp)) });
+        var entityToDelete = await DbContext.Products.FindAsync([id], cancellationToken)
+            ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
+
+        entityToDelete.ConcurrencyStamp = Convert.FromHexString(concurrencyStamp);
+
+        DbContext.Remove(entityToDelete);
 
         await DbContext.SaveChangesAsync(cancellationToken);
+
+        await responseCacheService.PurgeCache("/", $"/product/{entityToDelete.Id}/{Uri.EscapeDataString(entityToDelete.Name!)}", $"/api/ProductView/Get/{entityToDelete.Id}" /*You can also use Url.Action to build urls.*/);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -96,5 +114,13 @@ public partial class ProductController : AppControllerBase, IProductController
         await appHubContext.Clients.Group("AuthenticatedClients").SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.DASHBOARD_DATA_CHANGED, null, cancellationToken);
     }
     //#endif
+
+    private async Task Validate(Product product, CancellationToken cancellationToken)
+    {
+        // Remote validation example: Any errors thrown here will be displayed in the client's edit form component.
+        if (DbContext.Entry(product).Property(c => c.Name).IsModified
+            && await DbContext.Products.AnyAsync(p => p.Name == product.Name, cancellationToken: cancellationToken))
+            throw new ResourceValidationException((nameof(ProductDto.Name), [Localizer[nameof(AppStrings.DuplicateProductName)]]));
+    }
 }
 

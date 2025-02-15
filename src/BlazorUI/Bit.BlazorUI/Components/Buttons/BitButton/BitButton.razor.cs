@@ -2,6 +2,9 @@
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// Buttons enable users to take actions with a single tap. They're commonly used in forms, dialog panels, and specialized for tasks like navigation or repeated actions.
+/// </summary>
 public partial class BitButton : BitComponentBase
 {
     private string? _rel;
@@ -113,6 +116,11 @@ public partial class BitButton : BitComponentBase
     [Parameter] public bool IconOnly { get; set; }
 
     /// <summary>
+    /// The url of the custom icon to render inside the button.
+    /// </summary>
+    [Parameter] public string? IconUrl { get; set; }
+
+    /// <summary>
     /// Determines whether the button is in loading mode or not.
     /// </summary>
     [Parameter, TwoWayBound]
@@ -214,6 +222,8 @@ public partial class BitButton : BitComponentBase
                                     IconOnly
                                         ? "bit-btn-ntx"
                                         : string.Empty);
+
+        ClassBuilder.Register(() => SecondaryText.HasValue() || SecondaryTemplate is not null ? "bit-btn-hsc" : string.Empty);
 
         ClassBuilder.Register(() => Variant switch
         {

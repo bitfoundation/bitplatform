@@ -13,7 +13,7 @@ public static partial class Urls
 
     public const string AboutPage = "/about";
 
-    //#if (sample == "Admin")
+    //#if (module == "Admin")
     public const string AddOrEditCategoryPage = "/add-edit-category";
 
     public const string CategoriesPage = "/categories";
@@ -22,8 +22,12 @@ public static partial class Urls
 
     public const string ProductsPage = "/products";
 
-    //#elif (sample == "Todo")
+    //#endif
+    //#if (sample == true)
     public const string TodoPage = "/todo";
+    //#endif
+    //#if (module == "Sales")
+    public const string ProductPage = "/product";
     //#endif
 
     public static readonly string[] All = typeof(Urls).GetFields()

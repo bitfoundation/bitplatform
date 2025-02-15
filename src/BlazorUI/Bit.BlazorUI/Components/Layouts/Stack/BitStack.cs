@@ -2,6 +2,9 @@
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// A Stack is a container-type component that abstracts the implementation of a flexbox in order to define the layout of its children components.
+/// </summary>
 public partial class BitStack : BitComponentBase
 {
     /// <summary>
@@ -121,6 +124,8 @@ public partial class BitStack : BitComponentBase
 
     protected override void RegisterCssStyles()
     {
+        StyleBuilder.Register(() => "display:flex"); // to preserve display so it can't be overridden easily.
+
         StyleBuilder.Register(() => $"flex-direction:{(Horizontal ? "row" : "column")}{(Reversed ? "-reverse" : string.Empty)}");
 
         StyleBuilder.Register(() => $"gap:{Gap ?? "1rem"}");

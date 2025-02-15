@@ -56,7 +56,14 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 
 
     private CancellationTokenSource cts = new();
-    protected CancellationToken CurrentCancellationToken => cts.Token;
+    protected CancellationToken CurrentCancellationToken
+    {
+        get
+        {
+            cts.Token.ThrowIfCancellationRequested();
+            return cts.Token;
+        }
+    }
 
     protected bool InPrerenderSession => AppPlatform.IsBlazorHybrid is false && JSRuntime.IsInitialized() is false;
 
@@ -222,9 +229,12 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     /// <summary>
     /// Cancells running codes inside current component.
     /// </summary>
-    protected void Abort()
+    protected async Task Abort()
     {
-        cts.Cancel();
+        if (cts.IsCancellationRequested is false)
+        {
+            await cts.CancelAsync();
+        }
         cts.Dispose();
         cts = new();
     }
@@ -241,7 +251,6 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
         if (disposing)
         {
             await PrerenderStateService.DisposeAsync();
-            cts.Cancel();
             cts.Dispose();
         }
     }
@@ -260,6 +269,6 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
         }
         parameters["ComponentType"] = GetType().FullName;
 
-        ExceptionHandler.Handle(exp, displayKind: ExceptionDisplayKind.Interrupting, parameters, lineNumber, memberName, filePath);
+        ExceptionHandler.Handle(exp, ExceptionDisplayKind.Default, parameters, lineNumber, memberName, filePath);
     }
 }

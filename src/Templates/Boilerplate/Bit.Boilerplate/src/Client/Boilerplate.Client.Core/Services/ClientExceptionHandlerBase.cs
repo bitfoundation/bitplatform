@@ -8,11 +8,11 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
 {
     [AutoInject] protected readonly SnackBarService SnackBarService = default!;
     [AutoInject] protected readonly ITelemetryContext TelemetryContext = default!;
-    [AutoInject] protected readonly MessageBoxService MessageBoxService = default!;
+    [AutoInject] protected readonly BitMessageBoxService MessageBoxService = default!;
     [AutoInject] protected readonly ILogger<ClientExceptionHandlerBase> Logger = default!;
 
     public void Handle(Exception exception,
-        ExceptionDisplayKind displayKind = ExceptionDisplayKind.Interrupting,
+        ExceptionDisplayKind displayKind = ExceptionDisplayKind.Default,
         Dictionary<string, object?>? parameters = null,
         [CallerLineNumber] int lineNumber = 0,
         [CallerMemberName] string memberName = "",
@@ -50,17 +50,30 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
 
         string exceptionMessageToShow = GetExceptionMessageToShow(exception);
 
+        if (displayKind is ExceptionDisplayKind.Default)
+        {
+            displayKind = GetDisplayKind(exception);
+        }
+
         if (displayKind is ExceptionDisplayKind.NonInterrupting)
         {
             SnackBarService.Error("Boilerplate", exceptionMessageToShow);
         }
         else if (displayKind is ExceptionDisplayKind.Interrupting)
         {
-            MessageBoxService.Show(exceptionMessageToShow, Localizer[nameof(AppStrings.Error)]);
+            _ = MessageBoxService.Show(Localizer[nameof(AppStrings.Error)], exceptionMessageToShow);
         }
         else if (displayKind is ExceptionDisplayKind.None && isDevEnv)
         {
             Debugger.Break();
         }
+    }
+
+    private ExceptionDisplayKind GetDisplayKind(Exception exception)
+    {
+        if (exception is ServerConnectionException or ReusedRefreshTokenException)
+            return ExceptionDisplayKind.NonInterrupting;
+
+        return ExceptionDisplayKind.Interrupting;
     }
 }

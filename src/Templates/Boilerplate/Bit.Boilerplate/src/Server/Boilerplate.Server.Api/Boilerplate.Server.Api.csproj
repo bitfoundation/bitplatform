@@ -51,6 +51,7 @@
         <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />
         <Using Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
         <Using Include="Boilerplate.Shared" />
+        <Using Include="Boilerplate.Shared.Attributes" />
         <Using Include="Boilerplate.Server.Api.Data" />
         <Using Include="Boilerplate.Server.Api.Mappers" />
         <Using Include="Microsoft.AspNetCore.Identity" />
@@ -94,7 +95,7 @@
     -->
     <PropertyGroup>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-        <EnableSdkContainerDebugging Condition="'$(Environment)' == 'Production'">True</EnableSdkContainerDebugging>
+        <EnableSdkContainerDebugging Condition="'$(Environment)' == 'Development'">True</EnableSdkContainerDebugging>
     </PropertyGroup>
 
 </Project>

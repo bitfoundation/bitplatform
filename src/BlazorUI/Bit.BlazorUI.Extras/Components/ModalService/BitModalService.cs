@@ -3,6 +3,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// A core service to show any content inside a centralized <see cref="BitModal"/> using <see cref="BitModalContainer"/>.
+/// </summary>
 public class BitModalService
 {
     private BitModalContainer? _container;

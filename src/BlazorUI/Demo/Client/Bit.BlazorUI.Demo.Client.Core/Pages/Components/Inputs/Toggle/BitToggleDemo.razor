@@ -4,147 +4,129 @@
             Title="Toggle"
             Description="toggle component of the bit BlazorUI components" />
 
-<ComponentDemo ComponentName="Toggle"
-               ComponentDescription="A toggle represents a physical switch that allows someone to choose between two mutually exclusive options.  For example, “On/Off”, “Show/Hide”. Choosing an option should produce an immediate result."
-               ComponentParameters="componentParameters"
-               ComponentSubClasses="componentSubClasses">
-    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <ExamplePreview>
-            <BitToggle Label="Basic" />
+<DemoPage Name="Toggle"
+          Description="A toggle represents a physical switch that allows someone to choose between two mutually exclusive options.  For example, “On/Off”, “Show/Hide”. Choosing an option should produce an immediate result."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses">
+    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <BitToggle Label="Basic" />
+        <br />
+        <BitToggle Label="Disabled" IsEnabled="false" />
+    </DemoSection>
+
+    <DemoSection Title="Texts" RazorCode="@example2RazorCode" Id="example2">
+        <div>Customize BitToggle On and Off texts, providing more context for its state.</div><br />
+        <BitToggle Label="Text" Text="This is a toggle!" />
+        <br /><br />
+        <BitToggle Label="OnText & OffText" OnText="Toggle is On" OffText="Toggle is Off" />
+    </DemoSection>
+
+    <DemoSection Title="Label" RazorCode="@example3RazorCode" Id="example3">
+        <div>Use inline labels and custom label templates in BitToggle.</div>
+        <br /><br />
+        <div>Inline:</div><br />
+        <BitToggle Label="This is an inline label" Inline />
+        <br /><br /><br /><br />
+        <div>LabelTemplate:</div><br />
+        <BitToggle>
+            <LabelTemplate>
+                <div style="display:flex;align-items:center;gap:10px">
+                    <BitLabel Style="color:green">This is custom Label</BitLabel>
+                    <BitIcon IconName="@BitIconName.Filter" />
+                </div>
+            </LabelTemplate>
+        </BitToggle>
+    </DemoSection>
+
+    <DemoSection Title="Reversed" RazorCode="@example4RazorCode" Id="example4">
+        <div>Reverse the label and input position of BitToggle.</div>
+        <br /><br />
+        <div>Default:</div><br />
+        <BitToggle Label="This is a reversed label" Reversed />
+        <br /><br /><br /><br />
+        <div>Inline:</div><br />
+        <BitToggle Label="This is a reversed inline label" Reversed Inline />
+    </DemoSection>
+
+    <DemoSection Title="FullWidth" RazorCode="@example5RazorCode" Id="example5">
+        <div>Full width BitToggle in Inline mode.</div>
+        <br /><br />
+        <div>Default:</div><br />
+        <BitToggle Label="This is a full-width toggle" FullWidth Inline />
+        <br /><br /><br /><br />
+        <div>Reversed:</div><br />
+        <BitToggle Label="This is a reversed full-width toggle" Reversed FullWidth Inline />
+        <br /><br />
+        <BitToggle FullWidth Inline>
+            <LabelTemplate>
+                <BitActionButton FullWidth>go go go</BitActionButton>
+            </LabelTemplate>
+        </BitToggle>
+    </DemoSection>
+
+    <DemoSection Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <div class="example-box">
+            <div>Bind value one-way and two-way in BitToggle</div>
             <br />
-            <BitToggle Label="Disabled" IsEnabled="false" />
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Texts" RazorCode="@example2RazorCode" Id="example2">
-        <ExamplePreview>
-            <div>Customize BitToggle On and Off texts, providing more context for its state.</div><br />
-            <BitToggle Label="Text" Text="This is a toggle!" />
-            <br /><br />
-            <BitToggle Label="OnText & OffText" OnText="Toggle is On" OffText="Toggle is Off" />
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Label" RazorCode="@example3RazorCode" Id="example3">
-        <ExamplePreview>
-            <div>Use inline labels and custom label templates in BitToggle.</div>
-            <br /><br />
-            <div>Inline:</div><br />
-            <BitToggle Label="This is an inline label" Inline />
+            <BitToggle Label="One-way" Value="oneWayValue" />
+            <br />
+            <BitToggleButton @bind-IsChecked="oneWayValue" OnText="On" OffText="Off" />
             <br /><br /><br /><br />
-            <div>LabelTemplate:</div><br />
-            <BitToggle>
-                <LabelTemplate>
-                    <div style="display:flex;align-items:center;gap:10px">
-                        <BitLabel Style="color:green">This is custom Label</BitLabel>
-                        <BitIcon IconName="@BitIconName.Filter" />
-                    </div>
-                </LabelTemplate>
-            </BitToggle>
-        </ExamplePreview>
-    </ComponentExampleBox>
+            <BitToggle Label="Two-way" @bind-Value="twoWayValue" />
+            <br />
+            <BitToggleButton @bind-IsChecked="twoWayValue" OnText="On" OffText="Off" />
+        </div>
+    </DemoSection>
 
-    <ComponentExampleBox Title="Reversed" RazorCode="@example4RazorCode" Id="example4">
-        <ExamplePreview>
-            <div>Reverse the label and input position of BitToggle.</div>
-            <br /><br />
-            <div>Default:</div><br />
-            <BitToggle Label="This is a reversed label" Reversed />
-            <br /><br /><br /><br />
-            <div>Inline:</div><br />
-            <BitToggle Label="This is a reversed inline label" Reversed Inline />
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="FullWidth" RazorCode="@example5RazorCode" Id="example5">
-        <ExamplePreview>
-            <div>Full width BitToggle in Inline mode.</div>
-            <br /><br />
-            <div>Default:</div><br />
-            <BitToggle Label="This is a full-width toggle" FullWidth Inline />
-            <br /><br /><br /><br />
-            <div>Reversed:</div><br />
-            <BitToggle Label="This is a reversed full-width toggle" Reversed FullWidth Inline />
-            <br /><br />
-            <BitToggle FullWidth Inline>
-                <LabelTemplate>
-                    <BitActionButton FullWidth>go go go</BitActionButton>
-                </LabelTemplate>
-            </BitToggle>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-        <ExamplePreview>
-            <div class="example-box">
-                <div>Bind value one-way and two-way in BitToggle</div>
-                <br />
-                <BitToggle Label="One-way" Value="oneWayValue" />
-                <br />
-                <BitToggleButton @bind-IsChecked="oneWayValue" OnText="On" OffText="Off" />
-                <br /><br /><br /><br />
-                <BitToggle Label="Two-way" @bind-Value="twoWayValue" />
-                <br />
-                <BitToggleButton @bind-IsChecked="twoWayValue" OnText="On" OffText="Off" />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
-        <ExamplePreview>
-            <div class="example-box">
-                <div>Customize the appearance of BitToggle using styles and CSS classes.</div>
-                <br />
-                <BitToggle Label="Styles"
-                           Styles="@(new() { Root = "--toggle-background: lightgray;", Checked = "--toggle-background: #2ecc71;",
+    <DemoSection Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
+        <div class="example-box">
+            <div>Customize the appearance of BitToggle using styles and CSS classes.</div>
+            <br />
+            <BitToggle Label="Styles"
+                       Styles="@(new() { Root = "--toggle-background: lightgray;", Checked = "--toggle-background: #2ecc71;",
                                              Thumb = "background: whitesmoke; height: 28px; width: 28px;",
                                              Button = "background: var(--toggle-background); border: none; border-radius: 60px; padding: 0; height: 30px; width: 50px;" } )" />
-                <br />
-                <BitToggle Label="Classes"
-                           Classes="@(new() { Thumb = "custom-thumb",
+            <br />
+            <BitToggle Label="Classes"
+                       Classes="@(new() { Thumb = "custom-thumb",
                                               Button = "custom-button",
                                               Checked = "custom-check" } )" />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+        </div>
+    </DemoSection>
 
-    <ComponentExampleBox Title="Validation" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-        <ExamplePreview>
-            <div>
-                <div>Use BitToggle within a form and validate its state.</div>
-                <br />
-                @if (string.IsNullOrEmpty(SuccessMessage))
-                {
-                    <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
-                        <DataAnnotationsValidator />
-
-                        <BitToggle Label="Terms and conditions" Text="I agree." @bind-Value="validationModel.TermsAgreement" />
-                        <ValidationMessage For="@(() => validationModel.TermsAgreement)" />
-
-                        <br />
-
-                        <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
-                    </EditForm>
-                }
-                else
-                {
-                    <BitMessage Color="BitColor.Success">@SuccessMessage</BitMessage>
-                }
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" Id="example9">
-        <ExamplePreview>
-            <div>Use BitToggle in right-to-left (RTL).</div>
+    <DemoSection Title="Validation" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div>
+            <div>Use BitToggle within a form and validate its state.</div>
             <br />
-            <div dir="rtl">
-                <BitToggle Label="این یک تاگل است" Dir="BitDir.Rtl" OnText="روشن" OffText="خاموش" />
-                <br /><br /><br />
-                <BitToggle Label="این یک تاگل خطی است" Dir="BitDir.Rtl" Inline />
-                <br /><br /><br />
-                <BitToggle Label="این یک تاگل خطی برعکس است" Dir="BitDir.Rtl" Reversed Inline />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-</ComponentDemo>
+            @if (string.IsNullOrEmpty(SuccessMessage))
+            {
+                <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                    <DataAnnotationsValidator />
+
+                    <BitToggle Label="Terms and conditions" Text="I agree." @bind-Value="validationModel.TermsAgreement" />
+                    <ValidationMessage For="@(() => validationModel.TermsAgreement)" />
+
+                    <br />
+
+                    <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+                </EditForm>
+            }
+            else
+            {
+                <BitMessage Color="BitColor.Success">@SuccessMessage</BitMessage>
+            }
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="RTL" RazorCode="@example9RazorCode" Id="example9">
+        <div>Use BitToggle in right-to-left (RTL).</div>
+        <br />
+        <div dir="rtl">
+            <BitToggle Label="این یک تاگل است" Dir="BitDir.Rtl" OnText="روشن" OffText="خاموش" />
+            <br /><br /><br />
+            <BitToggle Label="این یک تاگل خطی است" Dir="BitDir.Rtl" Inline />
+            <br /><br /><br />
+            <BitToggle Label="این یک تاگل خطی برعکس است" Dir="BitDir.Rtl" Reversed Inline />
+        </div>
+    </DemoSection>
+</DemoPage>

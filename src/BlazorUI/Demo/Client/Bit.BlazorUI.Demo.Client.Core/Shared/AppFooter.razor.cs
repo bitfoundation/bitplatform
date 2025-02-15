@@ -9,6 +9,6 @@ public partial class AppFooter
     {
         if (AppShell is null) return;
 
-        await AppShell.GoToTop();
+        await AppShell.GoToTop(BitScrollBehavior.Instant);
     }
 }

@@ -1,24 +1,6 @@
-﻿.shimmer-container {
-    padding: 1rem 0;
-}
-
-::deep {
-    .custom-content {
-        gap: 1.7rem;
-        width: 100%;
-        display: flex;
-        align-items: center;
-    }
-
-    .custom-content .column {
-        gap: 0.5rem;
-        flex-flow: column;
-        align-items: start;
-    }
-
+﻿::deep {
     .custom-class {
-        border-radius: 1rem;
-        box-shadow: aqua 0 0 1rem;
+        box-shadow: aqua 0 0 1rem 0.5rem;
     }
 
     .custom-root {

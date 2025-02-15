@@ -4,10 +4,10 @@
     <BitStack Horizontal Gap="0.5rem" VerticalAlign="BitAlignment.Center">
         @if (isCrossLayoutPage is true)
         {
-            <BitButton Href="@($"{Urls.SignUpPage}?return-url={NavigationManager.GetRelativePath()}")">
+            <BitButton Href="@($"{Urls.SignUpPage}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")">
                 @Localizer[nameof(AppStrings.SignUp)]
             </BitButton>
-            <BitButton Href="@($"{Urls.SignInPage}?return-url={NavigationManager.GetRelativePath()}")" Variant="BitVariant.Text" Color="BitColor.Tertiary">
+            <BitButton Href="@($"{Urls.SignInPage}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")" Variant="BitVariant.Text" Color="BitColor.Tertiary">
                 @Localizer[nameof(AppStrings.SignIn)]
             </BitButton>
         }
@@ -37,13 +37,12 @@
                    Variant="BitVariant.Text"
                    OnClick="WrapHandled(ToggleTheme)"
                    Color="BitColor.SecondaryBackground"
-                   IconName="@(currentTheme == AppThemeType.Light ? BitIconName.Sunny : BitIconName.ClearNight)" />
+                   IconName="@(currentTheme == AppThemeType.Light ? BitIconName.ClearNight : BitIconName.Sunny)" />
 
         @if (CultureInfoManager.MultilingualEnabled)
         {
-            <BitDropdown Items="cultures" Responsive
+            <BitDropdown Items="cultures"
                          FitWidth NoBorder Transparent
-                         Classes="@(new() { Callout="language-callout" })"
                          DefaultValue="@CultureInfo.CurrentUICulture.Name"
                          OnChange="WrapHandled((string c) => OnCultureChanged(c))">
                 <TextTemplate Context="item">

@@ -1,0 +1,14 @@
+﻿//+:cnd:noEmit
+@import '../../Styles/abstracts/_media-queries.scss';
+
+section {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+::deep {
+    .root-stack {
+        max-width: 60rem;
+    }
+}

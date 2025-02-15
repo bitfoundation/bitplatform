@@ -70,8 +70,8 @@ public partial class MainLayout
             ChildItems =
             [
                 new() { Text = "BasicList", Url = "/components/basiclist", AdditionalUrls = ["/components/basic-list"] },
-                new() { Text = "Carousel", Url = "/components/carousel" },
-                new() { Text = "Swiper", Url = "/components/swiper" },
+                new() { Text = "Carousel", Url = "/components/carousel", Description = "Slideshow" },
+                new() { Text = "Swiper", Url = "/components/swiper", Description = "Touch slider" },
                 new() { Text = "Timeline", Url = "/components/timeline" },
             ]
         },
@@ -118,6 +118,7 @@ public partial class MainLayout
                 new() { Text = "Accordion", Url = "/components/accordion", Description = "Expander" },
                 new() { Text = "Callout", Url = "/components/callout", Description = "Popover, Popup" },
                 new() { Text = "Card", Url = "/components/card" },
+                new() { Text = "Collapse", Url = "/components/collapse" },
                 new() { Text = "Dialog", Url = "/components/dialog" },
                 new() { Text = "Modal", Url = "/components/modal" },
                 new() { Text = "Panel", Url = "/components/panel" },
@@ -149,11 +150,14 @@ public partial class MainLayout
             Text = "Extras",
             ChildItems =
             [
-                new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"] },
+                new() { Text = "AppShell", Url = "/components/appshell" },
                 new() { Text = "Chart", Url = "/components/chart" },
+                new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"] },
+                new() { Text = "ErrorBoundary", Url = "/components/errorboundary" },
+                new() { Text = "InfiniteScrolling", Url = "/components/infinitescrolling" },
+                new() { Text = "MessageBox", Url = "/components/messagebox" },
                 new() { Text = "NavPanel", Url = "/components/navpanel" },
                 new() { Text = "PdfReader", Url = "/components/pdfreader" },
-                new() { Text = "AppShell", Url = "/components/appshell" },
                 new() { Text = "ProPanel", Url = "/components/propanel" },
                 new()
                 {

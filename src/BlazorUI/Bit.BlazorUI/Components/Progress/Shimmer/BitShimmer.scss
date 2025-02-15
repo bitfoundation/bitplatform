@@ -2,8 +2,9 @@
 
 .bit-smr {
     display: block;
+    --bit-smr-bg-clr: #{$clr-bg-ter};
 
-    @keyframes shimmer-wave-anim {
+    @keyframes bit-smr-anim-wave {
         0% {
             transform: translateX(-100%);
         }
@@ -13,7 +14,7 @@
         }
     }
 
-    @keyframes shimmer-pulse-anim {
+    @keyframes bit-smr-anim-pulse {
         0% {
             opacity: 0;
         }
@@ -23,7 +24,7 @@
         }
     }
 
-    @keyframes shimmer-opacity-anim {
+    @keyframes bit-smr-anim-opacity {
         0% {
             opacity: 0;
         }
@@ -34,11 +35,27 @@
     }
 }
 
+.bit-smr-lin {
+    width: 100%;
+    height: spacing(4);
+
+    .bit-smr-wrp {
+        border-radius: spacing(0.5);
+    }
+}
+
+.bit-smr-crl {
+    .bit-smr-wrp {
+        aspect-ratio: 1;
+        border-radius: 50%;
+    }
+}
+
 .bit-smr-cnt {
     animation-fill-mode: both;
     animation-duration: 0.367s;
     animation-timing-function: ease;
-    animation-name: shimmer-opacity-anim;
+    animation-name: bit-smr-anim-opacity;
 }
 
 .bit-smr-wrp {
@@ -47,33 +64,162 @@
     position: relative;
     animation-fill-mode: both;
     animation-duration: 0.367s;
-    animation-timing-function: ease;
-    animation-name: shimmer-opacity-anim;
     background-color: $clr-bg-sec;
-}
-
-.bit-smr-lin {
-    border-radius: spacing(0.5);
-}
-
-.bit-smr-crl {
-    aspect-ratio: 1;
-    border-radius: 50%;
+    animation-timing-function: ease;
+    animation-name: bit-smr-anim-opacity;
 }
 
 .bit-smr-anm {
     inset: 0;
     overflow: hidden;
     position: absolute;
-    background: $clr-bg-dis;
+    background: var(--bit-smr-bg-clr);
 }
 
 .bit-smr-wav {
     transform: translateX(-100%);
-    animation: shimmer-wave-anim 1.6s linear 0.5s infinite;
-    background: linear-gradient(90deg, transparent, $clr-bg-dis, transparent);
+    animation: bit-smr-anim-wave 1.6s linear 0.5s infinite;
+    background: linear-gradient(90deg, transparent, var(--bit-smr-bg-clr), transparent);
 }
 
 .bit-smr-pul {
-    animation: shimmer-pulse-anim 1.5s ease-in-out 0.5s infinite;
+    animation: bit-smr-anim-pulse 1.6s ease-in-out 0.5s infinite;
+}
+
+
+.bit-smr-pri {
+    --bit-smr-bg-clr: #{$clr-pri};
+}
+
+.bit-smr-sec {
+    --bit-smr-bg-clr: #{$clr-sec};
+}
+
+.bit-smr-ter {
+    --bit-smr-bg-clr: #{$clr-ter};
+}
+
+.bit-smr-inf {
+    --bit-smr-bg-clr: #{$clr-inf};
+}
+
+.bit-smr-suc {
+    --bit-smr-bg-clr: #{$clr-suc};
+}
+
+.bit-smr-wrn {
+    --bit-smr-bg-clr: #{$clr-wrn};
+}
+
+.bit-smr-swr {
+    --bit-smr-bg-clr: #{$clr-swr};
+}
+
+.bit-smr-err {
+    --bit-smr-bg-clr: #{$clr-err};
+}
+
+.bit-smr-pbg {
+    --bit-smr-bg-clr: #{$clr-bg-pri};
+}
+
+.bit-smr-sbg {
+    --bit-smr-bg-clr: #{$clr-bg-sec};
+}
+
+.bit-smr-tbg {
+    --bit-smr-bg-clr: #{$clr-bg-ter};
+}
+
+.bit-smr-pfg {
+    --bit-smr-bg-clr: #{$clr-fg-pri};
+}
+
+.bit-smr-sfg {
+    --bit-smr-bg-clr: #{$clr-fg-sec};
+}
+
+.bit-smr-tfg {
+    --bit-smr-bg-clr: #{$clr-fg-ter};
+}
+
+.bit-smr-pbr {
+    --bit-smr-bg-clr: #{$clr-brd-pri};
+}
+
+.bit-smr-sbr {
+    --bit-smr-bg-clr: #{$clr-brd-sec};
+}
+
+.bit-smr-tbr {
+    --bit-smr-bg-clr: #{$clr-brd-ter};
+}
+
+
+.bit-smr-bpri {
+    background-color: $clr-pri;
+}
+
+.bit-smr-bsec {
+    background-color: $clr-sec;
+}
+
+.bit-smr-bter {
+    background-color: $clr-ter;
+}
+
+.bit-smr-binf {
+    background-color: $clr-inf;
+}
+
+.bit-smr-bsuc {
+    background-color: $clr-suc;
+}
+
+.bit-smr-bwrn {
+    background-color: $clr-wrn;
+}
+
+.bit-smr-bswr {
+    background-color: $clr-swr;
+}
+
+.bit-smr-berr {
+    background-color: $clr-err;
+}
+
+.bit-smr-bpbg {
+    background-color: $clr-bg-pri;
+}
+
+.bit-smr-bsbg {
+    background-color: $clr-bg-sec;
+}
+
+.bit-smr-btbg {
+    background-color: $clr-bg-ter;
+}
+
+.bit-smr-bpfg {
+    background-color: $clr-fg-pri;
+}
+
+.bit-smr-bsfg {
+    background-color: $clr-fg-sec;
+}
+
+.bit-smr-btfg {
+    background-color: $clr-fg-ter;
+}
+
+.bit-smr-bpbr {
+    background-color: $clr-brd-pri;
+}
+
+.bit-smr-bsbr {
+    background-color: $clr-brd-sec;
+}
+
+.bit-smr-btbr {
+    background-color: $clr-brd-ter;
 }

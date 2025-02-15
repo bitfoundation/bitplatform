@@ -4,10 +4,10 @@
 <section>
     <BitNavBar TItem="BitNavBarOption" Style="width:100%">
         <BitNavBarOption Text="@Localizer[nameof(AppStrings.Home)]" IconName="@BitIconName.Home" Url="@Urls.HomePage" />
-        @*#if (sample == "Todo")*@
+        @*#if (sample == true)*@
         <BitNavBarOption Text="@Localizer[nameof(AppStrings.Todo)]" IconName="@BitIconName.ToDoLogoOutline" Url="@Urls.TodoPage" />
         @*#endif*@
-        @*#if (sample == "Admin")*@
+        @*#if (module == "Admin")*@
         <BitNavBarOption Text="@Localizer[nameof(AppStrings.Dashboard)]" IconName="@BitIconName.BarChartVerticalFill" Url="@Urls.DashboardPage" />
         <BitNavBarOption Text="@Localizer[nameof(AppStrings.Categories)]" IconName="@BitIconName.BuildQueue" Url="@Urls.CategoriesPage" />
         <BitNavBarOption Text="@Localizer[nameof(AppStrings.Products)]" IconName="@BitIconName.Product" Url="@Urls.ProductsPage" />

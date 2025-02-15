@@ -49,7 +49,7 @@ public partial class PopularComponents
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await JSRuntime.InvokeVoidAsync("highlightSnippet");
+        await JSRuntime.InvokeVoid("highlightSnippet");
     }
 
     private void SelectComponent(PopularComponent com)

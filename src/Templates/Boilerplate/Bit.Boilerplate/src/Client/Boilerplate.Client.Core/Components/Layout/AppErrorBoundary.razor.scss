@@ -1,15 +1,1 @@
 ﻿@import '../../Styles/abstracts/_bit-css-variables.scss';
-
-main {
-    width: 100%;
-    height: 100%;
-    background-color: $bit-color-background-primary
-}
-
-.exception {
-    width: 90%;
-    margin: 1.5rem;
-    overflow: auto;
-    white-space: pre;
-    text-align: start;
-}

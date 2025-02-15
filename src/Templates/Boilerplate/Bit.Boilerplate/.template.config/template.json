@@ -123,22 +123,6 @@
                 }
             ]
         },
-        "captcha": {
-            "displayName": "Captcha",
-            "type": "parameter",
-            "datatype": "choice",
-            "defaultValue": "None",
-            "choices": [
-                {
-                    "choice": "reCaptcha",
-                    "description": "Google reCaptcha"
-                },
-                {
-                    "choice": "None",
-                    "description": "None"
-                }
-            ]
-        },
         "pipeline": {
             "displayName": "CI-CD pipeline",
             "type": "parameter",
@@ -159,19 +143,19 @@
                 }
             ]
         },
-        "sample": {
-            "displayName": "Sample",
+        "module": {
+            "displayName": "Module",
             "type": "parameter",
             "datatype": "choice",
             "defaultValue": "None",
             "choices": [
                 {
                     "choice": "Admin",
-                    "description": "Admin Panel"
+                    "description": "Admin Panel module"
                 },
                 {
-                    "choice": "Todo",
-                    "description": "Todo app"
+                    "choice": "Sales",
+                    "description": "Sales (E-Commerce module)"
                 },
                 {
                     "choice": "None",
@@ -179,12 +163,21 @@
                 }
             ]
         },
-        "signalR": {
-            "displayName": "Add SignalR?",
+        "captcha": {
+            "displayName": "Captcha",
             "type": "parameter",
-            "datatype": "bool",
-            "defaultValue": "false",
-            "description": "Add SignalR sample."
+            "datatype": "choice",
+            "defaultValue": "None",
+            "choices": [
+                {
+                    "choice": "reCaptcha",
+                    "description": "Google reCaptcha"
+                },
+                {
+                    "choice": "None",
+                    "description": "None"
+                }
+            ]
         },
         "notification": {
             "displayName": "Add push notification?",
@@ -193,19 +186,18 @@
             "defaultValue": "false",
             "description": "Add push notification."
         },
-        "offlineDb": {
-            "displayName": "Add Offline db?",
+        "sample": {
+            "displayName": "Sample",
             "type": "parameter",
             "datatype": "bool",
             "defaultValue": "false",
-            "description": "Add support for EF Core DbContext on the client side. If your app doesn't need offline data storage, we recommend not enabling this feature."
+            "description": "Add todo page sample."
         },
-        "windows": {
-            "displayName": "Add Windows project?",
+        "sentry": {
+            "displayName": "Add Sentry logging to project?",
             "type": "parameter",
             "datatype": "bool",
-            "defaultValue": "true",
-            "description": ".NET desktop app project supporting Windows 7 SP1 and above."
+            "defaultValue": "false"
         },
         "appInsights": {
             "displayName": "Add Azure application insights to project?",
@@ -213,11 +205,26 @@
             "datatype": "bool",
             "defaultValue": "false"
         },
-        "sentry": {
-            "displayName": "Add Sentry logging to project?",
+        "signalR": {
+            "displayName": "Add SignalR?",
             "type": "parameter",
             "datatype": "bool",
-            "defaultValue": "false"
+            "defaultValue": "false",
+            "description": "Add SignalR sample."
+        },
+        "offlineDb": {
+            "displayName": "Add Offline db?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false",
+            "description": "Add support for EF Core DbContext on the client side. If your app doesn't need offline data storage, we recommend not enabling this feature."
+        },
+        "cloudflare": {
+            "displayName": "Add cloudflare CDN integration?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "true",
+            "description": "Add cloudflare CDN integration."
         },
         "nameToLower": {
             "type": "generated",
@@ -347,7 +354,9 @@
             ],
             "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
             "args": {
-                "files": [ "Boilerplate.Web.slnf" ]
+                "files": [
+                    "Boilerplate.Web.slnf"
+                ]
             },
             "continueOnError": true
         },
@@ -375,7 +384,6 @@
             "modifiers": [
                 {
                     "copyOnly": [
-                        "**/HomePage.razor",
                         "**/*.svg",
                         "**/*.png",
                         "**/*.sh"
@@ -407,30 +415,46 @@
                     ]
                 },
                 {
-                    "condition": "(sample != Admin)",
+                    "condition": "(module != Admin)",
+                    "exclude": [
+                        "src/Shared/Dtos/Dashboard/**",
+                        "src/Server/Boilerplate.Server.Api/Controllers/Dashboard/**",
+                        "src/Server/Boilerplate.Server.Api/Controllers/Categories/**",
+                        "src/Server/Boilerplate.Server.Api/Controllers/Products/ProductController.cs",
+                        "src/Shared/Controllers/Dashboard/**",
+                        "src/Shared/Controllers/Categories/**",
+                        "src/Shared/Controllers/Products/IProductController.cs",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Dashboard/**",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Categories/**",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Products/**"
+                    ]
+                },
+                {
+                    "condition": "(module != Sales)",
+                    "exclude": [
+                        "src/Server/Boilerplate.Server.Api/Controllers/Products/ProductViewController.cs",
+                        "src/Shared/Controllers/Products/IProductViewController.cs",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Home/ProductsCarousel.*",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Home/ProductsSection.*",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/ProductPage.*",
+                        "src/Client/Boilerplate.Client.Core/wwwroot/images/product-placeholder.svg"
+                    ]
+                },
+                {
+                    "condition": "(module != Admin && module != Sales)",
                     "exclude": [
                         "src/Shared/Dtos/Categories/**",
-                        "src/Shared/Dtos/Dashboard/**",
                         "src/Shared/Dtos/Products/**",
-                        "src/Server/Boilerplate.Server.Api/Controllers/Categories/**",
-                        "src/Server/Boilerplate.Server.Api/Controllers/Products/**",
-                        "src/Server/Boilerplate.Server.Api/Controllers/Dashboard/**",
                         "src/Server/Boilerplate.Server.Api/Data/Configurations/Category/**",
                         "src/Server/Boilerplate.Server.Api/Data/Configurations/Product/**",
                         "src/Server/Boilerplate.Server.Api/Mappers/CategoriesMapper.cs",
                         "src/Server/Boilerplate.Server.Api/Mappers/ProductsMapper.cs",
                         "src/Server/Boilerplate.Server.Api/Models/Categories/**",
-                        "src/Server/Boilerplate.Server.Api/Models/Products/**",
-                        "src/Shared/Controllers/Categories/**",
-                        "src/Shared/Controllers/Products/**",
-                        "src/Shared/Controllers/Dashboard/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Categories/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Dashboard/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Products/**"
+                        "src/Server/Boilerplate.Server.Api/Models/Products/**"
                     ]
                 },
                 {
-                    "condition": "(sample != Todo)",
+                    "condition": "(sample != true)",
                     "exclude": [
                         "src/Shared/Dtos/Todo/**",
                         "src/Server/Boilerplate.Server.Api/Controllers/Todo/**",
@@ -488,18 +512,12 @@
                     ]
                 },
                 {
-                    "condition": "(windows != true)",
-                    "exclude": [
-                        "src/Client/Boilerplate.Client.Windows/**"
-                    ]
-                },
-                {
                     "condition": "(captcha != reCaptcha)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Api/Services/GoogleRecaptchaHttpClient.cs",
+                        "src/Server/Boilerplate.Server.Api/Services/GoogleRecaptchaService.cs",
                         "src/Server/Boilerplate.Server.Api/Services/GoogleRecaptchaVerificationResponse.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Identity/SignUp/GoogleRecaptcha.razor",
-                        "src/Tests/Services/FakeGoogleRecaptchaHttpClient.cs"
+                        "src/Tests/Services/FakeGoogleRecaptchaService.cs"
                     ]
                 },
                 {
@@ -526,7 +544,9 @@
                     "condition": "(api == Integrated)",
                     "exclude": [
                         "src/Server/Boilerplate.Server.Web/appsettings*.json",
-                        "src/Server/Boilerplate.Server.Web/Services/SimpleJwtSecureDataFormat.cs"
+                        "src/Server/Boilerplate.Server.Web/Services/AppResponseCachePolicy.cs",
+                        "src/Server/Boilerplate.Server.Web/Services/SimpleJwtSecureDataFormat.cs",
+                        "src/Server/Boilerplate.Server.Web/Extensions/HttpContextExtensions.cs"
                     ]
                 },
                 {
@@ -537,7 +557,7 @@
                         "src/Tests/Services/EmailReaderService.cs",
                         "src/Tests/Services/UserService.cs",
                         "src/Tests/Services/FakePhoneService.cs",
-                        "src/Tests/Services/FakeGoogleRecaptchaHttpClient.cs",
+                        "src/Tests/Services/FakeGoogleRecaptchaService.cs",
                         "src/Tests/Extensions/PlaywrightAssetCachingExtensions.cs",
                         "src/Tests/Extensions/PlaywrightCacheStorageExtensions.cs",
                         "src/Tests/Extensions/PlaywrightNetworkExtensions.cs",

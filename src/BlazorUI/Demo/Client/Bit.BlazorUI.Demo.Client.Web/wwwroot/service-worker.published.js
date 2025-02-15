@@ -1,4 +1,4 @@
-// bit version: 9.2.1-pre-02
+// bit version: 9.4.2-pre-01
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 self.assetsInclude = [];
@@ -37,8 +37,9 @@ self.serverHandledUrls = [
 
 self.isPassive = true;
 self.defaultUrl = "/";
+self.errorTolerance = 'lax';
 self.caseInsensitiveUrl = true;
-self.noPrerenderQuery = 'no-prerender=true';
 self.disablePassiveFirstBoot = true;
+self.noPrerenderQuery = 'no-prerender=true';
 
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');

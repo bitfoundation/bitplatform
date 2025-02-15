@@ -28,7 +28,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
         <PackageReference Include="Bit.Bswup" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageReference Condition="'$(sample)' == 'Admin' OR '$(sample)' == ''" Include="Newtonsoft.Json" />
+        <PackageReference Condition="'$(module)' == 'Admin' OR '$(module)' == ''" Include="Newtonsoft.Json" />
         <!--/-:msbuild-conditional:noEmit -->
         <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.Icons.wasm" />
     </ItemGroup>
@@ -44,11 +44,11 @@
     </ItemGroup>
 
     <!--/+:msbuild-conditional:noEmit -->
-    <ItemGroup Condition=" ('$(sample)' == 'Admin' OR '$(sample)' == '') AND ('$(offlineDb)' == 'false')">
+    <ItemGroup Condition=" ('$(module)' == 'Admin' OR '$(module)' == '') AND ('$(offlineDb)' == 'false')">
         <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
         <BlazorWebAssemblyLazyLoad Include="System.Data.Common.wasm" />
     </ItemGroup>
-    <ItemGroup Condition="'$(sample)' == 'Admin' OR '$(sample)' == ''">
+    <ItemGroup Condition="'$(module)' == 'Admin' OR '$(module)' == ''">
         <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
     </ItemGroup>
     <!--/-:msbuild-conditional:noEmit -->

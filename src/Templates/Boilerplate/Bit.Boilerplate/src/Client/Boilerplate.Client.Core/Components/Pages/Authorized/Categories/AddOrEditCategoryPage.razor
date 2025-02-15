@@ -34,7 +34,7 @@
         </BitStack>
         <BitCard FullSize>
             <EditForm Model="category" OnValidSubmit="WrapHandled(Save)" novalidate>
-                <AppDataAnnotationsValidator />
+                <AppDataAnnotationsValidator @ref="validatorRef" />
 
                 <BitStack Gap="0.25rem">
                     @if (isLoading)
@@ -61,9 +61,7 @@
 
                         <BitStack Horizontal>
                             <div class="color-square selected" style="background-color: @category.Color"></div>
-                            <BitToggleButton @bind-bind-IsChecked="isColorPickerOpen"
-                                             Variant="BitVariant.Outline"
-                                             OnClick=@ToggleColorPicker>
+                            <BitToggleButton @bind-IsChecked="isColorPickerOpen" Variant="BitVariant.Outline">
                                 @Localizer[(nameof(AppStrings.CustomColor))]
                             </BitToggleButton>
                         </BitStack>

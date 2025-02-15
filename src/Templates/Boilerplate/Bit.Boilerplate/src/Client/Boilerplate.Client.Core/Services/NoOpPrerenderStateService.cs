@@ -5,7 +5,7 @@ namespace Boilerplate.Client.Core.Services;
 /// <summary>
 /// <inheritdoc cref="IPrerenderStateService"/>
 /// </summary>
-public class NoopPrerenderStateService : IPrerenderStateService
+public class NoOpPrerenderStateService : IPrerenderStateService
 {
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 

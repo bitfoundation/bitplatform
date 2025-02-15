@@ -3,7 +3,7 @@
     <BitAccordion Class="@($"accordion{(_boilerplateExpanded ? " expanded" : "")}")" @bind-IsExpanded="_boilerplateExpanded">
         <HeaderTemplate Context="isExpanded">
             <div class="header-container">
-                <BitIcon Class="header-icon" IconName="@(isExpanded ? BitIconName.ChevronDown : BitIconName.ChevronRight)" />
+                <BitIcon Class="header-icon" IconName="ChevronRight" Style="@(isExpanded ? "transform:rotate(90deg)" : "")" />
                 <div>
                     <BitText Typography="BitTypography.H4" Class="header-title">Boilerplate</BitText>
                     <BitText Typography="BitTypography.H5" Class="header-subtitle">Feature-rich .NET project template</BitText>
@@ -17,13 +17,13 @@
                     for PWA/SSR enabled websites and Android, iOS, macOS, Windows apps.
                 </BitText>
                 <div class="template-terminal">
-                    <BitIcon IconName="@BitIconName.ChevronRightSmall" /> <span>dotnet</span> <span>new</span> <span>bit-bp</span>
+                    <BitIcon IconName="ChevronRight" /> <span>dotnet</span> <span>new</span> <span>bit-bp</span>
                     <span>--database</span>
                     <span class="animation-container"><span class="animated a-2">sqlite&nbsp;&nbsp;&nbsp;</span> <span class="animated a-2 delayed d-2">sqlserver</span></span>
                     <span>--pipeline</span>
                     <span class="animation-container"><span class="animated a-3">github</span> <span class="animated a-3 delayed d-3">azure</span></span>
-                    <span>--sample</span>
-                    <span class="animation-container"><span class="animated a-4">admin</span> <span class="animated a-4 delayed d-4">todo</span></span>
+                    <span>--module</span>
+                    <span class="animation-container"><span class="animated a-4">admin</span> <span class="animated a-4 delayed d-4">sales</span></span>
                     <span>--name</span> <span>MyAwesomeProject</span>
                 </div>
                 <a class="template-link" href="@Urls.Templates">
@@ -36,7 +36,7 @@
     <BitAccordion Class="@($"accordion{(_butilExpanded ? " expanded" : "")}")" @bind-IsExpanded="_butilExpanded">
         <HeaderTemplate Context="isExpanded">
             <div class="header-container">
-                <BitIcon Class="header-icon" IconName="@(isExpanded ? BitIconName.ChevronDown : BitIconName.ChevronRight)" />
+                <BitIcon Class="header-icon" IconName="ChevronRight" Style="@(isExpanded ? "transform:rotate(90deg)" : "")" />
                 <div>
                     <BitText Typography="BitTypography.H4" Class="header-title">Butil</BitText>
                     <BitText Typography="BitTypography.H5" Class="header-subtitle">
@@ -67,7 +67,7 @@
     <BitAccordion Class="@($"accordion{(_bswupExpanded ? " expanded" : "")}")" @bind-IsExpanded="_bswupExpanded">
         <HeaderTemplate Context="isExpanded">
             <div class="header-container">
-                <BitIcon Class="header-icon" IconName="@(isExpanded ? BitIconName.ChevronDown : BitIconName.ChevronRight)" />
+                <BitIcon Class="header-icon" IconName="ChevronRight" Style="@(isExpanded ? "transform:rotate(90deg)" : "")" />
                 <div>
                     <BitText Typography="BitTypography.H4" Class="header-title">Bswup</BitText>
                     <BitText Typography="BitTypography.H5" Class="header-subtitle">
@@ -82,7 +82,7 @@
                     bit Bswup is a set of tools that assists developers in making the most out of the Service Worker when building apps with Blazor.
                 </BitText>
                 <br />
-                <div>
+                <div style="text-align:center">
                     <img src="/images/home/bswup.webp" style="max-width:100%;" />
                 </div>
                 <br />
@@ -96,7 +96,7 @@
     <BitAccordion Class="@($"accordion{(_besqlExpanded ? " expanded" : "")}")" @bind-IsExpanded="_besqlExpanded">
         <HeaderTemplate Context="isExpanded">
             <div class="header-container">
-                <BitIcon Class="header-icon" IconName="@(isExpanded ? BitIconName.ChevronDown : BitIconName.ChevronRight)" />
+                <BitIcon Class="header-icon" IconName="ChevronRight" Style="@(isExpanded ? "transform:rotate(90deg)" : "")" />
                 <div>
                     <BitText Typography="BitTypography.H4" Class="header-title">Besql</BitText>
                     <BitText Typography="BitTypography.H5" Class="header-subtitle">Blazor Entity Framework Sqlite</BitText>
@@ -121,7 +121,7 @@
     <BitAccordion Class="@($"accordion{(_blazoruiExpanded ? " expanded" : "")}")" @bind-IsExpanded="_blazoruiExpanded">
         <HeaderTemplate Context="isExpanded">
             <div class="header-container">
-                <BitIcon Class="header-icon" IconName="@(isExpanded ? BitIconName.ChevronDown : BitIconName.ChevronRight)" />
+                <BitIcon Class="header-icon" IconName="ChevronRight" Style="@(isExpanded ? "transform:rotate(90deg)" : "")" />
                 <div>
                     <BitText Typography="BitTypography.H4" Class="header-title">BlazorUI</BitText>
                     <BitText Typography="BitTypography.H5" Class="header-subtitle">Native Blazor UI components</BitText>
@@ -131,7 +131,7 @@
         <ChildContent>
             <div class="content-container">
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit BlazorUI components are native, easy-to-customize, and work seamlessly in all Blazor modes (WASM, Server, Hybrid, pre-rendering),
+                    bit BlazorUI components are native, easy-to-customize, and work seamlessly in all interactive Blazor modes (WASM, Server, Hybrid, pre-rendering),
                     saving you time and making development enjoyable.
                 </BitText>
                 <div>

@@ -2,22 +2,19 @@
     export class Observers {
         private static _resizeObservers: Record<string, ResizeObserver> = {};
 
-        public static registerResize(element: HTMLElement, obj: DotNetObject, method: string) {
+        public static registerResize(id: string, element: HTMLElement, obj: DotNetObject) {
             const observer = new ResizeObserver(entries => {
                 const entry = entries[0];
                 if (!entry) return;
 
-                obj.invokeMethodAsync(method, entry.contentRect);
+                obj.invokeMethodAsync("OnResize", entry.contentRect);
             });
             observer.observe(element);
 
-            const id = Utils.uuidv4();
             Observers._resizeObservers[id] = observer;
-
-            return id;
         }
 
-        public static unregisterResize(element: HTMLElement, id: string, obj: DotNetObject) {
+        public static unregisterResize(id: string, element: HTMLElement, obj: DotNetObject) {
             const observer = Observers._resizeObservers[id];
             if (!observer) return;
 

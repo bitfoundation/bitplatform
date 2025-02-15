@@ -747,6 +747,13 @@
     }
 }
 
+.bit-dtp-req {
+    .bit-dtp-lbl::after {
+        content: "*";
+        color: $clr-req;
+        margin-inline-start: spacing(0.625);
+    }
+}
 
 .bit-dtp-res {
     @include lt-sm {

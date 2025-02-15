@@ -4,11 +4,11 @@
     cursor: pointer;
     gap: spacing(0.5);
     text-align: start;
+    align-items: center;
     flex-direction: row;
     display: inline-flex;
     text-decoration: none;
     box-sizing: border-box;
-    align-items: flex-start;
     justify-content: center;
     color: var(--bit-btn-clr-txt);
     font-family: $tg-font-family;
@@ -38,6 +38,10 @@
     }
 }
 
+.bit-btn-hsc {
+    align-items: flex-start;
+}
+
 .bit-btn-tcn {
     display: flex;
     gap: spacing(0.625);
@@ -57,6 +61,11 @@
 .bit-btn-icn {
     font-size: var(--bit-btn-icn-fontsize);
     margin-top: var(--bit-btn-icn-margintop);
+}
+
+.bit-btn-icnu {
+    width: var(--bit-btn-icn-size);
+    height: var(--bit-btn-icn-size);
 }
 
 .bit-btn-rvi {
@@ -307,13 +316,14 @@
 
 .bit-btn-sm {
     --bit-btn-spn-size: #{spacing(1.75)};
-    --bit-btn-lbl-fontsize: #{spacing(1.75)};
+    --bit-btn-lbl-fontsize: #{spacing(1.25)};
     --bit-btn-prt-fontsize: #{spacing(1.50)};
     --bit-btn-sct-fontsize: #{spacing(1.25)};
     --bit-btn-icn-fontsize: #{spacing(1.50)};
     --bit-btn-icn-margintop: #{spacing(0.2)};
     --bit-btn-pad-ntx: #{spacing(0.5)};
     --bit-btn-padding: #{spacing(0.5)} #{spacing(1.5)};
+    --bit-btn-icn-size: #{spacing(1.5)};
 }
 
 .bit-btn-md {
@@ -325,6 +335,7 @@
     --bit-btn-icn-margintop: #{spacing(0.25)};
     --bit-btn-pad-ntx: #{spacing(0.75)};
     --bit-btn-padding: #{spacing(0.75)} #{spacing(2.0)};
+    --bit-btn-icn-size: #{spacing(2)};
 }
 
 .bit-btn-lg {
@@ -336,6 +347,7 @@
     --bit-btn-icn-margintop: #{spacing(0.5)};
     --bit-btn-pad-ntx: #{spacing(1.0)};
     --bit-btn-padding: #{spacing(1.0)} #{spacing(2.5)};
+    --bit-btn-icn-size: #{spacing(2.5)};
 }
 
 

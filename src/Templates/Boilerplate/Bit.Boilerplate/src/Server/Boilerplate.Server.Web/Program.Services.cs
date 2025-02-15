@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 //#endif
 using Boilerplate.Client.Web;
 using Boilerplate.Server.Web.Services;
+using Microsoft.AspNetCore.Antiforgery;
 using Boilerplate.Client.Core.Services.Contracts;
 
 namespace Boilerplate.Server.Web;
@@ -38,7 +39,14 @@ public static partial class Program
         //#if (api == "Integrated")
         builder.AddServerApiProjectServices();
         //#else
-        services.AddResponseCaching();
+        services.AddOutputCache(options =>
+        {
+            options.AddPolicy("AppResponseCachePolicy", policy =>
+            {
+                var builder = policy.AddPolicy<AppResponseCachePolicy>();
+            }, excludeDefaultPolicy: true);
+        });
+        services.AddMemoryCache();
 
         services.AddHttpContextAccessor();
 
@@ -97,6 +105,7 @@ public static partial class Program
         var services = builder.Services;
         var configuration = builder.Configuration;
 
+        services.AddTransient<IAntiforgery, NoOpAntiforgery>();
         services.AddScoped<IAuthTokenProvider, ServerSideAuthTokenProvider>();
         services.AddScoped(sp =>
         {

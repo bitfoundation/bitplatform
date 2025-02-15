@@ -36,6 +36,7 @@ public partial class SignInPage : IDisposable
     private bool requiresTwoFactor;
     private SignInPanelTab currentSignInPanelTab;
     private readonly SignInRequestDto model = new();
+    private AppDataAnnotationsValidator? validatorRef;
     private Action unsubscribeIdentityHeaderBackLinkClicked = default!;
 
 
@@ -96,7 +97,7 @@ public partial class SignInPage : IDisposable
     {
         try
         {
-            var port = localHttpServer.Start(CurrentCancellationToken);
+            var port = localHttpServer.ShouldUseForSocialSignIn() ? localHttpServer.Start(CurrentCancellationToken) : -1;
 
             var redirectUrl = await identityController.GetSocialSignInUri(provider, ReturnUrlQueryString, port is -1 ? null : port, CurrentCancellationToken);
 
@@ -120,6 +121,8 @@ public partial class SignInPage : IDisposable
             if (requiresTwoFactor && string.IsNullOrWhiteSpace(model.TwoFactorCode)) return;
 
             CleanModel();
+
+            if (validatorRef?.EditContext.Validate() is false) return;
 
             model.DeviceInfo = telemetryContext.Platform;
 
@@ -209,11 +212,16 @@ public partial class SignInPage : IDisposable
         if (currentSignInPanelTab is SignInPanelTab.Email)
         {
             model.PhoneNumber = null;
-        }
+            if (validatorRef is null) return;
 
-        if (currentSignInPanelTab is SignInPanelTab.Phone)
+            validatorRef.EditContext.NotifyFieldChanged(validatorRef.EditContext.Field(nameof(SignInRequestDto.PhoneNumber)));
+        }
+        else
         {
             model.Email = null;
+            if (validatorRef is null) return;
+
+            validatorRef.EditContext.NotifyFieldChanged(validatorRef.EditContext.Field(nameof(SignInRequestDto.Email)));
         }
     }
 

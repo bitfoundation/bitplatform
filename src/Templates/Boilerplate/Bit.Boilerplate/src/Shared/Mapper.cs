@@ -1,9 +1,10 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Shared.Dtos.Identity;
 
-//#if (sample == "Todo")
+//#if (sample == true)
 using Boilerplate.Shared.Dtos.Todo;
-//#elif (sample == "Admin")
+//#endif
+//#if (module == "Admin")
 using Boilerplate.Shared.Dtos.Products;
 //#endif
 using Riok.Mapperly.Abstractions;
@@ -22,9 +23,10 @@ namespace Boilerplate.Shared;
 [Mapper(UseDeepCloning = true)]
 public static partial class Mapper
 {
-    //#if (sample == "Todo")
+    //#if (sample == true)
     public static partial void Patch(this TodoItemDto source, TodoItemDto destination);
-    //#elif (sample == "Admin")
+    //#endif
+    //#if (module == "Admin")
     public static partial void Patch(this ProductDto source, ProductDto destination);
     //#endif
     public static partial void Patch(this UserDto source, UserDto destination);

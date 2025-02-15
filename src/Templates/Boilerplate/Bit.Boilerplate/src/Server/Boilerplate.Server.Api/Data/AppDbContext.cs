@@ -1,8 +1,9 @@
 ﻿//+:cnd:noEmit
-//#if (sample == "Admin")
-using Boilerplate.Server.Api.Models.Categories;
+//#if (module == "Admin" || module == "Sales")
 using Boilerplate.Server.Api.Models.Products;
-//#elif (sample == "Todo")
+using Boilerplate.Server.Api.Models.Categories;
+//#endif
+//#if (sample == true)
 using Boilerplate.Server.Api.Models.Todo;
 //#endif
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -22,9 +23,10 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<UserSession> UserSessions { get; set; } = default!;
 
-    //#if (sample == "Todo")
+    //#if (sample == true)
     public DbSet<TodoItem> TodoItems { get; set; } = default!;
-    //#elif (sample == "Admin")
+    //#endif
+    //#if (module == "Admin" || module == "Sales")
     public DbSet<Category> Categories { get; set; } = default!;
     public DbSet<Product> Products { get; set; } = default!;
     //#endif
@@ -41,7 +43,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         ConfigureIdentityTableNames(modelBuilder);
 
         //#if (database != "Sqlite")
-        ConcurrencyStamp(modelBuilder);
+        ConfigureConcurrencyStamp(modelBuilder);
         //#endif
     }
 
@@ -49,6 +51,10 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         try
         {
+            //#if (database != "Sqlite")
+            ReplaceOriginalConcurrencyStamp();
+            //#endif
+
             return base.SaveChanges(acceptAllChangesOnSuccess);
         }
         catch (DbUpdateConcurrencyException exception)
@@ -61,6 +67,10 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         try
         {
+            //#if (database != "Sqlite")
+            ReplaceOriginalConcurrencyStamp();
+            //#endif
+
             return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
         }
         catch (DbUpdateConcurrencyException exception)
@@ -68,6 +78,29 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
             throw new ConflictException(nameof(AppStrings.UpdateConcurrencyException), exception);
         }
     }
+
+    //#if (database != "Sqlite")
+    /// <summary>
+    /// https://github.com/dotnet/efcore/issues/35443
+    /// </summary>
+    private void ReplaceOriginalConcurrencyStamp()
+    {
+        //#if (IsInsideProjectTemplate == true)
+        if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))
+            return;
+        //#endif
+        ChangeTracker.DetectChanges();
+
+        foreach (var entityEntry in ChangeTracker.Entries().Where(e => e.State is EntityState.Modified or EntityState.Deleted))
+        {
+            if (entityEntry.CurrentValues.TryGetValue<object>("ConcurrencyStamp", out var currentConcurrencyStamp) is false
+                || currentConcurrencyStamp is not byte[])
+                continue;
+
+            entityEntry.OriginalValues.SetValues(new Dictionary<string, object> { { "ConcurrencyStamp", currentConcurrencyStamp } });
+        }
+    }
+    //#endif
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -136,7 +169,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     }
 
     //#if (database != "Sqlite")
-    private void ConcurrencyStamp(ModelBuilder modelBuilder)
+    private void ConfigureConcurrencyStamp(ModelBuilder modelBuilder)
     {
         //#if (IsInsideProjectTemplate == true)
         if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))

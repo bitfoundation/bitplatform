@@ -5,25 +5,39 @@
             Description="Dropdown component of the bit BlazorUI components" />
 
 <div>
-    <ComponentDemo ComponentName="Dropdown"
-                   ComponentDescription="A dropdown is a list in which the selected item is always visible while other items are visible on demand by clicking a dropdown button. Dropdowns are typically used for forms."
-                   ComponentParameters="componentParameters"
-                   ComponentSubClasses="componentSubClasses"
-                   ComponentSubEnums="componentSubEnums"
-                   ComponentPublicMembers="componentPublicMembers"
-                   Notes="The BitDropdown is a Multi-API component which can accept the list of Items in 3 different ways: BitDropdownItem class, a custom Generic class, and BitDropdownOption component.">
-        <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })">
-            <BitPivotItem HeaderText="Item">
-                <_BitDropdownItemDemo />
-            </BitPivotItem>
+    <DemoPage Name="Dropdown"
+              Description="A dropdown is a list in which the selected item is always visible while other items are visible on demand by clicking a dropdown button. Dropdowns are typically used for forms."
+              Parameters="componentParameters"
+              SubClasses="componentSubClasses"
+              SubEnums="componentSubEnums"
+              PublicMembers="componentPublicMembers"
+              Notes="The BitDropdown is a Multi-API component which can accept the list of Items in 3 different ways: BitDropdownItem class, a custom Generic class, and BitDropdownOption component."
+              VideoUrl="https://videos.bitplatform.dev/bit%20Dropdown.mp4">
+        <VideoDescriptionTemplate>
+            <BitScrollablePane>
+                <BitText Typography="BitTypography.Body2" Color="BitColor.TertiaryForeground">
+                    Music: Music Cocktails, Musician: AlexGuz, URL:
+                    <a href="https://open.spotify.com/artist/1u0Nlnljg2xGHJV6X7W4i1"
+                       target="_blank" style="color:inherit">
+                        https://open.spotify.com/artist/1u0Nlnljg2xGHJV6X7W4i1
+                    </a>
+                </BitText>
+            </BitScrollablePane>
+        </VideoDescriptionTemplate>
+        <Examples>
+            <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })">
+                <BitPivotItem HeaderText="Item">
+                    <_BitDropdownItemDemo />
+                </BitPivotItem>
 
-            <BitPivotItem HeaderText="Custom">
-                <_BitDropdownCustomDemo />
-            </BitPivotItem>
+                <BitPivotItem HeaderText="Custom">
+                    <_BitDropdownCustomDemo />
+                </BitPivotItem>
 
-            <BitPivotItem HeaderText="Option">
-                <_BitDropdownOptionDemo />
-            </BitPivotItem>
-        </BitPivot>
-    </ComponentDemo>
+                <BitPivotItem HeaderText="Option">
+                    <_BitDropdownOptionDemo />
+                </BitPivotItem>
+            </BitPivot>
+        </Examples>
+    </DemoPage>
 </div>

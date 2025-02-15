@@ -276,55 +276,75 @@ private void ResetList()
     private readonly string example4RazorCode = @"
 <style>
     .mobile-frame {
-        width: 375px;
-        height: 712px;
+        height: 666px;
+        max-width: 375px;
         overflow: hidden;
         position: relative;
         border-radius: 36px;
-        background-color: #fff;
         border: 16px solid #333;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        background-color: var(--bit-clr-fg-sec);
     }
 
     .mobile-frame .screen {
         width: 100%;
         height: 100%;
-        overflow: auto;
     }
 
-    .panel-adv-container {
-        cursor: grab;
-        overflow: hidden;
+    .mobile-frame .layout {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .mobile-frame .header {
+        gap: 1rem;
+        width: 100%;
+        height: 66px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--bit-clr-bg-sec);
+    }
+
+    .mobile-frame .main {
+        flex-grow: 1;
         position: relative;
     }
 
-    .panel-adv-container .panel-adv {
-        color: #000;
+    .mobile-frame .main-text {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mobile-frame .panel {
+        color: black;
         cursor: grab;
         inset-block: 0;
         user-select: none;
         position: absolute;
-        background-color: #d3d3d3;
-    }
+        background-color: lightgray;
 
-    .panel-adv-container .panel-adv.left {
+    .mobile-frame .panel.left {
         left: 0;
         width: 200px;
         transform: translateX(-100%);
     }
 
-    .panel-adv-container .panel-adv.right {
+    .mobile-frame .panel.right {
         right: 0;
         width: 200px;
         transform: translateX(100%);
     }
 
-    .panel-adv-container .panel-adv .panel-adv-trap {
+    .mobile-frame .panel-trap {
         gap: 1rem;
         height: 100%;
         display: flex;
-        padding-top: .2rem;
-        padding-left: .8rem;
+        padding-top: 0.2rem;
+        padding-left: 0.8rem;
         flex-direction: column;
         background-color: gray;
     }
@@ -332,40 +352,35 @@ private void ResetList()
 
 <div class=""mobile-frame"">
     <div class=""screen"">
-        <BitLayout Classes=""@(new() { MainContent = ""panel-adv-container"" })"">
-            <Header>
-                <BitCard FullWidth>
-                    <BitStack Horizontal HorizontalAlign=""BitAlignment.Center"" VerticalAlign=""BitAlignment.Center"">
-                        <BitImage Src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" Width=""50"" />
-                        <BitText Typography=""BitTypography.H4"" Color=""BitColor.Info"">
-                            bit BlazorUI
-                        </BitText>
-                    </BitStack>
-                </BitCard>
-            </Header>
-            <Main>
+        <div class=""layout"">
+            <div class=""header"">
+                <BitImage Src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" Width=""50"" />
+                <BitText Typography=""BitTypography.H4"" Color=""BitColor.Info"">
+                    bit BlazorUI
+                </BitText>
+            </div>
+            <div class=""main"">
                 <BitSwipeTrap Style=""width:100%;height:100%""
-                                OnMove=""HandleOnMovePanelAdvanced""
-                                OnEnd=""HandleOnEndPanelAdvanced""
-                                OnTrigger=""HandleOnTriggerPanelAdvanced"" Trigger=""20"">
-                    <BitStack HorizontalAlign=""BitAlignment.Center"" VerticalAlign=""BitAlignment.Center"">
+                              OnMove=""HandleOnMovePanelAdvanced""
+                              OnEnd=""HandleOnEndPanelAdvanced""
+                              OnTrigger=""HandleOnTriggerPanelAdvanced"">
+                    <div class=""main-text"">
                         <BitText Style=""user-select:none""
-                                    Typography=""BitTypography.H4""
-                                    Color=""BitColor.SecondaryBackground"">
+                                 Typography=""BitTypography.H4""
+                                 Color=""BitColor.SecondaryBackground"">
                             Swipe left or right
                         </BitText>
-                    </BitStack>
-
-                    <div class=""panel-adv left"" style=""@GetLeftPanelAdvancedStyle()"">
-                        <div class=""panel-adv-trap"">
+                    </div
+                    <div class=""panel left"" style=""@GetLeftPanelAdvancedStyle()"">
+                        <div class=""panel-trap"">
                             <h3>Left Menu</h3>
                             <div>Item1</div>
                             <div>Item2</div>
                             <div>Item3</div>
                         </div>
                     </div>
-                    <div class=""panel-adv right"" style=""@GetRightPanelAdvancedStyle()"">
-                        <div class=""panel-adv-trap"">
+                    <div class=""panel right"" style=""@GetRightPanelAdvancedStyle()"">
+                        <div class=""panel-trap"">
                             <h3>Right Menu</h3>
                             <div>Item1</div>
                             <div>Item2</div>
@@ -373,8 +388,8 @@ private void ResetList()
                         </div>
                     </div>
                 </BitSwipeTrap>
-            </Main>
-        </BitLayout>
+            </div>
+        </div>
     </div>
 </div>";
     private readonly string example4CsharpCode = @"

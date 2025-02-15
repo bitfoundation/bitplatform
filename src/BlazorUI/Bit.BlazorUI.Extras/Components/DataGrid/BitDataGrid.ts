@@ -1,7 +1,7 @@
 namespace BitBlazorUI {
-    export class BitDataGrid {
+    export class DataGrid {
         public static init(tableElement: any) {
-            BitDataGrid.enableColumnResizing(tableElement);
+            DataGrid.enableColumnResizing(tableElement);
 
             const bodyClickHandler = (event: any) => {
                 const columnOptionsElement = tableElement.tHead.querySelector('.col-options');

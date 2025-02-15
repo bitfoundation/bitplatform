@@ -5,13 +5,41 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Bit.Besql;
 
-public class BesqlDbContextInterceptor(IBesqlStorage storage) : IDbCommandInterceptor, ISingletonInterceptor
+public class BesqlDbContextInterceptor(IBitBesqlStorage storage) : IDbCommandInterceptor, ISingletonInterceptor
 {
+    private readonly string[] keywords = ["INSERT", "UPDATE", "DELETE", "CREATE", "ALTER", "DROP"];
+
+    public DbDataReader ReaderExecuted(
+        DbCommand command,
+        CommandExecutedEventData eventData,
+        DbDataReader result)
+    {
+        if (IsTargetedCommand(command.CommandText))
+        {
+            _ = ThrottledSync(eventData.Context!.Database.GetDbConnection().DataSource).ConfigureAwait(false);
+        }
+
+        return result;
+    }
+
     public async ValueTask<DbDataReader> ReaderExecutedAsync(
         DbCommand command,
         CommandExecutedEventData eventData,
         DbDataReader result,
         CancellationToken cancellationToken)
+    {
+        if (IsTargetedCommand(command.CommandText))
+        {
+            _ = ThrottledSync(eventData.Context!.Database.GetDbConnection().DataSource).ConfigureAwait(false);
+        }
+
+        return result;
+    }
+
+    public int NonQueryExecuted(
+        DbCommand command,
+        CommandExecutedEventData eventData,
+        int result)
     {
         if (IsTargetedCommand(command.CommandText))
         {
@@ -35,6 +63,18 @@ public class BesqlDbContextInterceptor(IBesqlStorage storage) : IDbCommandInterc
         return result;
     }
 
+    public object? ScalarExecuted(
+        DbCommand command,
+        CommandExecutedEventData eventData,
+        object? result)
+    {
+        if (IsTargetedCommand(command.CommandText))
+        {
+            _ = ThrottledSync(eventData.Context!.Database.GetDbConnection().DataSource).ConfigureAwait(false);
+        }
+        return result;
+    }
+
     public async ValueTask<object?> ScalarExecutedAsync(
         DbCommand command,
         CommandExecutedEventData eventData,
@@ -48,9 +88,8 @@ public class BesqlDbContextInterceptor(IBesqlStorage storage) : IDbCommandInterc
         return result;
     }
 
-    private bool IsTargetedCommand(string sql)
+    protected virtual bool IsTargetedCommand(string sql)
     {
-        var keywords = new[] { "INSERT", "UPDATE", "DELETE", "CREATE", "ALTER", "DROP" };
         return keywords.Any(k => sql.Contains(k, StringComparison.OrdinalIgnoreCase));
     }
 
