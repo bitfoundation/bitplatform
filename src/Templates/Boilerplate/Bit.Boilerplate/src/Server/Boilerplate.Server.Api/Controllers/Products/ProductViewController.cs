@@ -25,7 +25,7 @@ public partial class ProductViewController : AppControllerBase, IProductViewCont
 
 
     // This method needs to be implemented based on the logic required in each business.
-    [EnableQuery, HttpGet("{id}")]
+    [EnableQuery, HttpGet("{id}"), AppResponseCache(MaxAge = 60 * 5, SharedMaxAge = 0, UserAgnostic = true)]
     public IQueryable<ProductDto> GetSimilar(Guid id)
     {
         var similarProducts = Get()
@@ -35,7 +35,7 @@ public partial class ProductViewController : AppControllerBase, IProductViewCont
         return similarProducts;
     }
 
-    [EnableQuery, HttpGet("{id}")]
+    [EnableQuery, HttpGet("{id}"), AppResponseCache(MaxAge = 60 * 5, SharedMaxAge = 0, UserAgnostic = true)]
     public IQueryable<ProductDto> GetSiblings(Guid id)
     {
         var siblings = Get().Where(t => t.CategoryId == id);

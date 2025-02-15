@@ -8,10 +8,11 @@
 /// The returned chain will include the following handlers, in order:
 ///
 /// 1. <see cref="LoggingDelegatingHandler"/>
-/// 2. <see cref="RequestHeadersDelegatingHandler" />
-/// 3. <see cref="AuthDelegatingHandler" />
-/// 4. <see cref="RetryDelegatingHandler" />
-/// 5. <see cref="ExceptionDelegatingHandler" />
+/// 2. <see cref="CacheDelegatingHandler"/>
+/// 3. <see cref="RequestHeadersDelegatingHandler" />
+/// 4. <see cref="AuthDelegatingHandler" />
+/// 5. <see cref="RetryDelegatingHandler" />
+/// 6. <see cref="ExceptionDelegatingHandler" />
 ///
 /// The chain is constructed in reverse order, with the provided `transportHandler` as the final
 /// link. Each subsequent handler in the chain receives the output of the previous one.

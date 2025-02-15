@@ -74,13 +74,15 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddScoped<HttpMessageHandlersChainFactory>(serviceProvider => transportHandler =>
         {
             var constructedHttpMessageHandler = ActivatorUtilities.CreateInstance<LoggingDelegatingHandler>(serviceProvider,
+                        [ActivatorUtilities.CreateInstance<CacheDelegatingHandler>(serviceProvider,
                         [ActivatorUtilities.CreateInstance<RequestHeadersDelegatingHandler>(serviceProvider,
                         [ActivatorUtilities.CreateInstance<AuthDelegatingHandler>(serviceProvider,
                         [ActivatorUtilities.CreateInstance<RetryDelegatingHandler>(serviceProvider,
-                        [ActivatorUtilities.CreateInstance<ExceptionDelegatingHandler>(serviceProvider, [transportHandler])])])])]);
+                        [ActivatorUtilities.CreateInstance<ExceptionDelegatingHandler>(serviceProvider, [transportHandler])])])])])]);
             return constructedHttpMessageHandler;
         });
         services.AddScoped<AuthDelegatingHandler>();
+        services.AddScoped<CacheDelegatingHandler>();
         services.AddScoped<RetryDelegatingHandler>();
         services.AddScoped<ExceptionDelegatingHandler>();
         services.AddScoped<RequestHeadersDelegatingHandler>();

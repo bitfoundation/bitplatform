@@ -8,6 +8,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Authorization" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
+        <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
         <PackageReference Include="Microsoft.Extensions.Localization" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
