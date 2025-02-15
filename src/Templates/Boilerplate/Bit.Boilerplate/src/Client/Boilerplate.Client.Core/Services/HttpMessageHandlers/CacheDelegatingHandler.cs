@@ -51,7 +51,7 @@ internal class CacheDelegatingHandler(IMemoryCache memoryCache, HttpMessageHandl
                     StatusCode = response.StatusCode,
                     ResponseHeaders = response.Headers.ToDictionary(h => h.Key, h => h.Value.ToArray()),
                     ContentHeaders = response.Content.Headers.ToDictionary(h => h.Key, h => h.Value.ToArray()),
-                    LogScopeData = logScopeData
+                    LogScopeData = logScopeData.ToDictionary()
                 }, maxAge);
             }
 
