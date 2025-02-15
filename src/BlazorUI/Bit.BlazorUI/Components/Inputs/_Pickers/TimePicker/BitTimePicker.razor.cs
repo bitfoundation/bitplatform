@@ -315,6 +315,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
         ClassBuilder.Register(() => Standalone ? "bit-tpc-sta" : string.Empty);
 
         ClassBuilder.Register(() => _hasFocus ? $"bit-tpc-foc {Classes?.Focused}" : string.Empty);
+
+        ClassBuilder.Register(() => IsEnabled && Required ? "bit-tpc-req" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
