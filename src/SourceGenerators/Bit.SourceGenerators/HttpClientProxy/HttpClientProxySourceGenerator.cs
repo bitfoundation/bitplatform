@@ -144,6 +144,5 @@ internal class AppControllerBase
 }}
 ");
         context.AddSource($"HttpClientProxy.cs", finalSource.ToString());
-        System.IO.File.WriteAllText(@"C:\Workspace\Codes.cs", finalSource.ToString());
     }
 }
