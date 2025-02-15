@@ -538,43 +538,45 @@
                      Placeholder="Select an item"
                      Styles="@(new() { Label = "text-shadow: dodgerblue 0 0 0.5rem;",
                                            Container = "box-shadow: dodgerblue 0 0 0.5rem; border-color: lightskyblue; color: lightskyblue;",
-                                           ItemHeader = "color: dodgerblue; text-shadow: dodgerblue 0 0 0.5rem;",
-                                           ItemButton = "color: lightskyblue",
-                                           Callout = "border-radius: 0.25rem; box-shadow: lightskyblue 0 0 0.5rem;" })" />
+                                                                                      ItemHeader = "color: dodgerblue; text-shadow: dodgerblue 0 0 0.5rem;",
+                                                                                      ItemButton = "color: lightskyblue",
+                                                                                      Callout = "border-radius: 0.25rem; box-shadow: lightskyblue 0 0 0.5rem;" })" />
         <br />
         <BitDropdown Label="Classes"
                      Items="GetBasicItems()"
                      DefaultValue="@string.Empty"
                      Placeholder="Select an item"
                      Classes="@(new() { Callout = "custom-callout",
-                                            Container = "custom-container",
-                                            ItemButton = "custom-item-button",
-                                            ScrollContainer = "custom-scroll-container" })" />
+                                                                                        Container = "custom-container",
+                                                                                        ItemButton = "custom-item-button",
+                                                                                        ScrollContainer = "custom-scroll-container" })" />
     </div>
 </DemoSection>
 
 <DemoSection Title="RTL" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
     <div>Use BitDropdown in right-to-left (RTL).</div>
     <br />
-    <div dir="rtl" class="example-content">
-        <BitDropdown Label="تک انتخابی"
-                     Dir="BitDir.Rtl"
-                     Items="GetRtlItems()"
-                     DefaultValue="@string.Empty"
-                     Placeholder="لطفا انتخاب کنید" />
-        <br /><br />
-        <BitDropdown Label="چند انتخابی"
-                     MultiSelect
-                     Dir="BitDir.Rtl"
-                     Items="GetRtlItems()"
-                     DefaultValue="@string.Empty"
-                     Placeholder="انتخاب چند گزینه ای" />
-        <br /><br />
-        <BitDropdown Label="تک انتخابی ریسپانسیو"
-                     Responsive
-                     Dir="BitDir.Rtl"
-                     Items="GetRtlItems()"
-                     DefaultValue="@string.Empty"
-                     Placeholder="لطفا انتخاب کنید" />
-    </div>
+    <dir dir="rtl" style="padding:0">
+        <div class="example-content">
+            <BitDropdown Label="تک انتخابی"
+                         Dir="BitDir.Rtl"
+                         Items="GetRtlItems()"
+                         DefaultValue="@string.Empty"
+                         Placeholder="لطفا انتخاب کنید" />
+            <br /><br />
+            <BitDropdown Label="چند انتخابی"
+                         MultiSelect
+                         Dir="BitDir.Rtl"
+                         Items="GetRtlItems()"
+                         DefaultValue="@string.Empty"
+                         Placeholder="انتخاب چند گزینه ای" />
+            <br /><br />
+            <BitDropdown Label="تک انتخابی ریسپانسیو"
+                         Responsive
+                         Dir="BitDir.Rtl"
+                         Items="GetRtlItems()"
+                         DefaultValue="@string.Empty"
+                         Placeholder="لطفا انتخاب کنید" />
+        </div>
+    </dir>
 </DemoSection>

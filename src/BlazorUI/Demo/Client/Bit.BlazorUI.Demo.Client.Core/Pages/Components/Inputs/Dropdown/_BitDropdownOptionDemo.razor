@@ -707,9 +707,9 @@
                      TItem="BitDropdownOption<string>" TValue="string"
                      Styles="@(new() { Label = "text-shadow: dodgerblue 0 0 0.5rem;",
                                        Container = "box-shadow: dodgerblue 0 0 0.5rem; border-color: lightskyblue; color: lightskyblue;",
-                                       ItemHeader = "color: dodgerblue; text-shadow: dodgerblue 0 0 0.5rem;",
-                                       ItemButton = "color: lightskyblue",
-                                       Callout = "border-radius: 0.25rem; box-shadow: lightskyblue 0 0 0.5rem;" })">
+                                                                              ItemHeader = "color: dodgerblue; text-shadow: dodgerblue 0 0 0.5rem;",
+                                                                              ItemButton = "color: lightskyblue",
+                                                                              Callout = "border-radius: 0.25rem; box-shadow: lightskyblue 0 0 0.5rem;" })">
             @foreach (var item in basicItems)
             {
                 <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
@@ -721,8 +721,8 @@
                      TItem="BitDropdownOption<string>" TValue="string"
                      Classes="@(new() { Callout = "custom-callout",
                                         Container = "custom-container",
-                                        ItemButton = "custom-item-button",
-                                        ScrollContainer = "custom-scroll-container" })">
+                                                                                ItemButton = "custom-item-button",
+                                                                                ScrollContainer = "custom-scroll-container" })">
             @foreach (var item in basicItems)
             {
                 <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
@@ -734,37 +734,39 @@
 <DemoSection Title="RTL" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
     <div>Use BitDropdown in right-to-left (RTL).</div>
     <br />
-    <div dir="rtl" class="example-content">
-        <BitDropdown Label="تک انتخابی"
-                     Dir="BitDir.Rtl"
-                     Placeholder="لطفا انتخاب کنید"
-                     TItem="BitDropdownOption<string>" TValue="string">
-            @foreach (var item in rtlItems)
-            {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
-            }
-        </BitDropdown>
-        <br /><br />
-        <BitDropdown Label="چند انتخابی"
-                     MultiSelect
-                     Dir="BitDir.Rtl"
-                     Placeholder="انتخاب چند گزینه ای"
-                     TItem="BitDropdownOption<string>" TValue="string">
-            @foreach (var item in rtlItems)
-            {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
-            }
-        </BitDropdown>
-        <br /><br />
-        <BitDropdown Label="تک انتخابی ریسپانسیو"
-                     Responsive
-                     Dir="BitDir.Rtl"
-                     Placeholder="لطفا انتخاب کنید"
-                     TItem="BitDropdownOption<string>" TValue="string">
-            @foreach (var item in rtlItems)
-            {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
-            }
-        </BitDropdown>
-    </div>
+    <dir dir="rtl" style="padding:0">
+        <div class="example-content">
+            <BitDropdown Label="تک انتخابی"
+                         Dir="BitDir.Rtl"
+                         Placeholder="لطفا انتخاب کنید"
+                         TItem="BitDropdownOption<string>" TValue="string">
+                @foreach (var item in rtlItems)
+                {
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                }
+            </BitDropdown>
+            <br /><br />
+            <BitDropdown Label="چند انتخابی"
+                         MultiSelect
+                         Dir="BitDir.Rtl"
+                         Placeholder="انتخاب چند گزینه ای"
+                         TItem="BitDropdownOption<string>" TValue="string">
+                @foreach (var item in rtlItems)
+                {
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                }
+            </BitDropdown>
+            <br /><br />
+            <BitDropdown Label="تک انتخابی ریسپانسیو"
+                         Responsive
+                         Dir="BitDir.Rtl"
+                         Placeholder="لطفا انتخاب کنید"
+                         TItem="BitDropdownOption<string>" TValue="string">
+                @foreach (var item in rtlItems)
+                {
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                }
+            </BitDropdown>
+        </div>
+    </dir>
 </DemoSection>
