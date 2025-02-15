@@ -24,7 +24,6 @@ public class BitCascadingValueProvider : ComponentBase
 
 
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CascadingValue<>))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCascadingValue))]
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
