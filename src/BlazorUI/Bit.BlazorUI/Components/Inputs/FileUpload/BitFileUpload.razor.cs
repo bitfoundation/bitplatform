@@ -662,7 +662,7 @@ public partial class BitFileUpload : BitComponentBase, IAsyncDisposable
         // this method is copied from:
         // https://github.com/aspnet/HttpAbstractions/blob/master/src/Microsoft.AspNetCore.WebUtilities/QueryHelpers.cs
 
-        int anchorIndex = url.IndexOf('#', StringComparison.InvariantCultureIgnoreCase);
+        int anchorIndex = url!.IndexOf('#', StringComparison.InvariantCultureIgnoreCase);
         string uriToBeAppended = url;
         string? anchorText = null;
 

@@ -10,7 +10,7 @@ public class BitPdfReaderConfig
     /// <summary>
     /// The URL of the pdf file.
     /// </summary>
-    public string Url { get; set; }
+    public string? Url { get; set; }
 
     /// <summary>
     /// The scale in which the pdf document gets rendered on the page.

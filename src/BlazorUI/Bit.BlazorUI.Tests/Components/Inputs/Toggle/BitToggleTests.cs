@@ -95,8 +95,8 @@ public class BitToggleTests : BunitTestContext
         });
 
         var button = com.Find("button");
-        var labelId = button.Id.Replace("button", "label");
-        var stateTextId = button.Id.Replace("button", "state-text");
+        var labelId = button?.Id?.Replace("button", "label");
+        var stateTextId = button?.Id?.Replace("button", "state-text");
 
         var ariaLabelledById = string.Empty;
         var stateText = (value ? onText : offText) ?? defaultText ?? string.Empty;
@@ -111,7 +111,7 @@ public class BitToggleTests : BunitTestContext
             ariaLabelledById = ariaLabelledById.HasValue() ? $"{labelId} {stateTextId}" : stateTextId;
         }
 
-        Assert.AreEqual(button.GetAttribute("aria-labelledby"), ariaLabelledById);
+        Assert.AreEqual(button?.GetAttribute("aria-labelledby"), ariaLabelledById);
     }
 
     [DataTestMethod,

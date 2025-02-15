@@ -8,7 +8,7 @@ public class BitChartLineOptions : BitChartBaseConfigOptions
     /// <summary>
     /// The scales for this chart. You can use any <see cref="BitChartCartesianAxis"/> for x and y.
     /// </summary>
-    public BitChartScales Scales { get; set; }
+    public BitChartScales? Scales { get; set; }
 
     /// <summary>
     /// If false, the lines between points are not drawn.

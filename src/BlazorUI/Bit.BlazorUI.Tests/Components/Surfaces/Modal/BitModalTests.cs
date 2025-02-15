@@ -22,7 +22,7 @@ public class BitModalTests : BunitTestContext
         });
 
         var element = com.Find(".bit-mdl");
-        Assert.AreEqual(element.Attributes["role"].Value, isAlert.HasValue && isAlert.Value ? "alertdialog" : "dialog");
+        Assert.AreEqual(element?.Attributes?["role"]?.Value, isAlert.HasValue && isAlert.Value ? "alertdialog" : "dialog");
     }
 
     [DataTestMethod,
@@ -61,7 +61,7 @@ public class BitModalTests : BunitTestContext
         });
 
         var element = com.Find(".bit-mdl");
-        Assert.AreEqual(element.Attributes["aria-modal"].Value, (isModeless is false).ToString().ToLower());
+        Assert.AreEqual(element?.Attributes?["aria-modal"]?.Value, (isModeless is false).ToString().ToLower());
 
         var elementOverlay = com.FindAll(".bit-mdl-ovl");
         Assert.AreEqual(isModeless ? 0 : 1, elementOverlay.Count);
@@ -103,11 +103,11 @@ public class BitModalTests : BunitTestContext
         }
         else if (subtitleAriaId == string.Empty)
         {
-            Assert.AreEqual(element.Attributes["aria-describedby"].Value, string.Empty);
+            Assert.AreEqual(element?.Attributes?["aria-describedby"]?.Value, string.Empty);
         }
         else
         {
-            Assert.AreEqual(element.Attributes["aria-describedby"].Value, subtitleAriaId);
+            Assert.AreEqual(element?.Attributes?["aria-describedby"]?.Value, subtitleAriaId);
         }
     }
 
@@ -132,11 +132,11 @@ public class BitModalTests : BunitTestContext
         }
         else if (titleAriaId == string.Empty)
         {
-            Assert.AreEqual(element.Attributes["aria-labelledby"].Value, string.Empty);
+            Assert.AreEqual(element?.Attributes["aria-labelledby"]?.Value, string.Empty);
         }
         else
         {
-            Assert.AreEqual(element.Attributes["aria-labelledby"].Value, titleAriaId);
+            Assert.AreEqual(element?.Attributes["aria-labelledby"]?.Value, titleAriaId);
         }
     }
 

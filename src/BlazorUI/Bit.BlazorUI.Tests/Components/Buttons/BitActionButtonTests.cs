@@ -66,7 +66,7 @@ public class BitActionButtonTests : BunitTestContext
 
         if (hasTabIndexAttr)
         {
-            Assert.IsTrue(bitButton.GetAttribute("tabindex").Equals("-1"));
+            Assert.IsTrue(bitButton?.GetAttribute("tabindex")?.Equals("-1"));
         }
 
     }
@@ -81,7 +81,7 @@ public class BitActionButtonTests : BunitTestContext
 
         var bitButton = com.Find(".bit-acb");
 
-        Assert.IsTrue(bitButton.GetAttribute("aria-describedby").Contains(ariaDescription));
+        Assert.IsTrue(bitButton?.GetAttribute("aria-describedby")?.Contains(ariaDescription));
     }
 
     [DataTestMethod, DataRow("Detailed label")]
@@ -94,7 +94,7 @@ public class BitActionButtonTests : BunitTestContext
 
         var bitButton = com.Find(".bit-acb");
 
-        Assert.IsTrue(bitButton.GetAttribute("aria-label").Contains(ariaLabel));
+        Assert.IsTrue(bitButton?.GetAttribute("aria-label")?.Contains(ariaLabel));
     }
 
     [DataTestMethod, DataRow(true, true), DataRow(false, false), DataRow(null, false)]

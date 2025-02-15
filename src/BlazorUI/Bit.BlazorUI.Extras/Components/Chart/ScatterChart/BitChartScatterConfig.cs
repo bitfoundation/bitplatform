@@ -4,7 +4,7 @@
 /// Represents the config for a scatter chart.
 /// <para>
 /// Scatter charts are based on basic line charts with the x axis changed to a
-/// <see cref="Common.Axes.LinearCartesianAxis"/> (unless otherwise specified).
+/// <see cref="BitChartLinearCartesianAxis"/> (unless otherwise specified).
 /// Therefore, many configuration options are from the line chart.
 /// </para>
 /// </summary>

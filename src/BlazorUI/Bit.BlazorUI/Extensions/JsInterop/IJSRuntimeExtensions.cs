@@ -68,6 +68,7 @@ public static class IJSRuntimeExtensions
 
 
 
+    [SuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "<Pending>")]
     internal static bool IsRuntimeInvalid(this IJSRuntime jsRuntime)
     {
         var type = jsRuntime.GetType();

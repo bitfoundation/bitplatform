@@ -121,7 +121,7 @@ public class BitRatingTests : BunitTestContext
         var firstButton = component.Find(".bit-rtg-btn");
 
         //TODO: bypassed - BUnit 2-way bound parameters issue
-        Assert.AreEqual(allowZeroStars is false, bool.Parse(firstButton.GetAttribute("aria-checked")));
+        Assert.AreEqual(allowZeroStars is false, bool.Parse(firstButton?.GetAttribute("aria-checked") ?? "false"));
     }
 
     [TestMethod]

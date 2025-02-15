@@ -10,17 +10,17 @@ public class BitChartChartData
     /// </summary>
     public BitChartChartData()
     {
-        Labels = new List<string>();
-        XLabels = new List<string>();
-        YLabels = new List<string>();
-        Datasets = new List<IBitChartDataset>();
+        Labels = [];
+        XLabels = [];
+        YLabels = [];
+        Datasets = [];
     }
 
     /// <summary>
     /// Gets the labels the chart will use.
     /// <para>
     /// If defined (1 or more labels) the corresponding axis has to be of type
-    /// <see cref="Enums.AxisType.Category"/> for the chart to work correctly.
+    /// <see cref="BitChartAxisType.Category"/> for the chart to work correctly.
     /// </para>
     /// </summary>
     public virtual List<string> Labels { get; }
@@ -29,7 +29,7 @@ public class BitChartChartData
     /// Gets the labels the horizontal axes will use.
     /// <para>
     /// If defined (1 or more labels) the x-axis has to be of type
-    /// <see cref="Enums.AxisType.Category"/> for the chart to work correctly.
+    /// <see cref="BitChartAxisType.Category"/> for the chart to work correctly.
     /// </para>
     /// </summary>
     public virtual List<string> XLabels { get; }
@@ -38,7 +38,7 @@ public class BitChartChartData
     /// Gets the labels the vertical axes will use.
     /// <para>
     /// If defined (1 or more labels) the y-axis has to be of type
-    /// <see cref="Enums.AxisType.Category"/> for the chart to work correctly.
+    /// <see cref="BitChartAxisType.Category"/> for the chart to work correctly.
     /// </para>
     /// </summary>
     public virtual List<string> YLabels { get; }

@@ -14,7 +14,7 @@ public class BitChartLegend
     /// <summary>
     /// Position of the legend
     /// </summary>
-    public BitChartPosition Position { get; set; }
+    public BitChartPosition? Position { get; set; }
 
     /// <summary>
     /// Marks that this box should take the full width of the canvas (pushing down other boxes).
@@ -26,13 +26,13 @@ public class BitChartLegend
     /// Gets or sets the callback to call when a click event is registered on a label item.
     /// <para>See <see cref="BitChartJavascriptHandler{T}"/> and <see cref="BitChartDelegateHandler{T}"/>.</para>
     /// </summary>
-    public IBitChartMethodHandler<BitChartLegendItemMouseEvent> OnClick { get; set; }
+    public IBitChartMethodHandler<BitChartLegendItemMouseEvent>? OnClick { get; set; }
 
     /// <summary>
     /// Gets or sets the callback to call when a <see cref="BitChartBrowserEvent.MouseMove"/> event is registered on top of a label item.
     /// <para>See <see cref="BitChartJavascriptHandler{T}"/> and <see cref="BitChartDelegateHandler{T}"/>.</para>
     /// </summary>
-    public IBitChartMethodHandler<BitChartLegendItemMouseEvent> OnHover { get; set; }
+    public IBitChartMethodHandler<BitChartLegendItemMouseEvent>? OnHover { get; set; }
 
     /// <summary>
     /// Legend will show datasets in reverse order.
@@ -42,5 +42,5 @@ public class BitChartLegend
     /// <summary>
     /// Configuration options for the legend-labels
     /// </summary>
-    public BitChartLegendLabels Labels { get; set; }
+    public BitChartLegendLabels? Labels { get; set; }
 }

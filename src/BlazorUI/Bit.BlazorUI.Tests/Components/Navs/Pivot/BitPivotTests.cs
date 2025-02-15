@@ -64,7 +64,7 @@ public class BitPivotTests : BunitTestContext
 
         foreach (var bitPivot in bitPivots)
         {
-            Assert.IsTrue(bitPivot.GetAttribute("aria-label").Equals(ariaLabel));
+            Assert.IsTrue(bitPivot?.GetAttribute("aria-label")?.Equals(ariaLabel));
         }
     }
 

@@ -78,7 +78,7 @@ public class BitButtonTests : BunitTestContext
 
         if (hasTabIndexAttr)
         {
-            Assert.IsTrue(bitButton.GetAttribute("tabindex").Equals("-1"));
+            Assert.IsTrue(bitButton?.GetAttribute("tabindex")?.Equals("-1"));
         }
     }
 
@@ -302,7 +302,7 @@ public class BitButtonTests : BunitTestContext
 
         if (isLoading)
         {
-            Assert.IsTrue(bitButton.FirstElementChild.ClassList.Contains("bit-btn-ldg"));
+            Assert.IsTrue(bitButton?.FirstElementChild?.ClassList.Contains("bit-btn-ldg"));
         }
         else
         {
@@ -358,11 +358,11 @@ public class BitButtonTests : BunitTestContext
             _ => "bit-btn-end"
         };
 
-        Assert.AreEqual(loadingLabel, bitButton.LastElementChild.TextContent);
+        Assert.AreEqual(loadingLabel, bitButton?.LastElementChild?.TextContent);
 
-        Assert.IsTrue(bitButton.FirstElementChild.ClassList.Contains("bit-btn-ldg"));
+        Assert.IsTrue(bitButton?.FirstElementChild?.ClassList.Contains("bit-btn-ldg"));
 
-        Assert.IsTrue(bitButton.FirstElementChild.ClassList.Contains(labelPositionClass));
+        Assert.IsTrue(bitButton?.FirstElementChild?.ClassList.Contains(labelPositionClass));
     }
 
 }

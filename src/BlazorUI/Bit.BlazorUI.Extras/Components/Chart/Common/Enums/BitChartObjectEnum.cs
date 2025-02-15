@@ -50,8 +50,7 @@ public abstract class BitChartObjectEnum : IEquatable<BitChartObjectEnum>
         Value = value ?? throw new ArgumentNullException(nameof(value));
 
         if (value is BitChartObjectEnum)
-            throw new ArgumentException("The value cannot be an ObjectEnum. " +
-                                        "Recursive ObjectEnums aren't allowed.");
+            throw new ArgumentException("The value cannot be an ObjectEnum. Recursive ObjectEnums aren't allowed.");
     }
 
     /// <summary>
@@ -78,7 +77,7 @@ public abstract class BitChartObjectEnum : IEquatable<BitChartObjectEnum>
     /// <param name="obj">The object to compare with the current object.</param>
     /// <returns>true if the specified object is considered to be equal to the current object;
     /// otherwise, false.</returns>
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (obj is BitChartObjectEnum asEnum)
         {
@@ -94,9 +93,7 @@ public abstract class BitChartObjectEnum : IEquatable<BitChartObjectEnum>
     /// <param name="other">An object to compare with this object.</param>
     /// <returns>true if the current object is equal to the other parameter; otherwise, false.
     /// </returns>
-    public bool Equals(BitChartObjectEnum other) =>
-        other != null &&
-        Value.Equals(other.Value);
+    public bool Equals(BitChartObjectEnum? other) => other is not null && Value.Equals(other.Value);
 
     /// <summary>
     /// Returns the hash code of the underlying value.
@@ -109,7 +106,7 @@ public abstract class BitChartObjectEnum : IEquatable<BitChartObjectEnum>
     /// Calls <see cref="object.ToString"/> on the underlying object.
     /// </summary>
     /// <returns>The <see cref="string"/> representation of the underlying object.</returns>
-    public override string ToString() => Value.ToString();
+    public override string? ToString() => Value.ToString();
 
     public static bool operator ==(BitChartObjectEnum left, BitChartObjectEnum right) =>
         EqualityComparer<object>.Default.Equals(left?.Value, right?.Value);

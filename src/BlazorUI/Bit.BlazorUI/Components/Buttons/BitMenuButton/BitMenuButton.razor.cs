@@ -82,7 +82,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IAsyncDisposable w
     /// Determines the opening state of the callout.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(ToggleCallout))]
+    [CallOnSet(nameof(OnSetIsOpen))]
     [ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
     public bool IsOpen { get; set; }
 
@@ -94,7 +94,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IAsyncDisposable w
     /// <summary>
     /// The custom template content to render each item.
     /// </summary>
-    [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
+    [Parameter] public RenderFragment<TItem?>? ItemTemplate { get; set; }
 
     /// <summary>
     /// Names and selectors of the custom input type properties.
@@ -585,6 +585,11 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IAsyncDisposable w
                                 "",
                                 "",
                                 true);
+    }
+
+    private void OnSetIsOpen()
+    {
+        _ = ToggleCallout();
     }
 
     private string GetItemKey(TItem item, string defaultKey)

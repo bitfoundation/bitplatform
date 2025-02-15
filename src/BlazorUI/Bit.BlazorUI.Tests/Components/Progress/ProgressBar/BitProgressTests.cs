@@ -20,7 +20,7 @@ public class BitProgressTests : BunitTestContext
         var piWrapper = component.Find(".bit-prb-bcn");
         var piWrapperStyle = piWrapper.GetAttribute("style");
         var expectedValue = $"height: {thickness}px";
-        Assert.IsTrue(piWrapperStyle.Contains(expectedValue));
+        Assert.IsTrue(piWrapperStyle?.Contains(expectedValue));
     }
 
     [DataTestMethod,
@@ -37,7 +37,7 @@ public class BitProgressTests : BunitTestContext
         var piBar = component.Find(".bit-prb-bar");
         var piBarStyle = piBar.GetAttribute("style");
         var expectedValue = $"width: {percent}%";
-        Assert.IsTrue(piBarStyle.Contains(expectedValue));
+        Assert.IsTrue(piBarStyle?.Contains(expectedValue));
     }
 
     [DataTestMethod,
@@ -54,7 +54,7 @@ public class BitProgressTests : BunitTestContext
         var piBar = component.Find(".bit-prb-bar");
         var piBarStyle = piBar.GetAttribute("style");
         var expectedValue = "width: 100%";
-        Assert.IsTrue(piBarStyle.Contains(expectedValue));
+        Assert.IsTrue(piBarStyle?.Contains(expectedValue));
     }
 
     [DataTestMethod,
@@ -71,7 +71,7 @@ public class BitProgressTests : BunitTestContext
         var piBar = component.Find(".bit-prb-bar");
         var piBarStyle = piBar.GetAttribute("style");
         var expectedValue = "width: 0%";
-        Assert.IsTrue(piBarStyle.Contains(expectedValue));
+        Assert.IsTrue(piBarStyle?.Contains(expectedValue));
     }
 
 
@@ -194,8 +194,8 @@ public class BitProgressTests : BunitTestContext
             parameters.Add(p => p.LabelTemplate, labelTemplate);
         });
 
-        var labelChildNodes = component.Find(".bit-prb").FirstChild.ChildNodes;
-        labelChildNodes.MarkupMatches(labelTemplate);
+        var labelChildNodes = component?.Find(".bit-prb")?.FirstChild?.ChildNodes;
+        labelChildNodes?.MarkupMatches(labelTemplate);
     }
 
     [DataTestMethod,
@@ -208,7 +208,7 @@ public class BitProgressTests : BunitTestContext
             parameters.Add(p => p.DescriptionTemplate, descriptionTemplate);
         });
 
-        var descriptionChildNodes = component.Find(".bit-prb").LastChild.ChildNodes;
-        descriptionChildNodes.MarkupMatches(descriptionTemplate);
+        var descriptionChildNodes = component?.Find(".bit-prb")?.LastChild?.ChildNodes;
+        descriptionChildNodes?.MarkupMatches(descriptionTemplate);
     }
 }

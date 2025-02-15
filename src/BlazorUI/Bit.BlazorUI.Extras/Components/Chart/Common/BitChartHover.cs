@@ -8,7 +8,7 @@ public class BitChartHover
     /// <summary>
     /// Gets or sets which elements appear in the tooltip.
     /// </summary>
-    public BitChartInteractionMode Mode { get; set; }
+    public BitChartInteractionMode? Mode { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether or not the hover mode only applies
@@ -21,7 +21,7 @@ public class BitChartHover
     /// Defaults to <see cref="BitChartAxisDirection.X"/> for <see cref="Mode"/> == <see cref="BitChartInteractionMode.Index"/>
     /// and <see cref="BitChartAxisDirection.XY"/> for <see cref="Mode"/> == <see cref="BitChartInteractionMode.Dataset"/> or <see cref="BitChartInteractionMode.Nearest"/>.
     /// </summary>
-    public BitChartAxisDirection Axis { get; set; }
+    public BitChartAxisDirection? Axis { get; set; }
 
     /// <summary>
     /// Gets or sets the duration in milliseconds it takes to animate hover style changes.

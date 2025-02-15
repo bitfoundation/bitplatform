@@ -72,10 +72,10 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     /// unique identifier, such as a primary key value, for each data item.
     ///
     /// This allows the grid to preserve the association between row elements and data items based on their
-    /// unique identifiers, even when the <see cref="TGridItem"/> instances are replaced by new copies (for
+    /// unique identifiers, even when the TGridItem instances are replaced by new copies (for
     /// example, after a new query against the underlying data store).
     ///
-    /// If not set, the @key will be the <see cref="TGridItem"/> instance itself.
+    /// If not set, the @key will be the TGridItem instance itself.
     /// </summary>
     [Parameter] public Func<TGridItem, object> ItemKey { get; set; } = x => x!;
 
@@ -83,7 +83,7 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     /// Optionally links this <see cref="BitDataGrid{TGridItem}"/> instance with a <see cref="BitDataGridPaginationState"/> model,
     /// causing the grid to fetch and render only the current page of data.
     ///
-    /// This is normally used in conjunction with a <see cref="Paginator"/> component or some other UI logic
+    /// This is normally used in conjunction with a <see cref="BitDataGridPaginator"/> component or some other UI logic
     /// that displays and updates the supplied <see cref="BitDataGridPaginationState"/> instance.
     /// </summary>
     [Parameter] public BitDataGridPaginationState? Pagination { get; set; }

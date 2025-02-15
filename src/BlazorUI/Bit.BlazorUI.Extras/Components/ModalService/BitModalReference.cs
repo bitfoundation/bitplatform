@@ -48,6 +48,6 @@ public class BitModalReference
 
     public void Close()
     {
-        _modalService.Close(this);
+        _ = _modalService.Close(this);
     }
 }

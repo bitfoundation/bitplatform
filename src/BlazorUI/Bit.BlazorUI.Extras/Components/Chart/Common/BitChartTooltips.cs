@@ -9,7 +9,7 @@ public class BitChartTooltips
     /// <summary>
     /// Gets or sets which elements appear in the tooltip.
     /// </summary>
-    public BitChartInteractionMode Mode { get; set; }
+    public BitChartInteractionMode? Mode { get; set; }
 
     /// <summary>
     /// Gets or sets the value indicating if the hover mode only applies when the mouse position intersects an item on the chart.
@@ -24,18 +24,18 @@ public class BitChartTooltips
     /// <summary>
     /// Gets or sets the mode for positioning the tooltip.
     /// </summary>
-    public BitChartTooltipPosition Position { get; set; }
+    public BitChartTooltipPosition? Position { get; set; }
 
     /// <summary>
     /// Gets or sets the background color of the tooltip.
-    /// <para>See <see cref="Util.ColorUtil"/> for working with colors.</para>
+    /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
     /// </summary>
-    public string BackgroundColor { get; set; }
+    public string? BackgroundColor { get; set; }
 
     /// <summary>
     /// Gets or sets the title font.
     /// </summary>
-    public string TitleFontFamily { get; set; }
+    public string? TitleFontFamily { get; set; }
 
     /// <summary>
     /// Gets or sets the title font size.
@@ -45,13 +45,13 @@ public class BitChartTooltips
     /// <summary>
     /// Gets or sets the title font style.
     /// </summary>
-    public BitChartFontStyle TitleFontStyle { get; set; }
+    public BitChartFontStyle? TitleFontStyle { get; set; }
 
     /// <summary>
     /// Gets or sets the title font color.
-    /// <para>See <see cref="Util.ColorUtil"/> for working with colors.</para>
+    /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
     /// </summary>
-    public string TitleFontColor { get; set; }
+    public string? TitleFontColor { get; set; }
 
     /// <summary>
     /// Gets or sets the spacing to add to top and bottom of each title line.
@@ -66,7 +66,7 @@ public class BitChartTooltips
     /// <summary>
     /// Gets or sets the body line font.
     /// </summary>
-    public string BodyFontFamily { get; set; }
+    public string? BodyFontFamily { get; set; }
 
     /// <summary>
     /// Gets or sets the body font size.
@@ -76,13 +76,13 @@ public class BitChartTooltips
     /// <summary>
     /// Gets or sets the body font style.
     /// </summary>
-    public BitChartFontStyle BodyFontStyle { get; set; }
+    public BitChartFontStyle? BodyFontStyle { get; set; }
 
     /// <summary>
     /// Gets or sets the body font color.
-    /// <para>See <see cref="Util.ColorUtil"/> for working with colors.</para>
+    /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
     /// </summary>
-    public string BodyFontColor { get; set; }
+    public string? BodyFontColor { get; set; }
 
     /// <summary>
     /// Gets or sets the spacing to add to top and bottom of each tooltip item.
@@ -92,7 +92,7 @@ public class BitChartTooltips
     /// <summary>
     /// Gets or sets the footer font.
     /// </summary>
-    public string FooterFontFamily { get; set; }
+    public string? FooterFontFamily { get; set; }
 
     /// <summary>
     /// Gets or sets the footer font size.
@@ -102,13 +102,13 @@ public class BitChartTooltips
     /// <summary>
     /// Gets or sets the footer font style.
     /// </summary>
-    public BitChartFontStyle FooterFontStyle { get; set; }
+    public BitChartFontStyle? FooterFontStyle { get; set; }
 
     /// <summary>
     /// Gets or sets the footer font color.
-    /// <para>See <see cref="Util.ColorUtil"/> for working with colors.</para>
+    /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
     /// </summary>
-    public string FooterFontColor { get; set; }
+    public string? FooterFontColor { get; set; }
 
     /// <summary>
     /// Gets or sets the spacing to add to top and bottom of each footer line.
@@ -147,9 +147,9 @@ public class BitChartTooltips
 
     /// <summary>
     /// Gets or sets the color to draw behind the colored boxes when multiple items are in the tooltip.
-    /// <para>See <see cref="Util.ColorUtil"/> for working with colors.</para>
+    /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
     /// </summary>
-    public string MultiKeyBackground { get; set; }
+    public string? MultiKeyBackground { get; set; }
 
     /// <summary>
     /// Gets or sets the value indicating if color boxes are shown in the tooltip.
@@ -158,9 +158,9 @@ public class BitChartTooltips
 
     /// <summary>
     /// Gets or sets the color of the border.
-    /// <para>See <see cref="Util.ColorUtil"/> for working with colors.</para>
+    /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
     /// </summary>
-    public string BorderColor { get; set; }
+    public string? BorderColor { get; set; }
 
     /// <summary>
     /// Gets or sets the size of the border.

@@ -14,7 +14,7 @@ public interface IBitChartMethodHandler<T> : IBitChartMethodHandler
 /// Represents a type that's able to handle method calls coming from JavaScript.
 /// In order to maintain the strongly typed nature of C#, please prefer using <see cref="IBitChartMethodHandler{T}"/>.
 /// </summary>
-[Obsolete("Use " + nameof(IBitChartMethodHandler) + "<T> instead.")]
+//[Obsolete("Use " + nameof(IBitChartMethodHandler) + "<T> instead.")]
 public interface IBitChartMethodHandler
 {
     /// <summary>

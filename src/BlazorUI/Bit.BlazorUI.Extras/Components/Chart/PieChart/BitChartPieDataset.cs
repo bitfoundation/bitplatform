@@ -53,42 +53,42 @@ public class BitChartPieDataset<T> : BitChartDataset<T>
     /// This property should usually be indexed, otherwise it's hard to distinguish the individual arcs.
     /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
     /// </summary>
-    public BitChartIndexableOption<string> BackgroundColor { get; set; }
+    public BitChartIndexableOption<string>? BackgroundColor { get; set; }
 
     /// <summary>
     /// Gets or sets the border alignment. When <see cref="BitChartBorderAlign.Center" /> is set,
     /// the borders of arcs next to each other will overlap. When <see cref="BitChartBorderAlign.Inner" />
     /// is set, it is guaranteed that all the borders will not overlap.
     /// </summary>
-    public BitChartIndexableOption<BitChartBorderAlign> BorderAlign { get; set; }
+    public BitChartIndexableOption<BitChartBorderAlign>? BorderAlign { get; set; }
 
     /// <summary>
     /// Gets or sets the border color of the arcs.
     /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
     /// </summary>
-    public BitChartIndexableOption<string> BorderColor { get; set; }
+    public BitChartIndexableOption<string>? BorderColor { get; set; }
 
     /// <summary>
     /// Gets or sets the border width of the arcs (in pixels).
     /// </summary>
-    public BitChartIndexableOption<int> BorderWidth { get; set; }
+    public BitChartIndexableOption<int>? BorderWidth { get; set; }
 
     /// <summary>
     /// Gets or sets the background color of the arcs when hovered.
     /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
     /// </summary>
-    public BitChartIndexableOption<string> HoverBackgroundColor { get; set; }
+    public BitChartIndexableOption<string>? HoverBackgroundColor { get; set; }
 
     /// <summary>
     /// Gets or sets the border color of the arcs when hovered.
     /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
     /// </summary>
-    public BitChartIndexableOption<string> HoverBorderColor { get; set; }
+    public BitChartIndexableOption<string>? HoverBorderColor { get; set; }
 
     /// <summary>
     /// Gets or sets the border width of the arcs when hovered (in pixels).
     /// </summary>
-    public BitChartIndexableOption<int> HoverBorderWidth { get; set; }
+    public BitChartIndexableOption<int>? HoverBorderWidth { get; set; }
 
     /// <summary>
     /// Gets or sets the relative thickness of the dataset.
