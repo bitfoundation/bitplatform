@@ -60,9 +60,16 @@ public class HttpClientProxySourceGenerator : ISourceGenerator
                     requestOptions.AppendLine($"__request.Options.TryAdd(\"ResponseType\", typeof({action.ReturnType.GetUnderlyingType().ToDisplayString(NullableFlowState.None)}));");
                 }
 
+                var stringType = context.Compilation.GetSpecialType(SpecialType.System_String);
+
+                var encodeStringRouteParameters = string.Join(Environment.NewLine, action.Parameters
+                    .Where(p => SymbolEqualityComparer.Default.Equals(p.Type , stringType))
+                    .Select(p => $"{p.Name} = Uri.EscapeDataString(Uri.UnescapeDataString({p.Name}));"));
+
                 generatedMethods.AppendLine($@"
         public async {action.ReturnType.ToDisplayString()} {action.Method.Name}({parameters})
         {{
+            {encodeStringRouteParameters}
             {$@"var __url = $""{action.Url}"";"}
             var dynamicQS = GetDynamicQueryString();
             if (dynamicQS is not null)
@@ -124,7 +131,6 @@ internal class AppControllerBase
 
     protected string? GetDynamicQueryString()
     {{
-
         var result = queryString.ToString();
 
         queryString.Clear();
@@ -138,5 +144,6 @@ internal class AppControllerBase
 }}
 ");
         context.AddSource($"HttpClientProxy.cs", finalSource.ToString());
+        System.IO.File.WriteAllText(@"C:\Workspace\Codes.cs", finalSource.ToString());
     }
 }
