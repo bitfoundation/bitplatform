@@ -19,9 +19,9 @@ internal class CacheDelegatingHandler(IMemoryCache memoryCache, HttpMessageHandl
             if (useCache && memoryCache.TryGetValue(cacheKey, out ResponseMemoryCacheItems? cachedResponse))
             {
                 memoryCacheStatus = "HIT";
-                var cachedHttpResponse = new HttpResponseMessage(HttpStatusCode.OK)
+                var cachedHttpResponse = new HttpResponseMessage(cachedResponse!.StatusCode)
                 {
-                    Content = new ByteArrayContent(cachedResponse!.Content)
+                    Content = new ByteArrayContent(cachedResponse.Content)
                 };
                 foreach (var (key, values) in cachedResponse.ResponseHeaders)
                 {
@@ -48,6 +48,7 @@ internal class CacheDelegatingHandler(IMemoryCache memoryCache, HttpMessageHandl
                 memoryCache.Set(cacheKey, new ResponseMemoryCacheItems
                 {
                     Content = responseContent,
+                    StatusCode = response.StatusCode,
                     ResponseHeaders = response.Headers.ToDictionary(h => h.Key, h => h.Value.ToArray()),
                     ContentHeaders = response.Content.Headers.ToDictionary(h => h.Key, h => h.Value.ToArray()),
                     LogScopeData = logScopeData
@@ -65,6 +66,8 @@ internal class CacheDelegatingHandler(IMemoryCache memoryCache, HttpMessageHandl
     public class ResponseMemoryCacheItems
     {
         public required byte[] Content { get; set; }
+
+        public required HttpStatusCode StatusCode { get; set; }
 
         public required Dictionary<string, string[]> ResponseHeaders { get; set; }
         public required Dictionary<string, string[]> ContentHeaders { get; set; }
