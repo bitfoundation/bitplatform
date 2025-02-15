@@ -7,7 +7,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// A dropdown is a list in which the selected item is always visible while other items are visible on demand by clicking a dropdown button. Dropdowns are typically used for forms.
 /// </summary>
-public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDisposable where TItem : class, new()
+public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TItem : class, new()
 {
     private bool _disposed;
     private int? _totalItems;
@@ -1469,13 +1469,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
 
 
 
-    public async ValueTask DisposeAsync()
-    {
-        await DisposeAsync(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual async ValueTask DisposeAsync(bool disposing)
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (_disposed || disposing is false) return;
 
