@@ -14,7 +14,7 @@ internal class CacheDelegatingHandler(IMemoryCache memoryCache, HttpMessageHandl
 
         try
         {
-            var cacheKey = request.RequestUri!.ToString();
+            var cacheKey = $"{request.Method}-{request.RequestUri}";
 
             if (useCache && memoryCache.TryGetValue(cacheKey, out ResponseMemoryCacheItems? cachedResponse))
             {
@@ -23,9 +23,17 @@ internal class CacheDelegatingHandler(IMemoryCache memoryCache, HttpMessageHandl
                 {
                     Content = new ByteArrayContent(cachedResponse!.Content)
                 };
-                foreach (var (key, values) in cachedResponse.Headers)
+                foreach (var (key, values) in cachedResponse.ResponseHeaders)
                 {
                     cachedHttpResponse.Headers.TryAddWithoutValidation(key, values);
+                }
+                foreach (var (key, values) in cachedResponse.ContentHeaders)
+                {
+                    cachedHttpResponse.Content.Headers.TryAddWithoutValidation(key, values);
+                }
+                foreach (var l in cachedResponse.LogScopeData)
+                {
+                    logScopeData[l.Key] = l.Value;
                 }
                 request.Options.Set(new(RequestOptionNames.LogLevel), LogLevel.Information);
                 return cachedHttpResponse;
@@ -33,14 +41,16 @@ internal class CacheDelegatingHandler(IMemoryCache memoryCache, HttpMessageHandl
 
             var response = await base.SendAsync(request, cancellationToken);
 
-            if (useCache && response.IsSuccessStatusCode && response.Headers.CacheControl?.MaxAge is TimeSpan maxAge)
+            if (useCache && response.IsSuccessStatusCode && response.Headers.CacheControl?.MaxAge is TimeSpan maxAge && maxAge > TimeSpan.Zero)
             {
                 memoryCacheStatus = "MISS";
                 var responseContent = await response.Content.ReadAsByteArrayAsync(cancellationToken);
                 memoryCache.Set(cacheKey, new ResponseMemoryCacheItems
                 {
                     Content = responseContent,
-                    Headers = response.Headers.Select(h => (h.Key, h.Value.ToArray())).ToArray()
+                    ResponseHeaders = response.Headers.ToDictionary(h => h.Key, h => h.Value.ToArray()),
+                    ContentHeaders = response.Content.Headers.ToDictionary(h => h.Key, h => h.Value.ToArray()),
+                    LogScopeData = logScopeData
                 }, maxAge);
             }
 
@@ -56,6 +66,9 @@ internal class CacheDelegatingHandler(IMemoryCache memoryCache, HttpMessageHandl
     {
         public required byte[] Content { get; set; }
 
-        public required (string key, string[] values)[] Headers { get; set; }
+        public required Dictionary<string, string[]> ResponseHeaders { get; set; }
+        public required Dictionary<string, string[]> ContentHeaders { get; set; }
+
+        public required Dictionary<string, object?> LogScopeData { get; set; }
     }
 }
