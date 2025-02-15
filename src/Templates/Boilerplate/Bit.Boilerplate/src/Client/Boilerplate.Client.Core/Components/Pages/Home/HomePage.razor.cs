@@ -22,11 +22,11 @@ public partial class HomePage
     //#endif
 
 
+    //#if(module != "Sales")
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();
 
-        //#if(module != "Sales")
         // If required, you should typically manage the authorization header for external APIs in **AuthDelegatingHandler.cs**
         // and handle error extraction from failed responses in **ExceptionDelegatingHandler.cs**.  
 
@@ -37,8 +37,8 @@ public partial class HomePage
         // effectively addresses most scenarios.
 
         await Task.WhenAll(LoadNuget(), LoadGitHub());
-        //#endif
     }
+    //#endif
 
     //#if(module != "Sales")
     private async Task LoadNuget()
