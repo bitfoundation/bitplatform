@@ -20,10 +20,11 @@ public class BitCascadingValueProvider : ComponentBase
 
 
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-    private Type _cascadingValueType = typeof(CascadingValue<>);
+    private readonly Type _cascadingValueType = typeof(CascadingValue<>);
 
 
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CascadingValue<>))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCascadingValue))]
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
