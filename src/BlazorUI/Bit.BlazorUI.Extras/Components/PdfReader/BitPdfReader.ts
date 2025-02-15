@@ -98,6 +98,10 @@ namespace BitBlazorUI {
                 const renderTask = page.render(renderContext);
                 await renderTask.promise;
 
+            } catch (err: any) {
+                if (err.name !== 'RenderingCancelledException') {
+                    throw err;
+                }
             } finally {
                 config.isRendering[pageNumber] = false;
             }
