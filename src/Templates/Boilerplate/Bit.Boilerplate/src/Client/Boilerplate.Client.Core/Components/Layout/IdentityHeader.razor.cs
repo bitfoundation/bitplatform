@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Client.Core.Components.Layout;
 
-public partial class IdentityHeader : AppComponentBase, IDisposable
+public partial class IdentityHeader : AppComponentBase
 {
     private string? backLinkPayload;
     private BitDropdownItem<string>[] cultures = default!;
@@ -51,9 +51,9 @@ public partial class IdentityHeader : AppComponentBase, IDisposable
         await cultureService.ChangeCulture(cultureName);
     }
 
-
-    public void Dispose()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
         unsubscribeUpdateBackLink?.Invoke();
+        await base.DisposeAsync(disposing);
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Boilerplate.Client.Core.Services;
+﻿using System.Reflection;
+
+namespace Boilerplate.Client.Core.Services;
 
 /// <summary>
 /// Service for Publish/Subscribe pattern.
@@ -7,7 +9,8 @@
 /// </summary>
 public partial class PubSubService
 {
-    private readonly ConcurrentDictionary<string, List<Func<object?, Task>>> handlers = [];
+    // Handlers are stored per message as a list of weak subscriptions.
+    private readonly ConcurrentDictionary<string, List<WeakSubscription>> handlers = [];
 
     /// <summary>
     /// Messages that were published before any handler was subscribed.
@@ -18,11 +21,14 @@ public partial class PubSubService
 
     public void Publish(string message, object? payload = null, bool persistent = false)
     {
-        if (handlers.TryGetValue(message, out var messageHandlers))
+        if (handlers.TryGetValue(message, out var weakHandlers))
         {
-            foreach (var handler in messageHandlers.ToArray())
+            foreach (var weakHandler in weakHandlers.ToArray())
             {
-                handler(payload).ContinueWith(handleException, TaskContinuationOptions.OnlyOnFaulted);
+                if (weakHandler.IsAlive)
+                {
+                    weakHandler.Invoke(payload)?.ContinueWith(HandleException, TaskContinuationOptions.OnlyOnFaulted);
+                }
             }
         }
         else if (persistent)
@@ -33,24 +39,91 @@ public partial class PubSubService
 
     public Action Subscribe(string message, Func<object?, Task> handler)
     {
-        var messageHandlers = handlers.TryGetValue(message, out var value) ? value : handlers[message] = [];
+        var weakHandler = new WeakSubscription(handler);
+        var weakHandlers = handlers.GetOrAdd(message, _ => []);
+        weakHandlers.Add(weakHandler);
 
-        messageHandlers.Add(handler);
-
+        // If persistent messages exist for this message, publish them immediately.
         foreach (var (notHandledMessage, payload) in persistentMessages)
         {
             if (notHandledMessage == message)
             {
-                handler(payload).ContinueWith(handleException, TaskContinuationOptions.OnlyOnFaulted);
+                weakHandler.Invoke(payload)?.ContinueWith(HandleException, TaskContinuationOptions.OnlyOnFaulted);
                 persistentMessages.TryTake(out _);
             }
         }
 
-        return () => messageHandlers.Remove(handler);
+        return () =>
+        {
+            var removedHandlersCount = weakHandlers.RemoveAll(wh => wh.Matches(handler));
+        };
     }
 
-    private void handleException(Task t)
+    private void HandleException(Task t)
     {
         serviceProvider.GetRequiredService<IExceptionHandler>().Handle(t.Exception!);
+    }
+
+    private class WeakSubscription
+    {
+        private string targetInfo;
+        private readonly bool isStatic;
+        private readonly MethodInfo method;
+        private readonly WeakReference? target;
+
+        public WeakSubscription(Func<object?, Task> handler)
+        {
+            isStatic = handler.Target is null;
+            if (isStatic is false)
+            {
+                target = new WeakReference(handler.Target);
+            }
+            method = handler.Method;
+            targetInfo = $"{(handler.Target?.GetType().FullName ?? "static")}'s {method.Name}";
+        }
+
+        public bool IsAlive => isStatic || target?.IsAlive is true;
+
+        /// <summary>
+        /// Invokes the stored handler if it is still alive.
+        /// Returns the Task from the handler or null if the target is no longer available.
+        /// </summary>
+        public Task? Invoke(object? payload)
+        {
+            if (isStatic)
+            {
+                return (Task?)method.Invoke(null, [payload]);
+            }
+            else
+            {
+                if (this.target?.Target is object target)
+                {
+                    return (Task?)method.Invoke(target, [payload]);
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Checks if the given handler matches this weak subscription.
+        /// </summary>
+        public bool Matches(Func<object?, Task> handler)
+        {
+            if (isStatic)
+            {
+                return handler.Target is null && handler.Method.Equals(method);
+            }
+            else
+            {
+                return handler.Target is not null &&
+                       ReferenceEquals(handler.Target, target?.Target) &&
+                       handler.Method.Equals(method);
+            }
+        }
+
+        public override string ToString()
+        {
+            return targetInfo;
+        }
     }
 }

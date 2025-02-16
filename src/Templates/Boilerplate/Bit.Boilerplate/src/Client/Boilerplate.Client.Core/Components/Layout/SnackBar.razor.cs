@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Client.Core.Components.Layout;
 
-public partial class SnackBar : IDisposable
+public partial class SnackBar
 {
     private Action? unsubscribe;
     private BitSnackBar snackbarRef = default!;
@@ -18,9 +18,9 @@ public partial class SnackBar : IDisposable
         return base.OnInitAsync();
     }
 
-
-    public void Dispose()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
         unsubscribe?.Invoke();
+        await base.DisposeAsync(disposing);
     }
 }

@@ -4,7 +4,7 @@ using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
 
-public partial class SignInPage : IDisposable
+public partial class SignInPage
 {
     [Parameter, SupplyParameterFromQuery(Name = "return-url")]
     public string? ReturnUrlQueryString { get; set; }
@@ -225,9 +225,9 @@ public partial class SignInPage : IDisposable
         }
     }
 
-
-    public void Dispose()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
         unsubscribeIdentityHeaderBackLinkClicked?.Invoke();
+        await base.DisposeAsync(disposing);
     }
 }

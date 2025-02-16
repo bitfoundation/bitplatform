@@ -7,7 +7,7 @@ namespace Boilerplate.Client.Core.Components.Layout;
 /// This modal can be opened by clicking 7 times on the spacer of the header or by pressing Ctrl+Shift+X.
 /// Also by calling `App.showDiagnostic` function using the dev-tools console.
 /// </summary>
-public partial class DiagnosticModal : IDisposable
+public partial class DiagnosticModal
 {
     private bool isOpen;
     private string? searchText;
@@ -145,6 +145,21 @@ public partial class DiagnosticModal : IDisposable
         await messageBoxService.Show("Diagnostics Result", result);
     }
 
+    private async Task CallGC()
+    {
+        static string FormatMemory(long bytes) => $"{bytes / (1024.0 * 1024.0):F2} MB";
+
+        long beforeGC = Environment.WorkingSet;
+        SnackBarService.Show("Memory Before GC", FormatMemory(beforeGC));
+
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+        GC.WaitForPendingFinalizers();
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+
+        long afterGC = Environment.WorkingSet;
+        SnackBarService.Show("Memory After GC", FormatMemory(afterGC));
+    }
+
     private void ResetLogs()
     {
         allLogs = [.. DiagnosticLogger.Store];
@@ -175,9 +190,9 @@ public partial class DiagnosticModal : IDisposable
         };
     }
 
-
-    public void Dispose()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
         unsubscribe?.Invoke();
+        await base.DisposeAsync(disposing);
     }
 }
