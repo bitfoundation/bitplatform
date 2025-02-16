@@ -31,7 +31,6 @@ public partial class DiagnosticModal
     [AutoInject] private BitMessageBoxService messageBoxService = default!;
     [AutoInject] private IDiagnosticsController diagnosticsController = default!;
 
-
     protected override Task OnInitAsync()
     {
         unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL, async _ =>
@@ -147,17 +146,22 @@ public partial class DiagnosticModal
 
     private async Task CallGC()
     {
-        static string FormatMemory(long bytes) => $"{bytes / (1024.0 * 1024.0):F2} MB";
+        SnackBarService.Show("Memory Before GC", GetMemoryUsage());
 
-        long beforeGC = Environment.WorkingSet;
-        SnackBarService.Show("Memory Before GC", FormatMemory(beforeGC));
+        await Task.Run(() =>
+        {
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+            GC.WaitForPendingFinalizers();
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+        });
 
-        GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
-        GC.WaitForPendingFinalizers();
-        GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+        SnackBarService.Show("Memory After GC", GetMemoryUsage());
+    }
 
-        long afterGC = Environment.WorkingSet;
-        SnackBarService.Show("Memory After GC", FormatMemory(afterGC));
+    string GetMemoryUsage()
+    {
+        long memory = Environment.WorkingSet;
+        return $"{memory / (1024.0 * 1024.0):F2} MB";
     }
 
     private void ResetLogs()

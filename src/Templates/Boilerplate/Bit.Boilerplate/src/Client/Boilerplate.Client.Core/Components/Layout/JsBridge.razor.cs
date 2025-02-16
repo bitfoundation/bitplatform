@@ -12,7 +12,7 @@ public partial class JsBridge
     {
         dotnetObj = DotNetObjectReference.Create(this);
 
-        await JSRuntime.InvokeVoidAsync("App.registerJsBridge", dotnetObj);
+        await JSRuntime.FastInvokeVoidAsync("App.registerJsBridge", dotnetObj);
 
         await base.OnAfterFirstRenderAsync();
     }
