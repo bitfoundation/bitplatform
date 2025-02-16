@@ -10,7 +10,7 @@ namespace Boilerplate.Client.Core.Services;
 public partial class PubSubService
 {
     // Handlers are stored per message as a list of weak subscriptions.
-    private readonly ConcurrentDictionary<string, List<WeakSubscription>> handlers = [];
+    private readonly ConcurrentDictionary<string, List<WeakHandler>> handlers = [];
 
     /// <summary>
     /// Messages that were published before any handler was subscribed.
@@ -25,10 +25,7 @@ public partial class PubSubService
         {
             foreach (var weakHandler in weakHandlers.ToArray())
             {
-                if (weakHandler.IsAlive)
-                {
-                    weakHandler.Invoke(payload)?.ContinueWith(HandleException, TaskContinuationOptions.OnlyOnFaulted);
-                }
+                weakHandler.Invoke(payload)?.ContinueWith(HandleException, TaskContinuationOptions.OnlyOnFaulted);
             }
         }
         else if (persistent)
@@ -39,7 +36,7 @@ public partial class PubSubService
 
     public Action Subscribe(string message, Func<object?, Task> handler)
     {
-        var weakHandler = new WeakSubscription(handler);
+        var weakHandler = new WeakHandler(handler);
         var weakHandlers = handlers.GetOrAdd(message, _ => []);
         weakHandlers.Add(weakHandler);
 
@@ -64,14 +61,14 @@ public partial class PubSubService
         serviceProvider.GetRequiredService<IExceptionHandler>().Handle(t.Exception!);
     }
 
-    private class WeakSubscription
+    private class WeakHandler
     {
         private string targetInfo;
         private readonly bool isStatic;
         private readonly MethodInfo method;
         private readonly WeakReference? target;
 
-        public WeakSubscription(Func<object?, Task> handler)
+        public WeakHandler(Func<object?, Task> handler)
         {
             isStatic = handler.Target is null;
             if (isStatic is false)
@@ -81,8 +78,6 @@ public partial class PubSubService
             method = handler.Method;
             targetInfo = $"{(handler.Target?.GetType().FullName ?? "static")}'s {method.Name}";
         }
-
-        public bool IsAlive => isStatic || target?.IsAlive is true;
 
         /// <summary>
         /// Invokes the stored handler if it is still alive.
@@ -94,12 +89,9 @@ public partial class PubSubService
             {
                 return (Task?)method.Invoke(null, [payload]);
             }
-            else
+            else if (this.target?.IsAlive is true && this.target.Target is object target)
             {
-                if (this.target?.Target is object target)
-                {
-                    return (Task?)method.Invoke(target, [payload]);
-                }
+                return (Task?)method.Invoke(target, [payload]);
             }
             return null;
         }
