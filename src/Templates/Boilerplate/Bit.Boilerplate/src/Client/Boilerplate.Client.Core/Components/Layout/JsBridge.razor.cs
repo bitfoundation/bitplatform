@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Client.Core.Components.Layout;
 
-public partial class JsBridge : IDisposable
+public partial class JsBridge
 {
     private DotNetObjectReference<JsBridge>? dotnetObj;
     /// <summary>
@@ -12,7 +12,7 @@ public partial class JsBridge : IDisposable
     {
         dotnetObj = DotNetObjectReference.Create(this);
 
-        await JSRuntime.InvokeVoidAsync("App.registerJsBridge", dotnetObj);
+        await JSRuntime.FastInvokeVoidAsync("App.registerJsBridge", dotnetObj);
 
         await base.OnAfterFirstRenderAsync();
     }
@@ -33,8 +33,9 @@ public partial class JsBridge : IDisposable
         PubSubService.Publish(message, payload);
     }
 
-    public void Dispose()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
         dotnetObj?.Dispose();
+        await base.DisposeAsync(disposing);
     }
 }

@@ -241,18 +241,18 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        cts.Dispose();
+
+        await PrerenderStateService.DisposeAsync();
+
         await DisposeAsync(true);
 
         GC.SuppressFinalize(this);
     }
 
-    protected virtual async ValueTask DisposeAsync(bool disposing)
+    protected virtual ValueTask DisposeAsync(bool disposing)
     {
-        if (disposing)
-        {
-            await PrerenderStateService.DisposeAsync();
-            cts.Dispose();
-        }
+        return ValueTask.CompletedTask;
     }
 
     private void HandleException(Exception exp,
