@@ -250,9 +250,9 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
         GC.SuppressFinalize(this);
     }
 
-    protected virtual async ValueTask DisposeAsync(bool disposing)
+    protected virtual ValueTask DisposeAsync(bool disposing)
     {
-
+        return ValueTask.CompletedTask;
     }
 
     private void HandleException(Exception exp,
