@@ -24,7 +24,7 @@ public class HttpClientProxySyntaxReceiver : ISyntaxContextReceiver
                 var controllerSymbol = (ITypeSymbol)model.GetDeclaredSymbol(interfaceDeclarationSyntax)!;
                 bool isController = controllerSymbol.IsIController();
 
-                if (isController == true)
+                if (isController)
                 {
                     var controllerName = controllerSymbol.Name[1..].Replace("Controller", string.Empty);
 
