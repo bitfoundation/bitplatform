@@ -109,7 +109,7 @@ public static class IJSRuntimeExtensions
     {
         if (jsRuntime.IsRuntimeInvalid()) return default;
 
-        return jsRuntime.FastInvoke<TValue>(identifier, cancellationToken, args);
+        return jsRuntime.Invoke<TValue>(identifier, cancellationToken, args);
     }
 
     /// <summary>
