@@ -378,9 +378,6 @@
     <data name="Price" xml:space="preserve">
     <value>Prijs</value>
   </data>
-    <data name="Number" xml:space="preserve">
-    <value>Nummer</value>
-  </data>
     <data name="EitherProvideEmailOrPhoneNumber" xml:space="preserve">
     <value>Geef een e-mailadres of telefoonnummer op.</value>
   </data>

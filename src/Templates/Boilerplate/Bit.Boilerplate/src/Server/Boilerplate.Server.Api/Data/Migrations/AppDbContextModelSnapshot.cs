@@ -294,11 +294,11 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     .HasMaxLength(64)
                     .HasColumnType("TEXT");
 
-                b.Property<int>("Number")
-                    .HasColumnType("INTEGER");
-
                 b.Property<decimal>("Price")
                     .HasColumnType("TEXT");
+
+                b.Property<int>("ShortId")
+                    .HasColumnType("INTEGER");
 
                 b.HasKey("Id");
 
@@ -307,7 +307,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.HasIndex("Name")
                     .IsUnique();
 
-                b.HasIndex("Number")
+                b.HasIndex("ShortId")
                     .IsUnique();
 
                 b.ToTable("Products");
@@ -321,8 +321,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "The Ford Mustang is ranked #1 in Sports Cars",
                         Name = "Mustang - 1",
-                        Number = 9024,
-                        Price = 27155m
+                        Price = 27155m,
+                        ShortId = 9024
                     },
                     new
                     {
@@ -332,8 +332,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "The Ford GT is a mid-engine two-seater sports car manufactured and marketed by American automobile manufacturer",
                         Name = "GT - 1",
-                        Number = 9025,
-                        Price = 500000m
+                        Price = 500000m,
+                        ShortId = 9025
                     },
                     new
                     {
@@ -343,8 +343,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306440105984000000L,
                         Description = "Ford Ranger is a nameplate that has been used on multiple model lines of pickup trucks sold by Ford worldwide.",
                         Name = "Ranger - 1",
-                        Number = 9026,
-                        Price = 25000m
+                        Price = 25000m,
+                        ShortId = 9026
                     },
                     new
                     {
@@ -354,8 +354,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306431258624000000L,
                         Description = "Raptor is a SCORE off-road trophy truck living in a asphalt world",
                         Name = "Raptor - 1",
-                        Number = 9027,
-                        Price = 53205m
+                        Price = 53205m,
+                        ShortId = 9027
                     },
                     new
                     {
@@ -365,8 +365,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "The Ford Maverick is a compact pickup truck produced by Ford Motor Company.",
                         Name = "Maverick - 1",
-                        Number = 9028,
-                        Price = 22470m
+                        Price = 22470m,
+                        ShortId = 9028
                     },
                     new
                     {
@@ -376,8 +376,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "A powerful convertible sports car",
                         Name = "Roadster - 1",
-                        Number = 9029,
-                        Price = 42800m
+                        Price = 42800m,
+                        ShortId = 9029
                     },
                     new
                     {
@@ -387,8 +387,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "A perfectly adequate family sedan with sharp looks",
                         Name = "Altima - 1",
-                        Number = 9030,
-                        Price = 24550m
+                        Price = 24550m,
+                        ShortId = 9030
                     },
                     new
                     {
@@ -398,8 +398,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306440105984000000L,
                         Description = "Legendary supercar with AWD, 4 seats, a powerful V6 engine and the latest tech",
                         Name = "GT-R - 1",
-                        Number = 9031,
-                        Price = 113540m
+                        Price = 113540m,
+                        ShortId = 9031
                     },
                     new
                     {
@@ -409,8 +409,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "A new smart SUV",
                         Name = "Juke - 1",
-                        Number = 9032,
-                        Price = 28100m
+                        Price = 28100m,
+                        ShortId = 9032
                     },
                     new
                     {
@@ -420,8 +420,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "Subcompact luxury crossover SUV",
                         Name = "H247 - 1",
-                        Number = 9033,
-                        Price = 54950m
+                        Price = 54950m,
+                        ShortId = 9033
                     },
                     new
                     {
@@ -431,8 +431,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "Battery-electric full-size luxury liftback",
                         Name = "V297 - 1",
-                        Number = 9034,
-                        Price = 103360m
+                        Price = 103360m,
+                        ShortId = 9034
                     },
                     new
                     {
@@ -442,8 +442,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "Ultra-rare and powerful sports car",
                         Name = "R50 - 1",
-                        Number = 9035,
-                        Price = 2000000m
+                        Price = 2000000m,
+                        ShortId = 9035
                     },
                     new
                     {
@@ -453,8 +453,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "A powerful, sporty variant of the BMW 5 Series",
                         Name = "M550i - 1",
-                        Number = 9036,
-                        Price = 77790m
+                        Price = 77790m,
+                        ShortId = 9036
                     },
                     new
                     {
@@ -464,8 +464,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "Luxurious and powerful sedan that combines elegant design with impressive performance",
                         Name = "540i - 1",
-                        Number = 9037,
-                        Price = 60945m
+                        Price = 60945m,
+                        ShortId = 9037
                     },
                     new
                     {
@@ -475,8 +475,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306448953344000000L,
                         Description = "Combines class, spaciousness, and a well-built cabin",
                         Name = "530e - 1",
-                        Number = 9038,
-                        Price = 56545m
+                        Price = 56545m,
+                        ShortId = 9038
                     },
                     new
                     {
@@ -486,8 +486,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306440105984000000L,
                         Description = "Zippy and fuel-efficient powertrain, and sure-footed handling",
                         Name = "530i - 1",
-                        Number = 9039,
-                        Price = 55195m
+                        Price = 55195m,
+                        ShortId = 9039
                     },
                     new
                     {
@@ -497,8 +497,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306431258624000000L,
                         Description = "A Beastly coupe, powered by a fine-tuned 523-horsepower V8 engine",
                         Name = "M850i - 1",
-                        Number = 9040,
-                        Price = 100045m
+                        Price = 100045m,
+                        ShortId = 9040
                     },
                     new
                     {
@@ -508,8 +508,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "A full-size luxury crossover SUV that combines innovative design, an expansive presence, and a range of powerful engines",
                         Name = "X7 - 1",
-                        Number = 9041,
-                        Price = 77980m
+                        Price = 77980m,
+                        ShortId = 9041
                     },
                     new
                     {
@@ -519,8 +519,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306413563904000000L,
                         Description = "Luxury crossover SUV that combines cutting-edge technology",
                         Name = "IX - 1",
-                        Number = 9042,
-                        Price = 87000m
+                        Price = 87000m,
+                        ShortId = 9042
                     },
                     new
                     {
@@ -530,8 +530,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "Rapid acceleration and dynamic handling",
                         Name = "Model 3 - 1",
-                        Number = 9043,
-                        Price = 61990m
+                        Price = 61990m,
+                        ShortId = 9043
                     },
                     new
                     {
@@ -541,8 +541,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "Finishes near the top of our luxury electric car rankings.",
                         Name = "Model S - 1",
-                        Number = 9044,
-                        Price = 135000m
+                        Price = 135000m,
+                        ShortId = 9044
                     },
                     new
                     {
@@ -552,8 +552,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306448953344000000L,
                         Description = "Heart-pumping acceleration, long drive range",
                         Name = "Model X - 1",
-                        Number = 9045,
-                        Price = 138890m
+                        Price = 138890m,
+                        ShortId = 9045
                     },
                     new
                     {
@@ -563,8 +563,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "Extensive driving range, lots of standard safety features",
                         Name = "Model Y - 1",
-                        Number = 9046,
-                        Price = 67790m
+                        Price = 67790m,
+                        ShortId = 9046
                     },
                     new
                     {
@@ -574,8 +574,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "The Ford Mustang is ranked #1 in Sports Cars",
                         Name = "Mustang - 2",
-                        Number = 9047,
-                        Price = 27155m
+                        Price = 27155m,
+                        ShortId = 9047
                     },
                     new
                     {
@@ -585,8 +585,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "The Ford GT is a mid-engine two-seater sports car manufactured and marketed by American automobile manufacturer",
                         Name = "GT - 2",
-                        Number = 9048,
-                        Price = 500000m
+                        Price = 500000m,
+                        ShortId = 9048
                     },
                     new
                     {
@@ -596,8 +596,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306440105984000000L,
                         Description = "Ford Ranger is a nameplate that has been used on multiple model lines of pickup trucks sold by Ford worldwide.",
                         Name = "Ranger - 2",
-                        Number = 9049,
-                        Price = 25000m
+                        Price = 25000m,
+                        ShortId = 9049
                     },
                     new
                     {
@@ -607,8 +607,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306431258624000000L,
                         Description = "Raptor is a SCORE off-road trophy truck living in a asphalt world",
                         Name = "Raptor - 2",
-                        Number = 9050,
-                        Price = 53205m
+                        Price = 53205m,
+                        ShortId = 9050
                     },
                     new
                     {
@@ -618,8 +618,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "The Ford Maverick is a compact pickup truck produced by Ford Motor Company.",
                         Name = "Maverick - 2",
-                        Number = 9051,
-                        Price = 22470m
+                        Price = 22470m,
+                        ShortId = 9051
                     },
                     new
                     {
@@ -629,8 +629,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "A powerful convertible sports car",
                         Name = "Roadster - 2",
-                        Number = 9052,
-                        Price = 42800m
+                        Price = 42800m,
+                        ShortId = 9052
                     },
                     new
                     {
@@ -640,8 +640,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "A perfectly adequate family sedan with sharp looks",
                         Name = "Altima - 2",
-                        Number = 9053,
-                        Price = 24550m
+                        Price = 24550m,
+                        ShortId = 9053
                     },
                     new
                     {
@@ -651,8 +651,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306440105984000000L,
                         Description = "Legendary supercar with AWD, 4 seats, a powerful V6 engine and the latest tech",
                         Name = "GT-R - 2",
-                        Number = 9054,
-                        Price = 113540m
+                        Price = 113540m,
+                        ShortId = 9054
                     },
                     new
                     {
@@ -662,8 +662,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "A new smart SUV",
                         Name = "Juke - 2",
-                        Number = 9055,
-                        Price = 28100m
+                        Price = 28100m,
+                        ShortId = 9055
                     },
                     new
                     {
@@ -673,8 +673,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "Subcompact luxury crossover SUV",
                         Name = "H247 - 2",
-                        Number = 9056,
-                        Price = 54950m
+                        Price = 54950m,
+                        ShortId = 9056
                     },
                     new
                     {
@@ -684,8 +684,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "Battery-electric full-size luxury liftback",
                         Name = "V297 - 2",
-                        Number = 9057,
-                        Price = 103360m
+                        Price = 103360m,
+                        ShortId = 9057
                     },
                     new
                     {
@@ -695,8 +695,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "Ultra-rare and powerful sports car",
                         Name = "R50 - 2",
-                        Number = 9058,
-                        Price = 2000000m
+                        Price = 2000000m,
+                        ShortId = 9058
                     },
                     new
                     {
@@ -706,8 +706,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "A powerful, sporty variant of the BMW 5 Series",
                         Name = "M550i - 2",
-                        Number = 9059,
-                        Price = 77790m
+                        Price = 77790m,
+                        ShortId = 9059
                     },
                     new
                     {
@@ -717,8 +717,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "Luxurious and powerful sedan that combines elegant design with impressive performance",
                         Name = "540i - 2",
-                        Number = 9060,
-                        Price = 60945m
+                        Price = 60945m,
+                        ShortId = 9060
                     },
                     new
                     {
@@ -728,8 +728,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306448953344000000L,
                         Description = "Combines class, spaciousness, and a well-built cabin",
                         Name = "530e - 2",
-                        Number = 9061,
-                        Price = 56545m
+                        Price = 56545m,
+                        ShortId = 9061
                     },
                     new
                     {
@@ -739,8 +739,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306440105984000000L,
                         Description = "Zippy and fuel-efficient powertrain, and sure-footed handling",
                         Name = "530i - 2",
-                        Number = 9062,
-                        Price = 55195m
+                        Price = 55195m,
+                        ShortId = 9062
                     },
                     new
                     {
@@ -750,8 +750,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306431258624000000L,
                         Description = "A Beastly coupe, powered by a fine-tuned 523-horsepower V8 engine",
                         Name = "M850i - 2",
-                        Number = 9063,
-                        Price = 100045m
+                        Price = 100045m,
+                        ShortId = 9063
                     },
                     new
                     {
@@ -761,8 +761,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "A full-size luxury crossover SUV that combines innovative design, an expansive presence, and a range of powerful engines",
                         Name = "X7 - 2",
-                        Number = 9064,
-                        Price = 77980m
+                        Price = 77980m,
+                        ShortId = 9064
                     },
                     new
                     {
@@ -772,8 +772,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306413563904000000L,
                         Description = "Luxury crossover SUV that combines cutting-edge technology",
                         Name = "IX - 2",
-                        Number = 9065,
-                        Price = 87000m
+                        Price = 87000m,
+                        ShortId = 9065
                     },
                     new
                     {
@@ -783,8 +783,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "Rapid acceleration and dynamic handling",
                         Name = "Model 3 - 2",
-                        Number = 9066,
-                        Price = 61990m
+                        Price = 61990m,
+                        ShortId = 9066
                     },
                     new
                     {
@@ -794,8 +794,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "Finishes near the top of our luxury electric car rankings.",
                         Name = "Model S - 2",
-                        Number = 9067,
-                        Price = 135000m
+                        Price = 135000m,
+                        ShortId = 9067
                     },
                     new
                     {
@@ -805,8 +805,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306448953344000000L,
                         Description = "Heart-pumping acceleration, long drive range",
                         Name = "Model X - 2",
-                        Number = 9068,
-                        Price = 138890m
+                        Price = 138890m,
+                        ShortId = 9068
                     },
                     new
                     {
@@ -816,8 +816,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "Extensive driving range, lots of standard safety features",
                         Name = "Model Y - 2",
-                        Number = 9069,
-                        Price = 67790m
+                        Price = 67790m,
+                        ShortId = 9069
                     },
                     new
                     {
@@ -827,8 +827,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "The Ford Mustang is ranked #1 in Sports Cars",
                         Name = "Mustang - 3",
-                        Number = 9070,
-                        Price = 27155m
+                        Price = 27155m,
+                        ShortId = 9070
                     },
                     new
                     {
@@ -838,8 +838,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "The Ford GT is a mid-engine two-seater sports car manufactured and marketed by American automobile manufacturer",
                         Name = "GT - 3",
-                        Number = 9071,
-                        Price = 500000m
+                        Price = 500000m,
+                        ShortId = 9071
                     },
                     new
                     {
@@ -849,8 +849,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306440105984000000L,
                         Description = "Ford Ranger is a nameplate that has been used on multiple model lines of pickup trucks sold by Ford worldwide.",
                         Name = "Ranger - 3",
-                        Number = 9072,
-                        Price = 25000m
+                        Price = 25000m,
+                        ShortId = 9072
                     },
                     new
                     {
@@ -860,8 +860,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306431258624000000L,
                         Description = "Raptor is a SCORE off-road trophy truck living in a asphalt world",
                         Name = "Raptor - 3",
-                        Number = 9073,
-                        Price = 53205m
+                        Price = 53205m,
+                        ShortId = 9073
                     },
                     new
                     {
@@ -871,8 +871,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "The Ford Maverick is a compact pickup truck produced by Ford Motor Company.",
                         Name = "Maverick - 3",
-                        Number = 9074,
-                        Price = 22470m
+                        Price = 22470m,
+                        ShortId = 9074
                     },
                     new
                     {
@@ -882,8 +882,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "A powerful convertible sports car",
                         Name = "Roadster - 3",
-                        Number = 9075,
-                        Price = 42800m
+                        Price = 42800m,
+                        ShortId = 9075
                     },
                     new
                     {
@@ -893,8 +893,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "A perfectly adequate family sedan with sharp looks",
                         Name = "Altima - 3",
-                        Number = 9076,
-                        Price = 24550m
+                        Price = 24550m,
+                        ShortId = 9076
                     },
                     new
                     {
@@ -904,8 +904,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306440105984000000L,
                         Description = "Legendary supercar with AWD, 4 seats, a powerful V6 engine and the latest tech",
                         Name = "GT-R - 3",
-                        Number = 9077,
-                        Price = 113540m
+                        Price = 113540m,
+                        ShortId = 9077
                     },
                     new
                     {
@@ -915,8 +915,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "A new smart SUV",
                         Name = "Juke - 3",
-                        Number = 9078,
-                        Price = 28100m
+                        Price = 28100m,
+                        ShortId = 9078
                     },
                     new
                     {
@@ -926,8 +926,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "Subcompact luxury crossover SUV",
                         Name = "H247 - 3",
-                        Number = 9079,
-                        Price = 54950m
+                        Price = 54950m,
+                        ShortId = 9079
                     },
                     new
                     {
@@ -937,8 +937,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "Battery-electric full-size luxury liftback",
                         Name = "V297 - 3",
-                        Number = 9080,
-                        Price = 103360m
+                        Price = 103360m,
+                        ShortId = 9080
                     },
                     new
                     {
@@ -948,8 +948,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "Ultra-rare and powerful sports car",
                         Name = "R50 - 3",
-                        Number = 9081,
-                        Price = 2000000m
+                        Price = 2000000m,
+                        ShortId = 9081
                     },
                     new
                     {
@@ -959,8 +959,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "A powerful, sporty variant of the BMW 5 Series",
                         Name = "M550i - 3",
-                        Number = 9082,
-                        Price = 77790m
+                        Price = 77790m,
+                        ShortId = 9082
                     },
                     new
                     {
@@ -970,8 +970,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "Luxurious and powerful sedan that combines elegant design with impressive performance",
                         Name = "540i - 3",
-                        Number = 9083,
-                        Price = 60945m
+                        Price = 60945m,
+                        ShortId = 9083
                     },
                     new
                     {
@@ -981,8 +981,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306448953344000000L,
                         Description = "Combines class, spaciousness, and a well-built cabin",
                         Name = "530e - 3",
-                        Number = 9084,
-                        Price = 56545m
+                        Price = 56545m,
+                        ShortId = 9084
                     },
                     new
                     {
@@ -992,8 +992,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306440105984000000L,
                         Description = "Zippy and fuel-efficient powertrain, and sure-footed handling",
                         Name = "530i - 3",
-                        Number = 9085,
-                        Price = 55195m
+                        Price = 55195m,
+                        ShortId = 9085
                     },
                     new
                     {
@@ -1003,8 +1003,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306431258624000000L,
                         Description = "A Beastly coupe, powered by a fine-tuned 523-horsepower V8 engine",
                         Name = "M850i - 3",
-                        Number = 9086,
-                        Price = 100045m
+                        Price = 100045m,
+                        ShortId = 9086
                     },
                     new
                     {
@@ -1014,8 +1014,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "A full-size luxury crossover SUV that combines innovative design, an expansive presence, and a range of powerful engines",
                         Name = "X7 - 3",
-                        Number = 9087,
-                        Price = 77980m
+                        Price = 77980m,
+                        ShortId = 9087
                     },
                     new
                     {
@@ -1025,8 +1025,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306413563904000000L,
                         Description = "Luxury crossover SUV that combines cutting-edge technology",
                         Name = "IX - 3",
-                        Number = 9088,
-                        Price = 87000m
+                        Price = 87000m,
+                        ShortId = 9088
                     },
                     new
                     {
@@ -1036,8 +1036,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "Rapid acceleration and dynamic handling",
                         Name = "Model 3 - 3",
-                        Number = 9089,
-                        Price = 61990m
+                        Price = 61990m,
+                        ShortId = 9089
                     },
                     new
                     {
@@ -1047,8 +1047,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "Finishes near the top of our luxury electric car rankings.",
                         Name = "Model S - 3",
-                        Number = 9090,
-                        Price = 135000m
+                        Price = 135000m,
+                        ShortId = 9090
                     },
                     new
                     {
@@ -1058,8 +1058,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306448953344000000L,
                         Description = "Heart-pumping acceleration, long drive range",
                         Name = "Model X - 3",
-                        Number = 9091,
-                        Price = 138890m
+                        Price = 138890m,
+                        ShortId = 9091
                     },
                     new
                     {
@@ -1069,8 +1069,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "Extensive driving range, lots of standard safety features",
                         Name = "Model Y - 3",
-                        Number = 9092,
-                        Price = 67790m
+                        Price = 67790m,
+                        ShortId = 9092
                     },
                     new
                     {
@@ -1080,8 +1080,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "The Ford Mustang is ranked #1 in Sports Cars",
                         Name = "Mustang - 4",
-                        Number = 9093,
-                        Price = 27155m
+                        Price = 27155m,
+                        ShortId = 9093
                     },
                     new
                     {
@@ -1091,8 +1091,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "The Ford GT is a mid-engine two-seater sports car manufactured and marketed by American automobile manufacturer",
                         Name = "GT - 4",
-                        Number = 9094,
-                        Price = 500000m
+                        Price = 500000m,
+                        ShortId = 9094
                     },
                     new
                     {
@@ -1102,8 +1102,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306440105984000000L,
                         Description = "Ford Ranger is a nameplate that has been used on multiple model lines of pickup trucks sold by Ford worldwide.",
                         Name = "Ranger - 4",
-                        Number = 9095,
-                        Price = 25000m
+                        Price = 25000m,
+                        ShortId = 9095
                     },
                     new
                     {
@@ -1113,8 +1113,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306431258624000000L,
                         Description = "Raptor is a SCORE off-road trophy truck living in a asphalt world",
                         Name = "Raptor - 4",
-                        Number = 9096,
-                        Price = 53205m
+                        Price = 53205m,
+                        ShortId = 9096
                     },
                     new
                     {
@@ -1124,8 +1124,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "The Ford Maverick is a compact pickup truck produced by Ford Motor Company.",
                         Name = "Maverick - 4",
-                        Number = 9097,
-                        Price = 22470m
+                        Price = 22470m,
+                        ShortId = 9097
                     },
                     new
                     {
@@ -1135,8 +1135,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "A powerful convertible sports car",
                         Name = "Roadster - 4",
-                        Number = 9098,
-                        Price = 42800m
+                        Price = 42800m,
+                        ShortId = 9098
                     },
                     new
                     {
@@ -1146,8 +1146,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "A perfectly adequate family sedan with sharp looks",
                         Name = "Altima - 4",
-                        Number = 9099,
-                        Price = 24550m
+                        Price = 24550m,
+                        ShortId = 9099
                     },
                     new
                     {
@@ -1157,8 +1157,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306440105984000000L,
                         Description = "Legendary supercar with AWD, 4 seats, a powerful V6 engine and the latest tech",
                         Name = "GT-R - 4",
-                        Number = 9100,
-                        Price = 113540m
+                        Price = 113540m,
+                        ShortId = 9100
                     },
                     new
                     {
@@ -1168,8 +1168,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "A new smart SUV",
                         Name = "Juke - 4",
-                        Number = 9101,
-                        Price = 28100m
+                        Price = 28100m,
+                        ShortId = 9101
                     },
                     new
                     {
@@ -1179,8 +1179,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "Subcompact luxury crossover SUV",
                         Name = "H247 - 4",
-                        Number = 9102,
-                        Price = 54950m
+                        Price = 54950m,
+                        ShortId = 9102
                     },
                     new
                     {
@@ -1190,8 +1190,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "Battery-electric full-size luxury liftback",
                         Name = "V297 - 4",
-                        Number = 9103,
-                        Price = 103360m
+                        Price = 103360m,
+                        ShortId = 9103
                     },
                     new
                     {
@@ -1201,8 +1201,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "Ultra-rare and powerful sports car",
                         Name = "R50 - 4",
-                        Number = 9104,
-                        Price = 2000000m
+                        Price = 2000000m,
+                        ShortId = 9104
                     },
                     new
                     {
@@ -1212,8 +1212,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "A powerful, sporty variant of the BMW 5 Series",
                         Name = "M550i - 4",
-                        Number = 9105,
-                        Price = 77790m
+                        Price = 77790m,
+                        ShortId = 9105
                     },
                     new
                     {
@@ -1223,8 +1223,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "Luxurious and powerful sedan that combines elegant design with impressive performance",
                         Name = "540i - 4",
-                        Number = 9106,
-                        Price = 60945m
+                        Price = 60945m,
+                        ShortId = 9106
                     },
                     new
                     {
@@ -1234,8 +1234,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306448953344000000L,
                         Description = "Combines class, spaciousness, and a well-built cabin",
                         Name = "530e - 4",
-                        Number = 9107,
-                        Price = 56545m
+                        Price = 56545m,
+                        ShortId = 9107
                     },
                     new
                     {
@@ -1245,8 +1245,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306440105984000000L,
                         Description = "Zippy and fuel-efficient powertrain, and sure-footed handling",
                         Name = "530i - 4",
-                        Number = 9108,
-                        Price = 55195m
+                        Price = 55195m,
+                        ShortId = 9108
                     },
                     new
                     {
@@ -1256,8 +1256,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306431258624000000L,
                         Description = "A Beastly coupe, powered by a fine-tuned 523-horsepower V8 engine",
                         Name = "M850i - 4",
-                        Number = 9109,
-                        Price = 100045m
+                        Price = 100045m,
+                        ShortId = 9109
                     },
                     new
                     {
@@ -1267,8 +1267,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "A full-size luxury crossover SUV that combines innovative design, an expansive presence, and a range of powerful engines",
                         Name = "X7 - 4",
-                        Number = 9110,
-                        Price = 77980m
+                        Price = 77980m,
+                        ShortId = 9110
                     },
                     new
                     {
@@ -1278,8 +1278,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306413563904000000L,
                         Description = "Luxury crossover SUV that combines cutting-edge technology",
                         Name = "IX - 4",
-                        Number = 9111,
-                        Price = 87000m
+                        Price = 87000m,
+                        ShortId = 9111
                     },
                     new
                     {
@@ -1289,8 +1289,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "Rapid acceleration and dynamic handling",
                         Name = "Model 3 - 4",
-                        Number = 9112,
-                        Price = 61990m
+                        Price = 61990m,
+                        ShortId = 9112
                     },
                     new
                     {
@@ -1300,8 +1300,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "Finishes near the top of our luxury electric car rankings.",
                         Name = "Model S - 4",
-                        Number = 9113,
-                        Price = 135000m
+                        Price = 135000m,
+                        ShortId = 9113
                     },
                     new
                     {
@@ -1311,8 +1311,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306448953344000000L,
                         Description = "Heart-pumping acceleration, long drive range",
                         Name = "Model X - 4",
-                        Number = 9114,
-                        Price = 138890m
+                        Price = 138890m,
+                        ShortId = 9114
                     },
                     new
                     {
@@ -1322,8 +1322,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "Extensive driving range, lots of standard safety features",
                         Name = "Model Y - 4",
-                        Number = 9115,
-                        Price = 67790m
+                        Price = 67790m,
+                        ShortId = 9115
                     },
                     new
                     {
@@ -1333,8 +1333,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "The Ford Mustang is ranked #1 in Sports Cars",
                         Name = "Mustang - 5",
-                        Number = 9116,
-                        Price = 27155m
+                        Price = 27155m,
+                        ShortId = 9116
                     },
                     new
                     {
@@ -1344,8 +1344,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "The Ford GT is a mid-engine two-seater sports car manufactured and marketed by American automobile manufacturer",
                         Name = "GT - 5",
-                        Number = 9117,
-                        Price = 500000m
+                        Price = 500000m,
+                        ShortId = 9117
                     },
                     new
                     {
@@ -1355,8 +1355,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306440105984000000L,
                         Description = "Ford Ranger is a nameplate that has been used on multiple model lines of pickup trucks sold by Ford worldwide.",
                         Name = "Ranger - 5",
-                        Number = 9118,
-                        Price = 25000m
+                        Price = 25000m,
+                        ShortId = 9118
                     },
                     new
                     {
@@ -1366,8 +1366,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306431258624000000L,
                         Description = "Raptor is a SCORE off-road trophy truck living in a asphalt world",
                         Name = "Raptor - 5",
-                        Number = 9119,
-                        Price = 53205m
+                        Price = 53205m,
+                        ShortId = 9119
                     },
                     new
                     {
@@ -1377,8 +1377,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "The Ford Maverick is a compact pickup truck produced by Ford Motor Company.",
                         Name = "Maverick - 5",
-                        Number = 9120,
-                        Price = 22470m
+                        Price = 22470m,
+                        ShortId = 9120
                     },
                     new
                     {
@@ -1388,8 +1388,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "A powerful convertible sports car",
                         Name = "Roadster - 5",
-                        Number = 9121,
-                        Price = 42800m
+                        Price = 42800m,
+                        ShortId = 9121
                     },
                     new
                     {
@@ -1399,8 +1399,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "A perfectly adequate family sedan with sharp looks",
                         Name = "Altima - 5",
-                        Number = 9122,
-                        Price = 24550m
+                        Price = 24550m,
+                        ShortId = 9122
                     },
                     new
                     {
@@ -1410,8 +1410,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306440105984000000L,
                         Description = "Legendary supercar with AWD, 4 seats, a powerful V6 engine and the latest tech",
                         Name = "GT-R - 5",
-                        Number = 9123,
-                        Price = 113540m
+                        Price = 113540m,
+                        ShortId = 9123
                     },
                     new
                     {
@@ -1421,8 +1421,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "A new smart SUV",
                         Name = "Juke - 5",
-                        Number = 9124,
-                        Price = 28100m
+                        Price = 28100m,
+                        ShortId = 9124
                     },
                     new
                     {
@@ -1432,8 +1432,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "Subcompact luxury crossover SUV",
                         Name = "H247 - 5",
-                        Number = 9125,
-                        Price = 54950m
+                        Price = 54950m,
+                        ShortId = 9125
                     },
                     new
                     {
@@ -1443,8 +1443,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "Battery-electric full-size luxury liftback",
                         Name = "V297 - 5",
-                        Number = 9126,
-                        Price = 103360m
+                        Price = 103360m,
+                        ShortId = 9126
                     },
                     new
                     {
@@ -1454,8 +1454,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "Ultra-rare and powerful sports car",
                         Name = "R50 - 5",
-                        Number = 9127,
-                        Price = 2000000m
+                        Price = 2000000m,
+                        ShortId = 9127
                     },
                     new
                     {
@@ -1465,8 +1465,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "A powerful, sporty variant of the BMW 5 Series",
                         Name = "M550i - 5",
-                        Number = 9128,
-                        Price = 77790m
+                        Price = 77790m,
+                        ShortId = 9128
                     },
                     new
                     {
@@ -1476,8 +1476,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "Luxurious and powerful sedan that combines elegant design with impressive performance",
                         Name = "540i - 5",
-                        Number = 9129,
-                        Price = 60945m
+                        Price = 60945m,
+                        ShortId = 9129
                     },
                     new
                     {
@@ -1487,8 +1487,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306448953344000000L,
                         Description = "Combines class, spaciousness, and a well-built cabin",
                         Name = "530e - 5",
-                        Number = 9130,
-                        Price = 56545m
+                        Price = 56545m,
+                        ShortId = 9130
                     },
                     new
                     {
@@ -1498,8 +1498,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306440105984000000L,
                         Description = "Zippy and fuel-efficient powertrain, and sure-footed handling",
                         Name = "530i - 5",
-                        Number = 9131,
-                        Price = 55195m
+                        Price = 55195m,
+                        ShortId = 9131
                     },
                     new
                     {
@@ -1509,8 +1509,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306431258624000000L,
                         Description = "A Beastly coupe, powered by a fine-tuned 523-horsepower V8 engine",
                         Name = "M850i - 5",
-                        Number = 9132,
-                        Price = 100045m
+                        Price = 100045m,
+                        ShortId = 9132
                     },
                     new
                     {
@@ -1520,8 +1520,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "A full-size luxury crossover SUV that combines innovative design, an expansive presence, and a range of powerful engines",
                         Name = "X7 - 5",
-                        Number = 9133,
-                        Price = 77980m
+                        Price = 77980m,
+                        ShortId = 9133
                     },
                     new
                     {
@@ -1531,8 +1531,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306413563904000000L,
                         Description = "Luxury crossover SUV that combines cutting-edge technology",
                         Name = "IX - 5",
-                        Number = 9134,
-                        Price = 87000m
+                        Price = 87000m,
+                        ShortId = 9134
                     },
                     new
                     {
@@ -1542,8 +1542,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "Rapid acceleration and dynamic handling",
                         Name = "Model 3 - 5",
-                        Number = 9135,
-                        Price = 61990m
+                        Price = 61990m,
+                        ShortId = 9135
                     },
                     new
                     {
@@ -1553,8 +1553,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "Finishes near the top of our luxury electric car rankings.",
                         Name = "Model S - 5",
-                        Number = 9136,
-                        Price = 135000m
+                        Price = 135000m,
+                        ShortId = 9136
                     },
                     new
                     {
@@ -1564,8 +1564,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306448953344000000L,
                         Description = "Heart-pumping acceleration, long drive range",
                         Name = "Model X - 5",
-                        Number = 9137,
-                        Price = 138890m
+                        Price = 138890m,
+                        ShortId = 9137
                     },
                     new
                     {
@@ -1575,8 +1575,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "Extensive driving range, lots of standard safety features",
                         Name = "Model Y - 5",
-                        Number = 9138,
-                        Price = 67790m
+                        Price = 67790m,
+                        ShortId = 9138
                     },
                     new
                     {
@@ -1586,8 +1586,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "The Ford Mustang is ranked #1 in Sports Cars",
                         Name = "Mustang - 6",
-                        Number = 9139,
-                        Price = 27155m
+                        Price = 27155m,
+                        ShortId = 9139
                     },
                     new
                     {
@@ -1597,8 +1597,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "The Ford GT is a mid-engine two-seater sports car manufactured and marketed by American automobile manufacturer",
                         Name = "GT - 6",
-                        Number = 9140,
-                        Price = 500000m
+                        Price = 500000m,
+                        ShortId = 9140
                     },
                     new
                     {
@@ -1608,8 +1608,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306440105984000000L,
                         Description = "Ford Ranger is a nameplate that has been used on multiple model lines of pickup trucks sold by Ford worldwide.",
                         Name = "Ranger - 6",
-                        Number = 9141,
-                        Price = 25000m
+                        Price = 25000m,
+                        ShortId = 9141
                     },
                     new
                     {
@@ -1619,8 +1619,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306431258624000000L,
                         Description = "Raptor is a SCORE off-road trophy truck living in a asphalt world",
                         Name = "Raptor - 6",
-                        Number = 9142,
-                        Price = 53205m
+                        Price = 53205m,
+                        ShortId = 9142
                     },
                     new
                     {
@@ -1630,8 +1630,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "The Ford Maverick is a compact pickup truck produced by Ford Motor Company.",
                         Name = "Maverick - 6",
-                        Number = 9143,
-                        Price = 22470m
+                        Price = 22470m,
+                        ShortId = 9143
                     },
                     new
                     {
@@ -1641,8 +1641,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "A powerful convertible sports car",
                         Name = "Roadster - 6",
-                        Number = 9144,
-                        Price = 42800m
+                        Price = 42800m,
+                        ShortId = 9144
                     },
                     new
                     {
@@ -1652,8 +1652,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "A perfectly adequate family sedan with sharp looks",
                         Name = "Altima - 6",
-                        Number = 9145,
-                        Price = 24550m
+                        Price = 24550m,
+                        ShortId = 9145
                     },
                     new
                     {
@@ -1663,8 +1663,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306440105984000000L,
                         Description = "Legendary supercar with AWD, 4 seats, a powerful V6 engine and the latest tech",
                         Name = "GT-R - 6",
-                        Number = 9146,
-                        Price = 113540m
+                        Price = 113540m,
+                        ShortId = 9146
                     },
                     new
                     {
@@ -1674,8 +1674,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "A new smart SUV",
                         Name = "Juke - 6",
-                        Number = 9147,
-                        Price = 28100m
+                        Price = 28100m,
+                        ShortId = 9147
                     },
                     new
                     {
@@ -1685,8 +1685,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "Subcompact luxury crossover SUV",
                         Name = "H247 - 6",
-                        Number = 9148,
-                        Price = 54950m
+                        Price = 54950m,
+                        ShortId = 9148
                     },
                     new
                     {
@@ -1696,8 +1696,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "Battery-electric full-size luxury liftback",
                         Name = "V297 - 6",
-                        Number = 9149,
-                        Price = 103360m
+                        Price = 103360m,
+                        ShortId = 9149
                     },
                     new
                     {
@@ -1707,8 +1707,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "Ultra-rare and powerful sports car",
                         Name = "R50 - 6",
-                        Number = 9150,
-                        Price = 2000000m
+                        Price = 2000000m,
+                        ShortId = 9150
                     },
                     new
                     {
@@ -1718,8 +1718,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "A powerful, sporty variant of the BMW 5 Series",
                         Name = "M550i - 6",
-                        Number = 9151,
-                        Price = 77790m
+                        Price = 77790m,
+                        ShortId = 9151
                     },
                     new
                     {
@@ -1729,8 +1729,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "Luxurious and powerful sedan that combines elegant design with impressive performance",
                         Name = "540i - 6",
-                        Number = 9152,
-                        Price = 60945m
+                        Price = 60945m,
+                        ShortId = 9152
                     },
                     new
                     {
@@ -1740,8 +1740,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306448953344000000L,
                         Description = "Combines class, spaciousness, and a well-built cabin",
                         Name = "530e - 6",
-                        Number = 9153,
-                        Price = 56545m
+                        Price = 56545m,
+                        ShortId = 9153
                     },
                     new
                     {
@@ -1751,8 +1751,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306440105984000000L,
                         Description = "Zippy and fuel-efficient powertrain, and sure-footed handling",
                         Name = "530i - 6",
-                        Number = 9154,
-                        Price = 55195m
+                        Price = 55195m,
+                        ShortId = 9154
                     },
                     new
                     {
@@ -1762,8 +1762,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306431258624000000L,
                         Description = "A Beastly coupe, powered by a fine-tuned 523-horsepower V8 engine",
                         Name = "M850i - 6",
-                        Number = 9155,
-                        Price = 100045m
+                        Price = 100045m,
+                        ShortId = 9155
                     },
                     new
                     {
@@ -1773,8 +1773,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "A full-size luxury crossover SUV that combines innovative design, an expansive presence, and a range of powerful engines",
                         Name = "X7 - 6",
-                        Number = 9156,
-                        Price = 77980m
+                        Price = 77980m,
+                        ShortId = 9156
                     },
                     new
                     {
@@ -1784,8 +1784,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306413563904000000L,
                         Description = "Luxury crossover SUV that combines cutting-edge technology",
                         Name = "IX - 6",
-                        Number = 9157,
-                        Price = 87000m
+                        Price = 87000m,
+                        ShortId = 9157
                     },
                     new
                     {
@@ -1795,8 +1795,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306466648064000000L,
                         Description = "Rapid acceleration and dynamic handling",
                         Name = "Model 3 - 6",
-                        Number = 9158,
-                        Price = 61990m
+                        Price = 61990m,
+                        ShortId = 9158
                     },
                     new
                     {
@@ -1806,8 +1806,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306457800704000000L,
                         Description = "Finishes near the top of our luxury electric car rankings.",
                         Name = "Model S - 6",
-                        Number = 9159,
-                        Price = 135000m
+                        Price = 135000m,
+                        ShortId = 9159
                     },
                     new
                     {
@@ -1817,8 +1817,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306448953344000000L,
                         Description = "Heart-pumping acceleration, long drive range",
                         Name = "Model X - 6",
-                        Number = 9160,
-                        Price = 138890m
+                        Price = 138890m,
+                        ShortId = 9160
                     },
                     new
                     {
@@ -1828,8 +1828,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         CreatedOn = 1306422411264000000L,
                         Description = "Extensive driving range, lots of standard safety features",
                         Name = "Model Y - 6",
-                        Number = 9161,
-                        Price = 67790m
+                        Price = 67790m,
+                        ShortId = 9161
                     });
             });
 
