@@ -14,7 +14,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
         /*
         //#endif
         //#if (database == "PostgreSQL" || database == "SqlServer")
-        builder.Property(p => p.Number).UseSequence("ProductShortId");
+        builder.Property(p => p.ShortId).UseSequence("ProductShortId");
         //#if (IsInsideProjectTemplate == true)
         */
         //#endif
