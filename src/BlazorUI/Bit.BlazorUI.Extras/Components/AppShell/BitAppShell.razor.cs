@@ -88,15 +88,22 @@ public partial class BitAppShell : BitComponentBase, IAsyncDisposable
         {
             await _js.BitAppShellInitScroll(_containerRef, _navManager.Uri);
         }
+
+        if (_locationChanged)
+        {
+            _locationChanged = false;
+            await _js.BitAppShellAfterRenderScroll(_navManager.Uri);
+        }
     }
 
 
-
+    private bool _locationChanged;
     private void LocationChanged(object? sender, LocationChangedEventArgs args)
     {
         if (PersistScroll)
         {
-            _ = _js.BitAppShellNavigateScroll(_navManager.Uri);
+            _locationChanged = true;
+            _ = _js.BitAppShellLocationChangedScroll(_navManager.Uri);
         }
         else if (AutoGoToTop)
         {
