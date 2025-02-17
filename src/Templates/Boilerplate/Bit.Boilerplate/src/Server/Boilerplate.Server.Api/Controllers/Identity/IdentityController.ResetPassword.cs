@@ -15,22 +15,22 @@ public partial class IdentityController
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
         var user = await userManager.FindUserAsync(request)
-                    ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
+                    ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]).WithData(new() { { "Identifier", request } });
 
         if (await userConfirmation.IsConfirmedAsync(userManager, user) is false)
-            throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]);
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]).WithData(new() { { "UserId", user.Id } });
 
         var resendDelay = (DateTimeOffset.Now - user.ResetPasswordTokenRequestedOn) - AppSettings.Identity.ResetPasswordTokenLifetime;
 
         if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForResetPasswordTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
+            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForResetPasswordTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData(new() { { "UserId", user.Id } });
 
         user.ResetPasswordTokenRequestedOn = DateTimeOffset.Now;
 
         var result = await userManager.UpdateAsync(user);
 
         if (result.Succeeded is false)
-            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData(new() { { "UserId", user.Id } });
 
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ResetPassword,{user.ResetPasswordTokenRequestedOn?.ToUniversalTime()}"));
         var isEmail = string.IsNullOrEmpty(request.Email) is false;
@@ -68,33 +68,33 @@ public partial class IdentityController
     public async Task ResetPassword(ResetPasswordRequestDto request, CancellationToken cancellationToken)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
-        var user = await userManager.FindUserAsync(request) ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
+        var user = await userManager.FindUserAsync(request) ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]).WithData(new() { { "Identifier", request } });
 
         var expired = (DateTimeOffset.Now - user.ResetPasswordTokenRequestedOn) > AppSettings.Identity.ResetPasswordTokenLifetime;
 
         if (expired)
-            throw new BadRequestException(nameof(AppStrings.ExpiredToken));
+            throw new BadRequestException(nameof(AppStrings.ExpiredToken)).WithData(new() { { "UserId", user.Id } });
 
         if (await userManager.IsLockedOutAsync(user))
-            throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData(new() { { "UserId", user.Id } });
 
         bool tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ResetPassword,{user.ResetPasswordTokenRequestedOn?.ToUniversalTime()}"), request.Token!);
 
         if (tokenIsValid is false)
         {
             await userManager.AccessFailedAsync(user);
-            throw new BadRequestException(nameof(AppStrings.InvalidToken));
+            throw new BadRequestException(nameof(AppStrings.InvalidToken)).WithData(new() { { "UserId", user.Id } });
         }
 
         var result = await userManager.ResetPasswordAsync(user!, await userManager.GeneratePasswordResetTokenAsync(user!), request.Password!);
 
         if (result.Succeeded is false)
-            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData(new() { { "UserId", user.Id } });
 
         await ((IUserLockoutStore<User>)userStore).ResetAccessFailedCountAsync(user, cancellationToken);
         user.ResetPasswordTokenRequestedOn = null; // invalidates reset password token
         var updateResult = await userManager.UpdateAsync(user);
         if (updateResult.Succeeded is false)
-            throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+            throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData(new() { { "UserId", user.Id } });
     }
 }

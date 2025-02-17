@@ -25,6 +25,11 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
         parameters[nameof(lineNumber)] = lineNumber;
         parameters["exceptionId"] = Guid.NewGuid(); // This will remain consistent across different registered loggers, such as Sentry, Application Insights, etc.
 
+        foreach (var key in exception.Data.Keys)
+        {
+            parameters[key.ToString()!] = exception.Data[key];
+        }
+
         Handle(exception, displayKind, parameters.ToDictionary(i => i.Key, i => i.Value ?? string.Empty));
     }
 

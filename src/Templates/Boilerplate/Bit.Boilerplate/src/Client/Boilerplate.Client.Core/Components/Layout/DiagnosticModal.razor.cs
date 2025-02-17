@@ -134,8 +134,8 @@ public partial class DiagnosticModal
         showKnownException = !showKnownException;
 
         throw showKnownException
-            ? new InvalidOperationException("Something critical happened.")
-            : new DomainLogicException("Something bad happened.");
+            ? new InvalidOperationException("Something critical happened.").WithData(new() { { "TestData", 1 } })
+            : new DomainLogicException("Something bad happened.").WithData(new() { { "TestData", 2 } });
     }
 
     private async Task CallDiagnosticsApi()

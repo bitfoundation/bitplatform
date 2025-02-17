@@ -11,7 +11,7 @@ public partial class NugetStatisticsService
         var url = $"/query?q=packageid:{packageId}";
 
         var response = await httpClient.GetFromJsonAsync(url, ServerJsonContext.Default.Options.GetTypeInfo<NugetStatsDto>(), cancellationToken)
-                                ?? throw new ResourceNotFoundException(packageId);
+                                ?? throw new ResourceNotFoundException().WithData(new() { { "PackageId", packageId } });
 
         return response;
     }
