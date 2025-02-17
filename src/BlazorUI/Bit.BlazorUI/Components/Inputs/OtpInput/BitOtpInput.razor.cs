@@ -433,8 +433,16 @@ public partial class BitOtpInput : BitInputBase<string?>
     {
         if (IsDisposed || disposing is false) return;
 
-        _dotnetObj?.Dispose();
-        await _js.BitOtpInputDispose(_Id);
+        if (_dotnetObj is not null)
+        {
+            _dotnetObj.Dispose();
+
+            try
+            {
+                await _js.BitOtpInputDispose(_Id);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+        }
 
         await base.DisposeAsync(disposing);
     }
