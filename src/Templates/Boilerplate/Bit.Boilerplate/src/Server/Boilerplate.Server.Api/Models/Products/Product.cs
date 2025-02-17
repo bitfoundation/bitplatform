@@ -7,10 +7,13 @@ public partial class Product
 {
     public Guid Id { get; set; }
 
+    /// <summary>
+    /// The product's ShortId is used to create a more human-friendly URL.
+    /// </summary>
     [Range(0, int.MaxValue)]
-    public int Number { get; set; }
+    public int ShortId { get; set; }
         //#if (database != "PostgreSQL" && database != "SqlServer")
-        = Environment.TickCount;
+        = Environment.TickCount; // Using a database sequence for this is recommended.
         //#endif
 
     [Required, MaxLength(64)]

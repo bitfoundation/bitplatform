@@ -9,7 +9,10 @@ public partial class ProductPage
     protected override string? Subtitle => string.Empty;
 
 
-    [Parameter] public int Number { get; set; }
+    /// <summary>
+    /// The product's ShortId is used to create a more human-friendly URL.
+    /// </summary>
+    [Parameter] public int Id { get; set; }
     [Parameter] public string? Name { get; set; }
 
 
@@ -38,7 +41,7 @@ public partial class ProductPage
     {
         try
         {
-            product = await productViewController.Get(Number, CurrentCancellationToken);
+            product = await productViewController.Get(Id, CurrentCancellationToken);
         }
         finally
         {
@@ -53,7 +56,7 @@ public partial class ProductPage
         {
             similarProducts = await productViewController
                 .WithQuery(new ODataQuery { Top = 10 })
-                .GetSimilar(Number, CurrentCancellationToken);
+                .GetSimilar(Id, CurrentCancellationToken);
         }
         finally
         {
@@ -67,8 +70,8 @@ public partial class ProductPage
         try
         {
             siblingProducts = await productViewController
-                .WithQuery(new ODataQuery { Top = 10, Filter = $"{nameof(ProductDto.Number)} ne {Number}" })
-                .GetSiblings(Number, CurrentCancellationToken);
+                .WithQuery(new ODataQuery { Top = 10, Filter = $"{nameof(ProductDto.ShortId)} ne {Id}" })
+                .GetSiblings(Id, CurrentCancellationToken);
         }
         finally
         {

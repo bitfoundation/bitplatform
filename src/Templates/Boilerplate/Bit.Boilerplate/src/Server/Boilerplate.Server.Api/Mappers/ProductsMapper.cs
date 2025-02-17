@@ -22,10 +22,10 @@ public static partial class ProductsMapper
     public static partial ProductDto Map(this Product source);
 
     //#if(module == "Admin")
-    [MapperIgnoreSource(nameof(Product.Number))]
+    [MapperIgnoreSource(nameof(Product.ShortId))]
     public static partial Product Map(this ProductDto source);
 
-    [MapperIgnoreSource(nameof(Product.Number))]
+    [MapperIgnoreSource(nameof(Product.ShortId))]
     public static partial void Patch(this ProductDto source, Product dest);
     //#endif
 }

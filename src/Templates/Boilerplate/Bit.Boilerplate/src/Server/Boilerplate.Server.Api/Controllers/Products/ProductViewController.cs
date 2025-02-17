@@ -17,7 +17,7 @@ public partial class ProductViewController : AppControllerBase, IProductViewCont
     [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5, UserAgnostic = true)]
     public async Task<ProductDto> Get(int number, CancellationToken cancellationToken)
     {
-        var product = await Get().FirstOrDefaultAsync(t => t.Number == number, cancellationToken)
+        var product = await Get().FirstOrDefaultAsync(t => t.ShortId == number, cancellationToken)
             ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
 
         return product;
@@ -30,7 +30,7 @@ public partial class ProductViewController : AppControllerBase, IProductViewCont
     {
         var similarProducts = Get()
                               .OrderBy(p => EF.Functions.Random())
-                              .Where(p => p.Number != number);
+                              .Where(p => p.ShortId != number);
 
         return similarProducts;
     }
@@ -39,7 +39,7 @@ public partial class ProductViewController : AppControllerBase, IProductViewCont
     public async Task<IQueryable<ProductDto>> GetSiblings(int number, CancellationToken cancellationToken)
     {
         var categoryId = await DbContext.Products
-            .Where(p => p.Number == number)
+            .Where(p => p.ShortId == number)
             .Select(p => p.CategoryId)
             .FirstOrDefaultAsync(cancellationToken);
 

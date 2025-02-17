@@ -78,7 +78,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await responseCacheService.PurgeCache("/", $"/product/{dto.Number}/{Uri.EscapeDataString(dto.Name!)}", $"/api/ProductView/Get/{dto.Number}" /*You can also use Url.Action to build urls.*/);
+        await responseCacheService.PurgeCache("/", $"/product/{dto.ShortId}/{Uri.EscapeDataString(dto.Name!)}", $"/api/ProductView/Get/{dto.ShortId}" /*You can also use Url.Action to build urls.*/);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -99,7 +99,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await responseCacheService.PurgeCache("/", $"/product/{entityToDelete.Number}/{Uri.EscapeDataString(entityToDelete.Name!)}", $"/api/ProductView/Get/{entityToDelete.Number}" /*You can also use Url.Action to build urls.*/);
+        await responseCacheService.PurgeCache("/", $"/product/{entityToDelete.ShortId}/{Uri.EscapeDataString(entityToDelete.Name!)}", $"/api/ProductView/Get/{entityToDelete.ShortId}" /*You can also use Url.Action to build urls.*/);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
