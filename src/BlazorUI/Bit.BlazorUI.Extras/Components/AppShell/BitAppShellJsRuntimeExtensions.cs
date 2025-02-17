@@ -9,9 +9,14 @@ internal static class BitAppShellJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.AppShell.initScroll", container, url);
     }
 
-    internal static ValueTask BitAppShellNavigateScroll(this IJSRuntime jsRuntime, string url)
+    internal static ValueTask BitAppShellLocationChangedScroll(this IJSRuntime jsRuntime, string url)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.AppShell.navigateScroll", url);
+        return jsRuntime.InvokeVoid("BitBlazorUI.AppShell.locationChangedScroll", url);
+    }
+
+    internal static ValueTask BitAppShellAfterRenderScroll(this IJSRuntime jsRuntime, string url)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.AppShell.afterRenderScroll", url);
     }
 
     internal static ValueTask BitAppShellDisposeScroll(this IJSRuntime jsRuntime)

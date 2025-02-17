@@ -5,7 +5,7 @@ function scrollToElement(targetElementId: string) {
 
     if (element != null) {
         element.scrollIntoView({
-            behavior: "smooth",
+            behavior: "instant",
             block: "start",
             inline: "nearest"
         });
