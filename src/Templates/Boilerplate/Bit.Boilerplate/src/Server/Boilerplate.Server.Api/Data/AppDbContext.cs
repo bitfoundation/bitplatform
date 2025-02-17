@@ -38,6 +38,20 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         base.OnModelCreating(modelBuilder);
 
+        //#if (IsInsideProjectTemplate == true)
+        if (Database.ProviderName!.EndsWith("SqlServer", StringComparison.InvariantCulture) ||
+            Database.ProviderName!.EndsWith("PostgreSQL", StringComparison.InvariantCulture))
+        {
+            //#endif
+            //#if (database == "PostgreSQL" || database == "SqlServer")
+            modelBuilder.HasSequence<int>("ProductNumber")
+                .StartsAt(10_000)
+                .IncrementsBy(1);
+            //#endif
+            //#if (IsInsideProjectTemplate == true)
+        }
+        //#endif
+
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
         ConfigureIdentityTableNames(modelBuilder);

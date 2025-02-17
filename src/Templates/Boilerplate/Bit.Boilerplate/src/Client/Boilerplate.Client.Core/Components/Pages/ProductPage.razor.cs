@@ -9,7 +9,7 @@ public partial class ProductPage
     protected override string? Subtitle => string.Empty;
 
 
-    [Parameter] public Guid Id { get; set; }
+    [Parameter] public int Number { get; set; }
     [Parameter] public string? Name { get; set; }
 
 
@@ -29,21 +29,16 @@ public partial class ProductPage
 
     protected override async Task OnInitAsync()
     {
+        await Task.WhenAll(LoadProduct(), LoadSimilarProducts(), LoadSiblingProducts());
+
         await base.OnInitAsync();
-
-        await LoadProduct();
-
-        if (InPrerenderSession is false)
-        {
-            await Task.WhenAll(LoadSimilarProducts(), LoadSiblingProducts());
-        }
     }
 
     private async Task LoadProduct()
     {
         try
         {
-            product = await productViewController.Get(Id, CurrentCancellationToken);
+            product = await productViewController.Get(Number, CurrentCancellationToken);
         }
         finally
         {
@@ -54,13 +49,11 @@ public partial class ProductPage
 
     private async Task LoadSimilarProducts()
     {
-        if (product is null) return;
-
         try
         {
             similarProducts = await productViewController
                 .WithQuery(new ODataQuery { Top = 10 })
-                .GetSimilar(product.Id, CurrentCancellationToken);
+                .GetSimilar(Number, CurrentCancellationToken);
         }
         finally
         {
@@ -71,13 +64,11 @@ public partial class ProductPage
 
     private async Task LoadSiblingProducts()
     {
-        if (product is null || product.CategoryId.HasValue is false) return;
-
         try
         {
             siblingProducts = await productViewController
-                .WithQuery(new ODataQuery { Top = 10, Filter = $"{nameof(ProductDto.Id)} ne {product.Id}" })
-                .GetSiblings(product.CategoryId.Value, CurrentCancellationToken);
+                .WithQuery(new ODataQuery { Top = 10, Filter = $"{nameof(ProductDto.Number)} ne {Number}" })
+                .GetSiblings(Number, CurrentCancellationToken);
         }
         finally
         {

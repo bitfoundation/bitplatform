@@ -13,11 +13,11 @@ public partial class ProductViewController : AppControllerBase, IProductViewCont
         return DbContext.Products.Project();
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{number}")]
     [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5, UserAgnostic = true)]
-    public async Task<ProductDto> Get(Guid id, CancellationToken cancellationToken)
+    public async Task<ProductDto> Get(int number, CancellationToken cancellationToken)
     {
-        var product = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken)
+        var product = await Get().FirstOrDefaultAsync(t => t.Number == number, cancellationToken)
             ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
 
         return product;
@@ -25,20 +25,25 @@ public partial class ProductViewController : AppControllerBase, IProductViewCont
 
 
     // This method needs to be implemented based on the logic required in each business.
-    [EnableQuery, HttpGet("{id}"), AppResponseCache(MaxAge = 60 * 5, SharedMaxAge = 0, UserAgnostic = true)]
-    public IQueryable<ProductDto> GetSimilar(Guid id)
+    [EnableQuery, HttpGet("{number}"), AppResponseCache(MaxAge = 60 * 5, SharedMaxAge = 0, UserAgnostic = true)]
+    public IQueryable<ProductDto> GetSimilar(int number)
     {
         var similarProducts = Get()
                               .OrderBy(p => EF.Functions.Random())
-                              .Where(p => p.Id != id);
+                              .Where(p => p.Number != number);
 
         return similarProducts;
     }
 
-    [EnableQuery, HttpGet("{id}"), AppResponseCache(MaxAge = 60 * 5, SharedMaxAge = 0, UserAgnostic = true)]
-    public IQueryable<ProductDto> GetSiblings(Guid id)
+    [EnableQuery, HttpGet("{number}"), AppResponseCache(MaxAge = 60 * 5, SharedMaxAge = 0, UserAgnostic = true)]
+    public async Task<IQueryable<ProductDto>> GetSiblings(int number, CancellationToken cancellationToken)
     {
-        var siblings = Get().Where(t => t.CategoryId == id);
+        var categoryId = await DbContext.Products
+            .Where(p => p.Number == number)
+            .Select(p => p.CategoryId)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var siblings = Get().Where(t => t.CategoryId == categoryId);
 
         return siblings;
     }

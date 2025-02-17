@@ -378,6 +378,9 @@
     <data name="Price" xml:space="preserve">
     <value>قيمت</value>
   </data>
+    <data name="Number" xml:space="preserve">
+    <value>شماره</value>
+  </data>
     <data name="EitherProvideEmailOrPhoneNumber" xml:space="preserve">
     <value>یا ایمیل یا شماره تلفن را وارد کنید.</value>
   </data>

@@ -378,6 +378,9 @@
     <data name="Price" xml:space="preserve">
     <value>Price</value>
   </data>
+    <data name="Number" xml:space="preserve">
+    <value>Number</value>
+  </data>
     <data name="EitherProvideEmailOrPhoneNumber" xml:space="preserve">
     <value>Either provide email or phone number.</value>
   </data>
