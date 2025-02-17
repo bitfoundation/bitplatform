@@ -43,7 +43,7 @@ public partial class ProductViewController : AppControllerBase, IProductViewCont
             .Select(p => p.CategoryId)
             .FirstOrDefaultAsync(cancellationToken);
 
-        var siblings = Get().Where(t => t.CategoryId == categoryId);
+        var siblings = Get().Where(t => t.ShortId != id && t.CategoryId == categoryId);
 
         return siblings;
     }
