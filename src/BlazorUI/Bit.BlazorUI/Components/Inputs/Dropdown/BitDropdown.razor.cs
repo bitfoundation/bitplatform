@@ -9,7 +9,6 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TItem : class, new()
 {
-    private bool _disposed;
     private int? _totalItems;
     private string? _searchText;
     private bool _isResponsiveMode;
@@ -1471,7 +1470,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        if (_disposed || disposing is false) return;
+        if (IsDisposed || disposing is false) return;
 
         try
         {
@@ -1480,6 +1479,6 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
-        _disposed = true;
+        await base.DisposeAsync(disposing);
     }
 }

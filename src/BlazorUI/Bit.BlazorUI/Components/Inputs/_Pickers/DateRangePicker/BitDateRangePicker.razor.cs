@@ -15,7 +15,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
 
 
-    private bool _disposed;
     private bool _hasFocus;
     private int _currentYear;
     private int _currentMonth;
@@ -2068,7 +2067,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        if (_disposed || disposing is false) return;
+        if (IsDisposed || disposing is false) return;
 
         _cancellationTokenSource?.Dispose();
         OnValueChanged -= HandleOnValueChanged;
@@ -2080,6 +2079,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
-        _disposed = true;
+        await base.DisposeAsync(disposing);
     }
 }

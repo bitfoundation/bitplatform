@@ -263,16 +263,6 @@ public partial class BitSpinButton : BitInputBase<double>
         return false;
     }
 
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _cancellationTokenSource?.Dispose();
-        }
-
-        base.Dispose(disposing);
-    }
-
 
 
     private async Task ApplyValueChange(bool isIncrement)
@@ -528,5 +518,16 @@ public partial class BitSpinButton : BitInputBase<double>
         }
 
         return value;
+    }
+
+
+
+    protected override void Dispose(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return;
+
+        _cancellationTokenSource?.Dispose();
+
+        base.Dispose(disposing);
     }
 }

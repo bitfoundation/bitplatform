@@ -482,7 +482,13 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable, IAsy
 
     public void Dispose()
     {
-        if (IsDisposed) return;
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return;
 
         // When initialization in the SetParametersAsync method fails, the EditContext property can remain equal to null
         if (EditContext is not null)
@@ -491,20 +497,13 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable, IAsy
         }
 
         IsDisposed = true;
-
-        Dispose(true);
-        GC.SuppressFinalize(this);
     }
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
-        if (IsDisposed) return ValueTask.CompletedTask;
-
+        await DisposeAsync(true);
         Dispose();
-        return DisposeAsync(true);
     }
-
-    protected virtual void Dispose(bool disposing) { }
 
     protected virtual ValueTask DisposeAsync(bool disposing) { return ValueTask.CompletedTask; }
 }
