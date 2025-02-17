@@ -23,7 +23,7 @@ public class PooledDbContextFactoryBase<TDbContext>(DbContextOptions<TDbContext>
 
     public override TDbContext CreateDbContext()
     {
-        throw new NotSupportedException($"{nameof(CreateDbContext)} is not supported in bit Besql, use {nameof(CreateDbContextAsync)} instead.");
+        return CreateDbContextAsync().GetAwaiter().GetResult();
     }
 
     private async Task StartRunningDbContextInitializer()
