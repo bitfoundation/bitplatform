@@ -13,7 +13,7 @@ namespace Boilerplate.Shared
 {
     public static class IAppControllerExtensions
     {
-        public static TAppController WithQuery<TAppController>(this TAppController controller, string existingQueryString)
+        public static TAppController WithQuery<TAppController>(this TAppController controller, string? existingQueryString)
             where TAppController : IAppController
         {
             return controller.WithQuery(queryString: AppQueryStringCollection.Parse(existingQueryString));

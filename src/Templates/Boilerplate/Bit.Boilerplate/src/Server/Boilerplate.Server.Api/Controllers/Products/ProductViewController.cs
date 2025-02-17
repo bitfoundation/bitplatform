@@ -15,9 +15,9 @@ public partial class ProductViewController : AppControllerBase, IProductViewCont
 
     [HttpGet("{id}")]
     [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5, UserAgnostic = true)]
-    public async Task<ProductDto> Get(Guid id, CancellationToken cancellationToken)
+    public async Task<ProductDto> Get(int id, CancellationToken cancellationToken)
     {
-        var product = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken)
+        var product = await Get().FirstOrDefaultAsync(t => t.ShortId == id, cancellationToken)
             ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
 
         return product;
@@ -26,19 +26,24 @@ public partial class ProductViewController : AppControllerBase, IProductViewCont
 
     // This method needs to be implemented based on the logic required in each business.
     [EnableQuery, HttpGet("{id}"), AppResponseCache(MaxAge = 60 * 5, SharedMaxAge = 0, UserAgnostic = true)]
-    public IQueryable<ProductDto> GetSimilar(Guid id)
+    public IQueryable<ProductDto> GetSimilar(int id)
     {
         var similarProducts = Get()
                               .OrderBy(p => EF.Functions.Random())
-                              .Where(p => p.Id != id);
+                              .Where(p => p.ShortId != id);
 
         return similarProducts;
     }
 
     [EnableQuery, HttpGet("{id}"), AppResponseCache(MaxAge = 60 * 5, SharedMaxAge = 0, UserAgnostic = true)]
-    public IQueryable<ProductDto> GetSiblings(Guid id)
+    public async Task<IQueryable<ProductDto>> GetSiblings(int id, CancellationToken cancellationToken)
     {
-        var siblings = Get().Where(t => t.CategoryId == id);
+        var categoryId = await DbContext.Products
+            .Where(p => p.ShortId == id)
+            .Select(p => p.CategoryId)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var siblings = Get().Where(t => t.ShortId != id && t.CategoryId == categoryId);
 
         return siblings;
     }
