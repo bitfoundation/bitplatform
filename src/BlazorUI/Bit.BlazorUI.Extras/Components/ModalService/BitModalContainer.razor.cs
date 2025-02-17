@@ -63,7 +63,7 @@ public partial class BitModalContainer : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (disposing is false || _disposed) return;
+        if (_disposed || disposing is false) return;
 
         _modalService.OnAddModal -= OnModalAdd;
         _modalService.OnCloseModal -= OnCloseModal;

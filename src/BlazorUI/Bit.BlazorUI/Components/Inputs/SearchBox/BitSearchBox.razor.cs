@@ -461,6 +461,10 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     {
         if (IsDisposed || disposing is false) return;
 
+        _cancellationTokenSource?.Dispose();
+
+        OnValueChanged -= HandleOnValueChanged;
+
         if (_dotnetObj is not null)
         {
             _dotnetObj.Dispose();
@@ -471,10 +475,6 @@ public partial class BitSearchBox : BitTextInputBase<string?>
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
-
-        _cancellationTokenSource?.Dispose();
-
-        OnValueChanged -= HandleOnValueChanged;
 
         await base.DisposeAsync(disposing);
     }

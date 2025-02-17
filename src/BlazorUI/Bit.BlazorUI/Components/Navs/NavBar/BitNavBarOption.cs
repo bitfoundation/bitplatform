@@ -89,7 +89,7 @@ public partial class BitNavBarOption : ComponentBase, IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (disposing is false || _disposed) return;
+        if (_disposed || disposing is false) return;
 
         NavBar?.UnregisterOption(this);
 

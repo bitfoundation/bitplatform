@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// BitPdfReader is a simple pdf renderer utilizing the pdfjs library to bring pdf reading feature into Blazor world.
 /// </summary>
-public partial class BitPdfReader : BitComponentBase, IAsyncDisposable
+public partial class BitPdfReader : BitComponentBase
 {
     private bool _allPageRendered;
     private int _numberOfPages = 1;
@@ -246,8 +246,16 @@ public partial class BitPdfReader : BitComponentBase, IAsyncDisposable
 
 
 
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await _js.BitPdfReaderDispose(Config.Id);
+        if (IsDisposed || disposing is false) return;
+
+        try
+        {
+            await _js.BitPdfReaderDispose(Config.Id);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+
+        await base.DisposeAsync(disposing);
     }
 }

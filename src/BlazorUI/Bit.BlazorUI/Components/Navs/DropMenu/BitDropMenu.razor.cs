@@ -3,9 +3,8 @@
 /// <summary>
 /// DropMenu component is a versatile dropdown menu used in Blazor applications. It allows you to create a button that, when clicked, opens a callout or dropdown menu.
 /// </summary>
-public partial class BitDropMenu : BitComponentBase, IAsyncDisposable
+public partial class BitDropMenu : BitComponentBase
 {
-    private bool _disposed;
     private string _calloutId = default!;
     private DotNetObjectReference<BitDropMenu> _dotnetObj = default!;
 
@@ -232,15 +231,9 @@ public partial class BitDropMenu : BitComponentBase, IAsyncDisposable
 
 
 
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await DisposeAsync(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual async ValueTask DisposeAsync(bool disposing)
-    {
-        if (_disposed || disposing is false) return;
+        if (IsDisposed || disposing is false) return;
 
         try
         {
@@ -249,6 +242,6 @@ public partial class BitDropMenu : BitComponentBase, IAsyncDisposable
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
-        _disposed = true;
+        await base.DisposeAsync(disposing);
     }
 }

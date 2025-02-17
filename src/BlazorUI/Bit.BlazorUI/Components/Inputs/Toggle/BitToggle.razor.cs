@@ -155,12 +155,12 @@ public partial class BitToggle : BitInputBase<bool>
 
 
 
-    protected override void Dispose(bool disposing)
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return;
 
         OnValueChanged -= HandleOnValueChanged;
 
-        base.Dispose(disposing);
+        await base.DisposeAsync(disposing);
     }
 }

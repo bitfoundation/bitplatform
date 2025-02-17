@@ -1115,13 +1115,13 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
 
 
-    protected override void Dispose(bool disposing)
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return;
 
         _cancellationTokenSource?.Dispose();
         OnValueChanged -= HandleOnValueChanged;
 
-        base.Dispose(disposing);
+        await base.DisposeAsync(disposing);
     }
 }

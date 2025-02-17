@@ -7,9 +7,8 @@ namespace Bit.BlazorUI;
 /// BitAppShell is an advanced container to handle the nuances of a cross-platform layout.
 /// </summary>
 [SuppressMessage("Trimming", "IL2110:Field with 'DynamicallyAccessedMembersAttribute' is accessed via reflection. Trimmer can't guarantee availability of the requirements of the field.", Justification = "<Pending>")]
-public partial class BitAppShell : BitComponentBase, IAsyncDisposable
+public partial class BitAppShell : BitComponentBase
 {
-    private bool _disposed;
     private ElementReference _containerRef = default!;
 
 
@@ -106,20 +105,18 @@ public partial class BitAppShell : BitComponentBase, IAsyncDisposable
 
 
 
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await DisposeAsync(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual async ValueTask DisposeAsync(bool disposing)
-    {
-        if (disposing is false || _disposed) return;
+        if (IsDisposed || disposing is false) return;
 
         _navManager.LocationChanged -= LocationChanged;
 
-        await _js.BitAppShellDisposeScroll();
+        try
+        {
+            await _js.BitAppShellDisposeScroll();
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
 
-        _disposed = true;
+        await base.DisposeAsync(disposing);
     }
 }

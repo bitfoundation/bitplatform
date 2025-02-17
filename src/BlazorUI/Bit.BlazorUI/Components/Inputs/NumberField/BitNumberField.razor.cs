@@ -588,12 +588,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
 
 
-    protected override void Dispose(bool disposing)
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return;
 
         _continuousChangeValueCts?.Dispose();
 
-        base.Dispose(disposing);
+        await base.DisposeAsync(disposing);
     }
 }

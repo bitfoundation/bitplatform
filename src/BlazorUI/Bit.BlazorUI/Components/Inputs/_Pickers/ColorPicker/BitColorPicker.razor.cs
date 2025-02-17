@@ -3,9 +3,8 @@
 /// <summary>
 /// The color picker (ColorPicker) is used to browse through and select colors. By default, it lets people navigate through colors on a color spectrum, or specify a color in either Red-Green-Blue (RGB), or alpha color code; or Hexadecimal textboxes.
 /// </summary>
-public partial class BitColorPicker : BitComponentBase, IAsyncDisposable
+public partial class BitColorPicker : BitComponentBase
 {
-    private bool _disposed;
     private double _selectedHue;
     private double _selectedValue = 1;
     private double _selectedSaturation = 1;
@@ -233,15 +232,9 @@ public partial class BitColorPicker : BitComponentBase, IAsyncDisposable
 
 
 
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await DisposeAsync(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual async ValueTask DisposeAsync(bool disposing)
-    {
-        if (_disposed || disposing is false) return;
+        if (IsDisposed || disposing is false) return;
 
         if (_dotnetObj is not null)
         {
@@ -254,6 +247,6 @@ public partial class BitColorPicker : BitComponentBase, IAsyncDisposable
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
-        _disposed = true;
+        await base.DisposeAsync(disposing);
     }
 }

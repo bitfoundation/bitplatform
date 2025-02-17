@@ -152,7 +152,7 @@ public partial class BitNavOption : ComponentBase, IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (disposing is false || _disposed) return;
+        if (_disposed || disposing is false) return;
 
         if (Parent is null)
         {

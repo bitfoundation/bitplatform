@@ -3,9 +3,8 @@
 /// <summary>
 /// Carousel (slide-show) let people show their items in separate slides from two or more items.
 /// </summary>
-public partial class BitCarousel : BitComponentBase, IAsyncDisposable
+public partial class BitCarousel : BitComponentBase
 {
-    private bool _disposed;
     private int _pagesCount;
     private int _currentPage;
     private double _pointerX;
@@ -424,17 +423,9 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
 
 
 
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await DisposeAsync(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual async ValueTask DisposeAsync(bool disposing)
-    {
-        if (_disposed || disposing is false) return;
-
-        _disposed = true;
+        if (IsDisposed || disposing is false) return;
 
         if (_autoPlayTimer is not null)
         {
@@ -451,5 +442,7 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
+
+        await base.DisposeAsync(disposing);
     }
 }

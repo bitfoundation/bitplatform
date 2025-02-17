@@ -1,9 +1,12 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitPivotItem : BitComponentBase, IDisposable
+public partial class BitPivotItem : BitComponentBase
 {
-    private bool _disposed;
     private bool _isEnabled;
+
+
+
+    [CascadingParameter] private BitPivot? Parent { get; set; }
 
 
 
@@ -59,7 +62,14 @@ public partial class BitPivotItem : BitComponentBase, IDisposable
     [Parameter] public string? Key { get; set; }
 
 
-    [CascadingParameter] private BitPivot? Parent { get; set; }
+
+    internal void SetIsSelected(bool value)
+    {
+        _ = AssignIsSelected(value);
+
+        StateHasChanged();
+    }
+
 
 
     protected override string RootElementClass => "bit-pvti";
@@ -100,12 +110,7 @@ public partial class BitPivotItem : BitComponentBase, IDisposable
         Parent?.Refresh();
     }
 
-    internal void SetIsSelected(bool value)
-    {
-        _ = AssignIsSelected(value);
 
-        StateHasChanged();
-    }
 
     private async Task HandleOnClick()
     {
@@ -117,18 +122,12 @@ public partial class BitPivotItem : BitComponentBase, IDisposable
 
 
 
-    public void Dispose()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (_disposed) return;
+        if (IsDisposed || disposing is false) return;
 
         Parent?.UnregisterItem(this);
 
-        _disposed = true;
+        await base.DisposeAsync(disposing);
     }
 }

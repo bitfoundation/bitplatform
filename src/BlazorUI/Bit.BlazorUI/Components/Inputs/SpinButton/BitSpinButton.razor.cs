@@ -522,12 +522,12 @@ public partial class BitSpinButton : BitInputBase<double>
 
 
 
-    protected override void Dispose(bool disposing)
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return;
 
         _cancellationTokenSource?.Dispose();
 
-        base.Dispose(disposing);
+        await base.DisposeAsync(disposing);
     }
 }

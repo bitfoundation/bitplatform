@@ -3,9 +3,8 @@
 /// <summary>
 /// Breadcrumbs should be used as a navigational aid in your app or site. They indicate the current page’s location within a hierarchy and help the user understand where they are in relation to the rest of that hierarchy.
 /// </summary>
-public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable where TItem : class
+public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 {
-    private bool _disposed;
     private bool _isCalloutOpen;
     private uint _internalOverflowIndex;
     private uint _internalMaxDisplayedItems;
@@ -623,15 +622,9 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
 
 
 
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await DisposeAsync(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual async ValueTask DisposeAsync(bool disposing)
-    {
-        if (_disposed || disposing is false) return;
+        if (IsDisposed || disposing is false) return;
 
         if (_dotnetObj is not null)
         {
@@ -644,6 +637,6 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
-        _disposed = true;
+        await base.DisposeAsync(disposing);
     }
 }
