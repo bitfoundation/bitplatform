@@ -10,7 +10,9 @@ namespace Bit.BlazorUI;
 public partial class BitAppShell : BitComponentBase, IAsyncDisposable
 {
     private bool _disposed;
+    private bool _locationChanged;
     private ElementReference _containerRef = default!;
+
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -97,7 +99,7 @@ public partial class BitAppShell : BitComponentBase, IAsyncDisposable
     }
 
 
-    private bool _locationChanged;
+    
     private void LocationChanged(object? sender, LocationChangedEventArgs args)
     {
         if (PersistScroll)
