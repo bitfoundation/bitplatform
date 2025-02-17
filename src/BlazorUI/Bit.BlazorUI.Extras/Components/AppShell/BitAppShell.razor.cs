@@ -9,7 +9,9 @@ namespace Bit.BlazorUI;
 [SuppressMessage("Trimming", "IL2110:Field with 'DynamicallyAccessedMembersAttribute' is accessed via reflection. Trimmer can't guarantee availability of the requirements of the field.", Justification = "<Pending>")]
 public partial class BitAppShell : BitComponentBase
 {
+    private bool _locationChanged;
     private ElementReference _containerRef = default!;
+
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -87,15 +89,22 @@ public partial class BitAppShell : BitComponentBase
         {
             await _js.BitAppShellInitScroll(_containerRef, _navManager.Uri);
         }
+
+        if (_locationChanged)
+        {
+            _locationChanged = false;
+            await _js.BitAppShellAfterRenderScroll(_navManager.Uri);
+        }
     }
 
 
-
+    
     private void LocationChanged(object? sender, LocationChangedEventArgs args)
     {
         if (PersistScroll)
         {
-            _ = _js.BitAppShellNavigateScroll(_navManager.Uri);
+            _locationChanged = true;
+            _ = _js.BitAppShellLocationChangedScroll(_navManager.Uri);
         }
         else if (AutoGoToTop)
         {

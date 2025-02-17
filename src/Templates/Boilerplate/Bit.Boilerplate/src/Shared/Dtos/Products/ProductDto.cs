@@ -6,6 +6,12 @@ public partial class ProductDto
 {
     public Guid Id { get; set; }
 
+    /// <summary>
+    /// The product's ShortId is used to create a more human-friendly URL.
+    /// </summary>
+    [Range(0, int.MaxValue)]
+    public int ShortId { get; set; }
+
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [MaxLength(64, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_InvalidMaxLength))]
     [Display(Name = nameof(AppStrings.Name))]
@@ -54,6 +60,6 @@ public partial class ProductDto
     }
 
     //#if (module == "Sales")
-    public string PageUrl => $"{Urls.ProductPage}/{Id}/{Uri.EscapeDataString(Name!)}";
+    public string PageUrl => $"{Urls.ProductPage}/{ShortId}/{Uri.EscapeDataString(Name!)}";
     //#endif
 }

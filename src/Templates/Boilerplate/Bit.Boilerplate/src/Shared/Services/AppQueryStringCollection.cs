@@ -15,7 +15,7 @@ public class AppQueryStringCollection() : Dictionary<string, object?>(StringComp
         return string.Join("&", this.Select(kv => $"{Uri.EscapeDataString(Uri.UnescapeDataString(kv.Key))}={Uri.EscapeDataString(Uri.UnescapeDataString(kv.Value?.ToString() ?? ""))}"));
     }
 
-    public static AppQueryStringCollection Parse(string query)
+    public static AppQueryStringCollection Parse(string? query)
     {
         var qsCollection = new AppQueryStringCollection();
 
