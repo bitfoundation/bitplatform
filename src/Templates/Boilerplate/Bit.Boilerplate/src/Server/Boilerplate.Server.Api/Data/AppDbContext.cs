@@ -42,7 +42,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         /*
         //#endif
         //#if (database == "PostgreSQL" || database == "SqlServer")
-        modelBuilder.HasSequence<int>("ProductNumber")
+        modelBuilder.HasSequence<int>("ProductShortId")
             .StartsAt(10_000)
             .IncrementsBy(1);
         //#endif

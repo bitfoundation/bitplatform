@@ -10,7 +10,7 @@ public partial class ProductPage
 
 
     /// <summary>
-    /// The product's ShortId is used to create a more human-friendly URL.
+    /// <inheritdoc cref="ProductDto.ShortId"/>
     /// </summary>
     [Parameter] public int Id { get; set; }
     [Parameter] public string? Name { get; set; }
