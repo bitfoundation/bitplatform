@@ -127,16 +127,6 @@ public partial class BitToggle : BitInputBase<bool>
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out bool result, [NotNullWhen(false)] out string? parsingErrorMessage)
         => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
 
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            OnValueChanged -= HandleOnValueChanged;
-        }
-
-        base.Dispose(disposing);
-    }
-
 
 
     private void HandleOnValueChanged(object? sender, EventArgs args)
@@ -161,5 +151,16 @@ public partial class BitToggle : BitInputBase<bool>
         if (AriaLabel.HasValue()) return;
 
         _labelledById = $"{(Label.HasValue() ? _labelId : "")} {(_stateText.HasValue() ? _stateTextId : "")}".Trim();
+    }
+
+
+
+    protected override void Dispose(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return;
+
+        OnValueChanged -= HandleOnValueChanged;
+
+        base.Dispose(disposing);
     }
 }

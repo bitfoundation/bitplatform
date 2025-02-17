@@ -11,7 +11,6 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 {
     private int? _hour;
     private int? _minute;
-    private bool _disposed;
     private bool _hasFocus;
     private string? _labelId;
     private string? _inputId;
@@ -701,7 +700,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        if (_disposed || disposing is false) return;
+        if (IsDisposed || disposing is false) return;
 
         OnValueChanged -= HandleOnValueChanged;
 
@@ -714,6 +713,6 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
-        _disposed = true;
+        await base.DisposeAsync(disposing);
     }
 }

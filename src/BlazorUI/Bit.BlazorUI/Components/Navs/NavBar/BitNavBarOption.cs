@@ -80,6 +80,7 @@ public partial class BitNavBarOption : ComponentBase, IDisposable
     }
 
 
+
     public void Dispose()
     {
         Dispose(true);

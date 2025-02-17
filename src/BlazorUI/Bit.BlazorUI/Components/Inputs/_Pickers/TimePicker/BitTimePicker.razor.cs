@@ -9,7 +9,6 @@ namespace Bit.BlazorUI;
 public partial class BitTimePicker : BitInputBase<TimeSpan?>
 {
     private bool _hasFocus;
-    private bool _disposed;
     private string? _labelId;
     private string? _inputId;
     private string _calloutId = string.Empty;
@@ -665,7 +664,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        if (_disposed || disposing is false) return;
+        if (IsDisposed || disposing is false) return;
 
         _cancellationTokenSource?.Dispose();
         OnValueChanged -= HandleOnValueChanged;
@@ -677,6 +676,6 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
-        _disposed = true;
+        await base.DisposeAsync(disposing);
     }
 }
