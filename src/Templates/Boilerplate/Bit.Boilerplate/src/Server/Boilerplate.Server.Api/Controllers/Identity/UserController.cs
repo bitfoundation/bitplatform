@@ -130,7 +130,7 @@ public partial class UserController : AppControllerBase, IUserController
         if (await userManager.IsLockedOutAsync(user!))
         {
             var tryAgainIn = (user!.LockoutEnd! - DateTimeOffset.UtcNow).Value;
-            throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), tryAgainIn.Humanize(culture: CultureInfo.CurrentUICulture)]).WithExtensionData(new() { { "TryAgainIn", tryAgainIn } });
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), tryAgainIn.Humanize(culture: CultureInfo.CurrentUICulture)]).WithExtensionData("TryAgainIn", tryAgainIn);
         }
 
         var result = await userManager.ChangePasswordAsync(user!, request.OldPassword!, request.NewPassword!);
@@ -160,7 +160,7 @@ public partial class UserController : AppControllerBase, IUserController
         var resendDelay = (DateTimeOffset.Now - user!.EmailTokenRequestedOn) - AppSettings.Identity.EmailTokenLifetime;
 
         if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForEmailTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithExtensionData(new() { { "TryAgainIn", resendDelay } });
+            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForEmailTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithExtensionData("TryAgainIn", resendDelay);
 
         user.EmailTokenRequestedOn = DateTimeOffset.Now;
         var result = await userManager.UpdateAsync(user);
@@ -221,7 +221,7 @@ public partial class UserController : AppControllerBase, IUserController
         var resendDelay = (DateTimeOffset.Now - user!.PhoneNumberTokenRequestedOn) - AppSettings.Identity.PhoneNumberTokenLifetime;
 
         if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForPhoneNumberTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithExtensionData(new() { { "TryAgainIn", resendDelay } });
+            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForPhoneNumberTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithExtensionData("TryAgainIn", resendDelay);
 
         user.PhoneNumberTokenRequestedOn = DateTimeOffset.Now;
         var result = await userManager.UpdateAsync(user);
@@ -378,7 +378,7 @@ public partial class UserController : AppControllerBase, IUserController
         // Elevated access token claim gets added to access token upon refresh token request call, so their lifetime would be the same
 
         if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForElevatedAccessTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithExtensionData(new() { { "TryAgainIn", resendDelay } });
+            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForElevatedAccessTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithExtensionData("TryAgainIn", resendDelay);
 
         user.ElevatedAccessTokenRequestedOn = DateTimeOffset.Now;
         var result = await userManager.UpdateAsync(user);

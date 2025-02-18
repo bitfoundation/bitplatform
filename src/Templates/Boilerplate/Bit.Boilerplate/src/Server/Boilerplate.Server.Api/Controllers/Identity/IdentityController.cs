@@ -53,7 +53,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         // Attempt to locate an existing user using either their email address or phone number. The enforcement of a unique username policy is integral to the aspnetcore identity framework.
         var existingUser = await userManager.FindUserAsync(new() { Email = request.Email, PhoneNumber = request.PhoneNumber });
         if (existingUser is not null)
-            throw new BadRequestException(Localizer[nameof(AppStrings.DuplicateEmailOrPhoneNumber)]).WithData(new() { { "UserId", existingUser.Id } });
+            throw new BadRequestException(Localizer[nameof(AppStrings.DuplicateEmailOrPhoneNumber)]).WithData("UserId", existingUser.Id);
 
         var userToAdd = new User { LockoutEnabled = true };
 
@@ -93,7 +93,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
         signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 
-        var user = await userManager.FindUserAsync(request) ?? throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]).WithData(new() { { "Identifier", request } });
+        var user = await userManager.FindUserAsync(request) ?? throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]).WithData("Identifier", request);
 
         var userSession = await CreateUserSession(user.Id, request.DeviceInfo, cancellationToken);
 
@@ -117,12 +117,12 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             : (await signInManager.PasswordSignInAsync(user!.UserName!, request.Password!, isPersistent: false, lockoutOnFailure: true), authenticationMethod: "Password");
 
         if (signInResult.IsNotAllowed && await userConfirmation.IsConfirmedAsync(userManager, user) is false)
-            throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]).WithData(new() { { "UserId", user.Id } });
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]).WithData("UserId", user.Id);
 
         if (signInResult.IsLockedOut)
         {
             var tryAgainIn = (user.LockoutEnd! - DateTimeOffset.UtcNow).Value;
-            throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), tryAgainIn.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData(new() { { "UserId", user.Id } }).WithExtensionData(new() { { "TryAgainIn", tryAgainIn } });
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), tryAgainIn.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData("UserId", user.Id).WithExtensionData("TryAgainIn", tryAgainIn);
         }
 
         if (signInResult.RequiresTwoFactor)
@@ -147,14 +147,14 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             user.OtpRequestedOn = null; // invalidates the OTP
             var updateResult = await userManager.UpdateAsync(user);
             if (updateResult.Succeeded is false)
-                throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData(new() { { "UserId", user.Id } });
+                throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData("UserId", user.Id);
         }
 
         DbContext.UserSessions.Add(userSession);
         user.TwoFactorTokenRequestedOn = null;
         var addUserSessionResult = await userManager.UpdateAsync(user);
         if (addUserSessionResult.Succeeded is false)
-            throw new ResourceValidationException(addUserSessionResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData(new() { { "UserId", user.Id } });
+            throw new ResourceValidationException(addUserSessionResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData("UserId", user.Id);
         await DbContext.SaveChangesAsync(cancellationToken);
     }
 
@@ -228,7 +228,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             var currentSessionId = refreshTicket.Principal.GetSessionId();
 
             userSession = await DbContext.UserSessions
-                .FirstOrDefaultAsync(us => us.Id == currentSessionId, cancellationToken) ?? throw new UnauthorizedException().WithData(new() { { "UserSessionId", currentSessionId } }); // User session has been deleted.
+                .FirstOrDefaultAsync(us => us.Id == currentSessionId, cancellationToken) ?? throw new UnauthorizedException().WithData("UserSessionId", currentSessionId); // User session has been deleted.
 
             var sessionStampValueInDatabase = (userSession.RenewedOn ?? userSession.StartedOn).ToUnixTimeSeconds();
             var sessionStampValueInJwtToken = long.Parse(refreshTicket.Principal.Claims.Single(c => c.Type == AppClaimTypes.SESSION_STAMP).Value);
@@ -250,7 +250,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 if (tokenIsValid is false)
                 {
                     await userManager.AccessFailedAsync(user);
-                    throw new BadRequestException(nameof(AppStrings.InvalidToken)).WithData(new() { { "UserId", user.Id } });
+                    throw new BadRequestException(nameof(AppStrings.InvalidToken)).WithData("UserId", user.Id);
                 }
                 else
                 {
@@ -298,15 +298,15 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
         var user = await userManager.FindUserAsync(request)
-                    ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]).WithData(new() { { "Identifiar", request } });
+                    ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]).WithData("Identifiar", request);
 
         if (await userConfirmation.IsConfirmedAsync(userManager, user) is false)
-            throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]).WithData(new() { { "UserId", user.Id } });
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]).WithData("UserId", user.Id);
 
         var resendDelay = (DateTimeOffset.Now - user.OtpRequestedOn) - AppSettings.Identity.OtpTokenLifetime;
 
         if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForOtpRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData(new() { { "UserId", user.Id } }).WithExtensionData(new() { { "TryAgainIn", resendDelay } });
+            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForOtpRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData("UserId", user.Id).WithExtensionData("TryAgainIn", resendDelay);
 
         var (magicLinkToken, url) = await GenerateAutomaticSignInLink(user, returnUrl, originalAuthenticationMethod: "Email");
 
@@ -346,10 +346,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     public async Task SendTwoFactorToken(SignInRequestDto request, CancellationToken cancellationToken)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
-        var user = await userManager.FindUserAsync(request) ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]).WithData(new() { { "Identifier", request } });
+        var user = await userManager.FindUserAsync(request) ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]).WithData("Identifier", request);
 
         if (user.TwoFactorEnabled is false)
-            throw new BadRequestException().WithData(new() { { "UserId", user.Id } });
+            throw new BadRequestException().WithData("UserId", user.Id);
 
         bool isOtpSignIn = string.IsNullOrEmpty(request.Otp) is false;
 
@@ -358,17 +358,17 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             : (await signInManager.PasswordSignInAsync(user!.UserName!, request.Password!, isPersistent: false, lockoutOnFailure: true), authenticationMethod: "Password");
 
         if (signInResult.RequiresTwoFactor is false)
-            throw new BadRequestException().WithData(new() { { "UserId", user.Id } });
+            throw new BadRequestException().WithData("UserId", user.Id);
 
         var resendDelay = (DateTimeOffset.Now - user.TwoFactorTokenRequestedOn) - AppSettings.Identity.TwoFactorTokenLifetime;
 
         if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForTwoFactorTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData(new() { { "UserId", user.Id } }).WithExtensionData(new() { { "TryAgainIn", resendDelay } });
+            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForTwoFactorTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData("UserId", user.Id).WithExtensionData("TryAgainIn", resendDelay);
 
         user.TwoFactorTokenRequestedOn = DateTimeOffset.Now;
         var result = await userManager.UpdateAsync(user);
         if (result.Succeeded is false)
-            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData(new() { { "UserId", user.Id } });
+            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData("UserId", user.Id);
 
         var token = await userManager.GenerateTwoFactorTokenAsync(user, TokenOptions.DefaultPhoneProvider);
 
@@ -417,7 +417,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var result = await userManager.UpdateAsync(user);
 
         if (result.Succeeded is false)
-            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData(new() { { "UserId", user.Id } });
+            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData("UserId", user.Id);
 
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"Otp_{originalAuthenticationMethod},{user.OtpRequestedOn?.ToUniversalTime()}"));
 

@@ -9,14 +9,25 @@ public static class KnownExceptionExtensions
     public static TException WithExtensionData<TException>(this TException exception, Dictionary<string, object?> data)
         where TException : KnownException
     {
+        foreach (var item in data)
+        {
+            exception.WithExtensionData(item.Key, item.Value);
+        }
+
+        return exception;
+    }
+
+    /// <summary>
+    /// <inheritdoc cref="WithExtensionData{TException}(TException, Dictionary{string, object?})"/>
+    /// </summary>
+    public static TException WithExtensionData<TException>(this TException exception, string key, object? value)
+        where TException : KnownException
+    {
         exception.Data["__AppExtendedData"] ??= new Dictionary<string, object?>();
 
         var appProblemExtensionsData = (Dictionary<string, object?>)exception.Data["__AppExtendedData"]!;
 
-        foreach (var item in data)
-        {
-            appProblemExtensionsData[item.Key] = item.Value;
-        }
+        appProblemExtensionsData[key] = value;
 
         return exception;
     }

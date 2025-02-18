@@ -14,10 +14,10 @@ public partial class IdentityController
     public async Task SendConfirmEmailToken(SendEmailTokenRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByEmailAsync(request.Email!)
-            ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound)]).WithData(new() { { "Email", request.Email } });
+            ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound)]).WithData("Email", request.Email);
 
         if (await userManager.IsEmailConfirmedAsync(user))
-            throw new BadRequestException(Localizer[nameof(AppStrings.EmailAlreadyConfirmed)]).WithData(new() { { "UserId", user.Id } });
+            throw new BadRequestException(Localizer[nameof(AppStrings.EmailAlreadyConfirmed)]).WithData("UserId", user.Id);
 
         await SendConfirmEmailToken(user, returnUrl: null, cancellationToken);
     }
@@ -26,17 +26,17 @@ public partial class IdentityController
     public async Task ConfirmEmail(ConfirmEmailRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByEmailAsync(request.Email!)
-            ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound)]).WithData(new() { { "Email", request.Email } });
+            ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound)]).WithData("Email", request.Email);
 
         var expired = (DateTimeOffset.Now - user.EmailTokenRequestedOn) > AppSettings.Identity.EmailTokenLifetime;
 
         if (expired)
-            throw new BadRequestException(nameof(AppStrings.ExpiredToken)).WithData(new() { { "UserId", user.Id } });
+            throw new BadRequestException(nameof(AppStrings.ExpiredToken)).WithData("UserId", user.Id);
 
         if (await userManager.IsLockedOutAsync(user))
         {
             var tryAgainIn = (user.LockoutEnd! - DateTimeOffset.UtcNow).Value;
-            throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData(new() { { "UserId", user.Id } }).WithExtensionData(new() { { "TryAgainIn", tryAgainIn } });
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData("UserId", user.Id).WithExtensionData("TryAgainIn", tryAgainIn);
         }
 
         var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"VerifyEmail:{request.Email},{user.EmailTokenRequestedOn?.ToUniversalTime()}"), request.Token!);
@@ -44,7 +44,7 @@ public partial class IdentityController
         if (tokenIsValid is false)
         {
             await userManager.AccessFailedAsync(user);
-            throw new BadRequestException(nameof(AppStrings.InvalidToken)).WithData(new() { { "UserId", user.Id } });
+            throw new BadRequestException(nameof(AppStrings.InvalidToken)).WithData("UserId", user.Id);
         }
 
         await userEmailStore.SetEmailConfirmedAsync(user, true, cancellationToken);
@@ -56,7 +56,7 @@ public partial class IdentityController
         user.EmailTokenRequestedOn = null; // invalidates email token
         var updateResult = await userManager.UpdateAsync(user);
         if (updateResult.Succeeded is false)
-            throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData(new() { { "UserId", user.Id } });
+            throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData("UserId", user.Id);
 
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"Otp_Email,{user.OtpRequestedOn?.ToUniversalTime()}"));
 
@@ -71,13 +71,13 @@ public partial class IdentityController
         var resendDelay = (DateTimeOffset.Now - user.EmailTokenRequestedOn) - AppSettings.Identity.EmailTokenLifetime;
 
         if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForEmailTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData(new() { { "UserId", user.Id } }).WithExtensionData(new() { { "TryAgainIn", resendDelay } });
+            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForEmailTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData("UserId", user.Id).WithExtensionData("TryAgainIn", resendDelay);
 
         user.EmailTokenRequestedOn = DateTimeOffset.Now;
         var result = await userManager.UpdateAsync(user);
 
         if (result.Succeeded is false)
-            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData(new() { { "UserId", user.Id } });
+            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData("UserId", user.Id);
 
         var email = user.Email!;
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"VerifyEmail:{email},{user.EmailTokenRequestedOn?.ToUniversalTime()}"));

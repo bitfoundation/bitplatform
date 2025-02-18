@@ -54,7 +54,7 @@ public partial class PhoneService
                 smsMessage = MessageResource.Create(messageOptions);
 
                 if (smsMessage.ErrorCode is not null)
-                    throw new InvalidOperationException(smsMessage.ErrorMessage).WithData(new() { { "Code", smsMessage.ErrorCode }, { "PhoneNumber", phoneNumber });
+                    throw new InvalidOperationException(smsMessage.ErrorMessage).WithData(new() { { "Code", smsMessage.ErrorCode }, { "PhoneNumber", phoneNumber } });
             }
             catch (Exception exp)
             {
