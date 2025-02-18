@@ -39,19 +39,11 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
     }
 
     private void Handle(Exception exception,
-        Dictionary<string, object>? parameters,
+        Dictionary<string, object?>? parameters,
         HttpContext? httpContext,
         out int statusCode,
         out ProblemDetails? problemDetails)
     {
-        var knownException = exception as KnownException;
-
-        statusCode = (int)(exception is RestException restExp ? restExp.StatusCode : HttpStatusCode.InternalServerError);
-
-        // The details of all of the exceptions are returned only in dev mode. in any other modes like production, only the details of the known exceptions are returned.
-        var message = GetExceptionMessageToShow(exception);
-        var exceptionKey = knownException?.Key ?? nameof(UnknownException);
-
         var data = new Dictionary<string, object?>()
         {
             { "ActivityId", Activity.Current?.Id },
@@ -63,13 +55,31 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
             { "ServerDateTime", DateTimeOffset.UtcNow.ToString("u") },
         };
 
-        if (httpContext is not null)
+        string? instance = null;
+        string? traceIdentifier = null;
+
+        try
         {
-            data["RequestId"] = httpContext.TraceIdentifier;
-            data["UserId"] = httpContext.User.IsAuthenticated() ? httpContext.User.GetUserId() : null;
-            data["UserSessionId"] = httpContext.User.IsAuthenticated() ? httpContext.User.GetSessionId() : null;
-            data["ClientIP"] = httpContext.Connection.RemoteIpAddress;
+            if (httpContext is not null)
+            {
+                traceIdentifier = httpContext.TraceIdentifier;
+                instance = $"{httpContext.Request.Method} {httpContext.Request.GetUri().PathAndQuery}";
+
+                data["RequestId"] = httpContext.TraceIdentifier;
+                data["UserId"] = httpContext.User.IsAuthenticated() ? httpContext.User.GetUserId() : null;
+                data["UserSessionId"] = httpContext.User.IsAuthenticated() ? httpContext.User.GetSessionId() : null;
+                data["ClientIP"] = httpContext.Connection.RemoteIpAddress;
+            }
         }
+        catch (ObjectDisposedException) { /* The HttpContext from IHttpContextAccessor may be disposed at any time if the exception is handled within Task.Run or similar situations. */ }
+
+        var knownException = exception as KnownException;
+
+        statusCode = (int)(exception is RestException restExp ? restExp.StatusCode : HttpStatusCode.InternalServerError);
+
+        // The details of all of the exceptions are returned only in dev mode. in any other modes like production, only the details of the known exceptions are returned.
+        var message = GetExceptionMessageToShow(exception);
+        var exceptionKey = knownException?.Key ?? nameof(UnknownException);
 
         foreach (var key in exception.Data.Keys)
         {
@@ -112,7 +122,7 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
             }
         }
 
-        if (httpContext is null)
+        if (instance is null || traceIdentifier is null)
         {
             problemDetails = null;
             return;
@@ -128,11 +138,11 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
             Title = message,
             Status = statusCode,
             Type = knownException?.GetType().FullName ?? typeof(UnknownException).FullName,
-            Instance = $"{httpContext.Request.Method} {httpContext.Request.GetUri().PathAndQuery}",
+            Instance = instance,
             Extensions = new Dictionary<string, object?>()
             {
                 { "key", exceptionKey },
-                { "traceId", httpContext.TraceIdentifier }
+                { "traceId", traceIdentifier }
             }
         };
 
@@ -151,7 +161,7 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
     }
 
     public void Handle(Exception exp,
-        Dictionary<string, object>? parameters = null)
+        Dictionary<string, object?>? parameters = null)
     {
         Handle(UnWrapException(exp), parameters, httpContextAccessor.HttpContext, out var _, out var _);
     }

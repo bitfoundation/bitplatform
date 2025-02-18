@@ -91,7 +91,7 @@ public static partial class Program
         //#endif
 
         services.AddSingleton<ServerExceptionHandler>();
-        services.AddSingleton(sp => (IProblemDetailsService)sp.GetRequiredService<ServerExceptionHandler>());
+        services.AddSingleton(sp => (IProblemDetailsWriter)sp.GetRequiredService<ServerExceptionHandler>());
         services.AddProblemDetails();
 
         services.AddOutputCache(options =>
