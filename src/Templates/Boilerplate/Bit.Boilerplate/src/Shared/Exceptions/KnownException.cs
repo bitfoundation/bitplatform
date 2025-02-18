@@ -27,4 +27,27 @@ public abstract partial class KnownException : Exception
     }
 
     public string? Key { get; set; }
+
+    /// <summary>
+    /// Read KnownExceptionExtensions.WithExtensionData comments.
+    /// </summary>
+    public bool TryGetExtensionDataValue<T>(string key, out T value)
+    {
+        value = default!;
+
+        if (Data[key] is object valueObj)
+        {
+            if (valueObj is T)
+            {
+                value = (T)valueObj;
+            }
+            else if (valueObj is JsonElement jsonElement)
+            {
+                value = jsonElement.Deserialize<T>(AppJsonContext.Default.Options)!;
+            }
+            return true;
+        }
+
+        return false;
+    }
 }

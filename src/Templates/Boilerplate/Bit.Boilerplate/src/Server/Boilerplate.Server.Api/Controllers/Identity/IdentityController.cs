@@ -120,7 +120,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]).WithData(new() { { "UserId", user.Id } });
 
         if (signInResult.IsLockedOut)
-            throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData(new() { { "UserId", user.Id } });
+        {
+            var tryAgainIn = (user.LockoutEnd! - DateTimeOffset.UtcNow).Value;
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), tryAgainIn.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData(new() { { "UserId", user.Id } }).WithExtensionData(new() { { "TryAgainIn", tryAgainIn } });
+        }
 
         if (signInResult.RequiresTwoFactor)
         {
@@ -303,7 +306,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var resendDelay = (DateTimeOffset.Now - user.OtpRequestedOn) - AppSettings.Identity.OtpTokenLifetime;
 
         if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForOtpRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData(new() { { "UserId", user.Id } });
+            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForOtpRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData(new() { { "UserId", user.Id } }).WithExtensionData(new() { { "TryAgainIn", resendDelay } });
 
         var (magicLinkToken, url) = await GenerateAutomaticSignInLink(user, returnUrl, originalAuthenticationMethod: "Email");
 
@@ -360,7 +363,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var resendDelay = (DateTimeOffset.Now - user.TwoFactorTokenRequestedOn) - AppSettings.Identity.TwoFactorTokenLifetime;
 
         if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForTwoFactorTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData(new() { { "UserId", user.Id } });
+            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForTwoFactorTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData(new() { { "UserId", user.Id } }).WithExtensionData(new() { { "TryAgainIn", resendDelay } });
 
         user.TwoFactorTokenRequestedOn = DateTimeOffset.Now;
         var result = await userManager.UpdateAsync(user);

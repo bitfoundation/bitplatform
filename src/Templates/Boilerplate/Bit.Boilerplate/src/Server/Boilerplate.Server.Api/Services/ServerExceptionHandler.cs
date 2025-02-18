@@ -50,7 +50,21 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
 
         foreach (var key in exception.Data.Keys)
         {
-            data[key.ToString()!] = exception.Data[key]!;
+            var keyAsString = key.ToString()!;
+
+            var value = exception.Data[keyAsString]!;
+
+            if (keyAsString == "AppProblemExtensions" && value is Dictionary<string,object?> appProblemExtensionsData)
+            {
+                foreach (var innerDataItem in appProblemExtensionsData)
+                {
+                    data[innerDataItem.Key] = innerDataItem.Value;
+                }
+
+                continue;
+            }
+
+            data[keyAsString] = value;
         }
 
         using (var scope = logger.BeginScope(data))
@@ -92,6 +106,14 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
                 { "traceId", httpContext.TraceIdentifier }
             }
         };
+
+        if (exception.Data["AppProblemExtensions"] is Dictionary<string, object?> errorExtensions)
+        {
+            foreach (var item in errorExtensions)
+            {
+                problemDetail.Extensions[item.Key] = item.Value;
+            }
+        }
 
         if (exception is ResourceValidationException validationException)
         {

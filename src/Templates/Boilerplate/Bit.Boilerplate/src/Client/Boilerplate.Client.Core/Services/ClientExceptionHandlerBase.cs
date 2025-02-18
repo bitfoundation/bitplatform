@@ -27,7 +27,21 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
 
         foreach (var key in exception.Data.Keys)
         {
-            parameters[key.ToString()!] = exception.Data[key];
+            var keyAsString = key.ToString()!;
+
+            var value = exception.Data[keyAsString]!;
+
+            if (keyAsString == "AppProblemExtensions" && value is Dictionary<string, object?> appProblemExtensionsData)
+            {
+                foreach (var innerDataItem in appProblemExtensionsData)
+                {
+                    parameters[innerDataItem.Key] = innerDataItem.Value;
+                }
+
+                continue;
+            }
+
+            parameters[keyAsString] = value;
         }
 
         Handle(exception, displayKind, parameters.ToDictionary(i => i.Key, i => i.Value ?? string.Empty));
