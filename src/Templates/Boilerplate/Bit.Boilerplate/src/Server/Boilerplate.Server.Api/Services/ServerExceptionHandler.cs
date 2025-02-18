@@ -26,7 +26,7 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
         // Using the Request-Id header, one can find the log for server-related exceptions
         httpContext.Response.Headers.Append(HeaderNames.RequestId, httpContext.TraceIdentifier);
 
-        Handle(exception, httpContext, out var statusCode, out var problemDetail);
+        Handle(exception, null, httpContext, out var statusCode, out var problemDetail);
         httpContext.Response.StatusCode = statusCode;
 
         if (exception is AuthenticationFailureException)
@@ -38,7 +38,11 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
         await httpContext.Response.WriteAsJsonAsync(problemDetail!, jsonSerializerOptions.GetTypeInfo<ProblemDetails>(), cancellationToken: httpContext.RequestAborted);
     }
 
-    private void Handle(Exception exception, HttpContext? httpContext, out int statusCode, out ProblemDetails? problemDetails)
+    private void Handle(Exception exception,
+        Dictionary<string, object>? parameters,
+        HttpContext? httpContext,
+        out int statusCode,
+        out ProblemDetails? problemDetails)
     {
         var knownException = exception as KnownException;
 
@@ -84,6 +88,14 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
             }
 
             data[keyAsString] = value;
+        }
+
+        if (parameters is not null)
+        {
+            foreach (var parameter in parameters)
+            {
+                data[parameter.Key] = parameter.Value;
+            }
         }
 
         using (var scope = logger.BeginScope(data))
@@ -138,8 +150,9 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
         }
     }
 
-    public void Handle(Exception exp)
+    public void Handle(Exception exp,
+        Dictionary<string, object>? parameters = null)
     {
-        Handle(UnWrapException(exp), httpContextAccessor.HttpContext, out var _, out var _);
+        Handle(UnWrapException(exp), parameters, httpContextAccessor.HttpContext, out var _, out var _);
     }
 }
