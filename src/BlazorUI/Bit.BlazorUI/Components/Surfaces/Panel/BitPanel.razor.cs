@@ -3,10 +3,9 @@
 /// <summary>
 /// Panels are overlays that contain supplementary content and are used for complex creation, edit, or management experiences.
 /// </summary>
-public partial class BitPanel : BitComponentBase, IAsyncDisposable
+public partial class BitPanel : BitComponentBase
 {
     private int _offsetTop;
-    private bool _disposed;
     private bool _internalIsOpen;
     private string _containerId = default!;
 
@@ -253,15 +252,9 @@ public partial class BitPanel : BitComponentBase, IAsyncDisposable
 
 
 
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await DisposeAsync(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual async ValueTask DisposeAsync(bool disposing)
-    {
-        if (_disposed || disposing is false) return;
+        if (IsDisposed || disposing is false) return;
 
         try
         {
@@ -269,6 +262,6 @@ public partial class BitPanel : BitComponentBase, IAsyncDisposable
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
-        _disposed = true;
+        await base.DisposeAsync(disposing);
     }
 }

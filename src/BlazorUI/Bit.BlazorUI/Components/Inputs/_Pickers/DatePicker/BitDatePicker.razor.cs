@@ -15,7 +15,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
 
 
-    private bool _disposed;
     private bool _hasFocus;
     private int _currentDay;
     private int _currentYear;
@@ -1526,7 +1525,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        if (_disposed || disposing is false) return;
+        if (IsDisposed || disposing is false) return;
 
         _cancellationTokenSource?.Dispose();
         OnValueChanged -= HandleOnValueChanged;
@@ -1538,6 +1537,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
-        _disposed = true;
+        await base.DisposeAsync(disposing);
     }
 }

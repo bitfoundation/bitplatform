@@ -3,13 +3,15 @@
 /// <summary>
 /// BitInfiniteScrolling is a container that enables scrolling through a list of items infinitely as long as there are items to fetch and render.
 /// </summary>
-public partial class BitInfiniteScrolling<TItem> : BitComponentBase, IAsyncDisposable
+public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 {
     private List<TItem> _currentItems = [];
     private CancellationTokenSource? _globalCts;
     private ElementReference _lastElementRef = default!;
     private BitInfiniteScrollingItemsProvider<TItem>? _itemsProvider;
     private DotNetObjectReference<BitInfiniteScrolling<TItem>>? _dotnetObj;
+
+
 
     private bool _isLoading => _globalCts is not null;
 
@@ -107,7 +109,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase, IAsyncDispo
         if (firstRender)
         {
             _dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitInfiniteScrollingSetup(_Id, ScrollerSelector, RootElement, _lastElementRef, _dotnetObj);
+            await _js.BitInfiniteScrollingSetup(UniqueId, ScrollerSelector, RootElement, _lastElementRef, _dotnetObj);
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -143,7 +145,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase, IAsyncDispo
 
                     if (items.Count != length)
                     {
-                        await _js.BitInfiniteScrollingReobserve(_Id, _lastElementRef);
+                        await _js.BitInfiniteScrollingReobserve(UniqueId, _lastElementRef);
                     }
                 }
             }
@@ -160,8 +162,10 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase, IAsyncDispo
 
 
 
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
+        if (IsDisposed || disposing is false) return;
+
         if (_globalCts is not null)
         {
             _globalCts.Dispose();
@@ -169,6 +173,13 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase, IAsyncDispo
         }
 
         _dotnetObj?.Dispose();
-        await _js.BitInfiniteScrollingDispose(_Id);
+
+        try
+        {
+            await _js.BitInfiniteScrollingDispose(UniqueId);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+
+        await base.DisposeAsync(disposing);
     }
 }

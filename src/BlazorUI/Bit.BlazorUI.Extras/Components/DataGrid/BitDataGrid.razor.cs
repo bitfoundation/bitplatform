@@ -7,6 +7,75 @@
 [CascadingTypeParameter(nameof(TGridItem))]
 public partial class BitDataGrid<TGridItem> : IAsyncDisposable
 {
+    private bool _disposed;
+    private int _ariaBodyRowCount;
+    private ElementReference _tableReference;
+    private Virtualize<(int, TGridItem)>? _virtualizeComponent;
+    private ICollection<TGridItem> _currentNonVirtualizedViewItems = Array.Empty<TGridItem>();
+
+    // IQueryable only exposes synchronous query APIs. IAsyncQueryExecutor is an adapter that lets us invoke any
+    // async query APIs that might be available. We have built-in support for using EF Core's async query APIs.
+    private IAsyncQueryExecutor? _asyncQueryExecutor;
+
+    // We cascade the InternalGridContext to descendants, which in turn call it to add themselves to _columns
+    // This happens on every render so that the column list can be updated dynamically
+    private InternalGridContext<TGridItem> _internalGridContext;
+    private List<BitDataGridColumnBase<TGridItem>> _columns;
+    private bool _collectingColumns; // Columns might re-render themselves arbitrarily. We only want to capture them at a defined time.
+
+    // Tracking state for options and sorting
+    private BitDataGridColumnBase<TGridItem>? _displayOptionsForColumn;
+    private BitDataGridColumnBase<TGridItem>? _sortByColumn;
+    private bool _sortByAscending;
+    private bool _checkColumnOptionsPosition;
+
+    // The associated ES6 module, which uses document-level event listeners
+    //private IJSObjectReference? _jsModule;
+    private IJSObjectReference? _jsEventDisposable;
+
+    // Caches of method->delegate conversions
+    private readonly RenderFragment _renderColumnHeaders;
+    private readonly RenderFragment _renderNonVirtualizedRows;
+
+    // We try to minimize the number of times we query the items provider, since queries may be expensive
+    // We only re-query when the developer calls RefreshDataAsync, or if we know something's changed, such
+    // as sort order, the pagination state, or the data source itself. These fields help us detect when
+    // things have changed, and to discard earlier load attempts that were superseded.
+    private int? _lastRefreshedPaginationStateHash;
+    private object? _lastAssignedItemsOrProvider;
+    private CancellationTokenSource? _pendingDataLoadCancellationTokenSource;
+
+    // If the PaginationState mutates, it raises this event. We use it to trigger a re-render.
+    private readonly EventCallbackSubscriber<BitDataGridPaginationState> _currentPageItemsChanged;
+
+
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+    [Inject] private IServiceProvider _services { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Constructs an instance of <see cref="BitDataGrid{TGridItem}"/>.
+    /// </summary>
+    public BitDataGrid()
+    {
+        _columns = new();
+        _internalGridContext = new(this);
+        _currentPageItemsChanged = new(EventCallback.Factory.Create<BitDataGridPaginationState>(this, RefreshDataCoreAsync));
+        _renderColumnHeaders = RenderColumnHeaders;
+        _renderNonVirtualizedRows = RenderNonVirtualizedRows;
+
+        // As a special case, we don't issue the first data load request until we've collected the initial set of columns
+        // This is so we can apply default sort order (or any future per-column options) before loading data
+        // We use EventCallbackSubscriber to safely hook this async operation into the synchronous rendering flow
+        var columnsFirstCollectedSubscriber = new EventCallbackSubscriber<object?>(
+            EventCallback.Factory.Create<object?>(this, RefreshDataCoreAsync));
+        columnsFirstCollectedSubscriber.SubscribeOrMove(_internalGridContext.ColumnsFirstCollected);
+    }
+
+
+
     /// <summary>
     /// A queryable source of data for the grid.
     ///
@@ -90,67 +159,69 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
 
 
 
-    [Inject] private IJSRuntime _js { get; set; } = default!;
-    [Inject] private IServiceProvider _services { get; set; } = default!;
+    /// <summary>
+    /// Sets the grid's current sort column to the specified <paramref name="column"/>.
+    /// </summary>
+    /// <param name="column">The column that defines the new sort order.</param>
+    /// <param name="direction">The direction of sorting. If the value is <see cref="BitDataGridSortDirection.Auto"/>, then it will toggle the direction on each call.</param>
+    /// <returns>A <see cref="Task"/> representing the completion of the operation.</returns>
+    public Task SortByColumnAsync(BitDataGridColumnBase<TGridItem> column, BitDataGridSortDirection direction = BitDataGridSortDirection.Auto)
+    {
+        _sortByAscending = direction switch
+        {
+            BitDataGridSortDirection.Ascending => true,
+            BitDataGridSortDirection.Descending => false,
+            BitDataGridSortDirection.Auto => _sortByColumn == column ? !_sortByAscending : true,
+            _ => throw new NotSupportedException($"Unknown sort direction {direction}"),
+        };
 
-    private int _ariaBodyRowCount;
-    private ElementReference _tableReference;
-    private Virtualize<(int, TGridItem)>? _virtualizeComponent;
-    private ICollection<TGridItem> _currentNonVirtualizedViewItems = Array.Empty<TGridItem>();
-    
-    // IQueryable only exposes synchronous query APIs. IAsyncQueryExecutor is an adapter that lets us invoke any
-    // async query APIs that might be available. We have built-in support for using EF Core's async query APIs.
-    private IAsyncQueryExecutor? _asyncQueryExecutor;
+        _sortByColumn = column;
 
-    // We cascade the InternalGridContext to descendants, which in turn call it to add themselves to _columns
-    // This happens on every render so that the column list can be updated dynamically
-    private InternalGridContext<TGridItem> _internalGridContext;
-    private List<BitDataGridColumnBase<TGridItem>> _columns;
-    private bool _collectingColumns; // Columns might re-render themselves arbitrarily. We only want to capture them at a defined time.
-
-    // Tracking state for options and sorting
-    private BitDataGridColumnBase<TGridItem>? _displayOptionsForColumn;
-    private BitDataGridColumnBase<TGridItem>? _sortByColumn;
-    private bool _sortByAscending;
-    private bool _checkColumnOptionsPosition;
-
-    // The associated ES6 module, which uses document-level event listeners
-    //private IJSObjectReference? _jsModule;
-    private IJSObjectReference? _jsEventDisposable;
-
-    // Caches of method->delegate conversions
-    private readonly RenderFragment _renderColumnHeaders;
-    private readonly RenderFragment _renderNonVirtualizedRows;
-
-    // We try to minimize the number of times we query the items provider, since queries may be expensive
-    // We only re-query when the developer calls RefreshDataAsync, or if we know something's changed, such
-    // as sort order, the pagination state, or the data source itself. These fields help us detect when
-    // things have changed, and to discard earlier load attempts that were superseded.
-    private int? _lastRefreshedPaginationStateHash;
-    private object? _lastAssignedItemsOrProvider;
-    private CancellationTokenSource? _pendingDataLoadCancellationTokenSource;
-
-    // If the PaginationState mutates, it raises this event. We use it to trigger a re-render.
-    private readonly EventCallbackSubscriber<BitDataGridPaginationState> _currentPageItemsChanged;
+        StateHasChanged(); // We want to see the updated sort order in the header, even before the data query is completed
+        return RefreshDataAsync();
+    }
 
     /// <summary>
-    /// Constructs an instance of <see cref="BitDataGrid{TGridItem}"/>.
+    /// Displays the <see cref="BitDataGridColumnBase{TGridItem}.ColumnOptions"/> UI for the specified column, closing any other column
+    /// options UI that was previously displayed.
     /// </summary>
-    public BitDataGrid()
+    /// <param name="column">The column whose options are to be displayed, if any are available.</param>
+    public void ShowColumnOptions(BitDataGridColumnBase<TGridItem> column)
     {
-        _columns = new();
-        _internalGridContext = new(this);
-        _currentPageItemsChanged = new(EventCallback.Factory.Create<BitDataGridPaginationState>(this, RefreshDataCoreAsync));
-        _renderColumnHeaders = RenderColumnHeaders;
-        _renderNonVirtualizedRows = RenderNonVirtualizedRows;
-
-        // As a special case, we don't issue the first data load request until we've collected the initial set of columns
-        // This is so we can apply default sort order (or any future per-column options) before loading data
-        // We use EventCallbackSubscriber to safely hook this async operation into the synchronous rendering flow
-        var columnsFirstCollectedSubscriber = new EventCallbackSubscriber<object?>(
-            EventCallback.Factory.Create<object?>(this, RefreshDataCoreAsync));
-        columnsFirstCollectedSubscriber.SubscribeOrMove(_internalGridContext.ColumnsFirstCollected);
+        _displayOptionsForColumn = column;
+        _checkColumnOptionsPosition = true; // Triggers a call to JS to position the options element, apply autofocus, and any other setup
+        StateHasChanged();
     }
+
+    /// <summary>
+    /// Instructs the grid to re-fetch and render the current data from the supplied data source
+    /// (either <see cref="Items"/> or <see cref="ItemsProvider"/>).
+    /// </summary>
+    /// <returns>A <see cref="Task"/> that represents the completion of the operation.</returns>
+    public async Task RefreshDataAsync()
+    {
+        await RefreshDataCoreAsync();
+        StateHasChanged();
+    }
+
+
+
+    // Invoked by descendant columns at a special time during rendering
+    internal void AddColumn(BitDataGridColumnBase<TGridItem> column, BitDataGridSortDirection? isDefaultSortDirection)
+    {
+        if (_collectingColumns)
+        {
+            _columns.Add(column);
+
+            if (_sortByColumn is null && isDefaultSortDirection.HasValue)
+            {
+                _sortByColumn = column;
+                _sortByAscending = isDefaultSortDirection.Value != BitDataGridSortDirection.Descending;
+            }
+        }
+    }
+
+
 
     /// <inheritdoc />
     protected override Task OnParametersSetAsync()
@@ -195,20 +266,7 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
         }
     }
 
-    // Invoked by descendant columns at a special time during rendering
-    internal void AddColumn(BitDataGridColumnBase<TGridItem> column, BitDataGridSortDirection? isDefaultSortDirection)
-    {
-        if (_collectingColumns)
-        {
-            _columns.Add(column);
 
-            if (_sortByColumn is null && isDefaultSortDirection.HasValue)
-            {
-                _sortByColumn = column;
-                _sortByAscending = isDefaultSortDirection.Value != BitDataGridSortDirection.Descending;
-            }
-        }
-    }
 
     private void StartCollectingColumns()
     {
@@ -219,51 +277,6 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     private void FinishCollectingColumns()
     {
         _collectingColumns = false;
-    }
-
-    /// <summary>
-    /// Sets the grid's current sort column to the specified <paramref name="column"/>.
-    /// </summary>
-    /// <param name="column">The column that defines the new sort order.</param>
-    /// <param name="direction">The direction of sorting. If the value is <see cref="BitDataGridSortDirection.Auto"/>, then it will toggle the direction on each call.</param>
-    /// <returns>A <see cref="Task"/> representing the completion of the operation.</returns>
-    public Task SortByColumnAsync(BitDataGridColumnBase<TGridItem> column, BitDataGridSortDirection direction = BitDataGridSortDirection.Auto)
-    {
-        _sortByAscending = direction switch
-        {
-            BitDataGridSortDirection.Ascending => true,
-            BitDataGridSortDirection.Descending => false,
-            BitDataGridSortDirection.Auto => _sortByColumn == column ? !_sortByAscending : true,
-            _ => throw new NotSupportedException($"Unknown sort direction {direction}"),
-        };
-
-        _sortByColumn = column;
-
-        StateHasChanged(); // We want to see the updated sort order in the header, even before the data query is completed
-        return RefreshDataAsync();
-    }
-
-    /// <summary>
-    /// Displays the <see cref="BitDataGridColumnBase{TGridItem}.ColumnOptions"/> UI for the specified column, closing any other column
-    /// options UI that was previously displayed.
-    /// </summary>
-    /// <param name="column">The column whose options are to be displayed, if any are available.</param>
-    public void ShowColumnOptions(BitDataGridColumnBase<TGridItem> column)
-    {
-        _displayOptionsForColumn = column;
-        _checkColumnOptionsPosition = true; // Triggers a call to JS to position the options element, apply autofocus, and any other setup
-        StateHasChanged();
-    }
-
-    /// <summary>
-    /// Instructs the grid to re-fetch and render the current data from the supplied data source
-    /// (either <see cref="Items"/> or <see cref="ItemsProvider"/>).
-    /// </summary>
-    /// <returns>A <see cref="Task"/> that represents the completion of the operation.</returns>
-    public async Task RefreshDataAsync()
-    {
-        await RefreshDataCoreAsync();
-        StateHasChanged();
     }
 
     // Same as RefreshDataAsync, except without forcing a re-render. We use this from OnParametersSetAsync
@@ -386,6 +399,11 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     private string GridClass()
         => $"bitdatagrid {Class} {(_pendingDataLoadCancellationTokenSource is null ? null : "loading")}";
 
+    private void CloseColumnOptions()
+    {
+        _displayOptionsForColumn = null;
+    }
+
     private static string? ColumnClass(BitDataGridColumnBase<TGridItem> column) => column.Align switch
     {
         BitDataGridAlign.Center => $"col-justify-center {column.Class}",
@@ -393,9 +411,19 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
         _ => column.Class,
     };
 
+
+
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
+        await DisposeAsync(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual async ValueTask DisposeAsync(bool disposing)
+    {
+        if (_disposed || disposing is false) return;
+
         _currentPageItemsChanged.Dispose();
 
         try
@@ -422,10 +450,7 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
             // otherwise it will blow up the MAUI app in a page refresh for example.
             Console.WriteLine(ex.Message);
         }
-    }
 
-    private void CloseColumnOptions()
-    {
-        _displayOptionsForColumn = null;
+        _disposed = true;
     }
 }
