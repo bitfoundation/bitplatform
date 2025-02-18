@@ -31,16 +31,6 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
 
             var value = exception.Data[keyAsString]!;
 
-            if (keyAsString == "AppProblemExtensions" && value is Dictionary<string, object?> appProblemExtensionsData)
-            {
-                foreach (var innerDataItem in appProblemExtensionsData)
-                {
-                    parameters[innerDataItem.Key] = innerDataItem.Value;
-                }
-
-                continue;
-            }
-
             parameters[keyAsString] = value;
         }
 

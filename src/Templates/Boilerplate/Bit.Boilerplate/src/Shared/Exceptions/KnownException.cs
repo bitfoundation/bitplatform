@@ -43,7 +43,7 @@ public abstract partial class KnownException : Exception
             }
             else if (valueObj is JsonElement jsonElement)
             {
-                value = jsonElement.Deserialize<T>(AppJsonContext.Default.Options)!;
+                value = jsonElement.Deserialize(AppJsonContext.Default.Options.GetTypeInfo<T>())!;
             }
             return true;
         }
