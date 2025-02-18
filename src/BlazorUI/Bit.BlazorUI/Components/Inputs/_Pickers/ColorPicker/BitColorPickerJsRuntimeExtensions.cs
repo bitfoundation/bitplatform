@@ -2,18 +2,13 @@
 
 internal static class BitColorPickerJsRuntimeExtensions
 {
-    internal static ValueTask<string> BitColorPickerRegisterPointerUp(this IJSRuntime js, DotNetObjectReference<BitColorPicker> obj, string methodName)
+    internal static ValueTask<string> BitColorPickerSetup(this IJSRuntime js, DotNetObjectReference<BitColorPicker> obj, string pointerUpHandler, string pointerMoveHandler)
     {
-        return js.Invoke<string>("BitBlazorUI.ColorPicker.registerEvent", "pointerup", obj, methodName);
+        return js.Invoke<string>("BitBlazorUI.ColorPicker.setup", obj, pointerUpHandler, pointerMoveHandler);
     }
 
-    internal static ValueTask<string> BitColorPickerRegisterPointerMove(this IJSRuntime js, DotNetObjectReference<BitColorPicker> obj, string methodName)
+    internal static ValueTask BitColorPickerDispose(this IJSRuntime jSRuntime, string? abortControllerId)
     {
-        return js.Invoke<string>("BitBlazorUI.ColorPicker.registerEvent", "pointermove", obj, methodName);
-    }
-
-    internal static ValueTask BitColorPickerAbort(this IJSRuntime jSRuntime, string? abortControllerId, bool dispose = false)
-    {
-        return jSRuntime.InvokeVoid("BitBlazorUI.ColorPicker.abort", abortControllerId, dispose);
+        return jSRuntime.InvokeVoid("BitBlazorUI.ColorPicker.dispose", abortControllerId);
     }
 }

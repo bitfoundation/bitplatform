@@ -7,13 +7,12 @@ public partial class BitColorPicker : BitComponentBase
 {
     private double _selectedHue;
     private double _selectedValue = 1;
+    private string? _abortControllerId;
     private double _selectedSaturation = 1;
     private string? _saturationPickerStyle;
     private BitInternalColor _color = new();
     private BitInternalColorType _colorType;
     private bool _saturationPickerPointerDown;
-    private string? _pointerUpAbortControllerId;
-    private string? _pointerMoveAbortControllerId;
     private ElementReference _saturationPickerRef;
     private (double Left, double Top)? _saturationPickerThumbPosition;
     private DotNetObjectReference<BitColorPicker> _dotnetObj = default!;
@@ -123,8 +122,7 @@ public partial class BitColorPicker : BitComponentBase
 
         if (firstRender is false) return;
 
-        _pointerUpAbortControllerId = await _js.BitColorPickerRegisterPointerUp(_dotnetObj, nameof(HandlePointerUp));
-        _pointerMoveAbortControllerId = await _js.BitColorPickerRegisterPointerMove(_dotnetObj, nameof(HandlePointerMove));
+        _abortControllerId = await _js.BitColorPickerSetup(_dotnetObj, nameof(HandlePointerUp), nameof(HandlePointerMove));
 
         await SetSaturationPickerThumbPositionAsync();
     }
@@ -241,8 +239,7 @@ public partial class BitColorPicker : BitComponentBase
             // _dotnetObj.Dispose(); // it is getting disposed in the following js call:
             try
             {
-                await _js.BitColorPickerAbort(_pointerUpAbortControllerId, true);
-                await _js.BitColorPickerAbort(_pointerMoveAbortControllerId);
+                await _js.BitColorPickerDispose(_abortControllerId);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }

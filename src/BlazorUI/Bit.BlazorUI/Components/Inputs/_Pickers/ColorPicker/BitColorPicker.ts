@@ -2,12 +2,16 @@
     export class ColorPicker {
         private static _bitControllers: BitController[] = [];
 
-        public static registerEvent(event: string, dotnetObj: DotNetObject, methodName: string): string {
+        public static setup(dotnetObj: DotNetObject, pointerUpHandler: string, pointerMoveHandler: string): string {
             const bitController = new BitController();
             bitController.dotnetObj = dotnetObj;
 
-            document.addEventListener(event, e => {
-                dotnetObj.invokeMethodAsync(methodName, ColorPicker.extractArgs(e as MouseEvent));
+            document.addEventListener('pointerup', e => {
+                dotnetObj.invokeMethodAsync(pointerUpHandler, ColorPicker.extractArgs(e as MouseEvent));
+            }, { signal: bitController.controller.signal });
+
+            document.addEventListener('pointermove', e => {
+                dotnetObj.invokeMethodAsync(pointerMoveHandler, ColorPicker.extractArgs(e as MouseEvent));
             }, { signal: bitController.controller.signal });
 
             ColorPicker._bitControllers.push(bitController);
@@ -15,13 +19,11 @@
             return bitController.id;
         }
 
-        public static abort(id: string, dispose: boolean): void {
+        public static dispose(id: string): void {
             const bitController = ColorPicker._bitControllers.find(bc => bc.id == id);
             bitController?.controller.abort();
 
-            if (dispose) {
-                bitController?.dotnetObj?.dispose();
-            }
+            bitController?.dotnetObj?.dispose();
 
             ColorPicker._bitControllers = ColorPicker._bitControllers.filter(bc => bc.id != id);
         }
