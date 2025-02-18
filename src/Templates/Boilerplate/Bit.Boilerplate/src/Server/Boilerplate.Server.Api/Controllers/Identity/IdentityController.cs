@@ -234,6 +234,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 // refresh token is being re-used.
                 throw new ReusedRefreshTokenException().WithData(new()
                 {
+                    { "UserSessionId", currentSessionId },
                     { nameof(sessionStampValueInDatabase), sessionStampValueInDatabase },
                     { nameof(sessionStampValueInJwtToken), sessionStampValueInJwtToken }
                 });
