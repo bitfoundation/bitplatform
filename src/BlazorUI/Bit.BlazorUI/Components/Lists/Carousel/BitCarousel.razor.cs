@@ -283,7 +283,7 @@ public partial class BitCarousel : BitComponentBase
 
     private async Task Go(bool isNext = false, int scrollCount = 0)
     {
-        if (_disposed) return;
+        if (IsDisposed) return;
         if (_othersIndices.Length == 0) return;
 
         if (scrollCount < 1)
@@ -316,7 +316,7 @@ public partial class BitCarousel : BitComponentBase
 
         if (AutoPlay) _autoPlayTimer.Stop();
         await Task.Delay(50);
-        if (_disposed) return;
+        if (IsDisposed) return;
         if (AutoPlay) _autoPlayTimer.Start();
 
         offset = isNext ? VisibleItemsCount - scrollCount : 0;
