@@ -87,7 +87,7 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
 
             var value = exception.Data[keyAsString]!;
 
-            if (keyAsString == "__AppExtendedData" && value is Dictionary<string, object?> appProblemExtensionsData)
+            if (keyAsString == "__AppProblemDetailsExtensionsData" && value is Dictionary<string, object?> appProblemExtensionsData)
             {
                 foreach (var innerDataItem in appProblemExtensionsData)
                 {
@@ -146,7 +146,7 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
             }
         };
 
-        if (exception.Data["__AppExtendedData"] is Dictionary<string, object?> errorExtensions)
+        if (exception.Data["__AppProblemDetailsExtensionsData"] is Dictionary<string, object?> errorExtensions)
         {
             foreach (var item in errorExtensions)
             {

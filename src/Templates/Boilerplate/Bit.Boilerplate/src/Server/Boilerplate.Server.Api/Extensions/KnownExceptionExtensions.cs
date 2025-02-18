@@ -23,9 +23,9 @@ public static class KnownExceptionExtensions
     public static TException WithExtensionData<TException>(this TException exception, string key, object? value)
         where TException : KnownException
     {
-        exception.Data["__AppExtendedData"] ??= new Dictionary<string, object?>();
+        exception.Data["__AppProblemDetailsExtensionsData"] ??= new Dictionary<string, object?>();
 
-        var appProblemExtensionsData = (Dictionary<string, object?>)exception.Data["__AppExtendedData"]!;
+        var appProblemExtensionsData = (Dictionary<string, object?>)exception.Data["__AppProblemDetailsExtensionsData"]!;
 
         appProblemExtensionsData[key] = value;
 
