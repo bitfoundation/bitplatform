@@ -14,11 +14,11 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
 
     private static readonly Guid appSessionId = Guid.NewGuid();
 
-    public bool CanWrite(ProblemDetailsContext context) => true;
+    public bool CanWrite(ProblemDetailsContext context) => context.Exception is not null;
 
     public async ValueTask WriteAsync(ProblemDetailsContext context)
     {
-        var e = context.Exception;
+        var e = context.Exception!;
 
         var httpContext = context.HttpContext;
 
