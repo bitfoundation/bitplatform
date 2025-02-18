@@ -109,7 +109,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
         if (firstRender)
         {
             _dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitInfiniteScrollingSetup(_Id, ScrollerSelector, RootElement, _lastElementRef, _dotnetObj);
+            await _js.BitInfiniteScrollingSetup(UniqueId, ScrollerSelector, RootElement, _lastElementRef, _dotnetObj);
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -145,7 +145,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
                     if (items.Count != length)
                     {
-                        await _js.BitInfiniteScrollingReobserve(_Id, _lastElementRef);
+                        await _js.BitInfiniteScrollingReobserve(UniqueId, _lastElementRef);
                     }
                 }
             }
@@ -176,7 +176,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
         try
         {
-            await _js.BitInfiniteScrollingDispose(_Id);
+            await _js.BitInfiniteScrollingDispose(UniqueId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 

@@ -197,7 +197,7 @@ public partial class BitCarousel : BitComponentBase
 
         if (firstRender is false) return;
 
-        await _js.BitObserversRegisterResize(_Id, RootElement, _dotnetObj);
+        await _js.BitObserversRegisterResize(UniqueId, RootElement, _dotnetObj);
 
         if (AutoPlay)
         {
@@ -438,7 +438,7 @@ public partial class BitCarousel : BitComponentBase
             //_dotnetObjRef.Dispose(); // it is getting disposed in the following js call:
             try
             {
-                await _js.BitObserversUnregisterResize(_Id, RootElement, _dotnetObj);
+                await _js.BitObserversUnregisterResize(UniqueId, RootElement, _dotnetObj);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }

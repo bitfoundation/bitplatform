@@ -152,7 +152,7 @@ public partial class BitSwiper : BitComponentBase
             //    _autoPlayTimer.Start();
             //}
 
-            await _js.BitObserversRegisterResize(_Id, RootElement, _dotnetObj);
+            await _js.BitObserversRegisterResize(UniqueId, RootElement, _dotnetObj);
 
             await _js.BitSwiperRegisterPointerLeave(RootElement, _dotnetObj);
 
@@ -293,7 +293,7 @@ public partial class BitSwiper : BitComponentBase
             //_dotnetObj.Dispose(); // it is getting disposed in the following js call:
             try
             {
-               await _js.BitObserversUnregisterResize(_Id, RootElement, _dotnetObj);
+               await _js.BitObserversUnregisterResize(UniqueId, RootElement, _dotnetObj);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }

@@ -200,7 +200,7 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         foreach (var inputRef in _inputRefs)
         {
-            await _js.BitOtpInputSetup(_Id, _dotnetObj, inputRef);
+            await _js.BitOtpInputSetup(UniqueId, _dotnetObj, inputRef);
         }
     }
 
@@ -439,7 +439,7 @@ public partial class BitOtpInput : BitInputBase<string?>
 
             try
             {
-                await _js.BitOtpInputDispose(_Id);
+                await _js.BitOtpInputDispose(UniqueId);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
