@@ -10,6 +10,7 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
     [AutoInject] private IHostEnvironment env = default!;
     [AutoInject] private ILogger<ServerExceptionHandler> logger = default!;
     [AutoInject] private IWebHostEnvironment webHostEnvironment = default!;
+    [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
 
     private static readonly Guid appSessionId = Guid.NewGuid();
@@ -18,16 +19,30 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
 
     public async ValueTask WriteAsync(ProblemDetailsContext context)
     {
-        var e = context.Exception!;
+        var exception = UnWrapException(context.Exception!);
 
         var httpContext = context.HttpContext;
 
         // Using the Request-Id header, one can find the log for server-related exceptions
         httpContext.Response.Headers.Append(HeaderNames.RequestId, httpContext.TraceIdentifier);
 
-        var exception = UnWrapException(e);
+        Handle(exception, httpContext, out var statusCode, out var problemDetail);
+        httpContext.Response.StatusCode = statusCode;
 
+        if (exception is AuthenticationFailureException)
+        {
+            httpContext.Response.Redirect($"{Urls.SignInPage}?error={Uri.EscapeDataString(exception.Message)}");
+            return;
+        }
+
+        await httpContext.Response.WriteAsJsonAsync(problemDetail!, jsonSerializerOptions.GetTypeInfo<ProblemDetails>(), cancellationToken: httpContext.RequestAborted);
+    }
+
+    private void Handle(Exception exception, HttpContext? httpContext, out int statusCode, out ProblemDetails? problemDetails)
+    {
         var knownException = exception as KnownException;
+
+        statusCode = (int)(exception is RestException restExp ? restExp.StatusCode : HttpStatusCode.InternalServerError);
 
         // The details of all of the exceptions are returned only in dev mode. in any other modes like production, only the details of the known exceptions are returned.
         var message = GetExceptionMessageToShow(exception);
@@ -35,18 +50,22 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
 
         var data = new Dictionary<string, object?>()
         {
-            { "RequestId", httpContext.TraceIdentifier },
             { "ActivityId", Activity.Current?.Id },
             { "ParentActivityId", Activity.Current?.ParentId },
-            { "UserId", httpContext.User.IsAuthenticated() ? httpContext.User.GetUserId() : null },
-            { "UserSessionId", httpContext.User.IsAuthenticated() ? httpContext.User.GetSessionId() : null },
             { "AppSessionId", appSessionId },
             { "AppVersion", typeof(ServerExceptionHandler).Assembly.GetName().Version },
             { "Culture", CultureInfo.CurrentUICulture.Name },
             { "Environment", env.EnvironmentName },
             { "ServerDateTime", DateTimeOffset.UtcNow.ToString("u") },
-            { "ClientIP", httpContext.Connection.RemoteIpAddress }
         };
+
+        if (httpContext is not null)
+        {
+            data["RequestId"] = httpContext.TraceIdentifier;
+            data["UserId"] = httpContext.User.IsAuthenticated() ? httpContext.User.GetUserId() : null;
+            data["UserSessionId"] = httpContext.User.IsAuthenticated() ? httpContext.User.GetSessionId() : null;
+            data["ClientIP"] = httpContext.Connection.RemoteIpAddress;
+        }
 
         foreach (var key in exception.Data.Keys)
         {
@@ -54,7 +73,7 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
 
             var value = exception.Data[keyAsString]!;
 
-            if (keyAsString == "AppProblemExtensions" && value is Dictionary<string,object?> appProblemExtensionsData)
+            if (keyAsString == "__AppExtendedData" && value is Dictionary<string, object?> appProblemExtensionsData)
             {
                 foreach (var innerDataItem in appProblemExtensionsData)
                 {
@@ -81,20 +100,18 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
             }
         }
 
-        if (exception is AuthenticationFailureException)
+        if (httpContext is null)
         {
-            httpContext.Response.Redirect($"{Urls.SignInPage}?error={Uri.EscapeDataString(exception.Message)}");
+            problemDetails = null;
             return;
         }
-
-        var statusCode = (int)(exception is RestException restExp ? restExp.StatusCode : HttpStatusCode.InternalServerError);
 
         if (exception is KnownException && message == exceptionKey)
         {
             message = Localizer[message];
         }
 
-        var problemDetail = new ProblemDetails
+        problemDetails = new ProblemDetails
         {
             Title = message,
             Status = statusCode,
@@ -107,20 +124,22 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
             }
         };
 
-        if (exception.Data["AppProblemExtensions"] is Dictionary<string, object?> errorExtensions)
+        if (exception.Data["__AppExtendedData"] is Dictionary<string, object?> errorExtensions)
         {
             foreach (var item in errorExtensions)
             {
-                problemDetail.Extensions[item.Key] = item.Value;
+                problemDetails.Extensions[item.Key] = item.Value;
             }
         }
 
         if (exception is ResourceValidationException validationException)
         {
-            problemDetail.Extensions.Add("payload", validationException.Payload);
+            problemDetails.Extensions.Add("payload", validationException.Payload);
         }
+    }
 
-        httpContext.Response.StatusCode = statusCode;
-        await httpContext.Response.WriteAsJsonAsync(problemDetail, jsonSerializerOptions.GetTypeInfo<ProblemDetails>(), cancellationToken: httpContext.RequestAborted);
+    public void Handle(Exception exp)
+    {
+        Handle(UnWrapException(exp), httpContextAccessor.HttpContext, out var _, out var _);
     }
 }

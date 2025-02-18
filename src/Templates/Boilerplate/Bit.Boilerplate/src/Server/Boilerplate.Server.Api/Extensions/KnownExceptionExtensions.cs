@@ -9,9 +9,9 @@ public static class KnownExceptionExtensions
     public static TException WithExtensionData<TException>(this TException exception, Dictionary<string, object?> data)
         where TException : KnownException
     {
-        exception.Data["AppProblemExtensions"] ??= new Dictionary<string, object?>();
+        exception.Data["__AppExtendedData"] ??= new Dictionary<string, object?>();
 
-        var appProblemExtensionsData = (Dictionary<string, object?>)exception.Data["AppProblemExtensions"]!;
+        var appProblemExtensionsData = (Dictionary<string, object?>)exception.Data["__AppExtendedData"]!;
 
         foreach (var item in data)
         {
