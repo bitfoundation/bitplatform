@@ -48,7 +48,7 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
         {
             { "ActivityId", Activity.Current?.Id },
             { "ParentActivityId", Activity.Current?.ParentId },
-            { "AppSessionId", appSessionId },
+            { "ServerAppSessionId", appSessionId },
             { "AppVersion", typeof(ServerExceptionHandler).Assembly.GetName().Version },
             { "Culture", CultureInfo.CurrentUICulture.Name },
             { "Environment", env.EnvironmentName },
