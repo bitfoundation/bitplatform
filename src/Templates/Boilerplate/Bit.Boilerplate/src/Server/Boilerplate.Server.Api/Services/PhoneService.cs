@@ -41,7 +41,7 @@ public partial class PhoneService
         _ = Task.Run(async () => // Let's not wait for the sms to be sent. Consider using a proper message queue or background job system like Hangfire.
         {
             await using var scope = rootServiceScopeProvider.Invoke();
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger<PhoneService>>();
+            var serverExceptionHandler = scope.ServiceProvider.GetRequiredService<ServerExceptionHandler>();
             MessageResource? smsMessage = null;
             try
             {
@@ -54,18 +54,15 @@ public partial class PhoneService
                 smsMessage = MessageResource.Create(messageOptions);
 
                 if (smsMessage.ErrorCode is not null)
-                    throw new InvalidOperationException(smsMessage.ErrorMessage);
+                    throw new InvalidOperationException(smsMessage.ErrorMessage).WithData(new() { { "Code", smsMessage.ErrorCode } });
             }
             catch (Exception exp)
             {
-                LogSendSmsFailed(logger, exp, phoneNumber, smsMessage?.ErrorCode);
+                serverExceptionHandler.Handle(exp, new() { { "PhoneNumber", phoneNumber } });
             }
         }, default);
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "SMS: {message} to {phoneNumber}.")]
     private static partial void LogSendSms(ILogger logger, string message, string phoneNumber);
-
-    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to send Sms to {phoneNumber}. Code: {errorCode}")]
-    private static partial void LogSendSmsFailed(ILogger logger, Exception exp, string phoneNumber, int? errorCode);
 }

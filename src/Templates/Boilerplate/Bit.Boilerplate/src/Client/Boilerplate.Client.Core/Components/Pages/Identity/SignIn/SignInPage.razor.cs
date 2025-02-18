@@ -139,6 +139,8 @@ public partial class SignInPage
         }
         catch (KnownException e)
         {
+            // To disable the sign-in button until a specific time after a user lockout, use the value of `e.TryGetExtensionDataValue<TimeSpan>("TryAgainIn", out var tryAgainIn)`.
+
             SnackBarService.Error(e.Message);
         }
         finally
