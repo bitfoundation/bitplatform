@@ -302,7 +302,6 @@ public partial class BitOtpInput : BitTextInputBase<string?>
 
     private async Task HandleOnChange(ChangeEventArgs e, int index)
     {
-        await Task.Delay(1); // waiting for input default behavior before setting a new value.
         await ChangeInputValue(e, index, false);
 
         await HandleOnStringValueChangeAsync(new ChangeEventArgs() { Value = string.Join(string.Empty, _inputValues) });
@@ -330,6 +329,10 @@ public partial class BitOtpInput : BitTextInputBase<string?>
         var oldValue = _inputValues[index];
         var newValue = e.Value?.ToString()?.Trim() ?? string.Empty;
 
+        if (changeFocus)
+        {
+            await Task.Delay(1); // waiting for input default behavior before setting a new value.
+        }
         _inputValues[index] = string.Empty;
 
         if (IsEnabled is false || InvalidValueBinding())
