@@ -213,6 +213,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        semaphore.Dispose();
         unsubscribe?.Invoke();
     }
 }
