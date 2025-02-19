@@ -307,23 +307,6 @@ public partial class BitOtpInput : BitTextInputBase<string?>
         await HandleOnStringValueChangeAsync(new ChangeEventArgs() { Value = string.Join(string.Empty, _inputValues) });
     }
 
-    private async Task HandleOnKeyDown(KeyboardEventArgs e, int index)
-    {
-        if (IsEnabled is false || InvalidValueBinding()) return;
-        if (e.Code is null) return;
-
-        await NavigateInput(e.Code, e.Key, index);
-
-        await OnKeyDown.InvokeAsync((e, index));
-    }
-
-    private async Task HandleOnPaste(ClipboardEventArgs e, int index)
-    {
-        if (IsEnabled is false) return;
-
-        await OnPaste.InvokeAsync((e, index));
-    }
-
     private async Task ChangeInputValue(ChangeEventArgs e, int index, bool changeFocus)
     {
         var oldValue = _inputValues[index];
@@ -365,6 +348,23 @@ public partial class BitOtpInput : BitTextInputBase<string?>
         {
             _inputValues[index] = null;
         }
+    }
+
+    private async Task HandleOnKeyDown(KeyboardEventArgs e, int index)
+    {
+        if (IsEnabled is false || InvalidValueBinding()) return;
+        if (e.Code is null) return;
+
+        await NavigateInput(e.Code, e.Key, index);
+
+        await OnKeyDown.InvokeAsync((e, index));
+    }
+
+    private async Task HandleOnPaste(ClipboardEventArgs e, int index)
+    {
+        if (IsEnabled is false) return;
+
+        await OnPaste.InvokeAsync((e, index));
     }
 
     private async Task NavigateInput(string code, string key, int index)
