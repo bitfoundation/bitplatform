@@ -75,11 +75,22 @@
     <DemoSection Title="Binding" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <div>Examples of one-way and two-way data binding with BitOtpInput.</div>
         <br />
-        <BitOtpInput Label="One-way" Value="@oneWayValue" />
-        <BitTextField Style="margin-top: 5px;" @bind-Value="oneWayValue" />
-        <br /><br />
-        <BitOtpInput Label="Two-way" @bind-Value="twoWayValue" />
-        <BitTextField Style="margin-top: 5px;" @bind-Value="twoWayValue" />
+        <div class="example-box">
+            <BitOtpInput Label="One-way" Value="@oneWayValue" />
+            <BitTextField Style="margin-top: 5px;" @bind-Value="oneWayValue" />
+            <br />
+            <BitOtpInput Label="Two-way" @bind-Value="twoWayValue" />
+            <BitTextField Style="margin-top: 5px;" @bind-Value="twoWayValue" />
+            <br />
+            <BitOtpInput Label="Immediate" @bind-Value="@immediateValue" Immediate />
+            <div>Value: [@immediateValue]</div>
+            <br />
+            <BitOtpInput Label="Debounce" @bind-Value="@debounceValue" Immediate DebounceTime="300" />
+            <div>Value: [@debounceValue]</div>
+            <br />
+            <BitOtpInput Label="Throttle" @bind-Value="@throttleValue" Immediate ThrottleTime="300" />
+            <div>Value: [@throttleValue]</div>
+        </div>
     </DemoSection>
 
     <DemoSection Title="Events" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
