@@ -100,7 +100,7 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
              || (exp.InnerException is not null && IsServerConnectionException(exp.InnerException))
              || (exp is AggregateException aggExp && aggExp.InnerExceptions.Any(IsServerConnectionException))
              || (exp is WebException webEx && webEx.Status is WebExceptionStatus.ConnectFailure)
-             || (exp is HttpRequestException { StatusCode: HttpStatusCode.BadGateway or HttpStatusCode.GatewayTimeout or HttpStatusCode.ServiceUnavailable or HttpStatusCode.RequestTimeout })
-             || (exp is SocketException sockExp && sockExp.SocketErrorCode is SocketError.HostNotFound or SocketError.HostUnreachable or SocketError.HostDown or SocketError.TimedOut);
+             || (exp is SocketException sockExp && sockExp.SocketErrorCode is SocketError.HostNotFound or SocketError.HostUnreachable or SocketError.HostDown or SocketError.TimedOut)
+             || (exp is HttpRequestException { StatusCode: HttpStatusCode.BadGateway or HttpStatusCode.GatewayTimeout or HttpStatusCode.ServiceUnavailable or HttpStatusCode.RequestTimeout });
     }
 }
