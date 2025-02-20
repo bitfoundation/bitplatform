@@ -36,7 +36,9 @@ namespace BitBlazorUI {
         }
 
         private static removeScroll() {
-            AppShell._container.removeEventListener('scroll', AppShell.onScroll);
+            if (AppShell._container != null) {
+                AppShell._container.removeEventListener('scroll', AppShell.onScroll);
+            }
         }
 
         private static onScroll() {
