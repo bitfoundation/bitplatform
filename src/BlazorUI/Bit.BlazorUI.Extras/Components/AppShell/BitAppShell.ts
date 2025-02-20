@@ -1,5 +1,7 @@
 namespace BitBlazorUI {
     export class AppShell {
+        public static PreScroll: number = 0;
+
         private static _currentUrl: string;
         private static _container: HTMLElement;
         private static _scrolls: { [key: string]: number } = {};
@@ -7,7 +9,10 @@ namespace BitBlazorUI {
         public static initScroll(container: HTMLElement, url: string) {
             AppShell._container = container;
             AppShell._currentUrl = url;
-            AppShell._scrolls[url] = 0;
+            AppShell._scrolls[url] = AppShell.PreScroll;
+            if (AppShell.PreScroll > 0) {
+                AppShell._container.scrollTo({ top: AppShell.PreScroll, behavior: 'instant' });
+            }
             AppShell.addScroll();
         }
 
@@ -39,3 +44,12 @@ namespace BitBlazorUI {
         }
     }
 }
+
+(function () {
+    const container = document.getElementById('BitAppShell-container');
+    if (!container) return;
+
+    container.addEventListener('scroll', e => {
+        BitBlazorUI.AppShell.PreScroll = container.scrollTop;
+    });
+}());
