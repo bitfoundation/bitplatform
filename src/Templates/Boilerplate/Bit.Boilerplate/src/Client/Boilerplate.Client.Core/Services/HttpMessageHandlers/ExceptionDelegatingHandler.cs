@@ -79,8 +79,7 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
 
             return response;
         }
-        catch (Exception exp) when ((exp is HttpRequestException && serverCommunicationSuccess is false) 
-        || IsServerConnectionException(exp))
+        catch (Exception exp) when ((exp is HttpRequestException && serverCommunicationSuccess is false) || IsServerConnectionException(exp))
         {
             serverCommunicationSuccess = false; // Let's treat the server communication as failed if an exception is caught here.
             throw new ServerConnectionException(localizer[nameof(AppStrings.ServerConnectionException)], exp);
