@@ -106,6 +106,8 @@
         <br /><br />
         <div class="example-content-standalone">
             <BitCircularTimePicker Label="Standalone" Standalone ReadOnly @bind-Value="@readOnlyTime" />
+            <br /><br />
+            <BitCircularTimePicker Label="Standalone TimeFormat (AM/PM)" Standalone ReadOnly TimeFormat="BitTimeFormat.TwelveHours" @bind-Value="@readOnlyTime" />
         </div>
     </DemoSection>
 

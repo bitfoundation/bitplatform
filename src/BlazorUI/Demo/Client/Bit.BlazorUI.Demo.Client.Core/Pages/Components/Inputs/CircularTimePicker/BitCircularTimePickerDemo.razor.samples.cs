@@ -44,7 +44,9 @@ private TimeSpan? selectedTime = new(5, 12, 15);";
 
 <BitCircularTimePicker Label=""Text input allowed"" ReadOnly AllowTextInput @bind-Value=""@readOnlyTime"" />
 
-<BitCircularTimePicker Label=""Standalone CircularTimePicker"" Standalone ReadOnly @bind-Value=""@readOnlyTime"" />";
+<BitCircularTimePicker Label=""Standalone CircularTimePicker"" Standalone ReadOnly @bind-Value=""@readOnlyTime"" />
+
+<BitCircularTimePicker Label=""Standalone TimeFormat (AM/PM)"" Standalone ReadOnly TimeFormat=""BitTimeFormat.TwelveHours"" @bind-Value=""@readOnlyTime"" />";
     private readonly string example8CsharpCode = @"
 private TimeSpan? readOnlyTime = new(2, 50, 0);";
 
