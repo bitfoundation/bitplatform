@@ -137,12 +137,12 @@ public partial class ClientAppCoordinator : AppComponentBase
                 authLogger.LogInformation("Propagating {AuthStateType} {AuthState} authentication state.", firstRun ? "Initial" : "Updated", user.IsAuthenticated() ? "Authenticated" : "Anonymous");
             }
 
-            //#if (notification == true)
-            await pushNotificationService.Subscribe(CurrentCancellationToken);
-            //#endif
-
             //#if (signalR == true)
             await StartSignalR();
+            //#endif
+
+            //#if (notification == true)
+            await pushNotificationService.Subscribe(CurrentCancellationToken);
             //#endif
         }
         catch (Exception exp)
