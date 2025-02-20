@@ -49,6 +49,7 @@
 .bit-snb-hdr {
     display: flex;
     gap: spacing(1.25);
+    align-items: flex-start;
     flex-direction: row-reverse;
     justify-content: space-between;
 }
@@ -56,9 +57,11 @@
 .bit-snb-ttl {
     font-weight: 500;
     font-size: spacing(2);
+    word-break: break-word;
 }
 
 .bit-snb-bdy {
+    word-break: break-word;
     font-size: spacing(1.5);
 }
 
