@@ -97,10 +97,10 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
     private bool IsServerConnectionException(Exception exp)
     {
         return (exp is TimeoutException)
-             || (exp is TaskCanceledException tcExp && tcExp.InnerException is TimeoutException)
+             || (exp.InnerException is not null && IsServerConnectionException(exp.InnerException))
              || (exp is AggregateException aggExp && aggExp.InnerExceptions.Any(IsServerConnectionException))
-             || (exp.InnerException is WebException webEx && webEx.Status is WebExceptionStatus.ConnectFailure)
+             || (exp is WebException webEx && webEx.Status is WebExceptionStatus.ConnectFailure)
              || (exp is HttpRequestException { StatusCode: HttpStatusCode.BadGateway or HttpStatusCode.GatewayTimeout or HttpStatusCode.ServiceUnavailable or HttpStatusCode.RequestTimeout })
-             || (exp.InnerException is SocketException sockExp && sockExp.SocketErrorCode is SocketError.HostNotFound or SocketError.HostUnreachable or SocketError.HostDown or SocketError.TimedOut);
+             || (exp is SocketException sockExp && sockExp.SocketErrorCode is SocketError.HostNotFound or SocketError.HostUnreachable or SocketError.HostDown or SocketError.TimedOut);
     }
 }
