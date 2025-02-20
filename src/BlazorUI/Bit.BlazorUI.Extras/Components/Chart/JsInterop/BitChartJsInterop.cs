@@ -1,4 +1,5 @@
 ﻿using System.Dynamic;
+using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
@@ -25,9 +26,10 @@ internal static class BitChartJsInterop
         return jsRuntime.InvokeVoid("BitBlazorUI.BitChart.initChartJs", scripts);
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     public static ValueTask BitChartJsRemoveChart(this IJSRuntime jsRuntime, string? canvasId)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.BitChart.removeChart", canvasId);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.BitChart.removeChart", canvasId);
     }
 
     /// <summary>
@@ -36,11 +38,12 @@ internal static class BitChartJsInterop
     /// <param name="jsRuntime"></param>
     /// <param name="chartConfig">The config for the new chart.</param>
     /// <returns></returns>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     public static ValueTask<bool> BitChartJsSetupChart(this IJSRuntime jsRuntime, BitChartConfigBase chartConfig)
     {
         var dynParam = StripNulls(chartConfig);
         Dictionary<string, object> param = ConvertExpandoObjectToDictionary(dynParam!);
-        return jsRuntime.Invoke<bool>("BitBlazorUI.BitChart.setupChart", param);
+        return jsRuntime.FastInvoke<bool>("BitBlazorUI.BitChart.setupChart", param);
     }
 
     /// <summary>
@@ -49,11 +52,12 @@ internal static class BitChartJsInterop
     /// <param name="jsRuntime"></param>
     /// <param name="chartConfig">The updated config of the chart you want to update.</param>
     /// <returns></returns>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     public static ValueTask<bool> BitChartJsUpdateChart(this IJSRuntime jsRuntime, BitChartConfigBase chartConfig)
     {
         var dynParam = StripNulls(chartConfig);
         var param = ConvertExpandoObjectToDictionary(dynParam!);
-        return jsRuntime.Invoke<bool>("BitBlazorUI.BitChart.updateChart", param);
+        return jsRuntime.FastInvoke<bool>("BitBlazorUI.BitChart.updateChart", param);
     }
 
 
@@ -113,7 +117,7 @@ internal static class BitChartJsInterop
     /// </summary>
     /// <param name="chartConfig">The config you want to strip of null members.</param>
     /// <returns></returns>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [SuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     private static ExpandoObject? StripNulls(BitChartConfigBase chartConfig)
     {
         // Serializing with the custom serializer settings remove null members

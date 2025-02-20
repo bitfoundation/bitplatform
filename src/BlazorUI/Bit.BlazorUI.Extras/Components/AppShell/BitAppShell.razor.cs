@@ -54,6 +54,7 @@ public partial class BitAppShell : BitComponentBase
     /// <summary>
     /// Scrolls the main container to top.
     /// </summary>
+    [RequiresUnreferencedCode("Calls Bit.BlazorUI.IJSRuntimeExtensions.FastInvokeVoid(String, params Object[])")]
     public async Task GoToTop(BitScrollBehavior? behavior = null)
     {
         await _js.BitExtrasGoToTop(_containerRef, behavior);
@@ -82,7 +83,7 @@ public partial class BitAppShell : BitComponentBase
 
         base.OnInitialized();
     }
-
+    
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender && PersistScroll)

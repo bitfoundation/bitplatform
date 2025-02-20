@@ -13,10 +13,6 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
 
 
-    [Inject] private IJSRuntime _js { get; set; } = default!;
-
-
-
     /// <summary>
     /// Custom CSS classes for different parts of the nav panel.
     /// </summary>
