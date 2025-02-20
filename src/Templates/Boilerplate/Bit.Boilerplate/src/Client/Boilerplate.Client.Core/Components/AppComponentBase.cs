@@ -55,11 +55,13 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     [AutoInject] protected AbsoluteServerAddressProvider AbsoluteServerAddress { get; set; } = default!;
 
 
-    private CancellationTokenSource cts = new();
+    private CancellationTokenSource? cts = new();
     protected CancellationToken CurrentCancellationToken
     {
         get
         {
+            if (cts == null)
+                throw new OperationCanceledException(); // Component already disposed.
             cts.Token.ThrowIfCancellationRequested();
             return cts.Token;
         }
@@ -231,17 +233,22 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     /// </summary>
     protected async Task Abort()
     {
-        if (cts.IsCancellationRequested is false)
-        {
-            await cts.CancelAsync();
-        }
-        cts.Dispose();
+        if (cts == null)
+            return; // Component already disposed.
+
+        using var currentCts = cts;
         cts = new();
+
+        if (currentCts.IsCancellationRequested is false)
+        {
+            await currentCts.CancelAsync();
+        }
     }
 
     public async ValueTask DisposeAsync()
     {
-        cts.Dispose();
+        cts?.Dispose();
+        cts = null;
 
         await PrerenderStateService.DisposeAsync();
 
