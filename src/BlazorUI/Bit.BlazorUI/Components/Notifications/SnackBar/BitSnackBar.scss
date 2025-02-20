@@ -5,6 +5,7 @@
     display: flex;
     position: fixed;
     gap: spacing(1.25);
+    pointer-events: none;
     flex-flow: column nowrap;
     z-index: $zindex-snackbar;
     max-width: calc(100% - spacing(1));
@@ -25,6 +26,7 @@
     gap: spacing(1);
     width: fit-content;
     position: relative;
+    pointer-events: all;
     padding: spacing(1.25);
     color: var(--bit-snb-fg);
     flex-flow: column nowrap;
