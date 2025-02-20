@@ -32,11 +32,9 @@ public static partial class Program
         services.AddKeyedScoped<HttpMessageHandler, SocketsHttpHandler>("PrimaryHttpMessageHandler", (sp, key) => new()
         {
             EnableMultipleHttp2Connections = true,
-            //+:cnd:noEmit
             //#if (framework == 'net9.0')
             EnableMultipleHttp3Connections = true,
             //#endif
-            //-:cnd:noEmit
             PooledConnectionLifetime = TimeSpan.FromMinutes(15),
             AutomaticDecompression = System.Net.DecompressionMethods.All,
             SslOptions = new()
