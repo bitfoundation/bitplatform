@@ -3,8 +3,8 @@ namespace BitBlazorUI {
         public static PreScroll: number = 0;
 
         private static _currentUrl: string;
-        private static _container: HTMLElement;
-        private static _scrolls: { [key: string]: number } = {};
+        private static _container: HTMLElement | undefined;
+        private static _scrolls: { [key: string]: number | undefined } = {};
 
         public static initScroll(container: HTMLElement, url: string) {
             AppShell._container = container;
@@ -23,7 +23,7 @@ namespace BitBlazorUI {
         public static afterRenderScroll(url: string) {
             AppShell._currentUrl = url;
             AppShell._scrolls[url] = AppShell._scrolls[url] || 0;
-            AppShell._container.scrollTo({ top: AppShell._scrolls[url], behavior: 'instant' });
+            AppShell._container?.scrollTo({ top: AppShell._scrolls[url], behavior: 'instant' });
             AppShell.addScroll();
         }
 
@@ -32,17 +32,15 @@ namespace BitBlazorUI {
         }
 
         private static addScroll() {
-            AppShell._container.addEventListener('scroll', AppShell.onScroll);
+            AppShell._container?.addEventListener('scroll', AppShell.onScroll);
         }
 
         private static removeScroll() {
-            if (AppShell._container != null) {
-                AppShell._container.removeEventListener('scroll', AppShell.onScroll);
-            }
+            AppShell._container?.removeEventListener('scroll', AppShell.onScroll);
         }
 
         private static onScroll() {
-            AppShell._scrolls[AppShell._currentUrl] = AppShell._container.scrollTop;
+            AppShell._scrolls[AppShell._currentUrl] = AppShell._container?.scrollTop;
         }
     }
 }
