@@ -207,7 +207,7 @@
         id: string;
         element: HTMLElement;
         trigger: number;
-        dotnetObj: DotNetObject;
+        dotnetObj: DotNetObject | undefined;
         disposer: () => void = () => { };
 
         constructor(id: string, element: HTMLElement, trigger: number, dotnetObj: DotNetObject) {
@@ -222,7 +222,8 @@
 
         public dispose() {
             this.disposer();
-            this.dotnetObj.dispose();
+            this.dotnetObj?.dispose();
+            this.dotnetObj = undefined;
         }
     }
 
