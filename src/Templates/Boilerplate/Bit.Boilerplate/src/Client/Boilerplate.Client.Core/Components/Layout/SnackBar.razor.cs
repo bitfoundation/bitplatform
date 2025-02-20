@@ -5,8 +5,7 @@ public partial class SnackBar
     private Action? unsubscribe;
     private BitSnackBar snackbarRef = default!;
 
-
-    protected override Task OnInitAsync()
+    protected override async Task OnAfterFirstRenderAsync()
     {
         unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.SHOW_SNACK, async args =>
         {
@@ -15,7 +14,7 @@ public partial class SnackBar
             await snackbarRef.Show(title, body, color);
         });
 
-        return base.OnInitAsync();
+        await base.OnAfterFirstRenderAsync();
     }
 
     protected override async ValueTask DisposeAsync(bool disposing)
