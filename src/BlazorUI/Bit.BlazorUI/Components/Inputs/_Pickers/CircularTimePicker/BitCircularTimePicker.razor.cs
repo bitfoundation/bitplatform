@@ -544,7 +544,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private async Task UpdateTime(MouseEventArgs e)
     {
-        if (IsEnabled is false || InvalidValueBinding()) return;
+        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
 
         var rect = await _js.BitUtilsGetBoundingClientRect(_clockRef);
         var radius = rect.Width / 2;
