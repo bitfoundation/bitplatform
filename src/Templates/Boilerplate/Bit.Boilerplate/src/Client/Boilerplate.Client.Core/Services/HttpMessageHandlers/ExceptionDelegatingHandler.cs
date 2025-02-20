@@ -79,11 +79,8 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
 
             return response;
         }
-        catch (Exception exp) when (
-               (exp is HttpRequestException && serverCommunicationSuccess is false)
-            || (exp is TaskCanceledException tcExp && tcExp.InnerException is TimeoutException)
-            || (exp.InnerException is SocketException sockExp && sockExp.SocketErrorCode is SocketError.HostNotFound)
-            || (exp is HttpRequestException { StatusCode: HttpStatusCode.BadGateway or HttpStatusCode.GatewayTimeout or HttpStatusCode.ServiceUnavailable }))
+        catch (Exception exp) when ((exp is HttpRequestException && serverCommunicationSuccess is false) 
+        || IsServerConnectionException(exp))
         {
             serverCommunicationSuccess = false; // Let's treat the server communication as failed if an exception is caught here.
             throw new ServerConnectionException(localizer[nameof(AppStrings.ServerConnectionException)], exp);
@@ -95,5 +92,15 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
                 pubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, serverCommunicationSuccess);
             }
         }
+    }
+
+    private bool IsServerConnectionException(Exception exp)
+    {
+        return (exp is TimeoutException)
+             || (exp is TaskCanceledException tcExp && tcExp.InnerException is TimeoutException)
+             || (exp is AggregateException aggExp && aggExp.InnerExceptions.Any(IsServerConnectionException))
+             || (exp.InnerException is WebException webEx && webEx.Status is WebExceptionStatus.ConnectFailure)
+             || (exp is HttpRequestException { StatusCode: HttpStatusCode.BadGateway or HttpStatusCode.GatewayTimeout or HttpStatusCode.ServiceUnavailable or HttpStatusCode.RequestTimeout })
+             || (exp.InnerException is SocketException sockExp && sockExp.SocketErrorCode is SocketError.HostNotFound or SocketError.HostUnreachable or SocketError.HostDown or SocketError.TimedOut);
     }
 }
