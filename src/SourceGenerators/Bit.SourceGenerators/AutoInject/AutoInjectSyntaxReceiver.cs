@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -8,14 +9,21 @@ namespace Bit.SourceGenerators;
 
 public class AutoInjectSyntaxReceiver : ISyntaxContextReceiver
 {
-    public Collection<ISymbol> EligibleMembers { get; } = new();
-    public Collection<INamedTypeSymbol> EligibleClassesWithBaseClassUsedAutoInject { get; } = new();
+    public Collection<ISymbol> EligibleMembers { get; } = [];
+    public Collection<INamedTypeSymbol> EligibleClassesWithBaseClassUsedAutoInject { get; } = [];
 
     public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
     {
-        MarkEligibleFields(context);
-        MarkEligibleProperties(context);
-        MarkEligibleClasses(context);
+        try
+        {
+            MarkEligibleFields(context);
+            MarkEligibleProperties(context);
+            MarkEligibleClasses(context);
+        }
+        catch (Exception exp)
+        {
+            throw new InvalidOperationException($"Error processing {context.Node.SyntaxTree.FilePath}: {exp}", exp);
+        }
     }
 
     private void MarkEligibleClasses(GeneratorSyntaxContext context)

@@ -7,10 +7,11 @@ namespace Bit.BlazorUI;
 /// BitAppShell is an advanced container to handle the nuances of a cross-platform layout.
 /// </summary>
 [SuppressMessage("Trimming", "IL2110:Field with 'DynamicallyAccessedMembersAttribute' is accessed via reflection. Trimmer can't guarantee availability of the requirements of the field.", Justification = "<Pending>")]
-public partial class BitAppShell : BitComponentBase, IDisposable
+public partial class BitAppShell : BitComponentBase
 {
-    private bool _disposed;
+    private bool _locationChanged;
     private ElementReference _containerRef = default!;
+
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -37,6 +38,11 @@ public partial class BitAppShell : BitComponentBase, IDisposable
     /// Custom CSS classes for different parts of the layout.
     /// </summary>
     [Parameter] public BitAppShellClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// Persists scroll position of the main container and restores it on navigation.
+    /// </summary>
+    [Parameter] public bool PersistScroll { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the layout.
@@ -69,7 +75,7 @@ public partial class BitAppShell : BitComponentBase, IDisposable
 
     protected override void OnInitialized()
     {
-        if (AutoGoToTop)
+        if (AutoGoToTop || PersistScroll)
         {
             _navManager.LocationChanged += LocationChanged;
         }
@@ -77,11 +83,33 @@ public partial class BitAppShell : BitComponentBase, IDisposable
         base.OnInitialized();
     }
 
-
-
-    private void LocationChanged(object? sender, LocationChangedEventArgs e)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (AutoGoToTop)
+        if (firstRender && PersistScroll)
+        {
+            await _js.BitAppShellInitScroll(_containerRef, _navManager.Uri);
+        }
+
+        if (_locationChanged && firstRender is false)
+        {
+            _locationChanged = false;
+            await _js.BitAppShellAfterRenderScroll(_navManager.Uri);
+        }
+    }
+
+
+
+    private void LocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        if (PersistScroll)
+        {
+            if (IsRendered)
+            {
+                _locationChanged = true;
+                _ = _js.BitAppShellLocationChangedScroll(_navManager.Uri);
+            }
+        }
+        else if (AutoGoToTop)
         {
             _ = GoToTop(BitScrollBehavior.Instant);
         }
@@ -89,18 +117,21 @@ public partial class BitAppShell : BitComponentBase, IDisposable
 
 
 
-    public void Dispose()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing is false || _disposed) return;
+        if (IsDisposed || disposing is false) return;
 
         _navManager.LocationChanged -= LocationChanged;
 
-        _disposed = true;
+        if (PersistScroll)
+        {
+            try
+            {
+                await _js.BitAppShellDisposeScroll();
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+        }
+
+        await base.DisposeAsync(disposing);
     }
 }

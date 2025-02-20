@@ -9,6 +9,10 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitChart : IAsyncDisposable
 {
+    private bool _disposed;
+
+
+
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
     /// <summary>
@@ -46,6 +50,22 @@ public partial class BitChart : IAsyncDisposable
     /// see available adapters here: https://github.com/chartjs/awesome#adapters
     /// </summary>
     [Parameter] public IEnumerable<string>? DateAdapterScripts { get; set; }
+
+
+
+    /// <summary>
+    /// Updates the chart.
+    /// <para>
+    /// Call this method after you've updated the <see cref="Config"/>.
+    /// </para>
+    /// </summary>
+    public Task Update()
+    {
+        if (Config is null) return Task.CompletedTask;
+
+        return _js.BitChartJsUpdateChart(Config).AsTask();
+    }
+
 
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartBarConfig))]
@@ -139,34 +159,27 @@ public partial class BitChart : IAsyncDisposable
         }
     }
 
-    /// <summary>
-    /// Updates the chart.
-    /// <para>
-    /// Call this method after you've updated the <see cref="Config"/>.
-    /// </para>
-    /// </summary>
-    public Task Update()
-    {
-        if (Config is null) return Task.CompletedTask;
 
-        return _js.BitChartJsUpdateChart(Config).AsTask();
-    }
 
     public async ValueTask DisposeAsync()
     {
         await DisposeAsync(true);
-
         GC.SuppressFinalize(this);
     }
 
     protected virtual async ValueTask DisposeAsync(bool disposing)
     {
-        if (disposing is false) return;
+        if (_disposed || disposing is false) return;
 
         try
         {
-            await _js.BitChartJsRemoveChart(Config?.CanvasId);
+            if (Config is not null)
+            {
+                await _js.BitChartJsRemoveChart(Config.CanvasId);
+            }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+
+        _disposed = true;
     }
 }

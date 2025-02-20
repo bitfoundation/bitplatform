@@ -28,7 +28,7 @@ public partial class AppHub : Hub
                 // AppHub allows anonymous connections. However, if an Authorization is included
                 // and the user is not authenticated, it indicates the client has sent an invalid or expired access token.
                 // In this scenario, we should refresh the access token and attempt to reconnect.
-                throw new HubException(nameof(AppStrings.UnauthorizedException));
+                throw new HubException(nameof(AppStrings.UnauthorizedException)).WithData("ConnectionId", Context.ConnectionId);
             }
         }
         else

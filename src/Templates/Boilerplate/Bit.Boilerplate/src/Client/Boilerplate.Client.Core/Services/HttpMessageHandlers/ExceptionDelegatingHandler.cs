@@ -56,6 +56,11 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
                                     ? new ResourceValidationException(problemDetails.Title!, problemDetails.Payload)
                                     : (Exception)Activator.CreateInstance(exceptionType, args.ToArray())!;
 
+                foreach (var data in problemDetails.Extensions)
+                {
+                    exp.Data[data.Key] = data.Value;
+                }
+
                 throw exp;
             }
 

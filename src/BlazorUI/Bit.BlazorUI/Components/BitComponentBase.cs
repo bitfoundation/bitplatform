@@ -1,11 +1,12 @@
 ﻿namespace Bit.BlazorUI;
 
-public abstract partial class BitComponentBase : ComponentBase
+public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
 {
     private BitDir? _dir;
     private string _uniqueId = BitShortId.NewId();
 
-    protected bool Rendered { get; private set; }
+    protected bool IsRendered;
+    protected bool IsDisposed;
 
     internal string _Id => Id ?? _uniqueId;
 
@@ -171,7 +172,7 @@ public abstract partial class BitComponentBase : ComponentBase
 
     protected override void OnAfterRender(bool firstRender)
     {
-        Rendered = true;
+        IsRendered = true;
         base.OnAfterRender(firstRender);
     }
 
@@ -186,4 +187,18 @@ public abstract partial class BitComponentBase : ComponentBase
     protected virtual void RegisterCssClasses() { }
 
     protected virtual void OnVisibilityChanged(BitVisibility visibility) { }
+
+
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsync(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual ValueTask DisposeAsync(bool disposing)
+    {
+        IsDisposed = true;
+        return ValueTask.CompletedTask;
+    }
 }

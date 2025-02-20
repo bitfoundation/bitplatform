@@ -3,14 +3,14 @@
 /// <summary>
 /// BitNavPanel is a navigation component specialized to be rendered in a vertical panel.
 /// </summary>
-public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TItem : class
+public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 {
-    private bool _disposed;
     private decimal diffXPanel;
     private BitNav<TItem> _bitNavRef = default!;
     private IList<TItem> _filteredNavItems = [];
     private BitSearchBox _searchBoxRef = default!;
     private IEnumerable<TItem> _flatNavItemList = [];
+
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -230,19 +230,5 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
                             ? $"transform: translateX({diffXPanel}px)"
                             : string.Empty;
         return $"{translate};{StyleBuilder.Value}".Trim(';');
-    }
-
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing is false || _disposed) return;
-
-        _disposed = true;
     }
 }

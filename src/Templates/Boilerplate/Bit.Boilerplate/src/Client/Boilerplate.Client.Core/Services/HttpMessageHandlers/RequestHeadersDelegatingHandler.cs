@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Net;
+using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
@@ -10,6 +11,8 @@ public partial class RequestHeadersDelegatingHandler(ITelemetryContext telemetry
     {
         request.SetBrowserRequestCredentials(BrowserRequestCredentials.Omit);
         request.SetBrowserResponseStreamingEnabled(true);
+
+        request.Version = HttpVersion.Version30;
 
         if (request.Headers.UserAgent.Any() is false)
         {

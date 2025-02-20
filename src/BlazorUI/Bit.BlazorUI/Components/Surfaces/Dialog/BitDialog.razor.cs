@@ -3,10 +3,9 @@
 /// <summary>
 /// Dialogs are temporary pop-ups that take focus from the page or app and require people to interact with them.
 /// </summary>
-public partial class BitDialog : BitComponentBase, IAsyncDisposable
+public partial class BitDialog : BitComponentBase
 {
     private int _offsetTop;
-    private bool _disposed;
     private bool _isLoading;
     private bool _internalIsOpen;
     private string _containerId = default!;
@@ -320,15 +319,12 @@ public partial class BitDialog : BitComponentBase, IAsyncDisposable
 
 
 
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await DisposeAsync(true);
-        GC.SuppressFinalize(this);
-    }
+        if (IsDisposed || disposing is false) return;
 
-    protected virtual async ValueTask DisposeAsync(bool disposing)
-    {
-        if (_disposed || disposing is false) return;
+        _tcs?.SetResult(Result = null);
+        _tcs = null;
 
         try
         {
@@ -336,9 +332,6 @@ public partial class BitDialog : BitComponentBase, IAsyncDisposable
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
-        _tcs?.SetResult(Result = null);
-        _tcs = null;
-
-        _disposed = true;
+        await base.DisposeAsync(disposing);
     }
 }

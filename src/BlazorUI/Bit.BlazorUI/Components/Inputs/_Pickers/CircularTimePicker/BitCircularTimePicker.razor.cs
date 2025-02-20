@@ -11,16 +11,14 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 {
     private int? _hour;
     private int? _minute;
-    private bool _disposed;
     private bool _hasFocus;
     private string? _labelId;
     private string? _inputId;
     private bool _isPointerDown;
     private bool _showHourView = true;
     private ElementReference _clockRef;
+    private string? _abortControllerId;
     private string _calloutId = string.Empty;
-    private string? _pointerUpAbortControllerId;
-    private string? _pointerMoveAbortControllerId;
     private string _circularTimePickerId = string.Empty;
     private CultureInfo _culture = CultureInfo.CurrentUICulture;
     private DotNetObjectReference<BitCircularTimePicker> _dotnetObj = default!;
@@ -314,8 +312,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, BitSwipeOrientation.Vertical, _dotnetObj);
 
-        _pointerUpAbortControllerId = await _js.BitCircularTimePickerRegisterPointerUp(_dotnetObj, nameof(_HandlePointerUp));
-        _pointerMoveAbortControllerId = await _js.BitCircularTimePickerRegisterPointerMove(_dotnetObj, nameof(_HandlePointerMove));
+        _abortControllerId = await _js.BitCircularTimePickerSetup(_dotnetObj, nameof(_HandlePointerUp), nameof(_HandlePointerMove));
     }
 
 
@@ -701,19 +698,20 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        if (_disposed || disposing is false) return;
+        if (IsDisposed || disposing is false) return;
 
         OnValueChanged -= HandleOnValueChanged;
 
+        // _dotnetObj.Dispose(); // it is getting disposed in the following js call:
+
         try
         {
+            await _js.BitCircularTimePickerDispose(_abortControllerId);
             await _js.BitCalloutClearCallout(_calloutId);
-            await _js.BitSwipesDispose(_calloutId);
-            await _js.BitCircularTimePickerAbort(_pointerUpAbortControllerId);
-            await _js.BitCircularTimePickerAbort(_pointerMoveAbortControllerId);
+            await _js.BitSwipesDispose(_calloutId); // _dotnetObj is getting disposed here!
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
-        _disposed = true;
+        await base.DisposeAsync(disposing);
     }
 }

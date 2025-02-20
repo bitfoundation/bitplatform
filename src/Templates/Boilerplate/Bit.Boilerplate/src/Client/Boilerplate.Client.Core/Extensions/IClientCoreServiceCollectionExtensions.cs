@@ -29,7 +29,6 @@ public static partial class IClientCoreServiceCollectionExtensions
 
         services.AddScoped<ThemeService>();
         services.AddScoped<CultureService>();
-        services.AddScoped<HttpClientHandler>();
         services.AddScoped<LazyAssemblyLoader>();
         services.AddScoped<IAuthTokenProvider, ClientSideAuthTokenProvider>();
         services.AddScoped<IExternalNavigationService, DefaultExternalNavigationService>();
@@ -88,7 +87,7 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddScoped<RequestHeadersDelegatingHandler>();
         services.AddScoped(serviceProvider =>
         {
-            var transportHandler = serviceProvider.GetRequiredService<HttpClientHandler>();
+            var transportHandler = serviceProvider.GetRequiredKeyedService<HttpMessageHandler>("PrimaryHttpMessageHandler");
             var constructedHttpMessageHandler = serviceProvider.GetRequiredService<HttpMessageHandlersChainFactory>().Invoke(transportHandler);
             return constructedHttpMessageHandler;
         });

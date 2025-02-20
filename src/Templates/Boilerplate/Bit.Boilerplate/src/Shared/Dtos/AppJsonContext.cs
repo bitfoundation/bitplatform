@@ -22,6 +22,7 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 [JsonSerializable(typeof(Dictionary<string, JsonElement>))]
 [JsonSerializable(typeof(Dictionary<string, string?>))]
+[JsonSerializable(typeof(TimeSpan))]
 [JsonSerializable(typeof(string[]))]
 [JsonSerializable(typeof(GitHubStats))]
 [JsonSerializable(typeof(NugetStatsDto))]
