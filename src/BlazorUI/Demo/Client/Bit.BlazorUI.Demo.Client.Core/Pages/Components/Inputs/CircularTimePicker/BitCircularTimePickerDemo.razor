@@ -36,7 +36,7 @@
         </div>
         <div class="example-content">
             <BitCircularTimePicker Label="Text input allowed"
-                                   AllowTextInput="true"
+                                   AllowTextInput
                                    ValueFormat="hh:mm"
                                    Placeholder="Enter a time (hh:mm)" />
         </div>
@@ -51,49 +51,6 @@
             <BitCircularTimePicker Label="Formatted time"
                                    ValueFormat="hh-mm.ss"
                                    Placeholder="Select a time" />
-        </div>
-    </DemoSection>
-
-    <DemoSection Title="Style & Class" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-        <div>Explore styling and class customization for BitCircularTimePicker, including component styles, custom classes, and detailed styles.</div>
-        <br /><br />
-        <div>Component's Style & Class:</div>
-        <br />
-        <div class="example-content">
-            <BitCircularTimePicker Style="margin: 1rem; box-shadow: dodgerblue 0 0 1rem;" />
-            <br />
-            <BitCircularTimePicker Class="custom-class" />
-        </div>
-        <br /><br /><br />
-        <div><b>Styles</b> & <b>Classes</b>:</div>
-        <br />
-        <div class="example-content">
-            <BitCircularTimePicker Styles="@(new() { Root = "margin-inline: 1rem;",
-                                                         Focused = "--focused-background: #b2b2b25a;",
-                                                         Input = "padding: 0.5rem;",
-                                                         InputContainer = "background: var(--focused-background);",
-                                                         HourButton = "color: gray;",
-                                                         MinuteButton = "color: gray;",
-                                                         HourMinuteSeparator = "color: gray;",
-                                                         Toolbar = "background-color: transparent;",
-                                                         ClockFace="box-shadow: dodgerblue 0 0 1rem;",
-                                                         ClockPointerThumb = "background-color: blue;" })" />
-            <br />
-            <BitCircularTimePicker @bind-Value="@classesValue"
-                                   Label="Select a date"
-                                   Classes="@(new() { Root = "custom-root",
-                                                          Focused = "custom-focus",
-                                                          Input = "custom-input",
-                                                          InputContainer = "custom-input-container",
-                                                          Label = $"custom-label{(classesValue is null ? string.Empty : " custom-label-top")}",
-                                                          Toolbar = "custom-toolbar",
-                                                          ClockPin = "custom-clock-pin",
-                                                          ClockFace = "custom-clock-face",
-                                                          ClockNumber = "custom-clock-number",
-                                                          ClockPointer = "custom-clock-pointer",
-                                                          ClockPointerThumb = "custom-clock-pointer-thumb",
-                                                          ClockSelectedNumber = "custom-clock-selected-number",
-                                                          ClockPointerThumbMinute = "custom-clock-pointer-thumb-minute" })" />
         </div>
     </DemoSection>
 
@@ -124,7 +81,35 @@
         </div>
     </DemoSection>
 
-    <DemoSection Title="Templates" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <DemoSection Title="Standalone" RazorCode="@example7RazorCode" Id="example7">
+        <div>Use the BitCircularTimePicker in a standalone mode, allowing it to function independently without a surrounding form or container.</div>
+        <br />
+        <div class="example-content-standalone">
+            <BitCircularTimePicker Label="Basic CircularTimePicker" Standalone />
+            <br /><br />
+            <BitCircularTimePicker Label="Disabled" IsEnabled="false" Standalone />
+            <br /><br />
+            <BitCircularTimePicker Label="PlaceHolder" Placeholder="Select a time" Standalone />
+            <br /><br />
+            <BitCircularTimePicker Label="TimeFormat (AM/PM)" TimeFormat="BitTimeFormat.TwelveHours" Standalone />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="ReadOnly" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div>The ReadOnly parameter makes the time picker input non-editable, preventing users from manually changing the time value.</div>
+        <br />
+        <div class="example-content">
+            <BitCircularTimePicker Label="Basic" ReadOnly @bind-Value="@readOnlyTime" />
+            <br /><br />
+            <BitCircularTimePicker Label="Text input allowed" ReadOnly AllowTextInput @bind-Value="@readOnlyTime" />
+        </div>
+        <br /><br />
+        <div class="example-content-standalone">
+            <BitCircularTimePicker Label="Standalone" Standalone ReadOnly @bind-Value="@readOnlyTime" />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Templates" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div class="example-desc">
             In this example, the callout of the BitCircularTimePicker would be opened and closed using an icon button which is customely located in the label.
             This functionality has been implemented using a public API provided in the BitCircularTimePicker.
@@ -146,7 +131,7 @@
         </div>
     </DemoSection>
 
-    <DemoSection Title="Responsive" RazorCode="@example8RazorCode" Id="example8">
+    <DemoSection Title="Responsive" RazorCode="@example10RazorCode" Id="example10">
         <div>Enable responsive design for the BitCircularTimePicker, allowing it to adjust its layout and appearance based on the screen size.</div>
         <br />
         <div class="example-content">
@@ -156,7 +141,7 @@
         </div>
     </DemoSection>
 
-    <DemoSection Title="Validation" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoSection Title="Validation" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>Implement form validation with BitCircularTimePicker using data annotations, ensuring the user selects a valid date before submitting the form.</div>
         <br />
         <div class="example-content">
@@ -205,28 +190,56 @@
         </div>
     </DemoSection>
 
+    <DemoSection Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <div>Explore styling and class customization for BitCircularTimePicker, including component styles, custom classes, and detailed styles.</div>
+        <br /><br />
+        <div>Component's Style & Class:</div>
+        <br />
+        <div class="example-content">
+            <BitCircularTimePicker Style="margin: 1rem; box-shadow: dodgerblue 0 0 1rem;" />
+            <br />
+            <BitCircularTimePicker Class="custom-class" />
+        </div>
+        <br /><br /><br />
+        <div><b>Styles</b> & <b>Classes</b>:</div>
+        <br />
+        <div class="example-content">
+            <BitCircularTimePicker Styles="@(new() { Root = "margin-inline: 1rem;",
+                                                         Focused = "--focused-background: #b2b2b25a;",
+                                                                                                                  Input = "padding: 0.5rem;",
+                                                                                                                  InputContainer = "background: var(--focused-background);",
+                                                                                                                  HourButton = "color: gray;",
+                                                                                                                  MinuteButton = "color: gray;",
+                                                                                                                  HourMinuteSeparator = "color: gray;",
+                                                                                                                  Toolbar = "background-color: transparent;",
+                                                                                                                  ClockFace = "box-shadow: dodgerblue 0 0 1rem;",
+                                                                                                                  ClockPointerThumb = "background-color: blue;" })" />
+            <br />
+            <BitCircularTimePicker @bind-Value="@classesValue"
+                                   Label="Select a date"
+                                   Classes="@(new() { Root = "custom-root",
+                                                                                                                    Focused = "custom-focus",
+                                                                                                                    Input = "custom-input",
+                                                                                                                    InputContainer = "custom-input-container",
+                                                                                                                    Label = $"custom-label{(classesValue is null ? string.Empty : " custom-label-top")}",
+                                                                                                                    Toolbar = "custom-toolbar",
+                                                                                                                    ClockPin = "custom-clock-pin",
+                                                                                                                    ClockFace = "custom-clock-face",
+                                                                                                                    ClockNumber = "custom-clock-number",
+                                                                                                                    ClockPointer = "custom-clock-pointer",
+                                                                                                                    ClockPointerThumb = "custom-clock-pointer-thumb",
+                                                                                                                    ClockSelectedNumber = "custom-clock-selected-number",
+                                                                                                                    ClockPointerThumbMinute = "custom-clock-pointer-thumb-minute" })" />
+        </div>
+    </DemoSection>
 
-    <DemoSection Title="RTL" RazorCode="@example10RazorCode" Id="example10">
+    <DemoSection Title="RTL" RazorCode="@example13RazorCode" Id="example13">
         <div>Use BitCircularTimePicker in a right-to-left (RTL) layout.</div>
         <br />
         <div dir="rtl">
             <div class="example-content">
                 <BitCircularTimePicker Dir="BitDir.Rtl" />
             </div>
-        </div>
-    </DemoSection>
-
-    <DemoSection Title="Standalone" RazorCode="@example11RazorCode" Id="example11">
-        <div>Use the BitCircularTimePicker in a standalone mode, allowing it to function independently without a surrounding form or container.</div>
-        <br />
-        <div class="example-content-standalone">
-            <BitCircularTimePicker Label="Basic CircularTimePicker" Standalone />
-            <br /><br />
-            <BitCircularTimePicker Label="Disabled" IsEnabled="false" Standalone />
-            <br /><br />
-            <BitCircularTimePicker Label="PlaceHolder" Placeholder="Select a time" Standalone />
-            <br /><br />
-            <BitCircularTimePicker Label="TimeFormat (AM/PM)" TimeFormat="BitTimeFormat.TwelveHours" Standalone />
         </div>
     </DemoSection>
 </DemoPage>
