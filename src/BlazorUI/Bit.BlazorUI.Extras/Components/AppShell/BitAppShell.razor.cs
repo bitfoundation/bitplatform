@@ -123,11 +123,14 @@ public partial class BitAppShell : BitComponentBase
 
         _navManager.LocationChanged -= LocationChanged;
 
-        try
+        if (PersistScroll)
         {
-            await _js.BitAppShellDisposeScroll();
+            try
+            {
+                await _js.BitAppShellDisposeScroll();
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
         }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
 
         await base.DisposeAsync(disposing);
     }
