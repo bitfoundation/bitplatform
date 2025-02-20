@@ -12,11 +12,11 @@ public partial class BitCarousel : BitComponentBase
     private int[] _othersIndices = [];
     private int[] _currentIndices = [];
     private int _internalScrollItemsCount = 1;
+    private System.Timers.Timer? _autoPlayTimer;
     private string _directionStyle = string.Empty;
     private string _goLeftButtonStyle = string.Empty;
     private string _goRightButtonStyle = string.Empty;
     private readonly List<BitCarouselItem> _allItems = [];
-    private System.Timers.Timer _autoPlayTimer = default!;
     private ElementReference _carouselContainer = default!;
     private DotNetObjectReference<BitCarousel> _dotnetObj = default!;
 
@@ -313,11 +313,11 @@ public partial class BitCarousel : BitComponentBase
 
 
         StateHasChanged();
-
-        if (AutoPlay) _autoPlayTimer.Stop();
+        if (IsDisposed) return;
+        _autoPlayTimer?.Stop();
         await Task.Delay(50);
         if (IsDisposed) return;
-        if (AutoPlay) _autoPlayTimer.Start();
+        _autoPlayTimer?.Start();
 
         offset = isNext ? VisibleItemsCount - scrollCount : 0;
 
@@ -431,6 +431,7 @@ public partial class BitCarousel : BitComponentBase
         {
             _autoPlayTimer.Elapsed -= AutoPlayTimerElapsed;
             _autoPlayTimer.Dispose();
+            _autoPlayTimer = null;
         }
 
         if (_dotnetObj is not null)
