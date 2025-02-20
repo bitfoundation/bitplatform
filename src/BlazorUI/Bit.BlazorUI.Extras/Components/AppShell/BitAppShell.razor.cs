@@ -90,7 +90,7 @@ public partial class BitAppShell : BitComponentBase
             await _js.BitAppShellInitScroll(_containerRef, _navManager.Uri);
         }
 
-        if (_locationChanged)
+        if (_locationChanged && firstRender is false)
         {
             _locationChanged = false;
             await _js.BitAppShellAfterRenderScroll(_navManager.Uri);
@@ -98,13 +98,16 @@ public partial class BitAppShell : BitComponentBase
     }
 
 
-    
+
     private void LocationChanged(object? sender, LocationChangedEventArgs args)
     {
         if (PersistScroll)
         {
-            _locationChanged = true;
-            _ = _js.BitAppShellLocationChangedScroll(_navManager.Uri);
+            if (IsRendered)
+            {
+                _locationChanged = true;
+                _ = _js.BitAppShellLocationChangedScroll(_navManager.Uri);
+            }
         }
         else if (AutoGoToTop)
         {
