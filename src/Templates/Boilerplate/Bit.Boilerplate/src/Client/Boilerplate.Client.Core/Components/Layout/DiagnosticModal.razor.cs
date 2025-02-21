@@ -158,14 +158,6 @@ public partial class DiagnosticModal
 
             resultBuilder.AppendLine();
 
-            resultBuilder.AppendLine(string.Join(Environment.NewLine, AssemblyLoadContext.Default.Assemblies
-                .Where(asm => asm.GetName().Name?.Contains("Boilerplate") is true)
-                .SelectMany(asm => asm.GetCustomAttributes<AssemblyMetadataAttribute>())
-                .Select(metadata => $"{metadata.Key}: {metadata.Value}")
-                .Distinct()));
-
-            resultBuilder.AppendLine();
-
             resultBuilder.AppendLine($"Env version: {Environment.Version}");
             resultBuilder.AppendLine($"64 bit process: {Environment.Is64BitProcess}");
         }
