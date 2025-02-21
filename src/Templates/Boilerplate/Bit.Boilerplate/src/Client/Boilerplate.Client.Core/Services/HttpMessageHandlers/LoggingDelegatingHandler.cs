@@ -11,16 +11,18 @@ internal class LoggingDelegatingHandler(ILogger<HttpClient> logger, HttpMessageH
         logger.LogInformation("Sending HTTP request {Method} {Uri}", request.Method, HttpUtility.UrlDecode(request.RequestUri?.ToString()));
         request.Options.Set(new(RequestOptionNames.LogLevel), LogLevel.Warning);
         request.Options.Set(new(RequestOptionNames.LogScopeData), new Dictionary<string, object?>());
+        var logScopeData = (Dictionary<string, object?>)request.Options.GetValueOrDefault(RequestOptionNames.LogScopeData)!;
 
         var stopwatch = Stopwatch.StartNew();
         try
         {
-            return await base.SendAsync(request, cancellationToken);
+            var response = await base.SendAsync(request, cancellationToken);
+            logScopeData["HttpVersion"] = response.Version;
+            return response;
         }
         finally
         {
             var logLevel = (LogLevel)request.Options.GetValueOrDefault(RequestOptionNames.LogLevel)!;
-            var logScopeData = (Dictionary<string, object?>)request.Options.GetValueOrDefault(RequestOptionNames.LogScopeData)!;
 
             using var scope = logger.BeginScope(logScopeData);
             logger.Log(logLevel, "Received HTTP response for {Uri} after {Duration}ms",
