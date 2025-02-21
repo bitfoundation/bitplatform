@@ -89,14 +89,14 @@ public partial class BitColorPicker : BitComponentBase
     public string? Rgba => FormattableString.Invariant($"rgba({_color.R},{_color.G},{_color.B},{_color.A})");
     public (double Hue, double Saturation, double Value) Hsv => _color.Hsv;
 
-    [JSInvokable(nameof(HandlePointerUp))]
-    public void HandlePointerUp(MouseEventArgs e)
+    [JSInvokable(nameof(_HandlePointerUp))]
+    public void _HandlePointerUp(MouseEventArgs e)
     {
         _saturationPickerPointerDown = false;
     }
 
-    [JSInvokable(nameof(HandlePointerMove))]
-    public async Task HandlePointerMove(MouseEventArgs e)
+    [JSInvokable(nameof(_HandlePointerMove))]
+    public async Task _HandlePointerMove(MouseEventArgs e)
     {
         if (_saturationPickerPointerDown is false) return;
 
@@ -122,7 +122,7 @@ public partial class BitColorPicker : BitComponentBase
 
         if (firstRender is false) return;
 
-        _abortControllerId = await _js.BitColorPickerSetup(_dotnetObj, nameof(HandlePointerUp), nameof(HandlePointerMove));
+        _abortControllerId = await _js.BitColorPickerSetup(_dotnetObj, nameof(_HandlePointerUp), nameof(_HandlePointerMove));
 
         await SetSaturationPickerThumbPositionAsync();
     }

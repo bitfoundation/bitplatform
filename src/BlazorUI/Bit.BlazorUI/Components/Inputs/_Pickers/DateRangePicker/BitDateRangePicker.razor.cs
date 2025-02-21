@@ -2072,6 +2072,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         _cancellationTokenSource?.Dispose();
         OnValueChanged -= HandleOnValueChanged;
 
+        //_dotnetObj?.Dispose(); // it is getting disposed in the following js call:
+
         try
         {
             await _js.BitCalloutClearCallout(_calloutId);

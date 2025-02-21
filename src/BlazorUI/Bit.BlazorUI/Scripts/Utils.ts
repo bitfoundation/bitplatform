@@ -52,7 +52,7 @@
             }
         }
 
-        public static getBoundingClientRect(element: HTMLElement): Partial<DOMRect> {
+        public static getBoundingClientRect(element: HTMLElement | undefined): Partial<DOMRect> {
             if (!element) return {};
 
             try {

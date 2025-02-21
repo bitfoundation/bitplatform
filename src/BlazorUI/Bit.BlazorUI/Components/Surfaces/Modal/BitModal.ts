@@ -60,10 +60,11 @@
             if (!listeners) return;
 
             const dragElement = document.querySelector(dragElementSelector)! as HTMLElement;
-
-            dragElement.removeEventListener('pointerdown', listeners['pointerdown']);
-            dragElement.style.cursor = '';
-            dragElement.classList.remove('bit-mdl-nta');
+            if (dragElement) {
+                dragElement.removeEventListener('pointerdown', listeners['pointerdown']);
+                dragElement.style.cursor = '';
+                dragElement.classList.remove('bit-mdl-nta');
+            }
 
             document.removeEventListener('pointermove', listeners['pointermove']);
 

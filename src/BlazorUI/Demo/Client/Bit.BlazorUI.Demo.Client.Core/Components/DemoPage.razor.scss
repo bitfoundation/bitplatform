@@ -29,6 +29,10 @@
         border-style: $bit-shape-border-style;
         border-radius: $bit-shape-border-radius;
         border-color: $bit-color-border-tertiary;
+
+        @include lt-lg {
+            width: 100%;
+        }
     }
 }
 

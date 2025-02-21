@@ -24,7 +24,9 @@
             element.style.height = height + 'px';
         };
 
-        public static resetPaneDimensions(element: HTMLElement) {
+        public static resetPaneDimensions(element: HTMLElement | undefined) {
+            if (!element || !element.style) return;
+
             element.style.width = '';
             element.style.height = '';
         };

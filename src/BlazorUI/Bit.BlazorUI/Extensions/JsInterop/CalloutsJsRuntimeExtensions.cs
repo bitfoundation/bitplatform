@@ -2,6 +2,7 @@
 
 namespace Bit.BlazorUI;
 
+[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
 internal static class CalloutsJsRuntimeExtensions
 {
     internal static ValueTask<bool> BitCalloutToggleCallout<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
@@ -22,7 +23,7 @@ internal static class CalloutsJsRuntimeExtensions
         bool setCalloutWidth,
         int maxWidth = 0) where T : class
     {
-        return jsRuntime.Invoke<bool>("BitBlazorUI.Callouts.toggle",
+        return jsRuntime.FastInvoke<bool>("BitBlazorUI.Callouts.toggle",
                                       dotnetObj,
                                       componentId,
                                       component,
@@ -42,6 +43,6 @@ internal static class CalloutsJsRuntimeExtensions
 
     internal static ValueTask BitCalloutClearCallout(this IJSRuntime jsRuntime, string calloutId)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Callouts.clear", calloutId);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Callouts.clear", calloutId);
     }
 }

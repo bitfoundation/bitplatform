@@ -2,6 +2,7 @@
 
 namespace Bit.BlazorUI;
 
+[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
 internal static class BitFileUploadJsRuntimeExtensions
 {
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitFileInfo))]
@@ -13,7 +14,7 @@ internal static class BitFileUploadJsRuntimeExtensions
                                                                      string uploadAddress,
                                                                      IReadOnlyDictionary<string, string> uploadRequestHttpHeaders)
     {
-        return jsRuntime.Invoke<BitFileInfo[]>("BitBlazorUI.FileUpload.setup", id, dotnetObjectReference, element, append, uploadAddress, uploadRequestHttpHeaders);
+        return jsRuntime.FastInvoke<BitFileInfo[]>("BitBlazorUI.FileUpload.setup", id, dotnetObjectReference, element, append, uploadAddress, uploadRequestHttpHeaders);
     }
 
     internal static ValueTask BitFileUploadUpload(this IJSRuntime jsRuntime,
@@ -24,34 +25,34 @@ internal static class BitFileUploadJsRuntimeExtensions
                                                        string? uploadUrl,
                                                        IReadOnlyDictionary<string, string>? httpHeaders)
     {
-        return (httpHeaders is null ? jsRuntime.InvokeVoid("BitBlazorUI.FileUpload.upload", id, from, to, index, uploadUrl)
-                                    : jsRuntime.InvokeVoid("BitBlazorUI.FileUpload.upload", id, from, to, index, uploadUrl, httpHeaders));
+        return (httpHeaders is null ? jsRuntime.FastInvokeVoid("BitBlazorUI.FileUpload.upload", id, from, to, index, uploadUrl)
+                                    : jsRuntime.FastInvokeVoid("BitBlazorUI.FileUpload.upload", id, from, to, index, uploadUrl, httpHeaders));
     }
 
     internal static ValueTask BitFileUploadPause(this IJSRuntime jsRuntime, string id, int index = -1)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.FileUpload.pause", id, index);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.FileUpload.pause", id, index);
     }
 
     internal static ValueTask<IJSObjectReference> BitFileUploadSetupDragDrop(this IJSRuntime jsRuntime,
                                                                                   ElementReference dragDropZoneElement,
                                                                                   ElementReference inputFileElement)
     {
-        return jsRuntime.Invoke<IJSObjectReference>("BitBlazorUI.FileUpload.setupDragDrop", dragDropZoneElement, inputFileElement);
+        return jsRuntime.FastInvoke<IJSObjectReference>("BitBlazorUI.FileUpload.setupDragDrop", dragDropZoneElement, inputFileElement);
     }
 
     internal static ValueTask BitFileUploadBrowse(this IJSRuntime jsRuntime, ElementReference inputFileElement)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.FileUpload.browse", inputFileElement);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.FileUpload.browse", inputFileElement);
     }
 
     internal static ValueTask BitFileUploadClear(this IJSRuntime jsRuntime, string id)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.FileUpload.clear", id);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.FileUpload.clear", id);
     }
 
     internal static ValueTask BitFileUploadReset(this IJSRuntime jsRuntime, string id, ElementReference inputFileElement)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.FileUpload.reset", id, inputFileElement);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.FileUpload.reset", id, inputFileElement);
     }
 }

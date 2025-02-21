@@ -2,10 +2,11 @@
 
 namespace Bit.BlazorUI;
 
+[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
 internal static class SwipesJsRuntimeExtensions
 {
     internal static ValueTask BitSwipesSetup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
-        this IJSRuntime js,
+        this IJSRuntime jsRuntime,
              string id,
              decimal trigger,
              BitPanelPosition position,
@@ -14,11 +15,11 @@ internal static class SwipesJsRuntimeExtensions
              DotNetObjectReference<T>? dotnetObj,
              bool isResponsive = true) where T : class
     {
-        return js.InvokeVoid("BitBlazorUI.Swipes.setup", id, trigger, position, isRtl, orientationLock, dotnetObj, isResponsive);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Swipes.setup", id, trigger, position, isRtl, orientationLock, dotnetObj, isResponsive);
     }
 
     internal static ValueTask BitSwipesDispose(this IJSRuntime jsRuntime, string id)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Swipes.dispose", id);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Swipes.dispose", id);
     }
 }

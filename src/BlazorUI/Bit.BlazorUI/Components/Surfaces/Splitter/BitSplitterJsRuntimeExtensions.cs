@@ -1,39 +1,42 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
 
+namespace Bit.BlazorUI;
+
+[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
 internal static class BitSplitterJsRuntimeExtensions
 {
-    internal static ValueTask BitSplitterResetPaneDimensions(this IJSRuntime js, ElementReference element)
+    internal static ValueTask BitSplitterResetPaneDimensions(this IJSRuntime jsRuntime, ElementReference element)
     {
-        return js.InvokeVoid("BitBlazorUI.Splitter.resetPaneDimensions", element);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Splitter.resetPaneDimensions", element);
     }
 
-    internal static ValueTask<double> BitSplitterGetSplitterWidth(this IJSRuntime js, ElementReference element)
+    internal static ValueTask<double> BitSplitterGetSplitterWidth(this IJSRuntime jsRuntime, ElementReference element)
     {
-        return js.Invoke<double>("BitBlazorUI.Splitter.getSplitterWidth", element);
+        return jsRuntime.FastInvoke<double>("BitBlazorUI.Splitter.getSplitterWidth", element);
     }
 
-    internal static ValueTask BitSplitterSetSplitterWidth(this IJSRuntime js, ElementReference element, double value)
+    internal static ValueTask BitSplitterSetSplitterWidth(this IJSRuntime jsRuntime, ElementReference element, double value)
     {
-        return js.InvokeVoid("BitBlazorUI.Splitter.setSplitterWidth", element, value);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Splitter.setSplitterWidth", element, value);
     }
 
-    internal static ValueTask<double> BitSplitterGetSplitterHeight(this IJSRuntime js, ElementReference element)
+    internal static ValueTask<double> BitSplitterGetSplitterHeight(this IJSRuntime jsRuntime, ElementReference element)
     {
-        return js.Invoke<double>("BitBlazorUI.Splitter.getSplitterHeight", element);
+        return jsRuntime.FastInvoke<double>("BitBlazorUI.Splitter.getSplitterHeight", element);
     }
 
-    internal static ValueTask BitSplitterSetSplitterHeight(this IJSRuntime js, ElementReference element, double value)
+    internal static ValueTask BitSplitterSetSplitterHeight(this IJSRuntime jsRuntime, ElementReference element, double value)
     {
-        return js.InvokeVoid("BitBlazorUI.Splitter.setSplitterHeight", element, value);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Splitter.setSplitterHeight", element, value);
     }
 
-    internal static ValueTask BitSplitterHandleSplitterDragging(this IJSRuntime js, TouchEventArgs e)
+    internal static ValueTask BitSplitterHandleSplitterDragging(this IJSRuntime jsRuntime, TouchEventArgs e)
     {
-        return js.InvokeVoid("BitBlazorUI.Splitter.handleSplitterDragging", e);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Splitter.handleSplitterDragging", e);
     }
 
-    internal static ValueTask BitSplitterHandleSplitterDraggingEnd(this IJSRuntime js)
+    internal static ValueTask BitSplitterHandleSplitterDraggingEnd(this IJSRuntime jsRuntime)
     {
-        return js.InvokeVoid("BitBlazorUI.Splitter.handleSplitterDraggingEnd");
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Splitter.handleSplitterDraggingEnd");
     }
 }
