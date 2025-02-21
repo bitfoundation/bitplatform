@@ -6,7 +6,6 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// BitAppShell is an advanced container to handle the nuances of a cross-platform layout.
 /// </summary>
-[SuppressMessage("Trimming", "IL2110:Field with 'DynamicallyAccessedMembersAttribute' is accessed via reflection. Trimmer can't guarantee availability of the requirements of the field.", Justification = "<Pending>")]
 public partial class BitAppShell : BitComponentBase
 {
     private bool _locationChanged;
@@ -54,7 +53,6 @@ public partial class BitAppShell : BitComponentBase
     /// <summary>
     /// Scrolls the main container to top.
     /// </summary>
-    [RequiresUnreferencedCode("Calls Bit.BlazorUI.IJSRuntimeExtensions.FastInvokeVoid(String, params Object[])")]
     public async Task GoToTop(BitScrollBehavior? behavior = null)
     {
         await _js.BitExtrasGoToTop(_containerRef, behavior);
