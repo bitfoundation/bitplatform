@@ -44,6 +44,7 @@
         <MauiUseDefaultAotProfile Condition="Exists('custom.aprof')">false</MauiUseDefaultAotProfile>
         <!--/+:msbuild-conditional:noEmit -->
         <AndroidStripILAfterAOT Condition=" '$(offlineDb)' == 'false'">true</AndroidStripILAfterAOT>
+        <RunAOTCompilation Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">false</RunAOTCompilation>
         <!--/-:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
