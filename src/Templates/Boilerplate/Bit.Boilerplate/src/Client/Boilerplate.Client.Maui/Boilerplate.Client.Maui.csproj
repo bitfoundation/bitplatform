@@ -60,8 +60,8 @@
         <!-- https://learn.microsoft.com/en-us/dotnet/maui/macios/interpreter -->
         <MtouchInterpreter Condition=" '$(offlineDb)' == 'false'">-all</MtouchInterpreter>
         <UseInterpreter Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">True</UseInterpreter>
-        <PublishAot Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">false</PublishAot>
-        <PublishAot Condition=" '$(offlineDb)' == 'false' ">true</PublishAot>
+        <RunAOTCompilation Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">false</RunAOTCompilation>
+        <RunAOTCompilation Condition=" '$(offlineDb)' == 'false' ">true</RunAOTCompilation>
         <!--/-:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
@@ -77,8 +77,8 @@
         <!--/+:msbuild-conditional:noEmit -->
         <MtouchInterpreter Condition=" '$(offlineDb)' == 'false'">-all</MtouchInterpreter>
         <UseInterpreter Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">True</UseInterpreter>
-        <PublishAot Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">false</PublishAot>
-        <PublishAot Condition=" '$(offlineDb)' == 'false' ">true</PublishAot>
+        <RunAOTCompilation Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">false</RunAOTCompilation>
+        <RunAOTCompilation Condition=" '$(offlineDb)' == 'false' ">true</RunAOTCompilation>
         <!--/-:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
