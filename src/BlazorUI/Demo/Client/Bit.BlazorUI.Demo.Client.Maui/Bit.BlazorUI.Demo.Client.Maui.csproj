@@ -40,7 +40,7 @@
         <EnableSGenConc>True</EnableSGenConc>
         <PublishAot>true</PublishAot>
         <MtouchInterpreter>-all</MtouchInterpreter>
-        <TrimMode>partial</TrimMode>
+        <PublishTrimmed>false</PublishTrimmed>
     </PropertyGroup>
 
     <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
