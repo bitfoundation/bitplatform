@@ -37,6 +37,7 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Configuration)' == 'Release'">
+        <PublishAot>true</PublishAot>
         <EnableSGenConc>True</EnableSGenConc>
         <MtouchInterpreter>-all</MtouchInterpreter>
     </PropertyGroup>
