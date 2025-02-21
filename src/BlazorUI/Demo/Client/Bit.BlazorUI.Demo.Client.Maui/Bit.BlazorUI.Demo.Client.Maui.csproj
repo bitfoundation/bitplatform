@@ -32,12 +32,16 @@
         <AndroidPackageFormat>apk</AndroidPackageFormat>
         <RuntimeIdentifiers Condition="'$(AndroidPackageFormat)' == 'apk'">android-arm</RuntimeIdentifiers>
         <PublishAot>true</PublishAot>
+        <OptimizationPreference>Speed</OptimizationPreference>
+        <PublishAotUsingRuntimePack>true</PublishAotUsingRuntimePack>
         <MauiUseDefaultAotProfile Condition="Exists('custom.aprof')">false</MauiUseDefaultAotProfile>
         <AndroidStripILAfterAOT>true</AndroidStripILAfterAOT>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Configuration)' == 'Release'">
         <PublishAot>true</PublishAot>
+        <OptimizationPreference>Speed</OptimizationPreference>
+        <PublishAotUsingRuntimePack>true</PublishAotUsingRuntimePack>
         <EnableSGenConc>True</EnableSGenConc>
         <MtouchInterpreter>-all</MtouchInterpreter>
     </PropertyGroup>
