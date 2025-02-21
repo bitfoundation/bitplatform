@@ -61,8 +61,6 @@
         <MtouchInterpreter Condition=" '$(offlineDb)' == 'false'">-all</MtouchInterpreter>
         <UseInterpreter Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">True</UseInterpreter>
         <PublishAot Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">false</PublishAot>
-        <PublishAot Condition=" '$(offlineDb)' == 'false' ">true</PublishAot>
-        <TrimMode>partial</TrimMode>
         <!--/-:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
@@ -79,8 +77,6 @@
         <MtouchInterpreter Condition=" '$(offlineDb)' == 'false'">-all</MtouchInterpreter>
         <UseInterpreter Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">True</UseInterpreter>
         <PublishAot Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">false</PublishAot>
-        <PublishAot Condition=" '$(offlineDb)' == 'false' ">true</PublishAot>
-        <TrimMode>partial</TrimMode>
         <!--/-:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
