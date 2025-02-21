@@ -3,7 +3,6 @@
     <PropertyGroup>
         <LangVersion>13.0</LangVersion>
         <Nullable>enable</Nullable>
-        <IsAotCompatible>true</IsAotCompatible>
         <ImplicitUsings>enable</ImplicitUsings>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <NoWarn>$(NoWarn);CS1998;CS1591;BL0007</NoWarn>
