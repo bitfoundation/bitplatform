@@ -1,5 +1,7 @@
-﻿using Boilerplate.Shared.Controllers.Diagnostics;
+﻿using System.Runtime.CompilerServices;
+using Boilerplate.Shared.Controllers.Diagnostics;
 using Boilerplate.Client.Core.Services.DiagnosticLog;
+using System.Diagnostics;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -141,6 +143,16 @@ public partial class DiagnosticModal
     private async Task CallDiagnosticsApi()
     {
         var result = await diagnosticsController.PerformDiagnostics(CurrentCancellationToken);
+        try
+        {
+            result += $"{Environment.NewLine}IsDynamicCodeCompiled: {RuntimeFeature.IsDynamicCodeCompiled}";
+            result += $"{Environment.NewLine}IsDynamicCodeSupported: {RuntimeFeature.IsDynamicCodeSupported}";
+            result += $"{Environment.NewLine}Is Aot: {new StackTrace(false).GetFrame(0)?.GetMethod() is null}";
+        }
+        catch (Exception exp)
+        {
+            result += $"{Environment.NewLine}Error while getting RuntimeFeature: {exp.Message}";
+        }
         await messageBoxService.Show("Diagnostics Result", result);
     }
 
