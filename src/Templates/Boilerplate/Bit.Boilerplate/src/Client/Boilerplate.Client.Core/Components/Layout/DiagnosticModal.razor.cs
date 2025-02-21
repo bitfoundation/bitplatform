@@ -1,7 +1,10 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Reflection;
+using System.Diagnostics;
+using System.Runtime.Loader;
+using System.Runtime.CompilerServices;
 using Boilerplate.Shared.Controllers.Diagnostics;
 using Boilerplate.Client.Core.Services.DiagnosticLog;
-using System.Diagnostics;
+using System.Text;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -142,18 +145,36 @@ public partial class DiagnosticModal
 
     private async Task CallDiagnosticsApi()
     {
-        var result = await diagnosticsController.PerformDiagnostics(CurrentCancellationToken);
+        var serverResult = await diagnosticsController.PerformDiagnostics(CurrentCancellationToken);
+
+        StringBuilder resultBuilder = new(serverResult);
         try
         {
-            result += $"{Environment.NewLine}IsDynamicCodeCompiled: {RuntimeFeature.IsDynamicCodeCompiled}";
-            result += $"{Environment.NewLine}IsDynamicCodeSupported: {RuntimeFeature.IsDynamicCodeSupported}";
-            result += $"{Environment.NewLine}Is Aot: {new StackTrace(false).GetFrame(0)?.GetMethod() is null}";
+            resultBuilder.AppendLine();
+
+            resultBuilder.AppendLine($"IsDynamicCodeCompiled: {RuntimeFeature.IsDynamicCodeCompiled}");
+            resultBuilder.AppendLine($"IsDynamicCodeSupported: {RuntimeFeature.IsDynamicCodeSupported}");
+            resultBuilder.AppendLine($"Is Aot: {new StackTrace(false).GetFrame(0)?.GetMethod() is null}");
+
+            resultBuilder.AppendLine();
+
+            resultBuilder.AppendLine(string.Join(Environment.NewLine, AssemblyLoadContext.Default.Assemblies
+                .Where(asm => asm.GetName().Name?.Contains("Boilerplate") is true)
+                .SelectMany(asm => asm.GetCustomAttributes<AssemblyMetadataAttribute>())
+                .Select(metadata => $"{metadata.Key}: {metadata.Value}")
+                .Distinct()));
+
+            resultBuilder.AppendLine();
+
+            resultBuilder.AppendLine($"Env version: {Environment.Version}");
+            resultBuilder.AppendLine($"64 bit process: {Environment.Is64BitProcess}");
         }
         catch (Exception exp)
         {
-            result += $"{Environment.NewLine}Error while getting RuntimeFeature: {exp.Message}";
+            serverResult += $"{Environment.NewLine}Error while getting diagnostic data: {exp.Message}";
         }
-        await messageBoxService.Show("Diagnostics Result", result);
+
+        await messageBoxService.Show("Diagnostics Result", resultBuilder.ToString());
     }
 
     private async Task CallGC()
