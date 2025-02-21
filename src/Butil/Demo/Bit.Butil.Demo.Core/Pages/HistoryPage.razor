@@ -114,7 +114,7 @@
 
     private async Task GetScrollRestoration()
     {
-        await console.Log("history.scrollRestoration =", await history.GetScrollRestoration());
+        await console.Log("history.scrollRestoration =", (await history.GetScrollRestoration()).ToString());
     }
 
     private async Task GetState()
