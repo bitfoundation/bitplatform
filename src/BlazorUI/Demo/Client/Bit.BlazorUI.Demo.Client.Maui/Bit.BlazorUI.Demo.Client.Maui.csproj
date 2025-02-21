@@ -24,6 +24,7 @@
 
         <!-- Required for C# Hot Reload -->
         <UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>
+
         <NoWarn>$(NoWarn);ClassWithoutModifierAnalyzer</NoWarn>
     </PropertyGroup>
 
