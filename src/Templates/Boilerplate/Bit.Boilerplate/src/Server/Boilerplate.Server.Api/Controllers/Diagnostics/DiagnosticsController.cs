@@ -30,6 +30,8 @@ public partial class DiagnosticsController : AppControllerBase, IDiagnosticsCont
 
         result.AppendLine($"Trace => {Request.HttpContext.TraceIdentifier}");
 
+        result.AppendLine($"Http version: {HttpContext.Request.Protocol}");
+
         var isAuthenticated = User.IsAuthenticated();
         Guid? userSessionId = null;
         UserSession? userSession = null;
