@@ -64,7 +64,7 @@
         <PublishAot Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">false</PublishAot>
         <PublishAot Condition=" '$(offlineDb)' == 'false' ">true</PublishAot>
         <OptimizationPreference>Speed</OptimizationPreference>
-        <PublishAotUsingRuntimePack>true</PublishAotUsingRuntimePack>
+        <PublishAotUsingRuntimePack>false</PublishAotUsingRuntimePack>
         <!--/-:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
