@@ -17,7 +17,10 @@ internal class LoggingDelegatingHandler(ILogger<HttpClient> logger, HttpMessageH
         try
         {
             var response = await base.SendAsync(request, cancellationToken);
-            logScopeData["HttpVersion"] = response.Version;
+            if (AppPlatform.IsBrowser is false)
+            {
+                logScopeData["HttpVersion"] = response.Version;
+            }
             return response;
         }
         finally
