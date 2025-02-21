@@ -489,12 +489,18 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private async Task HandleOnAmClick()
     {
+        if (ReadOnly) return;
+        if (IsEnabled is false) return;
+
         _hour %= 12;  // "12:-- am" is "00:--" in 24h
         await UpdateCurrentValue();
     }
 
     private async Task HandleOnPmClick()
     {
+        if (ReadOnly) return;
+        if (IsEnabled is false) return;
+
         if (_hour <= 12) // "12:-- pm" is "12:--" in 24h
         {
             _hour += 12;
@@ -544,7 +550,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private async Task UpdateTime(MouseEventArgs e)
     {
-        if (IsEnabled is false || InvalidValueBinding()) return;
+        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
 
         var rect = await _js.BitUtilsGetBoundingClientRect(_clockRef);
         var radius = rect.Width / 2;

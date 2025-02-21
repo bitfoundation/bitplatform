@@ -10,7 +10,7 @@ public static class ExceptionExtensions
     {
         foreach (var item in data)
         {
-            exception.Data.Add(item.Key, item.Value);
+            exception.Data[item.Key] = item.Value;
         }
 
         return exception;
@@ -22,7 +22,7 @@ public static class ExceptionExtensions
     public static TException WithData<TException>(this TException exception, string key, object? value)
         where TException : Exception
     {
-        exception.Data.Add(key, value);
+        exception.Data[key] = value;
 
         return exception;
     }

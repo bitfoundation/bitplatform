@@ -130,7 +130,7 @@ public static partial class IClientCoreServiceCollectionExtensions
         }, loggingOptions: options => configuration.GetRequiredSection("Logging:ApplicationInsightsLoggerProvider").Bind(options));
         //#endif
 
-        services.AddTypedHttpClients();
+        services.AddTypedHttpClients(); // See Boilerplate.Shared/Controllers/Readme.md
 
         //#if (signalR == true)
         services.AddScoped<IRetryPolicy, SignalRInfiniteRetryPolicy>();

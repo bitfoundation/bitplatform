@@ -64,7 +64,7 @@ public class HttpClientProxySourceGenerator : ISourceGenerator
 
                 var encodeStringRouteParameters = string.Join(Environment.NewLine, action.Parameters
                     .Where(p => SymbolEqualityComparer.Default.Equals(p.Type , stringType))
-                    .Select(p => $"{p.Name} = Uri.EscapeDataString(Uri.UnescapeDataString({p.Name}));"));
+                    .Select(p => $"{p.Name} = Uri.EscapeDataString(Uri.UnescapeDataString({p.Name} ?? string.Empty));"));
 
                 generatedMethods.AppendLine($@"
         public async {action.ReturnType.ToDisplayString()} {action.Method.Name}({parameters})
