@@ -1,13 +1,12 @@
-﻿using System;
+﻿using System.Text;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
 
 namespace Bit.BlazorUI;
 
 /// <summary>
 /// The OTP input is used for MFA procedure of authenticating users by a one-time password.
 /// </summary>
-public partial class BitOtpInput : BitTextInputBase<string?>
+public partial class BitOtpInput : BitInputBase<string?>
 {
     private string _labelId = default!;
     private string?[] _inputIds = default!;
@@ -21,6 +20,11 @@ public partial class BitOtpInput : BitTextInputBase<string?>
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
+
+    /// <summary>
+    /// If true, the first input is auto focused.
+    /// </summary>
+    [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
     /// Enables auto shifting the indexes while clearing the inputs using Delete or Backspace.
@@ -185,14 +189,14 @@ public partial class BitOtpInput : BitTextInputBase<string?>
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-        {
-            InputElement = _inputRefs[0];
-        }
-
         await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender is false || IsEnabled is false) return;
+
+        if (AutoFocus)
+        {
+            await _inputRefs[0].FocusAsync();
+        }
 
         foreach (var inputRef in _inputRefs)
         {
@@ -281,31 +285,11 @@ public partial class BitOtpInput : BitTextInputBase<string?>
 
     private async Task HandleOnInput(ChangeEventArgs e, int index)
     {
-        await ChangeInputValue(e, index, true);
-
-        await HandleOnStringValueInputAsync(new ChangeEventArgs() { Value = string.Join(string.Empty, _inputValues) });
-
-        await OnInput.InvokeAsync((e, index));
-        await CallOnFill();
-    }
-
-    private async Task HandleOnChange(ChangeEventArgs e, int index)
-    {
-        await ChangeInputValue(e, index, false);
-
-        await HandleOnStringValueChangeAsync(new ChangeEventArgs() { Value = string.Join(string.Empty, _inputValues) });
-    }
-
-    private async Task ChangeInputValue(ChangeEventArgs e, int index, bool changeFocus)
-    {
         var oldValue = _inputValues[index];
         var newValue = e.Value?.ToString()?.Trim() ?? string.Empty;
 
-        if (changeFocus)
-        {
-            await Task.Delay(1); // waiting for input default behavior before setting a new value.
-        }
         _inputValues[index] = string.Empty;
+        await Task.Delay(1); // waiting for input default behavior before setting a new value.
 
         if (IsEnabled is false || InvalidValueBinding())
         {
@@ -329,7 +313,7 @@ public partial class BitOtpInput : BitTextInputBase<string?>
                 {
                     _inputValues[index] = diff;
                     int nextIndex = index + 1;
-                    if (changeFocus && nextIndex < Length) await _inputRefs[nextIndex].FocusAsync();
+                    if (nextIndex < Length) await _inputRefs[nextIndex].FocusAsync();
                 }
             }
         }
@@ -337,6 +321,11 @@ public partial class BitOtpInput : BitTextInputBase<string?>
         {
             _inputValues[index] = null;
         }
+
+        CurrentValueAsString = string.Join(string.Empty, _inputValues);
+
+        await OnInput.InvokeAsync((e, index));
+        await CallOnFill();
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e, int index)
@@ -417,9 +406,10 @@ public partial class BitOtpInput : BitTextInputBase<string?>
 
     private async Task CallOnFill()
     {
-        if (Length != CurrentValue?.Length) return;
-
-        await OnFill.InvokeAsync(CurrentValue);
+        if (Length == CurrentValue?.Length)
+        {
+            await OnFill.InvokeAsync(CurrentValue);
+        }
     }
 
     private static string DiffValues(string oldValue, string newValue)
