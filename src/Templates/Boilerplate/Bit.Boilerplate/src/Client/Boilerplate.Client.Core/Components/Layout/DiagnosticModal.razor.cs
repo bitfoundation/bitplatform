@@ -164,7 +164,11 @@ public partial class DiagnosticModal
 
             resultBuilder.AppendLine();
 
-            resultBuilder.AppendLine($"GC: {string.Join(Environment.NewLine, GC.GetConfigurationVariables().Select(i => $"{i.Key}: {i.Value}"))}");
+            if(GC.GetConfigurationVariables().TryGetValue("ServerGC", out var serverGC))
+                resultBuilder.AppendLine($"ServerGC: {serverGC}");
+
+            if (GC.GetConfigurationVariables().TryGetValue("ConcurrentGC", out var concurrentGC))
+                resultBuilder.AppendLine($"ConcurrentGC: {concurrentGC}");
         }
         catch (Exception exp)
         {
