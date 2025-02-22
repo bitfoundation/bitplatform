@@ -238,9 +238,9 @@ public partial class BitModal : BitComponentBase
 
     private void OnSetIsOpen()
     {
-        if (IsOpen) return;
+        if (IsOpen || IsRendered is false) return;
 
-        _ = ModalParameters.OnDismiss.InvokeAsync();
+        _ = ModalParameters.OnDismiss.InvokeAsync().ContinueWith(_ => InvokeAsync(StateHasChanged));
     }
 
 
