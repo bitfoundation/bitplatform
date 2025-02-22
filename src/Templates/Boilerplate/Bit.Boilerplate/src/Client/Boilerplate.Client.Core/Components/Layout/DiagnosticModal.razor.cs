@@ -162,9 +162,9 @@ public partial class DiagnosticModal
             resultBuilder.AppendLine($"64 bit process: {Environment.Is64BitProcess}");
             resultBuilder.AppendLine($"Privilaged process: {Environment.IsPrivilegedProcess}");
 
+            resultBuilder.AppendLine();
+
             resultBuilder.AppendLine($"GC: {string.Join(Environment.NewLine, GC.GetConfigurationVariables().Select(i => $"{i.Key}: {i.Value}"))}");
-
-
         }
         catch (Exception exp)
         {
