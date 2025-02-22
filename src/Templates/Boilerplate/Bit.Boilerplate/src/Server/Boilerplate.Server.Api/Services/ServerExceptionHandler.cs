@@ -9,7 +9,6 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
 {
     [AutoInject] private IHostEnvironment env = default!;
     [AutoInject] private ILogger<ServerExceptionHandler> logger = default!;
-    [AutoInject] private IWebHostEnvironment webHostEnvironment = default!;
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
 
