@@ -23,7 +23,7 @@ public partial class RetryDelegatingHandler(HttpMessageHandler handler)
             }
             catch (Exception exp) when (exp is not KnownException || exp is ServerConnectionException) // If the exception is either unknown or a server connection issue, let's retry once more.
             {
-                if (HasNoRetryPolicyAttribute(request))
+                if (HasNoRetryPolicyAttribute(request) || AppEnvironment.IsDev())
                     throw;
                 retryCount++;
                 logScopeData["RetryCount"] = retryCount;

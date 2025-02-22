@@ -17,79 +17,89 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
         bool serverCommunicationSuccess = false;
         var isInternalRequest = request.RequestUri!.ToString().StartsWith(absoluteServerAddress, StringComparison.InvariantCultureIgnoreCase);
 
+        string? requestIdValue = null;
+
         try
         {
-            var response = await base.SendAsync(request, cancellationToken);
-            if (response.Headers.TryGetValues("Request-Id", out var requestId))
+            try
             {
-                logScopeData["RequestId"] = requestId.First();
-            }
-            //#if (cloudflare == true)
-            if (response.Headers.TryGetValues("Cf-Cache-Status", out var cfCacheStatus)) // Cloudflare cache status
-            {
-                logScopeData["Cf-Cache-Status"] = cfCacheStatus.First();
-            }
-            //#endif
-            if (response.Headers.TryGetValues("Age", out var age)) // ASP.NET Core Output Caching
-            {
-                logScopeData["Age"] = age.First();
-            }
-            if (response.Headers.TryGetValues("App-Cache-Response", out var appCacheResponse))
-            {
-                logScopeData["App-Cache-Response"] = appCacheResponse.First();
-            }
-            logScopeData["HttpStatusCode"] = response.StatusCode;
-
-            serverCommunicationSuccess = true;
-
-            if (isInternalRequest && /* The following exception handling mechanism applies exclusively to responses from our own server. */
-                response.IsSuccessStatusCode is false &&
-                response.Content.Headers.ContentType?.MediaType?.Contains("application/json", StringComparison.InvariantCultureIgnoreCase) is true)
-            {
-                var problemDetails = (await response.Content.ReadFromJsonAsync(jsonSerializerOptions.GetTypeInfo<AppProblemDetails>(), cancellationToken))!;
-
-                Type exceptionType = typeof(KnownException).Assembly.GetType(problemDetails.Type!) ?? typeof(UnknownException);
-
-                var args = new List<object?> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(problemDetails.Key!.ToString()!, problemDetails.Title!) : (object?)problemDetails.Title! };
-
-                Exception exp = exceptionType == typeof(ResourceValidationException)
-                                    ? new ResourceValidationException(problemDetails.Title!, problemDetails.Payload)
-                                    : (Exception)Activator.CreateInstance(exceptionType, args.ToArray())!;
-
-                foreach (var data in problemDetails.Extensions)
+                var response = await base.SendAsync(request, cancellationToken);
+                if (response.Headers.TryGetValues("Request-Id", out var requestId))
                 {
-                    exp.Data[data.Key] = data.Value;
+                    logScopeData["RequestId"] = requestIdValue = requestId.First();
+                }
+                //#if (cloudflare == true)
+                if (response.Headers.TryGetValues("Cf-Cache-Status", out var cfCacheStatus)) // Cloudflare cache status
+                {
+                    logScopeData["Cf-Cache-Status"] = cfCacheStatus.First();
+                }
+                //#endif
+                if (response.Headers.TryGetValues("Age", out var age)) // ASP.NET Core Output Caching
+                {
+                    logScopeData["Age"] = age.First();
+                }
+                if (response.Headers.TryGetValues("App-Cache-Response", out var appCacheResponse))
+                {
+                    logScopeData["App-Cache-Response"] = appCacheResponse.First();
+                }
+                logScopeData["HttpStatusCode"] = response.StatusCode;
+
+                serverCommunicationSuccess = true;
+
+                if (isInternalRequest && /* The following exception handling mechanism applies exclusively to responses from our own server. */
+                    response.IsSuccessStatusCode is false &&
+                    response.Content.Headers.ContentType?.MediaType?.Contains("application/json", StringComparison.InvariantCultureIgnoreCase) is true)
+                {
+                    var problemDetails = (await response.Content.ReadFromJsonAsync(jsonSerializerOptions.GetTypeInfo<AppProblemDetails>(), cancellationToken))!;
+
+                    Type exceptionType = typeof(KnownException).Assembly.GetType(problemDetails.Type!) ?? typeof(UnknownException);
+
+                    var args = new List<object?> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(problemDetails.Key!.ToString()!, problemDetails.Title!) : (object?)problemDetails.Title! };
+
+                    Exception exp = exceptionType == typeof(ResourceValidationException)
+                                        ? new ResourceValidationException(problemDetails.Title!, problemDetails.Payload)
+                                        : (Exception)Activator.CreateInstance(exceptionType, args.ToArray())!;
+
+                    foreach (var data in problemDetails.Extensions)
+                    {
+                        exp.Data[data.Key] = data.Value;
+                    }
+
+                    throw exp;
                 }
 
-                throw exp;
-            }
+                if (response.StatusCode is HttpStatusCode.Unauthorized)
+                {
+                    throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
+                }
+                if (response.StatusCode is HttpStatusCode.Forbidden)
+                {
+                    throw new ForbiddenException(localizer[nameof(AppStrings.ForbiddenException)]);
+                }
 
-            if (response.StatusCode is HttpStatusCode.Unauthorized)
+                response.EnsureSuccessStatusCode();
+
+                request.Options.Set(new(RequestOptionNames.LogLevel), LogLevel.Information);
+
+                return response;
+            }
+            catch (Exception exp) when ((exp is HttpRequestException && serverCommunicationSuccess is false) || IsServerConnectionException(exp))
             {
-                throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
+                serverCommunicationSuccess = false; // Let's treat the server communication as failed if an exception is caught here.
+                throw new ServerConnectionException(localizer[nameof(AppStrings.ServerConnectionException)], exp);
             }
-            if (response.StatusCode is HttpStatusCode.Forbidden)
+            finally
             {
-                throw new ForbiddenException(localizer[nameof(AppStrings.ForbiddenException)]);
+                if (isInternalRequest)
+                {
+                    pubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, serverCommunicationSuccess);
+                }
             }
-
-            response.EnsureSuccessStatusCode();
-
-            request.Options.Set(new(RequestOptionNames.LogLevel), LogLevel.Information);
-
-            return response;
         }
-        catch (Exception exp) when ((exp is HttpRequestException && serverCommunicationSuccess is false) || IsServerConnectionException(exp))
+        catch (Exception exp)
         {
-            serverCommunicationSuccess = false; // Let's treat the server communication as failed if an exception is caught here.
-            throw new ServerConnectionException(localizer[nameof(AppStrings.ServerConnectionException)], exp);
-        }
-        finally
-        {
-            if (isInternalRequest)
-            {
-                pubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, serverCommunicationSuccess);
-            }
+            exp.WithData("RequestId", requestIdValue ?? "?"); // Connect the exception to its corresponding request id, if one exists.
+            throw;
         }
     }
 

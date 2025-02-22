@@ -1,10 +1,8 @@
-﻿using System.Reflection;
+﻿using System.Text;
 using System.Diagnostics;
-using System.Runtime.Loader;
 using System.Runtime.CompilerServices;
 using Boilerplate.Shared.Controllers.Diagnostics;
 using Boilerplate.Client.Core.Services.DiagnosticLog;
-using System.Text;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -54,6 +52,7 @@ public partial class AppDiagnosticModal
     {
         searchText = text;
         FilterLogs();
+        StateHasChanged();
     }
 
     private void HandleOnLogLevelFilter(IEnumerable<LogLevel> logLevels)
@@ -76,7 +75,9 @@ public partial class AppDiagnosticModal
 
     private void FilterLogs()
     {
-        filteredLogs = allLogs.WhereIf(string.IsNullOrEmpty(searchText) is false, l => l.Message?.Contains(searchText!, StringComparison.InvariantCultureIgnoreCase) is true || l.Category?.Contains(searchText!, StringComparison.InvariantCultureIgnoreCase) is true)
+        filteredLogs = allLogs.WhereIf(string.IsNullOrEmpty(searchText) is false, l => l.Message?.Contains(searchText!, StringComparison.InvariantCultureIgnoreCase) is true ||
+                                                                                       l.Category?.Contains(searchText!, StringComparison.InvariantCultureIgnoreCase) is true ||
+                                                                                       l.State?.Any(s => s.Key.Contains(searchText!) || s.Value?.Contains(searchText!, StringComparison.InvariantCultureIgnoreCase) is true) is true)
                               .Where(l => filterLogLevels.Contains(l.Level))
                               .Where(l => filterCategories.Contains(l.Category));
         if (isDescendingSort)
