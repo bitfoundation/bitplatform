@@ -52,6 +52,7 @@ public partial class AppDiagnosticModal
     {
         searchText = text;
         FilterLogs();
+        StateHasChanged();
     }
 
     private void HandleOnLogLevelFilter(IEnumerable<LogLevel> logLevels)

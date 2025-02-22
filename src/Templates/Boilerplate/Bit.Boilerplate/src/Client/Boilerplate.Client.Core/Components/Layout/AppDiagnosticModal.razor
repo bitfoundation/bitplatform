@@ -1,7 +1,11 @@
 ﻿@inherits AppComponentBase
 
 <div>
-    <BitModal @bind-IsOpen="isOpen" FullSize Class="modal" Styles="@(new() { Content = "overflow:auto" })">
+    <BitModal @bind-IsOpen="isOpen"
+              FullSize
+              Class="modal"
+              Styles="@(new() { Content = "overflow:auto" })"
+              OnDismiss="() => HandleOnSearchChange(null)">
         <BitStack FillContent Class="container">
             <BitStack Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
                 <BitText Typography="BitTypography.H3">Diagnostic</BitText>
@@ -49,7 +53,7 @@
                 <BitButton IconOnly
                            OnClick="HandleOnSortClick"
                            Color="BitColor.SecondaryBackground"
-                           IconName="@(isDescendingSort ? BitIconName.SortDown : BitIconName.SortUp)" />
+                           IconName="@(isDescendingSort? BitIconName.SortDown: BitIconName.SortUp)" />
                 <BitButton OnClick="ClearLogs"
                            Color="BitColor.Info"
                            Variant="BitVariant.Outline">Clear logs</BitButton>
