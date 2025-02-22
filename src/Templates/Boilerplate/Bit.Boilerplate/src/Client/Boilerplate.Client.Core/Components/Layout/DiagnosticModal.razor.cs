@@ -1,5 +1,10 @@
-﻿using Boilerplate.Shared.Controllers.Diagnostics;
+﻿using System.Reflection;
+using System.Diagnostics;
+using System.Runtime.Loader;
+using System.Runtime.CompilerServices;
+using Boilerplate.Shared.Controllers.Diagnostics;
 using Boilerplate.Client.Core.Services.DiagnosticLog;
+using System.Text;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -140,8 +145,37 @@ public partial class DiagnosticModal
 
     private async Task CallDiagnosticsApi()
     {
-        var result = await diagnosticsController.PerformDiagnostics(CurrentCancellationToken);
-        await messageBoxService.Show("Diagnostics Result", result);
+        var serverResult = await diagnosticsController.PerformDiagnostics(CurrentCancellationToken);
+
+        StringBuilder resultBuilder = new(serverResult);
+        try
+        {
+            resultBuilder.AppendLine();
+
+            resultBuilder.AppendLine($"IsDynamicCodeCompiled: {RuntimeFeature.IsDynamicCodeCompiled}");
+            resultBuilder.AppendLine($"IsDynamicCodeSupported: {RuntimeFeature.IsDynamicCodeSupported}");
+            resultBuilder.AppendLine($"Is Aot: {new StackTrace(false).GetFrame(0)?.GetMethod() is null}"); // No 100% Guaranteed way to detect AOT.
+
+            resultBuilder.AppendLine();
+
+            resultBuilder.AppendLine($"Env version: {Environment.Version}");
+            resultBuilder.AppendLine($"64 bit process: {Environment.Is64BitProcess}");
+            resultBuilder.AppendLine($"Privilaged process: {Environment.IsPrivilegedProcess}");
+
+            resultBuilder.AppendLine();
+
+            if (GC.GetConfigurationVariables().TryGetValue("ServerGC", out var serverGC))
+                resultBuilder.AppendLine($"ServerGC: {serverGC}");
+
+            if (GC.GetConfigurationVariables().TryGetValue("ConcurrentGC", out var concurrentGC))
+                resultBuilder.AppendLine($"ConcurrentGC: {concurrentGC}");
+        }
+        catch (Exception exp)
+        {
+            resultBuilder.AppendLine($"{Environment.NewLine}Error while getting diagnostic data: {exp.Message}");
+        }
+
+        await messageBoxService.Show("Diagnostics Result", resultBuilder.ToString());
     }
 
     private async Task CallGC()

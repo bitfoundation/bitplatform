@@ -64,7 +64,9 @@ public partial class DiagnosticsController : AppControllerBase, IDiagnosticsCont
 
         result.AppendLine($"Culture => C: {CultureInfo.CurrentCulture.Name}, UC: {CultureInfo.CurrentUICulture.Name}");
 
-        foreach (var header in Request.Headers)
+        result.AppendLine();
+
+        foreach (var header in Request.Headers.OrderBy(h => h.Key))
         {
             result.AppendLine($"{header.Key}: {header.Value}");
         }
