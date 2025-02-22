@@ -330,7 +330,40 @@
         </BitModal>
     </DemoSection>
 
-    <DemoSection Title="Style & Class" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoSection Title="Events" RazorCode="@example8RazorCode" CSharpCode="@example8CsharpCode" Id="example8">
+        <div>Discover different events available in the BitModal component.</div><br />
+        <BitButton OnClick="() => isEventsOpen = true">Open Modal</BitButton>
+        <br /><br />
+        <div>Dismissed? [@isDismissed]</div>
+        <br />
+        <div>Overlay clicked? [@isOverlayClicked]</div>
+        <BitModal @bind-IsOpen="isEventsOpen"
+                  Draggable
+                  OnDismiss="HandleOnDismiss"
+                  OnOverlayClick="HandleOnOverlayClick">
+            <div class="modal-header">
+                <span class="modal-header-text">Events modal</span>
+                <BitButton Title="Close"
+                           Variant="BitVariant.Text"
+                           OnClick="() => isEventsOpen = false"
+                           IconName="@BitIconName.ChromeClose" />
+            </div>
+            <div class="modal-body">
+                <p>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                    amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                    sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                    turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                    ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                    Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                    Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                    efficitur.
+                </p>
+            </div>
+        </BitModal>
+    </DemoSection>
+
+    <DemoSection Title="Style & Class" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>
             <div>Using css related parameter users can further customize the modal based on their needs.</div>
             <br /><br />
@@ -422,7 +455,7 @@
         </div>
     </DemoSection>
 
-    <DemoSection Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoSection Title="RTL" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>Use BitModal in right-to-left (RTL).</div><br />
         <BitButton Dir="BitDir.Rtl" OnClick="() => isOpenRtl = true">باز کردن مُدال</BitButton>
         <BitModal Dir="BitDir.Rtl" @bind-IsOpen="isOpenRtl">
