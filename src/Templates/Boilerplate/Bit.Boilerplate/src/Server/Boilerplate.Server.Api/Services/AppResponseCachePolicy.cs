@@ -35,7 +35,7 @@ public class AppResponseCachePolicy(ServerApiSettings settings) : IOutputCachePo
             responseCacheAtt.SharedMaxAge = responseCacheAtt.MaxAge;
         }
 
-        var browserCacheTtl = responseCacheAtt.MaxAge;
+        var clientCacheTtl = responseCacheAtt.MaxAge;
         var edgeCacheTtl = responseCacheAtt.SharedMaxAge;
         var outputCacheTtl = responseCacheAtt.SharedMaxAge;
 
@@ -59,10 +59,10 @@ public class AppResponseCachePolicy(ServerApiSettings settings) : IOutputCachePo
         if (context.HttpContext.IsBlazorPageContext() && CultureInfoManager.MultilingualEnabled)
         {
             // Note: Currently, we are not keeping the current culture in the URL. 
-            // The edge and browser caches do not support such variations, although the output cache does. 
-            // As a temporary solution, browser and edge caching are disabled for pre-rendered pages.
+            // The edge and client caches do not support such variations, although the output cache does. 
+            // As a temporary solution, client and edge caching are disabled for pre-rendered pages.
             edgeCacheTtl = -1;
-            browserCacheTtl = -1;
+            clientCacheTtl = -1;
         }
         //#endif
 
@@ -72,13 +72,13 @@ public class AppResponseCachePolicy(ServerApiSettings settings) : IOutputCachePo
             outputCacheTtl = -1;
         }
 
-        // Edge - Browser Cache
-        if (browserCacheTtl != -1 || edgeCacheTtl != -1)
+        // Edge - Client Cache
+        if (clientCacheTtl != -1 || edgeCacheTtl != -1)
         {
             context.HttpContext.Response.GetTypedHeaders().CacheControl = new()
             {
                 Public = edgeCacheTtl > 0,
-                MaxAge = browserCacheTtl == -1 ? null : TimeSpan.FromSeconds(browserCacheTtl),
+                MaxAge = clientCacheTtl == -1 ? null : TimeSpan.FromSeconds(clientCacheTtl),
                 SharedMaxAge = edgeCacheTtl == -1 ? null : TimeSpan.FromSeconds(edgeCacheTtl)
             };
             context.HttpContext.Response.Headers.Remove("Pragma");
@@ -96,7 +96,7 @@ public class AppResponseCachePolicy(ServerApiSettings settings) : IOutputCachePo
         //#if (api == "Integrated")
         context.HttpContext.Items["AppResponseCachePolicy__DisableStreamPrerendering"] = outputCacheTtl > 0 || edgeCacheTtl > 0;
         //#endif
-        context.HttpContext.Response.Headers.TryAdd("App-Cache-Response", FormattableString.Invariant($"Output:{outputCacheTtl},Edge:{edgeCacheTtl},Browser:{browserCacheTtl}"));
+        context.HttpContext.Response.Headers.TryAdd("App-Cache-Response", FormattableString.Invariant($"Output:{outputCacheTtl},Edge:{edgeCacheTtl},Client:{clientCacheTtl}"));
     }
 
     /// <summary>

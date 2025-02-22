@@ -588,9 +588,8 @@ public partial class BitTimePickerDemo
 
     private readonly string example1RazorCode = @"
 <BitTimePicker Label=""Basic TimePicker"" />
-
 <BitTimePicker Label=""Disabled"" IsEnabled=""false"" />
-
+<BitTimePicker Label=""Required"" Required />
 <BitTimePicker Label=""Placeholder"" Placeholder=""Select a time..."" />";
 
     private readonly string example2RazorCode = @"

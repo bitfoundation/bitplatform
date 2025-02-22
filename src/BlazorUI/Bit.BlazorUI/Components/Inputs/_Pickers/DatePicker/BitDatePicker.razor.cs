@@ -7,7 +7,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// A BitDatePicker offers a drop-down control that’s optimized for picking a single date from a calendar view where contextual information like the day of the week or fullness of the calendar is important.
 /// </summary>
-public partial class BitDatePicker : BitInputBase<DateTimeOffset?>, IAsyncDisposable
+public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 {
     private const int MAX_WIDTH = 470;
     private const int DEFAULT_WEEK_COUNT = 6;
@@ -15,7 +15,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>, IAsyncDispos
 
 
 
-    private bool _disposed;
     private bool _hasFocus;
     private int _currentDay;
     private int _currentYear;
@@ -1524,15 +1523,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>, IAsyncDispos
 
 
 
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await DisposeAsync(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual async ValueTask DisposeAsync(bool disposing)
-    {
-        if (_disposed || disposing is false) return;
+        if (IsDisposed || disposing is false) return;
 
         _cancellationTokenSource?.Dispose();
         OnValueChanged -= HandleOnValueChanged;
@@ -1544,6 +1537,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>, IAsyncDispos
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
-        _disposed = true;
+        await base.DisposeAsync(disposing);
     }
 }

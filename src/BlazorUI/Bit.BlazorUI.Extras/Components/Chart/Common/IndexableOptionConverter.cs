@@ -16,23 +16,27 @@ internal class IndexableOptionConverter : JsonConverter
         return objectType.GetGenericTypeDefinition() == typeof(BitChartIndexableOption<>);
     }
 
-    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+    public override object ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
     {
         throw new NotImplementedException();
     }
 
-    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "<Pending>")]
+    public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
     {
+        ArgumentNullException.ThrowIfNull(value);
+
         // get the correct property using reflection
         var prop = value.GetType().GetProperty(BitChartIndexableOption<object>.PropertyName, BindingFlags.Instance | BindingFlags.NonPublic);
+
 
         try
         {
             // if the indexable option was not initialized, this will throw an InvalidOperationException wrapped in a TargetInvocationException
-            object toWrite = prop.GetValue(value);
+            var toWrite = prop?.GetValue(value);
 
             // write the property
-            JToken.FromObject(toWrite).WriteTo(writer);
+            JToken.FromObject(toWrite!).WriteTo(writer);
         }
         catch (TargetInvocationException oex)
             when (oex.InnerException is InvalidOperationException iex)

@@ -5,9 +5,8 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// A menu button is a menu item that displays a word or phrase that the user can click to initiate an operation.
 /// </summary>
-public partial class BitMenuButton<TItem> : BitComponentBase, IAsyncDisposable where TItem : class
+public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 {
-    private bool _disposed;
     private List<TItem> _items = [];
     private BitButtonType _buttonType;
     private string _calloutId = default!;
@@ -82,7 +81,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IAsyncDisposable w
     /// Determines the opening state of the callout.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(ToggleCallout))]
+    [CallOnSet(nameof(OnSetIsOpen))]
     [ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
     public bool IsOpen { get; set; }
 
@@ -94,7 +93,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IAsyncDisposable w
     /// <summary>
     /// The custom template content to render each item.
     /// </summary>
-    [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
+    [Parameter] public RenderFragment<TItem?>? ItemTemplate { get; set; }
 
     /// <summary>
     /// Names and selectors of the custom input type properties.
@@ -587,6 +586,11 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IAsyncDisposable w
                                 true);
     }
 
+    private void OnSetIsOpen()
+    {
+        _ = ToggleCallout();
+    }
+
     private string GetItemKey(TItem item, string defaultKey)
     {
         return GetKey(item) ?? $"{UniqueId}-{defaultKey}";
@@ -594,15 +598,9 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IAsyncDisposable w
 
 
 
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await DisposeAsync(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual async ValueTask DisposeAsync(bool disposing)
-    {
-        if (_disposed || disposing is false) return;
+        if (IsDisposed || disposing is false) return;
 
         if (_dotnetObj is not null)
         {
@@ -615,6 +613,6 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IAsyncDisposable w
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
-        _disposed = true;
+        await base.DisposeAsync(disposing);
     }
 }

@@ -40,6 +40,8 @@ public static partial class ISharedServiceCollectionExtensions
 
         services.AddLocalization();
 
+        services.AddMemoryCache();
+
         return services;
     }
 

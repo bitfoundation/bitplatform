@@ -25,7 +25,7 @@
             var template = GetTemplate(SelectedItem);
             if (template is not null)
             {
-                @template(SelectedItem)
+                @template(SelectedItem!)
             }
             else if (ItemTemplate is not null)
             {

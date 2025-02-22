@@ -15,7 +15,7 @@ internal static class EventsJsInterop
         object? options = null,
         bool preventDefault = false,
         bool stopPropagation = false)
-        => await js.FastInvokeVoidAsync("BitButil.events.addEventListener",
+        => await js.InvokeVoid("BitButil.events.addEventListener",
             elementName,
             eventName,
             methodName,
@@ -30,7 +30,7 @@ internal static class EventsJsInterop
         string eventName,
         Guid[] listenerIds,
         object? options = null)
-        => await js.FastInvokeVoidAsync("BitButil.events.removeEventListener",
+        => await js.InvokeVoid("BitButil.events.removeEventListener",
             elementName,
             eventName,
             listenerIds,

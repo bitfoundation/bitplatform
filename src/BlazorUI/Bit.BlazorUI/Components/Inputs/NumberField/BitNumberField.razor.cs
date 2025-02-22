@@ -302,16 +302,6 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
              : "0";
     }
 
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _continuousChangeValueCts?.Dispose();
-        }
-
-        base.Dispose(disposing);
-    }
-
 
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
@@ -594,5 +584,16 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         return (_typeOfValue == typeof(decimal) || _typeOfValue == typeof(double) || _typeOfValue == typeof(float))
             ? "decimal"
             : "numeric";
+    }
+
+
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return;
+
+        _continuousChangeValueCts?.Dispose();
+
+        await base.DisposeAsync(disposing);
     }
 }

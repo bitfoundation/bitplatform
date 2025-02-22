@@ -5,9 +5,8 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// A navigation pane (Nav) provides links to the main areas of an app or site.
 /// </summary>
-public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem : class
+public partial class BitNav<TItem> : BitComponentBase where TItem : class
 {
-    private bool _disposed;
     internal TItem? _currentItem;
     internal List<TItem> _items = [];
     private IEnumerable<TItem>? _oldItems;
@@ -956,21 +955,15 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
 
 
 
-    public void Dispose()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing is false || _disposed) return;
+        if (IsDisposed || disposing is false) return;
 
         if (Mode == BitNavMode.Automatic)
         {
             _navigationManager.LocationChanged -= OnLocationChanged;
         }
 
-        _disposed = true;
+        await base.DisposeAsync(disposing);
     }
 }

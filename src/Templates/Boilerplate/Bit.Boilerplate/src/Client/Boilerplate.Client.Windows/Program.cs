@@ -98,7 +98,7 @@ public partial class Program
         blazorWebView.WebView.DefaultBackgroundColor = ColorTranslator.FromHtml("#0D2960");
 
         //#if (appInsights == true)
-        blazorWebView.RootComponents.Add(new RootComponent("head::after", typeof(BlazorApplicationInsights.ApplicationInsightsInit), null));
+        blazorWebView.RootComponents.Add(new RootComponent("head::after", typeof(BlazorApplicationInsights.ApplicationInsightsInit), new Dictionary<string, object?> { { nameof(BlazorApplicationInsights.ApplicationInsightsInit.IsWasmStandalone), true } }));
         //#endif
 
         blazorWebView.RootComponents.Add(new RootComponent("#app-container", typeof(Routes), null));
@@ -116,15 +116,20 @@ public partial class Program
                 settings.IsZoomControlEnabled = false;
                 settings.AreBrowserAcceleratorKeysEnabled = false;
             }
-            blazorWebView.WebView.NavigationCompleted += async delegate
-            {
-                await blazorWebView.WebView.ExecuteScriptAsync("Blazor.start()");
-            };
+            _ = StartBlazor(blazorWebView);
         };
 
         form.Controls.Add(blazorWebView);
 
         Application.Run(form);
+    }
+
+    static async Task StartBlazor(BlazorWebView blazorWebView)
+    {
+        while (await blazorWebView.WebView.ExecuteScriptAsync("Blazor.start()") is "null")
+        {
+            await Task.Yield();
+        }
     }
 
     private static void LogException(object? error, string reportedBy)

@@ -9,11 +9,11 @@ public interface IProductViewController : IAppController
     Task<List<ProductDto>> Get(CancellationToken cancellationToken) => default!;
 
     [HttpGet("{id}")]
-    Task<ProductDto> Get(Guid id, CancellationToken cancellationToken);
+    Task<ProductDto> Get(int id, CancellationToken cancellationToken);
 
     [HttpGet("{id}")]
-    Task<List<ProductDto>> GetSimilar(Guid id, CancellationToken cancellationToken) => default!;
+    Task<List<ProductDto>> GetSimilar(int id, CancellationToken cancellationToken) => default!;
 
     [HttpGet("{id}")]
-    Task<List<ProductDto>> GetSiblings(Guid id, CancellationToken cancellationToken) => default!;
+    Task<List<ProductDto>> GetSiblings(int id, CancellationToken cancellationToken) => default!;
 }

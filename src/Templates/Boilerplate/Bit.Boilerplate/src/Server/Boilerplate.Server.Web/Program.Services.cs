@@ -46,7 +46,6 @@ public static partial class Program
                 var builder = policy.AddPolicy<AppResponseCachePolicy>();
             }, excludeDefaultPolicy: true);
         });
-        services.AddMemoryCache();
 
         services.AddHttpContextAccessor();
 
@@ -123,7 +122,8 @@ public static partial class Program
 
             var httpClient = new HttpClient(sp.GetRequiredService<HttpMessageHandler>())
             {
-                BaseAddress = serverAddress
+                BaseAddress = serverAddress,
+                DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrLower
             };
 
             var forwardedHeadersOptions = sp.GetRequiredService<ServerWebSettings>().ForwardedHeaders;
@@ -156,6 +156,15 @@ public static partial class Program
             httpClient.DefaultRequestHeaders.Add("X-Origin", currentRequest.GetBaseUrl().ToString());
 
             return httpClient;
+        });
+        services.AddKeyedScoped<HttpMessageHandler, SocketsHttpHandler>("PrimaryHttpMessageHandler", (sp, key) => new()
+        {
+            EnableMultipleHttp2Connections = true,
+            //+:cnd:noEmit
+            //#if (framework == 'net9.0')
+            EnableMultipleHttp3Connections = true
+            //#endif
+            //-:cnd:noEmit
         });
 
         services.AddRazorComponents()

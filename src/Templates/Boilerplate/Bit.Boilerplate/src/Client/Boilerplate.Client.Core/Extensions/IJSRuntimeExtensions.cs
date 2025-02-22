@@ -10,7 +10,7 @@ public static partial class IJSRuntimeExtensions
 {
     public static ValueTask<string> GetTimeZone(this IJSRuntime jsRuntime)
     {
-        return jsRuntime.InvokeAsync<string>("App.getTimeZone");
+        return jsRuntime.FastInvokeAsync<string>("App.getTimeZone");
     }
 
     //#if (captcha == "reCaptcha")

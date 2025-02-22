@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Bit.BlazorUI;
@@ -13,16 +14,17 @@ internal class ObjectEnumFactory
     private static readonly ConcurrentDictionary<Type, ObjectEnumFactory> _factorySingletons = new ConcurrentDictionary<Type, ObjectEnumFactory>();
 
     private readonly Dictionary<Type, ConstructorInfo> _constructorCache;
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.NonPublicConstructors)]
     private readonly Type _enumType;
 
     /// <summary>
     /// Gets (and creates if needed) the singleton-factory for this <paramref name="enumType"/>.
     /// </summary>
     /// <param name="enumType">The <see cref="BitChartObjectEnum"/>-type whose factory to get.</param>
-    public static ObjectEnumFactory GetFactory(Type enumType)
+    [SuppressMessage("Trimming", "IL2067:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The parameter of method does not have matching annotations.", Justification = "<Pending>")]
+    public static ObjectEnumFactory GetFactory(Type? enumType)
     {
-        if (enumType == null)
-            throw new ArgumentNullException(nameof(enumType));
+        ArgumentNullException.ThrowIfNull(enumType);
 
         if (!typeof(BitChartObjectEnum).IsAssignableFrom(enumType))
             throw new ArgumentException($"The type '{enumType.FullName}' doesn't inherit from '{typeof(BitChartObjectEnum).FullName}'");
@@ -30,7 +32,7 @@ internal class ObjectEnumFactory
         return _factorySingletons.GetOrAdd(enumType, type => new ObjectEnumFactory(type));
     }
 
-    private ObjectEnumFactory(Type enumType)
+    private ObjectEnumFactory([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.NonPublicConstructors)] Type enumType)
     {
         // checks omitted because the constructor is non-public
         _enumType = enumType;
@@ -58,9 +60,9 @@ internal class ObjectEnumFactory
     /// <param name="valueType">The <see cref="Type"/> of <paramref name="value"/>.</param>
     public BitChartObjectEnum Create(object value, Type valueType)
     {
-        if (_constructorCache.TryGetValue(valueType, out ConstructorInfo constructor))
+        if (_constructorCache.TryGetValue(valueType, out ConstructorInfo? constructor))
         {
-            return (BitChartObjectEnum)constructor.Invoke(new[] { value });
+            return (BitChartObjectEnum)constructor.Invoke([value]);
         }
 
         if (BitChartObjectEnum.IsSupportedSerializationType(valueType))

@@ -17,7 +17,7 @@ public class ButilStorage(IJSRuntime js, string storageName)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/length">https://developer.mozilla.org/en-US/docs/Web/API/Storage/length</see>
     /// </summary>
     public async Task<int> GetLength()
-        => await js.FastInvokeAsync<int>("BitButil.storage.length", storageName);
+        => await js.Invoke<int>("BitButil.storage.length", storageName);
 
     /// <summary>
     /// When passed a number n, this method will return the name of the nth key in the storage.
@@ -25,7 +25,7 @@ public class ButilStorage(IJSRuntime js, string storageName)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/key">https://developer.mozilla.org/en-US/docs/Web/API/Storage/key</see>
     /// </summary>
     public async Task<string?> GetKey(int index)
-        => await js.FastInvokeAsync<string?>("BitButil.storage.key", storageName, index);
+        => await js.Invoke<string?>("BitButil.storage.key", storageName, index);
 
     /// <summary>
     /// When passed a key name, will return that key's value.
@@ -33,7 +33,7 @@ public class ButilStorage(IJSRuntime js, string storageName)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/getItem">https://developer.mozilla.org/en-US/docs/Web/API/Storage/getItem</see>
     /// </summary>
     public async Task<string?> GetItem(string? key)
-        => await js.FastInvokeAsync<string?>("BitButil.storage.getItem", storageName, key);
+        => await js.Invoke<string?>("BitButil.storage.getItem", storageName, key);
 
     /// <summary>
     /// When passed a key name and value, will add that key to the storage, or update that key's value if it already exists.
@@ -41,7 +41,7 @@ public class ButilStorage(IJSRuntime js, string storageName)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/setItem">https://developer.mozilla.org/en-US/docs/Web/API/Storage/setItem</see>
     /// </summary>
     public async Task SetItem(string? key, string? value)
-        => await js.FastInvokeVoidAsync("BitButil.storage.setItem", storageName, key, value);
+        => await js.InvokeVoid("BitButil.storage.setItem", storageName, key, value);
 
     /// <summary>
     /// When passed a key name, will remove that key from the storage.
@@ -49,7 +49,7 @@ public class ButilStorage(IJSRuntime js, string storageName)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/removeItem">https://developer.mozilla.org/en-US/docs/Web/API/Storage/removeItem</see>
     /// </summary>
     public async Task RemoveItem(string? key)
-        => await js.FastInvokeVoidAsync("BitButil.storage.removeItem", storageName, key);
+        => await js.InvokeVoid("BitButil.storage.removeItem", storageName, key);
 
     /// <summary>
     /// When invoked, will empty all keys out of the storage.
@@ -57,5 +57,5 @@ public class ButilStorage(IJSRuntime js, string storageName)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/clear">https://developer.mozilla.org/en-US/docs/Web/API/Storage/clear</see>
     /// </summary>
     public async Task Clear()
-        => await js.FastInvokeVoidAsync("BitButil.storage.clear", storageName);
+        => await js.InvokeVoid("BitButil.storage.clear", storageName);
 }

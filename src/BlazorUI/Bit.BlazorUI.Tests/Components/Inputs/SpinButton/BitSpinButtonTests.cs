@@ -138,7 +138,7 @@ public class BitSpinButtonTests : BunitTestContext
         var input = component.Find("input");
         var inputValue = input.GetAttribute("value");
 
-        Assert.IsTrue(inputValue.Contains(suffix));
+        Assert.IsTrue(inputValue?.Contains(suffix));
     }
 
     [DataTestMethod,

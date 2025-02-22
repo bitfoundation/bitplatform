@@ -7,20 +7,26 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Components/Layout/AppDiagnosticModal.razor.css",
+        "inputFile": "Components/Layout/AppDiagnosticModal.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Components/Layout/AppErrorBoundary.razor.css",
         "inputFile": "Components/Layout/AppErrorBoundary.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Layout/AuthorizedHeader.razor.css",
-        "inputFile": "Components/Layout/AuthorizedHeader.razor.scss",
+        "outputFile": "Components/Layout/AppSnackBar.razor.css",
+        "inputFile": "Components/Layout/AppSnackBar.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Layout/DiagnosticModal.razor.css",
-        "inputFile": "Components/Layout/DiagnosticModal.razor.scss",
+        "outputFile": "Components/Layout/AuthorizedHeader.razor.css",
+        "inputFile": "Components/Layout/AuthorizedHeader.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -37,20 +43,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Layout/Modal.razor.css",
-        "inputFile": "Components/Layout/Modal.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Components/Layout/NavBar.razor.css",
         "inputFile": "Components/Layout/NavBar.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Components/Layout/NavPanel.razor.css",
-        "inputFile": "Components/Layout/NavPanel.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -90,7 +84,7 @@
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
-    //#if (module == "Sample")
+    //#if (module == "Sales")
     {
         "outputFile": "Components/Pages/ProductPage.razor.css",
         "inputFile": "Components/Pages/ProductPage.razor.scss",

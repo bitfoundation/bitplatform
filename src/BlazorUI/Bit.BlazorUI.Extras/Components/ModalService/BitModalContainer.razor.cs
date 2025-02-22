@@ -1,10 +1,10 @@
 ﻿using System.Collections.Concurrent;
-using System.Threading.Tasks;
 
 namespace Bit.BlazorUI;
 
 public partial class BitModalContainer : IDisposable
 {
+    private bool _disposed;
     private readonly List<BitModalReference> _modalRefs = [];
 
 
@@ -57,7 +57,17 @@ public partial class BitModalContainer : IDisposable
 
     public void Dispose()
     {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed || disposing is false) return;
+
         _modalService.OnAddModal -= OnModalAdd;
         _modalService.OnCloseModal -= OnCloseModal;
+
+        _disposed = true;
     }
 }

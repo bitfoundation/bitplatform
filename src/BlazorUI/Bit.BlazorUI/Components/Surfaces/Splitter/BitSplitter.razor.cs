@@ -112,10 +112,10 @@ public partial class BitSplitter : BitComponentBase
 
 
 
-    private async Task OnSetVertical()
+    private void OnSetVertical()
     {
-        await _js.BitSplitterResetPaneDimensions(_firstPanelRef);
-        await _js.BitSplitterResetPaneDimensions(_secondPanelRef);
+        _ = _js.BitSplitterResetPaneDimensions(_firstPanelRef);
+        _ = _js.BitSplitterResetPaneDimensions(_secondPanelRef);
     }
 
     private async Task OnDraggingStart(double position)

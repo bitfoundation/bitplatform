@@ -13,15 +13,15 @@ public class BitChartTimeAxis : BitChartCartesianAxis<BitChartTimeTicks>
     /// <summary>
     /// Gets or sets the distribution which controls the data distribution along the scale.
     /// </summary>
-    public BitChartTimeDistribution Distribution { get; set; }
+    public BitChartTimeDistribution? Distribution { get; set; }
 
     /// <summary>
     /// Gets or sets the bounds which control the scale boundary strategy (bypassed by min/max time options).
     /// </summary>
-    public BitChartScaleBound Bounds { get; set; }
+    public BitChartScaleBound? Bounds { get; set; }
 
     /// <summary>
     /// Gets or sets the configuration for time related options.
     /// </summary>
-    public BitChartTimeOptions Time { get; set; }
+    public BitChartTimeOptions? Time { get; set; }
 }

@@ -5,12 +5,8 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// A SwipeTrap is a component that traps swipe actions and triggers corresponding events.
 /// </summary>
-public partial class BitSwipeTrap : BitComponentBase, IAsyncDisposable
+public partial class BitSwipeTrap : BitComponentBase
 {
-    private bool _disposed;
-
-
-
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
@@ -116,15 +112,9 @@ public partial class BitSwipeTrap : BitComponentBase, IAsyncDisposable
 
 
 
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await DisposeAsync(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual async ValueTask DisposeAsync(bool disposing)
-    {
-        if (_disposed || disposing is false) return;
+        if (IsDisposed || disposing is false) return;
 
         try
         {
@@ -132,6 +122,6 @@ public partial class BitSwipeTrap : BitComponentBase, IAsyncDisposable
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
-        _disposed = true;
+        await base.DisposeAsync(disposing);
     }
 }

@@ -51,7 +51,7 @@ public class BitNavTests : BunitTestContext
 
         var bitNav = component.Find(".bit-nav");
 
-        Assert.IsTrue(bitNav.GetAttribute("aria-label").Equals(ariaLabel));
+        Assert.IsTrue(bitNav?.GetAttribute("aria-label")?.Equals(ariaLabel));
     }
 
     [DataTestMethod,

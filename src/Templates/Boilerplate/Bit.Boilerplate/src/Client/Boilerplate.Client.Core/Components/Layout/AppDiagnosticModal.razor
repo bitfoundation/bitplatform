@@ -65,6 +65,13 @@
                            OnClick="CallDiagnosticsApi"
                            Color="BitColor.SecondaryBackground"
                            IconName="@BitIconName.DiagnosticDataViewerApp" />
+                @if (AppPlatform.IsBrowser is false)
+                {
+                    <BitButton IconOnly
+                               OnClick="CallGC"
+                               Color="BitColor.SecondaryBackground"
+                               IconName="@BitIconName.RecycleBin" />
+                }
             </BitStack>
 
             <BitBasicList @ref="logStackRef"

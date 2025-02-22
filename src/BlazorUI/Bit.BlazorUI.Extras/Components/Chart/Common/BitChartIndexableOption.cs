@@ -13,14 +13,15 @@ public class BitChartIndexableOption<T> : IEquatable<BitChartIndexableOption<T>>
     internal const string PropertyName = nameof(BoxedValue);
 
     // for serialization, there has to be a cast to object anyway
-    internal object BoxedValue => IsIndexed ? (object)IndexedValues : SingleValue;
+    internal object? BoxedValue => IsIndexed ? IndexedValues : SingleValue;
 
-    private readonly T[] _indexedValues;
+    private readonly T? _singleValue;
+    private readonly T[]? _indexedValues;
 
     /// <summary>
     /// The indexed values represented by this instance.
     /// </summary>
-    public T[] IndexedValues
+    public T[]? IndexedValues
     {
         get
         {
@@ -31,12 +32,10 @@ public class BitChartIndexableOption<T> : IEquatable<BitChartIndexableOption<T>>
         }
     }
 
-    private readonly T _singleValue;
-
     /// <summary>
     /// The single value represented by this instance.
     /// </summary>
-    public T SingleValue
+    public T? SingleValue
     {
         get
         {
@@ -57,7 +56,7 @@ public class BitChartIndexableOption<T> : IEquatable<BitChartIndexableOption<T>>
     /// Creates a new instance of <see cref="BitChartIndexableOption{T}"/> which represents a single value.
     /// </summary>
     /// <param name="singleValue">The single value this <see cref="BitChartIndexableOption{T}"/> should represent.</param>
-    public BitChartIndexableOption(T singleValue)
+    public BitChartIndexableOption(T? singleValue)
     {
         _singleValue = singleValue != null ? singleValue : throw new ArgumentNullException(nameof(singleValue));
         IsIndexed = false;
@@ -67,7 +66,7 @@ public class BitChartIndexableOption<T> : IEquatable<BitChartIndexableOption<T>>
     /// Creates a new instance of <see cref="BitChartIndexableOption{T}"/> which represents an array of values.
     /// </summary>
     /// <param name="indexedValues">The array of values this <see cref="BitChartIndexableOption{T}"/> should represent.</param>
-    public BitChartIndexableOption(T[] indexedValues)
+    public BitChartIndexableOption(T[]? indexedValues)
     {
         _indexedValues = indexedValues ?? throw new ArgumentNullException(nameof(indexedValues));
         IsIndexed = true;
@@ -77,9 +76,9 @@ public class BitChartIndexableOption<T> : IEquatable<BitChartIndexableOption<T>>
     /// Implicitly wraps a single value of <typeparamref name="T"/> to a new instance of <see cref="BitChartIndexableOption{T}"/>.
     /// </summary>
     /// <param name="singleValue">The single value to wrap</param>
-    public static implicit operator BitChartIndexableOption<T>(T singleValue)
+    public static implicit operator BitChartIndexableOption<T>(T? singleValue)
     {
-        CheckIsNotIndexableOption(singleValue.GetType());
+        CheckIsNotIndexableOption(singleValue?.GetType());
 
         return new BitChartIndexableOption<T>(singleValue);
     }
@@ -88,15 +87,17 @@ public class BitChartIndexableOption<T> : IEquatable<BitChartIndexableOption<T>>
     /// Implicitly wraps an array of values of <typeparamref name="T"/> to a new instance of <see cref="BitChartIndexableOption{T}"/>.
     /// </summary>
     /// <param name="indexedValues">The array of values to wrap</param>
-    public static implicit operator BitChartIndexableOption<T>(T[] indexedValues)
+    public static implicit operator BitChartIndexableOption<T>(T[]? indexedValues)
     {
-        CheckIsNotIndexableOption(indexedValues.GetType().GetElementType());
+        CheckIsNotIndexableOption(indexedValues?.GetType().GetElementType());
 
         return new BitChartIndexableOption<T>(indexedValues);
     }
 
-    private static void CheckIsNotIndexableOption(Type type)
+    private static void CheckIsNotIndexableOption(Type? type)
     {
+        ArgumentNullException.ThrowIfNull(type);
+
         if (!type.IsGenericType) return;
         if (type.GetGenericTypeDefinition() == typeof(BitChartIndexableOption<>))
             throw new ArgumentException("You cannot use an indexable option inside an indexable option.");
@@ -107,13 +108,15 @@ public class BitChartIndexableOption<T> : IEquatable<BitChartIndexableOption<T>>
     /// </summary>
     /// <param name="other">The <see cref="BitChartIndexableOption{T}"/> to compare with.</param>
     /// <returns>true if the objects are considered equal; otherwise, false.</returns>
-    public bool Equals(BitChartIndexableOption<T> other)
+    public bool Equals(BitChartIndexableOption<T>? other)
     {
-        if (IsIndexed != other.IsIndexed) return false;
+        if (IsIndexed != other?.IsIndexed) return false;
 
         if (IsIndexed)
         {
-            if (IndexedValues == other.IndexedValues) return true;
+            if (IndexedValues == other?.IndexedValues) return true;
+
+            if (IndexedValues is null || other is null || other.IndexedValues is null) return false;
 
             return Enumerable.SequenceEqual(IndexedValues, other.IndexedValues);
         }
@@ -128,7 +131,7 @@ public class BitChartIndexableOption<T> : IEquatable<BitChartIndexableOption<T>>
     /// </summary>
     /// <param name="obj">The object to compare with.</param>
     /// <returns>true if the objects are considered equal; otherwise, false.</returns>
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         // an indexable option cannot store null
         if (obj == null) return false;
@@ -141,11 +144,11 @@ public class BitChartIndexableOption<T> : IEquatable<BitChartIndexableOption<T>>
         {
             if (IsIndexed)
             {
-                return IndexedValues.Equals(obj);
+                return IndexedValues?.Equals(obj) ?? false;
             }
             else
             {
-                return SingleValue.Equals(obj);
+                return SingleValue?.Equals(obj) ?? false;
             }
         }
     }
@@ -157,8 +160,8 @@ public class BitChartIndexableOption<T> : IEquatable<BitChartIndexableOption<T>>
     public override int GetHashCode()
     {
         var hashCode = -506568782;
-        hashCode = hashCode * -1521134295 + EqualityComparer<T[]>.Default.GetHashCode(_indexedValues);
-        hashCode = hashCode * -1521134295 + EqualityComparer<T>.Default.GetHashCode(_singleValue);
+        hashCode = hashCode * -1521134295 + EqualityComparer<T[]>.Default.GetHashCode(_indexedValues!);
+        hashCode = hashCode * -1521134295 + EqualityComparer<T>.Default.GetHashCode(_singleValue!);
         hashCode = hashCode * -1521134295 + IsIndexed.GetHashCode();
         return hashCode;
     }

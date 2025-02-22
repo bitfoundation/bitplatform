@@ -34,7 +34,7 @@ public abstract class BitChartDataset<T> : Collection<T>, IDataset<T>
     /// <param name="type">The <see cref="BitChartChartType"/> this dataset is for.</param>
     /// <param name="id">The id for this dataset. If <see langword="null"/>,
     /// a random GUID string will be used.</param>
-    protected BitChartDataset(BitChartChartType type, string id = null) : base(new List<T>())
+    protected BitChartDataset(BitChartChartType type, string? id = null) : base([])
     {
         Data = new ReadOnlyCollection<T>(Items);
         Id = id ?? Guid.NewGuid().ToString();
@@ -63,9 +63,9 @@ public abstract class BitChartDataset<T> : Collection<T>, IDataset<T>
     /// <param name="obj">The object to compare with the current object.</param>
     /// <returns><see langword="true"/> if the specified object is considered to be equal
     /// to the current object; otherwise, <see langword="false"/>.</returns>
-    public override bool Equals(object obj) => obj is BitChartDataset<T> set &&
-            Id == set.Id &&
-            EqualityComparer<IList<T>>.Default.Equals(Items, set.Items);
+    public override bool Equals(object? obj) => obj is BitChartDataset<T> set &&
+                                                Id == set.Id &&
+                                                EqualityComparer<IList<T>>.Default.Equals(Items, set.Items);
 
     /// <summary>
     /// Returns the hash code for this <see cref="BitChartDataset{T}"/>.

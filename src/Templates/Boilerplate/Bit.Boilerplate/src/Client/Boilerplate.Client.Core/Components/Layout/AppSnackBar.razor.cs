@@ -1,12 +1,11 @@
 ﻿namespace Boilerplate.Client.Core.Components.Layout;
 
-public partial class SnackBar : IDisposable
+public partial class AppSnackBar
 {
     private Action? unsubscribe;
     private BitSnackBar snackbarRef = default!;
 
-
-    protected override Task OnInitAsync()
+    protected override async Task OnAfterFirstRenderAsync()
     {
         unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.SHOW_SNACK, async args =>
         {
@@ -15,12 +14,12 @@ public partial class SnackBar : IDisposable
             await snackbarRef.Show(title, body, color);
         });
 
-        return base.OnInitAsync();
+        await base.OnAfterFirstRenderAsync();
     }
 
-
-    public void Dispose()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
         unsubscribe?.Invoke();
+        await base.DisposeAsync(disposing);
     }
 }

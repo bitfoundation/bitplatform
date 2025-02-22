@@ -361,17 +361,6 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
             : null;
     }
 
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _cancellationTokenSource?.Dispose();
-            OnValueChanged -= HandleOnValueChanged;
-        }
-
-        base.Dispose(disposing);
-    }
-
 
 
     private void HandleOnValueChanged(object? sender, EventArgs args)
@@ -1122,5 +1111,17 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
                (_showTimePicker && ShowMonthPickerAsOverlay && ShowTimePickerAsOverlay is false) ||
                (_showTimePicker is false && (ShowMonthPickerAsOverlay is false && ShowTimePickerAsOverlay is false) is false);
 
+    }
+
+
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return;
+
+        _cancellationTokenSource?.Dispose();
+        OnValueChanged -= HandleOnValueChanged;
+
+        await base.DisposeAsync(disposing);
     }
 }

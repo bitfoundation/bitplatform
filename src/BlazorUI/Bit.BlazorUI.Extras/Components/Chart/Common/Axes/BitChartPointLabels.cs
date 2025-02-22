@@ -10,7 +10,7 @@ public class BitChartPointLabels
     /// Gets or sets the font color for a point label.
     /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
     /// </summary>
-    public BitChartIndexableOption<string> FontColor { get; set; }
+    public BitChartIndexableOption<string>? FontColor { get; set; }
 
     /// <summary>
     /// Gets or sets the font size in pixels.
@@ -20,7 +20,7 @@ public class BitChartPointLabels
     /// <summary>
     /// Gets or sets the font style to use when rendering a point label.
     /// </summary>
-    public BitChartFontStyle FontStyle { get; set; }
+    public BitChartFontStyle? FontStyle { get; set; }
 
     /// <summary>
     /// Gets or sets the height of an individual line of text.

@@ -79,7 +79,7 @@ public partial class PushNotificationService
         {
             await using var scope = rootServiceScopeProvider.Invoke();
             var adsPushSender = scope.ServiceProvider.GetRequiredService<IAdsPushSender>();
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger<PushNotificationService>>();
+            var serverExceptionHandler = scope.ServiceProvider.GetRequiredService<ServerExceptionHandler>();
 
             var payload = new AdsPushBasicSendPayload()
             {
@@ -118,7 +118,8 @@ public partial class PushNotificationService
 
             if (exceptions.IsEmpty is false)
             {
-                logger.LogError(new AggregateException(exceptions), "Failed to send push notifications");
+                serverExceptionHandler.Handle(new AggregateException("Failed to send push notifications", exceptions)
+                    .WithData(new() { { "UserRelatedPush", userRelatedPush } }));
             }
 
         }, default);

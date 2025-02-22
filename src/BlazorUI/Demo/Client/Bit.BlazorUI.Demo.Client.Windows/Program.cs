@@ -102,19 +102,21 @@ public partial class Program
             settings.IsZoomControlEnabled = false;
             settings.AreBrowserAcceleratorKeysEnabled = false;
 #endif
-            bool hasBlazorStarted = false;
-            blazorWebView.WebView.NavigationCompleted += async delegate
-            {
-                if (hasBlazorStarted)
-                    return;
-                hasBlazorStarted = true;
-                await blazorWebView.WebView.ExecuteScriptAsync("Blazor.start()");
-            };
+
+            _ = StartBlazor(blazorWebView);
         };
 
         form.Controls.Add(blazorWebView);
 
         Application.Run(form);
+    }
+
+    static async Task StartBlazor(BlazorWebView blazorWebView)
+    {
+        while (await blazorWebView.WebView.ExecuteScriptAsync("Blazor.start()") is "null")
+        {
+            await Task.Yield();
+        }
     }
 
     private static void LogException(object? error)

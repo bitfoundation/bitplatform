@@ -137,7 +137,7 @@ public partial class EmailService
         _ = Task.Run(async () => // Let's not wait for the email to be sent. Consider using a proper message queue or background job system like Hangfire.
         {
             await using var scope = rootServiceScopeProvider.Invoke();
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger<EmailService>>();
+            var serverExceptionHandler = scope.ServiceProvider.GetRequiredService<ServerExceptionHandler>();
 
             try
             {
@@ -154,14 +154,11 @@ public partial class EmailService
             }
             catch (Exception exp)
             {
-                LogSendEmailFailed(logger, exp, subject, toEmailAddress);
+                serverExceptionHandler.Handle(exp, new() { { "Subject", subject }, { "ToEmailAddress", toEmailAddress } });
             }
 
         }, default);
     }
-
-    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to send e-mail with subject '{Subject}' to {ToEmailAddress}.")]
-    private static partial void LogSendEmailFailed(ILogger logger, Exception exp, string subject, string toEmailAddress);
 
     [LoggerMessage(Level = LogLevel.Information, Message = "{type} e-mail with subject '{subject}' to {toEmailAddress}. {link}")]
     private static partial void LogSendEmail(ILogger logger, string subject, string toEmailAddress, string type, string? link = null);

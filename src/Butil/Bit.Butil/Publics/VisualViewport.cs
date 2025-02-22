@@ -28,7 +28,7 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     /// <returns></returns>
     public async Task<double> GetOffsetLeft()
-        => await js.FastInvokeAsync<double>("BitButil.visualViewport.offsetLeft");
+        => await js.Invoke<double>("BitButil.visualViewport.offsetLeft");
 
     /// <summary>
     /// Returns the offset of the top edge of the visual viewport from the top edge of 
@@ -38,7 +38,7 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     /// <returns></returns>
     public async Task<double> GetOffsetTop()
-        => await js.FastInvokeAsync<double>("BitButil.visualViewport.offsetTop");
+        => await js.Invoke<double>("BitButil.visualViewport.offsetTop");
 
     /// <summary>
     /// Returns the x coordinate of the left edge of the visual viewport relative to the 
@@ -48,7 +48,7 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     /// <returns></returns>
     public async Task<double> GetPageLeft()
-        => await js.FastInvokeAsync<double>("BitButil.visualViewport.pageLeft");
+        => await js.Invoke<double>("BitButil.visualViewport.pageLeft");
 
     /// <summary>
     /// Returns the y coordinate of the top edge of the visual viewport relative to the 
@@ -58,7 +58,7 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     /// <returns></returns>
     public async Task<double> GetPageTop()
-        => await js.FastInvokeAsync<double>("BitButil.visualViewport.pageTop");
+        => await js.Invoke<double>("BitButil.visualViewport.pageTop");
 
     /// <summary>
     /// Returns the width of the visual viewport, in CSS pixels, or 0 if current document is not fully active.
@@ -67,7 +67,7 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     /// <returns></returns>
     public async Task<double> GetWidth()
-        => await js.FastInvokeAsync<double>("BitButil.visualViewport.width");
+        => await js.Invoke<double>("BitButil.visualViewport.width");
 
     /// <summary>
     /// Returns the height of the visual viewport, in CSS pixels, or 0 if current document is not fully active.
@@ -76,7 +76,7 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     /// <returns></returns>
     public async Task<double> GetHeight()
-        => await js.FastInvokeAsync<double>("BitButil.visualViewport.height");
+        => await js.Invoke<double>("BitButil.visualViewport.height");
 
     /// <summary>
     /// Returns the pinch-zoom scaling factor applied to the visual viewport, or 0 if current 
@@ -86,7 +86,7 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     /// <returns></returns>
     public async Task<double> GetScale()
-        => await js.FastInvokeAsync<double>("BitButil.visualViewport.scale");
+        => await js.Invoke<double>("BitButil.visualViewport.scale");
 
     /// <summary>
     /// Fired when the visual viewport is resized.
@@ -99,7 +99,7 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
         var listenerId = VisualViewportListenersManager.AddListener(handler);
         _handlers.TryAdd(listenerId, handler);
 
-        await js.FastInvokeVoidAsync("BitButil.visualViewport.addResize", VisualViewportListenersManager.InvokeMethodName, listenerId);
+        await js.InvokeVoid("BitButil.visualViewport.addResize", VisualViewportListenersManager.InvokeMethodName, listenerId);
 
         return listenerId;
     }
@@ -146,7 +146,7 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     {
         if (OperatingSystem.IsBrowser() is false) return;
 
-        await js.FastInvokeVoidAsync("BitButil.visualViewport.removeResize", ids);
+        await js.InvokeVoid("BitButil.visualViewport.removeResize", ids);
     }
 
     /// <summary>
@@ -160,7 +160,7 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
         var listenerId = VisualViewportListenersManager.AddListener(handler);
         _handlers.TryAdd(listenerId, handler);
 
-        await js.FastInvokeVoidAsync("BitButil.visualViewport.addScroll", VisualViewportListenersManager.InvokeMethodName, listenerId);
+        await js.InvokeVoid("BitButil.visualViewport.addScroll", VisualViewportListenersManager.InvokeMethodName, listenerId);
 
         return listenerId;
     }
@@ -205,7 +205,7 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     {
         if (OperatingSystem.IsBrowser() is false) return;
 
-        await js.FastInvokeVoidAsync("BitButil.visualViewport.removeScroll", ids);
+        await js.InvokeVoid("BitButil.visualViewport.removeScroll", ids);
     }
 
 

@@ -11,7 +11,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
 #pragma warning disable 612, 618
-        modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
+        modelBuilder.HasAnnotation("ProductVersion", "9.0.2");
 
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Categories.Category", b =>
             {
@@ -286,6 +286,9 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     .HasMaxLength(512)
                     .HasColumnType("TEXT");
 
+                b.Property<string>("ImageFileName")
+                    .HasColumnType("TEXT");
+
                 b.Property<string>("Name")
                     .IsRequired()
                     .HasMaxLength(64)
@@ -294,8 +297,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.Property<decimal>("Price")
                     .HasColumnType("TEXT");
 
-                b.Property<string>("ImageFileName")
-                    .HasColumnType("TEXT");
+                b.Property<int>("ShortId")
+                    .HasColumnType("INTEGER");
 
                 b.HasKey("Id");
 
@@ -304,188 +307,209 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.HasIndex("Name")
                     .IsUnique();
 
+                b.HasIndex("ShortId")
+                    .IsUnique();
+
                 b.ToTable("Products");
 
                 b.HasData(
                     new
                     {
-                        Id = new Guid("9a59dda2-7b12-4cc1-9658-d2586eef91d4"),
+                        Id = new Guid("9a59dda2-7b12-4cc1-9658-d2586eef91d1"),
                         CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306466648064000000L,
                         Description = "The Ford Mustang is ranked #1 in Sports Cars",
-                        Name = "Mustang",
-                        Price = 27155m
+                        Name = "Mustang - 1",
+                        Price = 27155m,
+                        ShortId = 9024
                     },
                     new
                     {
-                        Id = new Guid("a42914e2-92da-4f0b-aab0-b9572c9671b4"),
+                        Id = new Guid("a42914e2-92da-4f0b-aab0-b9572c9671b1"),
                         CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306457800704000000L,
                         Description = "The Ford GT is a mid-engine two-seater sports car manufactured and marketed by American automobile manufacturer",
-                        Name = "GT",
-                        Price = 500000m
+                        Name = "GT - 1",
+                        Price = 500000m,
+                        ShortId = 9025
                     },
                     new
                     {
-                        Id = new Guid("f75325c8-a213-470b-ab93-4677ca4caeef"),
+                        Id = new Guid("f75325c8-a213-470b-ab93-4677ca4caee1"),
                         CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306440105984000000L,
                         Description = "Ford Ranger is a nameplate that has been used on multiple model lines of pickup trucks sold by Ford worldwide.",
-                        Name = "Ranger",
-                        Price = 25000m
+                        Name = "Ranger - 1",
+                        Price = 25000m,
+                        ShortId = 9026
                     },
                     new
                     {
-                        Id = new Guid("43a82ec1-aab6-445f-83af-a85028417cf7"),
+                        Id = new Guid("43a82ec1-aab6-445f-83af-a85028417cf1"),
                         CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306431258624000000L,
                         Description = "Raptor is a SCORE off-road trophy truck living in a asphalt world",
-                        Name = "Raptor",
-                        Price = 53205m
+                        Name = "Raptor - 1",
+                        Price = 53205m,
+                        ShortId = 9027
                     },
                     new
                     {
-                        Id = new Guid("f01b32bb-eccd-43be-aaf3-3c788a7d7558"),
+                        Id = new Guid("f01b32bb-eccd-43be-aaf3-3c788a7d7551"),
                         CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306422411264000000L,
                         Description = "The Ford Maverick is a compact pickup truck produced by Ford Motor Company.",
-                        Name = "Maverick",
-                        Price = 22470m
+                        Name = "Maverick - 1",
+                        Price = 22470m,
+                        ShortId = 9028
                     },
                     new
                     {
-                        Id = new Guid("d53bb159-f4f9-493a-b4dc-215fd765ca25"),
+                        Id = new Guid("d53bb159-f4f9-493a-b4dc-215fd765ca21"),
                         CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306466648064000000L,
                         Description = "A powerful convertible sports car",
-                        Name = "Roadster",
-                        Price = 42800m
+                        Name = "Roadster - 1",
+                        Price = 42800m,
+                        ShortId = 9029
                     },
                     new
                     {
-                        Id = new Guid("74bb268f-18cf-45ec-9f2f-30b34b18fb3c"),
+                        Id = new Guid("74bb268f-18cf-45ec-9f2f-30b34b18fb31"),
                         CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306457800704000000L,
                         Description = "A perfectly adequate family sedan with sharp looks",
-                        Name = "Altima",
-                        Price = 24550m
+                        Name = "Altima - 1",
+                        Price = 24550m,
+                        ShortId = 9030
                     },
                     new
                     {
-                        Id = new Guid("eb787e1a-7ba8-4708-924b-9f7964fa0f64"),
+                        Id = new Guid("eb787e1a-7ba8-4708-924b-9f7964fa0f61"),
                         CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306440105984000000L,
                         Description = "Legendary supercar with AWD, 4 seats, a powerful V6 engine and the latest tech",
-                        Name = "GT-R",
-                        Price = 113540m
+                        Name = "GT-R - 1",
+                        Price = 113540m,
+                        ShortId = 9031
                     },
                     new
                     {
-                        Id = new Guid("362a6638-0031-485d-825f-e8aeae63a334"),
+                        Id = new Guid("362a6638-0031-485d-825f-e8aeae63a331"),
                         CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306422411264000000L,
                         Description = "A new smart SUV",
-                        Name = "Juke",
-                        Price = 28100m
+                        Name = "Juke - 1",
+                        Price = 28100m,
+                        ShortId = 9032
                     },
                     new
                     {
-                        Id = new Guid("8629931e-e26e-4885-b561-e447197d4b69"),
+                        Id = new Guid("8629931e-e26e-4885-b561-e447197d4b61"),
                         CategoryId = new Guid("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306466648064000000L,
                         Description = "Subcompact luxury crossover SUV",
-                        Name = "H247",
-                        Price = 54950m
+                        Name = "H247 - 1",
+                        Price = 54950m,
+                        ShortId = 9033
                     },
                     new
                     {
-                        Id = new Guid("a1c1987d-ee6c-41ad-9647-18de4504303a"),
+                        Id = new Guid("a1c1987d-ee6c-41ad-9647-18de45043031"),
                         CategoryId = new Guid("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306457800704000000L,
                         Description = "Battery-electric full-size luxury liftback",
-                        Name = "V297",
-                        Price = 103360m
+                        Name = "V297 - 1",
+                        Price = 103360m,
+                        ShortId = 9034
                     },
                     new
                     {
-                        Id = new Guid("59eea437-bdf2-4c11-b262-06643b253288"),
+                        Id = new Guid("59eea437-bdf2-4c11-b262-06643b253281"),
                         CategoryId = new Guid("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306422411264000000L,
                         Description = "Ultra-rare and powerful sports car",
-                        Name = "R50",
-                        Price = 2000000m
+                        Name = "R50 - 1",
+                        Price = 2000000m,
+                        ShortId = 9035
                     },
                     new
                     {
-                        Id = new Guid("01d223a3-182d-406a-9722-19dab083f96e"),
+                        Id = new Guid("01d223a3-182d-406a-9722-19dab083f961"),
                         CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306466648064000000L,
                         Description = "A powerful, sporty variant of the BMW 5 Series",
-                        Name = "M550i",
-                        Price = 77790m
+                        Name = "M550i - 1",
+                        Price = 77790m,
+                        ShortId = 9036
                     },
                     new
                     {
-                        Id = new Guid("64a2616f-3af6-4248-86cf-4a605095a644"),
+                        Id = new Guid("64a2616f-3af6-4248-86cf-4a605095a641"),
                         CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306457800704000000L,
                         Description = "Luxurious and powerful sedan that combines elegant design with impressive performance",
-                        Name = "540i",
-                        Price = 60945m
+                        Name = "540i - 1",
+                        Price = 60945m,
+                        ShortId = 9037
                     },
                     new
                     {
-                        Id = new Guid("ac50dc29-4b7e-4d4d-b23a-4227d91f2bb0"),
+                        Id = new Guid("ac50dc29-4b7e-4d4d-b23a-4227d91f2bb1"),
                         CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306448953344000000L,
                         Description = "Combines class, spaciousness, and a well-built cabin",
-                        Name = "530e",
-                        Price = 56545m
+                        Name = "530e - 1",
+                        Price = 56545m,
+                        ShortId = 9038
                     },
                     new
                     {
-                        Id = new Guid("fb41cc51-9abd-4b45-b0d9-ea8f565ec502"),
+                        Id = new Guid("fb41cc51-9abd-4b45-b0d9-ea8f565ec501"),
                         CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306440105984000000L,
                         Description = "Zippy and fuel-efficient powertrain, and sure-footed handling",
-                        Name = "530i",
-                        Price = 55195m
+                        Name = "530i - 1",
+                        Price = 55195m,
+                        ShortId = 9039
                     },
                     new
                     {
-                        Id = new Guid("e159b1ad-12aa-4e02-a39b-d5e4a32eaf99"),
+                        Id = new Guid("e159b1ad-12aa-4e02-a39b-d5e4a32eaf91"),
                         CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306431258624000000L,
                         Description = "A Beastly coupe, powered by a fine-tuned 523-horsepower V8 engine",
-                        Name = "M850i",
-                        Price = 100045m
+                        Name = "M850i - 1",
+                        Price = 100045m,
+                        ShortId = 9040
                     },
                     new
                     {
-                        Id = new Guid("4d9cb0f4-1f32-45d5-8c84-d7f15bc569d5"),
+                        Id = new Guid("4d9cb0f4-1f32-45d5-8c84-d7f15bc569d1"),
                         CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306422411264000000L,
                         Description = "A full-size luxury crossover SUV that combines innovative design, an expansive presence, and a range of powerful engines",
-                        Name = "X7",
-                        Price = 77980m
+                        Name = "X7 - 1",
+                        Price = 77980m,
+                        ShortId = 9041
                     },
                     new
                     {
@@ -494,28 +518,284 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306413563904000000L,
                         Description = "Luxury crossover SUV that combines cutting-edge technology",
-                        Name = "IX",
-                        Price = 87000m
+                        Name = "IX - 1",
+                        Price = 87000m,
+                        ShortId = 9042
                     },
                     new
                     {
-                        Id = new Guid("96c73b9c-03df-4f70-ac8d-75c32b89881a"),
+                        Id = new Guid("96c73b9c-03df-4f70-ac8d-75c32b898811"),
                         CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306466648064000000L,
                         Description = "Rapid acceleration and dynamic handling",
-                        Name = "Model 3",
-                        Price = 61990m
+                        Name = "Model 3 - 1",
+                        Price = 61990m,
+                        ShortId = 9043
                     },
                     new
                     {
-                        Id = new Guid("840ba759-bde9-4821-b49b-c981c082bb96"),
+                        Id = new Guid("840ba759-bde9-4821-b49b-c981c082bb91"),
                         CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306457800704000000L,
                         Description = "Finishes near the top of our luxury electric car rankings.",
-                        Name = "Model S",
-                        Price = 135000m
+                        Name = "Model S - 1",
+                        Price = 135000m,
+                        ShortId = 9044
+                    },
+                    new
+                    {
+                        Id = new Guid("840e113b-5074-4b1c-86bd-e9affb659411"),
+                        CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306448953344000000L,
+                        Description = "Heart-pumping acceleration, long drive range",
+                        Name = "Model X - 1",
+                        Price = 138890m,
+                        ShortId = 9045
+                    },
+                    new
+                    {
+                        Id = new Guid("b2db9074-a0a9-4054-87e2-206b7a55c791"),
+                        CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306422411264000000L,
+                        Description = "Extensive driving range, lots of standard safety features",
+                        Name = "Model Y - 1",
+                        Price = 67790m,
+                        ShortId = 9046
+                    },
+                    new
+                    {
+                        Id = new Guid("9a59dda2-7b12-4cc1-9658-d2586eef91d2"),
+                        CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306466648064000000L,
+                        Description = "The Ford Mustang is ranked #1 in Sports Cars",
+                        Name = "Mustang - 2",
+                        Price = 27155m,
+                        ShortId = 9047
+                    },
+                    new
+                    {
+                        Id = new Guid("a42914e2-92da-4f0b-aab0-b9572c9671b2"),
+                        CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306457800704000000L,
+                        Description = "The Ford GT is a mid-engine two-seater sports car manufactured and marketed by American automobile manufacturer",
+                        Name = "GT - 2",
+                        Price = 500000m,
+                        ShortId = 9048
+                    },
+                    new
+                    {
+                        Id = new Guid("f75325c8-a213-470b-ab93-4677ca4caee2"),
+                        CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306440105984000000L,
+                        Description = "Ford Ranger is a nameplate that has been used on multiple model lines of pickup trucks sold by Ford worldwide.",
+                        Name = "Ranger - 2",
+                        Price = 25000m,
+                        ShortId = 9049
+                    },
+                    new
+                    {
+                        Id = new Guid("43a82ec1-aab6-445f-83af-a85028417cf2"),
+                        CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306431258624000000L,
+                        Description = "Raptor is a SCORE off-road trophy truck living in a asphalt world",
+                        Name = "Raptor - 2",
+                        Price = 53205m,
+                        ShortId = 9050
+                    },
+                    new
+                    {
+                        Id = new Guid("f01b32bb-eccd-43be-aaf3-3c788a7d7552"),
+                        CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306422411264000000L,
+                        Description = "The Ford Maverick is a compact pickup truck produced by Ford Motor Company.",
+                        Name = "Maverick - 2",
+                        Price = 22470m,
+                        ShortId = 9051
+                    },
+                    new
+                    {
+                        Id = new Guid("d53bb159-f4f9-493a-b4dc-215fd765ca22"),
+                        CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306466648064000000L,
+                        Description = "A powerful convertible sports car",
+                        Name = "Roadster - 2",
+                        Price = 42800m,
+                        ShortId = 9052
+                    },
+                    new
+                    {
+                        Id = new Guid("74bb268f-18cf-45ec-9f2f-30b34b18fb32"),
+                        CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306457800704000000L,
+                        Description = "A perfectly adequate family sedan with sharp looks",
+                        Name = "Altima - 2",
+                        Price = 24550m,
+                        ShortId = 9053
+                    },
+                    new
+                    {
+                        Id = new Guid("eb787e1a-7ba8-4708-924b-9f7964fa0f62"),
+                        CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306440105984000000L,
+                        Description = "Legendary supercar with AWD, 4 seats, a powerful V6 engine and the latest tech",
+                        Name = "GT-R - 2",
+                        Price = 113540m,
+                        ShortId = 9054
+                    },
+                    new
+                    {
+                        Id = new Guid("362a6638-0031-485d-825f-e8aeae63a332"),
+                        CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306422411264000000L,
+                        Description = "A new smart SUV",
+                        Name = "Juke - 2",
+                        Price = 28100m,
+                        ShortId = 9055
+                    },
+                    new
+                    {
+                        Id = new Guid("8629931e-e26e-4885-b561-e447197d4b62"),
+                        CategoryId = new Guid("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306466648064000000L,
+                        Description = "Subcompact luxury crossover SUV",
+                        Name = "H247 - 2",
+                        Price = 54950m,
+                        ShortId = 9056
+                    },
+                    new
+                    {
+                        Id = new Guid("a1c1987d-ee6c-41ad-9647-18de45043032"),
+                        CategoryId = new Guid("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306457800704000000L,
+                        Description = "Battery-electric full-size luxury liftback",
+                        Name = "V297 - 2",
+                        Price = 103360m,
+                        ShortId = 9057
+                    },
+                    new
+                    {
+                        Id = new Guid("59eea437-bdf2-4c11-b262-06643b253282"),
+                        CategoryId = new Guid("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306422411264000000L,
+                        Description = "Ultra-rare and powerful sports car",
+                        Name = "R50 - 2",
+                        Price = 2000000m,
+                        ShortId = 9058
+                    },
+                    new
+                    {
+                        Id = new Guid("01d223a3-182d-406a-9722-19dab083f962"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306466648064000000L,
+                        Description = "A powerful, sporty variant of the BMW 5 Series",
+                        Name = "M550i - 2",
+                        Price = 77790m,
+                        ShortId = 9059
+                    },
+                    new
+                    {
+                        Id = new Guid("64a2616f-3af6-4248-86cf-4a605095a642"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306457800704000000L,
+                        Description = "Luxurious and powerful sedan that combines elegant design with impressive performance",
+                        Name = "540i - 2",
+                        Price = 60945m,
+                        ShortId = 9060
+                    },
+                    new
+                    {
+                        Id = new Guid("ac50dc29-4b7e-4d4d-b23a-4227d91f2bb2"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306448953344000000L,
+                        Description = "Combines class, spaciousness, and a well-built cabin",
+                        Name = "530e - 2",
+                        Price = 56545m,
+                        ShortId = 9061
+                    },
+                    new
+                    {
+                        Id = new Guid("fb41cc51-9abd-4b45-b0d9-ea8f565ec502"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306440105984000000L,
+                        Description = "Zippy and fuel-efficient powertrain, and sure-footed handling",
+                        Name = "530i - 2",
+                        Price = 55195m,
+                        ShortId = 9062
+                    },
+                    new
+                    {
+                        Id = new Guid("e159b1ad-12aa-4e02-a39b-d5e4a32eaf92"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306431258624000000L,
+                        Description = "A Beastly coupe, powered by a fine-tuned 523-horsepower V8 engine",
+                        Name = "M850i - 2",
+                        Price = 100045m,
+                        ShortId = 9063
+                    },
+                    new
+                    {
+                        Id = new Guid("4d9cb0f4-1f32-45d5-8c84-d7f15bc569d2"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306422411264000000L,
+                        Description = "A full-size luxury crossover SUV that combines innovative design, an expansive presence, and a range of powerful engines",
+                        Name = "X7 - 2",
+                        Price = 77980m,
+                        ShortId = 9064
+                    },
+                    new
+                    {
+                        Id = new Guid("1b22319e-0a58-471e-82b6-75cd8b9d98e2"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306413563904000000L,
+                        Description = "Luxury crossover SUV that combines cutting-edge technology",
+                        Name = "IX - 2",
+                        Price = 87000m,
+                        ShortId = 9065
+                    },
+                    new
+                    {
+                        Id = new Guid("96c73b9c-03df-4f70-ac8d-75c32b898812"),
+                        CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306466648064000000L,
+                        Description = "Rapid acceleration and dynamic handling",
+                        Name = "Model 3 - 2",
+                        Price = 61990m,
+                        ShortId = 9066
+                    },
+                    new
+                    {
+                        Id = new Guid("840ba759-bde9-4821-b49b-c981c082bb92"),
+                        CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306457800704000000L,
+                        Description = "Finishes near the top of our luxury electric car rankings.",
+                        Name = "Model S - 2",
+                        Price = 135000m,
+                        ShortId = 9067
                     },
                     new
                     {
@@ -524,8 +804,262 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306448953344000000L,
                         Description = "Heart-pumping acceleration, long drive range",
-                        Name = "Model X",
-                        Price = 138890m
+                        Name = "Model X - 2",
+                        Price = 138890m,
+                        ShortId = 9068
+                    },
+                    new
+                    {
+                        Id = new Guid("b2db9074-a0a9-4054-87e2-206b7a55c792"),
+                        CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306422411264000000L,
+                        Description = "Extensive driving range, lots of standard safety features",
+                        Name = "Model Y - 2",
+                        Price = 67790m,
+                        ShortId = 9069
+                    },
+                    new
+                    {
+                        Id = new Guid("9a59dda2-7b12-4cc1-9658-d2586eef91d3"),
+                        CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306466648064000000L,
+                        Description = "The Ford Mustang is ranked #1 in Sports Cars",
+                        Name = "Mustang - 3",
+                        Price = 27155m,
+                        ShortId = 9070
+                    },
+                    new
+                    {
+                        Id = new Guid("a42914e2-92da-4f0b-aab0-b9572c9671b3"),
+                        CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306457800704000000L,
+                        Description = "The Ford GT is a mid-engine two-seater sports car manufactured and marketed by American automobile manufacturer",
+                        Name = "GT - 3",
+                        Price = 500000m,
+                        ShortId = 9071
+                    },
+                    new
+                    {
+                        Id = new Guid("f75325c8-a213-470b-ab93-4677ca4caee3"),
+                        CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306440105984000000L,
+                        Description = "Ford Ranger is a nameplate that has been used on multiple model lines of pickup trucks sold by Ford worldwide.",
+                        Name = "Ranger - 3",
+                        Price = 25000m,
+                        ShortId = 9072
+                    },
+                    new
+                    {
+                        Id = new Guid("43a82ec1-aab6-445f-83af-a85028417cf3"),
+                        CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306431258624000000L,
+                        Description = "Raptor is a SCORE off-road trophy truck living in a asphalt world",
+                        Name = "Raptor - 3",
+                        Price = 53205m,
+                        ShortId = 9073
+                    },
+                    new
+                    {
+                        Id = new Guid("f01b32bb-eccd-43be-aaf3-3c788a7d7553"),
+                        CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306422411264000000L,
+                        Description = "The Ford Maverick is a compact pickup truck produced by Ford Motor Company.",
+                        Name = "Maverick - 3",
+                        Price = 22470m,
+                        ShortId = 9074
+                    },
+                    new
+                    {
+                        Id = new Guid("d53bb159-f4f9-493a-b4dc-215fd765ca23"),
+                        CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306466648064000000L,
+                        Description = "A powerful convertible sports car",
+                        Name = "Roadster - 3",
+                        Price = 42800m,
+                        ShortId = 9075
+                    },
+                    new
+                    {
+                        Id = new Guid("74bb268f-18cf-45ec-9f2f-30b34b18fb33"),
+                        CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306457800704000000L,
+                        Description = "A perfectly adequate family sedan with sharp looks",
+                        Name = "Altima - 3",
+                        Price = 24550m,
+                        ShortId = 9076
+                    },
+                    new
+                    {
+                        Id = new Guid("eb787e1a-7ba8-4708-924b-9f7964fa0f63"),
+                        CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306440105984000000L,
+                        Description = "Legendary supercar with AWD, 4 seats, a powerful V6 engine and the latest tech",
+                        Name = "GT-R - 3",
+                        Price = 113540m,
+                        ShortId = 9077
+                    },
+                    new
+                    {
+                        Id = new Guid("362a6638-0031-485d-825f-e8aeae63a333"),
+                        CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306422411264000000L,
+                        Description = "A new smart SUV",
+                        Name = "Juke - 3",
+                        Price = 28100m,
+                        ShortId = 9078
+                    },
+                    new
+                    {
+                        Id = new Guid("8629931e-e26e-4885-b561-e447197d4b63"),
+                        CategoryId = new Guid("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306466648064000000L,
+                        Description = "Subcompact luxury crossover SUV",
+                        Name = "H247 - 3",
+                        Price = 54950m,
+                        ShortId = 9079
+                    },
+                    new
+                    {
+                        Id = new Guid("a1c1987d-ee6c-41ad-9647-18de45043033"),
+                        CategoryId = new Guid("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306457800704000000L,
+                        Description = "Battery-electric full-size luxury liftback",
+                        Name = "V297 - 3",
+                        Price = 103360m,
+                        ShortId = 9080
+                    },
+                    new
+                    {
+                        Id = new Guid("59eea437-bdf2-4c11-b262-06643b253283"),
+                        CategoryId = new Guid("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306422411264000000L,
+                        Description = "Ultra-rare and powerful sports car",
+                        Name = "R50 - 3",
+                        Price = 2000000m,
+                        ShortId = 9081
+                    },
+                    new
+                    {
+                        Id = new Guid("01d223a3-182d-406a-9722-19dab083f963"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306466648064000000L,
+                        Description = "A powerful, sporty variant of the BMW 5 Series",
+                        Name = "M550i - 3",
+                        Price = 77790m,
+                        ShortId = 9082
+                    },
+                    new
+                    {
+                        Id = new Guid("64a2616f-3af6-4248-86cf-4a605095a643"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306457800704000000L,
+                        Description = "Luxurious and powerful sedan that combines elegant design with impressive performance",
+                        Name = "540i - 3",
+                        Price = 60945m,
+                        ShortId = 9083
+                    },
+                    new
+                    {
+                        Id = new Guid("ac50dc29-4b7e-4d4d-b23a-4227d91f2bb3"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306448953344000000L,
+                        Description = "Combines class, spaciousness, and a well-built cabin",
+                        Name = "530e - 3",
+                        Price = 56545m,
+                        ShortId = 9084
+                    },
+                    new
+                    {
+                        Id = new Guid("fb41cc51-9abd-4b45-b0d9-ea8f565ec503"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306440105984000000L,
+                        Description = "Zippy and fuel-efficient powertrain, and sure-footed handling",
+                        Name = "530i - 3",
+                        Price = 55195m,
+                        ShortId = 9085
+                    },
+                    new
+                    {
+                        Id = new Guid("e159b1ad-12aa-4e02-a39b-d5e4a32eaf93"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306431258624000000L,
+                        Description = "A Beastly coupe, powered by a fine-tuned 523-horsepower V8 engine",
+                        Name = "M850i - 3",
+                        Price = 100045m,
+                        ShortId = 9086
+                    },
+                    new
+                    {
+                        Id = new Guid("4d9cb0f4-1f32-45d5-8c84-d7f15bc569d3"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306422411264000000L,
+                        Description = "A full-size luxury crossover SUV that combines innovative design, an expansive presence, and a range of powerful engines",
+                        Name = "X7 - 3",
+                        Price = 77980m,
+                        ShortId = 9087
+                    },
+                    new
+                    {
+                        Id = new Guid("1b22319e-0a58-471e-82b6-75cd8b9d98e3"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306413563904000000L,
+                        Description = "Luxury crossover SUV that combines cutting-edge technology",
+                        Name = "IX - 3",
+                        Price = 87000m,
+                        ShortId = 9088
+                    },
+                    new
+                    {
+                        Id = new Guid("96c73b9c-03df-4f70-ac8d-75c32b898813"),
+                        CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306466648064000000L,
+                        Description = "Rapid acceleration and dynamic handling",
+                        Name = "Model 3 - 3",
+                        Price = 61990m,
+                        ShortId = 9089
+                    },
+                    new
+                    {
+                        Id = new Guid("840ba759-bde9-4821-b49b-c981c082bb93"),
+                        CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306457800704000000L,
+                        Description = "Finishes near the top of our luxury electric car rankings.",
+                        Name = "Model S - 3",
+                        Price = 135000m,
+                        ShortId = 9090
+                    },
+                    new
+                    {
+                        Id = new Guid("840e113b-5074-4b1c-86bd-e9affb659413"),
+                        CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306448953344000000L,
+                        Description = "Heart-pumping acceleration, long drive range",
+                        Name = "Model X - 3",
+                        Price = 138890m,
+                        ShortId = 9091
                     },
                     new
                     {
@@ -534,8 +1068,768 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306422411264000000L,
                         Description = "Extensive driving range, lots of standard safety features",
-                        Name = "Model Y",
-                        Price = 67790m
+                        Name = "Model Y - 3",
+                        Price = 67790m,
+                        ShortId = 9092
+                    },
+                    new
+                    {
+                        Id = new Guid("9a59dda2-7b12-4cc1-9658-d2586eef91d4"),
+                        CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306466648064000000L,
+                        Description = "The Ford Mustang is ranked #1 in Sports Cars",
+                        Name = "Mustang - 4",
+                        Price = 27155m,
+                        ShortId = 9093
+                    },
+                    new
+                    {
+                        Id = new Guid("a42914e2-92da-4f0b-aab0-b9572c9671b4"),
+                        CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306457800704000000L,
+                        Description = "The Ford GT is a mid-engine two-seater sports car manufactured and marketed by American automobile manufacturer",
+                        Name = "GT - 4",
+                        Price = 500000m,
+                        ShortId = 9094
+                    },
+                    new
+                    {
+                        Id = new Guid("f75325c8-a213-470b-ab93-4677ca4caee4"),
+                        CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306440105984000000L,
+                        Description = "Ford Ranger is a nameplate that has been used on multiple model lines of pickup trucks sold by Ford worldwide.",
+                        Name = "Ranger - 4",
+                        Price = 25000m,
+                        ShortId = 9095
+                    },
+                    new
+                    {
+                        Id = new Guid("43a82ec1-aab6-445f-83af-a85028417cf4"),
+                        CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306431258624000000L,
+                        Description = "Raptor is a SCORE off-road trophy truck living in a asphalt world",
+                        Name = "Raptor - 4",
+                        Price = 53205m,
+                        ShortId = 9096
+                    },
+                    new
+                    {
+                        Id = new Guid("f01b32bb-eccd-43be-aaf3-3c788a7d7554"),
+                        CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306422411264000000L,
+                        Description = "The Ford Maverick is a compact pickup truck produced by Ford Motor Company.",
+                        Name = "Maverick - 4",
+                        Price = 22470m,
+                        ShortId = 9097
+                    },
+                    new
+                    {
+                        Id = new Guid("d53bb159-f4f9-493a-b4dc-215fd765ca24"),
+                        CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306466648064000000L,
+                        Description = "A powerful convertible sports car",
+                        Name = "Roadster - 4",
+                        Price = 42800m,
+                        ShortId = 9098
+                    },
+                    new
+                    {
+                        Id = new Guid("74bb268f-18cf-45ec-9f2f-30b34b18fb34"),
+                        CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306457800704000000L,
+                        Description = "A perfectly adequate family sedan with sharp looks",
+                        Name = "Altima - 4",
+                        Price = 24550m,
+                        ShortId = 9099
+                    },
+                    new
+                    {
+                        Id = new Guid("eb787e1a-7ba8-4708-924b-9f7964fa0f64"),
+                        CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306440105984000000L,
+                        Description = "Legendary supercar with AWD, 4 seats, a powerful V6 engine and the latest tech",
+                        Name = "GT-R - 4",
+                        Price = 113540m,
+                        ShortId = 9100
+                    },
+                    new
+                    {
+                        Id = new Guid("362a6638-0031-485d-825f-e8aeae63a334"),
+                        CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306422411264000000L,
+                        Description = "A new smart SUV",
+                        Name = "Juke - 4",
+                        Price = 28100m,
+                        ShortId = 9101
+                    },
+                    new
+                    {
+                        Id = new Guid("8629931e-e26e-4885-b561-e447197d4b64"),
+                        CategoryId = new Guid("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306466648064000000L,
+                        Description = "Subcompact luxury crossover SUV",
+                        Name = "H247 - 4",
+                        Price = 54950m,
+                        ShortId = 9102
+                    },
+                    new
+                    {
+                        Id = new Guid("a1c1987d-ee6c-41ad-9647-18de45043034"),
+                        CategoryId = new Guid("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306457800704000000L,
+                        Description = "Battery-electric full-size luxury liftback",
+                        Name = "V297 - 4",
+                        Price = 103360m,
+                        ShortId = 9103
+                    },
+                    new
+                    {
+                        Id = new Guid("59eea437-bdf2-4c11-b262-06643b253284"),
+                        CategoryId = new Guid("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306422411264000000L,
+                        Description = "Ultra-rare and powerful sports car",
+                        Name = "R50 - 4",
+                        Price = 2000000m,
+                        ShortId = 9104
+                    },
+                    new
+                    {
+                        Id = new Guid("01d223a3-182d-406a-9722-19dab083f964"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306466648064000000L,
+                        Description = "A powerful, sporty variant of the BMW 5 Series",
+                        Name = "M550i - 4",
+                        Price = 77790m,
+                        ShortId = 9105
+                    },
+                    new
+                    {
+                        Id = new Guid("64a2616f-3af6-4248-86cf-4a605095a644"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306457800704000000L,
+                        Description = "Luxurious and powerful sedan that combines elegant design with impressive performance",
+                        Name = "540i - 4",
+                        Price = 60945m,
+                        ShortId = 9106
+                    },
+                    new
+                    {
+                        Id = new Guid("ac50dc29-4b7e-4d4d-b23a-4227d91f2bb4"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306448953344000000L,
+                        Description = "Combines class, spaciousness, and a well-built cabin",
+                        Name = "530e - 4",
+                        Price = 56545m,
+                        ShortId = 9107
+                    },
+                    new
+                    {
+                        Id = new Guid("fb41cc51-9abd-4b45-b0d9-ea8f565ec504"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306440105984000000L,
+                        Description = "Zippy and fuel-efficient powertrain, and sure-footed handling",
+                        Name = "530i - 4",
+                        Price = 55195m,
+                        ShortId = 9108
+                    },
+                    new
+                    {
+                        Id = new Guid("e159b1ad-12aa-4e02-a39b-d5e4a32eaf94"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306431258624000000L,
+                        Description = "A Beastly coupe, powered by a fine-tuned 523-horsepower V8 engine",
+                        Name = "M850i - 4",
+                        Price = 100045m,
+                        ShortId = 9109
+                    },
+                    new
+                    {
+                        Id = new Guid("4d9cb0f4-1f32-45d5-8c84-d7f15bc569d4"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306422411264000000L,
+                        Description = "A full-size luxury crossover SUV that combines innovative design, an expansive presence, and a range of powerful engines",
+                        Name = "X7 - 4",
+                        Price = 77980m,
+                        ShortId = 9110
+                    },
+                    new
+                    {
+                        Id = new Guid("1b22319e-0a58-471e-82b6-75cd8b9d98e4"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306413563904000000L,
+                        Description = "Luxury crossover SUV that combines cutting-edge technology",
+                        Name = "IX - 4",
+                        Price = 87000m,
+                        ShortId = 9111
+                    },
+                    new
+                    {
+                        Id = new Guid("96c73b9c-03df-4f70-ac8d-75c32b898814"),
+                        CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306466648064000000L,
+                        Description = "Rapid acceleration and dynamic handling",
+                        Name = "Model 3 - 4",
+                        Price = 61990m,
+                        ShortId = 9112
+                    },
+                    new
+                    {
+                        Id = new Guid("840ba759-bde9-4821-b49b-c981c082bb94"),
+                        CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306457800704000000L,
+                        Description = "Finishes near the top of our luxury electric car rankings.",
+                        Name = "Model S - 4",
+                        Price = 135000m,
+                        ShortId = 9113
+                    },
+                    new
+                    {
+                        Id = new Guid("840e113b-5074-4b1c-86bd-e9affb659414"),
+                        CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306448953344000000L,
+                        Description = "Heart-pumping acceleration, long drive range",
+                        Name = "Model X - 4",
+                        Price = 138890m,
+                        ShortId = 9114
+                    },
+                    new
+                    {
+                        Id = new Guid("b2db9074-a0a9-4054-87e2-206b7a55c794"),
+                        CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306422411264000000L,
+                        Description = "Extensive driving range, lots of standard safety features",
+                        Name = "Model Y - 4",
+                        Price = 67790m,
+                        ShortId = 9115
+                    },
+                    new
+                    {
+                        Id = new Guid("9a59dda2-7b12-4cc1-9658-d2586eef91d5"),
+                        CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306466648064000000L,
+                        Description = "The Ford Mustang is ranked #1 in Sports Cars",
+                        Name = "Mustang - 5",
+                        Price = 27155m,
+                        ShortId = 9116
+                    },
+                    new
+                    {
+                        Id = new Guid("a42914e2-92da-4f0b-aab0-b9572c9671b5"),
+                        CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306457800704000000L,
+                        Description = "The Ford GT is a mid-engine two-seater sports car manufactured and marketed by American automobile manufacturer",
+                        Name = "GT - 5",
+                        Price = 500000m,
+                        ShortId = 9117
+                    },
+                    new
+                    {
+                        Id = new Guid("f75325c8-a213-470b-ab93-4677ca4caee5"),
+                        CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306440105984000000L,
+                        Description = "Ford Ranger is a nameplate that has been used on multiple model lines of pickup trucks sold by Ford worldwide.",
+                        Name = "Ranger - 5",
+                        Price = 25000m,
+                        ShortId = 9118
+                    },
+                    new
+                    {
+                        Id = new Guid("43a82ec1-aab6-445f-83af-a85028417cf5"),
+                        CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306431258624000000L,
+                        Description = "Raptor is a SCORE off-road trophy truck living in a asphalt world",
+                        Name = "Raptor - 5",
+                        Price = 53205m,
+                        ShortId = 9119
+                    },
+                    new
+                    {
+                        Id = new Guid("f01b32bb-eccd-43be-aaf3-3c788a7d7555"),
+                        CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306422411264000000L,
+                        Description = "The Ford Maverick is a compact pickup truck produced by Ford Motor Company.",
+                        Name = "Maverick - 5",
+                        Price = 22470m,
+                        ShortId = 9120
+                    },
+                    new
+                    {
+                        Id = new Guid("d53bb159-f4f9-493a-b4dc-215fd765ca25"),
+                        CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306466648064000000L,
+                        Description = "A powerful convertible sports car",
+                        Name = "Roadster - 5",
+                        Price = 42800m,
+                        ShortId = 9121
+                    },
+                    new
+                    {
+                        Id = new Guid("74bb268f-18cf-45ec-9f2f-30b34b18fb35"),
+                        CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306457800704000000L,
+                        Description = "A perfectly adequate family sedan with sharp looks",
+                        Name = "Altima - 5",
+                        Price = 24550m,
+                        ShortId = 9122
+                    },
+                    new
+                    {
+                        Id = new Guid("eb787e1a-7ba8-4708-924b-9f7964fa0f65"),
+                        CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306440105984000000L,
+                        Description = "Legendary supercar with AWD, 4 seats, a powerful V6 engine and the latest tech",
+                        Name = "GT-R - 5",
+                        Price = 113540m,
+                        ShortId = 9123
+                    },
+                    new
+                    {
+                        Id = new Guid("362a6638-0031-485d-825f-e8aeae63a335"),
+                        CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306422411264000000L,
+                        Description = "A new smart SUV",
+                        Name = "Juke - 5",
+                        Price = 28100m,
+                        ShortId = 9124
+                    },
+                    new
+                    {
+                        Id = new Guid("8629931e-e26e-4885-b561-e447197d4b65"),
+                        CategoryId = new Guid("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306466648064000000L,
+                        Description = "Subcompact luxury crossover SUV",
+                        Name = "H247 - 5",
+                        Price = 54950m,
+                        ShortId = 9125
+                    },
+                    new
+                    {
+                        Id = new Guid("a1c1987d-ee6c-41ad-9647-18de45043035"),
+                        CategoryId = new Guid("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306457800704000000L,
+                        Description = "Battery-electric full-size luxury liftback",
+                        Name = "V297 - 5",
+                        Price = 103360m,
+                        ShortId = 9126
+                    },
+                    new
+                    {
+                        Id = new Guid("59eea437-bdf2-4c11-b262-06643b253285"),
+                        CategoryId = new Guid("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306422411264000000L,
+                        Description = "Ultra-rare and powerful sports car",
+                        Name = "R50 - 5",
+                        Price = 2000000m,
+                        ShortId = 9127
+                    },
+                    new
+                    {
+                        Id = new Guid("01d223a3-182d-406a-9722-19dab083f965"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306466648064000000L,
+                        Description = "A powerful, sporty variant of the BMW 5 Series",
+                        Name = "M550i - 5",
+                        Price = 77790m,
+                        ShortId = 9128
+                    },
+                    new
+                    {
+                        Id = new Guid("64a2616f-3af6-4248-86cf-4a605095a645"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306457800704000000L,
+                        Description = "Luxurious and powerful sedan that combines elegant design with impressive performance",
+                        Name = "540i - 5",
+                        Price = 60945m,
+                        ShortId = 9129
+                    },
+                    new
+                    {
+                        Id = new Guid("ac50dc29-4b7e-4d4d-b23a-4227d91f2bb5"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306448953344000000L,
+                        Description = "Combines class, spaciousness, and a well-built cabin",
+                        Name = "530e - 5",
+                        Price = 56545m,
+                        ShortId = 9130
+                    },
+                    new
+                    {
+                        Id = new Guid("fb41cc51-9abd-4b45-b0d9-ea8f565ec505"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306440105984000000L,
+                        Description = "Zippy and fuel-efficient powertrain, and sure-footed handling",
+                        Name = "530i - 5",
+                        Price = 55195m,
+                        ShortId = 9131
+                    },
+                    new
+                    {
+                        Id = new Guid("e159b1ad-12aa-4e02-a39b-d5e4a32eaf95"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306431258624000000L,
+                        Description = "A Beastly coupe, powered by a fine-tuned 523-horsepower V8 engine",
+                        Name = "M850i - 5",
+                        Price = 100045m,
+                        ShortId = 9132
+                    },
+                    new
+                    {
+                        Id = new Guid("4d9cb0f4-1f32-45d5-8c84-d7f15bc569d5"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306422411264000000L,
+                        Description = "A full-size luxury crossover SUV that combines innovative design, an expansive presence, and a range of powerful engines",
+                        Name = "X7 - 5",
+                        Price = 77980m,
+                        ShortId = 9133
+                    },
+                    new
+                    {
+                        Id = new Guid("1b22319e-0a58-471e-82b6-75cd8b9d98e5"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306413563904000000L,
+                        Description = "Luxury crossover SUV that combines cutting-edge technology",
+                        Name = "IX - 5",
+                        Price = 87000m,
+                        ShortId = 9134
+                    },
+                    new
+                    {
+                        Id = new Guid("96c73b9c-03df-4f70-ac8d-75c32b898815"),
+                        CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306466648064000000L,
+                        Description = "Rapid acceleration and dynamic handling",
+                        Name = "Model 3 - 5",
+                        Price = 61990m,
+                        ShortId = 9135
+                    },
+                    new
+                    {
+                        Id = new Guid("840ba759-bde9-4821-b49b-c981c082bb95"),
+                        CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306457800704000000L,
+                        Description = "Finishes near the top of our luxury electric car rankings.",
+                        Name = "Model S - 5",
+                        Price = 135000m,
+                        ShortId = 9136
+                    },
+                    new
+                    {
+                        Id = new Guid("840e113b-5074-4b1c-86bd-e9affb659415"),
+                        CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306448953344000000L,
+                        Description = "Heart-pumping acceleration, long drive range",
+                        Name = "Model X - 5",
+                        Price = 138890m,
+                        ShortId = 9137
+                    },
+                    new
+                    {
+                        Id = new Guid("b2db9074-a0a9-4054-87e2-206b7a55c795"),
+                        CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306422411264000000L,
+                        Description = "Extensive driving range, lots of standard safety features",
+                        Name = "Model Y - 5",
+                        Price = 67790m,
+                        ShortId = 9138
+                    },
+                    new
+                    {
+                        Id = new Guid("9a59dda2-7b12-4cc1-9658-d2586eef91d6"),
+                        CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306466648064000000L,
+                        Description = "The Ford Mustang is ranked #1 in Sports Cars",
+                        Name = "Mustang - 6",
+                        Price = 27155m,
+                        ShortId = 9139
+                    },
+                    new
+                    {
+                        Id = new Guid("a42914e2-92da-4f0b-aab0-b9572c9671b6"),
+                        CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306457800704000000L,
+                        Description = "The Ford GT is a mid-engine two-seater sports car manufactured and marketed by American automobile manufacturer",
+                        Name = "GT - 6",
+                        Price = 500000m,
+                        ShortId = 9140
+                    },
+                    new
+                    {
+                        Id = new Guid("f75325c8-a213-470b-ab93-4677ca4caee6"),
+                        CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306440105984000000L,
+                        Description = "Ford Ranger is a nameplate that has been used on multiple model lines of pickup trucks sold by Ford worldwide.",
+                        Name = "Ranger - 6",
+                        Price = 25000m,
+                        ShortId = 9141
+                    },
+                    new
+                    {
+                        Id = new Guid("43a82ec1-aab6-445f-83af-a85028417cf6"),
+                        CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306431258624000000L,
+                        Description = "Raptor is a SCORE off-road trophy truck living in a asphalt world",
+                        Name = "Raptor - 6",
+                        Price = 53205m,
+                        ShortId = 9142
+                    },
+                    new
+                    {
+                        Id = new Guid("f01b32bb-eccd-43be-aaf3-3c788a7d7556"),
+                        CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306422411264000000L,
+                        Description = "The Ford Maverick is a compact pickup truck produced by Ford Motor Company.",
+                        Name = "Maverick - 6",
+                        Price = 22470m,
+                        ShortId = 9143
+                    },
+                    new
+                    {
+                        Id = new Guid("d53bb159-f4f9-493a-b4dc-215fd765ca26"),
+                        CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306466648064000000L,
+                        Description = "A powerful convertible sports car",
+                        Name = "Roadster - 6",
+                        Price = 42800m,
+                        ShortId = 9144
+                    },
+                    new
+                    {
+                        Id = new Guid("74bb268f-18cf-45ec-9f2f-30b34b18fb36"),
+                        CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306457800704000000L,
+                        Description = "A perfectly adequate family sedan with sharp looks",
+                        Name = "Altima - 6",
+                        Price = 24550m,
+                        ShortId = 9145
+                    },
+                    new
+                    {
+                        Id = new Guid("eb787e1a-7ba8-4708-924b-9f7964fa0f66"),
+                        CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306440105984000000L,
+                        Description = "Legendary supercar with AWD, 4 seats, a powerful V6 engine and the latest tech",
+                        Name = "GT-R - 6",
+                        Price = 113540m,
+                        ShortId = 9146
+                    },
+                    new
+                    {
+                        Id = new Guid("362a6638-0031-485d-825f-e8aeae63a336"),
+                        CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306422411264000000L,
+                        Description = "A new smart SUV",
+                        Name = "Juke - 6",
+                        Price = 28100m,
+                        ShortId = 9147
+                    },
+                    new
+                    {
+                        Id = new Guid("8629931e-e26e-4885-b561-e447197d4b66"),
+                        CategoryId = new Guid("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306466648064000000L,
+                        Description = "Subcompact luxury crossover SUV",
+                        Name = "H247 - 6",
+                        Price = 54950m,
+                        ShortId = 9148
+                    },
+                    new
+                    {
+                        Id = new Guid("a1c1987d-ee6c-41ad-9647-18de45043036"),
+                        CategoryId = new Guid("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306457800704000000L,
+                        Description = "Battery-electric full-size luxury liftback",
+                        Name = "V297 - 6",
+                        Price = 103360m,
+                        ShortId = 9149
+                    },
+                    new
+                    {
+                        Id = new Guid("59eea437-bdf2-4c11-b262-06643b253286"),
+                        CategoryId = new Guid("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306422411264000000L,
+                        Description = "Ultra-rare and powerful sports car",
+                        Name = "R50 - 6",
+                        Price = 2000000m,
+                        ShortId = 9150
+                    },
+                    new
+                    {
+                        Id = new Guid("01d223a3-182d-406a-9722-19dab083f966"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306466648064000000L,
+                        Description = "A powerful, sporty variant of the BMW 5 Series",
+                        Name = "M550i - 6",
+                        Price = 77790m,
+                        ShortId = 9151
+                    },
+                    new
+                    {
+                        Id = new Guid("64a2616f-3af6-4248-86cf-4a605095a646"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306457800704000000L,
+                        Description = "Luxurious and powerful sedan that combines elegant design with impressive performance",
+                        Name = "540i - 6",
+                        Price = 60945m,
+                        ShortId = 9152
+                    },
+                    new
+                    {
+                        Id = new Guid("ac50dc29-4b7e-4d4d-b23a-4227d91f2bb6"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306448953344000000L,
+                        Description = "Combines class, spaciousness, and a well-built cabin",
+                        Name = "530e - 6",
+                        Price = 56545m,
+                        ShortId = 9153
+                    },
+                    new
+                    {
+                        Id = new Guid("fb41cc51-9abd-4b45-b0d9-ea8f565ec506"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306440105984000000L,
+                        Description = "Zippy and fuel-efficient powertrain, and sure-footed handling",
+                        Name = "530i - 6",
+                        Price = 55195m,
+                        ShortId = 9154
+                    },
+                    new
+                    {
+                        Id = new Guid("e159b1ad-12aa-4e02-a39b-d5e4a32eaf96"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306431258624000000L,
+                        Description = "A Beastly coupe, powered by a fine-tuned 523-horsepower V8 engine",
+                        Name = "M850i - 6",
+                        Price = 100045m,
+                        ShortId = 9155
+                    },
+                    new
+                    {
+                        Id = new Guid("4d9cb0f4-1f32-45d5-8c84-d7f15bc569d6"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306422411264000000L,
+                        Description = "A full-size luxury crossover SUV that combines innovative design, an expansive presence, and a range of powerful engines",
+                        Name = "X7 - 6",
+                        Price = 77980m,
+                        ShortId = 9156
+                    },
+                    new
+                    {
+                        Id = new Guid("1b22319e-0a58-471e-82b6-75cd8b9d98e6"),
+                        CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306413563904000000L,
+                        Description = "Luxury crossover SUV that combines cutting-edge technology",
+                        Name = "IX - 6",
+                        Price = 87000m,
+                        ShortId = 9157
+                    },
+                    new
+                    {
+                        Id = new Guid("96c73b9c-03df-4f70-ac8d-75c32b898816"),
+                        CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306466648064000000L,
+                        Description = "Rapid acceleration and dynamic handling",
+                        Name = "Model 3 - 6",
+                        Price = 61990m,
+                        ShortId = 9158
+                    },
+                    new
+                    {
+                        Id = new Guid("840ba759-bde9-4821-b49b-c981c082bb96"),
+                        CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306457800704000000L,
+                        Description = "Finishes near the top of our luxury electric car rankings.",
+                        Name = "Model S - 6",
+                        Price = 135000m,
+                        ShortId = 9159
+                    },
+                    new
+                    {
+                        Id = new Guid("840e113b-5074-4b1c-86bd-e9affb659416"),
+                        CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306448953344000000L,
+                        Description = "Heart-pumping acceleration, long drive range",
+                        Name = "Model X - 6",
+                        Price = 138890m,
+                        ShortId = 9160
+                    },
+                    new
+                    {
+                        Id = new Guid("b2db9074-a0a9-4054-87e2-206b7a55c796"),
+                        CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
+                        CreatedOn = 1306422411264000000L,
+                        Description = "Extensive driving range, lots of standard safety features",
+                        Name = "Model Y - 6",
+                        Price = 67790m,
+                        ShortId = 9161
                     });
             });
 

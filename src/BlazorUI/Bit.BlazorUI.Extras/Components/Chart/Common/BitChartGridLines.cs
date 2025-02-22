@@ -1,7 +1,7 @@
 ﻿namespace Bit.BlazorUI;
 
 /// <summary>
-/// The grid lines sub-config of the axis-configuration (see <see cref="Axes.Axis"/>).
+/// The grid lines sub-config of the axis-configuration (see <see cref="BitChartAxis"/>).
 /// </summary>
 public class BitChartGridLines
 {
@@ -19,18 +19,18 @@ public class BitChartGridLines
     /// The color of the grid lines. If specified as an array, the first color applies to the first grid line, the second to the second grid line and so on.
     /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
     /// </summary>
-    public BitChartIndexableOption<string> Color { get; set; }
+    public BitChartIndexableOption<string>? Color { get; set; }
 
     /// <summary>
     /// Length and spacing of dashes on grid lines
     /// <para>See <a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/setLineDash"/> for patterns and details</para>
     /// </summary>
-    public double[] BorderDash { get; set; }
+    public double[]? BorderDash { get; set; }
 
     /// <summary>
     /// Stroke width of grid lines.
     /// </summary>
-    public BitChartIndexableOption<double> LineWidth { get; set; }
+    public BitChartIndexableOption<double>? LineWidth { get; set; }
 
     /// <summary>
     /// If true, draw border at the edge between the axis and the chart area.
@@ -61,13 +61,13 @@ public class BitChartGridLines
     /// Stroke color of the grid line for the first index (index 0).
     /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
     /// </summary>
-    public string ZeroLineColor { get; set; }
+    public string? ZeroLineColor { get; set; }
 
     /// <summary>
     /// Length and spacing of dashes of the grid line for the first index (index 0).
     /// <para>See <a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/setLineDash"/> for details.</para>
     /// </summary>
-    public double[] ZeroLineBorderDash { get; set; }
+    public double[]? ZeroLineBorderDash { get; set; }
 
     /// <summary>
     /// Offset for line dashes of the grid line for the first index (index 0).

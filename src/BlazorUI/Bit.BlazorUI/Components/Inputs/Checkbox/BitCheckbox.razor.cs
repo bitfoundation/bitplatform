@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// BitCheckbox is a component that permits the user to make a binary choice, a choice between one of two possible mutually exclusive options.
 /// </summary>
-public partial class BitCheckbox : BitInputBase<bool>, IDisposable
+public partial class BitCheckbox : BitInputBase<bool>
 {
     private string _inputId = string.Empty;
 
@@ -77,7 +77,7 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
     /// Setting indeterminate state takes visual precedence over checked given but does not affect on Value state.
     /// </summary>
     [Parameter, ResetClassBuilder, TwoWayBound]
-    [CallOnSet(nameof(SetIndeterminate))]
+    [CallOnSet(nameof(OnSetIndeterminate))]
     public bool Indeterminate { get; set; }
 
     /// <summary>
@@ -201,21 +201,16 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out bool result, [NotNullWhen(false)] out string? parsingErrorMessage)
         => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
 
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            OnValueChanged -= HandleOnValueChanged;
-        }
-
-        base.Dispose(disposing);
-    }
-
 
 
     private async Task SetIndeterminate()
     {
         await _js.BitUtilsSetProperty(InputElement, "indeterminate", Indeterminate);
+    }
+
+    private void OnSetIndeterminate()
+    {
+        _ = SetIndeterminate();
     }
 
     private async Task HandleOnCheckboxClick(MouseEventArgs args)
@@ -245,5 +240,16 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
         if (await AssignIndeterminate(value) is false) return;
 
         await _js.BitUtilsSetProperty(InputElement, "indeterminate", value);
+    }
+
+
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return;
+
+        OnValueChanged -= HandleOnValueChanged;
+
+        await base.DisposeAsync(disposing);
     }
 }

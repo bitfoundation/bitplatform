@@ -35,7 +35,7 @@ public static partial class Program
             // The following is only required for blazor webassembly standalone.
             builder.RootComponents.Add<HeadOutlet>("head::after");
             //#if (appInsights == true)
-            builder.RootComponents.Add<BlazorApplicationInsights.ApplicationInsightsInit>(selector: "head::after");
+            builder.RootComponents.Add(componentType: typeof(BlazorApplicationInsights.ApplicationInsightsInit), selector: "head::after", parameters: ParameterView.FromDictionary(new Dictionary<string, object?> { { nameof(BlazorApplicationInsights.ApplicationInsightsInit.IsWasmStandalone), true } }));
             //#endif
             builder.RootComponents.Add<Routes>("#app-container");
         }

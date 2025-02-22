@@ -2,7 +2,7 @@
 
 public partial class DiagnosticLogger : ILogger, IDisposable
 {
-    public static ConcurrentBag<DiagnosticLog> Store { get; } = [];
+    public static ConcurrentQueue<DiagnosticLog> Store { get; } = [];
 
     private IDictionary<string, object?>? currentState;
 
@@ -30,7 +30,12 @@ public partial class DiagnosticLogger : ILogger, IDisposable
 
         var message = formatter(state, exception);
 
-        Store.Add(new()
+        if (Store.Count >= 1_000)
+        {
+            Store.TryDequeue(out var _);
+        }
+
+        Store.Enqueue(new()
         {
             CreatedOn = DateTimeOffset.Now,
             Level = logLevel,

@@ -36,7 +36,7 @@ public readonly struct BitChartFloatingBarPoint : IEquatable<BitChartFloatingBar
         End = end;
     }
 
-    public override bool Equals(object obj) => obj is BitChartFloatingBarPoint point && Equals(point);
+    public override bool Equals(object? obj) => obj is BitChartFloatingBarPoint point && Equals(point);
     public bool Equals(BitChartFloatingBarPoint other) => Start == other.Start && End == other.End;
     public override int GetHashCode() => HashCode.Combine(Start, End);
 

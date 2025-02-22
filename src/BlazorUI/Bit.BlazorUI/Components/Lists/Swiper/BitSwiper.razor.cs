@@ -5,12 +5,11 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// Swipers (touch slider) let people show their slides in a swiping row.
 /// </summary>
-public partial class BitSwiper : BitComponentBase, IAsyncDisposable
+public partial class BitSwiper : BitComponentBase
 {
     private double _lastX;
-    private bool _disposed;
-    private int _pagesCount;
-    private int _currentPage;
+    //private int _pagesCount;
+    //private int _currentPage;
     private double _lastDiffX;
     private double _translateX;
     private double _rootWidth;
@@ -153,7 +152,7 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
             //    _autoPlayTimer.Start();
             //}
 
-            await _js.BitObserversRegisterResize(_Id, RootElement, _dotnetObj);
+            await _js.BitObserversRegisterResize(UniqueId, RootElement, _dotnetObj);
 
             await _js.BitSwiperRegisterPointerLeave(RootElement, _dotnetObj);
 
@@ -279,15 +278,9 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
 
 
 
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await DisposeAsync(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual async ValueTask DisposeAsync(bool disposing)
-    {
-        if (_disposed || disposing is false) return;
+        if (IsDisposed || disposing is false) return;
 
         if (_autoPlayTimer is not null)
         {
@@ -297,14 +290,14 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
 
         if (_dotnetObj is not null)
         {
-            //_dotnetObjRef.Dispose(); // it is getting disposed in the following js call:
+            //_dotnetObj.Dispose(); // it is getting disposed in the following js call:
             try
             {
-               await _js.BitObserversUnregisterResize(_Id, RootElement, _dotnetObj);
+               await _js.BitObserversUnregisterResize(UniqueId, RootElement, _dotnetObj);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
-        _disposed = true;
+        await base.DisposeAsync(disposing);
     }
 }

@@ -26,4 +26,16 @@ public static class BitButil
 
         return services;
     }
+
+    internal static bool FastInvokeEnabled { get; private set; }
+
+    public static void UseFastInvoke()
+    {
+        FastInvokeEnabled = true;
+    }
+
+    public static void UseNormalInvoke()
+    {
+        FastInvokeEnabled = false;
+    }
 }

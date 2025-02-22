@@ -88,11 +88,11 @@ public readonly struct BitChartClipping : IEquatable<BitChartClipping>
         static string ValOrNull(int? value) => value.HasValue ? value.Value.ToString() : "null";
     }
 
-    public override bool Equals(object obj) => obj is BitChartClipping clipping && Equals(clipping);
+    public override bool Equals(object? obj) => obj is BitChartClipping clipping && Equals(clipping);
+
     public bool Equals(BitChartClipping other)
     {
-        if (_equalSides && other._equalSides)
-            return Top.Value == other.Top.Value;
+        if (_equalSides && other._equalSides) return Top == other.Top;
 
         return Top == other.Top &&
                Right == other.Right &&
@@ -111,7 +111,7 @@ internal class ClippingJsonConverter : JsonConverter<BitChartClipping>
     public override BitChartClipping ReadJson(JsonReader reader, Type objectType, [AllowNull] BitChartClipping existingValue, bool hasExistingValue, JsonSerializer serializer)
     {
         if (reader.TokenType == JsonToken.Integer)
-            return new BitChartClipping((int)(long)reader.Value);
+            return new BitChartClipping((int?)(long?)reader.Value);
 
         if (reader.TokenType != JsonToken.StartObject)
             throw new JsonReaderException();
@@ -127,7 +127,7 @@ internal class ClippingJsonConverter : JsonConverter<BitChartClipping>
 
     private static int? GetClippingValue(JObject obj, string name)
     {
-        if (!obj.TryGetValue(name, StringComparison.OrdinalIgnoreCase, out JToken token))
+        if (!obj.TryGetValue(name, StringComparison.OrdinalIgnoreCase, out JToken? token))
             return null;
 
         if (token.Type == JTokenType.Boolean && (bool)token is false)
@@ -143,11 +143,11 @@ internal class ClippingJsonConverter : JsonConverter<BitChartClipping>
     {
         if (value._equalSides)
         {
-            writer.WriteValue(value.Bottom.Value);
+            writer.WriteValue(value.Bottom!.Value);
             return;
         }
 
-        NamingStrategy naming = (serializer.ContractResolver as DefaultContractResolver)?.NamingStrategy;
+        var naming = (serializer.ContractResolver as DefaultContractResolver)?.NamingStrategy;
 
         writer.WriteStartObject();
 
@@ -166,7 +166,7 @@ internal class ClippingJsonConverter : JsonConverter<BitChartClipping>
         writer.WriteEndObject();
     }
 
-    private static void WriteAdjustedName(JsonWriter writer, NamingStrategy namingStrategy, string name)
+    private static void WriteAdjustedName(JsonWriter writer, NamingStrategy? namingStrategy, string name)
     {
         if (namingStrategy != null)
         {

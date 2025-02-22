@@ -10,7 +10,7 @@ public class BitChartLinearRadialTicks : BitChartTicks
     /// Gets or sets the color of the label backdrops.
     /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
     /// </summary>
-    public string BackdropColor { get; set; }
+    public string? BackdropColor { get; set; }
 
     /// <summary>
     /// Gets or sets the horizontal padding of label backdrop.

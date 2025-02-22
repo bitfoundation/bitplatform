@@ -40,7 +40,7 @@
                        placeholder="@Placeholder"
                        value="@CurrentValueAsString"
                        disabled=@(IsEnabled is false)
-                       readonly=@(AllowTextInput is false)
+                       readonly=@(AllowTextInput is false || ReadOnly)
                        aria-expanded="@(IsOpen ? "true" : "false")"
                        aria-controls="@(IsOpen ? _calloutId : null)"
                        aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
@@ -72,7 +72,7 @@
                class="bit-input-hidden"
                value="@CurrentValueAsString"
                disabled="@(IsEnabled is false)"
-               readonly="@(AllowTextInput is false)" />
+               readonly="@(AllowTextInput is false || ReadOnly)" />
     }
 
     <div id="@_calloutId"

@@ -7,20 +7,18 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// A BitCircularTimePicker offers a drop-down control that’s optimized for picking a single time from a clock view where contextual information like the day of the week or fullness of the calendar is important.
 /// </summary>
-public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
+public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 {
     private int? _hour;
     private int? _minute;
-    private bool _disposed;
     private bool _hasFocus;
     private string? _labelId;
     private string? _inputId;
     private bool _isPointerDown;
     private bool _showHourView = true;
     private ElementReference _clockRef;
+    private string? _abortControllerId;
     private string _calloutId = string.Empty;
-    private string? _pointerUpAbortControllerId;
-    private string? _pointerMoveAbortControllerId;
     private string _circularTimePickerId = string.Empty;
     private CultureInfo _culture = CultureInfo.CurrentUICulture;
     private DotNetObjectReference<BitCircularTimePicker> _dotnetObj = default!;
@@ -314,8 +312,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
 
         await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, BitSwipeOrientation.Vertical, _dotnetObj);
 
-        _pointerUpAbortControllerId = await _js.BitCircularTimePickerRegisterPointerUp(_dotnetObj, nameof(_HandlePointerUp));
-        _pointerMoveAbortControllerId = await _js.BitCircularTimePickerRegisterPointerMove(_dotnetObj, nameof(_HandlePointerMove));
+        _abortControllerId = await _js.BitCircularTimePickerSetup(_dotnetObj, nameof(_HandlePointerUp), nameof(_HandlePointerMove));
     }
 
 
@@ -492,12 +489,18 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
 
     private async Task HandleOnAmClick()
     {
+        if (ReadOnly) return;
+        if (IsEnabled is false) return;
+
         _hour %= 12;  // "12:-- am" is "00:--" in 24h
         await UpdateCurrentValue();
     }
 
     private async Task HandleOnPmClick()
     {
+        if (ReadOnly) return;
+        if (IsEnabled is false) return;
+
         if (_hour <= 12) // "12:-- pm" is "12:--" in 24h
         {
             _hour += 12;
@@ -547,7 +550,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
 
     private async Task UpdateTime(MouseEventArgs e)
     {
-        if (IsEnabled is false || InvalidValueBinding()) return;
+        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
 
         var rect = await _js.BitUtilsGetBoundingClientRect(_clockRef);
         var radius = rect.Width / 2;
@@ -699,27 +702,22 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
 
 
 
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await DisposeAsync(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual async ValueTask DisposeAsync(bool disposing)
-    {
-        if (_disposed || disposing is false) return;
+        if (IsDisposed || disposing is false) return;
 
         OnValueChanged -= HandleOnValueChanged;
 
+        // _dotnetObj.Dispose(); // it is getting disposed in the following js call:
+
         try
         {
+            await _js.BitCircularTimePickerDispose(_abortControllerId);
             await _js.BitCalloutClearCallout(_calloutId);
-            await _js.BitSwipesDispose(_calloutId);
-            await _js.BitCircularTimePickerAbort(_pointerUpAbortControllerId);
-            await _js.BitCircularTimePickerAbort(_pointerMoveAbortControllerId);
+            await _js.BitSwipesDispose(_calloutId); // _dotnetObj is getting disposed here!
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
-        _disposed = true;
+        await base.DisposeAsync(disposing);
     }
 }

@@ -109,7 +109,7 @@ public class BitCheckboxTests : BunitTestContext
 
         if (string.IsNullOrEmpty(ariaLabel) is false)
         {
-            Assert.IsTrue(chbInput.GetAttribute("aria-label").Equals(ariaLabel));
+            Assert.IsTrue(chbInput?.GetAttribute("aria-label")?.Equals(ariaLabel));
         }
         else
         {
@@ -132,7 +132,7 @@ public class BitCheckboxTests : BunitTestContext
 
         if (string.IsNullOrEmpty(ariaDescription) is false)
         {
-            Assert.IsTrue(chbInput.GetAttribute("aria-describedby").Equals(ariaDescription));
+            Assert.IsTrue(chbInput?.GetAttribute("aria-describedby")?.Equals(ariaDescription));
         }
         else
         {
@@ -155,7 +155,7 @@ public class BitCheckboxTests : BunitTestContext
 
         if (string.IsNullOrEmpty(ariaLabelledby) is false)
         {
-            Assert.IsTrue(chbInput.GetAttribute("aria-labelledby").Equals(ariaLabelledby));
+            Assert.IsTrue(chbInput?.GetAttribute("aria-labelledby")?.Equals(ariaLabelledby));
         }
         else
         {
@@ -178,7 +178,7 @@ public class BitCheckboxTests : BunitTestContext
 
         if (string.IsNullOrEmpty(title) is false)
         {
-            Assert.IsTrue(chbInput.GetAttribute("title").Equals(title));
+            Assert.IsTrue(chbInput?.GetAttribute("title")?.Equals(title));
         }
         else
         {
@@ -201,7 +201,7 @@ public class BitCheckboxTests : BunitTestContext
 
         if (name is not null)
         {
-            Assert.IsTrue(chbInput.GetAttribute("name").Equals(name));
+            Assert.IsTrue(chbInput?.GetAttribute("name")?.Equals(name));
         }
         else
         {
@@ -224,7 +224,7 @@ public class BitCheckboxTests : BunitTestContext
 
         if (ariaPosInSet is not null)
         {
-            Assert.IsTrue(chbInput.GetAttribute("aria-posinset").Equals(ariaPosInSet.ToString()));
+            Assert.IsTrue(chbInput?.GetAttribute("aria-posinset")?.Equals(ariaPosInSet.ToString()));
         }
         else
         {
@@ -247,7 +247,7 @@ public class BitCheckboxTests : BunitTestContext
 
         if (ariaSetSize is not null)
         {
-            Assert.IsTrue(chbInput.GetAttribute("aria-setsize").Equals(ariaSetSize.ToString()));
+            Assert.IsTrue(chbInput?.GetAttribute("aria-setsize")?.Equals(ariaSetSize.ToString()));
         }
         else
         {

@@ -6,10 +6,9 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// A BitTimePicker offers a drop-down control that’s optimized for picking a single time from a clock view where contextual information like the day of the week or fullness of the calendar is important.
 /// </summary>
-public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
+public partial class BitTimePicker : BitInputBase<TimeSpan?>
 {
     private bool _hasFocus;
-    private bool _disposed;
     private string? _labelId;
     private string? _inputId;
     private string _calloutId = string.Empty;
@@ -315,6 +314,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
         ClassBuilder.Register(() => Standalone ? "bit-tpc-sta" : string.Empty);
 
         ClassBuilder.Register(() => _hasFocus ? $"bit-tpc-foc {Classes?.Focused}" : string.Empty);
+
+        ClassBuilder.Register(() => IsEnabled && Required ? "bit-tpc-req" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -661,15 +662,9 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
 
 
 
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await DisposeAsync(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual async ValueTask DisposeAsync(bool disposing)
-    {
-        if (_disposed || disposing is false) return;
+        if (IsDisposed || disposing is false) return;
 
         _cancellationTokenSource?.Dispose();
         OnValueChanged -= HandleOnValueChanged;
@@ -681,6 +676,6 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
-        _disposed = true;
+        await base.DisposeAsync(disposing);
     }
 }

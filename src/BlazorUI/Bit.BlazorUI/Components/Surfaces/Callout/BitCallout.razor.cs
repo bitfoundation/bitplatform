@@ -3,9 +3,8 @@
 /// <summary>
 /// A callout is an anchored tip that can be used to teach people or guide them through the app without blocking them.
 /// </summary>
-public partial class BitCallout : BitComponentBase, IAsyncDisposable
+public partial class BitCallout : BitComponentBase
 {
-    private bool _disposed;
     private string _anchorId = default!;
     private string _contentId = default!;
     private DotNetObjectReference<BitCallout> _dotnetObj = default!;
@@ -55,7 +54,7 @@ public partial class BitCallout : BitComponentBase, IAsyncDisposable
     /// Determines the opening state of the callout.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(ToggleCallout))]
+    [CallOnSet(nameof(OnSetIsOpen))]
     [ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
     public bool IsOpen { get; set; }
 
@@ -166,17 +165,16 @@ public partial class BitCallout : BitComponentBase, IAsyncDisposable
         await OnToggle.InvokeAsync(IsOpen);
     }
 
-
-
-    public async ValueTask DisposeAsync()
+    private void OnSetIsOpen()
     {
-        await DisposeAsync(true);
-        GC.SuppressFinalize(this);
+        _ = ToggleCallout();
     }
 
-    protected virtual async ValueTask DisposeAsync(bool disposing)
+
+
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        if (_disposed || disposing is false) return;
+        if (IsDisposed || disposing is false) return;
 
         if (_dotnetObj is not null)
         {
@@ -189,6 +187,6 @@ public partial class BitCallout : BitComponentBase, IAsyncDisposable
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
-        _disposed = true;
+        await base.DisposeAsync(disposing);
     }
 }

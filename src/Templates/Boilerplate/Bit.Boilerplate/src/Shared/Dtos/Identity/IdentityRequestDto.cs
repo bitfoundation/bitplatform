@@ -28,4 +28,9 @@ public partial class IdentityRequestDto : IValidatableObject
             );
         }
     }
+
+    public override string? ToString()
+    {
+        return Email ?? PhoneNumber ?? UserName;
+    }
 }

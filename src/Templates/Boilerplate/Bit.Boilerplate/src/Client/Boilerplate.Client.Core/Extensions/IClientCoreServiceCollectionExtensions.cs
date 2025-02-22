@@ -29,7 +29,6 @@ public static partial class IClientCoreServiceCollectionExtensions
 
         services.AddScoped<ThemeService>();
         services.AddScoped<CultureService>();
-        services.AddScoped<HttpClientHandler>();
         services.AddScoped<LazyAssemblyLoader>();
         services.AddScoped<IAuthTokenProvider, ClientSideAuthTokenProvider>();
         services.AddScoped<IExternalNavigationService, DefaultExternalNavigationService>();
@@ -74,19 +73,21 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddScoped<HttpMessageHandlersChainFactory>(serviceProvider => transportHandler =>
         {
             var constructedHttpMessageHandler = ActivatorUtilities.CreateInstance<LoggingDelegatingHandler>(serviceProvider,
+                        [ActivatorUtilities.CreateInstance<CacheDelegatingHandler>(serviceProvider,
                         [ActivatorUtilities.CreateInstance<RequestHeadersDelegatingHandler>(serviceProvider,
                         [ActivatorUtilities.CreateInstance<AuthDelegatingHandler>(serviceProvider,
                         [ActivatorUtilities.CreateInstance<RetryDelegatingHandler>(serviceProvider,
-                        [ActivatorUtilities.CreateInstance<ExceptionDelegatingHandler>(serviceProvider, [transportHandler])])])])]);
+                        [ActivatorUtilities.CreateInstance<ExceptionDelegatingHandler>(serviceProvider, [transportHandler])])])])])]);
             return constructedHttpMessageHandler;
         });
         services.AddScoped<AuthDelegatingHandler>();
+        services.AddScoped<CacheDelegatingHandler>();
         services.AddScoped<RetryDelegatingHandler>();
         services.AddScoped<ExceptionDelegatingHandler>();
         services.AddScoped<RequestHeadersDelegatingHandler>();
         services.AddScoped(serviceProvider =>
         {
-            var transportHandler = serviceProvider.GetRequiredService<HttpClientHandler>();
+            var transportHandler = serviceProvider.GetRequiredKeyedService<HttpMessageHandler>("PrimaryHttpMessageHandler");
             var constructedHttpMessageHandler = serviceProvider.GetRequiredService<HttpMessageHandlersChainFactory>().Invoke(transportHandler);
             return constructedHttpMessageHandler;
         });
@@ -129,7 +130,7 @@ public static partial class IClientCoreServiceCollectionExtensions
         }, loggingOptions: options => configuration.GetRequiredSection("Logging:ApplicationInsightsLoggerProvider").Bind(options));
         //#endif
 
-        services.AddTypedHttpClients();
+        services.AddTypedHttpClients(); // See Boilerplate.Shared/Controllers/Readme.md
 
         //#if (signalR == true)
         services.AddScoped<IRetryPolicy, SignalRInfiniteRetryPolicy>();

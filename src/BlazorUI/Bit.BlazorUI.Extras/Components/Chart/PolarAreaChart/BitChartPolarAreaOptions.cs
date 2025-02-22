@@ -13,10 +13,10 @@ public class BitChartPolarAreaOptions : BitChartBaseConfigOptions
     /// <summary>
     /// Gets or sets the animation-configuration for this chart.
     /// </summary>
-    public new BitChartArcAnimation Animation { get; set; }
+    public new BitChartArcAnimation? Animation { get; set; }
 
     /// <summary>
     /// The scale (axis) for this chart.
     /// </summary>
-    public BitChartLinearRadialAxis Scale { get; set; }
+    public BitChartLinearRadialAxis? Scale { get; set; }
 }

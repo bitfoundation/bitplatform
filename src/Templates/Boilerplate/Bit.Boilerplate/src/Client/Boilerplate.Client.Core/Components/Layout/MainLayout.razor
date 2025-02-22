@@ -7,7 +7,7 @@
             <CascadingValue Name=@Parameters.IsAuthenticated Value=isAuthenticated>
                 <CascadingValue Name=@Parameters.CurrentRouteData Value=currentRouteData>
                     <CascadingValue Name=@Parameters.IsCrossLayoutPage Value=isCrossLayoutPage>
-                        <BitAppShell AutoGoToTop>
+                        <BitAppShell PersistScroll>
                             <main class="@GetMainCssClass()">
                                 <div class="root">
                                     @if (isAuthenticated is false)
@@ -46,15 +46,15 @@
                                 }
                             </main>
                         </BitAppShell>
+
+                        <AppSnackBar />
+                        <AppDiagnosticModal />
+                        <BitModalContainer ModalParameters="modalParameters" />
+                        <AppJsBridge />
+
                     </CascadingValue>
                 </CascadingValue>
             </CascadingValue>
         </CascadingValue>
     </CascadingValue>
 </CascadingValue>
-
-<SnackBar />
-<DiagnosticModal />
-<BitModalContainer ModalParameters="modalParameters" />
-
-<JsBridge />

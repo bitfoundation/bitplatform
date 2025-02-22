@@ -42,23 +42,23 @@ public class BitChartPolarAreaDataset<T> : BitChartDataset<T>
     protected BitChartPolarAreaDataset(BitChartChartType type) : base(type) { }
 
     /// <inheritdoc cref="BitChartPieDataset{T}.BackgroundColor"/>
-    public BitChartIndexableOption<string> BackgroundColor { get; set; }
+    public BitChartIndexableOption<string>? BackgroundColor { get; set; }
 
     /// <inheritdoc cref="BitChartPieDataset{T}.BorderAlign"/>
-    public BitChartIndexableOption<BitChartBorderAlign> BorderAlign { get; set; }
+    public BitChartIndexableOption<BitChartBorderAlign>? BorderAlign { get; set; }
 
     /// <inheritdoc cref="BitChartPieDataset{T}.BorderColor"/>
-    public BitChartIndexableOption<string> BorderColor { get; set; }
+    public BitChartIndexableOption<string>? BorderColor { get; set; }
 
     /// <inheritdoc cref="BitChartPieDataset{T}.BorderWidth"/>
-    public BitChartIndexableOption<int> BorderWidth { get; set; }
+    public BitChartIndexableOption<int>? BorderWidth { get; set; }
 
     /// <inheritdoc cref="BitChartPieDataset{T}.HoverBackgroundColor"/>
-    public BitChartIndexableOption<string> HoverBackgroundColor { get; set; }
+    public BitChartIndexableOption<string>? HoverBackgroundColor { get; set; }
 
     /// <inheritdoc cref="BitChartPieDataset{T}.HoverBorderColor"/>
-    public BitChartIndexableOption<string> HoverBorderColor { get; set; }
+    public BitChartIndexableOption<string>? HoverBorderColor { get; set; }
 
     /// <inheritdoc cref="BitChartPieDataset{T}.HoverBorderWidth"/>
-    public BitChartIndexableOption<int> HoverBorderWidth { get; set; }
+    public BitChartIndexableOption<int>? HoverBorderWidth { get; set; }
 }

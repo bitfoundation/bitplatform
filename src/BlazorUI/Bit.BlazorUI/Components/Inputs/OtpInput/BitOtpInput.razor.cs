@@ -200,7 +200,7 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         foreach (var inputRef in _inputRefs)
         {
-            await _js.BitOtpInputSetup(_Id, _dotnetObj, inputRef);
+            await _js.BitOtpInputSetup(UniqueId, _dotnetObj, inputRef);
         }
     }
 
@@ -209,17 +209,6 @@ public partial class BitOtpInput : BitInputBase<string?>
         result = value;
         parsingErrorMessage = null;
         return true;
-    }
-
-    protected override async ValueTask DisposeAsync(bool disposing)
-    {
-        if (disposing)
-        {
-            _dotnetObj?.Dispose();
-            await _js.BitOtpInputDispose(_Id);
-        }
-
-        base.Dispose(disposing);
     }
 
 
@@ -436,5 +425,25 @@ public partial class BitOtpInput : BitInputBase<string?>
         if (newValue.Substring(newLength - oldLength, oldLength) == oldValue) return newValue[..(newLength - oldLength)];
 
         return newValue;
+    }
+
+
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return;
+
+        if (_dotnetObj is not null)
+        {
+            _dotnetObj.Dispose();
+
+            try
+            {
+                await _js.BitOtpInputDispose(UniqueId);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+        }
+
+        await base.DisposeAsync(disposing);
     }
 }

@@ -282,7 +282,7 @@ public partial class BitSwipeTrapDemo
 
     private int deletingIndex = -1;
     private bool isListDialogOpen;
-    private TaskCompletionSource listTcs;
+    private TaskCompletionSource? listTcs;
     private List<int> itemsList = Enumerable.Range(0, 10).ToList();
     private decimal[] diffXList = Enumerable.Repeat(0m, 10).ToArray();
     private void HandleOnMoveList(BitSwipeTrapEventArgs args, int index)
@@ -320,11 +320,11 @@ public partial class BitSwipeTrapDemo
         {
             itemsList.Remove(deletingIndex);
         }
-        listTcs.SetResult();
+        listTcs?.SetResult();
     }
     private void HandleOnCancelList()
     {
-        listTcs.SetResult();
+        listTcs?.SetResult();
     }
     private void ResetList()
     {
