@@ -83,6 +83,7 @@
     <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
         <AndroidResource Include="Platforms\Android\Resources\**\styles.xml" />
         <GoogleServicesJson Condition="Exists('Platforms\Android\google-services.json')" Include="Platforms\Android\google-services.json" />
+        <AndroidAotProfile Condition="Exists('custom.aprof')" Include="custom.aprof" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" />
         <PackageReference Include="Xamarin.AndroidX.Collection" />
@@ -98,15 +99,12 @@
         <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData.Core.Ktx" />
         <PackageReference Include="Xamarin.GooglePlayServices.Basement" />
         <PackageReference Include="Xamarin.Google.Android.Play.Review.Ktx" />
-        
-        <AndroidAotProfile Condition="Exists('custom.aprof')" Include="custom.aprof" />
         <!--/-:msbuild-conditional:noEmit -->
         <!-- Run the following commands to create custom.aprof file which improves the Android app performance -->
         <!-- dotnet add package Mono.AotProfiler.Android -->
         <!-- dotnet build -t:BuildAndStartAotProfiling -f net9.0-android -p:UseInterpreter=false -->
         <!-- dotnet build -t:FinishAotProfiling -f net9.0-android -->
         <!-- dotnet remove package Mono.AotProfiler.Android -->
-        
     </ItemGroup>
 
     <ItemGroup Condition="$(TargetFramework.Contains('-ios'))">
