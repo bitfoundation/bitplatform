@@ -7,20 +7,26 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Components/Layout/AppDiagnosticModal.razor.css",
+        "inputFile": "Components/Layout/AppDiagnosticModal.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Components/Layout/AppErrorBoundary.razor.css",
         "inputFile": "Components/Layout/AppErrorBoundary.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Layout/AuthorizedHeader.razor.css",
-        "inputFile": "Components/Layout/AuthorizedHeader.razor.scss",
+        "outputFile": "Components/Layout/AppSnackBar.razor.css",
+        "inputFile": "Components/Layout/AppSnackBar.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Layout/DiagnosticModal.razor.css",
-        "inputFile": "Components/Layout/DiagnosticModal.razor.scss",
+        "outputFile": "Components/Layout/AuthorizedHeader.razor.css",
+        "inputFile": "Components/Layout/AuthorizedHeader.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Client.Core.Components.Layout;
 
-public partial class SnackBar
+public partial class AppSnackBar
 {
     private Action? unsubscribe;
     private BitSnackBar snackbarRef = default!;
