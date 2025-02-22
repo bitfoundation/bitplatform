@@ -40,7 +40,7 @@
                        placeholder="@Placeholder"
                        value="@CurrentValueAsString"
                        disabled=@(IsEnabled is false)
-                       readonly=@(AllowTextInput is false)
+                       readonly=@(AllowTextInput is false || ReadOnly)
                        aria-expanded="@(IsOpen ? "true" : "false")"
                        aria-controls="@(IsOpen ? _calloutId : null)"
                        aria-labelledby="@((LabelTemplate is not null || Label.HasValue()) ? _labelId : null)"
@@ -85,7 +85,7 @@
                class="bit-input-hidden"
                value="@CurrentValueAsString"
                disabled="@(IsEnabled is false)"
-               readonly="@(AllowTextInput is false)" />
+               readonly="@(AllowTextInput is false || ReadOnly)" />
     }
 
     <div id="@_calloutId"
@@ -566,6 +566,7 @@
                                        max="@(TimeFormat == BitTimeFormat.TwelveHours ? "12" : "23")"
                                        type="number"
                                        inputmode="numeric"
+                                       readonly="@ReadOnly"
                                        disabled="@(IsEnabled is false)"
                                        aria-disabled="@(IsEnabled is false)"
                                        style="@Styles?.TimePickerHourInput"
@@ -602,6 +603,7 @@
                                        max="59"
                                        type="number"
                                        inputmode="numeric"
+                                       readonly="@ReadOnly"
                                        disabled="@(IsEnabled is false)"
                                        aria-disabled="@(IsEnabled is false)"
                                        style="@Styles?.TimePickerMinuteInput"

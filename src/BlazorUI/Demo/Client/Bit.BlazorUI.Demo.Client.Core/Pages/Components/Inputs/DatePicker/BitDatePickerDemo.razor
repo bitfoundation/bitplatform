@@ -53,16 +53,17 @@
         </div>
     </DemoSection>
 
-    <DemoSection Title="Text input" RazorCode="@example3RazorCode" Id="example3">
-        <div class="example-desc">
-            The input field will open the BitDatePicker, and clicking the field again will dismiss the BitDatePicker and
-            allow text input. Please note to use this feature, you must enter the date in the exact <code>DateFormat</code> provided for the BitDatePicker.
-        </div>
+    <DemoSection Title="Hour/Minute step" RazorCode="@example3RazorCode" Id="example3">
+        <div>Adjust the increment step for hours and minutes when using the BitDatePicker's time selection feature.</div>
+        <br />
         <div class="example-content">
-            <BitDatePicker Label="Text input allowed"
-                           AllowTextInput=true
-                           DateFormat="dd/MM/yyyy"
-                           Placeholder="Enter a date (dd/MM/yyyy)" />
+            <BitDatePicker ShowTimePicker
+                           Label="HourStep = 2"
+                           HourStep="2" />
+            <br />
+            <BitDatePicker ShowTimePicker
+                           Label="MinuteStep = 15"
+                           MinuteStep="15" />
         </div>
     </DemoSection>
 
@@ -78,50 +79,16 @@
         </div>
     </DemoSection>
 
-    <DemoSection Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-        <div>Explore styling and class customization for BitDatePicker, including component styles, custom classes, and detailed styles.</div>
-        <br /><br />
-        <div>Component's Style & Class:</div><br />
-        <div class="example-content">
-            <BitDatePicker Style="margin: 1rem; box-shadow: dodgerblue 0 0 1rem;" />
-            <br />
-            <BitDatePicker Class="custom-class" />
+    <DemoSection Title="Text input" RazorCode="@example5RazorCode" Id="example5">
+        <div class="example-desc">
+            The input field will open the BitDatePicker, and clicking the field again will dismiss the BitDatePicker and
+            allow text input. Please note to use this feature, you must enter the date in the exact <code>DateFormat</code> provided for the BitDatePicker.
         </div>
-        <br /><br /><br />
-        <div><b>Styles</b> & <b>Classes</b>:</div><br />
         <div class="example-content">
-            <BitDatePicker ShowTimePicker
-                           Styles="@(new() { Root = "margin-inline: 1rem;",
-                                                 Focused = "--focused-background: #b2b2b25a;",
-                                                 Input = "padding: 0.5rem;",
-                                                 InputContainer = "background: var(--focused-background);",
-                                                 Group = "border: 1px solid mediumseagreen; background: #1c73324d;",
-                                                 Divider = "border-color: mediumseagreen;",
-                                                 DayPickerMonth = "color: darkgreen;",
-                                                 TodayDayButton = "background-color: green;",
-                                                 SelectedDayButton = "background-color: limegreen;",
-                                                 TimePickerIncreaseHourButton = "background-color: limegreen;",
-                                                 TimePickerIncreaseMinuteButton = "background-color: limegreen;",
-                                                 TimePickerDecreaseHourButton = "background-color: limegreen;",
-                                                 TimePickerDecreaseMinuteButton = "background-color: limegreen;" })" />
-            <br />
-            <BitDatePicker @bind-Value="@classesValue"
-                           Label="Select a date"
-                           Classes="@(new() { Root = "custom-root",
-                                                  Focused = "custom-focus",
-                                                  Input = "custom-input",
-                                                  InputContainer = "custom-input-container",
-                                                  Label = $"custom-label{(classesValue is null ? string.Empty : " custom-label-top")}",
-                                                  DayPickerWrapper = "custom-day-picker",
-                                                  DayButton = "custom-day",
-                                                  TodayDayButton = "custom-today-day",
-                                                  SelectedDayButton = "custom-selected-day",
-                                                  PrevMonthNavButton = "custom-prev-month",
-                                                  NextMonthNavButton = "custom-next-month",
-                                                  DayPickerMonth = "custom-day-month",
-                                                  DayPickerHeader = "custom-day-header",
-                                                  WeekNumbersHeader = "custom-week-header",
-                                                  YearMonthPickerWrapper = "custom-year-picker" })" />
+            <BitDatePicker Label="Text input allowed"
+                           AllowTextInput
+                           DateFormat="dd/MM/yyyy"
+                           Placeholder="Enter a date (dd/MM/yyyy)" />
         </div>
     </DemoSection>
 
@@ -156,7 +123,39 @@
         </div>
     </DemoSection>
 
-    <DemoSection Title="Templates" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoSection Title="Standalone" RazorCode="@example8RazorCode" Id="example8">
+        <div>Use the BitDatePicker in a standalone mode, allowing it to function independently without a surrounding form or container.</div>
+        <br />
+        <div class="example-content-standalone">
+            <BitDatePicker Label="Basic DatePicker" Standalone />
+            <br /><br />
+            <BitDatePicker Label="Disabled" IsEnabled="false" Standalone />
+            <br /><br />
+            <BitDatePicker Label="Week numbers" ShowWeekNumbers Standalone />
+            <br /><br />
+            <BitDatePicker Label="Highlight months" HighlightCurrentMonth HighlightSelectedMonth Standalone />
+            <br /><br />
+            <BitDatePicker Label="TimePicker" ShowTimePicker Standalone />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="ReadOnly" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>Use the BitDatePicker in a standalone mode, allowing it to function independently without a surrounding form or container.</div>
+        <br />
+        <div class="example-content">
+            <BitDatePicker Label="Basic" ReadOnly @bind-Value="readOnlyDate" />
+            <br /><br />
+            <BitDatePicker Label="Text input allowed" ReadOnly AllowTextInput @bind-Value="readOnlyDate" />
+        </div>
+        <br /><br />
+        <div class="example-content-standalone">
+            <BitDatePicker Label="Standalone" ReadOnly Standalone @bind-Value="readOnlyDate" />
+            <br /><br />
+            <BitDatePicker Label="Standalone with TimePicker" ReadOnly ShowTimePicker Standalone @bind-Value="readOnlyDate" />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Templates" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>Utilize various templates within the BitDatePicker, such as custom label templates, day cell templates, and year cell templates.</div>
         <br />
         <div class="example-content">
@@ -198,7 +197,7 @@
         </div>
     </DemoSection>
 
-    <DemoSection Title="Responsive" RazorCode="@example9RazorCode" Id="example9">
+    <DemoSection Title="Responsive" RazorCode="@example11RazorCode" Id="example11">
         <div>Enable responsive design for the BitDatePicker, allowing it to adjust its layout and appearance based on the screen size.</div>
         <br />
         <div class="example-content">
@@ -206,36 +205,6 @@
                            Responsive
                            ShowWeekNumbers
                            Placeholder="Select a date" />
-        </div>
-    </DemoSection>
-
-    <DemoSection Title="Hour/Minute step" RazorCode="@example10RazorCode" Id="example10">
-        <div>Adjust the increment step for hours and minutes when using the BitDatePicker's time selection feature.</div>
-        <br />
-        <div class="example-content">
-            <BitDatePicker ShowTimePicker
-                           Label="HourStep = 2"
-                           HourStep="2" />
-            <br />
-            <BitDatePicker ShowTimePicker
-                           Label="MinuteStep = 15"
-                           MinuteStep="15" />
-        </div>
-    </DemoSection>
-
-    <DemoSection Title="Standalone" RazorCode="@example11RazorCode" Id="example11">
-        <div>Use the BitDatePicker in a standalone mode, allowing it to function independently without a surrounding form or container.</div>
-        <br />
-        <div class="example-content-standalone">
-            <BitDatePicker Label="Basic DatePicker" Standalone />
-            <br /><br />
-            <BitDatePicker Label="Disabled" IsEnabled="false" Standalone />
-            <br /><br />
-            <BitDatePicker Label="Week numbers" ShowWeekNumbers Standalone />
-            <br /><br />
-            <BitDatePicker Label="Highlight months" HighlightCurrentMonth HighlightSelectedMonth Standalone />
-            <br /><br />
-            <BitDatePicker Label="TimePicker" ShowTimePicker Standalone />
         </div>
     </DemoSection>
 
@@ -264,7 +233,54 @@
         </div>
     </DemoSection>
 
-    <DemoSection Title="RTL" RazorCode="@example13RazorCode" Id="example13">
+    <DemoSection Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <div>Explore styling and class customization for BitDatePicker, including component styles, custom classes, and detailed styles.</div>
+        <br /><br />
+        <div>Component's Style & Class:</div><br />
+        <div class="example-content">
+            <BitDatePicker Style="margin: 1rem; box-shadow: dodgerblue 0 0 1rem;" />
+            <br />
+            <BitDatePicker Class="custom-class" />
+        </div>
+        <br /><br /><br />
+        <div><b>Styles</b> & <b>Classes</b>:</div><br />
+        <div class="example-content">
+            <BitDatePicker ShowTimePicker
+                           Styles="@(new() { Root = "margin-inline: 1rem;",
+                                                 Focused = "--focused-background: #b2b2b25a;",
+                                                                                                                                                                                                    Input = "padding: 0.5rem;",
+                                                                                                                                                                                                    InputContainer = "background: var(--focused-background);",
+                                                                                                                                                                                                    Group = "border: 1px solid mediumseagreen; background: #1c73324d;",
+                                                                                                                                                                                                    Divider = "border-color: mediumseagreen;",
+                                                                                                                                                                                                    DayPickerMonth = "color: darkgreen;",
+                                                                                                                                                                                                    TodayDayButton = "background-color: green;",
+                                                                                                                                                                                                    SelectedDayButton = "background-color: limegreen;",
+                                                                                                                                                                                                    TimePickerIncreaseHourButton = "background-color: limegreen;",
+                                                                                                                                                                                                    TimePickerIncreaseMinuteButton = "background-color: limegreen;",
+                                                                                                                                                                                                    TimePickerDecreaseHourButton = "background-color: limegreen;",
+                                                                                                                                                                                                    TimePickerDecreaseMinuteButton = "background-color: limegreen;" })" />
+            <br />
+            <BitDatePicker @bind-Value="@classesValue"
+                           Label="Select a date"
+                           Classes="@(new() { Root = "custom-root",
+                                                                                                                                                                                                        Focused = "custom-focus",
+                                                                                                                                                                                                        Input = "custom-input",
+                                                                                                                                                                                                        InputContainer = "custom-input-container",
+                                                                                                                                                                                                        Label = $"custom-label{(classesValue is null ? string.Empty : " custom-label-top")}",
+                                                                                                                                                                                                        DayPickerWrapper = "custom-day-picker",
+                                                                                                                                                                                                        DayButton = "custom-day",
+                                                                                                                                                                                                        TodayDayButton = "custom-today-day",
+                                                                                                                                                                                                        SelectedDayButton = "custom-selected-day",
+                                                                                                                                                                                                        PrevMonthNavButton = "custom-prev-month",
+                                                                                                                                                                                                        NextMonthNavButton = "custom-next-month",
+                                                                                                                                                                                                        DayPickerMonth = "custom-day-month",
+                                                                                                                                                                                                        DayPickerHeader = "custom-day-header",
+                                                                                                                                                                                                        WeekNumbersHeader = "custom-week-header",
+                                                                                                                                                                                                        YearMonthPickerWrapper = "custom-year-picker" })" />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="RTL" RazorCode="@example14RazorCode" Id="example14">
         <div>Use BitDatePicker in right-to-left (RTL).</div>
         <br />
         <div dir="rtl">
