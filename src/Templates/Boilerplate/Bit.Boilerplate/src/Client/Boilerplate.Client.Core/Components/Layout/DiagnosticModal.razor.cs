@@ -172,7 +172,7 @@ public partial class DiagnosticModal
         }
         catch (Exception exp)
         {
-            resultBuilder += $"{Environment.NewLine}Error while getting diagnostic data: {exp.Message}";
+            resultBuilder.AppendLine($"{Environment.NewLine}Error while getting diagnostic data: {exp.Message}");
         }
 
         await messageBoxService.Show("Diagnostics Result", resultBuilder.ToString());
