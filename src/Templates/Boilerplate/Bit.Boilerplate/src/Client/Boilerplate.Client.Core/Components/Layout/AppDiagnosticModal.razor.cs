@@ -1,6 +1,9 @@
 ﻿using System.Text;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+//#if (signalR == true)
+using Microsoft.AspNetCore.SignalR.Client;
+//#endif
 using Boilerplate.Shared.Controllers.Diagnostics;
 using Boilerplate.Client.Core.Services.DiagnosticLog;
 
@@ -30,9 +33,15 @@ public partial class AppDiagnosticModal
 
 
     [AutoInject] private Clipboard clipboard = default!;
+    //#if (signalR == true)
+    [AutoInject] private HubConnection hubConnection = default!;
+    //#endif
     [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private BitMessageBoxService messageBoxService = default!;
     [AutoInject] private IDiagnosticsController diagnosticsController = default!;
+    //#if (notification == true)
+    [AutoInject] private IPushNotificationService pushNotificationService = default!;
+    //#endif
 
     protected override Task OnInitAsync()
     {
@@ -146,7 +155,26 @@ public partial class AppDiagnosticModal
 
     private async Task CallDiagnosticsApi()
     {
-        var serverResult = await diagnosticsController.PerformDiagnostics(CurrentCancellationToken);
+        string? signalRConnectionId = null;
+        string? pushNotificationSubscriptionDeviceId = null;
+
+        //#if (signalR == true)
+        try
+        {
+            signalRConnectionId = hubConnection.State == HubConnectionState.Connected ? hubConnection.ConnectionId : null;
+        }
+        catch { }
+        //#endif
+
+        //#if (notification == true)
+        try
+        {
+            pushNotificationSubscriptionDeviceId = (await pushNotificationService.IsPushNotificationSupported(CurrentCancellationToken)) ? (await pushNotificationService.GetSubscription(CurrentCancellationToken)).DeviceId : null;
+        }
+        catch { }
+        //#endif
+
+        var serverResult = await diagnosticsController.PerformDiagnostics(signalRConnectionId, pushNotificationSubscriptionDeviceId, CurrentCancellationToken);
 
         StringBuilder resultBuilder = new(serverResult);
         try

@@ -22,7 +22,7 @@ public partial class DiagnosticsController : AppControllerBase, IDiagnosticsCont
     //#endif
 
     [HttpPost]
-    public async Task<string> PerformDiagnostics(CancellationToken cancellationToken)
+    public async Task<string> PerformDiagnostics([FromQuery] string? signalRConnectionId, [FromQuery] string? pushNotificationSubscriptionDeviceId, CancellationToken cancellationToken)
     {
         StringBuilder result = new();
 
@@ -44,21 +44,21 @@ public partial class DiagnosticsController : AppControllerBase, IDiagnosticsCont
         result.AppendLine($"IsAuthenticated: {isAuthenticated.ToString().ToLowerInvariant()}");
 
         //#if (notification == true)
-        if (isAuthenticated)
+        if (string.IsNullOrEmpty(pushNotificationSubscriptionDeviceId) is false)
         {
-            var subscription = await DbContext.UserSessions.Include(us => us.PushNotificationSubscription)
-                .FirstOrDefaultAsync(us => us.Id == userSessionId, cancellationToken);
+            var subscription = await DbContext.PushNotificationSubscriptions.Include(us => us.UserSession)
+                .FirstOrDefaultAsync(d => d.DeviceId == pushNotificationSubscriptionDeviceId, cancellationToken);
 
-            result.AppendLine($"Subscription exists: {(subscription?.PushNotificationSubscription is not null).ToString().ToLowerInvariant()}");
+            result.AppendLine($"Subscription exists: {(subscription is not null).ToString().ToLowerInvariant()}");
 
-            await pushNotificationService.RequestPush("Test Push", DateTimeOffset.Now.ToString("HH:mm:ss"), "Test action", userRelatedPush: true, u => u.UserSessionId == userSessionId, cancellationToken);
+            await pushNotificationService.RequestPush("Test Push", DateTimeOffset.Now.ToString("HH:mm:ss"), "Test action", userRelatedPush: false, u => u.DeviceId == pushNotificationSubscriptionDeviceId, cancellationToken);
         }
         //#endif
 
         //#if (signalR == true)
-        if (isAuthenticated && userSession!.SignalRConnectionId is not null)
+        if (string.IsNullOrEmpty(signalRConnectionId) is false)
         {
-            await appHubContext.Clients.Client(userSession.SignalRConnectionId).SendAsync(SignalREvents.SHOW_MESSAGE, DateTimeOffset.Now.ToString("HH:mm:ss"), cancellationToken);
+            await appHubContext.Clients.Client(signalRConnectionId).SendAsync(SignalREvents.SHOW_MESSAGE, DateTimeOffset.Now.ToString("HH:mm:ss"), cancellationToken);
         }
         //#endif
 
