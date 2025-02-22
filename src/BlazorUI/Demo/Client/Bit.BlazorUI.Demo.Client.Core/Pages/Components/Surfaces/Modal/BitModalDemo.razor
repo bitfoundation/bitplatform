@@ -308,7 +308,7 @@
                 <span class="modal-header-text">Full size modal</span>
                 <BitButton Variant="BitVariant.Text"
                            OnClick="() => isFullSize = !isFullSize"
-                           IconName="@(isFullSize? BitIconName.BackToWindow: BitIconName.ChromeFullScreen)"
+                           IconName="@(isFullSize ? BitIconName.BackToWindow : BitIconName.ChromeFullScreen)"
                            Title="@(isFullSize ? "Exit FullScreen" : "FullScreen")" />
                 <BitButton Variant="BitVariant.Text"
                            OnClick="() => isOpenFullSize = false"
