@@ -81,6 +81,7 @@ public partial class BitModal : BitComponentBase
     /// Whether the Modal is displayed.
     /// </summary>
     [Parameter, TwoWayBound]
+    [CallOnSet(nameof(OnSetIsOpen))]
     public bool IsOpen { get; set; }
 
     /// <summary>
@@ -216,8 +217,6 @@ public partial class BitModal : BitComponentBase
         await ModalParameters.OnOverlayClick.InvokeAsync(e);
 
         if (await AssignIsOpen(false) is false) return;
-
-        await ModalParameters.OnDismiss.InvokeAsync(e);
     }
 
     private string GetDragElementSelector()
@@ -235,6 +234,13 @@ public partial class BitModal : BitComponentBase
         if (ModalParameters.AutoToggleScroll is false) return;
 
         _offsetTop = await _js.BitUtilsToggleOverflow(ModalParameters.ScrollerSelector ?? "body", isOpen);
+    }
+
+    private void OnSetIsOpen()
+    {
+        if (IsOpen) return;
+
+        _ = ModalParameters.OnDismiss.InvokeAsync();
     }
 
 
