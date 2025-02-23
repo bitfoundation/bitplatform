@@ -25,7 +25,6 @@
 
         <PackageReference Include="Bit.BlazorUI" Version="9.5.0-pre-04" />
         <PackageReference Include="Bit.BlazorUI.Icons" Version="9.5.0-pre-04" />
-        <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.Icons.wasm" />
         <PackageReference Include="Bit.BlazorUI.Assets" Version="9.5.0-pre-04" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="9.5.0-pre-04">
             <PrivateAssets>all</PrivateAssets>
