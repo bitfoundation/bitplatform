@@ -45,11 +45,11 @@ jobs:
       folderPath: './'
       targetFiles: 'src/Shared/appsettings.json, src/Client/Boilerplate.Client.Core/appsettings.json, src/Client/Boilerplate.Client.Web/appsettings.json'
 
-  - task: Bash@3
-    displayName: 'Generate CSS/JS files'
-    inputs:
-      targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release'
+  - script: |
+      dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release
+      dotnet build src/Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj -t:BeforeBuildTasks --no-restore -c Release
+    failOnStderr: true
+    displayName: Generate CSS/JS files
 
   - task: Bash@3
     displayName: 'Publish'
