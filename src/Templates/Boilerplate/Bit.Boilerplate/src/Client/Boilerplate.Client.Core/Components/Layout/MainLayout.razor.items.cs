@@ -69,22 +69,15 @@ public partial class MainLayout
             termsNavItem
         ];
 
-        // Currently, the "About" page is absent from the Client/Core project, rendering it inaccessible on the web platform.
-        // In order to exhibit a sample page that grants direct access to native functionalities without dependence on
-        // dependency injection (DI) or publish-subscribe patterns, the "About" page is integrated within Blazor
-        // hybrid projects like Client/Maui.
-        if (AppPlatform.IsBlazorHybrid)
+        BitNavItem aboutNavItem = new()
         {
-            BitNavItem aboutNavItem = new()
-            {
-                Text = localizer[nameof(AppStrings.AboutTitle)],
-                IconName = BitIconName.Info,
-                Url = Urls.AboutPage,
-            };
+            Text = localizer[nameof(AppStrings.AboutTitle)],
+            IconName = BitIconName.Info,
+            Url = Urls.AboutPage,
+        };
 
-            navPanelAuthenticatedItems.Add(aboutNavItem);
-            navPanelUnAuthenticatedItems.Add(aboutNavItem);
-        }
+        navPanelAuthenticatedItems.Add(aboutNavItem);
+        navPanelUnAuthenticatedItems.Add(aboutNavItem);
 
         navPanelAuthenticatedItems.Add(new()
         {

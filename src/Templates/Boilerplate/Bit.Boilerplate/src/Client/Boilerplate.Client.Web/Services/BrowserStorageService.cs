@@ -9,8 +9,17 @@ public partial class BrowserStorageService : IStorageService
 
     public async ValueTask<string?> GetItem(string key)
     {
-        return await localStorage.GetItem(key) ??
-            await sessionStorage.GetItem(key);
+        try
+        {
+            BitButil.UseFastInvoke();
+
+            return await localStorage.GetItem(key) ??
+                await sessionStorage.GetItem(key);
+        }
+        finally
+        {
+            BitButil.UseNormalInvoke();
+        }
     }
 
     public async ValueTask RemoveItem(string key)

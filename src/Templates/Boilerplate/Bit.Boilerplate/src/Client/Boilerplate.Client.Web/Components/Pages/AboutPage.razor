@@ -1,0 +1,24 @@
+﻿@attribute [Route(Urls.AboutPage)]
+@attribute [Route("{culture?}" + Urls.AboutPage)]
+@inherits AppPageBase
+
+<section>
+    <BitStack Gap="3rem">
+        <BitText Typography="BitTypography.Body1">
+            For Razor pages that are exclusively dependent on native Maui features for Android, iOS, Windows, and macOS functionality,
+            consider using Client/Maui project instead of placing them in Client/Core project.
+            <br />
+            This approach allows direct access to native features without the need for dependency injection (DI) or publish-subscribe messaging patterns.
+        </BitText>
+
+        <BitStack AutoWidth>
+            <BitText>App Name: <b>@appName</b></BitText>
+            <BitText>App Version: <b>@appVersion</b></BitText>
+            <BitText>OS: <b>@platform</b></BitText>
+            <BitText>Web View: <b>@webView</b></BitText>
+            <BitText>OEM: <b>@oem</b></BitText>
+            <BitText>Environment: <b>@AppEnvironment.Current</b></BitText>
+            <BitText>Process Id: <b>@processId</b></BitText>
+        </BitStack>
+    </BitStack>
+</section>
