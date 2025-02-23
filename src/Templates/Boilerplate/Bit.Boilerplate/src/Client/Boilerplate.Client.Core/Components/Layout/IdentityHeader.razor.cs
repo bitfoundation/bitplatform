@@ -9,13 +9,13 @@ public partial class IdentityHeader : AppComponentBase
     private BitDropdownItem<string>[] cultures = default!;
 
 
-    [CascadingParameter] private BitDir? currentDir { get; set; }
-    [CascadingParameter(Name = Parameters.IsCrossLayoutPage)] private bool? isCrossLayoutPage { get; set; }
-    [CascadingParameter(Name = Parameters.CurrentTheme)] private AppThemeType? currentTheme { get; set; }
-
-
     [AutoInject] private ThemeService themeService = default!;
     [AutoInject] private CultureService cultureService = default!;
+
+
+    [CascadingParameter] private BitDir? currentDir { get; set; }
+    [CascadingParameter(Name = Parameters.CurrentTheme)] private AppThemeType? currentTheme { get; set; }
+    [CascadingParameter(Name = Parameters.IsCrossLayoutPage)] private bool? isCrossLayoutPage { get; set; }
 
 
     protected override async Task OnInitAsync()
