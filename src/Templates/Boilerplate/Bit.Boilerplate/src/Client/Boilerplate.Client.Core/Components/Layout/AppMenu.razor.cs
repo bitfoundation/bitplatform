@@ -1,5 +1,7 @@
-﻿using Boilerplate.Shared.Dtos.Identity;
+﻿using System.Threading.Tasks;
+using Boilerplate.Client.Core.Services;
 using Boilerplate.Shared.Controllers.Identity;
+using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -47,14 +49,36 @@ public partial class AppMenu
             await InvokeAsync(StateHasChanged);
         });
 
-        isAuthenticated = (await AuthenticationStateTask).User.IsAuthenticated();
+        AuthManager.AuthenticationStateChanged += AuthenticationStateChanged;
+        await GetCurrentUser(AuthenticationStateTask);
 
+        await base.OnInitAsync();
+    }
+
+
+    private async void AuthenticationStateChanged(Task<AuthenticationState> task)
+    {
+        try
+        {
+            await GetCurrentUser(task);
+        }
+        catch (Exception ex)
+        {
+            ExceptionHandler.Handle(ex);
+        }
+        finally
+        {
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task GetCurrentUser(Task<AuthenticationState> task)
+    {
+        isAuthenticated = (await task).User.IsAuthenticated();
         if (isAuthenticated)
         {
             user = await userController.GetCurrentUser(CurrentCancellationToken);
         }
-
-        await base.OnInitAsync();
     }
 
     private async Task OnCultureChanged(string? cultureName)
