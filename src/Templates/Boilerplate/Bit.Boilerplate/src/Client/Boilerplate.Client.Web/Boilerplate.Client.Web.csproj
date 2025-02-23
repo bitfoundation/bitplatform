@@ -35,7 +35,6 @@
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition="'$(module)' == 'Admin' OR '$(module)' == ''" Include="Newtonsoft.Json" />
         <!--/-:msbuild-conditional:noEmit -->
-        <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.Icons.wasm" />
     </ItemGroup>
 
     <ItemGroup>
