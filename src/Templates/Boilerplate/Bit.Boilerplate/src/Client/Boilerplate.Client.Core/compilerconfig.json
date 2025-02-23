@@ -19,6 +19,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Components/Layout/AppMenu.razor.css",
+        "inputFile": "Components/Layout/AppMenu.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Components/Layout/AppSnackBar.razor.css",
         "inputFile": "Components/Layout/AppSnackBar.razor.scss",
         "minify": { "enabled": false },
@@ -57,12 +63,6 @@
     {
         "outputFile": "Components/Layout/SignOutConfirmDialog.razor.css",
         "inputFile": "Components/Layout/SignOutConfirmDialog.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Components/Layout/UserMenu.razor.css",
-        "inputFile": "Components/Layout/UserMenu.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

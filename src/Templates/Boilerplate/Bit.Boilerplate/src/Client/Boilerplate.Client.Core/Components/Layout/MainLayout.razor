@@ -15,12 +15,14 @@
                                         if (isAuthenticated is true)
                                         {
                                             <BitNavPanel @bind-IsOpen="isNavPanelOpen"
+                                                         @bind-IsToggled="isNavPanelToggled"
                                                          Items="@navPanelAuthenticatedItems"
                                                          IconUrl="_content/Boilerplate.Client.Core/images/bit-logo.svg" />
                                         }
                                         else if (isAuthenticated is false)
                                         {
                                             <BitNavPanel @bind-IsOpen="isNavPanelOpen"
+                                                         @bind-IsToggled="isNavPanelToggled"
                                                          Items="@navPanelUnAuthenticatedItems"
                                                          IconUrl="_content/Boilerplate.Client.Core/images/bit-logo.svg" />
                                         }

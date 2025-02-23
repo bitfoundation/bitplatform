@@ -3,13 +3,14 @@
 <section>
     <BitDropMenu Transparent @bind-IsOpen="isOpen" Responsive
                  OnDismiss="() => showCultures = false"
-                 Classes="@(new() { Callout="user-menu-callout" })">
+                 Classes="@(new() { Callout = "user-menu-callout" })">
         <Template>
             <BitPersona Class="persona"
                         ImageUrl="@ProfileImageUrl"
                         Size=@BitPersonaSize.Size32
-                        PrimaryText="@user.DisplayName"
-                        Classes="@(new() { DetailsContainer="persona-details" })"
+                        Unknown="@(IsAuthenticated is false)"
+                        Classes="@(new() { DetailsContainer = "persona-details" })"
+                        PrimaryText="@(IsAuthenticated is false ? null : user.DisplayName)"
                         Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
             <BitIcon IconName="@BitIconName.ChevronDown" Size="BitSize.Small" Color="BitColor.Info" Class="menu-chevron" />
         </Template>
@@ -18,27 +19,30 @@
                 @if (showCultures is false)
                 {
                     <BitStack AutoSize>
-                        <BitPersona Class="persona"
-                                    ImageUrl="@ProfileImageUrl"
-                                    OnImageClick="GoToProfile"
-                                    Size="BitPersonaSize.Size48"
-                                    PrimaryText="@user.DisplayName"
-                                    SecondaryText="@(user.Email ?? user.PhoneNumber)"
-                                    Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)">
-                            <ImageOverlayTemplate>
-                                <span>@Localizer[nameof(AppStrings.Edit)]</span>
-                            </ImageOverlayTemplate>
-                        </BitPersona>
+                        @if (IsAuthenticated is true)
+                        {
+                            <BitPersona Class="persona"
+                                        ImageUrl="@ProfileImageUrl"
+                                        OnImageClick="GoToProfile"
+                                        Size="BitPersonaSize.Size48"
+                                        PrimaryText="@user.DisplayName"
+                                        SecondaryText="@(user.Email ?? user.PhoneNumber)"
+                                        Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)">
+                                <ImageOverlayTemplate>
+                                    <span>@Localizer[nameof(AppStrings.Edit)]</span>
+                                </ImageOverlayTemplate>
+                            </BitPersona>
 
-                        <BitSeparator />
+                            <BitSeparator />
 
-                        <BitActionButton IconName="@BitIconName.Contact" Href="@($"{Urls.SettingsPage}/{Urls.SettingsSections.Profile}")" FullWidth OnClick="() => isOpen=false">
-                            @Localizer[nameof(AppStrings.ProfileTitle)]
-                        </BitActionButton>
+                            <BitActionButton IconName="@BitIconName.Contact" Href="@($"{Urls.SettingsPage}/{Urls.SettingsSections.Profile}")" FullWidth OnClick="() => isOpen = false">
+                                @Localizer[nameof(AppStrings.ProfileTitle)]
+                            </BitActionButton>
+                        }
 
                         @if (CultureInfoManager.MultilingualEnabled)
                         {
-                            <BitActionButton IconName="@BitIconName.Globe" FullWidth OnClick="() => showCultures=true">
+                            <BitActionButton IconName="@BitIconName.Globe" FullWidth OnClick="() => showCultures = true">
                                 <BitStack Horizontal Gap="0" Grows VerticalAlign="BitAlignment.Center">
                                     @Localizer[nameof(AppStrings.Language)]
                                     <BitSpacer />
@@ -55,15 +59,31 @@
                                              IconName="@(currentTheme == AppThemeType.Light ? BitIconName.Sunny : BitIconName.ClearNight)">
                                 @(currentTheme == AppThemeType.Light ? Localizer[nameof(AppStrings.Light)] : Localizer[nameof(AppStrings.Dark)])
                             </BitActionButton>
-                            <BitToggle OnChange="ToggleTheme" Value="currentTheme == AppThemeType.Light" ValueChanged="v => {}" />
+                            <BitToggle OnChange="ToggleTheme" Value="currentTheme == AppThemeType.Light" ValueChanged="v => { }" />
                         </BitStack>
 
-                        <BitActionButton FullWidth
-                                         Color="BitColor.Error"
-                                         IconName="@BitIconName.SignOut"
-                                         OnClick="() => { isSignOutConfirmOpen=true; isOpen=false; }">
-                            @Localizer[nameof(AppStrings.SignOut)]
-                        </BitActionButton>
+                        @if (IsAuthenticated is true)
+                        {
+                            <BitActionButton FullWidth
+                                             Color="BitColor.Error"
+                                             IconName="@BitIconName.SignOut"
+                                             OnClick="() => { isSignOutConfirmOpen = true; isOpen = false; }">
+                                @Localizer[nameof(AppStrings.SignOut)]
+                            </BitActionButton>
+                        }
+                        else if (IsAuthenticated is false)
+                        {
+                            <BitActionButton FullWidth
+                                             IconName="@BitIconName.Signin"
+                                             Href="@($"{Urls.SignInPage}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")">
+                                @Localizer[nameof(AppStrings.SignIn)]
+                            </BitActionButton>
+                            <BitActionButton FullWidth
+                                             IconName="@BitIconName.Signin"
+                                             Href="@($"{Urls.SignUpPage}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")">
+                                @Localizer[nameof(AppStrings.SignUp)]
+                            </BitActionButton>
+                        }
                     </BitStack>
                 }
                 else
@@ -71,7 +91,7 @@
                     <BitStack HorizontalAlign="BitAlignment.Start" AutoSize>
                         <BitActionButton FullWidth
                                          Style="align-items:flex-end"
-                                         OnClick="() => showCultures=false"
+                                         OnClick="() => showCultures = false"
                                          IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)">
                             @Localizer[nameof(AppStrings.SelectLanguage)]
                         </BitActionButton>

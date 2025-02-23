@@ -1,9 +1,9 @@
-﻿using Boilerplate.Shared.Controllers.Identity;
-using Boilerplate.Shared.Dtos.Identity;
+﻿using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
-public partial class UserMenu
+public partial class AppMenu
 {
     private bool isOpen;
     private bool showCultures;
@@ -20,6 +20,7 @@ public partial class UserMenu
 
 
     [CascadingParameter] private BitDir? currentDir { get; set; }
+    [CascadingParameter(Name = Parameters.IsAuthenticated)] public bool? IsAuthenticated { get; set; }
     [CascadingParameter(Name = Parameters.CurrentTheme)] private AppThemeType? currentTheme { get; set; }
 
 
@@ -39,14 +40,17 @@ public partial class UserMenu
         {
             if (payload is null) return;
 
-            user = payload is JsonElement jsonDocument 
+            user = payload is JsonElement jsonDocument
                 ? jsonDocument.Deserialize(JsonSerializerOptions.GetTypeInfo<UserDto>())! // PROFILE_UPDATED can be invoked from server through SignalR
                 : (UserDto)payload;
 
             await InvokeAsync(StateHasChanged);
         });
 
-        user = await userController.GetCurrentUser(CurrentCancellationToken);
+        if (IsAuthenticated is true)
+        {
+            user = await userController.GetCurrentUser(CurrentCancellationToken);
+        }
 
         await base.OnInitAsync();
     }

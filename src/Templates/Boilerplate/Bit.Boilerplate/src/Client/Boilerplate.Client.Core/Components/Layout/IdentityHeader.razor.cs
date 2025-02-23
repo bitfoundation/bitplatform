@@ -6,10 +6,16 @@ public partial class IdentityHeader : AppComponentBase
 {
     private string? backLinkPayload;
     private Action unsubscribeUpdateBackLink = default!;
+    private BitDropdownItem<string>[] cultures = default!;
 
 
     [CascadingParameter] private BitDir? currentDir { get; set; }
     [CascadingParameter(Name = Parameters.IsCrossLayoutPage)] private bool? isCrossLayoutPage { get; set; }
+    [CascadingParameter(Name = Parameters.CurrentTheme)] private AppThemeType? currentTheme { get; set; }
+
+
+    [AutoInject] private ThemeService themeService = default!;
+    [AutoInject] private CultureService cultureService = default!;
 
 
     protected override async Task OnInitAsync()
@@ -23,12 +29,19 @@ public partial class IdentityHeader : AppComponentBase
 
         NavigationManager.LocationChanged += NavigationManager_LocationChanged;
 
+        if (CultureInfoManager.MultilingualEnabled)
+        {
+            cultures = CultureInfoManager.SupportedCultures
+                        .Select(sc => new BitDropdownItem<string> { Value = sc.Culture.Name, Text = sc.DisplayName })
+                        .ToArray();
+        }
+
         await base.OnInitAsync();
     }
 
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
     {
-        // The sign-in and sign-up button hrefs are bound to NavigationManager.GetRelativePath().
+        // The sign-in and sign-up buttons href are bound to NavigationManager.GetRelativePath().
         // To ensure the bound values update with each route change, it's necessary to call StateHasChanged on location changes.
         StateHasChanged();
     }
@@ -37,6 +50,17 @@ public partial class IdentityHeader : AppComponentBase
     {
         PubSubService.Publish(ClientPubSubMessages.IDENTITY_HEADER_BACK_LINK_CLICKED, backLinkPayload);
     }
+
+    private async Task ToggleTheme()
+    {
+        await themeService.ToggleTheme();
+    }
+
+    private async Task OnCultureChanged(string? cultureName)
+    {
+        await cultureService.ChangeCulture(cultureName);
+    }
+
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {

@@ -8,6 +8,7 @@ public partial class MainLayout : IAsyncDisposable
     private BitDir? currentDir;
     private bool isNavPanelOpen;
     private bool? isIdentityPage;
+    private bool isNavPanelToggled = true;
     private readonly BitModalParameters modalParameters = new() { Classes = new() { Root = "modal" } };
 
     /// <summary>
@@ -35,6 +36,7 @@ public partial class MainLayout : IAsyncDisposable
     [AutoInject] private BitExtraServices bitExtraServices = default!;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
     [AutoInject] private ITelemetryContext telemetryContext = default!;
+    [AutoInject] private NavigationManager navigationManager = default!;
     [AutoInject] private IPrerenderStateService prerenderStateService = default!;
 
 
