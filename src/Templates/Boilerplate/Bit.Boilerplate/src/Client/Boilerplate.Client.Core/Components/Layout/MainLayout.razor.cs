@@ -45,7 +45,6 @@ public partial class MainLayout : IAsyncDisposable
         {
             InitializeNavPanelItems();
 
-            navigationManager.LocationChanged += NavigationManagerLocationChanged;
             authManager.AuthenticationStateChanged += AuthenticationStateChanged;
 
             unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async _ =>
@@ -131,12 +130,6 @@ public partial class MainLayout : IAsyncDisposable
         }
     }
 
-    private void NavigationManagerLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
-    {
-        StateHasChanged();
-    }
-
-
     private void SetCurrentDir()
     {
         currentDir = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? BitDir.Rtl : null;
@@ -189,8 +182,6 @@ public partial class MainLayout : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        navigationManager.LocationChanged -= NavigationManagerLocationChanged;
-
         authManager.AuthenticationStateChanged -= AuthenticationStateChanged;
 
         unsubscribers.ForEach(d => d.Invoke());
