@@ -79,6 +79,7 @@ public partial class MainLayout : IAsyncDisposable
             unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.OPEN_NAV_PANEL, async _ =>
             {
                 isNavPanelOpen = true;
+                isNavPanelToggled = false;
                 StateHasChanged();
             }));
 
