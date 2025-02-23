@@ -70,6 +70,7 @@ public class AppResponseCachePolicy(ServerWebSettings settings) : IOutputCachePo
             context.HttpContext.Response.GetTypedHeaders().CacheControl = new()
             {
                 Public = edgeCacheTtl > 0,
+                Private = edgeCacheTtl <= 0,
                 MaxAge = clientCacheTtl == -1 ? null : TimeSpan.FromSeconds(clientCacheTtl),
                 SharedMaxAge = edgeCacheTtl == -1 ? null : TimeSpan.FromSeconds(edgeCacheTtl)
             };
