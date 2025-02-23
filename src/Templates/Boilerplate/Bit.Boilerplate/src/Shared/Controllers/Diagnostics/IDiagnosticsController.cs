@@ -3,6 +3,6 @@
 [Route("api/[controller]/[action]/")]
 public interface IDiagnosticsController : IAppController
 {
-    [HttpPost]
-    Task<string> PerformDiagnostics(CancellationToken cancellationToken);
+    [HttpPost("{?signalRConnectionId,pushNotificationSubscriptionDeviceId}")]
+    Task<string> PerformDiagnostics(string? signalRConnectionId, string? pushNotificationSubscriptionDeviceId, CancellationToken cancellationToken);
 }
