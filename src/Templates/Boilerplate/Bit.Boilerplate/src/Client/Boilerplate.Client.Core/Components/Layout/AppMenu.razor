@@ -5,7 +5,7 @@
                  OnDismiss="() => showCultures = false"
                  Classes="@(new() { Callout = "user-menu-callout" })">
         <Template>
-            @if (IsAuthenticated is true)
+            @if (isAuthenticated is true)
             {
                 <BitPersona Class="persona"
                             ImageUrl="@ProfileImageUrl"
@@ -14,7 +14,7 @@
                             Classes="@(new() { DetailsContainer = "persona-details" })"
                             Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
             }
-            else if (IsAuthenticated is false)
+            else if (isAuthenticated is false)
             {
                 <BitIcon IconName="@BitIconName.Contact" Size="BitSize.Small" Color="BitColor.Info" Class="menu-user" />
             }
@@ -25,7 +25,7 @@
                 @if (showCultures is false)
                 {
                     <BitStack AutoSize>
-                        @if (IsAuthenticated is true)
+                        @if (isAuthenticated is true)
                         {
                             <BitPersona Class="persona"
                                         ImageUrl="@ProfileImageUrl"
@@ -45,7 +45,7 @@
                                 @Localizer[nameof(AppStrings.ProfileTitle)]
                             </BitActionButton>
                         }
-                        else if (IsAuthenticated is false)
+                        else if (isAuthenticated is false)
                         {
                             <BitActionButton FullWidth
                                              IconName="@BitIconName.Signin"
@@ -81,7 +81,7 @@
                             <BitToggle OnChange="ToggleTheme" Value="currentTheme == AppThemeType.Light" ValueChanged="v => { }" />
                         </BitStack>
 
-                        @if (IsAuthenticated is true)
+                        @if (isAuthenticated is true)
                         {
                             <BitActionButton FullWidth
                                              Color="BitColor.Error"
