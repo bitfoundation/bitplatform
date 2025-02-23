@@ -16,11 +16,6 @@ public partial class MainLayout : IAsyncDisposable
     /// </summary>
     private bool? isOnline;
 
-    /// <summary>
-    /// <inheritdoc cref="Parameters.IsCrossLayoutPage"/>
-    /// </summary>
-    private bool? isCrossLayoutPage;
-
     private bool? isAuthenticated;
     private AppThemeType? currentTheme;
     private RouteData? currentRouteData;
@@ -139,15 +134,11 @@ public partial class MainLayout : IAsyncDisposable
         currentDir = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? BitDir.Rtl : null;
     }
 
-    /// <summary>
-    /// <inheritdoc cref="Parameters.IsCrossLayoutPage"/>
-    /// </summary>
     private void SetRouteData()
     {
         if (currentRouteData is null)
         {
             isIdentityPage = false;
-            isCrossLayoutPage = true;
             return;
         }
 
@@ -156,19 +147,16 @@ public partial class MainLayout : IAsyncDisposable
         if (type.GetCustomAttributes<AuthorizeAttribute>(inherit: true).Any())
         {
             isIdentityPage = false;
-            isCrossLayoutPage = false;
             return;
         }
 
         if (type.Namespace?.Contains("Client.Core.Components.Pages.Identity") ?? false)
         {
             isIdentityPage = true;
-            isCrossLayoutPage = false;
             return;
         }
 
         isIdentityPage = false;
-        isCrossLayoutPage = true;
     }
 
     private void OpenDiagnosticModal()

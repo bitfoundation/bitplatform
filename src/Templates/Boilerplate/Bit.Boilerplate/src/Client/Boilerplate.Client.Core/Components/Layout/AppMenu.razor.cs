@@ -7,6 +7,7 @@ public partial class AppMenu
 {
     private bool isOpen;
     private bool showCultures;
+    private bool isAuthenticated;
     private UserDto user = new();
     private bool isSignOutConfirmOpen;
     private Action unsubscribeUerDataUpdated = default!;
@@ -20,7 +21,6 @@ public partial class AppMenu
 
 
     [CascadingParameter] private BitDir? currentDir { get; set; }
-    [CascadingParameter(Name = Parameters.IsAuthenticated)] public bool? IsAuthenticated { get; set; }
     [CascadingParameter(Name = Parameters.CurrentTheme)] private AppThemeType? currentTheme { get; set; }
 
 
@@ -47,7 +47,9 @@ public partial class AppMenu
             await InvokeAsync(StateHasChanged);
         });
 
-        if (IsAuthenticated is true)
+        isAuthenticated = (await AuthenticationStateTask).User.IsAuthenticated();
+
+        if (isAuthenticated)
         {
             user = await userController.GetCurrentUser(CurrentCancellationToken);
         }
