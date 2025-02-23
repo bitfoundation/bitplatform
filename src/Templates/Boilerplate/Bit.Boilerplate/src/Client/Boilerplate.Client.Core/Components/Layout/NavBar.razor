@@ -16,7 +16,7 @@
             <BitNavBarOption Text="@Localizer[nameof(AppStrings.Products)]" IconName="@BitIconName.Product" Url="@Urls.ProductsPage" />
             @*#endif*@
             <BitNavBarOption Text="@Localizer[nameof(AppStrings.Terms)]" IconName="@BitIconName.EntityExtraction" Url="@Urls.TermsPage" />
-            @*#if (module == "Sales")*@
+            @*#if (module != "Admin" || sample != true)*@
             <BitNavBarOption Text="@Localizer[nameof(AppStrings.AboutTitle)]" IconName="@BitIconName.Info" Url="@Urls.AboutPage" />
             @*#endif*@
         }
