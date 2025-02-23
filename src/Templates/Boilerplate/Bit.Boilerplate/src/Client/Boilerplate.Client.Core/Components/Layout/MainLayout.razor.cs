@@ -177,13 +177,9 @@ public partial class MainLayout : IAsyncDisposable
 
     private string GetMainCssClass()
     {
-        var authClass = isIdentityPage is false ? "authenticated"
-                      : isIdentityPage is true ? "unauthenticated"
-                      : string.Empty;
-
-        var crossClass = isCrossLayoutPage is true ? " cross-layout" : string.Empty;
-
-        return authClass + crossClass;
+        return isIdentityPage is true ? "identity"
+             : isIdentityPage is false ? "non-identity"
+             : string.Empty;
     }
 
     public async ValueTask DisposeAsync()

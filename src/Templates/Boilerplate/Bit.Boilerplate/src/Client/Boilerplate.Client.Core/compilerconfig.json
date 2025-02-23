@@ -25,8 +25,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Layout/AuthorizedHeader.razor.css",
-        "inputFile": "Components/Layout/AuthorizedHeader.razor.scss",
+        "outputFile": "Components/Layout/Header.razor.css",
+        "inputFile": "Components/Layout/Header.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
