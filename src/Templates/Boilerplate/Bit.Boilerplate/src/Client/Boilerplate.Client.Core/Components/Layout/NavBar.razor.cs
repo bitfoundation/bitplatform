@@ -2,5 +2,4 @@
 
 public partial class NavBar
 {
-    [CascadingParameter(Name = Parameters.IsAuthenticated)] public bool? IsAuthenticated { get; set; }
 }

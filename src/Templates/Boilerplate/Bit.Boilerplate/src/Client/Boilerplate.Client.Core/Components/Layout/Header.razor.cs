@@ -8,10 +8,6 @@ public partial class Header : AppComponentBase
     private string? pageSubtitle;
     private Action unsubscribePageTitleChanged = default!;
 
-
-    [CascadingParameter(Name = Parameters.IsAuthenticated)] public bool? IsAuthenticated { get; set; }
-
-
     protected override async Task OnInitAsync()
     {
         unsubscribePageTitleChanged = PubSubService.Subscribe(ClientPubSubMessages.PAGE_TITLE_CHANGED, async payload =>

@@ -6,7 +6,6 @@ public class Parameters
 {
     public const string CurrentDir = nameof(CurrentDir);
     public const string CurrentTheme = nameof(CurrentTheme);
-    public const string IsAuthenticated = nameof(IsAuthenticated);
     public const string CurrentRouteData = nameof(CurrentRouteData);
 
     /// <summary>
