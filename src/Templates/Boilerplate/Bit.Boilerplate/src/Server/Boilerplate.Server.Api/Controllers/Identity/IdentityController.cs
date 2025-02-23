@@ -401,7 +401,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     [HttpGet]
-    [AppResponseCache(SharedMaxAge = 3600 * 24 * 7)]
+    [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5)]
     public async Task<ActionResult> SocialSignedIn()
     {
         var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>

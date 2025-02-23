@@ -66,12 +66,6 @@ public class AppResponseCachePolicy(ServerApiSettings settings) : IOutputCachePo
         }
         //#endif
 
-        if (context.HttpContext.Request.IsFromCDN() && edgeCacheTtl > 0)
-        {
-            // The origin backend is hosted behind a CDN, so there's no need to use both output caching and edge caching simultaneously.
-            outputCacheTtl = -1;
-        }
-
         // Edge - Client Cache
         if (clientCacheTtl != -1 || edgeCacheTtl != -1)
         {
