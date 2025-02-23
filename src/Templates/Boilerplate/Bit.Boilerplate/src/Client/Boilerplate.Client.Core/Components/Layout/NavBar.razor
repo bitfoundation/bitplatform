@@ -16,12 +16,12 @@
             @*#endif*@
         }
         <BitNavBarOption Text="@Localizer[nameof(AppStrings.Terms)]" IconName="@BitIconName.EntityExtraction" Url="@Urls.TermsPage" />
-        @*#if (module != "Sales")*@
+        @*#if (module == "Admin" || sample == true)*@
         @if (IsAuthenticated is false)
         {
             @*#endif*@
             <BitNavBarOption Text="@Localizer[nameof(AppStrings.AboutTitle)]" IconName="@BitIconName.Info" Url="@Urls.AboutPage" />
-            @*#if (module != "Sales")*@
+            @*#if (module == "Admin" || sample == true)*@
         }
         @*#endif*@
     </BitNavBar>

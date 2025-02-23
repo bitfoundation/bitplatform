@@ -24,30 +24,17 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
             try
             {
                 var response = await base.SendAsync(request, cancellationToken);
+
                 if (response.Headers.TryGetValues("Request-Id", out var requestId))
                 {
-                    logScopeData["RequestId"] = requestIdValue = requestId.First();
+                    requestIdValue = requestId.First();
                 }
-                //#if (cloudflare == true)
-                if (response.Headers.TryGetValues("Cf-Cache-Status", out var cfCacheStatus)) // Cloudflare cache status
-                {
-                    logScopeData["Cf-Cache-Status"] = cfCacheStatus.First();
-                }
-                //#endif
-                if (response.Headers.TryGetValues("Age", out var age)) // ASP.NET Core Output Caching
-                {
-                    logScopeData["Age"] = age.First();
-                }
-                if (response.Headers.TryGetValues("App-Cache-Response", out var appCacheResponse))
-                {
-                    logScopeData["App-Cache-Response"] = appCacheResponse.First();
-                }
-                logScopeData["HttpStatusCode"] = response.StatusCode;
 
                 serverCommunicationSuccess = true;
 
                 if (isInternalRequest && /* The following exception handling mechanism applies exclusively to responses from our own server. */
                     response.IsSuccessStatusCode is false &&
+                    string.IsNullOrEmpty(requestIdValue) is false &&
                     response.Content.Headers.ContentType?.MediaType?.Contains("application/json", StringComparison.InvariantCultureIgnoreCase) is true)
                 {
                     var problemDetails = (await response.Content.ReadFromJsonAsync(jsonSerializerOptions.GetTypeInfo<AppProblemDetails>(), cancellationToken))!;

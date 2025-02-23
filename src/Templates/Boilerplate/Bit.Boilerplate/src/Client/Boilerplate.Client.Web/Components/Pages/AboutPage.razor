@@ -5,10 +5,11 @@
 <section>
     <BitStack Gap="3rem">
         <BitText Typography="BitTypography.Body1">
-            For Razor pages that are exclusively dependent on native Maui features for Android, iOS, Windows, and macOS functionality,
-            consider using Client/Maui project instead of placing them in Client/Core project.
+            You can add `.razor`, `.razor.cs`, and `.razor.scss` files to the `Client.Maui` and `Client.Windows` projects,
+            allowing direct access to native platform features without dependency injection.
             <br />
-            This approach allows direct access to native features without the need for dependency injection (DI) or publish-subscribe messaging patterns.
+            The `AboutPage.razor` file in `Client.Web` demonstrates that you can use the same route (e.g., `/about`) on the web,
+            but it does not provide access to native platform features.
         </BitText>
 
         <BitStack AutoWidth>

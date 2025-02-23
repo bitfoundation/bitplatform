@@ -21,6 +21,25 @@ internal class LoggingDelegatingHandler(ILogger<HttpClient> logger, HttpMessageH
             {
                 logScopeData["HttpVersion"] = response.Version;
             }
+            if (response.Headers.TryGetValues("Request-Id", out var requestId))
+            {
+                logScopeData["RequestId"] = requestId.First();
+            }
+            //#if (cloudflare == true)
+            if (response.Headers.TryGetValues("Cf-Cache-Status", out var cfCacheStatus)) // Cloudflare cache status
+            {
+                logScopeData["Cf-Cache-Status"] = cfCacheStatus.First();
+            }
+            //#endif
+            if (response.Headers.TryGetValues("Age", out var age)) // ASP.NET Core Output Caching
+            {
+                logScopeData["Age"] = age.First();
+            }
+            if (response.Headers.TryGetValues("App-Cache-Response", out var appCacheResponse))
+            {
+                logScopeData["App-Cache-Response"] = appCacheResponse.First();
+            }
+            logScopeData["HttpStatusCode"] = response.StatusCode;
             return response;
         }
         finally
