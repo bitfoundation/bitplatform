@@ -292,9 +292,9 @@
                         {
                             var prevDisabled = IsEnabled is false || CanChangeYear(false) is false;
                             var nextDisabled = IsEnabled is false || CanChangeYear(true) is false;
-                            var toggleTitle = string.Format(YearPickerToggleTitle, _currentYear);
-                            var prevTitle = string.Format(GoToPrevYearTitle, _currentYear - 1);
-                            var nextTitle = string.Format(GoToNextYearTitle, _currentYear + 1);
+                            var toggleTitle = string.Format(YearPickerToggleTitle, _showYear);
+                            var prevTitle = string.Format(GoToPrevYearTitle, _showYear - 1);
+                            var nextTitle = string.Format(GoToNextYearTitle, _showYear + 1);
                             <div style="@Styles?.MonthPickerHeader" class="bit-dtp-pkh @Classes?.MonthPickerHeader">
                                 <button @onclick="ToggleBetweenMonthAndYearPicker"
                                         tabindex="0"
@@ -307,7 +307,7 @@
                                         aria-disabled="@(IsEnabled is false)"
                                         style="@Styles?.YearPickerToggleButton"
                                         class="bit-dtp-ptb @Classes?.YearPickerToggleButton">
-                                    @_currentYear
+                                    @_showYear
                                 </button>
                                 <div style="@Styles?.MonthPickerNavWrapper" class="bit-dtp-nbc @Classes?.MonthPickerNavWrapper">
                                     <button @onclick="() => HandleYearChange(false)"
@@ -371,7 +371,7 @@
                                     }
                                 </div>
                             </div>
-                            <div style="@Styles?.MonthsContainer" class="bit-dtp-pkc @Classes?.MonthsContainer" role="grid" aria-label="@_currentYear">
+                            <div style="@Styles?.MonthsContainer" class="bit-dtp-pkc @Classes?.MonthsContainer" role="grid" aria-label="@_showYear">
                                 @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
                                 {
                                     <div style="@Styles?.MonthsRow" class="bit-dtp-pkr @Classes?.MonthsRow" role="row">
@@ -380,7 +380,7 @@
                                             var month = (rowIndex * 4) + cellIndex;
                                             var monthName = _culture.DateTimeFormat.GetMonthName(month);
                                             var disabled = IsEnabled is false || IsMonthOutOfMinAndMaxDate(month);
-                                            var selected = month == _currentMonth;
+                                            var selected = month == _showMonth;
                                             <button @onclick="() => SelectMonth(month)"
                                                     type="button"
                                                     role="gridcell"
@@ -479,7 +479,7 @@
                                         {
                                             var year = _yearPickerStartYear + (rowIndex * 4) + cellIndex;
                                             var disabled = IsEnabled is false || IsYearOutOfMinAndMaxDate(year);
-                                            var selected = year == _currentYear;
+                                            var selected = year == _showYear;
                                             <button @onclick="() => SelectYear(year)"
                                                     type="button"
                                                     role="gridcell"
