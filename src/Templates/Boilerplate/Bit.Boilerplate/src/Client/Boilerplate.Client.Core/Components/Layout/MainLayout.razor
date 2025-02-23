@@ -10,21 +10,31 @@
                         <BitAppShell PersistScroll>
                             <main class="@GetMainCssClass()">
                                 <div class="root">
-                                    @if (isAuthenticated is false)
+                                    @if (isIdentityPage is false)
                                     {
-                                        <IdentityHeader />
-                                    }
-                                    else if (isAuthenticated is true)
-                                    {
-                                        <BitNavPanel @bind-IsOpen="isNavPanelOpen"
-                                                     Items="navPanelItems"
-                                                     IconUrl="_content/Boilerplate.Client.Core/images/bit-logo.svg" />
+                                        if (isAuthenticated is true)
+                                        {
+                                            <BitNavPanel @bind-IsOpen="isNavPanelOpen"
+                                                         Items="@navPanelAuthenticatedItems"
+                                                         IconUrl="_content/Boilerplate.Client.Core/images/bit-logo.svg" />
+                                        }
+                                        else if (isAuthenticated is false)
+                                        {
+                                            <BitNavPanel @bind-IsOpen="isNavPanelOpen"
+                                                         Items="@navPanelUnAuthenticatedItems"
+                                                         IconUrl="_content/Boilerplate.Client.Core/images/bit-logo.svg" />
+                                        }
                                     }
 
                                     <div class="stack">
-                                        @if (isAuthenticated is true)
+                                        @if (isIdentityPage is true)
                                         {
-                                            <AuthorizedHeader />
+                                            <IdentityHeader />
+                                        }
+
+                                        @if (isIdentityPage is false)
+                                        {
+                                            <Header />
                                         }
 
                                         <div class="body">
@@ -40,7 +50,7 @@
                                     </div>
                                 </div>
 
-                                @if (isAuthenticated is true)
+                                @if (isIdentityPage is false)
                                 {
                                     <NavBar />
                                 }

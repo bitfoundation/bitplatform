@@ -7,22 +7,25 @@ public partial class MainLayout : IAsyncDisposable
 {
     private BitDir? currentDir;
     private bool isNavPanelOpen;
+    private bool? isIdentityPage;
     private readonly BitModalParameters modalParameters = new() { Classes = new() { Root = "modal" } };
 
     /// <summary>
     /// <inheritdoc cref="Parameters.IsOnline"/>
     /// </summary>
-    private bool? isOnline = null;
-    private bool? isAuthenticated;
+    private bool? isOnline;
 
     /// <summary>
     /// <inheritdoc cref="Parameters.IsCrossLayoutPage"/>
     /// </summary>
     private bool? isCrossLayoutPage;
+
+    private bool? isAuthenticated;
     private AppThemeType? currentTheme;
     private RouteData? currentRouteData;
     private List<Action> unsubscribers = [];
-    private List<BitNavItem> navPanelItems = [];
+    private List<BitNavItem> navPanelAuthenticatedItems = [];
+    private List<BitNavItem> navPanelUnAuthenticatedItems = [];
 
 
     [AutoInject] private Keyboard keyboard = default!;
@@ -32,7 +35,6 @@ public partial class MainLayout : IAsyncDisposable
     [AutoInject] private BitExtraServices bitExtraServices = default!;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
     [AutoInject] private ITelemetryContext telemetryContext = default!;
-    [AutoInject] private NavigationManager navigationManager = default!;
     [AutoInject] private IPrerenderStateService prerenderStateService = default!;
 
 
@@ -63,7 +65,7 @@ public partial class MainLayout : IAsyncDisposable
             unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.ROUTE_DATA_UPDATED, async payload =>
             {
                 currentRouteData = (RouteData?)payload;
-                SetIsCrossLayout();
+                SetRouteData();
                 StateHasChanged();
             }));
 
@@ -138,10 +140,11 @@ public partial class MainLayout : IAsyncDisposable
     /// <summary>
     /// <inheritdoc cref="Parameters.IsCrossLayoutPage"/>
     /// </summary>
-    private void SetIsCrossLayout()
+    private void SetRouteData()
     {
         if (currentRouteData is null)
         {
+            isIdentityPage = false;
             isCrossLayoutPage = true;
             return;
         }
@@ -150,16 +153,19 @@ public partial class MainLayout : IAsyncDisposable
 
         if (type.GetCustomAttributes<AuthorizeAttribute>(inherit: true).Any())
         {
+            isIdentityPage = false;
             isCrossLayoutPage = false;
             return;
         }
 
         if (type.Namespace?.Contains("Client.Core.Components.Pages.Identity") ?? false)
         {
+            isIdentityPage = true;
             isCrossLayoutPage = false;
             return;
         }
 
+        isIdentityPage = false;
         isCrossLayoutPage = true;
     }
 
@@ -171,8 +177,8 @@ public partial class MainLayout : IAsyncDisposable
 
     private string GetMainCssClass()
     {
-        var authClass = isAuthenticated is false ? "unauthenticated"
-                      : isAuthenticated is true ? "authenticated"
+        var authClass = isIdentityPage is false ? "authenticated"
+                      : isIdentityPage is true ? "unauthenticated"
                       : string.Empty;
 
         var crossClass = isCrossLayoutPage is true ? " cross-layout" : string.Empty;

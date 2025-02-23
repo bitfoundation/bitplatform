@@ -6,14 +6,41 @@ public partial class MainLayout
 
     private void InitializeNavPanelItems()
     {
-        navPanelItems =
+        BitNavItem homeNavItem = new()
+        {
+            Text = localizer[nameof(AppStrings.Home)],
+            IconName = BitIconName.Home,
+            Url = Urls.HomePage,
+        };
+
+        BitNavItem termsNavItem = new()
+        {
+            Text = localizer[nameof(AppStrings.Terms)],
+            IconName = BitIconName.EntityExtraction,
+            Url = Urls.TermsPage,
+        };
+
+        navPanelUnAuthenticatedItems =
         [
+            homeNavItem,
+            termsNavItem,
             new()
             {
-                Text = localizer[nameof(AppStrings.Home)],
-                IconName = BitIconName.Home,
-                Url = Urls.HomePage,
+                Text = localizer[nameof(AppStrings.SignIn)],
+                IconName = BitIconName.Signin,
+                Url = Urls.SignInPage,
             },
+            new()
+            {
+                Text = localizer[nameof(AppStrings.SignUp)],
+                IconName = BitIconName.Signin,
+                Url = Urls.SignInPage,
+            },
+        ];
+
+        navPanelAuthenticatedItems =
+        [
+            homeNavItem,
             //#if (module == "Admin")
             new()
             {
@@ -55,12 +82,7 @@ public partial class MainLayout
                 Url = Urls.OfflineEditProfilePage,
             },
             //#endif
-            new()
-            {
-                Text = localizer[nameof(AppStrings.Terms)],
-                IconName = BitIconName.EntityExtraction,
-                Url = Urls.TermsPage,
-            }
+            termsNavItem
         ];
 
         // Currently, the "About" page is absent from the Client/Core project, rendering it inaccessible on the web platform.
@@ -69,15 +91,18 @@ public partial class MainLayout
         // hybrid projects like Client/Maui.
         if (AppPlatform.IsBlazorHybrid)
         {
-            navPanelItems.Add(new()
+            BitNavItem aboutNavItem = new()
             {
                 Text = localizer[nameof(AppStrings.AboutTitle)],
                 IconName = BitIconName.Info,
                 Url = Urls.AboutPage,
-            });
+            };
+
+            navPanelAuthenticatedItems.Add(aboutNavItem);
+            navPanelUnAuthenticatedItems.Add(aboutNavItem);
         }
 
-        navPanelItems.Add(new()
+        navPanelAuthenticatedItems.Add(new()
         {
             Text = localizer[nameof(AppStrings.Settings)],
             IconName = BitIconName.Equalizer,

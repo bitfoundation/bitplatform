@@ -24,6 +24,24 @@
 
         <DiagnosticSpacer />
 
-        <UserMenu />
+        @if (IsAuthenticated is true)
+        {
+            <UserMenu />
+        }
+        else if (IsAuthenticated is false)
+        {
+            <BitButton Class="identity-button"
+                       Href="@($"{Urls.SignUpPage}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")">
+                @Localizer[nameof(AppStrings.SignUp)]
+            </BitButton>
+            <BitButton Class="identity-button"
+                       Variant="BitVariant.Text"
+                       Color="BitColor.Tertiary"
+                       Href="@($"{Urls.SignInPage}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")">
+                @Localizer[nameof(AppStrings.SignIn)]
+            </BitButton>
+
+            <HeaderButtons />
+        }
     </BitStack>
 </header>

@@ -2,28 +2,26 @@
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
-public partial class IdentityHeader : AppComponentBase
+public partial class Header : AppComponentBase
 {
-    private string? backLinkPayload;
-    private Action unsubscribeUpdateBackLink = default!;
+    private string? pageTitle;
+    private string? pageSubtitle;
+    private Action unsubscribePageTitleChanged = default!;
 
 
-    [CascadingParameter] private BitDir? currentDir { get; set; }
-    [CascadingParameter(Name = Parameters.IsCrossLayoutPage)] private bool? isCrossLayoutPage { get; set; }
+    [CascadingParameter(Name = Parameters.IsAuthenticated)] public bool? IsAuthenticated { get; set; }
 
 
     protected override async Task OnInitAsync()
     {
-        unsubscribeUpdateBackLink = PubSubService.Subscribe(ClientPubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, async payload =>
+        unsubscribePageTitleChanged = PubSubService.Subscribe(ClientPubSubMessages.PAGE_TITLE_CHANGED, async payload =>
         {
-            backLinkPayload = (string?)payload;
+            (pageTitle, pageSubtitle) = ((string, string))payload!;
 
-            await InvokeAsync(StateHasChanged);
+            StateHasChanged();
         });
 
         NavigationManager.LocationChanged += NavigationManager_LocationChanged;
-
-        await base.OnInitAsync();
     }
 
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
@@ -33,14 +31,16 @@ public partial class IdentityHeader : AppComponentBase
         StateHasChanged();
     }
 
-    private async Task HandleBackLinkClick()
+
+    private void OpenNavPanel()
     {
-        PubSubService.Publish(ClientPubSubMessages.IDENTITY_HEADER_BACK_LINK_CLICKED, backLinkPayload);
+        PubSubService.Publish(ClientPubSubMessages.OPEN_NAV_PANEL);
     }
+
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        unsubscribeUpdateBackLink?.Invoke();
+        unsubscribePageTitleChanged?.Invoke();
         NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
 
         await base.DisposeAsync(disposing);
