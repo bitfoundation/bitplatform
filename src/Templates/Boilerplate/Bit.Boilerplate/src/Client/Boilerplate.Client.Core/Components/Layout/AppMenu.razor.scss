@@ -30,4 +30,15 @@
             display: none;
         }
     }
+
+    .menu-user {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        color: $bit-color-info-text;
+        background: $bit-color-info;
+    }
 }

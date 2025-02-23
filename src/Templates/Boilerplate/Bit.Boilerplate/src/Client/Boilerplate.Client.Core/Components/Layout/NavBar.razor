@@ -16,7 +16,7 @@
             @*#endif*@
         }
         <BitNavBarOption Text="@Localizer[nameof(AppStrings.Terms)]" IconName="@BitIconName.EntityExtraction" Url="@Urls.TermsPage" />
-        @if (IsAuthenticated is false && AppPlatform.IsBlazorHybrid)
+        @if (IsAuthenticated is false)
         {
             <BitNavBarOption Text="@Localizer[nameof(AppStrings.AboutTitle)]" IconName="@BitIconName.Info" Url="@Urls.AboutPage" />
         }

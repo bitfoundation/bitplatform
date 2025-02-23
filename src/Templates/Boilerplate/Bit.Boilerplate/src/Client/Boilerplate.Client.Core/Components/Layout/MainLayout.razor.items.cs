@@ -20,23 +20,7 @@ public partial class MainLayout
             Url = Urls.TermsPage,
         };
 
-        navPanelUnAuthenticatedItems =
-        [
-            homeNavItem,
-            termsNavItem,
-            new()
-            {
-                Text = localizer[nameof(AppStrings.SignIn)],
-                IconName = BitIconName.Signin,
-                Url = $"{Urls.SignUpPage}?return-url={Uri.EscapeDataString(navigationManager.GetRelativePath())}",
-            },
-            new()
-            {
-                Text = localizer[nameof(AppStrings.SignUp)],
-                IconName = BitIconName.Signin,
-                Url = $"{Urls.SignInPage}?return-url={Uri.EscapeDataString(navigationManager.GetRelativePath())}",
-            },
-        ];
+        navPanelUnAuthenticatedItems = [homeNavItem, termsNavItem];
 
         navPanelAuthenticatedItems =
         [
