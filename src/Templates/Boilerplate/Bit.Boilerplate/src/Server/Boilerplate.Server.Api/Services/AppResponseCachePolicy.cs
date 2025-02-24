@@ -7,7 +7,7 @@ namespace Boilerplate.Server.Api.Services;
 /// <summary>
 /// An implementation of this interface can update how the current request is cached.
 /// </summary>
-public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
+public class AppResponseCachePolicy(ServerApiSettings settings) : IOutputCachePolicy
 {
     /// <summary>
     /// Updates the <see cref="OutputCacheContext"/> before the cache middleware is invoked.
@@ -35,16 +35,17 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
             responseCacheAtt.SharedMaxAge = responseCacheAtt.MaxAge;
         }
 
-        var browserCacheTtl = responseCacheAtt.MaxAge;
+        var clientCacheTtl = responseCacheAtt.MaxAge;
         var edgeCacheTtl = responseCacheAtt.SharedMaxAge;
         var outputCacheTtl = responseCacheAtt.SharedMaxAge;
 
-        if (env.IsDevelopment())
+        if (settings.ResponseCaching.EnableCdnEdgeCaching is false)
         {
-            // To enhance the developer experience, return from here to make it easier for developers to debug cacheable responses.
             edgeCacheTtl = -1;
+        }
+        if (settings.ResponseCaching.EnableOutputCaching is false)
+        {
             outputCacheTtl = -1;
-            browserCacheTtl = -1;
         }
 
         if (context.HttpContext.User.IsAuthenticated() && responseCacheAtt.UserAgnostic is false)
@@ -58,26 +59,21 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
         if (context.HttpContext.IsBlazorPageContext() && CultureInfoManager.MultilingualEnabled)
         {
             // Note: Currently, we are not keeping the current culture in the URL. 
-            // The edge and browser caches do not support such variations, although the output cache does. 
-            // As a temporary solution, browser and edge caching are disabled for pre-rendered pages.
+            // The edge and client caches do not support such variations, although the output cache does. 
+            // As a temporary solution, client and edge caching are disabled for pre-rendered pages.
             edgeCacheTtl = -1;
-            browserCacheTtl = -1;
+            clientCacheTtl = -1;
         }
         //#endif
 
-        if (context.HttpContext.Request.IsFromCDN() && edgeCacheTtl > 0)
-        {
-            // The origin backend is hosted behind a CDN, so there's no need to use both output caching and edge caching simultaneously.
-            outputCacheTtl = -1;
-        }
-
-        // Edge - Browser Cache
-        if (browserCacheTtl != -1 || edgeCacheTtl != -1)
+        // Edge - Client Cache
+        if (clientCacheTtl != -1 || edgeCacheTtl != -1)
         {
             context.HttpContext.Response.GetTypedHeaders().CacheControl = new()
             {
                 Public = edgeCacheTtl > 0,
-                MaxAge = browserCacheTtl == -1 ? null : TimeSpan.FromSeconds(browserCacheTtl),
+                Private = edgeCacheTtl <= 0,
+                MaxAge = clientCacheTtl == -1 ? null : TimeSpan.FromSeconds(clientCacheTtl),
                 SharedMaxAge = edgeCacheTtl == -1 ? null : TimeSpan.FromSeconds(edgeCacheTtl)
             };
             context.HttpContext.Response.Headers.Remove("Pragma");
@@ -95,7 +91,7 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
         //#if (api == "Integrated")
         context.HttpContext.Items["AppResponseCachePolicy__DisableStreamPrerendering"] = outputCacheTtl > 0 || edgeCacheTtl > 0;
         //#endif
-        context.HttpContext.Response.Headers.TryAdd("App-Cache-Response", FormattableString.Invariant($"Output:{outputCacheTtl},Edge:{edgeCacheTtl},Browser:{browserCacheTtl}"));
+        context.HttpContext.Response.Headers.TryAdd("App-Cache-Response", FormattableString.Invariant($"Output:{outputCacheTtl},Edge:{edgeCacheTtl},Client:{clientCacheTtl}"));
     }
 
     /// <summary>

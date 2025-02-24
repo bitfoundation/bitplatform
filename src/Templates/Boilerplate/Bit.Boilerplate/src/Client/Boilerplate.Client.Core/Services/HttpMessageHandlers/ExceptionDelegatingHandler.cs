@@ -17,78 +17,86 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
         bool serverCommunicationSuccess = false;
         var isInternalRequest = request.RequestUri!.ToString().StartsWith(absoluteServerAddress, StringComparison.InvariantCultureIgnoreCase);
 
+        string? requestIdValue = null;
+
         try
         {
-            var response = await base.SendAsync(request, cancellationToken);
-            if (response.Headers.TryGetValues("Request-Id", out var requestId))
+            try
             {
-                logScopeData["RequestId"] = requestId.First();
+                var response = await base.SendAsync(request, cancellationToken);
+
+                if (response.Headers.TryGetValues("Request-Id", out var requestId))
+                {
+                    requestIdValue = requestId.First();
+                }
+
+                serverCommunicationSuccess = true;
+
+                if (isInternalRequest && /* The following exception handling mechanism applies exclusively to responses from our own server. */
+                    response.IsSuccessStatusCode is false &&
+                    string.IsNullOrEmpty(requestIdValue) is false &&
+                    response.Content.Headers.ContentType?.MediaType?.Contains("application/json", StringComparison.InvariantCultureIgnoreCase) is true)
+                {
+                    var problemDetails = (await response.Content.ReadFromJsonAsync(jsonSerializerOptions.GetTypeInfo<AppProblemDetails>(), cancellationToken))!;
+
+                    Type exceptionType = typeof(KnownException).Assembly.GetType(problemDetails.Type!) ?? typeof(UnknownException);
+
+                    var args = new List<object?> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(problemDetails.Key!.ToString()!, problemDetails.Title!) : (object?)problemDetails.Title! };
+
+                    Exception exp = exceptionType == typeof(ResourceValidationException)
+                                        ? new ResourceValidationException(problemDetails.Title!, problemDetails.Payload)
+                                        : (Exception)Activator.CreateInstance(exceptionType, args.ToArray())!;
+
+                    foreach (var data in problemDetails.Extensions)
+                    {
+                        exp.Data[data.Key] = data.Value;
+                    }
+
+                    throw exp;
+                }
+
+                if (response.StatusCode is HttpStatusCode.Unauthorized)
+                {
+                    throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
+                }
+                if (response.StatusCode is HttpStatusCode.Forbidden)
+                {
+                    throw new ForbiddenException(localizer[nameof(AppStrings.ForbiddenException)]);
+                }
+
+                response.EnsureSuccessStatusCode();
+
+                request.Options.Set(new(RequestOptionNames.LogLevel), LogLevel.Information);
+
+                return response;
             }
-            //#if (cloudflare == true)
-            if (response.Headers.TryGetValues("Cf-Cache-Status", out var cfCacheStatus)) // Cloudflare cache status
+            catch (Exception exp) when ((exp is HttpRequestException && serverCommunicationSuccess is false) || IsServerConnectionException(exp))
             {
-                logScopeData["Cf-Cache-Status"] = cfCacheStatus.First();
+                serverCommunicationSuccess = false; // Let's treat the server communication as failed if an exception is caught here.
+                throw new ServerConnectionException(localizer[nameof(AppStrings.ServerConnectionException)], exp);
             }
-            //#endif
-            if (response.Headers.TryGetValues("Age", out var age)) // ASP.NET Core Output Caching
+            finally
             {
-                logScopeData["Age"] = age.First();
+                if (isInternalRequest)
+                {
+                    pubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, serverCommunicationSuccess);
+                }
             }
-            if (response.Headers.TryGetValues("App-Cache-Response", out var appCacheResponse))
-            {
-                logScopeData["App-Cache-Response"] = appCacheResponse.First();
-            }
-            logScopeData["HttpStatusCode"] = response.StatusCode;
-
-            serverCommunicationSuccess = true;
-
-            if (isInternalRequest && /* The following exception handling mechanism applies exclusively to responses from our own server. */
-                response.IsSuccessStatusCode is false &&
-                response.Content.Headers.ContentType?.MediaType?.Contains("application/json", StringComparison.InvariantCultureIgnoreCase) is true)
-            {
-                var problemDetails = (await response.Content.ReadFromJsonAsync(jsonSerializerOptions.GetTypeInfo<AppProblemDetails>(), cancellationToken))!;
-
-                Type exceptionType = typeof(KnownException).Assembly.GetType(problemDetails.Type!) ?? typeof(UnknownException);
-
-                var args = new List<object?> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(problemDetails.Key!.ToString()!, problemDetails.Title!) : (object?)problemDetails.Title! };
-
-                Exception exp = exceptionType == typeof(ResourceValidationException)
-                                    ? new ResourceValidationException(problemDetails.Title!, problemDetails.Payload)
-                                    : (Exception)Activator.CreateInstance(exceptionType, args.ToArray())!;
-
-                throw exp;
-            }
-
-            if (response.StatusCode is HttpStatusCode.Unauthorized)
-            {
-                throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
-            }
-            if (response.StatusCode is HttpStatusCode.Forbidden)
-            {
-                throw new ForbiddenException(localizer[nameof(AppStrings.ForbiddenException)]);
-            }
-
-            response.EnsureSuccessStatusCode();
-
-            request.Options.Set(new(RequestOptionNames.LogLevel), LogLevel.Information);
-
-            return response;
         }
-        catch (Exception exp) when (
-               (exp is HttpRequestException && serverCommunicationSuccess is false)
-            || (exp is TaskCanceledException tcExp && tcExp.InnerException is TimeoutException)
-            || (exp.InnerException is SocketException sockExp && sockExp.SocketErrorCode is SocketError.HostNotFound)
-            || (exp is HttpRequestException { StatusCode: HttpStatusCode.BadGateway or HttpStatusCode.GatewayTimeout or HttpStatusCode.ServiceUnavailable }))
+        catch (Exception exp)
         {
-            serverCommunicationSuccess = false; // Let's treat the server communication as failed if an exception is caught here.
-            throw new ServerConnectionException(localizer[nameof(AppStrings.ServerConnectionException)], exp);
+            exp.WithData("RequestId", requestIdValue ?? "?"); // Connect the exception to its corresponding request id, if one exists.
+            throw;
         }
-        finally
-        {
-            if (isInternalRequest)
-            {
-                pubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, serverCommunicationSuccess);
-            }
-        }
+    }
+
+    private bool IsServerConnectionException(Exception exp)
+    {
+        return (exp is TimeoutException)
+             || (exp is WebException webEx && webEx.WithData("Status", webEx.Status).Status is WebExceptionStatus.ConnectFailure)
+             || (exp.InnerException is not null && IsServerConnectionException(exp.InnerException))
+             || (exp is AggregateException aggExp && aggExp.InnerExceptions.Any(IsServerConnectionException))
+             || (exp is SocketException sockExp && sockExp.WithData("SocketErrorCode", sockExp.SocketErrorCode).SocketErrorCode is SocketError.HostNotFound or SocketError.HostUnreachable or SocketError.HostDown or SocketError.TimedOut)
+             || (exp is HttpRequestException { StatusCode: HttpStatusCode.BadGateway or HttpStatusCode.GatewayTimeout or HttpStatusCode.ServiceUnavailable or HttpStatusCode.RequestTimeout });
     }
 }

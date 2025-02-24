@@ -5,10 +5,9 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The PullToRefresh component is used to add the pull down to refresh feature to a page or a specific element.
 /// </summary>
-public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
+public partial class BitPullToRefresh : BitComponentBase
 {
     private decimal _diff;
-    private bool _disposed;
     private bool _refreshing;
     private ElementReference _loadingRef = default!;
 
@@ -236,15 +235,11 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
         return string.Join(';', styles);
     }
 
-    public async ValueTask DisposeAsync()
-    {
-        await DisposeAsync(true);
-        GC.SuppressFinalize(this);
-    }
 
-    protected virtual async ValueTask DisposeAsync(bool disposing)
+
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        if (_disposed || disposing is false) return;
+        if (IsDisposed || disposing is false) return;
 
         try
         {
@@ -252,6 +247,6 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
-        _disposed = true;
+        await base.DisposeAsync(disposing);
     }
 }

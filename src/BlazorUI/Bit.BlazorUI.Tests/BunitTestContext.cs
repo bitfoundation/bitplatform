@@ -8,7 +8,7 @@ namespace Bit.BlazorUI.Tests;
 
 public abstract class BunitTestContext : IDisposable
 {
-    protected Bunit.TestContext Context;
+    protected Bunit.TestContext Context = default!;
 
     public ITestRenderer Renderer => Context?.Renderer ?? throw new InvalidOperationException("MSTest has not started executing tests yet");
 
@@ -26,8 +26,7 @@ public abstract class BunitTestContext : IDisposable
 
     public void Dispose()
     {
-        Context?.Dispose();
-        Context = null;
+        Context.Dispose();
     }
 
     public IRenderedComponent<TComponent> RenderComponent<TComponent>(params ComponentParameter[] parameters)

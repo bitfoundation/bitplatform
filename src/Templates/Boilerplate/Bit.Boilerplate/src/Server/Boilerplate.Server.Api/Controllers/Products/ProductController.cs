@@ -78,7 +78,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await responseCacheService.PurgeCache("/", $"product/{dto.Id}", $"api/ProductView/Get/{dto.Id}" /*You can also use Url.Action to build urls.*/);
+        await responseCacheService.PurgeCache("/", $"/product/{dto.ShortId}/{Uri.EscapeDataString(dto.Name!)}", $"/api/ProductView/Get/{dto.ShortId}" /*You can also use Url.Action to build urls.*/);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -90,11 +90,16 @@ public partial class ProductController : AppControllerBase, IProductController
     [HttpDelete("{id}/{concurrencyStamp}")]
     public async Task Delete(Guid id, string concurrencyStamp, CancellationToken cancellationToken)
     {
-        DbContext.Products.Remove(new() { Id = id, ConcurrencyStamp = Convert.FromHexString(concurrencyStamp) });
+        var entityToDelete = await DbContext.Products.FindAsync([id], cancellationToken)
+            ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
+
+        entityToDelete.ConcurrencyStamp = Convert.FromHexString(concurrencyStamp);
+
+        DbContext.Remove(entityToDelete);
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await responseCacheService.PurgeCache("/", $"product/{id}", $"api/ProductView/Get/{id}" /*You can also use Url.Action to build urls.*/);
+        await responseCacheService.PurgeCache("/", $"/product/{entityToDelete.ShortId}/{Uri.EscapeDataString(entityToDelete.Name!)}", $"/api/ProductView/Get/{entityToDelete.ShortId}" /*You can also use Url.Action to build urls.*/);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);

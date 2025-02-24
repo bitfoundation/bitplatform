@@ -8,5 +8,5 @@ public class BitChartTimeTicks : BitChartCartesianTicks
     /// <summary>
     /// Gets or sets how ticks are generated.
     /// </summary>
-    public BitChartTickSource Source { get; set; }
+    public BitChartTickSource? Source { get; set; }
 }

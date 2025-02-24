@@ -5,6 +5,5 @@
 /// </summary>
 /// <typeparam name="TGridItem">The type of data represented by each row in the grid.</typeparam>
 /// <param name="request">Parameters describing the data being requested.</param>
-/// <returns>A <see cref="ValueTask{BitDataGridItemsProviderResult{TResult}}" /> that gives the data to be displayed.</returns>
-public delegate ValueTask<BitDataGridItemsProviderResult<TGridItem>> BitDataGridItemsProvider<TGridItem>(
-    BitDataGridItemsProviderRequest<TGridItem> request);
+/// <returns>A <see cref="ValueTask{BitDataGridItemsProviderResult}" /> that gives the data to be displayed.</returns>
+public delegate ValueTask<BitDataGridItemsProviderResult<TGridItem>> BitDataGridItemsProvider<TGridItem>(BitDataGridItemsProviderRequest<TGridItem> request);

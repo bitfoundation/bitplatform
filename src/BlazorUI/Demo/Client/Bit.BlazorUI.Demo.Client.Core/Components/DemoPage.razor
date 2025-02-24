@@ -1,0 +1,103 @@
+﻿@inherits AppComponentBase
+
+<div class="demo-page">
+    <div class="page-container example">
+        <BitText Typography="BitTypography.H3" Class="title">@Name</BitText>
+
+        @if (Description.HasValue() || DescriptionTemplate is not null)
+        {
+            <section id="overview-section" class="page-section">
+                @if (DescriptionTemplate is not null)
+                {
+                    @DescriptionTemplate
+                }
+                else
+                {
+                    <BitText>@Description</BitText>
+                }
+            </section>
+        }
+
+        @if (Notes.HasValue() || NotesTemplate is not null)
+        {
+            <section id="notes-section" class="page-section">
+                <BitText Typography="BitTypography.H4" Class="subtitle">Notes</BitText>
+                @if (NotesTemplate is not null)
+                {
+                    @NotesTemplate
+                }
+                else
+                {
+                    @Notes
+                }
+            </section>
+        }
+
+        @if (VideoUrl.HasValue())
+        {
+            <section id="video-section" class="page-section">
+                <BitText Typography="BitTypography.H4" Class="subtitle">Introduction video</BitText>
+                <div class="video-container">
+                    <video src="@VideoUrl" controls />
+                </div>
+                @if (VideoDescription.HasValue() || VideoDescriptionTemplate is not null)
+                {
+                    <br />
+                    @if (VideoDescriptionTemplate is not null)
+                    {
+                        @VideoDescriptionTemplate
+                    }
+                    else
+                    {
+                        <BitText Typography="BitTypography.Body2">@VideoDescription</BitText>
+                    }
+                }
+            </section>
+        }
+
+        <section id="usage-section" class="page-section">
+            <BitText Typography="BitTypography.H4" Class="subtitle">Usage</BitText>
+            @(ChildContent ?? Examples)
+        </section>
+
+        <section id="api-section" class="page-section">
+            <BitText Typography="BitTypography.H4" Class="subtitle">API</BitText>
+
+            <DemoParametersTable Name="@($"Bit{Name}")" Parameters="Parameters" />
+
+            @if (PublicMembers.Any())
+            {
+                <DemoParametersTable Name="@($"Bit{Name}")" NameSuffix="public members" Parameters="PublicMembers" />
+            }
+
+            @if (_textInputComponents.Contains(Name))
+            {
+                <DemoParametersTable Name="BitTextInputBase" Parameters="_textInputBaseParameters" />
+            }
+
+            @if (_inputComponents.Contains(Name))
+            {
+                <DemoParametersTable Name="BitInputBase" Parameters="_inputBaseParameters" />
+
+                <DemoParametersTable Name="BitInputBase" NameSuffix="public members" Parameters="_inputBasePublicMembers" />
+            }
+
+            @if (_notInheritedComponents.Contains(Name) is false)
+            {
+                <DemoParametersTable Name="BitComponentBase" Parameters="_componentBaseParameters" />
+
+                <DemoParametersTable Name="BitComponentBase" NameSuffix="public members" Parameters="_componentBasePublicMembers" />
+            }
+
+            <DemoSubClassesTable Classes="SubClasses" />
+
+            <DemoSubEnumsTable Enums="SubEnums" />
+
+            @if (_notInheritedComponents.Contains(Name) is false)
+            {
+                <DemoSubEnumsTable Enums="_componentBaseSubEnums" />
+            }
+        </section>
+    </div>
+    <SideRail />
+</div>

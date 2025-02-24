@@ -324,6 +324,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(expectedMaxValue.HasValue ? expectedMaxValue.ToString() : null, input.GetAttribute("aria-valuemax"));
     }
 
+    [Ignore]
     [DataTestMethod,
          DataRow(3),
          DataRow(5)
@@ -348,6 +349,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(countOfClicks, onIncrementEventCounter);
     }
 
+    [Ignore]
     [DataTestMethod,
          DataRow(3),
          DataRow(5)

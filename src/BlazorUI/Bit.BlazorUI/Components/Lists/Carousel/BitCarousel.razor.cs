@@ -3,9 +3,8 @@
 /// <summary>
 /// Carousel (slide-show) let people show their items in separate slides from two or more items.
 /// </summary>
-public partial class BitCarousel : BitComponentBase, IAsyncDisposable
+public partial class BitCarousel : BitComponentBase
 {
-    private bool _disposed;
     private int _pagesCount;
     private int _currentPage;
     private double _pointerX;
@@ -13,11 +12,11 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
     private int[] _othersIndices = [];
     private int[] _currentIndices = [];
     private int _internalScrollItemsCount = 1;
+    private System.Timers.Timer? _autoPlayTimer;
     private string _directionStyle = string.Empty;
     private string _goLeftButtonStyle = string.Empty;
     private string _goRightButtonStyle = string.Empty;
     private readonly List<BitCarouselItem> _allItems = [];
-    private System.Timers.Timer _autoPlayTimer = default!;
     private ElementReference _carouselContainer = default!;
     private DotNetObjectReference<BitCarousel> _dotnetObj = default!;
 
@@ -198,7 +197,7 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
 
         if (firstRender is false) return;
 
-        await _js.BitObserversRegisterResize(_Id, RootElement, _dotnetObj);
+        await _js.BitObserversRegisterResize(UniqueId, RootElement, _dotnetObj);
 
         if (AutoPlay)
         {
@@ -284,7 +283,7 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
 
     private async Task Go(bool isNext = false, int scrollCount = 0)
     {
-        if (_disposed) return;
+        if (IsDisposed) return;
         if (_othersIndices.Length == 0) return;
 
         if (scrollCount < 1)
@@ -314,10 +313,11 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
 
 
         StateHasChanged();
-
-        if (AutoPlay) _autoPlayTimer.Stop();
+        if (IsDisposed) return;
+        _autoPlayTimer?.Stop();
         await Task.Delay(50);
-        if (AutoPlay) _autoPlayTimer.Start();
+        if (IsDisposed) return;
+        _autoPlayTimer?.Start();
 
         offset = isNext ? VisibleItemsCount - scrollCount : 0;
 
@@ -423,22 +423,15 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
 
 
 
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await DisposeAsync(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual async ValueTask DisposeAsync(bool disposing)
-    {
-        if (_disposed || disposing is false) return;
-
-        _disposed = true;
+        if (IsDisposed || disposing is false) return;
 
         if (_autoPlayTimer is not null)
         {
             _autoPlayTimer.Elapsed -= AutoPlayTimerElapsed;
             _autoPlayTimer.Dispose();
+            _autoPlayTimer = null;
         }
 
         if (_dotnetObj is not null)
@@ -446,9 +439,11 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
             //_dotnetObjRef.Dispose(); // it is getting disposed in the following js call:
             try
             {
-                await _js.BitObserversUnregisterResize(_Id, RootElement, _dotnetObj);
+                await _js.BitObserversUnregisterResize(UniqueId, RootElement, _dotnetObj);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
+
+        await base.DisposeAsync(disposing);
     }
 }

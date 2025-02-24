@@ -5,91 +5,81 @@
             Description="separator component of the bit BlazorUI components" />
 
 <div>
-    <ComponentDemo ComponentName="Separator"
-                   ComponentDescription="A Separator is a component that visually separates content into groups."
-                   ComponentParameters="componentParameters"
-                   ComponentSubEnums="componentSubEnums">
-        <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-            <ExamplePreview>
-                <div>
-                    <div>Simple Separator</div>
-                    <BitSeparator />
-                    <br /><br />
-                    <div>Separator with text</div>
-                    <BitSeparator>Text</BitSeparator>
-                    <br /><br />
-                    <div>Separator with icon</div>
-                    <BitSeparator><BitIcon IconName="Clock" /></BitSeparator>
-                </div>
-            </ExamplePreview>
-        </ComponentExampleBox>
-
-        <ComponentExampleBox Title="Vertical" RazorCode="@example2RazorCode" Id="example2">
-            <ExamplePreview>
-                <div class="custom-horizontal-layout">
-                    <span>Item 1</span>
-                    <BitSeparator Vertical />
-                    <span>Item 2</span>
-                    <BitSeparator Vertical />
-                    <span>Item 3</span>
-                    <BitSeparator Vertical />
-                    <span>Item 4</span>
-                    <BitSeparator Vertical />
-                    <span>Item 5</span>
-                </div>
-            </ExamplePreview>
-        </ComponentExampleBox>
-
-        <ComponentExampleBox Title="AlignContent" RazorCode="@example3RazorCode" Id="example3">
-            <ExamplePreview>
-                <div>Horizontal</div><br />
-                <BitSeparator AlignContent="@BitSeparatorAlignContent.Center">Center</BitSeparator>
+    <DemoPage Name="Separator"
+              Description="A Separator is a component that visually separates content into groups."
+              Parameters="componentParameters"
+              SubEnums="componentSubEnums">
+        <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>
+                <div>Simple Separator</div>
+                <BitSeparator />
                 <br /><br />
-                <BitSeparator AlignContent="@BitSeparatorAlignContent.Start">Start</BitSeparator>
+                <div>Separator with text</div>
+                <BitSeparator>Text</BitSeparator>
                 <br /><br />
-                <BitSeparator AlignContent="@BitSeparatorAlignContent.End">End</BitSeparator>
-                <br /><br /><br />
-                <div>Vertical</div><br />
-                <div style="height: 13rem">
-                    <BitSeparator Vertical AlignContent="@BitSeparatorAlignContent.Center">Center</BitSeparator>
-                    <BitSeparator Vertical AlignContent="@BitSeparatorAlignContent.Start">Start</BitSeparator>
-                    <BitSeparator Vertical AlignContent="@BitSeparatorAlignContent.End">End</BitSeparator>
-                </div>
-            </ExamplePreview>
-        </ComponentExampleBox>
+                <div>Separator with icon</div>
+                <BitSeparator><BitIcon IconName="Clock" /></BitSeparator>
+            </div>
+        </DemoSection>
 
-        <ComponentExampleBox Title="FullWidth" RazorCode="@example4RazorCode" Id="example4">
-            <ExamplePreview>
-                <div>While using inside a flex container with align-items css style:</div>
-                <br /><br />
-                <div style="display:flex;flex-direction:column;align-items:center">
-                    <BitSeparator>Default</BitSeparator>
-                    <br />
-                    <BitSeparator AutoSize>AutoSize</BitSeparator>
-                </div>
-            </ExamplePreview>
-        </ComponentExampleBox>
+        <DemoSection Title="Vertical" RazorCode="@example2RazorCode" Id="example2">
+            <div class="custom-horizontal-layout">
+                <span>Item 1</span>
+                <BitSeparator Vertical />
+                <span>Item 2</span>
+                <BitSeparator Vertical />
+                <span>Item 3</span>
+                <BitSeparator Vertical />
+                <span>Item 4</span>
+                <BitSeparator Vertical />
+                <span>Item 5</span>
+            </div>
+        </DemoSection>
 
-        <ComponentExampleBox Title="Colors" RazorCode="@example5RazorCode" Id="example5">
-            <ExamplePreview>
-                <div>Background:</div><br />
-                <BitSeparator Background="BitColorKind.Primary">Primary</BitSeparator>
+        <DemoSection Title="AlignContent" RazorCode="@example3RazorCode" Id="example3">
+            <div>Horizontal</div><br />
+            <BitSeparator AlignContent="@BitSeparatorAlignContent.Center">Center</BitSeparator>
+            <br /><br />
+            <BitSeparator AlignContent="@BitSeparatorAlignContent.Start">Start</BitSeparator>
+            <br /><br />
+            <BitSeparator AlignContent="@BitSeparatorAlignContent.End">End</BitSeparator>
+            <br /><br /><br />
+            <div>Vertical</div><br />
+            <div style="height: 13rem">
+                <BitSeparator Vertical AlignContent="@BitSeparatorAlignContent.Center">Center</BitSeparator>
+                <BitSeparator Vertical AlignContent="@BitSeparatorAlignContent.Start">Start</BitSeparator>
+                <BitSeparator Vertical AlignContent="@BitSeparatorAlignContent.End">End</BitSeparator>
+            </div>
+        </DemoSection>
+
+        <DemoSection Title="FullWidth" RazorCode="@example4RazorCode" Id="example4">
+            <div>While using inside a flex container with align-items css style:</div>
+            <br /><br />
+            <div style="display:flex;flex-direction:column;align-items:center">
+                <BitSeparator>Default</BitSeparator>
                 <br />
-                <BitSeparator Background="BitColorKind.Secondary">Secondary</BitSeparator>
-                <br />
-                <BitSeparator Background="BitColorKind.Tertiary">Tertiary</BitSeparator>
-                <br />
-                <BitSeparator Background="BitColorKind.Transparent">Transparent</BitSeparator>
-                <br /><br /><br />
-                <div>Border:</div><br />
-                <BitSeparator Border="BitColorKind.Primary">Primary</BitSeparator>
-                <br />
-                <BitSeparator Border="BitColorKind.Secondary">Secondary</BitSeparator>
-                <br />
-                <BitSeparator Border="BitColorKind.Tertiary">Tertiary</BitSeparator>
-                <br />
-                <BitSeparator Border="BitColorKind.Transparent">Transparent</BitSeparator>
-            </ExamplePreview>
-        </ComponentExampleBox>
-    </ComponentDemo>
+                <BitSeparator AutoSize>AutoSize</BitSeparator>
+            </div>
+        </DemoSection>
+
+        <DemoSection Title="Colors" RazorCode="@example5RazorCode" Id="example5">
+            <div>Background:</div><br />
+            <BitSeparator Background="BitColorKind.Primary">Primary</BitSeparator>
+            <br />
+            <BitSeparator Background="BitColorKind.Secondary">Secondary</BitSeparator>
+            <br />
+            <BitSeparator Background="BitColorKind.Tertiary">Tertiary</BitSeparator>
+            <br />
+            <BitSeparator Background="BitColorKind.Transparent">Transparent</BitSeparator>
+            <br /><br /><br />
+            <div>Border:</div><br />
+            <BitSeparator Border="BitColorKind.Primary">Primary</BitSeparator>
+            <br />
+            <BitSeparator Border="BitColorKind.Secondary">Secondary</BitSeparator>
+            <br />
+            <BitSeparator Border="BitColorKind.Tertiary">Tertiary</BitSeparator>
+            <br />
+            <BitSeparator Border="BitColorKind.Transparent">Transparent</BitSeparator>
+        </DemoSection>
+    </DemoPage>
 </div>

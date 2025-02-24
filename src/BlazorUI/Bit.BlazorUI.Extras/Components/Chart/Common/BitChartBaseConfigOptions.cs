@@ -8,7 +8,7 @@ public class BitChartBaseConfigOptions
     /// <summary>
     /// Gets or sets the title of this chart.
     /// </summary>
-    public BitChartOptionsTitle Title { get; set; }
+    public BitChartOptionsTitle? Title { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the chart canvas should be resized when its container is.
@@ -35,17 +35,17 @@ public class BitChartBaseConfigOptions
     /// <summary>
     /// Gets or sets the legend for this chart.
     /// </summary>
-    public BitChartLegend Legend { get; set; }
+    public BitChartLegend? Legend { get; set; }
 
     /// <summary>
     /// Gets or sets the tooltip options for this chart.
     /// </summary>
-    public BitChartTooltips Tooltips { get; set; }
+    public BitChartTooltips? Tooltips { get; set; }
 
     /// <summary>
     /// Gets or sets the animation-configuration for this chart.
     /// </summary>
-    public BitChartAnimation Animation { get; set; }
+    public BitChartAnimation? Animation { get; set; }
 
     /// <summary>
     /// Gets the plugin options. The key has to be the unique
@@ -55,7 +55,7 @@ public class BitChartBaseConfigOptions
     /// <a href="https://www.chartjs.org/docs/latest/developers/plugins.html#plugin-options"/>
     /// </para>
     /// </summary>
-    public Dictionary<string, object> Plugins { get; } = new Dictionary<string, object>();
+    public Dictionary<string, object> Plugins { get; } = [];
 
     /// <summary>
     /// Gets or sets the browser events that the chart should listen to for tooltips and hovering.
@@ -64,7 +64,7 @@ public class BitChartBaseConfigOptions
     /// <see cref="BitChartBrowserEvent.Click"/>, <see cref="BitChartBrowserEvent.TouchStart"/> and <see cref="BitChartBrowserEvent.TouchMove"/> (by default).
     /// </para>
     /// </summary>
-    public BitChartBrowserEvent[] Events { get; set; }
+    public BitChartBrowserEvent[]? Events { get; set; }
 
     /// <summary>
     /// Gets or sets the callback to call when an event of type <see cref="BitChartBrowserEvent.MouseUp"/> or
@@ -72,7 +72,7 @@ public class BitChartBaseConfigOptions
     /// Called in the context of the chart and passed the event and an array of active elements.
     /// <para>See <see cref="BitChartJavascriptHandler{T}"/> and <see cref="BitChartDelegateHandler{T}"/>.</para>
     /// </summary>
-    public IBitChartMethodHandler<BitChartChartMouseEvent> OnClick { get; set; }
+    public IBitChartMethodHandler<BitChartChartMouseEvent>? OnClick { get; set; }
 
     /// <summary>
     /// Gets or sets the callback to call when any of the <see cref="Events"/> fire on the chart.
@@ -80,12 +80,12 @@ public class BitChartBaseConfigOptions
     /// active elements (bars, points, etc).
     /// <para>See <see cref="BitChartJavascriptHandler{T}"/> and <see cref="BitChartDelegateHandler{T}"/>.</para>
     /// </summary>
-    public IBitChartMethodHandler<BitChartChartMouseEvent> OnHover { get; set; }
+    public IBitChartMethodHandler<BitChartChartMouseEvent>? OnHover { get; set; }
 
     /// <summary>
     /// Gets or sets the hover configuration for this chart.
     /// </summary>
-    public BitChartHover Hover { get; set; }
+    public BitChartHover? Hover { get; set; }
 
     /// <summary>
     /// This method tells json.net to only serialize the plugin options when

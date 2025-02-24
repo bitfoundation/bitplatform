@@ -65,7 +65,7 @@
     private async Task GetOrientationType()
     {
         var type = await screenOrientation.GetOrientationType();
-        await console.Log("OrientationType:", type);
+        await console.Log("OrientationType:", type.ToString());
     }
 
     private async Task GetAngle()

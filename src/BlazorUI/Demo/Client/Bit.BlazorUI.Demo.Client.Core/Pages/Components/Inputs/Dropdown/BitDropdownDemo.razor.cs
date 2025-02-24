@@ -100,7 +100,7 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "DynamicValueGenerator",
-            Type = "Func<TItem, TValue>?",
+            Type = "Func<TItem?, TValue>?",
             DefaultValue = "null",
             Description = "The function for generating value in a custom item when a new item is on added Dynamic ComboBox mode.",
         },
@@ -245,7 +245,7 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "OnValuesChange",
-            Type = "EventCallback<IEnumerable<TValue>>",
+            Type = "EventCallback<IEnumerable<TValue?>>",
             Description = "The callback that called when selected items change.",
         },
         new()

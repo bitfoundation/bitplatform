@@ -45,7 +45,7 @@ public abstract class BitChartStringEnum : IEquatable<BitChartStringEnum>
     /// <param name="obj">The object to compare with the current object.</param>
     /// <returns>true if the specified object is considered to be equal to the current
     /// object; otherwise, false.</returns>
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (obj is BitChartStringEnum asEnum)
         {
@@ -66,9 +66,7 @@ public abstract class BitChartStringEnum : IEquatable<BitChartStringEnum>
     /// <param name="other">An object to compare with this object.</param>
     /// <returns>true if the current object is equal to the other parameter;
     /// otherwise, false.</returns>
-    public bool Equals(BitChartStringEnum other) =>
-        other != null &&
-        _value == other._value;
+    public bool Equals(BitChartStringEnum? other) => other is not null && _value == other._value;
 
     /// <summary>
     /// Returns the hash code of the underlying <see cref="string"/> value.

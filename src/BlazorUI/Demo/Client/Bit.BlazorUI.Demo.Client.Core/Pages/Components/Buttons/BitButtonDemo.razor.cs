@@ -133,6 +133,13 @@ public partial class BitButtonDemo
         },
         new()
         {
+            Name = "IconUrl",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The url of the custom icon to render inside the button."
+        },
+        new()
+        {
             Name = "IsLoading",
             Type = "bool",
             DefaultValue = "false",

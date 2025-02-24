@@ -22,7 +22,7 @@ internal class IgnoreDatasetCountContractResolver : DefaultContractResolver
             foreach (var prop in baseProps)
             {
                 if (prop.PropertyName == countName &&
-                    prop.DeclaringType.IsGenericType &&
+                    prop.DeclaringType!.IsGenericType &&
                     prop.DeclaringType.GetGenericTypeDefinition() == typeof(Collection<>))
                 {
                     prop.Ignored = true;

@@ -4,66 +4,60 @@
             Title="Layout"
             Description="layout component of the bit BlazorUI components" />
 
-<ComponentDemo ComponentName="Layout"
-               ComponentDescription="Layout can be used to create a base UI structure for an application."
-               ComponentParameters="componentParameters"
-               ComponentSubClasses="componentSubClasses">
-    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <ExamplePreview>
-            <div class="container">
-                <BitLayout>
-                    <Header>
-                        <div class="header">Header</div>
-                    </Header>
-                    <Main>
-                        <div class="main">Main</div>
-                    </Main>
-                    <Footer>
-                        <div class="footer">Footer</div>
-                    </Footer>
-                </BitLayout>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+<DemoPage Name="Layout"
+          Description="Layout can be used to create a base UI structure for an application."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses">
+    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <div class="container">
+            <BitLayout>
+                <Header>
+                    <div class="header">Header</div>
+                </Header>
+                <Main>
+                    <div class="main">Main</div>
+                </Main>
+                <Footer>
+                    <div class="footer">Footer</div>
+                </Footer>
+            </BitLayout>
+        </div>
+    </DemoSection>
 
-    <ComponentExampleBox Title="NavPanel" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-        <ExamplePreview>
-            <BitToggle Label="Hide NavPanel" @bind-Value="HideNavPanel" />
-            <br />
-            <div class="container">
-                <BitLayout HideNavPanel="HideNavPanel">
-                    <Header>
-                        <div class="header">Header</div>
-                    </Header>
-                    <NavPanel>
-                        <div class="nav-menu">NavPanel</div>
-                    </NavPanel>
-                    <Main>
-                        <div class="main">Main</div>
-                    </Main>
-                    <Footer>
-                        <div class="footer">Footer</div>
-                    </Footer>
-                </BitLayout>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+    <DemoSection Title="NavPanel" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <BitToggle Label="Hide NavPanel" @bind-Value="HideNavPanel" />
+        <br />
+        <div class="container">
+            <BitLayout HideNavPanel="HideNavPanel">
+                <Header>
+                    <div class="header">Header</div>
+                </Header>
+                <NavPanel>
+                    <div class="nav-menu">NavPanel</div>
+                </NavPanel>
+                <Main>
+                    <div class="main">Main</div>
+                </Main>
+                <Footer>
+                    <div class="footer">Footer</div>
+                </Footer>
+            </BitLayout>
+        </div>
+    </DemoSection>
 
-    <ComponentExampleBox Title="Styles & Classes" RazorCode="@example3RazorCode" Id="example3">
-        <ExamplePreview>
-            <div class="container">
-                <BitLayout Styles="@(new() { Main = "height: 19rem;" })" 
-                           Classes="@(new() { Header = "header2",
+    <DemoSection Title="Styles & Classes" RazorCode="@example3RazorCode" Id="example3">
+        <div class="container">
+            <BitLayout Styles="@(new() { Main = "height: 19rem;" })"
+                       Classes="@(new() { Header = "header2",
                                               Main = "main2",
                                               NavPanel = "nav-menu2",
                                               MainContent = "main-content2",
                                               Footer = "footer2" })">
-                    <Header>Header</Header>
-                    <NavPanel>NavPanel</NavPanel>
-                    <Main>Main</Main>
-                    <Footer>Footer</Footer>
-                </BitLayout>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-</ComponentDemo>
+                <Header>Header</Header>
+                <NavPanel>NavPanel</NavPanel>
+                <Main>Main</Main>
+                <Footer>Footer</Footer>
+            </BitLayout>
+        </div>
+    </DemoSection>
+</DemoPage>

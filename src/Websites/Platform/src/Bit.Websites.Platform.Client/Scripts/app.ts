@@ -15,14 +15,15 @@ function goToTop() {
 declare class BitTheme { static init(options: any): void; };
 
 BitTheme.init({
-    system: true,
+    //system: true,
+    default: 'dark',
     onChange: (newTheme: string, oldThem: string) => {
         if (newTheme === 'dark') {
-            document.body.classList.add('bit-theme-dark');
-            document.body.classList.remove('bit-theme-light');
+            document.body.classList.add('bit-platform-dark-theme');
+            document.body.classList.remove('bit-platform-light-theme');
         } else {
-            document.body.classList.add('bit-theme-light');
-            document.body.classList.remove('bit-theme-dark');
+            document.body.classList.add('bit-platform-light-theme');
+            document.body.classList.remove('bit-platform-dark-theme');
         }
     }
 });

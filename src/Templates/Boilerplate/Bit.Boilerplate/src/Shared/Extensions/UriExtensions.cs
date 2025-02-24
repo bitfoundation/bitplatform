@@ -1,18 +1,16 @@
-﻿using System.Web;
-
-namespace System;
+﻿namespace System;
 
 public static partial class UriExtensions
 {
     public static string GetUrlWithoutQueryParameter(this Uri uri, string key)
     {
-        var newQueryString = HttpUtility.ParseQueryString(uri.Query);
-        newQueryString.Remove(key);
+        var qsCollection = AppQueryStringCollection.Parse(uri.Query);
+        qsCollection.Remove(key);
 
         string pagePathWithoutQueryString = uri.GetLeftPart(UriPartial.Path);
 
-        return newQueryString.Count > 0
-            ? $"{pagePathWithoutQueryString}?{newQueryString}"
+        return qsCollection is { Count: > 0 }
+            ? $"{pagePathWithoutQueryString}?{qsCollection}"
             : pagePathWithoutQueryString;
     }
 
@@ -25,11 +23,9 @@ public static partial class UriExtensions
     {
         if (CultureInfoManager.MultilingualEnabled is false)
             return null;
-        
-        var culture = HttpUtility.ParseQueryString(uri.Query)["culture"];
 
-        if (string.IsNullOrEmpty(culture) is false)
-            return culture;
+        if (AppQueryStringCollection.Parse(uri.Query).TryGetValue("culture", out var culture))
+            return culture?.ToString();
 
         foreach (var segment in uri.Segments.Take(2))
         {

@@ -1,4 +1,5 @@
 ﻿//+:cnd:noEmit
+using Boilerplate.Server.Api.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Web;
 
@@ -7,9 +8,10 @@ namespace Boilerplate.Server.Api.Controllers.Identity;
 public partial class IdentityController
 {
     [AutoInject] private HtmlRenderer htmlRenderer = default!;
+    [AutoInject] private ServerExceptionHandler serverExceptionHandler = default!;
 
     [HttpGet]
-    [AppResponseCache(SharedMaxAge = 3600 * 24 * 7)]
+    [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5)]
     public async Task<string> GetSocialSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default)
     {
         var uri = Url.Action(nameof(SocialSignIn), new { provider, returnUrl, localHttpPort, origin = Request.GetWebAppUrl() })!;
@@ -90,7 +92,7 @@ public partial class IdentityController
         }
         catch (Exception exp)
         {
-            LogSocialSignInCallbackFailed(logger, exp, info?.LoginProvider, info?.Principal?.GetDisplayName());
+            serverExceptionHandler.Handle(exp, new() { { "LoginProvider", info?.LoginProvider }, { "Principal", info?.Principal?.GetDisplayName() } });
             url = $"{Urls.SignInPage}?error={Uri.EscapeDataString(exp is KnownException ? Localizer[exp.Message] : Localizer[nameof(AppStrings.UnknownException)])}";
         }
         finally
@@ -101,7 +103,4 @@ public partial class IdentityController
         if (localHttpPort is not null) return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}"), url).ToString());
         return Redirect(new Uri(Request.HttpContext.Request.GetWebAppUrl(), url).ToString());
     }
-
-    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to perform {loginProvider} social sign in for {principal}")]
-    private static partial void LogSocialSignInCallbackFailed(ILogger logger, Exception exp, string? loginProvider, string? principal);
 }

@@ -1009,6 +1009,7 @@ public partial class BitDateRangePickerDemo
     private readonly string example1RazorCode = @"
 <BitDateRangePicker Label=""Basic DateRangePicker"" />
 <BitDateRangePicker Label=""Disabled"" IsEnabled=""false"" />
+<BitDateRangePicker Label=""Required"" Required />
 <BitDateRangePicker Label=""PlaceHolder"" Placeholder=""Select a date range"" />
 <BitDateRangePicker Label=""Week numbers"" ShowWeekNumbers />
 <BitDateRangePicker Label=""Highlight months"" HighlightCurrentMonth HighlightSelectedMonth />

@@ -9,9 +9,8 @@ namespace Bit.BlazorUI;
 /// integrates with an <see cref="Microsoft.AspNetCore.Components.Forms.EditContext"/>, which must be supplied
 /// as a cascading parameter.
 /// </summary>
-public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable, IAsyncDisposable
+public abstract class BitInputBase<TValue> : BitComponentBase
 {
-    protected bool IsDisposed;
     protected bool ValueHasBeenSet;
 
 
@@ -480,9 +479,9 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable, IAsy
 
 
 
-    public void Dispose()
+    protected override async ValueTask DisposeAsync(bool disposing) 
     {
-        if (IsDisposed) return;
+        if (IsDisposed || disposing is false) return;
 
         // When initialization in the SetParametersAsync method fails, the EditContext property can remain equal to null
         if (EditContext is not null)
@@ -490,21 +489,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable, IAsy
             EditContext.OnValidationStateChanged -= _validationStateChangedHandler;
         }
 
-        IsDisposed = true;
-
-        Dispose(true);
-        GC.SuppressFinalize(this);
+        await base.DisposeAsync(disposing);
     }
-
-    public ValueTask DisposeAsync()
-    {
-        if (IsDisposed) return ValueTask.CompletedTask;
-
-        Dispose();
-        return DisposeAsync(true);
-    }
-
-    protected virtual void Dispose(bool disposing) { }
-
-    protected virtual ValueTask DisposeAsync(bool disposing) { return ValueTask.CompletedTask; }
 }

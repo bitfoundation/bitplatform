@@ -31,11 +31,11 @@ BitTheme.init({
     system: true,
     onChange: (newTheme: string, oldThem: string) => {
         if (newTheme === 'dark') {
-            document.body.classList.add('bit-theme-dark');
-            document.body.classList.remove('bit-theme-light');
+            document.body.classList.add('bit-careers-dark-theme');
+            document.body.classList.remove('bit-careers-light-theme');
         } else {
-            document.body.classList.add('bit-theme-light');
-            document.body.classList.remove('bit-theme-dark');
+            document.body.classList.add('bit-careers-light-theme');
+            document.body.classList.remove('bit-careers-dark-theme');
         }
     }
 });

@@ -7,9 +7,8 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// A dropdown is a list in which the selected item is always visible while other items are visible on demand by clicking a dropdown button. Dropdowns are typically used for forms.
 /// </summary>
-public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDisposable where TItem : class, new()
+public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TItem : class, new()
 {
-    private bool _disposed;
     private int? _totalItems;
     private string? _searchText;
     private bool _isResponsiveMode;
@@ -106,7 +105,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     /// <summary>
     /// The function for generating value in a custom item when a new item is on added Dynamic ComboBox mode.
     /// </summary>
-    [Parameter] public Func<TItem, TValue>? DynamicValueGenerator { get; set; }
+    [Parameter] public Func<TItem?, TValue>? DynamicValueGenerator { get; set; }
 
     /// <summary>
     /// Custom search function to be used in place of the default search algorithm for checking existing an item in selected items in the ComboBox mode.
@@ -138,7 +137,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     /// Determines the opening state of the callout. (two-way bound)
     /// </summary>
     [Parameter, TwoWayBound]
-    [CallOnSet(nameof(ClearSearchBox))]
+    [CallOnSet(nameof(OnSetIsOpen))]
     public bool IsOpen { get; set; }
 
     /// <summary>
@@ -215,7 +214,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     /// <summary>
     /// The callback that called when selected items change.
     /// </summary>
-    [Parameter] public EventCallback<IEnumerable<TValue>> OnValuesChange { get; set; }
+    [Parameter] public EventCallback<IEnumerable<TValue?>> OnValuesChange { get; set; }
 
     /// <summary>
     /// Alias of ChildContent.
@@ -948,7 +947,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
         }
 
         SetIsSelectedForSelectedItems();
-        await OnValuesChange.InvokeAsync([.. Values ?? []]);
+        await OnValuesChange.InvokeAsync([.. (Values ?? [])!]);
     }
 
     private void UpdateSelectedItemsFromValues()
@@ -1051,6 +1050,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
 
         await OnSearch.InvokeAsync(_searchText);
         await SearchVirtualized();
+    }
+
+    private void OnSetIsOpen()
+    {
+        _ = ClearSearchBox();
     }
 
     private async ValueTask FocusOnSearchBox()
@@ -1464,15 +1468,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
 
 
 
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await DisposeAsync(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual async ValueTask DisposeAsync(bool disposing)
-    {
-        if (_disposed || disposing is false) return;
+        if (IsDisposed || disposing is false) return;
 
         try
         {
@@ -1481,6 +1479,6 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
-        _disposed = true;
+        await base.DisposeAsync(disposing);
     }
 }

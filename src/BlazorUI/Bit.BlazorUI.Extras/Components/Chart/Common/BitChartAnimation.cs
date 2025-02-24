@@ -15,7 +15,7 @@ public class BitChartAnimation
     /// Gets or sets the easing function to use.
     /// See <a href="https://easings.net"/> for reference.
     /// </summary>
-    public BitChartEasing Easing { get; set; }
+    public BitChartEasing? Easing { get; set; }
 
     // TODO OnProgress Callback called on each step of an animation.
     // TODO OnComplete Callback called at the end of an animation.

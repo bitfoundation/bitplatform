@@ -226,13 +226,6 @@
             "defaultValue": "true",
             "description": "Add cloudflare CDN integration."
         },
-        "windows": {
-            "displayName": "Add Windows project?",
-            "type": "parameter",
-            "datatype": "bool",
-            "defaultValue": "true",
-            "description": ".NET desktop app project supporting Windows 7 SP1 and above."
-        },
         "nameToLower": {
             "type": "generated",
             "generator": "casing",
@@ -516,12 +509,6 @@
                         "src/Shared/Dtos/PushNotification/**",
                         "src/Server/Boilerplate.Server.Api/Mappers/PushNotificationMapper.cs",
                         "src/Server/Boilerplate.Server.Api/Data/Configurations/PushNotification/**"
-                    ]
-                },
-                {
-                    "condition": "(windows != true)",
-                    "exclude": [
-                        "src/Client/Boilerplate.Client.Windows/**"
                     ]
                 },
                 {

@@ -1,0 +1,12 @@
+﻿@attribute [Authorize]
+
+@* This route is disabled by default. Uncomment and enable it only if necessary,  
+   as it may expose authentication-related endpoints. *@
+@*
+@attribute [Route(Urls.Authorize)]
+@attribute [Route("{culture?}" + Urls.Authorize)]
+*@
+
+@inherits AppComponentBase
+
+<LoadingComponent />

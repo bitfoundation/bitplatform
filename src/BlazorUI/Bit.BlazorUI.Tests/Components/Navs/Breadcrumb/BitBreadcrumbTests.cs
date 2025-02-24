@@ -87,7 +87,7 @@ public class BitBreadcrumbTests : BunitTestContext
 
         var lastIndex = breadcrumbItems.Count - 1;
 
-        Assert.IsTrue(breadcrumbElements[lastIndex].GetAttribute("aria-current").Contains("page"));
+        Assert.IsTrue(breadcrumbElements?[lastIndex]?.GetAttribute("aria-current")?.Contains("page"));
     }
 
     [DataTestMethod,
@@ -106,7 +106,7 @@ public class BitBreadcrumbTests : BunitTestContext
 
         var breadcrumbButton = component.Find(".bit-brc ul li button");
 
-        Assert.IsTrue(breadcrumbButton.GetAttribute("aria-label").Contains(overflowAriaLabel));
+        Assert.IsTrue(breadcrumbButton?.GetAttribute("aria-label")?.Contains(overflowAriaLabel));
     }
 
     [DataTestMethod,
@@ -122,7 +122,7 @@ public class BitBreadcrumbTests : BunitTestContext
 
         var breadcrumb = component.Find(".bit-brc");
 
-        Assert.IsTrue(breadcrumb.GetAttribute("style").Contains(customStyle));
+        Assert.IsTrue(breadcrumb?.GetAttribute("style")?.Contains(customStyle));
     }
 
     [DataTestMethod,
@@ -162,10 +162,10 @@ public class BitBreadcrumbTests : BunitTestContext
                 Assert.IsFalse(breadcrumb.HasAttribute("style"));
                 break;
             case BitVisibility.Hidden:
-                Assert.IsTrue(breadcrumb.GetAttribute("style").Contains("visibility:hidden"));
+                Assert.IsTrue(breadcrumb?.GetAttribute("style")?.Contains("visibility:hidden"));
                 break;
             case BitVisibility.Collapsed:
-                Assert.IsTrue(breadcrumb.GetAttribute("style").Contains("display:none"));
+                Assert.IsTrue(breadcrumb?.GetAttribute("style")?.Contains("display:none"));
                 break;
         }
     }

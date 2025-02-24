@@ -40,24 +40,24 @@ public class BitChartBarDataset<T> : BitChartDataset<T>
     /// Gets or sets the fill color of the bars in the dataset.
     /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
     /// </summary>
-    public BitChartIndexableOption<string> BackgroundColor { get; set; }
+    public BitChartIndexableOption<string>? BackgroundColor { get; set; }
 
     /// <summary>
     /// Gets or sets the border color of the bars in the dataset.
     /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
     /// </summary>
-    public BitChartIndexableOption<string> BorderColor { get; set; }
+    public BitChartIndexableOption<string>? BorderColor { get; set; }
 
     /// <summary>
     /// Gets or sets a value to avoid drawing the bar stroke at the base of the fill.
     /// In general, this does not need to be changed except when creating chart types that derive from a bar chart.
     /// </summary>
-    public BitChartIndexableOption<BitChartBorderSkipped> BorderSkipped { get; set; }
+    public BitChartIndexableOption<BitChartBorderSkipped>? BorderSkipped { get; set; }
 
     /// <summary>
     /// Gets or sets the border width of the bars in the dataset.
     /// </summary>
-    public BitChartIndexableOption<int> BorderWidth { get; set; }
+    public BitChartIndexableOption<int>? BorderWidth { get; set; }
 
     /// <summary>
     /// Gets or sets the percentage (0-1) of the available width each bar should be within the category
@@ -77,7 +77,7 @@ public class BitChartBarDataset<T> : BitChartDataset<T>
     /// If set to <see cref="BitChartBarThickness.Flex"/>, it computes "optimal" sample widths that globally
     /// arrange bars side by side. If not set (default), bars are equally sized based on the smallest interval.
     /// </summary>
-    public BitChartBarThickness BarThickness { get; set; }
+    public BitChartBarThickness? BarThickness { get; set; }
 
     /// <summary>
     /// Gets or sets how to clip relative to the chart area. Positive values allow overflow,
@@ -89,23 +89,23 @@ public class BitChartBarDataset<T> : BitChartDataset<T>
     /// Gets or sets the fill color of the bars when hovered.
     /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
     /// </summary>
-    public BitChartIndexableOption<string> HoverBackgroundColor { get; set; }
+    public BitChartIndexableOption<string>? HoverBackgroundColor { get; set; }
 
     /// <summary>
     /// Gets or sets the stroke color of the bars when hovered.
     /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
     /// </summary>
-    public BitChartIndexableOption<string> HoverBorderColor { get; set; }
+    public BitChartIndexableOption<string>? HoverBorderColor { get; set; }
 
     /// <summary>
     /// Gets or sets the stroke width of the bars when hovered.
     /// </summary>
-    public BitChartIndexableOption<int> HoverBorderWidth { get; set; }
+    public BitChartIndexableOption<int>? HoverBorderWidth { get; set; }
 
     /// <summary>
     /// Gets or sets the label for the dataset which appears in the legend and tooltips.
     /// </summary>
-    public string Label { get; set; }
+    public string? Label { get; set; }
 
     /// <summary>
     /// Gets or sets the maximum thickness of the bars in pixels.
@@ -123,10 +123,10 @@ public class BitChartBarDataset<T> : BitChartDataset<T>
     /// <para>
     /// In order to use this, the 'Stacked' property of the corresponding
     /// axis has to be set to <see langword="true"/>. The 'Stacked' property
-    /// is only available in axes from the <see cref="Axes"/> namespace.
+    /// is only available in axes.
     /// </para>
     /// </summary>
-    public string Stack { get; set; }
+    public string? Stack { get; set; }
 
     /// <summary>
     /// Gets or sets the drawing order of this dataset.
@@ -139,12 +139,12 @@ public class BitChartBarDataset<T> : BitChartDataset<T>
     /// this defaults to the ID of the first found x axis.
     /// </summary>
     [JsonProperty("xAxisID")]
-    public string XAxisId { get; set; }
+    public string? XAxisId { get; set; }
 
     /// <summary>
     /// Gets or sets the ID of the y axis to plot this dataset on. If not specified,
     /// this defaults to the ID of the first found y axis.
     /// </summary>
     [JsonProperty("yAxisID")]
-    public string YAxisId { get; set; }
+    public string? YAxisId { get; set; }
 }

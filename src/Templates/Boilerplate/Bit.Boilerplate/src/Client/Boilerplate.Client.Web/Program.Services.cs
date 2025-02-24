@@ -25,12 +25,16 @@ public static partial class Program
 
         services.AddScoped(sp =>
         {
-            var httpClient = new HttpClient(sp.GetRequiredService<HttpMessageHandler>()) { BaseAddress = serverAddress };
+            var httpClient = new HttpClient(sp.GetRequiredService<HttpMessageHandler>())
+            {
+                BaseAddress = serverAddress
+            };
 
             httpClient.DefaultRequestHeaders.Add("X-Origin", builder.HostEnvironment.BaseAddress);
 
             return httpClient;
         });
+        services.AddKeyedScoped<HttpMessageHandler, HttpClientHandler>("PrimaryHttpMessageHandler");
     }
 
     public static void AddClientWebProjectServices(this IServiceCollection services, IConfiguration configuration)

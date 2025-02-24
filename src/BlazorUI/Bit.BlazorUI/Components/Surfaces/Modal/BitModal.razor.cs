@@ -3,10 +3,9 @@
 /// <summary>
 /// Modals are temporary pop-ups that take focus from the page or app and require people to interact with them.
 /// </summary>
-public partial class BitModal : BitComponentBase, IAsyncDisposable
+public partial class BitModal : BitComponentBase
 {
     private int _offsetTop;
-    private bool _disposed;
     private bool _internalIsOpen;
     private string _containerId = default!;
 
@@ -82,6 +81,7 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     /// Whether the Modal is displayed.
     /// </summary>
     [Parameter, TwoWayBound]
+    [CallOnSet(nameof(OnSetIsOpen))]
     public bool IsOpen { get; set; }
 
     /// <summary>
@@ -217,8 +217,6 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
         await ModalParameters.OnOverlayClick.InvokeAsync(e);
 
         if (await AssignIsOpen(false) is false) return;
-
-        await ModalParameters.OnDismiss.InvokeAsync(e);
     }
 
     private string GetDragElementSelector()
@@ -238,17 +236,18 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
         _offsetTop = await _js.BitUtilsToggleOverflow(ModalParameters.ScrollerSelector ?? "body", isOpen);
     }
 
-
-
-    public async ValueTask DisposeAsync()
+    private void OnSetIsOpen()
     {
-        await DisposeAsync(true);
-        GC.SuppressFinalize(this);
+        if (IsOpen || IsRendered is false) return;
+
+        _ = ModalParameters.OnDismiss.InvokeAsync().ContinueWith(_ => InvokeAsync(StateHasChanged));
     }
 
-    protected virtual async ValueTask DisposeAsync(bool disposing)
+
+
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        if (_disposed || disposing is false) return;
+        if (IsDisposed || disposing is false) return;
 
         try
         {
@@ -257,6 +256,6 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
-        _disposed = true;
+        await base.DisposeAsync(disposing);
     }
 }

@@ -26,7 +26,7 @@ public readonly struct BitChartPoint : IEquatable<BitChartPoint>
         Y = y;
     }
 
-    public override bool Equals(object obj) => obj is BitChartPoint point && Equals(point);
+    public override bool Equals(object? obj) => obj is BitChartPoint point && Equals(point);
     public bool Equals(BitChartPoint other) => X == other.X && Y == other.Y;
     public override int GetHashCode() => HashCode.Combine(X, Y);
 

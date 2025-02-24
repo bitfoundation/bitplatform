@@ -14,8 +14,6 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 
     [AutoInject] protected IStorageService StorageService = default!;
 
-    [AutoInject] protected HttpClient HttpClient = default!;
-
     [AutoInject] protected JsonSerializerOptions JsonSerializerOptions = default!;
 
     /// <summary>
@@ -55,8 +53,17 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     [AutoInject] protected AbsoluteServerAddressProvider AbsoluteServerAddress { get; set; } = default!;
 
 
-    private CancellationTokenSource cts = new();
-    protected CancellationToken CurrentCancellationToken => cts.Token;
+    private CancellationTokenSource? cts = new();
+    protected CancellationToken CurrentCancellationToken
+    {
+        get
+        {
+            if (cts == null)
+                throw new OperationCanceledException(); // Component already disposed.
+            cts.Token.ThrowIfCancellationRequested();
+            return cts.Token;
+        }
+    }
 
     protected bool InPrerenderSession => AppPlatform.IsBlazorHybrid is false && JSRuntime.IsInitialized() is false;
 
@@ -222,31 +229,35 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     /// <summary>
     /// Cancells running codes inside current component.
     /// </summary>
-    protected void Abort()
+    protected async Task Abort()
     {
-        if (cts.IsCancellationRequested is false)
-        {
-            cts.Cancel();
-            cts.Dispose();
-        }
+        if (cts == null)
+            return; // Component already disposed.
+
+        using var currentCts = cts;
         cts = new();
+
+        if (currentCts.IsCancellationRequested is false)
+        {
+            await currentCts.CancelAsync();
+        }
     }
 
     public async ValueTask DisposeAsync()
     {
+        cts?.Dispose();
+        cts = null;
+
+        await PrerenderStateService.DisposeAsync();
+
         await DisposeAsync(true);
 
         GC.SuppressFinalize(this);
     }
 
-    protected virtual async ValueTask DisposeAsync(bool disposing)
+    protected virtual ValueTask DisposeAsync(bool disposing)
     {
-        if (disposing)
-        {
-            await PrerenderStateService.DisposeAsync();
-            cts.Cancel();
-            cts.Dispose();
-        }
+        return ValueTask.CompletedTask;
     }
 
     private void HandleException(Exception exp,

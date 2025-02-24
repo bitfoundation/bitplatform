@@ -28,7 +28,7 @@ public partial class ResponseCacheService
         //#if (cloudflare == true)
         await PurgeCloudflareCache(relativePaths);
         //#else
-        // If you're using CDNs like GCore or others, make sure to purge the Edge Cache of your CDN.
+        // If you're using CDN like GCore or others, make sure to purge the Edge Cache of your CDN.
         // The Cloudflare Cache API is already integrated into the Boilerplate, but for other CDNs, 
         // you'll need to implement the caching logic yourself.
         if (httpContextAccessor.HttpContext!.Request.IsFromCDN())

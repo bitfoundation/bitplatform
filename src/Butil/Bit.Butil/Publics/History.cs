@@ -23,7 +23,7 @@ public class History(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/History/length">https://developer.mozilla.org/en-US/docs/Web/API/History/length</see>
     /// </summary>
     public async Task<int> GetLength()
-        => await js.FastInvokeAsync<int>("BitButil.history.length");
+        => await js.Invoke<int>("BitButil.history.length");
 
     /// <summary>
     /// Gets default scroll restoration behavior on history navigation. This property can be either auto or manual.
@@ -32,7 +32,7 @@ public class History(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     public async Task<ScrollRestoration> GetScrollRestoration()
     {
-        var value = await js.FastInvokeAsync<string>("BitButil.history.scrollRestoration");
+        var value = await js.Invoke<string>("BitButil.history.scrollRestoration");
         return value == "auto" ? ScrollRestoration.Auto : ScrollRestoration.Manual;
     }
 
@@ -43,7 +43,7 @@ public class History(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/History/scrollRestoration">https://developer.mozilla.org/en-US/docs/Web/API/History/scrollRestoration</see>
     /// </summary>
     public async Task SetScrollRestoration(ScrollRestoration value)
-        => await js.FastInvokeVoidAsync("BitButil.history.setScrollRestoration", value.ToString().ToLowerInvariant());
+        => await js.InvokeVoid("BitButil.history.setScrollRestoration", value.ToString().ToLowerInvariant());
 
     /// <summary>
     /// Returns an any value representing the state at the top of the history stack.
@@ -51,7 +51,7 @@ public class History(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/History/state">https://developer.mozilla.org/en-US/docs/Web/API/History/state</see>
     /// </summary>
     public async Task<object> GetState()
-        => await js.FastInvokeAsync<object>("BitButil.history.state");
+        => await js.Invoke<object>("BitButil.history.state");
 
     /// <summary>
     /// This asynchronous method goes to the previous page in session history, the same action as 
@@ -61,7 +61,7 @@ public class History(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/History/back">https://developer.mozilla.org/en-US/docs/Web/API/History/back</see>
     /// </summary>
     public async Task GoBack()
-        => await js.FastInvokeVoidAsync("BitButil.history.back");
+        => await js.InvokeVoid("BitButil.history.back");
 
     /// <summary>
     /// This asynchronous method goes to the next page in session history, the same action as 
@@ -71,7 +71,7 @@ public class History(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/History/forward">https://developer.mozilla.org/en-US/docs/Web/API/History/forward</see>
     /// </summary>
     public async Task GoForward()
-        => await js.FastInvokeVoidAsync("BitButil.history.forward");
+        => await js.InvokeVoid("BitButil.history.forward");
 
     /// <summary>
     /// Asynchronously loads a page from the session history, identified by its relative location 
@@ -81,7 +81,7 @@ public class History(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/History/go">https://developer.mozilla.org/en-US/docs/Web/API/History/go</see>
     /// </summary>
     public async Task Go(int? delta = null)
-        => await js.FastInvokeVoidAsync("BitButil.history.go", delta);
+        => await js.InvokeVoid("BitButil.history.go", delta);
 
     /// <summary>
     /// Pushes the given data onto the session history stack with the specified title (and, if provided, URL).
@@ -92,7 +92,7 @@ public class History(IJSRuntime js) : IAsyncDisposable
     /// <param name="url">The new history entry's URL. The new URL must be of the same origin as the current URL; 
     /// otherwise PushState throws an exception.</param>
     public async Task PushState(object? state = null, string? url = null)
-        => await js.FastInvokeVoidAsync("BitButil.history.pushState", state, string.Empty, url);
+        => await js.InvokeVoid("BitButil.history.pushState", state, string.Empty, url);
 
     /// <summary>
     /// Updates the most recent entry on the history stack to have the specified data, title, and, if provided, URL.
@@ -104,7 +104,7 @@ public class History(IJSRuntime js) : IAsyncDisposable
     /// <param name="url">The URL of the history entry. The new URL must be of the same origin as the current URL; 
     /// otherwise ReplaceState throws an exception.</param>
     public async Task ReplaceState(object? state = null, string? url = null)
-        => await js.FastInvokeVoidAsync("BitButil.history.replaceState", state, string.Empty, url);
+        => await js.InvokeVoid("BitButil.history.replaceState", state, string.Empty, url);
 
     /// <summary>
     /// The popstate event of the Window interface is fired when the active history entry changes while the user 
@@ -118,7 +118,7 @@ public class History(IJSRuntime js) : IAsyncDisposable
         var listenerId = HistoryListenersManager.AddListener(handler);
         _handlers.TryAdd(listenerId, handler);
 
-        await js.FastInvokeVoidAsync("BitButil.history.addPopState", HistoryListenersManager.InvokeMethodName, listenerId);
+        await js.InvokeVoid("BitButil.history.addPopState", HistoryListenersManager.InvokeMethodName, listenerId);
 
         return listenerId;
     }
@@ -180,7 +180,7 @@ public class History(IJSRuntime js) : IAsyncDisposable
     {
         if (OperatingSystem.IsBrowser() is false) return;
 
-        await js.FastInvokeVoidAsync("BitButil.history.removePopState", ids);
+        await js.InvokeVoid("BitButil.history.removePopState", ids);
     }
 
     public async ValueTask DisposeAsync()

@@ -107,14 +107,6 @@
     margin-left: rem2(5px);
 }
 
-.bit-theme-dark .github-btn {
-    background-image: url('images/github-icon-dark.svg');
-}
-
-.bit-theme-light .github-btn {
-    background-image: url('images/github-icon-light.svg');
-}
-
 .toggle-theme-btn {
     padding: 0;
     border: none;
@@ -129,28 +121,36 @@
     .icon-container {
         height: 100%;
         display: flex;
+        padding-top: 1px;
         flex-wrap: nowrap;
         align-items: center;
         justify-content: center;
 
-        .bit-icon {
-            margin: 0 rem2(4px);
-        }
-    }
-
-    &.dark-theme {
-        .icon-container {
-            padding: 2px 0px 0 1px;
+        img {
+            width: 20px;
+            height: 20px;
         }
     }
 }
 
-.bit-theme-dark .dark-theme {
-    display: unset;
+.bit-platform-dark-theme {
+    .dark-theme {
+        display: unset;
+    }
+
+    .github-btn {
+        background-image: url('images/github-icon-dark.svg');
+    }
 }
 
-.bit-theme-light .light-theme {
-    display: unset;
+.bit-platform-light-theme {
+    .light-theme {
+        display: unset;
+    }
+    
+    .github-btn {
+        background-image: url('images/github-icon-light.svg');
+    }
 }
 
 .header-second-row {
@@ -203,14 +203,12 @@
         z-index: 2;
         top: rem2(10px);
         right: rem2(10px);
-        width: rem2(44px);
-        height: rem2(44px);
         position: absolute;
-        color: $bit-color-primary;
     }
 
     .header-menu-btn {
-        margin-right: rem2(16px);
+        padding: rem2(4px);
+        margin-right: rem2(8px);
 
         @include gt-md {
             display: none;

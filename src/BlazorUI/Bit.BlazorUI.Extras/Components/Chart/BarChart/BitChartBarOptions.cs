@@ -8,5 +8,5 @@ public class BitChartBarOptions : BitChartBaseConfigOptions
     /// <summary>
     /// Gets or sets the scales for this chart.
     /// </summary>
-    public BitChartBarScales Scales { get; set; }
+    public BitChartBarScales? Scales { get; set; }
 }

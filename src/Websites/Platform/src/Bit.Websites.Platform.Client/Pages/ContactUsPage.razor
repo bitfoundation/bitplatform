@@ -20,7 +20,7 @@
                 Send us an email and we will get back to you.
             </BitText>
 
-            <br /><br />
+            <br />
 
             <div class="contact-container">
                 <EditForm Model="contactUsModel" OnValidSubmit="WrapHandled(SendMessage)" class="form" novalidate>
@@ -28,7 +28,6 @@
 
                     <BitText Typography="BitTypography.H5" Gutter>
                         Have any feedbacks?
-
                     </BitText>
 
                     <BitTextField @bind-Value="@contactUsModel.Email"
@@ -46,16 +45,18 @@
                                   Placeholder="Enter your message" />
                     <ValidationMessage For="() => contactUsModel.Message" />
 
-                    <BitStack Horizontal>
+                    <BitStack Horizontal Alignment="BitAlignment.Center">
                         <BitButton IsLoading="isSending" ButtonType="BitButtonType.Submit">
                             Send
                         </BitButton>
 
                         <BitButton Title="Reset"
+                                   Color="BitColor.Tertiary"
                                    Variant="BitVariant.Text"
-                                   IconName="@BitIconName.Reset"
                                    ButtonType="BitButtonType.Button"
-                                   OnClick="() => contactUsModel = new()" />
+                                   OnClick="() => contactUsModel = new()">
+                            Reset
+                        </BitButton>
                     </BitStack>
                 </EditForm>
             </div>

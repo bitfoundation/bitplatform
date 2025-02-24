@@ -7,14 +7,14 @@
     <ItemGroup>
         <ProjectReference Include="..\Bit.Websites.Careers.Shared\Bit.Websites.Careers.Shared.csproj" />
         <ProjectReference Include="..\Bit.Websites.Careers.Client\Bit.Websites.Careers.Client.csproj" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.1" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.1" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.1" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="9.4.1">
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.2" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="9.5.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="9.4.1">
+        <PackageReference Include="Bit.SourceGenerators" Version="9.5.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

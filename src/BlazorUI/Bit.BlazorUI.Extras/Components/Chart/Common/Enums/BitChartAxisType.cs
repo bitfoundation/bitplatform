@@ -30,7 +30,7 @@ public sealed class BitChartAxisType : BitChartStringEnum
     /// Note: The axes in this library are strongly typed and always contain a type so this inference only applies if you don't provide an axis in the options.
     /// </para>
     /// <para>
-    /// For more fine-grained control of category labels it is also possible to add labels as part of the category axis definition (<see cref="Axes.Ticks.CategoryTicks.Labels"/>).
+    /// For more fine-grained control of category labels it is also possible to add labels as part of the category axis definition (<see cref="BitChartCategoryTicks.Labels"/>).
     /// Doing so does not apply the global defaults for the chart.
     /// </para>
     /// <para>See <a href="https://www.chartjs.org/docs/latest/axes/cartesian/category.html">here (Chart.js)</a>.</para>

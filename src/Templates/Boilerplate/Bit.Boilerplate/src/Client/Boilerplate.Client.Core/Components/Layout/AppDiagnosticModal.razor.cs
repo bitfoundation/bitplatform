@@ -1,4 +1,10 @@
-﻿using Boilerplate.Shared.Controllers.Diagnostics;
+﻿using System.Text;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+//#if (signalR == true)
+using Microsoft.AspNetCore.SignalR.Client;
+//#endif
+using Boilerplate.Shared.Controllers.Diagnostics;
 using Boilerplate.Client.Core.Services.DiagnosticLog;
 
 namespace Boilerplate.Client.Core.Components.Layout;
@@ -7,7 +13,7 @@ namespace Boilerplate.Client.Core.Components.Layout;
 /// This modal can be opened by clicking 7 times on the spacer of the header or by pressing Ctrl+Shift+X.
 /// Also by calling `App.showDiagnostic` function using the dev-tools console.
 /// </summary>
-public partial class DiagnosticModal : IDisposable
+public partial class AppDiagnosticModal
 {
     private bool isOpen;
     private string? searchText;
@@ -27,10 +33,15 @@ public partial class DiagnosticModal : IDisposable
 
 
     [AutoInject] private Clipboard clipboard = default!;
+    //#if (signalR == true)
+    [AutoInject] private HubConnection hubConnection = default!;
+    //#endif
     [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private BitMessageBoxService messageBoxService = default!;
     [AutoInject] private IDiagnosticsController diagnosticsController = default!;
-
+    //#if (notification == true)
+    [AutoInject] private IPushNotificationService pushNotificationService = default!;
+    //#endif
 
     protected override Task OnInitAsync()
     {
@@ -50,6 +61,7 @@ public partial class DiagnosticModal : IDisposable
     {
         searchText = text;
         FilterLogs();
+        StateHasChanged();
     }
 
     private void HandleOnLogLevelFilter(IEnumerable<LogLevel> logLevels)
@@ -72,7 +84,9 @@ public partial class DiagnosticModal : IDisposable
 
     private void FilterLogs()
     {
-        filteredLogs = allLogs.WhereIf(string.IsNullOrEmpty(searchText) is false, l => l.Message?.Contains(searchText!, StringComparison.InvariantCultureIgnoreCase) is true || l.Category?.Contains(searchText!, StringComparison.InvariantCultureIgnoreCase) is true)
+        filteredLogs = allLogs.WhereIf(string.IsNullOrEmpty(searchText) is false, l => l.Message?.Contains(searchText!, StringComparison.InvariantCultureIgnoreCase) is true ||
+                                                                                       l.Category?.Contains(searchText!, StringComparison.InvariantCultureIgnoreCase) is true ||
+                                                                                       l.State?.Any(s => s.Key.Contains(searchText!) || s.Value?.Contains(searchText!, StringComparison.InvariantCultureIgnoreCase) is true) is true)
                               .Where(l => filterLogLevels.Contains(l.Level))
                               .Where(l => filterCategories.Contains(l.Category));
         if (isDescendingSort)
@@ -135,14 +149,82 @@ public partial class DiagnosticModal : IDisposable
         showKnownException = !showKnownException;
 
         throw showKnownException
-            ? new InvalidOperationException("Something critical happened.")
-            : new DomainLogicException("Something bad happened.");
+            ? new InvalidOperationException("Something critical happened.").WithData("TestData", 1)
+            : new DomainLogicException("Something bad happened.").WithData("TestData", 2);
     }
 
     private async Task CallDiagnosticsApi()
     {
-        var result = await diagnosticsController.PerformDiagnostics(CurrentCancellationToken);
-        await messageBoxService.Show("Diagnostics Result", result);
+        string? signalRConnectionId = null;
+        string? pushNotificationSubscriptionDeviceId = null;
+
+        //#if (signalR == true)
+        try
+        {
+            signalRConnectionId = hubConnection.State == HubConnectionState.Connected ? hubConnection.ConnectionId : null;
+        }
+        catch { }
+        //#endif
+
+        //#if (notification == true)
+        try
+        {
+            pushNotificationSubscriptionDeviceId = (await pushNotificationService.IsPushNotificationSupported(CurrentCancellationToken)) ? (await pushNotificationService.GetSubscription(CurrentCancellationToken)).DeviceId : null;
+        }
+        catch { }
+        //#endif
+
+        var serverResult = await diagnosticsController.PerformDiagnostics(signalRConnectionId, pushNotificationSubscriptionDeviceId, CurrentCancellationToken);
+
+        StringBuilder resultBuilder = new(serverResult);
+        try
+        {
+            resultBuilder.AppendLine();
+
+            resultBuilder.AppendLine($"IsDynamicCodeCompiled: {RuntimeFeature.IsDynamicCodeCompiled}");
+            resultBuilder.AppendLine($"IsDynamicCodeSupported: {RuntimeFeature.IsDynamicCodeSupported}");
+            resultBuilder.AppendLine($"Is Aot: {new StackTrace(false).GetFrame(0)?.GetMethod() is null}"); // No 100% Guaranteed way to detect AOT.
+
+            resultBuilder.AppendLine();
+
+            resultBuilder.AppendLine($"Env version: {Environment.Version}");
+            resultBuilder.AppendLine($"64 bit process: {Environment.Is64BitProcess}");
+            resultBuilder.AppendLine($"Privilaged process: {Environment.IsPrivilegedProcess}");
+
+            resultBuilder.AppendLine();
+
+            if (GC.GetConfigurationVariables().TryGetValue("ServerGC", out var serverGC))
+                resultBuilder.AppendLine($"ServerGC: {serverGC}");
+
+            if (GC.GetConfigurationVariables().TryGetValue("ConcurrentGC", out var concurrentGC))
+                resultBuilder.AppendLine($"ConcurrentGC: {concurrentGC}");
+        }
+        catch (Exception exp)
+        {
+            resultBuilder.AppendLine($"{Environment.NewLine}Error while getting diagnostic data: {exp.Message}");
+        }
+
+        await messageBoxService.Show("Diagnostics Result", resultBuilder.ToString());
+    }
+
+    private async Task CallGC()
+    {
+        SnackBarService.Show("Memory Before GC", GetMemoryUsage());
+
+        await Task.Run(() =>
+        {
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+            GC.WaitForPendingFinalizers();
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+        });
+
+        SnackBarService.Show("Memory After GC", GetMemoryUsage());
+    }
+
+    string GetMemoryUsage()
+    {
+        long memory = Environment.WorkingSet;
+        return $"{memory / (1024.0 * 1024.0):F2} MB";
     }
 
     private void ResetLogs()
@@ -175,9 +257,9 @@ public partial class DiagnosticModal : IDisposable
         };
     }
 
-
-    public void Dispose()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
         unsubscribe?.Invoke();
+        await base.DisposeAsync(disposing);
     }
 }

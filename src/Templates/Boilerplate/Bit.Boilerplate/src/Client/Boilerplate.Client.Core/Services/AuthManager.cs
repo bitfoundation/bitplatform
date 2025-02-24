@@ -89,6 +89,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     /// <summary>
     /// To prevent multiple simultaneous refresh token requests.
     /// </summary>
+    private SemaphoreSlim semaphore = new(1, 1);
     private TaskCompletionSource<string?>? accessTokenTsc = null;
 
     public Task<string?> RefreshToken(string requestedBy, string? elevatedAccessToken = null)
@@ -103,41 +104,45 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
         async Task RefreshTokenImplementation()
         {
-            authLogger.LogInformation("Refreshing access token requested by {RequestedBy}", requestedBy);
-            string? refreshToken = await storageService.GetItem("refresh_token");
             try
             {
-                if (string.IsNullOrEmpty(refreshToken))
-                    throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
+                await semaphore.WaitAsync();
+                authLogger.LogInformation("Refreshing access token requested by {RequestedBy}", requestedBy);
+                string? refreshToken = await storageService.GetItem("refresh_token");
+                try
+                {
+                    if (string.IsNullOrEmpty(refreshToken))
+                        throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
 
-                var refreshTokenResponse = await identityController.Refresh(new()
-                {
-                    RefreshToken = refreshToken,
-                    DeviceInfo = telemetryContext.Platform,
-                    ElevatedAccessToken = elevatedAccessToken
-                }, default);
-                await StoreTokens(refreshTokenResponse);
-                accessTokenTsc.SetResult(refreshTokenResponse.AccessToken!);
-            }
-            catch (Exception exp)
-            {
-                exceptionHandler.Handle(exp, parameters: new()
-                {
-                    { "AdditionalData", "Refreshing access token failed." },
-                    { "RefreshTokenRequestedBy", requestedBy }
-                });
-
-                if (exp is UnauthorizedException // refresh token is also invalid.
-                    || exp is ReusedRefreshTokenException && refreshToken == await storageService.GetItem("refresh_token"))
-                {
-                    await ClearTokens();
+                    var refreshTokenResponse = await identityController.Refresh(new()
+                    {
+                        RefreshToken = refreshToken,
+                        DeviceInfo = telemetryContext.Platform,
+                        ElevatedAccessToken = elevatedAccessToken
+                    }, default);
+                    await StoreTokens(refreshTokenResponse);
+                    accessTokenTsc.SetResult(refreshTokenResponse.AccessToken!);
                 }
+                catch (Exception exp)
+                {
+                    exceptionHandler.Handle(exp, parameters: new()
+                    {
+                        { "AdditionalData", "Refreshing access token failed." },
+                        { "RefreshTokenRequestedBy", requestedBy }
+                    });
 
-                accessTokenTsc.SetResult(null);
+                    if (exp is UnauthorizedException) // refresh token is also invalid
+                    {
+                        await ClearTokens();
+                    }
+
+                    accessTokenTsc.SetResult(null);
+                }
             }
             finally
             {
                 accessTokenTsc = null;
+                semaphore.Release();
             }
         }
     }
@@ -207,6 +212,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        semaphore.Dispose();
         unsubscribe?.Invoke();
     }
 }

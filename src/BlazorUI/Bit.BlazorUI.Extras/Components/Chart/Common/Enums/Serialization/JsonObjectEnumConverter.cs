@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 
 internal class JsonObjectEnumConverter : JsonConverter<BitChartObjectEnum>
 {
-    public override BitChartObjectEnum ReadJson(JsonReader reader, Type objectType, [AllowNull] BitChartObjectEnum existingValue, bool hasExistingValue, JsonSerializer serializer)
+    public override BitChartObjectEnum? ReadJson(JsonReader reader, Type objectType, [AllowNull] BitChartObjectEnum existingValue, bool hasExistingValue, JsonSerializer serializer)
     {
         if (reader.TokenType == JsonToken.Null ||
             reader.TokenType == JsonToken.Undefined)
@@ -77,10 +77,12 @@ internal class JsonObjectEnumConverter : JsonConverter<BitChartObjectEnum>
         return factory.Create(value, readerValueType);
     }
 
-    public override void WriteJson(JsonWriter writer, BitChartObjectEnum wrapper, JsonSerializer serializer)
+    public override void WriteJson(JsonWriter writer, BitChartObjectEnum? wrapper, JsonSerializer serializer)
     {
+        ArgumentNullException.ThrowIfNull(wrapper);
+
         // Note: wrapper won't be null (json.net wouldn't call this method if it were null)
-        Type wrappedType = wrapper.Value.GetType();
+        var wrappedType = wrapper.Value.GetType();
         if (!BitChartObjectEnum.IsSupportedSerializationType(wrappedType))
         {
             throw new NotSupportedException($"The type '{wrappedType.FullName}' isn't supported for serialization " +

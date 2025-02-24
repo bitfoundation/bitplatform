@@ -17,7 +17,7 @@ public class Keyboard(IJSRuntime js) : IAsyncDisposable
         var listenerId = KeyboardListenersManager.AddListener(handler);
         _handlers.TryAdd(listenerId, handler);
 
-        await js.FastInvokeVoidAsync("BitButil.keyboard.add",
+        await js.InvokeVoid("BitButil.keyboard.add",
             KeyboardListenersManager.InvokeMethodName,
             listenerId,
             code,
@@ -77,7 +77,7 @@ public class Keyboard(IJSRuntime js) : IAsyncDisposable
     {
         if (OperatingSystem.IsBrowser() is false) return;
 
-        await js.FastInvokeVoidAsync("BitButil.keyboard.remove", ids);
+        await js.InvokeVoid("BitButil.keyboard.remove", ids);
     }
 
     public async ValueTask DisposeAsync()

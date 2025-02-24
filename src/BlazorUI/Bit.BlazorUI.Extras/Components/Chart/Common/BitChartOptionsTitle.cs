@@ -13,7 +13,7 @@ public class BitChartOptionsTitle
     /// <summary>
     /// Gets or sets the position of the title.
     /// </summary>
-    public BitChartPosition Position { get; set; }
+    public BitChartPosition? Position { get; set; }
 
     /// <summary>
     /// Gets or sets the font size for the title text.
@@ -23,18 +23,18 @@ public class BitChartOptionsTitle
     /// <summary>
     /// Gets or sets the font family for the title text.
     /// </summary>
-    public string FontFamily { get; set; }
+    public string? FontFamily { get; set; }
 
     /// <summary>
     /// Gets or sets the font color for the title text.
     /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
     /// </summary>
-    public string FontColor { get; set; }
+    public string? FontColor { get; set; }
 
     /// <summary>
     /// Gets or sets the font style for the title text.
     /// </summary>
-    public BitChartFontStyle FontStyle { get; set; }
+    public BitChartFontStyle? FontStyle { get; set; }
 
     /// <summary>
     /// Gets or sets the number of pixels to add above and below the title text.
@@ -50,5 +50,5 @@ public class BitChartOptionsTitle
     /// <summary>
     /// Gets or sets the title text to display. If specified as an array, text is rendered on multiple lines.
     /// </summary>
-    public BitChartIndexableOption<string> Text { get; set; }
+    public BitChartIndexableOption<string>? Text { get; set; }
 }

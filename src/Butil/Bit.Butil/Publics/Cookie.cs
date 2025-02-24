@@ -17,7 +17,7 @@ public class Cookie(IJSRuntime js)
     /// </summary>
     public async Task<ButilCookie[]> GetAll()
     {
-        var cookie = await js.FastInvokeAsync<string>("BitButil.cookie.get");
+        var cookie = await js.Invoke<string>("BitButil.cookie.get");
         return cookie.Split(';').Select(ButilCookie.Parse).ToArray();
     }
 
@@ -62,5 +62,5 @@ public class Cookie(IJSRuntime js)
     /// Sets a cookie.
     /// </summary>
     public async Task Set(ButilCookie cookie)
-        => await js.FastInvokeVoidAsync("BitButil.cookie.set", cookie.ToString());
+        => await js.InvokeVoid("BitButil.cookie.set", cookie.ToString());
 }

@@ -1,4 +1,5 @@
 ﻿//+:cnd:noEmit
+using System.Web;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -54,7 +55,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             });
             TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
             TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
-            TelemetryContext.PageUrl = NavigationManager.Uri;
+            TelemetryContext.PageUrl = HttpUtility.UrlDecode(NavigationManager.Uri);
             if (AppPlatform.IsBlazorHybrid is false)
             {
                 var userAgentData = await userAgent.Extract();
@@ -86,8 +87,8 @@ public partial class ClientAppCoordinator : AppComponentBase
 
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
     {
-        TelemetryContext.PageUrl = e.Location;
-        navigatorLogger.LogInformation("Navigator's location changed to {Location}", e.Location);
+        TelemetryContext.PageUrl = HttpUtility.UrlDecode(e.Location);
+        navigatorLogger.LogInformation("Navigator's location changed to {Location}", TelemetryContext.PageUrl);
     }
 
     private Guid? lastPropagatedUserId = Guid.Empty;
@@ -104,7 +105,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             var userId = isAuthenticated ? user.GetUserId() : (Guid?)null;
             if (lastPropagatedUserId == userId)
                 return;
-            Abort(); // Cancels ongoing user id propagation, because the new authentication state is available.
+            await Abort(); // Cancels ongoing user id propagation, because the new authentication state is available.
             lastPropagatedUserId = userId;
             TelemetryContext.UserId = userId;
             TelemetryContext.UserSessionId = isAuthenticated ? user.GetSessionId() : null;
@@ -136,12 +137,12 @@ public partial class ClientAppCoordinator : AppComponentBase
                 authLogger.LogInformation("Propagating {AuthStateType} {AuthState} authentication state.", firstRun ? "Initial" : "Updated", user.IsAuthenticated() ? "Authenticated" : "Anonymous");
             }
 
-            //#if (notification == true)
-            await pushNotificationService.Subscribe(CurrentCancellationToken);
-            //#endif
-
             //#if (signalR == true)
             await StartSignalR();
+            //#endif
+
+            //#if (notification == true)
+            await pushNotificationService.Subscribe(CurrentCancellationToken);
             //#endif
         }
         catch (Exception exp)

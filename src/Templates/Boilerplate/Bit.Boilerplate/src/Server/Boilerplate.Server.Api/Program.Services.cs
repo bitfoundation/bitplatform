@@ -90,7 +90,8 @@ public static partial class Program
         services.AddScoped<PushNotificationService>();
         //#endif
 
-        services.AddSingleton<IProblemDetailsWriter, ServerExceptionHandler>();
+        services.AddSingleton<ServerExceptionHandler>();
+        services.AddSingleton(sp => (IProblemDetailsWriter)sp.GetRequiredService<ServerExceptionHandler>());
         services.AddProblemDetails();
 
         services.AddOutputCache(options =>
@@ -100,7 +101,6 @@ public static partial class Program
                 var builder = policy.AddPolicy<AppResponseCachePolicy>();
             }, excludeDefaultPolicy: true);
         });
-        services.AddMemoryCache();
 
         services.AddHttpContextAccessor();
 
@@ -281,17 +281,20 @@ public static partial class Program
         //#if (captcha == "reCaptcha")
         services.AddHttpClient<GoogleRecaptchaService>(c =>
         {
+            c.Timeout = TimeSpan.FromSeconds(10);
             c.BaseAddress = new Uri("https://www.google.com/recaptcha/");
         });
         //#endif
 
         services.AddHttpClient<NugetStatisticsService>(c =>
         {
+            c.Timeout = TimeSpan.FromSeconds(3);
             c.BaseAddress = new Uri("https://azuresearch-usnc.nuget.org");
         });
 
         services.AddHttpClient<ResponseCacheService>(c =>
         {
+            c.Timeout = TimeSpan.FromSeconds(10);
             c.BaseAddress = new Uri("https://api.cloudflare.com/client/v4/zones/");
         });
     }

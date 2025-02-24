@@ -60,9 +60,16 @@ public class HttpClientProxySourceGenerator : ISourceGenerator
                     requestOptions.AppendLine($"__request.Options.TryAdd(\"ResponseType\", typeof({action.ReturnType.GetUnderlyingType().ToDisplayString(NullableFlowState.None)}));");
                 }
 
+                var stringType = context.Compilation.GetSpecialType(SpecialType.System_String);
+
+                var encodeStringRouteParameters = string.Join(Environment.NewLine, action.Parameters
+                    .Where(p => SymbolEqualityComparer.Default.Equals(p.Type , stringType))
+                    .Select(p => $"{p.Name} = Uri.EscapeDataString(Uri.UnescapeDataString({p.Name} ?? string.Empty));"));
+
                 generatedMethods.AppendLine($@"
         public async {action.ReturnType.ToDisplayString()} {action.Method.Name}({parameters})
         {{
+            {encodeStringRouteParameters}
             {$@"var __url = $""{action.Url}"";"}
             var dynamicQS = GetDynamicQueryString();
             if (dynamicQS is not null)
@@ -107,12 +114,7 @@ public static class IHttpClientServiceCollectionExtensions
 
 internal class AppControllerBase
 {{
-    System.Collections.Specialized.NameValueCollection queryString = HttpUtility.ParseQueryString(string.Empty);
-
-    public void AddQueryString(string existingQueryString)
-    {{
-        queryString.Add(HttpUtility.ParseQueryString(existingQueryString));
-    }}
+    AppQueryStringCollection queryString = [];
 
     public void AddQueryString(string key, object? value)
     {{
@@ -129,19 +131,11 @@ internal class AppControllerBase
 
     protected string? GetDynamicQueryString()
     {{
-        if (queryString is not {{ Count: > 0 }})
-            return null;
-
-        var collection = HttpUtility.ParseQueryString(string.Empty);
-
-        foreach (string key in queryString)
-        {{
-            collection.Add(key, queryString[key]);
-        }}
+        var result = queryString.ToString();
 
         queryString.Clear();
 
-        return collection.ToString();
+        return result;
     }}
 }}
 

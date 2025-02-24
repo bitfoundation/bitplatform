@@ -1,5 +1,6 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.ButtonGroup;
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "BL0005:Component parameter should not be set outside of its component.", Justification = "<Pending>")]
 public partial class _BitButtonGroupItemDemo
 {
     private int clickCounter;

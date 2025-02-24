@@ -4,7 +4,7 @@
 @import '../Styles/abstracts/_media-queries.scss';
 
 .page-container {
-    padding-top: rem2($HeaderHeight);
+    padding-block: rem2($HeaderHeight);
 
     @include lt-lg {
         padding-top: rem2(calc($HeaderHeight + $HeaderSecondRowHeight));

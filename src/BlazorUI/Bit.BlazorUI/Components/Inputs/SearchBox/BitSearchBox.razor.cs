@@ -459,24 +459,23 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        if (disposing)
+        if (IsDisposed || disposing is false) return;
+
+        _cancellationTokenSource?.Dispose();
+
+        OnValueChanged -= HandleOnValueChanged;
+
+        if (_dotnetObj is not null)
         {
-            if (_dotnetObj is not null)
+            _dotnetObj.Dispose();
+
+            try
             {
-                _dotnetObj.Dispose();
-
-                try
-                {
-                    await _js.BitCalloutClearCallout(_calloutId);
-                }
-                catch (JSDisconnectedException) { } // we can ignore this exception here
+                await _js.BitCalloutClearCallout(_calloutId);
             }
-
-            _cancellationTokenSource?.Dispose();
-
-            OnValueChanged -= HandleOnValueChanged;
+            catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
-        base.Dispose(disposing);
+        await base.DisposeAsync(disposing);
     }
 }

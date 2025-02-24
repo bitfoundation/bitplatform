@@ -9,7 +9,7 @@ public abstract class BitChartAxis
     /// Controls the axis global visibility (visible when <see cref="BitChartAxisDisplay.True"/>, hidden when <see cref="BitChartAxisDisplay.False"/>).
     /// When display: <see cref="BitChartAxisDisplay.Auto"/>, the axis is visible only if at least one associated dataset is visible.
     /// </summary>
-    public BitChartAxisDisplay Display { get; set; }
+    public BitChartAxisDisplay? Display { get; set; }
 
     /// <summary>
     /// The weight used to sort the axis. Higher weights are further away from the chart area.

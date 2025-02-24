@@ -20,7 +20,7 @@ public class BitCascadingValueProvider : ComponentBase
 
 
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-    private Type _cascadingValueType = typeof(CascadingValue<>);
+    private readonly Type _cascadingValueType = typeof(CascadingValue<>);
 
 
 

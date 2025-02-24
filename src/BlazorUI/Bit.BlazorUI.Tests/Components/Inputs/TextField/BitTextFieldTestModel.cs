@@ -7,5 +7,5 @@ public class BitTextFieldTestModel
     [Required]
     [EmailAddress]
     [StringLength(16)]
-    public string Value { get; set; }
+    public string? Value { get; set; }
 }

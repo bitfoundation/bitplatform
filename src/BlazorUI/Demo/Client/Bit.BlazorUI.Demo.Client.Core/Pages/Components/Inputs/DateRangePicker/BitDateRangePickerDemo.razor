@@ -6,228 +6,211 @@
             Title="DateRangePicker"
             Description="daterangepicker component of the bit BlazorUI components" />
 
-<ComponentDemo ComponentName="DateRangePicker"
-               ComponentDescription="A BitDateRangePicker offers a drop-down control that’s optimized for picking two dates from a calendar view where contextual information like the day of the week or fullness of the calendar is important. You can modify the calendar to provide additional context or to limit available dates."
-               ComponentParameters="componentParameters"
-               ComponentSubClasses="componentSubClasses"
-               ComponentSubEnums="componentSubEnums">
-    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-        <ExamplePreview>
-            <div>Explore basic configurations of the BitDateRangePicker, including labels, placeholders, week numbers and highlighting features.</div>
-            <br />
-            <div class="example-content">
-                <BitDateRangePicker Label="Basic DateRangePicker" />
-                <br /><br />
-                <BitDateRangePicker Label="Disabled" IsEnabled="false" />
-                <br /><br />
-                <BitDateRangePicker Label="PlaceHolder" Placeholder="Select a date range" />
-                <br /><br />
-                <BitDateRangePicker Label="Week numbers" ShowWeekNumbers />
-                <br /><br />
-                <BitDateRangePicker Label="Highlight months" HighlightCurrentMonth HighlightSelectedMonth />
-                <br /><br />
-                <BitDateRangePicker Label="TimePicker" ShowTimePicker />
-                <br /><br />
-                <BitDateRangePicker Label="Custom Icon" IconName="@BitIconName.Airplane" />
-                <br /><br />
-                <BitDateRangePicker Label="Disabled AutoClose" AutoClose="false" />
-                <br /><br />
-                <BitDateRangePicker Label="Show clear button when has a value" ShowClearButton />
-                <br /><br />
-                <div style="font-weight:600;padding:4px 0;font-size:14px;color:var(--bit-clr-fg-pri);">
-                    <div>StartingValue: December 2020</div>
-                    <div>Start Time: 10:12</div>
-                    <div>End Time: 16:59</div>
-                </div>
-                <BitDateRangePicker ShowTimePicker StartingValue="startingValue" />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Min & Max" RazorCode="@example2RazorCode" Id="example2">
-        <ExamplePreview>
-            <div>Set minimum and maximum selectable dates to restrict user input to a specific range of days, months, or years.</div>
+<DemoPage Name="DateRangePicker"
+          Description="A BitDateRangePicker offers a drop-down control that’s optimized for picking two dates from a calendar view where contextual information like the day of the week or fullness of the calendar is important. You can modify the calendar to provide additional context or to limit available dates."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums">
+    <DemoSection Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+        <div>Explore basic configurations of the BitDateRangePicker, including labels, placeholders, week numbers and highlighting features.</div>
+        <br />
+        <div class="example-content">
+            <BitDateRangePicker Label="Basic DateRangePicker" />
             <br /><br />
-            <div class="example-content">
-                <div>Min: Now.AddDays(-5)</div>
-                <div>Max: Now.AddDays(+5)</div>
-                <BitDateRangePicker MinDate="DateTimeOffset.Now.AddDays(-5)" MaxDate="DateTimeOffset.Now.AddDays(5)" />
-                <br /><br />
-                <div>Min: Now.AddMonths(-2)</div>
-                <div>Max: Now.AddMonths(+1)</div>
-                <BitDateRangePicker MinDate="DateTimeOffset.Now.AddMonths(-2)" MaxDate="DateTimeOffset.Now.AddMonths(1)" />
-                <br /><br />
-                <div>Min: Now.AddYears(-5)</div>
-                <div>Max: Now.AddYears(+1)</div>
-                <BitDateRangePicker MinDate="DateTimeOffset.Now.AddYears(-5)" MaxDate="DateTimeOffset.Now.AddYears(1)" />
-                <br /><br />
-                <div>MaxRange: 2 days, 4 hours and 30 minutes</div>
-                <BitDateRangePicker MaxRange="new TimeSpan(2, 4, 30, 0)" ShowTimePicker />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Formatting" RazorCode="@example3RazorCode" Id="example3">
-        <ExamplePreview>
-            <div class="example-desc">
-                Applications can customize how dates are formatted and parsed. Formatted dates can be ambiguous, so the control will avoid parsing the formatted strings of dates selected using the UI when text input is allowed.
-                In this example, we are formatting and parsing dates as dd=MM(yy).
-            </div>
-            <div class="example-content">
-                <BitDateRangePicker Label="DateFormat: 'dd=MM(yy)'" DateFormat="dd=MM(yy)" />
-                <br /><br />
-                <BitDateRangePicker Label="ValueFormat: 'Dep: {0}, Arr: {1}'" ValueFormat="Dep: {0}, Arr: {1}" />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Binding" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-        <ExamplePreview>
-            <div>Bind a selected date to a model or view, allowing two-way data binding with the BitDateRangePicker.</div>
-            <br />
-            <div class="example-content">
-                <BitDateRangePicker @bind-Value="@selectedDateRange" />
-            </div>
-            <br />
-            <div>From: <b>@selectedDateRange?.StartDate.ToString()</b></div>
-            <div>To: <b>@selectedDateRange?.EndDate.ToString()</b></div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Culture" RazorCode="@example5RazorCode" Id="example5">
-        <ExamplePreview>
-            <div class="example-desc">
-                By default, BitDateRangePicker picks the current culture.
-                But you can provide your own instance of CultureInfo for any custom culture.
-                <br />
-                You also can use our
-                <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Helpers/CultureInfoHelper.cs" Target="_blank">
-                    CultureInfoHelper
-                </BitLink> class or check its code to see how to create a custom culture.
-            </div>
-            <br />
-            <div class="example-content">
-                <BitDateRangePicker Label="fa-IR culture with Farsi names"
-                                    GoToTodayTitle="برو به امروز"
-                                    ValueFormat="شروع: {0}, پایان: {1}"
-                                    Culture="CultureInfoHelper.GetFaIrCultureWithFarsiNames()" />
-                <br /><br />
-                <BitDateRangePicker Label="fa-IR culture with Fingilish names"
-                                    GoToTodayTitle="Boro be emrouz"
-                                    ValueFormat="Shoro: {0}, Payan: {1}"
-                                    Culture="CultureInfoHelper.GetFaIrCultureWithFingilishNames()" />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Templates" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-        <ExamplePreview>
-            <div>Utilize various templates within the BitDateRangePicker, such as custom label templates, day cell templates, and year cell templates.</div>
-            <br />
-            <div class="example-content">
-                <BitDateRangePicker>
-                    <LabelTemplate>
-                        Custom label <BitIcon IconName="@BitIconName.Calendar" />
-                    </LabelTemplate>
-                </BitDateRangePicker>
-                <br /><br /><br />
-                <BitDateRangePicker Label="DayCellTemplate">
-                    <DayCellTemplate>
-                        <span class="day-cell@(context.DayOfWeek == DayOfWeek.Sunday ? " weekend-cell" : null)">
-                            @context.Day
-
-                            @if (context.Day % 5 is 0)
-                            {
-                                <span class="badge"></span>
-                            }
-                        </span>
-                    </DayCellTemplate>
-                </BitDateRangePicker>
-                <br /><br /><br />
-                <BitDateRangePicker Label="MonthCellTemplate">
-                    <MonthCellTemplate>
-                        <div style="width:28px;padding:3px;color:black;background:@(context.Month == 1 ? "lightcoral" : "yellowgreen")">
-                            @culture.DateTimeFormat.GetAbbreviatedMonthName(context.Month)
-                        </div>
-                    </MonthCellTemplate>
-                </BitDateRangePicker>
-                <br /><br /><br />
-                <BitDateRangePicker Label="YearCellTemplate">
-                    <YearCellTemplate>
-                        <span style="position: relative">
-                            @context
-                            <span class="year-suffix">AC</span>
-                        </span>
-                    </YearCellTemplate>
-                </BitDateRangePicker>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Responsive" RazorCode="@example7RazorCode" Id="example7">
-        <ExamplePreview>
-            <div>Enable responsive design for the BitDateRangePicker, allowing it to adjust its layout and appearance based on the screen size.</div>
-            <br />
-            <div class="example-content">
-                <BitDateRangePicker Label="Responsive DateRangePicker"
-                                    Responsive
-                                    ShowWeekNumbers
-                                    Placeholder="Select a date range" />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Hour/Minute step" RazorCode="@example8RazorCode" Id="example8">
-        <ExamplePreview>
-            <div>Adjust the increment step for hours and minutes when using the BitDateRangePicker's time selection feature.</div>
-            <br />
-            <div class="example-content">
-                <BitDateRangePicker ShowTimePicker
-                                    Label="HourStep = 2"
-                                    HourStep="2" />
-                <br />
-                <BitDateRangePicker ShowTimePicker
-                                    Label="MinuteStep = 15"
-                                    MinuteStep="15" />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Standalone" RazorCode="@example9CsharpCode" Id="example9">
-        <ExamplePreview>
-            <div>Use the BitDateRangePicker in a standalone mode, allowing it to function independently without a surrounding form or container.</div>
-            <br />
-            <div class="example-content-standalone">
-                <BitDateRangePicker Label="Basic DatePicker" Standalone />
-                <br /><br />
-                <BitDateRangePicker Label="Disabled" IsEnabled="false" Standalone />
-                <br /><br />
-                <BitDateRangePicker Label="Week numbers" ShowWeekNumbers Standalone />
-                <br /><br />
-                <BitDateRangePicker Label="Highlight months" HighlightCurrentMonth HighlightSelectedMonth Standalone />
-                <br /><br />
-                <BitDateRangePicker Label="TimePicker" ShowTimePicker Standalone />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
-        <ExamplePreview>
-            <div>Explore styling and class customization for BitDateRangePicker, including component styles, custom classes, and detailed styles.</div>
+            <BitDateRangePicker Label="Disabled" IsEnabled="false" />
             <br /><br />
-            <div>Component's Style & Class:</div>
-            <br />
-            <div class="example-content">
-                <BitDateRangePicker Style="margin: 1rem; box-shadow: dodgerblue 0 0 1rem;" />
-                <br />
-                <BitDateRangePicker Class="custom-class" />
+            <BitDateRangePicker Label="Required" Required />
+            <br /><br />
+            <BitDateRangePicker Label="PlaceHolder" Placeholder="Select a date range" />
+            <br /><br />
+            <BitDateRangePicker Label="Week numbers" ShowWeekNumbers />
+            <br /><br />
+            <BitDateRangePicker Label="Highlight months" HighlightCurrentMonth HighlightSelectedMonth />
+            <br /><br />
+            <BitDateRangePicker Label="TimePicker" ShowTimePicker />
+            <br /><br />
+            <BitDateRangePicker Label="Custom Icon" IconName="@BitIconName.Airplane" />
+            <br /><br />
+            <BitDateRangePicker Label="Disabled AutoClose" AutoClose="false" />
+            <br /><br />
+            <BitDateRangePicker Label="Show clear button when has a value" ShowClearButton />
+            <br /><br />
+            <div style="font-weight:600;padding:4px 0;font-size:14px;color:var(--bit-clr-fg-pri);">
+                <div>StartingValue: December 2020</div>
+                <div>Start Time: 10:12</div>
+                <div>End Time: 16:59</div>
             </div>
+            <BitDateRangePicker ShowTimePicker StartingValue="startingValue" />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Min & Max" RazorCode="@example2RazorCode" Id="example2">
+        <div>Set minimum and maximum selectable dates to restrict user input to a specific range of days, months, or years.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Min: Now.AddDays(-5)</div>
+            <div>Max: Now.AddDays(+5)</div>
+            <BitDateRangePicker MinDate="DateTimeOffset.Now.AddDays(-5)" MaxDate="DateTimeOffset.Now.AddDays(5)" />
+            <br /><br />
+            <div>Min: Now.AddMonths(-2)</div>
+            <div>Max: Now.AddMonths(+1)</div>
+            <BitDateRangePicker MinDate="DateTimeOffset.Now.AddMonths(-2)" MaxDate="DateTimeOffset.Now.AddMonths(1)" />
+            <br /><br />
+            <div>Min: Now.AddYears(-5)</div>
+            <div>Max: Now.AddYears(+1)</div>
+            <BitDateRangePicker MinDate="DateTimeOffset.Now.AddYears(-5)" MaxDate="DateTimeOffset.Now.AddYears(1)" />
+            <br /><br />
+            <div>MaxRange: 2 days, 4 hours and 30 minutes</div>
+            <BitDateRangePicker MaxRange="new TimeSpan(2, 4, 30, 0)" ShowTimePicker />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Formatting" RazorCode="@example3RazorCode" Id="example3">
+        <div class="example-desc">
+            Applications can customize how dates are formatted and parsed. Formatted dates can be ambiguous, so the control will avoid parsing the formatted strings of dates selected using the UI when text input is allowed.
+            In this example, we are formatting and parsing dates as dd=MM(yy).
+        </div>
+        <div class="example-content">
+            <BitDateRangePicker Label="DateFormat: 'dd=MM(yy)'" DateFormat="dd=MM(yy)" />
+            <br /><br />
+            <BitDateRangePicker Label="ValueFormat: 'Dep: {0}, Arr: {1}'" ValueFormat="Dep: {0}, Arr: {1}" />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Binding" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <div>Bind a selected date to a model or view, allowing two-way data binding with the BitDateRangePicker.</div>
+        <br />
+        <div class="example-content">
+            <BitDateRangePicker @bind-Value="@selectedDateRange" />
+        </div>
+        <br />
+        <div>From: <b>@selectedDateRange?.StartDate.ToString()</b></div>
+        <div>To: <b>@selectedDateRange?.EndDate.ToString()</b></div>
+    </DemoSection>
+
+    <DemoSection Title="Culture" RazorCode="@example5RazorCode" Id="example5">
+        <div class="example-desc">
+            By default, BitDateRangePicker picks the current culture.
+            But you can provide your own instance of CultureInfo for any custom culture.
+            <br />
+            You also can use our
+            <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Helpers/CultureInfoHelper.cs" Target="_blank">
+                CultureInfoHelper
+            </BitLink> class or check its code to see how to create a custom culture.
+        </div>
+        <br />
+        <div class="example-content">
+            <BitDateRangePicker Label="fa-IR culture with Farsi names"
+                                GoToTodayTitle="برو به امروز"
+                                ValueFormat="شروع: {0}, پایان: {1}"
+                                Culture="CultureInfoHelper.GetFaIrCultureWithFarsiNames()" />
+            <br /><br />
+            <BitDateRangePicker Label="fa-IR culture with Fingilish names"
+                                GoToTodayTitle="Boro be emrouz"
+                                ValueFormat="Shoro: {0}, Payan: {1}"
+                                Culture="CultureInfoHelper.GetFaIrCultureWithFingilishNames()" />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Templates" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <div>Utilize various templates within the BitDateRangePicker, such as custom label templates, day cell templates, and year cell templates.</div>
+        <br />
+        <div class="example-content">
+            <BitDateRangePicker>
+                <LabelTemplate>
+                    Custom label <BitIcon IconName="@BitIconName.Calendar" />
+                </LabelTemplate>
+            </BitDateRangePicker>
             <br /><br /><br />
-            <div><b>Styles</b> & <b>Classes</b>:</div>
+            <BitDateRangePicker Label="DayCellTemplate">
+                <DayCellTemplate>
+                    <span class="day-cell@(context.DayOfWeek == DayOfWeek.Sunday ? " weekend-cell" : null)">
+                        @context.Day
+
+                        @if (context.Day % 5 is 0)
+                        {
+                            <span class="badge"></span>
+                        }
+                    </span>
+                </DayCellTemplate>
+            </BitDateRangePicker>
+            <br /><br /><br />
+            <BitDateRangePicker Label="MonthCellTemplate">
+                <MonthCellTemplate>
+                    <div style="width:28px;padding:3px;color:black;background:@(context.Month == 1 ? "lightcoral" : "yellowgreen")">
+                        @culture.DateTimeFormat.GetAbbreviatedMonthName(context.Month)
+                    </div>
+                </MonthCellTemplate>
+            </BitDateRangePicker>
+            <br /><br /><br />
+            <BitDateRangePicker Label="YearCellTemplate">
+                <YearCellTemplate>
+                    <span style="position: relative">
+                        @context
+                        <span class="year-suffix">AC</span>
+                    </span>
+                </YearCellTemplate>
+            </BitDateRangePicker>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Responsive" RazorCode="@example7RazorCode" Id="example7">
+        <div>Enable responsive design for the BitDateRangePicker, allowing it to adjust its layout and appearance based on the screen size.</div>
+        <br />
+        <div class="example-content">
+            <BitDateRangePicker Label="Responsive DateRangePicker"
+                                Responsive
+                                ShowWeekNumbers
+                                Placeholder="Select a date range" />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Hour/Minute step" RazorCode="@example8RazorCode" Id="example8">
+        <div>Adjust the increment step for hours and minutes when using the BitDateRangePicker's time selection feature.</div>
+        <br />
+        <div class="example-content">
+            <BitDateRangePicker ShowTimePicker
+                                Label="HourStep = 2"
+                                HourStep="2" />
             <br />
-            <div class="example-content">
-                <BitDateRangePicker ShowTimePicker
-                                    Styles="@(new() { Root = "margin-inline: 1rem;",
+            <BitDateRangePicker ShowTimePicker
+                                Label="MinuteStep = 15"
+                                MinuteStep="15" />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Standalone" RazorCode="@example9CsharpCode" Id="example9">
+        <div>Use the BitDateRangePicker in a standalone mode, allowing it to function independently without a surrounding form or container.</div>
+        <br />
+        <div class="example-content-standalone">
+            <BitDateRangePicker Label="Basic DatePicker" Standalone />
+            <br /><br />
+            <BitDateRangePicker Label="Disabled" IsEnabled="false" Standalone />
+            <br /><br />
+            <BitDateRangePicker Label="Week numbers" ShowWeekNumbers Standalone />
+            <br /><br />
+            <BitDateRangePicker Label="Highlight months" HighlightCurrentMonth HighlightSelectedMonth Standalone />
+            <br /><br />
+            <BitDateRangePicker Label="TimePicker" ShowTimePicker Standalone />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Style & Class" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>Explore styling and class customization for BitDateRangePicker, including component styles, custom classes, and detailed styles.</div>
+        <br /><br />
+        <div>Component's Style & Class:</div>
+        <br />
+        <div class="example-content">
+            <BitDateRangePicker Style="margin: 1rem; box-shadow: dodgerblue 0 0 1rem;" />
+            <br />
+            <BitDateRangePicker Class="custom-class" />
+        </div>
+        <br /><br /><br />
+        <div><b>Styles</b> & <b>Classes</b>:</div>
+        <br />
+        <div class="example-content">
+            <BitDateRangePicker ShowTimePicker
+                                Styles="@(new() { Root = "margin-inline: 1rem;",
                                                       Focused = "--focused-background: #b2b2b25a;",
                                                       Input = "padding: 0.5rem;",
                                                       InputContainer = "background: var(--focused-background);",
@@ -246,10 +229,10 @@
                                                       EndTimeIncreaseMinuteButton = "background-color: limegreen;",
                                                       EndTimeDecreaseHourButton = "background-color: limegreen;",
                                                       EndTimeDecreaseMinuteButton = "background-color: limegreen;" })" />
-                <br />
-                <BitDateRangePicker @bind-Value="@classesValue"
-                                    Label="Select a date"
-                                    Classes="@(new() { Root = "custom-root",
+            <br />
+            <BitDateRangePicker @bind-Value="@classesValue"
+                                Label="Select a date"
+                                Classes="@(new() { Root = "custom-root",
                                                        Focused = "custom-focus",
                                                        Input = "custom-input",
                                                        InputContainer = "custom-input-container",
@@ -266,19 +249,16 @@
                                                        DayPickerHeader = "custom-day-header",
                                                        WeekNumbersHeader = "custom-week-header",
                                                        YearMonthPickerWrapper = "custom-year-picker" })" />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+        </div>
+    </DemoSection>
 
-    <ComponentExampleBox Title="RTL" RazorCode="@example11RazorCode" Id="example11">
-        <ExamplePreview>
-            <div>Use BitDateRangePicker in right-to-left (RTL).</div>
-            <br />
-            <div dir="rtl">
-                <div class="example-content">
-                    <BitDateRangePicker Dir="BitDir.Rtl" />
-                </div>
+    <DemoSection Title="RTL" RazorCode="@example11RazorCode" Id="example11">
+        <div>Use BitDateRangePicker in right-to-left (RTL).</div>
+        <br />
+        <div dir="rtl">
+            <div class="example-content">
+                <BitDateRangePicker Dir="BitDir.Rtl" />
             </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-</ComponentDemo>
+        </div>
+    </DemoSection>
+</DemoPage>

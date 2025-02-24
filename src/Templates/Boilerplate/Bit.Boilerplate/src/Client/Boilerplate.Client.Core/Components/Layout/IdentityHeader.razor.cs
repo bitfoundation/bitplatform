@@ -1,10 +1,12 @@
-﻿namespace Boilerplate.Client.Core.Components.Layout;
+﻿using Microsoft.AspNetCore.Components.Routing;
 
-public partial class IdentityHeader : AppComponentBase, IDisposable
+namespace Boilerplate.Client.Core.Components.Layout;
+
+public partial class IdentityHeader : AppComponentBase
 {
     private string? backLinkPayload;
-    private BitDropdownItem<string>[] cultures = default!;
     private Action unsubscribeUpdateBackLink = default!;
+    private BitDropdownItem<string>[] cultures = default!;
 
 
     [AutoInject] private ThemeService themeService = default!;
@@ -13,7 +15,6 @@ public partial class IdentityHeader : AppComponentBase, IDisposable
 
     [CascadingParameter] private BitDir? currentDir { get; set; }
     [CascadingParameter(Name = Parameters.CurrentTheme)] private AppThemeType? currentTheme { get; set; }
-    [CascadingParameter(Name = Parameters.IsCrossLayoutPage)] private bool? isCrossLayoutPage { get; set; }
 
 
     protected override async Task OnInitAsync()
@@ -35,7 +36,6 @@ public partial class IdentityHeader : AppComponentBase, IDisposable
         await base.OnInitAsync();
     }
 
-
     private async Task HandleBackLinkClick()
     {
         PubSubService.Publish(ClientPubSubMessages.IDENTITY_HEADER_BACK_LINK_CLICKED, backLinkPayload);
@@ -52,8 +52,10 @@ public partial class IdentityHeader : AppComponentBase, IDisposable
     }
 
 
-    public void Dispose()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
         unsubscribeUpdateBackLink?.Invoke();
+
+        await base.DisposeAsync(disposing);
     }
 }

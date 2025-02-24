@@ -117,7 +117,7 @@ public class BitMenuButtonTests : BunitTestContext
     ]
     public void BitMenuButtonShouldBeItemClickIfEnabled(bool itemIsEnabled)
     {
-        BitMenuButtonItem clickedItem = default!;
+        BitMenuButtonItem? clickedItem = null;
 
         items.Last().IsEnabled = itemIsEnabled;
 
@@ -175,7 +175,7 @@ public class BitMenuButtonTests : BunitTestContext
     ]
     public void BitMenuButtonStickyTest(bool isSticky)
     {
-        BitMenuButtonItem clickedItem = default!;
+        BitMenuButtonItem? clickedItem = null;
 
         var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
         {

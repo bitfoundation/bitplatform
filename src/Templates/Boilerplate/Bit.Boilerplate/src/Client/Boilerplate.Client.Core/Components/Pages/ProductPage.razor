@@ -1,11 +1,9 @@
-﻿@attribute [Route(Urls.ProductPage + "/{Id:guid}")]
-@attribute [Route(Urls.ProductPage + "/{Id:guid}/{Name}")]
-@attribute [Route("{culture?}" + Urls.ProductPage + "/{Id:guid}")]
-@attribute [Route("{culture?}" + Urls.ProductPage + "/{Id:guid}/{Name}")]
-@attribute [AppResponseCache(SharedMaxAge = 3600 * 24)]
+﻿@attribute [Route(Urls.ProductPage + "/{Id:int}/{Name}")]
+@attribute [Route("{culture?}" + Urls.ProductPage + "/{Id:int}/{Name}")]
+@attribute [AppResponseCache(SharedMaxAge = 3600 * 24, MaxAge = 60 * 5)]
 @inherits AppPageBase
 
-<PageTitle>@product?.Name</PageTitle>
+<PageTitle>@Name</PageTitle>
 
 <section>
     <BitStack Gap="2rem" Class="root-stack">

@@ -9,7 +9,10 @@ public partial class ProductPage
     protected override string? Subtitle => string.Empty;
 
 
-    [Parameter] public Guid Id { get; set; }
+    /// <summary>
+    /// <inheritdoc cref="ProductDto.ShortId"/>
+    /// </summary>
+    [Parameter] public int Id { get; set; }
     [Parameter] public string? Name { get; set; }
 
 
@@ -29,14 +32,9 @@ public partial class ProductPage
 
     protected override async Task OnInitAsync()
     {
+        await Task.WhenAll(LoadProduct(), LoadSimilarProducts(), LoadSiblingProducts());
+
         await base.OnInitAsync();
-
-        await LoadProduct();
-
-        if (InPrerenderSession is false)
-        {
-            await Task.WhenAll(LoadSimilarProducts(), LoadSiblingProducts());
-        }
     }
 
     private async Task LoadProduct()
@@ -54,11 +52,11 @@ public partial class ProductPage
 
     private async Task LoadSimilarProducts()
     {
-        if (product is null) return;
-
         try
         {
-            similarProducts = await productViewController.GetSimilar(product.Id, CurrentCancellationToken);
+            similarProducts = await productViewController
+                .WithQuery(new ODataQuery { Top = 10 })
+                .GetSimilar(Id, CurrentCancellationToken);
         }
         finally
         {
@@ -69,11 +67,11 @@ public partial class ProductPage
 
     private async Task LoadSiblingProducts()
     {
-        if (product is null || product.CategoryId.HasValue is false) return;
-
         try
         {
-            siblingProducts = await productViewController.WithQuery(new ODataQuery { Filter = $"{nameof(ProductDto.Id)} ne {product.Id}" }).GetSiblings(product.CategoryId.Value, CurrentCancellationToken);
+            siblingProducts = await productViewController
+                .WithQuery(new ODataQuery { Top = 10 })
+                .GetSiblings(Id, CurrentCancellationToken);
         }
         finally
         {

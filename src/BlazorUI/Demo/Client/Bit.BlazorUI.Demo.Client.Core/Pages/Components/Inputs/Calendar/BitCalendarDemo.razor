@@ -5,13 +5,12 @@
             Title="Calendar"
             Description="calendar component of the bit BlazorUI components" />
 
-<ComponentDemo ComponentName="Calendar"
-               ComponentDescription="The calendar control lets people select and view a single date or a range of dates in their calendar. It’s made up of 3 separate views: the month view, year view, and decade view."
-               ComponentParameters="componentParameters"
-               ComponentSubClasses="componentSubClasses"
-               ComponentSubEnums="componentSubEnums">
-    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="example1CsharpCode" Id="example1">
-        <ExamplePreview>
+<DemoPage Name="Calendar"
+               Description="The calendar control lets people select and view a single date or a range of dates in their calendar. It’s made up of 3 separate views: the month view, year view, and decade view."
+               Parameters="componentParameters"
+               SubClasses="componentSubClasses"
+               SubEnums="componentSubEnums">
+    <DemoSection Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <div>Basic Calendar configuration showcasing default usage, disabled state, week numbers, highlighted months, and time picker.</div>
             <br /><br />
             <div class="example-content">
@@ -30,11 +29,9 @@
                 <div>StartingValue: December 2020, Time: 20:45:</div>
                 <BitCalendar ShowTimePicker="true" StartingValue="startingValue" />
             </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+    </DemoSection>
 
-    <ComponentExampleBox Title="Min & Max" RazorCode="@example2RazorCode" Id="example2">
-        <ExamplePreview>
+    <DemoSection Title="Min & Max" RazorCode="@example2RazorCode" Id="example2">
             <div>Demonstrates setting minimum and maximum selectable dates in the calendar.</div>
             <br /><br />
             <div class="example-content">
@@ -50,11 +47,9 @@
                 <div>Max: Now.AddYears(+1)</div>
                 <BitCalendar MinDate="DateTimeOffset.Now.AddYears(-5)" MaxDate="DateTimeOffset.Now.AddYears(1)" />
             </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+    </DemoSection>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example3RazorCode" Id="example3">
-        <ExamplePreview>
+    <DemoSection Title="Style & Class" RazorCode="@example3RazorCode" Id="example3">
             <div>Showcases custom styling and class usage for the calendar component.</div>
             <br /><br />
             <div>Component's Style & Class:</div>
@@ -90,22 +85,18 @@
                                                 WeekNumbersHeader = "custom-week-header",
                                                 YearMonthPickerWrapper = "custom-year-picker" })" />
             </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+    </DemoSection>
 
-    <ComponentExampleBox Title="Binding" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-        <ExamplePreview>
+    <DemoSection Title="Binding" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>Illustrates binding the selected date value to a variable.</div>
             <br />
             <div class="example-content">
                 <BitCalendar @bind-Value="@selectedDate" />
                 <div>Selected date: @selectedDate.ToString()</div>
             </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+    </DemoSection>
 
-    <ComponentExampleBox Title="Culture" RazorCode="@example5RazorCode" Id="example5">
-        <ExamplePreview>
+    <DemoSection Title="Culture" RazorCode="@example5RazorCode" Id="example5">
             <div>
                 By default, BitCalendar picks the current culture. But you can provide your own instance of CultureInfo for any custom culture.
                 <br />
@@ -124,11 +115,9 @@
                 <br />
                 <BitCalendar GoToTodayTitle="Boro be emrouz" Culture="CultureInfoHelper.GetFaIrCultureWithFingilishNames()" />
             </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+    </DemoSection>
 
-    <ComponentExampleBox Title="Templates" RazorCode="@example6RazorCode" Id="example6">
-        <ExamplePreview>
+    <DemoSection Title="Templates" RazorCode="@example6RazorCode" Id="example6">
             <div>Use custom templates for day cells, month cells, and year cells.</div>
             <br /><br />
             <div class="example-content">
@@ -168,11 +157,9 @@
                     </YearCellTemplate>
                 </BitCalendar>
             </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+    </DemoSection>
 
-    <ComponentExampleBox Title="MonthPicker" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-        <ExamplePreview>
+    <DemoSection Title="MonthPicker" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>Demonstrates controlling the visibility and position of the month picker.</div>
             <br /><br />
             <div class="example-content">
@@ -186,11 +173,9 @@
                 <BitCalendar ShowMonthPickerAsOverlay="@showMonthPickerAsOverlay" />
                 <BitToggleButton OnText="Position Overlay" OffText="Position Besides" @bind-IsChecked="@showMonthPickerAsOverlay" />
             </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+    </DemoSection>
 
-    <ComponentExampleBox Title="TimePicker" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-        <ExamplePreview>
+    <DemoSection Title="TimePicker" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>Demonstrates the time picker functionality integrated within the calendar component.</div>
             <br />
             <div class="example-content">
@@ -198,11 +183,9 @@
                 <br />
                 <div>Selected DateTime: @selectedDateTime.ToString()</div>
             </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+    </DemoSection>
 
-    <ComponentExampleBox Title="Hour/Minute step" RazorCode="@example9RazorCode" Id="example9">
-        <ExamplePreview>
+    <DemoSection Title="Hour/Minute step" RazorCode="@example9RazorCode" Id="example9">
             <div>Customizes the step increments for hours and minutes in the time picker.</div>
             <br /><br />
             <div class="example-content">
@@ -214,11 +197,9 @@
                 <br />
                 <BitCalendar ShowTimePicker="true" MinuteStep="15" />
             </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+    </DemoSection>
 
-    <ComponentExampleBox Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
-        <ExamplePreview>
+    <DemoSection Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>Demonstrates validation for BitCalendar within a form, including required fields and custom validation messages.</div>
             <br />
             <div>
@@ -242,16 +223,13 @@
                     <BitMessage Color="BitColor.Success">@SuccessMessage</BitMessage>
                 }
             </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+    </DemoSection>
 
-    <ComponentExampleBox Title="RTL" RazorCode="@example11RazorCode" Id="example11">
-        <ExamplePreview>
+    <DemoSection Title="RTL" RazorCode="@example11RazorCode" Id="example11">
             <div>Use BitCalendar in right-to-left (RTL).</div>
             <br />
             <div class="example-content">
                 <BitCalendar Dir="BitDir.Rtl" />
             </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-</ComponentDemo>
+    </DemoSection>
+</DemoPage>
