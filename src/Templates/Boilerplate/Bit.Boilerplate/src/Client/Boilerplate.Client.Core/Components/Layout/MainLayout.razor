@@ -22,7 +22,20 @@
                                     <BitNavPanel @bind-IsOpen="isNavPanelOpen"
                                                  @bind-IsToggled="isNavPanelToggled"
                                                  Items="@navPanelUnAuthenticatedItems"
-                                                 IconUrl="_content/Boilerplate.Client.Core/images/bit-logo.svg" />
+                                                 IconUrl="_content/Boilerplate.Client.Core/images/bit-logo.svg">
+                                        <Footer>
+                                            <BitActionButton IconOnly="isNavPanelToggled"
+                                                             IconName="@BitIconName.Signin"
+                                                             Href="@($"{Urls.SignInPage}?return-url={Uri.EscapeDataString(navigationManager.GetRelativePath())}")">
+                                                @(isNavPanelToggled ? "" : localizer[nameof(AppStrings.SignIn)])
+                                            </BitActionButton>
+                                            <BitActionButton IconOnly="isNavPanelToggled"
+                                                             IconName="@BitIconName.AddFriend"
+                                                             Href="@($"{Urls.SignUpPage}?return-url={Uri.EscapeDataString(navigationManager.GetRelativePath())}")">
+                                                @(isNavPanelToggled ? "" : localizer[nameof(AppStrings.SignUp)])
+                                            </BitActionButton>
+                                        </Footer>
+                                    </BitNavPanel>
                                 }
                             }
 

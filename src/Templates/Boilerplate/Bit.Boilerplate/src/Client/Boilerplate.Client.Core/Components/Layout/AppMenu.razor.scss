@@ -24,8 +24,13 @@
         max-width: 12rem;
     }
 
-    .persona-details,
-    .menu-chevron {
+    .persona-details {
+        display: none;
+    }
+
+
+    .menu-chevron,
+    .menu-displayname {
         @include lt-sm {
             display: none;
         }

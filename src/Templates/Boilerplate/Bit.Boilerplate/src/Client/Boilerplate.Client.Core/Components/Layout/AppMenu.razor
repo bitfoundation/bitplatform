@@ -5,8 +5,10 @@
                  OnDismiss="() => showCultures = false"
                  Classes="@(new() { Callout = "app-menu-callout" })">
         <Template>
+            <BitIcon IconName="@BitIconName.ChevronDown" Size="BitSize.Small" Color="BitColor.Info" Class="menu-chevron" />
             @if (isAuthenticated is true)
             {
+                <BitText Class="menu-displayname">@user.DisplayName</BitText>
                 <BitPersona Class="persona"
                             ImageUrl="@ProfileImageUrl"
                             Size=@BitPersonaSize.Size32
@@ -26,7 +28,6 @@
                     </CoinTemplate>
                 </BitPersona>
             }
-            <BitIcon IconName="@BitIconName.ChevronDown" Size="BitSize.Small" Color="BitColor.Info" Class="menu-chevron" />
         </Template>
         <Body>
             <BitCard FullSize Class="app-menu-card">
