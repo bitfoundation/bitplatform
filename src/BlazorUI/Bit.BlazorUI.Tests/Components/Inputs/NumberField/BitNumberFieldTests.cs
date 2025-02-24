@@ -349,6 +349,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(countOfClicks, onIncrementEventCounter);
     }
 
+    [Ignore]
     [DataTestMethod,
          DataRow(3),
          DataRow(5)

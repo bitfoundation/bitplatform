@@ -34,10 +34,10 @@
         <pre class="code"><code class="language-csharp">builder.Services.AddBitBlazorUIServices();</code></pre>
         <br />
         <BitText Typography="BitTypography.Body1">
-            And then add a specific attribute named <code>use-system-theme</code> to the <code>html</code> tag:
+            And then add a specific attribute named <code>bit-theme-system</code> to the <code>html</code> tag:
         </BitText>
         <br />
-        <pre><code class="language-cshtml">&lthtml use-system-theme&gt...&lt/html&gt</code></pre>
+        <pre class="code"><code class="language-cshtml">&lthtml bit-theme-system&gt...&lt/html&gt</code></pre>
         <br />
         <BitText Typography="BitTypography.Body1">
             Now with this setup, the app will follow the system theme (dark or light) automatically.
@@ -78,11 +78,27 @@
             <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/main/src/BlazorUI/Bit.BlazorUI/Styles/Fluent" Target="_blank">
                 bit BlazorUI GitHub repo
             </BitLink>.
-            <br />
-            You can simply override these values to customize the UI.
-            <br />
-            <br />
-            <strong>Note:</strong> If you're using <code>scss</code> in your project, you can use <code>bit-css-variables.scss</code>
+            You can simply override these values to customize the UI like what we did in our main website (<BitLink Href="https://bitplatform.dev">bitplatform.dev</BitLink>) in
+            <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/develop/src/Websites/Platform/src/Bit.Websites.Platform.Client/Styles/app.scss">this file</BitLink>:
+        </BitText>
+        <br />
+        <pre class="code"><code class="language-css">
+// overridden values:
+
+:root[bit-theme="dark"] {
+    --bit-clr-sec: transparent;
+    --bit-clr-sec-hover: #061342;
+    --bit-clr-bg-pri: #060E2D;
+    --bit-clr-bg-sec: #0a153d;
+    --bit-clr-bg-pri-hover: #07154a;
+    --bit-clr-bg-pri-active: #061241;
+    --bit-clr-bg-sec-hover: #07154a;
+    --bit-clr-fg-sec: #dddddd;
+}
+        </code></pre>
+        <br />
+        <BitText Typography="BitTypography.Body1">
+            <strong>Note:</strong> If you're using <code>scss</code> in your project, you can use <code>_bit-css-variables.scss</code>
             file which introduces scss variables for each bit theme css variable. you can find the latest version of this file
             <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/main/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Styles/abstracts/_bit-css-variables.scss" Target="_blank">
                 here
@@ -155,10 +171,44 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</code></pre>
             In bit BlazorUI you can use the system theme as the default theme when the app starts up.
             <br />
             In order to enable this feature a specific attribute named
-            <code>use-system-theme</code> should be added to the <code>html</code> tag:
+            <code>bit-theme-system</code> should be added to the <code>html</code> tag:
         </BitText>
         <br />
-        <pre><code class="language-cshtml">&lthtml use-system-theme&gt...&lt/html&gt</code></pre>
+        <pre class="code"><code class="language-cshtml">&lthtml bit-theme-system&gt...&lt/html&gt</code></pre>
+    </section>
+
+    <section class="page-section">
+        <BitText Typography="BitTypography.H4" Class="subtitle">Persist Theme</BitText>
+        <BitText Typography="BitTypography.Body1">
+            In bit BlazorUI you can use persist the current theme in the local storage.
+            <br />
+            In order to enable this feature a specific attribute named
+            <code>bit-theme-persist</code> should be added to the <code>html</code> tag:
+        </BitText>
+        <br />
+        <pre class="code"><code class="language-cshtml">&lthtml bit-theme-persist&gt...&lt/html&gt</code></pre>
+    </section>
+
+    <section class="page-section">
+        <BitText Typography="BitTypography.H4" Class="subtitle">Default Theme</BitText>
+        <BitText Typography="BitTypography.Body1">
+            In bit BlazorUI you can change the default theme which is <code>light</code> using a specific attribute named
+            <code>bit-theme-default</code> on the <code>html</code> tag:
+        </BitText>
+        <br />
+        <pre class="code"><code class="language-cshtml">&lthtml bit-theme-default="dark"&gt...&lt/html&gt</code></pre>
+    </section>
+
+    <section class="page-section">
+        <BitText Typography="BitTypography.H4" Class="subtitle">Customizing theme names</BitText>
+        <BitText Typography="BitTypography.Body1">
+            In bit BlazorUI the default name of the available themes are <code>light</code> and <code>dark</code>.
+            you can change these default names using the following attributes on the <code>html</code> tag:
+        </BitText>
+        <br />
+        <pre class="code"><code class="language-cshtml">
+&lthtml bit-theme-dark="custom-dark" bit-theme-light="custom-light" &gt...&lt/html&gt
+        </code></pre>
     </section>
 
     <section class="page-section">
@@ -169,7 +219,7 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</code></pre>
             You can use different properties of this class to further customize your UI:
         </BitText>
         <br />
-        <pre><code class="language-cshtml">&lthtml&gt
+        <pre class="code"><code class="language-cshtml">&lthtml&gt
     &lthead&gt...&lt/head&gt
     &ltbody class="@@BitCss.Class.Color.Background.Primary @@BitCss.Class.Color.Foreground.Primary"&gt
         ...
@@ -180,7 +230,7 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</code></pre>
             This class contians two main property for accessing CSS classes (<code>BitCss.Class</code>) and CSS variables (<code>BitCss.Var</code>).
         </BitText>
         <br />
-        <pre><code class="language-cshtml">&ltdiv style="border-color:var(@@BitCss.Var.Color.Border.Secondary)"&gt
+        <pre class="code"><code class="language-cshtml">&ltdiv style="border-color:var(@@BitCss.Var.Color.Border.Secondary)"&gt
     hello world!
 &lt/div&gt</code></pre>
     </section>
@@ -243,37 +293,35 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</code></pre>
             The differnet functions available in this object are as follows:
         </BitText>
         <br />
-        <pre><code class="language-js">BitTheme.get()</code></pre>
+        <pre class="code"><code class="language-js">const currentTheme = BitTheme.get();</code></pre>
         <BitText Typography="BitTypography.Body1">
             Gets the current theme.
         </BitText>
         <br />
         <br />
-        <pre><code class="language-js">BitTheme.set('dark')</code></pre>
+        <pre class="code"><code class="language-js">BitTheme.set('dark');</code></pre>
         <BitText Typography="BitTypography.Body1">
             Sets the current theme.
         </BitText>
         <br />
         <br />
-        <pre><code class="language-js">BitTheme.toggleDarkLight()</code></pre>
+        <pre class="code"><code class="language-js">BitTheme.toggleDarkLight();</code></pre>
         <BitText Typography="BitTypography.Body1">
             Toggles the current theme between dark & light.
         </BitText>
         <br />
         <br />
-        <pre><code class="language-js">BitTheme.useSystem()</code></pre>
+        <pre class="code"><code class="language-js">BitTheme.useSystem();</code></pre>
         <BitText Typography="BitTypography.Body1">
             Uses the current theme of the system (dark or light) as the app theme.
         </BitText>
         <br />
         <br />
-        <pre><code class="language-js">BitTheme.onChange((newTheme, oldTheme) => {
+        <pre class="code"><code class="language-js">BitTheme.onChange((newTheme, oldTheme) => {
     if (newTheme.includes('dark')) {
-        document.body.classList.add('bit-theme-dark');
-        document.body.classList.remove('bit-theme-light');
+        document.querySelector("meta[name=theme-color]")!.setAttribute('content', '#0d1117');
     } else {
-        document.body.classList.add('bit-theme-light');
-        document.body.classList.remove('bit-theme-dark');
+        document.querySelector("meta[name=theme-color]")!.setAttribute('content', '#ffffff');
     }
 });</code></pre>
         <BitText Typography="BitTypography.Body1">
@@ -281,28 +329,30 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</code></pre>
         </BitText>
         <br />
         <br />
-        <pre><code class="language-js">BitTheme.applyBitTheme({...}, el)</code></pre>
+        <pre class="code"><code class="language-js">BitTheme.applyBitTheme({ '--bit-clr-pri': '#1A86D8' }, myElement)</code></pre>
         <BitText Typography="BitTypography.Body1">
             Applies an instance of BitTheme to the specified or body element just like the
             <code>ApplyBitThemeAsync</code> method of the <code>BitThemeManager</code>.
         </BitText>
         <br />
         <br />
-        <pre><code class="language-js">BitTheme.isSystemDark()</code></pre>
+        <pre class="code"><code class="language-js">BitTheme.isSystemDark();</code></pre>
         <BitText Typography="BitTypography.Body1">
             Checks if the current theme of the system is dark.
         </BitText>
         <br />
         <br />
-        <pre><code class="language-js">BitTheme.init({
+        <pre class="code"><code class="language-js">BitTheme.init({
     system: true,
+    persist: true,
+    default: 'custom-dark',
+    darkTheme: 'custom-dark',
+    lightTheme: 'custom-light',
     onChange: (newTheme: string, oldThem: string) => {
-        if (newTheme === 'dark') {
-            document.body.classList.add('bit-theme-dark');
-            document.body.classList.remove('bit-theme-light');
+        if (newTheme === 'custom-dark') {
+            document.querySelector("meta[name=theme-color]")!.setAttribute('content', '#0d1117');
         } else {
-            document.body.classList.add('bit-theme-light');
-            document.body.classList.remove('bit-theme-dark');
+            document.querySelector("meta[name=theme-color]")!.setAttribute('content', '#ffffff');
         }
     }
 });</code></pre>
