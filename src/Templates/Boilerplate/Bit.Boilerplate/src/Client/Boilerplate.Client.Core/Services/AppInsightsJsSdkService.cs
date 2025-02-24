@@ -155,9 +155,9 @@ public partial class AppInsightsJsSdkService : IApplicationInsights
 
             while (true)
             {
-                if (await jsRuntime.FastInvokeAsync<bool>("window.hasOwnProperty", "appInsights") &&
-                    await jsRuntime.FastInvokeAsync<bool>("appInsights.hasOwnProperty", "updateCfg") &&
-                    await jsRuntime.FastInvokeAsync<bool>("window.hasOwnProperty", "blazorApplicationInsights"))
+                if (await jsRuntime.InvokeAsync<bool>("window.hasOwnProperty", "appInsights") &&
+                    await jsRuntime.InvokeAsync<bool>("appInsights.hasOwnProperty", "updateCfg") &&
+                    await jsRuntime.InvokeAsync<bool>("window.hasOwnProperty", "blazorApplicationInsights"))
                 {
                     appInsightsJsFilesAreLoaded.TrySetResult();
                     break;
