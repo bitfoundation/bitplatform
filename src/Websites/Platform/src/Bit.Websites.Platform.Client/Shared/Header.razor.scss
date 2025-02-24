@@ -107,14 +107,6 @@
     margin-left: rem2(5px);
 }
 
-.bit-theme-dark .github-btn {
-    background-image: url('images/github-icon-dark.svg');
-}
-
-.bit-theme-light .github-btn {
-    background-image: url('images/github-icon-light.svg');
-}
-
 .toggle-theme-btn {
     padding: 0;
     border: none;
@@ -141,12 +133,24 @@
     }
 }
 
-.bit-theme-dark .dark-theme {
-    display: unset;
+.bit-platform-dark-theme {
+    .dark-theme {
+        display: unset;
+    }
+
+    .github-btn {
+        background-image: url('images/github-icon-dark.svg');
+    }
 }
 
-.bit-theme-light .light-theme {
-    display: unset;
+.bit-platform-light-theme {
+    .light-theme {
+        display: unset;
+    }
+    
+    .github-btn {
+        background-image: url('images/github-icon-light.svg');
+    }
 }
 
 .header-second-row {
