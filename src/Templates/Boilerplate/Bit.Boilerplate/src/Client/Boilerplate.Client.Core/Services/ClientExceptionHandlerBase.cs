@@ -80,7 +80,7 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
 
     private ExceptionDisplayKind GetDisplayKind(Exception exception)
     {
-        if (exception is ServerConnectionException or ReusedRefreshTokenException)
+        if (exception is ServerConnectionException)
             return ExceptionDisplayKind.NonInterrupting;
 
         return ExceptionDisplayKind.Interrupting;
