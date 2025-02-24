@@ -25,6 +25,7 @@
 
         <PackageReference Include="Bit.BlazorUI" Version="9.5.0-pre-04" />
         <PackageReference Include="Bit.BlazorUI.Icons" Version="9.5.0-pre-04" />
+        <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.Icons.wasm" />
         <PackageReference Include="Bit.BlazorUI.Assets" Version="9.5.0-pre-04" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="9.5.0-pre-04">
             <PrivateAssets>all</PrivateAssets>
@@ -91,7 +92,7 @@
         <Exec Command="node_modules/.bin/sass .:. --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
-    <Target Name="BuildGlobalScssFiles" Inputs="@(GlobalScssFiles)" Outputs="wwwroot/styles/app.css">        
+    <Target Name="BuildGlobalScssFiles" Inputs="@(GlobalScssFiles)" Outputs="wwwroot/styles/app.css">
         <Exec Command="node_modules/.bin/sass Styles/app.scss:wwwroot/styles/app.css --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
