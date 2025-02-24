@@ -11,7 +11,7 @@ public partial class BrowserStorageService : IStorageService
     {
         try
         {
-            BitButil.UseFastInvoke();
+            BitButil.UseFastInvoke(); // In Blazor WebAssembly, `IJSInProcessRuntime` is used for `localStorage` and `sessionStorage`, providing a slight performance boost.
 
             return await localStorage.GetItem(key) ??
                 await sessionStorage.GetItem(key);
