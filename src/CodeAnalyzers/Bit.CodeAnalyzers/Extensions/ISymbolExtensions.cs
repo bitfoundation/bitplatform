@@ -44,8 +44,8 @@ public static class ISymbolExtensions
 
         ImmutableArray<AttributeData> attrs = methodSymbol.GetAttributes();
 
-        operationAttribute = attrs.ExtendedSingleOrDefault($"Looking for action/function attribute on {methodSymbol.Name}", att => att.AttributeClass.Name == "ActionAttribute" || att.AttributeClass.Name == "FunctionAttribute");
+        operationAttribute = attrs.ExtendedSingleOrDefault($"Looking for action/function attribute on {methodSymbol.Name}", att => att.AttributeClass?.Name == "ActionAttribute" || att.AttributeClass?.Name == "FunctionAttribute");
 
-        return operationAttribute != null;
+        return true;
     }
 }
