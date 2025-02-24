@@ -2,6 +2,7 @@
 using Boilerplate.Client.Core.Services;
 using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -31,6 +32,9 @@ public partial class AppMenu
 
     protected override async Task OnInitAsync()
     {
+        AuthManager.AuthenticationStateChanged += AuthManager_AuthenticationStateChanged;
+        NavigationManager.LocationChanged += NavigationManager_LocationChanged;
+
         if (CultureInfoManager.MultilingualEnabled)
         {
             cultures = CultureInfoManager.SupportedCultures
@@ -49,14 +53,20 @@ public partial class AppMenu
             await InvokeAsync(StateHasChanged);
         });
 
-        AuthManager.AuthenticationStateChanged += AuthenticationStateChanged;
         await GetCurrentUser(AuthenticationStateTask);
 
         await base.OnInitAsync();
     }
 
 
-    private async void AuthenticationStateChanged(Task<AuthenticationState> task)
+    private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        // The sign-in and sign-up buttons href are bound to NavigationManager.GetRelativePath().
+        // To ensure the bound values update with each route change, it's necessary to call StateHasChanged on location changes.
+        StateHasChanged();
+    }
+
+    private async void AuthManager_AuthenticationStateChanged(Task<AuthenticationState> task)
     {
         try
         {
@@ -96,10 +106,12 @@ public partial class AppMenu
         NavigationManager.NavigateTo(Urls.SettingsPage);
     }
 
+
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         unsubscribeUerDataUpdated?.Invoke();
-        AuthManager.AuthenticationStateChanged -= AuthenticationStateChanged;
+        NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
+        AuthManager.AuthenticationStateChanged -= AuthManager_AuthenticationStateChanged;
 
         await base.DisposeAsync(disposing);
     }

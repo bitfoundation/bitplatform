@@ -1,5 +1,6 @@
 ﻿//+:cnd:noEmit
 using System.Reflection;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -44,7 +45,8 @@ public partial class MainLayout : IAsyncDisposable
         {
             InitializeNavPanelItems();
 
-            authManager.AuthenticationStateChanged += AuthenticationStateChanged;
+            navigationManager.LocationChanged += NavigationManager_LocationChanged;
+            authManager.AuthenticationStateChanged += AuthManager_AuthenticationStateChanged;
 
             unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async _ =>
             {
@@ -114,7 +116,14 @@ public partial class MainLayout : IAsyncDisposable
     }
 
 
-    private async void AuthenticationStateChanged(Task<AuthenticationState> task)
+    private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        // The sign-in and sign-up buttons href are bound to NavigationManager.GetRelativePath().
+        // To ensure the bound values update with each route change, it's necessary to call StateHasChanged on location changes.
+        StateHasChanged();
+    }
+
+    private async void AuthManager_AuthenticationStateChanged(Task<AuthenticationState> task)
     {
         try
         {
@@ -165,7 +174,6 @@ public partial class MainLayout : IAsyncDisposable
         pubSubService.Publish(ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL);
     }
 
-
     private string GetMainCssClass()
     {
         return isIdentityPage is true ? "identity"
@@ -173,9 +181,11 @@ public partial class MainLayout : IAsyncDisposable
              : string.Empty;
     }
 
+
     public async ValueTask DisposeAsync()
     {
-        authManager.AuthenticationStateChanged -= AuthenticationStateChanged;
+        navigationManager.LocationChanged -= NavigationManager_LocationChanged;
+        authManager.AuthenticationStateChanged -= AuthManager_AuthenticationStateChanged;
 
         unsubscribers.ForEach(d => d.Invoke());
 
