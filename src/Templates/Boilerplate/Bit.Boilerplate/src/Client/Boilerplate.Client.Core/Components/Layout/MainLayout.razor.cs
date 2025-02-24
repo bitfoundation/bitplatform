@@ -1,5 +1,6 @@
 ﻿//+:cnd:noEmit
 using System.Reflection;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -7,22 +8,21 @@ public partial class MainLayout : IAsyncDisposable
 {
     private BitDir? currentDir;
     private bool isNavPanelOpen;
+    private bool? isIdentityPage;
+    private bool isNavPanelToggled = true;
     private readonly BitModalParameters modalParameters = new() { Classes = new() { Root = "modal" } };
 
     /// <summary>
     /// <inheritdoc cref="Parameters.IsOnline"/>
     /// </summary>
-    private bool? isOnline = null;
-    private bool? isAuthenticated;
+    private bool? isOnline;
 
-    /// <summary>
-    /// <inheritdoc cref="Parameters.IsCrossLayoutPage"/>
-    /// </summary>
-    private bool? isCrossLayoutPage;
+    private bool? isAuthenticated;
     private AppThemeType? currentTheme;
     private RouteData? currentRouteData;
     private List<Action> unsubscribers = [];
-    private List<BitNavItem> navPanelItems = [];
+    private List<BitNavItem> navPanelAuthenticatedItems = [];
+    private List<BitNavItem> navPanelUnAuthenticatedItems = [];
 
 
     [AutoInject] private Keyboard keyboard = default!;
@@ -45,7 +45,8 @@ public partial class MainLayout : IAsyncDisposable
         {
             InitializeNavPanelItems();
 
-            authManager.AuthenticationStateChanged += AuthenticationStateChanged;
+            navigationManager.LocationChanged += NavigationManager_LocationChanged;
+            authManager.AuthenticationStateChanged += AuthManager_AuthenticationStateChanged;
 
             unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async _ =>
             {
@@ -63,7 +64,7 @@ public partial class MainLayout : IAsyncDisposable
             unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.ROUTE_DATA_UPDATED, async payload =>
             {
                 currentRouteData = (RouteData?)payload;
-                SetIsCrossLayout();
+                SetRouteData();
                 StateHasChanged();
             }));
 
@@ -76,6 +77,7 @@ public partial class MainLayout : IAsyncDisposable
             unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.OPEN_NAV_PANEL, async _ =>
             {
                 isNavPanelOpen = true;
+                isNavPanelToggled = false;
                 StateHasChanged();
             }));
 
@@ -114,7 +116,14 @@ public partial class MainLayout : IAsyncDisposable
     }
 
 
-    private async void AuthenticationStateChanged(Task<AuthenticationState> task)
+    private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        // The sign-in and sign-up buttons href are bound to NavigationManager.GetRelativePath().
+        // To ensure the bound values update with each route change, it's necessary to call StateHasChanged on location changes.
+        StateHasChanged();
+    }
+
+    private async void AuthManager_AuthenticationStateChanged(Task<AuthenticationState> task)
     {
         try
         {
@@ -135,14 +144,11 @@ public partial class MainLayout : IAsyncDisposable
         currentDir = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? BitDir.Rtl : null;
     }
 
-    /// <summary>
-    /// <inheritdoc cref="Parameters.IsCrossLayoutPage"/>
-    /// </summary>
-    private void SetIsCrossLayout()
+    private void SetRouteData()
     {
         if (currentRouteData is null)
         {
-            isCrossLayoutPage = true;
+            isIdentityPage = false;
             return;
         }
 
@@ -150,17 +156,17 @@ public partial class MainLayout : IAsyncDisposable
 
         if (type.GetCustomAttributes<AuthorizeAttribute>(inherit: true).Any())
         {
-            isCrossLayoutPage = false;
+            isIdentityPage = false;
             return;
         }
 
         if (type.Namespace?.Contains("Client.Core.Components.Pages.Identity") ?? false)
         {
-            isCrossLayoutPage = false;
+            isIdentityPage = true;
             return;
         }
 
-        isCrossLayoutPage = true;
+        isIdentityPage = false;
     }
 
     private void OpenDiagnosticModal()
@@ -168,21 +174,18 @@ public partial class MainLayout : IAsyncDisposable
         pubSubService.Publish(ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL);
     }
 
-
     private string GetMainCssClass()
     {
-        var authClass = isAuthenticated is false ? "unauthenticated"
-                      : isAuthenticated is true ? "authenticated"
-                      : string.Empty;
-
-        var crossClass = isCrossLayoutPage is true ? " cross-layout" : string.Empty;
-
-        return authClass + crossClass;
+        return isIdentityPage is true ? "identity"
+             : isIdentityPage is false ? "non-identity"
+             : string.Empty;
     }
+
 
     public async ValueTask DisposeAsync()
     {
-        authManager.AuthenticationStateChanged -= AuthenticationStateChanged;
+        navigationManager.LocationChanged -= NavigationManager_LocationChanged;
+        authManager.AuthenticationStateChanged -= AuthManager_AuthenticationStateChanged;
 
         unsubscribers.ForEach(d => d.Invoke());
 

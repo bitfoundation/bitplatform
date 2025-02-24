@@ -5,8 +5,8 @@ namespace Boilerplate.Client.Core.Components.Layout;
 public partial class IdentityHeader : AppComponentBase
 {
     private string? backLinkPayload;
-    private BitDropdownItem<string>[] cultures = default!;
     private Action unsubscribeUpdateBackLink = default!;
+    private BitDropdownItem<string>[] cultures = default!;
 
 
     [AutoInject] private ThemeService themeService = default!;
@@ -15,7 +15,6 @@ public partial class IdentityHeader : AppComponentBase
 
     [CascadingParameter] private BitDir? currentDir { get; set; }
     [CascadingParameter(Name = Parameters.CurrentTheme)] private AppThemeType? currentTheme { get; set; }
-    [CascadingParameter(Name = Parameters.IsCrossLayoutPage)] private bool? isCrossLayoutPage { get; set; }
 
 
     protected override async Task OnInitAsync()
@@ -27,8 +26,6 @@ public partial class IdentityHeader : AppComponentBase
             await InvokeAsync(StateHasChanged);
         });
 
-        NavigationManager.LocationChanged += NavigationManager_LocationChanged;
-
         if (CultureInfoManager.MultilingualEnabled)
         {
             cultures = CultureInfoManager.SupportedCultures
@@ -37,13 +34,6 @@ public partial class IdentityHeader : AppComponentBase
         }
 
         await base.OnInitAsync();
-    }
-
-    private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        // In IdentityHeader.razor, the sign-in and sign-up button hrefs are bound to NavigationManager.GetRelativePath().
-        // To ensure the bound values update with each route change, it's necessary to call StateHasChanged on location changes.
-        StateHasChanged();
     }
 
     private async Task HandleBackLinkClick()
@@ -61,10 +51,10 @@ public partial class IdentityHeader : AppComponentBase
         await cultureService.ChangeCulture(cultureName);
     }
 
+
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         unsubscribeUpdateBackLink?.Invoke();
-        NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
 
         await base.DisposeAsync(disposing);
     }

@@ -8,6 +8,13 @@ public abstract partial class AppPageBase : AppComponentBase
 
     [Parameter] public string? culture { get; set; }
 
+    protected override async Task OnInitAsync()
+    {
+        await base.OnInitAsync();
+
+        PubSubService.Publish(ClientPubSubMessages.PAGE_TITLE_CHANGED, (Title, Subtitle), persistent: true);
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
@@ -23,8 +30,6 @@ public abstract partial class AppPageBase : AppComponentBase
                     NavigationManager.NavigateTo($"{Urls.NotFoundPage}?url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}", replace: true);
                 }
             }
-
-            PubSubService.Publish(ClientPubSubMessages.PAGE_TITLE_CHANGED, (Title, Subtitle), persistent: true);
         }
     }
 }

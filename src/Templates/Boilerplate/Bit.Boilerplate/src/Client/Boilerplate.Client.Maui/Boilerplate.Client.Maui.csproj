@@ -119,7 +119,6 @@
         <Using Include="Boilerplate.Client.Core.Services.Contracts" />
         <Using Include="Boilerplate.Client.Core.Services" />
         <Using Include="Boilerplate.Shared" />
-        <Watch Remove="*.scss" />
     </ItemGroup>
 
     <ItemGroup>

@@ -281,17 +281,20 @@ public static partial class Program
         //#if (captcha == "reCaptcha")
         services.AddHttpClient<GoogleRecaptchaService>(c =>
         {
+            c.Timeout = TimeSpan.FromSeconds(10);
             c.BaseAddress = new Uri("https://www.google.com/recaptcha/");
         });
         //#endif
 
         services.AddHttpClient<NugetStatisticsService>(c =>
         {
+            c.Timeout = TimeSpan.FromSeconds(3);
             c.BaseAddress = new Uri("https://azuresearch-usnc.nuget.org");
         });
 
         services.AddHttpClient<ResponseCacheService>(c =>
         {
+            c.Timeout = TimeSpan.FromSeconds(10);
             c.BaseAddress = new Uri("https://api.cloudflare.com/client/v4/zones/");
         });
     }

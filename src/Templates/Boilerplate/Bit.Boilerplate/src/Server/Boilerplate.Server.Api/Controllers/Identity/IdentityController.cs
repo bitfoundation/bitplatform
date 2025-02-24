@@ -104,7 +104,6 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         }
 
         userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_ID, userSession.Id.ToString()));
-        userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_STAMP, userSession.StartedOn.ToUnixTimeSeconds().ToString()));
         if (userSession.Privileged)
         {
             userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, "true"));
@@ -230,19 +229,6 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             userSession = await DbContext.UserSessions
                 .FirstOrDefaultAsync(us => us.Id == currentSessionId, cancellationToken) ?? throw new UnauthorizedException().WithData("UserSessionId", currentSessionId); // User session has been deleted.
 
-            var sessionStampValueInDatabase = (userSession.RenewedOn ?? userSession.StartedOn).ToUnixTimeSeconds();
-            var sessionStampValueInJwtToken = long.Parse(refreshTicket.Principal.Claims.Single(c => c.Type == AppClaimTypes.SESSION_STAMP).Value);
-            if (sessionStampValueInDatabase != sessionStampValueInJwtToken)
-            {
-                // refresh token is being re-used.
-                throw new ReusedRefreshTokenException().WithData(new()
-                {
-                    { "UserSessionId", currentSessionId },
-                    { nameof(sessionStampValueInDatabase), sessionStampValueInDatabase },
-                    { nameof(sessionStampValueInJwtToken), sessionStampValueInJwtToken }
-                });
-            }
-
             if (string.IsNullOrEmpty(request.ElevatedAccessToken) is false)
             {
                 var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ElevatedAccess:{userSession.Id},{user.ElevatedAccessTokenRequestedOn?.ToUniversalTime()}"), request.ElevatedAccessToken)
@@ -267,7 +253,6 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             userSession.DeviceInfo = request.DeviceInfo;
 
             userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_ID, currentSessionId.ToString()));
-            userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_STAMP, userSession.RenewedOn.Value.ToUnixTimeSeconds().ToString()));
 
             userSession.Privileged = await IsUserSessionPrivileged(userSession, cancellationToken);
             if (userSession.Privileged)
@@ -401,7 +386,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     [HttpGet]
-    [AppResponseCache(SharedMaxAge = 3600 * 24 * 7)]
+    [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5)]
     public async Task<ActionResult> SocialSignedIn()
     {
         var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>

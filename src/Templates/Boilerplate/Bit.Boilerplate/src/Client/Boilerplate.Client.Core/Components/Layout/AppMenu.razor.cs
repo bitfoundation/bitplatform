@@ -1,12 +1,16 @@
-﻿using Boilerplate.Shared.Controllers.Identity;
+﻿using System.Threading.Tasks;
+using Boilerplate.Client.Core.Services;
+using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
-public partial class UserMenu
+public partial class AppMenu
 {
     private bool isOpen;
     private bool showCultures;
+    private bool isAuthenticated;
     private UserDto user = new();
     private bool isSignOutConfirmOpen;
     private Action unsubscribeUerDataUpdated = default!;
@@ -28,6 +32,9 @@ public partial class UserMenu
 
     protected override async Task OnInitAsync()
     {
+        AuthManager.AuthenticationStateChanged += AuthManager_AuthenticationStateChanged;
+        NavigationManager.LocationChanged += NavigationManager_LocationChanged;
+
         if (CultureInfoManager.MultilingualEnabled)
         {
             cultures = CultureInfoManager.SupportedCultures
@@ -39,16 +46,49 @@ public partial class UserMenu
         {
             if (payload is null) return;
 
-            user = payload is JsonElement jsonDocument 
+            user = payload is JsonElement jsonDocument
                 ? jsonDocument.Deserialize(JsonSerializerOptions.GetTypeInfo<UserDto>())! // PROFILE_UPDATED can be invoked from server through SignalR
                 : (UserDto)payload;
 
             await InvokeAsync(StateHasChanged);
         });
 
-        user = await userController.GetCurrentUser(CurrentCancellationToken);
+        await GetCurrentUser(AuthenticationStateTask);
 
         await base.OnInitAsync();
+    }
+
+
+    private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        // The sign-in and sign-up buttons href are bound to NavigationManager.GetRelativePath().
+        // To ensure the bound values update with each route change, it's necessary to call StateHasChanged on location changes.
+        StateHasChanged();
+    }
+
+    private async void AuthManager_AuthenticationStateChanged(Task<AuthenticationState> task)
+    {
+        try
+        {
+            await GetCurrentUser(task);
+        }
+        catch (Exception ex)
+        {
+            ExceptionHandler.Handle(ex);
+        }
+        finally
+        {
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task GetCurrentUser(Task<AuthenticationState> task)
+    {
+        isAuthenticated = (await task).User.IsAuthenticated();
+        if (isAuthenticated)
+        {
+            user = await userController.GetCurrentUser(CurrentCancellationToken);
+        }
     }
 
     private async Task OnCultureChanged(string? cultureName)
@@ -66,10 +106,13 @@ public partial class UserMenu
         NavigationManager.NavigateTo(Urls.SettingsPage);
     }
 
+
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await base.DisposeAsync(disposing);
-
         unsubscribeUerDataUpdated?.Invoke();
+        NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
+        AuthManager.AuthenticationStateChanged -= AuthManager_AuthenticationStateChanged;
+
+        await base.DisposeAsync(disposing);
     }
 }

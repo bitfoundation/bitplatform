@@ -14,8 +14,6 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 
     [AutoInject] protected IStorageService StorageService = default!;
 
-    [AutoInject] protected HttpClient HttpClient = default!;
-
     [AutoInject] protected JsonSerializerOptions JsonSerializerOptions = default!;
 
     /// <summary>

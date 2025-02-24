@@ -84,6 +84,8 @@
         <Using Include="Boilerplate.Shared.Exceptions" />
         <Using Include="Boilerplate.Shared.Services" />
         <Using Include="Boilerplate.Shared.Services.Contracts" />
+
+        <Watch Remove="*.scss" />
     </ItemGroup>
 
 </Project>
