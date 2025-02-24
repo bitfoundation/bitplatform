@@ -48,7 +48,7 @@ The following apps are our open-source projects powered by the bit platform show
 1. [bitplatform.dev](https://bitplatform.dev): .NET 9 Pre-rendered SPA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
 2. [sales.bitplatform.dev](https://sales.bitplatform.dev): .NET 9 Sales Pre-rendered SPA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
 3. [blazorui.bitplatform.dev](https://blazorui.bitplatform.dev): .NET 9 Pre-rendered PWA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
-5. [adminpanel.bitplatform.dev](https://adminpanel.bitplatform.dev): .NET 9 PWA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
+4. [adminpanel.bitplatform.dev](https://adminpanel.bitplatform.dev): .NET 9 PWA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
 5. [todo.bitplatform.dev](https://todo.bitplatform.dev): .NET 8 Pre-rendered PWA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
 6. [adminpanel.bitplatform.cc](https://adminpanel.bitplatform.cc): .NET 9 PWA with Blazor WebAssembly Standalone (Azure static web app)
 7. [todo-aot.bitplatform.cc](https://todo-aot.bitplatform.cc): .NET 9 AOT Compiled PWA with Blazor WebAssembly Standalone (Azure static web app)
