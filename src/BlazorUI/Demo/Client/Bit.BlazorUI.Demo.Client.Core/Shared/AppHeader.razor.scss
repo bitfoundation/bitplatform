@@ -84,14 +84,6 @@
     border-radius: 50%;
 }
 
-.bit-theme-dark .github-btn {
-    background-image: url('images/github-icon-dark.svg');
-}
-
-.bit-theme-light .github-btn {
-    background-image: url('images/github-icon-light.svg');
-}
-
 .toggle-theme-btn {
     padding: 0;
     border: none;
@@ -121,12 +113,24 @@
     }
 }
 
-.bit-theme-dark .light-theme {
-    display: none;
+.bit-blazorui-dark-theme {
+    .light-theme {
+        display: none;
+    }
+
+    .github-btn {
+        background-image: url('images/github-icon-dark.svg');
+    }
 }
 
-.bit-theme-light .dark-theme {
-    display: none;
+.bit-blazorui-light-theme {
+    .dark-theme {
+        display: none;
+    }
+
+    .github-btn {
+        background-image: url('images/github-icon-light.svg');
+    }
 }
 
 ::deep {
