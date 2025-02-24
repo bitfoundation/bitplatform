@@ -150,7 +150,7 @@
         id: string;
         element: HTMLElement;
         trigger: number;
-        dotnetObj: DotNetObject;
+        dotnetObj: DotNetObject | undefined;
         removeHandlers: () => void = () => { };
 
         constructor(id: string, element: HTMLElement, trigger: number, dotnetObj: DotNetObject) {
@@ -165,7 +165,8 @@
 
         public dispose() {
             this.removeHandlers();
-            this.dotnetObj.dispose();
+            this.dotnetObj?.dispose();
+            this.dotnetObj = undefined;
         }
     }
 

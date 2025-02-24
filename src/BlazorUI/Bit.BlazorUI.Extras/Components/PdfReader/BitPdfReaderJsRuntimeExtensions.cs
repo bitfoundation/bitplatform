@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 internal static class BitPdfReaderJsRuntimeExtensions
 {
@@ -22,8 +24,9 @@ internal static class BitPdfReaderJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.PdfReader.refreshPage", config, pageNumber);
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     public static ValueTask BitPdfReaderDispose(this IJSRuntime jsRuntime, string id)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.PdfReader.dispose", id);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.PdfReader.dispose", id);
     }
 }

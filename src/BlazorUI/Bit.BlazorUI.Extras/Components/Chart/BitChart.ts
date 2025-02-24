@@ -87,7 +87,7 @@ namespace BitBlazorUI {
 
         public static updateChart(config: BitChartConfiguration): boolean {
             if (!BitChart._bitCharts.has(config.canvasId))
-                throw `Could not find a chart with the given id. ${config.canvasId}`;
+                throw `Could not find a chart with the given id: ${config.canvasId}`;
 
             let myChart = BitChart._bitCharts.get(config.canvasId);
 

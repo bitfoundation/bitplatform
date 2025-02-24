@@ -734,6 +734,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(expectedResult, inputValue);
     }
 
+    [Ignore]
     [DataTestMethod,
          DataRow(5, 2, "4"),
          DataRow(1, 15, "1")

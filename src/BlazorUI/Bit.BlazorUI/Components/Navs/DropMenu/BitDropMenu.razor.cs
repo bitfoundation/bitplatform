@@ -235,6 +235,8 @@ public partial class BitDropMenu : BitComponentBase
     {
         if (IsDisposed || disposing is false) return;
 
+        //_dotnetObj?.Dispose(); // it is getting disposed in the following js call:
+
         try
         {
             await _js.BitCalloutClearCallout(_calloutId);

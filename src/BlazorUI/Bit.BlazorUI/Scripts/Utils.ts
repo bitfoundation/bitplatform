@@ -52,11 +52,11 @@
             }
         }
 
-        public static getBoundingClientRect(element: HTMLElement): Partial<DOMRect> {
+        public static getBoundingClientRect(element: HTMLElement | undefined): Partial<DOMRect> {
             if (!element) return {};
 
             try {
-                return element.getBoundingClientRect();
+                return element.getBoundingClientRect?.();
             } catch (e) {
                 console.error("BitBlazorUI.Utils.getBoundingClientRect:", e);
                 return {};

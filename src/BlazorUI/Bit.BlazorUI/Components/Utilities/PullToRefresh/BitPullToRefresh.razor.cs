@@ -13,6 +13,10 @@ public partial class BitPullToRefresh : BitComponentBase
 
 
 
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
     /// <summary>
     /// The anchor element that the pull to refresh component adheres to (alias of ChildContent).
     /// </summary>
@@ -87,10 +91,6 @@ public partial class BitPullToRefresh : BitComponentBase
     /// The pulling height in pixel that triggers the refresh.
     /// </summary>
     [Parameter] public int Trigger { get; set; } = 80;
-
-
-
-    [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
 
