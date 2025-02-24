@@ -2,7 +2,7 @@
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
 ::deep {
-    .user-menu-callout {
+    .app-menu-callout {
         min-width: 225px;
 
         @include lt-sm {
@@ -14,7 +14,7 @@
         }
     }
 
-    .user-menu-card {
+    .app-menu-card {
         @include lt-sm {
             box-shadow: none;
         }
@@ -31,7 +31,7 @@
         }
     }
 
-    .menu-user {
+    .menu-icon {
         width: 32px;
         height: 32px;
         display: flex;

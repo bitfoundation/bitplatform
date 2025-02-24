@@ -3,7 +3,7 @@
 <section>
     <BitDropMenu Transparent @bind-IsOpen="isOpen" Responsive
                  OnDismiss="() => showCultures = false"
-                 Classes="@(new() { Callout = "user-menu-callout" })">
+                 Classes="@(new() { Callout = "app-menu-callout" })">
         <Template>
             @if (isAuthenticated is true)
             {
@@ -16,12 +16,20 @@
             }
             else if (isAuthenticated is false)
             {
-                <BitIcon IconName="@BitIconName.Contact" Size="BitSize.Small" Color="BitColor.Info" Class="menu-user" />
+                <BitPersona Class="persona"
+                            Size=@BitPersonaSize.Size32
+                            CoinVariant="BitVariant.Text"
+                            Classes="@(new() { DetailsContainer = "persona-details" })"
+                            Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)">
+                    <CoinTemplate>
+                        <BitIcon IconName="@BitIconName.Contact" Size="BitSize.Small" Color="BitColor.Info" Class="menu-icon" />
+                    </CoinTemplate>
+                </BitPersona>
             }
             <BitIcon IconName="@BitIconName.ChevronDown" Size="BitSize.Small" Color="BitColor.Info" Class="menu-chevron" />
         </Template>
         <Body>
-            <BitCard FullSize Class="user-menu-card">
+            <BitCard FullSize Class="app-menu-card">
                 @if (showCultures is false)
                 {
                     <BitStack AutoSize>
