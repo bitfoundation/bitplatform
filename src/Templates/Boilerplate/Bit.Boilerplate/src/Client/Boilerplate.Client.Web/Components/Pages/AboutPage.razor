@@ -2,6 +2,8 @@
 @attribute [Route("{culture?}" + Urls.AboutPage)]
 @inherits AppPageBase
 
+<PageTitle>@Localizer[nameof(AppStrings.AboutPageTitle)]</PageTitle>
+
 <section>
     <BitStack Gap="3rem">
         <BitText Typography="BitTypography.Body1">

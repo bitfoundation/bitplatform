@@ -16,12 +16,12 @@
                 @*#endif*@
                 <BitNavBarOption Text="@Localizer[nameof(AppStrings.Terms)]" IconName="@BitIconName.EntityExtraction" Url="@Urls.TermsPage" />
                 @*#if (module != "Admin" && sample != true)*@
-                <BitNavBarOption Text="@Localizer[nameof(AppStrings.AboutTitle)]" IconName="@BitIconName.Info" Url="@Urls.AboutPage" />
+                <BitNavBarOption Text="@Localizer[nameof(AppStrings.About)]" IconName="@BitIconName.Info" Url="@Urls.AboutPage" />
                 @*#endif*@
             </Authorized>
             <NotAuthorized>
                 <BitNavBarOption Text="@Localizer[nameof(AppStrings.Terms)]" IconName="@BitIconName.EntityExtraction" Url="@Urls.TermsPage" />
-                <BitNavBarOption Text="@Localizer[nameof(AppStrings.AboutTitle)]" IconName="@BitIconName.Info" Url="@Urls.AboutPage" />
+                <BitNavBarOption Text="@Localizer[nameof(AppStrings.About)]" IconName="@BitIconName.Info" Url="@Urls.AboutPage" />
             </NotAuthorized>
         </AuthorizeView>
     </BitNavBar>

@@ -1017,7 +1017,10 @@
     <data name="UpdateToNewVersion" xml:space="preserve">
     <value>آیا می خواهید به نسخه جدید بروید؟ {0}</value>
   </data>
-    <data name="AboutTitle" xml:space="preserve">
+    <data name="About" xml:space="preserve">
+    <value>درباره</value>
+  </data>
+    <data name="AboutPageTitle" xml:space="preserve">
     <value>درباره</value>
   </data>
     <data name="NothingFound" xml:space="preserve">
