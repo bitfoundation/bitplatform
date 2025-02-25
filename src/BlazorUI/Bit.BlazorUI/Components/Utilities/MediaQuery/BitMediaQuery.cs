@@ -13,7 +13,7 @@ public partial class BitMediaQuery : BitComponentBase
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// The custom html element used for the root node. The default is "div".
+    /// Specifies the media query to match for the child content.
     /// </summary>
     [Parameter] public BitScreenQuery? Query { get; set; }
 
