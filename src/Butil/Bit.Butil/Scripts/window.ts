@@ -78,6 +78,7 @@ var BitButil = BitButil || {};
 
     function open(id: string, url?: string, target?: string, windowFeatures?: string) {
         const ref = window.open(url, target, windowFeatures);
+        if (!ref) return;
         _refs[id] = ref;
         return id;
     }
