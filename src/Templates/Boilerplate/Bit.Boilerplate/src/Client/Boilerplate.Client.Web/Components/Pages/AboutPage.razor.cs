@@ -15,7 +15,6 @@ public partial class AboutPage
 
     private string oem = default!;
     private string appName = default!;
-    private string webView = default!;
     private string platform = default!;
     private string processId = default!;
     private string appVersion = default!;
@@ -28,7 +27,6 @@ public partial class AboutPage
         // but it does not provide access to native platform features.
 
         appName = "Boilerplate";
-        webView = telemetryContext.WebView!;
         platform = telemetryContext.Platform!;
         appVersion = telemetryContext.AppVersion!;
         processId = Environment.ProcessId.ToString();
