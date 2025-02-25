@@ -29,7 +29,7 @@ public partial class LoadingComponent
     {
         if (firstRender)
         {
-            zIndex = "999999";
+            zIndex = "999";
             StateHasChanged();
         }
 

@@ -1017,7 +1017,10 @@
     <data name="UpdateToNewVersion" xml:space="preserve">
     <value>Would you like to update to the new version? {0}</value>
   </data>
-    <data name="AboutTitle" xml:space="preserve">
+    <data name="About" xml:space="preserve">
+    <value>About</value>
+  </data>
+    <data name="AboutPageTitle" xml:space="preserve">
     <value>About</value>
   </data>
     <data name="NothingFound" xml:space="preserve">

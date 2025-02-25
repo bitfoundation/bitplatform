@@ -6,7 +6,7 @@ public partial class AboutPage
 {
     [AutoInject] private ITelemetryContext telemetryContext = default!;
 
-    protected override string? Title => Localizer[nameof(AppStrings.AboutTitle)];
+    protected override string? Title => Localizer[nameof(AppStrings.About)];
     protected override string? Subtitle => string.Empty;
 
 
