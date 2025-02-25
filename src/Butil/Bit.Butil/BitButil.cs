@@ -29,17 +29,11 @@ public static class BitButil
 
     internal static bool FastInvokeEnabled { get; private set; }
 
-    /// <summary>
-    /// Enables the use of the fast APIs globally when available (Invoke methods of IJSInProcessRuntime).
-    /// </summary>
     public static void UseFastInvoke()
     {
         FastInvokeEnabled = true;
     }
 
-    /// <summary>
-    /// Disables the use of the fast APIs globally when available (Invoke methods of IJSInProcessRuntime).
-    /// </summary>
     public static void UseNormalInvoke()
     {
         FastInvokeEnabled = false;

@@ -10,7 +10,7 @@ namespace Bit.Butil;
 /// <br />
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window">https://developer.mozilla.org/en-US/docs/Web/API/Window</see>
 /// </summary>
-public class Window(IJSRuntime js) : IAsyncDisposable
+public class Window(IJSRuntime js)
 {
     private const string ElementName = "window";
 
@@ -179,9 +179,8 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/close">https://developer.mozilla.org/en-US/docs/Web/API/Window/close</see>
     /// </summary>
-    public async Task Close(string? id = null)
-        => await (id is null ? js.InvokeVoid("BitButil.window.close")
-                             : js.InvokeVoid("BitButil.window.close", id));
+    public async Task Close()
+        => await js.InvokeVoid("BitButil.window.close");
 
     /// <summary>
     /// Displays a dialog with a message that the user needs to respond to.
@@ -233,15 +232,15 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/open">https://developer.mozilla.org/en-US/docs/Web/API/Window/open</see>
     /// </summary>
-    public async Task<string> Open(string? url = null, string? target = null, string? windowFeatures = null)
-        => await js.Invoke<string>("BitButil.window.open", Guid.NewGuid(), url, target, windowFeatures);
+    public async Task<bool> Open(string? url = null, string? target = null, string? windowFeatures = null)
+        => await js.Invoke<bool>("BitButil.window.open", url, target, windowFeatures);
     /// <summary>
     /// Opens a new window.
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/open">https://developer.mozilla.org/en-US/docs/Web/API/Window/open</see>
     /// </summary>
-    public async Task<string> Open(string? url = null, string? target = null, WindowFeatures? windowFeatures = null)
-        => await js.Invoke<string>("BitButil.window.open", Guid.NewGuid(), url, target, windowFeatures?.ToString());
+    public async Task<bool> Open(string? url = null, string? target = null, WindowFeatures? windowFeatures = null)
+        => await js.Invoke<bool>("BitButil.window.open", url, target, windowFeatures?.ToString());
 
     /// <summary>
     /// Opens the Print Dialog to print the current document.
@@ -296,19 +295,4 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     public async Task Stop()
         => await js.InvokeVoid("BitButil.window.stop");
-
-    public async ValueTask DisposeAsync()
-    {
-        await DisposeAsync(true);
-
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual async ValueTask DisposeAsync(bool disposing)
-    {
-        if (disposing)
-        {
-            await js.InvokeVoid("BitButil.window.dispose");
-        }
-    }
 }
