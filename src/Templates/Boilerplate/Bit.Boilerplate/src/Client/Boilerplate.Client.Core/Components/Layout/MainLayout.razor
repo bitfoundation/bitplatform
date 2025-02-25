@@ -15,6 +15,7 @@
                                     <BitNavPanel @bind-IsOpen="isNavPanelOpen"
                                                  @bind-IsToggled="isNavPanelToggled"
                                                  Items="@navPanelAuthenticatedItems"
+                                                 IconNavUrl="/"
                                                  IconUrl="_content/Boilerplate.Client.Core/images/bit-logo.svg" />
                                 }
                                 else if (isAuthenticated is false)
@@ -22,6 +23,7 @@
                                     <BitNavPanel @bind-IsOpen="isNavPanelOpen"
                                                  @bind-IsToggled="isNavPanelToggled"
                                                  Items="@navPanelUnAuthenticatedItems"
+                                                 IconNavUrl="/"
                                                  IconUrl="_content/Boilerplate.Client.Core/images/bit-logo.svg">
                                         <Footer>
                                             <BitActionButton IconOnly="isNavPanelToggled"

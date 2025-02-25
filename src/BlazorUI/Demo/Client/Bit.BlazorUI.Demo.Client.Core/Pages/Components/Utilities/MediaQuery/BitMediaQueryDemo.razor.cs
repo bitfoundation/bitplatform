@@ -23,5 +23,10 @@ public partial class BitMediaQueryDemo
 
 
     private string example1RazorCode = @"
-<BitMediaQuery Query=""BitScreenQuery.Sm"">This is SM!</BitMediaQuery>";
+<BitMediaQuery Query=""BitScreenQuery.Xs"">This is Xs!</BitMediaQuery>
+<BitMediaQuery Query=""BitScreenQuery.Sm"">This is Sm!</BitMediaQuery>
+<BitMediaQuery Query=""BitScreenQuery.Md"">This is Md!</BitMediaQuery>
+<BitMediaQuery Query=""BitScreenQuery.Lg"">This is Lg!</BitMediaQuery>
+<BitMediaQuery Query=""BitScreenQuery.Xl"">This is Xl!</BitMediaQuery>
+<BitMediaQuery Query=""BitScreenQuery.Xxl"">This is Xxl!</BitMediaQuery>";
 }
