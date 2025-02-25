@@ -8,15 +8,15 @@
 <h1>Window</h1>
 
 <pre style="font-family:Consolas; overflow: auto;">
-    @@inject Bit.Butil.Window window
+@@inject Bit.Butil.Window window
 
-    @@code {
+@@code {
     ...
     await window.AddEventListener(ButilEvents.KeyDown, args => { ... });
     ...
     await window.Alert("Alert from C#");
     ...
-    }
+}
 </pre>
 
 <br />
@@ -98,7 +98,8 @@
 
 <button @onclick=OpenWindow>OpenWindow</button>
 <button @onclick=CloseWindow>CloseWindow</button>
-&nbsp;
+<br />
+<br />
 <button @onclick=OpenPrint>OpenPrint</button>
 
 <br />
