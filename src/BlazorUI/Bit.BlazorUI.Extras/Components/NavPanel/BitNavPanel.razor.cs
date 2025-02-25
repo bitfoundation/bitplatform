@@ -43,6 +43,11 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public RenderFragment? Header { get; set; }
 
     /// <summary>
+    /// Renders an anchor wrapping the icon to navigate to the specified url.
+    /// </summary>
+    [Parameter] public string? IconNavUrl { get; set; }
+
+    /// <summary>
     /// The icon url to show in the header of the nav panel.
     /// </summary>
     [Parameter] public string? IconUrl { get; set; }

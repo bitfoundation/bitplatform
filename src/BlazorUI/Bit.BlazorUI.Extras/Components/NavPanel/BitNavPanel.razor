@@ -33,9 +33,20 @@
                 <div style="@Styles?.Header" class="bit-npn-hdr @Classes?.Header">
                     @if (IconUrl.HasValue())
                     {
-                        <img src="@IconUrl"
-                             class="bit-npn-img @Classes?.HeaderIcon"
-                             style="@(isToggled ? "display:none;" : "") @Styles?.HeaderIcon" />
+                        if (IconNavUrl.HasValue())
+                        {
+                            <a href="@IconNavUrl">
+                                <img src="@IconUrl"
+                                     class="bit-npn-img @Classes?.HeaderIcon"
+                                     style="@(isToggled ? "display:none;" : "") @Styles?.HeaderIcon" />
+                            </a>
+                        }
+                        else
+                        {
+                            <img src="@IconUrl"
+                                 class="bit-npn-img @Classes?.HeaderIcon"
+                                 style="@(isToggled ? "display:none;" : "") @Styles?.HeaderIcon" />
+                        }                        
                     }
 
                     <div class="bit-npn-spc" style="@(isToggled ? "display:none;" : "")" />
