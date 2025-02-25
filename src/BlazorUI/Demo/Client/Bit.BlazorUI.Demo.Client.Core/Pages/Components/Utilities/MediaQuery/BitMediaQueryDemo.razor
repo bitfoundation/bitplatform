@@ -1,0 +1,13 @@
+﻿@page "/components/mediaquery"
+
+<PageOutlet Url="components/mediaquery"
+            Title="MediaQuery"
+            Description="mediaquery component of the bit BlazorUI components" />
+
+<DemoPage Name="MediaQuery"
+          Description="A component to easily use predefined bit BlazorUI media queries in Blazor components."
+          Parameters="componentParameters">
+    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <BitMediaQuery Query="BitScreenQuery.Sm">This is SM!</BitMediaQuery>
+    </DemoSection>
+</DemoPage>
