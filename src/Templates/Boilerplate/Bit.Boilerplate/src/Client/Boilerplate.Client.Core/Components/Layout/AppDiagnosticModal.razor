@@ -69,6 +69,10 @@
                            OnClick="CallDiagnosticsApi"
                            Color="BitColor.SecondaryBackground"
                            IconName="@BitIconName.DiagnosticDataViewerApp" />
+                <BitButton IconOnly
+                           OnClick="OpenDevTools"
+                           Color="BitColor.SecondaryBackground"
+                           IconName="@BitIconName.DeveloperTools" />
                 @if (AppPlatform.IsBrowser is false)
                 {
                     <BitButton IconOnly

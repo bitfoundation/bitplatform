@@ -15,6 +15,8 @@ namespace Boilerplate.Client.Core.Components.Layout;
 /// </summary>
 public partial class AppDiagnosticModal
 {
+    private static bool showKnownException = true;
+
     private bool isOpen;
     private string? searchText;
     private bool isLogModalOpen;
@@ -141,8 +143,7 @@ public partial class AppDiagnosticModal
         ResetLogs();
     }
 
-    private static bool showKnownException = true;
-    private async Task ThrowTestException()
+    private static async Task ThrowTestException()
     {
         await Task.Delay(250);
 
@@ -207,6 +208,11 @@ public partial class AppDiagnosticModal
         await messageBoxService.Show("Diagnostics Result", resultBuilder.ToString());
     }
 
+    private async Task OpenDevTools()
+    {
+        await JSRuntime.InvokeVoidAsync("App.openDevTools");
+    }
+
     private async Task CallGC()
     {
         SnackBarService.Show("Memory Before GC", GetMemoryUsage());
@@ -241,7 +247,6 @@ public partial class AppDiagnosticModal
         FilterLogs();
     }
 
-
     private static BitColor GetColor(LogLevel? level)
     {
         return level switch
@@ -256,6 +261,7 @@ public partial class AppDiagnosticModal
             _ => BitColor.TertiaryForeground
         };
     }
+
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {

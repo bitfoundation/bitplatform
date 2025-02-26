@@ -26,6 +26,21 @@ class App {
         return Intl.DateTimeFormat().resolvedOptions().timeZone;
     }
 
+    public static openDevTools() {
+        const allScripts = Array.from(document.scripts).map(s => s.src);
+        const scriptAppended = allScripts.find(as => as.includes('npm/eruda'));
+
+        if (scriptAppended) {
+            (window as any).eruda.show();
+            return;
+        }
+
+        var script = document.createElement('script');
+        script.src = "https://cdn.jsdelivr.net/npm/eruda";
+        document.body.append(script);
+        script.onload = function () { (window as any).eruda.init(); }
+    }
+
     //#if (notification == true)
     public static async getPushNotificationSubscription(vapidPublicKey: string) {
         const registration = await navigator.serviceWorker.ready;
