@@ -24,7 +24,6 @@ public static partial class MauiProgram
             var handler = sp.GetRequiredService<HttpMessageHandler>();
             var httpClient = new HttpClient(handler)
             {
-                DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrLower,
                 BaseAddress = new Uri(configuration.GetServerAddress(), UriKind.Absolute)
             };
             if (sp.GetRequiredService<ClientMauiSettings>().WebAppUrl is Uri origin)

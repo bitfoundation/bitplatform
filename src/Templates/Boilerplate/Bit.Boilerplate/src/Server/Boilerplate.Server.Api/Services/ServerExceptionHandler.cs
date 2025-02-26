@@ -64,6 +64,7 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
                 traceIdentifier = httpContext.TraceIdentifier;
                 instance = $"{httpContext.Request.Method} {httpContext.Request.GetUri().PathAndQuery}";
 
+                data["Instance"] = instance;
                 data["RequestId"] = httpContext.TraceIdentifier;
                 data["UserId"] = httpContext.User.IsAuthenticated() ? httpContext.User.GetUserId() : null;
                 data["UserSessionId"] = httpContext.User.IsAuthenticated() ? httpContext.User.GetSessionId() : null;

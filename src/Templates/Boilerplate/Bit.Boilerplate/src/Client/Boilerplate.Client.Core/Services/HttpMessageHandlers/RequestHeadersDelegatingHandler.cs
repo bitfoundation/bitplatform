@@ -13,6 +13,7 @@ public partial class RequestHeadersDelegatingHandler(ITelemetryContext telemetry
         request.SetBrowserResponseStreamingEnabled(true);
 
         request.Version = HttpVersion.Version30;
+        request.VersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
 
         if (request.Headers.UserAgent.Any() is false)
         {
