@@ -147,11 +147,11 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     {
         if (_bitNavRef.GetUrl(item).HasNoValue()) return;
 
-        await OnItemClick.InvokeAsync(item);
+        _filteredNavItems = Items;
 
         await _searchBoxRef.Clear();
 
-        _filteredNavItems = Items;
+        await OnItemClick.InvokeAsync(item);
 
         await ClosePanel();
     }
