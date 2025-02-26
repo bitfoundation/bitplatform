@@ -16,11 +16,6 @@ class BitTheme {
             BitTheme._onThemeChange = options.onChange;
         }
 
-        if (options.persist) {
-            BitTheme._persist = true;
-            BitTheme._currentTheme = localStorage.getItem(BitTheme.THEME_STORAGE_KEY) || BitTheme._currentTheme;
-        }
-
         if (options.darkTheme) {
             BitTheme._darkTheme = options.darkTheme;
         }
@@ -33,6 +28,11 @@ class BitTheme {
             BitTheme._currentTheme = BitTheme.isSystemDark() ? BitTheme._darkTheme : BitTheme._lightTheme;
         } else if (options.default) {
             BitTheme._currentTheme = options.default;
+        }
+
+        if (options.persist) {
+            BitTheme._persist = true;
+            BitTheme._currentTheme = localStorage.getItem(BitTheme.THEME_STORAGE_KEY) || BitTheme._currentTheme;
         }
 
         BitTheme.set(BitTheme._currentTheme);
@@ -80,11 +80,11 @@ class BitTheme {
 
 (function () {
     const options = {
-        persist: document.documentElement.hasAttribute('bit-theme-persist'),
         darkTheme: document.documentElement.getAttribute('bit-theme-dark'),
         lightTheme: document.documentElement.getAttribute('bit-theme-light'),
+        system: document.documentElement.hasAttribute('bit-theme-system'),
         default: document.documentElement.getAttribute('bit-theme-default'),
-        system: document.documentElement.hasAttribute('bit-theme-system')
+        persist: document.documentElement.hasAttribute('bit-theme-persist'),
     };
 
     BitTheme.init(options);
