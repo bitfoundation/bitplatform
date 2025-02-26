@@ -1,6 +1,7 @@
 ﻿using Bit.Besql;
 using Microsoft.EntityFrameworkCore;
 #if NET9_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore.Migrations;
 #endif
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -9,6 +10,9 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionBesqlExtentions
 {
+#if NET9_0_OR_GREATER
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BesqlHistoryRepository))]
+#endif
     public static IServiceCollection AddBesqlDbContextFactory<TDbContext>(this IServiceCollection services,
         Action<IServiceProvider, DbContextOptionsBuilder>? optionsAction = null,
         Func<IServiceProvider, TDbContext, Task>? dbContextInitializer = null)
