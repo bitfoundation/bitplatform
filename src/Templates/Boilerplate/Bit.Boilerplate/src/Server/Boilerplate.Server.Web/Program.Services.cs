@@ -122,8 +122,7 @@ public static partial class Program
 
             var httpClient = new HttpClient(sp.GetRequiredService<HttpMessageHandler>())
             {
-                BaseAddress = serverAddress,
-                DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrLower
+                BaseAddress = serverAddress
             };
 
             var forwardedHeadersOptions = sp.GetRequiredService<ServerWebSettings>().ForwardedHeaders;
