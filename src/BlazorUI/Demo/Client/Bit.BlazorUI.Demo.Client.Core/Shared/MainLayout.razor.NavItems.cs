@@ -71,7 +71,7 @@ public partial class MainLayout
             [
                 new() { Text = "BasicList", Url = "/components/basiclist", AdditionalUrls = ["/components/basic-list"] },
                 new() { Text = "Carousel", Url = "/components/carousel", Description = "Slideshow" },
-                new() { Text = "Swiper", Url = "/components/swiper", Description = "Touch slider" },
+                new() { Text = "Swiper", Url = "/components/swiper", Description = "TouchSlider" },
                 new() { Text = "Timeline", Url = "/components/timeline" },
             ]
         },
@@ -82,10 +82,10 @@ public partial class MainLayout
             [
                 new() { Text = "Breadcrumb", Url = "/components/breadcrumb" },
                 new() { Text = "DropMenu", Url = "/components/dropmenu" },
-                new() { Text = "Nav", Url = "/components/nav", Description = "Tree" },
+                new() { Text = "Nav", Url = "/components/nav", Description = "Tree, TreeView" },
                 new() { Text = "NavBar", Url = "/components/navbar", Description = "NavMenu, TabPanel" },
                 new() { Text = "Pagination", Url = "/components/pagination" },
-                new() { Text = "Pivot", Url = "/components/pivot", Description = "Tab" },
+                new() { Text = "Pivot", Url = "/components/pivot", Description = "Tab, TabPage" },
             ]
         },
         new()

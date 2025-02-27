@@ -2,7 +2,20 @@
 
 <div class="demo-page">
     <div class="page-container example">
-        <BitText Typography="BitTypography.H3" Class="title">@Name</BitText>
+        <BitText Typography="BitTypography.H3" Class="title">
+            @Name
+
+            @if (SecondaryNames?.Length > 0)
+            {
+                <br />
+                <BitStack Horizontal>
+                    @foreach (var name in SecondaryNames)
+                    {
+                        <BitText Typography="BitTypography.Subtitle1" Color="BitColor.Info">@name</BitText>
+                    }
+                </BitStack>
+            }
+        </BitText>
 
         @if (Description.HasValue() || DescriptionTemplate is not null)
         {

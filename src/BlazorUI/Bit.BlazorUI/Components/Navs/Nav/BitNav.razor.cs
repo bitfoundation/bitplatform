@@ -936,6 +936,8 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
         _items = Items?.ToList() ?? [];
         _oldItems = Items;
+
+        SetSelectedItemByCurrentUrl();
     }
 
     private bool ToggleItemAndParents(IList<TItem> items, TItem item, bool isExpanded)
