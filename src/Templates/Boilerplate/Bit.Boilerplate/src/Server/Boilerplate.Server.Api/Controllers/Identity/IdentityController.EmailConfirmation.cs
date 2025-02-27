@@ -19,7 +19,7 @@ public partial class IdentityController
         if (await userManager.IsEmailConfirmedAsync(user))
             throw new BadRequestException(Localizer[nameof(AppStrings.EmailAlreadyConfirmed)]).WithData("UserId", user.Id);
 
-        await SendConfirmEmailToken(user, returnUrl: null, cancellationToken);
+        await SendConfirmEmailToken(user, request.ReturnUrl, cancellationToken);
     }
 
     [HttpPost, Produces<TokenResponseDto>()]
