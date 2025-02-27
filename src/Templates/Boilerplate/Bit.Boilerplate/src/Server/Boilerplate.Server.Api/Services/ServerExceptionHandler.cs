@@ -81,13 +81,9 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
         var message = GetExceptionMessageToShow(exception);
         var exceptionKey = knownException?.Key ?? nameof(UnknownException);
 
-        foreach (var key in exception.Data.Keys)
+        foreach (var item in GetExceptionData(exception))
         {
-            var keyAsString = key.ToString()!;
-
-            var value = exception.Data[keyAsString]!;
-
-            if (keyAsString == "__AppProblemDetailsExtensionsData" && value is Dictionary<string, object?> appProblemExtensionsData)
+            if (item.Value is Dictionary<string, object?> appProblemExtensionsData)
             {
                 foreach (var innerDataItem in appProblemExtensionsData)
                 {
@@ -97,7 +93,7 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
                 continue;
             }
 
-            data[keyAsString] = value;
+            data[item.Key] = item.Value;
         }
 
         if (parameters is not null)
