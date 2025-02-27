@@ -46,6 +46,7 @@ internal class LoggingDelegatingHandler(ILogger<HttpClient> logger, HttpMessageH
         finally
         {
             var logLevel = (LogLevel)request.Options.GetValueOrDefault(RequestOptionNames.LogLevel)!;
+            logScopeData[nameof(CancellationToken.IsCancellationRequested)] = cancellationToken.IsCancellationRequested;
 
             using var scope = logger.BeginScope(logScopeData);
             logger.Log(logLevel, "Received HTTP response for {Uri} after {Duration}ms",
