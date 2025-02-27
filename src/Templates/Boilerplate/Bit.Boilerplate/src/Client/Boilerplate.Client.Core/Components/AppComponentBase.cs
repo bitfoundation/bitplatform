@@ -245,8 +245,15 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        cts?.Dispose();
-        cts = null;
+        if (cts != null)
+        {
+            using var currentCts = cts;
+            cts = null;
+            if (currentCts.IsCancellationRequested is false)
+            {
+                await currentCts.CancelAsync();
+            }
+        }
 
         await PrerenderStateService.DisposeAsync();
 
