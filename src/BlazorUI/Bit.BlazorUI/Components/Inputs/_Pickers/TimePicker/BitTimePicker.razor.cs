@@ -480,6 +480,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     private async Task HandleOnAmClick()
     {
+        if (ReadOnly) return;
         if (IsEnabled is false) return;
 
         _hour %= 12;  // "12:-- am" is "00:--" in 24h
@@ -488,6 +489,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     private async Task HandleOnPmClick()
     {
+        if (ReadOnly) return;
         if (IsEnabled is false) return;
 
         if (_hour <= 12) // "12:-- pm" is "12:--" in 24h
@@ -582,6 +584,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     private async Task HandleOnPointerDown(bool isNext, bool isHour)
     {
+        if (ReadOnly) return;
         if (IsEnabled is false) return;
 
         await ChangeTime(isNext, isHour);
