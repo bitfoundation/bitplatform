@@ -1,6 +1,7 @@
 ﻿using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 namespace Bit.Besql;
 
@@ -8,13 +9,15 @@ public class BesqlPooledDbContextFactory<TDbContext> : PooledDbContextFactoryBas
     where TDbContext : DbContext
 {
     private readonly string _fileName;
-    private readonly IBitBesqlStorage _storage;
     private readonly string _connectionString;
+    private readonly IBitBesqlStorage _storage;
+    private readonly LazyAssemblyLoader _lazyAssemblyLoader;
 
     public BesqlPooledDbContextFactory(
         IBitBesqlStorage storage,
         DbContextOptions<TDbContext> options,
-        Func<IServiceProvider, TDbContext, Task> dbContextInitializer)
+        Func<IServiceProvider, TDbContext, Task> dbContextInitializer,
+        LazyAssemblyLoader lazyAssemblyLoader)
         : base(options, dbContextInitializer)
     {
         _connectionString = options.Extensions
@@ -27,10 +30,18 @@ public class BesqlPooledDbContextFactory<TDbContext> : PooledDbContextFactoryBas
         }["Data Source"].ToString()!.Trim('/');
 
         _storage = storage;
+
+        _lazyAssemblyLoader = lazyAssemblyLoader;
     }
 
     protected override async Task InitializeDbContext()
     {
+        try
+        {
+            await _lazyAssemblyLoader.LoadAssembliesAsync(["System.Private.Xml.wasm"]);
+        }
+        catch { }
+
         if (File.Exists(_fileName) is false)
         {
             await _storage.Load(_fileName).ConfigureAwait(false);

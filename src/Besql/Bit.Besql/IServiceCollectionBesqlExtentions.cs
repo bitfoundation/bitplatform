@@ -1,14 +1,19 @@
 ﻿using Bit.Besql;
 using Microsoft.EntityFrameworkCore;
 #if NET9_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore.Migrations;
 #endif
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionBesqlExtentions
 {
+#if NET9_0_OR_GREATER
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BesqlHistoryRepository))]
+#endif
     public static IServiceCollection AddBesqlDbContextFactory<TDbContext>(this IServiceCollection services,
         Action<IServiceProvider, DbContextOptionsBuilder>? optionsAction = null,
         Func<IServiceProvider, TDbContext, Task>? dbContextInitializer = null)
@@ -17,7 +22,7 @@ public static class IServiceCollectionBesqlExtentions
         optionsAction ??= (_, _) => { };
         dbContextInitializer ??= async (_, _) => { };
 
-        services.AddSingleton(async (IServiceProvider sp, TDbContext dbContext) =>
+        services.TryAddSingleton(async (IServiceProvider sp, TDbContext dbContext) =>
         {
             await dbContext.Database.ConfigureSqliteSynchronous();
             await dbContextInitializer(sp, dbContext);
@@ -30,7 +35,8 @@ public static class IServiceCollectionBesqlExtentions
 
         if (OperatingSystem.IsBrowser())
         {
-            services.AddSingleton<BesqlDbContextInterceptor>();
+            services.TryAddScoped<LazyAssemblyLoader>();
+            services.TryAddSingleton<BesqlDbContextInterceptor>();
             services.TryAddSingleton<IBitBesqlStorage, BitBesqlBrowserCacheStorage>();
             // To make optimized db context work in blazor wasm: https://github.com/dotnet/efcore/issues/31751
             // https://learn.microsoft.com/en-us/ef/core/performance/advanced-performance-topics?tabs=with-di%2Cexpression-api-with-constant#compiled-models

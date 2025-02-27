@@ -1,0 +1,102 @@
+@import "../../../Styles/functions.scss";
+@import "../../../Styles/media-queries.scss";
+
+.bit-mdq {
+    display: none;
+}
+
+.bit-mdq-xs {
+    @include xs {
+        display: unset;
+    }
+}
+
+.bit-mdq-sm {
+    @include sm {
+        display: unset;
+    }
+}
+
+.bit-mdq-md {
+    @include md {
+        display: unset;
+    }
+}
+
+.bit-mdq-lg {
+    @include lg {
+        display: unset;
+    }
+}
+
+.bit-mdq-xl {
+    @include xl {
+        display: unset;
+    }
+}
+
+.bit-mdq-xxl {
+    @include xxl {
+        display: unset;
+    }
+}
+
+.bit-mdq-ltsm {
+    @include lt-sm {
+        display: unset;
+    }
+}
+
+.bit-mdq-ltmd {
+    @include lt-md {
+        display: unset;
+    }
+}
+
+.bit-mdq-ltlg {
+    @include lt-lg {
+        display: unset;
+    }
+}
+
+.bit-mdq-ltxl {
+    @include lt-xl {
+        display: unset;
+    }
+}
+
+.bit-mdq-ltxxl {
+    @include lt-xxl {
+        display: unset;
+    }
+}
+
+.bit-mdq-gtxs {
+    @include gt-xs {
+        display: unset;
+    }
+}
+
+.bit-mdq-gtsm {
+    @include gt-sm {
+        display: unset;
+    }
+}
+
+.bit-mdq-gtmd {
+    @include gt-md {
+        display: unset;
+    }
+}
+
+.bit-mdq-gtlg {
+    @include gt-lg {
+        display: unset;
+    }
+}
+
+.bit-mdq-gtxl {
+    @include gt-xl {
+        display: unset;
+    }
+}

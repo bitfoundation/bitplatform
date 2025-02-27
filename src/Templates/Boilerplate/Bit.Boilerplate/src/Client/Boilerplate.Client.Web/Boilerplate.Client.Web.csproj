@@ -49,8 +49,10 @@
 
     <!--/+:msbuild-conditional:noEmit -->
     <ItemGroup Condition=" ('$(module)' == 'Admin' OR '$(module)' == '') AND ('$(offlineDb)' == 'false')">
-        <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
         <BlazorWebAssemblyLazyLoad Include="System.Data.Common.wasm" />
+    </ItemGroup>
+    <ItemGroup Condition=" ('$(module)' == 'Admin' OR '$(module)' == '') OR ('$(offlineDb)' == 'true' OR '$(offlineDb)' == '')">
+        <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
     </ItemGroup>
     <ItemGroup Condition="'$(module)' == 'Admin' OR '$(module)' == ''">
         <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />

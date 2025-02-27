@@ -44,6 +44,13 @@ public partial class BitNavPanelDemo
          },
          new()
          {
+            Name = "IconNavUrl",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Renders an anchor wrapping the icon to navigate to the specified url.",
+         },
+         new()
+         {
             Name = "IconUrl",
             Type = "string?",
             DefaultValue = "null",

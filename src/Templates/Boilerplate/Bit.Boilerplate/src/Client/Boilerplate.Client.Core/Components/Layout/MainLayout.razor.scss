@@ -9,6 +9,7 @@ main {
         height: unset;
         min-height: $bit-env-height-available;
     }
+
     .root {
         display: flex;
     }
@@ -31,18 +32,6 @@ main {
             flex-direction: row;
         }
 
-        .panel {
-            width: 70%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            @include lt-md {
-                display: none;
-            }
-        }
-
         .body {
             width: 30%;
             padding: 4rem;
@@ -59,6 +48,18 @@ main {
                 background-color: $bit-color-background-primary;
             }
         }
+
+        .panel {
+            width: 70%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            @include lt-md {
+                display: none;
+            }
+        }
     }
 
     &.non-identity {
@@ -68,21 +69,9 @@ main {
             flex-direction: row;
         }
 
-        .body {
-            width: 100%;
-            height: 100%;
-            background-color: $bit-color-background-primary;
-
-            @include lt-md {
-                height: unset;
-                padding-bottom: 3.5rem;
-            }
-        }
-
         .stack {
             gap: 2rem;
             flex-grow: 1;
-            padding: 1rem;
             flex-direction: column;
 
             @include lt-md {
@@ -91,6 +80,18 @@ main {
 
             @include lt-sm {
                 gap: 0;
+            }
+        }
+
+        .body {
+            width: 100%;
+            height: 100%;
+            padding: 1rem;
+            background-color: $bit-color-background-primary;
+
+            @include lt-md {
+                height: unset;
+                padding-bottom: 4.5rem;
             }
         }
     }

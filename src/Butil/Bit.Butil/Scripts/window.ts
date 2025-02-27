@@ -1,6 +1,8 @@
 var BitButil = BitButil || {};
 
 (function (butil: any) {
+    let _refs = {};
+
     butil.window = {
         addBeforeUnload,
         removeBeforeUnload,
@@ -21,7 +23,7 @@ var BitButil = BitButil || {};
         alert(message?: string) { window.alert(message) },
         blur() { window.blur() },
         btoa(data: string) { return window.btoa(data) },
-        close() { window.close() },
+        close,
         confirm(message?: string) { return window.confirm(message) },
         find,
         focus() { window.focus() },
@@ -32,7 +34,8 @@ var BitButil = BitButil || {};
         prompt(message?: string, defaultValue?: string) { return window.prompt(message, defaultValue) },
         scroll,
         scrollBy,
-        stop() { window.stop() }
+        stop() { window.stop() },
+        dispose
     };
 
     function addBeforeUnload() {
@@ -45,6 +48,15 @@ var BitButil = BitButil || {};
 
     function removeBeforeUnload() {
         window.onbeforeunload = null;
+    }
+
+    function close(id: string | undefined) {
+        if (!id) return window.close();
+
+        const ref = _refs[id];
+        if (!ref) return;
+        delete _refs[id];
+        return ref.close();
     }
 
     function find(text?: string,
@@ -64,9 +76,11 @@ var BitButil = BitButil || {};
         };
     }
 
-    function open(url?: string, target?: string, windowFeatures?: string) {
-        const result = window.open(url, target, windowFeatures);
-        return !!result;
+    function open(id: string, url?: string, target?: string, windowFeatures?: string) {
+        const ref = window.open(url, target, windowFeatures);
+        if (!ref) return;
+        _refs[id] = ref;
+        return id;
     }
 
     function scroll(options?: ScrollToOptions, x?: number, y?: number) {
@@ -83,5 +97,9 @@ var BitButil = BitButil || {};
         } else {
             window.scrollBy(x, y);
         }
+    }
+
+    function dispose() {
+        _refs = {};
     }
 }(BitButil));

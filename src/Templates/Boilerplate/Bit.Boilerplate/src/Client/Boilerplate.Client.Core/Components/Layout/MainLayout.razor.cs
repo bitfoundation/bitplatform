@@ -160,9 +160,10 @@ public partial class MainLayout : IAsyncDisposable
             return;
         }
 
-        if (type.Namespace?.Contains("Client.Core.Components.Pages.Identity") ?? false)
+        if (type.Namespace?.Contains("Client.Core.Components.Pages.Identity") is true)
         {
             isIdentityPage = true;
+            isNavPanelOpen = false;
             return;
         }
 

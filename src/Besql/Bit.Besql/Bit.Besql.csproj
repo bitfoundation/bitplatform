@@ -15,9 +15,12 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.JSInterop" Version="8.0.0" Condition="'$(TargetFramework)' == 'net8.0'" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0"  Condition="'$(TargetFramework)' == 'net8.0'" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0" Condition="'$(TargetFramework)' == 'net8.0'" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0" Condition="'$(TargetFramework)' == 'net8.0'" />
+
         <PackageReference Include="Microsoft.JSInterop" Version="9.0.0" Condition="'$(TargetFramework)' == 'net9.0'" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0"  Condition="'$(TargetFramework)' == 'net9.0'" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0" Condition="'$(TargetFramework)' == 'net9.0'" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" Condition="'$(TargetFramework)' == 'net9.0'" />
     </ItemGroup>
 
 </Project>
