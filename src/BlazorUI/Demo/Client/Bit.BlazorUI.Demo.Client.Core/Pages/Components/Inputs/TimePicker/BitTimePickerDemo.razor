@@ -79,7 +79,41 @@
         </div>
     </DemoSection>
 
-    <DemoSection Title="Validation" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <DemoSection Title="Standalone" RazorCode="@example7RazorCode" Id="example7">
+        <div>Use the BitTimePicker as a standalone component, including options for time format and disabled state.</div>
+        <br />
+        <div class="example-content">
+            <BitTimePicker Standalone Label="Standalone picker" />
+            <br />
+            <BitTimePicker Standalone
+                           Label="Picker (AM/PM)"
+                           TimeFormat="BitTimeFormat.TwelveHours" />
+            <br />
+            <BitTimePicker Standalone
+                           Label="Disabled"
+                           IsEnabled="false"
+                           Value="new(10, 24, 0)"
+                           TimeFormat="BitTimeFormat.TwelveHours" />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="ReadOnly" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div>The ReadOnly parameter makes the time picker input non-editable, preventing users from manually changing the time value.</div>
+        <br />
+        <div class="example-content">
+            <BitTimePicker Label="Basic" ReadOnly @bind-Value="@readOnlyTime" />
+            <br /><br />
+            <BitTimePicker Label="Text input allowed" ReadOnly AllowTextInput @bind-Value="@readOnlyTime" />
+        </div>
+        <br /><br />
+        <div class="example-content-standalone">
+            <BitTimePicker Label="Standalone" Standalone ReadOnly @bind-Value="@readOnlyTime" />
+            <br /><br />
+            <BitTimePicker Label="Standalone TimeFormat (AM/PM)" Standalone ReadOnly TimeFormat="BitTimeFormat.TwelveHours" @bind-Value="@readOnlyTime" />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Validation" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>
             Validation will happen when the <code>Submit</code> button is clicked.
             This example demonstrates how to use the BitTimePicker within a form to validate the selected time.
@@ -112,7 +146,7 @@
         }
     </DemoSection>
 
-    <DemoSection Title="Responsive" RazorCode="@example8RazorCode" Id="example8">
+    <DemoSection Title="Responsive" RazorCode="@example10RazorCode" Id="example10">
         <div>Enable responsive design for the BitTimePicker, allowing it to adjust its layout and appearance based on the screen size.</div>
         <br />
         <div class="example-content">
@@ -122,7 +156,7 @@
         </div>
     </DemoSection>
 
-    <DemoSection Title="Templates" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoSection Title="Templates" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>Customize the BitTimePicker using templates, including a custom label template with an action button and a custom icon template.</div>
         <br />
         <div class="example-content">
@@ -140,7 +174,7 @@
         </div>
     </DemoSection>
 
-    <DemoSection Title="Hour/minute step" RazorCode="@example10RazorCode" Id="example10">
+    <DemoSection Title="Hour/minute step" RazorCode="@example12RazorCode" Id="example12">
         <div>Customize the hour and minute steps in the BitTimePicker, allowing users to increment time by a specified interval.</div>
         <br />
         <div class="example-content">
@@ -154,25 +188,7 @@
         </div>
     </DemoSection>
 
-    <DemoSection Title="Standalone" RazorCode="@example11RazorCode" Id="example11">
-        <div>Use the BitTimePicker as a standalone component, including options for time format and disabled state.</div>
-        <br />
-        <div class="example-content">
-            <BitTimePicker Standalone Label="Standalone picker" />
-            <br />
-            <BitTimePicker Standalone
-                           Label="Picker (AM/PM)"
-                           TimeFormat="BitTimeFormat.TwelveHours" />
-            <br />
-            <BitTimePicker Standalone
-                           Label="Disabled"
-                           IsEnabled="false"
-                           Value="new(10, 24, 0)"
-                           TimeFormat="BitTimeFormat.TwelveHours" />
-        </div>
-    </DemoSection>
-
-    <DemoSection Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <DemoSection Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>Explore styling and class customization for BitTimePicker, including component styles, custom classes, and detailed styles.</div>
         <br /><br />
         <div>Component's Style & Class:</div>
@@ -210,7 +226,7 @@
         </div>
     </DemoSection>
 
-    <DemoSection Title="RTL" RazorCode="@example13RazorCode" Id="example13">
+    <DemoSection Title="RTL" RazorCode="@example14RazorCode" Id="example14">
         <div>Use BitTimePicker in right-to-left (RTL).</div>
         <br />
         <div dir="rtl">
