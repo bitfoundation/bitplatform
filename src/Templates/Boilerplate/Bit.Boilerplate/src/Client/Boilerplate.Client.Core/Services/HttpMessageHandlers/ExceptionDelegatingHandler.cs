@@ -70,7 +70,7 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
 
                 return response;
             }
-            catch (Exception exp) when (IsServerConnectionException(exp) || (exp is HttpRequestException && serverCommunicationSuccess is false))
+            catch (Exception exp) when ((exp is HttpRequestException && serverCommunicationSuccess is false) || IsServerConnectionException(exp))
             {
                 serverCommunicationSuccess = false; // Let's treat the server communication as failed if an exception is caught here.
                 throw new ServerConnectionException(localizer[nameof(AppStrings.ServerConnectionException)], exp);
@@ -93,10 +93,10 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
     private bool IsServerConnectionException(Exception exp)
     {
         return (exp is TimeoutException)
-             || (exp is WebException webExp && webExp.WithData("Status", webExp.Status).Status is WebExceptionStatus.ConnectFailure)
+             || (exp is WebException webEx && webEx.WithData("Status", webEx.Status).Status is WebExceptionStatus.ConnectFailure)
              || (exp.InnerException is not null && IsServerConnectionException(exp.InnerException))
              || (exp is AggregateException aggExp && aggExp.InnerExceptions.Any(IsServerConnectionException))
              || (exp is SocketException sockExp && sockExp.WithData("SocketErrorCode", sockExp.SocketErrorCode).SocketErrorCode is SocketError.HostNotFound or SocketError.HostUnreachable or SocketError.HostDown or SocketError.TimedOut)
-             || (exp is HttpRequestException reqExp && reqExp.WithData("StatusCode", reqExp.StatusCode).StatusCode is HttpStatusCode.BadGateway or HttpStatusCode.GatewayTimeout or HttpStatusCode.ServiceUnavailable or HttpStatusCode.RequestTimeout);
+             || (exp is HttpRequestException { StatusCode: HttpStatusCode.BadGateway or HttpStatusCode.GatewayTimeout or HttpStatusCode.ServiceUnavailable or HttpStatusCode.RequestTimeout });
     }
 }

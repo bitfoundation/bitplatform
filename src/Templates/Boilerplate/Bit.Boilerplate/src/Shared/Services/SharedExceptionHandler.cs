@@ -55,23 +55,4 @@ public partial class SharedExceptionHandler
             exception is TimeoutException ||
             (exception.InnerException is not null && IgnoreException(exception.InnerException));
     }
-
-    protected IDictionary<string, object?> GetExceptionData(Exception exp)
-    {
-        var data = exp.Data.Keys.Cast<string>()
-            .Zip(exp.Data.Values.Cast<object?>())
-            .ToDictionary(item => item.First, item => item.Second);
-
-        if (exp.InnerException is not null)
-        {
-            var innerData = GetExceptionData(exp.InnerException);
-
-            foreach (var innerDataItem in innerData)
-            {
-                data[innerDataItem.Key] = innerDataItem.Value;
-            }
-        }
-
-        return data;
-    }
 }
