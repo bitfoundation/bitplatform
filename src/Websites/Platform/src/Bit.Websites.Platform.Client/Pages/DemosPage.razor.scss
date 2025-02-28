@@ -1,0 +1,166 @@
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_mixins.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+
+.page-container {
+    width: 100%;
+    display: flex;
+    overflow: hidden;
+    box-sizing: border-box;
+    align-items: flex-start;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    padding-top: rem2($HeaderHeight);
+
+    @include lt-lg {
+        padding-top: rem2(calc($HeaderHeight + $HeaderSecondRowHeight));
+    }
+}
+
+.page-section {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.page-section-content {
+    display: flex;
+    align-items: center;
+    max-width: rem2(1200px);
+    padding-left: rem2(20px);
+    padding-right: rem2(20px);
+    justify-content: center;
+    flex-flow: column nowrap;
+}
+
+
+.vision-section {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+
+    .page-section-content {
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+        justify-content: center;
+    }
+
+    ::deep {
+        .page-title {
+            @include lt-md {
+                font-size: 4rem;
+            }
+        }
+
+        .vision-title {
+            @include lt-md {
+                font-size: 2rem;
+            }
+        }
+    }
+}
+
+.values-section {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+
+    .value-card-list {
+        gap: 1rem;
+        display: flex;
+        margin-top: 2rem;
+        flex-flow: row wrap;
+        justify-content: center;
+    }
+
+    .value-card {
+        flex-grow: 0;
+        padding: rem2(20px);
+        min-width: rem2(325px);
+        min-height: rem2(200px);
+        border-radius: rem2(4px);
+        max-width: calc((100% / 3) - 20px);
+        flex-basis: calc((100% / 3) - 20px);
+        box-shadow: $bit-box-shadow-callout;
+
+        @include lt-md {
+            min-width: 18rem;
+        }
+    }
+}
+
+.download-section {
+    margin: 5rem 0;
+    padding: 7rem 0;
+    text-align: center;
+    background-color: $bit-color-background-secondary;
+}
+
+.team-section {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+
+    .member-card-list {
+        gap: 1rem;
+        display: flex;
+        margin-top: 3rem;
+        flex-flow: row wrap;
+        justify-content: center;
+    }
+
+    .member-card {
+        gap: 1rem;
+        display: flex;
+        flex-flow: row;
+        min-width: 21rem;
+        max-width: 21rem;
+        padding: rem2(20px);
+        border-radius: rem2(4px);
+        justify-content: flex-start;
+        box-shadow: $bit-box-shadow-callout;
+    }
+
+    .member-img {
+        width: rem2(150px);
+        height: rem2(150px);
+        border-radius: rem2(4px);
+    }
+
+    .member-container {
+        display: flex;
+        flex-flow: column;
+    }
+
+    .member-name {
+        margin-bottom: rem2(5px);
+    }
+
+    .member-position {
+        font-size: rem2(14px);
+        color: $bit-color-foreground-secondary;
+    }
+
+    .contact-grp {
+        display: flex;
+        margin-top: 0.5rem;
+        flex-flow: row nowrap;
+    }
+
+    .contact-lnk {
+        cursor: pointer;
+        width: rem2(36px);
+        height: rem2(36px);
+        border-radius: 50%;
+        background-size: rem2(20px);
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    .github {
+        background-image: url('/images/about-us/github-icon.webp');
+    }
+
+    .twitter {
+        background-image: url('/images/about-us/twitter-icon.webp');
+    }
+}

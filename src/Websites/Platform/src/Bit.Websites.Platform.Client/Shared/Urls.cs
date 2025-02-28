@@ -46,6 +46,7 @@ public static class Urls
     public const string CloudHostingSolutions = "/cloud-hosting-solutions";
     public const string Support = "/support";
     public const string Academy = "/academy";
+    public const string Demos = "/demos";
     public const string Pricing = "/pricing";
     public const string Blogs = "/blogs";
     public const string Videos = "/videos";

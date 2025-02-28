@@ -17,6 +17,7 @@ declare class BitTheme { static init(options: any): void; };
 BitTheme.init({
     //system: true,
     default: 'dark',
+    persist: true,
     onChange: (newTheme: string, oldThem: string) => {
         if (newTheme === 'dark') {
             document.body.classList.add('bit-platform-dark-theme');

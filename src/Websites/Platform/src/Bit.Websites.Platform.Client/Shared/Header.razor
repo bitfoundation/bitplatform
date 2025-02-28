@@ -71,6 +71,7 @@
                     </div>
                 </div>
             </div>
+            <a class="header-link @(currentUrl == Urls.Demos ? "header-link--active" : null)" href="@Urls.Demos">Demos</a>
             <a class="header-link @(currentUrl == Urls.Pricing ? "header-link--active" : null)" href="@Urls.Pricing">Pricing</a>
             <a class="header-link @(currentUrl == Urls.AboutUs ? "header-link--active" : null)" href="@Urls.AboutUs">About us</a>
             <a class="header-link @(currentUrl == Urls.ContactUs ? "header-link--active" : null)" href="@Urls.ContactUs">Contact us</a>
@@ -165,6 +166,7 @@
                 </div>
             </div>
         </div>
+        <a class="header-nav-link @(currentUrl == Urls.Demos ? "header-nav-link--active" : null)" href="@Urls.Demos" @onclick=@WrapHandled(ToggleHeaderMenu)>Demos</a>
         <a class="header-nav-link @(currentUrl == Urls.Pricing ? "header-nav-link--active" : null)" href="@Urls.Pricing" @onclick=@WrapHandled(ToggleHeaderMenu)>Pricing</a>
         <a class="header-nav-link @(currentUrl == Urls.AboutUs ? "header-nav-link--active" : null)" href="@Urls.AboutUs" @onclick=@WrapHandled(ToggleHeaderMenu)>About us</a>
         <a class="header-nav-link @(currentUrl == Urls.ContactUs ? "header-nav-link--active" : null)" href="@Urls.ContactUs" @onclick=@WrapHandled(ToggleHeaderMenu)>Contact us</a>
