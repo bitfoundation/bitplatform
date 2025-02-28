@@ -48,14 +48,14 @@ const CACHE_NAME_PREFIX = 'bit-bswup';
 const CACHE_NAME = `${CACHE_NAME_PREFIX} - ${VERSION}`;
 
 switch (self.prerenderMode) {
-    case 'initial': // like sale
+    case 'none': // like admin
         self.defaultUrl = "/";
         self.isPassive = true;
-        self.prerenderOnly = true;
         self.errorTolerance = 'lax';
         self.caseInsensitiveUrl = true;
+        self.noPrerenderQuery = 'no-prerender=true';
         break;
-    case 'always': // like todo
+    case 'initial': // like todo
         self.defaultUrl = "/";
         self.isPassive = true;
         self.errorTolerance = 'lax';
@@ -63,12 +63,12 @@ switch (self.prerenderMode) {
         self.disablePassiveFirstBoot = true;
         self.noPrerenderQuery = 'no-prerender=true';
         break;
-    case 'none': // like admin
+    case 'always': // like sale
         self.defaultUrl = "/";
         self.isPassive = true;
+        self.prerenderOnly = true;
         self.errorTolerance = 'lax';
         self.caseInsensitiveUrl = true;
-        self.noPrerenderQuery = 'no-prerender=true';
         break;
 }
 
