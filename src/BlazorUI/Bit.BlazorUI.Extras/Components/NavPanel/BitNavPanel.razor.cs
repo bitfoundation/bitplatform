@@ -18,9 +18,26 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
 
     /// <summary>
+    /// The accent color of the nav.
+    /// </summary>
+    [Parameter]
+    public BitColor? Accent { get; set; }
+
+    /// <summary>
+    /// The custom icon name of the chevron-down element of each nav item.
+    /// </summary>
+    [Parameter] public string? ChevronDownIcon { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the nav panel.
     /// </summary>
     [Parameter] public BitNavPanelClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The general color of the nav.
+    /// </summary>
+    [Parameter]
+    public BitColor? Color { get; set; }
 
     /// <summary>
     /// The custom template for when the search result is empty.
@@ -43,6 +60,16 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public RenderFragment? Header { get; set; }
 
     /// <summary>
+    /// Used to customize how nav content inside the group header is rendered.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem>? HeaderTemplate { get; set; }
+
+    /// <summary>
+    /// The render mode of the custom HeaderTemplate of the nav.
+    /// </summary>
+    [Parameter] public BitNavItemTemplateRenderMode HeaderTemplateRenderMode { get; set; }
+
+    /// <summary>
     /// Renders an anchor wrapping the icon to navigate to the specified url.
     /// </summary>
     [Parameter] public string? IconNavUrl { get; set; }
@@ -51,6 +78,21 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     /// The icon url to show in the header of the nav panel.
     /// </summary>
     [Parameter] public string? IconUrl { get; set; }
+
+    /// <summary>
+    /// The indentation value in px for each level of depth of child item.
+    /// </summary>
+    [Parameter] public int IndentValue { get; set; } = 16;
+
+    /// <summary>
+    /// The indentation padding in px for items without children (compensation space for chevron icon).
+    /// </summary>
+    [Parameter] public int IndentPadding { get; set; } = 27;
+
+    /// <summary>
+    /// The indentation padding in px for items in reversed mode.
+    /// </summary>
+    [Parameter] public int IndentReversedPadding { get; set; } = 4;
 
     /// <summary>
     /// Determines if the nav panel is open in small screens.
@@ -63,6 +105,16 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     /// </summary>
     [Parameter, TwoWayBound]
     public bool IsToggled { get; set; }
+
+    /// <summary>
+    /// Used to customize how content inside each item is rendered.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
+
+    /// <summary>
+    /// The render mode of the custom ItemTemplate.
+    /// </summary>
+    [Parameter] public BitNavItemTemplateRenderMode ItemTemplateRenderMode { get; set; }
 
     /// <summary>
     /// A collection of items to display in the nav panel.
@@ -96,6 +148,31 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
 
     /// <summary>
+    /// Callback invoked when a group header is clicked and Expanded or Collapse.
+    /// </summary>
+    [Parameter] public EventCallback<TItem> OnItemToggle { get; set; }
+
+    /// <summary>
+    /// Callback invoked when an item is selected.
+    /// </summary>
+    [Parameter] public EventCallback<TItem> OnSelectItem { get; set; }
+
+    /// <summary>
+    /// The way to render nav items.
+    /// </summary>
+    [Parameter] public BitNavRenderType RenderType { get; set; }
+
+    /// <summary>
+    /// Enables recalling the select events when the same item is selected.
+    /// </summary>
+    [Parameter] public bool Reselectable { get; set; }
+
+    /// <summary>
+    /// Reverses the location of the expander chevron.
+    /// </summary>
+    [Parameter] public bool ReversedChevron { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the search box of the nav panel.
     /// </summary>
     [Parameter] public BitSearchBoxClassStyles? SearchBoxClasses { get; set; }
@@ -109,6 +186,11 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     /// Custom CSS styles for different parts of the search box of the nav panel.
     /// </summary>
     [Parameter] public BitSearchBoxClassStyles? SearchBoxStyles { get; set; }
+
+    /// <summary>
+    /// Enables the single-expand mode in the BitNav.
+    /// </summary>
+    [Parameter] public bool SingleExpand { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the nav panel.
