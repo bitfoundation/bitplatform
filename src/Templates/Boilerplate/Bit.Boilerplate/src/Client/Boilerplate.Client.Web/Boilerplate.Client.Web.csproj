@@ -27,6 +27,10 @@
         <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
     </ItemGroup>
 
+    <ItemGroup Condition=" '$(PwaEnabled)' == 'false' ">
+        <ServiceWorker Include="wwwroot\service-worker-cleanup.js" PublishedContent="wwwroot\service-worker-cleanup.published.js" />
+    </ItemGroup>
+
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
