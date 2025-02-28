@@ -25,7 +25,7 @@ interface Window {
     enableDiagnostics: any
     enableFetchDiagnostics: any
     disableHashlessAssetsUpdate: any
-    prerenderOnly: any
+    forcePrerender: any
 
     prerenderMode: any
 }
@@ -66,7 +66,7 @@ switch (self.prerenderMode) {
     case 'always': // like sale
         self.defaultUrl = "/";
         self.isPassive = true;
-        self.prerenderOnly = true;
+        self.forcePrerender = true;
         self.errorTolerance = 'lax';
         self.caseInsensitiveUrl = true;
         break;
@@ -146,7 +146,7 @@ async function handleFetch(e) {
     }
 
     const isServerRendered = SERVER_RENDERED_URLS.some(pattern => pattern.test(req.url))
-    const shouldServeDefaultDoc = (req.mode === 'navigate' && !isServerRendered && !self.prerenderOnly);
+    const shouldServeDefaultDoc = (req.mode === 'navigate' && !isServerRendered && !self.forcePrerender);
     const requestUrl = shouldServeDefaultDoc ? DEFAULT_URL : req.url;
 
     const start = new Date().toISOString();
