@@ -25,6 +25,9 @@ interface Window {
     enableDiagnostics: any
     enableFetchDiagnostics: any
     disableHashlessAssetsUpdate: any
+    prerenderOnly: any
+
+    prerenderMode: any
 }
 
 interface Event {
@@ -43,6 +46,31 @@ self.importScripts(ASSETS_URL);
 const VERSION = self.assetsManifest.version;
 const CACHE_NAME_PREFIX = 'bit-bswup';
 const CACHE_NAME = `${CACHE_NAME_PREFIX} - ${VERSION}`;
+
+switch (self.prerenderMode) {
+    case 'initial': // like sale
+        self.defaultUrl = "/";
+        self.isPassive = true;
+        self.prerenderOnly = true;
+        self.errorTolerance = 'lax';
+        self.caseInsensitiveUrl = true;
+        break;
+    case 'always': // like todo
+        self.defaultUrl = "/";
+        self.isPassive = true;
+        self.errorTolerance = 'lax';
+        self.caseInsensitiveUrl = true;
+        self.disablePassiveFirstBoot = true;
+        self.noPrerenderQuery = 'no-prerender=true';
+        break;
+    case 'none': // like admin
+        self.defaultUrl = "/";
+        self.isPassive = true;
+        self.errorTolerance = 'lax';
+        self.caseInsensitiveUrl = true;
+        self.noPrerenderQuery = 'no-prerender=true';
+        break;
+}
 
 self.addEventListener('install', e => e.waitUntil(handleInstall(e)));
 self.addEventListener('activate', e => e.waitUntil(handleActivate(e)));
@@ -118,8 +146,8 @@ async function handleFetch(e) {
     }
 
     const isServerRendered = SERVER_RENDERED_URLS.some(pattern => pattern.test(req.url))
-    const shouldServeIndexHtml = (req.mode === 'navigate' && !isServerRendered);
-    const requestUrl = shouldServeIndexHtml ? DEFAULT_URL : req.url;
+    const shouldServeDefaultDoc = (req.mode === 'navigate' && !isServerRendered && !self.prerenderOnly);
+    const requestUrl = shouldServeDefaultDoc ? DEFAULT_URL : req.url;
 
     const start = new Date().toISOString();
 
@@ -133,7 +161,7 @@ async function handleFetch(e) {
 
     // the assets url are only the pathname part of the actual request url!
     // since only the index url is simple and other urls have extra thins in them(like 'https://...`)
-    let asset = UNIQUE_ASSETS.find(a => a[shouldServeIndexHtml ? 'url' : 'reqUrl'][caseMethod]() === requestUrl[caseMethod]());
+    let asset = UNIQUE_ASSETS.find(a => a[shouldServeDefaultDoc ? 'url' : 'reqUrl'][caseMethod]() === requestUrl[caseMethod]());
 
     if (!asset) { // for assets that has asp-append-version or similar type of url versioning
         try {
