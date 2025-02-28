@@ -1,4 +1,6 @@
-﻿self.addEventListener('install', e => e.waitUntil(handleInstall(e)));
+﻿self['bit-bp.sw-cleanup version'] = '9.5.1';
+
+self.addEventListener('install', e => e.waitUntil(handleInstall(e)));
 
 async function handleInstall(e) {
     await removeBswup();
