@@ -1,10 +1,10 @@
 ﻿self.addEventListener('install', e => e.waitUntil(handleInstall(e)));
 
 async function handleInstall(e) {
-    await resetBswup();
+    await removeBswup();
 }
 
-async function resetBswup() {
+async function removeBswup() {
     const cacheKeys = await caches.keys();
     const cachePromises = cacheKeys.filter(key => key.startsWith('bit-bswup') || key.startsWith('blazor-resources')).map(key => caches.delete(key));
     await Promise.all(cachePromises);
