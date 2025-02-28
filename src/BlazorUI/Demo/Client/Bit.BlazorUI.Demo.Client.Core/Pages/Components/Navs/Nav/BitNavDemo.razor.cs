@@ -930,17 +930,20 @@ public partial class BitNavDemo
         {
             Id = "nav-render-type-enum",
             Name = "BitNavRenderType",
+            Description="Determines how the nav items are rendered visually.",
             Items =
             [
                 new()
                 {
                     Name = "Normal",
                     Value = "0",
+                    Description="All items will be rendered normally only based on their own properties."
                 },
                 new()
                 {
                     Name = "Grouped",
                     Value = "1",
+                    Description="Root elements are rendered in a specific way that resembles a grouped list of items."
                 }
             ]
         },
