@@ -118,6 +118,14 @@ BitBswup.forceRefresh = async () => {
                 return;
             }
 
+            if (e.data === 'UNREGISTER') {
+                navigator.serviceWorker.getRegistrations().then(regs => {
+                    const regPromises = regs.map(r => r.unregister());
+                    Promise.all(regPromises).then(() => window.location.reload());
+                });
+                return;
+            }
+
             const message = JSON.parse(e.data);
             const { type, data } = message;
 
