@@ -145,27 +145,30 @@ diagGroupEnd();
 async function handleFetch(e) {
     const req = e.request as Request;
 
-    if (req.method !== 'GET' || SERVER_HANDLED_URLS.some(pattern => pattern.test(req.url))) {
-        diagFetch('*** handleFetch ended - skipped:', e, req);
+    if (PROHIBITED_URLS.some(pattern => pattern.test(req.url))) {
+        diagFetch('+++ handleFetch ended - prohibited:', e, req);
+
+        return new Response(new Blob(), { status: 405, "statusText": `prohibited URL: ${req.url}` });
+    }
+
+    const isServerHandled = SERVER_HANDLED_URLS.some(pattern => pattern.test(req.url));
+    if (req.method !== 'GET' || isServerHandled) {
+        diagFetch('*** handleFetch ended - skipped - !GET or SERVER_HANDLED_URLS:', e, req);
         return fetch(req);
     }
 
-    const isServerRendered = SERVER_RENDERED_URLS.some(pattern => pattern.test(req.url))
+
+
+    const isServerRendered = SERVER_RENDERED_URLS.some(pattern => pattern.test(req.url));
     const shouldServeDefaultDoc = (req.mode === 'navigate') && !isServerRendered && !self.forcePrerender;
     const requestUrl = shouldServeDefaultDoc ? DEFAULT_URL : req.url;
 
     const start = new Date().toISOString();
 
-    if (PROHIBITED_URLS.some(pattern => pattern.test(requestUrl))) {
-        diagFetch('+++ handleFetch ended - prohibited:', start, requestUrl, e, req);
-
-        return new Response(new Blob(), { status: 405, "statusText": `prohibited URL: ${requestUrl}` });
-    }
-
     const caseMethod = self.caseInsensitiveUrl ? 'toLowerCase' : 'toString';
 
     // the assets url are only the pathname part of the actual request url!
-    // since only the index url is simple and other urls have extra thins in them(like 'https://...`)
+    // since only the default url is simple and other ones contain other parts (like 'https://...`)
     let asset = UNIQUE_ASSETS.find(a => a[shouldServeDefaultDoc ? 'url' : 'reqUrl'][caseMethod]() === requestUrl[caseMethod]());
 
     if (!asset) { // for assets that has asp-append-version or similar type of url versioning
@@ -176,8 +179,14 @@ async function handleFetch(e) {
         } catch { }
     }
 
-    if (!asset?.url) {
+    if (!(asset?.url)) {
         diagFetch('+++ handleFetch ended - asset not found:', start, asset, requestUrl, e, req);
+
+        return fetch(req);
+    }
+
+    if (self.forcePrerender && asset.url === DEFAULT_URL) {
+        diagFetch('+++ handleFetch ended - skipped - forcePrerender defaultDoc:', start, asset, requestUrl, e, req);
 
         return fetch(req);
     }
