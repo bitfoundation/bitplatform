@@ -38,6 +38,9 @@ self.externalAssets = [
     },
     {
         "url": "Boilerplate.Server.Web.styles.css"
+    },
+    {
+        "url": "Boilerplate.Client.Web.bundle.scp.css"
     }
 ];
 
