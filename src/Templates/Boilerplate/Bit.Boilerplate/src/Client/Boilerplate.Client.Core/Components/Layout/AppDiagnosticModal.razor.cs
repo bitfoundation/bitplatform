@@ -170,7 +170,7 @@ public partial class AppDiagnosticModal
         //#if (notification == true)
         try
         {
-            pushNotificationSubscriptionDeviceId = (await pushNotificationService.IsPushNotificationSupported(CurrentCancellationToken)) ? (await pushNotificationService.GetSubscription(CurrentCancellationToken)).DeviceId : null;
+            pushNotificationSubscriptionDeviceId = (await pushNotificationService.GetSubscription(CurrentCancellationToken)).DeviceId;
         }
         catch { }
         //#endif
