@@ -1,7 +1,9 @@
 ﻿using System.Text;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+//#if (signalR == true)
 using Microsoft.AspNetCore.SignalR.Client;
+//#endif
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
