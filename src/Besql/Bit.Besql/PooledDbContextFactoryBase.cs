@@ -10,6 +10,7 @@ public class PooledDbContextFactoryBase<TDbContext>(DbContextOptions<TDbContext>
 {
     private TaskCompletionSource? dbContextInitializerTcs;
 
+    [RequiresUnreferencedCode("Calls StartRunningDbContextInitializer()")]
     public override async Task<TDbContext> CreateDbContextAsync(CancellationToken cancellationToken = default)
     {
         if (dbContextInitializerTcs is null)
