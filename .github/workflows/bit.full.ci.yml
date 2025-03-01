@@ -186,13 +186,13 @@ jobs:
       continue-on-error: true
       run: |
         dotnet new bit-bp --name TestProject --database SqlServer --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --module Admin --offlineDb --appInsights --sentry --signalR --notification --cloudflare --framework net9.0
-        dotnet build TestProject/TestProject.sln -p:MultilingualEnabled=true -p:PwaEnabled=true -p:Environment=Staging
+        dotnet build TestProject/TestProject.sln -p:MultilingualEnabled=true -p:Environment=Staging
 
     - name: Test sample configuration 2
       continue-on-error: true
       run: |
         dotnet new bit-bp --name TestProject2 --database Other --filesStorage Other --api Standalone --captcha None --pipeline None --module None --offlineDb false --appInsights false --sentry false --signalR false --notification false --cloudflare false --framework net8.0
-        dotnet build TestProject2/TestProject2.sln -p:MultilingualEnabled=false -p:PwaEnabled=false -p:Environment=Development
+        dotnet build TestProject2/TestProject2.sln -p:MultilingualEnabled=false -p:Environment=Development
 
     - name: Run BeforeBuildTasks
       continue-on-error: true # Error MSB4057, not all csproj files have BeforeBuildTasks target.
