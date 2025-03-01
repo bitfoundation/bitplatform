@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Bit.Besql;
@@ -44,6 +45,7 @@ public class PooledDbContextFactoryBase<TDbContext>(DbContextOptions<TDbContext>
         }
     }
 
+    [RequiresUnreferencedCode("Types and members the loaded assemblies depend on might be removed")]
     protected virtual async Task InitializeDbContext()
     {
         if (dbContextInitializer is not null)
