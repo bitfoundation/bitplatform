@@ -28,7 +28,6 @@
         <DefineConstants Condition="  $(TargetFramework.Contains('-windows')) ">$(DefineConstants);Windows</DefineConstants>
         <DefineConstants Condition="  $(TargetFramework.Contains('-mac')) ">$(DefineConstants);Mac</DefineConstants>
         <DefineConstants Condition=" '$(MultilingualEnabled)' == 'true' ">$(DefineConstants);MultilingualEnabled</DefineConstants>
-        <DefineConstants Condition=" '$(PwaEnabled)' == 'true' ">$(DefineConstants);PwaEnabled</DefineConstants>
         <DefineConstants>$(DefineConstants);$(Environment);$(Configuration)</DefineConstants>
     </PropertyGroup>
     <!--/+:msbuild-conditional:noEmit -->
