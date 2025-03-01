@@ -1,10 +1,6 @@
 self['bit-bswup.sw-cleanup version'] = '9.5.1';
 
-self.addEventListener('install', e => e.waitUntil(handleInstall(e)));
-
-async function handleInstall(e) {
-    await removeBswup();
-}
+self.addEventListener('install', e => e.waitUntil(removeBswup()));
 
 async function removeBswup() {
     const cacheKeys = await caches.keys();

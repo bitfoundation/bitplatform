@@ -105,6 +105,11 @@ BitBswup.forceRefresh = async () => {
         }
 
         function handleMessage(e) {
+            if (e.data === 'START_BLAZOR') {
+                startBlazor(true);
+                return;
+            }
+
             if (e.data === 'WAITING_SKIPPED') {
                 window.location.reload();
                 return;
@@ -154,7 +159,7 @@ BitBswup.forceRefresh = async () => {
 
         // ============================================================
 
-        function startBlazor() {
+        function startBlazor(forceStart = false) {
             const scriptTags = [].slice.call(document.scripts);
 
             const blazorWasmScriptTag = scriptTags.find(s => s.src && s.src.indexOf(options.blazorScript) !== -1);
@@ -167,7 +172,7 @@ BitBswup.forceRefresh = async () => {
                 return warn('no "autostart=false" found on the blazor script tag!');
             }
 
-            if (navigator.serviceWorker.controller) {
+            if (navigator.serviceWorker.controller || forceStart) {
                 Blazor.start();
             }
         }
