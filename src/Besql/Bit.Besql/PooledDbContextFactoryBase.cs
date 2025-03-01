@@ -27,6 +27,7 @@ public class PooledDbContextFactoryBase<TDbContext>(DbContextOptions<TDbContext>
         return CreateDbContextAsync().GetAwaiter().GetResult();
     }
 
+    [RequiresUnreferencedCode("Calls Bit.Besql.PooledDbContextFactoryBase<TDbContext>.InitializeDbContext()")]
     private async Task StartRunningDbContextInitializer()
     {
         if (dbContextInitializerTcs is not null)
