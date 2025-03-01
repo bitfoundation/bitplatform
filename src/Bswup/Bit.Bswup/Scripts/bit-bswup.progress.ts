@@ -38,8 +38,10 @@
                     case BswupMessage.activate: return showLogs ? console.log('new version activated:', data.version) : undefined;
 
                     case BswupMessage.downloadStarted:
-                        hideApp && appEl && (appEl.style.display = 'none');
-                        bswupEl && (bswupEl.style.display = 'block');
+                        // commenting these lines to prevent showing empty progress when bypass is called in bswup.
+                        // these two lines will always be called in the progress event.
+                        //hideApp && appEl && (appEl.style.display = 'none');
+                        //bswupEl && (bswupEl.style.display = 'block');
                         return showLogs ? console.log('downloading assets started:', data?.version) : undefined;
 
                     case BswupMessage.downloadProgress:
