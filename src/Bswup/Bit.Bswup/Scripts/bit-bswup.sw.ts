@@ -69,6 +69,7 @@ switch (self.prerenderMode) {
         self.forcePrerender = true;
         self.errorTolerance = 'lax';
         self.caseInsensitiveUrl = true;
+        self.disablePassiveFirstBoot = true;
         break;
 }
 
@@ -146,7 +147,7 @@ async function handleFetch(e) {
     }
 
     const isServerRendered = SERVER_RENDERED_URLS.some(pattern => pattern.test(req.url))
-    const shouldServeDefaultDoc = (req.mode === 'navigate' && !isServerRendered && !self.forcePrerender);
+    const shouldServeDefaultDoc = (req.mode === 'navigate') && !isServerRendered && !self.forcePrerender;
     const requestUrl = shouldServeDefaultDoc ? DEFAULT_URL : req.url;
 
     const start = new Date().toISOString();

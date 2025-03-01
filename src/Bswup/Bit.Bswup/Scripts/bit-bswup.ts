@@ -135,6 +135,7 @@ BitBswup.forceRefresh = async () => {
 
             if (type === 'progress') {
                 handle(BswupMessage.downloadProgress, data);
+
                 if (data.percent >= 100) {
                     const firstInstall = !(navigator.serviceWorker.controller);
                     handle(BswupMessage.downloadFinished, { reload, firstInstall });
