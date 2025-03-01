@@ -49,31 +49,31 @@ const CACHE_NAME = `${CACHE_NAME_PREFIX} - ${VERSION}`;
 
 switch (self.prerenderMode) {
     case 'none': // like admin
-        self.defaultUrl = (self.defaultUrl === undefined) || "/";
-        self.isPassive = (self.isPassive === undefined) || true;
-        self.forcePrerender = (self.forcePrerender === undefined) || false;
-        self.errorTolerance = (self.errorTolerance === undefined) || 'lax';
-        self.caseInsensitiveUrl = (self.caseInsensitiveUrl === undefined) || true;
-        self.disablePassiveFirstBoot = (self.disablePassiveFirstBoot === undefined) || false;
-        self.noPrerenderQuery = (self.noPrerenderQuery === undefined) || 'no-prerender=true';
+        self.defaultUrl ||= "/";
+        self.isPassive ||= true;
+        self.forcePrerender ||= false;
+        self.errorTolerance ||= 'lax';
+        self.caseInsensitiveUrl ||= true;
+        self.disablePassiveFirstBoot ||= false;
+        self.noPrerenderQuery ||= 'no-prerender=true';
         break;
     case 'initial': // like todo
-        self.defaultUrl = (self.defaultUrl === undefined) || "/";
-        self.isPassive = (self.isPassive === undefined) || true;
-        self.forcePrerender = (self.forcePrerender === undefined) || false;
-        self.errorTolerance = (self.errorTolerance === undefined) || 'lax';
-        self.caseInsensitiveUrl = (self.caseInsensitiveUrl === undefined) || true;
-        self.disablePassiveFirstBoot = (self.disablePassiveFirstBoot === undefined) || true;
-        self.noPrerenderQuery = (self.noPrerenderQuery === undefined) || 'no-prerender=true';
+        self.defaultUrl ||= "/";
+        self.isPassive ||= true;
+        self.forcePrerender ||= false;
+        self.errorTolerance ||= 'lax';
+        self.caseInsensitiveUrl ||= true;
+        self.disablePassiveFirstBoot ||= true;
+        self.noPrerenderQuery ||= 'no-prerender=true';
         break;
     case 'always': // like sales
-        self.defaultUrl = (self.defaultUrl === undefined) || "/";
-        self.isPassive = (self.isPassive === undefined) || true;
-        self.forcePrerender = (self.forcePrerender === undefined) || true;
-        self.errorTolerance = (self.errorTolerance === undefined) || 'lax';
-        self.caseInsensitiveUrl = (self.caseInsensitiveUrl === undefined) || true;
-        self.disablePassiveFirstBoot = (self.disablePassiveFirstBoot === undefined) || true;
-        self.noPrerenderQuery = (self.noPrerenderQuery === undefined) || '';
+        self.defaultUrl ||= "/";
+        self.isPassive ||= true;
+        self.forcePrerender ||= true;
+        self.errorTolerance ||= 'lax';
+        self.caseInsensitiveUrl ||= true;
+        self.disablePassiveFirstBoot ||= true;
+        self.noPrerenderQuery ||= '';
         break;
 }
 
