@@ -19,3 +19,7 @@ self.addEventListener('push', function (event) {
 
 });
 //#endif
+
+self.clients
+    .matchAll({ includeUncontrolled: true })
+    .then(clients => (clients || []).forEach(client => client.postMessage('START_BLAZOR')));

@@ -11,11 +11,10 @@
         <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
 		
 		<!-- You have the flexibility to modify all of these properties using the -p parameters during the build process. -->
-		<!-- Examples: dotnet publish -c Release -p:MultilingualEnabled=false OR dotnet build -p:PwaEnabled=false -->
+		<!-- Examples: dotnet publish -c Release -p:MultilingualEnabled=false -->
 
         <NeutralLanguage>en-US</NeutralLanguage>
         <MultilingualEnabled>true</MultilingualEnabled>
-        <PwaEnabled>false</PwaEnabled>
 
         <!-- Additional configurations were added to optimize build times for those using the SLNX solution file. -->
         <Configurations>Debug;Release;DebugBlazorServer;DebugBlazorWasm;DebugBlazorHybridMaui;DebugBlazorHybridWindows</Configurations>

@@ -14,6 +14,5 @@ public partial class WebPushNotificationService : PushNotificationServiceBase
         return await jSRuntime.GetPushNotificationSubscription(clientWebSettings.AdsPushVapid!.PublicKey);
     }
 
-    public override async Task<bool> IsPushNotificationSupported(CancellationToken cancellationToken) => clientWebSettings.WebAppRender.PwaEnabled
-        && string.IsNullOrEmpty(clientWebSettings.AdsPushVapid?.PublicKey) is false && await notification.IsNotificationAvailable();
+    public override async Task<bool> IsPushNotificationSupported(CancellationToken cancellationToken) =>string.IsNullOrEmpty(clientWebSettings.AdsPushVapid?.PublicKey) is false && await notification.IsNotificationAvailable();
 }

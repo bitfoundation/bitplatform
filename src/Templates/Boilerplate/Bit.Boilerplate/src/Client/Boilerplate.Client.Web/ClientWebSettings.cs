@@ -71,18 +71,6 @@ public partial class WebAppRenderOptions
             };
         }
     }
-
-    //-:cnd:noEmit
-    /// <summary>
-    /// To enable/disable pwa support, navigate to Directory.Build.props and modify the PwaEnabled flag.
-    /// </summary>
-    public bool PwaEnabled =>
-#if PwaEnabled
-        true;
-#else
-    false;
-#endif
-    //+:cnd:noEmit
 }
 
 /// <summary>
