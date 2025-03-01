@@ -44,4 +44,10 @@ public partial class BrowserStorageService : IStorageService
     {
         return (await localStorage.GetItem(key)) is not null;
     }
+
+    public async ValueTask Clear()
+    {
+        await localStorage.Clear();
+        await sessionStorage.Clear();
+    }
 }
