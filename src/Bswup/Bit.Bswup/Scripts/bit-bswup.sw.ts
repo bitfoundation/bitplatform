@@ -396,10 +396,7 @@ function createNewAssetRequest(asset) {
 
 async function deleteOldCaches() {
     const cacheKeys = await caches.keys();
-    const promises = cacheKeys.filter(key =>
-        key.startsWith('blazor-resources') ||
-        key.startsWith('dotnet-resources') ||
-        (key.startsWith(CACHE_NAME_PREFIX) && key !== CACHE_NAME)).map(key => caches.delete(key));
+    const promises = cacheKeys.filter(key => (key.startsWith(CACHE_NAME_PREFIX) && key !== CACHE_NAME)).map(key => caches.delete(key));
     return Promise.all(promises);
 }
 
