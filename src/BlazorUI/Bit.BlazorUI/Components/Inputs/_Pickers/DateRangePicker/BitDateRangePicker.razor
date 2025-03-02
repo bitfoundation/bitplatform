@@ -2,10 +2,10 @@
 @inherits BitInputBase<BitDateRangePickerValue?>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
-id="@_Id"
-style="@StyleBuilder.Value"
-class="@ClassBuilder.Value"
-dir="@Dir?.ToString().ToLower()">
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
 
     @if (LabelTemplate is not null)
     {
@@ -25,27 +25,27 @@ dir="@Dir?.ToString().ToLower()">
         <div style="@Styles?.InputWrapper" class="bit-dtrp-wrp @Classes?.InputWrapper" id="@_dateRangePickerId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
             <div style="@Styles?.InputContainer" class="bit-dtrp-icn @Classes?.InputContainer">
                 <input @ref="InputElement" @attributes="InputHtmlAttributes"
-                @onfocus="@HandleOnFocus"
-                @onchange="@HandleOnChange"
-                @onfocusin="@HandleOnFocusIn"
-                @onfocusout="@HandleOnFocusOut"
-                type="text"
-                name="@Name"
-                id="@_inputId"
-                role="combobox"
-                required="@Required"
-                tabindex="@TabIndex"
-                aria-haspopup="dialog"
-                aria-label="@AriaLabel"
-                placeholder="@Placeholder"
-                value="@CurrentValueAsString"
-                disabled=@(IsEnabled is false)
-                readonly=@(AllowTextInput is false)
-                aria-expanded="@(IsOpen ? "true" : "false")"
-                aria-controls="@(IsOpen ? _calloutId : null)"
-                aria-labelledby="@(Label.HasValue() ? _labelId : null)"
-                style="@Styles?.Input"
-                class="bit-dtrp-inp@(AllowTextInput ? " bit-dtrp-ein" : null) @Classes?.Input" />
+                       @onfocus="@HandleOnFocus"
+                       @onchange="@HandleOnChange"
+                       @onfocusin="@HandleOnFocusIn"
+                       @onfocusout="@HandleOnFocusOut"
+                       type="text"
+                       name="@Name"
+                       id="@_inputId"
+                       role="combobox"
+                       required="@Required"
+                       tabindex="@TabIndex"
+                       aria-haspopup="dialog"
+                       aria-label="@AriaLabel"
+                       placeholder="@Placeholder"
+                       value="@CurrentValueAsString"
+                       disabled=@(IsEnabled is false)
+                       readonly=@(AllowTextInput is false)
+                       aria-expanded="@(IsOpen ? "true" : "false")"
+                       aria-controls="@(IsOpen ? _calloutId : null)"
+                       aria-labelledby="@(Label.HasValue() ? _labelId : null)"
+                       style="@Styles?.Input"
+                       class="bit-dtrp-inp@(AllowTextInput ? " bit-dtrp-ein" : null) @Classes?.Input" />
 
                 @if (IsEnabled && ShowClearButton && CurrentValue?.StartDate is not null)
                 {
@@ -77,14 +77,14 @@ dir="@Dir?.ToString().ToLower()">
     else
     {
         <input @ref="InputElement" @attributes="InputHtmlAttributes"
-        type="text"
-        name="@Name"
-        id="@_inputId"
-        aria-label="@AriaLabel"
-        class="bit-input-hidden"
-        value="@CurrentValueAsString"
-        disabled="@(IsEnabled is false)"
-        readonly="@(AllowTextInput is false)" />
+                type="text"
+                name="@Name"
+                id="@_inputId"
+                aria-label="@AriaLabel"
+                class="bit-input-hidden"
+                value="@CurrentValueAsString"
+                disabled="@(IsEnabled is false)"
+                readonly="@(AllowTextInput is false)" />
     }
 
     <div id="@_calloutId"
