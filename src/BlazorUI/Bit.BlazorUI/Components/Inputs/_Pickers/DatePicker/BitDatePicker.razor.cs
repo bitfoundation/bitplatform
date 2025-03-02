@@ -875,12 +875,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         _currentMonth = _culture.Calendar.GetMonth(dateTime);
         _currentYear = _culture.Calendar.GetYear(dateTime);
 
-        if (ReadOnly is false)
-        {
-            _currentMonth = _currentMonth;
-            _currentYear = _currentYear;
-        }
-
         _yearPickerStartYear = _currentYear - 1;
         _yearPickerEndYear = _currentYear + 10;
 
