@@ -5,15 +5,17 @@ self.assetsInclude = [];
 self.assetsExclude = [
     /bit\.blazorui\.fluent\.css$/,
     /bit\.blazorui\.fluent-dark\.css$/,
-    /bit\.blazorui\.fluent-light\.css$/,
-    /Bit\.BlazorUI\.Demo.Client\.Web\.styles\.css$/
+    /bit\.blazorui\.fluent-light\.css$/
 ];
 self.externalAssets = [
     {
         "url": "_framework/blazor.web.js"
     },
     {
-        "url": "Bit.BlazorUI.Demo.Server.styles.css"
+        "url": "Bit.Websites.Platform.Server.styles.css"
+    },
+    {
+        "url": "Bit.Websites.Platform.Client.bundle.scp.css"
     }
 ];
 

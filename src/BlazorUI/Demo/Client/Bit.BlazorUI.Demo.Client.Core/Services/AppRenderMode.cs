@@ -4,7 +4,7 @@ namespace Bit.BlazorUI.Demo.Client.Core.Services;
 
 public static class AppRenderMode
 {
-    public static readonly bool PrerenderEnabled = false;
+    public static readonly bool PrerenderEnabled = true;
 
     private static IComponentRenderMode Auto => new InteractiveAutoRenderMode(PrerenderEnabled);
     private static IComponentRenderMode BlazorWebAssembly => new InteractiveWebAssemblyRenderMode(PrerenderEnabled);
@@ -14,13 +14,6 @@ public static class AppRenderMode
     public static IComponentRenderMode Current => BuildConfiguration.IsDebug() 
                                                     ? BlazorServer /*For better development experience*/ 
                                                     : BlazorWebAssembly;
-
-    public static bool PwaEnabled =>
-#if PwaEnabled
-        true;
-#else
-        false;
-#endif
 
     /// <summary>
     /// Is running under .NET MAUI?

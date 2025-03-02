@@ -1,0 +1,54 @@
+{
+    "dir": "ltr",
+    "lang": "en",
+    "scope": "/",
+    "start_url": "/",
+    "orientation": "any",
+    "id": "bitPlatformWebsite",
+    "display": "standalone",
+    "theme_color": "#2EA3FF",
+    "related_applications": [],
+    "name": "bit platform",
+    "background_color": "#0D1117",
+    "short_name": "bit platform",
+    "prefer_related_applications": false,
+    "display_override": [ "window-controls-overlay" ],
+    "description": "A set of tools for .NET developers across multiple platforms",
+    "features": [
+        "Cross Platform",
+        "fast",
+        "simple"
+    ],
+    "categories": [
+        "utilities"
+    ],
+    "icons": [
+        {
+            "sizes": "512x512",
+            "type": "image/png",
+            "src": "images/bit-icon-512.png"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "bit Demos",
+            "url": "/demos"
+        },
+        {
+            "name": "bit Templates",
+            "url": "/templates"
+        },
+        {
+            "name": "bit Butil",
+            "url": "/butil"
+        },
+        {
+            "name": "bit Bswup",
+            "url": "/bswup"
+        },
+        {
+            "name": "bit Besql",
+            "url": "/besql"
+        }
+    ]
+}
