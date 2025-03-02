@@ -8,13 +8,13 @@
         <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
         <HybridGlobalization>true</HybridGlobalization>
         <WasmStripILAfterAOT>true</WasmStripILAfterAOT>
-        <ServiceWorkerAssetsManifest Condition=" '$(PwaEnabled)' == 'true' ">service-worker-assets.js</ServiceWorkerAssetsManifest>
-        <BlazorCacheBootResources Condition=" '$(PwaEnabled)' == 'true' ">false</BlazorCacheBootResources>
+        <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+        <BlazorCacheBootResources>false</BlazorCacheBootResources>
         <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
     </PropertyGroup>
 
-    <ItemGroup Condition=" '$(PwaEnabled)' == 'true' ">
+    <ItemGroup>
         <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
     </ItemGroup>
 
