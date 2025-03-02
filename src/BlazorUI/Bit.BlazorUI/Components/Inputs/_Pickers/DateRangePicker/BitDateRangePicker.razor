@@ -50,11 +50,11 @@
                 @if (IsEnabled && ShowClearButton && CurrentValue?.StartDate is not null)
                 {
                     <button @onclick="HandleOnClearButtonClick" @onclick:stopPropagation
-                    style="@Styles?.ClearButton"
-                    class="bit-dtrp-clr @Classes?.ClearButton"
-                    type="button"
-                    aria-hidden="true"
-                    aria-label="Clear date">
+                            style="@Styles?.ClearButton"
+                            class="bit-dtrp-clr @Classes?.ClearButton"
+                            type="button"
+                            aria-hidden="true"
+                            aria-label="Clear date">
                         <i style="@Styles?.ClearButtonIcon" class="bit-icon bit-icon--Cancel @Classes?.ClearButtonIcon" aria-hidden="true" />
                     </button>
                 }
@@ -71,8 +71,8 @@
         </div>
 
         <div @onclick="CloseCallout"
-        style="display:@(IsOpen ? "block;" : "none;") @Styles?.Overlay"
-        class="bit-dtrp-ovl @Classes?.Overlay"></div>
+             style="display:@(IsOpen ? "block;" : "none;") @Styles?.Overlay"
+             class="bit-dtrp-ovl @Classes?.Overlay"></div>
     }
     else
     {
@@ -88,8 +88,8 @@
     }
 
     <div id="@_calloutId"
-    style="@Styles?.Callout"
-    class="@GetCalloutCssClasses()">
+         style="@Styles?.Callout"
+         class="@GetCalloutCssClasses()">
         <div style="@Styles?.CalloutContainer" class="bit-dtrp-cac @Classes?.CalloutContainer" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@CalloutAriaLabel">
             <div style="@Styles?.Group" class="bit-dtrp-grp @Classes?.Group" role="group" aria-label="">
                 <div class="bit-dtrp-sdt" aria-live="polite" aria-atomic="true">Selected date @CurrentValueAsString</div>
@@ -109,26 +109,26 @@
                             {
                                 var title = string.Format(MonthPickerToggleTitle, _monthTitle);
                                 <button @onclick="@ToggleMonthPickerOverlay"
-                                tabindex="0"
-                                type="button"
-                                title="@title"
-                                aria-live="polite"
-                                aria-atomic="true"
-                                aria-label="@title"
-                                style="@Styles?.DayPickerMonth"
-                                disabled="@(IsEnabled is false)"
-                                aria-disabled="@(IsEnabled is false)"
-                                class="bit-dtrp-ptb @Classes?.DayPickerMonth">
+                                        tabindex="0"
+                                        type="button"
+                                        title="@title"
+                                        aria-live="polite"
+                                        aria-atomic="true"
+                                        aria-label="@title"
+                                        style="@Styles?.DayPickerMonth"
+                                        disabled="@(IsEnabled is false)"
+                                        aria-disabled="@(IsEnabled is false)"
+                                        class="bit-dtrp-ptb @Classes?.DayPickerMonth">
                                     @_monthTitle
                                 </button>
                             }
                             else
                             {
                                 <div style="@Styles?.DayPickerMonth"
-                                class="bit-dtrp-pkt @Classes?.DayPickerMonth"
-                                aria-live="polite"
-                                aria-atomic="true"
-                                tabindex="-1">
+                                     class="bit-dtrp-pkt @Classes?.DayPickerMonth"
+                                     aria-live="polite"
+                                     aria-atomic="true"
+                                     tabindex="-1">
                                     @_monthTitle
                                 </div>
                             }
@@ -138,72 +138,72 @@
                             }
                             <div class="bit-dtrp-nbc">
                                 <button @onclick="() => HandleMonthChange(false)"
-                                type="button"
-                                disabled="@prevDisabled"
-                                title="@GoToPrevMonthTitle"
-                                aria-disabled="@prevDisabled"
-                                style="@Styles?.PrevMonthNavButton"
-                                class="bit-dtrp-nbt @Classes?.PrevMonthNavButton">
+                                        type="button"
+                                        disabled="@prevDisabled"
+                                        title="@GoToPrevMonthTitle"
+                                        aria-disabled="@prevDisabled"
+                                        style="@Styles?.PrevMonthNavButton"
+                                        class="bit-dtrp-nbt @Classes?.PrevMonthNavButton">
                                     <i aria-hidden="true"
-                                    style="@Styles?.PrevMonthNavIcon"
-                                    class="bit-icon bit-icon--Up @Classes?.PrevMonthNavIcon" />
+                                       style="@Styles?.PrevMonthNavIcon"
+                                       class="bit-icon bit-icon--Up @Classes?.PrevMonthNavIcon" />
                                 </button>
                                 @if (ShowGoToToday && (_showMonthPickerAsOverlayInternal || (ShowTimePicker && _showTimePickerAsOverlayInternal is false)))
                                 {
                                     var goToTodayDisabled = IsGoToTodayButtonDisabled(todayYear, todayMonth);
 
                                     <button @onclick="HandleGoToToday"
-                                    type="button"
-                                    title="@GoToTodayTitle"
-                                    disabled="@goToTodayDisabled"
-                                    style="@Styles?.GoToTodayButton"
-                                    aria-disabled="@goToTodayDisabled"
-                                    class="bit-dtrp-gtb @Classes?.GoToTodayButton">
+                                            type="button"
+                                            title="@GoToTodayTitle"
+                                            disabled="@goToTodayDisabled"
+                                            style="@Styles?.GoToTodayButton"
+                                            aria-disabled="@goToTodayDisabled"
+                                            class="bit-dtrp-gtb @Classes?.GoToTodayButton">
                                         <i aria-hidden="true"
-                                        style="@Styles?.GoToTodayIcon"
-                                        class="bit-dtrp-gti bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />
+                                           style="@Styles?.GoToTodayIcon"
+                                           class="bit-dtrp-gti bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />
                                     </button>
                                 }
                                 <button @onclick="() => HandleMonthChange(true)"
-                                type="button"
-                                disabled="@nextDisabled"
-                                title="@GoToNextMonthTitle"
-                                aria-disabled="@nextDisabled"
-                                style="@Styles?.NextMonthNavButton"
-                                class="bit-dtrp-nbt @Classes?.NextMonthNavButton">
+                                        type="button"
+                                        disabled="@nextDisabled"
+                                        title="@GoToNextMonthTitle"
+                                        aria-disabled="@nextDisabled"
+                                        style="@Styles?.NextMonthNavButton"
+                                        class="bit-dtrp-nbt @Classes?.NextMonthNavButton">
                                     <i aria-hidden="true"
-                                    style="@Styles?.NextMonthNavIcon"
-                                    class="bit-icon bit-icon--Up bit-ico-r180 @Classes?.NextMonthNavIcon" />
+                                       style="@Styles?.NextMonthNavIcon"
+                                       class="bit-icon bit-icon--Up bit-ico-r180 @Classes?.NextMonthNavIcon" />
                                 </button>
                                 @if (ShowCloseButton && Standalone is false)
                                 {
                                     <button @onclick="CloseCallout"
-                                    type="button"
-                                    style="@Styles?.CloseButton"
-                                    class="bit-dtrp-nbt @Classes?.CloseButton"
-                                    title="@CloseButtonTitle"
-                                    aria-label="@CloseButtonTitle">
+                                            type="button"
+                                            style="@Styles?.CloseButton"
+                                            class="bit-dtrp-nbt @Classes?.CloseButton"
+                                            title="@CloseButtonTitle"
+                                            aria-label="@CloseButtonTitle">
                                         <i aria-hidden="true"
-                                        style="@Styles?.CloseButtonIcon"
-                                        class="bit-icon bit-icon--Cancel @Classes?.CloseButtonIcon" />
+                                           style="@Styles?.CloseButtonIcon"
+                                           class="bit-icon bit-icon--Cancel @Classes?.CloseButtonIcon" />
                                     </button>
                                 }
                                 @if (_showMonthPickerAsOverlayInternal && _showTimePickerAsOverlayInternal && ShowTimePicker)
                                 {
                                     <button @onclick="@ToggleTimePickerOverlay"
-                                    tabindex="0"
-                                    type="button"
-                                    aria-live="polite"
-                                    aria-atomic="true"
-                                    title="@ShowTimePickerTitle"
-                                    disabled="@(IsEnabled is false)"
-                                    aria-label="@ShowTimePickerTitle"
-                                    aria-disabled="@(IsEnabled is false)"
-                                    style="@Styles?.ShowTimePickerButton"
-                                    class="bit-dtrp-nbt @Classes?.ShowTimePickerButton">
+                                            tabindex="0"
+                                            type="button"
+                                            aria-live="polite"
+                                            aria-atomic="true"
+                                            title="@ShowTimePickerTitle"
+                                            disabled="@(IsEnabled is false)"
+                                            aria-label="@ShowTimePickerTitle"
+                                            aria-disabled="@(IsEnabled is false)"
+                                            style="@Styles?.ShowTimePickerButton"
+                                            class="bit-dtrp-nbt @Classes?.ShowTimePickerButton">
                                         <i aria-hidden="true"
-                                        style="@Styles?.ShowTimePickerIcon"
-                                        class="bit-dtrp-gti bit-icon bit-icon--Clock @Classes?.ShowTimePickerIcon" />
+                                           style="@Styles?.ShowTimePickerIcon"
+                                           class="bit-dtrp-gti bit-icon bit-icon--Clock @Classes?.ShowTimePickerIcon" />
                                     </button>
                                 }
                             </div>
@@ -219,9 +219,9 @@
                             {
                                 var dayOfWeekName = _culture.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index));
                                 <div scope="col"
-                                title="@dayOfWeekName"
-                                style="@Styles?.WeekNumbersHeader"
-                                class="bit-dtrp-wlb @Classes?.WeekNumbersHeader">
+                                     title="@dayOfWeekName"
+                                     style="@Styles?.WeekNumbersHeader"
+                                     class="bit-dtrp-wlb @Classes?.WeekNumbersHeader">
                                     @dayOfWeekName[0]
                                 </div>
                             }
@@ -238,10 +238,10 @@
                                     var weekNumber = GetWeekNumber(week);
                                     var title = string.Format(WeekNumberTitle, weekNumber);
                                     <div style="@Styles?.WeekNumber"
-                                    scope="row"
-                                    title="title"
-                                    aria-label="title"
-                                    class="bit-dtrp-wnm @Classes?.WeekNumber">
+                                         scope="row"
+                                         title="title"
+                                         aria-label="title"
+                                         class="bit-dtrp-wnm @Classes?.WeekNumber">
                                         @weekNumber
                                     </div>
                                 }
