@@ -663,6 +663,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task HandleOnClearButtonClick()
     {
+        if (ReadOnly) return;
         if (IsEnabled is false) return;
 
         CurrentValue = null;
@@ -725,6 +726,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task SelectDate(int dayIndex, int weekIndex)
     {
+        if (ReadOnly) return;
         if (IsEnabled is false || InvalidValueBinding()) return;
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
         if (IsWeekDayOutOfMinAndMaxDate(dayIndex, weekIndex)) return;
@@ -858,6 +860,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task HandleGoToNow()
     {
+        if (ReadOnly) return;
         if (IsEnabled is false) return;
 
         _hour = DateTime.Now.Hour;
@@ -1281,7 +1284,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task HandleOnTimeHourFocus()
     {
-        if (IsEnabled is false || ShowTimePicker is false) return;
+        if (IsEnabled is false || ShowTimePicker is false || ReadOnly) return;
 
         await _js.BitUtilsSelectText(_inputTimeHourRef);
     }
@@ -1302,12 +1305,18 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task HandleOnAmClick()
     {
+        if (ReadOnly) return;
+        if (IsEnabled is false) return;
+
         _hour %= 12;  // "12:-- am" is "00:--" in 24h
         await UpdateCurrentValue();
     }
 
     private async Task HandleOnPmClick()
     {
+        if (ReadOnly) return;
+        if (IsEnabled is false) return;
+
         if (_hour <= 12) // "12:-- pm" is "12:--" in 24h
         {
             _hour += 12;
@@ -1326,6 +1335,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task HandleOnPointerDown(bool isNext, bool isHour)
     {
+        if (ReadOnly) return;
         if (IsEnabled is false) return;
 
         await ChangeTime(isNext, isHour);
