@@ -318,8 +318,8 @@ async function createAssetsCache(ignoreProgressReport = false) {
     }
 
     const defaultAsset = UNIQUE_ASSETS.find(a => a.url === DEFAULT_URL);
-    if (!updatedAssets.includes(defaultAsset)) {
-        updatedAssets.push(defaultAsset); // get the latest version of the default doc in each update!
+    if (defaultAsset && !updatedAssets.includes(defaultAsset)) {
+        updatedAssets.push(defaultAsset); // get the latest version of the default doc in each update if exists!!
     }
 
     diag('oldUrls:', oldUrls);
@@ -336,9 +336,8 @@ async function createAssetsCache(ignoreProgressReport = false) {
     diagGroupEnd();
 
     async function addCache(report, asset) {
-        const request = createNewAssetRequest(asset);
-
         try {
+            const request = createNewAssetRequest(asset);
             const responsePromise = fetch(request);
             return responsePromise.then(async response => {
                 try {
@@ -397,7 +396,7 @@ function createNewAssetRequest(asset) {
 
 async function deleteOldCaches() {
     const cacheKeys = await caches.keys();
-    const promises = cacheKeys.filter(key => key.startsWith('blazor-resources') || (key.startsWith(CACHE_NAME_PREFIX) && key !== CACHE_NAME)).map(key => caches.delete(key));
+    const promises = cacheKeys.filter(key => (key.startsWith(CACHE_NAME_PREFIX) && key !== CACHE_NAME)).map(key => caches.delete(key));
     return Promise.all(promises);
 }
 
