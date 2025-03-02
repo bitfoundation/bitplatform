@@ -33,6 +33,16 @@
     justify-content: center;
 }
 
+.page-section-content {
+    gap: 1rem;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-flow: column nowrap;
+    padding-block: rem2(80px);
+    padding-inline: rem2(20px);
+}
+
 .page-flex-container {
     gap: 1rem;
     width: 100%;
