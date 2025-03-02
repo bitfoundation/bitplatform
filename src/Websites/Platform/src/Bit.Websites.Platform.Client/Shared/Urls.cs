@@ -29,7 +29,7 @@ public static class Urls
 
     public const string BoilerplateNuget = "https://www.nuget.org/packages/Bit.Boilerplate/";
 
-    public const string PlatformSpa = "https://bitplatform.dev/";
+    public const string PlatformPwa = "https://bitplatform.dev/";
 
     public const string BlazorUiPwa = "https://blazorui.bitplatform.dev/";
     public const string BlazorUiGooglePlay = "https://play.google.com/store/apps/details?id=com.bitplatform.BlazorUI.Demo";
@@ -41,10 +41,10 @@ public static class Urls
     public const string AdminPanelAppleStore = "https://apps.apple.com/app/bit-adminpanel/id6450611349";
     public const string AdminPanelWindows = "https://windows-admin.bitplatform.dev/AdminPanel.Client.Windows-win-Setup.exe";
 
-    public const string SalesSpa = "https://sales.bitplatform.dev/";
+    public const string SalesPwa = "https://sales.bitplatform.dev/";
     public const string SalesWindows = "https://windows-sales.bitplatform.dev/SalesModule.Client.Windows-win-Setup.exe";
 
-    public const string TodoTemplatePwaPrerendered = "https://todo.bitplatform.dev/";
+    public const string TodoTemplatePwa = "https://todo.bitplatform.dev/";
     public const string TodoTemplateGooglePlay = "https://play.google.com/store/apps/details?id=com.bitplatform.Todo.Template";
     public const string TodoTemplateAppleStore = "https://apps.apple.com/app/bit-todotemplate/id6450611072";
     public const string TodoTemplateWindows = "https://windows-todo.bitplatform.dev/TodoSample.Client.Windows-win-Setup.exe";

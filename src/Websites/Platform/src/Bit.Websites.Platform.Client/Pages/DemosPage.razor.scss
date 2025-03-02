@@ -115,6 +115,7 @@
 .secondary-btn {
     outline: 0;
     width: 100%;
+    color: #1976d2;
     cursor: pointer;
     font-weight: 600;
     line-height: 1.2;
@@ -128,13 +129,12 @@
     border-radius: rem2(4px);
     margin-bottom: rem2(8px);
     justify-content: center;
+    background-color: $White;
     padding: rem2(12px) rem2(16px);
     border: rem2(1px) solid #bdbdbd;
-    color: #1976d2;
-    background-color: $White;
 
-    &:hover {
-        background-color: #eee;
+    &.disabled {
+        color: gray;
     }
 }
 
