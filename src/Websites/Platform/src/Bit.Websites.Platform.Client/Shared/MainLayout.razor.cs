@@ -30,7 +30,7 @@ public partial class MainLayout : IDisposable
     private readonly List<BitNavItem> templatesNavItems =
     [
         new BitNavItem { Text = "Overview", Url = "/templates", AdditionalUrls = [ "/templates/overview", "/boilerplate", "/boilerplate/overview" ] },
-        new BitNavItem { Text = "Samples", Url = "/templates/samples", AdditionalUrls = [ "/boilerplate/samples" ] },
+        //new BitNavItem { Text = "Samples", Url = "/templates/samples", AdditionalUrls = [ "/boilerplate/samples" ] },
         new BitNavItem { Text = "Getting started", Url = "/templates/getting-started", AdditionalUrls = [ "/templates/development-prerequisites", "/boilerplate/getting-started", "/boilerplate/development-prerequisites" ] },
         new BitNavItem { Text = "Project structure", Url = "/templates/project-structure", AdditionalUrls = [ "/boilerplate/project-structure" ] },
         new BitNavItem { Text = "Create project", Url = "/templates/create-project", AdditionalUrls = [ "/boilerplate/create-project" ] },
