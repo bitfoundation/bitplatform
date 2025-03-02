@@ -15,13 +15,6 @@ public static class AppRenderMode
                                                     ? BlazorServer /*For better development experience*/ 
                                                     : BlazorWebAssembly;
 
-    public static bool PwaEnabled =>
-#if PwaEnabled
-        true;
-#else
-        false;
-#endif
-
     /// <summary>
     /// Is running under .NET MAUI?
     /// </summary>

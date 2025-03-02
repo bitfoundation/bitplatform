@@ -6,6 +6,9 @@
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
         <InvariantTimezone>true</InvariantTimezone>
         <InvariantGlobalization>true</InvariantGlobalization>
+        <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+        <BlazorCacheBootResources>false</BlazorCacheBootResources>
+        <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
         <ResolveStaticWebAssetsInputsDependsOn>
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
@@ -13,6 +16,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.2" />
     </ItemGroup>
 
@@ -22,7 +26,7 @@
 
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
-
+        <PackageReference Include="Bit.Bswup" Version="9.6.0-pre-02" />
         <PackageReference Include="Bit.BlazorUI" Version="9.6.0-pre-02" />
         <PackageReference Include="Bit.BlazorUI.Icons" Version="9.6.0-pre-02" />
         <PackageReference Include="Bit.BlazorUI.Assets" Version="9.6.0-pre-02" />
