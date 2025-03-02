@@ -77,14 +77,14 @@
     else
     {
         <input @ref="InputElement" @attributes="InputHtmlAttributes"
-                type="text"
-                name="@Name"
-                id="@_inputId"
-                aria-label="@AriaLabel"
-                class="bit-input-hidden"
-                value="@CurrentValueAsString"
-                disabled="@(IsEnabled is false)"
-                readonly="@(AllowTextInput is false)" />
+               type="text"
+               name="@Name"
+               id="@_inputId"
+               aria-label="@AriaLabel"
+               class="bit-input-hidden"
+               value="@CurrentValueAsString"
+               disabled="@(IsEnabled is false)"
+               readonly="@(AllowTextInput is false)" />
     }
 
     <div id="@_calloutId"
