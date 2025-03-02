@@ -170,3 +170,9 @@
 ::deep a {
     color: $bit-color-primary;
 }
+
+.video-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
