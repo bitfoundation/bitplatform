@@ -61,10 +61,10 @@
     box-sizing: border-box;
 
     &:last-child {
-        max-width: 30%;
+        width: 30%;
 
         @include lt-lg {
-            max-width: unset;
+            width: unset;
         }
     }
 }
