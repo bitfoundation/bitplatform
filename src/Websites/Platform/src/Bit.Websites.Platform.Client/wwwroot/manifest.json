@@ -6,10 +6,10 @@
     "orientation": "any",
     "id": "bitPlatformWebsite",
     "display": "standalone",
-    "theme_color": "#2EA3FF",
+    "theme_color": "#060E2D",
     "related_applications": [],
     "name": "bit platform",
-    "background_color": "#0D1117",
+    "background_color": "#060E2D",
     "short_name": "bit platform",
     "prefer_related_applications": false,
     "display_override": [ "window-controls-overlay" ],
@@ -31,7 +31,7 @@
     ],
     "shortcuts": [
         {
-            "name": "bit Demos",
+            "name": "Product demos",
             "url": "/demos"
         },
         {
