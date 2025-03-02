@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-// bit version: 9.5.1
+// bit version: 9.6.0-pre-02
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 //#if (notification == true)
@@ -38,6 +38,9 @@ self.externalAssets = [
     },
     {
         "url": "Boilerplate.Server.Web.styles.css"
+    },
+    {
+        "url": "Boilerplate.Client.Web.bundle.scp.css"
     }
 ];
 
@@ -58,16 +61,10 @@ self.serverHandledUrls = [
     /\/sitemap_index.xml/
 ];
 
-self.defaultUrl = "/";
-self.isPassive = true;
-self.errorTolerance = 'lax';
-self.caseInsensitiveUrl = true;
-self.noPrerenderQuery = 'no-prerender=true';
+self.prerenderMode = 'none'; // Demo: https://adminpanel.bitplatform.dev/ (No-Prerendering + Offline support)
 
-
-// on apps with Prerendering enabled, to have the best experience for the end user un-comment the following line.
-// more info: https://bitplatform.dev/bswup/service-worker
-// self.disablePassiveFirstBoot = true;
-
+// On apps with Prerendering enabled, to have the best experience for the end user un-comment one of the following lines:
+// self.prerenderMode = 'always'; // Demo: https://sales.bitplatform.dev/ (Always show pre-render without offline support)
+// self.prerenderMode = 'initial'; // Demo: https://todo.bitplatform.dev/ (Pre-Render on first site visit + Offline support)
 
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');

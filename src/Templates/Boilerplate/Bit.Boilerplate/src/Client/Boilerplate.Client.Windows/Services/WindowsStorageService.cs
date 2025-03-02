@@ -48,6 +48,13 @@ public partial class WindowsStorageService : IStorageService
         }
     }
 
+    public async ValueTask Clear()
+    {
+        persistentStorage?.Clear();
+        tempStorage?.Clear();
+        await Save([]);
+    }
+
     const string WindowsStorageFilename = "Boilerplate.Client.Windows.storage.json";
     private static readonly SemaphoreSlim ioLock = new(1, 1);
     // Restore application-scope property from isolated storage
