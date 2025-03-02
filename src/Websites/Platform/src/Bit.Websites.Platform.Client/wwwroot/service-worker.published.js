@@ -20,15 +20,7 @@ self.externalAssets = [
 ];
 
 self.serverHandledUrls = [
-    /\/api\//,
-    /\/odata\//,
-    /\/jobs\//,
-    /\/core\//,
-    /\/signalr\//,
-    /\/healthchecks-ui/,
-    /\/healthz/,
-    /\/swagger/,
-    /\/api.fda.gov/
+    /\/api\//
 ];
 
 self.prerenderMode = 'always';
