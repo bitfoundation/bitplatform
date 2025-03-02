@@ -4,7 +4,7 @@ namespace Bit.BlazorUI.Demo.Client.Core.Services;
 
 public static class AppRenderMode
 {
-    public static readonly bool PrerenderEnabled = true;
+    public static readonly bool PrerenderEnabled = false;
 
     private static IComponentRenderMode Auto => new InteractiveAutoRenderMode(PrerenderEnabled);
     private static IComponentRenderMode BlazorWebAssembly => new InteractiveWebAssemblyRenderMode(PrerenderEnabled);
