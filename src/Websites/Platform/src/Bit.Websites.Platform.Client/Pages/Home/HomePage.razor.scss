@@ -1,8 +1,8 @@
 ﻿@import '../../Styles/abstracts/_vars.scss';
-@import '../../Styles/abstracts/_bit-css-variables.scss';
 @import '../../Styles/abstracts/_colors.scss';
 @import '../../Styles/abstracts/_functions.scss';
 @import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
 
 .page-container {
     width: 100%;
@@ -331,52 +331,4 @@
 }
 
 .customer-section {
-    ::deep .customer-carousel {
-        width: 100%;
-        height: 24rem;
-        margin: rem2(32px) auto;
-
-        @include lt-xl {
-            height: 22rem;
-        }
-
-        @include lt-lg {
-            height: 14rem;
-        }
-
-        @include lt-sm {
-            height: 17rem;
-        }
-    }
-
-    .customer-card {
-        width: 100%;
-        height: 100%;
-        padding: 2rem;
-        display: flex;
-        position: relative;
-        box-sizing: border-box;
-        align-items: flex-start;
-        flex-flow: column nowrap;
-        justify-content: flex-start;
-
-        @include md {
-            padding: rem2(28px) rem2(25px);
-        }
-
-        @include sm {
-            padding: rem2(24px);
-        }
-
-        a {
-            display: inherit;
-        }
-    }
-
-    .customer-link {
-        display: block;
-        margin-bottom: 0.5em;
-        text-decoration: underline;
-        text-underline-offset: 0.25em;
-    }
 }

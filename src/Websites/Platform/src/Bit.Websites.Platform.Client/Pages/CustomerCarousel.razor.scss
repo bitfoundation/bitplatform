@@ -1,0 +1,55 @@
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_bit-css-variables.scss';
+
+::deep {
+    .customer-carousel {
+        width: 100%;
+        height: 24rem;
+        margin: rem2(32px) auto;
+
+        @include lt-xl {
+            height: 22rem;
+        }
+
+        @include lt-lg {
+            height: 14rem;
+        }
+
+        @include lt-sm {
+            height: 17rem;
+        }
+    }
+
+    .text-subtitle {
+        font-size: 2.25rem;
+        text-align: center;
+        color: $bit-color-foreground-secondary;
+
+        @include lt-xl {
+            font-size: 2rem;
+        }
+
+        @include lt-lg {
+            font-size: 1.25rem;
+        }
+
+        @include lt-md {
+            font-size: 1rem;
+        }
+    }
+}
+
+.customer-link {
+    display: block;
+    text-align: center;
+    margin-bottom: 1em;
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+}
+
+.highlight {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(241deg, #982ff7 20%, #524add 56%, #6668eb 84%);
+}
