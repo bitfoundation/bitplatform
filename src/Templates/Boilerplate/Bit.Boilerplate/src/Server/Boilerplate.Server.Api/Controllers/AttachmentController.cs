@@ -9,8 +9,9 @@ using Boilerplate.Shared.Controllers;
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
-using Boilerplate.Server.Api.Models.Products;
+//#if (module == "Sales" || module == "Admin")
 using Boilerplate.Shared.Dtos.Products;
+//#endif
 
 namespace Boilerplate.Server.Api.Controllers;
 
