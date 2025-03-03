@@ -717,7 +717,7 @@
     <data name="TermsMessage" xml:space="preserve">
     <value>من موافقم با</value>
   </data>
-    <data name="UploadNewProfileImage" xml:space="preserve">
+    <data name="UploadNewImage" xml:space="preserve">
     <value>بارگذاری یک عکس پروفایل جدید</value>
   </data>
     <data name="Yes" xml:space="preserve">
@@ -1050,6 +1050,9 @@
   </data>
     <!--#endif -->
     <!--#if (module == "Admin" || module == "Sales") -->
+    <data name="ProductImageCouldNotBeFound" xml:space="preserve">
+    <value>تصویر محصول پیدا نشد</value>
+  </data>
     <data name="CategoryCouldNotBeFound" xml:space="preserve">
     <value>دسته مورد نظر پیدا نشد</value>
   </data>

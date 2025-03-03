@@ -717,7 +717,7 @@
     <data name="TermsMessage" xml:space="preserve">
     <value>I agree to the</value>
   </data>
-    <data name="UploadNewProfileImage" xml:space="preserve">
+    <data name="UploadNewImage" xml:space="preserve">
     <value>Upload a new profile image</value>
   </data>
     <data name="Yes" xml:space="preserve">
@@ -1050,6 +1050,9 @@
   </data>
     <!--#endif -->
     <!--#if (module == "Admin" || module == "Sales") -->
+    <data name="ProductImageCouldNotBeFound" xml:space="preserve">
+    <value>Product image could not be found</value>
+  </data>
     <data name="CategoryCouldNotBeFound" xml:space="preserve">
     <value>Category entity could not be found</value>
   </data>

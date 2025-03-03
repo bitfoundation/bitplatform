@@ -9,7 +9,7 @@ public partial class MainLayout : IAsyncDisposable
     private BitDir? currentDir;
     private bool isNavPanelOpen;
     private bool? isIdentityPage;
-    private bool isNavPanelToggled = true;
+    private bool isNavPanelToggled = false;
     private readonly BitModalParameters modalParameters = new() { Classes = new() { Root = "modal" } };
 
     /// <summary>

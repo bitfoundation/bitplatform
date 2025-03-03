@@ -78,7 +78,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await responseCacheService.PurgeCache("/", $"/product/{dto.ShortId}/{Uri.EscapeDataString(dto.Name!)}", $"/api/ProductView/Get/{dto.ShortId}" /*You can also use Url.Action to build urls.*/);
+        await responseCacheService.PurgeProductCache(entityToUpdate);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -99,7 +99,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await responseCacheService.PurgeCache("/", $"/product/{entityToDelete.ShortId}/{Uri.EscapeDataString(entityToDelete.Name!)}", $"/api/ProductView/Get/{entityToDelete.ShortId}" /*You can also use Url.Action to build urls.*/);
+        await responseCacheService.PurgeProductCache(entityToDelete);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);

@@ -42,7 +42,7 @@ public partial class ProductDto
     {
         return ImageFileName is null
             ? null
-            : new Uri(absoluteServerAddress, $"/api/Attachment/GetProductImage/{Id}?v={ConcurrencyStamp}").ToString();
+            : new Uri(absoluteServerAddress, $"/api/Attachment/GetProductImage/{Id}?v={ConcurrencyStamp.ToStampString()}").ToString();
     }
 
     public string FormattedPrice => FormatPrice();

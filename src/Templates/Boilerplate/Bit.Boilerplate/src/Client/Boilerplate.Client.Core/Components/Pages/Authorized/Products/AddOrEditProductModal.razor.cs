@@ -1,4 +1,5 @@
-﻿using Boilerplate.Shared.Dtos.Products;
+﻿using Boilerplate.Shared.Controllers;
+using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Shared.Controllers.Products;
 using Boilerplate.Shared.Controllers.Categories;
 
@@ -6,13 +7,17 @@ namespace Boilerplate.Client.Core.Components.Pages.Authorized.Products;
 
 public partial class AddOrEditProductModal
 {
-    [AutoInject] ICategoryController categoryController = default!;
     [AutoInject] IProductController productController = default!;
+    [AutoInject] ICategoryController categoryController = default!;
+    [AutoInject] IAttachmentController attachmentController = default!;
 
     private bool isOpen;
     private bool isSaving;
     private bool isLoading;
+    private bool isManagingFile;
     private ProductDto product = new();
+    private string? productImageUploadUrl;
+    private BitFileUpload fileUploadRef = default!;
     private string selectedCategoryId = string.Empty;
     private List<BitDropdownItem<string>> allCategoryList = [];
     private AppDataAnnotationsValidator validatorRef = default!;
@@ -26,12 +31,13 @@ public partial class AddOrEditProductModal
 
     public async Task ShowModal(ProductDto productToShow)
     {
-        await InvokeAsync(() =>
+        await InvokeAsync(async () =>
         {
             isOpen = true;
             productToShow.Patch(product);
             selectedCategoryId = (product.CategoryId ?? default).ToString();
-
+            var accessToken = await AuthTokenProvider.GetAccessToken();
+            productImageUploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadProductImage/{product.Id}?access_token={accessToken}").ToString();
             StateHasChanged();
         });
     }
@@ -91,5 +97,49 @@ public partial class AddOrEditProductModal
     private async Task CloseModal()
     {
         isOpen = false;
+    }
+
+    private async Task HandleOnUploadComplete()
+    {
+        try
+        {
+            var updatedProduct = await productController.Get(product.Id, CurrentCancellationToken);
+            updatedProduct.Patch(product);
+        }
+        catch (KnownException e)
+        {
+            SnackBarService.Error(e.Message);
+        }
+        finally
+        {
+            isManagingFile = false;
+        }
+    }
+
+    private async Task HandleOnUploadFailed()
+    {
+        isManagingFile = false;
+        SnackBarService.Error(Localizer[nameof(AppStrings.FileUploadFailed)]);
+    }
+
+    private async Task RemoveProductImage()
+    {
+        if (isManagingFile) return;
+        isManagingFile = true;
+
+        try
+        {
+            var updatedProduct = await attachmentController.RemoveProductImage(product.Id, CurrentCancellationToken);
+
+            updatedProduct.Patch(product);
+        }
+        catch (KnownException e)
+        {
+            SnackBarService.Error(e.Message);
+        }
+        finally
+        {
+            isManagingFile = false;
+        }
     }
 }

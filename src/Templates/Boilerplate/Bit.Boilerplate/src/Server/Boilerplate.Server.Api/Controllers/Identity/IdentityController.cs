@@ -201,6 +201,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     /// </summary>
     private async Task<bool> IsUserSessionPrivileged(UserSession userSession, CancellationToken cancellationToken)
     {
+        if (userSession.UserId == Guid.Parse("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"))
+            return true; // Unlimited privileged sessions for this user: Customize policies based on user roles, subscriptions, and other criteria.
+
         var maxConcurrentPrivilegedSessions = AppSettings.Identity.MaxConcurrentPrivilegedSessions;
 
         return maxConcurrentPrivilegedSessions == -1 || // -1 means no limit

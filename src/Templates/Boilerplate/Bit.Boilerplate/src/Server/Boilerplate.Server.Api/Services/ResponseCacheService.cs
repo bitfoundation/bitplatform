@@ -1,5 +1,8 @@
 ﻿//+:cnd:noEmit
 using Microsoft.AspNetCore.OutputCaching;
+//#if (module == "Sales" || modile == "Admin")
+using Boilerplate.Server.Api.Models.Products;
+//#endif
 
 namespace Boilerplate.Server.Api.Services;
 
@@ -37,6 +40,13 @@ public partial class ResponseCacheService
         }
         //#endif
     }
+
+    //#if (module == "Sales" || modile == "Admin")
+    public async Task PurgeProductCache(Product product)
+    {
+        await PurgeCache("/", $"/product/{product.ShortId}/{Uri.EscapeDataString(product.Name!)}", $"/api/ProductView/Get/{product.ShortId}");
+    }
+    //#endif
 
     //#if (cloudflare == true)
     private async Task PurgeCloudflareCache(string[] relativePaths)
