@@ -1,6 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Text;
 using System.Globalization;
-using System.Text;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -993,7 +993,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         _monthTitle = $"{_culture.DateTimeFormat.GetMonthName(month)} {year}";
 
         var calendar = _culture.Calendar;
-        DateTime firstDayOfMonth = new DateTime(year, month, 1, calendar);
+        var firstDayOfMonth = new DateTime(year, month, 1, calendar);
         int daysInMonth = calendar.GetDaysInMonth(year, month);
         int dayOfWeek = (int)calendar.GetDayOfWeek(firstDayOfMonth);
         int firstDayOfWeek = (int)_culture.DateTimeFormat.FirstDayOfWeek;
@@ -1034,7 +1034,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         }
 
         day = 1;
-        bool ended = false;
+        var ended = false;
         for (int i = 0; i < 6; i++)
         {
             for (int j = 0; j < 7; j++)
