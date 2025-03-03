@@ -78,7 +78,8 @@
 
             @if (isToggled)
             {
-                <BitButton IconOnly FixedColor
+                <BitButton IconOnly 
+                           FixedColor
                            IconName="Search"
                            Size="BitSize.Large"
                            OnClick="ToggleForSearch"
@@ -109,6 +110,7 @@
                 <BitNav @ref=_bitNavRef
                         FullWidth
                         Color="Color"
+                        Accent="Accent"
                         Styles="NavStyles"
                         Classes="NavClasses"
                         IconOnly="isToggled"
@@ -130,8 +132,7 @@
                         IndentReversedPadding="IndentReversedPadding"
                         ItemTemplateRenderMode="ItemTemplateRenderMode"
                         HeaderTemplateRenderMode="HeaderTemplateRenderMode"
-                        OnItemClick="(TItem item) => HandleNavItemClick(item)"
-                        Accent="NoPad ? null : Accent ?? BitColor.SecondaryBackground" />
+                        OnItemClick="(TItem item) => HandleNavItemClick(item)" />
             }
 
             <BitSpacer />

@@ -13,10 +13,6 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
 
 
-    [Inject] private IJSRuntime _js { get; set; } = default!;
-
-
-
     /// <summary>
     /// The accent color of the nav.
     /// </summary>
@@ -50,9 +46,21 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public string? EmptyListMessage { get; set; }
 
     /// <summary>
+    /// Renders the nav panel with fit-content width.
+    /// </summary>
+    [Parameter]
+    public bool FitWidth { get; set; }
+
+    /// <summary>
     /// The custom template to render as the footer of the nav panel.
     /// </summary>
     [Parameter] public RenderFragment? Footer { get; set; }
+
+    /// <summary>
+    /// Renders the nav panel with full (100%) width.
+    /// </summary>
+    [Parameter]
+    public bool FullWidth { get; set; }
 
     /// <summary>
     /// The custom template to render as the header of the nav panel.
@@ -210,8 +218,34 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => FitWidth ? "bit-npn-fiw" : string.Empty);
+        ClassBuilder.Register(() => FullWidth ? "bit-npn-fuw" : string.Empty);
+
         ClassBuilder.Register(() => IsOpen ? string.Empty : "bit-npn-cls");
-        ClassBuilder.Register(() => NoPad ? string.Empty : "bit-npn-pad");
+        ClassBuilder.Register(() => NoPad ? "bit-npn-npd" : string.Empty);
+
+        ClassBuilder.Register(() => Accent switch
+        {
+            BitColor.Primary => "bit-nav-apri",
+            BitColor.Secondary => "bit-nav-asec",
+            BitColor.Tertiary => "bit-nav-ater",
+            BitColor.Info => "bit-nav-ainf",
+            BitColor.Success => "bit-nav-asuc",
+            BitColor.Warning => "bit-nav-awrn",
+            BitColor.SevereWarning => "bit-nav-aswr",
+            BitColor.Error => "bit-nav-aerr",
+            BitColor.PrimaryBackground => "bit-nav-apbg",
+            BitColor.SecondaryBackground => "bit-nav-asbg",
+            BitColor.TertiaryBackground => "bit-nav-atbg",
+            BitColor.PrimaryForeground => "bit-nav-apfg",
+            BitColor.SecondaryForeground => "bit-nav-asfg",
+            BitColor.TertiaryForeground => "bit-nav-atfg",
+            BitColor.PrimaryBorder => "bit-nav-apbr",
+            BitColor.SecondaryBorder => "bit-nav-asbr",
+            BitColor.TertiaryBorder => "bit-nav-atbr",
+            _ => string.Empty,
+        });
     }
 
     protected override void RegisterCssStyles()

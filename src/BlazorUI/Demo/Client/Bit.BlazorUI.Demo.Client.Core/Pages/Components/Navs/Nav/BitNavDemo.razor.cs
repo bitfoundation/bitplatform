@@ -41,7 +41,7 @@ public partial class BitNavDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the nav.",
+            Description = "The general color of the nav that is only used for colored parts like icons.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
