@@ -208,14 +208,14 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             }
         }
 
-        destFileName = destFileName.Replace(Path.GetExtension(destFileName), "_256.webp");
+        destFileName = destFileName.Replace(Path.GetExtension(destFileName), "_512.webp");
         var resizedFilePath = $"{AppSettings.ProductImagesDir}{destFileName}";
 
         try
         {
             using MagickImage sourceImage = new(file.OpenReadStream());
 
-            MagickGeometry resizedImageSize = new(256, 256);
+            MagickGeometry resizedImageSize = new(512, 512);
 
             sourceImage.Resize(resizedImageSize);
 
