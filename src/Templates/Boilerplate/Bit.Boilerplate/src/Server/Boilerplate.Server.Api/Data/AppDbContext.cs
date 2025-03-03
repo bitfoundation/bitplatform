@@ -99,10 +99,24 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
                 continue;
 
             //#if (database != "Sqlite")
-            // https://github.com/dotnet/efcore/issues/35443
-            entityEntry.OriginalValues.SetValues(new Dictionary<string, object> { { "ConcurrencyStamp", currentConcurrencyStamp } });
+            //#if (IsInsideProjectTemplate == true)
+            if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture) is false)
+            {
+                //#endif
+                // https://github.com/dotnet/efcore/issues/35443
+                entityEntry.OriginalValues.SetValues(new Dictionary<string, object> { { "ConcurrencyStamp", currentConcurrencyStamp } });
+                //#if (IsInsideProjectTemplate == true)
+            }
+            //#endif
             //#else
-            entityEntry.CurrentValues.SetValues(new Dictionary<string, object> { { "ConcurrencyStamp", RandomNumberGenerator.GetBytes(8) } });
+            //#if (IsInsideProjectTemplate == true)
+            if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))
+            {
+                //#endif
+                entityEntry.CurrentValues.SetValues(new Dictionary<string, object> { { "ConcurrencyStamp", RandomNumberGenerator.GetBytes(8) } });
+                //#if (IsInsideProjectTemplate == true)
+            }
+            //#endif
             //#endif
         }
     }
