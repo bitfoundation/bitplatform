@@ -55,10 +55,24 @@ public partial class BitNavPanelDemo
         },
         new()
         {
+            Name = "FitWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the nav panel with fit-content width.",
+        },
+        new()
+        {
             Name = "Footer",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The custom template to render as the footer of the nav panel.",
+        },
+        new()
+        {
+            Name = "FullWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the nav panel with full (100%) width.",
         },
         new()
         {
@@ -683,7 +697,7 @@ private List<BitNavItem> basicNavItems =
     private readonly string example2RazorCode = @"
 <BitToggleButton @bind-IsChecked=""templateIsOpen"" OnText=""Close"" OffText=""Open"" />
 
-<BitNavPanel @bind-IsOpen=""templateIsOpen"" Items=""basicNavItems"" FitWidth NoToggle>
+<BitNavPanel @bind-IsOpen=""templateIsOpen"" Items=""basicNavItems"" Accent=""BitColor.SecondaryBackground"" FitWidth NoToggle>
     <ItemTemplate Context=""item"">
         <BitText>@item.Text</BitText>
         <BitSpacer />

@@ -42,7 +42,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     [Parameter] public BitNavClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The general color of the nav.
+    /// The general color of the nav that is only used for colored parts like icons.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }

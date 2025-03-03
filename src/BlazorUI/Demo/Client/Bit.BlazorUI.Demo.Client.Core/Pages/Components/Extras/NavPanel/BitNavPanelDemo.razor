@@ -27,7 +27,7 @@
             <div class="open-btn">
                 <BitToggleButton @bind-IsChecked="templateIsOpen" OnText="Close" OffText="Open" />
             </div>
-            <BitNavPanel @bind-IsOpen="templateIsOpen" Items="basicNavItems" FitWidth NoToggle>
+            <BitNavPanel @bind-IsOpen="templateIsOpen" Items="basicNavItems" Accent="BitColor.SecondaryBackground" FitWidth NoToggle>
                 <ItemTemplate Context="item">
                     <BitText>@item.Text</BitText>
                     <BitSpacer />
