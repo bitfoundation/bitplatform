@@ -2,7 +2,7 @@
 
 public static class Urls
 {
-    public const string HomePage = "/";
+    public const string Home = "/";
 
     public const string Github = "https://github.com/bitfoundation/bitplatform";
 
@@ -60,4 +60,5 @@ public static class Urls
     public const string Videos = "/videos";
     public const string AboutUs = "/about-us";
     public const string ContactUs = "/contact-us";
+    public const string NotFound = "/not-found";
 }
