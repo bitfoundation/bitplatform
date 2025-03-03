@@ -511,7 +511,7 @@ public partial class BitNavPanelDemo
 
 
     private bool basicIsOpen;
-    private bool rtlIsOpen;
+    private bool templateIsOpen;
     private List<BitNavItem> basicNavItems =
     [
         new()
@@ -519,6 +519,7 @@ public partial class BitNavPanelDemo
             Text = "Home",
             IconName = BitIconName.Home,
             Url = "HomePage",
+            Data = 13,
         },
         new()
         {
@@ -530,6 +531,7 @@ public partial class BitNavPanelDemo
                     Text = "Dashboard",
                     IconName = BitIconName.BarChartVerticalFill,
                     Url = "DashboardPage",
+                    Data = 63,
                 },
                 new() {
                     Text = "Categories",
@@ -553,11 +555,64 @@ public partial class BitNavPanelDemo
         {
             Text = "Settings",
             IconName = BitIconName.Equalizer,
-            Url = "SettingsPage"
+            Url = "SettingsPage",
+            Data = 85,
         },
         new()
         {
             Text = "Terms",
+            IconName = BitIconName.EntityExtraction,
+            Url = "TermsPage",
+        }
+    ];
+
+    private bool rtlIsOpen;
+    private List<BitNavItem> rtlNavItems =
+    [
+        new()
+        {
+            Text = "خانه",
+            IconName = BitIconName.Home,
+            Url = "HomePage",
+        },
+        new()
+        {
+            Text = "ادمین پنل",
+            IconName = BitIconName.Admin,
+            ChildItems =
+            [
+                new() {
+                    Text = "داشبورد",
+                    IconName = BitIconName.BarChartVerticalFill,
+                    Url = "DashboardPage",
+                },
+                new() {
+                    Text = "دسته‌ها",
+                    IconName = BitIconName.BuildQueue,
+                    Url = "CategoriesPage",
+                },
+                new() {
+                    Text = "کالاها",
+                    IconName = BitIconName.Product,
+                    Url = "ProductsPage",
+                }
+            ]
+        },
+        new()
+        {
+            Text = "وظایف",
+            IconName = BitIconName.ToDoLogoOutline,
+            Url = "TodoPage",
+        },
+        new()
+        {
+            Text = "تنظیمات",
+            IconName = BitIconName.Equalizer,
+            Url = "SettingsPage"
+        },
+        new()
+        {
+            Text = "قوانین",
             IconName = BitIconName.EntityExtraction,
             Url = "TermsPage",
         }
@@ -568,7 +623,9 @@ public partial class BitNavPanelDemo
     private readonly string example1RazorCode = @"
 <BitToggleButton @bind-IsChecked=""basicIsOpen"" OnText=""Close"" OffText=""Open"" />
 
-<BitNavPanel @bind-IsOpen=""basicIsOpen"" Items=""basicNavItems"" NoPad />";
+<div style=""width:222px"">
+    <BitNavPanel @bind-IsOpen=""basicIsOpen"" Items=""basicNavItems"" />
+</div>";
     private readonly string example1CsharpCode = @"
 private bool basicIsOpen;
 
@@ -624,12 +681,20 @@ private List<BitNavItem> basicNavItems =
 ];";
 
     private readonly string example2RazorCode = @"
-<BitToggleButton @bind-IsChecked=""rtlIsOpen"" OnText=""Close"" OffText=""Open"" />
+<BitToggleButton @bind-IsChecked=""templateIsOpen"" OnText=""Close"" OffText=""Open"" />
 
-<BitNavPanel @bind-IsOpen=""rtlIsOpen"" Items=""basicNavItems"" Dir=""BitDir.Rtl"" />";
+<BitNavPanel @bind-IsOpen=""templateIsOpen"" Items=""basicNavItems"" FitWidth NoToggle>
+    <ItemTemplate Context=""item"">
+        <BitText>@item.Text</BitText>
+        <BitSpacer />
+        @if (item.Data is not null)
+        {
+            <BitTag Size=""BitSize.Small"" Color=""BitColor.Info"">@item.Data</BitTag>
+        }
+    </ItemTemplate>
+</BitNavPanel>";
     private readonly string example2CsharpCode = @"
-private bool rtlIsOpen;
-
+private bool templateIsOpen;
 private List<BitNavItem> basicNavItems =
 [
     new()
@@ -637,6 +702,7 @@ private List<BitNavItem> basicNavItems =
         Text = ""Home"",
         IconName = BitIconName.Home,
         Url = ""HomePage"",
+        Data = 13,
     },
     new()
     {
@@ -648,6 +714,7 @@ private List<BitNavItem> basicNavItems =
                 Text = ""Dashboard"",
                 IconName = BitIconName.BarChartVerticalFill,
                 Url = ""DashboardPage"",
+                Data = 63,
             },
             new() {
                 Text = ""Categories"",
@@ -671,11 +738,70 @@ private List<BitNavItem> basicNavItems =
     {
         Text = ""Settings"",
         IconName = BitIconName.Equalizer,
-        Url = ""SettingsPage""
+        Url = ""SettingsPage"",
+        Data = 85,
     },
     new()
     {
         Text = ""Terms"",
+        IconName = BitIconName.EntityExtraction,
+        Url = ""TermsPage"",
+    }
+];";
+
+    private readonly string example3RazorCode = @"
+<BitToggleButton @bind-IsChecked=""rtlIsOpen"" OnText=""Close"" OffText=""Open"" />
+
+<BitNavPanel @bind-IsOpen=""rtlIsOpen"" Items=""rtlNavItems"" Dir=""BitDir.Rtl"" />";
+    private readonly string example3CsharpCode = @"
+private bool rtlIsOpen;
+
+private List<BitNavItem> rtlNavItems =
+[
+    new()
+    {
+        Text = ""خانه"",
+        IconName = BitIconName.Home,
+        Url = ""HomePage"",
+    },
+    new()
+    {
+        Text = ""ادمین پنل"",
+        IconName = BitIconName.Admin,
+        ChildItems =
+        [
+            new() {
+                Text = ""داشبورد"",
+                IconName = BitIconName.BarChartVerticalFill,
+                Url = ""DashboardPage"",
+            },
+            new() {
+                Text = ""دسته‌ها"",
+                IconName = BitIconName.BuildQueue,
+                Url = ""CategoriesPage"",
+            },
+            new() {
+                Text = ""کالاها"",
+                IconName = BitIconName.Product,
+                Url = ""ProductsPage"",
+            }
+        ]
+    },
+    new()
+    {
+        Text = ""وظایف"",
+        IconName = BitIconName.ToDoLogoOutline,
+        Url = ""TodoPage"",
+    },
+    new()
+    {
+        Text = ""تنظیمات"",
+        IconName = BitIconName.Equalizer,
+        Url = ""SettingsPage""
+    },
+    new()
+    {
+        Text = ""قوانین"",
         IconName = BitIconName.EntityExtraction,
         Url = ""TermsPage"",
     }

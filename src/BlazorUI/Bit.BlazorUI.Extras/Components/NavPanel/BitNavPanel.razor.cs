@@ -50,9 +50,21 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public string? EmptyListMessage { get; set; }
 
     /// <summary>
+    /// Renders the navpanel with fit-content width.
+    /// </summary>
+    [Parameter]
+    public bool FitWidth { get; set; }
+
+    /// <summary>
     /// The custom template to render as the footer of the nav panel.
     /// </summary>
     [Parameter] public RenderFragment? Footer { get; set; }
+
+    /// <summary>
+    /// Renders the navpanel with full (100%) width.
+    /// </summary>
+    [Parameter]
+    public bool FullWidth { get; set; }
 
     /// <summary>
     /// The custom template to render as the header of the nav panel.
@@ -210,6 +222,10 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => FitWidth ? "bit-npn-fiw" : string.Empty);
+        ClassBuilder.Register(() => FullWidth ? "bit-npn-fuw" : string.Empty);
+
         ClassBuilder.Register(() => IsOpen ? string.Empty : "bit-npn-cls");
         ClassBuilder.Register(() => NoPad ? string.Empty : "bit-npn-pad");
     }

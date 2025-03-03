@@ -6,8 +6,6 @@
     top: 0;
     position: sticky;
     overflow: hidden auto;
-    max-width: spacing(28);
-    min-width: spacing(28);
     background-color: $clr-bg-pri;
     height: $bit-env-height-available;
 
@@ -84,6 +82,14 @@
     .bit-npn-cnt {
         height: -webkit-fill-available;
     }
+}
+
+.bit-npn-fiw {
+    width: fit-content;
+}
+
+.bit-npn-fuw {
+    width: 100%;
 }
 
 .bit-npn-ovl {
