@@ -1004,22 +1004,22 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         DateTime previousMonth;
         if (month == 1)
         {
-            previousMonth = new DateTime(year - 1, 12, 1);
+            previousMonth = new(year - 1, 12, 1);
         }
         else
         {
-            previousMonth = new DateTime(year, month - 1, 1);
+            previousMonth = new(year, month - 1, 1);
         }
         int daysInPreviousMonth = calendar.GetDaysInMonth(previousMonth.Year, previousMonth.Month);
 
         DateTime nextMonth;
         if (month == 12)
         {
-            nextMonth = new DateTime(year + 1, 1, 1);
+            nextMonth = new(year + 1, 1, 1);
         }
         else
         {
-            nextMonth = new DateTime(year, month + 1, 1);
+            nextMonth = new(year, month + 1, 1);
         }
 
         int day = daysInPreviousMonth - dayOfWeek + 1;
@@ -1028,7 +1028,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         {
             for (int j = 0; j < dayOfWeek; j++)
             {
-                _daysOfCurrentMonth[i, j] = new DateTime(previousMonth.Year, previousMonth.Month, day, calendar);
+                _daysOfCurrentMonth[i, j] = new(previousMonth.Year, previousMonth.Month, day, calendar);
                 day++;
             }
         }
@@ -1043,7 +1043,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
                 if (day <= daysInMonth)
                 {
-                    _daysOfCurrentMonth[i, j] = new DateTime(year, month, day, calendar);
+                    _daysOfCurrentMonth[i, j] = new(year, month, day, calendar);
                     day++;
                 }
                 else
@@ -1052,7 +1052,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                     {
                         ended = true;
                     }
-                    _daysOfCurrentMonth[i, j] = ended ? null : new DateTime(nextMonth.Year, nextMonth.Month, day - daysInMonth, calendar);
+                    _daysOfCurrentMonth[i, j] = ended ? null : new(nextMonth.Year, nextMonth.Month, day - daysInMonth, calendar);
                     day++;
                 }
             }
