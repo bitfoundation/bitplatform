@@ -137,6 +137,10 @@
     &.disabled {
         color: gray;
     }
+
+    &:hover {
+        background-color: #ccc;
+    }
 }
 
 .btn-img {
@@ -149,23 +153,27 @@
 }
 
 .google-play {
-    background-image: url('/images/templates/google-play.svg');
+    background-image: url('/images/google-play.svg');
 }
 
 .windows {
-    background-image: url('/images/templates/windows.svg');
+    background-image: url('/images/windows.svg');
 }
 
 .apple-store {
-    background-image: url('/images/templates/apple-store.svg');
+    background-image: url('/images/apple-app-store.svg');
 }
 
 .nuget {
-    background-image: url('/images/templates/nuget.svg');
+    background-image: url('/images/nuget.svg');
 }
 
 .figma {
-    background-image: url('/images/templates/figma.svg');
+    background-image: url('/images/figma.svg');
+}
+
+.github {
+    background-image: url('/images/github.svg');
 }
 
 ::deep a {
