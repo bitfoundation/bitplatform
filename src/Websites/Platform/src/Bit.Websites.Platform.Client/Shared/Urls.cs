@@ -38,7 +38,7 @@ public static class Urls
     public const string BlazorUiPlayground = "https://codespaces.new/bitfoundation/bit-blazorui-playground/tree/develop";
     public const string BlazorUiBenchmarks = "https://github.com/bitfoundation/blazor-benchmarks";
 
-    public const string AdminPanelPwa = "https://adminpanel.bitplatform.dev/";
+    public const string AdminPanelPwa = "https://adminpanel.bitplatform.dev/dashboard";
     public const string AdminPanelGooglePlay = "https://play.google.com/store/apps/details?id=com.bitplatform.AdminPanel.Template";
     public const string AdminPanelAppleStore = "https://apps.apple.com/app/bit-adminpanel/id6450611349";
     public const string AdminPanelWindows = "https://windows-admin.bitplatform.dev/AdminPanel.Client.Windows-win-Setup.exe";
@@ -47,7 +47,7 @@ public static class Urls
     public const string SalesPwa = "https://sales.bitplatform.dev/";
     public const string SalesWindows = "https://windows-sales.bitplatform.dev/SalesModule.Client.Windows-win-Setup.exe";
 
-    public const string TodoTemplatePwa = "https://todo.bitplatform.dev/";
+    public const string TodoTemplatePwa = "https://todo.bitplatform.dev/todo";
     public const string TodoTemplateGooglePlay = "https://play.google.com/store/apps/details?id=com.bitplatform.Todo.Template";
     public const string TodoTemplateAppleStore = "https://apps.apple.com/app/bit-todotemplate/id6450611072";
     public const string TodoTemplateWindows = "https://windows-todo.bitplatform.dev/TodoSample.Client.Windows-win-Setup.exe";
