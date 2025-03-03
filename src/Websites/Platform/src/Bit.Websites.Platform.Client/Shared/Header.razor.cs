@@ -15,7 +15,7 @@ public partial class Header : IDisposable
 
 
     [AutoInject] public NavManuService navManuService = default!;
-    [AutoInject] public BitThemeManager bitThemeManager  = default!;
+    [AutoInject] public BitThemeManager bitThemeManager = default!;
 
     protected override async Task OnInitAsync()
     {
@@ -53,14 +53,21 @@ public partial class Header : IDisposable
 
     private string GetActiveRouteName()
     {
-        return currentUrl switch
+        var routeName = currentUrl switch
         {
-            Urls.HomePage => "Home",
+            Urls.Home => "Home",
+            Urls.Demos => "Demos",
             Urls.Pricing => "Pricing",
             Urls.AboutUs => "About us",
             Urls.ContactUs => "Contact us",
-            _ => "Products",
+            _ => string.Empty,
         };
+
+        if (string.IsNullOrEmpty(routeName) is false) return routeName;
+
+        if (currentUrl.StartsWith(Urls.NotFound)) return "404";
+
+        return "Products";
     }
 
     private bool IsProductsServicesActive()

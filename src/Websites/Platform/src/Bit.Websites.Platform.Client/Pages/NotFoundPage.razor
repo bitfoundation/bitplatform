@@ -2,7 +2,11 @@
 
 @inherits AppComponentBase
 
-<div class="main">
-    <h1 class="title">404</h1>
-    <div class="description">There is nothing here.</div>
-</div>
+<BitStack Alignment="BitAlignment.Center">
+    <BitText Typography="BitTypography.H1">404</BitText>
+    <BitText>There is nothing here: [<b>@Url</b>]</BitText>
+</BitStack>
+
+@code {
+    [SupplyParameterFromQuery(Name = "url")] public string? Url { get; set; }
+}
