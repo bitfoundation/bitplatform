@@ -1,6 +1,6 @@
 ﻿//+:cnd:noEmit
 using Microsoft.AspNetCore.OutputCaching;
-//#if (module == "Sales" || modile == "Admin")
+//#if (module == "Sales" || module == "Admin")
 using Boilerplate.Server.Api.Models.Products;
 //#endif
 
@@ -41,7 +41,7 @@ public partial class ResponseCacheService
         //#endif
     }
 
-    //#if (module == "Sales" || modile == "Admin")
+    //#if (module == "Sales" || module == "Admin")
     public async Task PurgeProductCache(Product product)
     {
         await PurgeCache("/", $"/product/{product.ShortId}/{Uri.EscapeDataString(product.Name!)}", $"/api/ProductView/Get/{product.ShortId}");

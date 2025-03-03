@@ -24,7 +24,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
 
-    //#if (module == "Sales" || modile == "Admin")
+    //#if (module == "Sales" || module == "Admin")
     [AutoInject] private ResponseCacheService responseCacheService = default!;
     //#endif
 
@@ -141,7 +141,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     }
     //#endif
 
-    //#if (module == "Sales" || modile == "Admin")
+    //#if (module == "Sales" || module == "Admin")
     [AllowAnonymous]
     [HttpGet("{productId}")]
     [AppResponseCache(MaxAge = 3600 * 24 * 7, UserAgnostic = true)]
