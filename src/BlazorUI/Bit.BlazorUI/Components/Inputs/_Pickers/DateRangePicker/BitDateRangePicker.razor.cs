@@ -1422,7 +1422,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private DateTimeOffset GetDateTimeOfDayCell(DateTime date)
     {
-        return new DateTimeOffset(date, DateTimeOffset.Now.Offset);
+        return new(date, DateTimeOffset.Now.Offset);
     }
 
     private DateTimeOffset GetDateTimeOfMonthCell(int monthIndex)
