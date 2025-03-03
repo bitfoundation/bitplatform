@@ -11,8 +11,16 @@
         <div class="page-section-content">
             <BitText Typography="BitTypography.H1" Align="BitTextAlign.Center" Gutter>Products Demo</BitText>
 
+            <BitText Typography="BitTypography.H3" Align="BitTextAlign.Center" Gutter>It's not just another Blazor component library!</BitText>
+
             <BitText Typography="BitTypography.H5" Align="BitTextAlign.Center" Gutter>
-                We've published a few apps using our own products in different platforms to showcase what we can achieve using them.
+                A complete E2E solution for C# .NET developers and one of the best technology partners available
+            </BitText>
+
+            <br />
+
+            <BitText Typography="BitTypography.H5" Align="BitTextAlign.Center" Gutter>
+                We've published a few apps using our own products in different platforms to showcase what we can achieve using them
             </BitText>
         </div>
 
@@ -49,6 +57,8 @@
                 <a class="secondary-btn" href="@Urls.BlazorUiGooglePlay" target="_blank" title="Google Play"><span class="btn-img google-play"></span>Android</a>
                 <a class="secondary-btn" href="@Urls.BlazorUiAppleStore" target="_blank" title="Apple Store"><span class="btn-img apple-store"></span>iOS - macOS</a>
                 <a class="secondary-btn" href="@Urls.BlazorUiWindows" target="_blank" title="Windows"><span class="btn-img windows"></span>Windows</a>
+                <a class="secondary-btn" href="@Urls.BlazorUiPlayground" target="_blank" title="GitHub codespace"><span class="btn-img github"></span>Playground</a>
+                <a class="secondary-btn" href="@Urls.BlazorUiBenchmarks" target="_blank" title="Benchmark repo"><span class="btn-img github"></span>Benchmarks</a>
             </div>
         </div>
 
@@ -64,10 +74,15 @@
             </iframe>
         </div>
         <br />
+        <BitText Typography="BitTypography.H6" Gutter>
+            You can start playing with its source code here: <a href="https://codespaces.new/bitfoundation/bit-templates-playground/tree/develop" target="_blank">Boilerplate playground</a>
+        </BitText>
+        <br />
         <BitText Gutter>
-            Check out our samples to see the Boilerplate across various platforms.
-            Notably, both bitplatform.dev and blazorui.bitplatform.dev were built using this template.
-            With our straightforward setup and a bit of time to get familiar with the Boilerplate, you’ll have a project with the same functionality deployed in production in less than a week.
+            Both <a href="https://bitplatform.dev" target="_blank">bitplatform.dev</a> and <a href="https://blazorui.bitplatform.dev" target="_blank">blazorui.bitplatform.dev</a>
+            were built using this project template. With our straightforward setup and a bit of time to get familiar with the Boilerplate,
+            you’ll have a project with the same functionality deployed in production in less than a week.
+            Check out our samples to see the Boilerplate in action across various platforms:
         </BitText>
 
         <br /><br /><br /><br />
@@ -87,6 +102,7 @@
                 <a class="secondary-btn" href="@Urls.AdminPanelGooglePlay" target="_blank" title="Google Play"><span class="btn-img google-play"></span>Android</a>
                 <a class="secondary-btn" href="@Urls.AdminPanelAppleStore" target="_blank" title="Apple Store"><span class="btn-img apple-store"></span>iOS - macOS</a>
                 <a class="secondary-btn" href="@Urls.AdminPanelWindows" target="_blank" title="Windows"><span class="btn-img windows"></span>Windows</a>
+                <a class="secondary-btn" href="@Urls.AdminPanelPlayground" target="_blank" title="GitHub codespace"><span class="btn-img github"></span>Playground</a>
             </div>
         </div>
 
@@ -130,7 +146,13 @@
             <b>Note:</b> These websites are all deployed on a single app service plan, leveraging the cheapest available plan.
         </BitText>
 
-        <br /><br />
+        <br /><br /><br /><br />
+
+        <BitText Typography="BitTypography.H2" Align="BitTextAlign.Center">
+            a few words from our customers
+        </BitText>
+
+        <br />
 
         <CustomerCarousel />
     </div>

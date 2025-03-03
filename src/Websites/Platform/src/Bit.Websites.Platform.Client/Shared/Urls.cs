@@ -35,11 +35,14 @@ public static class Urls
     public const string BlazorUiGooglePlay = "https://play.google.com/store/apps/details?id=com.bitplatform.BlazorUI.Demo";
     public const string BlazorUiAppleStore = "https://apps.apple.com/app/bit-blazor-ui/id6450401404";
     public const string BlazorUiWindows = "https://windows-components.bitplatform.dev/Bit.BlazorUI.Demo.Client.Windows-win-Setup.exe";
+    public const string BlazorUiPlayground = "https://codespaces.new/bitfoundation/bit-blazorui-playground/tree/develop";
+    public const string BlazorUiBenchmarks = "https://github.com/bitfoundation/blazor-benchmarks";
 
     public const string AdminPanelPwa = "https://adminpanel.bitplatform.dev/";
     public const string AdminPanelGooglePlay = "https://play.google.com/store/apps/details?id=com.bitplatform.AdminPanel.Template";
     public const string AdminPanelAppleStore = "https://apps.apple.com/app/bit-adminpanel/id6450611349";
     public const string AdminPanelWindows = "https://windows-admin.bitplatform.dev/AdminPanel.Client.Windows-win-Setup.exe";
+    public const string AdminPanelPlayground = "https://codespaces.new/bitfoundation/bit-templates-playground/tree/develop";
 
     public const string SalesPwa = "https://sales.bitplatform.dev/";
     public const string SalesWindows = "https://windows-sales.bitplatform.dev/SalesModule.Client.Windows-win-Setup.exe";
