@@ -60,10 +60,10 @@ public partial class Header : IDisposable
             Urls.Pricing => "Pricing",
             Urls.AboutUs => "About us",
             Urls.ContactUs => "Contact us",
-            _ => string.Empty,
+            _ => null,
         };
 
-        if (string.IsNullOrEmpty(routeName) is false) return routeName;
+        if (routeName is not null) return routeName;
 
         if (currentUrl.StartsWith(Urls.NotFound)) return "404";
 
