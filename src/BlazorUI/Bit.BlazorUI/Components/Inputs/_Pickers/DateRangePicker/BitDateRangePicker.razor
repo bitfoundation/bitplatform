@@ -39,7 +39,7 @@
                        aria-label="@AriaLabel"
                        placeholder="@Placeholder"
                        value="@CurrentValueAsString"
-                       disabled=@(IsEnabled is false)
+                       disabled="@(IsEnabled is false)"
                        readonly="@(AllowTextInput is false || ReadOnly)"
                        aria-expanded="@(IsOpen ? "true" : "false")"
                        aria-controls="@(IsOpen ? _calloutId : null)"
