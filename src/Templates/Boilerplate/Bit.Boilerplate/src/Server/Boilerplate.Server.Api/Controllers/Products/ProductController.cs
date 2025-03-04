@@ -78,7 +78,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await responseCacheService.PurgeProductCache(entityToUpdate);
+        await responseCacheService.PurgeProductCache(entityToUpdate.ShortId, DbContext.Entry(entityToUpdate).Property(p => p.Name).OriginalValue!);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -99,7 +99,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await responseCacheService.PurgeProductCache(entityToDelete);
+        await responseCacheService.PurgeProductCache(entityToDelete.ShortId, entityToDelete.Name!);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -119,7 +119,7 @@ public partial class ProductController : AppControllerBase, IProductController
     {
         // Remote validation example: Any errors thrown here will be displayed in the client's edit form component.
         if (DbContext.Entry(product).Property(c => c.Name).IsModified
-            && await DbContext.Products.AnyAsync(p => p.Name == product.Name, cancellationToken: cancellationToken))
+            && await DbContext.Products.AnyAsync(p => p.Name == product.Name, cancellationToken))
             throw new ResourceValidationException((nameof(ProductDto.Name), [Localizer[nameof(AppStrings.DuplicateProductName)]]));
     }
 }

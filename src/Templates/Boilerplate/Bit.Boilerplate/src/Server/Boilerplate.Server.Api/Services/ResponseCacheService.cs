@@ -42,9 +42,9 @@ public partial class ResponseCacheService
     }
 
     //#if (module == "Sales" || module == "Admin")
-    public async Task PurgeProductCache(Product product)
+    public async Task PurgeProductCache(int shortId, string originalName /* If a product's name changes, we must clear the response cache using its original name. */)
     {
-        await PurgeCache("/", $"/product/{product.ShortId}/{Uri.EscapeDataString(product.Name!)}", $"/api/ProductView/Get/{product.ShortId}");
+        await PurgeCache("/", $"/product/{shortId}/{Uri.EscapeDataString(originalName)}", $"/api/ProductView/Get/{shortId}");
     }
     //#endif
 

@@ -181,7 +181,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
         await blobStorage.DeleteAsync(filePath, cancellationToken);
 
-        await responseCacheService.PurgeProductCache(product);
+        await responseCacheService.PurgeProductCache(product.ShortId, product.Name!);
 
         return product.Map();
     }
@@ -232,7 +232,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             throw;
         }
 
-        await responseCacheService.PurgeProductCache(product);
+        await responseCacheService.PurgeProductCache(product.ShortId, product.Name!);
     }
     //#endif
 }
