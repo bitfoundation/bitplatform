@@ -19,7 +19,7 @@
     <script>
         // disable auto-zoom of iOS Safari when focusing an input
         (/iPad|iPhone|iPod/.test(navigator.userAgent)) &&
-            (document.querySelector('meta[name="viewport"]').content = 'width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0')
+        (document.querySelector('meta[name="viewport"]').content = 'width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0')
     </script>
 
     <Link rel="icon" href="favicon.ico" type="image/x-icon" />
@@ -44,14 +44,17 @@
     }
     <Routes @rendermode=renderMode />
 
-    <Script src="_framework/blazor.web.js" autostart="false"></Script>
-    <Script src="_content/Bit.Bswup/bit-bswup.js"></Script>
-    <Script src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
-    <AppBswupProgressBar />
-    <Script src="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism.js"></Script>
-    <Script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
-    <Script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></Script>
-    <Script src="_content/Bit.BlazorUI.Demo.Client.Core/scripts/app.js"></Script>
+    @if (HttpContext.Request.IsLightHouseRequest() is false)
+    {
+        <Script src="_framework/blazor.web.js" autostart="false"></Script>
+        <Script src="_content/Bit.Bswup/bit-bswup.js"></Script>
+        <Script src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
+        <AppBswupProgressBar />
+        <Script src="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism.js"></Script>
+        <Script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
+        <Script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></Script>
+        <Script src="_content/Bit.BlazorUI.Demo.Client.Core/scripts/app.js"></Script>
+    }
 </body>
 
 </html>

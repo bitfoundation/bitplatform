@@ -20,7 +20,7 @@
 
     <Routes @rendermode=RenderModeProvider.Current />
 
-    @if (HttpContext.Request.ShouldRenderStaticMode() is false)
+    @if (HttpContext.Request.IsLightHouseRequest() is false)
     {
         <Script src="_framework/blazor.web.js" autostart="false"></Script>
         <Script src="_content/Bit.Bswup/bit-bswup.js"></Script>

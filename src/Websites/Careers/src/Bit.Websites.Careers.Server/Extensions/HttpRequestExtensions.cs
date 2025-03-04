@@ -17,4 +17,9 @@ public static class HttpRequestExtensions
 
         return uriBuilder.Uri.AbsoluteUri;
     }
+
+    public static bool IsLightHouseRequest(this HttpRequest request)
+    {
+        return request.Headers[HeaderNames.UserAgent].Contains("lighthouse", StringComparer.InvariantCultureIgnoreCase) is true;
+    }
 }

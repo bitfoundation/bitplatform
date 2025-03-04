@@ -1,5 +1,6 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Shared.Attributes;
+using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.Components.Endpoints;
 
 namespace Microsoft.AspNetCore.Http;
@@ -19,5 +20,10 @@ internal static class HttpContextExtensions
     internal static bool IsBlazorPageContext(this HttpContext context)
     {
         return context.GetEndpoint()?.Metadata?.OfType<ComponentTypeMetadata>()?.Any() is true;
+    }
+
+    public static bool IsLightHouseRequest(this HttpContext context)
+    {
+        return context.Request.Headers[HeaderNames.UserAgent].Contains("lighthouse", StringComparer.InvariantCultureIgnoreCase) is true;
     }
 }

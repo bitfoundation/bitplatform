@@ -68,6 +68,12 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerWebSettings sett
             clientCacheTtl = -1;
         }
 
+        if (context.HttpContext.IsLightHouseRequest())
+        {
+            edgeCacheTtl = -1;
+            outputCacheTtl = -1;
+        }
+
         // Edge - Client Cache
         if (clientCacheTtl != -1 || edgeCacheTtl != -1)
         {
