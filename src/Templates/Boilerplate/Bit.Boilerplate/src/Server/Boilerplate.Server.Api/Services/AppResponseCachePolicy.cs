@@ -69,7 +69,7 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerApiSettings sett
             clientCacheTtl = -1;
         }
 
-        if (context.HttpContext.IsLightHouseRequest())
+        if (context.HttpContext.Request.IsLightHouseRequest())
         {
             edgeCacheTtl = -1;
             outputCacheTtl = -1;
