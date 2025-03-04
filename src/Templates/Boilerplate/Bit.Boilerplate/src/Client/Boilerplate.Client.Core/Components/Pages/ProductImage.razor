@@ -1,6 +1,7 @@
-<BitImage Src="@(Src ?? "_content/Boilerplate.Client.Core/images/product-placeholder.svg")" Width="@Width" ShouldFadeIn="false" />
+<BitImage Src="@(Src ?? "_content/Boilerplate.Client.Core/images/product-placeholder.svg")" Class="@Class" Width="@Width" ShouldFadeIn="false" />
 
 @code {
     [Parameter] public string? Src { get; set; }
     [Parameter] public string? Width { get; set; }
+    [Parameter] public string? Class { get; set; }
 }
