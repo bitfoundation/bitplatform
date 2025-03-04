@@ -22,11 +22,6 @@ internal static class HttpContextExtensions
     {
         return context.GetEndpoint()?.Metadata?.OfType<ComponentTypeMetadata>()?.Any() is true;
     }
-
-    internal static bool IsLightHouseRequest(this HttpContext context)
-    {
-        return context.Request.Headers[HeaderNames.UserAgent].Contains("lighthouse", StringComparer.InvariantCultureIgnoreCase) is true;
-    }
     //#endif
 }
 
