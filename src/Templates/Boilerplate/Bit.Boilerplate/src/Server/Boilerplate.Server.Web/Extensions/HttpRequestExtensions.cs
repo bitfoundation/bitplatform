@@ -62,6 +62,11 @@ public static partial class HttpRequestExtensions
         return userAgent.ToLowerInvariant();
     }
 
+    public static bool IsLightHouseRequest(this HttpRequest request)
+    {
+        return GetLoweredUserAgent(request).Contains("lighthouse") is true;
+    }
+
     public static bool IsFromCDN(this HttpRequest request)
     {
         return request.Headers.ContainsKey("CDN-Loop");
