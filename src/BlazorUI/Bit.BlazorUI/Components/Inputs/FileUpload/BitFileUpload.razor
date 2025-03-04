@@ -34,13 +34,16 @@
                 var file = Files[index];
                 file.Index = index;
 
-                if (FileViewTemplate is not null)
+                if (HideFileView is false)
                 {
-                    @FileViewTemplate(file)
-                }
-                else
-                {
-                    <_BitFileUploadItem FileUpload="this" Item="file" />
+                    if (FileViewTemplate is not null)
+                    {
+                        @FileViewTemplate(file)
+                    }
+                    else
+                    {
+                        <_BitFileUploadItem FileUpload="this" Item="file" />
+                    }
                 }
             }
         </div>
