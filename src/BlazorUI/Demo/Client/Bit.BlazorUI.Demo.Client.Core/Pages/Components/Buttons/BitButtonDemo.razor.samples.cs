@@ -50,13 +50,13 @@ public partial class BitButtonDemo
 <BitButton IconName=""@BitIconName.Emoji2"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Outline"" ReversedIcon>End</BitButton>
 <BitButton IconName=""@BitIconName.Emoji2"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Text"" ReversedIcon>End</BitButton>
 
-<BitButton IconUrl=""/images/bit-logo.svg"" SecondaryText=""IconUrl"" Variant=""BitVariant.Fill"">Start</BitButton>
-<BitButton IconUrl=""/images/bit-logo.svg"" SecondaryText=""IconUrl"" Variant=""BitVariant.Outline"">Start</BitButton>
-<BitButton IconUrl=""/images/bit-logo.svg"" SecondaryText=""IconUrl"" Variant=""BitVariant.Text"">Start</BitButton>
+<BitButton IconUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" SecondaryText=""IconUrl"" Variant=""BitVariant.Fill"">Start</BitButton>
+<BitButton IconUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" SecondaryText=""IconUrl"" Variant=""BitVariant.Outline"">Start</BitButton>
+<BitButton IconUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" SecondaryText=""IconUrl"" Variant=""BitVariant.Text"">Start</BitButton>
 
-<BitButton IconUrl=""/images/bit-logo.svg"" SecondaryText=""IconUrl"" Variant=""BitVariant.Fill"" ReversedIcon>End</BitButton>
-<BitButton IconUrl=""/images/bit-logo.svg"" SecondaryText=""IconUrl"" Variant=""BitVariant.Outline"" ReversedIcon>End</BitButton>
-<BitButton IconUrl=""/images/bit-logo.svg"" SecondaryText=""IconUrl"" Variant=""BitVariant.Text"" ReversedIcon>End</BitButton>";
+<BitButton IconUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" SecondaryText=""IconUrl"" Variant=""BitVariant.Fill"" ReversedIcon>End</BitButton>
+<BitButton IconUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" SecondaryText=""IconUrl"" Variant=""BitVariant.Outline"" ReversedIcon>End</BitButton>
+<BitButton IconUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" SecondaryText=""IconUrl"" Variant=""BitVariant.Text"" ReversedIcon>End</BitButton>";
 
     private readonly string example5RazorCode = @"
 <BitButton IsLoading=""fillIsLoading"" Variant=""BitVariant.Fill"" Style=""min-width: 11rem"" OnClick=""LoadingFillClick"">

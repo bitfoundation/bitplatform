@@ -70,19 +70,19 @@ public partial class BitFileUpload : BitComponentBase
     public long? ChunkSize { get; set; }
 
     /// <summary>
-    /// The message shown for failed file uploads.
-    /// </summary>
-    [Parameter] public string FailedUploadMessage { get; set; } = "File upload failed";
-
-    /// <summary>
     /// The message shown for failed file removes.
     /// </summary>
     [Parameter] public string FailedRemoveMessage { get; set; } = "File remove failed";
 
     /// <summary>
-    /// Enables multi-file selection.
+    /// The message shown for failed file uploads.
     /// </summary>
-    [Parameter] public bool Multiple { get; set; }
+    [Parameter] public string FailedUploadMessage { get; set; } = "File upload failed";
+
+    /// <summary>
+    /// Hides the file view section of the file upload.
+    /// </summary>
+    [Parameter] public bool HideFileView { get; set; }
 
     /// <summary>
     /// The text of select file button.
@@ -103,6 +103,11 @@ public partial class BitFileUpload : BitComponentBase
     /// Specifies the message for the failed uploading progress due to exceeding the maximum size.
     /// </summary>
     [Parameter] public string MaxSizeErrorMessage { get; set; } = "The file size is larger than the max size";
+
+    /// <summary>
+    /// Enables multi-file selection.
+    /// </summary>
+    [Parameter] public bool Multiple { get; set; }
 
     /// <summary>
     /// Specifies the message for the failed uploading progress due to the allowed extensions.
@@ -190,7 +195,7 @@ public partial class BitFileUpload : BitComponentBase
     [Parameter] public string? UploadUrl { get; set; }
 
     /// <summary>
-    /// Template to render each file info.
+    /// The custom file view template.
     /// </summary>
     [Parameter] public RenderFragment<BitFileInfo>? FileViewTemplate { get; set; }
 

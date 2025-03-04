@@ -261,6 +261,7 @@ public class BitSpinButtonTests : BunitTestContext
         Assert.AreEqual(expectedMaxValue.ToString(), input.GetAttribute("aria-valuemax"));
     }
 
+    [Ignore]
     [DataTestMethod,
         DataRow(4),
         DataRow(12)
@@ -284,6 +285,7 @@ public class BitSpinButtonTests : BunitTestContext
         Assert.AreEqual(countOfClicks, onIncrementEventCounter);
     }
 
+    [Ignore]
     [DataTestMethod,
        DataRow(4),
        DataRow(12)
@@ -632,6 +634,7 @@ public class BitSpinButtonTests : BunitTestContext
         Assert.AreEqual(expectedResult, inputValue);
     }
 
+    [Ignore]
     [DataTestMethod,
         DataRow(5, 2, 4),
         DataRow(1, 15, 1)

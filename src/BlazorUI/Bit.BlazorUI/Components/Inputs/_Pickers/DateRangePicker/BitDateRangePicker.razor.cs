@@ -816,6 +816,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private async Task SelectDate(DateTime selectedDate)
     {
+        if (ReadOnly) return;
         if (IsEnabled is false || InvalidValueBinding()) return;
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
         if (IsWeekDayOutOfMinAndMaxDate(selectedDate)) return;
@@ -1513,6 +1514,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private void HandleOnAmClick(bool isStartTime)
     {
+        if (ReadOnly) return;
+        if (IsEnabled is false) return;
+
         if (isStartTime)
         {
             _startTimeHour %= 12;  // "12:-- am" is "00:--" in 24h
@@ -1527,6 +1531,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private void HandleOnPmClick(bool isStartTime)
     {
+        if (ReadOnly) return;
+        if (IsEnabled is false) return;
+
         if (isStartTime)
         {
             if (_startTimeHour <= 12) // "12:-- pm" is "12:--" in 24h
@@ -1558,6 +1565,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private async Task HandleOnPointerDown(bool isNext, bool isHour, bool isStartTime)
     {
+        if (ReadOnly) return;
         if (IsEnabled is false) return;
 
         await ChangeTime(isNext, isHour, isStartTime);
