@@ -11,7 +11,7 @@ public partial class IdentityController
     [AutoInject] private ServerExceptionHandler serverExceptionHandler = default!;
 
     [HttpGet]
-    [AppResponseCache(SharedMaxAge = 3600 * 24 * 7)]
+    [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5)]
     public async Task<string> GetSocialSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default)
     {
         var uri = Url.Action(nameof(SocialSignIn), new { provider, returnUrl, localHttpPort, origin = Request.GetWebAppUrl() })!;

@@ -36,13 +36,13 @@ BitTheme.init({
     persist: true,
     onChange: (newTheme: string, oldThem: string) => {
         if (newTheme === 'dark') {
-            document.body.classList.add('bit-theme-dark');
-            document.body.classList.remove('bit-theme-light');
-            document.querySelector("meta[name=theme-color]")!.setAttribute('content', '#0d1117');
+            document.body.classList.add('bit-blazorui-dark-theme');
+            document.body.classList.remove('bit-blazorui-light-theme');
+            document.querySelector("meta[name=theme-color]")?.setAttribute('content', '#0d1117');
         } else {
-            document.body.classList.add('bit-theme-light');
-            document.body.classList.remove('bit-theme-dark');
-            document.querySelector("meta[name=theme-color]")!.setAttribute('content', '#ffffff');
+            document.body.classList.add('bit-blazorui-light-theme');
+            document.body.classList.remove('bit-blazorui-dark-theme');
+            document.querySelector("meta[name=theme-color]")?.setAttribute('content', '#ffffff');
         }
     }
 });

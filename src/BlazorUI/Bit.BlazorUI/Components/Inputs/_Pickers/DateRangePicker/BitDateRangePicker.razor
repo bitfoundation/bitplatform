@@ -230,7 +230,7 @@
                         @for (var week = 0; week < 6; week++)
                         {
                             //to ignore the last empty week out of month || to ignore the first whole week out of month
-                            if (_daysOfCurrentMonth[week, 0] == 0 || (week == 0 && _daysOfCurrentMonth[week, 6] > 20)) continue;
+                            if (_daysOfCurrentMonth[week, 0].HasValue is false) continue;
 
                             <div style="@Styles?.DaysRow" class="bit-dtrp-dgr @Classes?.DaysRow">
                                 @if (ShowWeekNumbers)
@@ -248,12 +248,11 @@
 
                                 @for (var day = 0; day < 7; day++)
                                 {
-                                    var w = week;
-                                    var d = day;
-                                    var disabled = IsEnabled is false || IsWeekDayOutOfMinAndMaxDate(d, w);
-                                    var (style, klass) = GetDayButtonCss(d, w, todayYear, todayMonth, todayDay);
-                                    var isSelected = (w == _selectedStartDateWeek && d == _selectedStartDateDayOfWeek) || (w == _selectedEndDateWeek && d == _selectedEndDateDayOfWeek);
-                                    <button @onclick="() => SelectDate(d, w)"
+                                    var date = _daysOfCurrentMonth[week, day]!.Value;
+                                    var disabled = IsEnabled is false || IsWeekDayOutOfMinAndMaxDate(date);
+                                    var isSelected = IsBetweenTwoSelectedDate(date);
+                                    var (style, klass) = GetDayButtonCss(date);
+                                    <button @onclick="() => SelectDate(date)"
                                             type="button"
                                             role="gridcell"
                                             aria-readonly="true"
@@ -265,11 +264,11 @@
                                             aria-selected="@(isSelected ? "true" : "false")">
                                         @if (DayCellTemplate is not null)
                                         {
-                                            @DayCellTemplate(GetDateTimeOfDayCell(d, w))
+                                            @DayCellTemplate(GetDateTimeOfDayCell(date))
                                         }
                                         else
                                         {
-                                            @_daysOfCurrentMonth[w, d]
+                                            @GetDayOfCurrentMonth(date)
                                         }
                                     </button>
                                 }

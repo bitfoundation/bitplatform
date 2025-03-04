@@ -1,7 +1,7 @@
 ﻿@*+:cnd:noEmit*@
 @attribute [Route(Urls.HomePage)]
 @attribute [Route("{culture:nonfile?}" + Urls.HomePage)]
-@attribute [AppResponseCache(SharedMaxAge = 3600 * 24)]
+@attribute [AppResponseCache(SharedMaxAge = 3600 * 24, MaxAge = 60 * 5)]
 @inherits AppPageBase
 
 <PageTitle>@Localizer[nameof(AppStrings.HomePageTitle)]</PageTitle>
@@ -119,7 +119,7 @@
                     </BitStack>
                 </BitLink>
                 <BitLink Href="https://www.nuget.org/profiles/bit-foundation" Target="_blank" NoUnderline>
-                    <BitImage Src="https://img.shields.io/badge/packages_download-5.9M-blue.svg?logo=nuget" Alt="nuget downloads" />
+                    <BitImage Src="https://img.shields.io/badge/packages_download-6.0M-blue.svg?logo=nuget" Alt="nuget downloads" />
                 </BitLink>
             </BitStack>
         </BitCard>

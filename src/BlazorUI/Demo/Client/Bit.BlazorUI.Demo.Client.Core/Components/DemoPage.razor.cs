@@ -3,6 +3,7 @@
 public partial class DemoPage
 {
     [Parameter] public string Name { get; set; } = default!;
+    [Parameter] public string[]? SecondaryNames { get; set; }
     [Parameter] public string? Description { get; set; }
     [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
     [Parameter] public string? Notes { get; set; }

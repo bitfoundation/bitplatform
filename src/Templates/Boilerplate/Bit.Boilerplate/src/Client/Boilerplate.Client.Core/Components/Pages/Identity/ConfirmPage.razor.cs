@@ -99,7 +99,7 @@ public partial class ConfirmPage
 
         await WrapRequest(async () =>
         {
-            await identityController.SendConfirmEmailToken(new() { Email = emailModel.Email }, CurrentCancellationToken);
+            await identityController.SendConfirmEmailToken(new() { Email = emailModel.Email, ReturnUrl = ReturnUrlQueryString }, CurrentCancellationToken);
         });
     }
 

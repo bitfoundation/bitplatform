@@ -9,7 +9,6 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
 {
     [AutoInject] private IHostEnvironment env = default!;
     [AutoInject] private ILogger<ServerExceptionHandler> logger = default!;
-    [AutoInject] private IWebHostEnvironment webHostEnvironment = default!;
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
 
@@ -65,6 +64,7 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
                 traceIdentifier = httpContext.TraceIdentifier;
                 instance = $"{httpContext.Request.Method} {httpContext.Request.GetUri().PathAndQuery}";
 
+                data["Instance"] = instance;
                 data["RequestId"] = httpContext.TraceIdentifier;
                 data["UserId"] = httpContext.User.IsAuthenticated() ? httpContext.User.GetUserId() : null;
                 data["UserSessionId"] = httpContext.User.IsAuthenticated() ? httpContext.User.GetSessionId() : null;
@@ -81,13 +81,9 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
         var message = GetExceptionMessageToShow(exception);
         var exceptionKey = knownException?.Key ?? nameof(UnknownException);
 
-        foreach (var key in exception.Data.Keys)
+        foreach (var item in GetExceptionData(exception))
         {
-            var keyAsString = key.ToString()!;
-
-            var value = exception.Data[keyAsString]!;
-
-            if (keyAsString == "__AppProblemDetailsExtensionsData" && value is Dictionary<string, object?> appProblemExtensionsData)
+            if (item.Value is Dictionary<string, object?> appProblemExtensionsData)
             {
                 foreach (var innerDataItem in appProblemExtensionsData)
                 {
@@ -97,7 +93,7 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
                 continue;
             }
 
-            data[keyAsString] = value;
+            data[item.Key] = item.Value;
         }
 
         if (parameters is not null)

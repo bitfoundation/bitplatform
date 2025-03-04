@@ -1,6 +1,9 @@
 ﻿using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 namespace Bit.Besql;
 
@@ -8,13 +11,15 @@ public class BesqlPooledDbContextFactory<TDbContext> : PooledDbContextFactoryBas
     where TDbContext : DbContext
 {
     private readonly string _fileName;
-    private readonly IBitBesqlStorage _storage;
     private readonly string _connectionString;
+    private readonly IBitBesqlStorage _storage;
+    private readonly IServiceProvider _serviceProvider;
 
     public BesqlPooledDbContextFactory(
         IBitBesqlStorage storage,
         DbContextOptions<TDbContext> options,
-        Func<IServiceProvider, TDbContext, Task> dbContextInitializer)
+        Func<IServiceProvider, TDbContext, Task> dbContextInitializer,
+        IServiceProvider serviceProvider)
         : base(options, dbContextInitializer)
     {
         _connectionString = options.Extensions
@@ -27,10 +32,20 @@ public class BesqlPooledDbContextFactory<TDbContext> : PooledDbContextFactoryBas
         }["Data Source"].ToString()!.Trim('/');
 
         _storage = storage;
+
+        _serviceProvider = serviceProvider;
     }
 
+    [RequiresUnreferencedCode("Types and members the loaded assemblies depend on might be removed")]
     protected override async Task InitializeDbContext()
     {
+        try
+        {
+            await using var scope = _serviceProvider.CreateAsyncScope();
+            await scope.ServiceProvider.GetRequiredService<LazyAssemblyLoader>().LoadAssembliesAsync(["System.Private.Xml.wasm"]);
+        }
+        catch { }
+
         if (File.Exists(_fileName) is false)
         {
             await _storage.Load(_fileName).ConfigureAwait(false);

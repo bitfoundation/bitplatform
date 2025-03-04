@@ -9,4 +9,6 @@ public interface IStorageService
     ValueTask<bool> IsPersistent(string key);
 
     ValueTask RemoveItem(string key);
+
+    ValueTask Clear();
 }

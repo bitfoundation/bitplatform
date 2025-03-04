@@ -33,9 +33,20 @@
                 <div style="@Styles?.Header" class="bit-npn-hdr @Classes?.Header">
                     @if (IconUrl.HasValue())
                     {
-                        <img src="@IconUrl"
-                             class="bit-npn-img @Classes?.HeaderIcon"
-                             style="@(isToggled ? "display:none;" : "") @Styles?.HeaderIcon" />
+                        if (IconNavUrl.HasValue())
+                        {
+                            <a href="@IconNavUrl">
+                                <img src="@IconUrl"
+                                     class="bit-npn-img @Classes?.HeaderIcon"
+                                     style="@(isToggled ? "display:none;" : "") @Styles?.HeaderIcon" />
+                            </a>
+                        }
+                        else
+                        {
+                            <img src="@IconUrl"
+                                 class="bit-npn-img @Classes?.HeaderIcon"
+                                 style="@(isToggled ? "display:none;" : "") @Styles?.HeaderIcon" />
+                        }
                     }
 
                     <div class="bit-npn-spc" style="@(isToggled ? "display:none;" : "")" />
@@ -67,7 +78,8 @@
 
             @if (isToggled)
             {
-                <BitButton IconOnly FixedColor
+                <BitButton IconOnly 
+                           FixedColor
                            IconName="Search"
                            Size="BitSize.Large"
                            OnClick="ToggleForSearch"
@@ -97,14 +109,29 @@
             {
                 <BitNav @ref=_bitNavRef
                         FullWidth
+                        Color="Color"
+                        Accent="Accent"
                         Styles="NavStyles"
                         Classes="NavClasses"
                         IconOnly="isToggled"
                         Style="@Styles?.Nav"
                         Class="@Classes?.Nav"
+                        RenderType="RenderType"
                         Items="_filteredNavItems"
+                        IndentValue="IndentValue"
+                        SingleExpand="SingleExpand"
+                        Reselectable="Reselectable"
+                        ItemTemplate="ItemTemplate"
+                        OnItemToggle="OnItemToggle"
+                        OnSelectItem="OnSelectItem"
+                        IndentPadding="IndentPadding"
+                        HeaderTemplate="HeaderTemplate"
+                        ReversedChevron="ReversedChevron"
+                        ChevronDownIcon="@ChevronDownIcon"
                         DefaultSelectedItem="_filteredNavItems[0]"
-                        Accent="NoPad ? null : BitColor.SecondaryBackground"
+                        IndentReversedPadding="IndentReversedPadding"
+                        ItemTemplateRenderMode="ItemTemplateRenderMode"
+                        HeaderTemplateRenderMode="HeaderTemplateRenderMode"
                         OnItemClick="(TItem item) => HandleNavItemClick(item)" />
             }
 

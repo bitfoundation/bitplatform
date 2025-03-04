@@ -9,8 +9,17 @@ public partial class BrowserStorageService : IStorageService
 
     public async ValueTask<string?> GetItem(string key)
     {
-        return await localStorage.GetItem(key) ??
-            await sessionStorage.GetItem(key);
+        try
+        {
+            BitButil.UseFastInvoke(); // In Blazor WebAssembly, `IJSInProcessRuntime` is used for `localStorage` and `sessionStorage`, providing a slight performance boost.
+
+            return await localStorage.GetItem(key) ??
+                await sessionStorage.GetItem(key);
+        }
+        finally
+        {
+            BitButil.UseNormalInvoke();
+        }
     }
 
     public async ValueTask RemoveItem(string key)
@@ -34,5 +43,11 @@ public partial class BrowserStorageService : IStorageService
     public async ValueTask<bool> IsPersistent(string key)
     {
         return (await localStorage.GetItem(key)) is not null;
+    }
+
+    public async ValueTask Clear()
+    {
+        await localStorage.Clear();
+        await sessionStorage.Clear();
     }
 }

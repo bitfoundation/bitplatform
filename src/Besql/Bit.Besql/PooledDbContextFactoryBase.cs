@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Bit.Besql;
@@ -9,6 +10,7 @@ public class PooledDbContextFactoryBase<TDbContext>(DbContextOptions<TDbContext>
 {
     private TaskCompletionSource? dbContextInitializerTcs;
 
+    [RequiresUnreferencedCode("Calls StartRunningDbContextInitializer()")]
     public override async Task<TDbContext> CreateDbContextAsync(CancellationToken cancellationToken = default)
     {
         if (dbContextInitializerTcs is null)
@@ -26,6 +28,7 @@ public class PooledDbContextFactoryBase<TDbContext>(DbContextOptions<TDbContext>
         return CreateDbContextAsync().GetAwaiter().GetResult();
     }
 
+    [RequiresUnreferencedCode("Calls Bit.Besql.PooledDbContextFactoryBase<TDbContext>.InitializeDbContext()")]
     private async Task StartRunningDbContextInitializer()
     {
         if (dbContextInitializerTcs is not null)
@@ -44,6 +47,7 @@ public class PooledDbContextFactoryBase<TDbContext>(DbContextOptions<TDbContext>
         }
     }
 
+    [RequiresUnreferencedCode("Types and members the loaded assemblies depend on might be removed")]
     protected virtual async Task InitializeDbContext()
     {
         if (dbContextInitializer is not null)

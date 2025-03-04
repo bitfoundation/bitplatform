@@ -131,8 +131,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                         { "RefreshTokenRequestedBy", requestedBy }
                     });
 
-                    if (exp is UnauthorizedException // refresh token is also invalid.
-                        || exp is ReusedRefreshTokenException && refreshToken == await storageService.GetItem("refresh_token"))
+                    if (exp is UnauthorizedException) // refresh token is also invalid
                     {
                         await ClearTokens();
                     }

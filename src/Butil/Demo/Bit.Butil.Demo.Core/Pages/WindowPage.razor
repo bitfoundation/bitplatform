@@ -97,7 +97,9 @@
 <br />
 
 <button @onclick=OpenWindow>OpenWindow</button>
-&nbsp;
+<button @onclick=CloseWindow>CloseWindow</button>
+<br />
+<br />
 <button @onclick=OpenPrint>OpenPrint</button>
 
 <br />
@@ -356,10 +358,19 @@ Y: <input type="number" @bind-value="scrollByY"/>
         await window.Prompt("Prompt from C#", string.Empty);
     }
 
+    private List<string> windowIds = [];
     private async Task OpenWindow()
     {
         var windowFeatures = new WindowFeatures() { Popup = true, Width = 848, Height = 568 };
-        await window.Open("/document", "popupWindow", windowFeatures);
+        windowIds.Add(await window.Open("/document", "_blank", windowFeatures));
+    }
+
+    private async Task CloseWindow()
+    {
+        if (windowIds.Count == 0) return;
+        var id = windowIds[^1];
+        await window.Close(id);
+        windowIds.Remove(id);
     }
 
     private async Task OpenPrint()

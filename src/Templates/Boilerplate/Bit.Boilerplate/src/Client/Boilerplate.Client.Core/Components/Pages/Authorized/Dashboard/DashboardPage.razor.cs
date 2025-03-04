@@ -29,9 +29,10 @@ public partial class DashboardPage
             {
                 await lazyAssemblyLoader.LoadAssembliesAsync([
                     //#if (offlineDb == false)
-                    "System.Private.Xml.wasm", "System.Data.Common.wasm",
+                    "System.Data.Common.wasm",
                     //#endif
-                    "Newtonsoft.Json.wasm"]
+                    "Newtonsoft.Json.wasm",
+                    "System.Private.Xml.wasm"]
                     );
             }
         }

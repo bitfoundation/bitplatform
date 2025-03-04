@@ -1,4 +1,4 @@
-﻿self['bit-bswup.sw version'] = '9.5.0-pre-03';
+﻿self['bit-bswup.sw version'] = '9.6.0-pre-03';
 
 interface Window {
     clients: any
@@ -25,6 +25,9 @@ interface Window {
     enableDiagnostics: any
     enableFetchDiagnostics: any
     disableHashlessAssetsUpdate: any
+    forcePrerender: any
+
+    prerenderMode: any
 }
 
 interface Event {
@@ -43,6 +46,36 @@ self.importScripts(ASSETS_URL);
 const VERSION = self.assetsManifest.version;
 const CACHE_NAME_PREFIX = 'bit-bswup';
 const CACHE_NAME = `${CACHE_NAME_PREFIX} - ${VERSION}`;
+
+switch (self.prerenderMode) {
+    case 'none': // like admin
+        self.defaultUrl ||= "/";
+        self.isPassive ||= true;
+        self.forcePrerender ||= false;
+        self.errorTolerance ||= 'lax';
+        self.caseInsensitiveUrl ||= true;
+        self.disablePassiveFirstBoot ||= false;
+        self.noPrerenderQuery ||= 'no-prerender=true';
+        break;
+    case 'initial': // like todo
+        self.defaultUrl ||= "/";
+        self.isPassive ||= true;
+        self.forcePrerender ||= false;
+        self.errorTolerance ||= 'lax';
+        self.caseInsensitiveUrl ||= true;
+        self.disablePassiveFirstBoot ||= true;
+        self.noPrerenderQuery ||= 'no-prerender=true';
+        break;
+    case 'always': // like sales
+        self.defaultUrl ||= "/";
+        self.isPassive ||= true;
+        self.forcePrerender ||= true;
+        self.errorTolerance ||= 'lax';
+        self.caseInsensitiveUrl ||= true;
+        self.disablePassiveFirstBoot ||= true;
+        self.noPrerenderQuery ||= '';
+        break;
+}
 
 self.addEventListener('install', e => e.waitUntil(handleInstall(e)));
 self.addEventListener('activate', e => e.waitUntil(handleActivate(e)));
@@ -112,28 +145,31 @@ diagGroupEnd();
 async function handleFetch(e) {
     const req = e.request as Request;
 
-    if (req.method !== 'GET' || SERVER_HANDLED_URLS.some(pattern => pattern.test(req.url))) {
-        diagFetch('*** handleFetch ended - skipped:', e, req);
+    if (PROHIBITED_URLS.some(pattern => pattern.test(req.url))) {
+        diagFetch('+++ handleFetch ended - prohibited:', e, req);
+
+        return new Response(new Blob(), { status: 405, "statusText": `prohibited URL: ${req.url}` });
+    }
+
+    const isServerHandled = SERVER_HANDLED_URLS.some(pattern => pattern.test(req.url));
+    if (req.method !== 'GET' || isServerHandled) {
+        diagFetch('*** handleFetch ended - skipped - !GET or SERVER_HANDLED_URLS:', e, req);
         return fetch(req);
     }
 
-    const isServerRendered = SERVER_RENDERED_URLS.some(pattern => pattern.test(req.url))
-    const shouldServeIndexHtml = (req.mode === 'navigate' && !isServerRendered);
-    const requestUrl = shouldServeIndexHtml ? DEFAULT_URL : req.url;
+
+
+    const isServerRendered = SERVER_RENDERED_URLS.some(pattern => pattern.test(req.url));
+    const shouldServeDefaultDoc = (req.mode === 'navigate') && !isServerRendered && !self.forcePrerender;
+    const requestUrl = shouldServeDefaultDoc ? DEFAULT_URL : req.url;
 
     const start = new Date().toISOString();
-
-    if (PROHIBITED_URLS.some(pattern => pattern.test(requestUrl))) {
-        diagFetch('+++ handleFetch ended - prohibited:', start, requestUrl, e, req);
-
-        return new Response(new Blob(), { status: 405, "statusText": `prohibited URL: ${requestUrl}` });
-    }
 
     const caseMethod = self.caseInsensitiveUrl ? 'toLowerCase' : 'toString';
 
     // the assets url are only the pathname part of the actual request url!
-    // since only the index url is simple and other urls have extra thins in them(like 'https://...`)
-    let asset = UNIQUE_ASSETS.find(a => a[shouldServeIndexHtml ? 'url' : 'reqUrl'][caseMethod]() === requestUrl[caseMethod]());
+    // since only the default url is simple and other ones contain other parts (like 'https://...`)
+    let asset = UNIQUE_ASSETS.find(a => a[shouldServeDefaultDoc ? 'url' : 'reqUrl'][caseMethod]() === requestUrl[caseMethod]());
 
     if (!asset) { // for assets that has asp-append-version or similar type of url versioning
         try {
@@ -143,8 +179,14 @@ async function handleFetch(e) {
         } catch { }
     }
 
-    if (!asset?.url) {
+    if (!(asset?.url)) {
         diagFetch('+++ handleFetch ended - asset not found:', start, asset, requestUrl, e, req);
+
+        return fetch(req);
+    }
+
+    if (self.forcePrerender && asset.url === DEFAULT_URL) {
+        diagFetch('+++ handleFetch ended - skipped - forcePrerender defaultDoc:', start, asset, requestUrl, e, req);
 
         return fetch(req);
     }
@@ -276,8 +318,8 @@ async function createAssetsCache(ignoreProgressReport = false) {
     }
 
     const defaultAsset = UNIQUE_ASSETS.find(a => a.url === DEFAULT_URL);
-    if (!updatedAssets.includes(defaultAsset)) {
-        updatedAssets.push(defaultAsset); // get the latest version of the default doc in each update!
+    if (defaultAsset && !updatedAssets.includes(defaultAsset)) {
+        updatedAssets.push(defaultAsset); // get the latest version of the default doc in each update if exists!!
     }
 
     diag('oldUrls:', oldUrls);
@@ -294,9 +336,8 @@ async function createAssetsCache(ignoreProgressReport = false) {
     diagGroupEnd();
 
     async function addCache(report, asset) {
-        const request = createNewAssetRequest(asset);
-
         try {
+            const request = createNewAssetRequest(asset);
             const responsePromise = fetch(request);
             return responsePromise.then(async response => {
                 try {
@@ -355,7 +396,7 @@ function createNewAssetRequest(asset) {
 
 async function deleteOldCaches() {
     const cacheKeys = await caches.keys();
-    const promises = cacheKeys.filter(key => key.startsWith('blazor-resources') || (key.startsWith(CACHE_NAME_PREFIX) && key !== CACHE_NAME)).map(key => caches.delete(key));
+    const promises = cacheKeys.filter(key => (key.startsWith(CACHE_NAME_PREFIX) && key !== CACHE_NAME)).map(key => caches.delete(key));
     return Promise.all(promises);
 }
 

@@ -1,6 +1,6 @@
 ﻿@attribute [Route(Urls.ProductPage + "/{Id:int}/{Name}")]
 @attribute [Route("{culture?}" + Urls.ProductPage + "/{Id:int}/{Name}")]
-@attribute [AppResponseCache(SharedMaxAge = 3600 * 24)]
+@attribute [AppResponseCache(SharedMaxAge = 3600 * 24, MaxAge = 60 * 5)]
 @inherits AppPageBase
 
 <PageTitle>@Name</PageTitle>
@@ -32,7 +32,7 @@
 
             <br />
 
-            <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.AboutTitle)]</BitText>
+            <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.About)]</BitText>
 
             <BitCard FullWidth>
                 <BitStack AutoHeight Grows>
@@ -66,7 +66,7 @@
 
                 <br />
 
-                <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.AboutTitle)]</BitText>
+                <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.About)]</BitText>
 
                 <BitCard FullWidth>
                     <BitText>

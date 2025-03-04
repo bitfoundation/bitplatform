@@ -35,4 +35,10 @@ public partial class MauiStorageService : IStorageService
             }
         }
     }
+
+    public async ValueTask Clear()
+    {
+        tempStorage.Clear();
+        Preferences.Clear();
+    }
 }

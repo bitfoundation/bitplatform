@@ -1,10 +1,8 @@
-﻿using System.Reflection;
-using System.Diagnostics;
-using System.Runtime.Loader;
-using System.Runtime.CompilerServices;
+﻿//#if (signalR == true)
+using Microsoft.AspNetCore.SignalR.Client;
+//#endif
 using Boilerplate.Shared.Controllers.Diagnostics;
 using Boilerplate.Client.Core.Services.DiagnosticLog;
-using System.Text;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -14,6 +12,8 @@ namespace Boilerplate.Client.Core.Components.Layout;
 /// </summary>
 public partial class AppDiagnosticModal
 {
+    private static bool showKnownException = true;
+
     private bool isOpen;
     private string? searchText;
     private bool isLogModalOpen;
@@ -32,9 +32,15 @@ public partial class AppDiagnosticModal
 
 
     [AutoInject] private Clipboard clipboard = default!;
+    //#if (signalR == true)
+    [AutoInject] private HubConnection hubConnection = default!;
+    //#endif
     [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private BitMessageBoxService messageBoxService = default!;
     [AutoInject] private IDiagnosticsController diagnosticsController = default!;
+    //#if (notification == true)
+    [AutoInject] private IPushNotificationService pushNotificationService = default!;
+    //#endif
 
     protected override Task OnInitAsync()
     {
@@ -54,6 +60,7 @@ public partial class AppDiagnosticModal
     {
         searchText = text;
         FilterLogs();
+        StateHasChanged();
     }
 
     private void HandleOnLogLevelFilter(IEnumerable<LogLevel> logLevels)
@@ -76,7 +83,9 @@ public partial class AppDiagnosticModal
 
     private void FilterLogs()
     {
-        filteredLogs = allLogs.WhereIf(string.IsNullOrEmpty(searchText) is false, l => l.Message?.Contains(searchText!, StringComparison.InvariantCultureIgnoreCase) is true || l.Category?.Contains(searchText!, StringComparison.InvariantCultureIgnoreCase) is true)
+        filteredLogs = allLogs.WhereIf(string.IsNullOrEmpty(searchText) is false, l => l.Message?.Contains(searchText!, StringComparison.InvariantCultureIgnoreCase) is true ||
+                                                                                       l.Category?.Contains(searchText!, StringComparison.InvariantCultureIgnoreCase) is true ||
+                                                                                       l.State?.Any(s => s.Key.Contains(searchText!) || s.Value?.Contains(searchText!, StringComparison.InvariantCultureIgnoreCase) is true) is true)
                               .Where(l => filterLogLevels.Contains(l.Level))
                               .Where(l => filterCategories.Contains(l.Category));
         if (isDescendingSort)
@@ -131,73 +140,6 @@ public partial class AppDiagnosticModal
         ResetLogs();
     }
 
-    private static bool showKnownException = true;
-    private async Task ThrowTestException()
-    {
-        await Task.Delay(250);
-
-        showKnownException = !showKnownException;
-
-        throw showKnownException
-            ? new InvalidOperationException("Something critical happened.").WithData("TestData", 1)
-            : new DomainLogicException("Something bad happened.").WithData("TestData", 2);
-    }
-
-    private async Task CallDiagnosticsApi()
-    {
-        var serverResult = await diagnosticsController.PerformDiagnostics(CurrentCancellationToken);
-
-        StringBuilder resultBuilder = new(serverResult);
-        try
-        {
-            resultBuilder.AppendLine();
-
-            resultBuilder.AppendLine($"IsDynamicCodeCompiled: {RuntimeFeature.IsDynamicCodeCompiled}");
-            resultBuilder.AppendLine($"IsDynamicCodeSupported: {RuntimeFeature.IsDynamicCodeSupported}");
-            resultBuilder.AppendLine($"Is Aot: {new StackTrace(false).GetFrame(0)?.GetMethod() is null}"); // No 100% Guaranteed way to detect AOT.
-
-            resultBuilder.AppendLine();
-
-            resultBuilder.AppendLine($"Env version: {Environment.Version}");
-            resultBuilder.AppendLine($"64 bit process: {Environment.Is64BitProcess}");
-            resultBuilder.AppendLine($"Privilaged process: {Environment.IsPrivilegedProcess}");
-
-            resultBuilder.AppendLine();
-
-            if (GC.GetConfigurationVariables().TryGetValue("ServerGC", out var serverGC))
-                resultBuilder.AppendLine($"ServerGC: {serverGC}");
-
-            if (GC.GetConfigurationVariables().TryGetValue("ConcurrentGC", out var concurrentGC))
-                resultBuilder.AppendLine($"ConcurrentGC: {concurrentGC}");
-        }
-        catch (Exception exp)
-        {
-            resultBuilder.AppendLine($"{Environment.NewLine}Error while getting diagnostic data: {exp.Message}");
-        }
-
-        await messageBoxService.Show("Diagnostics Result", resultBuilder.ToString());
-    }
-
-    private async Task CallGC()
-    {
-        SnackBarService.Show("Memory Before GC", GetMemoryUsage());
-
-        await Task.Run(() =>
-        {
-            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
-            GC.WaitForPendingFinalizers();
-            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
-        });
-
-        SnackBarService.Show("Memory After GC", GetMemoryUsage());
-    }
-
-    string GetMemoryUsage()
-    {
-        long memory = Environment.WorkingSet;
-        return $"{memory / (1024.0 * 1024.0):F2} MB";
-    }
-
     private void ResetLogs()
     {
         allLogs = [.. DiagnosticLogger.Store];
@@ -211,7 +153,6 @@ public partial class AppDiagnosticModal
 
         FilterLogs();
     }
-
 
     private static BitColor GetColor(LogLevel? level)
     {
@@ -227,6 +168,7 @@ public partial class AppDiagnosticModal
             _ => BitColor.TertiaryForeground
         };
     }
+
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {

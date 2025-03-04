@@ -4,56 +4,68 @@ class BitTheme {
     private static THEME_ATTRIBUTE = 'bit-theme';
     private static THEME_STORAGE_KEY = 'bit-current-theme';
 
-    private static currentTheme = 'light';
-    private static onThemeChange: onThemeChangeType = () => { };
+    private static _darkTheme: string = 'dark';
+    private static _lightTheme: string = 'light';
+
+    private static _persist = false;
+    private static _currentTheme = BitTheme._lightTheme;
+    private static _onThemeChange: onThemeChangeType = () => { };
 
     public static init(options: any) {
+        if (options.onChange) {
+            BitTheme._onThemeChange = options.onChange;
+        }
+
+        if (options.darkTheme) {
+            BitTheme._darkTheme = options.darkTheme;
+        }
+
+        if (options.lightTheme) {
+            BitTheme._lightTheme = options.lightTheme;
+        }
+
         if (options.system) {
-            BitTheme.currentTheme = BitTheme.isSystemDark() ? 'dark' : 'light';
+            BitTheme._currentTheme = BitTheme.isSystemDark() ? BitTheme._darkTheme : BitTheme._lightTheme;
         } else if (options.default) {
-            BitTheme.currentTheme = options.default;
+            BitTheme._currentTheme = options.default;
         }
 
         if (options.persist) {
-            BitTheme.currentTheme = localStorage.getItem(BitTheme.THEME_STORAGE_KEY) || BitTheme.currentTheme;
+            BitTheme._persist = true;
+            BitTheme._currentTheme = localStorage.getItem(BitTheme.THEME_STORAGE_KEY) || BitTheme._currentTheme;
         }
 
-        BitTheme.onThemeChange = options.onChange;
-
-        BitTheme.set(BitTheme.currentTheme);
+        BitTheme.set(BitTheme._currentTheme);
     }
 
     public static onChange(fn: onThemeChangeType) {
-        BitTheme.onThemeChange = fn;
-    }
-
-    public static useSystem() {
-        BitTheme.currentTheme = BitTheme.isSystemDark() ? 'dark' : 'light';
-        BitTheme.set(BitTheme.currentTheme);
+        BitTheme._onThemeChange = fn;
     }
 
     public static get() {
-        BitTheme.currentTheme = document.documentElement.getAttribute(BitTheme.THEME_ATTRIBUTE) || '';
+        BitTheme._currentTheme = document.documentElement.getAttribute(BitTheme.THEME_ATTRIBUTE) || '';
 
-        return BitTheme.currentTheme;
+        return BitTheme._currentTheme;
     }
 
     public static set(themeName: string) {
-        BitTheme.currentTheme = themeName;
-        localStorage.setItem(BitTheme.THEME_STORAGE_KEY, themeName);
-        const oldTheme = document.documentElement.getAttribute(BitTheme.THEME_ATTRIBUTE) || '';
+        BitTheme._currentTheme = themeName;
+        if (BitTheme._persist) {
+            localStorage.setItem(BitTheme.THEME_STORAGE_KEY, themeName);
+        }
 
+        const oldTheme = document.documentElement.getAttribute(BitTheme.THEME_ATTRIBUTE) || '';
         document.documentElement.setAttribute(BitTheme.THEME_ATTRIBUTE, themeName);
 
-        BitTheme.onThemeChange?.(themeName, oldTheme);
+        BitTheme._onThemeChange?.(themeName, oldTheme);
     }
 
     public static toggleDarkLight() {
-        BitTheme.currentTheme = BitTheme.currentTheme === 'light' ? 'dark' : 'light';
+        BitTheme._currentTheme = BitTheme._currentTheme === BitTheme._lightTheme ? BitTheme._darkTheme : BitTheme._lightTheme;
 
-        BitTheme.set(BitTheme.currentTheme);
+        BitTheme.set(BitTheme._currentTheme);
 
-        return BitTheme.currentTheme;
+        return BitTheme._currentTheme;
     }
 
     public static applyBitTheme(theme: any, element?: HTMLElement) {
@@ -66,6 +78,14 @@ class BitTheme {
     }
 }
 
-if (document.documentElement.hasAttribute('use-system-theme')) {
-    BitTheme.useSystem();
-}
+(function () {
+    const options = {
+        darkTheme: document.documentElement.getAttribute('bit-theme-dark'),
+        lightTheme: document.documentElement.getAttribute('bit-theme-light'),
+        system: document.documentElement.hasAttribute('bit-theme-system'),
+        default: document.documentElement.getAttribute('bit-theme-default'),
+        persist: document.documentElement.hasAttribute('bit-theme-persist'),
+    };
+
+    BitTheme.init(options);
+}());

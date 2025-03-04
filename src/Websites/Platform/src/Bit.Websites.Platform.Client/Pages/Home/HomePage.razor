@@ -3,7 +3,7 @@
 
 <PageOutlet Url=""
             Title="Home"
-            Description="home page of the bit platform" />
+            Description="bit platform is a set of tools for .NET developers to easily Code, Build & Deploy their projects across multiple platforms" />
 
 <div class="page-container">
     <img src="/images/home/hero-gradient-dark.svg" class="hero-gradient dark-theme" />
@@ -134,34 +134,8 @@
                 <br />
                 they can make
             </BitText>
-            <br />
-            <BitCarousel Class="customer-carousel" ShowNextPrev="false" AutoPlay="true" AutoPlayInterval="10000" InfiniteScrolling="true">
-                <BitCarouselItem>
-                    <BitText Typography="BitTypography.H5" Class="text-subtitle">
-                        <a class="customer-link" href="https://rigidrobotics.com/" target="_blank"><b class="highlight-2">RIGID Robotics</b></a>
-                        Offers a unified and scalable Cloud Platform and Applications that gather Data in Real-time from its Sensors
-                        that are embedded in customers’ mining equipment and operations. A centralized web portal built on bit platform
-                        delivers real-time data insights, 3D visualization, and advanced reporting, all in one unified environment.
-                    </BitText>
-                </BitCarouselItem>
-                <BitCarouselItem>
-                    <BitText Typography="BitTypography.H5" Class="text-subtitle">
-                        <a class="customer-link" href="https://www.antargyan.com/" target="_blank"><b class="highlight-2">Antargyan</b></a>
-                        Serving over 450,000 students and 500+ educators, Antargyan is known for its innovative RioPlay platform.
-                        They are re-building their software products with bit platform to enhance UI/UX, boost performance,
-                        and expand their reach across more platforms using bit platform's cross-platform features.
-                    </BitText>
-                </BitCarouselItem>
-                <BitCarouselItem>
-                    <BitText Typography="BitTypography.H5" Class="text-subtitle">
-                        <a class="customer-link" href="https://fx.land/" target="_blank"><b class="highlight-2">Functionland</b></a>
-                        Want to own your files, literally? This is something that will not happen ever on traditional cloud services.
-                        The innovative FxFiles (file manager), built on bit platform, leverages the FULA blockchain network to
-                        ensure you retain complete control over your data. Check out the project on
-                        <a href="https://github.com/functionland/fx-files" target="_blank">GitHub</a>.
-                    </BitText>
-                </BitCarouselItem>
-            </BitCarousel>
+            <br /><br />
+            <CustomerCarousel />
         </div>
     </section>
 </div>

@@ -232,6 +232,26 @@ public partial class BitModalDemo
     private bool isOpenFullSize;
     private bool isFullSize;
 
+    private bool isEventsOpen;
+    private bool isDismissed;
+    private bool isOverlayClicked;
+    private async Task HandleOnDismiss()
+    {
+        isDismissed = true;
+        await Task.Delay(3000);
+        isDismissed = false;
+    }
+    private void HandleOnOverlayClick()
+    {
+        isOverlayClicked = true;
+        _ = Task.Delay(2000).ContinueWith(_ =>
+            {
+                isOverlayClicked = false;
+                InvokeAsync(StateHasChanged);
+            });
+    }
+
+
     private bool isOpenStyle;
     private bool isOpenClass;
     private bool isOpenStyles;
@@ -738,6 +758,83 @@ private bool isFullSize;";
         overflow-y: hidden;
         padding: 0 24px 24px;
     }
+</style>
+
+
+<BitButton OnClick=""() => isEventsOpen = true"">Open Modal</BitButton>
+
+<div>Dismissed? [@isDismissed]</div>
+
+<div>Overlay clicked? [@isOverlayClicked]</div>
+
+<BitModal @bind-IsOpen=""isEventsOpen""
+          Draggable
+          OnDismiss=""HandleOnDismiss""
+          OnOverlayClick=""HandleOnOverlayClick"">
+    <div class=""modal-header"">
+        <span class=""modal-header-text"">Events modal</span>
+        <BitButton Title=""Close""
+                   Variant=""BitVariant.Text""
+                   OnClick=""() => isEventsOpen = false""
+                   IconName=""@BitIconName.ChromeClose"" />
+    </div>
+    <div class=""modal-body"">
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+            efficitur.
+        </p>
+    </div>
+</BitModal>";
+    private readonly string example8CsharpCode = @"
+private bool isEventsOpen;
+private bool isDismissed;
+private bool isOverlayClicked;
+
+private async Task HandleOnDismiss()
+{
+    isDismissed = true;
+    await Task.Delay(3000);
+    isDismissed = false;
+}
+
+private void HandleOnOverlayClick()
+{
+    isOverlayClicked = true;
+    _ = Task.Delay(2000).ContinueWith(_ =>
+        {
+            isOverlayClicked = false;
+            InvokeAsync(StateHasChanged);
+        });
+}";
+
+    private readonly string example9RazorCode = @"
+<style>
+    .modal-header {
+        gap: 0.5rem;
+        display: flex;
+        font-size: 24px;
+        font-weight: 600;
+        align-items: center;
+        padding: 12px 12px 14px 24px;
+        border-top: 4px solid #0054C6;
+    }
+
+    .modal-header-text {
+        flex-grow: 1;
+    }
+
+    .modal-body {
+        max-width: 960px;
+        line-height: 20px;
+        overflow-y: hidden;
+        padding: 0 24px 24px;
+    }
 
     .custom-class {
         border: 0.5rem solid tomato;
@@ -839,13 +936,13 @@ private bool isFullSize;";
         </p>
     </div>
 </BitModal>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private bool isOpenStyle;
 private bool isOpenClass;
 private bool isOpenStyles;
 private bool isOpenClasses;";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .modal-header {
         gap: 0.5rem;
@@ -897,6 +994,6 @@ private bool isOpenClasses;";
         </p>
     </div>
 </BitModal>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private bool isOpenRtl;";
 }

@@ -1,5 +1,5 @@
-﻿const BitBswup = {} as any;
-BitBswup.version = window['bit-bswup version'] = '9.5.0-pre-03';
+﻿var BitBswup = BitBswup || {};
+BitBswup.version = window['bit-bswup version'] = '9.6.0-pre-03';
 
 declare const Blazor: any;
 
@@ -105,6 +105,11 @@ BitBswup.forceRefresh = async () => {
         }
 
         function handleMessage(e) {
+            if (e.data === 'START_BLAZOR') {
+                startBlazor(true);
+                return;
+            }
+
             if (e.data === 'WAITING_SKIPPED') {
                 window.location.reload();
                 return;
@@ -118,6 +123,14 @@ BitBswup.forceRefresh = async () => {
                 return;
             }
 
+            if (e.data === 'UNREGISTER') {
+                navigator.serviceWorker.getRegistrations().then(regs => {
+                    const regPromises = regs.map(r => r.unregister());
+                    Promise.all(regPromises).then(() => window.location.reload());
+                });
+                return;
+            }
+
             const message = JSON.parse(e.data);
             const { type, data } = message;
 
@@ -127,6 +140,7 @@ BitBswup.forceRefresh = async () => {
 
             if (type === 'progress') {
                 handle(BswupMessage.downloadProgress, data);
+
                 if (data.percent >= 100) {
                     const firstInstall = !(navigator.serviceWorker.controller);
                     handle(BswupMessage.downloadFinished, { reload, firstInstall });
@@ -145,7 +159,7 @@ BitBswup.forceRefresh = async () => {
 
         // ============================================================
 
-        function startBlazor() {
+        function startBlazor(forceStart = false) {
             const scriptTags = [].slice.call(document.scripts);
 
             const blazorWasmScriptTag = scriptTags.find(s => s.src && s.src.indexOf(options.blazorScript) !== -1);
@@ -158,7 +172,7 @@ BitBswup.forceRefresh = async () => {
                 return warn('no "autostart=false" found on the blazor script tag!');
             }
 
-            if (navigator.serviceWorker.controller) {
+            if (navigator.serviceWorker.controller || forceStart) {
                 Blazor.start();
             }
         }

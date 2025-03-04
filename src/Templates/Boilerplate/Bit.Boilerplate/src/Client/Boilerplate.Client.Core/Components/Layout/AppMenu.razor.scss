@@ -2,7 +2,7 @@
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
 ::deep {
-    .user-menu-callout {
+    .app-menu-callout {
         min-width: 225px;
 
         @include lt-sm {
@@ -14,7 +14,7 @@
         }
     }
 
-    .user-menu-card {
+    .app-menu-card {
         @include lt-sm {
             box-shadow: none;
         }
@@ -24,10 +24,26 @@
         max-width: 12rem;
     }
 
-    .persona-details,
-    .menu-chevron {
+    .persona-details {
+        display: none;
+    }
+
+
+    .menu-chevron,
+    .menu-displayname {
         @include lt-sm {
             display: none;
         }
+    }
+
+    .menu-icon {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        color: $bit-color-info-text;
+        background: $bit-color-info;
     }
 }

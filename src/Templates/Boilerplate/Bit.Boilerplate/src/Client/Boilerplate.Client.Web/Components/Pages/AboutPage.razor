@@ -1,0 +1,26 @@
+﻿@attribute [Route(Urls.AboutPage)]
+@attribute [Route("{culture?}" + Urls.AboutPage)]
+@inherits AppPageBase
+
+<PageTitle>@Localizer[nameof(AppStrings.AboutPageTitle)]</PageTitle>
+
+<section>
+    <BitStack Gap="3rem">
+        <BitText Typography="BitTypography.Body1">
+            You can add `.razor`, `.razor.cs`, and `.razor.scss` files to the `Client.Maui` and `Client.Windows` projects,
+            allowing direct access to native platform features without dependency injection.
+            <br />
+            The `AboutPage.razor` file in `Client.Web` demonstrates that you can use the same route (e.g., `/about`) on the web,
+            but it does not provide access to native platform features.
+        </BitText>
+
+        <BitStack AutoWidth>
+            <BitText>App Name: <b>@appName</b></BitText>
+            <BitText>App Version: <b>@appVersion</b></BitText>
+            <BitText>OS: <b>@platform</b></BitText>
+            <BitText>OEM: <b>@oem</b></BitText>
+            <BitText>Environment: <b>@AppEnvironment.Current</b></BitText>
+            <BitText>Process Id: <b>@processId</b></BitText>
+        </BitStack>
+    </BitStack>
+</section>

@@ -8,17 +8,22 @@
         <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
         <InvariantGlobalization Condition="'$(MultilingualEnabled)' == 'false'">true</InvariantGlobalization>
         <HybridGlobalization Condition="'$(MultilingualEnabled)' == 'true'">true</HybridGlobalization>
-        <ServiceWorkerAssetsManifest Condition=" '$(PwaEnabled)' == 'true' ">service-worker-assets.js</ServiceWorkerAssetsManifest>
-        <BlazorCacheBootResources Condition=" '$(PwaEnabled)' == 'true' ">false</BlazorCacheBootResources>
+        <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+        <BlazorCacheBootResources>false</BlazorCacheBootResources>
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
         <!--/+:msbuild-conditional:noEmit -->
         <WasmEnableSIMD Condition=" '$(framework)' == 'net8.0'">false</WasmEnableSIMD>
         <WasmStripILAfterAOT Condition=" '$(offlineDb)' == 'false'">true</WasmStripILAfterAOT>
         <WasmBuildNative Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">true</WasmBuildNative>
         <!--/-:msbuild-conditional:noEmit -->
+        <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
+        <ResolveStaticWebAssetsInputsDependsOn>
+            BeforeBuildTasks;
+            $(ResolveStaticWebAssetsInputsDependsOn)
+        </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
 
-    <ItemGroup Condition=" '$(PwaEnabled)' == 'true' ">
+    <ItemGroup>
         <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
     </ItemGroup>
 
@@ -30,7 +35,6 @@
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition="'$(module)' == 'Admin' OR '$(module)' == ''" Include="Newtonsoft.Json" />
         <!--/-:msbuild-conditional:noEmit -->
-        <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.Icons.wasm" />
     </ItemGroup>
 
     <ItemGroup>
@@ -45,12 +49,22 @@
 
     <!--/+:msbuild-conditional:noEmit -->
     <ItemGroup Condition=" ('$(module)' == 'Admin' OR '$(module)' == '') AND ('$(offlineDb)' == 'false')">
-        <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
         <BlazorWebAssemblyLazyLoad Include="System.Data.Common.wasm" />
+    </ItemGroup>
+    <ItemGroup Condition=" ('$(module)' == 'Admin' OR '$(module)' == '') OR ('$(offlineDb)' == 'true' OR '$(offlineDb)' == '')">
+        <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
     </ItemGroup>
     <ItemGroup Condition="'$(module)' == 'Admin' OR '$(module)' == ''">
         <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
     </ItemGroup>
     <!--/-:msbuild-conditional:noEmit -->
+
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
+        <CallTarget Targets="BuildCssFiles" />
+    </Target>
+
+    <Target Name="BuildCssFiles">
+        <Exec Command="../Boilerplate.Client.Core/node_modules/.bin/sass .:. --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    </Target>
 
 </Project>

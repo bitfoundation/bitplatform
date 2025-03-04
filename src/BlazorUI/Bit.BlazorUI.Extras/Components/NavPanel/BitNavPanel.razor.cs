@@ -13,14 +13,27 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
 
 
-    [Inject] private IJSRuntime _js { get; set; } = default!;
+    /// <summary>
+    /// The accent color of the nav.
+    /// </summary>
+    [Parameter]
+    public BitColor? Accent { get; set; }
 
-
+    /// <summary>
+    /// The custom icon name of the chevron-down element of each nav item.
+    /// </summary>
+    [Parameter] public string? ChevronDownIcon { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the nav panel.
     /// </summary>
     [Parameter] public BitNavPanelClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The general color of the nav.
+    /// </summary>
+    [Parameter]
+    public BitColor? Color { get; set; }
 
     /// <summary>
     /// The custom template for when the search result is empty.
@@ -33,9 +46,21 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public string? EmptyListMessage { get; set; }
 
     /// <summary>
+    /// Renders the nav panel with fit-content width.
+    /// </summary>
+    [Parameter]
+    public bool FitWidth { get; set; }
+
+    /// <summary>
     /// The custom template to render as the footer of the nav panel.
     /// </summary>
     [Parameter] public RenderFragment? Footer { get; set; }
+
+    /// <summary>
+    /// Renders the nav panel with full (100%) width.
+    /// </summary>
+    [Parameter]
+    public bool FullWidth { get; set; }
 
     /// <summary>
     /// The custom template to render as the header of the nav panel.
@@ -43,9 +68,39 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public RenderFragment? Header { get; set; }
 
     /// <summary>
+    /// Used to customize how nav content inside the group header is rendered.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem>? HeaderTemplate { get; set; }
+
+    /// <summary>
+    /// The render mode of the custom HeaderTemplate of the nav.
+    /// </summary>
+    [Parameter] public BitNavItemTemplateRenderMode HeaderTemplateRenderMode { get; set; }
+
+    /// <summary>
+    /// Renders an anchor wrapping the icon to navigate to the specified url.
+    /// </summary>
+    [Parameter] public string? IconNavUrl { get; set; }
+
+    /// <summary>
     /// The icon url to show in the header of the nav panel.
     /// </summary>
     [Parameter] public string? IconUrl { get; set; }
+
+    /// <summary>
+    /// The indentation value in px for each level of depth of child item.
+    /// </summary>
+    [Parameter] public int IndentValue { get; set; } = 16;
+
+    /// <summary>
+    /// The indentation padding in px for items without children (compensation space for chevron icon).
+    /// </summary>
+    [Parameter] public int IndentPadding { get; set; } = 27;
+
+    /// <summary>
+    /// The indentation padding in px for items in reversed mode.
+    /// </summary>
+    [Parameter] public int IndentReversedPadding { get; set; } = 4;
 
     /// <summary>
     /// Determines if the nav panel is open in small screens.
@@ -58,6 +113,16 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     /// </summary>
     [Parameter, TwoWayBound]
     public bool IsToggled { get; set; }
+
+    /// <summary>
+    /// Used to customize how content inside each item is rendered.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
+
+    /// <summary>
+    /// The render mode of the custom ItemTemplate.
+    /// </summary>
+    [Parameter] public BitNavItemTemplateRenderMode ItemTemplateRenderMode { get; set; }
 
     /// <summary>
     /// A collection of items to display in the nav panel.
@@ -91,6 +156,31 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
 
     /// <summary>
+    /// Callback invoked when a group header is clicked and Expanded or Collapse.
+    /// </summary>
+    [Parameter] public EventCallback<TItem> OnItemToggle { get; set; }
+
+    /// <summary>
+    /// Callback invoked when an item is selected.
+    /// </summary>
+    [Parameter] public EventCallback<TItem> OnSelectItem { get; set; }
+
+    /// <summary>
+    /// The way to render nav items.
+    /// </summary>
+    [Parameter] public BitNavRenderType RenderType { get; set; }
+
+    /// <summary>
+    /// Enables recalling the select events when the same item is selected.
+    /// </summary>
+    [Parameter] public bool Reselectable { get; set; }
+
+    /// <summary>
+    /// Reverses the location of the expander chevron.
+    /// </summary>
+    [Parameter] public bool ReversedChevron { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the search box of the nav panel.
     /// </summary>
     [Parameter] public BitSearchBoxClassStyles? SearchBoxClasses { get; set; }
@@ -104,6 +194,11 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     /// Custom CSS styles for different parts of the search box of the nav panel.
     /// </summary>
     [Parameter] public BitSearchBoxClassStyles? SearchBoxStyles { get; set; }
+
+    /// <summary>
+    /// Enables the single-expand mode in the BitNav.
+    /// </summary>
+    [Parameter] public bool SingleExpand { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the nav panel.
@@ -123,8 +218,34 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => FitWidth ? "bit-npn-fiw" : string.Empty);
+        ClassBuilder.Register(() => FullWidth ? "bit-npn-fuw" : string.Empty);
+
         ClassBuilder.Register(() => IsOpen ? string.Empty : "bit-npn-cls");
-        ClassBuilder.Register(() => NoPad ? string.Empty : "bit-npn-pad");
+        ClassBuilder.Register(() => NoPad ? "bit-npn-npd" : string.Empty);
+
+        ClassBuilder.Register(() => Accent switch
+        {
+            BitColor.Primary => "bit-nav-apri",
+            BitColor.Secondary => "bit-nav-asec",
+            BitColor.Tertiary => "bit-nav-ater",
+            BitColor.Info => "bit-nav-ainf",
+            BitColor.Success => "bit-nav-asuc",
+            BitColor.Warning => "bit-nav-awrn",
+            BitColor.SevereWarning => "bit-nav-aswr",
+            BitColor.Error => "bit-nav-aerr",
+            BitColor.PrimaryBackground => "bit-nav-apbg",
+            BitColor.SecondaryBackground => "bit-nav-asbg",
+            BitColor.TertiaryBackground => "bit-nav-atbg",
+            BitColor.PrimaryForeground => "bit-nav-apfg",
+            BitColor.SecondaryForeground => "bit-nav-asfg",
+            BitColor.TertiaryForeground => "bit-nav-atfg",
+            BitColor.PrimaryBorder => "bit-nav-apbr",
+            BitColor.SecondaryBorder => "bit-nav-asbr",
+            BitColor.TertiaryBorder => "bit-nav-atbr",
+            _ => string.Empty,
+        });
     }
 
     protected override void RegisterCssStyles()
@@ -142,11 +263,11 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     {
         if (_bitNavRef.GetUrl(item).HasNoValue()) return;
 
-        await OnItemClick.InvokeAsync(item);
+        _filteredNavItems = Items;
 
         await _searchBoxRef.Clear();
 
-        _filteredNavItems = Items;
+        await OnItemClick.InvokeAsync(item);
 
         await ClosePanel();
     }

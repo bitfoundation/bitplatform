@@ -25,7 +25,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     public BitColor? Accent { get; set; }
 
     /// <summary>
-    /// The custom icon name of the chevron-down element of the BitNav component.
+    /// The custom icon name of the chevron-down element of each nav item.
     /// </summary>
     [Parameter] public string? ChevronDownIcon { get; set; }
 
@@ -37,12 +37,12 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Custom CSS classes for different parts of the BitNav component.
+    /// Custom CSS classes for different parts of the nav.
     /// </summary>
     [Parameter] public BitNavClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The general color of the nav.
+    /// The general color of the nav that is only used for colored parts like icons.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
@@ -72,7 +72,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// The render mode of the custom HeaderTemplate.
     /// </summary>
-    [Parameter] public BitNavItemTemplateRenderMode HeaderTemplateRenderMode { get; set; } = BitNavItemTemplateRenderMode.Normal;
+    [Parameter] public BitNavItemTemplateRenderMode HeaderTemplateRenderMode { get; set; }
 
     /// <summary>
     /// Only renders the icon of each nav item.
@@ -110,7 +110,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// The render mode of the custom ItemTemplate.
     /// </summary>
-    [Parameter] public BitNavItemTemplateRenderMode ItemTemplateRenderMode { get; set; } = BitNavItemTemplateRenderMode.Normal;
+    [Parameter] public BitNavItemTemplateRenderMode ItemTemplateRenderMode { get; set; }
 
     /// <summary>
     /// Determines how the navigation will be handled.
@@ -147,7 +147,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// The way to render nav items.
     /// </summary>
-    [Parameter] public BitNavRenderType RenderType { get; set; } = BitNavRenderType.Normal;
+    [Parameter] public BitNavRenderType RenderType { get; set; }
 
     /// <summary>
     /// Enables recalling the select events when the same item is selected.
@@ -175,6 +175,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     /// Custom CSS styles for different parts of the BitNav component.
     /// </summary>
     [Parameter] public BitNavClassStyles? Styles { get; set; }
+
 
 
     /// <summary>
@@ -936,6 +937,8 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
         _items = Items?.ToList() ?? [];
         _oldItems = Items;
+
+        SetSelectedItemByCurrentUrl();
     }
 
     private bool ToggleItemAndParents(IList<TItem> items, TItem item, bool isExpanded)

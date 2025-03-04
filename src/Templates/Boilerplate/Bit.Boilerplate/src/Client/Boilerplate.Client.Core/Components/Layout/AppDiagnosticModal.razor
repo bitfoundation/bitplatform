@@ -1,7 +1,11 @@
 ﻿@inherits AppComponentBase
 
 <div>
-    <BitModal @bind-IsOpen="isOpen" FullSize Class="modal" Styles="@(new() { Content = "overflow:auto" })">
+    <BitModal @bind-IsOpen="isOpen"
+              FullSize
+              Class="modal"
+              Styles="@(new() { Content = "overflow:auto" })"
+              OnDismiss="() => HandleOnSearchChange(null)">
         <BitStack FillContent Class="container">
             <BitStack Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
                 <BitText Typography="BitTypography.H3">Diagnostic</BitText>
@@ -48,30 +52,46 @@
                 </BitDropdown>
                 <BitButton IconOnly
                            OnClick="HandleOnSortClick"
+                           Title="Sort"
                            Color="BitColor.SecondaryBackground"
-                           IconName="@(isDescendingSort ? BitIconName.SortDown : BitIconName.SortUp)" />
+                           IconName="@(isDescendingSort? BitIconName.SortDown: BitIconName.SortUp)" />
                 <BitButton OnClick="ClearLogs"
+                           title="Clear lgos"
                            Color="BitColor.Info"
                            Variant="BitVariant.Outline">Clear logs</BitButton>
                 <BitButton IconOnly
                            OnClick="ReloadLogs"
+                           Title="Reload logs"
                            IconName="@BitIconName.Refresh"
                            Color="BitColor.SecondaryBackground" />
                 <BitButton IconOnly
                            OnClick="ThrowTestException"
+                           Title="Throw test error"
                            IconName="@BitIconName.Error"
                            Color="BitColor.SecondaryBackground" />
-                <BitButton IconOnly
+                <BitButton IconOnly AutoLoading
                            OnClick="CallDiagnosticsApi"
+                           Title="Call Diag API"
                            Color="BitColor.SecondaryBackground"
                            IconName="@BitIconName.DiagnosticDataViewerApp" />
+                <BitButton IconOnly AutoLoading
+                           OnClick="OpenDevTools"
+                           Title="Open dev tools"
+                           Color="BitColor.SecondaryBackground"
+                           IconName="@BitIconName.DeveloperTools" />
                 @if (AppPlatform.IsBrowser is false)
                 {
                     <BitButton IconOnly
                                OnClick="CallGC"
+                               Title="Call GC"
                                Color="BitColor.SecondaryBackground"
                                IconName="@BitIconName.RecycleBin" />
                 }
+                <BitButton IconOnly AutoLoading
+                           OnClick="ClearCache"
+                           Title="Clear cache"
+                           Color="BitColor.SecondaryBackground"
+                           IconName="@BitIconName.Clear" />
             </BitStack>
 
             <BitBasicList @ref="logStackRef"

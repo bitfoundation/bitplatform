@@ -432,6 +432,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Utilities/MediaQuery/BitMediaQueryDemo.razor.css",
+        "inputFile": "Pages/Components/Utilities/MediaQuery/BitMediaQueryDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Utilities/Overlay/BitOverlayDemo.razor.css",
         "inputFile": "Pages/Components/Utilities/Overlay/BitOverlayDemo.razor.scss",
         "minify": { "enabled": false },

@@ -4,14 +4,25 @@
 <section>
     <BitNavBar TItem="BitNavBarOption" Style="width:100%">
         <BitNavBarOption Text="@Localizer[nameof(AppStrings.Home)]" IconName="@BitIconName.Home" Url="@Urls.HomePage" />
-        @*#if (sample == true)*@
-        <BitNavBarOption Text="@Localizer[nameof(AppStrings.Todo)]" IconName="@BitIconName.ToDoLogoOutline" Url="@Urls.TodoPage" />
-        @*#endif*@
-        @*#if (module == "Admin")*@
-        <BitNavBarOption Text="@Localizer[nameof(AppStrings.Dashboard)]" IconName="@BitIconName.BarChartVerticalFill" Url="@Urls.DashboardPage" />
-        <BitNavBarOption Text="@Localizer[nameof(AppStrings.Categories)]" IconName="@BitIconName.BuildQueue" Url="@Urls.CategoriesPage" />
-        <BitNavBarOption Text="@Localizer[nameof(AppStrings.Products)]" IconName="@BitIconName.Product" Url="@Urls.ProductsPage" />
-        @*#endif*@
-        <BitNavBarOption Text="@Localizer[nameof(AppStrings.Terms)]" IconName="@BitIconName.EntityExtraction" Url="@Urls.TermsPage" />
+        <AuthorizeView>
+            <Authorized>
+                @*#if (sample == true)*@
+                <BitNavBarOption Text="@Localizer[nameof(AppStrings.Todo)]" IconName="@BitIconName.ToDoLogoOutline" Url="@Urls.TodoPage" />
+                @*#endif*@
+                @*#if (module == "Admin")*@
+                <BitNavBarOption Text="@Localizer[nameof(AppStrings.Dashboard)]" IconName="@BitIconName.BarChartVerticalFill" Url="@Urls.DashboardPage" />
+                <BitNavBarOption Text="@Localizer[nameof(AppStrings.Categories)]" IconName="@BitIconName.BuildQueue" Url="@Urls.CategoriesPage" />
+                <BitNavBarOption Text="@Localizer[nameof(AppStrings.Products)]" IconName="@BitIconName.Product" Url="@Urls.ProductsPage" />
+                @*#endif*@
+                <BitNavBarOption Text="@Localizer[nameof(AppStrings.Terms)]" IconName="@BitIconName.EntityExtraction" Url="@Urls.TermsPage" />
+                @*#if (module != "Admin" && sample != true)*@
+                <BitNavBarOption Text="@Localizer[nameof(AppStrings.About)]" IconName="@BitIconName.Info" Url="@Urls.AboutPage" />
+                @*#endif*@
+            </Authorized>
+            <NotAuthorized>
+                <BitNavBarOption Text="@Localizer[nameof(AppStrings.Terms)]" IconName="@BitIconName.EntityExtraction" Url="@Urls.TermsPage" />
+                <BitNavBarOption Text="@Localizer[nameof(AppStrings.About)]" IconName="@BitIconName.Info" Url="@Urls.AboutPage" />
+            </NotAuthorized>
+        </AuthorizeView>
     </BitNavBar>
 </section>

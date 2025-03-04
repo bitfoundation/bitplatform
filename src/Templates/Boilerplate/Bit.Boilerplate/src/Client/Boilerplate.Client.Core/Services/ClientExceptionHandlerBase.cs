@@ -25,13 +25,9 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
         parameters[nameof(lineNumber)] = lineNumber;
         parameters["exceptionId"] = Guid.NewGuid(); // This will remain consistent across different registered loggers, such as Sentry, Application Insights, etc.
 
-        foreach (var key in exception.Data.Keys)
+        foreach (var item in GetExceptionData(exception))
         {
-            var keyAsString = key.ToString()!;
-
-            var value = exception.Data[keyAsString]!;
-
-            parameters[keyAsString] = value;
+            parameters[item.Key] = item.Value;
         }
 
         Handle(exception, displayKind, parameters.ToDictionary(i => i.Key, i => i.Value ?? string.Empty));
@@ -80,7 +76,7 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
 
     private ExceptionDisplayKind GetDisplayKind(Exception exception)
     {
-        if (exception is ServerConnectionException or ReusedRefreshTokenException)
+        if (exception is ServerConnectionException)
             return ExceptionDisplayKind.NonInterrupting;
 
         return ExceptionDisplayKind.Interrupting;

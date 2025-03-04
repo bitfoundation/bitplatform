@@ -5,9 +5,8 @@
 .bit-npn {
     top: 0;
     position: sticky;
+    padding: spacing(2);
     overflow: hidden auto;
-    max-width: spacing(28);
-    min-width: spacing(28);
     background-color: $clr-bg-pri;
     height: $bit-env-height-available;
 
@@ -35,37 +34,44 @@
                 transform: translateX(100%);
             }
         }
+
+        &.bit-npn-tgl {
+            min-width: spacing(8);
+            max-width: spacing(8);
+        }
     }
 
     &.bit-npn-tgl {
-        min-width: spacing(6);
-        max-width: spacing(6);
+        min-width: spacing(12);
+        max-width: spacing(12);
 
         .bit-npn-cnt {
             align-items: center;
         }
 
-        &.bit-npn-pad {
-            min-width: spacing(12);
-            max-width: spacing(12);
+        &.bit-npn-npd {
+            min-width: spacing(6);
+            max-width: spacing(6);
         }
     }
 
-    &.bit-npn-pad {
-        padding: spacing(2);
+    &.bit-npn-npd {
+        padding: 0;
 
-        @include lt-md {
-            padding: 0;
-
-            &.bit-npn-tgl {
-                min-width: spacing(8);
-                max-width: spacing(8);
-            }
+        &.bit-npn-tgl {
+            min-width: spacing(6);
+            max-width: spacing(6);
         }
 
         .bit-npn-cnt {
-            padding: spacing(1);
-            background-color: $clr-bg-sec;
+            padding: 0;
+        }
+
+        @include lt-md {
+            &.bit-npn-tgl {
+                min-width: spacing(6);
+                max-width: spacing(6);
+            }
         }
     }
 
@@ -84,6 +90,14 @@
     .bit-npn-cnt {
         height: -webkit-fill-available;
     }
+}
+
+.bit-npn-fiw {
+    width: fit-content;
+}
+
+.bit-npn-fuw {
+    width: 100%;
 }
 
 .bit-npn-ovl {
@@ -106,7 +120,9 @@
     gap: spacing(2);
     min-height: 100%;
     height: fit-content;
+    padding: spacing(1);
     flex-direction: column;
+    background-color: var(--bit-npn-clr-bg);
 }
 
 .bit-npn-hdr {
@@ -122,4 +138,72 @@
 
 .bit-npn-spc {
     flex-grow: 1;
+}
+
+.bit-nav-apri {
+    --bit-npn-clr-bg: #{$clr-pri};
+}
+
+.bit-nav-asec {
+    --bit-npn-clr-bg: #{$clr-sec};
+}
+
+.bit-nav-ater {
+    --bit-npn-clr-bg: #{$clr-ter};
+}
+
+.bit-nav-ainf {
+    --bit-npn-clr-bg: #{$clr-inf};
+}
+
+.bit-nav-asuc {
+    --bit-npn-clr-bg: #{$clr-suc};
+}
+
+.bit-nav-awrn {
+    --bit-npn-clr-bg: #{$clr-wrn};
+}
+
+.bit-nav-aswr {
+    --bit-npn-clr-bg: #{$clr-swr};
+}
+
+.bit-nav-aerr {
+    --bit-npn-clr-bg: #{$clr-err};
+}
+
+.bit-nav-apbg {
+    --bit-npn-clr-bg: #{$clr-bg-pri};
+}
+
+.bit-nav-asbg {
+    --bit-npn-clr-bg: #{$clr-bg-sec};
+}
+
+.bit-nav-atbg {
+    --bit-npn-clr-bg: #{$clr-bg-ter};
+}
+
+.bit-nav-apfg {
+    --bit-npn-clr-bg: #{$clr-fg-pri};
+}
+
+.bit-nav-asfg {
+    --bit-npn-clr-bg: #{$clr-fg-sec};
+}
+
+.bit-nav-atfg {
+    --bit-npn-clr-bg: #{$clr-fg-ter};
+}
+
+.bit-nav-apbr {
+    --bit-npn-clr-bg: #{$clr-brd-pri};
+}
+
+.bit-nav-asbr {
+    --bit-npn-clr-bg: #{$clr-brd-sec};
+}
+
+.bit-nav-atbr {
+    --bit-npn-clr-bg: #{$clr-brd-ter};
 }

@@ -10,6 +10,8 @@ public partial class BitNavDemo
             Type = "BitColor?",
             DefaultValue = "null",
             Description = "The accent color of the nav.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum",
         },
         new()
         {
@@ -39,7 +41,9 @@ public partial class BitNavDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the nav.",
+            Description = "The general color of the nav that is only used for colored parts like icons.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum",
         },
         new()
         {
@@ -74,7 +78,9 @@ public partial class BitNavDemo
             Name = "HeaderTemplateRenderMode",
             Type = "BitNavItemTemplateRenderMode",
             DefaultValue = "BitNavItemTemplateRenderMode.Normal",
-            Description = "The render mode of the custom HeaderTemplate."
+            Description = "The render mode of the custom HeaderTemplate.",
+            LinkType = LinkType.Link,
+            Href = "#nav-itemtemplate-rendermode",
         },
         new()
         {
@@ -212,6 +218,7 @@ public partial class BitNavDemo
             Href = "#nav-class-styles",
         }
     ];
+
     private readonly List<ComponentParameter> componentPublicMembers =
     [
         new()
@@ -227,6 +234,7 @@ public partial class BitNavDemo
             Description = "Toggles an item.",
         },
     ];
+
     private readonly List<ComponentSubClass> componentSubClasses =
     [
         new()
@@ -784,8 +792,120 @@ public partial class BitNavDemo
             ]
         }
     ];
+
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
+        new()
+        {
+            Id = "color-enum",
+            Name = "BitColor",
+            Description = "Defines the general colors available in the bit BlazorUI.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Primary",
+                    Description="Info Primary general color.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Secondary",
+                    Description="Secondary general color.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Tertiary",
+                    Description="Tertiary general color.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Info",
+                    Description="Info general color.",
+                    Value="3",
+                },
+                new()
+                {
+                    Name= "Success",
+                    Description="Success general color.",
+                    Value="4",
+                },
+                new()
+                {
+                    Name= "Warning",
+                    Description="Warning general color.",
+                    Value="5",
+                },
+                new()
+                {
+                    Name= "SevereWarning",
+                    Description="SevereWarning general color.",
+                    Value="6",
+                },
+                new()
+                {
+                    Name= "Error",
+                    Description="Error general color.",
+                    Value="7",
+                },
+                new()
+                {
+                    Name= "PrimaryBackground",
+                    Description="Primary background color.",
+                    Value="8",
+                },
+                new()
+                {
+                    Name= "SecondaryBackground",
+                    Description="Secondary background color.",
+                    Value="9",
+                },
+                new()
+                {
+                    Name= "TertiaryBackground",
+                    Description="Tertiary background color.",
+                    Value="10",
+                },
+                new()
+                {
+                    Name= "PrimaryForeground",
+                    Description="Primary foreground color.",
+                    Value="11",
+                },
+                new()
+                {
+                    Name= "SecondaryForeground",
+                    Description="Secondary foreground color.",
+                    Value="12",
+                },
+                new()
+                {
+                    Name= "TertiaryForeground",
+                    Description="Tertiary foreground color.",
+                    Value="13",
+                },
+                new()
+                {
+                    Name= "PrimaryBorder",
+                    Description="Primary border color.",
+                    Value="14",
+                },
+                new()
+                {
+                    Name= "SecondaryBorder",
+                    Description="Secondary border color.",
+                    Value="15",
+                },
+                new()
+                {
+                    Name= "TertiaryBorder",
+                    Description="Tertiary border color.",
+                    Value="16",
+                }
+            ]
+        },
         new()
         {
             Id = "nav-mode-enum",
@@ -810,17 +930,20 @@ public partial class BitNavDemo
         {
             Id = "nav-render-type-enum",
             Name = "BitNavRenderType",
+            Description="Determines how the nav items are rendered visually.",
             Items =
             [
                 new()
                 {
                     Name = "Normal",
                     Value = "0",
+                    Description="All items will be rendered normally only based on their own properties."
                 },
                 new()
                 {
                     Name = "Grouped",
                     Value = "1",
+                    Description="Root elements are rendered in a specific way that resembles a grouped list of items."
                 }
             ]
         },

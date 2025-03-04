@@ -32,6 +32,7 @@ namespace BitBlazorUI {
 
             if (!isCalloutOpen) {
                 if (windowWidth < Utils.MAX_MOBILE_WIDTH && responsiveMode) {
+                    callout.style.opacity = '0';
                     callout.style.transform = '';
                 } else {
                     callout.style.display = 'none';

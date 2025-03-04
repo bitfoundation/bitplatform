@@ -1,4 +1,4 @@
-// bit version: 9.5.0-pre-03
+// bit version: 9.6.0-pre-03
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 self.assetsInclude = [];
@@ -10,36 +10,19 @@ self.assetsExclude = [
 ];
 self.externalAssets = [
     {
-        "url": "/"
-    },
-    {
-        "url": "_framework/blazor.web.js?v=9.0.0"
+        "url": "_framework/blazor.web.js"
     },
     {
         "url": "Bit.BlazorUI.Demo.Server.styles.css"
-    },
-    {
-        "url": "https://www.googletagmanager.com/gtag/js?id=G-G1ET5L69QF"
     }
 ];
 
 self.serverHandledUrls = [
     /\/api\//,
-    /\/odata\//,
-    /\/jobs\//,
-    /\/core\//,
-    /\/signalr\//,
-    /\/healthchecks-ui/,
-    /\/healthz/,
     /\/swagger/,
     /\/api.fda.gov/
 ];
 
-self.isPassive = true;
-self.defaultUrl = "/";
-self.errorTolerance = 'lax';
-self.caseInsensitiveUrl = true;
-self.disablePassiveFirstBoot = true;
-self.noPrerenderQuery = 'no-prerender=true';
+self.prerenderMode = 'always';
 
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');
