@@ -37,9 +37,19 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
 
     /// <summary>
+    /// The CSS class of the last element that triggers the loading.
+    /// </summary>
+    [Parameter] public string? LastElementClass { get; set; }
+
+    /// <summary>
     /// The height of the last element that triggers the loading.
     /// </summary>
     [Parameter] public string? LastElementHeight { get; set; }
+
+    /// <summary>
+    /// The CSS style of the last element that triggers the loading.
+    /// </summary>
+    [Parameter] public string? LastElementStyle { get; set; }
 
     /// <summary>
     /// The custom template to render while loading the new items.
@@ -55,6 +65,11 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     /// The CSS selector of the scroll container, by default the root element of the component is selected for this purpose.
     /// </summary>
     [Parameter] public string? ScrollerSelector { get; set; }
+
+    /// <summary>
+    /// The threshold parameter for the IntersectionObserver that specifies a ratio of intersection area to total bounding box area of the last element.
+    /// </summary>
+    [Parameter] public decimal? Threshold { get; set; }
 
 
 
@@ -83,10 +98,9 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        if (Preload && ItemsProvider is not null)
+        if (Preload)
         {
-            var items = await ItemsProvider(new(0, CancellationToken.None));
-            _currentItems.AddRange(items);
+            await LoadMoreItems();
         }
 
         await base.OnInitializedAsync();
@@ -109,7 +123,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
         if (firstRender)
         {
             _dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitInfiniteScrollingSetup(UniqueId, ScrollerSelector, RootElement, _lastElementRef, _dotnetObj);
+            await _js.BitInfiniteScrollingSetup(UniqueId, ScrollerSelector, RootElement, _lastElementRef, Threshold, _dotnetObj);
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -158,6 +172,21 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
         }
 
         StateHasChanged();
+    }
+
+    private string GetLastElementStyle()
+    {
+        if (_isLoading) return "display:none";
+
+
+        var style = $"height:{(LastElementHeight is null ? "1px" : LastElementHeight)};width:100%";
+
+        if (LastElementStyle is not null)
+        {
+            style += $";{LastElementStyle}";
+        }
+
+        return style;
     }
 
 
