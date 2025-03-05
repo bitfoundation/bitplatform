@@ -14,4 +14,9 @@
     <meta name="twitter:title" content="@Title - bit platform" />
     <meta name="twitter:description" content="@Description" />
     <meta name="twitter:image" content="@ImageUrl" />
+
+    @if (ChildContent is not null)
+    {
+        @ChildContent
+    }
 </HeadContent>
