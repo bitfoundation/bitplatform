@@ -45,6 +45,7 @@ public partial class MainLayout : IAsyncDisposable
         {
             InitializeNavPanelItems();
 
+            navigationManager.LocationChanged += NavigationManager_LocationChanged;
             authManager.AuthenticationStateChanged += AuthManager_AuthenticationStateChanged;
 
             unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async _ =>
@@ -114,6 +115,14 @@ public partial class MainLayout : IAsyncDisposable
         await base.OnAfterRenderAsync(firstRender);
     }
 
+
+    private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        // The sign-in and sign-up buttons href are bound to NavigationManager.GetRelativePath().
+        // To ensure the bound values update with each route change, it's necessary to call StateHasChanged on location changes.
+        StateHasChanged();
+    }
+
     private async void AuthManager_AuthenticationStateChanged(Task<AuthenticationState> task)
     {
         try
@@ -176,6 +185,7 @@ public partial class MainLayout : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        navigationManager.LocationChanged -= NavigationManager_LocationChanged;
         authManager.AuthenticationStateChanged -= AuthManager_AuthenticationStateChanged;
 
         unsubscribers.ForEach(d => d.Invoke());
