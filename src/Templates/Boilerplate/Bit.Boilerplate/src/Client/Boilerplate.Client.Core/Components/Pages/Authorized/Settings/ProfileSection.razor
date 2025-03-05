@@ -17,6 +17,7 @@
             <BitFileUpload @ref="fileUploadRef"
                            AutoReset
                            AutoUpload
+                           HideFileView
                            Accept="image/*"
                            MaxSize="1024 * 1024 * 10"
                            UploadUrl="@profileImageUploadUrl"
@@ -43,7 +44,6 @@
                         }
                     </BitStack>
                 </LabelTemplate>
-                <FileViewTemplate></FileViewTemplate>
             </BitFileUpload>
 
             @if (User?.ProfileImageName is not null)
