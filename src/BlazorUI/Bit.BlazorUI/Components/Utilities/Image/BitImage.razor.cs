@@ -175,6 +175,10 @@ public partial class BitImage : BitComponentBase
         {
             className.Append(" bit-img-vis");
         }
+        else
+        {
+            className.Append(" bit-img-hid");
+        }
 
         if (Classes?.Image.HasValue() ?? false)
         {
