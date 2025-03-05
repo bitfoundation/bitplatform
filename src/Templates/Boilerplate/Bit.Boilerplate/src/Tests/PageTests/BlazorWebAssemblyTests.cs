@@ -1,5 +1,6 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Client.Web;
+using Boilerplate.Server.Web;
 using Boilerplate.Tests.Extensions;
 using Boilerplate.Tests.PageTests.PageModels;
 using Boilerplate.Tests.PageTests.PageModels.Layout;

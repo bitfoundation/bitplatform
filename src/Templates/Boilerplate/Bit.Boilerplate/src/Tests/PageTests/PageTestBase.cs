@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Boilerplate.Client.Web;
+using Boilerplate.Server.Web;
 using Boilerplate.Tests.Extensions;
 using Microsoft.AspNetCore.Builder;
 

@@ -1,4 +1,5 @@
 ﻿using Boilerplate.Client.Web;
+using Boilerplate.Server.Web;
 
 namespace Boilerplate.Tests.PageTests.BlazorWebAssembly.PreRendering;
 

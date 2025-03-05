@@ -10,6 +10,7 @@ using Boilerplate.Tests.Extensions;
 using Boilerplate.Client.Web;
 //#endif
 using Microsoft.Extensions.Hosting;
+using Boilerplate.Server.Web;
 
 namespace Boilerplate.Tests;
 
