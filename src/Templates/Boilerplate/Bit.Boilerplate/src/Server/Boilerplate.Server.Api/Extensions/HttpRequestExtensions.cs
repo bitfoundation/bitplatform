@@ -1,4 +1,5 @@
 ﻿using Boilerplate.Server.Api;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -48,5 +49,25 @@ public static partial class HttpRequestExtensions
     internal static bool IsFromCDN(this HttpRequest request)
     {
         return request.Headers.ContainsKey("CDN-Loop");
+    }
+
+    internal static bool IsLightHouseRequest(this HttpRequest request)
+    {
+        var agent = GetLoweredUserAgent(request);
+
+        if (agent.Contains("google")) return true;
+
+        if (agent.Contains("lighthouse")) return true;
+
+        return false;
+    }
+
+    private static string GetLoweredUserAgent(HttpRequest request)
+    {
+        var userAgent = request.Headers[HeaderNames.UserAgent].ToString();
+
+        if (string.IsNullOrEmpty(userAgent)) return string.Empty;
+
+        return userAgent.ToLowerInvariant();
     }
 }
