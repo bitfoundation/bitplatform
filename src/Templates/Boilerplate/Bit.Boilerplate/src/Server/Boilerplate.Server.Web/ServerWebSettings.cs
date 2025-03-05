@@ -16,14 +16,12 @@ public partial class ServerWebSettings : ClientWebSettings
     public WebAppRenderOptions WebAppRender { get; set; } = default!;
 
     /// <summary>
-    /// Handles API data fetching during pre-rendering using an HTTP client.
+    /// In a production environment, <see cref="ClientCoreSettings.ServerAddress"/> is usually set to  
+    /// a URL like <c>https://api.myproject.com</c>, often secured behind a CDN or firewall.  
+    /// However, during pre-rendering or in Blazor Server/Auto mode, using a local address  
+    /// such as <c>http://localhost:8080</c> is much more efficient.  
+    /// This optional setting allows overriding HttpClient's BaseAddress specifically for the server project.
     /// </summary>
-    /// <remarks>
-    /// In a production environment, the <see cref="ClientCoreSettings.ServerAddress"/> typically points to
-    /// a URL like <c>https://api.myproject.com</c>, which is often behind a CDN, firewall, etc.
-    /// However, during pre-rendering, using a local address like <c>http://localhost:8080</c>
-    /// is significantly more efficient.
-    /// </remarks>
     public string? ServerSideHttpClientBaseAddress { get; set; }
 
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
