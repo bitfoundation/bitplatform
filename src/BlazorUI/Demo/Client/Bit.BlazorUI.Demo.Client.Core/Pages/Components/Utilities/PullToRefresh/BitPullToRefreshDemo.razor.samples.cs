@@ -180,7 +180,7 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
             <Header>
                 <BitCard FullWidth>
                     <BitStack Horizontal HorizontalAlign=""BitAlignment.Center"" VerticalAlign=""BitAlignment.Center"">
-                        <BitImage Src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" Width=""50"" />
+                        <BitImage Src=""/images/bit-logo.svg"" Width=""50"" />
                         <BitText Typography=""BitTypography.H4"" Color=""BitColor.Info"">
                             BlazorUI
                         </BitText>
