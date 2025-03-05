@@ -1,12 +1,12 @@
-﻿@import '../../../../Styles/abstracts/_colors.scss';
-@import '../../../../Styles/abstracts/_functions.scss';
+﻿@import '../../../../Styles/abstracts/_functions.scss';
+@import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
 .number {
-    color: $Gray3;
     top: rem2(12px);
     position: absolute;
     padding: rem2(12px);
     font-size: rem2(12px);
+    color: $bit-color-neutrals-gray50;
 }
 
 .image {
@@ -16,7 +16,7 @@
 
 .text-title {
     width: 100%;
-    color: $White;
+    color: white;
     bottom: rem2(55px);
     position: absolute;
     text-align: center;
@@ -25,7 +25,7 @@
 
 .text-description {
     width: 100%;
-    color: $White;
+    color: white;
     bottom: rem2(30px);
     position: absolute;
     text-align: center;
