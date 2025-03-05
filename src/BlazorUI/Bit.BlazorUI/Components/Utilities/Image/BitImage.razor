@@ -7,11 +7,25 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
      aria-label="@AriaLabel">
-    <img @attributes="ImageAttributes" @onclick="HandleOnClick" @onload="HandleOnLoad" @onerror="HandleOnError" @onloadstart="HandleOnLoadStart"
-         style="@Styles?.Image"
-         class="@GetImageClasses()"
+    <img @attributes="ImageAttributes"
          alt="@Alt"
          src="@Src"
          title="@Title"
-         loading="@Loading" />
+         style="@Styles?.Image"
+         class="@GetImageClasses()"
+         @onload="HandleOnLoad"
+         @onerror="HandleOnError"
+         @onclick="HandleOnClick"
+         @onloadstart="HandleOnLoadStart"
+         loading="@(Loading?.ToString().ToLower())" />
+
+    @if (_loadingState is BitImageState.Loading && StartVisible is false && LoadingTemplate is not null)
+    {
+        @LoadingTemplate
+    }
+    else if (_loadingState is BitImageState.Error && ErrorTemplate is not null)
+    {
+        @ErrorTemplate
+    }
+
 </div>

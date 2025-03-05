@@ -10,232 +10,167 @@
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums">
     <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <div style="min-height: 144px">
-            <BitImage Alt="Basic BitImage" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            <br />
-            <BitLabel>Disabled</BitLabel>
-            <BitImage Alt="Disabled BitImage" IsEnabled="false" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-        </div>
+        <BitImage Alt="Basic BitImage" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+        <br /><br />
+        <div>Disabled</div>
+        <BitImage Alt="Disabled BitImage" IsEnabled="false" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
     </DemoSection>
 
     <DemoSection Title="Width & Height" RazorCode="@example2RazorCode" Id="example2">
-        <div>
-            <div>
-                <BitLabel>Width</BitLabel>
-                <BitImage Width="9rem"
-                          Alt="BitImage with width"
-                          Style="background-color: #00ffff17"
-                          Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            </div>
-            <br />
-            <div>
-                <BitLabel>Height</BitLabel>
-                <BitImage Height="5rem"
-                          Alt="BitImage with height"
-                          Style="background-color: #00ffff17"
-                          Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            </div>
-            <br />
-            <div>
-                <BitLabel>Width & Height</BitLabel>
-                <BitImage Width="256px"
-                          Height="128px"
-                          Alt="BitImage with width and height"
-                          Style="background-color: #00ffff17"
-                          Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            </div>
-        </div>
+        <div>Width</div>
+        <BitImage Width="9rem"
+                  Alt="BitImage with width"
+                  Style="background-color: #00ffff17"
+                  Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+        <br /><br />
+        <div>Height</div>
+        <BitImage Height="5rem"
+                  Alt="BitImage with height"
+                  Style="background-color: #00ffff17"
+                  Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+        <br /><br />
+        <div>Width & Height</div>
+        <BitImage Width="256px"
+                  Height="128px"
+                  Alt="BitImage with width and height"
+                  Style="background-color: #00ffff17"
+                  Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
     </DemoSection>
 
-    <DemoSection Title="Style & Class" RazorCode="@example3RazorCode" Id="example3">
-        <div>
-            <div>
-                <BitLabel>Component's Style & Class:</BitLabel>
-                <br />
-                <div>
-                    <BitLabel>Styled</BitLabel>
-                    <BitImage Alt="Styled BitImage"
-                              Style="border: 2px solid goldenrod; border-radius: 5px; width: 258px;"
-                              Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-                </div>
-                <br />
-                <div>
-                    <BitLabel>Classed</BitLabel>
-                    <BitImage Alt="Styled BitImage"
-                              Class="custom-class"
-                              Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-                </div>
-            </div>
-            <br /><br />
-            <div>
-                <BitLabel>
-                    <div><b>Styles</b> & <b>Classes</b>:</div>
-                </BitLabel>
-                <br />
-                <div>
-                    <BitLabel>Styles</BitLabel>
-                    <BitImage Alt="Styled BitImage"
-                              Styles="@(new() {Image = "filter: blur(5px)" })"
-                              Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-                </div>
-                <br />
-                <div>
-                    <BitLabel>Classes</BitLabel>
-                    <BitImage Alt="Styled BitImage"
-                              Classes="@(new() {Image = "custom-image" })"
-                              Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-                </div>
-            </div>
-        </div>
+    <DemoSection Title="ImageFit" RazorCode="@example3RazorCode" Id="example3">
+        <div>None</div>
+        <BitImage Height="96"
+                  Alt="ImageFit: None BitImage"
+                  ImageFit="BitImageFit.None"
+                  Style="background-color: #00ffff17"
+                  Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+        <br /><br />
+        <div>Center</div>
+        <BitImage Height="96"
+                  Alt="ImageFit: Center BitImage"
+                  ImageFit="BitImageFit.Center"
+                  Style="background-color: #00ffff17"
+                  Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+        <br /><br />
+        <div>Contain</div>
+        <BitImage Height="96"
+                  Alt="ImageFit: Contain BitImage"
+                  ImageFit="BitImageFit.Contain"
+                  Style="background-color: #00ffff17"
+                  Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+        <br /><br />
+        <div>Cover</div>
+        <BitImage Height="96"
+                  Alt="ImageFit: Cover BitImage"
+                  ImageFit="BitImageFit.Cover"
+                  Style="background-color: #00ffff17"
+                  Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+        <br /><br />
+        <div>CenterContain</div>
+        <BitImage Height="96"
+                  Alt="ImageFit: CenterContain BitImage"
+                  ImageFit="BitImageFit.CenterContain"
+                  Style="background-color: #00ffff17"
+                  Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+        <br /><br />
+        <div>CenterCover</div>
+        <BitImage Height="96"
+                  Alt="ImageFit: CenterCover BitImage"
+                  ImageFit="BitImageFit.CenterCover"
+                  Style="background-color: #00ffff17"
+                  Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
     </DemoSection>
 
-    <DemoSection Title="Visibility" RazorCode="@example4RazorCode" Id="example4">
-        <div>
-            <div class="visibility-items">
-                Visible: [
-                <BitImage Alt="Visible BitImage"
-                          Width="194"
-                          ImageFit="BitImageFit.Contain"
-                          Visibility="BitVisibility.Visible"
-                          Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" /> ]
-            </div>
-            <br />
-            <div class="visibility-items">
-                Hidden: [
-                <BitImage Alt="Hidden BitImage"
-                          Width="194"
-                          ImageFit="BitImageFit.Contain"
-                          Visibility="BitVisibility.Hidden"
-                          Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" /> ]
-            </div>
-            <br />
-            <div class="visibility-items">
-                Collapsed: [
-                <BitImage Alt="Collapsed BitImage"
-                          Width="194"
-                          ImageFit="BitImageFit.Contain"
-                          Visibility="BitVisibility.Collapsed"
-                          Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" /> ]
-            </div>
-        </div>
+    <DemoSection Title="Cover" RazorCode="@example4RazorCode" Id="example4">
+        <div>ImageFit: CenterCover</div><br />
+        <div>Landscape</div>
+        <BitImage Height="96"
+                  Alt="Landscape BitImage with ImageFit: CenterCover"
+                  Style="background-color: #00ffff17"
+                  ImageFit="BitImageFit.CenterCover"
+                  Cover="BitImageCover.Landscape"
+                  Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+        <br />
+        <div>Portrait</div>
+        <BitImage Height="144"
+                  Width="96"
+                  Alt="Portrait BitImage with ImageFit: CenterCover"
+                  Style="background-color: #00ffff17"
+                  ImageFit="BitImageFit.CenterCover"
+                  Cover="BitImageCover.Portrait"
+                  Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+        <br /><br /><br /><br />
+        <div>ImageFit: CenterContain</div><br />
+        <div>Landscape</div>
+        <BitImage Height="96"
+                  Alt="Landscape BitImage with ImageFit: CenterContain"
+                  Style="background-color: #00ffff17"
+                  ImageFit="BitImageFit.CenterContain"
+                  Cover="BitImageCover.Landscape"
+                  Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+        <br />
+        <div>Portrait</div>
+        <BitImage Height="144"
+                  Width="96"
+                  Alt="Portrait BitImage with ImageFit: CenterContain"
+                  Style="background-color: #00ffff17"
+                  ImageFit="BitImageFit.CenterContain"
+                  Cover="BitImageCover.Portrait"
+                  Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
     </DemoSection>
 
-    <DemoSection Title="ImageFit" RazorCode="@example5RazorCode" Id="example5">
-        <div>
-            <div>
-                <BitLabel>None</BitLabel>
-                <BitImage Height="96"
-                          Alt="ImageFit: None BitImage"
-                          ImageFit="BitImageFit.None"
-                          Style="background-color: #00ffff17"
-                          Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            </div>
-            <br />
-            <div>
-                <BitLabel>Center</BitLabel>
-                <BitImage Height="96"
-                          Alt="ImageFit: Center BitImage"
-                          ImageFit="BitImageFit.Center"
-                          Style="background-color: #00ffff17"
-                          Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            </div>
-            <br />
-            <div>
-                <BitLabel>Contain</BitLabel>
-                <BitImage Height="96"
-                          Alt="ImageFit: Contain BitImage"
-                          ImageFit="BitImageFit.Contain"
-                          Style="background-color: #00ffff17"
-                          Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            </div>
-            <br />
-            <div>
-                <BitLabel>Cover</BitLabel>
-                <BitImage Height="96"
-                          Alt="ImageFit: Cover BitImage"
-                          ImageFit="BitImageFit.Cover"
-                          Style="background-color: #00ffff17"
-                          Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            </div>
-            <br />
-            <div>
-                <BitLabel>CenterContain</BitLabel>
-                <BitImage Height="96"
-                          Alt="ImageFit: CenterContain BitImage"
-                          ImageFit="BitImageFit.CenterContain"
-                          Style="background-color: #00ffff17"
-                          Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            </div>
-            <br />
-            <div>
-                <BitLabel>CenterCover</BitLabel>
-                <BitImage Height="96"
-                          Alt="ImageFit: CenterCover BitImage"
-                          ImageFit="BitImageFit.CenterCover"
-                          Style="background-color: #00ffff17"
-                          Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-            </div>
-        </div>
+    <DemoSection Title="MaximizeFrame" RazorCode="@example5RazorCode" Id="example5">
+        <BitImage Alt="Maximized BitImage" MaximizeFrame="true" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
     </DemoSection>
 
-    <DemoSection Title="CoverStyle" RazorCode="@example6RazorCode" Id="example6">
-        <div>
-            <div>
-                <BitText Typography="BitTypography.H6">ImageFit: CenterCover</BitText>
-                <br />
-                <div>
-                    <BitLabel>Landscape</BitLabel>
-                    <BitImage Height="96"
-                              Alt="Landscape BitImage with ImageFit: CenterCover"
-                              Style="background-color: #00ffff17"
-                              ImageFit="BitImageFit.CenterCover"
-                              CoverStyle="BitImageCoverStyle.Landscape"
-                              Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-                </div>
-                <br />
-                <div>
-                    <BitLabel>Portrait</BitLabel>
-                    <BitImage Height="144"
-                              Width="96"
-                              Alt="Portrait BitImage with ImageFit: CenterCover"
-                              Style="background-color: #00ffff17"
-                              ImageFit="BitImageFit.CenterCover"
-                              CoverStyle="BitImageCoverStyle.Portrait"
-                              Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-                </div>
-            </div>
-            <br />
-            <br />
-            <div>
-                <BitText Typography="BitTypography.H6">ImageFit: CenterContain</BitText>
-                <br />
-                <div>
-                    <BitLabel>Landscape</BitLabel>
-                    <BitImage Height="96"
-                              Alt="Landscape BitImage with ImageFit: CenterContain"
-                              Style="background-color: #00ffff17"
-                              ImageFit="BitImageFit.CenterContain"
-                              CoverStyle="BitImageCoverStyle.Landscape"
-                              Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-                </div>
-                <br />
-                <div>
-                    <BitLabel>Portrait</BitLabel>
-                    <BitImage Height="144"
-                              Width="96"
-                              Alt="Portrait BitImage with ImageFit: CenterContain"
-                              Style="background-color: #00ffff17"
-                              ImageFit="BitImageFit.CenterContain"
-                              CoverStyle="BitImageCoverStyle.Portrait"
-                              Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-                </div>
-            </div>
-        </div>
+    <DemoSection Title="ImageState" RazorCode="@example6RazorCode" CsharpCode="example6CsharpCode" Id="example6">
+        <div>Loading</div><br />
+        <BitButton OnClick="() => loadLoading = true">Load image</BitButton>
+        @if (loadLoading)
+        {
+            <BitImage Alt="Loading ImageState" Src="/api/Image/GetImage" Width="200px">
+                <LoadingTemplate>
+                    <b>loading...</b>
+                </LoadingTemplate>
+            </BitImage>
+        }
+        <br /><br /><br /><br />
+        <div>Error</div><br />
+        <BitButton OnClick="() => loadError = true">Load image</BitButton>
+        @if (loadError)
+        {
+            <BitImage Alt="Error ImageState" Src="/api/Image/GetImageError" Width="200px">
+                <LoadingTemplate><b>...</b></LoadingTemplate>
+                <ErrorTemplate>
+                    <b>error!!!</b>
+                </ErrorTemplate>
+            </BitImage>
+        }
     </DemoSection>
 
-    <DemoSection Title="MaximizeFrame" RazorCode="@example7RazorCode" Id="example7">
+    <DemoSection Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
         <div>
-            <BitImage Alt="Maximized BitImage" MaximizeFrame="true" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+            <div>Component's Style & Class:</div><br />
+            <div>Styled</div>
+            <BitImage Alt="Styled BitImage"
+                      Style="border: 2px solid goldenrod; border-radius: 5px; width: 258px;"
+                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+            <br />
+            <div>Classed</div>
+            <BitImage Alt="Styled BitImage"
+                      Class="custom-class"
+                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+            <br /><br /><br /><br />
+            <div><b>Styles</b> & <b>Classes</b>:</div><br />
+            <div>Styles</div>
+            <BitImage Alt="Styled BitImage"
+                      Styles="@(new() { Image = "filter: blur(5px)" })"
+                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+            <br />
+            <div>Classes</div>
+            <BitImage Alt="Styled BitImage"
+                      Classes="@(new() { Image = "custom-image" })"
+                      Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
         </div>
     </DemoSection>
 </DemoPage>
