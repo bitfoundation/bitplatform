@@ -45,8 +45,9 @@ jobs:
       with:
         files: 'SalesModule/**/appsettings*json'
       env:
-        ServerAddress: ${{ env.SERVER_ADDRESS }}
         WebAppRender.PrerenderEnabled: true
+        ServerAddress: ${{ env.SERVER_ADDRESS }}
+        WebAppRender.BlazorMode: 'BlazorWebAssembly'
         AdsPushVapid.PublicKey: ${{ secrets.SALES_PUBLIC_VAPIDKEY }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}

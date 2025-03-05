@@ -43,6 +43,7 @@ jobs:
         files: 'AdminPanel/**/appsettings*json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
+        WebAppRender.BlazorMode: 'BlazorWebAssembly'
         Logging.Sentry.Dsn: ${{ secrets.ADMINPANEL_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         AdsPushVapid.PublicKey: ${{ secrets.ADMINPANEL_PUBLIC_VAPIDKEY }}

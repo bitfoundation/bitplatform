@@ -51,6 +51,7 @@ jobs:
       env:
         WebAppRender.PrerenderEnabled: true
         ServerAddress: ${{ env.SERVER_ADDRESS }}
+        WebAppRender.BlazorMode: 'BlazorWebAssembly'
         Logging.Sentry.Dsn: ${{ secrets.TODO_SENTRY_DSN }}
         AdsPushVapid.PublicKey: ${{ secrets.TODO_PUBLIC_VAPIDKEY }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
