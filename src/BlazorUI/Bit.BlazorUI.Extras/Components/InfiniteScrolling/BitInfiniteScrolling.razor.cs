@@ -85,8 +85,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     {
         if (Preload && ItemsProvider is not null)
         {
-            var items = await ItemsProvider(new(0, CancellationToken.None));
-            _currentItems.AddRange(items);
+            await LoadMoreItems();
         }
 
         await base.OnInitializedAsync();
@@ -168,6 +167,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
         if (_globalCts is not null)
         {
+            //_globalCts.Cancel();
             _globalCts.Dispose();
             _globalCts = null;
         }
