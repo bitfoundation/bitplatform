@@ -53,14 +53,14 @@
 
                     @if (NoToggle is false)
                     {
-                        <BitButton IconOnly FixedColor
+                        <BitButton IconOnly
+                                   Color="Color"
                                    Size="BitSize.Large"
                                    OnClick="ToggleNavPanel"
                                    Variant="BitVariant.Text"
                                    Style="@Styles?.ToggleButton"
                                    Class="@Classes?.ToggleButton"
                                    IconName="ColumnRightTwoThirds"
-                                   Color="BitColor.TertiaryBackground"
                                    Classes="@(new() { Icon = "bit-icon-ex bit-icon-ex--ColumnRightTwoThirds" })" />
                     }
                 </div>
@@ -68,25 +68,25 @@
 
             <BitSearchBox @ref="_searchBoxRef"
                           Underlined
+                          Color="Color"
                           OnChange="SearchNavItems"
-                          Immediate DebounceTime="500"
-                          Placeholder="@SearchBoxPlaceholder"
                           Styles="SearchBoxStyles"
                           Classes="SearchBoxClasses"
                           Class="@Classes?.SearchBox"
+                          Immediate DebounceTime="500"
+                          Placeholder="@SearchBoxPlaceholder"
                           Style="@($"{(isToggled ? "display:none;" : "")}{Styles?.SearchBox}".Trim())" />
 
             @if (isToggled)
             {
-                <BitButton IconOnly 
-                           FixedColor
+                <BitButton IconOnly
+                           Color="Color"
                            IconName="Search"
                            Size="BitSize.Large"
                            OnClick="ToggleForSearch"
                            Variant="BitVariant.Text"
                            Style="@Styles?.ToggleSearchButton"
-                           Class="@Classes?.ToggleSearchButton"
-                           Color="BitColor.TertiaryBackground" />
+                           Class="@Classes?.ToggleSearchButton" />
             }
 
             @if (_filteredNavItems.Any() is false)

@@ -22,12 +22,26 @@ public partial class BitImageDemo
         },
         new()
         {
-            Name = "CoverStyle",
-            Type = "BitImageCoverStyle",
+            Name = "Cover",
+            Type = "BitImageCover?",
             DefaultValue = "null",
             Description = "Specifies the cover style to be used for this image.",
             LinkType = LinkType.Link,
-            Href = "#image-cover-enum"
+            Href = "#image-cover-style"
+        },
+        new()
+        {
+            Name = "ErrorTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template used to show the error state of the image.",
+        },
+        new()
+        {
+            Name = "FadeIn",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "If true, fades the image in when loaded."
         },
         new()
         {
@@ -50,14 +64,23 @@ public partial class BitImageDemo
             DefaultValue = "null",
             Description = "Used to determine how the image is scaled and cropped to fit the frame.",
             LinkType = LinkType.Link,
-            Href = "#image-fit-enum"
+            Href = "#image-fit"
         },
         new()
         {
             Name = "Loading",
-            Type = "string?",
+            Type = "BitImageLoading?",
             DefaultValue = "null",
-            Description = "Allows for browser-level image loading (lazy or eager)."
+            Description = "Allows for browser-level image loading (lazy or eager).",
+            LinkType = LinkType.Link,
+            Href = "#image-loading"
+        },
+        new()
+        {
+            Name = "LoadingTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template used to show the loading state of the image.",
         },
         new()
         {
@@ -76,22 +99,15 @@ public partial class BitImageDemo
         new()
         {
             Name = "OnLoadingStateChange",
-            Type = "EventCallback<BitImageLoadingState>",
+            Type = "EventCallback<BitImageState>",
             DefaultValue = "null",
             Description = "Optional callback method for when the image load state has changed.",
             LinkType = LinkType.Link,
-            Href = "#image-loading-enum"
+            Href = "#image-state"
         },
         new()
         {
-            Name = "ShouldFadeIn",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "If true, fades the image in when loaded."
-        },
-        new()
-        {
-            Name = "ShouldStartVisible",
+            Name = "StartVisible",
             Type = "bool",
             DefaultValue = "true",
             Description = "If true, the image starts as visible and is hidden on error. Otherwise, the image is hidden until it is successfully loaded."
@@ -159,7 +175,7 @@ public partial class BitImageDemo
     [
         new()
         {
-            Id = "image-fit-enum",
+            Id = "image-fit",
             Name = "BitImageFit",
             Description = "",
             Items =
@@ -204,8 +220,8 @@ public partial class BitImageDemo
         },
         new()
         {
-            Id = "image-cover-enum",
-            Name = "BitImageCoverStyle",
+            Id = "image-cover-style",
+            Name = "BitImageCover",
             Description = "",
             Items =
             [
@@ -225,15 +241,15 @@ public partial class BitImageDemo
         },
         new()
         {
-            Id = "image-loading-enum",
-            Name = "BitImageLoadingState",
+            Id = "image-state",
+            Name = "BitImageState",
             Description = "",
             Items =
             [
                 new()
                 {
-                    Name= "NotLoaded",
-                    Description="The image has not yet been loaded, and there is no error yet.",
+                    Name= "Loading",
+                    Description="The image is loading from its source.",
                     Value="0",
                 },
                 new()
@@ -249,8 +265,33 @@ public partial class BitImageDemo
                     Value="2",
                 }
             ]
-        }
+        },
+        new()
+        {
+            Id = "image-loading",
+            Name = "BitImageLoading",
+            Description = "Represents the img loading attribute values explained here: https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/loading",
+            Items =
+            [
+                new()
+                {
+                    Name= "Eager",
+                    Description="The default behavior, eager tells the browser to load the image as soon as the img element is processed.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Lazy",
+                    Description="Tells the user agent to hold off on loading the image until the browser estimates that it will be needed imminently.",
+                    Value="1",
+                }
+            ]
+        },
     ];
+
+
+    private bool loadLoading;
+    private bool loadError;
 
 
 
@@ -277,60 +318,6 @@ public partial class BitImageDemo
           Src=""images/bit-logo-blue.png"" />";
 
     private readonly string example3RazorCode = @"
-<style>
-    .custom-class {
-        padding: 0.5rem;
-        filter: hue-rotate(45deg);
-        background-color: blueviolet;
-    }
-
-    .custom-image {
-        width: 16rem;
-        filter: opacity(25%);
-        border-radius: 1rem 3rem;
-    }
-</style>
-
-<BitImage Alt=""Styled BitImage""
-          Style=""border: 2px solid goldenrod; border-radius: 5px; width: 258px;""
-          Src=""images/bit-logo-blue.png"" />
-                    
-<BitImage Alt=""Styled BitImage""
-          Class=""custom-class""
-          Src=""images/bit-logo-blue.png"" />
-                   
-
-<BitImage Alt=""Styled BitImage""
-          Styles=""@(new() { Image = ""filter: blur(5px)"" })""
-          Src=""images/bit-logo-blue.png"" />
-                    
-<BitImage Alt=""Styled BitImage""
-          Classes=""@(new() { Image = ""custom-image"" })""
-          Src=""images/bit-logo-blue.png"" />";
-
-    private readonly string example4RazorCode = @"
-Visible: [
-<BitImage Alt=""Visible BitImage""
-          Width=""194""
-          ImageFit=""BitImageFit.Contain""
-          Visibility=""BitVisibility.Visible""
-          Src=""images/bit-logo-blue.png"" /> ]
-
-Hidden: [
-<BitImage Alt=""Hidden BitImage""
-          Width=""194""
-          ImageFit=""BitImageFit.Contain""
-          Visibility=""BitVisibility.Hidden""
-          Src=""images/bit-logo-blue.png"" /> ]
-
-Collapsed: [
-<BitImage Alt=""Collapsed BitImage""
-          Width=""194""
-          ImageFit=""BitImageFit.Contain""
-          Visibility=""BitVisibility.Collapsed""
-          Src=""images/bit-logo-blue.png"" /> ]";
-
-    private readonly string example5RazorCode = @"
 <BitImage Height=""96""
           Alt=""ImageFit: None BitImage""
           ImageFit=""BitImageFit.None""
@@ -367,12 +354,12 @@ Collapsed: [
           Style=""background-color: #00ffff17""
           Src=""images/bit-logo-blue.png"" />";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example4RazorCode = @"
 <BitImage Height=""96""
           Alt=""Landscape BitImage with ImageFit: CenterCover""
           Style=""background-color: #00ffff17""
           ImageFit=""BitImageFit.CenterCover""
-          CoverStyle=""BitImageCoverStyle.Landscape""
+          Cover=""BitImageCover.Landscape""
           Src=""images/bit-logo-blue.png"" />
 
 <BitImage Height=""144""
@@ -380,7 +367,7 @@ Collapsed: [
           Alt=""Portrait BitImage with ImageFit: CenterCover""
           Style=""background-color: #00ffff17""
           ImageFit=""BitImageFit.CenterCover""
-          CoverStyle=""BitImageCoverStyle.Portrait""
+          Cover=""BitImageCover.Portrait""
           Src=""images/bit-logo-blue.png"" />
 
 
@@ -388,7 +375,7 @@ Collapsed: [
           Alt=""Landscape BitImage with ImageFit: CenterContain""
           Style=""background-color: #00ffff17""
           ImageFit=""BitImageFit.CenterContain""
-          CoverStyle=""BitImageCoverStyle.Landscape""
+          Cover=""BitImageCover.Landscape""
           Src=""images/bit-logo-blue.png"" />
 
 <BitImage Height=""144""
@@ -396,9 +383,67 @@ Collapsed: [
           Alt=""Portrait BitImage with ImageFit: CenterContain""
           Style=""background-color: #00ffff17""
           ImageFit=""BitImageFit.CenterContain""
-          CoverStyle=""BitImageCoverStyle.Portrait""
+          Cover=""BitImageCover.Portrait""
           Src=""images/bit-logo-blue.png"" />";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitImage Alt=""Maximized BitImage"" MaximizeFrame=""true"" Src=""images/bit-logo-blue.png"" />";
+
+    private readonly string example6RazorCode = @"
+<BitButton OnClick=""() => loadLoading = true"">Load image</BitButton>
+@if (loadLoading)
+{
+    <BitImage Alt=""Loading ImageState"" Src=""/api/Image/GetImage"" Width=""200px"">
+        <LoadingTemplate>
+            <b>loading...</b>
+        </LoadingTemplate>
+    </BitImage>
+}
+
+<BitButton OnClick=""() => loadError = true"">Load image</BitButton>
+@if (loadError)
+{
+    <BitImage Alt=""Error ImageState"" Src=""/api/Image/GetImageError"" Width=""200px"">
+        <LoadingTemplate><b>...</b></LoadingTemplate>
+        <ErrorTemplate>
+            <b>error!!!</b>
+        </ErrorTemplate>
+    </BitImage>
+}";
+    private readonly string example6CsharpCode = @"
+private bool loadLoading;
+private bool loadError;
+";
+
+    private readonly string example7RazorCode = @"
+< style>
+    .custom-class {
+        padding: 0.5rem;
+        filter: hue-rotate(45deg);
+        background-color: blueviolet;
+    }
+
+    .custom-image {
+        width: 16rem;
+        filter: opacity(25%);
+        border-radius: 1rem 3rem;
+    }
+</style>
+
+<BitImage Alt=""Styled BitImage""
+          Style=""border: 2px solid goldenrod; border-radius: 5px; width: 258px;""
+          Src=""images/bit-logo-blue.png"" />
+                    
+<BitImage Alt=""Styled BitImage""
+          Class=""custom-class""
+          Src=""images/bit-logo-blue.png"" />
+                   
+
+<BitImage Alt=""Styled BitImage""
+          Styles=""@(new() { Image = ""filter: blur(5px)"" })""
+          Src=""images/bit-logo-blue.png"" />
+                    
+<BitImage Alt=""Styled BitImage""
+          Classes=""@(new() { Image = ""custom-image"" })""
+          Src=""images/bit-logo-blue.png"" />";
 }

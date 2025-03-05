@@ -35,6 +35,12 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     [Parameter] public BitSearchBoxClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The general color of the search box, used for colored parts like icons.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
+
+    /// <summary>
     /// The default value of the text in the SearchBox, in the case of an uncontrolled component.
     /// </summary>
     [Parameter] public string? DefaultValue { get; set; }
@@ -202,6 +208,28 @@ public partial class BitSearchBox : BitTextInputBase<string?>
             BitColorKind.Tertiary => "bit-srb-ater",
             BitColorKind.Transparent => "bit-srb-atra",
             _ => string.Empty
+        });
+
+        ClassBuilder.Register(() => Color switch
+        {
+            BitColor.Primary => "bit-srb-pri",
+            BitColor.Secondary => "bit-srb-sec",
+            BitColor.Tertiary => "bit-srb-ter",
+            BitColor.Info => "bit-srb-inf",
+            BitColor.Success => "bit-srb-suc",
+            BitColor.Warning => "bit-srb-wrn",
+            BitColor.SevereWarning => "bit-srb-swr",
+            BitColor.Error => "bit-srb-err",
+            BitColor.PrimaryBackground => "bit-srb-pbg",
+            BitColor.SecondaryBackground => "bit-srb-sbg",
+            BitColor.TertiaryBackground => "bit-srb-tbg",
+            BitColor.PrimaryForeground => "bit-srb-pfg",
+            BitColor.SecondaryForeground => "bit-srb-sfg",
+            BitColor.TertiaryForeground => "bit-srb-tfg",
+            BitColor.PrimaryBorder => "bit-srb-pbr",
+            BitColor.SecondaryBorder => "bit-srb-sbr",
+            BitColor.TertiaryBorder => "bit-srb-tbr",
+            _ => "bit-srb-pri"
         });
     }
 

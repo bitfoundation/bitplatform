@@ -43,11 +43,11 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'SalesModule/src/Shared/appsettings.json, SalesModule/src/Client/SalesModule.Client.Core/appsettings.json, SalesModule/src/Client/SalesModule.Client.Web/appsettings.json, SalesModule/src/Client/SalesModule.Client.Web/appsettings.Production.json'
+        files: 'SalesModule/**/appsettings*json'
       env:
         WebAppRender.PrerenderEnabled: true
-        ServerAddress: /
-        WebAppRender.BlazorMode: BlazorWebAssembly
+        ServerAddress: ${{ env.SERVER_ADDRESS }}
+        WebAppRender.BlazorMode: 'BlazorWebAssembly'
         AdsPushVapid.PublicKey: ${{ secrets.SALES_PUBLIC_VAPIDKEY }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
@@ -146,7 +146,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'SalesModule\src\Shared\appsettings.json, SalesModule\src\Client\SalesModule.Client.Core\appsettings.json, SalesModule\src\Client\SalesModule.Client.Windows\appsettings.json'
+        files: 'SalesModule\**\appsettings*json'
       env:
         WebAppUrl: ${{ env.SERVER_ADDRESS }}
         ServerAddress: ${{ env.SERVER_ADDRESS }}

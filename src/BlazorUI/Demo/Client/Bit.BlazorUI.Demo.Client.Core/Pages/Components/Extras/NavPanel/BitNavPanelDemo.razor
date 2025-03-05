@@ -23,13 +23,22 @@
             </div>
         </DemoSection>
 
-        <DemoSection Title="ItemTemplate" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <DemoSection Title="Color" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div class="open-btn">
+                <BitToggleButton @bind-IsChecked="colorIsOpen" OnText="Close" OffText="Open" />
+            </div>
+            <div style="width:222px">
+                <BitNavPanel @bind-IsOpen="colorIsOpen" Items="basicNavItems" Color="BitColor.Secondary" Accent="BitColor.SecondaryBackground" />
+            </div>
+        </DemoSection>
+
+        <DemoSection Title="ItemTemplate" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div class="open-btn">
                 <BitToggleButton @bind-IsChecked="templateIsOpen" OnText="Close" OffText="Open" />
             </div>
-            <BitNavPanel @bind-IsOpen="templateIsOpen" Items="basicNavItems" Accent="BitColor.SecondaryBackground" FitWidth NoToggle>
+            <BitNavPanel @bind-IsOpen="templateIsOpen" Items="basicNavItems" FitWidth NoToggle>
                 <ItemTemplate Context="item">
-                    <BitText>@item.Text</BitText>
+                    <BitText><i><b>@item.Text</b></i></BitText>
                     <BitSpacer />
                     @if (item.Data is not null)
                     {
@@ -39,7 +48,7 @@
             </BitNavPanel>
         </DemoSection>
 
-        <DemoSection Title="RTL" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <DemoSection Title="RTL" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div class="open-btn">
                 <BitToggleButton @bind-IsChecked="rtlIsOpen" OnText="Close" OffText="Open" />
             </div>

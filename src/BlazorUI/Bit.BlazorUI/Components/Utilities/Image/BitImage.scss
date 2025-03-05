@@ -25,9 +25,9 @@
 }
 
 .bit-img-fde {
-    animation-name: image-opacity-anim;
     animation-fill-mode: both;
     animation-duration: 0.367s;
+    animation-name: image-opacity-anim;
     animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
 }
 
@@ -48,6 +48,10 @@
 
 .bit-img-vis {
     opacity: 1;
+}
+
+.bit-img-hid {
+    display: none;
 }
 
 .bit-img-max {

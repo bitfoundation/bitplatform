@@ -15,19 +15,22 @@
     <Link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
     <Link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
     <Link rel="stylesheet" href="styles/app.css" />
-    <Link rel="stylesheet" href="Bit.Websites.Careers.Server.styles.css" />
+    <Link rel="stylesheet" href="Bit.Websites.Careers.Client.bundle.scp.css" />
 </head>
 
 <body class="bit-blazor-web">
 
     <Routes @rendermode=RenderModeProvider.Current />
 
-    <Script src="_framework/blazor.web.js" autostart="false"></Script>
-    <Script src="_content/Bit.Bswup/bit-bswup.js"></Script>
-    <Script src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
-    <AppBswupProgressBar />
-    <Script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
-    <Script src="scripts/app.js"></Script>
+    @if (HttpContext.Request.IsLightHouseRequest() is false)
+    {
+        <Script src="_framework/blazor.web.js" autostart="false"></Script>
+        <Script src="_content/Bit.Bswup/bit-bswup.js"></Script>
+        <Script src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
+        <AppBswupProgressBar />
+        <Script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
+        <Script src="scripts/app.js"></Script>
+    }
 </body>
 
 </html>

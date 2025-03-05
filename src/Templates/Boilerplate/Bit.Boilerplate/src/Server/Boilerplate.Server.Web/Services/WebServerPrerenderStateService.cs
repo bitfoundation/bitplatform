@@ -3,25 +3,27 @@
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components;
+using Boilerplate.Client.Web.Services;
 
-namespace Boilerplate.Client.Web.Services;
+namespace Boilerplate.Server.Web.Services;
 
 /// <summary>
+/// This class persists values to be accessed by the web client after hydration using <see cref="WebClientPrerenderStateService"/>.
 /// <inheritdoc cref="IPrerenderStateService"/>
 /// </summary>
-public partial class WebPrerenderStateService : IPrerenderStateService, IAsyncDisposable
+public partial class WebServerPrerenderStateService : IPrerenderStateService, IAsyncDisposable
 {
     private PersistingComponentStateSubscription? subscription;
-    private readonly ClientWebSettings clientAppSettings = default!;
+    private readonly ServerWebSettings serverWebSettings = default!;
     private readonly PersistentComponentState? persistentComponentState;
     private readonly ConcurrentDictionary<string, object?> values = new();
 
-    private bool NoPersistent => clientAppSettings.WebAppRender.RenderMode is null /*Ssr*/ ||
-                                       clientAppSettings.WebAppRender.PrerenderEnabled is false;
+    private bool NoPersistent => serverWebSettings.WebAppRender.RenderMode is null /*Ssr*/ ||
+                                       serverWebSettings.WebAppRender.PrerenderEnabled is false;
 
-    public WebPrerenderStateService(ClientWebSettings clientWebSettings, PersistentComponentState? persistentComponentState = null)
+    public WebServerPrerenderStateService(ServerWebSettings clientWebSettings, PersistentComponentState? persistentComponentState = null)
     {
-        this.clientAppSettings = clientWebSettings;
+        this.serverWebSettings = clientWebSettings;
         this.persistentComponentState = persistentComponentState;
         if (NoPersistent) return;
         subscription = persistentComponentState?.RegisterOnPersisting(PersistAsJson, clientWebSettings.WebAppRender.RenderMode);
