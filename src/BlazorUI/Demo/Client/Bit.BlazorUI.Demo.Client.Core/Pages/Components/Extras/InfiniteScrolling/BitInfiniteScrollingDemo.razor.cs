@@ -115,7 +115,7 @@ private async ValueTask<IEnumerable<int>> LoadBasicItems(BitInfiniteScrollingIte
     }
 </style>
 
-<BitInfiniteScrolling ItemsProvider=""LoadAdvancedItems"" Class=""advanced"" LastElementHeight=""96px"" Preload>
+<BitInfiniteScrolling ItemsProvider=""LoadAdvancedItems"" Class=""advanced"" LastElementHeight=""96px"" ScrollerSelector=""body"" Preload>
     <ItemTemplate Context=""item"">
         <div class=""item"">Item @item</div>
     </ItemTemplate>
