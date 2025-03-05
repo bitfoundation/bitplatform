@@ -11,6 +11,7 @@ using Boilerplate.Client.Web;
 using Boilerplate.Server.Web.Services;
 using Microsoft.AspNetCore.Antiforgery;
 using Boilerplate.Client.Core.Services.Contracts;
+using Boilerplate.Client.Web.Services;
 using Boilerplate.Client.Core.Services;
 
 namespace Boilerplate.Server.Web;
@@ -104,22 +105,10 @@ public static partial class Program
     {
         var services = builder.Services;
         var configuration = builder.Configuration;
-        ServerWebSettings settings = new();
-        configuration.Bind(settings);
 
         services.AddTransient<IAntiforgery, NoOpAntiforgery>();
         services.AddScoped<IAuthTokenProvider, ServerSideAuthTokenProvider>();
         services.AddTransient<IPrerenderStateService, WebServerPrerenderStateService>();
-
-        Uri? serverAddress = null;
-        var _ = (string.IsNullOrEmpty(settings.ServerAddressDuringPreRendering) is false && Uri.TryCreate(settings.ServerAddressDuringPreRendering, UriKind.Absolute, out serverAddress))
-                || Uri.TryCreate(configuration.GetServerAddress(), UriKind.RelativeOrAbsolute, out serverAddress);
-
-        if ((serverAddress ?? throw new InvalidOperationException()).IsAbsoluteUri)
-        {
-            services.AddScoped<AbsoluteServerAddressProvider>(sp => new() { GetAddress = () => serverAddress });
-        }
-
         services.AddScoped(sp =>
         {
             // This HTTP client is utilized during pre-rendering and within Blazor Auto/Server sessions for API calls. 
@@ -127,6 +116,11 @@ public static partial class Program
             // Additionally, forwarded headers are handled to ensure proper forwarding, if the backend is hosted behind a CDN. 
             // User agent and referrer headers are also included to provide the API with necessary request context. 
 
+            var serverSettings = sp.GetRequiredService<ServerWebSettings>();
+            var serverAddressString = string.IsNullOrEmpty(serverSettings.ServerAddressDuringPreRendering) is false ?
+                serverSettings.ServerAddressDuringPreRendering : configuration.GetServerAddress();
+
+            Uri.TryCreate(serverAddressString, UriKind.RelativeOrAbsolute, out var serverAddress);
             var currentRequest = sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request;
             if (serverAddress!.IsAbsoluteUri is false)
             {
