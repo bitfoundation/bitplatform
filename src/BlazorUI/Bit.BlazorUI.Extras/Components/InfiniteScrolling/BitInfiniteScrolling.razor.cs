@@ -176,11 +176,14 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
     private string GetLastElementStyle()
     {
-        var style = _isLoading ? "display:none" : $"height:{(LastElementHeight is null ? "1px" : LastElementHeight)};width:100%";
+        if (_isLoading) return "display:none";
+
+
+        var style = $"height:{(LastElementHeight is null ? "1px" : LastElementHeight)};width:100%";
 
         if (LastElementStyle is not null)
         {
-            style += ";" + LastElementStyle;
+            style += $";{LastElementStyle}";
         }
 
         return style;

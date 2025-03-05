@@ -109,7 +109,7 @@ public partial class BitInfiniteScrollingDemo
 private async ValueTask<IEnumerable<int>> LoadBasicItems(BitInfiniteScrollingItemsProviderRequest request)
 {
     if (request.Skip > 200) return [];
-    await Task.Delay(1000);1
+    await Task.Delay(1000);
     return Enumerable.Range(request.Skip, 20);
 }";
 
