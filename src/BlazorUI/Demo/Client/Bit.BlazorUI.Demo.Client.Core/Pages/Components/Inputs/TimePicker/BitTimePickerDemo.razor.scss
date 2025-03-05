@@ -1,10 +1,10 @@
-﻿@import '../../../../Styles/abstracts/_colors.scss';
+﻿@import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
 .validation-summary {
     overflow: hidden;
     margin-bottom: 0.625rem;
-    background-color: $ErrorBlockRed;
-    border-left: 0.25rem solid $Red10;
+    background-color: $bit-color-error-light;
+    border-left: 0.25rem solid $bit-color-requried;
 }
 
 .example-content {
@@ -92,8 +92,8 @@
     }
 
     .validation-message {
-        color: $Red20;
         font-size: 0.75rem;
+        color: $bit-color-requried;
     }
 
     .validation-errors {
