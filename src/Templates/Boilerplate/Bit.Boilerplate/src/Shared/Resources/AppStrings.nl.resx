@@ -717,7 +717,7 @@
     <data name="TermsMessage" xml:space="preserve">
     <value>Ik ga akkoord met de</value>
   </data>
-    <data name="UploadNewProfileImage" xml:space="preserve">
+    <data name="UploadNewImage" xml:space="preserve">
     <value>Upload een nieuwe profielafbeelding</value>
   </data>
     <data name="Yes" xml:space="preserve">
@@ -1050,6 +1050,9 @@
   </data>
     <!--#endif -->
     <!--#if (module == "Admin" || module == "Sales") -->
+    <data name="ProductImageCouldNotBeFound" xml:space="preserve">
+    <value>Productafbeelding kan niet worden gevonden</value>
+  </data>
     <data name="CategoryCouldNotBeFound" xml:space="preserve">
     <value>Categorie-entiteit kan niet worden gevonden</value>
   </data>

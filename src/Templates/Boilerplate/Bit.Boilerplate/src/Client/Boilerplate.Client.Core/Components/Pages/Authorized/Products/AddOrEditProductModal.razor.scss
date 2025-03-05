@@ -5,6 +5,19 @@
     padding-block: 1rem;
 }
 
-::deep .stack {
-    padding-inline: 1rem;
+::deep {
+    .stack {
+        padding-inline: 1rem;
+    }
+
+    .product-image {
+        width: 300px;
+        height: 300px;
+
+        img {
+            margin: auto;
+            max-width: 100%;
+            max-height: 100%;
+        }
+    }
 }
