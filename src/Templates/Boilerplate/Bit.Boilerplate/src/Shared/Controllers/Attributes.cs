@@ -58,3 +58,13 @@ public partial class AuthorizedApiAttribute : Attribute
 {
 
 }
+
+/// <summary>
+/// This attribute designates an API as an external API, 
+/// allowing HTTP message handlers to modify their behavior accordingly.
+/// </summary>
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface)]
+public partial class ExternalApiAttribute : Attribute
+{
+
+}
