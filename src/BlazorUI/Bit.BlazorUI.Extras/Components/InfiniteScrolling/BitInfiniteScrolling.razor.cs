@@ -167,7 +167,6 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
         if (_globalCts is not null)
         {
-            //_globalCts.Cancel();
             _globalCts.Dispose();
             _globalCts = null;
         }
