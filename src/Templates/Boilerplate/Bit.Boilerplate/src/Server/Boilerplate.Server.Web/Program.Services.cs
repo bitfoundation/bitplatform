@@ -117,8 +117,8 @@ public static partial class Program
             // User agent and referrer headers are also included to provide the API with necessary request context. 
 
             var serverSettings = sp.GetRequiredService<ServerWebSettings>();
-            var serverAddressString = string.IsNullOrEmpty(serverSettings.ServerAddressDuringPreRendering) is false ?
-                serverSettings.ServerAddressDuringPreRendering : configuration.GetServerAddress();
+            var serverAddressString = string.IsNullOrEmpty(serverSettings.ServerSideHttpClientBaseAddress) is false ?
+                serverSettings.ServerSideHttpClientBaseAddress : configuration.GetServerAddress();
 
             Uri.TryCreate(serverAddressString, UriKind.RelativeOrAbsolute, out var serverAddress);
             var currentRequest = sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request;

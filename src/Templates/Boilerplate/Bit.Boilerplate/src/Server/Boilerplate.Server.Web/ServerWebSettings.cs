@@ -24,7 +24,7 @@ public partial class ServerWebSettings : ClientWebSettings
     /// However, during pre-rendering, using a local address like <c>http://localhost:8080</c>
     /// is significantly more efficient.
     /// </remarks>
-    public string? ServerAddressDuringPreRendering { get; set; }
+    public string? ServerSideHttpClientBaseAddress { get; set; }
 
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
