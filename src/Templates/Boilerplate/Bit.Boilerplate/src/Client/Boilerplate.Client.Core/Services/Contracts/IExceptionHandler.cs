@@ -13,11 +13,11 @@ public enum ExceptionDisplayKind
     /// </summary>
     Interrupting,
     /// <summary>
-    /// Shows an auto-dismissed message (e.g., a toast notification)
+    /// Shows an auto-dismissed message (e.g., a snack bar)
     /// </summary>
     NonInterrupting,
     /// <summary>
-    /// Automatically selects the exception display type based on the exception category.
+    /// Automatically selects the exception display type based on the exception type. <see cref="ClientExceptionHandlerBase.GetDisplayKind(Exception)"/>
     /// </summary>
     Default
 }
