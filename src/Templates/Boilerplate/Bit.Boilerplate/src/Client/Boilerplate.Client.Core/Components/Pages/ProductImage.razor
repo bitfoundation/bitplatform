@@ -1,4 +1,4 @@
-<BitImage Src="@(Src ?? "_content/Boilerplate.Client.Core/images/product-placeholder.svg")" Width="@Width">
+<BitImage Class="@Class" Src="@(Src ?? "_content/Boilerplate.Client.Core/images/product-placeholder.svg")" Width="@Width">
     <LoadingTemplate>
         <BitShimmer Style="width:100%;height:unset;aspect-ratio:1" />
     </LoadingTemplate>
@@ -7,4 +7,5 @@
 @code {
     [Parameter] public string? Src { get; set; }
     [Parameter] public string? Width { get; set; }
+    [Parameter] public string? Class { get; set; }
 }
