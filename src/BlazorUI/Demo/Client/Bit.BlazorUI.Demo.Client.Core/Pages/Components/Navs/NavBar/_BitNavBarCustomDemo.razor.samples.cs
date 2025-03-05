@@ -283,7 +283,7 @@ private static readonly List<MenuItem> basicNavBarCustoms =
         <BitSticky Top=""0"">
             <BitCard FullWidth>
                 <BitStack Horizontal HorizontalAlign=""BitAlignment.Center"" VerticalAlign=""BitAlignment.Center"">
-                    <BitImage Src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" Width=""50"" />
+                    <BitImage Src=""/images/bit-logo.svg"" Width=""50"" />
                     <BitText Typography=""BitTypography.H4"" Color=""BitColor.Info"">
                         bit BlazorUI
                     </BitText>
