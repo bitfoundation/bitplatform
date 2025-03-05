@@ -9,7 +9,7 @@ public partial class ImageController : AppControllerBase
     {
         await Task.Delay(1000, cancellationToken);
 
-        return File(System.IO.File.OpenRead("wwwroot/images/icon.png"), "image/png", enableRangeProcessing: true);
+        return File("images/icon.png", "image/png", enableRangeProcessing: true);
     }
 
     [HttpGet]
