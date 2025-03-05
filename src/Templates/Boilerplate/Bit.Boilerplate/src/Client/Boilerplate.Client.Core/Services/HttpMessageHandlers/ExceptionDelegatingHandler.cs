@@ -7,7 +7,6 @@ namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
                                                 IStringLocalizer<AppStrings> localizer,
                                                 JsonSerializerOptions jsonSerializerOptions,
-                                                AbsoluteServerAddressProvider absoluteServerAddress,
                                                 HttpMessageHandler handler) : DelegatingHandler(handler)
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -15,7 +14,7 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
         var logScopeData = (Dictionary<string, object?>)request.Options.GetValueOrDefault(RequestOptionNames.LogScopeData)!;
 
         bool serverCommunicationSuccess = false;
-        var isInternalRequest = request.RequestUri!.ToString().StartsWith(absoluteServerAddress, StringComparison.InvariantCultureIgnoreCase);
+        var isInternalRequest = request.HasExternalApiAttribute() is false;
 
         string? requestIdValue = null;
 
