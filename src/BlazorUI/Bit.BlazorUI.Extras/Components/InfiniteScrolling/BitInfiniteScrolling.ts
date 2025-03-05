@@ -7,6 +7,7 @@ namespace BitBlazorUI {
             scrollerSelector: string | undefined,
             rootElement: HTMLElement,
             lastElement: HTMLElement,
+            threshold: number | undefined,
             dotnetObj: DotNetObject) {
 
             let element = rootElement;
@@ -27,7 +28,7 @@ namespace BitBlazorUI {
                 }
             }, {
                 root: element,
-                threshold: 0.69,
+                threshold: threshold || 0.69,
             });
 
             observer.observe(lastElement);

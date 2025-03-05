@@ -1,6 +1,6 @@
-﻿@import '../Styles/abstracts/_colors.scss';
+﻿@import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
-@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_bit-css-variables.scss';
 
 .main {
     display: flex;
@@ -32,10 +32,10 @@
 
 .description {
     font-weight: 400;
+    text-align: center;
     font-size: rem2(32px);
     line-height: rem2(48px);
-    color: $Gray2;
-    text-align: center;
+    color: $bit-color-neutrals-gray110;
 
     @include lt-xl {
         font-size: rem2(24px);

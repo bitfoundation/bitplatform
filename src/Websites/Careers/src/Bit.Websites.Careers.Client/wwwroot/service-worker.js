@@ -3,6 +3,9 @@
 // be reflected on the first load after each change).
 self.addEventListener('fetch', () => { });
 
-self.clients
-    .matchAll({ includeUncontrolled: true })
-    .then(clients => (clients || []).forEach(client => client.postMessage('START_BLAZOR')));
+self.addEventListener('install', e => e.waitUntil(
+    self.clients
+        .matchAll({ includeUncontrolled: true })
+        .then(clients => (clients || []).forEach(client => client.postMessage('START_BLAZOR')))
+
+));

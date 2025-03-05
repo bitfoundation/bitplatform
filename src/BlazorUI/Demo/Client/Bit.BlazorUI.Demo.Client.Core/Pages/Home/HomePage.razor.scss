@@ -1,5 +1,4 @@
-﻿@import '../../Styles/abstracts/_colors.scss';
-@import '../../Styles/abstracts/_functions.scss';
+﻿@import '../../Styles/abstracts/_functions.scss';
 @import '../../Styles/abstracts/_media-queries.scss';
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
@@ -126,7 +125,7 @@
     }
 
     .section-btn {
-        color: $White;
+        color: white;
         cursor: pointer;
         box-shadow: none;
         font-weight: 700;
@@ -141,8 +140,8 @@
         border-radius: rem2(2px);
         justify-content: center;
         -webkit-user-select: none;
-        background-color: $B2Color;
         padding: rem2(14px) rem2(16px);
+        background-color: $bit-color-primary;
         transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
 
         @include sm {

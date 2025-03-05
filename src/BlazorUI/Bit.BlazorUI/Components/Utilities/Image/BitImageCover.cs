@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public enum BitImageCoverStyle
+public enum BitImageCover
 {
     /// <summary>
     /// The image will be shown at 100% height of container and the width will be scaled accordingly.
