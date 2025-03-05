@@ -12,31 +12,24 @@
     <Link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
     <Link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
     <Link rel="stylesheet" href="styles/app.css" />
-    <Link rel="stylesheet" href="Bit.Websites.Platform.Server.styles.css" />
+    <Link rel="stylesheet" href="Bit.Websites.Platform.Client.bundle.scp.css" />
     <Link rel="manifest" href="manifest.json" />
 </head>
 
 <body class="@BitCss.Class.Color.Background.Primary @BitCss.Class.Color.Foreground.Primary bit-blazor-web">
 
-    <!-- Microsoft Clarity
-    <Script type="text/javascript">
-        (function (c, l, a, r, i, t, y) {
-            c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments) };
-            t = l.createElement(r); t.async = 1; t.src = "https://www.clarity.ms/tag/" + i;
-            y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
-        })(window, document, "clarity", "script", "ip2k0jz1zu");
-    </Script>
-    Microsoft Clarity -->
-
     <Routes @rendermode=RenderModeProvider.Current />
 
-    <Script src="_framework/blazor.web.js" autostart="false"></Script>
-    <Script src="_content/Bit.Bswup/bit-bswup.js"></Script>
-    <Script src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
-    <AppBswupProgressBar />
-    <Script src="_content/Bit.Butil/bit-butil.js"></Script>
-    <Script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
-    <Script src="scripts/app.js"></Script>
+    @if (HttpContext.Request.IsLightHouseRequest() is false)
+    {
+        <Script src="_framework/blazor.web.js" autostart="false"></Script>
+        <Script src="_content/Bit.Bswup/bit-bswup.js"></Script>
+        <Script src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
+        <AppBswupProgressBar />
+        <Script src="_content/Bit.Butil/bit-butil.js"></Script>
+        <Script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
+        <Script src="scripts/app.js"></Script>
+    }
 </body>
 
 </html>

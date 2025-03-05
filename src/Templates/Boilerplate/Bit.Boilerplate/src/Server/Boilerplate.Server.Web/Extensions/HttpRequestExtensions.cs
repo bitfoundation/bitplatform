@@ -53,6 +53,17 @@ public static partial class HttpRequestExtensions
         return false;
     }
 
+    public static bool IsLightHouseRequest(this HttpRequest request)
+    {
+        var agent = GetLoweredUserAgent(request);
+
+        if (agent.Contains("google")) return true;
+
+        if (agent.Contains("lighthouse")) return true;
+
+        return false;
+    }
+
     private static string GetLoweredUserAgent(HttpRequest request)
     {
         var userAgent = request.Headers[HeaderNames.UserAgent].ToString();
