@@ -47,11 +47,10 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'TodoSample/src/Shared/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Web/appsettings.json, TodoSample/src/Server/TodoSample.Server.Api/appsettings.Production.json'
+        files: 'TodoSample/**/appsettings*json'
       env:
         WebAppRender.PrerenderEnabled: true
-        ServerAddress: /
-        WebAppRender.BlazorMode: BlazorWebAssembly
+        ServerAddress: ${{ env.SERVER_ADDRESS }}
         Logging.Sentry.Dsn: ${{ secrets.TODO_SENTRY_DSN }}
         AdsPushVapid.PublicKey: ${{ secrets.TODO_PUBLIC_VAPIDKEY }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
@@ -147,7 +146,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'TodoSample/src/Shared/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Web/appsettings.json, TodoSample/src/Client/TodoSample.Client.Web/appsettings.Production.json'
+        files: 'TodoSample/**/appsettings*json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
@@ -194,7 +193,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'TodoSample/src/Shared/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Web/appsettings.json, TodoSample/src/Client/TodoSample.Client.Web/appsettings.Production.json'
+        files: 'TodoSample/**/appsettings*json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
@@ -241,7 +240,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'TodoSample/src/Shared/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Web/appsettings.json, TodoSample/src/Client/TodoSample.Client.Web/appsettings.Production.json'
+        files: 'TodoSample/**/appsettings*json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
@@ -296,7 +295,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'TodoSample\src\Shared\appsettings.json, TodoSample\src\Client\TodoSample.Client.Core\appsettings.json, TodoSample\src\Client\TodoSample.Client.Windows\appsettings.json'
+        files: 'TodoSample\**\appsettings*json'
       env:
         WebAppUrl: ${{ env.SERVER_ADDRESS }}
         ServerAddress: ${{ env.SERVER_ADDRESS }}
@@ -367,7 +366,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'TodoSample/src/Shared/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Maui/appsettings.json'
+        files: 'TodoSample/**/appsettings*json'
       env:
         WebAppUrl: ${{ env.SERVER_ADDRESS }}
         ServerAddress: ${{ env.SERVER_ADDRESS }}
@@ -451,7 +450,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'TodoSample/src/Shared/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Maui/appsettings.json'
+        files: 'TodoSample/**/appsettings*json'
       env:
         WebAppUrl: ${{ env.SERVER_ADDRESS }}
         ServerAddress: ${{ env.SERVER_ADDRESS }}
