@@ -47,7 +47,6 @@
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    background-image: url('images/bit-logo.svg');
 
     @include lt-lg {
         margin: 0 rem2(10px);
@@ -121,6 +120,10 @@
     .github-btn {
         background-image: url('images/github-icon-dark.svg');
     }
+
+    .logo {
+        background-image: url('images/bit-logo-dark.svg');
+    }
 }
 
 .bit-blazorui-light-theme {
@@ -130,6 +133,10 @@
 
     .github-btn {
         background-image: url('images/github-icon-light.svg');
+    }
+
+    .logo {
+        background-image: url('images/bit-logo-light.svg');
     }
 }
 
