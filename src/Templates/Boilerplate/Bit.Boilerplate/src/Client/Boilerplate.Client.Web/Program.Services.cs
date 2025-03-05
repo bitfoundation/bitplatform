@@ -35,14 +35,14 @@ public static partial class Program
             return httpClient;
         });
         services.AddKeyedScoped<HttpMessageHandler, HttpClientHandler>("PrimaryHttpMessageHandler");
+
+        services.AddTransient<IPrerenderStateService, WebClientPrerenderStateService>();
     }
 
     public static void AddClientWebProjectServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddClientCoreProjectServices(configuration);
         // The following services work both in blazor web assembly and server side for pre-rendering and blazor server.
-
-        services.AddTransient<IPrerenderStateService, WebPrerenderStateService>();
 
         services.AddScoped<IBitDeviceCoordinator, WebDeviceCoordinator>();
         services.AddScoped<IExceptionHandler, WebExceptionHandler>();

@@ -144,7 +144,7 @@ public static partial class Program
 
         //#if (signalR == true)
         if (string.IsNullOrEmpty(configuration["Azure:SignalR:ConnectionString"]) is false
-            && settings.WebAppRender.BlazorMode is not Client.Web.BlazorWebAppMode.BlazorWebAssembly)
+            && settings.WebAppRender.BlazorMode is not BlazorWebAppMode.BlazorWebAssembly)
         {
             // Azure SignalR is going to send blazor server / auto messages to the Azure Cloud which is useless in this case,
             // because scale out lots of messages that are related to the current opened tab of browser only is not necessary and will cost you lots of money.

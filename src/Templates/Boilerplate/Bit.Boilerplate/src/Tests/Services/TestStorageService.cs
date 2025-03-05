@@ -32,4 +32,9 @@ public partial class TestStorageService : IStorageService
             tempStorage[key] = value;
         }
     }
+
+    public async ValueTask Clear()
+    {
+        tempStorage.Clear();
+    }
 }
