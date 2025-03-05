@@ -11,6 +11,7 @@ public partial class ImageController : AppControllerBase
 
         return File(System.IO.File.OpenRead("wwwroot/images/icon.png"), "image/png", enableRangeProcessing: true);
     }
+
     [HttpGet]
     public async Task<IActionResult> GetImageError(CancellationToken cancellationToken)
     {
