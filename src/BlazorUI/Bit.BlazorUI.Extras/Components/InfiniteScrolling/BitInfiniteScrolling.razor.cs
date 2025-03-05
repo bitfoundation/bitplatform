@@ -100,7 +100,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     {
         if (Preload)
         {
-            await LoadMoreItems();
+            _currentItems = await LoadMoreItems();
         }
 
         await base.OnInitializedAsync();
@@ -135,9 +135,9 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
 
 
-    private async Task LoadMoreItems()
+    private async Task<List<TItem>> LoadMoreItems()
     {
-        if (ItemsProvider is null || _globalCts is not null) return;
+        if (ItemsProvider is null || _globalCts is not null) return [];
 
         var items = _currentItems;
         var localCts = new CancellationTokenSource();
@@ -172,6 +172,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
         }
 
         StateHasChanged();
+        return items;
     }
 
     private string GetLastElementStyle()
