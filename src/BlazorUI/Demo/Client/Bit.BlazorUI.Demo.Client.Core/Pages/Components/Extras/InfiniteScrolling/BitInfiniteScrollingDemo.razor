@@ -16,20 +16,8 @@
             </BitInfiniteScrolling>
         </DemoSection>
 
-        <DemoSection Title="Preload" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-            <BitInfiniteScrolling ItemsProvider="LoadBasicItems" Class="basic" Context="item" Preload>
-                <div>Item @item</div>
-            </BitInfiniteScrolling>
-        </DemoSection>
-
-        <DemoSection Title="Preload" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-            <BitInfiniteScrolling ItemsProvider="LoadBasicItems" Class="basic" Context="item" Preload>
-                <div>Item @item</div>
-            </BitInfiniteScrolling>
-        </DemoSection>
-
         <DemoSection Title="Advanced" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-            <BitInfiniteScrolling ItemsProvider="LoadAdvancedItems" Class="advanced" LastElementHeight="96px">
+            <BitInfiniteScrolling ItemsProvider="LoadAdvancedItems" Class="advanced" LastElementHeight="96px" ScrollerSelector="body" Preload>
                 <ItemTemplate Context="item">
                     <div class="item">Item @item</div>
                 </ItemTemplate>

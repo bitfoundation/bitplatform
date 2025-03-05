@@ -68,6 +68,7 @@ public partial class BitInfiniteScrollingDemo
 
     private async ValueTask<IEnumerable<int>> LoadAdvancedItems(BitInfiniteScrollingItemsProviderRequest request)
     {
+        if (request.Skip > 200) return [];
         await Task.Delay(1000);
         return Enumerable.Range(request.Skip, 50);
     }
@@ -86,7 +87,8 @@ public partial class BitInfiniteScrollingDemo
     private readonly string example1CsharpCode = @"
 private async ValueTask<IEnumerable<int>> LoadBasicItems(BitInfiniteScrollingItemsProviderRequest request)
 {
-    await Task.Delay(1000);
+    if (request.Skip > 200) return [];
+    await Task.Delay(1000);1
     return Enumerable.Range(request.Skip, 20);
 }";
 
@@ -96,7 +98,6 @@ private async ValueTask<IEnumerable<int>> LoadBasicItems(BitInfiniteScrollingIte
         gap: 1rem;
         display: flex;
         flex-wrap: wrap;
-        max-height: 20rem;
         position: relative;
     }
 
@@ -114,7 +115,7 @@ private async ValueTask<IEnumerable<int>> LoadBasicItems(BitInfiniteScrollingIte
     }
 </style>
 
-<BitInfiniteScrolling ItemsProvider=""LoadAdvancedItems"" Class=""advanced"" LastElementHeight=""96px"">
+<BitInfiniteScrolling ItemsProvider=""LoadAdvancedItems"" Class=""advanced"" LastElementHeight=""96px"" Preload>
     <ItemTemplate Context=""item"">
         <div class=""item"">Item @item</div>
     </ItemTemplate>

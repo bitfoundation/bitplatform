@@ -83,7 +83,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        if (Preload && ItemsProvider is not null)
+        if (Preload)
         {
             await LoadMoreItems();
         }
