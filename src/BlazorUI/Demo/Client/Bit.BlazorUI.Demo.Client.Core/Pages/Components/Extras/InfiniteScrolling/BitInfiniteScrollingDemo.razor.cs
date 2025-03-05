@@ -20,10 +20,24 @@ public partial class BitInfiniteScrollingDemo
          },
          new()
          {
+            Name = "LastElementClass",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The CSS class of the last element that triggers the loading.",
+         },
+         new()
+         {
             Name = "LastElementHeight",
             Type = "string?",
             DefaultValue = "null",
             Description = "The height of the last element that triggers the loading.",
+         },
+         new()
+         {
+            Name = "LastElementStyle",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The CSS style of the last element that triggers the loading.",
          },
          new()
          {
@@ -45,6 +59,13 @@ public partial class BitInfiniteScrollingDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The CSS selector of the scroll container, by default the root element of the component is selected for this purpose.",
+         },
+         new()
+         {
+            Name = "Threshold",
+            Type = "decimal?",
+            DefaultValue = "null",
+            Description = "The threshold parameter for the IntersectionObserver that specifies a ratio of intersection area to total bounding box area of the last element.",
          },
     ];
 

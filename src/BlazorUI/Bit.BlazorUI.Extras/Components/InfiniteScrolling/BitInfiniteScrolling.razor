@@ -21,7 +21,8 @@
     }
 
     <div @ref="_lastElementRef"
-         style="@(_isLoading ? "display:none" : $"height:{(LastElementHeight is null ? "1px" : LastElementHeight)};width:100%")">
+         class="@LastElementClass"
+         style="@GetLastElementStyle()">
     </div>
 
     @if (_isLoading)
