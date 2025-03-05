@@ -303,18 +303,18 @@ public class BitImageTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitImageCoverStyle.Landscape),
-        DataRow(BitImageCoverStyle.Portrait),
+        DataRow(BitImageCover.Landscape),
+        DataRow(BitImageCover.Portrait),
         DataRow(null)
     ]
-    public void BitImageShouldRespectCoverStyle(BitImageCoverStyle? coverStyle)
+    public void BitImageShouldRespectCoverStyle(BitImageCover? coverStyle)
     {
         var component = RenderComponent<BitImage>(parameters =>
         {
-            parameters.Add(p => p.CoverStyle, coverStyle);
+            parameters.Add(p => p.Cover, coverStyle);
         });
 
-        if (coverStyle is BitImageCoverStyle.Landscape)
+        if (coverStyle is BitImageCover.Landscape)
         {
             component.MarkupMatches(@"<div class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-lan bit-img-img bit-img-vis"" /></div>");
         }
@@ -561,17 +561,17 @@ public class BitImageTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow("lazy"),
+        DataRow(BitImageLoading.Lazy),
         DataRow(null)
     ]
-    public void BitImageShouldRespectLoading(string loading)
+    public void BitImageShouldRespectLoading(BitImageLoading? loading)
     {
         var component = RenderComponent<BitImage>(parameters =>
         {
             parameters.Add(p => p.Loading, loading);
         });
 
-        if (loading.HasValue())
+        if (loading is not null)
         {
             component.MarkupMatches(@$"<div class=""bit-img bit-img-fde"" id:ignore><img loading=""{loading}"" class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
         }
@@ -621,14 +621,14 @@ public class BitImageTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitImageShouldRespectShouldFadeIn(bool shouldFadeIn)
+    public void BitImageShouldRespectFadeIn(bool FadeIn)
     {
         var component = RenderComponent<BitImage>(parameters =>
         {
-            parameters.Add(p => p.ShouldFadeIn, shouldFadeIn);
+            parameters.Add(p => p.FadeIn, FadeIn);
         });
 
-        var cssClass = shouldFadeIn ? " bit-img-fde" : null;
+        var cssClass = FadeIn ? " bit-img-fde" : null;
 
         component.MarkupMatches(@$"<div class=""bit-img{cssClass}"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
     }
@@ -637,14 +637,14 @@ public class BitImageTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitImageShouldRespectShouldStartVisible(bool shouldStartVisible)
+    public void BitImageShouldRespectStartVisible(bool StartVisible)
     {
         var component = RenderComponent<BitImage>(parameters =>
         {
-            parameters.Add(p => p.ShouldStartVisible, shouldStartVisible);
+            parameters.Add(p => p.StartVisible, StartVisible);
         });
 
-        var cssClass = shouldStartVisible ? " bit-img-vis" : null;
+        var cssClass = StartVisible ? " bit-img-vis" : null;
 
         component.MarkupMatches(@$"<div class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por {cssClass}"" /></div>");
     }

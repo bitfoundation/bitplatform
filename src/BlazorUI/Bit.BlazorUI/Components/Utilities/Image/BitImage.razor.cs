@@ -7,7 +7,7 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitImage : BitComponentBase
 {
-    private BitImageLoadingState _loadingState;
+    private BitImageState _loadingState;
 
 
 
@@ -24,7 +24,18 @@ public partial class BitImage : BitComponentBase
     /// <summary>
     /// Specifies the cover style to be used for this image.
     /// </summary>
-    [Parameter] public BitImageCoverStyle? CoverStyle { get; set; }
+    [Parameter] public BitImageCover? Cover { get; set; }
+
+    /// <summary>
+    /// The custom template used to show the error state of the image.
+    /// </summary>
+    [Parameter] public RenderFragment? ErrorTemplate { get; set; }
+
+    /// <summary>
+    /// If true, fades the image in when loaded.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FadeIn { get; set; }
 
     /// <summary>
     /// The image height value.
@@ -45,7 +56,12 @@ public partial class BitImage : BitComponentBase
     /// <summary>
     /// Allows for browser-level image loading (lazy or eager).
     /// </summary>
-    [Parameter] public string? Loading { get; set; }
+    [Parameter] public BitImageLoading? Loading { get; set; }
+
+    /// <summary>
+    /// The custom template used to show the loading state of the image.
+    /// </summary>
+    [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
     /// <summary>
     /// If true, the image frame will expand to fill its parent container.
@@ -62,18 +78,12 @@ public partial class BitImage : BitComponentBase
     /// Optional callback method for when the image load state has changed.
     /// The 'loadState' parameter indicates the current state of the Image.
     /// </summary>
-    [Parameter] public EventCallback<BitImageLoadingState> OnLoadingStateChange { get; set; }
-
-    /// <summary>
-    /// If true, fades the image in when loaded.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool ShouldFadeIn { get; set; } = true;
+    [Parameter] public EventCallback<BitImageState> OnLoadingStateChange { get; set; }
 
     /// <summary>
     /// If true, the image starts as visible and is hidden on error. Otherwise, the image is hidden until it is successfully loaded.
     /// </summary>
-    [Parameter] public bool ShouldStartVisible { get; set; } = true;
+    [Parameter] public bool StartVisible { get; set; }
 
     /// <summary>
     /// Specifies the src of image.
@@ -104,7 +114,7 @@ public partial class BitImage : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => ShouldFadeIn ? "bit-img-fde" : string.Empty);
+        ClassBuilder.Register(() => FadeIn ? "bit-img-fde" : string.Empty);
 
         ClassBuilder.Register(() => MaximizeFrame ? "bit-img-max" : string.Empty);
     }
@@ -159,13 +169,9 @@ public partial class BitImage : BitComponentBase
             }
         }
 
-        className.Append(CoverStyle switch
-        {
-            BitImageCoverStyle.Landscape => " bit-img-lan",
-            _ => " bit-img-por"
-        });
+        className.Append(Cover is BitImageCover.Landscape ? " bit-img-lan" : " bit-img-por");
 
-        if (_loadingState == BitImageLoadingState.Loaded || (_loadingState == BitImageLoadingState.NotLoaded && ShouldStartVisible))
+        if (_loadingState is BitImageState.Loaded || (_loadingState is BitImageState.Loading && StartVisible))
         {
             className.Append(" bit-img-vis");
         }
@@ -187,21 +193,21 @@ public partial class BitImage : BitComponentBase
 
     private void HandleOnError()
     {
-        _loadingState = BitImageLoadingState.Error;
+        _loadingState = BitImageState.Error;
 
         OnLoadingStateChange.InvokeAsync(_loadingState);
     }
 
     private void HandleOnLoad()
     {
-        _loadingState = BitImageLoadingState.Loaded;
+        _loadingState = BitImageState.Loaded;
 
         OnLoadingStateChange.InvokeAsync(_loadingState);
     }
 
     private void HandleOnLoadStart()
     {
-        _loadingState = BitImageLoadingState.NotLoaded;
+        _loadingState = BitImageState.Loading;
 
         OnLoadingStateChange.InvokeAsync(_loadingState);
     }

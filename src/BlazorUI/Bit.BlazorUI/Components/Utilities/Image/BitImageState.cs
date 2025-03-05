@@ -1,11 +1,11 @@
 ﻿namespace Bit.BlazorUI;
 
-public enum BitImageLoadingState
+public enum BitImageState
 {
     /// <summary>
-    /// The image has not yet been loaded, and there is no error yet.
+    /// The image is loading from its source.
     /// </summary>
-    NotLoaded,
+    Loading,
 
     /// <summary>
     /// The image has been loaded successfully.
