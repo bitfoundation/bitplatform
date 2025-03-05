@@ -28,6 +28,7 @@
         <Using Include="System.Net.Http.Headers" />
         <Using Include="System.Net.Http.Json" />
         <Using Include="Boilerplate.Shared" />
+        <Using Include="Boilerplate.Server.Web" />
         <Using Include="Boilerplate.Shared.Enums" />
         <Using Include="Microsoft.AspNetCore.Http" />
         <Using Include="Microsoft.AspNetCore.Components" />
