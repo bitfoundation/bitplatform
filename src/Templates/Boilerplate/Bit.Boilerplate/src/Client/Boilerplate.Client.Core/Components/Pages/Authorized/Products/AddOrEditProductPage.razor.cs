@@ -25,11 +25,8 @@ public partial class AddOrEditProductPage
 
     protected override async Task OnInitAsync()
     {
-        if (Id is null) return;
         try
         {
-            product = await productController.Get(Id.Value, CurrentCancellationToken);
-
             var categoryList = await categoryController.Get(CurrentCancellationToken);
 
             allCategoryList = categoryList.Select(c => new BitDropdownItem<string>()
@@ -38,6 +35,12 @@ public partial class AddOrEditProductPage
                 Text = c.Name ?? string.Empty,
                 Value = c.Id.ToString()
             }).ToList();
+
+            if (Id is null) return;
+            product = await productController.Get(Id.Value, CurrentCancellationToken);
+            selectedCategoryId = (product.CategoryId ?? default).ToString();
+            var accessToken = await AuthTokenProvider.GetAccessToken();
+            productImageUploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadProductImage/{product.Id}?access_token={accessToken}").ToString();
         }
         finally
         {
@@ -76,7 +79,7 @@ public partial class AddOrEditProductPage
 
     private void GoBack()
     {
-        NavigationManager.NavigateTo(Urls.CategoriesPage);
+        NavigationManager.NavigateTo(Urls.ProductsPage);
     }
 
     private async Task HandleOnUploadComplete()
