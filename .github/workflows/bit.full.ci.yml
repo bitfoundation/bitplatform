@@ -69,7 +69,6 @@ jobs:
         dotnet build
         pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
         dotnet test --logger GitHubActions --filter "${{ env.SIMPLE_TEST_FILTER }}"
-        rm -r "SimpleTest"
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
@@ -93,7 +92,6 @@ jobs:
         pwsh bin/Debug/net9.0/playwright.ps1 install --with-deps
         # dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_SERVER_TEST_FILTER }}"
         # dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_WASM_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
-        rm -r "TestSqlite"
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
@@ -115,7 +113,6 @@ jobs:
         cd ../../Tests
         # dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_SERVER_TEST_FILTER }}"
         # dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_WASM_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
-        rm -r "TestSqlServer"
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
