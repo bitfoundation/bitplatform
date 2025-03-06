@@ -69,6 +69,7 @@ jobs:
         dotnet build
         pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
         dotnet test --logger GitHubActions --filter "${{ env.SIMPLE_TEST_FILTER }}"
+        rm -r "SimpleTest"
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
@@ -92,6 +93,7 @@ jobs:
         pwsh bin/Debug/net9.0/playwright.ps1 install --with-deps
         # dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_SERVER_TEST_FILTER }}"
         # dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_WASM_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
+        rm -r "TestSqlite"
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
@@ -113,6 +115,7 @@ jobs:
         cd ../../Tests
         # dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_SERVER_TEST_FILTER }}"
         # dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_WASM_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
+        rm -r "TestSqlServer"
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
@@ -133,6 +136,7 @@ jobs:
         dotnet ef database update
         cd ../../Tests
         # dotnet test -p:MultilingualEnabled=false --logger GitHubActions --filter "${{ env.MULTILINGUAL_DISABLED_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
+        rm -r "MultilingualDisabled"
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
@@ -149,13 +153,17 @@ jobs:
         cd TestPostgreSQL/src/Server/TestPostgreSQL.Server.Web/
         dotnet build
         cd ../../../../
+        rm -r "TestPostgreSQL"
         dotnet new bit-bp --name TestMySql --database MySql --framework net8.0 --module Admin --offlineDb
         cd TestMySql/src/Server/TestMySql.Server.Web/
         dotnet build
         cd ../../../../
+        rm -r "TestMySql"
         dotnet new bit-bp --name TestOther --database Other --framework net9.0 --sample --sentry
         cd TestOther/src/Server/TestOther.Server.Web/
         dotnet build
+        cd ../../../../
+        rm -r "TestOther"
 
     - name: Test file storage options
       continue-on-error: true
@@ -164,9 +172,12 @@ jobs:
         cd TestLocal/src/Server/TestLocal.Server.Web/
         dotnet build
         cd ../../../../
+        rm -r "TestLocal"
         dotnet new bit-bp --name TestAzureBlobStorage --filesStorage AzureBlobStorage --framework net9.0 --captcha reCaptcha  --notification
         cd TestAzureBlobStorage/src/Server/TestAzureBlobStorage.Server.Web/
         dotnet build
+        cd ../../../../
+        rm -r "TestAzureBlobStorage"
 
     - name: Test backend setup options
       continue-on-error: true
@@ -178,21 +189,26 @@ jobs:
         cd TestStandalone.Server.Web/
         dotnet build
         cd ../../../../
+        rm -r "TestStandalone"
         dotnet new bit-bp --name TestIntegrated --api Integrated --framework net9.0
         cd TestIntegrated/src/Server/TestIntegrated.Server.Web/
         dotnet build
+        cd ../../../../
+        rm -r "TestIntegrated"
 
     - name: Test sample configuration 1
       continue-on-error: true
       run: |
         dotnet new bit-bp --name TestProject --database SqlServer --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --module Admin --offlineDb --appInsights --sentry --signalR --notification --cloudflare --framework net9.0
         dotnet build TestProject/TestProject.sln -p:MultilingualEnabled=true -p:Environment=Staging
+        rm -r "TestProject"
 
     - name: Test sample configuration 2
       continue-on-error: true
       run: |
         dotnet new bit-bp --name TestProject2 --database Other --filesStorage Other --api Standalone --captcha None --pipeline None --module None --offlineDb false --appInsights false --sentry false --signalR false --notification false --cloudflare false --framework net8.0
         dotnet build TestProject2/TestProject2.sln -p:MultilingualEnabled=false -p:Environment=Development
+        rm -r "TestProject2"
 
     - name: Create projects from BlazorEmpty project template with different parameters
       run: |
