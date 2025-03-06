@@ -73,8 +73,8 @@
     <PropertyGroup Condition="'$(Environment)' != 'Development'">
         <!-- https://emscripten.org/docs/tools_reference/emcc.html -->
         <!-- https://github.com/dotnet/runtime/blob/main/src/mono/wasm/build/WasmApp.Common.targets -->
-        <EmccLinkOptimizationFlag>-Oz</EmccLinkOptimizationFlag>
-        <EmccCompileOptimizationFlag>-Oz</EmccCompileOptimizationFlag>
+        <EmccLinkOptimizationFlag>-O3</EmccLinkOptimizationFlag>
+        <EmccCompileOptimizationFlag>-O3</EmccCompileOptimizationFlag>
     </PropertyGroup>
 
 </Project>
