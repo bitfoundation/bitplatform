@@ -95,7 +95,7 @@
         <PackageVersion Include="FakeItEasy" Version="8.3.0" />
         <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
         <PackageVersion Include="Microsoft.Playwright.MSTest" Version="1.50.0" />
-        <PackageVersion Include="MSTest.TestAdapter" Version="3.7.3" />
-        <PackageVersion Include="MSTest.TestFramework" Version="3.7.3" />
+        <PackageVersion Include="MSTest.TestAdapter" Version="3.8.2" />
+        <PackageVersion Include="MSTest.TestFramework" Version="3.8.2" />
     </ItemGroup>
 </Project>

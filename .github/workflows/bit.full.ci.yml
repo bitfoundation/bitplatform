@@ -136,7 +136,6 @@ jobs:
         dotnet ef database update
         cd ../../Tests
         # dotnet test -p:MultilingualEnabled=false --logger GitHubActions --filter "${{ env.MULTILINGUAL_DISABLED_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
-        rm -r "MultilingualDisabled"
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
