@@ -1,42 +1,31 @@
-﻿using Boilerplate.Shared.Controllers.Categories;
-using Boilerplate.Shared.Dtos.Categories;
+﻿using Boilerplate.Shared.Dtos.Categories;
+using Boilerplate.Shared.Controllers.Categories;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Categories;
 
-public partial class AddOrEditCategoryPage
+public partial class AddOrEditCategoryModal
 {
     protected override string? Title => Localizer[nameof(AppStrings.Category)];
     protected override string? Subtitle => string.Empty;
 
     [AutoInject] ICategoryController categoryController = default!;
 
-    [Parameter] public Guid? Id { get; set; }
+    [Parameter] public EventCallback OnSave { get; set; }
 
-    private bool isLoading;
+    private bool isOpen;
     private bool isSaving;
     private bool isColorPickerOpen;
     private CategoryDto category = new();
     private AppDataAnnotationsValidator validatorRef = default!;
 
-    protected override async Task OnInitAsync()
+    public async Task ShowModal(CategoryDto categoryToShow)
     {
-        await LoadCategory();
-    }
-
-    private async Task LoadCategory()
-    {
-        if (Id is null) return;
-
-        isLoading = true;
-
-        try
+        await InvokeAsync(async () =>
         {
-            category = await categoryController.Get(Id.Value, CurrentCancellationToken);
-        }
-        finally
-        {
-            isLoading = false;
-        }
+            isOpen = true;
+            categoryToShow.Patch(category);
+            StateHasChanged();
+        });
     }
 
     private void SetCategoryColor(string color)
@@ -46,10 +35,6 @@ public partial class AddOrEditCategoryPage
 
     private async Task Save()
     {
-        if (isSaving) return;
-
-        isSaving = true;
-
         try
         {
             if (category.Id == default)
@@ -73,7 +58,7 @@ public partial class AddOrEditCategoryPage
         }
         finally
         {
-            isSaving = false;
+            await OnSave.InvokeAsync();
         }
     }
 }

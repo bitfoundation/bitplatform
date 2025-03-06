@@ -1,4 +1,8 @@
-<BitImage Class="@Class" Src="@(Src ?? "_content/Boilerplate.Client.Core/images/product-placeholder.svg")" Width="@Width">
+<BitImage
+    Width="@Width"
+    Class="@Class" 
+    Src="@(Src ?? "_content/Boilerplate.Client.Core/images/product-placeholder.svg")"
+    StartVisible=@(AppPlatform.IsBlazorHybridOrBrowser is false)>
     <LoadingTemplate>
         <BitShimmer Style="width:100%;height:unset;aspect-ratio:1" />
     </LoadingTemplate>
