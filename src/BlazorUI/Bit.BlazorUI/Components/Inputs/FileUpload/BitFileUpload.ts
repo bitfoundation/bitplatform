@@ -14,7 +14,7 @@
                 FileUpload.clear(id);
             }
 
-            const lastIndex = append ? FileUpload._fileUploaders.length : 0;
+            const lastIndex = append ? FileUpload._fileUploaders.filter(u => u.id === id).length : 0;
             const files = Array.from(inputElement.files!).map((file, index) => ({
                 name: file.name,
                 size: file.size,
