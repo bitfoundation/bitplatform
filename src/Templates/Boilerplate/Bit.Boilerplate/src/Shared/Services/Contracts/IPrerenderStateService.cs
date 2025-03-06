@@ -16,7 +16,7 @@ namespace Boilerplate.Shared.Services.Contracts;
 /// function and returns its result without persisting any state.
 ///
 /// </summary>
-public interface IPrerenderStateService
+public interface IPrerenderStateService : IAsyncDisposable
 {
     /// <summary>
     /// <inheritdoc cref="IPrerenderStateService"/>

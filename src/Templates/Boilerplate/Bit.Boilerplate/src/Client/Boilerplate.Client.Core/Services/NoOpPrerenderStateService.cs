@@ -19,4 +19,6 @@ public class NoOpPrerenderStateService : IPrerenderStateService
     {
         return factory();
     }
+
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }

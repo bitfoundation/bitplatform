@@ -29,4 +29,6 @@ public partial class WebClientPrerenderStateService(PersistentComponentState? pe
 
         return result;
     }
+
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }
