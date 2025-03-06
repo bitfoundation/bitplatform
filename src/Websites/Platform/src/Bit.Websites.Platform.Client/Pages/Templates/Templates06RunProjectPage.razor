@@ -58,15 +58,11 @@
     <section class="section-card">
         <div class="section-card-txt">
             <BitText Typography="BitTypography.H5" Gutter>Blazor Mode Selection</BitText>
-            To choose between Blazor modes, refer to the Client.Web/appsettings.json file. By default, for development it
-            is Blazor Server and for Production it is Blazor Auto (appsettings.Production.json).
-            <br />
-            Blazor Auto is selected for production to optimize the user experience. On the first visit, the website will load quickly
-            in Blazor Server mode, while Blazor WebAssembly files are downloaded in the background. Subsequent visits will utilize Blazor
-            WebAssembly, enhancing performance.
+            To choose between Blazor modes, refer to the server project's appsettings.json file. By default, for development it
+            is Blazor Server.
             <CodeBox>"WebAppRender": {
-    "PrerenderEnabled": false,
-    "BlazorMode": "BlazorServer" // BlazorServer, BlazorWebAssembly, BlazorAuto
+    "BlazorMode": "BlazorServer",
+    "BlazorMode_Comment": "BlazorServer, BlazorWebAssembly and BlazorAuto."
 }</CodeBox>
             <BitText Typography="BitTypography.H5" Gutter>Debugging in Blazor WebAssembly</BitText>
             To debug the project in Blazor WebAssembly mode, change the Current value to BlazorWebAssembly for development. To fully
