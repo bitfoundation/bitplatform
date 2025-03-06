@@ -64,7 +64,7 @@
                     {
                         <div class="bit-nav-itg">
                             <div class="bit-nav-iit" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
-                                <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon ?? "ChevronRight") @(Nav.ChevronDownIcon.HasValue() ? "" ? (isExpanded ? "bit-nav-exp" : "bit-ico-r90"))" aria-hidden="true" />
+                                <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon ?? "ChevronRight") @(Nav.ChevronDownIcon.HasValue() ? "" : (isExpanded ? "bit-nav-exp" : "bit-ico-r90"))" aria-hidden="true" />
                                 <span class="bit-nav-ghd">@text</span>
                             </div>
                             <div title="@description"
@@ -77,7 +77,7 @@
                     else
                     {
                         <div class="bit-nav-iit" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
-                            <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon ?? "ChevronRight") @(Nav.ChevronDownIcon.HasValue() ? "" ? (isExpanded ? "bit-nav-exp" : "bit-ico-r90"))" aria-hidden="true" />
+                            <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon ?? "ChevronRight") @(Nav.ChevronDownIcon.HasValue() ? "" : (isExpanded ? "bit-nav-exp" : "bit-ico-r90"))" aria-hidden="true" />
                             <span class="bit-nav-ghd">@text</span>
                         </div>
                     }
