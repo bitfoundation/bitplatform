@@ -22,12 +22,4 @@ public partial class PushNotificationController : AppControllerBase, IPushNotifi
     {
         await pushNotificationService.Unsubscribe(deviceId, cancellationToken);
     }
-
-#if Development // This action is for testing purposes only.
-    [HttpPost]
-    public async Task RequestPush([FromQuery] string? title = null, [FromQuery] string? message = null, [FromQuery] string? action = null, CancellationToken cancellationToken = default)
-    {
-        await pushNotificationService.RequestPush(title, message, action, false, null, cancellationToken);
-    }
-#endif
 }

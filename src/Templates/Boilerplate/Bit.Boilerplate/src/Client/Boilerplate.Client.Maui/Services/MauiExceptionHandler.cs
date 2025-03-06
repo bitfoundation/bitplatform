@@ -5,7 +5,7 @@ namespace Boilerplate.Client.Maui.Services;
 /// Instead of Client.Core, install Firebase and similar packages in Client.Maui, so the web version of the app won't download unnecessary packages.
 /// You can call their APIs such as Crashes.TrackError in MauiExceptionHandler to monitor all exceptions across Android, iOS, Windows, and macOS.
 /// Employing Microsoft.Extensions.Logging implementations (like Sentry.Extensions.Logging) will result in
-/// automatic exception logging due to the logger.LogError method call within the ExceptionHandlerBase class.
+/// automatic exception logging due to the logger.LogError method call within the <see cref="ClientExceptionHandlerBase"/> class.
 /// </summary>
 public partial class MauiExceptionHandler : ClientExceptionHandlerBase
 {

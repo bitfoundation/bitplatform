@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Boilerplate.Server.Api.Models.Identity;
+using Boilerplate.Server.Api.Controllers.Identity;
 
 namespace Boilerplate.Server.Api.SignalR;
 
@@ -9,10 +11,10 @@ namespace Boilerplate.Server.Api.SignalR;
 ///
 /// In addition to these, the following enhanced scenarios are supported:
 /// 1. `Clients.Group("AuthenticatedClients")`: Sends a message to all browser tabs and apps that are signed in.
-/// 2. Each user session knows its own SignalR connection Id. For instance, the application 
-///    already uses this approach in the `UserController's RevokeSession` method by sending a SignalR message to 
+/// 2. Each user session knows its own <see cref="UserSession.SignalRConnectionId"/>. The application 
+///    already uses this approach in the `<see cref="UserController.RevokeSession(Guid, CancellationToken)"/>` method by sending a SignalR message to 
 ///    `Clients.Client(userSession.SignalRConnectionId)`. This ensures that the corresponding browser tab or app clears 
-///    its access/refresh tokens from storage and navigates to the sign-in page if necessary.
+///    its access/refresh tokens from storage and navigates to the sign-in page automatically.
 /// </summary>
 [AllowAnonymous]
 public partial class AppHub : Hub

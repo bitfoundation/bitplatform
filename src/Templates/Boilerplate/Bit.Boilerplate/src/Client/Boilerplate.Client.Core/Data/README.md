@@ -1,4 +1,4 @@
-﻿## bit entity framework core sqlite (bit Besql)
+﻿## bit entity framework core sqlite [bit Besql](https://bitplatform.dev/besql)
 
 How to use `Bit.Besql`:
 

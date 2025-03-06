@@ -8,7 +8,7 @@ public static partial class ISharedServiceCollectionExtensions
 {
     public static IServiceCollection AddSharedProjectServices(this IServiceCollection services, IConfiguration configuration)
     {
-        // Services being registered here can get injected everywhere (Api, Web, Android, iOS, Windows and macOS)
+        // Services being registered here can get injected everywhere.
 
         services.AddScoped<HtmlRenderer>();
         services.AddScoped<CultureInfoManager>();

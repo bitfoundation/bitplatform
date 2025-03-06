@@ -9,8 +9,9 @@ namespace Boilerplate.Client.Core.Components;
 
 /// <summary>
 /// To implement forms where each error is displayed according to the language chosen by the user, you can use the <see cref="DtoResourceTypeAttribute"/>
-/// on the corresponding class instead of using `ErrorResourceType` on each property. Check out <see cref="SignUpRequestDto"/> for an example.
+/// on the corresponding class instead of using `<see cref="ValidationAttribute.ErrorResourceType" />` on each property. Check out <see cref="SignUpRequestDto.UserName"/> for an example.
 /// However, you need to use <see cref="AppDataAnnotationsValidator"/> instead of <see cref="DataAnnotationsValidator"/> in Blazor EditForms for this method to work.
+/// Additionally, this provides the `<see cref="DisplayErrors(ResourceValidationException)"/>` method, which assists in displaying dynamic error messages.
 /// </summary>
 public partial class AppDataAnnotationsValidator : AppComponentBase
 {
