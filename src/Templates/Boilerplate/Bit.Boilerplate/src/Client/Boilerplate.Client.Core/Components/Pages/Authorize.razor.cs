@@ -43,13 +43,13 @@ public partial class Authorize
     {
         if (clients.TryGetValue(ClientId!, out var clientAllowedRedirectUrls) is false)
         {
-            NavigationManager.NavigateTo($"{RedirectUri}#error=Invalid or missing client_id&state={Uri.EscapeDataString(State ?? "")}");
+            NavigationManager.NavigateTo($"{RedirectUri}#error=invalid_missing_client_id&state={Uri.EscapeDataString(State ?? "")}");
             return;
         }
 
         if (clientAllowedRedirectUrls.Any(clientUrl => string.Equals(clientUrl, RedirectUri, StringComparison.InvariantCultureIgnoreCase)) is false)
         {
-            NavigationManager.NavigateTo($"{RedirectUri}#error=Invalid redirect uri&state={Uri.EscapeDataString(State ?? "")}");
+            NavigationManager.NavigateTo($"{RedirectUri}#error=invalid_redirect_uri&state={Uri.EscapeDataString(State ?? "")}");
             return;
         }
 

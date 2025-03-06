@@ -22,7 +22,7 @@ public static partial class IClientCoreServiceCollectionExtensions
 {
     public static IServiceCollection AddClientCoreProjectServices(this IServiceCollection services, IConfiguration configuration)
     {
-        // Services being registered here can get injected in client side (Web, Android, iOS, Windows, macOS) and server side (during pre rendering)
+        // Services being registered here can get injected in client side (WebAssembly, Android, iOS, Windows and macOS) + server side (during pre-rendering and Blazor Server)
         services.AddSharedProjectServices(configuration);
 
         services.AddTransient<IPrerenderStateService, NoOpPrerenderStateService>();
@@ -77,7 +77,7 @@ public static partial class IClientCoreServiceCollectionExtensions
 
         // This code constructs a chain of HTTP message handlers. By default, it uses `HttpClientHandler` 
         // to send requests to the server. However, you can replace `HttpClientHandler` with other HTTP message 
-        // handlers, such as ASP.NET Core's `HttpMessageHandler` from the Test Host, which is useful for integration tests.
+        // handlers, such as `SocketsHttpHandler` or ASP.NET Core's `HttpMessageHandler` from the Test Host, which is useful for integration tests.
         services.AddScoped<HttpMessageHandlersChainFactory>(serviceProvider => transportHandler =>
         {
             var constructedHttpMessageHandler = ActivatorUtilities.CreateInstance<LoggingDelegatingHandler>(serviceProvider,
