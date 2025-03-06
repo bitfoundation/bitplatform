@@ -70,4 +70,11 @@
         <Exec Command="../Boilerplate.Client.Core/node_modules/.bin/sass .:. --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
+    <PropertyGroup Condition="'$(Environment)' != 'Development'">
+        <!-- https://emscripten.org/docs/tools_reference/emcc.html -->
+        <!-- https://github.com/dotnet/runtime/blob/main/src/mono/wasm/build/WasmApp.Common.targets -->
+        <EmccLinkOptimizationFlag>-Oz</EmccLinkOptimizationFlag>
+        <EmccCompileOptimizationFlag>-Oz</EmccCompileOptimizationFlag>
+    </PropertyGroup>
+
 </Project>
