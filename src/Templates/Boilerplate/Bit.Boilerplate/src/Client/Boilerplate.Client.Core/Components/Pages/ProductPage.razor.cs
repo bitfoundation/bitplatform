@@ -13,7 +13,6 @@ public partial class ProductPage
     /// <inheritdoc cref="ProductDto.ShortId"/>
     /// </summary>
     [Parameter] public int Id { get; set; }
-    [Parameter] public string? Name { get; set; }
 
 
     [AutoInject] private IProductViewController productViewController = default!;
