@@ -1,4 +1,4 @@
-@page "/components/navpanel"
+﻿@page "/components/navpanel"
 
 <PageOutlet Url="components/navpanel"
             Title="NavPanel"
@@ -23,20 +23,96 @@
             </div>
         </DemoSection>
 
-        <DemoSection Title="Color" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <DemoSection Title="FitWidth" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div class="open-btn">
-                <BitToggleButton @bind-IsChecked="colorIsOpen" OnText="Close" OffText="Open" />
+                <BitToggleButton @bind-IsChecked="fitWidthIsOpen" OnText="Close" OffText="Open" />
             </div>
-            <div style="width:222px">
-                <BitNavPanel @bind-IsOpen="colorIsOpen" Items="basicNavItems" Color="BitColor.Secondary" Accent="BitColor.SecondaryBackground" />
+            <BitNavPanel @bind-IsOpen="fitWidthIsOpen" Items="basicNavItems" FitWidth />
+        </DemoSection>
+
+        <DemoSection Title="FullWidth" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div class="open-btn">
+                <BitToggleButton @bind-IsChecked="fullWidthIsOpen" OnText="Close" OffText="Open" />
+            </div>
+            <div style="width:333px">
+                <BitNavPanel @bind-IsOpen="fullWidthIsOpen" Items="basicNavItems" FullWidth />
             </div>
         </DemoSection>
 
-        <DemoSection Title="ItemTemplate" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <DemoSection Title="NoToggle" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div class="open-btn">
+                <BitToggleButton @bind-IsChecked="noToggleIsOpen" OnText="Close" OffText="Open" />
+            </div>
+            <div style="width:222px">
+                <BitNavPanel @bind-IsOpen="noToggleIsOpen" Items="basicNavItems" NoToggle />
+            </div>
+        </DemoSection>
+
+        <DemoSection Title="IconUrl & IconNavUrl" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div class="open-btn">
+                <BitToggleButton @bind-IsChecked="iconUrlIsOpen" OnText="Close" OffText="Open" />
+            </div>
+            <div style="width:222px">
+                <BitNavPanel @bind-IsOpen="iconUrlIsOpen" Items="basicNavItems" IconNavUrl="https://bitplatform.dev" IconUrl="/images/icon.png" />
+            </div>
+        </DemoSection>
+
+        <DemoSection Title="ChevronDownIcon" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div class="open-btn">
+                <BitToggleButton @bind-IsChecked="chevronDownIconIsOpen" OnText="Close" OffText="Open" />
+            </div>
+            <div style="width:222px">
+                <BitNavPanel @bind-IsOpen="chevronDownIconIsOpen" Items="basicNavItems" ChevronDownIcon="@BitIconName.ColumnList" />
+            </div>
+        </DemoSection>
+
+        <DemoSection Title="ReversedChevron" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div class="open-btn">
+                <BitToggleButton @bind-IsChecked="reversedChevronIsOpen" OnText="Close" OffText="Open" />
+            </div>
+            <div style="width:222px">
+                <BitNavPanel @bind-IsOpen="reversedChevronIsOpen" Items="basicNavItems" ReversedChevron />
+            </div>
+        </DemoSection>
+
+        <DemoSection Title="SearchBoxPlaceholder" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div class="open-btn">
+                <BitToggleButton @bind-IsChecked="searchBoxPlaceholderIsOpen" OnText="Close" OffText="Open" />
+            </div>
+            <div style="width:300px">
+                <BitNavPanel @bind-IsOpen="searchBoxPlaceholderIsOpen" Items="basicNavItems" SearchBoxPlaceholder="Search in menu items..." />
+            </div>
+        </DemoSection>
+
+        <DemoSection Title="EmptyListMessage" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div class="open-btn">
+                <BitToggleButton @bind-IsChecked="emptyListMessageIsOpen" OnText="Close" OffText="Open" />
+            </div>
+            <div style="width:222px">
+                <BitNavPanel @bind-IsOpen="emptyListMessageIsOpen" Items="basicNavItems" EmptyListMessage="There is no such item." />
+            </div>
+        </DemoSection>
+
+        <DemoSection Title="SingleExpand" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div class="open-btn">
+                <BitToggleButton @bind-IsChecked="singleExpandIsOpen" OnText="Close" OffText="Open" />
+            </div>
+            <div>
+                <BitToggleButton @bind-IsChecked="isSingleExpand" OnText="Single expand" OffText="Multi expand" />
+            </div>
+            <div style="width:222px">
+                <BitNavPanel @bind-IsOpen="singleExpandIsOpen" Items="singleExpandNavItems" SingleExpand="isSingleExpand" />
+            </div>
+        </DemoSection>
+
+        <DemoSection Title="Template" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
             <div class="open-btn">
                 <BitToggleButton @bind-IsChecked="templateIsOpen" OnText="Close" OffText="Open" />
             </div>
             <BitNavPanel @bind-IsOpen="templateIsOpen" Items="basicNavItems" FitWidth NoToggle>
+                <Header>
+                    <BitText Typography="BitTypography.H4" Color="BitColor.Info">Bit Menu</BitText>
+                </Header>
                 <ItemTemplate Context="item">
                     <BitText><i><b>@item.Text</b></i></BitText>
                     <BitSpacer />
@@ -45,15 +121,61 @@
                         <BitTag Size="BitSize.Small" Color="BitColor.Info">@item.Data</BitTag>
                     }
                 </ItemTemplate>
+                <Footer>
+                    <BitActionButton IconName="@BitIconName.PowerButton">Logout</BitActionButton>
+                </Footer>
             </BitNavPanel>
         </DemoSection>
 
-        <DemoSection Title="RTL" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <DemoSection Title="Event" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <div class="open-btn">
+                <BitToggleButton @bind-IsChecked="eventIsOpen" OnText="Close" OffText="Open" />
+            </div>
+            <div>
+                Clicked item: @onItemClick?.Text
+                <br />
+                Toggled item: @onItemToggle?.Text
+            </div>
+            <div style="width:222px">
+                <BitNavPanel @bind-IsOpen="eventIsOpen"
+                             Items="eventNavItems"
+                             OnItemClick="(BitNavItem item) => HandleOnItemClick(item)"
+                             OnItemToggle="(BitNavItem item) => HandleOnItemToggle(item)" />
+            </div>
+        </DemoSection>
+
+        <DemoSection Title="Color" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+            <div class="open-btn">
+                <BitToggleButton @bind-IsChecked="colorIsOpen" OnText="Close" OffText="Open" />
+            </div>
+            <div style="width:222px">
+                <BitNavPanel @bind-IsOpen="colorIsOpen" Items="basicNavItems" SingleExpand />
+            </div>
+        </DemoSection>
+
+        <DemoSection Title="Style & Class" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+            <div class="open-btn">
+                <BitToggleButton @bind-IsChecked="classStyleIsOpen" OnText="Close" OffText="Open" />
+            </div>
+            <div style="width:222px">
+                <BitNavPanel @bind-IsOpen="classStyleIsOpen"
+                             Items="basicNavItems"
+                             Styles="@(new() { Container = "background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);" })"
+                             NavClasses="@(new() { ItemContainer = "custom-nav-item", ItemIcon = "custom-nav-item-ico", ItemText = "custom-nav-item-txt" })"
+                             SearchBoxClasses="@(new() { Icon = "custom-icon-searchbox",
+                                                         Focused = "custom-focused-searchbox",
+                                                         ClearButton = "custom-clear-searchbox",
+                                                         IconWrapper = "custom-icon-wrapper-searchbox",
+                                                         InputContainer = "custom-input-container-searchbox" })" />
+            </div>
+        </DemoSection>
+
+        <DemoSection Title="RTL" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
             <div class="open-btn">
                 <BitToggleButton @bind-IsChecked="rtlIsOpen" OnText="Close" OffText="Open" />
             </div>
             <div dir="rtl">
-                <BitNavPanel @bind-IsOpen="rtlIsOpen" Items="rtlNavItems" Dir="BitDir.Rtl" />
+                <BitNavPanel @bind-IsOpen="rtlIsOpen" Items="rtlNavItems" FitWidth Dir="BitDir.Rtl" />
             </div>
         </DemoSection>
     </Examples>
