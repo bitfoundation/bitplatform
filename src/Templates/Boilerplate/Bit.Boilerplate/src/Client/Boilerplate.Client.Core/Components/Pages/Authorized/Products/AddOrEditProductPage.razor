@@ -1,4 +1,7 @@
-﻿@inherits AppComponentBase
+﻿@attribute [Route(Urls.AddOrEditProductPage + "/{Id:guid?}")]
+@attribute [Route("{culture?}" + Urls.AddOrEditProductPage + "/{Id:guid?}")]
+@attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+@inherits AppComponentBase
 
 <PageTitle>
     @if (product.Id == default)
@@ -29,7 +32,7 @@
                 <BitSpacer />
                 <BitButton IconName="@BitIconName.ChromeClose"
                            Color="BitColor.SecondaryForeground"
-                           OnClick="CloseModal"
+                           OnClick="GoBack"
                            Variant="BitVariant.Text" />
             </BitStack>
 
@@ -84,7 +87,7 @@
 
                                 @if (product.ImageFileName is not null)
                                 {
-                                    <BitButton IsLoading=@isSaving
+                                    <BitButton AutoLoading
                                                Color="BitColor.Error"
                                                ButtonType="BitButtonType.Button"
                                                OnClick="WrapHandled(RemoveProductImage)">
@@ -107,10 +110,10 @@
                 </BitFileUpload>
 
                 <BitStack Horizontal HorizontalAlign="BitAlignment.End">
-                    <BitButton ButtonType="BitButtonType.Button" OnClick="CloseModal" Variant="BitVariant.Outline">
+                    <BitButton ButtonType="BitButtonType.Button" OnClick="GoBack" Variant="BitVariant.Outline">
                         @Localizer[nameof(AppStrings.Cancel)]
                     </BitButton>
-                    <BitButton IsLoading="isSaving" ButtonType="BitButtonType.Submit">
+                    <BitButton IsLoading=isSaving ButtonType="BitButtonType.Submit">
                         @Localizer[nameof(AppStrings.Save)]
                     </BitButton>
                 </BitStack>

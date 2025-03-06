@@ -99,5 +99,3 @@
            CancelText="@Localizer[nameof(AppStrings.No)]"
            Title="@Localizer[nameof(AppStrings.DeleteProduct)]"
            Message="@Localizer.GetString(nameof(AppStrings.AreYouSureWannaDeleteProduct), deletingProduct?.Name ?? "")" />
-
-<AddOrEditProductModal @ref="modal" OnSave="WrapHandled(RefreshData)" />

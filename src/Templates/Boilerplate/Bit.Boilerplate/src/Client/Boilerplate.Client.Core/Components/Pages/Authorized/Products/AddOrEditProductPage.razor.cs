@@ -5,16 +5,15 @@ using Boilerplate.Shared.Controllers.Categories;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Products;
 
-public partial class AddOrEditProductModal
+public partial class AddOrEditProductPage
 {
     [AutoInject] IProductController productController = default!;
     [AutoInject] ICategoryController categoryController = default!;
     [AutoInject] IAttachmentController attachmentController = default!;
 
-    private bool isOpen;
     private bool isSaving;
-    private bool isLoading;
     private bool isManagingFile;
+    private bool isLoading = true;
     private ProductDto product = new();
     private string? productImageUploadUrl;
     private BitFileUpload fileUploadRef = default!;
@@ -22,32 +21,15 @@ public partial class AddOrEditProductModal
     private List<BitDropdownItem<string>> allCategoryList = [];
     private AppDataAnnotationsValidator validatorRef = default!;
 
-    [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public Guid? Id { get; set; }
 
     protected override async Task OnInitAsync()
     {
-        await LoadAllCategories();
-    }
-
-    public async Task ShowModal(ProductDto productToShow)
-    {
-        await InvokeAsync(async () =>
-        {
-            isOpen = true;
-            productToShow.Patch(product);
-            selectedCategoryId = (product.CategoryId ?? default).ToString();
-            var accessToken = await AuthTokenProvider.GetAccessToken();
-            productImageUploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadProductImage/{product.Id}?access_token={accessToken}").ToString();
-            StateHasChanged();
-        });
-    }
-
-    private async Task LoadAllCategories()
-    {
-        isLoading = true;
-
+        if (Id is null) return;
         try
         {
+            product = await productController.Get(Id.Value, CurrentCancellationToken);
+
             var categoryList = await categoryController.Get(CurrentCancellationToken);
 
             allCategoryList = categoryList.Select(c => new BitDropdownItem<string>()
@@ -65,7 +47,7 @@ public partial class AddOrEditProductModal
 
     private async Task Save()
     {
-        if (isLoading) return;
+        if (isLoading || isSaving) return;
 
         isSaving = true;
 
@@ -80,7 +62,7 @@ public partial class AddOrEditProductModal
                 await productController.Update(product, CurrentCancellationToken);
             }
 
-            isOpen = false;
+            GoBack();
         }
         catch (ResourceValidationException exp)
         {
@@ -89,14 +71,12 @@ public partial class AddOrEditProductModal
         finally
         {
             isSaving = false;
-
-            await OnSave.InvokeAsync();
         }
     }
 
-    private async Task CloseModal()
+    private void GoBack()
     {
-        isOpen = false;
+        NavigationManager.NavigateTo(Urls.CategoriesPage);
     }
 
     private async Task HandleOnUploadComplete()

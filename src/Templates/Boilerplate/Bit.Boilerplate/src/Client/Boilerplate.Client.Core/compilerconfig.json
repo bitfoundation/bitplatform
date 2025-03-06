@@ -256,8 +256,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Authorized/Products/AddOrEditProductModal.razor.css",
-        "inputFile": "Components/Pages/Authorized/Products/AddOrEditProductModal.razor.scss",
+        "outputFile": "Components/Pages/Authorized/Products/AddOrEditProductPage.razor.css",
+        "inputFile": "Components/Pages/Authorized/Products/AddOrEditProductPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

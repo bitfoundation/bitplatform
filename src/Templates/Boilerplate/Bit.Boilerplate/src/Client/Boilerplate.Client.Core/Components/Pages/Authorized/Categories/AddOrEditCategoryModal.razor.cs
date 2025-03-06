@@ -35,6 +35,10 @@ public partial class AddOrEditCategoryModal
 
     private async Task Save()
     {
+        if (isSaving) return;
+
+        isSaving = true;
+
         try
         {
             if (category.Id == default)
@@ -46,7 +50,8 @@ public partial class AddOrEditCategoryModal
                 await categoryController.Update(category, CurrentCancellationToken);
             }
 
-            NavigationManager.NavigateTo(Urls.CategoriesPage);
+            await OnSave.InvokeAsync();
+            isOpen = false;
         }
         catch (ResourceValidationException e)
         {
@@ -58,7 +63,7 @@ public partial class AddOrEditCategoryModal
         }
         finally
         {
-            await OnSave.InvokeAsync();
+            isSaving = false;
         }
     }
 }
