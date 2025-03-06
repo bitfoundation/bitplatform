@@ -6,6 +6,7 @@ using Boilerplate.Shared.Dtos.Todo;
 //#endif
 //#if (module == "Admin")
 using Boilerplate.Shared.Dtos.Products;
+using Boilerplate.Shared.Dtos.Categories;
 //#endif
 using Riok.Mapperly.Abstractions;
 
@@ -28,6 +29,7 @@ public static partial class Mapper
     //#endif
     //#if (module == "Admin")
     public static partial void Patch(this ProductDto source, ProductDto destination);
+    public static partial void Patch(this CategoryDto source, CategoryDto destination);
     //#endif
     public static partial void Patch(this UserDto source, UserDto destination);
     public static partial void Patch(this EditUserDto source, UserDto destination);

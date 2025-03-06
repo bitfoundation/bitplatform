@@ -1,0 +1,121 @@
+﻿@attribute [Route(Urls.AddOrEditProductPage + "/{Id:guid?}")]
+@attribute [Route("{culture?}" + Urls.AddOrEditProductPage + "/{Id:guid?}")]
+@attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+@inherits AppComponentBase
+
+<PageTitle>
+    @if (product.Id == default)
+    {
+        @Localizer[nameof(AppStrings.AddProduct)]
+    }
+    else
+    {
+        @Localizer[nameof(AppStrings.EditProduct)]
+    }
+</PageTitle>
+
+
+<section>
+    <BitStack FillContent>
+        <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0.5rem">
+            <BitButton Variant="BitVariant.Text"
+                       Href="@Urls.CategoriesPage"
+                       IconName="@BitIconName.Back"
+                       Title="@Localizer[nameof(AppStrings.Back)]" />
+            <BitText Typography="BitTypography.H5">
+                @if (product.Id == default)
+                {
+                    @Localizer[nameof(AppStrings.AddProduct)]
+                }
+                else
+                {
+                    @Localizer[nameof(AppStrings.EditProduct)]
+                }
+            </BitText>
+        </BitStack>
+
+        <EditForm Model="product" OnValidSubmit="WrapHandled(Save)" novalidate>
+            <AppDataAnnotationsValidator @ref="validatorRef" />
+
+            <BitStack FillContent Class="stack">
+                <BitTextField @bind-Value="product.Name"
+                              AutoComplete="@BitAutoCompleteValue.Off"
+                              Label="@Localizer[(nameof(AppStrings.Name))]"
+                              Placeholder="@Localizer[nameof(AppStrings.EnterProductName)]" />
+                <ValidationMessage For="() => product.Name" />
+
+                <BitDropdown @bind-Value="selectedCategoryId"
+                             Responsive
+                             Items="allCategoryList"
+                             Label="@Localizer[(nameof(AppStrings.Category))]"
+                             Placeholder="@Localizer[(nameof(AppStrings.SelectCategory))]"
+                             OnSelectItem="((BitDropdownItem<string> item) => { product.CategoryId = Guid.Parse(item.Value!); product.CategoryName = item.Text; })" />
+                <ValidationMessage For="@(() => product.CategoryId)" />
+
+                <BitNumberField @bind-Value="product.Price"
+                                Suffix="@CultureInfo.CurrentCulture.NumberFormat.CurrencySymbol"
+                                NumberFormat="N"
+                                Label="@Localizer[(nameof(AppStrings.Price))]" />
+                <ValidationMessage For="() => product.Price" />
+
+                <BitTextField @bind-Value="product.Description"
+                              Multiline
+                              Rows="3"
+                              Label="@Localizer[(nameof(AppStrings.Description))]" />
+                <ValidationMessage For="() => product.Description" />
+
+                @if (Id is not null)
+                {
+                    <BitFileUpload @ref="fileUploadRef"
+                                   AutoReset
+                                   AutoUpload
+                                   HideFileView
+                                   Accept="image/*"
+                                   Style="max-width:unset;"
+                                   MaxSize="1024 * 1024 * 10"
+                                   UploadUrl="@productImageUploadUrl"
+                                   OnUploading="() => isManagingFile = true"
+                                   OnUploadFailed="WrapHandled(HandleOnUploadFailed)"
+                                   OnUploadComplete="WrapHandled(HandleOnUploadComplete)">
+                        <LabelTemplate>
+                            <BitStack HorizontalAlign="BitAlignment.Center">
+                                @if (isManagingFile is false)
+                                {
+                                    <ProductImage Src="@product.GetProductImageUrl(AbsoluteServerAddress)" Width="50%" />
+
+                                    @if (product.ImageFileName is not null)
+                                    {
+                                        <BitButton AutoLoading
+                                                   Color="BitColor.Error"
+                                                   ButtonType="BitButtonType.Button"
+                                                   OnClick="WrapHandled(RemoveProductImage)">
+                                            @Localizer[nameof(AppStrings.Remove)]
+                                        </BitButton>
+                                    }
+
+                                    <BitLink OnClick="() => fileUploadRef.Browse()" NoUnderline>
+                                        <BitText>@Localizer[nameof(AppStrings.UploadNewImage)]</BitText>
+                                    </BitLink>
+                                }
+                                else
+                                {
+                                    <BitShimmer Shape="BitShimmerShape.Circle" Height="4.5rem" />
+                                    <BitShimmer Shape="BitShimmerShape.Rectangle" Height="1.5rem" Width="12.5rem" />
+                                }
+                            </BitStack>
+                        </LabelTemplate>
+                    </BitFileUpload>
+                }
+
+                <BitStack Horizontal HorizontalAlign="BitAlignment.End">
+                    <BitButton ButtonType="BitButtonType.Button" OnClick="GoBack" Variant="BitVariant.Outline">
+                        @Localizer[nameof(AppStrings.Cancel)]
+                    </BitButton>
+                    <BitButton IsLoading=isSaving ButtonType="BitButtonType.Submit">
+                        @Localizer[nameof(AppStrings.Save)]
+                    </BitButton>
+                </BitStack>
+            </BitStack>
+        </EditForm>
+    </BitStack>
+</section>

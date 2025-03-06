@@ -6,8 +6,12 @@ using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.SignalR;
 //#endif
 using Boilerplate.Shared.Controllers;
+using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
+//#if (module == "Sales" || module == "Admin")
+using Boilerplate.Shared.Dtos.Products;
+//#endif
 
 namespace Boilerplate.Server.Api.Controllers;
 
@@ -19,6 +23,10 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     [AutoInject] private UserManager<User> userManager = default!;
     //#if (signalR == true)
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
+    //#endif
+
+    //#if (module == "Sales" || module == "Admin")
+    [AutoInject] private ResponseCacheService responseCacheService = default!;
     //#endif
 
     [HttpPost]
@@ -134,7 +142,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     }
     //#endif
 
-    //#if (module == "Sales")
+    //#if (module == "Sales" || module == "Admin")
     [AllowAnonymous]
     [HttpGet("{productId}")]
     [AppResponseCache(MaxAge = 3600 * 24 * 7, UserAgnostic = true)]
@@ -151,6 +159,80 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             return new EmptyResult();
 
         return File(await blobStorage.OpenReadAsync(filePath, cancellationToken), "image/webp", enableRangeProcessing: true);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<ProductDto> RemoveProductImage(Guid id, CancellationToken cancellationToken)
+    {
+        var product = await DbContext.Products
+            .FindAsync([id], cancellationToken);
+
+        if (product?.ImageFileName is null)
+            throw new ResourceNotFoundException();
+
+        var filePath = $"{AppSettings.ProductImagesDir}{product.ImageFileName}";
+
+        if (await blobStorage.ExistsAsync(filePath, cancellationToken) is false)
+            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductImageCouldNotBeFound)]);
+
+        product.ImageFileName = null;
+
+        var result = await DbContext.SaveChangesAsync(cancellationToken);
+
+        await blobStorage.DeleteAsync(filePath, cancellationToken);
+
+        await responseCacheService.PurgeProductCache(product.ShortId);
+
+        return product.Map();
+    }
+
+    [HttpPost("{id}")]
+    [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
+    public async Task UploadProductImage(Guid id, IFormFile? file, CancellationToken cancellationToken)
+    {
+        if (file is null)
+            throw new BadRequestException();
+
+        var product = await DbContext.Products
+            .FindAsync([id], cancellationToken) ?? throw new ResourceNotFoundException();
+
+        var destFileName = $"{id}_{file.FileName}";
+
+        if (product.ImageFileName is not null)
+        {
+            var oldFilePath = $"{AppSettings.ProductImagesDir}{product.ImageFileName}";
+
+            if (await blobStorage.ExistsAsync(oldFilePath, cancellationToken))
+            {
+                await blobStorage.DeleteAsync(oldFilePath, cancellationToken);
+            }
+        }
+
+        destFileName = destFileName.Replace(Path.GetExtension(destFileName), "_512.webp");
+        var resizedFilePath = $"{AppSettings.ProductImagesDir}{destFileName}";
+
+        try
+        {
+            using MagickImage sourceImage = new(file.OpenReadStream());
+
+            MagickGeometry resizedImageSize = new(512, 512);
+
+            sourceImage.Resize(resizedImageSize);
+
+            await blobStorage.WriteAsync(resizedFilePath, sourceImage.ToByteArray(MagickFormat.WebP), cancellationToken: cancellationToken);
+
+            product.ImageFileName = destFileName;
+
+            await DbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch
+        {
+            await blobStorage.DeleteAsync(resizedFilePath, cancellationToken);
+
+            throw;
+        }
+
+        await responseCacheService.PurgeProductCache(product.ShortId);
     }
     //#endif
 }

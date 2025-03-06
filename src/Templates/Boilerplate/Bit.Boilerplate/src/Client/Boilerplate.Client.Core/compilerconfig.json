@@ -214,8 +214,8 @@
     //#endif
     //#if (module == "Admin")
     {
-        "outputFile": "Components/Pages/Authorized/Categories/AddOrEditCategoryPage.razor.css",
-        "inputFile": "Components/Pages/Authorized/Categories/AddOrEditCategoryPage.razor.scss",
+        "outputFile": "Components/Pages/Authorized/Categories/AddOrEditCategoryModal.razor.css",
+        "inputFile": "Components/Pages/Authorized/Categories/AddOrEditCategoryModal.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -256,8 +256,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Authorized/Products/AddOrEditProductModal.razor.css",
-        "inputFile": "Components/Pages/Authorized/Products/AddOrEditProductModal.razor.scss",
+        "outputFile": "Components/Pages/Authorized/Products/AddOrEditProductPage.razor.css",
+        "inputFile": "Components/Pages/Authorized/Products/AddOrEditProductPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

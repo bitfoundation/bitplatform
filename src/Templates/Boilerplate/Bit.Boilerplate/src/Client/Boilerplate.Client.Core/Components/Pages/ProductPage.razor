@@ -1,9 +1,9 @@
-﻿@attribute [Route(Urls.ProductPage + "/{Id:int}/{Name}")]
-@attribute [Route("{culture?}" + Urls.ProductPage + "/{Id:int}/{Name}")]
+﻿@attribute [Route(Urls.ProductPage + "/{Id:int}")]
+@attribute [Route("{culture?}" + Urls.ProductPage + "/{Id:int}")]
 @attribute [AppResponseCache(SharedMaxAge = 3600 * 24, MaxAge = 60 * 5)]
 @inherits AppPageBase
 
-<PageTitle>@Name</PageTitle>
+<PageTitle>@product?.Name</PageTitle>
 
 <section>
     <BitStack Gap="2rem" Class="root-stack">

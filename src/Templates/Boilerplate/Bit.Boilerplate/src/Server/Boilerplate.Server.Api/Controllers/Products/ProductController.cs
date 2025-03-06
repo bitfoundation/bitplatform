@@ -78,7 +78,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await responseCacheService.PurgeProductCache(entityToUpdate.ShortId, DbContext.Entry(entityToUpdate).Property(p => p.Name).OriginalValue!);
+        await responseCacheService.PurgeProductCache(entityToUpdate.ShortId);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -99,7 +99,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await responseCacheService.PurgeProductCache(entityToDelete.ShortId, entityToDelete.Name!);
+        await responseCacheService.PurgeProductCache(entityToDelete.ShortId);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
