@@ -6,9 +6,9 @@ using Boilerplate.Shared.Dtos.Todo;
 //#endif
 //#if (module == "Admin")
 using Boilerplate.Shared.Dtos.Products;
+using Boilerplate.Shared.Dtos.Categories;
 //#endif
 using Riok.Mapperly.Abstractions;
-using Boilerplate.Shared.Dtos.Categories;
 
 namespace Boilerplate.Shared;
 
