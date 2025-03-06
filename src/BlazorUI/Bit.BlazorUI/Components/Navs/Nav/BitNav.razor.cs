@@ -753,7 +753,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         return _itemExpandStates[item];
     }
 
-    internal async Task SetSelectedItem(TItem item)
+    internal async Task SetSelectedItem(TItem? item)
     {
         if (item == SelectedItem && Reselectable is false) return;
 
@@ -887,7 +887,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         var currentItem = Flatten(_items).FirstOrDefault(item => GetUrl(item) == currentUrl
                                                         || (GetAdditionalUrls(item)?.Contains(currentUrl) ?? false));
 
-        _ = AssignSelectedItem(currentItem);
+        _ = SetSelectedItem(currentItem);
     }
 
     private void SetIsExpanded(TItem item, bool value)
