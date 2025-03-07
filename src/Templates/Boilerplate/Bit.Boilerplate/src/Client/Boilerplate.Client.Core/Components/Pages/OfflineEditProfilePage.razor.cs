@@ -2,7 +2,7 @@
 using Boilerplate.Shared.Dtos.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace Boilerplate.Client.Core.Components.Pages.Authorized.Offline;
+namespace Boilerplate.Client.Core.Components.Pages;
 
 public partial class OfflineEditProfilePage
 {
