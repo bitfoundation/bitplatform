@@ -37,6 +37,8 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<PushNotificationSubscription> PushNotificationSubscriptions { get; set; } = default!;
     //#endif
 
+    public DbSet<WebAuthnCredential> WebAuthnCredential { get; set; } = default!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
