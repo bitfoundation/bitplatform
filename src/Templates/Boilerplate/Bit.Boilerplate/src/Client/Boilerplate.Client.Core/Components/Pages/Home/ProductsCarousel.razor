@@ -24,7 +24,7 @@ else
         <BitCarousel @ref="carouselRef" Class="carousel" AutoPlay AutoPlayInterval="5000" HideNextPrev InfiniteScrolling>
             @foreach (var product in carouselProducts)
             {
-                <BitCarouselItem>
+                <BitCarouselItem Style="width:100%">
                     <BitLink Href="@product.PageUrl" NoUnderline Style="color:unset">
                         <BitStack Horizontal Class="carousel-stack">
                             <ProductImage Src="@GetProductImageUrl(product)" Width="50%" />

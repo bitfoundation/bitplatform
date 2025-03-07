@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
         <!--If you don't need to use the time zone and your app is in WASM format, you can reduce the output size of the app by disabling the time zone.-->
-        <BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
+        <InvariantTimezone>false</InvariantTimezone>
         <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
         <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
         <InvariantGlobalization Condition="'$(MultilingualEnabled)' == 'false'">true</InvariantGlobalization>
@@ -69,5 +69,12 @@
     <Target Name="BuildCssFiles">
         <Exec Command="../Boilerplate.Client.Core/node_modules/.bin/sass .:. --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
+
+    <PropertyGroup Condition="'$(Environment)' != 'Development'">
+        <!-- https://emscripten.org/docs/tools_reference/emcc.html -->
+        <!-- https://github.com/dotnet/runtime/blob/main/src/mono/wasm/build/WasmApp.Common.targets -->
+        <EmccLinkOptimizationFlag>-O3</EmccLinkOptimizationFlag>
+        <EmccCompileOptimizationFlag>-O3</EmccCompileOptimizationFlag>
+    </PropertyGroup>
 
 </Project>
