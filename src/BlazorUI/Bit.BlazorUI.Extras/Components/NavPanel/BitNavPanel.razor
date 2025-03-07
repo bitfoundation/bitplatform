@@ -59,8 +59,8 @@
                                    OnClick="ToggleNavPanel"
                                    Variant="BitVariant.Text"
                                    Style="@Styles?.ToggleButton"
-                                   Class="@Classes?.ToggleButton"
                                    IconName="ColumnRightTwoThirds"
+                                   Class="@($"bit-npn-tbn {Classes?.ToggleButton}".Trim())"
                                    Classes="@(new() { Icon = "bit-icon-ex bit-icon-ex--ColumnRightTwoThirds" })" />
                     }
                 </div>

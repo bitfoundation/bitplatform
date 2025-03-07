@@ -124,9 +124,7 @@ private List<BitNavItem> basicNavItems =
     private readonly string example3RazorCode = @"
 <BitToggleButton @bind-IsChecked=""fullWidthIsOpen"" OnText=""Close"" OffText=""Open"" />
 
-<div style=""width:333px"">
-    <BitNavPanel @bind-IsOpen=""fullWidthIsOpen"" Items=""basicNavItems"" FullWidth />
-</div>";
+<BitNavPanel @bind-IsOpen=""fullWidthIsOpen"" Items=""basicNavItems"" FullWidth />";
     private readonly string example3CsharpCode = @"
 private bool fullWidthIsOpen;
 
@@ -302,132 +300,12 @@ private List<BitNavItem> basicNavItems =
 ];";
 
     private readonly string example6RazorCode = @"
-<BitToggleButton @bind-IsChecked=""chevronDownIconIsOpen"" OnText=""Close"" OffText=""Open"" />
-
-<div style=""width:222px"">
-    <BitNavPanel @bind-IsOpen=""chevronDownIconIsOpen"" Items=""basicNavItems"" ChevronDownIcon=""@BitIconName.ColumnList"" />
-</div>";
-    private readonly string example6CsharpCode = @"
-private bool chevronDownIconIsOpen;
-
-private List<BitNavItem> basicNavItems =
-[
-    new()
-    {
-        Text = ""Home"",
-        IconName = BitIconName.Home,
-        Url = ""HomePage"",
-    },
-    new()
-    {
-        Text = ""AdminPanel"",
-        IconName = BitIconName.Admin,
-        ChildItems =
-        [
-            new() {
-                Text = ""Dashboard"",
-                IconName = BitIconName.BarChartVerticalFill,
-                Url = ""DashboardPage"",
-            },
-            new() {
-                Text = ""Categories"",
-                IconName = BitIconName.BuildQueue,
-                Url = ""CategoriesPage"",
-            },
-            new() {
-                Text = ""Products"",
-                IconName = BitIconName.Product,
-                Url = ""ProductsPage"",
-            }
-        ]
-    },
-    new()
-    {
-        Text = ""Todo"",
-        IconName = BitIconName.ToDoLogoOutline,
-        Url = ""TodoPage"",
-    },
-    new()
-    {
-        Text = ""Settings"",
-        IconName = BitIconName.Equalizer,
-        Url = ""SettingsPage""
-    },
-    new()
-    {
-        Text = ""Terms"",
-        IconName = BitIconName.EntityExtraction,
-        Url = ""TermsPage"",
-    }
-];";
-
-    private readonly string example7RazorCode = @"
-<BitToggleButton @bind-IsChecked=""reversedChevronIsOpen"" OnText=""Close"" OffText=""Open"" />
-
-<div style=""width:222px"">
-    <BitNavPanel @bind-IsOpen=""reversedChevronIsOpen"" Items=""basicNavItems"" ReversedChevron />
-</div>";
-    private readonly string example7CsharpCode = @"
-private bool reversedChevronIsOpen;
-
-private List<BitNavItem> basicNavItems =
-[
-    new()
-    {
-        Text = ""Home"",
-        IconName = BitIconName.Home,
-        Url = ""HomePage"",
-    },
-    new()
-    {
-        Text = ""AdminPanel"",
-        IconName = BitIconName.Admin,
-        ChildItems =
-        [
-            new() {
-                Text = ""Dashboard"",
-                IconName = BitIconName.BarChartVerticalFill,
-                Url = ""DashboardPage"",
-            },
-            new() {
-                Text = ""Categories"",
-                IconName = BitIconName.BuildQueue,
-                Url = ""CategoriesPage"",
-            },
-            new() {
-                Text = ""Products"",
-                IconName = BitIconName.Product,
-                Url = ""ProductsPage"",
-            }
-        ]
-    },
-    new()
-    {
-        Text = ""Todo"",
-        IconName = BitIconName.ToDoLogoOutline,
-        Url = ""TodoPage"",
-    },
-    new()
-    {
-        Text = ""Settings"",
-        IconName = BitIconName.Equalizer,
-        Url = ""SettingsPage""
-    },
-    new()
-    {
-        Text = ""Terms"",
-        IconName = BitIconName.EntityExtraction,
-        Url = ""TermsPage"",
-    }
-];";
-
-    private readonly string example8RazorCode = @"
 <BitToggleButton @bind-IsChecked=""searchBoxPlaceholderIsOpen"" OnText=""Close"" OffText=""Open"" />
 
-<div style=""width:300px"">
+<div style=""width:240px"">
     <BitNavPanel @bind-IsOpen=""searchBoxPlaceholderIsOpen"" Items=""basicNavItems"" SearchBoxPlaceholder=""Search in menu items..."" />
 </div>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private bool searchBoxPlaceholderIsOpen;
 
 private List<BitNavItem> basicNavItems =
@@ -481,13 +359,13 @@ private List<BitNavItem> basicNavItems =
     }
 ];";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitToggleButton @bind-IsChecked=""emptyListMessageIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <div style=""width:222px"">
-    <BitNavPanel @bind-IsOpen=""emptyListMessageIsOpen"" Items=""basicNavItems"" EmptyListMessage=""There is no such item."" />
+    <BitNavPanel @bind-IsOpen=""emptyListMessageIsOpen"" Items=""basicNavItems"" EmptyListMessage=""There is no item found."" />
 </div>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private bool emptyListMessageIsOpen;
 
 private List<BitNavItem> basicNavItems =
@@ -541,75 +419,12 @@ private List<BitNavItem> basicNavItems =
     }
 ];";
 
-    private readonly string example10RazorCode = @"
-<BitToggleButton @bind-IsChecked=""singleExpandIsOpen"" OnText=""Close"" OffText=""Open"" />
-
-<BitToggleButton @bind-IsChecked=""isSingleExpand"" OnText=""Single expand"" OffText=""Multi expand"" />
-
-<div style=""width:222px"">
-    <BitNavPanel @bind-IsOpen=""singleExpandIsOpen"" Items=""singleExpandNavItems"" SingleExpand=""isSingleExpand"" />
-</div>";
-    private readonly string example10CsharpCode = @"
-private bool singleExpandIsOpen;
-private bool isSingleExpand = true;
-
-private List<BitNavItem> basicNavItems =
-[
-    new()
-    {
-        Text = ""Home"",
-        IconName = BitIconName.Home,
-        Url = ""HomePage"",
-    },
-    new()
-    {
-        Text = ""AdminPanel"",
-        IconName = BitIconName.Admin,
-        ChildItems =
-        [
-            new() {
-                Text = ""Dashboard"",
-                IconName = BitIconName.BarChartVerticalFill,
-                Url = ""DashboardPage"",
-            },
-            new() {
-                Text = ""Categories"",
-                IconName = BitIconName.BuildQueue,
-                Url = ""CategoriesPage"",
-            },
-            new() {
-                Text = ""Products"",
-                IconName = BitIconName.Product,
-                Url = ""ProductsPage"",
-            }
-        ]
-    },
-    new()
-    {
-        Text = ""Todo"",
-        IconName = BitIconName.ToDoLogoOutline,
-        Url = ""TodoPage"",
-    },
-    new()
-    {
-        Text = ""Settings"",
-        IconName = BitIconName.Equalizer,
-        Url = ""SettingsPage""
-    },
-    new()
-    {
-        Text = ""Terms"",
-        IconName = BitIconName.EntityExtraction,
-        Url = ""TermsPage"",
-    }
-];";
-
-    private readonly string example11RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitToggleButton @bind-IsChecked=""templateIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <BitNavPanel @bind-IsOpen=""templateIsOpen"" Items=""basicNavItems"" FitWidth NoToggle>
     <Header>
-        <BitText Typography=""BitTypography.H4"" Color=""BitColor.Info"">Bit Menu</BitText>
+        <BitText Typography=""BitTypography.H5""><b>NavPanel</b> header</BitText>
     </Header>
     <ItemTemplate Context=""item"">
         <BitText><i><b>@item.Text</b></i></BitText>
@@ -623,7 +438,7 @@ private List<BitNavItem> basicNavItems =
         <BitActionButton IconName=""@BitIconName.PowerButton"">Logout</BitActionButton>
     </Footer>
 </BitNavPanel>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private bool templateIsOpen;
 
 private List<BitNavItem> templateNavItems =
@@ -680,7 +495,7 @@ private List<BitNavItem> templateNavItems =
     }
 ];";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitToggleButton @bind-IsChecked=""eventIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <div>
@@ -695,7 +510,7 @@ private List<BitNavItem> templateNavItems =
                     OnItemClick=""(BitNavItem item) => HandleOnItemClick(item)""
                     OnItemToggle=""(BitNavItem item) => HandleOnItemToggle(item)"" />
 </div>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private bool eventIsOpen;
 private BitNavItem? onItemClick;
 private BitNavItem? onItemToggle;
@@ -754,13 +569,13 @@ private List<BitNavItem> eventNavItems =
     }
 ];";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitToggleButton @bind-IsChecked=""colorIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <div style=""width:222px"">
     <BitNavPanel @bind-IsOpen=""colorIsOpen"" Items=""colorNavItems"" Color=""BitColor.Secondary"" Accent=""BitColor.SecondaryBackground"" />
 </div>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private bool colorIsOpen;
 
 private List<BitNavItem> colorNavItems =
@@ -814,7 +629,7 @@ private List<BitNavItem> colorNavItems =
     }
 ];";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
 
 @media(hover: hover) {
@@ -875,7 +690,7 @@ private List<BitNavItem> colorNavItems =
                                             IconWrapper = ""custom-icon-wrapper-searchbox"",
                                             InputContainer = ""custom-input-container-searchbox"" })"" />
 </div>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private bool classStyleIsOpen;
 
 private List<BitNavItem> basicNavItems =
@@ -929,11 +744,11 @@ private List<BitNavItem> basicNavItems =
     }
 ];";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitToggleButton @bind-IsChecked=""rtlIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <BitNavPanel @bind-IsOpen=""rtlIsOpen"" Items=""rtlNavItems"" FitWidth Dir=""BitDir.Rtl"" />";
-    private readonly string example15CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private bool rtlIsOpen;
 
 private List<BitNavItem> rtlNavItems =
