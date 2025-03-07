@@ -530,8 +530,6 @@ public partial class BitNavPanelDemo
     private bool fullWidthIsOpen;
     private bool noToggleIsOpen;
     private bool iconUrlIsOpen;
-    private bool chevronDownIconIsOpen;
-    private bool reversedChevronIsOpen;
     private bool searchBoxPlaceholderIsOpen;
     private bool emptyListMessageIsOpen;
     private bool singleExpandIsOpen;
@@ -540,7 +538,6 @@ public partial class BitNavPanelDemo
     private bool colorIsOpen;
     private bool classStyleIsOpen;
     private bool rtlIsOpen;
-    private bool isSingleExpand = true;
 
     private BitNavItem? onItemClick;
     private BitNavItem? onItemToggle;
