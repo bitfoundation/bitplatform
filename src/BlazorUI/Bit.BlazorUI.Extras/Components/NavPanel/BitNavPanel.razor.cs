@@ -261,13 +261,13 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
     private async Task HandleNavItemClick(TItem item)
     {
+        await OnItemClick.InvokeAsync(item);
+
         if (_bitNavRef.GetUrl(item).HasNoValue()) return;
 
         _filteredNavItems = Items;
 
         await _searchBoxRef.Clear();
-
-        await OnItemClick.InvokeAsync(item);
 
         await ClosePanel();
     }
