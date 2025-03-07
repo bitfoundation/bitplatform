@@ -101,6 +101,7 @@ public static partial class Program
                 var builder = policy.AddPolicy<AppResponseCachePolicy>();
             }, excludeDefaultPolicy: true);
         });
+        services.AddDistributedMemoryCache();
 
         services.AddHttpContextAccessor();
 
