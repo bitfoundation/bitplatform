@@ -107,8 +107,9 @@ public static partial class Program
         var configuration = builder.Configuration;
 
         services.AddTransient<IAntiforgery, NoOpAntiforgery>();
-        services.AddScoped<IAuthTokenProvider, ServerSideAuthTokenProvider>();
         services.AddTransient<IPrerenderStateService, WebServerPrerenderStateService>();
+        services.AddScoped<IExceptionHandler, WebServerExceptionHandler>();
+        services.AddScoped<IAuthTokenProvider, ServerSideAuthTokenProvider>();
         services.AddScoped(sp =>
         {
             // This HTTP client is utilized during pre-rendering and within Blazor Auto/Server sessions for API calls. 
