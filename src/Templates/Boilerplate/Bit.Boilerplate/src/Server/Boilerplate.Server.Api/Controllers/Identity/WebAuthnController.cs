@@ -1,10 +1,11 @@
 ﻿//+:cnd:noEmit
-using System.IdentityModel.Tokens.Jwt;
 using System.Text;
-using Boilerplate.Server.Api.Models.Identity;
-using Boilerplate.Shared.Controllers.Identity;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.Extensions.Caching.Distributed;
 using Fido2NetLib;
 using Fido2NetLib.Objects;
+using Boilerplate.Server.Api.Models.Identity;
+using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
@@ -12,105 +13,86 @@ namespace Boilerplate.Server.Api.Controllers.Identity;
 public partial class WebAuthnController : AppControllerBase, IWebAuthnController
 {
     [AutoInject] private IFido2 fido2 = default!;
+    [AutoInject] private IDistributedCache cache = default!;
     [AutoInject] private UserManager<User> userManager = default!;
 
 
     [HttpGet]
-    public async Task<CredentialCreateOptions> GetCredentialOptions()
+    public async Task<CredentialCreateOptions> GetCredentialOptions(CancellationToken cancellationToken)
     {
-        try
+        var userId = User.GetUserId();
+        var user = await userManager.FindByIdAsync(userId.ToString())
+                    ?? throw new ResourceNotFoundException("User");
+
+        var existingCredentials = DbContext.WebAuthnCredential.Where(c => c.UserId == user.Id);
+        var existingKeys = existingCredentials.Select(c => new PublicKeyCredentialDescriptor(PublicKeyCredentialType.PublicKey,
+                                                                                             c.Id,
+                                                                                             c.Transports));
+        var fidoUser = new Fido2User
         {
-            var userId = User.GetUserId();
-            var user = await userManager.FindByIdAsync(userId.ToString())
-                        ?? throw new ResourceNotFoundException("User");
+            Id = Encoding.UTF8.GetBytes(user.Id.ToString()),
+            Name = user.Email ?? user.PhoneNumber ?? user.UserName,
+            DisplayName = user.DisplayName
+        };
 
-            var fidoUser = new Fido2User
-            {
-                Id = Encoding.UTF8.GetBytes(user.Id.ToString()),
-                Name = user.Email ?? user.PhoneNumber ?? user.UserName,
-                DisplayName = user.DisplayName
-            };
-            var existingCredentials = DbContext.WebAuthnCredential.Where(c => c.UserId == user.Id);
-            var existingKeys = existingCredentials.Select(c => new PublicKeyCredentialDescriptor(PublicKeyCredentialType.PublicKey, c.Id, c.Transports));
-
-            var options = fido2.RequestNewCredential(new RequestNewCredentialParams
-            {
-                User = fidoUser,
-                ExcludeCredentials = existingKeys.ToList(),
-                AuthenticatorSelection = AuthenticatorSelection.Default,
-                AttestationPreference = AttestationConveyancePreference.None,
-                Extensions = new AuthenticationExtensionsClientInputs
-                {
-                    Extensions = true,
-                    UserVerificationMethod = true,
-                    CredProps = true
-                }
-            });
-
-            _pendingCredentials[key] = options;
-
-            // 6. return options to client
-            return options;
-        }
-        catch (Exception)
+        var options = fido2.RequestNewCredential(new RequestNewCredentialParams
         {
-            throw;
-        }
+            User = fidoUser,
+            ExcludeCredentials = [.. existingKeys],
+            AuthenticatorSelection = AuthenticatorSelection.Default,
+            AttestationPreference = AttestationConveyancePreference.None,
+            Extensions = new AuthenticationExtensionsClientInputs
+            {
+                CredProps = true,
+                Extensions = true,
+                UserVerificationMethod = true,
+            }
+        });
+
+        var key = $"WebAuthn_Options_{user.Id}";
+        await cache.SetAsync(key, Encoding.UTF8.GetBytes(options.ToJson()), cancellationToken);
+
+        return options;
     }
 
-    /// <summary>
-    /// Creates a new credential for a user.
-    /// </summary>
-    /// <param name="username">Username of registering user. If usernameless, use base64 encoded options.User.Name from the credential-options used to create the credential.</param>
-    /// <param name="attestationResponse"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns>a string containing either "OK" or an error message.</returns>
-    [HttpPut("{username}/credential")]
-    public async Task<string> CreateCredentialAsync([FromRoute] string username, [FromBody] AuthenticatorAttestationRawResponse attestationResponse, CancellationToken cancellationToken)
+    [HttpPut()]
+    public async Task CreateCredentialAsync([FromRoute] string username,
+                                            [FromBody] AuthenticatorAttestationRawResponse attestationResponse,
+                                            CancellationToken cancellationToken)
     {
-        try
+        var userId = User.GetUserId();
+        var user = await userManager.FindByIdAsync(userId.ToString())
+                    ?? throw new ResourceNotFoundException("User");
+
+        var key = $"WebAuthn_Options_{user.Id}";
+        var cachedBytes = await cache.GetAsync(key, cancellationToken) ?? throw new InvalidOperationException("no create credential options found in the cache.");
+        var jsonOptions = Encoding.UTF8.GetString(cachedBytes);
+        var options = CredentialCreateOptions.FromJson(jsonOptions);
+
+        var credential = await fido2.MakeNewCredentialAsync(new MakeNewCredentialParams
         {
-            // 1. Get the options we sent the client
-            var options = _pendingCredentials[username];
+            AttestationResponse = attestationResponse,
+            OriginalOptions = options,
+            IsCredentialIdUniqueToUserCallback = CredentialIdUniqueToUserAsync
+        }, cancellationToken: cancellationToken);
 
-            // 2. Create callback so that lib can verify credential id is unique to this user
-
-            // 3. Verify and make the credentials
-            var credential = await fido2.MakeNewCredentialAsync(new MakeNewCredentialParams
-            {
-                AttestationResponse = attestationResponse,
-                OriginalOptions = options,
-                IsCredentialIdUniqueToUserCallback = CredentialIdUniqueToUserAsync
-            }, cancellationToken: cancellationToken);
-
-            // 4. Store the credentials in db
-            _demoStorage.AddCredentialToUser(options.User, new StoredCredential
-            {
-
-                AttestationFormat = credential.AttestationFormat,
-                Id = credential.Id,
-                PublicKey = credential.PublicKey,
-                UserHandle = credential.User.Id,
-                SignCount = credential.SignCount,
-                RegDate = DateTimeOffset.UtcNow,
-                AaGuid = credential.AaGuid,
-                Transports = credential.Transports,
-                IsBackupEligible = credential.IsBackupEligible,
-                IsBackedUp = credential.IsBackedUp,
-                AttestationObject = credential.AttestationObject,
-                AttestationClientDataJson = credential.AttestationClientDataJson,
-            });
-
-            // 5. Now we need to remove the options from the pending dictionary
-            _pendingCredentials.Remove(Request.Host.ToString());
-
-            // 5. return OK to client
-            return "OK";
-        }
-        catch (Exception e)
+        await DbContext.WebAuthnCredential.AddAsync(new()
         {
-            return FormatException(e);
-        }
+            Id = credential.Id,
+            PublicKey = credential.PublicKey,
+            UserHandle = credential.User.Id,
+            SignCount = credential.SignCount,
+            RegDate = DateTimeOffset.UtcNow,
+            AaGuid = credential.AaGuid,
+            Transports = credential.Transports,
+            AttestationFormat = credential.AttestationFormat,
+            IsBackupEligible = credential.IsBackupEligible,
+            IsBackedUp = credential.IsBackedUp,
+            AttestationObject = credential.AttestationObject,
+            AttestationClientDataJson = credential.AttestationClientDataJson,
+        });
+
+        await cache.RemoveAsync(key, cancellationToken);
     }
 
     private static async Task<bool> CredentialIdUniqueToUserAsync(IsCredentialIdUniqueToUserParams args, CancellationToken cancellationToken)

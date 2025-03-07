@@ -298,6 +298,14 @@ public static partial class Program
             c.Timeout = TimeSpan.FromSeconds(10);
             c.BaseAddress = new Uri("https://api.cloudflare.com/client/v4/zones/");
         });
+
+        services.AddFido2(options =>
+        {
+            //options.ServerDomain = origin.Host;
+            //options.ServerName = "FIDO2 Server";
+            //options.Origins = new HashSet<string> { origin.AbsoluteUri };
+            //options.TimestampDriftTolerance = 1000;
+        });
     }
 
     private static void AddIdentity(WebApplicationBuilder builder)
