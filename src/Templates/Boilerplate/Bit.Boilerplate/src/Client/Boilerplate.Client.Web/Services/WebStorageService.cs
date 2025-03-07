@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Client.Web.Services;
 
-public partial class BrowserStorageService : IStorageService
+public partial class WebStorageService : IStorageService
 {
     [AutoInject] private SessionStorage sessionStorage;
     [AutoInject] private LocalStorage localStorage;
