@@ -127,7 +127,7 @@ namespace {namespaceName}
         {
             if (doesSupporteParametersViewCache)
             {
-                builder.AppendLine("            return base.SetParametersAsync(default);");
+                builder.AppendLine("            return base.SetParametersAsync(ParameterView.Empty);");
             }
             else
             {
