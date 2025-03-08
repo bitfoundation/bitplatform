@@ -62,7 +62,7 @@ namespace {namespaceName}
         {
             builder.AppendLine($"            {par.PropertySymbol.Name}HasBeenSet = false;");
         }
-        builder.AppendLine(" foreach (var parameter in parameters)");
+        builder.AppendLine("            foreach (var parameter in parameters)");
         builder.AppendLine("            {");
         builder.AppendLine("                switch (parameter.Name)");
         builder.AppendLine("                {");
