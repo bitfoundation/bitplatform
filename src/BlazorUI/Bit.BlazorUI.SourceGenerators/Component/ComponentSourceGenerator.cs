@@ -62,10 +62,9 @@ namespace {namespaceName}
         {
             builder.AppendLine($"            {par.PropertySymbol.Name}HasBeenSet = false;");
         }
-        builder.AppendLine("            var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;");
-        builder.AppendLine("            foreach (var parameter in parametersDictionary!)");
+        builder.AppendLine(" foreach (var parameter in parameters)");
         builder.AppendLine("            {");
-        builder.AppendLine("                switch (parameter.Key)");
+        builder.AppendLine("                switch (parameter.Name)");
         builder.AppendLine("                {");
         foreach (var par in parameters)
         {
@@ -96,7 +95,6 @@ namespace {namespaceName}
             {
                 builder.AppendLine($"                       if (notEquals{paramName}) {par.CallOnSetMethodName}();");
             }
-            builder.AppendLine("                       parametersDictionary.Remove(parameter.Key);");
             builder.AppendLine("                       break;");
             if (par.IsTwoWayBound)
             {
@@ -105,7 +103,6 @@ namespace {namespaceName}
                 builder.AppendLine($"                    case nameof({paramName}):");
                 builder.AppendLine($"                       var {varName} = parameter.Value is null ? default! : (EventCallback<{sym.Type.ToDisplayString()}>)parameter.Value;");
                 builder.AppendLine($"                       {paramName} = {varName};");
-                builder.AppendLine("                       parametersDictionary.Remove(parameter.Key);");
                 builder.AppendLine("                       break;");
             }
         }
@@ -117,7 +114,7 @@ namespace {namespaceName}
         }
         else
         {
-            builder.AppendLine("            return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary as IDictionary<string, object?>));");
+            builder.AppendLine("            return base.SetParametersAsync(parameters);");
         }
         builder.AppendLine(@"        }");
 
