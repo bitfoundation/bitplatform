@@ -46,8 +46,8 @@
     <BlazorApplicationInsights.ApplicationInsightsInit />
     @if (renderMode is not null)
     {
-        <!-- Initialize IApplicationInsights service using ApplicationInsightsInit with @rndermode. -->
-        <!-- Use `IsWasmStandalone` to prevent re-donwloading scripts. -->
+        <!-- Initialize IApplicationInsights service using ApplicationInsightsInit with rendermode. -->
+        <!-- Use `IsWasmStandalone` to prevent re-downloading scripts. -->
         <BlazorApplicationInsights.ApplicationInsightsInit IsWasmStandalone="true" @rendermode=renderMode />
     }
     @*#endif*@
