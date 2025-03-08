@@ -40,7 +40,7 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
 
     public override Task SetParametersAsync(ParameterView parameters)
     {
-        var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;
+        var parametersDictionary = (ParametersCache ??= parameters.ToDictionary() as Dictionary<string, object?>); ;
 
         foreach (var parameter in parametersDictionary!)
         {
