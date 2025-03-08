@@ -6,4 +6,9 @@ internal static class BitMarkdownViewerJsRuntimeExtensions
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.MarkdownViewer.init", scripts);
     }
+
+    public static ValueTask<string> BitMarkdownViewerParse(this IJSRuntime jsRuntime, string markdown)
+    {
+        return jsRuntime.Invoke<string>("BitBlazorUI.MarkdownViewer.parse", markdown);
+    }
 }

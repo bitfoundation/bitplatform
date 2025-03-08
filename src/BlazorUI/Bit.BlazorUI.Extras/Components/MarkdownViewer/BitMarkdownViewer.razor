@@ -7,4 +7,5 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
+    @((MarkupString)(_html ?? ""))
 </div>
