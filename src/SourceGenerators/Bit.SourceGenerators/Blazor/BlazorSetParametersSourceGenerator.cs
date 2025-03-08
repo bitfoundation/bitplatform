@@ -56,10 +56,9 @@ namespace {namespaceName}
         //{
         //    source.AppendLine($"            {property.PropertySymbol.Name}HasBeenSet = false;");
         //} 
-        source.AppendLine("            var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;");
-        source.AppendLine("            foreach (var parameter in parametersDictionary!)");
+        source.AppendLine("            foreach (var parameter in parameters)");
         source.AppendLine("            {");
-        source.AppendLine("                switch (parameter.Key)");
+        source.AppendLine("                switch (parameter.Name)");
         source.AppendLine("                {");
 
         // create cases for each property
