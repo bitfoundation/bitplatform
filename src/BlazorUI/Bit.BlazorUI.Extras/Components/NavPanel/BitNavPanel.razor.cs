@@ -16,7 +16,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// The accent color of the nav.
     /// </summary>
-    [Parameter]
+    [Parameter, ResetClassBuilder]
     public BitColor? Accent { get; set; }
 
     /// <summary>
@@ -48,7 +48,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// Renders the nav panel with fit-content width.
     /// </summary>
-    [Parameter]
+    [Parameter, ResetClassBuilder]
     public bool FitWidth { get; set; }
 
     /// <summary>
@@ -59,7 +59,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// Renders the nav panel with full (100%) width.
     /// </summary>
-    [Parameter]
+    [Parameter, ResetClassBuilder]
     public bool FullWidth { get; set; }
 
     /// <summary>
@@ -261,13 +261,13 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
     private async Task HandleNavItemClick(TItem item)
     {
+        await OnItemClick.InvokeAsync(item);
+
         if (_bitNavRef.GetUrl(item).HasNoValue()) return;
 
         _filteredNavItems = Items;
 
         await _searchBoxRef.Clear();
-
-        await OnItemClick.InvokeAsync(item);
 
         await ClosePanel();
     }

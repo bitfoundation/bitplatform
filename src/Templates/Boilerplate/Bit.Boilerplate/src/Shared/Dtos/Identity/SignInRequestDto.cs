@@ -10,7 +10,7 @@ public partial class SignInRequestDto : IdentityRequestDto
     public string? Password { get; set; }
 
     /// <summary>
-    /// For either Otp or magic link
+    /// Read SignInManagerExtensions.OtpSignInAsync comments.
     /// </summary>
     /// <example>null</example>
     [StringLength(6)]

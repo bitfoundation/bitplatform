@@ -1,4 +1,4 @@
-// bit version: 9.6.0-pre-03
+// bit version: 9.6.0-pre-05
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 self.assetsInclude = [];
@@ -24,5 +24,6 @@ self.serverHandledUrls = [
 ];
 
 self.prerenderMode = 'always';
+self.enableIntegrityCheck = false;
 
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');

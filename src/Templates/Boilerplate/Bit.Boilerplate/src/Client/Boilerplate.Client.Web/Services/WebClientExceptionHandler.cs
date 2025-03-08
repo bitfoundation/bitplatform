@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Client.Web.Services;
 
-public partial class WebExceptionHandler : ClientExceptionHandlerBase
+public partial class WebClientExceptionHandler : ClientExceptionHandlerBase
 {
     protected override void Handle(Exception exception, ExceptionDisplayKind displayKind, Dictionary<string, object> parameters)
     {

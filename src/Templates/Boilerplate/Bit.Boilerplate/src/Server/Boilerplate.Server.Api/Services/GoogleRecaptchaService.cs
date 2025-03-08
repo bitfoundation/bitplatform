@@ -15,7 +15,7 @@ public partial class GoogleRecaptchaService
 
         response.EnsureSuccessStatusCode();
 
-        var result = await response.Content.ReadFromJsonAsync(ServerJsonContext.Default.GoogleRecaptchaVerificationResponse, cancellationToken: cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync(ServerJsonContext.Default.GoogleRecaptchaVerificationResponse, cancellationToken);
 
         return result?.Success is true;
     }

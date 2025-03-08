@@ -354,7 +354,7 @@ private void ResetList()
     <div class=""screen"">
         <div class=""layout"">
             <div class=""header"">
-                <BitImage Src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" Width=""50"" />
+                <BitImage Src=""/images/bit-logo.svg"" Width=""50"" />
                 <BitText Typography=""BitTypography.H4"" Color=""BitColor.Info"">
                     bit BlazorUI
                 </BitText>

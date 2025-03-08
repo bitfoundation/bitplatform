@@ -14,13 +14,14 @@ public static partial class Urls
     public const string AboutPage = "/about";
 
     //#if (module == "Admin")
-    public const string AddOrEditCategoryPage = "/add-edit-category";
 
     public const string CategoriesPage = "/categories";
 
     public const string DashboardPage = "/dashboard";
 
     public const string ProductsPage = "/products";
+
+    public const string AddOrEditProductPage = "/add-edit-product";
 
     //#endif
     //#if (sample == true)

@@ -22,7 +22,7 @@ public partial class User : IdentityUser<Guid>
     public string? ProfileImageName { get; set; }
 
     /// <summary>
-    /// The date and time of the last token request. Ensures the generated token is valid and can only be used once.
+    /// The date and time of the last token request. Ensures only the latest generated token is valid and can only be used once.
     /// </summary>
     public DateTimeOffset? EmailTokenRequestedOn { get; set; }
 

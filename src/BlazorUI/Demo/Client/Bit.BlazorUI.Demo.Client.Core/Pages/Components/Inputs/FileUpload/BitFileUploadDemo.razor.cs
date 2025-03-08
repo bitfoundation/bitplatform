@@ -62,10 +62,24 @@ public partial class BitFileUploadDemo
         },
         new()
         {
-            Name = "Multiple",
+            Name = "FailedRemoveMessage",
+            Type = "string",
+            DefaultValue = "File remove failed",
+            Description = "The message shown for failed file removes."
+        },
+        new()
+        {
+            Name = "FailedUploadMessage",
+            Type = "string",
+            DefaultValue = "File upload failed",
+            Description = "The message shown for failed file uploads."
+        },
+        new()
+        {
+            Name = "HideFileView",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables multi-file selection."
+            Description = "Hides the file view section of the file upload."
         },
         new()
         {
@@ -94,6 +108,13 @@ public partial class BitFileUploadDemo
             Type = "string",
             DefaultValue = "The file size is larger than the max size",
             Description = "Specifies the message for the failed uploading progress due to exceeding the maximum size."
+        },
+        new()
+        {
+            Name = "Multiple",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables multi-file selection."
         },
         new()
         {
@@ -203,20 +224,6 @@ public partial class BitFileUploadDemo
         },
         new()
         {
-            Name = "FailedUploadMessage",
-            Type = "string",
-            DefaultValue = "File upload failed",
-            Description = "The message shown for failed file uploads."
-        },
-        new()
-        {
-            Name = "FailedRemoveMessage",
-            Type = "string",
-            DefaultValue = "File remove failed",
-            Description = "The message shown for failed file removes."
-        },
-        new()
-        {
             Name = "UploadRequestHttpHeaders",
             Type = "IReadOnlyDictionary<string, string>",
             DefaultValue = "new Dictionary<string, string>()",
@@ -235,6 +242,13 @@ public partial class BitFileUploadDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "URL of the server endpoint receiving the files."
+        },
+        new()
+        {
+            Name = "FileViewTemplate",
+            Type = "RenderFragment<BitFileInfo>?",
+            DefaultValue = "null",
+            Description = "The custom file view template."
         }
     ];
 

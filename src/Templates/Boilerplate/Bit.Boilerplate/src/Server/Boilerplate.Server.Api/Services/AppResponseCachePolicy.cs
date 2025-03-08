@@ -7,7 +7,7 @@ namespace Boilerplate.Server.Api.Services;
 /// <summary>
 /// An implementation of this interface can update how the current request is cached.
 /// </summary>
-public class AppResponseCachePolicy(ServerApiSettings settings) : IOutputCachePolicy
+public class AppResponseCachePolicy(IHostEnvironment env, ServerApiSettings settings) : IOutputCachePolicy
 {
     /// <summary>
     /// Updates the <see cref="OutputCacheContext"/> before the cache middleware is invoked.
@@ -47,6 +47,10 @@ public class AppResponseCachePolicy(ServerApiSettings settings) : IOutputCachePo
         {
             outputCacheTtl = -1;
         }
+        if (env.IsDevelopment())
+        {
+            clientCacheTtl = -1;
+        }
 
         if (context.HttpContext.User.IsAuthenticated() && responseCacheAtt.UserAgnostic is false)
         {
@@ -63,6 +67,12 @@ public class AppResponseCachePolicy(ServerApiSettings settings) : IOutputCachePo
             // As a temporary solution, client and edge caching are disabled for pre-rendered pages.
             edgeCacheTtl = -1;
             clientCacheTtl = -1;
+        }
+
+        if (context.HttpContext.Request.IsLightHouseRequest())
+        {
+            edgeCacheTtl = -1;
+            outputCacheTtl = -1;
         }
         //#endif
 

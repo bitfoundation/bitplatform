@@ -11,6 +11,8 @@ using Boilerplate.Client.Web;
 using Boilerplate.Server.Web.Services;
 using Microsoft.AspNetCore.Antiforgery;
 using Boilerplate.Client.Core.Services.Contracts;
+using Boilerplate.Client.Web.Services;
+using Boilerplate.Client.Core.Services;
 
 namespace Boilerplate.Server.Web;
 
@@ -46,6 +48,7 @@ public static partial class Program
                 var builder = policy.AddPolicy<AppResponseCachePolicy>();
             }, excludeDefaultPolicy: true);
         });
+        services.AddDistributedMemoryCache();
 
         services.AddHttpContextAccessor();
 
@@ -105,6 +108,8 @@ public static partial class Program
         var configuration = builder.Configuration;
 
         services.AddTransient<IAntiforgery, NoOpAntiforgery>();
+        services.AddTransient<IPrerenderStateService, WebServerPrerenderStateService>();
+        services.AddScoped<IExceptionHandler, WebServerExceptionHandler>();
         services.AddScoped<IAuthTokenProvider, ServerSideAuthTokenProvider>();
         services.AddScoped(sp =>
         {
@@ -113,7 +118,11 @@ public static partial class Program
             // Additionally, forwarded headers are handled to ensure proper forwarding, if the backend is hosted behind a CDN. 
             // User agent and referrer headers are also included to provide the API with necessary request context. 
 
-            Uri.TryCreate(configuration.GetServerAddress(), UriKind.RelativeOrAbsolute, out var serverAddress);
+            var serverSettings = sp.GetRequiredService<ServerWebSettings>();
+            var serverAddressString = string.IsNullOrEmpty(serverSettings.ServerSideHttpClientBaseAddress) is false ?
+                serverSettings.ServerSideHttpClientBaseAddress : configuration.GetServerAddress();
+
+            Uri.TryCreate(serverAddressString, UriKind.RelativeOrAbsolute, out var serverAddress);
             var currentRequest = sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request;
             if (serverAddress!.IsAbsoluteUri is false)
             {

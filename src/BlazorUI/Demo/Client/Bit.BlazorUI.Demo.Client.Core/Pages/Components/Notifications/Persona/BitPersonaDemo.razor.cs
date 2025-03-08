@@ -672,7 +672,7 @@ public partial class BitPersonaDemo
 
 <BitPersona PrimaryText=""Saleh Khafan""
             Size=""BitPersonaSize.Size72""
-            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+            ImageUrl=""/images/persona/persona-female.png"" />
 
 <BitPersona PrimaryText=""Unknown""
             SecondaryText=""Developer""
@@ -686,44 +686,44 @@ public partial class BitPersonaDemo
             SecondaryText=""Secondary""
             Size=""BitPersonaSize.Size8""
             HidePersonaDetails=""!isDetailsShown""
-            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+            ImageUrl=""/images/persona/persona-female.png"" />
 
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Secondary""
             Size=""BitPersonaSize.Size24""
             HidePersonaDetails=""!isDetailsShown""
-            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+            ImageUrl=""/images/persona/persona-female.png"" />
 
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Secondary""
             Size=@BitPersonaSize.Size32
             HidePersonaDetails=""!isDetailsShown""
-            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+            ImageUrl=""/images/persona/persona-female.png"" />
 
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Size=""BitPersonaSize.Size40""
             HidePersonaDetails=""!isDetailsShown""
-            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+            ImageUrl=""/images/persona/persona-female.png"" />
 
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Size=""BitPersonaSize.Size48""
             HidePersonaDetails=""!isDetailsShown""
-            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+            ImageUrl=""/images/persona/persona-female.png"" />
 
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Size=""BitPersonaSize.Size56""
             HidePersonaDetails=""!isDetailsShown""
-            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+            ImageUrl=""/images/persona/persona-female.png"" />
 
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
             Size=""BitPersonaSize.Size72""
             HidePersonaDetails=""!isDetailsShown""
-            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+            ImageUrl=""/images/persona/persona-female.png"" />
 
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
@@ -731,7 +731,7 @@ public partial class BitPersonaDemo
             OptionalText=""Available at 4:00pm""
             Size=""BitPersonaSize.Size100""
             HidePersonaDetails=""!isDetailsShown""
-            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+            ImageUrl=""/images/persona/persona-female.png"" />
 
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
@@ -739,7 +739,7 @@ public partial class BitPersonaDemo
             OptionalText=""Available at 4:00pm""
             Size=""BitPersonaSize.Size120""
             HidePersonaDetails=""!isDetailsShown""
-            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+            ImageUrl=""/images/persona/persona-female.png"" />
 
 <BitPersona CoinSize=""150""
             PrimaryText=""Annie Lindqvist""
@@ -748,7 +748,7 @@ public partial class BitPersonaDemo
             OptionalText=""Available at 4:00pm""
             Size=""BitPersonaSize.Size120""
             HidePersonaDetails=""!isDetailsShown""
-            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />";
+            ImageUrl=""/images/persona/persona-female.png"" />";
     private readonly string example2CsharpCode = @"
 private bool isDetailsShown = true;";
 
@@ -794,13 +794,13 @@ private bool isDetailsShown = true;";
             SecondaryText=""Developer""
             Size=""BitPersonaSize.Size72""
             CoinShape=""BitPersonaCoinShape.Circular""
-            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+            ImageUrl=""/images/persona/persona-female.png"" />
 
 <BitPersona PrimaryText=""Saleh Xafan""
             SecondaryText=""Developer""
             Size=""BitPersonaSize.Size72""
             CoinShape=""BitPersonaCoinShape.Square""
-            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />";
+            ImageUrl=""/images/persona/persona-female.png"" />";
 
     private readonly string example6RazorCode = @"
 <BitPersona PrimaryText=""Annie Lindqvist""
@@ -811,7 +811,7 @@ private bool isDetailsShown = true;";
             Presence=""BitPersonaPresence.None""
             OnActionClick=""() => actionClickCount++""
             ActionIconName=""@BitIconName.CloudUpload""
-            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+            ImageUrl=""/images/persona/persona-female.png"" />
 <p>Action Click Count: @actionClickCount</p>
 
 <BitPersona PrimaryText=""Annie Lindqvist""
@@ -821,7 +821,7 @@ private bool isDetailsShown = true;";
             Size=""BitPersonaSize.Size120""
             Presence=""BitPersonaPresence.Online""
             OnImageClick=""() => imageClickCount++""
-            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+            ImageUrl=""/images/persona/persona-female.png"" />
 <p>Image Click Count: @imageClickCount</p>";
     private readonly string example6CsharpCode = @"
 private int imageClickCount = 0;
@@ -844,7 +844,7 @@ private int actionClickCount = 0;";
             Presence=""BitPersonaPresence.None""
             PresenceIcons=""_icons""
             Size=""BitPersonaSize.Size120""
-            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+            ImageUrl=""/images/persona/persona-female.png"" />
 
 <div>Offline</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
@@ -852,7 +852,7 @@ private int actionClickCount = 0;";
             Presence=""BitPersonaPresence.Offline""
             PresenceIcons=""_icons""
             Size=""BitPersonaSize.Size120""
-            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+            ImageUrl=""/images/persona/persona-female.png"" />
 
 <div>Online</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
@@ -860,7 +860,7 @@ private int actionClickCount = 0;";
             Presence=""BitPersonaPresence.Online""
             PresenceIcons=""_icons""
             Size=""BitPersonaSize.Size120""
-            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+            ImageUrl=""/images/persona/persona-female.png"" />
 
 <div>Away</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
@@ -868,7 +868,7 @@ private int actionClickCount = 0;";
             Presence=""BitPersonaPresence.Away""
             PresenceIcons=""_icons""
             Size=""BitPersonaSize.Size120""
-            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+            ImageUrl=""/images/persona/persona-female.png"" />
 
 <div>Do not Disturb (Dnd)</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
@@ -876,14 +876,14 @@ private int actionClickCount = 0;";
             Presence=""BitPersonaPresence.Dnd""
             PresenceIcons=""_icons""
             Size=""BitPersonaSize.Size120""
-            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+            ImageUrl=""/images/persona/persona-female.png"" />
 
 <div>Blocked</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Presence=""BitPersonaPresence.Blocked""
             Size=""BitPersonaSize.Size120""
-            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+            ImageUrl=""/images/persona/persona-female.png"" />
 
 <div>Busy</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
@@ -891,7 +891,7 @@ private int actionClickCount = 0;";
             Presence=""BitPersonaPresence.Busy""
             PresenceIcons=""_icons""
             Size=""BitPersonaSize.Size120""
-            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />";
+            ImageUrl=""/images/persona/persona-female.png"" />";
     private readonly string example8CsharpCode = @"
 private Dictionary<BitPersonaPresence, string> _icons = new()
 {
@@ -916,7 +916,7 @@ private Dictionary<BitPersonaPresence, string> _icons = new()
     }
 </style>
 
-<BitPersona Size=""BitPersonaSize.Size100"" ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" OnImageClick=""() => {}"">
+<BitPersona Size=""BitPersonaSize.Size100"" ImageUrl=""/images/persona/persona-female.png"" OnImageClick=""() => {}"">
     <PrimaryTextTemplate>
         <BitIcon IconName=""@BitIconName.Contact"" Class=""custom-ico"" />
         Annie Lindqvist
@@ -942,7 +942,7 @@ private Dictionary<BitPersonaPresence, string> _icons = new()
 
 <BitPersona Size=""BitPersonaSize.Size100"" PrimaryText=""Annie Lindqvist"" SecondaryText=""Software Engineer"" Presence=""BitPersonaPresence.Online"" CoinVariant=""BitVariant.Text"">
     <CoinTemplate>
-        <img src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" width=""100px"" height=""100px"" class=""custom-coin"" />
+        <img src=""/images/persona/persona-female.png"" width=""100px"" height=""100px"" class=""custom-coin"" />
     </CoinTemplate>
 </BitPersona>";
 

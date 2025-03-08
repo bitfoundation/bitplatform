@@ -17,6 +17,7 @@
             <BitFileUpload @ref="fileUploadRef"
                            AutoReset
                            AutoUpload
+                           HideFileView
                            Accept="image/*"
                            MaxSize="1024 * 1024 * 10"
                            UploadUrl="@profileImageUploadUrl"
@@ -33,7 +34,7 @@
                                         Size=@BitPersonaSize.Size72
                                         Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
                             <BitLink OnClick="() => fileUploadRef.Browse()" NoUnderline>
-                                <BitText>@Localizer[nameof(AppStrings.UploadNewProfileImage)]</BitText>
+                                <BitText>@Localizer[nameof(AppStrings.UploadNewImage)]</BitText>
                             </BitLink>
                         }
                         else
@@ -43,7 +44,6 @@
                         }
                     </BitStack>
                 </LabelTemplate>
-                <FileViewTemplate></FileViewTemplate>
             </BitFileUpload>
 
             @if (User?.ProfileImageName is not null)

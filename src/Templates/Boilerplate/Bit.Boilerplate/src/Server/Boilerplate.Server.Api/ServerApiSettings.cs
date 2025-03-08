@@ -48,7 +48,7 @@ public partial class ServerApiSettings : SharedSettings
     public ResponseCachingOptions ResponseCaching { get; set; } = default!;
 
     /// <summary>
-    /// Defines the list of origins permitted for CORS access to the API. These origins are also valid for use as return URLs after social sign-ins and for generating URLs in emails.
+    /// Defines the list of origins permitted for CORS access to the API. These origins are `also` valid for use as return URLs after social sign-ins and for generating URLs in emails.
     /// </summary>
     public Uri[] AllowedOrigins { get; set; } = [];
 
@@ -133,7 +133,7 @@ command in the Server.Api's project's folder and replace P@ssw0rdP@ssw0rd with t
 public partial class AppIdentityOptions : IdentityOptions
 {
     /// <summary>
-    /// BearerTokenExpiration used as JWT's expiration claim, access token's expires in and cookie's max age.
+    /// BearerTokenExpiration used as JWT's expiration claim, access token's `expires in` and cookie's `max age`.
     /// </summary>
     public TimeSpan BearerTokenExpiration { get; set; }
     public TimeSpan RefreshTokenExpiration { get; set; }
@@ -156,7 +156,7 @@ public partial class AppIdentityOptions : IdentityOptions
     public TimeSpan TwoFactorTokenLifetime { get; set; }
 
     /// <summary>
-    /// To sign in with either Otp or magic link.
+    /// <see cref="SignInManagerExtensions.OtpSignInAsync(SignInManager{Models.Identity.User}, Models.Identity.User, string)"/>
     /// </summary>
     public TimeSpan OtpTokenLifetime { get; set; }
 
@@ -194,7 +194,7 @@ public class CloudflareOptions
 
     /// <summary>
     /// The <see cref="ResponseCacheService"/> clears the cache for the current domain by default.
-    /// If multiple Cloudflare-hosted domains point to your backend, you will need to
+    /// If multiple Cloudflare-hosted domains point to your origin backend, you will need to
     /// purge the cache for each of them individually.
     /// </summary>
     public Uri[] AdditionalDomains { get; set; } = [];

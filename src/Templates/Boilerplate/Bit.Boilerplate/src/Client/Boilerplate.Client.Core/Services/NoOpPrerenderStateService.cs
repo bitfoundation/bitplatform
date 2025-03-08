@@ -7,8 +7,6 @@ namespace Boilerplate.Client.Core.Services;
 /// </summary>
 public class NoOpPrerenderStateService : IPrerenderStateService
 {
-    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
-
     public Task<T?> GetValue<T>(Func<Task<T?>> factory, 
         [CallerLineNumber] int lineNumber = 0, 
         [CallerMemberName] string memberName = "", 
@@ -21,4 +19,6 @@ public class NoOpPrerenderStateService : IPrerenderStateService
     {
         return factory();
     }
+
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }

@@ -47,7 +47,7 @@
     @if (renderMode is not null)
     {
         <!-- Initialize IApplicationInsights service using ApplicationInsightsInit with @rndermode. -->
-        <!-- Use `IsWasmStandalone` to prevent reloading scripts. -->
+        <!-- Use `IsWasmStandalone` to prevent re-donwloading scripts. -->
         <BlazorApplicationInsights.ApplicationInsightsInit IsWasmStandalone="true" @rendermode=renderMode />
     }
     @*#endif*@
@@ -83,19 +83,20 @@
         </StreamRenderingEnabledContainer>
     }
 
-    <Script src="_framework/blazor.web.js" autostart="false"></Script>
-    <!-- Ensure that the version of `blazor.web.js` matches the version specified in `service-worker.published.js`.
-            This alignment is necessary for the PWA functionality of the Blazor app to work correctly. -->
-    <Script src="_content/Bit.Bswup/bit-bswup.js"></Script>
-    <Script src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
-    <AppBswupProgressBar />
-    <Script src="_content/Bit.Butil/bit-butil.js"></Script>
-    @*#if (offlineDb == true)*@
-    <Script src="_content/Bit.Besql/bit-besql.js"></Script>
-    @*#endif*@
-    <Script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
-    <Script src="_content/Boilerplate.Client.Core/scripts/app.js"></Script>
-    <Script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></Script>
+    @if (HttpContext.Request.IsLightHouseRequest() is false)
+    {
+        <Script src="_framework/blazor.web.js" autostart="false"></Script>
+        <Script src="_content/Bit.Bswup/bit-bswup.js"></Script>
+        <Script src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
+        <AppBswupProgressBar />
+        <Script src="_content/Bit.Butil/bit-butil.js"></Script>
+        @*#if (offlineDb == true)*@
+        <Script src="_content/Bit.Besql/bit-besql.js"></Script>
+        @*#endif*@
+        <Script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
+        <Script src="_content/Boilerplate.Client.Core/scripts/app.js"></Script>
+        <Script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></Script>
+    }
 </body>
 
 </html>

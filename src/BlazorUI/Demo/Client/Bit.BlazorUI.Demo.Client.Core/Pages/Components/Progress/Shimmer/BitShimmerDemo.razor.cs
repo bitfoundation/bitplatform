@@ -307,7 +307,7 @@ private bool isDataLoaded;";
 <BitShimmer Loaded=""@isContentLoaded"" AriaLabel=""Loading content"" Width=""15rem"" Height=""unset"">
     <Content>
         <BitImage Height=""8rem"" Alt=""bit logo""
-                  Src=""_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png"" />
+                  Src=""/images/bit-logo-blue.png"" />
         <br />
         <BitPersona PrimaryText=""Annie Lindqvist""
                     SecondaryText=""Software Engineer""

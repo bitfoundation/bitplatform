@@ -1,5 +1,6 @@
 ﻿using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
+using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 namespace Boilerplate.Client.Core.Services;
 
@@ -20,7 +21,6 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private IIdentityController identityController = default!;
     [AutoInject] private IAuthorizationService authorizationService = default!;
-    [AutoInject] private IPrerenderStateService prerenderStateService = default!;
 
     public void OnInit()
     {
@@ -153,7 +153,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     /// - If no access / refresh token exists, an anonymous user object is returned to Blazor.
     /// - If an access token exists, a ClaimsPrincipal is created from it regardless of its expiration status. This ensures:
     ///   - Users can access anonymous-allowed pages without unnecessary delays caused by token refresh attempts **during app startup**.
-    ///   - For protected pages, it is typical for these pages to make HTTP requests to secured APIs. In such cases, the `AuthDelegatingHandler.cs`
+    ///   - For protected pages, it is typical for these pages to make HTTP requests to secured APIs. In such cases, the `<see cref="AuthDelegatingHandler"/>`
     ///     validates the access token and refreshes it if necessary, keeping Blazor updated with the latest authentication state.
     /// </summary>
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()

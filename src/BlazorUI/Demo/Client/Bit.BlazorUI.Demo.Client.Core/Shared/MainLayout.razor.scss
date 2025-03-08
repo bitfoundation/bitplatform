@@ -1,5 +1,4 @@
-﻿@import '../Styles/abstracts/_colors.scss';
-@import '../Styles/abstracts/_functions.scss';
+﻿@import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_bit-css-variables.scss';
 
@@ -108,7 +107,7 @@
 
         &::-webkit-scrollbar-thumb:hover {
             border-radius: rem2(8px);
-            border: rem2(4px) solid $B3Color;
+            border: rem2(4px) solid $bit-color-primary;
         }
 
         &::-webkit-scrollbar:horizontal {
