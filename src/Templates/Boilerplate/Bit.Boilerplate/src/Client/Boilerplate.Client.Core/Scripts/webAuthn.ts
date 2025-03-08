@@ -82,3 +82,5 @@ class WebAuthn {
         return base64String.replace(/\+/g, "-").replace(/\//g, "_").replace(/=*$/g, "");
     }
 }
+
+(window as any).WebAuthn = WebAuthn;

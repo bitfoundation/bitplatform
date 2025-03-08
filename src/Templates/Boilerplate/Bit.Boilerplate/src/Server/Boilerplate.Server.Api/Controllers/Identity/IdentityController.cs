@@ -95,6 +95,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var user = await userManager.FindUserAsync(request) ?? throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]).WithData("Identifier", request);
 
+        await SignIn(request, user, cancellationToken);
+    }
+
+    private async Task SignIn(SignInRequestDto request, User user, CancellationToken cancellationToken)
+    {
         var userSession = await CreateUserSession(user.Id, request.DeviceInfo, cancellationToken);
 
         if (user.TwoFactorEnabled)

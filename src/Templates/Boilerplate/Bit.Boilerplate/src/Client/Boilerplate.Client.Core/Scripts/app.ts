@@ -76,6 +76,8 @@ class App {
     //#endif
 }
 
+(window as any).App = App;
+
 window.addEventListener('message', handleMessage);
 window.addEventListener('load', handleLoad);
 window.addEventListener('resize', setCssWindowSizes);
