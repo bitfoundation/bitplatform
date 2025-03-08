@@ -139,7 +139,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     {
         ValueHasBeenSet = false;
 
-        var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;
+        var parametersDictionary = (ParametersCache ??= parameters.ToDictionary() as Dictionary<string, object?>);
 
         foreach (var parameter in parametersDictionary!)
         {
