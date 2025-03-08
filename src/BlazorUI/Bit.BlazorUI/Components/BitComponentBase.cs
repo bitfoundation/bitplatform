@@ -140,6 +140,9 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
                     break;
             }
         }
+
+        ParametersCache = null;
+
         return base.SetParametersAsync(ParameterView.Empty);
     }
 
