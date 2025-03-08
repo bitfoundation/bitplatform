@@ -21,9 +21,6 @@ public partial class MainLayout : IAsyncDisposable
     private AppThemeType? currentTheme;
     private RouteData? currentRouteData;
     private List<Action> unsubscribers = [];
-    private List<BitNavItem> navPanelAuthenticatedItems = [];
-    private List<BitNavItem> navPanelUnAuthenticatedItems = [];
-
 
     [AutoInject] private Keyboard keyboard = default!;
     [AutoInject] private AuthManager authManager = default!;

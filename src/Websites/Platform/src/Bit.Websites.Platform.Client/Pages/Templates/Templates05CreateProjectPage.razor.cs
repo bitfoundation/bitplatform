@@ -66,7 +66,7 @@ public partial class Templates05CreateProjectPage
         Default = "Sqlite",
         Items = 
         [
-            new() { Text = "Sqlite", Value = "Sqlite" },
+            new() { Text = "SQLite", Value = "Sqlite" },
             new() { Text = "SqlServer", Value = "SqlServer" },
             new() { Text = "PostgreSQL", Value = "PostgreSQL" },
             new() { Text = "MySQL", Value = "MySQL" },
