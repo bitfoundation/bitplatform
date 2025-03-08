@@ -49,6 +49,7 @@ public static class Urls
     public const string SalesWindows = "https://windows-sales.bitplatform.dev/SalesModule.Client.Windows-win-Setup.exe";
 
     public const string TodoTemplatePwa = "https://todo.bitplatform.dev/todo";
+    public const string TodoOfflineWebApp = "https://todo-offline.bitplatform.cc/offline-edit-profile";
     public const string TodoTemplateGooglePlay = "https://play.google.com/store/apps/details?id=com.bitplatform.Todo.Template";
     public const string TodoTemplateAppleStore = "https://apps.apple.com/app/bit-todotemplate/id6450611072";
     public const string TodoTemplateWindows = "https://windows-todo.bitplatform.dev/TodoSample.Client.Windows-win-Setup.exe";

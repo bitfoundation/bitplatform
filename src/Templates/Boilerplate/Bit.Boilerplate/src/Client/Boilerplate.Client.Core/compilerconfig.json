@@ -198,8 +198,8 @@
     },
     //#if (offlineDb == true)
     {
-        "outputFile": "Components/Pages/Authorized/Offline/OfflineEditProfilePage.razor.css",
-        "inputFile": "Components/Pages/Authorized/Offline/OfflineEditProfilePage.razor.scss",
+        "outputFile": "Components/Pages/OfflineEditProfilePage.razor.css",
+        "inputFile": "Components/Pages/OfflineEditProfilePage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
