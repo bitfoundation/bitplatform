@@ -74,11 +74,11 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     [Parameter] public BitVisibility Visibility { get; set; }
 
 
-
+    internal protected Dictionary<string, object?>? ParametersCache { get; set; }
     public override Task SetParametersAsync(ParameterView parameters)
     {
         HtmlAttributes.Clear();
-        var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;
+        var parametersDictionary = ParametersCache ?? throw new InvalidOperationException();
         foreach (var parameter in parametersDictionary!)
         {
             switch (parameter.Key)
@@ -140,6 +140,9 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
                     break;
             }
         }
+
+        ParametersCache = null;
+
         return base.SetParametersAsync(ParameterView.Empty);
     }
 

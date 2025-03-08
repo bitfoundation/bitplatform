@@ -56,7 +56,7 @@ public abstract class BitLoadingBase : BitComponentBase
 
     public override Task SetParametersAsync(ParameterView parameters)
     {
-        var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;
+        var parametersDictionary = (ParametersCache ??= parameters.ToDictionary() as Dictionary<string, object?>);
 
         foreach (var parameter in parametersDictionary!)
         {
