@@ -9,10 +9,6 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitMarkdownViewer : BitComponentBase
 {
-    private static string _ScriptPath = "_content/Bit.BlazorUI.Extras/marked/marked-15.0.7.js";
-
-
-
     private string? _html;
     private CancellationTokenSource _cts = new();
 
@@ -42,7 +38,7 @@ public partial class BitMarkdownViewer : BitComponentBase
             }
             catch (FileNotFoundException ex) when (ex.FileName?.StartsWith("Jint") is true)
             {
-                Console.Error.WriteLine("Please install `Jint` nuget package into your SERVER project.");
+                Console.Error.WriteLine("Please install `Jint` nuget package on your SERVER project.");
             }
             catch (Exception ex)
             {
@@ -51,9 +47,10 @@ public partial class BitMarkdownViewer : BitComponentBase
         }
         else
         {
-            if (await _js.BitMarkdownViewerCheckScript(_ScriptPath) is false)
+            var scriptPath = "_content/Bit.BlazorUI.Extras/marked/marked-15.0.7.js";
+            if (await _js.BitMarkdownViewerCheckScript(scriptPath) is false)
             {
-                await _js.BitExtrasInitScripts([_ScriptPath]);
+                await _js.BitExtrasInitScripts([scriptPath]);
             }
 
             if (_html.HasNoValue())
