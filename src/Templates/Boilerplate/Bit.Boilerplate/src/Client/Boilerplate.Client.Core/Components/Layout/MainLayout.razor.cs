@@ -23,6 +23,7 @@ public partial class MainLayout : IAsyncDisposable
     private List<Action> unsubscribers = [];
 
     [AutoInject] private Keyboard keyboard = default!;
+    [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private AuthManager authManager = default!;
     [AutoInject] private ThemeService themeService = default!;
     [AutoInject] private PubSubService pubSubService = default!;
@@ -40,6 +41,15 @@ public partial class MainLayout : IAsyncDisposable
     {
         try
         {
+            var inPrerenderSession = jsRuntime.IsInitialized() is false;
+            isOnline = await prerenderStateService.GetValue<bool?>(nameof(isOnline), async () => isOnline ?? inPrerenderSession is true ? true : null);
+            // During pre-rendering, if any API calls are made, the `isOnline` value will be set 
+            // using PubSub's `ClientPubSubMessages.IS_ONLINE_CHANGED`, depending on the success 
+            // or failure of the API call. However, if a pre-rendered page has no HTTP API call 
+            // dependencies, its value remains null. 
+            // Even though Server.Web and Server.Api may be deployed on different servers, 
+            // we can still assume that if the client is displaying a pre-rendered result, it is online.
+
             InitializeNavPanelItems();
 
             navigationManager.LocationChanged += NavigationManager_LocationChanged;
