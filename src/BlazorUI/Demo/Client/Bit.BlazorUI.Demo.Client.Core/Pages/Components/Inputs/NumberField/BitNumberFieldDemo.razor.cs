@@ -86,8 +86,8 @@ public partial class BitNumberFieldDemo
         new()
         {
             Name = "IconAriaLabel",
-            Type = "string",
-            DefaultValue = "string.Empty",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The aria label of the icon for the benefit of screen readers.",
         },
         new()
