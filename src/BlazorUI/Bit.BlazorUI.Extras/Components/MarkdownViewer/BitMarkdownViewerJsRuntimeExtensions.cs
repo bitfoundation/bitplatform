@@ -8,8 +8,9 @@ internal static class BitMarkdownViewerJsRuntimeExtensions
         return jsRuntime.FastInvoke<bool>("BitBlazorUI.MarkdownViewer.checkScript", script);
     }
 
-    public static ValueTask<string> BitMarkdownViewerParse(this IJSRuntime jsRuntime, string markdown)
+    public static async ValueTask<string> BitMarkdownViewerParse(this IJSRuntime jsRuntime, string markdown)
     {
-        return jsRuntime.FastInvoke<string>("BitBlazorUI.MarkdownViewer.parse", markdown);
+        return OperatingSystem.IsBrowser() ? await jsRuntime.FastInvoke<string>("BitBlazorUI.MarkdownViewer.parse", markdown)
+            : await jsRuntime.InvokeAsync<string>("BitBlazorUI.MarkdownViewer.parseAsync", markdown);
     }
 }

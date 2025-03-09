@@ -1,4 +1,5 @@
 ﻿using Jint;
+using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -39,27 +40,16 @@ public partial class BitMarkdownViewer : BitComponentBase
             {
                 await RunJint();
             }
+            catch (FileNotFoundException ex) when (ex.FileName?.StartsWith("Jint") is true)
+            {
+                Console.Error.WriteLine("Please install `Jint` nuget package into your SERVER project.");
+            }
             catch (Exception ex)
             {
-                System.Console.Error.WriteLine(ex.ToString());
+                Console.Error.WriteLine(ex.Message);
             }
         }
-        else if (OperatingSystem.IsBrowser())
-        {
-            if (await _js.BitMarkdownViewerCheckScript(_ScriptPath))
-            {
-                await ParseAndRender();
-            }
-        }
-
-        await base.OnInitializedAsync();
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await base.OnAfterRenderAsync(firstRender);
-
-        if (firstRender)
+        else
         {
             if (await _js.BitMarkdownViewerCheckScript(_ScriptPath) is false)
             {
@@ -71,8 +61,9 @@ public partial class BitMarkdownViewer : BitComponentBase
                 await ParseAndRender();
             }
         }
-    }
 
+        await base.OnInitializedAsync();
+    }
 
     private async Task RunJint()
     {
@@ -83,9 +74,11 @@ public partial class BitMarkdownViewer : BitComponentBase
             var scriptPath = Path.Combine(Environment.CurrentDirectory, "..", "..", "Bit.BlazorUI.Extras", "wwwroot", "marked", "marked-15.0.7.js");
             var script = await File.ReadAllTextAsync(scriptPath);
 
-            var engine = new Engine(options =>
+            using var engine = new Engine(options =>
             {
+                options.Strict();
                 options.CancellationToken(_cts.Token);
+                options.Culture(CultureInfo.CurrentUICulture);
             }).Execute(script);
 
             var fn = engine.Evaluate("marked.parse").AsFunctionInstance();
@@ -93,6 +86,7 @@ public partial class BitMarkdownViewer : BitComponentBase
             _html = fn.Call(Markdown).AsString();
 
             await InvokeAsync(StateHasChanged);
+
         }, _cts.Token);
     }
 

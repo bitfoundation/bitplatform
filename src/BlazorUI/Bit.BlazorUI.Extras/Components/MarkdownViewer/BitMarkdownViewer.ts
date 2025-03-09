@@ -11,5 +11,10 @@ namespace BitBlazorUI {
             const html = marked.parse(md, { async: false });
             return html;
         }
+
+        public static async parseAsync(md: string) {
+            const html = await marked.parse(md);
+            return html;
+        }
     }
 }
