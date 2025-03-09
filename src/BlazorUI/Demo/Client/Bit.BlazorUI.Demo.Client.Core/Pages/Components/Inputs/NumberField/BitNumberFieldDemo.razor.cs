@@ -120,6 +120,13 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "IsInputReadOnly",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, the input is readonly.",
+        },
+        new()
+        {
             Name = "LabelPosition",
             Type = "BitLabelPosition",
             DefaultValue = "BitLabelPosition.Top",
@@ -158,8 +165,8 @@ public partial class BitNumberFieldDemo
         new()
         {
             Name = "Mode",
-            Type = "BitSpinButtonMode",
-            DefaultValue = "BitSpinButtonMode.Compact",
+            Type = "BitSpinButtonMode?",
+            DefaultValue = "null",
             Description = "Determines how the spinning buttons should be rendered.",
             LinkType = LinkType.Link,
             Href = "#spinMode-enum",
