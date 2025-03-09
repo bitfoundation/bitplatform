@@ -22,45 +22,12 @@ namespace BitBlazorUI {
     }
 
     export class BitChart {
-        private static _initPromise?: Promise<unknown>;
         private static _bitCharts = new Map<string, Chart>();
 
         public static getChartJs(canvasId: string) {
             if (!BitChart._bitCharts.has(canvasId)) return null;
 
             return BitChart._bitCharts.get(canvasId)!;
-        }
-
-        public static async initChartJs(scripts: string[]) {
-            if (BitChart._initPromise) {
-                await BitChart._initPromise;
-            }
-
-            const allScripts = Array.from(document.scripts).map(s => s.src);
-            const notAppenedScripts = scripts.filter(s => !allScripts.find(as => as.endsWith(s)));
-
-            if (notAppenedScripts.length == 0) return Promise.resolve();
-
-            const promise = new Promise(async (resolve: any, reject: any) => {
-                try {
-                    for (let url of notAppenedScripts) await addScript(url);
-                    resolve();
-                } catch (e: any) {
-                    reject(e);
-                }
-            });
-            BitChart._initPromise = promise;
-            return promise;
-
-            async function addScript(url: string) {
-                return new Promise((res, rej) => {
-                    const script = document.createElement('script');
-                    script.src = url;
-                    script.onload = res;
-                    script.onerror = rej;
-                    document.body.appendChild(script);
-                })
-            }
         }
 
         public static removeChart(canvasId: string) {

@@ -142,7 +142,7 @@ public partial class BitChart : IAsyncDisposable
                 scripts.AddRange(DateAdapterScripts);
             }
 
-            await _js.BitChartJsInitChartJs(scripts);
+            await _js.BitExtrasInitScripts(scripts);
 
             if (Config is not null)
             {
