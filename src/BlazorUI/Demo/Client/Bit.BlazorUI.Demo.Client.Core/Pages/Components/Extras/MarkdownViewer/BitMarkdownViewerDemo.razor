@@ -6,17 +6,23 @@
 
 <DemoPage Name="MarkdownViewer"
           Description="BitMarkdownViewer is a SEO friendly Blazor wrapper around the famous markedjs library."
-          Notes="To use this component, you need to install the `Bit.BlazorUI.Extras` nuget package, as described in the Optional steps of the Getting started page."
-          SecondaryNames="@(["MD viewer"])"
+          SecondaryNames="@(["MdViewer", "MD"])"
           Parameters="componentParameters">
 
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <BitMarkdownViewer Markdown="@("# Marked in the browser\n\nRendered by **marked**.")" />
-    </DemoSection>
+    <NotesTemplate>
+        <BitMarkdownViewer Markdown="@("To use this component, you need to install the **`Bit.BlazorUI.Extras`** nuget package, as described in the Optional steps of the Getting started page.")" />
+        <BitMarkdownViewer Markdown="@("To utilize the **prerender** mode you need to install the [**`Jint`**](https://www.nuget.org/packages/Jint) nuget package on the Server project that is responsible for the prerendering.")" />
+    </NotesTemplate>
 
-    <DemoSection Title="Advanced" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-        <div>
-            <BitMarkdownViewer Markdown="@advancedMarkdown" Class="advanced" />
-        </div>
-    </DemoSection>
+    <Examples>
+        <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <BitMarkdownViewer Markdown="@("# Marked in the browser\n\nRendered by **marked**.")" />
+        </DemoSection>
+
+        <DemoSection Title="Advanced" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                <BitMarkdownViewer Markdown="@advancedMarkdown" Class="advanced" />
+            </div>
+        </DemoSection>
+    </Examples>
 </DemoPage>

@@ -4,7 +4,7 @@ using Microsoft.JSInterop.Infrastructure;
 
 namespace Bit.BlazorUI;
 
-internal static class IJSRuntimeFastExtensions
+public static class IJSRuntimeFastExtensions
 {
     public const DynamicallyAccessedMemberTypes JsonSerialized = DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties;
 
@@ -16,7 +16,7 @@ internal static class IJSRuntimeFastExtensions
     /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
     /// <param name="args">JSON-serializable arguments.</param>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-    internal static ValueTask FastInvokeVoid(this IJSRuntime jsRuntime, string identifier, params object?[]? args)
+    public static ValueTask FastInvokeVoid(this IJSRuntime jsRuntime, string identifier, params object?[]? args)
     {
         return FastInvokeVoid(jsRuntime, identifier, CancellationToken.None, args);
     }
@@ -28,7 +28,7 @@ internal static class IJSRuntimeFastExtensions
     /// <param name="timeout">The duration after which to cancel the async operation. Overrides default timeouts (<see cref="JSRuntime.DefaultAsyncTimeout"/>).</param>
     /// <param name="args">JSON-serializable arguments.</param>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-    internal static ValueTask FastInvokeVoid(this IJSRuntime jsRuntime, string identifier, TimeSpan timeout, params object?[]? args)
+    public static ValueTask FastInvokeVoid(this IJSRuntime jsRuntime, string identifier, TimeSpan timeout, params object?[]? args)
     {
         using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
         var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
@@ -46,7 +46,7 @@ internal static class IJSRuntimeFastExtensions
     /// </param>
     /// <param name="args">JSON-serializable arguments.</param>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-    internal static ValueTask FastInvokeVoid(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object?[]? args)
+    public static ValueTask FastInvokeVoid(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object?[]? args)
     {
         if (jsRuntime is IJSInProcessRuntime jsInProcessRuntime)
         {
@@ -78,7 +78,7 @@ internal static class IJSRuntimeFastExtensions
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-    internal static ValueTask<TValue> FastInvoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, params object?[]? args)
+    public static ValueTask<TValue> FastInvoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, params object?[]? args)
     {
         return FastInvoke<TValue>(jsRuntime, identifier, CancellationToken.None, args);
     }
@@ -93,7 +93,7 @@ internal static class IJSRuntimeFastExtensions
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-    internal static ValueTask<TValue> FastInvoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, TimeSpan timeout, params object?[]? args)
+    public static ValueTask<TValue> FastInvoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, TimeSpan timeout, params object?[]? args)
     {
         using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
         var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
@@ -114,7 +114,7 @@ internal static class IJSRuntimeFastExtensions
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-    internal static ValueTask<TValue> FastInvoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object?[]? args)
+    public static ValueTask<TValue> FastInvoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object?[]? args)
     {
         if (jsRuntime is IJSInProcessRuntime jsInProcessRuntime)
         {

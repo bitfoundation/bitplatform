@@ -4,7 +4,7 @@ using System.Globalization;
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// BitMarkdownViewer is a Blazor wrapper around the famous markedjs library.
+/// BitMarkdownViewer is a SEO friendly Blazor wrapper around the famous markedjs library.
 /// <see href="https://github.com/markedjs/marked"/>
 /// </summary>
 public partial class BitMarkdownViewer : BitComponentBase
