@@ -73,18 +73,13 @@ public partial class BitMarkdownViewer : BitComponentBase
             return _script;
         try
         {
-            await _semaphore.WaitAsync();
+            await _semaphore.WaitAsync(_cts.Token);
             if (_script is not null)
                 return _script;
-            var scriptPath = Path.Combine(AppContext.BaseDirectory, "wwwroot", "marked", "marked-15.0.7.js");
+            var scriptPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "_content", "Bit.BlazorUI.Extras", "marked", "marked-15.0.7.js");
             if (File.Exists(scriptPath) is false)
             {
-                var envType = Type.GetType("Microsoft.AspNetCore.Hosting.IWebHostEnvironment, Microsoft.AspNetCore.Hosting.Abstractions, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60")!;
-                var fileProviderProp = envType.GetProperty("ContentRootFileProvider", BindingFlags.Instance | BindingFlags.Public)!;
-                var webRootPathProp = envType.GetProperty("WebRootPath")!;
-                var env = _serviceProvider.GetRequiredService(envType);
-                var webRootPath = (string)webRootPathProp.GetValue(env)!;
-                scriptPath = Path.Combine(webRootPath, "marked", "marked-15.0.7.js");
+                scriptPath = Path.Combine(AppContext.BaseDirectory, "wwwroot", "marked", "marked-15.0.7.js");
             }
             return _script = await File.ReadAllTextAsync(scriptPath);
         }
