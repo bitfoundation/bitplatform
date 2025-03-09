@@ -142,7 +142,10 @@ public partial class ClientAppCoordinator : AppComponentBase
             //#endif
 
             //#if (notification == true)
-            await Task.Delay(10_000, CurrentCancellationToken); // No rush to subscribe to push notifications.
+            if (firstRun)
+            {
+                await Task.Delay(10_000, CurrentCancellationToken); // No rush to subscribe to push notifications.
+            }
             await pushNotificationService.Subscribe(CurrentCancellationToken);
             //#endif
         }
