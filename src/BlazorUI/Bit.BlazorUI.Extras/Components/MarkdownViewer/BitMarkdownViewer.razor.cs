@@ -56,10 +56,7 @@ public partial class BitMarkdownViewer : BitComponentBase
                 await _js.BitExtrasInitScripts([scriptPath]);
             }
 
-            if (_html.HasNoValue())
-            {
-                await ParseAndRender();
-            }
+            await ParseAndRender();
         }
 
         await base.OnInitializedAsync();
