@@ -50,4 +50,10 @@
         </EmbeddedResource>
     </ItemGroup>
 
+    <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+        <None Include="..\..\Bit.BlazorUI.Extras\wwwroot\marked\marked-15.0.7.js" Link="wwwroot\marked\marked-15.0.7.js">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
 </Project>

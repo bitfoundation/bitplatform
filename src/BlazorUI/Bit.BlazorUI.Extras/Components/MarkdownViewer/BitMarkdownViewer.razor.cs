@@ -1,5 +1,7 @@
 ﻿using Jint;
+using System.Reflection;
 using System.Globalization;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.BlazorUI;
 
@@ -15,6 +17,7 @@ public partial class BitMarkdownViewer : BitComponentBase
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+    [Inject] private IServiceProvider _serviceProvider { get; set; } = default!;
 
 
 
@@ -62,21 +65,47 @@ public partial class BitMarkdownViewer : BitComponentBase
         await base.OnInitializedAsync();
     }
 
+    private static string? _script;
+    private static SemaphoreSlim _semaphore = new(1, 1);
+    private async Task<string> GetMarkedJSScript()
+    {
+        if (_script is not null)
+            return _script;
+        try
+        {
+            await _semaphore.WaitAsync();
+            if (_script is not null)
+                return _script;
+            var scriptPath = Path.Combine(AppContext.BaseDirectory, "wwwroot", "marked", "marked-15.0.7.js");
+            if (File.Exists(scriptPath) is false)
+            {
+                var envType = Type.GetType("Microsoft.AspNetCore.Hosting.IWebHostEnvironment, Microsoft.AspNetCore.Hosting.Abstractions, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60")!;
+                var fileProviderProp = envType.GetProperty("ContentRootFileProvider", BindingFlags.Instance | BindingFlags.Public)!;
+                var webRootPathProp = envType.GetProperty("WebRootPath")!;
+                var env = _serviceProvider.GetRequiredService(envType);
+                var webRootPath = (string)webRootPathProp.GetValue(env)!;
+                scriptPath = Path.Combine(webRootPath, "marked", "marked-15.0.7.js");
+            }
+            return _script = await File.ReadAllTextAsync(scriptPath);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
     private async Task RunJint()
     {
         if (Markdown.HasNoValue()) return;
 
         await Task.Run(async () =>
         {
-            var scriptPath = Path.Combine(Environment.CurrentDirectory, "..", "..", "Bit.BlazorUI.Extras", "wwwroot", "marked", "marked-15.0.7.js");
-            var script = await File.ReadAllTextAsync(scriptPath);
-
             using var engine = new Engine(options =>
             {
                 options.Strict();
                 options.CancellationToken(_cts.Token);
                 options.Culture(CultureInfo.CurrentUICulture);
-            }).Execute(script);
+            }).Execute(await GetMarkedJSScript());
 
             var fn = engine.Evaluate("marked.parse").AsFunctionInstance();
 
