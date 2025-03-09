@@ -38,8 +38,8 @@
     }
 
     <div title="@Title"
-         style="@Styles?.InputWrapper"
-         class="bit-nfl-wrp @Classes?.InputWrapper"
+         style="@Styles?.InputContainer"
+         class="bit-nfl-cnt@(HideInput ? " bit-spb-hdi" : "") @Classes?.InputContainer"
          aria-label="@AriaLabel"
          aria-setsize="@AriaSetSize"
          aria-posinset="@AriaPositionInSet">
@@ -56,39 +56,89 @@
             </div>
         }
 
-        <input @ref="InputElement" @attributes="@InputHtmlAttributes"
-               @onblur="HandleOnBlur"
-               @onfocus="HandleOnFocus"
-               @onkeydown="HandleOnKeyDown"
-               @onfocusin="HandleOnFocusIn"
-               @onfocusout="HandleOnFocusOut"
-               @onchange="HandleOnStringValueChangeAsync"
-               @oninput="HandleOnStringValueInputAsync"
-               form=""
-               min="@_min"
-               max="@_max"
-               name="@Name"
-               step="@_step"
-               id="@_inputId"
-               readonly="@ReadOnly"
-               required="@Required"
-               style="@Styles?.Input"
-               autofocus="@AutoFocus"
-               inputmode="@GetInputMode()"
-               placeholder="@Placeholder"
-               aria-labelledby="@_labelId"
-               value="@CurrentValueAsString"
-               disabled="@(IsEnabled is false)"
-               class="bit-nfl-inp @Classes?.Input"
-               autocomplete="@(AutoComplete ?? "off")"
-               type="@(NumberFormat.HasValue() ? "text" : "number")"
-               aria-valuemin="@_min"
-               aria-valuemax="@_max"
-               aria-describedby="@AriaDescription"
-               aria-valuenow="@(AriaValueNow ?? CurrentValue)"
-               aria-valuetext="@(AriaValueText ?? CurrentValueAsString)"
-               aria-disabled="@(IsEnabled is false)" />
-        @if (ShowButtons)
+        @if (Mode == BitSpinButtonMode.Spread)
+        {
+            <button @ref="_buttonDecrement"
+                    @onpointerup="HandleOnPointerUpOrOut"
+                    @onpointerout="HandleOnPointerUpOrOut"
+                    @onpointerdown="() => HandleOnPointerDown(false)"
+                    type="button"
+                    tabindex="-1"
+                    style="@Styles?.DecrementButton"
+                    class="bit-nfl-sbn @Classes?.DecrementButton"
+                    disabled="@(IsEnabled is false)"
+                    title="@DecrementTitle"
+                    aria-disabled="@(IsEnabled is false)"
+                    aria-label="@DecrementAriaLabel">
+                <span style="@Styles?.DecrementIconContainer" class="bit-nfl-aic @Classes?.DecrementIconContainer">
+                    <i style="@Styles?.DecrementIcon"
+                       class="bit-nfl-bic bit-nfl-sbi bit-icon bit-icon--@(DecrementIconName ?? "ChevronDownSmall") @Classes?.DecrementIcon" />
+                </span>
+            </button>
+        }
+
+        @if (HideInput)
+        {
+            <input @ref="InputElement" @attributes="@InputHtmlAttributes"
+                   form=""
+                   min="@_min"
+                   max="@_max"
+                   name="@Name"
+                   step="@_step"
+                   id="@_inputId"
+                   readonly="@(ReadOnly || IsInputReadOnly)"
+                   required="@Required"
+                   autofocus="@AutoFocus"
+                   inputmode="@_inputMode"
+                   placeholder="@Placeholder"
+                   aria-labelledby="@_labelId"
+                   value="@CurrentValueAsString"
+                   disabled="@(IsEnabled is false)"
+                   type="hidden"
+                   aria-valuemin="@_min"
+                   aria-valuemax="@_max"
+                   aria-describedby="@AriaDescription"
+                   aria-valuenow="@(AriaValueNow ?? CurrentValue)"
+                   aria-valuetext="@(AriaValueText ?? CurrentValueAsString)"
+                   aria-disabled="@(IsEnabled is false)" />
+        }
+        else
+        {
+            <input @ref="InputElement" @attributes="@InputHtmlAttributes"
+                   @onblur="HandleOnBlur"
+                   @onfocus="HandleOnFocus"
+                   @onkeydown="HandleOnKeyDown"
+                   @onfocusin="HandleOnFocusIn"
+                   @onfocusout="HandleOnFocusOut"
+                   @onchange="HandleOnStringValueChangeAsync"
+                   @oninput="HandleOnStringValueInputAsync"
+                   form=""
+                   min="@_min"
+                   max="@_max"
+                   name="@Name"
+                   step="@_step"
+                   id="@_inputId"
+                   readonly="@(ReadOnly || IsInputReadOnly)"
+                   required="@Required"
+                   style="@Styles?.Input"
+                   autofocus="@AutoFocus"
+                   inputmode="@_inputMode"
+                   placeholder="@Placeholder"
+                   aria-labelledby="@_labelId"
+                   value="@CurrentValueAsString"
+                   disabled="@(IsEnabled is false)"
+                   class="bit-nfl-inp@(Mode == BitSpinButtonMode.Spread ? " bit-nfl-cin" : "") @Classes?.Input"
+                   autocomplete="@(AutoComplete ?? "off")"
+                   type="@(NumberFormat.HasValue() ? "text" : "number")"
+                   aria-valuemin="@_min"
+                   aria-valuemax="@_max"
+                   aria-describedby="@AriaDescription"
+                   aria-valuenow="@(AriaValueNow ?? CurrentValue)"
+                   aria-valuetext="@(AriaValueText ?? CurrentValueAsString)"
+                   aria-disabled="@(IsEnabled is false)" />
+        }
+
+        @if (Mode == BitSpinButtonMode.Compact)
         {
             <span style="@Styles?.ButtonsContainer" class="bit-nfl-act @Classes?.ButtonsContainer">
                 <button @ref="_buttonIncrement"
@@ -100,8 +150,9 @@
                         date-is-focusable="false"
                         style="@Styles?.IncrementButton"
                         class="bit-nfl-aup @Classes?.IncrementButton"
-                        aria-label="@IncrementAriaLabel"
                         disabled="@(IsEnabled is false)"
+                        title="@IncrementTitle"
+                        aria-label="@IncrementAriaLabel"
                         aria-disabled="@(IsEnabled is false)">
                     <span style="@Styles?.IncrementIconContainer" class="bit-nfl-aic @Classes?.IncrementIconContainer">
                         <i style="@Styles?.IncrementIcon"
@@ -119,6 +170,7 @@
                         style="@Styles?.DecrementButton"
                         class="bit-nfl-adn @Classes?.DecrementButton"
                         disabled="@(IsEnabled is false)"
+                        title="@DecrementTitle"
                         aria-label="@DecrementAriaLabel"
                         aria-disabled="@(IsEnabled is false)">
                     <span style="@Styles?.DecrementIconContainer" class="bit-nfl-aic @Classes?.DecrementIconContainer">
@@ -127,6 +179,64 @@
                     </span>
                 </button>
             </span>
+        }
+        else if (Mode == BitSpinButtonMode.Inline)
+        {
+            <button @ref="_buttonDecrement"
+                    @onpointerup="HandleOnPointerUpOrOut"
+                    @onpointerout="HandleOnPointerUpOrOut"
+                    @onpointerdown="() => HandleOnPointerDown(false)"
+                    type="button"
+                    tabindex="-1"
+                    style="@Styles?.DecrementButton"
+                    class="bit-nfl-sbn @Classes?.DecrementButton"
+                    disabled="@(IsEnabled is false)"
+                    title="@DecrementTitle"
+                    aria-disabled="@(IsEnabled is false)"
+                    aria-label="@DecrementAriaLabel">
+                <span style="@Styles?.DecrementIconContainer" class="bit-nfl-aic @Classes?.DecrementIconContainer">
+                    <i style="@Styles?.DecrementIcon"
+                       class="bit-nfl-bic bit-nfl-sbi bit-icon bit-icon--@(DecrementIconName ?? "ChevronDownSmall") @Classes?.DecrementIcon" />
+                </span>
+            </button>
+
+            <button @ref="_buttonIncrement"
+                    @onpointerup="HandleOnPointerUpOrOut"
+                    @onpointerout="HandleOnPointerUpOrOut"
+                    @onpointerdown="() => HandleOnPointerDown(true)"
+                    type="button"
+                    tabindex="-1"
+                    style="@Styles?.IncrementButton"
+                    class="bit-nfl-sbn @Classes?.IncrementButton"
+                    disabled="@(IsEnabled is false)"
+                    title="@IncrementTitle"
+                    aria-disabled="@(IsEnabled is false)"
+                    aria-label="@IncrementAriaLabel">
+                <span style="@Styles?.IncrementIconContainer" class="bit-nfl-aic @Classes?.IncrementIconContainer">
+                    <i style="@Styles?.IncrementIcon"
+                       class="bit-nfl-bic bit-nfl-sbi bit-icon bit-icon--@(IncrementIconName ?? "ChevronDownSmall bit-ico-r180") @Classes?.IncrementIcon" />
+                </span>
+            </button>
+        }
+        else if (Mode == BitSpinButtonMode.Spread)
+        {
+            <button @ref="_buttonIncrement"
+                    @onpointerup="HandleOnPointerUpOrOut"
+                    @onpointerout="HandleOnPointerUpOrOut"
+                    @onpointerdown="() => HandleOnPointerDown(true)"
+                    type="button"
+                    tabindex="-1"
+                    style="@Styles?.IncrementButton"
+                    class="bit-nfl-sbn @Classes?.IncrementButton"
+                    disabled="@(IsEnabled is false)"
+                    title="@IncrementTitle"
+                    aria-disabled="@(IsEnabled is false)"
+                    aria-label="@IncrementAriaLabel">
+                <span style="@Styles?.IncrementIconContainer" class="bit-nfl-aic @Classes?.IncrementIconContainer">
+                    <i style="@Styles?.IncrementIcon"
+                       class="bit-nfl-bic bit-nfl-sbi bit-icon bit-icon--@(IncrementIconName ?? "ChevronDownSmall bit-ico-r180") @Classes?.IncrementIcon" />
+                </span>
+            </button>
         }
 
         @if (SuffixTemplate is not null)
