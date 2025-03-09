@@ -367,10 +367,10 @@ public partial class BitNumberFieldDemo
                 },
                 new()
                 {
-                    Name = "InputWrapper",
+                    Name = "InputContainer",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the wrapper of label and input in the number field."
+                    Description = "Custom CSS classes/styles for the container of label and input in the number field."
                 },
                 new()
                 {
