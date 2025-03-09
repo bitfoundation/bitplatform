@@ -2,6 +2,7 @@
     "compileOnSave": true,
     "compilerOptions": {
         "allowJs": true,
+        "target": "ES2019",
         "lib": [ "DOM", "ESNext" ],
         "outDir": "wwwroot"
     },
