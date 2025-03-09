@@ -46,7 +46,10 @@
 
     @if (HttpContext.Request.IsLightHouseRequest() is false)
     {
-        <Script Src="_content/Bit.BlazorUI.Extras/marked/marked-15.0.7.js" AppendVersion=false></Script>
+        if (AppRenderMode.PrerenderEnabled)
+        {
+            <Script Src="_content/Bit.BlazorUI.Extras/marked/marked-15.0.7.js" AppendVersion=false></Script>
+        }
         <Script Src="_framework/blazor.web.js" autostart="false"></Script>
         <Script Src="_content/Bit.Bswup/bit-bswup.js"></Script>
         <Script Src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
