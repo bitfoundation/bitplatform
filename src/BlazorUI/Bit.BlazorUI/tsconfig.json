@@ -2,6 +2,7 @@
     "compileOnSave": true,
     "compilerOptions": {
         "strict": true,
+        "target": "ES2019",
         "noImplicitAny": true,
         "lib": [ "DOM", "ESNext" ],
         "outFile": "wwwroot/scripts/bit.blazorui.js"
