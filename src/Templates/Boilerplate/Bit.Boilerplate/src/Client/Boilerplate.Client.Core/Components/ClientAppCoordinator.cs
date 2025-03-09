@@ -79,7 +79,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             //#if (signalR == true)
             SubscribeToSignalREventsMessages();
             //#endif
-            await PropagateUserId(firstRun: true, AuthenticationStateTask);
+            await PropagateAuthState(firstRun: true, AuthenticationStateTask);
         }
 
         await base.OnInitAsync();
@@ -96,7 +96,7 @@ public partial class ClientAppCoordinator : AppComponentBase
     /// This code manages the association of a user with sensitive services, such as SignalR, push notifications, App Insights, and others, 
     /// ensuring the user is correctly set or cleared as needed.
     /// </summary>
-    public async Task PropagateUserId(bool firstRun, Task<AuthenticationState> task)
+    public async Task PropagateAuthState(bool firstRun, Task<AuthenticationState> task)
     {
         try
         {
@@ -142,6 +142,10 @@ public partial class ClientAppCoordinator : AppComponentBase
             //#endif
 
             //#if (notification == true)
+            if (firstRun)
+            {
+                await Task.Delay(10_000, CurrentCancellationToken); // No rush to subscribe to push notifications.
+            }
             await pushNotificationService.Subscribe(CurrentCancellationToken);
             //#endif
         }
@@ -153,7 +157,7 @@ public partial class ClientAppCoordinator : AppComponentBase
 
     private void AuthenticationStateChanged(Task<AuthenticationState> task)
     {
-        _ = PropagateUserId(firstRun: false, task);
+        _ = PropagateAuthState(firstRun: false, task);
     }
 
     //#if (signalR == true)
