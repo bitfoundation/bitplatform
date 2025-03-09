@@ -19,33 +19,28 @@ namespace BitBlazorUI {
             element.scrollBy(x, y);
         }
 
-        private static _initScriptPromises: { [key: string]: Promise<unknown> } = {};
-        public static async initScript(scripts: string[], isModule: boolean) {
+        private static _initScriptsPromises: { [key: string]: Promise<unknown> } = {};
+        public static async initScripts(scripts: string[], isModule: boolean) {
             const key = scripts.join('|');
-            if (Extras._initScriptPromises[key] !== undefined) {
-                return await Extras._initScriptPromises[key];
+            if (Extras._initScriptsPromises[key] !== undefined) {
+                return Extras._initScriptsPromises[key];
             }
 
             const allScripts = Array.from(document.scripts).map(s => s.src);
-            const notAddedScripts = scripts.filter(s => !allScripts.find(as => as.endsWith(s)));
+            const notAddedScripts = scripts.filter(s => !allScripts.find(as => as.includes(s)));
 
             if (notAddedScripts.length == 0) return Promise.resolve();
 
-            const promise = new Promise((resolve: any, reject: any) => {
+            const promise = new Promise(async (res: any, rej: any) => {
                 try {
-                    (async function loadScripts() {
-                        try {
-                            await Promise.all(notAddedScripts.map(addScript));
-                            resolve();
-                        } catch (e: any) {
-                            reject(e);
-                        }
-                    }());
+                    await Promise.all(notAddedScripts.map(addScript));
+                    res();
                 } catch (e: any) {
-                    reject(e);
+                    rej(e);
                 }
             });
-            Extras._initScriptPromises[key] = promise;
+
+            Extras._initScriptsPromises[key] = promise;
             return promise;
 
             async function addScript(url: string) {

@@ -12,31 +12,31 @@ public static class IJSRuntimeExtensions
     /// <summary>
     /// Only tries to Invoke the js call when the runtime is valid.
     /// </summary>
-    public static async ValueTask InvokeVoid(this IJSRuntime jsRuntime, string identifier, params object?[]? args)
+    public static ValueTask InvokeVoid(this IJSRuntime jsRuntime, string identifier, params object?[]? args)
     {
-        if (jsRuntime.IsRuntimeInvalid()) return;
+        if (jsRuntime.IsRuntimeInvalid()) return ValueTask.CompletedTask;
 
-        await jsRuntime.InvokeVoidAsync(identifier, args);
+        return jsRuntime.InvokeVoidAsync(identifier, args);
     }
 
     /// <summary>
     /// Only tries to Invoke the js call when the runtime is valid.
     /// </summary>
-    public static async ValueTask InvokeVoid(this IJSRuntime jsRuntime, string identifier, TimeSpan timeout, params object?[]? args)
+    public static ValueTask InvokeVoid(this IJSRuntime jsRuntime, string identifier, TimeSpan timeout, params object?[]? args)
     {
-        if (jsRuntime.IsRuntimeInvalid()) return;
+        if (jsRuntime.IsRuntimeInvalid()) return ValueTask.CompletedTask;
 
-        await jsRuntime.InvokeVoidAsync(identifier, timeout, args);
+        return jsRuntime.InvokeVoidAsync(identifier, timeout, args);
     }
 
     /// <summary>
     /// Only tries to Invoke the js call when the runtime is valid.
     /// </summary>
-    public static async ValueTask InvokeVoid(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object?[]? args)
+    public static ValueTask InvokeVoid(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object?[]? args)
     {
-        if (jsRuntime.IsRuntimeInvalid()) return;
+        if (jsRuntime.IsRuntimeInvalid()) return ValueTask.CompletedTask;
 
-        await jsRuntime.InvokeVoidAsync(identifier, cancellationToken, args);
+        return jsRuntime.InvokeVoidAsync(identifier, cancellationToken, args);
     }
 
 

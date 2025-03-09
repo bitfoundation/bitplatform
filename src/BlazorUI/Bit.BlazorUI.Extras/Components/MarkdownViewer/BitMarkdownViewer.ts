@@ -1,10 +1,7 @@
 namespace BitBlazorUI {
     export class MarkdownViewer {
-        private static _initPromise?: Promise<unknown>;
-
-        public static checkScript(script: string) {
-            const allScripts = Array.from(document.scripts).map(s => s.src);
-            return !!allScripts.find(as => as.includes(script));
+        public static checkScriptLoaded(script: string) {
+            return window.marked !== undefined;
         }
 
         public static parse(md: string) {

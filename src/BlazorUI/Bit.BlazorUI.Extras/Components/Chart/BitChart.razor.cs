@@ -1,6 +1,7 @@
 ﻿// a fork from https://github.com/mariusmuntean/ChartJs.Blazor
 
 using System.Diagnostics.CodeAnalysis;
+using Acornima.Ast;
 
 namespace Bit.BlazorUI;
 
@@ -130,19 +131,17 @@ public partial class BitChart : IAsyncDisposable
     {
         if (firstRender)
         {
-            var scripts = new List<string> { "_content/Bit.BlazorUI.Extras/chart.js/chartjs-2.9.4.js" };
+            await _js.BitExtrasInitScripts(["_content/Bit.BlazorUI.Extras/chart.js/chartjs-2.9.4.js"]);
 
             if (IsDateAdapterRequired && DateAdapterScripts is null)
             {
-                scripts.Add("_content/Bit.BlazorUI.Extras/chart.js/chartjs-2.9.4-adapter.js");
+                await _js.BitExtrasInitScripts(["_content/Bit.BlazorUI.Extras/chart.js/chartjs-2.9.4-adapter.js"]);
             }
 
             if (DateAdapterScripts is not null)
             {
-                scripts.AddRange(DateAdapterScripts);
+                await _js.BitExtrasInitScripts(DateAdapterScripts);
             }
-
-            await _js.BitExtrasInitScripts(scripts);
 
             if (Config is not null)
             {

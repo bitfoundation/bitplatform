@@ -19,6 +19,6 @@ internal static class ExtrasJsRuntimeExtensions
 
     public static ValueTask BitExtrasInitScripts(this IJSRuntime jsRuntime, IEnumerable<string> scripts, bool isModule = false)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Extras.initScript", scripts, isModule);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Extras.initScripts", scripts, isModule);
     }
 }
