@@ -1,7 +1,6 @@
 ﻿// a fork from https://github.com/mariusmuntean/ChartJs.Blazor
 
 using System.Diagnostics.CodeAnalysis;
-using Acornima.Ast;
 
 namespace Bit.BlazorUI;
 
