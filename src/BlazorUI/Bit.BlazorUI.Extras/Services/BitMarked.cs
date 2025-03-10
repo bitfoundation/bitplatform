@@ -5,6 +5,10 @@ namespace Bit.BlazorUI;
 
 public class BitMarked
 {
+    private const string MARKED_FILE = "marked/marked-15.0.7.js";
+
+
+
     private static string? _markedScriptText;
     private static readonly SemaphoreSlim _markedScriptReadTextSemaphore = new(1, 1);
 
@@ -41,11 +45,11 @@ public class BitMarked
             if (_markedScriptText is not null) return _markedScriptText;
 
             //TODO: this script path discovery needs improvement!
-            var scriptPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "_content", "Bit.BlazorUI.Extras", "marked", "marked-15.0.7.js");
+            var scriptPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "_content", "Bit.BlazorUI.Extras", MARKED_FILE);
 
             if (File.Exists(scriptPath) is false)
             {
-                scriptPath = Path.Combine(AppContext.BaseDirectory, "wwwroot", "marked", "marked-15.0.7.js");
+                scriptPath = Path.Combine(AppContext.BaseDirectory, "wwwroot", MARKED_FILE);
             }
 
             if (File.Exists(scriptPath) is false)
