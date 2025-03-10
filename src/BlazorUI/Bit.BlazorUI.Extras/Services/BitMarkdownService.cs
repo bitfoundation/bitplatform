@@ -27,10 +27,7 @@ public class BitMarkdownService(IJSRuntime js)
         {
             try
             {
-                html = await Task.Run(async () =>
-                {
-                    return await RuntJint(markdown, cancellationToken);
-                }, cancellationToken);
+                html = await Task.Run(async () => await RuntJint(markdown, cancellationToken), cancellationToken);
             }
             catch (FileNotFoundException ex) when (ex.FileName?.StartsWith("Jint") is true)
             {
