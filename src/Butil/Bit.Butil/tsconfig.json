@@ -1,9 +1,10 @@
 {
     "compileOnSave": true,
     "compilerOptions": {
-        "outFile": "wwwroot/bit-butil.js",
         "allowJs": true,
-        "lib": [ "DOM", "ESNext" ]
+        "target": "ES2019",
+        "lib": [ "DOM", "ESNext" ],
+        "outFile": "wwwroot/bit-butil.js"
     },
     "include": [ "./Scripts/*.ts" ]
 }

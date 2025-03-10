@@ -89,3 +89,5 @@ class BitTheme {
 
     BitTheme.init(options);
 }());
+
+(window as any).BitTheme = BitTheme;

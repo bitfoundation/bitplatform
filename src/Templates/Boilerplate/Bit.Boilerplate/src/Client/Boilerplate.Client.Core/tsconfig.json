@@ -2,9 +2,9 @@
     "compileOnSave": true,
     "compilerOptions": {
         "strict": true,
+        "target": "ES2019",
         "noImplicitAny": true,
         "lib": [ "DOM", "ESNext" ],
-        "outFile": "wwwroot/scripts/app.js",
-        "target": "ES2022" // same as the ASP.NET config here: https://github.com/dotnet/aspnetcore/blob/main/src/Components/Shared.JS/tsconfig.json
+        "outFile": "wwwroot/scripts/app.js"
     }
 }
