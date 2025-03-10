@@ -286,8 +286,8 @@ public partial class BitNumberFieldDemo
         {
             Id = "class-styles",
             Title = "BitNumberFieldClassStyles",
-            Parameters = new()
-            {
+            Parameters =
+            [
                 new()
                 {
                     Name = "ButtonsContainer",
@@ -386,7 +386,7 @@ public partial class BitNumberFieldDemo
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the number field's root element."
                 }
-            }
+            ]
         }
     ];
     private readonly List<ComponentSubEnum> componentSubEnums =
@@ -396,8 +396,8 @@ public partial class BitNumberFieldDemo
             Id = "labelPosition-enum",
             Name = "BitLabelPosition",
             Description = "",
-            Items = new()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Top",
@@ -422,15 +422,15 @@ public partial class BitNumberFieldDemo
                     Description="The label shows on the bottom of the spin button.",
                     Value="3",
                 }
-            }
+            ]
         },
         new()
         {
             Id = "spinMode-enum",
             Name = "BitSpinButtonMode",
             Description = "",
-            Items = new()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Compact",
@@ -441,15 +441,15 @@ public partial class BitNumberFieldDemo
                 {
                     Name= "Inline",
                     Description="Spinning buttons render inlined at the end of the input.",
-                    Value="0",
+                    Value="1",
                 },
                 new()
                 {
                     Name= "Spread",
                     Description="Spinning buttons render at the start and end of the input.",
-                    Value="1",
+                    Value="2",
                 }
-            }
+            ]
         },
     ];
     private readonly List<ComponentParameter> componentPublicMembers =
