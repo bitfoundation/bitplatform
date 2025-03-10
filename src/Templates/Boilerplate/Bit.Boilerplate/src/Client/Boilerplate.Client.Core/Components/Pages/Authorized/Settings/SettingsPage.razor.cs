@@ -10,6 +10,9 @@ public partial class SettingsPage
     protected override string? Subtitle => string.Empty;
 
 
+    private bool showPasswordless;
+
+
     [Parameter] public string? Section { get; set; }
 
 
@@ -20,6 +23,7 @@ public partial class SettingsPage
     private UserDto? user;
     private bool isLoading;
     private string? openedAccordion;
+    private string? accountSelectedPivot;
 
 
     protected override async Task OnInitAsync()
@@ -31,6 +35,7 @@ public partial class SettingsPage
         try
         {
             user = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/User/GetCurrentUser", JsonSerializerOptions.GetTypeInfo<UserDto>(), CurrentCancellationToken)))!;
+            await CheckShowPasswordless();
         }
         finally
         {
@@ -38,5 +43,27 @@ public partial class SettingsPage
         }
 
         await base.OnInitAsync();
+    }
+
+
+    private async Task HandleOnCredentialCreated()
+    {
+        await CheckShowPasswordless();
+
+        if(showPasswordless is false)
+        {
+            accountSelectedPivot = nameof(AppStrings.Email);
+            StateHasChanged();
+        }
+    }
+
+    private async Task CheckShowPasswordless()
+    {
+        if (user?.UserName is null) return;
+
+        var isAvailable = await JSRuntime.IsWebAuthnAvailable();
+        var isConfigured = await JSRuntime.IsWebAuthnConfigured(user.UserName);
+
+        showPasswordless = isAvailable && isConfigured is false;
     }
 }

@@ -1,7 +1,26 @@
 class WebAuthn {
+    private static STORE_KEY = 'configured-webauthn';
+
     public static isAvailable() {
         return !!window.PublicKeyCredential;
     }
+
+    public static storeConfigured(username: string) {
+        const storedCredentials = JSON.parse(localStorage.getItem(WebAuthn.STORE_KEY) || '[]') as string[];
+        storedCredentials.push(username);
+        localStorage.setItem(WebAuthn.STORE_KEY, JSON.stringify(storedCredentials));
+    }
+
+    public static isConfigured(username: string) {
+        const storedCredentials = JSON.parse(localStorage.getItem(WebAuthn.STORE_KEY) || '[]') as string[];
+        return storedCredentials.includes(username);
+    }
+
+    public static removeConfigured(username: string) {
+        const storedCredentials = JSON.parse(localStorage.getItem(WebAuthn.STORE_KEY) || '[]') as string[];
+        localStorage.setItem(WebAuthn.STORE_KEY, JSON.stringify(storedCredentials.filter(c => c !== username)));
+    }
+
 
     public static async createCredential(options: PublicKeyCredentialCreationOptions) {
         if (typeof options.challenge === 'string') {
@@ -22,7 +41,7 @@ class WebAuthn {
             cred.id = WebAuthn.fromBase64Url(cred.id);
         }
 
-        var credential = await navigator.credentials.create({ publicKey: options }) as PublicKeyCredential;
+        const credential = await navigator.credentials.create({ publicKey: options }) as PublicKeyCredential;
         const response = credential.response as AuthenticatorAttestationResponse;
 
         return {
@@ -44,14 +63,14 @@ class WebAuthn {
         }
 
         if (options.allowCredentials) {
-            for (var i = 0; i < options.allowCredentials.length; i++) {
+            for (let i = 0; i < options.allowCredentials.length; i++) {
                 const id = options.allowCredentials[i].id;
                 if (typeof id === 'string') {
                     options.allowCredentials[i].id = WebAuthn.fromBase64Url(id);
                 }
             }
         }
-        var credential = await navigator.credentials.get({ publicKey: options }) as PublicKeyCredential;
+        const credential = await navigator.credentials.get({ publicKey: options }) as PublicKeyCredential;
         const response = credential.response as AuthenticatorAssertionResponse;
 
         return {

@@ -11,6 +11,16 @@ public static partial class IJSRuntimeWebAuthnExtensions
         return jsRuntime.InvokeAsync<bool>("WebAuthn.isAvailable");
     }
 
+    public static ValueTask StoreWebAuthnConfigured(this IJSRuntime jsRuntime, string username)
+    {
+        return jsRuntime.InvokeVoidAsync("WebAuthn.storeConfigured", username);
+    }
+
+    public static ValueTask<bool> IsWebAuthnConfigured(this IJSRuntime jsRuntime, string username)
+    {
+        return jsRuntime.InvokeAsync<bool>("WebAuthn.isConfigured", username);
+    }
+
     public static ValueTask<AuthenticatorAttestationRawResponse> CreateWebAuthnCredential(this IJSRuntime jsRuntime, CredentialCreateOptions options)
     {
         return jsRuntime.InvokeAsync<AuthenticatorAttestationRawResponse>("WebAuthn.createCredential", options);

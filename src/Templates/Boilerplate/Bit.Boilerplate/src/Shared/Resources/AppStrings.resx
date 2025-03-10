@@ -1210,4 +1210,10 @@
     <value>Products in the same category</value>
   </data>
     <!--#endif -->
+    <data name="Passwordless" xml:space="preserve">
+    <value>Passwordless</value>
+  </data>
+    <data name="EnablePasswordless" xml:space="preserve">
+    <value>Enable passwordless login</value>
+  </data>
 </root>

@@ -301,10 +301,10 @@ public static partial class Program
 
         services.AddFido2(options =>
         {
-            //options.ServerDomain = origin.Host;
-            //options.ServerName = "FIDO2 Server";
-            //options.Origins = new HashSet<string> { origin.AbsoluteUri };
-            //options.TimestampDriftTolerance = 1000;
+            options.ServerDomain = "localhost";
+            options.ServerName = "Boilerplate fido2 server";
+            options.Origins = new HashSet<string> { "http://localhost:5030" };
+            options.TimestampDriftTolerance = 1000;
         });
     }
 

@@ -1,18 +1,19 @@
 ﻿//+:cnd:noEmit
 //#if (sample == true)
-using Boilerplate.Shared.Dtos.Todo;
+using Boilerplate.Shared.Dtos.Categories;
 //#endif
 //#if (module == "Admin")
 using Boilerplate.Shared.Dtos.Dashboard;
 //#endif
 //#if (module == "Admin" || module == "Sales")
 using Boilerplate.Shared.Dtos.Products;
-using Boilerplate.Shared.Dtos.Categories;
 //#endif
 //#if (notification == true)
 using Boilerplate.Shared.Dtos.PushNotification;
 //#endif
 using Boilerplate.Shared.Dtos.Statistics;
+using Boilerplate.Shared.Dtos.Todo;
+using Fido2NetLib;
 
 namespace Boilerplate.Shared.Dtos;
 
@@ -48,6 +49,10 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(OverallAnalyticsStatsDataResponseDto))]
 [JsonSerializable(typeof(List<ProductPercentagePerCategoryResponseDto>))]
 //#endif
+[JsonSerializable(typeof(AssertionOptions))]
+[JsonSerializable(typeof(AuthenticatorAssertionRawResponse))]
+[JsonSerializable(typeof(AuthenticatorAttestationRawResponse))]
+[JsonSerializable(typeof(CredentialCreateOptions))]
 public partial class AppJsonContext : JsonSerializerContext
 {
 }

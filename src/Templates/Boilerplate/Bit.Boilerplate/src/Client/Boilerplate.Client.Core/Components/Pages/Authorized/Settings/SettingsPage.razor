@@ -19,14 +19,20 @@
                    Name="@Urls.SettingsSections.Account"
                    Title="@Localizer[nameof(AppStrings.AccountTitle)]"
                    Subtitle="@Localizer[nameof(AppStrings.AccountSubtitle)]">
-            <BitPivot Alignment="BitAlignment.Center">
-                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Email)]">
+            <BitPivot Alignment="BitAlignment.Center" @bind-SelectedKey="@accountSelectedPivot">
+                <BitPivotItem Key="@nameof(AppStrings.Email)" HeaderText="@Localizer[nameof(AppStrings.Email)]">
                     <ChangeEmailSection Email="@user?.Email" />
                 </BitPivotItem>
-                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Phone)]">
+                <BitPivotItem Key="@nameof(AppStrings.Phone)" HeaderText="@Localizer[nameof(AppStrings.Phone)]">
                     <ChangePhoneNumberSection PhoneNumber="@user?.PhoneNumber" />
                 </BitPivotItem>
-                <BitPivotItem>
+                @if (showPasswordless)
+                {
+                    <BitPivotItem Key="@nameof(AppStrings.Passwordless)" HeaderText="@Localizer[nameof(AppStrings.Passwordless)]">
+                        <PasswordlessSection OnCredentialCreated="HandleOnCredentialCreated" />
+                    </BitPivotItem>
+                }
+                <BitPivotItem Key="@nameof(AppStrings.Delete)">
                     <Header>
                         <BitText Color="BitColor.Error">@Localizer[nameof(AppStrings.Delete)]</BitText>
                     </Header>
