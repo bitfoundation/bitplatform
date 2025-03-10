@@ -16,6 +16,7 @@ public class BitMarkdownService(IJSRuntime js)
     private static readonly SemaphoreSlim _markedScriptReadTextSemaphore = new(1, 1);
 
 
+
     public async Task<string> Parse(string? markdown, CancellationToken cancellationToken)
     {
         if (markdown.HasNoValue()) return string.Empty;
@@ -55,7 +56,8 @@ public class BitMarkdownService(IJSRuntime js)
     }
 
 
-    private async Task<string> RuntJint(string? markdown, CancellationToken cancellationToken)
+
+    private static async Task<string> RuntJint(string? markdown, CancellationToken cancellationToken)
     {
         if (markdown.HasNoValue()) return string.Empty;
 
