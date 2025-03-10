@@ -4,10 +4,10 @@ namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings;
 
 public partial class PasswordlessSection
 {
+    private bool isConfigured;
+
+
     [AutoInject] IUserController userController = default!;
-
-
-    [Parameter] public EventCallback OnCredentialCreated { get; set; }
 
 
     private async Task EnablePasswordless()
@@ -20,6 +20,15 @@ public partial class PasswordlessSection
 
         await JSRuntime.StoreWebAuthnConfigured(options.User.Name);
 
-        await OnCredentialCreated.InvokeAsync();
+        isConfigured = true;
+    }
+
+    private async Task DisablePasswordless()
+    {
+        var options = await userController.GetWebAuthnCredentialOptions(CurrentCancellationToken);
+
+        await JSRuntime.RemoveWebAuthnConfigured(options.User.Name);
+
+        isConfigured = false;
     }
 }

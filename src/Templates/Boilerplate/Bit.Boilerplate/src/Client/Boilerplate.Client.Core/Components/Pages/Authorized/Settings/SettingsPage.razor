@@ -19,7 +19,7 @@
                    Name="@Urls.SettingsSections.Account"
                    Title="@Localizer[nameof(AppStrings.AccountTitle)]"
                    Subtitle="@Localizer[nameof(AppStrings.AccountSubtitle)]">
-            <BitPivot Alignment="BitAlignment.Center" @bind-SelectedKey="@accountSelectedPivot">
+            <BitPivot Alignment="BitAlignment.Center">
                 <BitPivotItem Key="@nameof(AppStrings.Email)" HeaderText="@Localizer[nameof(AppStrings.Email)]">
                     <ChangeEmailSection Email="@user?.Email" />
                 </BitPivotItem>
@@ -29,7 +29,7 @@
                 @if (showPasswordless)
                 {
                     <BitPivotItem Key="@nameof(AppStrings.Passwordless)" HeaderText="@Localizer[nameof(AppStrings.Passwordless)]">
-                        <PasswordlessSection OnCredentialCreated="HandleOnCredentialCreated" />
+                        <PasswordlessSection />
                     </BitPivotItem>
                 }
                 <BitPivotItem Key="@nameof(AppStrings.Delete)">
