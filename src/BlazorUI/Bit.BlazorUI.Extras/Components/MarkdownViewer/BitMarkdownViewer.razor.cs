@@ -12,6 +12,7 @@ public partial class BitMarkdownViewer : BitComponentBase
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+    [Inject] private BitMarkdownService _markdownService { get; set; } = default!;
 
 
 
@@ -27,35 +28,9 @@ public partial class BitMarkdownViewer : BitComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        if (_js.IsRuntimeInvalid()) // prerendering
-        {
-            try
-            {
-                await Task.Run(async () =>
-                {
-                    _html = await BitMarked.Parse(Markdown, _cts.Token);
-                    await InvokeAsync(StateHasChanged);
-                }, _cts.Token);
-            }
-            catch (FileNotFoundException ex) when (ex.FileName?.StartsWith("Jint") is true)
-            {
-                Console.Error.WriteLine("Please install `Jint` nuget package on the server project.");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine(ex.Message);
-            }
-        }
-        else
-        {
-            var scriptPath = "_content/Bit.BlazorUI.Extras/marked/marked-15.0.7.js";
-            if ((await _js.BitMarkdownViewerCheckScriptLoaded(scriptPath)) is false)
-            {
-                await _js.BitExtrasInitScripts([scriptPath]);
-            }
+        _html = await _markdownService.Parse(Markdown, _cts.Token);
 
-            await ParseAndRender();
-        }
+        StateHasChanged();
 
         await base.OnInitializedAsync();
     }

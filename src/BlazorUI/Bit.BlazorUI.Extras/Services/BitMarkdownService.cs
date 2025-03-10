@@ -3,7 +3,10 @@ using Jint;
 
 namespace Bit.BlazorUI;
 
-public class BitMarked
+/// <summary>
+/// A utility service to parse Markdown texts into html strings. Works smoothly in both server and client.
+/// </summary>
+public class BitMarkdownService(IJSRuntime js)
 {
     private const string MARKED_FILE = "marked/marked-15.0.7.js";
 
@@ -13,8 +16,46 @@ public class BitMarked
     private static readonly SemaphoreSlim _markedScriptReadTextSemaphore = new(1, 1);
 
 
+    public async Task<string> Parse(string? markdown, CancellationToken cancellationToken)
+    {
+        if (markdown.HasNoValue()) return string.Empty;
 
-    public static async Task<string> Parse(string? markdown, CancellationToken cancellationToken)
+        var html = string.Empty;
+
+        if (js.IsRuntimeInvalid()) // server (prerendering)
+        {
+            try
+            {
+                html = await Task.Run(async () =>
+                {
+                    return await RuntJint(markdown, cancellationToken);
+                }, cancellationToken);
+            }
+            catch (FileNotFoundException ex) when (ex.FileName?.StartsWith("Jint") is true)
+            {
+                Console.Error.WriteLine("Please install `Jint` nuget package on the server project.");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex.Message);
+            }
+        }
+        else // client
+        {
+            var scriptPath = "_content/Bit.BlazorUI.Extras/marked/marked-15.0.7.js";
+            if ((await js.BitMarkdownViewerCheckScriptLoaded(scriptPath)) is false)
+            {
+                await js.BitExtrasInitScripts([scriptPath]);
+            }
+
+            html = await js.BitMarkdownViewerParse(markdown!);
+        }
+
+        return html;
+    }
+
+
+    private async Task<string> RuntJint(string? markdown, CancellationToken cancellationToken)
     {
         if (markdown.HasNoValue()) return string.Empty;
 
@@ -32,8 +73,6 @@ public class BitMarked
 
         return fn.Call(markdown).AsString();
     }
-
-
 
     private static async Task<string> ReadMarkedScriptText(CancellationToken cancellationToken)
     {
