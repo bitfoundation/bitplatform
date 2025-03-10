@@ -271,6 +271,54 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.ToTable("UserSessions");
             });
 
+        modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.WebAuthnCredential", b =>
+            {
+                b.Property<byte[]>("Id")
+                    .HasColumnType("BLOB");
+
+                b.Property<Guid>("AaGuid")
+                    .HasColumnType("TEXT");
+
+                b.Property<byte[]>("AttestationClientDataJson")
+                    .HasColumnType("BLOB");
+
+                b.Property<string>("AttestationFormat")
+                    .HasColumnType("TEXT");
+
+                b.Property<byte[]>("AttestationObject")
+                    .HasColumnType("BLOB");
+
+                b.Property<bool>("IsBackedUp")
+                    .HasColumnType("INTEGER");
+
+                b.Property<bool>("IsBackupEligible")
+                    .HasColumnType("INTEGER");
+
+                b.Property<byte[]>("PublicKey")
+                    .HasColumnType("BLOB");
+
+                b.Property<long>("RegDate")
+                    .HasColumnType("INTEGER");
+
+                b.Property<uint>("SignCount")
+                    .HasColumnType("INTEGER");
+
+                b.PrimitiveCollection<string>("Transports")
+                    .HasColumnType("TEXT");
+
+                b.Property<byte[]>("UserHandle")
+                    .HasColumnType("BLOB");
+
+                b.Property<Guid>("UserId")
+                    .HasColumnType("TEXT");
+
+                b.HasKey("Id");
+
+                b.HasIndex("UserId");
+
+                b.ToTable("WebAuthnCredential");
+            });
+
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Products.Product", b =>
             {
                 b.Property<Guid>("Id")
@@ -2029,6 +2077,17 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
             {
                 b.HasOne("Boilerplate.Server.Api.Models.Identity.User", "User")
                     .WithMany("Sessions")
+                    .HasForeignKey("UserId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.Navigation("User");
+            });
+
+        modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.WebAuthnCredential", b =>
+            {
+                b.HasOne("Boilerplate.Server.Api.Models.Identity.User", "User")
+                    .WithMany()
                     .HasForeignKey("UserId")
                     .OnDelete(DeleteBehavior.Cascade)
                     .IsRequired();
