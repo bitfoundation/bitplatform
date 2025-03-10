@@ -12,6 +12,7 @@ class BitTheme {
     private static _onThemeChange: onThemeChangeType = () => { };
 
     public static init(options: any) {
+        console.log(options)
         if (options.onChange) {
             BitTheme._onThemeChange = options.onChange;
         }
@@ -89,3 +90,5 @@ class BitTheme {
 
     BitTheme.init(options);
 }());
+
+(window as any).BitTheme = BitTheme;
