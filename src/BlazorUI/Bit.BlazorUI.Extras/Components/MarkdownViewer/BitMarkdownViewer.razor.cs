@@ -1,7 +1,4 @@
-﻿using System.Globalization;
-using Jint;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitMarkdownViewer is a SEO friendly Blazor wrapper around the famous markedjs library.
@@ -10,9 +7,7 @@ namespace Bit.BlazorUI;
 public partial class BitMarkdownViewer : BitComponentBase
 {
     private string? _html;
-    private static string? _markedScriptText;
     private readonly CancellationTokenSource _cts = new();
-    private static readonly SemaphoreSlim _markedScriptReadTextSemaphore = new(1, 1);
 
 
 
@@ -36,7 +31,11 @@ public partial class BitMarkdownViewer : BitComponentBase
         {
             try
             {
-                await RunJint();
+                await Task.Run(async () =>
+                {
+                    _html = await BitMarked.Parse(Markdown, _cts.Token);
+                    await InvokeAsync(StateHasChanged);
+                }, _cts.Token);
             }
             catch (FileNotFoundException ex) when (ex.FileName?.StartsWith("Jint") is true)
             {
@@ -62,59 +61,6 @@ public partial class BitMarkdownViewer : BitComponentBase
     }
 
 
-
-    private async Task RunJint()
-    {
-        if (Markdown.HasNoValue()) return;
-
-        await Task.Run(async () =>
-        {
-            await ReadMarkedScriptText();
-            if (_markedScriptText.HasNoValue()) return;
-
-            using var engine = new Engine(options =>
-            {
-                options.Strict();
-                options.CancellationToken(_cts.Token);
-                options.Culture(CultureInfo.CurrentUICulture);
-            }).Execute(_markedScriptText!);
-
-            var fn = engine.Evaluate("marked.parse").AsFunctionInstance();
-
-            _html = fn.Call(Markdown).AsString();
-
-            await InvokeAsync(StateHasChanged);
-        }, _cts.Token);
-    }
-
-    private async Task<string> ReadMarkedScriptText()
-    {
-        if (_markedScriptText is not null) return _markedScriptText;
-
-        try
-        {
-            await _markedScriptReadTextSemaphore.WaitAsync(_cts.Token);
-            if (_markedScriptText is not null) return _markedScriptText;
-
-            var scriptPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "_content", "Bit.BlazorUI.Extras", "marked", "marked-15.0.7.js");
-
-            if (File.Exists(scriptPath) is false)
-            {
-                scriptPath = Path.Combine(AppContext.BaseDirectory, "wwwroot", "marked", "marked-15.0.7.js");
-            }
-
-            if (File.Exists(scriptPath) is false)
-            {
-                return _markedScriptText = string.Empty;
-            }
-
-            return _markedScriptText = await File.ReadAllTextAsync(scriptPath);
-        }
-        finally
-        {
-            _markedScriptReadTextSemaphore.Release();
-        }
-    }
 
     private async Task OnMarkdownSet()
     {
