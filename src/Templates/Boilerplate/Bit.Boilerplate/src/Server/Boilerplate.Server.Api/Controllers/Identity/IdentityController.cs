@@ -91,9 +91,16 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     public async Task SignIn(SignInRequestDto request, CancellationToken cancellationToken)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
-        signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 
-        var user = await userManager.FindUserAsync(request) ?? throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]).WithData("Identifier", request);
+        var user = await userManager.FindUserAsync(request) 
+                    ?? throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]).WithData("Identifier", request);
+
+        await SignIn(request, user, cancellationToken);
+    }
+
+    private async Task SignIn(SignInRequestDto request, User user, CancellationToken cancellationToken)
+    {
+        signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 
         var userSession = await CreateUserSession(user.Id, request.DeviceInfo, cancellationToken);
 

@@ -1,4 +1,5 @@
 ﻿//+:cnd:noEmit
+using Fido2NetLib;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 
@@ -93,22 +94,6 @@ public partial class SignInPage
     }
 
 
-    private async Task SocialSignIn(string provider)
-    {
-        try
-        {
-            var port = localHttpServer.ShouldUseForSocialSignIn() ? localHttpServer.Start(CurrentCancellationToken) : -1;
-
-            var redirectUrl = await identityController.GetSocialSignInUri(provider, ReturnUrlQueryString, port is -1 ? null : port, CurrentCancellationToken);
-
-            await externalNavigationService.NavigateToAsync(redirectUrl);
-        }
-        catch (KnownException e)
-        {
-            SnackBarService.Error(e.Message);
-        }
-    }
-
     private async Task DoSignIn()
     {
         if (isWaiting) return;
@@ -128,13 +113,13 @@ public partial class SignInPage
 
             requiresTwoFactor = await AuthManager.SignIn(model, CurrentCancellationToken);
 
-            if (requiresTwoFactor is false)
+            if (requiresTwoFactor)
             {
-                NavigationManager.NavigateTo(ReturnUrlQueryString ?? Urls.HomePage, replace: true);
+                PubSubService.Publish(ClientPubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, TfaPayload);
             }
             else
             {
-                PubSubService.Publish(ClientPubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, TfaPayload);
+                NavigationManager.NavigateTo(ReturnUrlQueryString ?? Urls.HomePage, replace: true);
             }
         }
         catch (KnownException e)
@@ -149,6 +134,73 @@ public partial class SignInPage
         }
     }
 
+    private async Task HandleOnSocialSignIn(string provider)
+    {
+        try
+        {
+            var port = localHttpServer.ShouldUseForSocialSignIn() ? localHttpServer.Start(CurrentCancellationToken) : -1;
+
+            var redirectUrl = await identityController.GetSocialSignInUri(provider, ReturnUrlQueryString, port is -1 ? null : port, CurrentCancellationToken);
+
+            await externalNavigationService.NavigateToAsync(redirectUrl);
+        }
+        catch (KnownException e)
+        {
+            SnackBarService.Error(e.Message);
+        }
+    }
+
+    private async Task HandleOnPasswordlessSignIn()
+    {
+        if (isWaiting) return;
+
+        isWaiting = true;
+
+        try
+        {
+            var options = await identityController.GetWebAuthnAssertionOptions(CurrentCancellationToken);
+
+            AuthenticatorAssertionRawResponse assertion;
+            try
+            {
+                assertion = await JSRuntime.VerifyWebAuthnCredential(options);
+            }
+            catch (Exception ex)
+            {
+                // we can safely handle the exception thrown here since it mostly because of a timeout or user cancelling the native ui.
+                ExceptionHandler.Handle(ex, ExceptionDisplayKind.None);
+                return;
+            }
+
+            var response = await identityController.VerifyWebAuthAndSignIn(assertion, CurrentCancellationToken);
+
+            if (response.RequiresTwoFactor)
+            {
+                PubSubService.Publish(ClientPubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, TfaPayload);
+            }
+            else
+            {
+                await AuthManager.StoreTokens(response!, model.RememberMe);
+                NavigationManager.NavigateTo(ReturnUrlQueryString ?? Urls.HomePage, replace: true);
+            }
+        }
+        catch (KnownException e)
+        {
+            SnackBarService.Error(e.Message);
+        }
+        finally
+        {
+            isWaiting = false;
+        }
+    }
+
+    private void HandleOnSignInPanelTabChange(SignInPanelTab tab)
+    {
+        currentSignInPanelTab = tab;
+    }
+
+    private Task HandleOnSendOtp() => SendOtp(false);
+    private Task HandleOnResendOtp() => SendOtp(true);
     private async Task SendOtp(bool resend)
     {
         try
@@ -185,10 +237,8 @@ public partial class SignInPage
             SnackBarService.Error(e.Message);
         }
     }
-    private Task ResendOtp() => SendOtp(true);
-    private Task SendOtp() => SendOtp(false);
 
-    private async Task SendTfaToken()
+    private async Task HandleOnSendTfaToken()
     {
         try
         {
@@ -202,11 +252,6 @@ public partial class SignInPage
         {
             SnackBarService.Error(e.Message);
         }
-    }
-
-    private void HandleOnSignInPanelTabChange(SignInPanelTab tab)
-    {
-        currentSignInPanelTab = tab;
     }
 
     private void CleanModel()

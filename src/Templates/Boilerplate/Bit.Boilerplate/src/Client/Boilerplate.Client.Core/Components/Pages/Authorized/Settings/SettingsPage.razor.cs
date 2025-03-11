@@ -10,6 +10,9 @@ public partial class SettingsPage
     protected override string? Subtitle => string.Empty;
 
 
+    private bool showPasswordless;
+
+
     [Parameter] public string? Section { get; set; }
 
 
@@ -31,6 +34,7 @@ public partial class SettingsPage
         try
         {
             user = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/User/GetCurrentUser", JsonSerializerOptions.GetTypeInfo<UserDto>(), CurrentCancellationToken)))!;
+            showPasswordless = await JSRuntime.IsWebAuthnAvailable() && AppPlatform.IsBlazorHybrid is false;
         }
         finally
         {

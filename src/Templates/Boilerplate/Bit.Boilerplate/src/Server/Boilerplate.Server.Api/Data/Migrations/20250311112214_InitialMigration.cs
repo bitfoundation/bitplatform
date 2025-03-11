@@ -265,6 +265,35 @@ public partial class InitialMigration : Migration
             });
 
         migrationBuilder.CreateTable(
+            name: "WebAuthnCredential",
+            columns: table => new
+            {
+                Id = table.Column<byte[]>(type: "BLOB", nullable: false),
+                UserId = table.Column<Guid>(type: "TEXT", nullable: false),
+                PublicKey = table.Column<byte[]>(type: "BLOB", nullable: true),
+                SignCount = table.Column<uint>(type: "INTEGER", nullable: false),
+                Transports = table.Column<string>(type: "TEXT", nullable: true),
+                IsBackupEligible = table.Column<bool>(type: "INTEGER", nullable: false),
+                IsBackedUp = table.Column<bool>(type: "INTEGER", nullable: false),
+                AttestationObject = table.Column<byte[]>(type: "BLOB", nullable: true),
+                AttestationClientDataJson = table.Column<byte[]>(type: "BLOB", nullable: true),
+                UserHandle = table.Column<byte[]>(type: "BLOB", nullable: true),
+                AttestationFormat = table.Column<string>(type: "TEXT", nullable: true),
+                RegDate = table.Column<long>(type: "INTEGER", nullable: false),
+                AaGuid = table.Column<Guid>(type: "TEXT", nullable: false)
+            },
+            constraints: table =>
+            {
+                table.PrimaryKey("PK_WebAuthnCredential", x => x.Id);
+                table.ForeignKey(
+                    name: "FK_WebAuthnCredential_Users_UserId",
+                    column: x => x.UserId,
+                    principalTable: "Users",
+                    principalColumn: "Id",
+                    onDelete: ReferentialAction.Cascade);
+            });
+
+        migrationBuilder.CreateTable(
             name: "PushNotificationSubscriptions",
             columns: table => new
             {
@@ -542,6 +571,11 @@ public partial class InitialMigration : Migration
             name: "IX_UserSessions_UserId",
             table: "UserSessions",
             column: "UserId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_WebAuthnCredential_UserId",
+            table: "WebAuthnCredential",
+            column: "UserId");
     }
 
     /// <inheritdoc />
@@ -573,6 +607,9 @@ public partial class InitialMigration : Migration
 
         migrationBuilder.DropTable(
             name: "UserTokens");
+
+        migrationBuilder.DropTable(
+            name: "WebAuthnCredential");
 
         migrationBuilder.DropTable(
             name: "Categories");

@@ -10,6 +10,11 @@ public partial class WebServerExceptionHandler : ClientExceptionHandlerBase
 
     protected override void Handle(Exception exception, ExceptionDisplayKind displayKind, Dictionary<string, object> parameters)
     {
+        exception = UnWrapException(exception);
+
+        if (IgnoreException(exception))
+            return;
+
         if (httpContextAccessor.HttpContext is not null && httpContextAccessor.HttpContext.Response.HasStarted is false)
         {
             // This method is invoked for exceptions occurring in Blazor Server and during pre-rendering.

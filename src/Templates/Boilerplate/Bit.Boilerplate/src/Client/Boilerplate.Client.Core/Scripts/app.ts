@@ -35,7 +35,7 @@ class App {
             return;
         }
 
-        var script = document.createElement('script');
+        const script = document.createElement('script');
         script.src = "https://cdn.jsdelivr.net/npm/eruda";
         document.body.append(script);
         script.onload = function () {
@@ -75,6 +75,8 @@ class App {
     };
     //#endif
 }
+
+(window as any).App = App;
 
 window.addEventListener('message', handleMessage);
 window.addEventListener('load', handleLoad);

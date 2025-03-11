@@ -4,11 +4,21 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
 
 public partial class SignInPanel
 {
+    private const string EmailKey = nameof(EmailKey);
+    private const string PhoneKey = nameof(PhoneKey);
+
+
+    private bool isWebAuthnAvailable;
+    private string? selectedKey = EmailKey;
+
+
     [Parameter] public bool IsWaiting { get; set; }
 
     [Parameter] public SignInRequestDto Model { get; set; } = default!;
 
     [Parameter] public EventCallback<string?> OnSocialSignIn { get; set; }
+
+    [Parameter] public EventCallback OnPasswordlessSignIn { get; set; }
 
     [Parameter] public EventCallback OnSendOtp { get; set; }
 
@@ -18,10 +28,19 @@ public partial class SignInPanel
     public string? ReturnUrlQueryString { get; set; }
 
 
-    private const string EmailKey = nameof(EmailKey);
-    private const string PhoneKey = nameof(PhoneKey);
+    protected override async Task OnAfterFirstRenderAsync()
+    {
+        isWebAuthnAvailable = await JSRuntime.IsWebAuthnAvailable() && AppPlatform.IsBlazorHybrid is false;
+        StateHasChanged();
 
-    private string? selectedKey = EmailKey;
+        if (await JSRuntime.IsWebAuthnConfigured())
+        {
+            await OnPasswordlessSignIn.InvokeAsync();
+        }
+
+        await base.OnAfterFirstRenderAsync();
+    }
+
 
     private async Task HandleOnPivotChange(BitPivotItem item)
     {
