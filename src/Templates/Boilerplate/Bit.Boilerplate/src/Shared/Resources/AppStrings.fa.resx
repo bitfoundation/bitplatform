@@ -526,7 +526,7 @@
     <value>حساب کاربری</value>
   </data>
     <data name="AccountSubtitle" xml:space="preserve">
-    <value>ایمیل یا شماره تلفن حساب کاربری خود را تغییر دهید</value>
+    <value>ایمیل، شماره تلفن یا تنظیمات بی رمز حساب کاربری خود را تغییر دهید</value>
   </data>
     <data name="DeleteAccount" xml:space="preserve">
     <value>حذف حساب</value>

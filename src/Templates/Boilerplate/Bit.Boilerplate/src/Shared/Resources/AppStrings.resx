@@ -526,7 +526,7 @@
     <value>Account</value>
   </data>
     <data name="AccountSubtitle" xml:space="preserve">
-    <value>Change your account email or phone number</value>
+    <value>Change your account email, phone number, or passwordless settings</value>
   </data>
     <data name="DeleteAccount" xml:space="preserve">
     <value>Delete Account</value>

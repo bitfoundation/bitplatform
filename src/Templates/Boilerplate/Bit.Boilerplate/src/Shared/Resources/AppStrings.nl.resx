@@ -526,7 +526,7 @@
     <value>Account</value>
   </data>
     <data name="AccountSubtitle" xml:space="preserve">
-    <value>Het e-mailadres of telefoonnummer van je account wijzigen</value>
+    <value>Wijzig uw account-e-mailadres, telefoonnummer of wachtwoordloze instellingen</value>
   </data>
     <data name="DeleteAccount" xml:space="preserve">
     <value>Account verwijderen</value>

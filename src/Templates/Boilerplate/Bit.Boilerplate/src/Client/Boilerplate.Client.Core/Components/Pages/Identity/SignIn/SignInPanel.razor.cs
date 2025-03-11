@@ -31,6 +31,7 @@ public partial class SignInPanel
     protected override async Task OnAfterFirstRenderAsync()
     {
         isWebAuthnAvailable = await JSRuntime.IsWebAuthnAvailable();
+
         StateHasChanged();
 
         if (await JSRuntime.IsWebAuthnConfigured())
