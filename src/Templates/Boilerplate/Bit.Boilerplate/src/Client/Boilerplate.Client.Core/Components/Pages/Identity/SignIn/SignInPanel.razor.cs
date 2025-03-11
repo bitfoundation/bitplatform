@@ -8,7 +8,7 @@ public partial class SignInPanel
     private const string PhoneKey = nameof(PhoneKey);
 
 
-    private bool isWebAuthnConfigured;
+    private bool isWebAuthnAvailable;
     private string? selectedKey = EmailKey;
 
 
@@ -30,9 +30,9 @@ public partial class SignInPanel
 
     protected override async Task OnAfterFirstRenderAsync()
     {
-        isWebAuthnConfigured = await JSRuntime.IsWebAuthnConfigured();
+        isWebAuthnAvailable = await JSRuntime.IsWebAuthnAvailable();
 
-        if (isWebAuthnConfigured)
+        if (await JSRuntime.IsWebAuthnConfigured())
         {
             await OnPasswordlessSignIn.InvokeAsync();
         }

@@ -38,6 +38,7 @@ public partial class PasswordlessSection
         }
         catch (Exception ex)
         {
+            //
             ExceptionHandler.Handle(ex, ExceptionDisplayKind.None);
             return;
         }
@@ -64,9 +65,9 @@ public partial class PasswordlessSection
         }
         catch (Exception ex)
         {
+            //
             ExceptionHandler.Handle(ex, ExceptionDisplayKind.None);
             return;
-
         }
 
         var verifyResult = await identityController.VerifyWebAuthAssertion(assertion, CurrentCancellationToken);

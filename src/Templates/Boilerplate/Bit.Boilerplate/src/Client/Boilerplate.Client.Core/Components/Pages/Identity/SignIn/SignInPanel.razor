@@ -65,7 +65,7 @@
             <BitStack Horizontal Alignment="BitAlignment.Center">
                 <BitCheckbox @bind-Value="Model.RememberMe" Label="@Localizer[nameof(AppStrings.RememberMe)]" />
                 <BitSpacer />
-                @if (isWebAuthnConfigured)
+                @if (isWebAuthnAvailable)
                 {
                     <BitButton IconOnly
                                Size="BitSize.Large"

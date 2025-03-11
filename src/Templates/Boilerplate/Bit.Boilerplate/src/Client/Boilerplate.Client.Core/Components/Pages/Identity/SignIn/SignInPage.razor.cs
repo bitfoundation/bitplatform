@@ -167,6 +167,7 @@ public partial class SignInPage
             }
             catch (Exception ex)
             {
+                //
                 ExceptionHandler.Handle(ex, ExceptionDisplayKind.None);
                 return;
             }
