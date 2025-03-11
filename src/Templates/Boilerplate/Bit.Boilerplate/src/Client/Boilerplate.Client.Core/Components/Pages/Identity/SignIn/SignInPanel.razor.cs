@@ -30,8 +30,7 @@ public partial class SignInPanel
 
     protected override async Task OnAfterFirstRenderAsync()
     {
-        isWebAuthnAvailable = await JSRuntime.IsWebAuthnAvailable();
-
+        isWebAuthnAvailable = await JSRuntime.IsWebAuthnAvailable() && AppPlatform.IsBlazorHybrid is false;
         StateHasChanged();
 
         if (await JSRuntime.IsWebAuthnConfigured())
