@@ -28,8 +28,8 @@ public partial class IdentityController
 
         var options = fido2.GetAssertionOptions(new GetAssertionOptionsParams
         {
-            Extensions = extensions,
-            AllowedCredentials = existingKeys,
+            //Extensions = extensions,
+            //AllowedCredentials = existingKeys,
             UserVerification = UserVerificationRequirement.Discouraged,
         });
 

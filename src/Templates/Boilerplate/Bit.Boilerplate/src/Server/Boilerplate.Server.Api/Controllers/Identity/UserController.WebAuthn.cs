@@ -34,9 +34,9 @@ public partial class UserController
         var options = fido2.RequestNewCredential(new RequestNewCredentialParams
         {
             User = fidoUser,
-            ExcludeCredentials = [.. existingKeys],
+            //ExcludeCredentials = [.. existingKeys],
             AuthenticatorSelection = new() { AuthenticatorAttachment = AuthenticatorAttachment.Platform },
-            AttestationPreference = AttestationConveyancePreference.None,
+            //AttestationPreference = AttestationConveyancePreference.None,
             //Extensions = new AuthenticationExtensionsClientInputs
             //{
             //    CredProps = true,
