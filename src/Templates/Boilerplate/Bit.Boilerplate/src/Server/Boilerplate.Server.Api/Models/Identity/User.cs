@@ -10,7 +10,8 @@ public partial class User : IdentityUser<Guid>
     [PersonalData]
     public string? FullName { get; set; }
 
-    public string? DisplayName => FullName ?? Email ?? PhoneNumber ?? UserName;
+    public string? DisplayName => FullName ?? DisplayUserName;
+    public string? DisplayUserName => FullName ?? Email ?? PhoneNumber ?? UserName;
 
     [PersonalData]
     public Gender? Gender { get; set; }

@@ -28,8 +28,8 @@ public partial class UserController
         var fidoUser = new Fido2User
         {
             Id = Encoding.UTF8.GetBytes(userId.ToString()),
-            Name = user.UserName,
-            DisplayName = user.DisplayName
+            Name = user.DisplayUserName,
+            DisplayName = user.DisplayName,
         };
 
         var options = fido2.RequestNewCredential(new RequestNewCredentialParams
