@@ -145,6 +145,12 @@
                            Variant="BitVariant.Text"
                            OnClick="() => isLogModalOpen = false"
                            IconName="@BitIconName.ChromeClose" />
+                <BitButton IconOnly
+                           AutoLoading
+                           Color="BitColor.Info"
+                           Variant="BitVariant.Text"
+                           IconName="@BitIconName.Delete"
+                           OnClick="DeleteAllWebAuthnCredentials" />
             </BitStack>
             <br />
             <BitText Class="log-modal" Color="GetColor(selectedLog?.Level)">

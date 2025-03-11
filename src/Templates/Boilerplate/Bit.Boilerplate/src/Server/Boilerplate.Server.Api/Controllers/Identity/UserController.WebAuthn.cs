@@ -3,7 +3,6 @@ using System.Text;
 using Microsoft.Extensions.Caching.Distributed;
 using Fido2NetLib;
 using Fido2NetLib.Objects;
-using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
@@ -36,14 +35,14 @@ public partial class UserController
         {
             User = fidoUser,
             ExcludeCredentials = [.. existingKeys],
-            AuthenticatorSelection = AuthenticatorSelection.Default,
+            AuthenticatorSelection = new() { AuthenticatorAttachment = AuthenticatorAttachment.Platform },
             AttestationPreference = AttestationConveyancePreference.None,
-            Extensions = new AuthenticationExtensionsClientInputs
-            {
-                CredProps = true,
-                Extensions = true,
-                UserVerificationMethod = true,
-            }
+            //Extensions = new AuthenticationExtensionsClientInputs
+            //{
+            //    CredProps = true,
+            //    Extensions = true,
+            //    UserVerificationMethod = true,
+            //}
         });
 
         var key = GetWebAuthnCacheKey(userId);
@@ -110,6 +109,22 @@ public partial class UserController
                                 ?? throw new ResourceNotFoundException();
 
         DbContext.WebAuthnCredential.Remove(entityToDelete);
+
+        await DbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    [HttpDelete]
+    public async Task DeleteAllWebAuthnCredentials(CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+        var user = await userManager.FindByIdAsync(userId.ToString())
+                    ?? throw new ResourceNotFoundException();
+
+        var entities = await DbContext.WebAuthnCredential.Where(c => c.UserId == userId).ToListAsync(cancellationToken);
+
+        if (entities is null || entities.Count == 0) return;
+
+        DbContext.WebAuthnCredential.RemoveRange(entities);
 
         await DbContext.SaveChangesAsync(cancellationToken);
     }

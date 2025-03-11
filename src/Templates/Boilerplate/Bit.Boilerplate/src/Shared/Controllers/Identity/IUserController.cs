@@ -57,4 +57,7 @@ public interface IUserController : IAppController
 
     [HttpDelete]
     Task DeleteWebAuthnCredential(byte[] credentialId, CancellationToken cancellationToken);
+
+    [HttpDelete]
+    Task DeleteAllWebAuthnCredentials(CancellationToken cancellationToken);
 }

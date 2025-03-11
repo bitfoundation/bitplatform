@@ -34,7 +34,10 @@ public partial class SettingsPage
         try
         {
             user = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/User/GetCurrentUser", JsonSerializerOptions.GetTypeInfo<UserDto>(), CurrentCancellationToken)))!;
-            showPasswordless = await JSRuntime.IsWebAuthnAvailable() && AppPlatform.IsBlazorHybrid is false;
+            if (InPrerenderSession is false)
+            {
+                showPasswordless = await JSRuntime.IsWebAuthnAvailable() && AppPlatform.IsBlazorHybrid is false;
+            }
         }
         finally
         {

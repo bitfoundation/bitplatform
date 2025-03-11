@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 //#endif
 using Boilerplate.Shared.Controllers.Diagnostics;
 using Boilerplate.Client.Core.Services.DiagnosticLog;
+using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -41,6 +42,7 @@ public partial class AppDiagnosticModal
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
     //#endif
+    [AutoInject] private IUserController userController = default!;
 
     protected override Task OnInitAsync()
     {
@@ -152,6 +154,13 @@ public partial class AppDiagnosticModal
         allCategoryItems = defaultCategoryItems.Select(c => new BitDropdownItem<string>() { Text = c, Value = c }).ToArray();
 
         FilterLogs();
+    }
+
+    private async Task DeleteAllWebAuthnCredentials()
+    {
+        if ((await AuthenticationStateTask).User.IsAuthenticated() is false) return;
+
+        await userController.DeleteAllWebAuthnCredentials(CurrentCancellationToken);
     }
 
     private static BitColor GetColor(LogLevel? level)
