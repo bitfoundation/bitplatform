@@ -34,15 +34,15 @@ public partial class UserController
         var options = fido2.RequestNewCredential(new RequestNewCredentialParams
         {
             User = fidoUser,
-            //ExcludeCredentials = [.. existingKeys],
-            AuthenticatorSelection = new() { AuthenticatorAttachment = AuthenticatorAttachment.Platform },
-            //AttestationPreference = AttestationConveyancePreference.None,
-            //Extensions = new AuthenticationExtensionsClientInputs
-            //{
-            //    CredProps = true,
-            //    Extensions = true,
-            //    UserVerificationMethod = true,
-            //}
+            ExcludeCredentials = [.. existingKeys],
+            AuthenticatorSelection = AuthenticatorSelection.Default, // new() { AuthenticatorAttachment = AuthenticatorAttachment.Platform },
+            AttestationPreference = AttestationConveyancePreference.None,
+            Extensions = new AuthenticationExtensionsClientInputs
+            {
+                CredProps = true,
+                Extensions = true,
+                UserVerificationMethod = true,
+            }
         });
 
         var key = GetWebAuthnCacheKey(userId);

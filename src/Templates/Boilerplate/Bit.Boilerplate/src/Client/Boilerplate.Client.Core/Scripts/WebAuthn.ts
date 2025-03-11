@@ -23,6 +23,7 @@ class WebAuthn {
 
 
     public static async createCredential(options: PublicKeyCredentialCreationOptions) {
+        console.log(options)
         if (typeof options.challenge === 'string') {
             options.challenge = WebAuthn.stringToBinary(options.challenge);
         }
@@ -43,8 +44,8 @@ class WebAuthn {
 
         const credential = await navigator.credentials.create({ publicKey: options }) as PublicKeyCredential;
         const response = credential.response as AuthenticatorAttestationResponse;
-
-        return {
+        console.log('response:', response)
+        const result = {
             id: WebAuthn.base64ToString(credential.id),
             rawId: WebAuthn.binaryToString(credential.rawId),
             type: credential.type,
@@ -55,9 +56,12 @@ class WebAuthn {
                 transports: response.getTransports ? response.getTransports() : []
             }
         };
+        console.log('result:', result)
+        return result;
     }
 
     public static async verifyCredential(options: PublicKeyCredentialRequestOptions) {
+        console.log(options)
         if (typeof options.challenge === 'string') {
             options.challenge = WebAuthn.stringToBinary(options.challenge);
         }
@@ -72,8 +76,8 @@ class WebAuthn {
         }
         const credential = await navigator.credentials.get({ publicKey: options }) as PublicKeyCredential;
         const response = credential.response as AuthenticatorAssertionResponse;
-
-        return {
+        console.log('response:', response)
+        var result = {
             id: credential.id,
             rawId: WebAuthn.binaryToString(credential.rawId),
             type: credential.type,
@@ -85,6 +89,8 @@ class WebAuthn {
                 signature: WebAuthn.binaryToString(response.signature)
             }
         }
+        console.log('result:', result)
+        return result;
     }
 
 

@@ -22,14 +22,14 @@ public partial class IdentityController
 
         var extensions = new AuthenticationExtensionsClientInputs
         {
+            Extensions = true,
             UserVerificationMethod = true,
-            Extensions = true
         };
 
         var options = fido2.GetAssertionOptions(new GetAssertionOptionsParams
         {
-            //Extensions = extensions,
-            //AllowedCredentials = existingKeys,
+            Extensions = extensions,
+            AllowedCredentials = existingKeys,
             UserVerification = UserVerificationRequirement.Discouraged,
         });
 
