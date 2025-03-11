@@ -92,6 +92,12 @@
                            Title="Clear cache"
                            Color="BitColor.SecondaryBackground"
                            IconName="@BitIconName.Clear" />
+                <BitButton IconOnly AutoLoading
+                           Color="BitColor.Info"
+                           Variant="BitVariant.Text"
+                           IconName="@BitIconName.Delete"
+                           Title="Clear WebAuthn"
+                           OnClick="ClearWebAuthn" />
             </BitStack>
 
             <BitBasicList @ref="logStackRef"
@@ -145,12 +151,6 @@
                            Variant="BitVariant.Text"
                            OnClick="() => isLogModalOpen = false"
                            IconName="@BitIconName.ChromeClose" />
-                <BitButton IconOnly
-                           AutoLoading
-                           Color="BitColor.Info"
-                           Variant="BitVariant.Text"
-                           IconName="@BitIconName.Delete"
-                           OnClick="DeleteAllWebAuthnCredentials" />
             </BitStack>
             <br />
             <BitText Class="log-modal" Color="GetColor(selectedLog?.Level)">

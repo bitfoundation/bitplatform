@@ -20,7 +20,7 @@ public static partial class IJSRuntimeWebAuthnExtensions
         return jsRuntime.InvokeAsync<bool>("WebAuthn.isConfigured", username);
     }
 
-    public static ValueTask RemoveWebAuthnConfigured(this IJSRuntime jsRuntime, string username)
+    public static ValueTask RemoveWebAuthnConfigured(this IJSRuntime jsRuntime, string? username = null)
     {
         return jsRuntime.InvokeVoidAsync("WebAuthn.removeConfigured", username);
     }

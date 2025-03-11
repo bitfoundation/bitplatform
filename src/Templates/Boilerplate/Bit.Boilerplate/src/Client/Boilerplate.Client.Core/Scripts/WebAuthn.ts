@@ -18,12 +18,11 @@ class WebAuthn {
 
     public static removeConfigured(username: string) {
         const storedCredentials = JSON.parse(localStorage.getItem(WebAuthn.STORE_KEY) || '[]') as string[];
-        localStorage.setItem(WebAuthn.STORE_KEY, JSON.stringify(storedCredentials.filter(c => c !== username)));
+        localStorage.setItem(WebAuthn.STORE_KEY, JSON.stringify(!!username ? storedCredentials.filter(c => c !== username) : []));
     }
 
 
     public static async createCredential(options: PublicKeyCredentialCreationOptions) {
-        console.log(options)
         if (typeof options.challenge === 'string') {
             options.challenge = WebAuthn.stringToBinary(options.challenge);
         }
