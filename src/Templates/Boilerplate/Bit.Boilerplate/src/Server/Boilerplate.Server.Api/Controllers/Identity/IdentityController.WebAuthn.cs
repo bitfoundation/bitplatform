@@ -1,9 +1,10 @@
 ﻿//+:cnd:noEmit
 using System.Text;
-using Boilerplate.Shared.Dtos.Identity;
+using Microsoft.Extensions.Caching.Distributed;
 using Fido2NetLib;
 using Fido2NetLib.Objects;
-using Microsoft.Extensions.Caching.Distributed;
+using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Server.Api.Models.Identity;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
@@ -37,8 +38,35 @@ public partial class IdentityController
         return options;
     }
 
+    [HttpPost]
+    public async Task<VerifyAssertionResult> VerifyWebAuthAssertion(AuthenticatorAssertionRawResponse clientResponse, CancellationToken cancellationToken)
+    {
+        var (verifyResult, _) = await Verify(clientResponse, cancellationToken);
+
+        return verifyResult;
+    }
+
     [HttpPost, Produces<SignInResponseDto>()]
-    public async Task VerifyWebAuthAssertionAndSignIn(AuthenticatorAssertionRawResponse clientResponse, CancellationToken cancellationToken)
+    public async Task VerifyWebAuthAndSignIn(AuthenticatorAssertionRawResponse clientResponse, CancellationToken cancellationToken)
+    {
+        var (verifyResult, credential) = await Verify(clientResponse, cancellationToken);
+
+        var user = await userManager.FindByIdAsync(credential.UserId.ToString())
+                    ?? throw new ResourceNotFoundException("User");
+
+        var otp = await userManager.GenerateUserTokenAsync(user,
+                                                           TokenOptions.DefaultPhoneProvider,
+                                                           FormattableString.Invariant($"Otp_WebAuth,{user.OtpRequestedOn?.ToUniversalTime()}"));
+
+        credential.SignCount = verifyResult.SignCount;
+
+        DbContext.WebAuthnCredential.Update(credential);
+
+        await SignIn(new() { Otp = otp }, user, cancellationToken);
+    }
+
+
+    private async Task<(VerifyAssertionResult, WebAuthnCredential)> Verify(AuthenticatorAssertionRawResponse clientResponse, CancellationToken cancellationToken)
     {
         var response = JsonSerializer.Deserialize<AuthenticatorResponse>(clientResponse.Response.ClientDataJson)
                         ?? throw new InvalidOperationException("Invalid client data.");
@@ -55,9 +83,6 @@ public partial class IdentityController
         var credential = (await DbContext.WebAuthnCredential.FirstOrDefaultAsync(c => c.Id == clientResponse.Id, cancellationToken))
                         ?? throw new ResourceNotFoundException("Credential");
 
-        var user = await userManager.FindByIdAsync(credential.UserId.ToString())
-                    ?? throw new ResourceNotFoundException("User");
-
         var verifyResult = await fido2.MakeAssertionAsync(new MakeAssertionParams
         {
             AssertionResponse = clientResponse,
@@ -67,20 +92,12 @@ public partial class IdentityController
             IsUserHandleOwnerOfCredentialIdCallback = IsUserHandleOwnerOfCredentialId
         }, cancellationToken);
 
-        credential.SignCount = verifyResult.SignCount;
-
-        DbContext.WebAuthnCredential.Update(credential);
-
-        var otp = await userManager.GenerateUserTokenAsync(user, 
-                                                           TokenOptions.DefaultPhoneProvider, 
-                                                           FormattableString.Invariant($"Otp_WebAuth,{user.OtpRequestedOn?.ToUniversalTime()}"));
-
-        await SignIn(new() { Otp = otp }, user, cancellationToken);
+        return (verifyResult, credential);
     }
 
     private async Task<bool> IsUserHandleOwnerOfCredentialId(IsUserHandleOwnerOfCredentialIdParams args, CancellationToken cancellationToken)
     {
-        var storedCreds = await DbContext.WebAuthnCredential.Where(c => c.Id == args.UserHandle).ToListAsync(cancellationToken);
+        var storedCreds = await DbContext.WebAuthnCredential.Where(c => c.UserHandle == args.UserHandle).ToListAsync(cancellationToken);
         return storedCreds.Exists(c => new PublicKeyCredentialDescriptor(PublicKeyCredentialType.PublicKey, c.Id, c.Transports).Id.SequenceEqual(args.CredentialId));
     }
 }

@@ -14,6 +14,7 @@ using Boilerplate.Shared.Dtos.PushNotification;
 using Boilerplate.Shared.Dtos.Statistics;
 using Boilerplate.Shared.Dtos.Todo;
 using Fido2NetLib;
+using Fido2NetLib.Objects;
 
 namespace Boilerplate.Shared.Dtos;
 
@@ -53,6 +54,7 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(AuthenticatorAssertionRawResponse))]
 [JsonSerializable(typeof(AuthenticatorAttestationRawResponse))]
 [JsonSerializable(typeof(CredentialCreateOptions))]
+[JsonSerializable(typeof(VerifyAssertionResult))]
 public partial class AppJsonContext : JsonSerializerContext
 {
 }

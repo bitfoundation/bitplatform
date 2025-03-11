@@ -1,6 +1,7 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Shared.Dtos.Identity;
 using Fido2NetLib;
+using Fido2NetLib.Objects;
 
 namespace Boilerplate.Shared.Controllers.Identity;
 
@@ -51,5 +52,8 @@ public interface IIdentityController : IAppController
     Task<AssertionOptions> GetWebAuthnAssertionOptions(CancellationToken cancellationToken);
 
     [HttpPost]
-    Task VerifyWebAuthAssertionAndSignIn(AuthenticatorAssertionRawResponse clientResponse, CancellationToken cancellationToken);
+    Task<VerifyAssertionResult> VerifyWebAuthAssertion(AuthenticatorAssertionRawResponse clientResponse, CancellationToken cancellationToken);
+
+    [HttpPost]
+    Task VerifyWebAuthAndSignIn(AuthenticatorAssertionRawResponse clientResponse, CancellationToken cancellationToken);
 }

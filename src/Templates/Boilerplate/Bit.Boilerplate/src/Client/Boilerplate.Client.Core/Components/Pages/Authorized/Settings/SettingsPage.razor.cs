@@ -34,7 +34,7 @@ public partial class SettingsPage
         try
         {
             user = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/User/GetCurrentUser", JsonSerializerOptions.GetTypeInfo<UserDto>(), CurrentCancellationToken)))!;
-            await CheckShowPasswordless();
+            showPasswordless = await JSRuntime.IsWebAuthnAvailable();
         }
         finally
         {
@@ -42,15 +42,5 @@ public partial class SettingsPage
         }
 
         await base.OnInitAsync();
-    }
-
-
-    private async Task CheckShowPasswordless()
-    {
-        if (user?.UserName is null) return;
-
-        var isAvailable = await JSRuntime.IsWebAuthnAvailable();
-
-        showPasswordless = isAvailable;
     }
 }

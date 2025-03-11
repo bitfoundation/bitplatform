@@ -3,6 +3,7 @@ using System.Text;
 using Microsoft.Extensions.Caching.Distributed;
 using Fido2NetLib;
 using Fido2NetLib.Objects;
+using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
@@ -45,7 +46,7 @@ public partial class UserController
             }
         });
 
-        var key = GetWebAuthnKey(userId);
+        var key = GetWebAuthnCacheKey(userId);
         await cache.SetAsync(key, Encoding.UTF8.GetBytes(options.ToJson()), cancellationToken);
 
         return options;
@@ -58,7 +59,7 @@ public partial class UserController
         var user = await userManager.FindByIdAsync(userId.ToString())
                     ?? throw new ResourceNotFoundException("User");
 
-        var key = GetWebAuthnKey(userId);
+        var key = GetWebAuthnCacheKey(userId);
         var cachedBytes = await cache.GetAsync(key, cancellationToken)
                             ?? throw new InvalidOperationException("no create credential options found in the cache.");
 
@@ -98,8 +99,22 @@ public partial class UserController
         await DbContext.SaveChangesAsync(cancellationToken);
     }
 
+    [HttpDelete]
+    public async Task DeleteWebAuthnCredential(byte[] credentialId, CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+        var user = await userManager.FindByIdAsync(userId.ToString())
+                    ?? throw new ResourceNotFoundException("User");
 
-    private static string GetWebAuthnKey(Guid userId) => $"WebAuthn_Options_{userId}";
+        var entityToDelete = await DbContext.WebAuthnCredential.FindAsync([credentialId], cancellationToken)
+            ?? throw new ResourceNotFoundException("WebAuthnCredential");
+
+        DbContext.WebAuthnCredential.Remove(entityToDelete);
+
+        await DbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private static string GetWebAuthnCacheKey(Guid userId) => $"WebAuthn_Options_{userId}";
 
     private async Task<bool> IsCredentialIdUniqueToUser(IsCredentialIdUniqueToUserParams args, CancellationToken cancellationToken)
     {

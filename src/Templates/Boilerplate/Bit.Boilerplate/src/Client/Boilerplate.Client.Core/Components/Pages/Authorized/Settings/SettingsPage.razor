@@ -29,7 +29,7 @@
                 @if (showPasswordless)
                 {
                     <BitPivotItem Key="@nameof(AppStrings.Passwordless)" HeaderText="@Localizer[nameof(AppStrings.Passwordless)]">
-                        <PasswordlessSection />
+                        <PasswordlessSection User="user" />
                     </BitPivotItem>
                 }
                 <BitPivotItem Key="@nameof(AppStrings.Delete)">
