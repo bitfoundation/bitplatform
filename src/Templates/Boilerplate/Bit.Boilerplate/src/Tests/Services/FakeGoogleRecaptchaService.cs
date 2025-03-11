@@ -4,7 +4,7 @@ namespace Boilerplate.Tests.Services;
 
 public partial class FakeGoogleRecaptchaService : GoogleRecaptchaService
 {
-    public FakeGoogleRecaptchaService() : base(null, null) { }
+    public FakeGoogleRecaptchaService() : base(null, null, null) { }
 
     public override ValueTask<bool> Verify(string? googleRecaptchaResponse, CancellationToken cancellationToken)
     {

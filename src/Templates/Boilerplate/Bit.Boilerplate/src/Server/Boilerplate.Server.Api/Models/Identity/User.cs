@@ -45,4 +45,6 @@ public partial class User : IdentityUser<Guid>
     //#if (sample == true)
     public List<TodoItem> TodoItems { get; set; } = [];
     //#endif
+
+    public List<WebAuthnCredential> WebAuthnCredentials { get; set; } = [];
 }

@@ -12,6 +12,7 @@ public partial class IdentityController
 {
     [AutoInject] private IFido2 fido2 = default!;
     [AutoInject] private IDistributedCache cache = default!;
+    [AutoInject] protected JsonSerializerOptions jsonSerializerOptions = default!;
 
 
     [HttpGet]
@@ -68,7 +69,7 @@ public partial class IdentityController
 
     private async Task<(VerifyAssertionResult, WebAuthnCredential)> Verify(AuthenticatorAssertionRawResponse clientResponse, CancellationToken cancellationToken)
     {
-        var response = JsonSerializer.Deserialize<AuthenticatorResponse>(clientResponse.Response.ClientDataJson)
+        var response = JsonSerializer.Deserialize(clientResponse.Response.ClientDataJson, jsonSerializerOptions.GetTypeInfo<AuthenticatorResponse>())
                         ?? throw new InvalidOperationException("Invalid client data.");
 
         var key = new string([.. response.Challenge.Select(b => (char)b)]);

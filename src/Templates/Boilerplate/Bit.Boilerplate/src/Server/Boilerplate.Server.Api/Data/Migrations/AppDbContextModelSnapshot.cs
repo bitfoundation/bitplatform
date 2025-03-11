@@ -2087,7 +2087,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.WebAuthnCredential", b =>
             {
                 b.HasOne("Boilerplate.Server.Api.Models.Identity.User", "User")
-                    .WithMany()
+                    .WithMany("WebAuthnCredentials")
                     .HasForeignKey("UserId")
                     .OnDelete(DeleteBehavior.Cascade)
                     .IsRequired();
@@ -2188,6 +2188,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.Navigation("Sessions");
 
                 b.Navigation("TodoItems");
+
+                b.Navigation("WebAuthnCredentials");
             });
 
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.UserSession", b =>

@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Boilerplate.Server.Api.Data.Migrations;
 
 [DbContext(typeof(AppDbContext))]
-[Migration("20250310082820_InitialMigration")]
+[Migration("20250311112214_InitialMigration")]
 partial class InitialMigration
 {
     /// <inheritdoc />
@@ -2090,7 +2090,7 @@ partial class InitialMigration
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.WebAuthnCredential", b =>
             {
                 b.HasOne("Boilerplate.Server.Api.Models.Identity.User", "User")
-                    .WithMany()
+                    .WithMany("WebAuthnCredentials")
                     .HasForeignKey("UserId")
                     .OnDelete(DeleteBehavior.Cascade)
                     .IsRequired();
@@ -2191,6 +2191,8 @@ partial class InitialMigration
                 b.Navigation("Sessions");
 
                 b.Navigation("TodoItems");
+
+                b.Navigation("WebAuthnCredentials");
             });
 
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.UserSession", b =>

@@ -4,12 +4,11 @@ namespace Boilerplate.Server.Api.Models.Identity;
 
 public class WebAuthnCredential
 {
+    public required byte[] Id { get; set; }
     public Guid UserId { get; set; }
 
     [ForeignKey(nameof(UserId))]
     public User? User { get; set; }
-
-    public required byte[] Id { get; set; }
 
     public byte[]? PublicKey { get; set; }
 
