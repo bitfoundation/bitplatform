@@ -62,7 +62,20 @@
                 </BitStack>
             </BitStack>
 
-            <BitCheckbox @bind-Value="Model.RememberMe" Label="@Localizer[nameof(AppStrings.RememberMe)]" />
+            <BitStack Horizontal Alignment="BitAlignment.Center">
+                <BitCheckbox @bind-Value="Model.RememberMe" Label="@Localizer[nameof(AppStrings.RememberMe)]" />
+                <BitSpacer />
+                @if (isWebAuthnConfigured)
+                {
+                    <BitButton IconOnly
+                               Size="BitSize.Large"
+                               Variant="BitVariant.Text"
+                               Color="BitColor.Tertiary"
+                               ButtonType="BitButtonType.Button"
+                               IconName="@BitIconName.Fingerprint"
+                               OnClick="OnPasswordlessSignIn" />
+                }
+            </BitStack>
 
             <BitButton IsLoading="IsWaiting" ButtonType="BitButtonType.Submit">
                 @Localizer[nameof(AppStrings.SignIn)]

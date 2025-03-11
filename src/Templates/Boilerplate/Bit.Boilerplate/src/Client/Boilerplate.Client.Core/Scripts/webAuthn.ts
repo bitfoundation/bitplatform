@@ -11,9 +11,9 @@ class WebAuthn {
         localStorage.setItem(WebAuthn.STORE_KEY, JSON.stringify(storedCredentials));
     }
 
-    public static isConfigured(username: string) {
+    public static isConfigured(username: string | undefined) {
         const storedCredentials = JSON.parse(localStorage.getItem(WebAuthn.STORE_KEY) || '[]') as string[];
-        return storedCredentials.includes(username);
+        return !!username ? storedCredentials.includes(username) : storedCredentials.length > 0;
     }
 
     public static removeConfigured(username: string) {

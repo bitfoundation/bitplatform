@@ -16,7 +16,7 @@ public static partial class IJSRuntimeWebAuthnExtensions
         return jsRuntime.InvokeVoidAsync("WebAuthn.storeConfigured", username);
     }
 
-    public static ValueTask<bool> IsWebAuthnConfigured(this IJSRuntime jsRuntime, string username)
+    public static ValueTask<bool> IsWebAuthnConfigured(this IJSRuntime jsRuntime, string? username = null)
     {
         return jsRuntime.InvokeAsync<bool>("WebAuthn.isConfigured", username);
     }

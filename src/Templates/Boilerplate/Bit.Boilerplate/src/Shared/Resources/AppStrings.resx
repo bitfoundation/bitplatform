@@ -1228,7 +1228,4 @@
     <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
     <value>Passwordless login disabled successfully</value>
   </data>
-    <data name="PasswordlessCredentialErrorMessage" xml:space="preserve">
-    <value>Something went wrong during credential process</value>
-  </data>
 </root>

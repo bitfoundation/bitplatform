@@ -1210,4 +1210,22 @@
     <value>محصولات در همین دسته</value>
   </data>
     <!--#endif -->
+    <data name="Passwordless" xml:space="preserve">
+    <value>بی رمز</value>
+  </data>
+    <data name="PasswordlessTitle" xml:space="preserve">
+    <value>ورود بی رمز</value>
+  </data>
+    <data name="EnablePasswordless" xml:space="preserve">
+    <value>فعالسازی ورود بی رمز</value>
+  </data>
+    <data name="EnablePasswordlessSucsessMessage" xml:space="preserve">
+    <value>ورود بی رمز با موفقیت فعال شد</value>
+  </data>
+    <data name="DisablePasswordless" xml:space="preserve">
+    <value>غیرفعالسازی ورود بی رمز</value>
+  </data>
+    <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
+    <value>ورود بی رمز با موفقیت غیرفعال شد</value>
+  </data>
 </root>

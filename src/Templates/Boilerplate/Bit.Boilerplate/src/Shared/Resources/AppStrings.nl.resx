@@ -1210,4 +1210,22 @@
     <value>Producten in dezelfde categorie</value>
   </data>
     <!--#endif -->
+    <data name="Passwordless" xml:space="preserve">
+    <value>Wachtwoordloos</value>
+  </data>
+    <data name="PasswordlessTitle" xml:space="preserve">
+    <value>Wachtwoordloos inloggen</value>
+  </data>
+    <data name="EnablePasswordless" xml:space="preserve">
+    <value>Wachtwoordloos inloggen inschakelen</value>
+  </data>
+    <data name="EnablePasswordlessSucsessMessage" xml:space="preserve">
+    <value>Wachtwoordloos inloggen succesvol ingeschakeld</value>
+  </data>
+    <data name="DisablePasswordless" xml:space="preserve">
+    <value>Wachtwoordloos inloggen uitschakelen</value>
+  </data>
+    <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
+    <value>Wachtwoordloos inloggen succesvol uitgeschakeld</value>
+  </data>
 </root>

@@ -19,7 +19,7 @@ public partial class UserController
     {
         var userId = User.GetUserId();
         var user = await userManager.FindByIdAsync(userId.ToString())
-                    ?? throw new ResourceNotFoundException("User");
+                    ?? throw new ResourceNotFoundException();
 
         var existingCredentials = DbContext.WebAuthnCredential.Where(c => c.UserId == userId);
         var existingKeys = existingCredentials.Select(c => new PublicKeyCredentialDescriptor(PublicKeyCredentialType.PublicKey,
@@ -57,11 +57,11 @@ public partial class UserController
     {
         var userId = User.GetUserId();
         var user = await userManager.FindByIdAsync(userId.ToString())
-                    ?? throw new ResourceNotFoundException("User");
+                    ?? throw new ResourceNotFoundException();
 
         var key = GetWebAuthnCacheKey(userId);
         var cachedBytes = await cache.GetAsync(key, cancellationToken)
-                            ?? throw new InvalidOperationException("no create credential options found in the cache.");
+                            ?? throw new ResourceNotFoundException();
 
         var jsonOptions = Encoding.UTF8.GetString(cachedBytes);
         var options = CredentialCreateOptions.FromJson(jsonOptions);
@@ -104,10 +104,10 @@ public partial class UserController
     {
         var userId = User.GetUserId();
         var user = await userManager.FindByIdAsync(userId.ToString())
-                    ?? throw new ResourceNotFoundException("User");
+                    ?? throw new ResourceNotFoundException();
 
         var entityToDelete = await DbContext.WebAuthnCredential.FindAsync([credentialId], cancellationToken)
-            ?? throw new ResourceNotFoundException("WebAuthnCredential");
+                                ?? throw new ResourceNotFoundException();
 
         DbContext.WebAuthnCredential.Remove(entityToDelete);
 

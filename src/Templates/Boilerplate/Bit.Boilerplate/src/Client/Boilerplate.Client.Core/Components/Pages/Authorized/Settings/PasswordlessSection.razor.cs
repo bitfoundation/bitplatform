@@ -39,7 +39,6 @@ public partial class PasswordlessSection
         catch (Exception ex)
         {
             ExceptionHandler.Handle(ex, ExceptionDisplayKind.None);
-            SnackBarService.Error(Localizer[nameof(AppStrings.PasswordlessCredentialErrorMessage)], ex.Message);
             return;
         }
 
@@ -66,7 +65,6 @@ public partial class PasswordlessSection
         catch (Exception ex)
         {
             ExceptionHandler.Handle(ex, ExceptionDisplayKind.None);
-            SnackBarService.Error(Localizer[nameof(AppStrings.PasswordlessCredentialErrorMessage)], ex.Message);
             return;
 
         }

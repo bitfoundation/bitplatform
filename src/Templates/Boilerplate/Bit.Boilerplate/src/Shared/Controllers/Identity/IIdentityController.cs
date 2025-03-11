@@ -55,5 +55,5 @@ public interface IIdentityController : IAppController
     Task<VerifyAssertionResult> VerifyWebAuthAssertion(AuthenticatorAssertionRawResponse clientResponse, CancellationToken cancellationToken);
 
     [HttpPost]
-    Task VerifyWebAuthAndSignIn(AuthenticatorAssertionRawResponse clientResponse, CancellationToken cancellationToken);
+    Task<SignInResponseDto> VerifyWebAuthAndSignIn(AuthenticatorAssertionRawResponse clientResponse, CancellationToken cancellationToken) => default!;
 }

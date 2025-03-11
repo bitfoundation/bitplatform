@@ -52,15 +52,15 @@ public partial class IdentityController
         var (verifyResult, credential) = await Verify(clientResponse, cancellationToken);
 
         var user = await userManager.FindByIdAsync(credential.UserId.ToString())
-                    ?? throw new ResourceNotFoundException("User");
+                    ?? throw new ResourceNotFoundException();
 
-        var otp = await userManager.GenerateUserTokenAsync(user,
-                                                           TokenOptions.DefaultPhoneProvider,
-                                                           FormattableString.Invariant($"Otp_WebAuth,{user.OtpRequestedOn?.ToUniversalTime()}"));
+        var (otp, _) = await GenerateAutomaticSignInLink(user, null, "WebAuthn");
 
         credential.SignCount = verifyResult.SignCount;
 
         DbContext.WebAuthnCredential.Update(credential);
+
+        await DbContext.SaveChangesAsync(cancellationToken);
 
         await SignIn(new() { Otp = otp }, user, cancellationToken);
     }
@@ -73,7 +73,7 @@ public partial class IdentityController
 
         var key = new string([.. response.Challenge.Select(b => (char)b)]);
         var cachedBytes = await cache.GetAsync(key, cancellationToken)
-                             ?? throw new InvalidOperationException("no assertion credential options found in the cache.");
+                             ?? throw new ResourceNotFoundException();
 
         var jsonOptions = Encoding.UTF8.GetString(cachedBytes);
         var options = AssertionOptions.FromJson(jsonOptions);
@@ -81,7 +81,7 @@ public partial class IdentityController
         await cache.RemoveAsync(key, cancellationToken);
 
         var credential = (await DbContext.WebAuthnCredential.FirstOrDefaultAsync(c => c.Id == clientResponse.Id, cancellationToken))
-                        ?? throw new ResourceNotFoundException("Credential");
+                            ?? throw new ResourceNotFoundException();
 
         var verifyResult = await fido2.MakeAssertionAsync(new MakeAssertionParams
         {

@@ -15,16 +15,26 @@
                 {
                     @if (isOtpSent is false)
                     {
-                        <SignInPanel IsWaiting="isWaiting" Model="model" OnSocialSignIn="SocialSignIn" OnSendOtp="SendOtp" OnTabChange="HandleOnSignInPanelTabChange" />
+                        <SignInPanel Model="model"
+                                     IsWaiting="isWaiting"
+                                     OnSendOtp="HandleOnSendOtp"
+                                     OnSocialSignIn="HandleOnSocialSignIn"
+                                     OnTabChange="HandleOnSignInPanelTabChange"
+                                     OnPasswordlessSignIn="HandleOnPasswordlessSignIn" />
                     }
                     else
                     {
-                        <OtpPanel IsWaiting="isWaiting" Model="model" OnSignIn="DoSignIn" OnResendOtp="ResendOtp" />
+                        <OtpPanel Model="model"
+                                  OnSignIn="DoSignIn"
+                                  IsWaiting="isWaiting"
+                                  OnResendOtp="HandleOnResendOtp" />
                     }
                 }
                 else
                 {
-                    <TfaPanel IsWaiting="isWaiting" Model="model" OnSendTfaToken="SendTfaToken" />
+                    <TfaPanel Model="model"
+                              IsWaiting="isWaiting"
+                              OnSendTfaToken="HandleOnSendTfaToken" />
                 }
             </BitStack>
         </EditForm>
