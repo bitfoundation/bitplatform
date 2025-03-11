@@ -1,5 +1,4 @@
 ﻿using Boilerplate.Shared.Dtos.Identity;
-using Fido2NetLib;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
 

@@ -1,5 +1,5 @@
-﻿using Boilerplate.Shared.Dtos.Identity;
-using Fido2NetLib;
+﻿using Fido2NetLib;
+using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Shared.Controllers.Identity;
 

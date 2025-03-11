@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Shared.Dtos.Identity;
 using Fido2NetLib;
 using Fido2NetLib.Objects;
+using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Shared.Controllers.Identity;
 

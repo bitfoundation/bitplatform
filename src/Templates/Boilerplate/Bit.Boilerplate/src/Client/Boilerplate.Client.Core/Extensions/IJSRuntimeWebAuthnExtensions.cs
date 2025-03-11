@@ -1,5 +1,4 @@
 ﻿//+:cnd:noEmit
-
 using Fido2NetLib;
 
 namespace Microsoft.JSInterop;
