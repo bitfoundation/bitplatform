@@ -1,7 +1,6 @@
 ﻿//#if (signalR == true)
 using Microsoft.AspNetCore.SignalR.Client;
 //#endif
-using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Controllers.Diagnostics;
 using Boilerplate.Client.Core.Services.DiagnosticLog;
 

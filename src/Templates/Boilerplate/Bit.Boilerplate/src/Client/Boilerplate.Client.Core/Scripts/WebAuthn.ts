@@ -1,5 +1,5 @@
 class WebAuthn {
-    private static STORE_KEY = 'configured-webauthn';
+    private static STORE_KEY = 'webauthn';
 
     public static isAvailable() {
         return !!window.PublicKeyCredential;
@@ -11,14 +11,14 @@ class WebAuthn {
         localStorage.setItem(WebAuthn.STORE_KEY, JSON.stringify(storedCredentials));
     }
 
-    public static isConfigured(username: string | undefined) {
-        const storedCredentials = JSON.parse(localStorage.getItem(WebAuthn.STORE_KEY) || '[]') as string[];
-        return !!username ? storedCredentials.includes(username) : storedCredentials.length > 0;
-    }
-
     public static removeConfigured(username: string) {
         const storedCredentials = JSON.parse(localStorage.getItem(WebAuthn.STORE_KEY) || '[]') as string[];
         localStorage.setItem(WebAuthn.STORE_KEY, JSON.stringify(!!username ? storedCredentials.filter(c => c !== username) : []));
+    }
+
+    public static isConfigured(username: string | undefined) {
+        const storedCredentials = JSON.parse(localStorage.getItem(WebAuthn.STORE_KEY) || '[]') as string[];
+        return !!username ? storedCredentials.includes(username) : storedCredentials.length > 0;
     }
 
 
@@ -138,17 +138,37 @@ class WebAuthn {
 
 
 
-    //private static stringToBinary(value: string): Uint8Array {
-    //    return Uint8Array.from(atob(value.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0));
-    //}
+    private static ToBase64Url(value: any) {
+        // Array or ArrayBuffer to Uint8Array
+        if (Array.isArray(value)) {
+            value = Uint8Array.from(value);
+        }
 
-    //private static binaryToString(value: ArrayBuffer): string {
-    //    return btoa(String.fromCharCode(...new Uint8Array(value))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=*$/g, "");
-    //}
+        if (value instanceof ArrayBuffer) {
+            value = new Uint8Array(value);
+        }
 
-    //private static base64ToString(value: string): string {
-    //    return value.replace(/\+/g, "-").replace(/\//g, "_").replace(/=*$/g, "");
-    //}
+        // Uint8Array to base64
+        if (value instanceof Uint8Array) {
+            var str = "";
+            var len = value.byteLength;
+
+            for (var i = 0; i < len; i++) {
+                str += String.fromCharCode(value[i]);
+            }
+            value = window.btoa(str);
+        }
+
+        if (typeof value !== "string") {
+            throw new Error("could not coerce to string");
+        }
+
+        // base64 to base64url
+        // NOTE: "=" at the end of challenge is optional, strip it off here
+        value = value.replace(/\+/g, "-").replace(/\//g, "_").replace(/=*$/g, "");
+
+        return value;
+    };
 
     private static ToArrayBuffer(value: any, name: string) {
         if (typeof value === "string") {
@@ -178,38 +198,6 @@ class WebAuthn {
         if (!(value instanceof ArrayBuffer)) {
             throw new TypeError("could not coerce '" + name + "' to ArrayBuffer");
         }
-
-        return value;
-    };
-
-    private static ToBase64Url(value: any) {
-        // Array or ArrayBuffer to Uint8Array
-        if (Array.isArray(value)) {
-            value = Uint8Array.from(value);
-        }
-
-        if (value instanceof ArrayBuffer) {
-            value = new Uint8Array(value);
-        }
-
-        // Uint8Array to base64
-        if (value instanceof Uint8Array) {
-            var str = "";
-            var len = value.byteLength;
-
-            for (var i = 0; i < len; i++) {
-                str += String.fromCharCode(value[i]);
-            }
-            value = window.btoa(str);
-        }
-
-        if (typeof value !== "string") {
-            throw new Error("could not coerce to string");
-        }
-
-        // base64 to base64url
-        // NOTE: "=" at the end of challenge is optional, strip it off here
-        value = value.replace(/\+/g, "-").replace(/\//g, "_").replace(/=*$/g, "");
 
         return value;
     };
