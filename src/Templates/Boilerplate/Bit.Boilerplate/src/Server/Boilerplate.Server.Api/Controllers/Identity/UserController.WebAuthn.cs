@@ -31,18 +31,26 @@ public partial class UserController
             DisplayName = user.DisplayName,
         };
 
+        var authenticatorSelection = new AuthenticatorSelection
+        {
+            ResidentKey = ResidentKeyRequirement.Required,
+            UserVerification = UserVerificationRequirement.Preferred
+        };
+
+        var extensions = new AuthenticationExtensionsClientInputs
+        {
+            CredProps = true,
+            Extensions = true,
+            UserVerificationMethod = true,
+        };
+
         var options = fido2.RequestNewCredential(new RequestNewCredentialParams
         {
             User = fidoUser,
             ExcludeCredentials = [.. existingKeys],
-            AuthenticatorSelection = AuthenticatorSelection.Default, // new() { AuthenticatorAttachment = AuthenticatorAttachment.Platform },
+            AuthenticatorSelection = authenticatorSelection,
             AttestationPreference = AttestationConveyancePreference.None,
-            Extensions = new AuthenticationExtensionsClientInputs
-            {
-                CredProps = true,
-                Extensions = true,
-                UserVerificationMethod = true,
-            }
+            Extensions = extensions
         });
 
         var key = GetWebAuthnCacheKey(userId);
