@@ -105,7 +105,7 @@ public partial class AppDiagnosticModal
         return $"{memory / (1024.0 * 1024.0):F2} MB";
     }
 
-    private async Task ClearCache()
+    private async Task ClearData()
     {
         try
         {
@@ -120,6 +120,13 @@ public partial class AppDiagnosticModal
             await cookie.Remove(item.Name!);
         }
 
+        if ((await AuthenticationStateTask).User.IsAuthenticated())
+        {
+            await userController.DeleteAllWebAuthnCredentials(CurrentCancellationToken);
+
+            await JSRuntime.RemoveWebAuthnConfigured();
+        }
+
         if (AppPlatform.IsBlazorHybrid is false)
         {
             await JSRuntime.InvokeVoidAsync("BitBswup.forceRefresh"); // Clears cache storages and uninstalls service-worker.
@@ -128,14 +135,5 @@ public partial class AppDiagnosticModal
         {
             NavigationManager.Refresh(forceReload: true);
         }
-    }
-
-    private async Task ClearWebAuthn()
-    {
-        if ((await AuthenticationStateTask).User.IsAuthenticated() is false) return;
-
-        await userController.DeleteAllWebAuthnCredentials(CurrentCancellationToken);
-
-        await JSRuntime.RemoveWebAuthnConfigured();
     }
 }

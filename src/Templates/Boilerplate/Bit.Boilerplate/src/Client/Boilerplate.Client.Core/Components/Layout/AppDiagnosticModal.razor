@@ -88,16 +88,10 @@
                                IconName="@BitIconName.RecycleBin" />
                 }
                 <BitButton IconOnly AutoLoading
-                           OnClick="ClearCache"
-                           Title="Clear cache"
+                           OnClick="ClearData"
+                           Title="Clear data"
                            Color="BitColor.SecondaryBackground"
                            IconName="@BitIconName.Clear" />
-                <BitButton IconOnly AutoLoading
-                           Color="BitColor.Info"
-                           Variant="BitVariant.Text"
-                           IconName="@BitIconName.Delete"
-                           Title="Clear WebAuthn"
-                           OnClick="ClearWebAuthn" />
             </BitStack>
 
             <BitBasicList @ref="logStackRef"
