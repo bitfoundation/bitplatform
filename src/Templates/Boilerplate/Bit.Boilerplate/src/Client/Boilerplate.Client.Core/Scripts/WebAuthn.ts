@@ -5,6 +5,11 @@ class WebAuthn {
         return !!window.PublicKeyCredential;
     }
 
+    public static isConfigured(username: string | undefined) {
+        const storedCredentials = JSON.parse(localStorage.getItem(WebAuthn.STORE_KEY) || '[]') as string[];
+        return !!username ? storedCredentials.includes(username) : storedCredentials.length > 0;
+    }
+
     public static storeConfigured(username: string) {
         const storedCredentials = JSON.parse(localStorage.getItem(WebAuthn.STORE_KEY) || '[]') as string[];
         storedCredentials.push(username);
@@ -16,30 +21,13 @@ class WebAuthn {
         localStorage.setItem(WebAuthn.STORE_KEY, JSON.stringify(!!username ? storedCredentials.filter(c => c !== username) : []));
     }
 
-    public static isConfigured(username: string | undefined) {
-        const storedCredentials = JSON.parse(localStorage.getItem(WebAuthn.STORE_KEY) || '[]') as string[];
-        return !!username ? storedCredentials.includes(username) : storedCredentials.length > 0;
-    }
-
 
     public static async createCredential(options: PublicKeyCredentialCreationOptions) {
-        console.log(options);
-
-        //if (typeof options.challenge === 'string') {
-        //    options.challenge = WebAuthn.stringToBinary(options.challenge);
-        //}
-
         options.challenge = WebAuthn.ToArrayBuffer(options.challenge, 'challenge');
-
-        //if (typeof options.user.id === 'string') {
-        //    options.user.id = WebAuthn.stringToBinary(options.user.id);
-        //}
 
         options.user.id = WebAuthn.ToArrayBuffer(options.user.id, 'user.id');
 
         for (let cred of options.excludeCredentials || []) {
-            //if (typeof cred.id !== 'string') continue;
-            //cred.id = WebAuthn.stringToBinary(cred.id);
             cred.id = WebAuthn.ToArrayBuffer(cred.id, 'cred.id');
         }
 
@@ -51,11 +39,7 @@ class WebAuthn {
             options.rp.id = undefined;
         }
 
-        console.log('corrected:', options);
-
         const credential = await navigator.credentials.create({ publicKey: options }) as PublicKeyCredential;
-
-        console.log('credential:', credential);
 
         const response = credential.response as AuthenticatorAttestationResponse;
 
@@ -76,38 +60,17 @@ class WebAuthn {
             }
         };
 
-        console.log('result:', result);
-
         return result;
     }
 
     public static async verifyCredential(options: PublicKeyCredentialRequestOptions) {
-        console.log(options);
-
-        //if (typeof options.challenge === 'string') {
-        //    options.challenge = WebAuthn.stringToBinary(options.challenge);
-        //}
-
         options.challenge = WebAuthn.ToArrayBuffer(options.challenge, 'challenge');
-
-        //if (options.allowCredentials) {
-        //    for (let i = 0; i < options.allowCredentials.length; i++) {
-        //        const id = options.allowCredentials[i].id;
-        //        if (typeof id === 'string') {
-        //            options.allowCredentials[i].id = WebAuthn.stringToBinary(id);
-        //        }
-        //    }
-        //}
 
         options.allowCredentials?.forEach(function (cred) {
             cred.id = WebAuthn.ToArrayBuffer(cred.id, 'cred.id');
         });
 
-        console.log('corrected:', options);
-
         const credential = await navigator.credentials.get({ publicKey: options }) as PublicKeyCredential;
-
-        console.log('credential:', credential);
 
         const response = credential.response as AuthenticatorAssertionResponse;
 
@@ -130,8 +93,6 @@ class WebAuthn {
                 signature: WebAuthn.ToBase64Url(signature)
             }
         }
-
-        console.log('result:', result);
 
         return result;
     }
