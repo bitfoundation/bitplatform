@@ -1,5 +1,5 @@
 class WebAuthn {
-    private static STORE_KEY = 'webauthn';
+    private static STORE_KEY = 'bit-webauthn';
 
     public static isAvailable() {
         return !!window.PublicKeyCredential;
