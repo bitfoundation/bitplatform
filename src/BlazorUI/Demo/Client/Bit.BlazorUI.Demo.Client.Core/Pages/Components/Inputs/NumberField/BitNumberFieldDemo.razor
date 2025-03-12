@@ -11,6 +11,7 @@
           Description="A NumberField allows you to enter any number type and format you want. It could be a decimal number or integer number with a suffix and so on. Also, give you the capability to show or hide increment and decrement keys."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
           PublicMembers="componentPublicMembers">
     <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>Displays various basic configurations for the BitNumberField, including placeholders, disabled state, default values, step values, and required fields.</div>
@@ -22,8 +23,6 @@
             <br />
             <BitNumberField Label="Placeholder" TValue="int?" Placeholder="Enter a number..." />
             <br />
-            <BitNumberField Label="Step(5) & Buttons" TValue="int" Step="5" ShowButtons />
-            <br />
             <BitNumberField Label="Required" TValue="int?" Required />
         </div>
     </DemoSection>
@@ -34,9 +33,13 @@
         <div class="example-box">
             <div>Label position:</div>
             <br />
-            <BitNumberField Label="Label Top" TValue="int" />
+            <BitNumberField Label="Top (default)" TValue="int" />
             <br />
-            <BitNumberField Label="Inline Label" TValue="int" InlineLabel />
+            <BitNumberField Label="Start" LabelPosition="BitLabelPosition.Start" TValue="int" />
+            <br />
+            <BitNumberField Label="End" LabelPosition="BitLabelPosition.End" TValue="int" />
+            <br />
+            <BitNumberField Label="Bottom" LabelPosition="BitLabelPosition.Bottom" TValue="int" />
             <br /><br /><br /><br />
             <div>LabelTemplate:</div>
             <br />
@@ -55,48 +58,30 @@
         <div>Demonstrates BitNumberField with different icons, including component icon and increment/decrement icons in various modes.</div>
         <br />
         <div class="example-box">
+            <div> Component's Icon:</div>
             <BitNumberField Label="Label & Icon" TValue="int"
                             IconName="@BitIconName.Lightbulb" />
+            <br /><br /><br />
+            <div> Increment & Decrement Icons:</div>
             <br />
-            <BitNumberField Label="Increment & Decrement Icon" TValue="int"
-                            ShowButtons="true"
+            <BitNumberField Label="Compact mode" TValue="int"
+                            Mode="BitSpinButtonMode.Compact"
                             IncrementIconName="@BitIconName.LikeSolid"
                             DecrementIconName="@BitIconName.DislikeSolid" />
+            <br />
+            <BitNumberField Label="Inline mode" TValue="int"
+                            Mode="BitSpinButtonMode.Inline"
+                            IncrementIconName="@BitIconName.Forward"
+                            DecrementIconName="@BitIconName.Back" />
+            <br />
+            <BitNumberField Label="Spread mode" TValue="int"
+                            Mode="BitSpinButtonMode.Spread"
+                            IncrementIconName="@BitIconName.CalculatorAddition"
+                            DecrementIconName="@BitIconName.CalculatorSubtract" />
         </div>
     </DemoSection>
 
-    <DemoSection Title="Style & Class" RazorCode="@example4RazorCode" Id="example4">
-        <div>Explores styling and class customization for BitNumberField, including component styles, custom classes, and detailed style options.</div>
-        <br /><br />
-        <div class="example-box">
-            <div>Component's Style & Class:</div>
-            <br />
-            <BitNumberField DefaultValue="10" Style="box-shadow: aqua 0 0 1rem; margin-inline: 1rem;" />
-            <br />
-            <BitNumberField DefaultValue="20" Class="custom-class" />
-            <br /><br /><br />
-            <div><b>Styles</b> & <b>Classes</b>:</div>
-            <br />
-            <BitNumberField DefaultValue="1"
-                            Label="Styles"
-                            Styles="@(new() { Root = "margin-inline: 1rem;",
-                                                  Focused = "--focused-background: #b2b2b25a;",
-                                                  InputWrapper = "background: var(--focused-background);",
-                                                  Label = "text-shadow: aqua 0 0 1rem; font-weight: 900; font-size: 1.25rem;",
-                                                  Input = "padding: 0.5rem;" })" />
-            <br />
-            <BitNumberField TValue="int?"
-                            Label="Classes"
-                            @bind-Value="classesValue"
-                            Classes="@(new() { Root = "custom-root",
-                                                 InputWrapper = "custom-input-wrapper",
-                                                 Focused = "custom-focus",
-                                                 Input = "custom-input",
-                                                 Label = $"custom-label{(classesValue is null ? string.Empty : " custom-label-top")}" })" />
-        </div>
-    </DemoSection>
-
-    <DemoSection Title="NumberFormat" RazorCode="@example5RazorCode" Id="example5">
+    <DemoSection Title="NumberFormat" RazorCode="@example4RazorCode" Id="example4">
         <div>Demonstrates various number formatting options for BitNumberField, including examples with different number formats.</div>
         <br />
         <div class="example-box">
@@ -108,7 +93,7 @@
         </div>
     </DemoSection>
 
-    <DemoSection Title="Prefix & Suffix" RazorCode="@example6RazorCode" Id="example6">
+    <DemoSection Title="Prefix & Suffix" RazorCode="@example5RazorCode" Id="example5">
         <div>Demonstrates the use of prefixes and suffixes in BitNumberField, including examples with different prefix and suffix values.</div>
         <br />
         <div class="example-box">
@@ -124,7 +109,7 @@
         </div>
     </DemoSection>
 
-    <DemoSection Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <DemoSection Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>Demonstrates various binding scenarios with BitNumberField, including one-way and two-way binding.</div>
         <br />
         <div class="example-box">
@@ -140,7 +125,7 @@
         </div>
     </DemoSection>
 
-    <DemoSection Title="Min & Max" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoSection Title="Min & Max" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>Demonstrates setting minimum and maximum values in BitNumberField, including examples with various min and max constraints.</div>
         <br />
         <div class="example-box">
@@ -152,6 +137,19 @@
             <br />
             <BitNumberField Label="Min & Max (-10, 10)" Min="-10" Max="10" @bind-Value="minMaxValue" />
             <div>value: [@minMaxValue]</div>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="HideInput" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div>Demonstrates hiding the input field in BitNumberField while still allowing value changes.</div>
+        <br />
+        <div class="example-box">
+            <div>Hidden input:</div>
+            <br />
+            <BitNumberField HideInput
+                            @bind-Value="hideInputValue"
+                            Mode="BitSpinButtonMode.Inline"
+                            Label="@hideInputValue.ToString()" />
         </div>
     </DemoSection>
 
@@ -192,7 +190,38 @@
         </div>
     </DemoSection>
 
-    <DemoSection Title="RTL" RazorCode="@example11RazorCode" Id="example11">
+    <DemoSection Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
+        <div>Explores styling and class customization for BitNumberField, including component styles, custom classes, and detailed style options.</div>
+        <br /><br />
+        <div class="example-box">
+            <div>Component's Style & Class:</div>
+            <br />
+            <BitNumberField DefaultValue="10" Style="box-shadow: aqua 0 0 1rem; margin-inline: 1rem;" />
+            <br />
+            <BitNumberField DefaultValue="20" Class="custom-class" />
+            <br /><br /><br />
+            <div><b>Styles</b> & <b>Classes</b>:</div>
+            <br />
+            <BitNumberField DefaultValue="1"
+                            Label="Styles"
+                            Styles="@(new() { Root = "margin-inline: 1rem;",
+                                              Focused = "--focused-background: #b2b2b25a;",
+                                              InputContainer = "background: var(--focused-background);",
+                                              Label = "text-shadow: aqua 0 0 1rem; font-weight: 900; font-size: 1.25rem;",
+                                              Input = "padding: 0.5rem;" })" />
+            <br />
+            <BitNumberField TValue="int?"
+                            Label="Classes"
+                            @bind-Value="classesValue"
+                            Classes="@(new() { Root = "custom-root",
+                                               InputContainer = "custom-input-wrapper",
+                                               Focused = "custom-focus",
+                                               Input = "custom-input",
+                                               Label = $"custom-label{(classesValue is null ? string.Empty : " custom-label-top")}" })" />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="RTL" RazorCode="@example12RazorCode" Id="example12">
         <div>Use BitNumberField in right-to-left (RTL).</div>
         <br />
         <div dir="rtl">

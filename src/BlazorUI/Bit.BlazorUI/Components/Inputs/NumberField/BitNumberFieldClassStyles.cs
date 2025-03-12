@@ -63,9 +63,9 @@ public class BitNumberFieldClassStyles
     public string? Input { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the wrapper of label and input in numeric field.
+    /// Custom CSS classes/styles for the container of label and input in numeric field.
     /// </summary>
-    public string? InputWrapper { get; set; }
+    public string? InputContainer { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the numeric field's root element.
