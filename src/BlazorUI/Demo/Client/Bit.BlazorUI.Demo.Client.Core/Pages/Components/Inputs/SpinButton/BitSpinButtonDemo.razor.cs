@@ -121,8 +121,8 @@ public partial class BitSpinButtonDemo
         new()
         {
             Name = "Label",
-            Type = "string",
-            DefaultValue = "string.Empty",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Descriptive label for the spin button, Label displayed above the spin button and read by screen readers.",
         },
         new()
