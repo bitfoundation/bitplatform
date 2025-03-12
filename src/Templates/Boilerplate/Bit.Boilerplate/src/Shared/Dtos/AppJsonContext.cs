@@ -14,6 +14,7 @@ using Boilerplate.Shared.Dtos.Categories;
 //#if (notification == true)
 using Boilerplate.Shared.Dtos.PushNotification;
 //#endif
+using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Dtos.Statistics;
 
 namespace Boilerplate.Shared.Dtos;
@@ -55,6 +56,7 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(AuthenticatorAttestationRawResponse))]
 [JsonSerializable(typeof(CredentialCreateOptions))]
 [JsonSerializable(typeof(VerifyAssertionResult))]
+[JsonSerializable(typeof(VerifyWebAuthnAndSignInDto))]
 public partial class AppJsonContext : JsonSerializerContext
 {
 }

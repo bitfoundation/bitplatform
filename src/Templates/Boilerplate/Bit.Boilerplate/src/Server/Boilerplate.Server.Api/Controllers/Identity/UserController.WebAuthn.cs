@@ -54,7 +54,7 @@ public partial class UserController
         });
 
         var key = GetWebAuthnCacheKey(userId);
-        await cache.SetAsync(key, Encoding.UTF8.GetBytes(options.ToJson()), cancellationToken);
+        await cache.SetAsync(key, Encoding.UTF8.GetBytes(options.ToJson()), new() { SlidingExpiration = TimeSpan.FromMinutes(3) }, cancellationToken);
 
         return options;
     }
