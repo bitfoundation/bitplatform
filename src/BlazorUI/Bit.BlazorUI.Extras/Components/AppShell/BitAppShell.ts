@@ -11,7 +11,7 @@ namespace BitBlazorUI {
         public static initScroll(container: HTMLElement, url: string) {
             AppShell._container = container;
             AppShell._currentUrl = url;
-            AppShell._scrolls = JSON.parse(sessionStorage.getItem(this.STORE_KEY) || '{}');
+            AppShell._scrolls = JSON.parse(sessionStorage.getItem(AppShell.STORE_KEY) || '{}');
             AppShell.storeScroll(url, AppShell.PreScroll > 0 ? AppShell.PreScroll : AppShell._scrolls[url]);
             if (AppShell._scrolls[url]! > 0) {
                 AppShell._container.scrollTo({ top: AppShell._scrolls[url], behavior: 'instant' });
@@ -48,7 +48,7 @@ namespace BitBlazorUI {
 
         private static storeScroll(url: string, value: number | undefined) {
             AppShell._scrolls[url] = value || 0;
-            window.sessionStorage.setItem(this.STORE_KEY, JSON.stringify(AppShell._scrolls));
+            window.sessionStorage.setItem(AppShell.STORE_KEY, JSON.stringify(AppShell._scrolls));
         }
     }
 }
