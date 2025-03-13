@@ -31,16 +31,16 @@ public partial class UserController
             DisplayName = user.DisplayName,
         };
 
-        //var authenticatorSelection = new AuthenticatorSelection
-        //{
-        //    ResidentKey = ResidentKeyRequirement.Required,
-        //    UserVerification = UserVerificationRequirement.Preferred
-        //};
-
         var authenticatorSelection = new AuthenticatorSelection
         {
-            AuthenticatorAttachment = AuthenticatorAttachment.Platform
+            ResidentKey = ResidentKeyRequirement.Required,
+            UserVerification = UserVerificationRequirement.Preferred
         };
+
+        //var authenticatorSelection = new AuthenticatorSelection
+        //{
+        //    AuthenticatorAttachment = AuthenticatorAttachment.Platform
+        //};
 
         var extensions = new AuthenticationExtensionsClientInputs
         {
