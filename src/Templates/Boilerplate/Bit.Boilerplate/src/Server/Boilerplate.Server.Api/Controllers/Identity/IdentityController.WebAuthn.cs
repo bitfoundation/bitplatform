@@ -22,8 +22,8 @@ public partial class IdentityController
 
         var extensions = new AuthenticationExtensionsClientInputs
         {
+            Extensions = true,
             UserVerificationMethod = true,
-            Extensions = true
         };
 
         var options = fido2.GetAssertionOptions(new GetAssertionOptionsParams
@@ -34,7 +34,7 @@ public partial class IdentityController
         });
 
         var key = new string([.. options.Challenge.Select(b => (char)b)]);
-        await cache.SetAsync(key, Encoding.UTF8.GetBytes(options.ToJson()), cancellationToken);
+        await cache.SetAsync(key, Encoding.UTF8.GetBytes(options.ToJson()), new() { SlidingExpiration = TimeSpan.FromMinutes(3) }, cancellationToken);
 
         return options;
     }
@@ -48,7 +48,27 @@ public partial class IdentityController
     }
 
     [HttpPost, Produces<SignInResponseDto>()]
-    public async Task VerifyWebAuthAndSignIn(AuthenticatorAssertionRawResponse clientResponse, CancellationToken cancellationToken)
+    public async Task VerifyWebAuthAndSignIn(VerifyWebAuthnAndSignInDto request, CancellationToken cancellationToken)
+    {
+        var (verifyResult, credential) = await Verify(request.ClientResponse, cancellationToken);
+
+        var user = await userManager.FindByIdAsync(credential.UserId.ToString())
+                    ?? throw new ResourceNotFoundException();
+
+        var (otp, _) = await GenerateAutomaticSignInLink(user, null, "WebAuthn");
+
+        if (user.TwoFactorEnabled is false || request.TfaCode is not null)
+        {
+            credential.SignCount = verifyResult.SignCount;
+            DbContext.WebAuthnCredential.Update(credential);
+            await DbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        await SignIn(new() { Otp = otp, TwoFactorCode = request.TfaCode }, user, cancellationToken);
+    }
+
+    [HttpPost]
+    public async Task VerifyWebAuthAndSendTwoFactorToken(AuthenticatorAssertionRawResponse clientResponse, CancellationToken cancellationToken)
     {
         var (verifyResult, credential) = await Verify(clientResponse, cancellationToken);
 
@@ -57,13 +77,7 @@ public partial class IdentityController
 
         var (otp, _) = await GenerateAutomaticSignInLink(user, null, "WebAuthn");
 
-        credential.SignCount = verifyResult.SignCount;
-
-        DbContext.WebAuthnCredential.Update(credential);
-
-        await DbContext.SaveChangesAsync(cancellationToken);
-
-        await SignIn(new() { Otp = otp }, user, cancellationToken);
+        await SendTwoFactorToken(new() { Otp = otp }, user, cancellationToken);
     }
 
 
@@ -79,7 +93,8 @@ public partial class IdentityController
         var jsonOptions = Encoding.UTF8.GetString(cachedBytes);
         var options = AssertionOptions.FromJson(jsonOptions);
 
-        await cache.RemoveAsync(key, cancellationToken);
+        // since the TFA needs this option we won't remove it from cache manually and just wait for it to expire.
+        // await cache.RemoveAsync(key, cancellationToken);
 
         var credential = (await DbContext.WebAuthnCredential.FirstOrDefaultAsync(c => c.Id == clientResponse.Id, cancellationToken))
                             ?? throw new ResourceNotFoundException();

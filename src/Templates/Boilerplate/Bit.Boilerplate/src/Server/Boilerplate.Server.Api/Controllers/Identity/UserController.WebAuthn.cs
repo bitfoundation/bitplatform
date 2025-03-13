@@ -3,7 +3,6 @@ using System.Text;
 using Microsoft.Extensions.Caching.Distributed;
 using Fido2NetLib;
 using Fido2NetLib.Objects;
-using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
@@ -32,22 +31,35 @@ public partial class UserController
             DisplayName = user.DisplayName,
         };
 
+        var authenticatorSelection = new AuthenticatorSelection
+        {
+            ResidentKey = ResidentKeyRequirement.Required,
+            UserVerification = UserVerificationRequirement.Preferred
+        };
+
+        //var authenticatorSelection = new AuthenticatorSelection
+        //{
+        //    AuthenticatorAttachment = AuthenticatorAttachment.Platform
+        //};
+
+        var extensions = new AuthenticationExtensionsClientInputs
+        {
+            CredProps = true,
+            Extensions = true,
+            UserVerificationMethod = true,
+        };
+
         var options = fido2.RequestNewCredential(new RequestNewCredentialParams
         {
             User = fidoUser,
-            ExcludeCredentials = [.. existingKeys],
-            AuthenticatorSelection = AuthenticatorSelection.Default,
+            ExcludeCredentials = [], //[.. existingKeys],
+            AuthenticatorSelection = authenticatorSelection,
             AttestationPreference = AttestationConveyancePreference.None,
-            Extensions = new AuthenticationExtensionsClientInputs
-            {
-                CredProps = true,
-                Extensions = true,
-                UserVerificationMethod = true,
-            }
+            Extensions = extensions
         });
 
         var key = GetWebAuthnCacheKey(userId);
-        await cache.SetAsync(key, Encoding.UTF8.GetBytes(options.ToJson()), cancellationToken);
+        await cache.SetAsync(key, Encoding.UTF8.GetBytes(options.ToJson()), new() { SlidingExpiration = TimeSpan.FromMinutes(3) }, cancellationToken);
 
         return options;
     }
@@ -110,6 +122,22 @@ public partial class UserController
                                 ?? throw new ResourceNotFoundException();
 
         DbContext.WebAuthnCredential.Remove(entityToDelete);
+
+        await DbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    [HttpDelete]
+    public async Task DeleteAllWebAuthnCredentials(CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+        var user = await userManager.FindByIdAsync(userId.ToString())
+                    ?? throw new ResourceNotFoundException();
+
+        var entities = await DbContext.WebAuthnCredential.Where(c => c.UserId == userId).ToListAsync(cancellationToken);
+
+        if (entities is null || entities.Count == 0) return;
+
+        DbContext.WebAuthnCredential.RemoveRange(entities);
 
         await DbContext.SaveChangesAsync(cancellationToken);
     }

@@ -92,7 +92,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
 
-        var user = await userManager.FindUserAsync(request) 
+        var user = await userManager.FindUserAsync(request)
                     ?? throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]).WithData("Identifier", request);
 
         await SignIn(request, user, cancellationToken);
@@ -341,8 +341,15 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     public async Task SendTwoFactorToken(SignInRequestDto request, CancellationToken cancellationToken)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
-        var user = await userManager.FindUserAsync(request) ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]).WithData("Identifier", request);
 
+        var user = await userManager.FindUserAsync(request)
+                    ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]).WithData("Identifier", request);
+
+        await SendTwoFactorToken(request, user, cancellationToken);
+    }
+
+    private async Task SendTwoFactorToken(SignInRequestDto request, User user, CancellationToken cancellationToken)
+    {
         if (user.TwoFactorEnabled is false)
             throw new BadRequestException().WithData("UserId", user.Id);
 

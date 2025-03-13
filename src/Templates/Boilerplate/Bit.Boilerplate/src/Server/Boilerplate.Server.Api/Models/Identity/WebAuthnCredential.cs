@@ -2,6 +2,11 @@
 
 namespace Boilerplate.Server.Api.Models.Identity;
 
+/// <summary>
+/// This model is used by the Fido2 lib to store and retrieve the data of the browser credential api for `Web Authentication`.
+/// <br />
+/// More info: <see href="https://github.com/passwordless-lib/fido2-net-lib"/>
+/// </summary>
 public class WebAuthnCredential
 {
     public required byte[] Id { get; set; }

@@ -38,6 +38,7 @@ public partial class SignInPage
     private SignInPanelTab currentSignInPanelTab;
     private readonly SignInRequestDto model = new();
     private AppDataAnnotationsValidator? validatorRef;
+    private AuthenticatorAssertionRawResponse? webAuthnAssertion;
     private Action unsubscribeIdentityHeaderBackLinkClicked = default!;
 
 
@@ -83,6 +84,7 @@ public partial class SignInPage
 
             if (source == TfaPayload)
             {
+                webAuthnAssertion = null;
                 requiresTwoFactor = false;
                 model.TwoFactorCode = null;
             }
@@ -105,20 +107,29 @@ public partial class SignInPage
         {
             if (requiresTwoFactor && string.IsNullOrWhiteSpace(model.TwoFactorCode)) return;
 
-            CleanModel();
-
-            if (validatorRef?.EditContext.Validate() is false) return;
-
-            model.DeviceInfo = telemetryContext.Platform;
-
-            requiresTwoFactor = await AuthManager.SignIn(model, CurrentCancellationToken);
-
-            if (requiresTwoFactor)
+            if (webAuthnAssertion is null)
             {
-                PubSubService.Publish(ClientPubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, TfaPayload);
+                CleanModel();
+
+                if (validatorRef?.EditContext.Validate() is false) return;
+
+                model.DeviceInfo = telemetryContext.Platform;
+
+                requiresTwoFactor = await AuthManager.SignIn(model, CurrentCancellationToken);
+
+                if (requiresTwoFactor)
+                {
+                    PubSubService.Publish(ClientPubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, TfaPayload);
+                }
+                else
+                {
+                    NavigationManager.NavigateTo(ReturnUrlQueryString ?? Urls.HomePage, replace: true);
+                }
             }
             else
             {
+                var response = await identityController.VerifyWebAuthAndSignIn(new() { ClientResponse = webAuthnAssertion, TfaCode = model.TwoFactorCode }, CurrentCancellationToken);
+                await AuthManager.StoreTokens(response!, model.RememberMe);
                 NavigationManager.NavigateTo(ReturnUrlQueryString ?? Urls.HomePage, replace: true);
             }
         }
@@ -160,10 +171,9 @@ public partial class SignInPage
         {
             var options = await identityController.GetWebAuthnAssertionOptions(CurrentCancellationToken);
 
-            AuthenticatorAssertionRawResponse assertion;
             try
             {
-                assertion = await JSRuntime.VerifyWebAuthnCredential(options);
+                webAuthnAssertion = await JSRuntime.VerifyWebAuthnCredential(options);
             }
             catch (Exception ex)
             {
@@ -172,9 +182,11 @@ public partial class SignInPage
                 return;
             }
 
-            var response = await identityController.VerifyWebAuthAndSignIn(assertion, CurrentCancellationToken);
+            var response = await identityController.VerifyWebAuthAndSignIn(new() { ClientResponse = webAuthnAssertion }, CurrentCancellationToken);
 
-            if (response.RequiresTwoFactor)
+            requiresTwoFactor = response.RequiresTwoFactor;
+
+            if (requiresTwoFactor)
             {
                 PubSubService.Publish(ClientPubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, TfaPayload);
             }
@@ -186,6 +198,7 @@ public partial class SignInPage
         }
         catch (KnownException e)
         {
+            webAuthnAssertion = null;
             SnackBarService.Error(e.Message);
         }
         finally
@@ -242,9 +255,16 @@ public partial class SignInPage
     {
         try
         {
-            CleanModel();
+            if (webAuthnAssertion is null)
+            {
+                CleanModel();
 
-            await identityController.SendTwoFactorToken(model, CurrentCancellationToken);
+                await identityController.SendTwoFactorToken(model, CurrentCancellationToken);
+            }
+            else
+            {
+                await identityController.VerifyWebAuthAndSendTwoFactorToken(webAuthnAssertion, CurrentCancellationToken);
+            }
 
             SnackBarService.Success(Localizer[nameof(AppStrings.TfaTokenSentMessage)]);
         }

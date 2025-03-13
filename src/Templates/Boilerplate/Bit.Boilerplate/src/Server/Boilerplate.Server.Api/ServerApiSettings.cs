@@ -48,9 +48,9 @@ public partial class ServerApiSettings : SharedSettings
     public ResponseCachingOptions ResponseCaching { get; set; } = default!;
 
     /// <summary>
-    /// Defines the list of origins permitted for CORS access to the API. These origins are `also` valid for use as return URLs after social sign-ins and for generating URLs in emails.
+    /// Lists the permitted origins for CORS requests, return URLs following social sign-in and email confirmation, etc., along with allowed origins for Web Auth.
     /// </summary>
-    public Uri[] AllowedOrigins { get; set; } = [];
+    public Uri[] TrustedOrigins { get; set; } = [];
 
     //#if (module == "Admin" || module == "Sales")
     [Required]
@@ -113,8 +113,8 @@ command in the Server.Api's project's folder and replace P@ssw0rdP@ssw0rd with t
 
     internal bool IsAllowedOrigin(Uri origin)
     {
-        return AllowedOrigins.Any(allowedOrigin => allowedOrigin == origin)
-            || AllowedOriginsRegex().IsMatch(origin.ToString());
+        return TrustedOrigins.Any(trustedOrigin => trustedOrigin == origin)
+            || TrustedOriginsRegex().IsMatch(origin.ToString());
     }
 
     //-:cnd:noEmit
@@ -127,7 +127,7 @@ command in the Server.Api's project's folder and replace P@ssw0rdP@ssw0rd with t
     [GeneratedRegex(@"^(http|https|app):\/\/(localhost|0\.0\.0\.0|0\.0\.0\.1|127\.0\.0\.1)(:\d+)?(\/.*)?$")]
 #endif
     //+:cnd:noEmit
-    private partial Regex AllowedOriginsRegex();
+    private partial Regex TrustedOriginsRegex();
 }
 
 public partial class AppIdentityOptions : IdentityOptions
