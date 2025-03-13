@@ -31,10 +31,15 @@ public partial class UserController
             DisplayName = user.DisplayName,
         };
 
+        //var authenticatorSelection = new AuthenticatorSelection
+        //{
+        //    ResidentKey = ResidentKeyRequirement.Required,
+        //    UserVerification = UserVerificationRequirement.Preferred
+        //};
+
         var authenticatorSelection = new AuthenticatorSelection
         {
-            ResidentKey = ResidentKeyRequirement.Required,
-            UserVerification = UserVerificationRequirement.Preferred
+            AuthenticatorAttachment = AuthenticatorAttachment.Platform
         };
 
         var extensions = new AuthenticationExtensionsClientInputs
@@ -50,7 +55,7 @@ public partial class UserController
             ExcludeCredentials = [], //[.. existingKeys],
             AuthenticatorSelection = authenticatorSelection,
             AttestationPreference = AttestationConveyancePreference.None,
-            Extensions = extensions
+            //Extensions = extensions
         });
 
         var key = GetWebAuthnCacheKey(userId);

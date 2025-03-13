@@ -84,6 +84,7 @@ public partial class SignInPage
 
             if (source == TfaPayload)
             {
+                webAuthnAssertion = null;
                 requiresTwoFactor = false;
                 model.TwoFactorCode = null;
             }
@@ -197,6 +198,7 @@ public partial class SignInPage
         }
         catch (KnownException e)
         {
+            webAuthnAssertion = null;
             SnackBarService.Error(e.Message);
         }
         finally
