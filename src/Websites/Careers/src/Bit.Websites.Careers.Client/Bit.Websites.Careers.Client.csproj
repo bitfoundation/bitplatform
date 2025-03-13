@@ -31,6 +31,7 @@
         <EmbeddedResource Include="appsettings.json" />
         <PackageReference Include="Bit.Bswup" Version="9.6.0-pre-08" />
         <PackageReference Include="Bit.BlazorUI" Version="9.6.0-pre-08" />
+        <PackageReference Include="Bit.BlazorES2019" Version="9.6.0-pre-08" />
         <PackageReference Include="Bit.BlazorUI.Icons" Version="9.6.0-pre-08" />
         <PackageReference Include="Bit.BlazorUI.Assets" Version="9.6.0-pre-08" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="9.6.0-pre-08">

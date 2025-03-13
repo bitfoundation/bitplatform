@@ -18,6 +18,7 @@
 
         <PackageReference Include="Bit.Butil" />
         <PackageReference Include="Bit.BlazorUI" />
+        <PackageReference Include="Bit.BlazorES2019" />
         <PackageReference Include="Bit.BlazorUI.Icons" />
         <PackageReference Include="Bit.BlazorUI.Assets" />
         <!--/+:msbuild-conditional:noEmit -->

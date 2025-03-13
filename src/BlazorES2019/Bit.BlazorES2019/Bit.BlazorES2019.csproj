@@ -7,5 +7,10 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
+	
+    <ItemGroup>
+        <Content Remove="wwwroot/.gitkeep" />
+        <None Include="wwwroot/.gitkeep" />
+    </ItemGroup>
 
 </Project>

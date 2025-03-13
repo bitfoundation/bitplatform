@@ -44,6 +44,27 @@ jobs:
           fileName: 'AssemblyOriginatorKeyFile.snk'
           encodedString: ${{ secrets.STRONG_SIGN_CERTIFICATE_BASE64 }}
 
+    - name: Generate ES2019 based blazor.*.js files
+      run: |
+        git clone https://github.com/dotnet/aspnetcore.git
+        cd aspnetcore
+        git switch release/9.0
+        git submodule update --init --recursive
+        sed -i 's/ES2022/ES2019/g' src/Components/Shared.JS/tsconfig.json
+        ./restore.sh
+        npm run-script build
+        cd src/Components/
+        ./build.sh
+        cd Web.JS
+        npm run-script build:production
+        cd ../../../../
+        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/BlazorES2019/Bit.BlazorES2019/wwwroot/
+
+    - name: dotnet pack BlazorES2019
+      run: |
+          dotnet build src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+          dotnet pack src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj --output . --configuration Release
+
     - name: Generate CSS/JS files BlazorUI
       run: dotnet build src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj -t:BeforeBuildTasks --no-restore -f:net9.0 -c Release
     - name: dotnet build BlazorUI
@@ -112,5 +133,11 @@ jobs:
     - name: dotnet pack BlazorEmpty
       run: dotnet pack src/Templates/BlazorEmpty/Bit.BlazorEmpty.ProjectTemplate.csproj --output . --configuration Release
     
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: nupkg-files
+        path: ./*.nupkg
+
     - name: dotnet nuget push
       run: dotnet nuget push **/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_ORG_API_KEY}} --skip-duplicate
