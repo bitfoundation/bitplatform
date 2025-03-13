@@ -256,7 +256,7 @@ Collapsed: [ <BitRating Visibility=""""BitVisibility.Collapsed"""" /> ]";
 <BitToggleButton OnChange=""v => oneWayBinding = v ? 5 : 0"" Text=""@(oneWayBinding == 5 ? ""Unstar All"" : ""Star All"")"" />
 
 <BitRating @bind-Value=""twoWayBinding"" />
-<BitSpinButton @bind-Value=""twoWayBinding"" />
+<BitNumberField @bind-Value=""twoWayBinding"" />
 
 <BitRating DefaultValue=""2"" OnChange=""v => onChangeValue = v"" />
 <BitLabel>Changed Value: @onChangeValue</BitLabel>";

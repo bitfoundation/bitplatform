@@ -69,7 +69,7 @@
             <div>To set the Panel position on the page you can use the Position parameter.</div>
             <br /><br />
             <div class="position-btn">
-                <BitSpinButton @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
+                <BitNumberField @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
                 <div>
                     <BitButton OnClick="() => isOpenInPositionStart = true">Start</BitButton>
                     <BitButton OnClick="() => isOpenPositionEnd = true">End</BitButton>
@@ -85,7 +85,7 @@
                       Position="BitPanelPosition.Start">
                 <div style="padding:1rem">
                     BitPanel with Start position and custom Size.
-                    <BitSpinButton @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
+                    <BitNumberField @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
                 </div>
             </BitPanel>
 
@@ -94,14 +94,14 @@
                       Position="BitPanelPosition.End">
                 <div style="padding:1rem">
                     BitPanel with End position and custom Size.
-                    <BitSpinButton @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
+                    <BitNumberField @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
                 </div>
             </BitPanel>
 
             <BitPanel @bind-Size="customPanelSize" @bind-IsOpen="isOpenInPositionTop" Position="BitPanelPosition.Top">
                 <div style="padding:1rem">
                     BitPanel with Top position and custom Size.
-                    <BitSpinButton @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
+                    <BitNumberField @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
                 </div>
             </BitPanel>
 
@@ -110,7 +110,7 @@
                       Position="BitPanelPosition.Bottom">
                 <div style="padding:1rem">
                     BitPanel with Bottom position and custom Size.
-                    <BitSpinButton @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
+                    <BitNumberField @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
                 </div>
             </BitPanel>
         </DemoSection>

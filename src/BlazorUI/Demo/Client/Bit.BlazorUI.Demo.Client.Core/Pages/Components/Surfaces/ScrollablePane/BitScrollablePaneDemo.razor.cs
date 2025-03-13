@@ -273,7 +273,7 @@ public partial class BitScrollablePaneDemo
     <BitChoiceGroupOption Text=""Visible"" Value=""BitOverflow.Visible"" />
 </BitChoiceGroup>
 
-<BitSpinButton Label=""Items count"" Min=""4"" @bind-Value=""@overflowItemsCount"" />
+<BitNumberField Label=""Items count"" Min=""4"" @bind-Value=""@overflowItemsCount"" />
 
 <BitScrollablePane Overflow=""@overflow"" Height=""16rem"" Class=""pane"">
     @for (int i = 0; i < overflowItemsCount; i++)
@@ -312,7 +312,7 @@ private BitOverflow overflow;
     <BitChoiceGroupOption Text=""BothEdges"" Value=""BitScrollbarGutter.BothEdges"" />
 </BitChoiceGroup>
 
-<BitSpinButton Label=""Items count"" Min=""4"" @bind-Value=""@gutterItemsCount"" />
+<BitNumberField Label=""Items count"" Min=""4"" @bind-Value=""@gutterItemsCount"" />
 
 <BitScrollablePane Gutter=""@gutter"" Height=""16rem"" Class=""pane"">
     @for (int i = 0; i < gutterItemsCount; i++)

@@ -116,7 +116,7 @@
                     <BitChoiceGroupOption Text="Visible" Value="BitOverflow.Visible" />
                 </BitChoiceGroup>
                 <br />
-                <BitSpinButton Label="Items count" Min="4" @bind-Value="@overflowItemsCount" />
+                <BitNumberField Label="Items count" Min="4" @bind-Value="@overflowItemsCount" />
                 <br />
                 <BitScrollablePane Overflow="@overflow" Height="16rem" Class="pane">
                     @for (int i = 0; i < overflowItemsCount; i++)
@@ -139,7 +139,7 @@
                     <BitChoiceGroupOption Text="BothEdges" Value="BitScrollbarGutter.BothEdges" />
                 </BitChoiceGroup>
                 <br />
-                <BitSpinButton Label="Items count" Min="4" @bind-Value="@gutterItemsCount" />
+                <BitNumberField Label="Items count" Min="4" @bind-Value="@gutterItemsCount" />
                 <br />
                 <BitScrollablePane Gutter="@gutter" Height="16rem" Class="pane">
                     @for (int i = 0; i < gutterItemsCount; i++)
