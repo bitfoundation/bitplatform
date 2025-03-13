@@ -35,7 +35,9 @@ jobs:
           encodedString: ${{ secrets.STRONG_SIGN_CERTIFICATE_BASE64 }}
 
     - name: dotnet pack BlazorES2019
-      run: dotnet pack src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj --output . --configuration Release
+      run: |
+          dotnet build src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+          dotnet pack src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj --output . --configuration Release
 
     - name: Generate ES2019 based blazor.*.js files
       run: |
@@ -54,7 +56,9 @@ jobs:
         cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/BlazorES2019/Bit.BlazorES2019/wwwroot/
 
     - name: dotnet pack BlazorES2019
-      run: dotnet pack src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj --output . --configuration Release
+      run: |
+          dotnet build src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+          dotnet pack src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj --output . --configuration Release
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
