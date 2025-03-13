@@ -27,9 +27,9 @@ class WebAuthn {
 
         options.user.id = WebAuthn.ToArrayBuffer(options.user.id, 'user.id');
 
-        for (let cred of options.excludeCredentials || []) {
+        options.excludeCredentials?.forEach(function (cred) {
             cred.id = WebAuthn.ToArrayBuffer(cred.id, 'cred.id');
-        }
+        });
 
         if (options.authenticatorSelection?.authenticatorAttachment === null) {
             options.authenticatorSelection.authenticatorAttachment = undefined;
