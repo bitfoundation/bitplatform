@@ -5,7 +5,7 @@ public partial class MainLayout
 
     private readonly List<BitNavItem> _navItems =
     [
-        new() { Text = "Overview", Url = "/overview" },
+        new() { Text = "Overview", Url = "/overview", AdditionalUrls = ["/components"] },
         new() { Text = "Getting started", Url = "/getting-started" },
         new()
         {
