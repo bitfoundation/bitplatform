@@ -124,7 +124,7 @@ public partial class AppDiagnosticModal
         {
             await userController.DeleteAllWebAuthnCredentials(CurrentCancellationToken);
 
-            await JSRuntime.RemoveWebAuthnConfigured();
+            //await JSRuntime.RemoveWebAuthnConfigured();
         }
 
         if (AppPlatform.IsBlazorHybrid is false)
