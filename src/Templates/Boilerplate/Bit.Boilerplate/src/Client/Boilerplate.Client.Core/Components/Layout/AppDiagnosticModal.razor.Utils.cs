@@ -124,6 +124,8 @@ public partial class AppDiagnosticModal
         {
             await userController.DeleteAllWebAuthnCredentials(CurrentCancellationToken);
 
+            // since the localstorage is used to store configured webauthn users and it is already cleared above, we can ignore the following line.
+            // we kept it commented for future refrences.
             //await JSRuntime.RemoveWebAuthnConfigured();
         }
 
