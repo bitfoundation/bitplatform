@@ -23,15 +23,11 @@ jobs:
     
     - name: Checkout source code
       uses: actions/checkout@v4
-    
-    - name: Remove .NET 9 based global.json
-      run: |
-        rm src/global.json
-    
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global8.json
+        global-json-file: src/global.json
 
     - uses: actions/setup-node@v4
       with:
@@ -273,14 +269,10 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v4
 
-    - name: Remove .NET 9 based global.json
-      run: |
-        rm src/global.json
-    
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        global-json-file: src\Templates\Boilerplate\Bit.Boilerplate\global8.json
+        global-json-file: src/global.json
 
     - uses: actions/setup-node@v4
       with:
@@ -330,14 +322,10 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v4
      
-    - name: Remove .NET 9 based global.json
-      run: |
-        rm src/global.json
-    
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global8.json
+        global-json-file: src/global.json
 
     - uses: actions/setup-node@v4
       with:
@@ -424,14 +412,10 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v4
      
-    - name: Remove .NET 9 based global.json
-      run: |
-        rm src/global.json
-    
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global8.json
+        global-json-file: src/global.json
 
     - uses: actions/setup-node@v4
       with:
