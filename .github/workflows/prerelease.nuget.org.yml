@@ -34,11 +34,6 @@ jobs:
           fileName: 'AssemblyOriginatorKeyFile.snk'
           encodedString: ${{ secrets.STRONG_SIGN_CERTIFICATE_BASE64 }}
 
-    - name: dotnet pack BlazorES2019
-      run: |
-          dotnet build src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-          dotnet pack src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj --output . --configuration Release
-
     - name: Generate ES2019 based blazor.*.js files
       run: |
         git clone https://github.com/dotnet/aspnetcore.git
@@ -64,7 +59,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: nupkg-files
-        path: src/**/*.nupkg
+        path: ./*.nupkg
 
     # - name: Generate CSS/JS files BlazorUI
     #   run: dotnet build src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj -t:BeforeBuildTasks --no-restore -f:net9.0 -c Release
