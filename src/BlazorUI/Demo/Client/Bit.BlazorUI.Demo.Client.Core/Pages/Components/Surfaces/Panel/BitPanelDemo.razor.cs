@@ -244,7 +244,7 @@ private BitPanel modelessPanelRef = default!;
 private bool isAutoToggleScrollPanelOpen;";
 
     private readonly string example3RazorCode = @"
-<BitSpinButton @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+<BitNumberField @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
 
 <BitButton OnClick=""() => isOpenInPositionStart = true"">Start</BitButton>
 <BitButton OnClick=""() => isOpenPositionEnd = true"">End</BitButton>
@@ -256,7 +256,7 @@ private bool isAutoToggleScrollPanelOpen;";
             Position=""BitPanelPosition.Start"">
     <div style=""padding:1rem"">
         BitPanel with Start position and custom Size.
-        <BitSpinButton @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+        <BitNumberField @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
     </div>
 </BitPanel>
 
@@ -265,14 +265,14 @@ private bool isAutoToggleScrollPanelOpen;";
             Position=""BitPanelPosition.End"">
     <div style=""padding:1rem"">
         BitPanel with End position and custom Size.
-        <BitSpinButton @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+        <BitNumberField @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
     </div>
 </BitPanel>
 
 <BitPanel @bind-Size=""customPanelSize"" @bind-IsOpen=""isOpenInPositionTop"" Position=""BitPanelPosition.Top"">
     <div style=""padding:1rem"">
         BitPanel with Top position and custom Size.
-        <BitSpinButton @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+        <BitNumberField @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
     </div>
 </BitPanel>
 
@@ -281,7 +281,7 @@ private bool isAutoToggleScrollPanelOpen;";
             Position=""BitPanelPosition.Bottom"">
     <div style=""padding:1rem"">
         BitPanel with Bottom position and custom Size.
-        <BitSpinButton @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+        <BitNumberField @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
     </div>
 </BitPanel>";
     private readonly string example3CsharpCode = @"
