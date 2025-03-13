@@ -14,28 +14,50 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v4
 
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: src/global.json
 
-    # - name: Setup .NET
-    #   uses: actions/setup-dotnet@v4
-    #   with:
-    #     global-json-file: src/global.json
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 23
 
-    # - uses: actions/setup-node@v4
-    #   with:
-    #     node-version: 23
+    - name: Delete AssemblyOriginatorKeyFile.snk
+      run: |
+        rm src/AssemblyOriginatorKeyFile.snk
 
-    # - name: Delete AssemblyOriginatorKeyFile.snk
-    #   run: |
-    #     rm src/AssemblyOriginatorKeyFile.snk
+    - name: Extract strong sign certificate from env
+      uses: timheuer/base64-to-file@v1.2
+      with:
+          fileDir: './src/'
+          fileName: 'AssemblyOriginatorKeyFile.snk'
+          encodedString: ${{ secrets.STRONG_SIGN_CERTIFICATE_BASE64 }}
 
-    # - name: Extract strong sign certificate from env
-    #   uses: timheuer/base64-to-file@v1.2
-    #   with:
-    #       fileDir: './src/'
-    #       fileName: 'AssemblyOriginatorKeyFile.snk'
-    #       encodedString: ${{ secrets.STRONG_SIGN_CERTIFICATE_BASE64 }}
+    - name: Generate ES2019 based blazor.*.js files
+      run: |
+        git clone https://github.com/dotnet/aspnetcore.git
+        cd aspnetcore
+        git switch release/9.0
+        git submodule update --init --recursive
+        sed -i 's/ES2022/ES2019/g' src/Components/Shared.JS/tsconfig.json
+        ./restore.sh
+        npm run-script build
+        cd src/Components/
+        ./build.sh
+        cd Web.JS
+        npm run-script build:production
+        cd ../../../../
+        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/BlazorES2019/Bit.BlazorES2019/wwwroot/
+
+    - name: dotnet pack BlazorES2019
+      run: dotnet pack src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj --output . --configuration Release
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: nupkg-files
+        path: src/**/*.nupkg
 
     # - name: Generate CSS/JS files BlazorUI
     #   run: dotnet build src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj -t:BeforeBuildTasks --no-restore -f:net9.0 -c Release
