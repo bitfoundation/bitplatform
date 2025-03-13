@@ -55,7 +55,7 @@ public partial class UserController
             ExcludeCredentials = [], //[.. existingKeys],
             AuthenticatorSelection = authenticatorSelection,
             AttestationPreference = AttestationConveyancePreference.None,
-            //Extensions = extensions
+            Extensions = extensions
         });
 
         var key = GetWebAuthnCacheKey(userId);
