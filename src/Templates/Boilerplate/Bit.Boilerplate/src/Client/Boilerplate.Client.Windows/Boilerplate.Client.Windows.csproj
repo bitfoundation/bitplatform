@@ -14,7 +14,7 @@
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
-        <NoWarn Condition="('$(framework)' == 'net9.0' OR '$(framework)' == '')">$(NoWarn);WFO5001</NoWarn>
+        <NoWarn>$(NoWarn);WFO5001</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Environment)' != 'Development'">
@@ -48,6 +48,9 @@
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.Extensions.Logging.ApplicationInsights" />
         <!--/-:msbuild-conditional:noEmit -->
         <Content Include="..\Boilerplate.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="..\Boilerplate.Client.Maui\wwwroot\blazor.webview.js" Link="wwwroot\blazor.webview.js">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
         <Content Remove="compilerconfig.json" />

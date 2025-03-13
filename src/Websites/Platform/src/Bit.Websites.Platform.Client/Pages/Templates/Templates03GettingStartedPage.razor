@@ -15,13 +15,6 @@
     <section class="section-card">
         <div class="section-card-txt">
             <BitText Typography="BitTypography.H5" Gutter>Setup your development environment</BitText>
-            <BitDropdown @bind-Value="dotnetVersion"
-                         FitWidth
-                         Label=".NET version"
-                         TItem="BitDropdownOption<string>" TValue="string">
-                <BitDropdownOption Text=".NET 8" Value="@("net8.0")" />
-                <BitDropdownOption Text=".NET 9" Value="@("net9.0")" />
-            </BitDropdown>
             <br />
             <BitPivot>
                 <BitPivotItem HeaderText="Easy setup">
@@ -104,29 +97,17 @@
                     <BitToggle Inline Label="Show cross-platform development steps" @bind-Value="showCrossPlatform" />
                     <ol>
                         <li style="margin-bottom:8px">
-                            Install latest <a href="https://dotnet.microsoft.com/en-us/download/dotnet/@(dotnetVersion is "net9.0" ? "9.0" : "8.0")" target="_blank">.NET SDK</a>
+                            Install latest <a href="https://dotnet.microsoft.com/en-us/download/dotnet/9.0" target="_blank">.NET SDK</a>
                             @if (devOS is "Linux")
                             {
                                 <br />
                                 <BitAccordion Title="Ubuntu instructions">
-                                    @if (dotnetVersion is "net9.0")
-                                    {
-                                        <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/3606de37-1325-4f5f-bbe9-1bc44b3c1c7f/91872629e9f0c205cace9c462d5e89a4/dotnet-sdk-9.0.200-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
+                                <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/82a7fc96-b53b-4af4-ac3a-ef0a6c9325d5/84e522c31482538cddf696d03c5b20af/dotnet-sdk-9.0.201-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
 mkdir -p $HOME/.dotnet
 tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
 echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
 export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
 rm $HOME/dotnet.tar.gz</CodeBox>
-                                    }
-                                    else
-                                    {
-                                        <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/d2abdb4c-a96e-4123-9351-e4dd2ea20905/e8010ae2688786ffc1ebca4ebb52f41b/dotnet-sdk-8.0.406-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
-mkdir -p $HOME/.dotnet
-tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
-echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
-export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
-rm $HOME/dotnet.tar.gz</CodeBox>
-                                    }
                                 </BitAccordion>
                             }
                         </li>

@@ -38,12 +38,15 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
 
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.3" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="9.0.40" />
-        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3065.39" />
+        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3124.44" />
         <PackageReference Include="Velopack" Version="0.0.1053" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         <Content Include="..\Bit.BlazorUI.Demo.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="..\Bit.BlazorUI.Demo.Client.Maui\wwwroot\blazor.webview.js" Link="wwwroot\blazor.webview.js">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
         <Content Include=".config\dotnet-tools.json" />

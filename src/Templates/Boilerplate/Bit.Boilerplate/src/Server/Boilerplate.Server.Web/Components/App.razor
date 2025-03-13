@@ -5,13 +5,11 @@
 @{
     var noPrerender = HttpContext.Request.Query["no-prerender"].Count > 0;
     var renderMode = noPrerender ? noPrerenderBlazorWebAssembly : serverWebSettings.WebAppRender.RenderMode;
-    @*#if (framework == "net9.0")*@
     if (HttpContext.AcceptsInteractiveRouting() is false)
     {
         // https://learn.microsoft.com/en-us/aspnet/core/release-notes/aspnetcore-9.0?view=aspnetcore-9.0#add-static-server-side-rendering-ssr-pages-to-a-globally-interactive-blazor-web-app
         renderMode = null;
     }
-    @*#endif*@
 }
 
 <!DOCTYPE html>
@@ -85,8 +83,9 @@
 
     @if (HttpContext.Request.IsLightHouseRequest() is false)
     {
-        <Script src="_framework/blazor.web.js" autostart="false"></Script>
-        <Script src="_content/Bit.Bswup/bit-bswup.js"></Script>
+        <!-- If you don't plan to older browsers and prefer to use the original `blazor.web.js`, follow the instructions in this link: https://github.com/orgs/bitfoundation/discussions/9754 -->
+        <Script src="blazor.web.js" autostart="false"></Script>
+        <Script src="_content/Bit.Bswup/bit-bswup.js" blazorScript="blazor.web.js"></Script>
         <Script src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
         <AppBswupProgressBar />
         <Script src="_content/Bit.Butil/bit-butil.js"></Script>

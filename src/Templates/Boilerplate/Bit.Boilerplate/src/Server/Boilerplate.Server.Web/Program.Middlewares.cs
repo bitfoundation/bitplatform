@@ -22,7 +22,7 @@ namespace Boilerplate.Server.Web;
 public static partial class Program
 {
     /// <summary>
-    /// https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-8.0#middleware-order
+    /// https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-9.0#middleware-order
     /// </summary>
     public static void ConfigureMiddlewares(this WebApplication app)
     {

@@ -6,11 +6,9 @@ using Plugin.LocalNotification;
 //#endif
 using Boilerplate.Client.Core.Styles;
 using Boilerplate.Client.Maui.Services;
-//#if (framework == 'net9.0')
 using Maui.AppStores;
 using Maui.InAppReviews;
 using Maui.Android.InAppUpdates;
-//#endif
 //-:cnd:noEmit
 #if iOS || Mac
 using UIKit;
@@ -42,11 +40,9 @@ public static partial class MauiProgram
         //+:cnd:noEmit
         builder
             .UseMauiApp<App>()
-            //#if (framework == 'net9.0')
             .UseInAppReviews()
             .UseAppStoreInfo()
             .UseAndroidInAppUpdates()
-            //#endif
             //#if (sentry == true)
             .UseSentry(options =>
             {

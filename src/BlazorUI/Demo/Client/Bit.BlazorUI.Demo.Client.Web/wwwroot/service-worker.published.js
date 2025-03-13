@@ -10,9 +10,6 @@ self.assetsExclude = [
 ];
 self.externalAssets = [
     {
-        "url": "_framework/blazor.web.js"
-    },
-    {
         "url": "Bit.BlazorUI.Demo.Server.styles.css"
     }
 ];

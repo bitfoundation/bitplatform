@@ -7,9 +7,9 @@
     <ItemGroup>
         <ProjectReference Include="..\Bit.Websites.Careers.Shared\Bit.Websites.Careers.Shared.csproj" />
         <ProjectReference Include="..\Bit.Websites.Careers.Client\Bit.Websites.Careers.Client.csproj" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.2" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.2" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.3" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.3" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.3" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="9.6.0-pre-08">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

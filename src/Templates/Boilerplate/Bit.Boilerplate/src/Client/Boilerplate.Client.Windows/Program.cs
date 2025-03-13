@@ -22,9 +22,7 @@ public partial class Program
         AppPlatform.IsBlazorHybrid = true;
         ITelemetryContext.Current = new WindowsTelemetryContext();
 
-        //#if (framework == 'net9.0')
         Application.SetColorMode(SystemColorMode.System);
-        //#endif
 
         var configuration = new ConfigurationBuilder().AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Windows").Build();
         var services = new ServiceCollection();

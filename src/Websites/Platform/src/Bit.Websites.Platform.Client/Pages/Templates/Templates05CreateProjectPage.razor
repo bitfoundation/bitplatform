@@ -39,19 +39,6 @@
 
         <BitGridItem Class="grid-item md">
             <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>.NET</BitText>
-                <BitDropdown Placeholder="Choose .NET version" Items="@dotnetVersion.Items" @bind-Value="@dotnetVersion.Value" />
-            </div>
-            <br />
-            <CodeBox>
-                @GetDotNetVersionCommand()
-            </CodeBox>
-            <br />
-            Refer to the <a href="https://dotnet.microsoft.com/en-us/platform/support/policy" target="_blank">.NET Support Policy</a>
-        </BitGridItem>
-
-        <BitGridItem Class="grid-item md">
-            <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Server Database</BitText>
                 <BitDropdown Placeholder="Choose database" Items="@database.Items" @bind-Value="@database.Value" />
             </div>
