@@ -642,9 +642,9 @@ public partial class Butil12ElementPage
     <div style=""height: 10rem; width: 10rem;"">Element</div>
 </div>
 
-<BitSpinButton @bind-Value=""scrollY"" Label=""Scroll Y"" Mode=""BitSpinButtonMode.Inline"" />
+<BitNumberField @bind-Value=""scrollY"" Label=""Scroll Y"" Mode=""BitSpinButtonMode.Inline"" />
 
-<BitSpinButton @bind-Value=""scrollX"" Label=""Scroll X"" Mode=""BitSpinButtonMode.Inline"" />
+<BitNumberField @bind-Value=""scrollX"" Label=""Scroll X"" Mode=""BitSpinButtonMode.Inline"" />
 
 <BitChoiceGroup @bind-Value=""scrollBehavior""
                 Label=""Scroll behavior""
@@ -686,9 +686,9 @@ public partial class Butil12ElementPage
     <div style=""height: 10rem; width: 10rem;"">Element</div>
 </div>
 
-<BitSpinButton @bind-Value=""scrollByY"" Label=""ScrollBy Y"" Mode=""BitSpinButtonMode.Inline"" />
+<BitNumberField @bind-Value=""scrollByY"" Label=""ScrollBy Y"" Mode=""BitSpinButtonMode.Inline"" />
 
-<BitSpinButton @bind-Value=""scrollByX"" Label=""ScrollBy X"" Mode=""BitSpinButtonMode.Inline"" />
+<BitNumberField @bind-Value=""scrollByX"" Label=""ScrollBy X"" Mode=""BitSpinButtonMode.Inline"" />
 
 <BitChoiceGroup @bind-Value=""scrollByBehavior""
                 Label=""Scroll behavior""
@@ -1458,7 +1458,7 @@ public partial class Butil12ElementPage
     Element
 </div>
 
-<BitSpinButton @bind-Value=""newTabIndex"" Mode=""BitSpinButtonMode.Inline"" />
+<BitNumberField @bind-Value=""newTabIndex"" Mode=""BitSpinButtonMode.Inline"" />
 
 <BitButton OnClick=""SetTabIndex"">SetTabIndex</BitButton>
 

@@ -300,9 +300,9 @@
                             <div style="height: 10rem; width: 10rem;">Element</div>
                         </div>
                         <br />
-                        <BitSpinButton @bind-Value="scrollY" Label="Scroll Y" Mode="BitSpinButtonMode.Inline" Style="max-width: 18.75rem;" />
+                        <BitNumberField @bind-Value="scrollY" Label="Scroll Y" Mode="BitSpinButtonMode.Inline" Style="max-width: 18.75rem;" />
                         <br />
-                        <BitSpinButton @bind-Value="scrollX" Label="Scroll X" Mode="BitSpinButtonMode.Inline" Style="max-width: 18.75rem;" />
+                        <BitNumberField @bind-Value="scrollX" Label="Scroll X" Mode="BitSpinButtonMode.Inline" Style="max-width: 18.75rem;" />
                         <br />
                         <BitChoiceGroup @bind-Value="scrollBehavior"
                                         Label="Scroll behavior"
@@ -341,9 +341,9 @@
                             <div style="height: 10rem; width: 10rem;">Element</div>
                         </div>
                         <br />
-                        <BitSpinButton @bind-Value="scrollByY" Label="ScrollBy Y" Mode="BitSpinButtonMode.Inline" Style="max-width: 18.75rem;" />
+                        <BitNumberField @bind-Value="scrollByY" Label="ScrollBy Y" Mode="BitSpinButtonMode.Inline" Style="max-width: 18.75rem;" />
                         <br />
-                        <BitSpinButton @bind-Value="scrollByX" Label="ScrollBy X" Mode="BitSpinButtonMode.Inline" Style="max-width: 18.75rem;" />
+                        <BitNumberField @bind-Value="scrollByX" Label="ScrollBy X" Mode="BitSpinButtonMode.Inline" Style="max-width: 18.75rem;" />
                         <br />
                         <BitChoiceGroup @bind-Value="scrollByBehavior"
                                         Label="ScrollBy behavior"
@@ -1202,7 +1202,7 @@
                             Element
                         </div>
                         <br />
-                        <BitSpinButton @bind-Value="newTabIndex" Mode="BitSpinButtonMode.Inline" Style="max-width: 18.75rem;" />
+                        <BitNumberField @bind-Value="newTabIndex" Mode="BitSpinButtonMode.Inline" Style="max-width: 18.75rem;" />
                         <br />
                         <BitButton OnClick="SetTabIndex">SetTabIndex</BitButton>
                         &nbsp;
