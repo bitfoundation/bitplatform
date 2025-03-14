@@ -451,8 +451,6 @@ public partial class BitCarousel : BitComponentBase
 
     private async Task PageVisibilityChange(bool hidden)
     {
-        Console.WriteLine($"PageVisibilityChange: {hidden}");
-
         if (hidden)
         {
             await Pause();
