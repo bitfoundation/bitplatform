@@ -210,7 +210,19 @@ public partial class BitCarousel : BitComponentBase
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            await _js.BitObserversRegisterResize(UniqueId, RootElement, _dotnetObj);
+
+            if (ScrollItemsCount > VisibleItemsCount)
+            {
+                _internalScrollItemsCount = VisibleItemsCount;
+            }
+
+            await ResetDimensionsAsync();
+
+            await _pageVisibility.Init();
+        }
 
         _directionStyle = Dir == BitDir.Rtl ? "direction:rtl" : string.Empty;
 
@@ -228,18 +240,7 @@ public partial class BitCarousel : BitComponentBase
             _autoPlayTimer = null;
         }
 
-        if (firstRender is false) return;
-
-        await _pageVisibility.Init();
-
-        await _js.BitObserversRegisterResize(UniqueId, RootElement, _dotnetObj);
-
-        if (ScrollItemsCount > VisibleItemsCount)
-        {
-            _internalScrollItemsCount = VisibleItemsCount;
-        }
-
-        await ResetDimensionsAsync();
+        await base.OnAfterRenderAsync(firstRender);
     }
 
 
