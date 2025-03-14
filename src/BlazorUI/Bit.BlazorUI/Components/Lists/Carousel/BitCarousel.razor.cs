@@ -132,7 +132,7 @@ public partial class BitCarousel : BitComponentBase
     /// <summary>
     /// Pauses the AutoPlay if enabled.
     /// </summary>
-    public async Task Pause()
+    public void Pause()
     {
         _autoPlayTimer?.Stop();
     }
@@ -140,7 +140,7 @@ public partial class BitCarousel : BitComponentBase
     /// <summary>
     /// Resumes the AutoPlay if enabled.
     /// </summary>
-    public async Task Resume()
+    public void Resume()
     {
         _autoPlayTimer?.Start();
     }
@@ -449,16 +449,18 @@ public partial class BitCarousel : BitComponentBase
         await InvokeAsync(Next);
     }
 
-    private async Task PageVisibilityChange(bool hidden)
+    private Task PageVisibilityChange(bool hidden)
     {
         if (hidden)
         {
-            await Pause();
+            Pause();
         }
         else
         {
-            await Resume();
+            Resume();
         }
+
+        return Task.CompletedTask;
     }
 
 
