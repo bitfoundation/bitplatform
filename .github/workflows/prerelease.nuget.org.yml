@@ -49,6 +49,7 @@ jobs:
         npm run-script build:production
         cd ../../../../
         cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/BlazorES2019/Bit.BlazorES2019/wwwroot/
+        rm -rf aspnetcore
 
     - name: dotnet pack BlazorES2019
       run: |
