@@ -19,6 +19,9 @@ public class BitPageVisibility(IJSRuntime js)
 
 
 
+    /// <summary>
+    /// Initializes the js api of the page visibility utility.
+    /// </summary>
     public async Task Init()
     {
         if (_isInitialized) return;

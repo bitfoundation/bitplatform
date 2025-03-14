@@ -210,9 +210,9 @@ public partial class BitCarousel : BitComponentBase
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        _directionStyle = Dir == BitDir.Rtl ? "direction:rtl" : string.Empty;
-
         await base.OnAfterRenderAsync(firstRender);
+
+        _directionStyle = Dir == BitDir.Rtl ? "direction:rtl" : string.Empty;
 
         if (AutoPlay && _autoPlayTimer is null)
         {
