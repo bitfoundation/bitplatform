@@ -41,7 +41,7 @@ public partial class MainLayout : IAsyncDisposable
     {
         try
         {
-            var inPrerenderSession = jsRuntime.IsInitialized() is false;
+            var inPrerenderSession = RendererInfo.IsInteractive is false;
             isOnline = await prerenderStateService.GetValue<bool?>(nameof(isOnline), async () => isOnline ?? inPrerenderSession is true ? true : null);
             // During pre-rendering, if any API calls are made, the `isOnline` value will be set 
             // using PubSub's `ClientPubSubMessages.IS_ONLINE_CHANGED`, depending on the success 
