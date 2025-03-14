@@ -65,7 +65,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
         }
     }
 
-    protected bool InPrerenderSession => AppPlatform.IsBlazorHybrid is false && JSRuntime.IsInitialized() is false;
+    protected bool InPrerenderSession => AppPlatform.IsBlazorHybrid is false && RendererInfo.IsInteractive is false;
 
     protected sealed override void OnInitialized()
     {
