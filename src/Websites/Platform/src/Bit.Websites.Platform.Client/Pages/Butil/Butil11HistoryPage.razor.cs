@@ -84,7 +84,7 @@ public partial class Butil11HistoryPage
     private string goExampleCode =
 @"@inject Bit.Butil.History history
 
-<BitSpinButton @bind-Value=""delta"" Mode=""BitSpinButtonMode.Inline"" />
+<BitNumberField @bind-Value=""delta"" Mode=""BitSpinButtonMode.Inline"" />
 
 <BitButton OnClick=""@Go"">Go</BitButton>
 

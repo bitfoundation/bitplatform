@@ -192,12 +192,6 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Components/Inputs/SpinButton/BitSpinButtonDemo.razor.css",
-        "inputFile": "Pages/Components/Inputs/SpinButton/BitSpinButtonDemo.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Pages/Components/Inputs/TextField/BitTextFieldDemo.razor.css",
         "inputFile": "Pages/Components/Inputs/TextField/BitTextFieldDemo.razor.scss",
         "minify": { "enabled": false },
