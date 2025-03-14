@@ -25,17 +25,6 @@ public partial class Templates05CreateProjectPage
         ]
     };
 
-    private Parameter<string> dotnetVersion = new()
-    {
-        Value = "net9.0",
-        Default = "net9.0",
-        Items = 
-        [
-            new() { Text = ".NET 8", Value = "net8.0" },
-            new() { Text = ".NET 9", Value = "net9.0" },
-        ]
-    };
-
     private Parameter<string> pipeline = new()
     {
         Value = "GitHub",
@@ -100,11 +89,6 @@ public partial class Templates05CreateProjectPage
     private string GetFinalCommand()
     {
         StringBuilder finalCommand = new($"dotnet new bit-bp {GetNameCommand()}");
-
-        if (dotnetVersion.IsModified)
-        {
-            finalCommand.Append(GetDotNetVersionCommand());
-        }
 
         if (captcha.IsModified)
         {
@@ -182,11 +166,6 @@ public partial class Templates05CreateProjectPage
     private string GetCaptchaCommand()
     {
         return $"--captcha {captcha.Value} ";
-    }
-
-    private string GetDotNetVersionCommand()
-    {
-        return $"--framework {dotnetVersion.Value} ";
     }
 
     private string GetPipelineCommand()

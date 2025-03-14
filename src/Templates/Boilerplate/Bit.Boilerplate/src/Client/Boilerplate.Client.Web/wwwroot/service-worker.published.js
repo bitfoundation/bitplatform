@@ -33,9 +33,11 @@ self.externalAssets = [
     {
         "url": "/"
     },
+    /* If you don't plan to support older browsers and prefer to use the original `blazor.web.js`, follow the instructions in this link: https://github.com/orgs/bitfoundation/discussions/10238#discussioncomment-12493737
     {
         url: "_framework/blazor.web.js"
     },
+    */
     {
         "url": "Boilerplate.Server.Web.styles.css"
     },

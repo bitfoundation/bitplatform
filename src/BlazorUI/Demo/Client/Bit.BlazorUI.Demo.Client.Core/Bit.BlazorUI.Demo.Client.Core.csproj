@@ -15,6 +15,7 @@
         <None Include="compilerconfig.json" />
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
+        <PackageReference Include="Bit.BlazorES2019" Version="9.6.0-pre-08" />
 
         <PackageReference Include="Bit.CodeAnalyzers" Version="9.6.0-pre-08">
             <PrivateAssets>all</PrivateAssets>
@@ -24,9 +25,9 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.2" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.2" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.3" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.3" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.3" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />

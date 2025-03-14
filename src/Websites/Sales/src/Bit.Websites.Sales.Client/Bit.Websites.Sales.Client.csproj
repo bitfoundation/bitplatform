@@ -20,7 +20,7 @@
 
     <ItemGroup>
         <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.3" />
     </ItemGroup>
 
     <ItemGroup>
@@ -31,6 +31,7 @@
         <EmbeddedResource Include="appsettings.json" />
         <PackageReference Include="Bit.Bswup" Version="9.6.0-pre-08" />
         <PackageReference Include="Bit.BlazorUI" Version="9.6.0-pre-08" />
+        <PackageReference Include="Bit.BlazorES2019" Version="9.6.0-pre-08" />
         <PackageReference Include="Bit.BlazorUI.Icons" Version="9.6.0-pre-08" />
         <PackageReference Include="Bit.BlazorUI.Assets" Version="9.6.0-pre-08" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="9.6.0-pre-08">
@@ -41,7 +42,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.3" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
