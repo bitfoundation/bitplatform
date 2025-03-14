@@ -23,6 +23,7 @@ public partial class BitCarousel : BitComponentBase
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+    [Inject] private BitPageVisibility _pageVisibility { get; set; } = default!;
 
 
 
@@ -128,6 +129,22 @@ public partial class BitCarousel : BitComponentBase
         await GotoPage(index - 1);
     }
 
+    /// <summary>
+    /// Pauses the AutoPlay if enabled.
+    /// </summary>
+    public async Task Pause()
+    {
+        _autoPlayTimer?.Stop();
+    }
+
+    /// <summary>
+    /// Resumes the AutoPlay if enabled.
+    /// </summary>
+    public async Task Resume()
+    {
+        _autoPlayTimer?.Start();
+    }
+
 
 
     [JSInvokable("OnResize")]
@@ -179,6 +196,8 @@ public partial class BitCarousel : BitComponentBase
     {
         _dotnetObj = DotNetObjectReference.Create(this);
 
+        _pageVisibility.OnChange += PageVisibilityChange;
+
         base.OnInitialized();
     }
 
@@ -195,16 +214,25 @@ public partial class BitCarousel : BitComponentBase
 
         await base.OnAfterRenderAsync(firstRender);
 
-        if (firstRender is false) return;
-
-        await _js.BitObserversRegisterResize(UniqueId, RootElement, _dotnetObj);
-
-        if (AutoPlay)
+        if (AutoPlay && _autoPlayTimer is null)
         {
             _autoPlayTimer = new System.Timers.Timer(AutoPlayInterval);
             _autoPlayTimer.Elapsed += AutoPlayTimerElapsed;
             _autoPlayTimer.Start();
         }
+
+        if (AutoPlay is false && _autoPlayTimer is not null)
+        {
+            _autoPlayTimer.Elapsed -= AutoPlayTimerElapsed;
+            _autoPlayTimer.Dispose();
+            _autoPlayTimer = null;
+        }
+
+        if (firstRender is false) return;
+
+        await _pageVisibility.Init();
+
+        await _js.BitObserversRegisterResize(UniqueId, RootElement, _dotnetObj);
 
         if (ScrollItemsCount > VisibleItemsCount)
         {
@@ -421,11 +449,27 @@ public partial class BitCarousel : BitComponentBase
         await InvokeAsync(Next);
     }
 
+    private async Task PageVisibilityChange(bool hidden)
+    {
+        Console.WriteLine($"PageVisibilityChange: {hidden}");
+
+        if (hidden)
+        {
+            await Pause();
+        }
+        else
+        {
+            await Resume();
+        }
+    }
+
 
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return;
+
+        _pageVisibility.OnChange -= PageVisibilityChange;
 
         if (_autoPlayTimer is not null)
         {

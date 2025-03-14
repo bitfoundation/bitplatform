@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// SnackBars provide brief notifications. The component is also known as a toast.
