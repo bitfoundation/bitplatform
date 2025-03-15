@@ -99,19 +99,8 @@ jobs:
         with:
           files: 'appsettings.json'
         env:
-          ConnectionStrings_SqlServerConnectionString: ${{ secrets.DB_CONNECTION_STRING }}
-          DataProtectionCertificatePassword: ${{ secrets.API_DATA_PROTECTION_CERTIFICATE_PASSWORD }}
-
-      - name: Delete DataProtectionCertificate.pfx
-        run: |
-            rm DataProtectionCertificate.pfx
-
-      - name: Extract data protection certificate from env
-        uses: timheuer/base64-to-file@v1.2
-        with:
-            fileDir: './'
-            fileName: 'DataProtectionCertificate.pfx'
-            encodedString: ${{ secrets.API_DATA_PROTECTION_CERTIFICATE_FILE_BASE64 }}
+          ConnectionStrings.SqlServerConnectionString: ${{ secrets.DB_CONNECTION_STRING }}
+          Identity.JwtIssuerSigningKeySecret: ${{ secrets.Jwt_Issuer_Signing_Key_Secret }}
 
       - name: Run migrations
         run: |

@@ -6,10 +6,9 @@ using Boilerplate.Server.Api.Models.Categories;
 //#if (sample == true)
 using Boilerplate.Server.Api.Models.Todo;
 //#endif
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Data.Configurations;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 //#if (notification == true)
 using Boilerplate.Server.Api.Models.PushNotification;
 //#endif
@@ -20,10 +19,8 @@ using System.Security.Cryptography;
 namespace Boilerplate.Server.Api.Data;
 
 public partial class AppDbContext(DbContextOptions<AppDbContext> options)
-    : IdentityDbContext<User, Role, Guid>(options), IDataProtectionKeyContext
+    : IdentityDbContext<User, Role, Guid>(options)
 {
-    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = default!;
-
     public DbSet<UserSession> UserSessions { get; set; } = default!;
 
     //#if (sample == true)

@@ -60,12 +60,12 @@ public partial class App
             base.OnStart();
 
             await deviceCoordinator.ApplyTheme(AppInfo.Current.RequestedTheme is AppTheme.Dark);
-
+            //-:cnd:noEmit
 #if Android
-            const int minimumSupportedWebViewVersion = 84;
+            const int minimumSupportedWebViewVersion = 85;
             // Download link for Android emulator (x86 or x86_64)
-            // https://www.apkmirror.com/apk/google-inc/chrome/chrome-84-0-4147-89-release/
-            // https://www.apkmirror.com/apk/google-inc/android-system-webview/android-system-webview-84-0-4147-111-release/
+            // https://www.apkmirror.com/apk/google-inc/chrome/chrome-85-0-4183-127-release/
+            // https://www.apkmirror.com/apk/google-inc/android-system-webview/android-system-webview-85-0-4183-127-release/
 
             if (Version.TryParse(Android.Webkit.WebView.CurrentWebViewPackage?.VersionName, out var webViewVersion) &&
                 webViewVersion.Major < minimumSupportedWebViewVersion)
@@ -76,7 +76,7 @@ public partial class App
                 await Launcher.OpenAsync($"https://play.google.com/store/apps/details?id={webViewName}");
             }
 #endif
-
+            //+:cnd:noEmit
             await CheckForUpdates();
         }
         catch (Exception exp)
