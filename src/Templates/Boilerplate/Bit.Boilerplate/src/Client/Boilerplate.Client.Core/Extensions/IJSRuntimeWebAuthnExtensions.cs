@@ -35,8 +35,8 @@ public static partial class IJSRuntimeWebAuthnExtensions
         return jsRuntime.InvokeAsync<AuthenticatorAttestationRawResponse>("WebAuthn.createCredential", options);
     }
 
-    public static ValueTask<AuthenticatorAssertionRawResponse> VerifyWebAuthnCredential(this IJSRuntime jsRuntime, AssertionOptions options)
+    public static ValueTask<AuthenticatorAssertionRawResponse> GetWebAuthnCredential(this IJSRuntime jsRuntime, AssertionOptions options)
     {
-        return jsRuntime.InvokeAsync<AuthenticatorAssertionRawResponse>("WebAuthn.verifyCredential", options);
+        return jsRuntime.InvokeAsync<AuthenticatorAssertionRawResponse>("WebAuthn.getCredential", options);
     }
 }

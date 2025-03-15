@@ -176,7 +176,7 @@ public partial class SignInPage
 
             try
             {
-                webAuthnAssertion = await JSRuntime.VerifyWebAuthnCredential(options);
+                webAuthnAssertion = await JSRuntime.GetWebAuthnCredential(options);
             }
             catch (Exception ex)
             {

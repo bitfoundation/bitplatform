@@ -43,12 +43,6 @@ public partial class PasswordlessSection
             return;
         }
 
-        if (attestationResponse.Id is null)
-        {
-            SnackBarService.Error(Localizer[nameof(AppStrings.SomethingWentWrong)]);
-            return;
-        }
-
         await userController.CreateWebAuthnCredential(attestationResponse, CurrentCancellationToken);
 
         await JSRuntime.SetWebAuthnConfigured(User.Id);
@@ -67,18 +61,12 @@ public partial class PasswordlessSection
         AuthenticatorAssertionRawResponse assertion;
         try
         {
-            assertion = await JSRuntime.VerifyWebAuthnCredential(options);
+            assertion = await JSRuntime.GetWebAuthnCredential(options);
         }
         catch (Exception ex)
         {
             // we can safely handle the exception thrown here since it mostly because of a timeout or user cancelling the native ui.
             ExceptionHandler.Handle(ex, ExceptionDisplayKind.None);
-            return;
-        }
-
-        if (assertion.Id is null)
-        {
-            SnackBarService.Error(Localizer[nameof(AppStrings.SomethingWentWrong)]);
             return;
         }
 

@@ -28,87 +28,77 @@ class WebAuthn {
 
 
     public static async createCredential(options: PublicKeyCredentialCreationOptions) {
-        try {
-            options.challenge = WebAuthn.ToArrayBuffer(options.challenge, 'challenge');
+        options.challenge = WebAuthn.ToArrayBuffer(options.challenge, 'challenge');
 
-            options.user.id = WebAuthn.ToArrayBuffer(options.user.id, 'user.id');
+        options.user.id = WebAuthn.ToArrayBuffer(options.user.id, 'user.id');
 
-            options.excludeCredentials?.forEach(function (cred) {
-                cred.id = WebAuthn.ToArrayBuffer(cred.id, 'cred.id');
-            });
+        options.excludeCredentials?.forEach(function (cred) {
+            cred.id = WebAuthn.ToArrayBuffer(cred.id, 'cred.id');
+        });
 
-            if (options.authenticatorSelection?.authenticatorAttachment === null) {
-                options.authenticatorSelection.authenticatorAttachment = undefined;
-            }
-
-            if (options.rp.id === null) {
-                options.rp.id = undefined;
-            }
-
-            const credential = await navigator.credentials.create({ publicKey: options }) as PublicKeyCredential;
-
-            const response = credential.response as AuthenticatorAttestationResponse;
-
-            // Move data into Arrays incase it is super long
-            const attestationObject = new Uint8Array(response.attestationObject);
-            const clientDataJSON = new Uint8Array(response.clientDataJSON);
-            const rawId = new Uint8Array(credential.rawId);
-
-            const result = {
-                id: credential.id,
-                rawId: WebAuthn.ToBase64Url(rawId),
-                type: credential.type,
-                clientExtensionResults: credential.getClientExtensionResults(),
-                response: {
-                    attestationObject: WebAuthn.ToBase64Url(attestationObject),
-                    clientDataJSON: WebAuthn.ToBase64Url(clientDataJSON),
-                    transports: response.getTransports ? response.getTransports() : []
-                }
-            };
-
-            return result;
-        } catch (err) {
-            console.error(err);
-            return {};
+        if (options.authenticatorSelection?.authenticatorAttachment === null) {
+            options.authenticatorSelection.authenticatorAttachment = undefined;
         }
+
+        if (options.rp.id === null) {
+            options.rp.id = undefined;
+        }
+
+        const credential = await navigator.credentials.create({ publicKey: options }) as PublicKeyCredential;
+
+        const response = credential.response as AuthenticatorAttestationResponse;
+
+        // Move data into Arrays incase it is super long
+        const attestationObject = new Uint8Array(response.attestationObject);
+        const clientDataJSON = new Uint8Array(response.clientDataJSON);
+        const rawId = new Uint8Array(credential.rawId);
+
+        const result = {
+            id: credential.id,
+            rawId: WebAuthn.ToBase64Url(rawId),
+            type: credential.type,
+            clientExtensionResults: credential.getClientExtensionResults(),
+            response: {
+                attestationObject: WebAuthn.ToBase64Url(attestationObject),
+                clientDataJSON: WebAuthn.ToBase64Url(clientDataJSON),
+                transports: response.getTransports ? response.getTransports() : []
+            }
+        };
+
+        return result;
     }
 
-    public static async verifyCredential(options: PublicKeyCredentialRequestOptions) {
-        try {
-            options.challenge = WebAuthn.ToArrayBuffer(options.challenge, 'challenge');
+    public static async getCredential(options: PublicKeyCredentialRequestOptions) {
+        options.challenge = WebAuthn.ToArrayBuffer(options.challenge, 'challenge');
 
-            options.allowCredentials?.forEach(function (cred) {
-                cred.id = WebAuthn.ToArrayBuffer(cred.id, 'cred.id');
-            });
+        options.allowCredentials?.forEach(function (cred) {
+            cred.id = WebAuthn.ToArrayBuffer(cred.id, 'cred.id');
+        });
 
-            const credential = await navigator.credentials.get({ publicKey: options }) as PublicKeyCredential;
+        const credential = await navigator.credentials.get({ publicKey: options }) as PublicKeyCredential;
 
-            const response = credential.response as AuthenticatorAssertionResponse;
+        const response = credential.response as AuthenticatorAssertionResponse;
 
-            // Move data into Arrays incase it is super long
-            let authenticatorData = new Uint8Array(response.authenticatorData);
-            let clientDataJSON = new Uint8Array(response.clientDataJSON);
-            let rawId = new Uint8Array(credential.rawId);
-            let signature = new Uint8Array(response.signature);
-            let userHandle = new Uint8Array(response.userHandle || []);
+        // Move data into Arrays incase it is super long
+        let authenticatorData = new Uint8Array(response.authenticatorData);
+        let clientDataJSON = new Uint8Array(response.clientDataJSON);
+        let rawId = new Uint8Array(credential.rawId);
+        let signature = new Uint8Array(response.signature);
+        let userHandle = new Uint8Array(response.userHandle || []);
 
-            var result = {
-                id: credential.id,
-                rawId: WebAuthn.ToBase64Url(rawId),
-                type: credential.type,
-                clientExtensionResults: credential.getClientExtensionResults(),
-                response: {
-                    authenticatorData: WebAuthn.ToBase64Url(authenticatorData),
-                    clientDataJSON: WebAuthn.ToBase64Url(clientDataJSON),
-                    userHandle: userHandle ? (WebAuthn.ToBase64Url(userHandle) || null) : null,
-                    signature: WebAuthn.ToBase64Url(signature)
-                }
+        var result = {
+            id: credential.id,
+            rawId: WebAuthn.ToBase64Url(rawId),
+            type: credential.type,
+            clientExtensionResults: credential.getClientExtensionResults(),
+            response: {
+                authenticatorData: WebAuthn.ToBase64Url(authenticatorData),
+                clientDataJSON: WebAuthn.ToBase64Url(clientDataJSON),
+                userHandle: userHandle ? (WebAuthn.ToBase64Url(userHandle) || null) : null,
+                signature: WebAuthn.ToBase64Url(signature)
             }
-            return result;
-        } catch (err) {
-            console.error(err);
-            return {};
         }
+        return result;
     }
 
 
