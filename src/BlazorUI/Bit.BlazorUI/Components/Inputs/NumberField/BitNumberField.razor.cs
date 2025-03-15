@@ -9,8 +9,8 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : BitTextInputBase<TValue>
 {
-    private bool _hasFocus;
     private int _precision;
+    private bool _hasFocus;
     private TValue _min = default!;
     private TValue _max = default!;
     private TValue _step = default!;
