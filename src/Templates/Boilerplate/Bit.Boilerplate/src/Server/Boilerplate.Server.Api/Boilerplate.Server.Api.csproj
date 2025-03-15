@@ -27,7 +27,6 @@
         <PackageReference Include="FluentStorage" />
         <PackageReference Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="FluentStorage.Azure.Blobs" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
-        <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
         <PackageReference Include="Microsoft.AspNetCore.OData" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
@@ -59,10 +58,6 @@
         <Using Include="Microsoft.EntityFrameworkCore" />
         <Using Include="Microsoft.AspNetCore.OData.Query" />
         <Using Include="Microsoft.AspNetCore.Mvc" />
-
-        <None Update="DataProtectionCertificate.pfx">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
 
         <Content Include=".config\dotnet-tools.json" />
     </ItemGroup>

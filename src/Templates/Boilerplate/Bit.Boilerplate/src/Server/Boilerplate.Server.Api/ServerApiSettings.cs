@@ -2,6 +2,7 @@
 //#if (notification == true)
 using AdsPush.Abstraction.Settings;
 //#endif
+using System.Text;
 using System.Text.RegularExpressions;
 using Boilerplate.Server.Api.Services;
 
@@ -9,12 +10,6 @@ namespace Boilerplate.Server.Api;
 
 public partial class ServerApiSettings : SharedSettings
 {
-    /// <summary>
-    /// It can also be configured using: dotnet user-secrets set 'DataProtectionCertificatePassword' '@nyPassw0rd'
-    /// </summary>
-    [Required]
-    public string DataProtectionCertificatePassword { get; set; } = default!;
-
     [Required]
     public AppIdentityOptions Identity { get; set; } = default!;
 
@@ -85,12 +80,20 @@ public partial class ServerApiSettings : SharedSettings
         }
         Validator.TryValidateObject(ResponseCaching, new ValidationContext(ResponseCaching), validationResults, true);
 
+        const int MinimumJwtIssuerSigningKeyByteLength = 64; // 512 bits = 64 bytes, minimum for HS512
+        var jwtIssuerSigningKeyByteLength = Encoding.UTF8.GetBytes(Identity.JwtIssuerSigningKey).Length;
+        if (jwtIssuerSigningKeyByteLength <= MinimumJwtIssuerSigningKeyByteLength)
+        {
+            throw new ArgumentException(
+                $"The JWT signing key must be greater than {MinimumJwtIssuerSigningKeyByteLength} bytes " +
+                $"({MinimumJwtIssuerSigningKeyByteLength * 8} bits) for HS512. Current key is {jwtIssuerSigningKeyByteLength} bytes.");
+        }
+
         if (AppEnvironment.IsDev() is false)
         {
-            if (DataProtectionCertificatePassword is "P@ssw0rdP@ssw0rd")
+            if (Identity.JwtIssuerSigningKey is "VeryLongJWTIssuerSiginingKeyThatIsMoreThan64BytesToEnsureCompatibilityWithHS512Algorithm")
             {
-                throw new InvalidOperationException(@"The default test certificate is still in use. Please replace it with a new one by running the 'dotnet dev-certs https --export-path DataProtectionCertificate.pfx --password @nyPassw0rd'
-command in the Server.Api's project's folder and replace P@ssw0rdP@ssw0rd with the new password.");
+                throw new InvalidOperationException(@"Please replace JwtIssuerSigningKey with a new one.");
             }
 
             //#if (captcha == "reCaptcha")
@@ -132,6 +135,9 @@ command in the Server.Api's project's folder and replace P@ssw0rdP@ssw0rd with t
 
 public partial class AppIdentityOptions : IdentityOptions
 {
+    [Required]
+    public string JwtIssuerSigningKey { get; set; } = default!;
+
     /// <summary>
     /// BearerTokenExpiration used as JWT's expiration claim, access token's `expires in` and cookie's `max age`.
     /// </summary>

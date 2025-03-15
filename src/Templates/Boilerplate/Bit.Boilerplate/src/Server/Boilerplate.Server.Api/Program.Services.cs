@@ -6,10 +6,9 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Net.Http.Headers;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.ResponseCompression;
-using System.Security.Cryptography.X509Certificates;
 using Twilio;
+using System.Text;
 using Fido2NetLib;
 using PhoneNumbers;
 using FluentStorage;
@@ -331,16 +330,6 @@ public static partial class Program
         configuration.Bind(appSettings);
         var identityOptions = appSettings.Identity;
 
-        var certificatePath = Path.Combine(AppContext.BaseDirectory, "DataProtectionCertificate.pfx");
-        var certificate = new X509Certificate2(certificatePath, appSettings.DataProtectionCertificatePassword, AppPlatform.IsWindows ? X509KeyStorageFlags.EphemeralKeySet : X509KeyStorageFlags.DefaultKeySet);
-
-        if (env.IsDevelopment() is false && (DateTimeOffset.UtcNow < certificate.NotBefore || DateTimeOffset.UtcNow > certificate.NotAfter))
-            throw new InvalidOperationException($"The Data Protection certificate is invalid. Current UTC time: {DateTimeOffset.UtcNow}, Certificate valid from: {certificate.NotBefore.ToUniversalTime()}, Certificate valid until: {certificate.NotAfter.ToUniversalTime()}.");
-
-        services.AddDataProtection()
-            .PersistKeysToDbContext<AppDbContext>()
-            .ProtectKeysWithCertificate(certificate);
-
         services.AddIdentity<User, Role>()
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders()
@@ -367,7 +356,7 @@ public static partial class Program
                 RequireSignedTokens = true,
 
                 ValidateIssuerSigningKey = env.IsDevelopment() is false,
-                IssuerSigningKey = new X509SecurityKey(certificate),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(appSettings.Identity.JwtIssuerSigningKey)),
 
                 RequireExpirationTime = true,
                 ValidateLifetime = true,
