@@ -230,6 +230,13 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "Precision",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "How many decimal places the value should be rounded to.",
+        },
+        new()
+        {
             Name = "Prefix",
             Type = "string?",
             DefaultValue = "null",
@@ -483,6 +490,8 @@ public partial class BitNumberFieldDemo
     private int? classesValue;
 
     private int hideInputValue;
+
+    private double precisionInputValue = 3.1415;
 
     private string SuccessMessage = string.Empty;
     private BitNumberFieldValidationModel validationModel = new();

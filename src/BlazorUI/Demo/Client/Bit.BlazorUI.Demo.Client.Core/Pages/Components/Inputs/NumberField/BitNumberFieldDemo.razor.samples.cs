@@ -92,14 +92,19 @@ private int maxValue;
 private int minMaxValue;";
 
     private readonly string example8RazorCode = @"
+<BitNumberField Precision=""2"" @bind-Value=""precisionInputValue"" Label=""Rounding to 2 Decimal Places"" />";
+    private readonly string example8CsharpCode = @"
+    private double precisionInputValue = 3.1415;";
+
+    private readonly string example9RazorCode = @"
 <BitNumberField HideInput
                 @bind-Value=""hideInputValue""
                 Mode=""BitSpinButtonMode.Inline""
                 Label=""@hideInputValue.ToString()"" />";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private int hideInputValue;";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitNumberField Label=""OnIncrement & OnDecrement"" ShowButtons=""true""
                 OnIncrement=""(double v) => onIncrementCounter++""
                 OnDecrement=""(double v) => onDecrementCounter++"" />
@@ -108,12 +113,12 @@ private int hideInputValue;";
 
 <BitNumberField Label=""OnChange"" OnChange=""(double v) => onChangeCounter++"" />
 <div>OnChange Counter: @onChangeCounter</div>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private int onIncrementCounter;
 private int onDecrementCounter;
 private int onChangeCounter;";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <EditForm Model=""@validationModel"">
     <DataAnnotationsValidator />
 
@@ -122,7 +127,7 @@ private int onChangeCounter;";
     <br />
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 public class BitNumberFieldValidationModel
 {
     [Required(ErrorMessage = ""Enter an age"")]
@@ -132,7 +137,7 @@ public class BitNumberFieldValidationModel
 
 private BitNumberFieldValidationModel validationModel = new();";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -228,7 +233,7 @@ private BitNumberFieldValidationModel validationModel = new();";
                                  Input = ""custom-input"",
                                  Label = $""custom-label{(classesValue is null ? string.Empty : "" custom-label-top"")}"" })"" />";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <CascadingValue Value=""BitDir.Rtl"">
 
     <BitNumberField Label=""برچسب در بالا"" TValue=""int"" ShowButtons />

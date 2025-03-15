@@ -641,6 +641,7 @@ public class BitNumberFieldTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, defaultValue);
             parameters.Add(p => p.Max, max);
             parameters.Add(p => p.Min, min);
+            parameters.Add(p => p.Precision, 2);
         });
 
         var input = component.Find("input");

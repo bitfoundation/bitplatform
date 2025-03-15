@@ -1,6 +1,7 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text.RegularExpressions;
-using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 
 namespace Bit.BlazorUI;
 
@@ -10,6 +11,7 @@ namespace Bit.BlazorUI;
 public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : BitTextInputBase<TValue>
 {
     private bool _hasFocus;
+    private int _precision;
     private TValue _min = default!;
     private TValue _max = default!;
     private TValue _step = default!;
@@ -213,6 +215,13 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public string? Placeholder { get; set; }
 
     /// <summary>
+    /// How many decimal places the value should be rounded to.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetPrecision))]
+    public int? Precision { get; set; }
+
+    /// <summary>
     /// Prefix displayed before the numeric field contents. This is not included in the value.
     /// Ensure a descriptive label is present to assist screen readers, as the value does not include the prefix.
     /// </summary>
@@ -283,10 +292,14 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     protected override async Task OnInitializedAsync()
     {
+        OnValueChanged += HandleOnValueChanged;
+
         if (ValueHasBeenSet is false && DefaultValue is not null)
         {
             Value = DefaultValue;
         }
+
+        NormalizeValue();
 
         await base.OnInitializedAsync();
     }
@@ -301,6 +314,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         if (BindConverter.TryConvertTo(value, CultureInfo.InvariantCulture, out result))
         {
             result = CheckMinAndMax(result);
+
+            result = Normalize(result);
 
             parsingErrorMessage = null;
             return true;
@@ -608,11 +623,75 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
     }
 
+    private void OnSetPrecision()
+    {
+        _precision = Precision is not null ? Precision.Value : CalculatePrecision();
+    }
+
+    private TValue Normalize(TValue value)
+    {
+        if (value is double doubleValue)
+        {
+            return (TValue)Convert.ChangeType(Math.Round(doubleValue, _precision), typeof(TValue));
+        }
+        else if (value is float floatValue)
+        {
+            return (TValue)Convert.ChangeType(Math.Round(floatValue, _precision), typeof(TValue));
+        }
+        else if (value is decimal decimalValue)
+        {
+            return (TValue)Convert.ChangeType(Math.Round(decimalValue, _precision), typeof(TValue));
+        }
+
+        return value;
+    }
+
+    private int CalculatePrecision()
+    {
+        var step = Step ?? _step?.ToString() ?? "1";
+        var regex = new Regex(@"[1-9]([0]+$)|\.([0-9]*)");
+        if (regex.IsMatch(step) is false) return 0;
+
+        var matches = regex.Matches(step);
+        if (matches.Count == 0) return 0;
+
+        var groups = matches[0].Groups;
+        if (groups[1] != null && groups[1].Length != 0)
+        {
+            return -groups[1].Length;
+        }
+
+        if (groups[2] != null && groups[2].Length != 0)
+        {
+            return groups[2].Length;
+        }
+
+        return 0;
+    }
+
+    private void NormalizeValue()
+    {
+        if (Value is null) return;
+
+        var val = Normalize(Value);
+
+        if (EqualityComparer<TValue>.Default.Equals(val, Value)) return;
+
+        Value = val;
+    }
+
+    private void HandleOnValueChanged(object? sender, EventArgs args)
+    {
+        NormalizeValue();
+    }
+
 
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return;
+
+        OnValueChanged -= HandleOnValueChanged;
 
         _continuousChangeValueCts?.Dispose();
 
