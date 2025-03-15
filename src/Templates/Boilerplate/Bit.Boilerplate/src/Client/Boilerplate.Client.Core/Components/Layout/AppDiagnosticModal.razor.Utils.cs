@@ -105,7 +105,7 @@ public partial class AppDiagnosticModal
         return $"{memory / (1024.0 * 1024.0):F2} MB";
     }
 
-    private async Task ClearData()
+    private async Task ClearCache()
     {
         try
         {
