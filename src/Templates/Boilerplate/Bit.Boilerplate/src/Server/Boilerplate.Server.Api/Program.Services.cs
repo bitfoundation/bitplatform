@@ -356,7 +356,7 @@ public static partial class Program
                 RequireSignedTokens = true,
 
                 ValidateIssuerSigningKey = env.IsDevelopment() is false,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(appSettings.Identity.JwtIssuerSigningKey)),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(appSettings.Identity.JwtIssuerSigningKeySecret)),
 
                 RequireExpirationTime = true,
                 ValidateLifetime = true,

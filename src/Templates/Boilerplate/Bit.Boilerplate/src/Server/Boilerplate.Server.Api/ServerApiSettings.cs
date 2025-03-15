@@ -80,20 +80,20 @@ public partial class ServerApiSettings : SharedSettings
         }
         Validator.TryValidateObject(ResponseCaching, new ValidationContext(ResponseCaching), validationResults, true);
 
-        const int MinimumJwtIssuerSigningKeyByteLength = 64; // 512 bits = 64 bytes, minimum for HS512
-        var jwtIssuerSigningKeyByteLength = Encoding.UTF8.GetBytes(Identity.JwtIssuerSigningKey).Length;
-        if (jwtIssuerSigningKeyByteLength <= MinimumJwtIssuerSigningKeyByteLength)
+        const int MinimumJwtIssuerSigningKeySecretByteLength = 64; // 512 bits = 64 bytes, minimum for HS512
+        var jwtIssuerSigningKeySecretByteLength = Encoding.UTF8.GetBytes(Identity.JwtIssuerSigningKeySecret).Length;
+        if (jwtIssuerSigningKeySecretByteLength <= MinimumJwtIssuerSigningKeySecretByteLength)
         {
             throw new ArgumentException(
-                $"The JWT signing key must be greater than {MinimumJwtIssuerSigningKeyByteLength} bytes " +
-                $"({MinimumJwtIssuerSigningKeyByteLength * 8} bits) for HS512. Current key is {jwtIssuerSigningKeyByteLength} bytes.");
+                $"The JWT signing key must be greater than {MinimumJwtIssuerSigningKeySecretByteLength} bytes " +
+                $"({MinimumJwtIssuerSigningKeySecretByteLength * 8} bits) for HS512. Current key is {jwtIssuerSigningKeySecretByteLength} bytes.");
         }
 
         if (AppEnvironment.IsDev() is false)
         {
-            if (Identity.JwtIssuerSigningKey is "VeryLongJWTIssuerSiginingKeyThatIsMoreThan64BytesToEnsureCompatibilityWithHS512Algorithm")
+            if (Identity.JwtIssuerSigningKeySecret is "VeryLongJWTIssuerSiginingKeySecretThatIsMoreThan64BytesToEnsureCompatibilityWithHS512Algorithm")
             {
-                throw new InvalidOperationException(@"Please replace JwtIssuerSigningKey with a new one.");
+                throw new InvalidOperationException(@"Please replace JwtIssuerSigningKeySecret with a new one.");
             }
 
             //#if (captcha == "reCaptcha")
@@ -136,7 +136,7 @@ public partial class ServerApiSettings : SharedSettings
 public partial class AppIdentityOptions : IdentityOptions
 {
     [Required]
-    public string JwtIssuerSigningKey { get; set; } = default!;
+    public string JwtIssuerSigningKeySecret { get; set; } = default!;
 
     /// <summary>
     /// BearerTokenExpiration used as JWT's expiration claim, access token's `expires in` and cookie's `max age`.
