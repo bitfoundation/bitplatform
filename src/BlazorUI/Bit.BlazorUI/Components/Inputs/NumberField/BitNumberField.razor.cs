@@ -1,7 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.RegularExpressions;
-using System.Threading;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
