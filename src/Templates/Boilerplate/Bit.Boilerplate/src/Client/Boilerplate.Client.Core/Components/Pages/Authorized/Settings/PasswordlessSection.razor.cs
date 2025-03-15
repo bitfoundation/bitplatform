@@ -21,7 +21,7 @@ public partial class PasswordlessSection
 
         if (User?.UserName is null) return;
 
-        isConfigured = await JSRuntime.IsWebAuthnConfigured(User.UserName);
+        isConfigured = await JSRuntime.IsWebAuthnConfigured(User.Id);
     }
 
 
@@ -43,9 +43,15 @@ public partial class PasswordlessSection
             return;
         }
 
+        if (attestationResponse.Id is null)
+        {
+            SnackBarService.Error(Localizer[nameof(AppStrings.SomethingWentWrong)]);
+            return;
+        }
+
         await userController.CreateWebAuthnCredential(attestationResponse, CurrentCancellationToken);
 
-        await JSRuntime.StoreWebAuthnConfigured(User.UserName);
+        await JSRuntime.SetWebAuthnConfigured(User.Id);
 
         isConfigured = true;
 
@@ -56,7 +62,7 @@ public partial class PasswordlessSection
     {
         if (User?.UserName is null) return;
 
-        var options = await identityController.GetWebAuthnAssertionOptions(CurrentCancellationToken);
+        var options = await identityController.GetWebAuthnAssertionOptions(new() { UserId = User.Id }, CurrentCancellationToken);
 
         AuthenticatorAssertionRawResponse assertion;
         try
@@ -70,14 +76,30 @@ public partial class PasswordlessSection
             return;
         }
 
+        if (assertion.Id is null)
+        {
+            SnackBarService.Error(Localizer[nameof(AppStrings.SomethingWentWrong)]);
+            return;
+        }
+
         var verifyResult = await identityController.VerifyWebAuthAssertion(assertion, CurrentCancellationToken);
 
         await userController.DeleteWebAuthnCredential(assertion.Id, CurrentCancellationToken);
 
-        await JSRuntime.RemoveWebAuthnConfigured(User.UserName);
+        await JSRuntime.RemoveWebAuthnConfigured(User.Id);
 
         isConfigured = false;
 
         SnackBarService.Success(Localizer[nameof(AppStrings.DisablePasswordlessSucsessMessage)]);
     }
+
+    // Only for debugging purposes, uncomment the following lines and the corresponding lines in the razor file.
+    //private async Task DeleteAll()
+    //{
+    //    await userController.DeleteAllWebAuthnCredentials(CurrentCancellationToken);
+
+    //    await JSRuntime.RemoveWebAuthnConfigured();
+
+    //    isConfigured = false;
+    //}
 }

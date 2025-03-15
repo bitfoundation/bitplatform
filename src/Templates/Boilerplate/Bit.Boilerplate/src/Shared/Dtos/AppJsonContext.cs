@@ -57,6 +57,7 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(CredentialCreateOptions))]
 [JsonSerializable(typeof(VerifyAssertionResult))]
 [JsonSerializable(typeof(VerifyWebAuthnAndSignInDto))]
+[JsonSerializable(typeof(WebAuthnAssertionOptionsRequestDto))]
 public partial class AppJsonContext : JsonSerializerContext
 {
 }
