@@ -10,18 +10,18 @@ class WebAuthn {
         return !!userId ? storedCredentials.includes(userId) : storedCredentials.length > 0;
     }
 
-    public static getConfigured() {
+    public static getConfiguredUserIds() {
         const storedCredentials = JSON.parse(localStorage.getItem(WebAuthn.STORE_KEY) || '[]') as string[];
-        return storedCredentials[storedCredentials.length - 1];
+        return storedCredentials;
     }
 
-    public static setConfigured(userId: string) {
+    public static setConfiguredUserId(userId: string) {
         const storedCredentials = JSON.parse(localStorage.getItem(WebAuthn.STORE_KEY) || '[]') as string[];
         storedCredentials.push(userId);
         localStorage.setItem(WebAuthn.STORE_KEY, JSON.stringify(storedCredentials));
     }
 
-    public static removeConfigured(userId: string) {
+    public static removeConfiguredUserId(userId: string) {
         const storedCredentials = JSON.parse(localStorage.getItem(WebAuthn.STORE_KEY) || '[]') as string[];
         localStorage.setItem(WebAuthn.STORE_KEY, JSON.stringify(!!userId ? storedCredentials.filter(c => c !== userId) : []));
     }

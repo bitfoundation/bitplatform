@@ -20,9 +20,9 @@ public partial class IdentityController
     {
         var existingKeys = new List<PublicKeyCredentialDescriptor>();
 
-        if (request.UserId is not null)
+        if (request.UserIds is not null)
         {
-            var existingCredentials = DbContext.WebAuthnCredential.Where(c => c.UserId == request.UserId);
+            var existingCredentials = DbContext.WebAuthnCredential.Where(c => request.UserIds.Contains(c.UserId));
             existingKeys.AddRange(existingCredentials.Select(c => new PublicKeyCredentialDescriptor(PublicKeyCredentialType.PublicKey, c.Id, c.Transports)));
         }
 

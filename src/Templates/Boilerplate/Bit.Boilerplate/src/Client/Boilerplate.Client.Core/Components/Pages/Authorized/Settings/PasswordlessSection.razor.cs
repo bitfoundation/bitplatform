@@ -45,7 +45,7 @@ public partial class PasswordlessSection
 
         await userController.CreateWebAuthnCredential(attestationResponse, CurrentCancellationToken);
 
-        await JSRuntime.SetWebAuthnConfigured(User.Id);
+        await JSRuntime.SetWebAuthnConfiguredUserId(User.Id);
 
         isConfigured = true;
 
@@ -56,7 +56,7 @@ public partial class PasswordlessSection
     {
         if (User?.UserName is null) return;
 
-        var options = await identityController.GetWebAuthnAssertionOptions(new() { UserId = User.Id }, CurrentCancellationToken);
+        var options = await identityController.GetWebAuthnAssertionOptions(new() { UserIds = [User.Id] }, CurrentCancellationToken);
 
         AuthenticatorAssertionRawResponse assertion;
         try
@@ -74,7 +74,7 @@ public partial class PasswordlessSection
 
         await userController.DeleteWebAuthnCredential(assertion.Id, CurrentCancellationToken);
 
-        await JSRuntime.RemoveWebAuthnConfigured(User.Id);
+        await JSRuntime.RemoveWebAuthnConfiguredUserId(User.Id);
 
         isConfigured = false;
 

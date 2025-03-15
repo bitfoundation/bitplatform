@@ -15,19 +15,19 @@ public static partial class IJSRuntimeWebAuthnExtensions
         return jsRuntime.InvokeAsync<bool>("WebAuthn.isConfigured", userId);
     }
 
-    public static ValueTask<Guid?> GetWebAuthnConfigured(this IJSRuntime jsRuntime)
+    public static ValueTask<Guid[]?> GetWebAuthnConfiguredUserIds(this IJSRuntime jsRuntime)
     {
-        return jsRuntime.InvokeAsync<Guid?>("WebAuthn.getConfigured");
+        return jsRuntime.InvokeAsync<Guid[]?>("WebAuthn.getConfiguredUserIds");
     }
 
-    public static ValueTask SetWebAuthnConfigured(this IJSRuntime jsRuntime, Guid userId)
+    public static ValueTask SetWebAuthnConfiguredUserId(this IJSRuntime jsRuntime, Guid userId)
     {
-        return jsRuntime.InvokeVoidAsync("WebAuthn.setConfigured", userId);
+        return jsRuntime.InvokeVoidAsync("WebAuthn.setConfiguredUserId", userId);
     }
 
-    public static ValueTask RemoveWebAuthnConfigured(this IJSRuntime jsRuntime, Guid? userId = null)
+    public static ValueTask RemoveWebAuthnConfiguredUserId(this IJSRuntime jsRuntime, Guid? userId = null)
     {
-        return jsRuntime.InvokeVoidAsync("WebAuthn.removeConfigured", userId);
+        return jsRuntime.InvokeVoidAsync("WebAuthn.removeConfiguredUserId", userId);
     }
 
     public static ValueTask<AuthenticatorAttestationRawResponse> CreateWebAuthnCredential(this IJSRuntime jsRuntime, CredentialCreateOptions options)

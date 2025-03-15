@@ -2,5 +2,5 @@
 
 public partial class WebAuthnAssertionOptionsRequestDto
 {
-    public Guid? UserId { get; set; }
+    public Guid[]? UserIds { get; set; }
 }
