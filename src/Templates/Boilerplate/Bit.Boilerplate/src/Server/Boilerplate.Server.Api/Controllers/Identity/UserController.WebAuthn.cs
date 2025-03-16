@@ -21,9 +21,7 @@ public partial class UserController
                     ?? throw new ResourceNotFoundException();
 
         var existingCredentials = DbContext.WebAuthnCredential.Where(c => c.UserId == userId);
-        var existingKeys = existingCredentials.Select(c => new PublicKeyCredentialDescriptor(PublicKeyCredentialType.PublicKey,
-                                                                                             c.Id,
-                                                                                             c.Transports));
+        var existingKeys = existingCredentials.Select(c => new PublicKeyCredentialDescriptor(PublicKeyCredentialType.PublicKey, c.Id, c.Transports));
         var fidoUser = new Fido2User
         {
             Id = Encoding.UTF8.GetBytes(userId.ToString()),
@@ -33,14 +31,11 @@ public partial class UserController
 
         var authenticatorSelection = new AuthenticatorSelection
         {
-            ResidentKey = ResidentKeyRequirement.Required,
-            UserVerification = UserVerificationRequirement.Preferred
+            RequireResidentKey = false,
+            ResidentKey = ResidentKeyRequirement.Discouraged,
+            UserVerification = UserVerificationRequirement.Required,
+            AuthenticatorAttachment = AuthenticatorAttachment.Platform
         };
-
-        //var authenticatorSelection = new AuthenticatorSelection
-        //{
-        //    AuthenticatorAttachment = AuthenticatorAttachment.Platform
-        //};
 
         var extensions = new AuthenticationExtensionsClientInputs
         {
@@ -55,7 +50,7 @@ public partial class UserController
             ExcludeCredentials = [], //[.. existingKeys],
             AuthenticatorSelection = authenticatorSelection,
             AttestationPreference = AttestationConveyancePreference.None,
-            Extensions = extensions
+            //Extensions = extensions
         });
 
         var key = GetWebAuthnCacheKey(userId);

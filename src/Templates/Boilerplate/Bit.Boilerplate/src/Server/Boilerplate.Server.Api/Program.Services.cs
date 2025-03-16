@@ -310,9 +310,9 @@ public static partial class Program
 
             var options = new Fido2Configuration
             {
+                ServerDomain = webAppUrl.Host,
                 TimestampDriftTolerance = 1000,
                 ServerName = "Boilerplate WebAuthn",
-                ServerDomain = webAppUrl.Host,
                 Origins = new HashSet<string>([webAppUrl.AbsoluteUri]),
                 ServerIcon = new Uri(webAppUrl, "images/icons/bit-logo.png").ToString()
             };

@@ -169,11 +169,14 @@ public partial class SignInPage
 
         try
         {
-            var options = await identityController.GetWebAuthnAssertionOptions(CurrentCancellationToken);
+            var userIds = await JSRuntime.GetWebAuthnConfiguredUserIds();
+            if (userIds is null) return;
+
+            var options = await identityController.GetWebAuthnAssertionOptions(new() { UserIds = userIds }, CurrentCancellationToken);
 
             try
             {
-                webAuthnAssertion = await JSRuntime.VerifyWebAuthnCredential(options);
+                webAuthnAssertion = await JSRuntime.GetWebAuthnCredential(options);
             }
             catch (Exception ex)
             {

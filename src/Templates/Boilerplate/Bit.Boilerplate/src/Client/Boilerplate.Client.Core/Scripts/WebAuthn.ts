@@ -5,20 +5,25 @@ class WebAuthn {
         return !!window.PublicKeyCredential;
     }
 
-    public static isConfigured(username: string | undefined) {
+    public static isConfigured(userId: string | undefined) {
         const storedCredentials = JSON.parse(localStorage.getItem(WebAuthn.STORE_KEY) || '[]') as string[];
-        return !!username ? storedCredentials.includes(username) : storedCredentials.length > 0;
+        return !!userId ? storedCredentials.includes(userId) : storedCredentials.length > 0;
     }
 
-    public static storeConfigured(username: string) {
+    public static getConfiguredUserIds() {
         const storedCredentials = JSON.parse(localStorage.getItem(WebAuthn.STORE_KEY) || '[]') as string[];
-        storedCredentials.push(username);
+        return storedCredentials;
+    }
+
+    public static setConfiguredUserId(userId: string) {
+        const storedCredentials = JSON.parse(localStorage.getItem(WebAuthn.STORE_KEY) || '[]') as string[];
+        storedCredentials.push(userId);
         localStorage.setItem(WebAuthn.STORE_KEY, JSON.stringify(storedCredentials));
     }
 
-    public static removeConfigured(username: string) {
+    public static removeConfiguredUserId(userId: string) {
         const storedCredentials = JSON.parse(localStorage.getItem(WebAuthn.STORE_KEY) || '[]') as string[];
-        localStorage.setItem(WebAuthn.STORE_KEY, JSON.stringify(!!username ? storedCredentials.filter(c => c !== username) : []));
+        localStorage.setItem(WebAuthn.STORE_KEY, JSON.stringify(!!userId ? storedCredentials.filter(c => c !== userId) : []));
     }
 
 
@@ -63,7 +68,7 @@ class WebAuthn {
         return result;
     }
 
-    public static async verifyCredential(options: PublicKeyCredentialRequestOptions) {
+    public static async getCredential(options: PublicKeyCredentialRequestOptions) {
         options.challenge = WebAuthn.ToArrayBuffer(options.challenge, 'challenge');
 
         options.allowCredentials?.forEach(function (cred) {
@@ -89,11 +94,10 @@ class WebAuthn {
             response: {
                 authenticatorData: WebAuthn.ToBase64Url(authenticatorData),
                 clientDataJSON: WebAuthn.ToBase64Url(clientDataJSON),
-                userHandle: userHandle !== null ? WebAuthn.ToBase64Url(userHandle) : null,
+                userHandle: userHandle ? (WebAuthn.ToBase64Url(userHandle) || null) : null,
                 signature: WebAuthn.ToBase64Url(signature)
             }
         }
-
         return result;
     }
 

@@ -10,19 +10,24 @@ public static partial class IJSRuntimeWebAuthnExtensions
         return jsRuntime.InvokeAsync<bool>("WebAuthn.isAvailable");
     }
 
-    public static ValueTask StoreWebAuthnConfigured(this IJSRuntime jsRuntime, string username)
+    public static ValueTask<bool> IsWebAuthnConfigured(this IJSRuntime jsRuntime, Guid? userId = null)
     {
-        return jsRuntime.InvokeVoidAsync("WebAuthn.storeConfigured", username);
+        return jsRuntime.InvokeAsync<bool>("WebAuthn.isConfigured", userId);
     }
 
-    public static ValueTask<bool> IsWebAuthnConfigured(this IJSRuntime jsRuntime, string? username = null)
+    public static ValueTask<Guid[]?> GetWebAuthnConfiguredUserIds(this IJSRuntime jsRuntime)
     {
-        return jsRuntime.InvokeAsync<bool>("WebAuthn.isConfigured", username);
+        return jsRuntime.InvokeAsync<Guid[]?>("WebAuthn.getConfiguredUserIds");
     }
 
-    public static ValueTask RemoveWebAuthnConfigured(this IJSRuntime jsRuntime, string? username = null)
+    public static ValueTask SetWebAuthnConfiguredUserId(this IJSRuntime jsRuntime, Guid userId)
     {
-        return jsRuntime.InvokeVoidAsync("WebAuthn.removeConfigured", username);
+        return jsRuntime.InvokeVoidAsync("WebAuthn.setConfiguredUserId", userId);
+    }
+
+    public static ValueTask RemoveWebAuthnConfiguredUserId(this IJSRuntime jsRuntime, Guid? userId = null)
+    {
+        return jsRuntime.InvokeVoidAsync("WebAuthn.removeConfiguredUserId", userId);
     }
 
     public static ValueTask<AuthenticatorAttestationRawResponse> CreateWebAuthnCredential(this IJSRuntime jsRuntime, CredentialCreateOptions options)
@@ -30,8 +35,8 @@ public static partial class IJSRuntimeWebAuthnExtensions
         return jsRuntime.InvokeAsync<AuthenticatorAttestationRawResponse>("WebAuthn.createCredential", options);
     }
 
-    public static ValueTask<AuthenticatorAssertionRawResponse> VerifyWebAuthnCredential(this IJSRuntime jsRuntime, AssertionOptions options)
+    public static ValueTask<AuthenticatorAssertionRawResponse> GetWebAuthnCredential(this IJSRuntime jsRuntime, AssertionOptions options)
     {
-        return jsRuntime.InvokeAsync<AuthenticatorAssertionRawResponse>("WebAuthn.verifyCredential", options);
+        return jsRuntime.InvokeAsync<AuthenticatorAssertionRawResponse>("WebAuthn.getCredential", options);
     }
 }

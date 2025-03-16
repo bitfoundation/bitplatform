@@ -21,13 +21,22 @@ public partial class PasswordlessSection
 
         if (User?.UserName is null) return;
 
-        isConfigured = await JSRuntime.IsWebAuthnConfigured(User.UserName);
+        isConfigured = await JSRuntime.IsWebAuthnConfigured(User.Id);
     }
 
 
     private async Task EnablePasswordless()
     {
         if (User?.UserName is null) return;
+
+        // Only on Android this action will replace the current credential registered on the device,
+        // since android won't show the user selection window when there are multiple credentials registered.
+        // So it may be a good idea to show a confirm modal if this behavior is not appropriate for your app (as shown in the following commented lines):
+        //var userIds = await JSRuntime.GetWebAuthnConfiguredUserIds();
+        //if (userIds is not null && userIds.Length > 0)
+        //{
+        //    // show a warning or confirm modal
+        //}
 
         var options = await userController.GetWebAuthnCredentialOptions(CurrentCancellationToken);
 
@@ -45,7 +54,7 @@ public partial class PasswordlessSection
 
         await userController.CreateWebAuthnCredential(attestationResponse, CurrentCancellationToken);
 
-        await JSRuntime.StoreWebAuthnConfigured(User.UserName);
+        await JSRuntime.SetWebAuthnConfiguredUserId(User.Id);
 
         isConfigured = true;
 
@@ -56,12 +65,12 @@ public partial class PasswordlessSection
     {
         if (User?.UserName is null) return;
 
-        var options = await identityController.GetWebAuthnAssertionOptions(CurrentCancellationToken);
+        var options = await identityController.GetWebAuthnAssertionOptions(new() { UserIds = [User.Id] }, CurrentCancellationToken);
 
         AuthenticatorAssertionRawResponse assertion;
         try
         {
-            assertion = await JSRuntime.VerifyWebAuthnCredential(options);
+            assertion = await JSRuntime.GetWebAuthnCredential(options);
         }
         catch (Exception ex)
         {
@@ -74,10 +83,20 @@ public partial class PasswordlessSection
 
         await userController.DeleteWebAuthnCredential(assertion.Id, CurrentCancellationToken);
 
-        await JSRuntime.RemoveWebAuthnConfigured(User.UserName);
+        await JSRuntime.RemoveWebAuthnConfiguredUserId(User.Id);
 
         isConfigured = false;
 
         SnackBarService.Success(Localizer[nameof(AppStrings.DisablePasswordlessSucsessMessage)]);
     }
+
+    // Only for debugging purposes, uncomment the following lines and the corresponding lines in the razor file.
+    //private async Task DeleteAll()
+    //{
+    //    await userController.DeleteAllWebAuthnCredentials(CurrentCancellationToken);
+
+    //    await JSRuntime.RemoveWebAuthnConfigured();
+
+    //    isConfigured = false;
+    //}
 }

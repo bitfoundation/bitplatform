@@ -1,10 +1,10 @@
 ﻿//+:cnd:noEmit
 using System.Text;
-using Microsoft.Extensions.Caching.Distributed;
+using Boilerplate.Server.Api.Models.Identity;
+using Boilerplate.Shared.Dtos.Identity;
 using Fido2NetLib;
 using Fido2NetLib.Objects;
-using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Server.Api.Models.Identity;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
@@ -16,9 +16,18 @@ public partial class IdentityController
 
 
     [HttpGet]
-    public async Task<AssertionOptions> GetWebAuthnAssertionOptions(CancellationToken cancellationToken)
+    public async Task<AssertionOptions> GetWebAuthnAssertionOptions(WebAuthnAssertionOptionsRequestDto request, CancellationToken cancellationToken)
     {
         var existingKeys = new List<PublicKeyCredentialDescriptor>();
+
+        if (request.UserIds is not null)
+        {
+            var existingCredentials = await DbContext.WebAuthnCredential.Where(c => request.UserIds.Contains(c.UserId))
+                                                                        .OrderByDescending(c => c.RegDate)
+                                                                        .Select(c => new { c.Id, c.Transports })
+                                                                        .ToArrayAsync(cancellationToken);
+            existingKeys.AddRange(existingCredentials.Select(c => new PublicKeyCredentialDescriptor(PublicKeyCredentialType.PublicKey, c.Id, c.Transports)));
+        }
 
         var extensions = new AuthenticationExtensionsClientInputs
         {
@@ -28,9 +37,9 @@ public partial class IdentityController
 
         var options = fido2.GetAssertionOptions(new GetAssertionOptionsParams
         {
-            Extensions = extensions,
+            //Extensions = extensions,
             AllowedCredentials = existingKeys,
-            UserVerification = UserVerificationRequirement.Discouraged,
+            UserVerification = UserVerificationRequirement.Required,
         });
 
         var key = new string([.. options.Challenge.Select(b => (char)b)]);
