@@ -142,7 +142,15 @@
         </div>
     </DemoSection>
 
-    <DemoSection Title="HideInput" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoSection Title="Precision" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div>Specifies how many decimal places the value is rounded to.</div>
+        <br />
+        <div class="example-box">
+            <BitNumberField Precision="2" @bind-Value="precisionInputValue" Label="Rounding to 2 Decimal Places" />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="HideInput" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>Demonstrates hiding the input field in BitNumberField while still allowing value changes.</div>
         <br />
         <div class="example-box">
@@ -155,7 +163,7 @@
         </div>
     </DemoSection>
 
-    <DemoSection Title="Events" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoSection Title="Events" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>Handle events in BitNumberField, including increment, decrement, and change events.</div>
         <br />
         <div class="example-box">
@@ -170,7 +178,7 @@
         </div>
     </DemoSection>
 
-    <DemoSection Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <DemoSection Title="Validation" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>Demonstrates validation for BitNumberField within a form, including required fields and custom validation messages.</div>
         <br />
         <div class="example-box">
@@ -192,7 +200,7 @@
         </div>
     </DemoSection>
 
-    <DemoSection Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
+    <DemoSection Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
         <div>Explores styling and class customization for BitNumberField, including component styles, custom classes, and detailed style options.</div>
         <br /><br />
         <div class="example-box">
@@ -223,7 +231,7 @@
         </div>
     </DemoSection>
 
-    <DemoSection Title="RTL" RazorCode="@example12RazorCode" Id="example12">
+    <DemoSection Title="RTL" RazorCode="@example13RazorCode" Id="example13">
         <div>Use BitNumberField in right-to-left (RTL).</div>
         <br />
         <div dir="rtl">
