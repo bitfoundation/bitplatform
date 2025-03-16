@@ -29,6 +29,15 @@ public partial class PasswordlessSection
     {
         if (User?.UserName is null) return;
 
+        // Only on Android this action will replace the current credential registered on the device,
+        // since android won't show the user selection window when there are multiple credentials registered.
+        // So it may be a good idea to show a confirm modal if this behavior is not appropriate for your app (as shown in the following commented lines):
+        //var userIds = await JSRuntime.GetWebAuthnConfiguredUserIds();
+        //if (userIds is not null && userIds.Length > 0)
+        //{
+        //    // show a warning or confirm modal
+        //}
+
         var options = await userController.GetWebAuthnCredentialOptions(CurrentCancellationToken);
 
         AuthenticatorAttestationRawResponse attestationResponse;
