@@ -22,7 +22,10 @@ public partial class IdentityController
 
         if (request.UserIds is not null)
         {
-            var existingCredentials = DbContext.WebAuthnCredential.Where(c => request.UserIds.Contains(c.UserId)).OrderByDescending(c => c.RegDate);
+            var existingCredentials = await DbContext.WebAuthnCredential.Where(c => request.UserIds.Contains(c.UserId))
+                                                                        .OrderByDescending(c => c.RegDate)
+                                                                        .Select(c => new { c.Id, c.Transports })
+                                                                        .ToArrayAsync(cancellationToken);
             existingKeys.AddRange(existingCredentials.Select(c => new PublicKeyCredentialDescriptor(PublicKeyCredentialType.PublicKey, c.Id, c.Transports)));
         }
 
