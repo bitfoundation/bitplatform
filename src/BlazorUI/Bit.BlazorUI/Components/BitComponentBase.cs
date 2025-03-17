@@ -78,7 +78,7 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     public override Task SetParametersAsync(ParameterView parameters)
     {
         HtmlAttributes.Clear();
-        var parametersDictionary = ParametersCache ?? throw new InvalidOperationException();
+        var parametersDictionary = ParametersCache ?? new Dictionary<string, object?>(parameters.ToDictionary());
         foreach (var parameter in parametersDictionary!)
         {
             switch (parameter.Key)
