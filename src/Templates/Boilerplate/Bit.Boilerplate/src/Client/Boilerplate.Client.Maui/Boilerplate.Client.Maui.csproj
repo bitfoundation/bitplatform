@@ -150,6 +150,12 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Content Remove="wwwroot\external-js-runner.html" />
+        <EmbeddedResource Include="wwwroot\external-js-runner.html" />
+        <EmbeddedResource Include="..\Boilerplate.Client.Core\wwwroot\scripts\app.js" Link="wwwroot\scripts\app.js" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj" />
     </ItemGroup>
 

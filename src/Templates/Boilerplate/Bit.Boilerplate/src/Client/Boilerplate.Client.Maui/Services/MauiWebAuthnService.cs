@@ -62,12 +62,7 @@ public partial class MauiWebAuthnService : WebAuthnServiceBase
     {
         var osVersion = Environment.OSVersion.Version;
 
-        // Windows 10 version 1903 is build 18362
-        // Major version should be 10, Build number should be > 18362
-        if (osVersion.Major >= 10 && osVersion.Build > 18362)
-        {
-            return true;
-        }
-        return false;
+        return OperatingSystem.IsWindowsVersionAtLeast(10, 0, 18362)
+            || true /* Checkout SupportedOSPlatformVersion in Directory.Build.props */;
     }
 }

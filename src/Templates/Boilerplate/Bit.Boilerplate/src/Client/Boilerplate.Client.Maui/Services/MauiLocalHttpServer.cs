@@ -1,6 +1,7 @@
 ﻿using EmbedIO;
 using System.Net;
 using EmbedIO.Actions;
+using System.Reflection;
 using System.Net.Sockets;
 using Boilerplate.Client.Core.Components;
 
@@ -67,9 +68,8 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
-                    var filePath = Path.Combine(AppContext.BaseDirectory, @"wwwroot\external-js-runner.html");
-                    await using var fileStream = File.OpenRead(filePath);
-                    await fileStream.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
+                    await using var file = Assembly.Load("Boilerplate.Client.Maui").GetManifestResourceStream("Boilerplate.Client.Maui.wwwroot.external-js-runner.html")!;
+                    await file.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
                 }
                 catch (Exception exp)
                 {
@@ -80,9 +80,8 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
-                    var filePath = Path.Combine(AppContext.BaseDirectory, @"wwwroot\_content\Boilerplate.Client.Core\scripts\app.js");
-                    await using var fileStream = File.OpenRead(filePath);
-                    await fileStream.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
+                    await using var file = Assembly.Load("Boilerplate.Client.Maui").GetManifestResourceStream("Boilerplate.Client.Maui.wwwroot.scripts.app.js")!;
+                    await file.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
                 }
                 catch (Exception exp)
                 {
