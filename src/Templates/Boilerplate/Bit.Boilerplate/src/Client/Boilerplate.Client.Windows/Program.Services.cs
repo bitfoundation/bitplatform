@@ -12,6 +12,7 @@ public static partial class Program
         // Services being registered here can get injected in windows project only.
         services.AddClientCoreProjectServices(configuration);
 
+        services.AddScoped<IWebAuthnService, WindowsWebAuthnService>();
         services.AddScoped<IExceptionHandler, WindowsExceptionHandler>();
         services.AddScoped<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
 

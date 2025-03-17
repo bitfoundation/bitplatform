@@ -26,6 +26,7 @@ public partial class SignInPage
     public string? ErrorQueryString { get; set; }
 
 
+    [AutoInject] private IWebAuthnService webAuthnService = default!;
     [AutoInject] private ILocalHttpServer localHttpServer = default!;
     [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private IIdentityController identityController = default!;
@@ -128,7 +129,9 @@ public partial class SignInPage
             }
             else
             {
-                var response = await identityController.VerifyWebAuthAndSignIn(new() { ClientResponse = webAuthnAssertion, TfaCode = model.TwoFactorCode }, CurrentCancellationToken);
+                var response = await identityController
+                    .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
+                    .VerifyWebAuthAndSignIn(new() { ClientResponse = webAuthnAssertion, TfaCode = model.TwoFactorCode }, CurrentCancellationToken);
                 await AuthManager.StoreTokens(response!, model.RememberMe);
                 NavigationManager.NavigateTo(ReturnUrlQueryString ?? Urls.HomePage, replace: true);
             }
@@ -164,19 +167,24 @@ public partial class SignInPage
     private async Task HandleOnPasswordlessSignIn()
     {
         if (isWaiting) return;
-
         isWaiting = true;
 
         try
         {
-            var userIds = await JSRuntime.GetWebAuthnConfiguredUserIds();
-            if (userIds is null) return;
+            var userIds = await webAuthnService.GetWebAuthnConfiguredUserIds();
 
-            var options = await identityController.GetWebAuthnAssertionOptions(new() { UserIds = userIds }, CurrentCancellationToken);
+            if (AppPlatform.IsBlazorHybrid)
+            {
+                localHttpServer.Start(CurrentCancellationToken);
+            }
+
+            var options = await identityController
+                .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", $"http://localhost:{localHttpServer.Port}")
+                .GetWebAuthnAssertionOptions(new() { UserIds = userIds }, CurrentCancellationToken);
 
             try
             {
-                webAuthnAssertion = await JSRuntime.GetWebAuthnCredential(options);
+                webAuthnAssertion = await webAuthnService.GetWebAuthnCredential(options, CurrentCancellationToken);
             }
             catch (Exception ex)
             {
@@ -185,7 +193,9 @@ public partial class SignInPage
                 return;
             }
 
-            var response = await identityController.VerifyWebAuthAndSignIn(new() { ClientResponse = webAuthnAssertion }, CurrentCancellationToken);
+            var response = await identityController
+                .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
+                .VerifyWebAuthAndSignIn(new() { ClientResponse = webAuthnAssertion }, CurrentCancellationToken);
 
             requiresTwoFactor = response.RequiresTwoFactor;
 
@@ -266,7 +276,9 @@ public partial class SignInPage
             }
             else
             {
-                await identityController.VerifyWebAuthAndSendTwoFactorToken(webAuthnAssertion, CurrentCancellationToken);
+                await identityController
+                    .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
+                    .VerifyWebAuthAndSendTwoFactorToken(webAuthnAssertion, CurrentCancellationToken);
             }
 
             SnackBarService.Success(Localizer[nameof(AppStrings.TfaTokenSentMessage)]);

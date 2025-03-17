@@ -91,8 +91,7 @@ function handleMessage(e: MessageEvent) {
 
 function handleLoad() {
     setCssWindowSizes();
-
-    if (window.opener != null) {
+    if (window.opener != null && (location.pathname == '/sign-in' || location.pathname == '/sign-up')) {
         // The IExternalNavigationService is responsible for opening pages in a new window,
         // such as during social sign-in flows. Once the external navigation is complete,
         // and the user is redirected back to the newly opened window,
@@ -109,18 +108,20 @@ function setCssWindowSizes() {
 
 declare class BitTheme { static init(options: any): void; };
 
-BitTheme.init({
-    system: true,
-    persist: true,
-    onChange: (newTheme: string, oldThem: string) => {
-        if (newTheme === 'dark') {
-            document.body.classList.add('theme-dark');
-            document.body.classList.remove('theme-light');
-        } else {
-            document.body.classList.add('theme-light');
-            document.body.classList.remove('theme-dark');
+if (typeof BitTheme != "undefined") {
+    BitTheme.init({
+        system: true,
+        persist: true,
+        onChange: (newTheme: string, oldThem: string) => {
+            if (newTheme === 'dark') {
+                document.body.classList.add('theme-dark');
+                document.body.classList.remove('theme-light');
+            } else {
+                document.body.classList.add('theme-light');
+                document.body.classList.remove('theme-dark');
+            }
+            const primaryBgColor = getComputedStyle(document.documentElement).getPropertyValue('--bit-clr-bg-pri');
+            document.querySelector('meta[name=theme-color]')!.setAttribute('content', primaryBgColor);
         }
-        const primaryBgColor = getComputedStyle(document.documentElement).getPropertyValue('--bit-clr-bg-pri');
-        document.querySelector('meta[name=theme-color]')!.setAttribute('content', primaryBgColor);
-    }
-});
+    });
+}

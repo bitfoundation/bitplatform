@@ -18,6 +18,7 @@ public partial class SettingsPage
 
     [AutoInject] protected HttpClient HttpClient = default!;
     [AutoInject] private IUserController userController = default!;
+    [AutoInject] private IWebAuthnService webAuthnService = default!;
 
 
     private UserDto? user;
@@ -36,7 +37,7 @@ public partial class SettingsPage
             user = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/User/GetCurrentUser", JsonSerializerOptions.GetTypeInfo<UserDto>(), CurrentCancellationToken)))!;
             if (InPrerenderSession is false)
             {
-                showPasswordless = await JSRuntime.IsWebAuthnAvailable() && AppPlatform.IsBlazorHybrid is false;
+                showPasswordless = await webAuthnService.IsWebAuthnAvailable();
             }
         }
         finally

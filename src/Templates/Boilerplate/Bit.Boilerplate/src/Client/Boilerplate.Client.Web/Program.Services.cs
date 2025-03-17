@@ -50,6 +50,7 @@ public static partial class Program
         //#if (notification == true)
         services.AddScoped<IPushNotificationService, WebPushNotificationService>();
         //#endif
+        services.AddScoped<IWebAuthnService, WebAuthnService>();
 
         services.AddSingleton(sp =>
         {
