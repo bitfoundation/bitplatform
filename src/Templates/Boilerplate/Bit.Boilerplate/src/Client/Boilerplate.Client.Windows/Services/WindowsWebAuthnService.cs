@@ -20,13 +20,18 @@ public partial class WindowsWebAuthnService : WebAuthnServiceBase
         }
         finally
         {
-            await ExternalJSRunnerWebSocketModule.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "close" }, JsonSerializerOptions.Web));
-
-            Application.OpenForms[0]!.Invoke(() =>
-            {
-                Application.OpenForms[0]!.Activate();
-            });
+            await CloseExternalBrowser();
         }
+    }
+
+    private static async Task CloseExternalBrowser()
+    {
+        await ExternalJSRunnerWebSocketModule.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "close" }, JsonSerializerOptions.Web));
+
+        Application.OpenForms[0]!.Invoke(() =>
+        {
+            Application.OpenForms[0]!.Activate();
+        });
     }
 
     public override async ValueTask<AuthenticatorAttestationRawResponse> CreateWebAuthnCredential(CredentialCreateOptions options)
@@ -40,12 +45,7 @@ public partial class WindowsWebAuthnService : WebAuthnServiceBase
         }
         finally
         {
-            await ExternalJSRunnerWebSocketModule.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "close" }, JsonSerializerOptions.Web));
-
-            Application.OpenForms[0]!.Invoke(() =>
-            {
-                Application.OpenForms[0]!.Activate();
-            });
+            await CloseExternalBrowser();
         }
     }
 
