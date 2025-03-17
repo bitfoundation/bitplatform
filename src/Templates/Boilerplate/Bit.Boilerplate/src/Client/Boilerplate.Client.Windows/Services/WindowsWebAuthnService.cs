@@ -13,8 +13,10 @@ public partial class WindowsWebAuthnService : WebAuthnServiceBase
         {
             await externalNavigationService.NavigateToAsync($"{localHttpServer.Origin}/external-js-runner.html");
 
-            return (await ExternalJSRunnerWebSocketModule.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "getCredential", Options = options }, JsonSerializerOptions.Web)))
+            var result = (await ExternalJSRunnerWebSocketModule.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "getCredential", Options = options }, JsonSerializerOptions.Web)))
                 .Deserialize<AuthenticatorAssertionRawResponse>(JsonSerializerOptions.Web)!;
+
+            return result ?? throw new TaskCanceledException();
         }
         finally
         {

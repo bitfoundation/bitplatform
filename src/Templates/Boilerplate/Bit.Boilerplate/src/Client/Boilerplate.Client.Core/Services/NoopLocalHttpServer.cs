@@ -4,7 +4,7 @@ public partial class NoOpLocalHttpServer : ILocalHttpServer
 {
     public int Start(CancellationToken cancellationToken) => -1;
 
-    public string Origin => throw new InvalidOperationException();
+    public string Origin => $"http://localhost:{Port}";
 
     public int Port => -1;
 
