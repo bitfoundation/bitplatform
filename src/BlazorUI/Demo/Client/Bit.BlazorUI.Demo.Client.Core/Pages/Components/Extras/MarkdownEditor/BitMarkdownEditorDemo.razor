@@ -9,7 +9,7 @@
           Description="BitMarkdownEditor is a SEO friendly Blazor wrapper around the famous markedjs library."
           SecondaryNames="@(["MdViewer", "MD"])"
           Parameters="componentParameters">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+    <DemoSection Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <BitButton OnClick="GetValue">Get Value</BitButton>
         <div style="margin-top:1rem;display:flex;flex-direction:row;gap:1rem;height:300px">
             <BitMarkdownEditor @ref="editorRef" />

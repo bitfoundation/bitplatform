@@ -13,6 +13,9 @@ public partial class BitMarkdownEditor : BitComponentBase
 
 
 
+    /// <summary>
+    /// Returns the current value of the editor.
+    /// </summary>
     public async ValueTask<string> GetValue()
     {
         return await _js.BitMarkdownEditorGetValue(_Id);
