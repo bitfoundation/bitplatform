@@ -11,13 +11,18 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
     [AutoInject] private IExceptionHandler exceptionHandler;
     [AutoInject] private AbsoluteServerAddressProvider absoluteServerAddress;
 
+    private int port = -1;
     private WebServer? localHttpServer;
+
+    public int Port => port;
+
+    public string Origin => $"http://localhost:{port}";
 
     public int Start(CancellationToken cancellationToken)
     {
         localHttpServer?.Dispose();
 
-        var port = GetAvailableTcpPort();
+        port = GetAvailableTcpPort();
 
         localHttpServer = new WebServer(o => o
             .WithUrlPrefix($"http://localhost:{port}")
@@ -57,7 +62,34 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
                 {
                     exceptionHandler.Handle(exp);
                 }
-            }));
+            }))
+            .WithModule(new ActionModule("/external-js-runner.html", HttpVerbs.Get, async ctx =>
+            {
+                try
+                {
+                    var filePath = Path.Combine(AppContext.BaseDirectory, @"wwwroot\external-js-runner.html");
+                    await using var fileStream = File.OpenRead(filePath);
+                    await fileStream.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
+                }
+                catch (Exception exp)
+                {
+                    exceptionHandler.Handle(exp);
+                }
+            }))
+            .WithModule(new ActionModule("/app.js", HttpVerbs.Get, async ctx =>
+            {
+                try
+                {
+                    var filePath = Path.Combine(AppContext.BaseDirectory, @"wwwroot\_content\Boilerplate.Client.Core\scripts\app.js");
+                    await using var fileStream = File.OpenRead(filePath);
+                    await fileStream.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
+                }
+                catch (Exception exp)
+                {
+                    exceptionHandler.Handle(exp);
+                }
+            }))
+            .WithModule(new ExternalJSRunnerWebSocketModule());
 
         localHttpServer.HandleHttpException(async (context, exception) =>
         {

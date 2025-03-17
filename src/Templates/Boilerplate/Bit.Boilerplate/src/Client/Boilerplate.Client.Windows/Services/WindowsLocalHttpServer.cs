@@ -69,7 +69,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
-                    var filePath = Path.Combine(AppContext.BaseDirectory, @"wwwroot\_content\TodoSample.Client.Core\scripts\app.js");
+                    var filePath = Path.Combine(AppContext.BaseDirectory, @"wwwroot\_content\Boilerplate.Client.Core\scripts\app.js");
                     if (File.Exists(filePath) is false)
                     {
                         filePath = Path.Combine(AppContext.BaseDirectory, @"..\..\..\..", @"Boilerplate.Client.Core\wwwroot\scripts\app.js");
