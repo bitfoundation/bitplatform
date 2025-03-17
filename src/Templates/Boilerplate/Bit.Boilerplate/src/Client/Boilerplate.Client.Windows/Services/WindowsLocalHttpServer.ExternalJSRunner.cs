@@ -40,6 +40,7 @@ public class ExternalJSRunnerWebSocketModule : WebSocketModule
 
     protected override async Task OnClientDisconnectedAsync(IWebSocketContext context)
     {
+        webSocketTcs.TrySetCanceled();
         webSocketTcs = new();
         await base.OnClientDisconnectedAsync(context);
     }

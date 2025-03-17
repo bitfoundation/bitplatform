@@ -40,11 +40,6 @@ public partial class PasswordlessSection
         //    // show a warning or confirm modal
         //}
 
-        if (AppPlatform.IsBlazorHybrid)
-        {
-            localHttpServer.Start(CurrentCancellationToken);
-        }
-
         var options = await userController
             .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
             .GetWebAuthnCredentialOptions(CurrentCancellationToken);
@@ -75,11 +70,6 @@ public partial class PasswordlessSection
     private async Task DisablePasswordless()
     {
         if (User?.UserName is null) return;
-
-        if (AppPlatform.IsBlazorHybrid)
-        {
-            localHttpServer.Start(CurrentCancellationToken);
-        }
 
         var options = await identityController
             .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
@@ -121,4 +111,14 @@ public partial class PasswordlessSection
 
     //    isConfigured = false;
     //}
+
+    protected override async Task OnAfterFirstRenderAsync()
+    {
+        if (AppPlatform.IsBlazorHybrid)
+        {
+            localHttpServer.Start(CurrentCancellationToken);
+        }
+
+        await base.OnAfterFirstRenderAsync();
+    }
 }
