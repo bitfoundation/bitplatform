@@ -15,6 +15,8 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
 
     public int Start(CancellationToken cancellationToken)
     {
+        localHttpServer?.Dispose();
+
         var port = GetAvailableTcpPort();
 
         localHttpServer = new WebServer(o => o

@@ -11,7 +11,7 @@ public static partial class HttpRequestExtensions
 
         var serverUrl = req.GetBaseUrl();
 
-        var origin = req.Query["origin"].Union(req.Headers["X-Origin"]).Select(o => new Uri(o)).SingleOrDefault();
+        var origin = req.Query["origin"].Union(req.Headers["X-Origin"]).Select(o => new Uri(o)).FirstOrDefault();
 
         if (origin is null)
             return serverUrl; // Assume that web app and server are hosted in one place.

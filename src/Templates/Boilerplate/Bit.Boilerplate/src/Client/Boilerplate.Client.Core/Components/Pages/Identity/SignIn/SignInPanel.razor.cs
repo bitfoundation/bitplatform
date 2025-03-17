@@ -11,6 +11,7 @@ public partial class SignInPanel
     private bool isWebAuthnAvailable;
     private string? selectedKey = EmailKey;
 
+    [AutoInject] private IWebAuthnService webAuthnService = default!;
 
     [Parameter] public bool IsWaiting { get; set; }
 
@@ -30,13 +31,8 @@ public partial class SignInPanel
 
     protected override async Task OnAfterFirstRenderAsync()
     {
-        isWebAuthnAvailable = await JSRuntime.IsWebAuthnAvailable() && AppPlatform.IsBlazorHybrid is false;
+        isWebAuthnAvailable = await webAuthnService.IsWebAuthnAvailable();
         StateHasChanged();
-
-        if (await JSRuntime.IsWebAuthnConfigured())
-        {
-            await OnPasswordlessSignIn.InvokeAsync();
-        }
 
         await base.OnAfterFirstRenderAsync();
     }

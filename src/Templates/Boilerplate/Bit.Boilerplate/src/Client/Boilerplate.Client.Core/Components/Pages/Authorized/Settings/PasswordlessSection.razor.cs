@@ -10,6 +10,8 @@ public partial class PasswordlessSection
 
 
     [AutoInject] IUserController userController = default!;
+    [AutoInject] IWebAuthnService webAuthnService = default!;
+    [AutoInject] ILocalHttpServer localHttpServer = default!;
     [AutoInject] IIdentityController identityController = default!;
 
 
@@ -21,7 +23,7 @@ public partial class PasswordlessSection
 
         if (User?.UserName is null) return;
 
-        isConfigured = await JSRuntime.IsWebAuthnConfigured(User.Id);
+        isConfigured = await webAuthnService.IsWebAuthnConfigured(User.Id);
     }
 
 
@@ -38,12 +40,19 @@ public partial class PasswordlessSection
         //    // show a warning or confirm modal
         //}
 
-        var options = await userController.GetWebAuthnCredentialOptions(CurrentCancellationToken);
+        if (AppPlatform.IsBlazorHybrid)
+        {
+            localHttpServer.Start(CurrentCancellationToken);
+        }
+
+        var options = await userController
+            .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
+            .GetWebAuthnCredentialOptions(CurrentCancellationToken);
 
         AuthenticatorAttestationRawResponse attestationResponse;
         try
         {
-            attestationResponse = await JSRuntime.CreateWebAuthnCredential(options);
+            attestationResponse = await webAuthnService.CreateWebAuthnCredential(options);
         }
         catch (Exception ex)
         {
@@ -52,9 +61,11 @@ public partial class PasswordlessSection
             return;
         }
 
-        await userController.CreateWebAuthnCredential(attestationResponse, CurrentCancellationToken);
+        await userController
+            .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
+            .CreateWebAuthnCredential(attestationResponse, CurrentCancellationToken);
 
-        await JSRuntime.SetWebAuthnConfiguredUserId(User.Id);
+        await webAuthnService.SetWebAuthnConfiguredUserId(User.Id);
 
         isConfigured = true;
 
@@ -65,12 +76,19 @@ public partial class PasswordlessSection
     {
         if (User?.UserName is null) return;
 
-        var options = await identityController.GetWebAuthnAssertionOptions(new() { UserIds = [User.Id] }, CurrentCancellationToken);
+        if (AppPlatform.IsBlazorHybrid)
+        {
+            localHttpServer.Start(CurrentCancellationToken);
+        }
+
+        var options = await identityController
+            .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
+            .GetWebAuthnAssertionOptions(new() { UserIds = [User.Id] }, CurrentCancellationToken);
 
         AuthenticatorAssertionRawResponse assertion;
         try
         {
-            assertion = await JSRuntime.GetWebAuthnCredential(options);
+            assertion = await webAuthnService.GetWebAuthnCredential(options, CurrentCancellationToken);
         }
         catch (Exception ex)
         {
@@ -79,11 +97,15 @@ public partial class PasswordlessSection
             return;
         }
 
-        var verifyResult = await identityController.VerifyWebAuthAssertion(assertion, CurrentCancellationToken);
+        var verifyResult = await identityController
+            .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
+            .VerifyWebAuthAssertion(assertion, CurrentCancellationToken);
 
-        await userController.DeleteWebAuthnCredential(assertion.Id, CurrentCancellationToken);
+        await userController
+            .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
+            .DeleteWebAuthnCredential(assertion.Id, CurrentCancellationToken);
 
-        await JSRuntime.RemoveWebAuthnConfiguredUserId(User.Id);
+        await webAuthnService.RemoveWebAuthnConfiguredUserId(User.Id);
 
         isConfigured = false;
 
@@ -95,7 +117,7 @@ public partial class PasswordlessSection
     //{
     //    await userController.DeleteAllWebAuthnCredentials(CurrentCancellationToken);
 
-    //    await JSRuntime.RemoveWebAuthnConfigured();
+    //    await webAuthnService.RemoveWebAuthnConfigured();
 
     //    isConfigured = false;
     //}

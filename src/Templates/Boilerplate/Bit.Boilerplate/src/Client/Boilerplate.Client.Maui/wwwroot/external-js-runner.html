@@ -1,0 +1,17 @@
+<html>
+<head>
+    <base href="/" />
+    <title>Passwordless login</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+</head>
+<body>
+    <!-- Webview is not capable to provide some browser services such as WebAuthn etc.
+    So, we need to run the external js in the browser to get the browser services.
+    -->
+    <script src="app.js"></script>
+
+    <script type="text/javascript">
+        ExternalJSRunner.run();
+    </script>
+</body>
+</html>

@@ -48,7 +48,7 @@ public interface IIdentityController : IAppController
     [HttpGet("{?provider,returnUrl,localHttpPort}")]
     Task<string> GetSocialSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default);
 
-    [HttpGet]
+    [HttpPost]
     Task<AssertionOptions> GetWebAuthnAssertionOptions(WebAuthnAssertionOptionsRequestDto request, CancellationToken cancellationToken);
 
     [HttpPost]

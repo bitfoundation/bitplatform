@@ -51,7 +51,10 @@ public partial class ClientAppCoordinator : AppComponentBase
         {
             unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.NAVIGATE_TO, async (uri) =>
             {
-                NavigationManager.NavigateTo(uri!.ToString()!);
+                var uriValue = uri?.ToString()!;
+                var replace = uriValue.Contains("replace=true");
+                var forceLoad = uriValue.Contains("forceLoad=true");
+                NavigationManager.NavigateTo(uriValue.Replace("replace=true", "").Replace("forceLoad=true", "").TrimEnd('&'), forceLoad, replace);
             });
             TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
             TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;

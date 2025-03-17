@@ -1,8 +1,8 @@
 ﻿//+:cnd:noEmit
 using System.Text;
-using Microsoft.Extensions.Caching.Distributed;
 using Fido2NetLib;
 using Fido2NetLib.Objects;
+using Microsoft.Extensions.Caching.Distributed;
 using Boilerplate.Server.Api.Models.Identity;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
@@ -113,12 +113,12 @@ public partial class UserController
         var user = await userManager.FindByIdAsync(userId.ToString())
                     ?? throw new ResourceNotFoundException();
 
-        var entityToDelete = await DbContext.WebAuthnCredential.FindAsync([credentialId], cancellationToken)
-                                ?? throw new ResourceNotFoundException();
+        var affectedRows = await DbContext.WebAuthnCredential
+            .Where(webAuthCred => webAuthCred.Id == credentialId)
+            .ExecuteDeleteAsync(cancellationToken);
 
-        DbContext.WebAuthnCredential.Remove(entityToDelete);
-
-        await DbContext.SaveChangesAsync(cancellationToken);
+        if (affectedRows == 0)
+            throw new ResourceNotFoundException();
     }
 
     [HttpDelete]
@@ -128,13 +128,7 @@ public partial class UserController
         var user = await userManager.FindByIdAsync(userId.ToString())
                     ?? throw new ResourceNotFoundException();
 
-        var entities = await DbContext.WebAuthnCredential.Where(c => c.UserId == userId).ToListAsync(cancellationToken);
-
-        if (entities is null || entities.Count == 0) return;
-
-        DbContext.WebAuthnCredential.RemoveRange(entities);
-
-        await DbContext.SaveChangesAsync(cancellationToken);
+        var affectedRows = await DbContext.WebAuthnCredential.Where(c => c.UserId == userId).ExecuteDeleteAsync(cancellationToken);
     }
 
     private static string GetWebAuthnCacheKey(Guid userId) => $"WebAuthn_Options_{userId}";

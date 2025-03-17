@@ -32,5 +32,15 @@ namespace Boilerplate.Shared
             controller.AddQueryStrings(queryString);
             return controller;
         }
+
+        public static TAppController WithQueryIf<TAppController>(this TAppController controller, bool condition, string key, object? value)
+            where TAppController : IAppController
+        {
+            if (condition)
+            {
+                controller.WithQuery(key, value);
+            }
+            return controller;
+        }
     }
 }

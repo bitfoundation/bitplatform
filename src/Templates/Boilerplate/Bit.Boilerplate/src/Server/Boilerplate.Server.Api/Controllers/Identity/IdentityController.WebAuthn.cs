@@ -15,7 +15,7 @@ public partial class IdentityController
     [AutoInject] protected JsonSerializerOptions jsonSerializerOptions = default!;
 
 
-    [HttpGet]
+    [HttpPost]
     public async Task<AssertionOptions> GetWebAuthnAssertionOptions(WebAuthnAssertionOptionsRequestDto request, CancellationToken cancellationToken)
     {
         var existingKeys = new List<PublicKeyCredentialDescriptor>();

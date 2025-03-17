@@ -4,6 +4,10 @@ public interface ILocalHttpServer
 {
     int Start(CancellationToken cancellationToken);
 
+    int Port { get; }
+
+    string? Origin { get; }
+
     /// <summary>
     /// Social sign-in on the web version of the app uses simple redirects. However, for Android, iOS, Windows, and macOS, social sign-in requires an in-app or external browser.
     /// 
