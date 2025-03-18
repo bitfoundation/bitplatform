@@ -2,7 +2,7 @@
 
 public partial class NoOpLocalHttpServer : ILocalHttpServer
 {
-    public int Start(CancellationToken cancellationToken) => -1;
+    public int EnsureStarted() => -1;
 
     public string Origin => $"http://localhost:{Port}";
 
@@ -12,4 +12,6 @@ public partial class NoOpLocalHttpServer : ILocalHttpServer
     /// <inheritdoc cref="ILocalHttpServer.ShouldUseForSocialSignIn"/>
     /// </summary>
     public bool ShouldUseForSocialSignIn() => false;
+
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }

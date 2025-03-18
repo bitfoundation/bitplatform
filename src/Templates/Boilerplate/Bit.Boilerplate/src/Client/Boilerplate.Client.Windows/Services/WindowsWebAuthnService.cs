@@ -13,7 +13,7 @@ public partial class WindowsWebAuthnService : WebAuthnServiceBase
         {
             await externalNavigationService.NavigateToAsync($"{localHttpServer.Origin}/external-js-runner.html");
 
-            var result = (await ExternalJSRunnerWebSocketModule.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "getCredential", Options = options }, JsonSerializerOptions.Web)))
+            var result = (await WindowsExternalJsRunner.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "getCredential", Options = options }, JsonSerializerOptions.Web)))
                 .Deserialize<AuthenticatorAssertionRawResponse>(JsonSerializerOptions.Web)!;
 
             return result ?? throw new TaskCanceledException();
@@ -26,7 +26,7 @@ public partial class WindowsWebAuthnService : WebAuthnServiceBase
 
     private static async Task CloseExternalBrowser()
     {
-        await ExternalJSRunnerWebSocketModule.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "close" }, JsonSerializerOptions.Web));
+        await WindowsExternalJsRunner.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "close" }, JsonSerializerOptions.Web));
 
         Application.OpenForms[0]!.Invoke(() =>
         {
@@ -40,7 +40,7 @@ public partial class WindowsWebAuthnService : WebAuthnServiceBase
         {
             await externalNavigationService.NavigateToAsync($"{localHttpServer.Origin}/external-js-runner.html");
 
-            return (await ExternalJSRunnerWebSocketModule.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "createCredential", Options = options }, JsonSerializerOptions.Web)))
+            return (await WindowsExternalJsRunner.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "createCredential", Options = options }, JsonSerializerOptions.Web)))
                 .Deserialize<AuthenticatorAttestationRawResponse>(JsonSerializerOptions.Web)!;
         }
         finally
@@ -55,10 +55,6 @@ public partial class WindowsWebAuthnService : WebAuthnServiceBase
 
         // Windows 10 version 1903 is build 18362
         // Major version should be 10, Build number should be > 18362
-        if (osVersion.Major >= 10 && osVersion.Build > 18362)
-        {
-            return true;
-        }
-        return false;
+        return osVersion.Major >= 10 && osVersion.Build > 18362;
     }
 }

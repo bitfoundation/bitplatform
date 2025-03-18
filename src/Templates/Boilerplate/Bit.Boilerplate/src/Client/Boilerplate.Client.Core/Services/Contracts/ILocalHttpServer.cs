@@ -1,8 +1,8 @@
 ﻿namespace Boilerplate.Client.Core.Services.Contracts;
 
-public interface ILocalHttpServer
+public interface ILocalHttpServer : IAsyncDisposable
 {
-    int Start(CancellationToken cancellationToken);
+    int EnsureStarted();
 
     int Port { get; }
 
