@@ -6,10 +6,29 @@
 public partial class BitMarkdownEditor : BitComponentBase
 {
     private ElementReference _textAreaRef = default!;
+    private DotNetObjectReference<BitMarkdownEditor>? _dotnetObj = null;
 
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// The default text value of the editor to use at initialization.
+    /// </summary>
+    [Parameter] public string? DefaultValue { get; set; }
+
+    /// <summary>
+    /// Callback for when the editor value changes.
+    /// </summary>
+    [Parameter] public EventCallback<string?> OnChange { get; set; }
+
+    /// <summary>
+    /// The two-way bound text value of the editor.
+    /// </summary>
+    [Parameter, TwoWayBound]
+    public string? Value { get; set; }
 
 
 
@@ -23,15 +42,46 @@ public partial class BitMarkdownEditor : BitComponentBase
 
 
 
+    [JSInvokable("OnChange")]
+    public async Task _OnChange(string? value)
+    {
+        await AssignValue(value);
+        await OnChange.InvokeAsync(value);
+    }
+
+
+
     protected override string RootElementClass => "bit-mde";
 
-    protected override Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender is false) return;
+
+        if ((ValueHasBeenSet && ValueChanged.HasDelegate) || OnChange.HasDelegate)
         {
-            _js.BitMarkdownEditorInit(_Id, _textAreaRef);
+            _dotnetObj = DotNetObjectReference.Create(this);
         }
 
-        return base.OnAfterRenderAsync(firstRender);
+        await _js.BitMarkdownEditorInit(_Id, _textAreaRef, _dotnetObj, DefaultValue);
+    }
+
+
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return;
+
+        _dotnetObj?.Dispose();
+
+        try
+        {
+            await _js.BitMarkdownEditorDispose(_Id);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+
+
+        await base.DisposeAsync(disposing);
     }
 }
