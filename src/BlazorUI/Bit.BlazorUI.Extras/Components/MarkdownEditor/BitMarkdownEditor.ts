@@ -116,11 +116,7 @@ namespace BitBlazorUI {
             return { total, num: 0, col: 0 };
         }
 
-        insert(
-            content: Content,
-            start: number,
-            end: number,
-        ) {
+        insert(content: Content, start: number, end: number) {
             if (content.type === 'inline') {
                 this.value = `${this.value.slice(0, end)}${content.value}${this.value.slice(end)}`;
             } else if (content.type === 'wrap') {
@@ -143,11 +139,7 @@ namespace BitBlazorUI {
             } else if (content.type === 'init') { }
         }
 
-        setCaret(
-            text: string,
-            start: number,
-            end: number,
-        ) {
+        setCaret(text: string, start: number, end: number) {
             let startPos = 0;
             let endPos = 0;
             if (/[a-z]/i.test(text)) {
