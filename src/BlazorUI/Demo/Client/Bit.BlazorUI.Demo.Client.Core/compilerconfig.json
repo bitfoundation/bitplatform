@@ -78,6 +78,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Extras/MarkdownEditor/BitMarkdownEditorDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/MarkdownEditor/BitMarkdownEditorDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Extras/MarkdownViewer/BitMarkdownViewerDemo.razor.css",
         "inputFile": "Pages/Components/Extras/MarkdownViewer/BitMarkdownViewerDemo.razor.scss",
         "minify": { "enabled": false },
