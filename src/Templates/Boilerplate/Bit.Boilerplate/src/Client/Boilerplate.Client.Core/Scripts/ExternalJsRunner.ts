@@ -21,13 +21,7 @@ class ExternalJsRunner {
                 localWebSocket.send(JSON.stringify({ body: result }));
             }
             catch (e: any) {
-                let errMsg;
-                if (e instanceof Error) {
-                    errMsg = `${e.message} ${e.name} ${e.cause} ${e.stack}`;
-                }
-                else {
-                    errMsg = e?.toString();
-                }
+                const errMsg = `${e?.message} ${e?.name} ${e?.cause} ${e?.stack} ${e?.toString()}`;
                 localWebSocket.send(JSON.stringify({ error: errMsg }));
             }
         };
