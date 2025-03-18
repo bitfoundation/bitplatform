@@ -38,7 +38,7 @@ self.assetsExclude = [
     /marked-15\.0\.7\.js$/,
 
     // https://github.com/orgs/bitfoundation/discussions/10238#discussioncomment-12493737
-    /_content\/Bit\.BlazorES2019\/blazor\.server\.js$ /,
+    /_content\/Bit\.BlazorES2019\/blazor\.server\.js$/,
     /_content\/Bit\.BlazorES2019\/blazor\.webview\.js$/,
     /_framework\/blazor\.web\.js$/,
     /_framework\/blazor\.webassembly\.js$/
