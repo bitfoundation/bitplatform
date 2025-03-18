@@ -155,6 +155,7 @@ public partial class MainLayout
                 new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"] },
                 new() { Text = "ErrorBoundary", Url = "/components/errorboundary" },
                 new() { Text = "InfiniteScrolling", Url = "/components/infinitescrolling" },
+                new() { Text = "MarkdownEditor", Url = "/components/markdowneditor", Description = "MdEditor" },
                 new() { Text = "MarkdownViewer", Url = "/components/markdownviewer", Description = "MdViewer, MD" },
                 new() { Text = "MessageBox", Url = "/components/messagebox" },
                 new() { Text = "NavPanel", Url = "/components/navpanel" },
