@@ -27,7 +27,7 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(Dictionary<string, string?>))]
 [JsonSerializable(typeof(TimeSpan))]
 [JsonSerializable(typeof(string[]))]
-[JsonSerializable(typeof(List<Guid>))]
+[JsonSerializable(typeof(Guid[]))]
 [JsonSerializable(typeof(GitHubStats))]
 [JsonSerializable(typeof(NugetStatsDto))]
 [JsonSerializable(typeof(AppProblemDetails))]

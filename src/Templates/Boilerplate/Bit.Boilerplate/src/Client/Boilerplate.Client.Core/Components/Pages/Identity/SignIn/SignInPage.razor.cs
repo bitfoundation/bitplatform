@@ -179,7 +179,7 @@ public partial class SignInPage
             }
 
             var options = await identityController
-                .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", $"http://localhost:{localHttpServer.Port}")
+                .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
                 .GetWebAuthnAssertionOptions(new() { UserIds = userIds }, CurrentCancellationToken);
 
             try
