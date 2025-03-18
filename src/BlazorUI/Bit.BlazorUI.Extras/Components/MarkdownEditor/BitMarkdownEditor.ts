@@ -1,14 +1,18 @@
 namespace BitBlazorUI {
     type Content = {
         value: string;
-        type: "inline" | "block" | "wrap";
+        type: "inline" | "block" | "wrap" | "init";
     };
 
     export class MarkdownEditor {
         private static _editors: { [key: string]: MarkdownEditor } = {};
 
-        public static init(id: string, textArea: HTMLTextAreaElement) {
-            const editor = new MarkdownEditor(textArea);
+        public static init(id: string, textArea: HTMLTextAreaElement, dotnetObj?: DotNetObject, defaultValue?: string) {
+            const editor = new MarkdownEditor(textArea, dotnetObj);
+
+            if (defaultValue) {
+                editor.value = defaultValue;
+            }
 
             MarkdownEditor._editors[id] = editor;
         }
@@ -20,6 +24,14 @@ namespace BitBlazorUI {
             return editor.value;
         }
 
+        public static dispose(id: string) {
+            if (!MarkdownEditor._editors[id]) return;
+
+            MarkdownEditor._editors[id].#dispose();
+
+            delete MarkdownEditor._editors[id];
+        }
+
         #opens: string[] = [];
 
         #pairs: { [key: string]: string } = {
@@ -29,12 +41,26 @@ namespace BitBlazorUI {
             "<": ">",
             '"': '"',
             "`": "`",
+            "*": "*",
+            "**": "**",
         };
 
         #textArea: HTMLTextAreaElement;
+        #dotnetObj: DotNetObject | undefined | null;
 
-        constructor(textArea: HTMLTextAreaElement) {
+        #clickHandler: (e: MouseEvent) => void;
+        #changeHandler: (e: Event) => void;
+        #dblClickHandler: (e: MouseEvent) => void;
+        #keydownHandler: (e: KeyboardEvent) => Promise<void>;
+
+        constructor(textArea: HTMLTextAreaElement, dotnetObj?: DotNetObject) {
             this.#textArea = textArea;
+            this.#dotnetObj = dotnetObj;
+
+            this.#clickHandler = this.#click.bind(this);
+            this.#changeHandler = this.#change.bind(this);
+            this.#dblClickHandler = this.#dblClick.bind(this);
+            this.#keydownHandler = this.#keydown.bind(this);
 
             this.#init();
         }
@@ -45,6 +71,14 @@ namespace BitBlazorUI {
 
         set value(value) {
             this.#textArea.value = value;
+        }
+
+        #init() {
+            this.#textArea.addEventListener("click", this.#clickHandler);
+            this.#textArea.addEventListener("change", this.#changeHandler);
+            this.#textArea.addEventListener("input", this.#changeHandler);
+            this.#textArea.addEventListener("dblclick", this.#dblClickHandler);
+            this.#textArea.addEventListener("keydown", this.#keydownHandler);
         }
 
         get #block() {
@@ -90,30 +124,30 @@ namespace BitBlazorUI {
         }
 
         #insert(
-            element: Content,
+            content: Content,
             start: number,
             end: number,
         ) {
-            if (element.type === "inline") {
-                this.value = `${this.value.slice(0, end)}${element.value}${this.value.slice(end)}`;
-            } else if (element.type === "wrap") {
-                this.value = insert(this.value, element.value, start);
+            if (content.type === "inline") {
+                this.value = `${this.value.slice(0, end)}${content.value}${this.value.slice(end)}`;
+            } else if (content.type === "wrap") {
+                this.value = insert(this.value, content.value, start);
                 this.value = insert(
                     this.value,
-                    this.#pairs[element.value] as string,
-                    end + element.value.length,
+                    this.#pairs[content.value] as string,
+                    end + content.value.length,
                 );
-                if (element.value.length < 2) this.#opens.push(element.value);
-            } else if (element.type === "block") {
+                if (content.value.length < 2) this.#opens.push(content.value);
+            } else if (content.type === "block") {
                 const { total, num } = this.#getLine();
-                const first = element.value.at(0);
+                const first = content.value.at(0);
                 if (first && total[num]?.startsWith(first)) {
-                    total[num] = element.value.trim() + total[num];
+                    total[num] = content.value.trim() + total[num];
                 } else {
-                    total[num] = element.value + total[num];
+                    total[num] = content.value + total[num];
                 }
                 this.value = total.join("\n");
-            }
+            } else if (content.type === "init") { }
         }
 
         #setCaret(
@@ -144,12 +178,12 @@ namespace BitBlazorUI {
             this.#textArea.focus();
         }
 
-        #add(element: Content) {
+        #add(content: Content) {
             const end = this.#end;
             const start = this.#start;
 
-            this.#insert(element, start, end);
-            this.#setCaret(element.value, start, end);
+            this.#insert(content, start, end);
+            this.#setCaret(content.value, start, end);
         }
 
         #getLists(str: string | undefined) {
@@ -198,137 +232,155 @@ namespace BitBlazorUI {
             this.value = total.join("\n");
         }
 
-        #init() {
-            this.#textArea.addEventListener("keydown", async (e) => {
-                const reseters = ["Delete", "ArrowUp", "ArrowDown"];
-                const next = this.value[this.#end] ?? "";
-                if (reseters.includes(e.key)) {
-                    this.#opens = [];
-                } else if (e.key === "Backspace") {
-                    const prev = this.value[this.#start - 1];
-                    if (
-                        prev &&
-                        prev in this.#pairs &&
-                        next === this.#pairs[prev]
-                    ) {
-                        e.preventDefault();
-                        const start = this.#start - 1;
-                        const end = this.#end - 1;
-                        this.value = remove(this.value, start);
-                        this.value = remove(this.value, end);
-                        setTimeout(() => {
-                            this.#set(start, end);
-                        }, 0);
-                        this.#opens.pop();
+        async #keydown(e: KeyboardEvent) {
+            const reseters = ["Delete", "ArrowUp", "ArrowDown"];
+            const next = this.value[this.#end] ?? "";
+            if (reseters.includes(e.key)) {
+                this.#opens = [];
+            } else if (e.key === "Backspace") {
+                const prev = this.value[this.#start - 1];
+                if (
+                    prev &&
+                    prev in this.#pairs &&
+                    next === this.#pairs[prev]
+                ) {
+                    e.preventDefault();
+                    const start = this.#start - 1;
+                    const end = this.#end - 1;
+                    this.value = remove(this.value, start);
+                    this.value = remove(this.value, end);
+                    setTimeout(() => {
+                        this.#set(start, end);
+                    }, 0);
+                    this.#opens.pop();
+                }
+                if (prev === "\n" && this.#start === this.#end) {
+                    e.preventDefault();
+                    const pos = this.#start - 1;
+                    const { num } = this.#getLine();
+                    this.#correct(num, true);
+                    this.value = remove(this.value, pos);
+                    setTimeout(async () => {
+                        this.#set(pos, pos);
+                    }, 0);
+                }
+            } else if (e.key === "Tab") {
+                if (this.#block % 2 !== 0) {
+                    e.preventDefault();
+                    this.#add({ type: "inline", value: "\t" });
+                }
+            } else if (e.key === "Enter") {
+                const { total, num, col } = this.#getLine();
+                const line = total.at(num);
+                let rep = this.#getLists(line);
+                const orig = rep;
+
+                const n = startsWithNumber(rep);
+                if (n) rep = `${n + 1}. `;
+
+                if (rep && (orig && orig.length < col)) {
+                    e.preventDefault();
+                    if (n) this.#correct(num);
+                    this.#add({ type: "inline", value: `\n${rep}` });
+                } else if (rep && (orig && orig.length === col)) {
+                    e.preventDefault();
+
+                    const origEnd = this.#end;
+                    const pos = origEnd - orig.length;
+
+                    for (let i = 0; i < orig.length; i++) {
+                        this.value = remove(this.value, origEnd - (i + 1));
                     }
-                    if (prev === "\n" && this.#start === this.#end) {
-                        e.preventDefault();
-                        const pos = this.#start - 1;
-                        const { num } = this.#getLine();
-                        this.#correct(num, true);
-                        this.value = remove(this.value, pos);
-                        setTimeout(async () => {
-                            this.#set(pos, pos);
-                        }, 0);
-                    }
-                } else if (e.key === "Tab") {
-                    if (this.#block % 2 !== 0) {
-                        e.preventDefault();
-                        this.#add({
-                            type: "inline",
-                            value: "\t",
-                        });
-                    }
-                } else if (e.key === "Enter") {
-                    const { total, num, col } = this.#getLine();
-                    const line = total.at(num);
-                    let rep = this.#getLists(line);
-                    const orig = rep;
 
-                    const n = startsWithNumber(rep);
-                    if (n) rep = `${n + 1}. `;
+                    setTimeout(async () => {
+                        this.#set(pos, pos);
+                        this.#textArea.focus();
+                        this.#add({ type: "inline", value: `\n` });
+                    }, 0);
+                }
+            } else {
+                const nextIsPaired = Object.values(this.#pairs).includes(next);
+                const isSelected = this.#start !== this.#end;
+                if (e.ctrlKey || e.metaKey) {
+                    if (this.#start === this.#end) {
+                        if (e.key === "c" || e.key === "x") {
+                            e.preventDefault();
+                            const { total, num, col } = this.#getLine();
 
-                    if (rep && (orig && orig.length < col)) {
-                        e.preventDefault();
-                        if (n) this.#correct(num);
-                        this.#add({
-                            type: "inline",
-                            value: `\n${rep}`,
-                        });
-                    } else if (rep && (orig && orig.length === col)) {
-                        e.preventDefault();
+                            await navigator.clipboard.writeText(`${num === 0 && e.key === "x" ? "" : "\n"}${total[num]}`);
 
-                        const origEnd = this.#end;
-                        const pos = origEnd - orig.length;
-
-                        for (let i = 0; i < orig.length; i++) {
-                            this.value = remove(this.value, origEnd - (i + 1));
-                        }
-
-                        setTimeout(async () => {
-                            this.#set(pos, pos);
-                            this.#textArea.focus();
-                            this.#add({
-                                type: "inline",
-                                value: `\n`,
-                            });
-                        }, 0);
-                    }
-                } else {
-                    const nextIsPaired = Object.values(this.#pairs).includes(next);
-                    const isSelected = this.#start !== this.#end;
-                    if (e.ctrlKey || e.metaKey) {
-                        if (this.#start === this.#end) {
-                            if (e.key === "c" || e.key === "x") {
-                                e.preventDefault();
-                                const { total, num, col } = this.#getLine();
-
-                                await navigator.clipboard.writeText(`${num === 0 && e.key === "x" ? "" : "\n"}${total[num]}`);
-
-                                if (e.key === "x") {
-                                    const pos = this.#start - col;
-                                    total.splice(num, 1);
-                                    this.value = total.join("\n");
-                                    setTimeout(() => this.#set(pos, pos), 0);
-                                }
+                            if (e.key === "x") {
+                                const pos = this.#start - col;
+                                total.splice(num, 1);
+                                this.value = total.join("\n");
+                                setTimeout(() => this.#set(pos, pos), 0);
                             }
                         }
                     }
-
-                    if ((e.ctrlKey || e.metaKey) && e.key) {
-                        // TODO: handle shortkeys for example
-                    } else if (
-                        nextIsPaired &&
-                        (next === e.key || e.key === "ArrowRight") &&
-                        this.#opens.length &&
-                        !isSelected
-                    ) {
-                        e.preventDefault();
-                        this.#set(this.#start + 1, this.#end + 1);
-                        this.#opens.pop();
-                    } else if (e.key in this.#pairs) {
-                        e.preventDefault();
-                        this.#add({
-                            type: "wrap",
-                            value: e.key,
-                        });
-                        this.#opens.push(e.key);
-                    }
                 }
-            });
 
-            this.#textArea.addEventListener("dblclick", () => {
-                if (this.#start !== this.#end) {
-                    if (this.value[this.#start] === " ") {
-                        this.#set(this.#start + 1, this.#end);
+                if ((e.ctrlKey || e.metaKey) && e.key) {
+                    let content: Content | undefined;
+
+                    if (e.key === "h") {
+                        content = { type: 'block', value: '# ' };
                     }
-                    if (this.value[this.#end - 1] === " ") {
-                        this.#set(this.#start, this.#end - 1);
+                    if (e.key === "b") {
+                        content = { type: 'wrap', value: '**' };
                     }
+                    if (e.key === "i") {
+                        content = { type: 'wrap', value: '*' };
+                    }
+
+                    if (content) {
+                        this.#add(content);
+                        e.preventDefault();
+                    }
+
+                } else if (
+                    nextIsPaired &&
+                    (next === e.key || e.key === "ArrowRight") &&
+                    this.#opens.length &&
+                    !isSelected
+                ) {
+                    e.preventDefault();
+                    this.#set(this.#start + 1, this.#end + 1);
+                    this.#opens.pop();
+                } else if (e.key in this.#pairs) {
+                    e.preventDefault();
+                    this.#add({ type: "wrap", value: e.key });
+                    this.#opens.push(e.key);
                 }
-            });
+            }
+        }
 
-            this.#textArea.addEventListener("click", () => (this.#opens = []));
+        #dblClick(e: MouseEvent) {
+            if (this.#start !== this.#end) {
+                if (this.value[this.#start] === " ") {
+                    this.#set(this.#start + 1, this.#end);
+                }
+                if (this.value[this.#end - 1] === " ") {
+                    this.#set(this.#start, this.#end - 1);
+                }
+            }
+        }
+
+        #click(e: MouseEvent) {
+            this.#opens = [];
+        }
+
+        #change(e: Event) {
+            this.#dotnetObj?.invokeMethodAsync("OnChange", this.value);
+        }
+
+        #dispose() {
+            this.#textArea.removeEventListener("click", this.#clickHandler);
+            this.#textArea.removeEventListener("change", this.#changeHandler);
+            this.#textArea.removeEventListener("input", this.#changeHandler);
+            this.#textArea.removeEventListener("dblclick", this.#dblClickHandler);
+            this.#textArea.removeEventListener("keydown", this.#keydownHandler);
+
+            this.#dotnetObj = undefined;
         }
     }
 
