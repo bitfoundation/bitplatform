@@ -25,9 +25,23 @@ self.assetsExclude = [
     /bit\.blazorui\.fluent\.css$/,
     /bit\.blazorui\.fluent-dark\.css$/,
     /bit\.blazorui\.fluent-light\.css$/,
+
     // If a PDF viewer is needed in the PWA, remove these two lines:
     /pdfjs-4\.7\.76\.js$/,
-    /pdfjs-4\.7\.76-worker\.js$/
+    /pdfjs-4\.7\.76-worker\.js$/,
+
+    //#if (module != "Admin")
+    /chartjs-2\.9\.4\.js$/,
+    /chartjs-2\.9\.4-adapter\.js$/,
+    //#endif
+
+    /marked-15\.0\.7\.js$/,
+
+    // https://github.com/orgs/bitfoundation/discussions/10238#discussioncomment-12493737
+    /_content\/Bit\.BlazorES2019\/blazor\.server\.js$ /,
+    /_content\/Bit\.BlazorES2019\/blazor\.webview\.js$/,
+    /_framework\/blazor\.web\.js$/,
+    /_framework\/blazor\.webassembly\.js$/
 ];
 self.externalAssets = [
     {

@@ -21,7 +21,14 @@ class ExternalJsRunner {
                 localWebSocket.send(JSON.stringify({ body: result }));
             }
             catch (e: any) {
-                localWebSocket.send(JSON.stringify({ error: e?.toString() ?? e }));
+                let errMsg;
+                if (e instanceof Error) {
+                    errMsg = `${e.message} ${e.name} ${e.cause} ${e.stack}`;
+                }
+                else {
+                    errMsg = e?.toString();
+                }
+                localWebSocket.send(JSON.stringify({ error: errMsg }));
             }
         };
     }
