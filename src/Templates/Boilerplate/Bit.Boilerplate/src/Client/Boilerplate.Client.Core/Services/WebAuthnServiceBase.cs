@@ -34,13 +34,13 @@ public abstract partial class WebAuthnServiceBase : IWebAuthnService
     {
         var userIds = (await GetWebAuthnConfiguredUserIds())!;
 
-        await storageService.SetItem("bit-webauthn", JsonSerializer.Serialize(userId.HasValue ? userIds.Where(u => u != userId.Value).ToList() : [], jsonSerializerOptions.GetTypeInfo<List<Guid>>()));
+        await storageService.SetItem("bit-webauthn", JsonSerializer.Serialize(userId.HasValue ? [.. userIds.Where(u => u != userId.Value)] : [], jsonSerializerOptions.GetTypeInfo<List<Guid>>()));
     }
 
     public async ValueTask SetWebAuthnConfiguredUserId(Guid userId)
     {
         var userIds = (await GetWebAuthnConfiguredUserIds())!;
 
-        await storageService.SetItem("bit-webauthn", JsonSerializer.Serialize(userIds.Union([userId]).ToList(), jsonSerializerOptions.GetTypeInfo<List<Guid>>()));
+        await storageService.SetItem("bit-webauthn", JsonSerializer.Serialize([.. userIds.Union([userId])], jsonSerializerOptions.GetTypeInfo<List<Guid>>()));
     }
 }
