@@ -267,11 +267,11 @@ namespace BitBlazorUI {
 
                 if (rep && (orig && orig.length < col)) {
                     e.preventDefault();
-                    const ss = this.start;
-                    const ee = this.end;
+                    const start = this.start;
+                    const end = this.end;
 
                     if (n) this.correct(num);
-                    this.add({ type: 'inline', value: `\n${rep}` }, ss, ee);
+                    this.add({ type: 'inline', value: `\n${rep}` }, start, end);
                 } else if (rep && (orig && orig.length === col)) {
                     e.preventDefault();
 
