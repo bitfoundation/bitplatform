@@ -163,23 +163,23 @@ namespace BitBlazorUI {
             this.textArea.focus();
         }
 
-        add(content: Content) {
-            const end = this.end;
-            const start = this.start;
+        add(content: Content, s?: number, e?: number) {
+            const end = s || this.end;
+            const start = e || this.start;
 
             this.insert(content, start, end);
             this.setCaret(content.value, start, end);
         }
 
-        getLists(str: string | undefined) {
+        getRepeat(str: string | undefined) {
             if (!str) return;
 
             if (startsWithDash(str)) {
                 return '- ';
             }
 
-            const listNum = startsWithNumber(str);
-            if (listNum) return `${listNum}. `;
+            const n = startsWithNumber(str);
+            if (n) return `${n}. `;
         }
 
         correct(cur: number, isDec = false) {
@@ -188,31 +188,21 @@ namespace BitBlazorUI {
                 const l = total[i];
                 if (!l) continue;
 
-                if (startsWithDash(l)) {
-                    if (l.length > 2) {
-                        total[i] = l;
+                const number = startsWithNumber(l);
+                if (!number) break;
+
+                let newNumber: number;
+                if (isDec) {
+                    if (number > 1) {
+                        newNumber = number - 1;
                     } else {
-                        continue;
+                        break;
                     }
                 } else {
-                    const number = startsWithNumber(l);
-                    if (!number) {
-                        break;
-                    } else {
-                        let newNumber: number;
-                        if (isDec) {
-                            if (number > 1) {
-                                newNumber = number - 1;
-                            } else {
-                                break;
-                            }
-                        } else {
-                            newNumber = number + 1;
-                        }
-                        total[i] = l.slice(String(number).length);
-                        total[i] = String(newNumber) + total[i];
-                    }
+                    newNumber = number + 1;
                 }
+                total[i] = l.slice(String(number).length);
+                total[i] = String(newNumber) + total[i];
             }
             this.value = total.join('\n');
         }
@@ -269,7 +259,7 @@ namespace BitBlazorUI {
             } else if (e.key === 'Enter') {
                 const { total, num, col } = this.getLine();
                 const line = total.at(num);
-                let rep = this.getLists(line);
+                let rep = this.getRepeat(line);
                 const orig = rep;
 
                 const n = startsWithNumber(rep);
@@ -277,8 +267,11 @@ namespace BitBlazorUI {
 
                 if (rep && (orig && orig.length < col)) {
                     e.preventDefault();
+                    const ss = this.start;
+                    const ee = this.end;
+
                     if (n) this.correct(num);
-                    this.add({ type: 'inline', value: `\n${rep}` });
+                    this.add({ type: 'inline', value: `\n${rep}` }, ss, ee);
                 } else if (rep && (orig && orig.length === col)) {
                     e.preventDefault();
 
