@@ -2,9 +2,10 @@
 
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
+        
+        <SelfContained>true</SelfContained>
         <PublishReadyToRun>true</PublishReadyToRun>
         <PublishReadyToRunComposite>true</PublishReadyToRunComposite>
-        <SelfContained>true</SelfContained>
     </PropertyGroup>
 
     <ItemGroup>
