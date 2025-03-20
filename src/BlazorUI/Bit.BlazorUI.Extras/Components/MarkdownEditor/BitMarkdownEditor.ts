@@ -163,12 +163,12 @@ namespace BitBlazorUI {
             this.textArea.focus();
         }
 
-        add(content: Content, s?: number, e?: number) {
-            const end = s || this.end;
-            const start = e || this.start;
+        add(content: Content, start?: number, end?: number) {
+            const s = start || this.start;
+            const e = end || this.end;
 
-            this.insert(content, start, end);
-            this.setCaret(content.value, start, end);
+            this.insert(content, s, e);
+            this.setCaret(content.value, s, e);
         }
 
         getRepeat(str: string | undefined) {
