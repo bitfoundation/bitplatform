@@ -34,7 +34,7 @@ jobs:
       run: dotnet build src/Websites/Sales/src/Bit.Websites.Sales.Client/Bit.Websites.Sales.Client.csproj -t:BeforeBuildTasks --no-restore -c Release
 
     - name: Publish
-      run: dotnet publish src/Websites/Sales/src/Bit.Websites.Sales.Server/Bit.Websites.Sales.Server.csproj -c Release --self-contained -r linux-x64 -o server
+      run: dotnet publish src/Websites/Sales/src/Bit.Websites.Sales.Server/Bit.Websites.Sales.Server.csproj -c Release -p:PublishReadyToRun=true -p:PublishReadyToRunComposite=true --self-contained -r linux-x64 -o server
 
     - name: Upload server artifact
       uses: actions/upload-artifact@v4
