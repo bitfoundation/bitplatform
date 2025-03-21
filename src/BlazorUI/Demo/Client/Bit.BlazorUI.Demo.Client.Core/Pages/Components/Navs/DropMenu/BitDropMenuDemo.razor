@@ -8,7 +8,7 @@
           Description="DropMenu component is a versatile dropdown menu used in Blazor applications. It allows you to create a button that, when clicked, opens a callout or dropdown menu. This can be particularly useful for creating navigation menus, action lists, or any other interactive elements that require a dropdown."
           Parameters="componentParameters"
           SubClasses="componentSubClasses">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <BitDropMenu Text="Basic">
             <BitStack Gap="1rem" Style="padding:0.5rem">
                 <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
@@ -32,9 +32,9 @@
                 <BitToggle>Toggle me</BitToggle>
             </BitStack>
         </BitDropMenu>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Icon" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Icon" RazorCode="@example2RazorCode" Id="example2">
         <div>Customizing the drop menu icons.</div><br />
         <BitDropMenu Text="IconName" IconName="@BitIconName.Emoji2">
             <BitStack Gap="1rem" Style="padding:0.5rem">
@@ -47,9 +47,9 @@
                 <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
             </BitStack>
         </BitDropMenu>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Responsive" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="Responsive" RazorCode="@example3RazorCode" Id="example3">
         <div>Rendering the callout in responsive mode on small screens.</div><br />
         <BitDropMenu Text="Responsive" Responsive>
             <BitStack Gap="1rem" Style="padding:0.5rem">
@@ -59,9 +59,9 @@
                 <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
             </BitStack>
         </BitDropMenu>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Template" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Template" RazorCode="@example4RazorCode" Id="example4">
         <div>Here is an example of customizing the drop menu.</div><br />
         <BitDropMenu Text="Add Icon" IconName="@BitIconName.Emoji2">
             <Template>
@@ -77,18 +77,18 @@
                 </BitStack>
             </Body>
         </BitDropMenu>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Events" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoExample Title="Events" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <div>Utilizing the drop menu OnClick event:</div><br />
         <BitDropMenu Text="@($"Click me ({clickCounter})")" OnClick="() => clickCounter++">
             <BitStack Gap="1rem" Style="padding:0.5rem">
                 <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
             </BitStack>
         </BitDropMenu>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
+    <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
         <div>Further customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
         <br /><br />
         <div>Component's Style & Class:</div><br />
@@ -126,9 +126,9 @@
                 </BitStack>
             </BitDropMenu>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="RTL" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="RTL" RazorCode="@example7RazorCode" Id="example7">
         <div>Use BitDropMenu in right-to-left (RTL).</div>
         <br />
         <div class="example-content" dir="rtl">
@@ -144,5 +144,5 @@
                 </BitStack>
             </BitDropMenu>
         </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

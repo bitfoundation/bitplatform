@@ -9,21 +9,21 @@
           Description="The color picker (ColorPicker) is used to browse through and select colors. By default, it lets people navigate through colors on a color spectrum, or specify a color in either Red-Green-Blue (RGB), or alpha color code; or Hexadecimal textboxes."
           Parameters="componentParameters"
           SubClasses="componentSubClasses">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div class="example-content">
             <BitColorPicker />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Alpha & Preview" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Alpha & Preview" RazorCode="@example2RazorCode" Id="example2">
         <div>Use alpha slider and preview option in the BitColorPicker, allowing to adjust the transparency of the color and preview the result.</div>
         <br /><br />
         <div class="example-content">
             <BitColorPicker ShowAlphaSlider ShowPreview />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Binding" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <DemoExample Title="Binding" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <div>
             The color type (hex or rgb) of the BitColorPicker automatically matches the initial value of the Color parameter.
             For example, if the initial value of this parameter is in hex format, the component will return the resulting colors in hex and vice versa.
@@ -45,9 +45,9 @@
             <BitColorPicker @bind-Color="twoWayColor" ShowAlphaSlider ShowPreview />
             <BitTextField Label="Enter Color (Hex or Rgb)" @bind-Value="twoWayColor" Style="width: 200px;" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Events" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <DemoExample Title="Events" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div>Handle color change events in the BitColorPicker. This example shows how to capture the selected color and its alpha value when the user makes a selection.</div>
         <br /><br />
         <div class="example-content">
@@ -58,9 +58,9 @@
             <div>Color: @changedColor</div>
             <div>Alpha: @changedAlpha</div>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Public API" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoExample Title="Public API" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <div>Explore the public API of the BitColorPicker component, including how to access different color formats such as Hex, RGB, RGBA, and HSV using component references.</div>
         <br /><br />
         <div class="example-content">
@@ -72,9 +72,9 @@
             <div>Rgba: @colorPickerRef?.Rgba</div>
             <div>Hsv: @colorPickerRef?.Hsv</div>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
+    <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
         <div>Apply custom CSS classes and styles to the BitColorPicker component for tailoring its appearance to fit your design needs.</div>
         <br /><br />
         <div class="example-content">
@@ -86,5 +86,5 @@
             <br />
             <BitColorPicker ShowAlphaSlider Class="custom-class" />
         </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

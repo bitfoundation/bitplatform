@@ -11,7 +11,7 @@
           Parameters="componentParameters"
           SubEnums="componentSubEnums"
           SubClasses="componentSubClasses">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>Explore basic configurations of the BitCircularTimePicker, including labels, placeholders, icons, and time format feature.</div>
         <br />
         <div class="example-content">
@@ -27,9 +27,9 @@
             <br /><br />
             <BitCircularTimePicker Label="Custom icon" IconName="@BitIconName.Airplane" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Text input" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Text input" RazorCode="@example2RazorCode" Id="example2">
         <div class="example-desc">
             The input field will open the BitCircularTimePicker, and clicking the field again will dismiss the BitCircularTimePicker and
             allow text input. Please note to use this feature, you must enter the date in the exact <code>DateFormat</code> provided for the BitCircularTimePicker.
@@ -40,9 +40,9 @@
                                    ValueFormat="hh:mm"
                                    Placeholder="Enter a time (hh:mm)" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Value format" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="Value format" RazorCode="@example3RazorCode" Id="example3">
         <div class="example-desc">
             Applications can customize how dates are formatted and parsed. Formatted dates can be ambiguous, so the control will avoid parsing the formatted strings of dates selected using the UI when text input is allowed.
             In this example, we are formatting and parsing times as hh-mm.ss.
@@ -52,9 +52,9 @@
                                    ValueFormat="hh-mm.ss"
                                    Placeholder="Select a time" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Binding" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoExample Title="Binding" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <div>Bind a selected time to a model or view, allowing two-way data binding with the BitCircularTimePicker.</div>
         <br />
         <div class="example-content">
@@ -62,9 +62,9 @@
         </div>
         <br />
         <div>Selected time: @selectedTime.ToString()</div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Culture" RazorCode="@example6RazorCode" Id="example6">
+    <DemoExample Title="Culture" RazorCode="@example6RazorCode" Id="example6">
         <div>
             By default, BitCircularTimePicker picks the current culture. But you can provide your own instance of CultureInfo for any custom culture.
             <br />
@@ -79,9 +79,9 @@
                                    TimeFormat="BitTimeFormat.TwelveHours"
                                    Culture="CultureInfoHelper.GetFaIrCultureWithFarsiNames()" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Standalone" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="Standalone" RazorCode="@example7RazorCode" Id="example7">
         <div>Use the BitCircularTimePicker in a standalone mode, allowing it to function independently without a surrounding form or container.</div>
         <br />
         <div class="example-content-standalone">
@@ -93,9 +93,9 @@
             <br /><br />
             <BitCircularTimePicker Label="TimeFormat (AM/PM)" TimeFormat="BitTimeFormat.TwelveHours" Standalone />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="ReadOnly" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoExample Title="ReadOnly" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <div>The ReadOnly parameter makes the time picker input non-editable, preventing users from manually changing the time value.</div>
         <br />
         <div class="example-content">
@@ -109,9 +109,9 @@
             <br /><br />
             <BitCircularTimePicker Label="Standalone TimeFormat (AM/PM)" Standalone ReadOnly TimeFormat="BitTimeFormat.TwelveHours" @bind-Value="@readOnlyTime" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Templates" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoExample Title="Templates" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div class="example-desc">
             In this example, the callout of the BitCircularTimePicker would be opened and closed using an icon button which is customely located in the label.
             This functionality has been implemented using a public API provided in the BitCircularTimePicker.
@@ -131,9 +131,9 @@
                 </IconTemplate>
             </BitCircularTimePicker>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Responsive" RazorCode="@example10RazorCode" Id="example10">
+    <DemoExample Title="Responsive" RazorCode="@example10RazorCode" Id="example10">
         <div>Enable responsive design for the BitCircularTimePicker, allowing it to adjust its layout and appearance based on the screen size.</div>
         <br />
         <div class="example-content">
@@ -141,9 +141,9 @@
                                    Placeholder="Select a time"
                                    Responsive />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Validation" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="Validation" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>Implement form validation with BitCircularTimePicker using data annotations, ensuring the user selects a valid date before submitting the form.</div>
         <br />
         <div class="example-content">
@@ -190,9 +190,9 @@
                 </div>
             </EditForm>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>Explore styling and class customization for BitCircularTimePicker, including component styles, custom classes, and detailed styles.</div>
         <br /><br />
         <div>Component's Style & Class:</div>
@@ -233,9 +233,9 @@
                                                       ClockSelectedNumber = "custom-clock-selected-number",
                                                       ClockPointerThumbMinute = "custom-clock-pointer-thumb-minute" })" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="RTL" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
         <div>Use BitCircularTimePicker in a right-to-left (RTL) layout.</div>
         <br />
         <div dir="rtl">
@@ -243,5 +243,5 @@
                 <BitCircularTimePicker Dir="BitDir.Rtl" />
             </div>
         </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

@@ -9,20 +9,20 @@
           Description="A toggle represents a physical switch that allows someone to choose between two mutually exclusive options.  For example, “On/Off”, “Show/Hide”. Choosing an option should produce an immediate result."
           Parameters="componentParameters"
           SubClasses="componentSubClasses">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <BitToggle Label="Basic" />
         <br />
         <BitToggle Label="Disabled" IsEnabled="false" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Texts" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Texts" RazorCode="@example2RazorCode" Id="example2">
         <div>Customize BitToggle On and Off texts, providing more context for its state.</div><br />
         <BitToggle Label="Text" Text="This is a toggle!" />
         <br /><br />
         <BitToggle Label="OnText & OffText" OnText="Toggle is On" OffText="Toggle is Off" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Label" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="Label" RazorCode="@example3RazorCode" Id="example3">
         <div>Use inline labels and custom label templates in BitToggle.</div>
         <br /><br />
         <div>Inline:</div><br />
@@ -37,9 +37,9 @@
                 </div>
             </LabelTemplate>
         </BitToggle>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Reversed" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Reversed" RazorCode="@example4RazorCode" Id="example4">
         <div>Reverse the label and input position of BitToggle.</div>
         <br /><br />
         <div>Default:</div><br />
@@ -47,9 +47,9 @@
         <br /><br /><br /><br />
         <div>Inline:</div><br />
         <BitToggle Label="This is a reversed inline label" Reversed Inline />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="FullWidth" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="FullWidth" RazorCode="@example5RazorCode" Id="example5">
         <div>Full width BitToggle in Inline mode.</div>
         <br /><br />
         <div>Default:</div><br />
@@ -63,9 +63,9 @@
                 <BitActionButton FullWidth>go go go</BitActionButton>
             </LabelTemplate>
         </BitToggle>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <DemoExample Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div class="example-box">
             <div>Bind value one-way and two-way in BitToggle</div>
             <br />
@@ -77,9 +77,9 @@
             <br />
             <BitToggleButton @bind-IsChecked="twoWayValue" OnText="On" OffText="Off" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
         <div class="example-box">
             <div>Customize the appearance of BitToggle using styles and CSS classes.</div>
             <br />
@@ -93,9 +93,9 @@
                                               Button = "custom-button",
                                               Checked = "custom-check" } )" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Validation" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoExample Title="Validation" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <div>
             <div>Use BitToggle within a form and validate its state.</div>
             <br />
@@ -117,9 +117,9 @@
                 <BitMessage Color="BitColor.Success">@SuccessMessage</BitMessage>
             }
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="RTL" RazorCode="@example9RazorCode" Id="example9">
+    <DemoExample Title="RTL" RazorCode="@example9RazorCode" Id="example9">
         <div>Use BitToggle in right-to-left (RTL).</div>
         <br />
         <div dir="rtl">
@@ -129,5 +129,5 @@
             <br /><br /><br />
             <BitToggle Label="این یک تاگل خطی برعکس است" Dir="BitDir.Rtl" Reversed Inline />
         </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

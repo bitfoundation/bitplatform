@@ -1,4 +1,4 @@
-﻿<DemoSection Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <div>Displays basic dropdowns demonstrating single and multi-select options, including required and disabled states.</div>
     <br /><br />
     <div class="example-content">
@@ -30,9 +30,9 @@
                      DefaultValue="@("f-ora")"
                      Placeholder="Select an item" />
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Prefix & Suffix" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+<DemoExample Title="Prefix & Suffix" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
     <div>Use prefixes and suffixes in BitDropdown, including combinations and the disabled state.</div>
     <br />
     <div class="example-content">
@@ -67,9 +67,9 @@
                      TValue="string"
                      IsEnabled="false" />
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="FitWidth" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+<DemoExample Title="FitWidth" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <div>Enables fit-content width for the dropdown that sets the width of the component based on its content size.</div>
     <br /><br />
     <BitDropdown Label="Single select"
@@ -84,9 +84,9 @@
                  Items="GetBasicItems()"
                  Placeholder="Select items"
                  DefaultValue="@string.Empty" />
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="NoBorder" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+<DemoExample Title="NoBorder" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <div>The dropdown can be rendered without any border.</div>
     <br /><br />
     <div style="max-width:10rem">
@@ -101,9 +101,9 @@
                      Placeholder="Select items"
                      DefaultValue="@string.Empty" />
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Responsive" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<DemoExample Title="Responsive" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
     <div>When the <b>IsResponsive</b> parameter is true, on small screens the drop down items will render in a side panel.</div>
     <br />
     <div class="example-content">
@@ -113,9 +113,9 @@
                      DefaultValue="@string.Empty"
                      Placeholder="Select an item" />
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Drop direction" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+<DemoExample Title="Drop direction" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
     <div>Explores different drop directions for the BitDropdown component, including automatic and explicit directions.</div>
     <br />
     <div class="example-content">
@@ -131,9 +131,9 @@
                      Placeholder="Select an item"
                      DropDirection="BitDropDirection.TopAndBottom" />
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Clear button" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<DemoExample Title="Clear button" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
     <div>Shows the usage of the clear button in BitDropdown, allowing users to clear selected values in single and multi-select dropdowns.</div>
     <br />
     <div class="example-content">
@@ -154,9 +154,9 @@
         <br />
         <div>Values: @string.Join(',', clearValues)</div>
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="SearchBox" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+<DemoExample Title="SearchBox" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <div>Examples of dropdowns with search functionality, including default and custom search functions.</div>
     <br /><br />
     <div class="example-content">
@@ -195,9 +195,9 @@
                      SearchBoxPlaceholder="Search items"
                      SearchFunction="(items, text) => items.Where(i => i.Text?.EndsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()" />
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Validation" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+<DemoExample Title="Validation" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
     <div>Demonstrates how validation can be applied to BitDropdown, including required fields, numeric input, character constraints, email validation, and range validation.</div>
     <br />
     <div class="example-content">
@@ -233,9 +233,9 @@
             <BitMessage Color="BitColor.Success">@successMessage</BitMessage>
         }
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Customization" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+<DemoExample Title="Customization" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
     <div>Shows how to customize dropdowns using templates for header, text, item, placeholder, label, and callout sections.</div>
     <br /><br />
     <div class="example-content">
@@ -311,9 +311,9 @@
             </CalloutFooterTemplate>
         </BitDropdown>
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Binding" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+<DemoExample Title="Binding" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
     <div>Demonstrates two-way binding and change event handling for dropdowns, showcasing single and multi-select scenarios.</div>
     <br /><br />
     <div class="example-content">
@@ -369,9 +369,9 @@
         <br />
         <div>Selected Value: @selectedItem2?.Value</div>
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Virtualization" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+<DemoExample Title="Virtualization" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
     <div>Demonstrates virtualization in the BitDropdown component for handling large datasets efficiently.</div>
     <br /><br /><br />
     <div class="example-content">
@@ -419,9 +419,9 @@
                      InitialSelectedItems="initialSelectedItems"
                      TItem="BitDropdownItem<string>" TValue="string" />
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="ComboBox" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+<DemoExample Title="ComboBox" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
     <div>When the <b>Combo</b> parameter is true, you can type in BitDropdown input and search between items.</div>
     <br />
     <div class="example-content">
@@ -442,9 +442,9 @@
         <br />
         <div>Values: @string.Join(',', comboBoxValues1)</div>
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Chips" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+<DemoExample Title="Chips" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
     <div>When the <b>Chips</b> parameter is true, shows the selected items like chips in the ComboBox.</div>
     <br />
     <div class="example-content">
@@ -465,9 +465,9 @@
         <br />
         <div>Values: @string.Join(',', comboBoxValues2)</div>
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Dynamic ComboBox" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+<DemoExample Title="Dynamic ComboBox" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
     <div>When the <b>Dynamic</b> parameter is true, you can add a new item in the ComboBox.</div>
     <br />
     <div class="example-content">
@@ -509,9 +509,9 @@
         <br />
         <div>Values: @string.Join(',', comboBoxValues3)</div>
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Style & Class" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+<DemoExample Title="Style & Class" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
     <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
     <br /><br />
     <div class="example-content">
@@ -551,9 +551,9 @@
                                         ItemButton = "custom-item-button",
                                         ScrollContainer = "custom-scroll-container" })" />
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="RTL" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+<DemoExample Title="RTL" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
     <div>Use BitDropdown in right-to-left (RTL).</div>
     <br />
     <dir dir="rtl" style="padding:0">
@@ -579,4 +579,4 @@
                          Placeholder="لطفا انتخاب کنید" />
         </div>
     </dir>
-</DemoSection>
+</DemoExample>

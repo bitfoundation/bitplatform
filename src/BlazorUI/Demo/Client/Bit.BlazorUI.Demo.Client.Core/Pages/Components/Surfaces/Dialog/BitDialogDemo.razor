@@ -9,12 +9,12 @@
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <BitButton OnClick="@(() => IsOpen = true)">Open Dialog</BitButton>
         <BitDialog @bind-IsOpen="IsOpen" Title="Missing Subject" Message="Do you want to send this message without a subject?" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Result" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <DemoExample Title="Result" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <BitButton OnClick="@(() => IsOpen1 = true)">Open Dialog</BitButton>
         <br /><br />
         <span>Result is: @dialogRef?.Result</span>
@@ -22,17 +22,17 @@
                    @bind-IsOpen="@IsOpen1"
                    Title="Missing Subject"
                    Message="Do you want to send this message without a subject?" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Events" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <DemoExample Title="Events" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <BitButton OnClick="@(() => IsOpenEvent = true)">Open Dialog</BitButton>
         <BitDialog @bind-IsOpen="IsOpenEvent"
                    Title="Missing Subject"
                    Message="Do you want to send this message without a subject?"
                    OnOk="async () => await Task.Delay(1000)" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Custom content" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <DemoExample Title="Custom content" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <BitButton OnClick="@(() => IsOpen2 = true)">Open Dialog</BitButton>
         <br /><br />
         <div>Result is: @customDialogRef?.Result</div>
@@ -75,9 +75,9 @@
                 </div>
             </FooterTemplate>
         </BitDialog>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Advanced options" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoExample Title="Advanced options" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <div class="example-desc">BitDialog has some advanced options to be customized .</div>
         <div class="btn-container">
             <BitButton OnClick="@(() => IsOpen4 = true)">Open Dialog (IsBlocking = true)</BitButton>
@@ -94,9 +94,9 @@
                        Title="Missing Subject"
                        Message="Do you want to send this message without a subject?" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Absolute positioning" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <DemoExample Title="Absolute positioning" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div class="example-desc">BitDialog has an absolute position option to further customize it's location.</div>
 
         <div class="btn-container">
@@ -153,9 +153,9 @@
             Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
             efficitur.
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Position" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <DemoExample Title="Position" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div class="example-desc">To set the Dialog position on the page you can use the Position parameter.</div>
         <div>
             <div class="position-btn">
@@ -173,9 +173,9 @@
                        Title="Missing Subject"
                        Message="Do you want to send this message without a subject?" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Draggable" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoExample Title="Draggable" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <BitToggle Label="Is Draggable" @bind-Value="IsDraggable" />
         <br />
         <BitButton OnClick="@(() => IsOpen8 = true)">Open Dialog</BitButton>
@@ -206,9 +206,9 @@
                 </p>
             </div>
         </BitDialog>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoExample Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div dir="rtl">
             <BitButton Dir="BitDir.Rtl" OnClick="@(() => IsOpen10 = true)">باز کردن پنجره پیام</BitButton>
             <BitDialog @bind-IsOpen="IsOpen10"
@@ -218,5 +218,5 @@
                        CancelText="انصراف"
                        Message="آیا می خواهید این پیام را بدون موضوع ارسال کنید؟" />
         </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

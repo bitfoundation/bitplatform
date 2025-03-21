@@ -6,8 +6,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/DemoSection.razor.css",
-        "inputFile": "Components/DemoSection.razor.scss",
+        "outputFile": "Components/DemoExample.razor.css",
+        "inputFile": "Components/DemoExample.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

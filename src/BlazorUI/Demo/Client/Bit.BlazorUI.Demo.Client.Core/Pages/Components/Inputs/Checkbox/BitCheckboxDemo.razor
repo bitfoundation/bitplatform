@@ -10,7 +10,7 @@
           Parameters="componentParameters"
           SubEnums="componentSubEnums"
           SubClasses="componentSubClasses">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>Basic usage of BitCheckbox with enabled and disabled states.</div>
         <br />
         <BitCheckbox Label="Basic checkbox" />
@@ -18,17 +18,17 @@
         <BitCheckbox Label="Disable checkbox" IsEnabled="false" />
         <br />
         <BitCheckbox Label="Disable checked checkbox" IsEnabled="false" Value="true" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Check icon" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Check icon" RazorCode="@example2RazorCode" Id="example2">
         <div>Customize the check icon of BitCheckbox.</div>
         <br />
         <BitCheckbox Label="Custom check icon" CheckIconName="@BitIconName.Heart" />
         <br />
         <BitCheckbox Label="Disabled custom check icon" CheckIconName="@BitIconName.WavingHand" Value="true" IsEnabled="false" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Reversed" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="Reversed" RazorCode="@example3RazorCode" Id="example3">
         <div>Adjust the label position of BitCheckbox to be reversed.</div>
         <br />
         <BitCheckbox Label="Reversed" Reversed />
@@ -36,9 +36,9 @@
         <BitCheckbox Label="Reversed - Disabled" Reversed IsEnabled="false" />
         <br />
         <BitCheckbox Label="Reversed - Disable Checked" Reversed IsEnabled="false" Value="true" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="LabelTemplate" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="LabelTemplate" RazorCode="@example4RazorCode" Id="example4">
         <div>Customizing the label of BitCheckbox using a template.</div>
         <br />
         <BitCheckbox>
@@ -46,17 +46,17 @@
                 <BitTag Color="BitColor.Success">Label Template</BitTag>
             </LabelTemplate>
         </BitCheckbox>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Indeterminate" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="Indeterminate" RazorCode="@example5RazorCode" Id="example5">
         <div>Display BitCheckbox in an indeterminate state.</div>
         <br />
         <BitCheckbox Label="Indeterminate checkbox" Indeterminate />
         <br />
         <BitCheckbox Label="Disabled indeterminate checkbox" Indeterminate IsEnabled="false" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <DemoExample Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>Demonstrates one-way and two-way data binding with BitCheckbox.</div>
         <br /><br />
         <div><b>Value</b>:</div><br />
@@ -84,9 +84,9 @@
             <BitCheckbox Label="Two-way indeterminate" @bind-Indeterminate="twoWayIndeterminate" />
             <BitToggleButton @bind-IsChecked="twoWayIndeterminate" Text="Toggle" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Validation" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <DemoExample Title="Validation" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>Use data annotations to validate the BitCheckbox component.</div>
         <br />
         <div>
@@ -108,9 +108,9 @@
                 <BitMessage Color="BitColor.Success">@SuccessMessage</BitMessage>
             }
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Custom content" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoExample Title="Custom content" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <div>Create a custom checkbox with unique content and style.</div>
         <br />
         <BitCheckbox @bind-Value="customCheckboxValue">
@@ -127,9 +127,9 @@
             </BitCheckbox>
             <BitButton OnClick="() => customContentIndeterminate = true">Make Indeterminate</BitButton>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Size" RazorCode="@example9RazorCode" Id="example9">
+    <DemoExample Title="Size" RazorCode="@example9RazorCode" Id="example9">
         <div>Varying sizes for checkboxes tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.</div>
         <br />
         <div>
@@ -157,9 +157,9 @@
                 <BitCheckbox Size="BitSize.Large" Label="Checkbox" Value />
             </div>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Color" RazorCode="@example10RazorCode" Id="example10">
+    <DemoExample Title="Color" RazorCode="@example10RazorCode" Id="example10">
         <div>Offering a range of specialized color variants with Primary being the default, providing visual cues for specific actions or states within your application.</div>
         <br />
         <div>
@@ -271,9 +271,9 @@
                 </div>
             </div>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
+    <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
         <div>Explore styling and class customization for BitCheckbox, including component styles, custom classes, and detailed styles.</div>
         <br /><br />
         <div>Component's Style & Class:</div>
@@ -299,9 +299,9 @@
                                                 Label="custom-label",
                                                 Box="custom-box" })" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="RTL" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="RTL" RazorCode="@example12RazorCode" Id="example12">
         <div>Use BitCheckbox in right-to-left (RTL).</div>
         <br />
         <div dir="rtl">
@@ -311,5 +311,5 @@
             <br />
             <BitCheckbox Dir="BitDir.Rtl" Label="چکباکس غیرفعال چک شده" IsEnabled="false" Value="true" />
         </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

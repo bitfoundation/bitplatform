@@ -19,20 +19,20 @@ Instead, change the operation description to reflect the change if necessary.
 Bars moving backward reduce confidence in the service."
           SubClasses="componentSubClasses"
           Parameters="componentParameters">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <BitProgress Label="Basic Progress"
                      Description="Example description"
                      Percent="42" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Circular" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Circular" RazorCode="@example2RazorCode" Id="example2">
         <BitProgress Circular
                      Label="Basic Circular Progress"
                      Description="Example description"
                      Percent="42" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="ShowPercentNumber" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="ShowPercentNumber" RazorCode="@example3RazorCode" Id="example3">
         <BitProgress Label="Show Percent Number"
                      Percent="85.69"
                      ShowPercentNumber />
@@ -52,23 +52,23 @@ Bars moving backward reduce confidence in the service."
                      Percent="85.69"
                      PercentNumberFormat="{0:F2} %"
                      ShowPercentNumber />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Thickness" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <DemoExample Title="Thickness" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <BitSlider @bind-Value="barThickness" Max="50" />
         <br /><br />
         <BitProgress ShowPercentNumber Percent="69" Thickness="(int)barThickness" />
         <br />
         <BitProgress Circular ShowPercentNumber Percent="69" Thickness="(int)barThickness" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Indeterminate" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="Indeterminate" RazorCode="@example5RazorCode" Id="example5">
         <BitProgress Indeterminate />
         <br />
         <BitProgress Circular Indeterminate />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Color" RazorCode="@example6RazorCode" Id="example6">
+    <DemoExample Title="Color" RazorCode="@example6RazorCode" Id="example6">
         <BitProgress Color="#c10606" Percent="69" />
         <br />
         <BitProgress Color="#ffba17" Indeterminate />
@@ -76,9 +76,9 @@ Bars moving backward reduce confidence in the service."
         <BitProgress Color="#c10606" Circular Percent="69" />
         <br />
         <BitProgress Color="#ffba17" Circular Indeterminate />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
         <div>
             <div>Component's Style & Class:</div>
             <br />
@@ -118,9 +118,9 @@ Bars moving backward reduce confidence in the service."
                          Classes="@(new() { Bar = "custom-circle-bar",
                                             Track = "custom-circle-tracker"})" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="RTL" RazorCode="@example8RazorCode" Id="example8">
+    <DemoExample Title="RTL" RazorCode="@example8RazorCode" Id="example8">
         <BitProgress Dir="BitDir.Rtl"
                      Thickness="10"
                      Indeterminate />
@@ -144,5 +144,5 @@ Bars moving backward reduce confidence in the service."
                      Percent="69"
                      Thickness="10"
                      ShowPercentNumber />
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

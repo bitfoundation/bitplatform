@@ -9,7 +9,7 @@
               Description="A Stack is a container-type component that abstracts the implementation of a flexbox in order to define the layout of its children components."
               Parameters="componentParameters"
               SubEnums="componentSubEnums">
-        <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
             <div>Default (Vertical)</div>
             <BitStack Style="background:#71afe5">
                 <div style="color:black">Item 1</div>
@@ -37,9 +37,9 @@
                 <div style="color:black">Item 2</div>
                 <div style="color:black">Item 3</div>
             </BitStack>
-        </DemoSection>
+        </DemoExample>
 
-        <DemoSection Title="Gap" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <DemoExample Title="Gap" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <BitSlider Label="Gap between items" Max="5" ValueFormat="0.0 rem" Step="0.1" @bind-Value="@gap" />
             <br />
             <BitStack Gap="@($"{gap}rem")" Style="background:#71afe5">
@@ -47,9 +47,9 @@
                 <div class="item">Item 2</div>
                 <div class="item">Item 3</div>
             </BitStack>
-        </DemoSection>
+        </DemoExample>
 
-        <DemoSection Title="Nesting" RazorCode="@example3RazorCode" Id="example3">
+        <DemoExample Title="Nesting" RazorCode="@example3RazorCode" Id="example3">
             <BitStack Horizontal HorizontalAlign="BitAlignment.SpaceAround" Style="background:#71afe5">
                 <div class="item">Item 1</div>
                 <BitStack>
@@ -63,9 +63,9 @@
                     <div class="item">Item 3-3</div>
                 </BitStack>
             </BitStack>
-        </DemoSection>
+        </DemoExample>
 
-        <DemoSection Title="Alignment" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <DemoExample Title="Alignment" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <BitStack Horizontal Wrap Gap="2rem">
                 <BitToggle @bind-Value="isHorizontal" Text="Horizontal" />
                 <BitToggle @bind-Value="isReversed" Text="Reversed" />
@@ -118,9 +118,9 @@
                 <div class="item">Item 2</div>
                 <div class="item">Item 3</div>
             </BitStack>
-        </DemoSection>
+        </DemoExample>
 
-        <DemoSection Title="Wrap" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <DemoExample Title="Wrap" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <BitSlider Label="Stack height" Min="10" Max="20" Step="0.1" ValueFormat="0.0 rem" @bind-Value="@stackHeight" />
             <br />
             <BitStack Wrap Style="@($"height:{stackHeight}rem;background:#71afe5")">
@@ -130,9 +130,9 @@
                     <div class="item">Item @index</div>
                 }
             </BitStack>
-        </DemoSection>
+        </DemoExample>
 
-        <DemoSection Title="Grow" RazorCode="@example6RazorCode" Id="example6">
+        <DemoExample Title="Grow" RazorCode="@example6RazorCode" Id="example6">
             <div>The "Grows" parameter sets flex-grow to 1, while "Grow" accepts customizable values for more flexibility.</div>
             <br /><br />
 
@@ -200,6 +200,6 @@
                     Normal
                 </BitStack>
             </BitStack>
-        </DemoSection>
+        </DemoExample>
     </DemoPage>
 </div>

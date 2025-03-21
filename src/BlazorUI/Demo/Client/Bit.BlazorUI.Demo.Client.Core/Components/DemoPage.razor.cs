@@ -8,9 +8,9 @@ public partial class DemoPage
     [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
     [Parameter] public string? Notes { get; set; }
     [Parameter] public RenderFragment? NotesTemplate { get; set; }
-    [Parameter] public string? VideoUrl { get; set; }
-    [Parameter] public string? VideoDescription { get; set; }
-    [Parameter] public RenderFragment? VideoDescriptionTemplate { get; set; }
+    [Parameter] public string? IntroductionVideoUrl { get; set; }
+    [Parameter] public string? Introduction { get; set; }
+    [Parameter] public RenderFragment? IntroductionTemplate { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public RenderFragment? Examples { get; set; }
     [Parameter] public List<ComponentParameter> Parameters { get; set; } = [];

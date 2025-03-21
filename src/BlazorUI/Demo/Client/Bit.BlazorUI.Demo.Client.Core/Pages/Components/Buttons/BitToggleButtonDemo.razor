@@ -10,14 +10,14 @@
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div class="example-box">
             <BitToggleButton OffText="Unmuted" OffIconName="@BitIconName.Microphone"
                              OnText="Muted" OnIconName="@BitIconName.MicOff" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Variant" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Variant" RazorCode="@example2RazorCode" Id="example2">
         <div>The BitToggleButton offers three variants: Fill (default), Outline, and Text.</div>
         <br />
         <div class="example-box">
@@ -31,9 +31,9 @@
             <BitToggleButton Variant="BitVariant.Outline" IsEnabled="false">Outline</BitToggleButton>
             <BitToggleButton Variant="BitVariant.Text" IsEnabled="false">Text</BitToggleButton>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Size" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="Size" RazorCode="@example3RazorCode" Id="example3">
         <div>Varying sizes for BitToggleButton tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.</div>
         <br />
         <div class="example-box">
@@ -53,9 +53,9 @@
             <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Text">Medium</BitToggleButton>
             <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Text">Large</BitToggleButton>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Color" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Color" RazorCode="@example4RazorCode" Id="example4">
         <div>Offering a range of specialized color variants with Primary being the default, providing visual cues for specific actions or states within your application.</div>
         <br />
         <div class="example-box">
@@ -161,9 +161,9 @@
             <BitToggleButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBorder">TertiaryBorder</BitToggleButton>
             <BitToggleButton Variant="BitVariant.Text" Color="BitColor.TertiaryBorder">TertiaryBorder</BitToggleButton>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
         <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
         <br />
         <div>Component's Style & Class:</div>
@@ -197,9 +197,9 @@
                                                     Icon = "custom-icon",
                                                     Text = "custom-text" })" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <DemoExample Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>Explore default checked state, two-way binding, and handling change events for a customizable user experience.</div>
         <br />
         <div>DefaultIsChecked:</div>
@@ -229,9 +229,9 @@
             <br /><br />
             <BitLabel>Check status is: @example52Value</BitLabel>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Templates" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="Templates" RazorCode="@example7RazorCode" Id="example7">
         <div>Here are some examples of customizing the BitToggleButton content.</div>
         <br />
         <div>
@@ -242,9 +242,9 @@
             </BitToggleButton>
             <br />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoExample Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <div>
             Managing BitToggleButton click event (OnClick).
         </div>
@@ -252,9 +252,9 @@
         <div class="example-content">
             <BitToggleButton OnClick="() => clickCounter++">Click me (@clickCounter)</BitToggleButton>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="RTL" RazorCode="@example9RazorCode" Id="example9">
+    <DemoExample Title="RTL" RazorCode="@example9RazorCode" Id="example9">
         <div>Use BitToggleButton in right-to-left (RTL).</div>
         <br />
         <div class="example-box" dir="rtl">
@@ -270,5 +270,5 @@
                              OffText="صدا وصل" OffIconName="@BitIconName.Microphone"
                              OnText="صدا قطع" OnIconName="@BitIconName.MicOff" />
         </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

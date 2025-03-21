@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Components;
 
-public partial class DemoSection
+public partial class DemoExample
 {
     private bool showCode;
 
