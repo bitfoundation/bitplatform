@@ -40,6 +40,23 @@ public partial class BitMarkdownEditor : BitComponentBase
         return await _js.BitMarkdownEditorGetValue(_Id);
     }
 
+    /// <summary>
+    /// Runs a specific command on the editor.
+    /// </summary>
+    public async ValueTask Run(BitMarkdownEditorCommand command)
+    {
+        await _js.BitMarkdownEditorRun(_Id, command switch
+        { 
+            BitMarkdownEditorCommand.Heading => "h",
+            BitMarkdownEditorCommand.Bold => "b",
+            BitMarkdownEditorCommand.Italic => "i",
+            BitMarkdownEditorCommand.Link => "l",
+            BitMarkdownEditorCommand.Picture => "p",
+            BitMarkdownEditorCommand.Quote => "q",
+            _ => string.Empty
+        });
+    }
+
 
 
     [JSInvokable("OnChange")]

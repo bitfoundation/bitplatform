@@ -20,6 +20,13 @@ namespace BitBlazorUI {
             return editor.value;
         }
 
+        public static run(id: string, cmd: string) {
+            const editor = MarkdownEditor._editors[id];
+            if (!editor) return;
+
+            editor.command(cmd);
+        }
+
         public static dispose(id: string) {
             if (!MarkdownEditor._editors[id]) return;
 
@@ -40,6 +47,8 @@ namespace BitBlazorUI {
             '`': '`',
             '*': '*',
             '**': '**',
+            ' [': '](url)',
+            '![': '](url)',
         };
 
         private textArea: HTMLTextAreaElement;
@@ -72,6 +81,7 @@ namespace BitBlazorUI {
 
         set value(value) {
             this.textArea.value = value;
+            setTimeout(() => this.change({} as Event), 0);
         }
 
         get block() {
@@ -310,23 +320,10 @@ namespace BitBlazorUI {
                 }
 
                 if ((e.ctrlKey || e.metaKey) && e.key) {
-                    let content: Content | undefined;
-
-                    if (e.key === 'h') {
-                        content = { type: 'block', value: '# ' };
-                    }
-                    if (e.key === 'b') {
-                        content = { type: 'wrap', value: '**' };
-                    }
-                    if (e.key === 'i') {
-                        content = { type: 'wrap', value: '*' };
-                    }
-
+                    const content = this.command(e.key);
                     if (content) {
-                        this.add(content);
                         e.preventDefault();
                     }
-
                 } else if (
                     nextIsPaired &&
                     (next === e.key || e.key === 'ArrowRight') &&
@@ -362,11 +359,45 @@ namespace BitBlazorUI {
         change(e: Event) {
             this.dotnetObj?.invokeMethodAsync('OnChange', this.value);
         }
+
+        command(cmd: string) {
+            let content: Content | undefined;
+
+            if (cmd === 'h') { // heading
+                content = { type: 'block', value: '# ' };
+            }
+
+            if (cmd === 'b') { // bold
+                content = { type: 'wrap', value: '**' };
+            }
+
+            if (cmd === 'i') { // italic
+                content = { type: 'wrap', value: '*' };
+            }
+
+            if (cmd === 'l') { // link
+                content = { type: 'wrap', value: ' [' };
+            }
+
+            if (cmd === 'p') { // picture
+                content = { type: 'wrap', value: '![' };
+            }
+
+            if (cmd === 'q') { // quote
+                content = { type: 'block', value: '> ' };
+            }
+
+            if (content) {
+                this.add(content);
+            }
+
+            return content;
+        }
     }
 
     type Content = {
         value: string;
-        type: 'inline' | 'block' | 'wrap' | 'init';
+        type: 'inline' | 'block' | 'wrap';
     };
 
     const startsWithDash = (str: string | undefined) => {
