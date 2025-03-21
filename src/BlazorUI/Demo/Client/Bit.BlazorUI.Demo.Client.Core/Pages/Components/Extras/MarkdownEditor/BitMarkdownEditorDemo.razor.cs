@@ -111,7 +111,7 @@ public partial class BitMarkdownEditorDemo
 
     private bool showPreview;
     private string? advancedValue;
-    private BitMarkdownEditor advancedRef;
+    private BitMarkdownEditor advancedRef = default!;
 
 
 
@@ -155,12 +155,33 @@ private string? onChangeValue;";
 private string? bindingValue;";
 
     private readonly string example5RazorCode = @"
-<div style=""display:flex;gap:1rem;height:300px"">
-    <BitMarkdownEditor @bind-Value=""bindingValue"" />
-    <pre style=""padding:1rem;width:100%"">
-        @bindingValue
-    </pre>
+<div style=""display:flex;gap:1rem;margin-bottom:1rem"">
+    <BitToggleButton Color=""BitColor.Tertiary"" Variant=""BitVariant.Outline"" OnText=""Write"" OffText=""Preview"" @bind-IsChecked=""showPreview"" />
+            
+    <div style=""flex-grow:1""></div>
+
+    <div style=""display:@(showPreview ? ""none"" : ""flex"");gap:0.5rem;align-items:center"">
+        <BitButton Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" FixedColor Title=""Heading"" 
+                    OnClick=""async () => await advancedRef.Run(BitMarkdownEditorCommand.Heading)"">H</BitButton>
+        <BitButton Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" FixedColor Title=""Bold""
+                    OnClick=""async () => await advancedRef.Run(BitMarkdownEditorCommand.Bold)"">B</BitButton>
+        <BitButton Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" FixedColor Title=""Italic""
+                    OnClick=""async () => await advancedRef.Run(BitMarkdownEditorCommand.Italic)"">I</BitButton>
+        |
+        <BitButton Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" FixedColor Title=""Link""
+                    OnClick=""async () => await advancedRef.Run(BitMarkdownEditorCommand.Link)"">L</BitButton>
+        <BitButton Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" FixedColor Title=""Picture""
+                    OnClick=""async () => await advancedRef.Run(BitMarkdownEditorCommand.Picture)"">P</BitButton>
+        <BitButton Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" FixedColor Title=""Quote""
+                    OnClick=""async () => await advancedRef.Run(BitMarkdownEditorCommand.Quote)"">Q</BitButton>
+    </div>
+</div>
+<div style=""height:300px"">
+    <BitMarkdownEditor @ref=""advancedRef"" @bind-Value=""advancedValue"" Style=""@($""display:{(showPreview ? ""none"" : ""block"")}"")"" />
+    <BitMarkdownViewer Markdown=""@advancedValue"" Style=""@($""display:{(showPreview ? ""block"" : ""none"")}"")"" />
 </div>";
     private readonly string example5CsharpCode = @"
-private string? bindingValue;";
+private bool showPreview;
+private string? advancedValue;
+private BitMarkdownEditor advancedRef = default!;";
 }
