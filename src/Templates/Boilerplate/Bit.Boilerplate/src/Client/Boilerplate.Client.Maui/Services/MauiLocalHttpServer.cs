@@ -19,9 +19,10 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
 
     public string Origin => $"http://localhost:{port}";
 
-    public int Start(CancellationToken cancellationToken)
+    public int EnsureStarted()
     {
-        localHttpServer?.Dispose();
+        if (port != -1)
+            return port;
 
         port = GetAvailableTcpPort();
 
@@ -88,7 +89,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
                     exceptionHandler.Handle(exp);
                 }
             }))
-            .WithModule(new ExternalJSRunnerWebSocketModule());
+            .WithModule(new MauiExternalJsRunner());
 
         localHttpServer.HandleHttpException(async (context, exception) =>
         {
@@ -99,14 +100,14 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             });
         });
 
-        _ = localHttpServer.RunAsync(cancellationToken)
+        _ = localHttpServer.RunAsync()
             .ContinueWith(task =>
             {
                 if (task.Exception is not null)
                 {
                     exceptionHandler.Handle(task.Exception);
                 }
-            }, cancellationToken);
+            });
 
         return port;
     }
@@ -118,6 +119,11 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
         var port = ((IPEndPoint)l.LocalEndpoint).Port;
         l.Stop();
         return port;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        localHttpServer?.Dispose();
     }
 
     /// <summary>

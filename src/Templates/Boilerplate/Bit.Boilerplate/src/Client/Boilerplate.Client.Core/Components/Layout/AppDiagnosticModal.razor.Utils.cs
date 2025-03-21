@@ -109,6 +109,12 @@ public partial class AppDiagnosticModal
     {
         try
         {
+            await userController.DeleteAllWebAuthnCredentials(CurrentCancellationToken);
+        }
+        catch { }
+
+        try
+        {
             await authManager.SignOut(default);
         }
         catch { }
@@ -118,15 +124,6 @@ public partial class AppDiagnosticModal
         foreach (var item in await cookie.GetAll())
         {
             await cookie.Remove(item.Name!);
-        }
-
-        if ((await AuthenticationStateTask).User.IsAuthenticated())
-        {
-            await userController.DeleteAllWebAuthnCredentials(CurrentCancellationToken);
-
-            // since the localStorage is used to store configured webauthn users and it is already cleared above, we can ignore the following line.
-            // we kept it commented for future refrences.
-            //await JSRuntime.RemoveWebAuthnConfigured();
         }
 
         if (AppPlatform.IsBlazorHybrid is false)

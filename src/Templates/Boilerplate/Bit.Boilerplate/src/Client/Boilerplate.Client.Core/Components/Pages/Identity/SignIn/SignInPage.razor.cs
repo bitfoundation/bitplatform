@@ -152,7 +152,7 @@ public partial class SignInPage
     {
         try
         {
-            var port = localHttpServer.ShouldUseForSocialSignIn() ? localHttpServer.Start(CurrentCancellationToken) : -1;
+            var port = localHttpServer.ShouldUseForSocialSignIn() ? localHttpServer.EnsureStarted() : -1;
 
             var redirectUrl = await identityController.GetSocialSignInUri(provider, ReturnUrlQueryString, port is -1 ? null : port, CurrentCancellationToken);
 
@@ -175,11 +175,11 @@ public partial class SignInPage
 
             if (AppPlatform.IsBlazorHybrid)
             {
-                localHttpServer.Start(CurrentCancellationToken);
+                localHttpServer.EnsureStarted();
             }
 
             var options = await identityController
-                .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", $"http://localhost:{localHttpServer.Port}")
+                .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
                 .GetWebAuthnAssertionOptions(new() { UserIds = userIds }, CurrentCancellationToken);
 
             try
@@ -189,7 +189,7 @@ public partial class SignInPage
             catch (Exception ex)
             {
                 // we can safely handle the exception thrown here since it mostly because of a timeout or user cancelling the native ui.
-                ExceptionHandler.Handle(ex, ExceptionDisplayKind.None);
+                ExceptionHandler.Handle(ex, AppEnvironment.IsDev() ? ExceptionDisplayKind.NonInterrupting : ExceptionDisplayKind.None);
                 return;
             }
 

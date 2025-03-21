@@ -36,9 +36,9 @@
         <PackageVersion Include="Oscore.Maui.AppStoreInfo" Version="1.1.0" />
         <PackageVersion Include="Oscore.Maui.InAppReviews" Version="1.2.2" />
         <PackageVersion Include="Oscore.Maui.Android.InAppUpdates" Version="1.2.0" />
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" Version="5.3.0" />
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" Version="5.3.0" />
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" Version="5.3.0" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" Version="5.4.0" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" Version="5.4.0" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" Version="5.4.0" />
         <PackageVersion Include="Xamarin.AndroidX.Activity" Version="1.10.1" />
         <PackageVersion Include="Xamarin.AndroidX.Activity.Ktx" Version="1.10.1" />
         <PackageVersion Include="Xamarin.AndroidX.Collection" Version="1.4.5.2" />
@@ -82,13 +82,13 @@
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.3" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="9.0.3" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.3" />
-        <PackageVersion Include="Swashbuckle.AspNetCore" Version="7.3.1" />
+        <PackageVersion Include="Swashbuckle.AspNetCore" Version="8.0.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.3" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="9.0.3" />
-        <PackageVersion Include="AspNet.Security.OAuth.Apple" Version="9.0.0" />
-        <PackageVersion Include="AspNet.Security.OAuth.GitHub" Version="9.0.0" />
+        <PackageVersion Include="AspNet.Security.OAuth.Apple" Version="9.1.0" />
+        <PackageVersion Include="AspNet.Security.OAuth.GitHub" Version="9.1.0" />
         <PackageVersion Include="Riok.Mapperly" Version="4.1.1" />
-        <PackageVersion Include="Twilio" Version="7.9.0" />
+        <PackageVersion Include="Twilio" Version="7.9.1" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.3" />
         <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="9.0.3" />
         <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.3" />

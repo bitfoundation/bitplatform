@@ -13,7 +13,7 @@ public partial class MauiWebAuthnService : WebAuthnServiceBase
         {
             await externalNavigationService.NavigateToAsync($"{localHttpServer.Origin}/external-js-runner.html");
 
-            var result = (await ExternalJSRunnerWebSocketModule.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "getCredential", Options = options }, JsonSerializerOptions.Web)))
+            var result = (await MauiExternalJsRunner.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "getCredential", Options = options }, JsonSerializerOptions.Web)))
                 .Deserialize<AuthenticatorAssertionRawResponse>(JsonSerializerOptions.Web)!;
 
             return result ?? throw new TaskCanceledException();
@@ -26,7 +26,7 @@ public partial class MauiWebAuthnService : WebAuthnServiceBase
 
     private static async Task CloseExternalBrowser()
     {
-        await ExternalJSRunnerWebSocketModule.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "close" }, JsonSerializerOptions.Web));
+        await MauiExternalJsRunner.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "close" }, JsonSerializerOptions.Web));
 
         if (AppPlatform.IsIOS)
         {
@@ -49,7 +49,7 @@ public partial class MauiWebAuthnService : WebAuthnServiceBase
         {
             await externalNavigationService.NavigateToAsync($"{localHttpServer.Origin}/external-js-runner.html");
 
-            return (await ExternalJSRunnerWebSocketModule.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "createCredential", Options = options }, JsonSerializerOptions.Web)))
+            return (await MauiExternalJsRunner.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "createCredential", Options = options }, JsonSerializerOptions.Web)))
                 .Deserialize<AuthenticatorAttestationRawResponse>(JsonSerializerOptions.Web)!;
         }
         finally

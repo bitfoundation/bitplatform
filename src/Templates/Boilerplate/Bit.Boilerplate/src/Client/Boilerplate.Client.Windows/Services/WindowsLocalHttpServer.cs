@@ -1,7 +1,7 @@
 ﻿using EmbedIO;
 using System.Net;
-using System.Net.Sockets;
 using EmbedIO.Actions;
+using System.Net.Sockets;
 using Boilerplate.Client.Core.Components;
 
 namespace Boilerplate.Client.Windows.Services;
@@ -21,9 +21,10 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
 
     public string Origin => $"http://localhost:{port}";
 
-    public int Start(CancellationToken cancellationToken)
+    public int EnsureStarted()
     {
-        localHttpServer?.Dispose();
+        if (port != -1)
+            return port;
 
         port = GetAvailableTcpPort();
 
@@ -82,7 +83,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
                     exceptionHandler.Handle(exp);
                 }
             }))
-            .WithModule(new ExternalJSRunnerWebSocketModule());
+            .WithModule(new WindowsExternalJsRunner());
 
         localHttpServer.HandleHttpException(async (context, exception) =>
         {
@@ -93,14 +94,14 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
             });
         });
 
-        _ = localHttpServer.RunAsync(cancellationToken)
+        _ = localHttpServer.RunAsync()
             .ContinueWith(task =>
             {
                 if (task.Exception is not null)
                 {
                     exceptionHandler.Handle(task.Exception);
                 }
-            }, cancellationToken);
+            });
 
         return port;
     }
@@ -110,6 +111,11 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
     /// </summary>
 
     public bool ShouldUseForSocialSignIn() => true;
+
+    public async ValueTask DisposeAsync()
+    {
+        localHttpServer?.Dispose();
+    }
 
     private int GetAvailableTcpPort()
     {
