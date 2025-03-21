@@ -116,6 +116,25 @@
                 <DemoSubEnumsTable Enums="_componentBaseSubEnums" />
             }
         </section>
+
+        <section id="feedback-section" class="page-section">
+            <BitText Typography="BitTypography.H4" Class="subtitle">Feedback</BitText>
+            <BitText>
+                You can give us your feedback through our 
+                <BitLink Href="@GITHUB_URL" Target="_blank">GitHub repo</BitLink>.
+            </BitText>
+            @if (GitHubUrl.HasValue())
+            {
+                <br />
+                <BitText>
+                    Or you can
+                    <BitLink Href="@($"{GITHUB_URL}/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubUrl}")" Target="_blank">review</BitLink>
+                    or
+                    <BitLink Href="@($"{GITHUB_URL}/edit/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubUrl}")" Target="_blank">edit</BitLink>
+                     this page on GitHub.
+                </BitText>
+            }
+        </section>
     </div>
     <SideRail />
 </div>

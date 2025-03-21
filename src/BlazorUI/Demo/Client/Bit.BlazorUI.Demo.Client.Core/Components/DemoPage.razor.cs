@@ -2,6 +2,8 @@
 
 public partial class DemoPage
 {
+    private const string GITHUB_URL = "https://github.com/bitfoundation/bitplatform";
+
     [Parameter] public string Name { get; set; } = default!;
     [Parameter] public string[]? SecondaryNames { get; set; }
     [Parameter] public string? Description { get; set; }
@@ -17,6 +19,7 @@ public partial class DemoPage
     [Parameter] public List<ComponentSubClass> SubClasses { get; set; } = [];
     [Parameter] public List<ComponentSubEnum> SubEnums { get; set; } = [];
     [Parameter] public List<ComponentParameter> PublicMembers { get; set; } = [];
+    [Parameter] public string? GitHubUrl { get; set; }
 
 
 
