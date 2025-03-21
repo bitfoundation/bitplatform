@@ -46,9 +46,7 @@ public partial class BitMarkdownViewer : BitComponentBase
 
     private async Task ParseAndRender()
     {
-        if (Markdown.HasNoValue()) return;
-
-        _html = await _js.BitMarkdownViewerParse(Markdown!);
+        _html = await _markdownService.Parse(Markdown, _cts.Token);
 
         StateHasChanged();
     }
