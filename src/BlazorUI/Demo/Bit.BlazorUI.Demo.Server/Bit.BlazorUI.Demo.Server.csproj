@@ -20,7 +20,7 @@
         <PackageReference Include="Jint" Version="4.2.1" />
         <PackageReference Include="Microsoft.AspNetCore.OData" Version="9.2.1" />
         <PackageReference Include="MimeTypeMapOfficial" Version="1.0.17" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="7.3.1" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="8.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.System" Version="9.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI" Version="9.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
