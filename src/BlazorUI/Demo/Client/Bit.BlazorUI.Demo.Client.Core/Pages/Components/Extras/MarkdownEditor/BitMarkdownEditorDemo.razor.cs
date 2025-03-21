@@ -27,6 +27,75 @@ public partial class BitMarkdownEditorDemo
          },
     ];
 
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "GetValue",
+            Type = "Func<ValueTask<string>>",
+            DefaultValue = "",
+            Description = "Returns the current value of the editor."
+        },
+        new()
+        {
+            Name = "Run",
+            Type = "Func<BitMarkdownEditorCommand, ValueTask>",
+            DefaultValue = "",
+            Description = "Runs a specific command on the editor.",
+            LinkType = LinkType.Link,
+            Href = "#command-enum"
+        },
+    ];
+
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        new()
+        {
+            Id = "command-enum",
+            Name = "BitMarkdownEditorCommand",
+            Description = "Available commands to run by a BitMarkdownEditor on its current value.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Heading",
+                    Description="Makes the current line a heading.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Bold",
+                    Description="Makes the current selection text bold.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Italic",
+                    Description="Makes the current selection text italic.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Link",
+                    Description="Makes the current selection text a link.",
+                    Value="3",
+                },
+                new()
+                {
+                    Name= "Picture",
+                    Description="Makes the current selection text an image.",
+                    Value="4",
+                },
+                new()
+                {
+                    Name= "Quote",
+                    Description="Makes the current selection text a quote message.",
+                    Value="5",
+                }
+            ]
+        },
+    ];
+
 
 
     private BitMarkdownEditor editorRef = default!;
@@ -40,6 +109,10 @@ public partial class BitMarkdownEditorDemo
 
     private string? bindingValue;
 
+    private bool showPreview;
+    private string? advancedValue;
+    private BitMarkdownEditor advancedRef;
+
 
 
     private readonly string example1RazorCode = @"
@@ -47,7 +120,7 @@ public partial class BitMarkdownEditorDemo
 
     private readonly string example2RazorCode = @"
 <BitButton OnClick=""GetValue"">Get Value</BitButton>
-<div style=""margin-top:1rem;display:flex;flex-direction:row;gap:1rem;height:300px"">
+<div style=""margin-top:1rem;display:flex;gap:1rem;height:300px"">
     <BitMarkdownEditor @ref=""editorRef"" />
     <pre style=""width:100%"">
         @value
@@ -62,7 +135,7 @@ private async Task GetValue()
 }";
 
     private readonly string example3RazorCode = @"
-<div style=""display:flex;flex-direction:row;gap:1rem;height:300px"">
+<div style=""display:flex;gap:1rem;height:300px"">
     <BitMarkdownEditor DefaultValue=""# This is the default value"" OnChange=""v => onChangeValue = v"" />
     <pre style=""padding:1rem;width:100%"">
         @onChangeValue
@@ -72,12 +145,22 @@ private async Task GetValue()
 private string? onChangeValue;";
 
     private readonly string example4RazorCode = @"
-<div style=""display:flex;flex-direction:row;gap:1rem;height:300px"">
+<div style=""display:flex;gap:1rem;height:300px"">
     <BitMarkdownEditor @bind-Value=""bindingValue"" />
     <pre style=""padding:1rem;width:100%"">
         @bindingValue
     </pre>
 </div>";
     private readonly string example4CsharpCode = @"
+private string? bindingValue;";
+
+    private readonly string example5RazorCode = @"
+<div style=""display:flex;gap:1rem;height:300px"">
+    <BitMarkdownEditor @bind-Value=""bindingValue"" />
+    <pre style=""padding:1rem;width:100%"">
+        @bindingValue
+    </pre>
+</div>";
+    private readonly string example5CsharpCode = @"
 private string? bindingValue;";
 }
