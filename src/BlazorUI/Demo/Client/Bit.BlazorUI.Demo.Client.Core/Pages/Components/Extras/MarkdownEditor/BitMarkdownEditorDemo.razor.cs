@@ -116,13 +116,15 @@ public partial class BitMarkdownEditorDemo
 
 
     private readonly string example1RazorCode = @"
-<BitMarkdownEditor />";
+<div style=""height:300px"">
+    <BitMarkdownEditor />
+</div>";
 
     private readonly string example2RazorCode = @"
-<BitButton OnClick=""GetValue"">Get Value</BitButton>
-<div style=""margin-top:1rem;display:flex;gap:1rem;height:300px"">
+<div style=""display:flex;gap:1rem;height:300px"">
     <BitMarkdownEditor @ref=""editorRef"" />
-    <pre style=""width:100%"">
+    <BitButton OnClick=""GetValue"">=></BitButton>
+    <pre style=""padding:1rem;width:100%"">
         @value
     </pre>
 </div>";
