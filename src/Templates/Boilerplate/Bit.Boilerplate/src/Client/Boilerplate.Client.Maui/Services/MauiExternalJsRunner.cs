@@ -1,18 +1,19 @@
 ﻿using EmbedIO.WebSockets;
+using Microsoft.JSInterop;
 
 namespace Boilerplate.Client.Maui.Services;
 
 /// <summary>
 /// Checkout external-js-runner.html
 /// </summary>
-public class ExternalJSRunnerWebSocketModule : WebSocketModule
+public class MauiExternalJsRunner : WebSocketModule
 {
     public static Func<JsonDocument, Task<JsonDocument>>? RequestToBeSent { get; private set; }
 
     TaskCompletionSource<JsonDocument>? responseTcs;
     TaskCompletionSource<IWebSocketContext> webSocketTcs = new();
 
-    public ExternalJSRunnerWebSocketModule()
+    public MauiExternalJsRunner()
         : base("/external-js-runner", true)
     {
         RequestToBeSent += SendRequest;
@@ -28,8 +29,15 @@ public class ExternalJSRunnerWebSocketModule : WebSocketModule
 
     protected override async Task OnMessageReceivedAsync(IWebSocketContext context, byte[] buffer, IWebSocketReceiveResult result)
     {
-        var response = JsonDocument.Parse(System.Text.Encoding.UTF8.GetString(buffer));
-        responseTcs!.SetResult(response);
+        var response = JsonSerializer.Deserialize<ExternalJsRunnerResponse>(buffer, JsonSerializerOptions.Web)!;
+        if (string.IsNullOrEmpty(response.Error) is false)
+        {
+            responseTcs!.SetException(new JSException(response.Error));
+        }
+        else
+        {
+            responseTcs!.SetResult(response.Body!);
+        }
     }
 
     protected override async Task OnClientConnectedAsync(IWebSocketContext context)
@@ -50,4 +58,11 @@ public class ExternalJSRunnerWebSocketModule : WebSocketModule
         RequestToBeSent -= SendRequest;
         base.Dispose(disposing);
     }
+}
+
+public class ExternalJsRunnerResponse
+{
+    public JsonDocument? Body { get; set; }
+
+    public string? Error { get; set; }
 }

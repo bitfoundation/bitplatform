@@ -49,10 +49,10 @@ public partial class PasswordlessSection
         {
             attestationResponse = await webAuthnService.CreateWebAuthnCredential(options);
         }
-        catch (Exception ex)
+        catch (JSException ex)
         {
             // we can safely handle the exception thrown here since it mostly because of a timeout or user cancelling the native ui.
-            ExceptionHandler.Handle(ex, ExceptionDisplayKind.None);
+            ExceptionHandler.Handle(ex, AppEnvironment.IsDev() ? ExceptionDisplayKind.NonInterrupting : ExceptionDisplayKind.None);
             return;
         }
 
@@ -116,7 +116,7 @@ public partial class PasswordlessSection
     {
         if (AppPlatform.IsBlazorHybrid)
         {
-            localHttpServer.Start(CurrentCancellationToken);
+            localHttpServer.EnsureStarted();
         }
 
         await base.OnAfterFirstRenderAsync();

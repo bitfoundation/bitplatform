@@ -8,7 +8,7 @@ public interface IWebAuthnService
 
     ValueTask<bool> IsWebAuthnConfigured(Guid? userId = null);
 
-    ValueTask<List<Guid>> GetWebAuthnConfiguredUserIds();
+    ValueTask<Guid[]> GetWebAuthnConfiguredUserIds();
 
     ValueTask SetWebAuthnConfiguredUserId(Guid userId);
 
