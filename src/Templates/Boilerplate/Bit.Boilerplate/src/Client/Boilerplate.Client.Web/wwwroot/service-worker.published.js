@@ -26,7 +26,7 @@ self.assetsExclude = [
     /bit\.blazorui\.fluent-dark\.css$/,
     /bit\.blazorui\.fluent-light\.css$/,
 
-    // If a PDF viewer is needed in the PWA, remove these two lines:
+    // If a PDF reader (https://blazorui.bitplatform.dev/components/pdfreader) is needed in the PWA, remove these two lines:
     /pdfjs-4\.7\.76\.js$/,
     /pdfjs-4\.7\.76-worker\.js$/,
 
@@ -35,6 +35,7 @@ self.assetsExclude = [
     /chartjs-2\.9\.4-adapter\.js$/,
     //#endif
 
+    // If a MarkDown viewer (https://blazorui.bitplatform.dev/components/markdownviewer) is needed in the PWA, remove this line:
     /marked-15\.0\.7\.js$/,
 
     // https://github.com/orgs/bitfoundation/discussions/10238#discussioncomment-12493737
