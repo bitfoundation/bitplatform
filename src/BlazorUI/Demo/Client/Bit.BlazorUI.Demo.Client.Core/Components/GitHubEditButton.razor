@@ -1,0 +1,14 @@
+@code {
+    [Parameter] public string? GitHubUrl { get; set; }
+
+    private string Url => $"https://github.com/bitfoundation/bitplatform/edit/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/{GitHubUrl}";
+}
+
+<BitButton FixedColor
+           Href="@Url"
+           Target="_blank"
+           Variant="BitVariant.Outline"
+           IconName="@BitIconName.GitGraph"
+           Color="BitColor.TertiaryBackground">
+    Edit this page
+</BitButton>
