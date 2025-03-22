@@ -98,7 +98,12 @@ else
         {
             <i style="@Styles?.Icon" class="bit-btn-icn bit-icon bit-icon--@IconName @Classes?.Icon" />
         }
-        @if (hasPrimary || hasSecondary)
+        else if (IconUrl.HasValue())
+        {
+            <img src="@IconUrl" style="@Styles?.Icon" class="bit-btn-icnu @Classes?.Icon" />
+        }
+
+        @if (IconOnly is false && (hasPrimary || hasSecondary))
         {
             <div style="@Styles?.Container" class="bit-btn-tcn @Classes?.Container">
                 @if (hasPrimary)
