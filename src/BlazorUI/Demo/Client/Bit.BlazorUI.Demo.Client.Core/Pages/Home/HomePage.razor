@@ -33,11 +33,19 @@
     <section class="homepage-section contribution-section">
         <div class="homepage-section-content">
             <BitText Typography="BitTypography.H3" Gutter>Open Source contribution</BitText>
-            <BitText Typography="BitTypography.Body1" Gutter Style="max-width: 700px">Backed by a professional dedicated development team and an active community, you are well supported to work out all challenges. Since all open source components are on GitHub, you can follow the production flow of the components.  Feel free to report bugs, fork the repo, and submit pull request.</BitText>
-            <a class="section-btn" target="_blank" href="https://github.com/bitfoundation/bitplatform">
-                <span class="github-icon"></span>
-                GitHub
-            </a>
+            <BitText Typography="BitTypography.Body1" Gutter Style="max-width: 700px">
+                Backed by a professional dedicated development team and an active community,
+                you are well supported to work out all challenges. Since all open source components are on GitHub,
+                you can follow the production flow of the components. Feel free to report bugs, fork the repo, and submit pull request.
+            </BitText>
+            <BitStack Horizontal>
+                <BitButton IconUrl="_content/Bit.BlazorUI.Demo.Client.Core/images/icon/github-blue-icon.svg"
+                           Href="https://github.com/bitfoundation/bitplatform" Target="_blank">
+                    GitHub
+                </BitButton>
+                <BitSpacer />
+                <GitHubEditButton GitHubUrl="Home/HomePage.razor" />
+            </BitStack>
         </div>
     </section>
 </div>
