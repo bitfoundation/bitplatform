@@ -57,21 +57,42 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, 
                Culture=""CultureInfoHelper.GetFaIrCultureWithFingilishNames()"" />";
 
     private readonly string example8RazorCode = @"
+<BitDatePicker @bind-Value=""@timeZoneDate1"" />
+<div>Selected date: @timeZoneDate1?.ToString()</div>
+
+@{
+    TimeZoneInfo? timeZoneInfo = null;
+    var allTimeZones = TimeZoneInfo.GetSystemTimeZones();
+    if (allTimeZones.Count > 0)
+    {
+        timeZoneInfo = allTimeZones[0];
+    }
+}
+@if (timeZoneInfo is not null) {
+    <div>""@timeZoneInfo.Id"" TimeZone:</div><br/>
+    <BitDatePicker TimeZone=""timeZoneInfo"" @bind-Value=""@timeZoneDate2"" />
+    <div>Selected date: @timeZoneDate2?.ToString()</div>
+}";
+    private readonly string example8CsharpCode = @"
+private DateTimeOffset? timeZoneDate1;
+private DateTimeOffset? timeZoneDate2;";
+
+    private readonly string example9RazorCode = @"
 <BitDatePicker Label=""Basic DatePicker"" Standalone />
 <BitDatePicker Label=""Disabled"" IsEnabled=""false"" Standalone />
 <BitDatePicker Label=""Week numbers"" ShowWeekNumbers Standalone />
 <BitDatePicker Label=""Highlight months"" HighlightCurrentMonth HighlightSelectedMonth Standalone />
 <BitDatePicker Label=""TimePicker"" ShowTimePicker Standalone />";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitDatePicker Label=""Basic"" ReadOnly @bind-Value=""readOnlyDate"" />
 <BitDatePicker Label=""Text input allowed"" ReadOnly AllowTextInput @bind-Value=""readOnlyDate"" />
 <BitDatePicker Label=""Standalone"" ReadOnly Standalone @bind-Value=""readOnlyDate"" />
 <BitDatePicker Label=""Standalone with TimePicker"" ReadOnly ShowTimePicker Standalone @bind-Value=""readOnlyDate"" />";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private DateTimeOffset? readOnlyDate = DateTimeOffset.Now;";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .day-cell {
         width: 28px;
@@ -139,16 +160,16 @@ private DateTimeOffset? readOnlyDate = DateTimeOffset.Now;";
         </span>
     </YearCellTemplate>
 </BitDatePicker>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private CultureInfo culture = CultureInfo.CurrentUICulture;";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitDatePicker Label=""Response DatePicker""
                Responsive
                ShowWeekNumbers
                Placeholder=""Select a date"" />";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <style>
     .validation-message {
         color: red;
@@ -168,7 +189,7 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
         Reset
     </BitButton>
 </EditForm>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 public class BitDatePickerValidationModel
 {
     [Required]
@@ -180,7 +201,7 @@ private BitDatePickerValidationModel validationModel = new();
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -341,9 +362,9 @@ private void HandleInvalidSubmit() { }";
                                   DayPickerHeader = ""custom-day-header"",
                                   WeekNumbersHeader = ""custom-week-header"",
                                   YearMonthPickerWrapper = ""custom-year-picker"" })"" />";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private DateTimeOffset? classesValue;";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitDatePicker Dir=""BitDir.Rtl"" />";
 }
