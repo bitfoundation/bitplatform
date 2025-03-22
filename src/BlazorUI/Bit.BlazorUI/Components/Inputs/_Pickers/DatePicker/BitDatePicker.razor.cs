@@ -29,6 +29,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private string _monthTitle = string.Empty;
     private bool _showTimePickerAsOverlayInternal;
     private bool _showMonthPickerAsOverlayInternal;
+    private TimeZoneInfo _timeZone = TimeZoneInfo.Local;
     private CultureInfo _culture = CultureInfo.CurrentUICulture;
     private CancellationTokenSource _cancellationTokenSource = new();
     private DotNetObjectReference<BitDatePicker> _dotnetObj = default!;
@@ -375,6 +376,13 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter] public BitTimeFormat TimeFormat { get; set; }
 
     /// <summary>
+    /// TimeZone for the DatePicker.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public TimeZoneInfo? TimeZone { get; set; }
+
+    /// <summary>
     /// Whether or not the text field of the DatePicker is underlined.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -548,7 +556,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         if (DateTime.TryParseExact(value, DateFormat ?? _culture.DateTimeFormat.ShortDatePattern, _culture, DateTimeStyles.None, out DateTime parsedValue))
         {
-            result = new DateTimeOffset(parsedValue, DateTimeOffset.Now.Offset);
+            result = new DateTimeOffset(parsedValue, _timeZone.GetUtcOffset(parsedValue));
             validationErrorMessage = null;
             return true;
         }
@@ -684,6 +692,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private void OnSetParameters()
     {
+        _timeZone = TimeZone ?? TimeZoneInfo.Local;
         _culture = Culture ?? CultureInfo.CurrentUICulture;
 
         var dateTime = CurrentValue.GetValueOrDefault(StartingValue.GetValueOrDefault(DateTimeOffset.Now));
@@ -756,8 +765,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         _currentMonth = selectedMonth;
 
-        var currentDateTime = _culture.Calendar.ToDateTime(_currentYear, _currentMonth, _currentDay, _hour, _minute, 0, 0);
-        CurrentValue = new DateTimeOffset(currentDateTime, DateTimeOffset.Now.Offset);
+        CurrentValue = GetDateTimeOffset(_currentYear, _currentMonth, _currentDay, _hour, _minute);
 
         GenerateMonthData(_currentYear, _currentMonth);
     }
@@ -1262,12 +1270,12 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             currentYear--;
         }
 
-        return new DateTimeOffset(_culture.Calendar.ToDateTime(currentYear, selectedMonth, currentDay, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
+        return GetDateTimeOffset(currentYear, selectedMonth, currentDay);
     }
 
     private DateTimeOffset GetDateTimeOfMonthCell(int monthIndex)
     {
-        return new(_culture.Calendar.ToDateTime(_currentYear, monthIndex, 1, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
+        return GetDateTimeOffset(_currentYear, monthIndex);
     }
 
     private async Task UpdateCurrentValue()
@@ -1278,8 +1286,14 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         var currentValueMonth = _culture.Calendar.GetMonth(CurrentValue.Value.LocalDateTime);
         var currentValueDay = _culture.Calendar.GetDayOfMonth(CurrentValue.Value.LocalDateTime);
 
-        var dateTime = _culture.Calendar.ToDateTime(currentValueYear, currentValueMonth, currentValueDay, _hour, _minute, 0, 0);
-        CurrentValue = new(dateTime, DateTimeOffset.Now.Offset);
+        CurrentValue = GetDateTimeOffset(currentValueYear, currentValueMonth, currentValueDay, _hour, _minute);
+    }
+
+    private DateTimeOffset GetDateTimeOffset(int year, int month = 1, int day = 1, int hour = 0, int minute = 0)
+    {
+        var dateTime = _culture.Calendar.ToDateTime(year, month, day, hour, minute, 0, 0);
+        var offSet = _timeZone.GetUtcOffset(dateTime);
+        return new(dateTime, offSet);
     }
 
     private async Task HandleOnTimeHourFocus()
@@ -1510,7 +1524,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                                        0,
                                        "",
                                        "",
-                                       false, 
+                                       false,
                                        MAX_WIDTH);
     }
 

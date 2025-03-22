@@ -123,7 +123,17 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Standalone" RazorCode="@example8RazorCode" Id="example8">
+    <DemoExample Title="TimeZone" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div>Specifies the time zone used to interpret and display the selected date.</div>
+        <br />
+        <div class="example-content">
+            <BitDatePicker TimeZone="@(TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time"))" @bind-Value="@timeZoneDate" />
+        </div>
+        <br />
+        <div>Selected date: @timeZoneDate?.ToString()</div>
+    </DemoExample>
+
+    <DemoExample Title="Standalone" RazorCode="@example9RazorCode" Id="example9">
         <div>Use the BitDatePicker in a standalone mode, allowing it to function independently without a surrounding form or container.</div>
         <br />
         <div class="example-content-standalone">
@@ -139,7 +149,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="ReadOnly" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoExample Title="ReadOnly" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>The ReadOnly parameter makes the date picker input non-editable, preventing users from manually changing the time value.</div>
         <br />
         <div class="example-content">
@@ -155,7 +165,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Templates" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <DemoExample Title="Templates" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>Utilize various templates within the BitDatePicker, such as custom label templates, day cell templates, and year cell templates.</div>
         <br />
         <div class="example-content">
@@ -197,7 +207,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Responsive" RazorCode="@example11RazorCode" Id="example11">
+    <DemoExample Title="Responsive" RazorCode="@example12RazorCode" Id="example12">
         <div>Enable responsive design for the BitDatePicker, allowing it to adjust its layout and appearance based on the screen size.</div>
         <br />
         <div class="example-content">
@@ -208,7 +218,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Validation" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <DemoExample Title="Validation" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>Implement form validation with BitDatePicker using data annotations, ensuring the user selects a valid date before submitting the form.</div>
         <br />
         <div class="example-content">
@@ -233,7 +243,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
         <div>Explore styling and class customization for BitDatePicker, including component styles, custom classes, and detailed styles.</div>
         <br /><br />
         <div>Component's Style & Class:</div><br />
@@ -280,7 +290,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="RTL" RazorCode="@example15RazorCode" Id="example15">
         <div>Use BitDatePicker in right-to-left (RTL).</div>
         <br />
         <div dir="rtl">
