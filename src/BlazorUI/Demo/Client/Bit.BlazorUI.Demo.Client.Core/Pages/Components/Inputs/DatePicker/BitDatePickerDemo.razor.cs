@@ -916,10 +916,12 @@ public partial class BitDatePickerDemo
 
 
 
-    private DateTimeOffset? timeZoneDate;
     private DateTimeOffset? readOnlyDate = DateTimeOffset.Now;
     private DateTimeOffset? selectedDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset);
     private DateTimeOffset? startingValue = new DateTimeOffset(2020, 12, 4, 20, 45, 0, DateTimeOffset.Now.Offset);
+
+    private DateTimeOffset? timeZoneDate1;
+    private DateTimeOffset? timeZoneDate2;
 
     private DateTimeOffset? classesValue;
 

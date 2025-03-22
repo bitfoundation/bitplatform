@@ -124,13 +124,41 @@
     </DemoExample>
 
     <DemoExample Title="TimeZone" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-        <div>Specifies the time zone used to interpret and display the selected date.</div>
-        <br />
+        <div>
+            Specifies the timezone used to interpret and display the selected date/time.
+            <br />
+            Remeber using this feature in different runtimes needs more investigations, for example,
+            there are different data available based on the OS the code is running on or different settings
+            enabled for the project (like InvariantTimezone in the project file,
+            <BitLink Href="https://learn.microsoft.com/en-us/aspnet/core/blazor/globalization-localization?view=aspnetcore-9.0#timezone-information"
+                     Target="_blank">more info</BitLink>).
+        </div>
+        <br /><br />
+        <div>Defalt (local TimeZone):</div><br/>
         <div class="example-content">
-            <BitDatePicker TimeZone="@(TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time"))" @bind-Value="@timeZoneDate" />
+            <BitDatePicker @bind-Value="@timeZoneDate1" />
         </div>
         <br />
-        <div>Selected date: @timeZoneDate?.ToString()</div>
+        <div>Selected date: @timeZoneDate1?.ToString()</div>
+
+        @{
+            TimeZoneInfo? timeZoneInfo = null;
+            var allTimeZones = TimeZoneInfo.GetSystemTimeZones();
+            if (allTimeZones.Count > 0)
+            {
+                timeZoneInfo = allTimeZones[0];
+            }
+        }
+
+        @if (timeZoneInfo is not null) {
+            <br /><br /><br /><br />
+            <div>"@timeZoneInfo.Id" TimeZone:</div><br/>
+            <div class="example-content">
+                <BitDatePicker TimeZone="timeZoneInfo" @bind-Value="@timeZoneDate2" />
+            </div>
+            <br />
+            <div>Selected date: @timeZoneDate2?.ToString()</div>
+        }
     </DemoExample>
 
     <DemoExample Title="Standalone" RazorCode="@example9RazorCode" Id="example9">

@@ -57,10 +57,25 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, 
                Culture=""CultureInfoHelper.GetFaIrCultureWithFingilishNames()"" />";
 
     private readonly string example8RazorCode = @"
-<BitDatePicker TimeZone=""@(TimeZoneInfo.FindSystemTimeZoneById(""Eastern Standard Time""))"" @bind-Value=""@timeZoneDate"" />
-<div>Selected date: @timeZoneDate?.ToString()</div>""";
+<BitDatePicker @bind-Value=""@timeZoneDate1"" />
+<div>Selected date: @timeZoneDate1?.ToString()</div>
+
+@{
+    TimeZoneInfo? timeZoneInfo = null;
+    var allTimeZones = TimeZoneInfo.GetSystemTimeZones();
+    if (allTimeZones.Count > 0)
+    {
+        timeZoneInfo = allTimeZones[0];
+    }
+}
+@if (timeZoneInfo is not null) {
+    <div>""@timeZoneInfo.Id"" TimeZone:</div><br/>
+    <BitDatePicker TimeZone=""timeZoneInfo"" @bind-Value=""@timeZoneDate2"" />
+    <div>Selected date: @timeZoneDate2?.ToString()</div>
+}";
     private readonly string example8CsharpCode = @"
-private DateTimeOffset? timeZoneDate;";
+private DateTimeOffset? timeZoneDate1;
+private DateTimeOffset? timeZoneDate2;";
 
     private readonly string example9RazorCode = @"
 <BitDatePicker Label=""Basic DatePicker"" Standalone />
