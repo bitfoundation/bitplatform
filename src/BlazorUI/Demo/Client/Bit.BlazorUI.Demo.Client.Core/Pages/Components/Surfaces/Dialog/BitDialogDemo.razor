@@ -8,7 +8,8 @@
           Description="Dialogs are temporary pop-ups that take focus from the page or app and require people to interact with them."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
-          SubEnums="componentSubEnums">
+          SubEnums="componentSubEnums"
+          GitHubUrl="Surfaces/Dialog/BitDialogDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <BitButton OnClick="@(() => IsOpen = true)">Open Dialog</BitButton>
         <BitDialog @bind-IsOpen="IsOpen" Title="Missing Subject" Message="Do you want to send this message without a subject?" />
