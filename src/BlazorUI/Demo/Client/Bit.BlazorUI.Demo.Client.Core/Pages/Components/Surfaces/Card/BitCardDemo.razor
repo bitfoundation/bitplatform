@@ -8,7 +8,7 @@
           Description="A Card provides a container to wrap around a specific content. Keeping a card to a single subject keeps the design clean."
           Parameters="componentParameters"
           SubEnums="componentSubEnums">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <BitCard>
             <BitStack HorizontalAlign="BitAlignment.Start">
                 <BitText Typography="BitTypography.H4">bit BlazorUI</BitText>
@@ -18,9 +18,9 @@
                 <BitLink Href="https://blazorui.bitplatform.dev" Target="_blank">Learn more</BitLink>
             </BitStack>
         </BitCard>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Background" RazorCode="@example2RazorCode" CSharpCode="@example2CSharpCode" Id="example2">
+    <DemoExample Title="Background" RazorCode="@example2RazorCode" CSharpCode="@example2CSharpCode" Id="example2">
         <BitChoiceGroup @bind-Value="backgroundColorKind" Horizontal
                         TItem="BitChoiceGroupOption<BitColorKind>" TValue="BitColorKind">
             <BitChoiceGroupOption Text="Primary" Value="BitColorKind.Primary" />
@@ -40,9 +40,9 @@
                 </BitStack>
             </BitCard>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Border" RazorCode="@example3RazorCode" CSharpCode="@example3CSharpCode" Id="example3">
+    <DemoExample Title="Border" RazorCode="@example3RazorCode" CSharpCode="@example3CSharpCode" Id="example3">
         <BitChoiceGroup @bind-Value="borderColorKind" Horizontal
                         TItem="BitChoiceGroupOption<BitColorKind>" TValue="BitColorKind">
             <BitChoiceGroupOption Text="Primary" Value="BitColorKind.Primary" />
@@ -60,9 +60,9 @@
                 <BitLink Href="https://blazorui.bitplatform.dev" Target="_blank">Learn more</BitLink>
             </BitStack>
         </BitCard>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="FullSize" RazorCode="@example4RazorCode" CSharpCode="@example4CSharpCode" Id="example4">
+    <DemoExample Title="FullSize" RazorCode="@example4RazorCode" CSharpCode="@example4CSharpCode" Id="example4">
         <BitChoiceGroup @bind-Value="size" Horizontal
                         TItem="BitChoiceGroupOption<int>" TValue="int">
             <BitChoiceGroupOption Text="FullSize" Value="0" />
@@ -81,5 +81,5 @@
                 </BitStack>
             </BitCard>
         </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

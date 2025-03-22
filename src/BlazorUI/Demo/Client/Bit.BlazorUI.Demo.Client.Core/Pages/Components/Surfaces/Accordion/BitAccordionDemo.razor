@@ -9,19 +9,19 @@
           Description="The Accordion component allows the user to show and hide sections of related content on a page."
           Parameters="componentParameters"
           SubClasses="componentSubClasses">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <BitAccordion Title="Accordion">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl. Duis lobortis tristique nunc, id egestas ligula condimentum quis. Integer elementum tempor cursus. Phasellus vestibulum neque non laoreet faucibus. Nunc eu congue urna, in dapibus justo.
         </BitAccordion>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="NoBorder" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="NoBorder" RazorCode="@example2RazorCode" Id="example2">
         <BitAccordion Title="Accordion" NoBorder>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl. Duis lobortis tristique nunc, id egestas ligula condimentum quis. Integer elementum tempor cursus. Phasellus vestibulum neque non laoreet faucibus. Nunc eu congue urna, in dapibus justo.
         </BitAccordion>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Multiple" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="Multiple" RazorCode="@example3RazorCode" Id="example3">
         <div>You can define multiple accordions together.</div><br />
         <BitAccordion Title="Accordion 1">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl.
@@ -32,16 +32,16 @@
         <BitAccordion Title="Accordion 3">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl. Duis lobortis tristique nunc, id egestas ligula condimentum quis. Integer elementum tempor cursus. Phasellus vestibulum neque non laoreet faucibus. Nunc eu congue urna, in dapibus justo.
         </BitAccordion>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Description" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Description" RazorCode="@example4RazorCode" Id="example4">
         <div>You can set a short description inside the Accordion header.</div><br />
         <BitAccordion Title="General settings" Description="The general settings of the application">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu.
         </BitAccordion>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Controlled" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoExample Title="Controlled" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <div>You can control the accordions to open only one at a time.</div><br />
         <BitAccordion Title="General settings"
                       Description="I am an accordion"
@@ -61,9 +61,9 @@
                       IsExpanded="controlledAccordionExpandedItem == 3">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu.
         </BitAccordion>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <DemoExample Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>You can bind values ​​with Accordion.</div><br />
         <BitToggle @bind-Value="AccordionToggleIsEnabled" OnText="Enabled" OffText="Disabled" />
         <br />
@@ -75,9 +75,9 @@
                       @bind-IsExpanded="AccordionToggleIsExpanded">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit.
         </BitAccordion>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Customization" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="Customization" RazorCode="@example7RazorCode" Id="example7">
         <div>This Accordion header is customized.</div><br />
         <BitAccordion>
             <HeaderTemplate Context="isExpanded">
@@ -109,14 +109,14 @@
                 </BitCarouselItem>
             </BitCarousel>
         </BitAccordion>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="RTL" RazorCode="@example8RazorCode" Id="example8">
+    <DemoExample Title="RTL" RazorCode="@example8RazorCode" Id="example8">
         <div>Use BitAccordion in right-to-left (RTL).</div><br />
         <BitAccordion Dir="BitDir.Rtl"
                       Title="تنظیمات"
                       Description="من یک آکاردئون هستم!">
             لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است. چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
         </BitAccordion>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

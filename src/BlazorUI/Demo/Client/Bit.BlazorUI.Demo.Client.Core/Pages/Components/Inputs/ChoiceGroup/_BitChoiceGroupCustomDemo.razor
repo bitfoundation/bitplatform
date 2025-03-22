@@ -1,4 +1,4 @@
-﻿<DemoSection Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <div class="example-content">
         <BitChoiceGroup Label="Basic Customs"
                         Items="basicCustoms"
@@ -11,9 +11,9 @@
                         DefaultValue="basicCustoms[1].ItemValue"
                         NameSelectors="@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })" />
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Disabled" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+<DemoExample Title="Disabled" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
     <div>Illustrates how to disable the entire BitChoiceGroup and individual items.</div>
     <br />
     <div class="example-content">
@@ -30,9 +30,9 @@
                                                      Value = { Selector = i => i.ItemValue },
                                                      IsEnabled = { Selector = i => i.IsDisabled is false } })" />
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Images and Icons" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+<DemoExample Title="Images and Icons" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <div>Showcases BitChoiceGroup with image and icon items.</div>
     <br /><br />
     <div class="example-content">
@@ -77,9 +77,9 @@
                                                      IconName = { Selector = i => i.IconName },
                                                      IsEnabled = { Selector = i => i.IsDisabled is false } })" />
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Horizontal" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+<DemoExample Title="Horizontal" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <div>Displays the BitChoiceGroup component in a horizontal layout, demonstrating various configurations.</div>
     <br />
     <div class="example-content column">
@@ -116,9 +116,9 @@
                                                      IconName = { Selector = i => i.IconName },
                                                      IsEnabled = { Selector = i => i.IsDisabled is false } })" />
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<DemoExample Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
     <div>Explores styling and class customization for BitChoiceGroup, including component styles, custom classes, and detailed style items.</div>
     <br /><br />
     <div>Component's Style & Class:</div>
@@ -169,9 +169,9 @@
                                                ItemLabelWrapper = "custom-label-wrapper" })"
                         NameSelectors="@(new() { Text = { Selector = i => i.Name }, Value = { Selector = i => i.ItemValue } })" />
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="LabelTemplate" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+<DemoExample Title="LabelTemplate" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
     <div>Demonstrates how to customize the label of the BitChoiceGroup using a template.</div>
     <br />
     <BitChoiceGroup Items="basicCustoms"
@@ -183,9 +183,9 @@
             </div>
         </LabelTemplate>
     </BitChoiceGroup>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<DemoExample Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
     <div>Shows how to use one-way and two-way data binding with BitChoiceGroup.</div>
     <br />
     <div class="example-content">
@@ -204,9 +204,9 @@
             <BitTextField @bind-Value="twoWayValue" />
         </div>
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Item templates" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+<DemoExample Title="Item templates" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <div>Illustrates how to customize the appearance of BitChoiceGroup options using item templates.</div>
     <br />
     <div class="example-content">
@@ -248,9 +248,9 @@
                                                      Value = { Name = nameof(Order.ItemValue) },
                                                      Template = { Name = nameof(Order.Fragment) } })" />
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+<DemoExample Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
     <div>Use BitChoiceGroup in right-to-left (RTL).</div>
     <br />
     <div dir="rtl" class="example-content">
@@ -267,9 +267,9 @@
                         Items="rtlCustoms"
                         NameSelectors="@(new() { Text = { Selector = i => i.Name }, Value = { Selector = i => i.ItemValue } })" />
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+<DemoExample Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
     <div>Shows how to use data annotations for validating the selected value in BitChoiceGroup.</div>
     <br />
     @if (string.IsNullOrEmpty(successMessage))
@@ -293,7 +293,7 @@
     }
     <br />
     <BitButton Variant="BitVariant.Outline" OnClick="() => { validationModel = new(); successMessage=string.Empty; }">Reset</BitButton>
-</DemoSection>
+</DemoExample>
 
 @code {
     private List<Order> itemTemplateCustoms2 = default!;

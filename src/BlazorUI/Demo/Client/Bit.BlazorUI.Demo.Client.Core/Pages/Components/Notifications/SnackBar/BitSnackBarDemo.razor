@@ -11,12 +11,12 @@
           SubEnums="componentSubEnums"
           SubClasses="componentSubClasses"
           PublicMembers="componentPublicMembers">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <BitSnackBar @ref="basicRef" />
         <BitButton OnClick="OpenBasicSnackBar">Open SnackBar</BitButton>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Customization" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <DemoExample Title="Customization" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <BitSnackBar @ref="customizationRef"
                      Dir="direction"
                      Position="basicSnackBarPosition"
@@ -75,9 +75,9 @@
             </div>
         </div>
         <br />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Templates" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <DemoExample Title="Templates" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <BitSnackBar @ref="dismissIconNameRef" DismissIconName="@BitIconName.Go" />
         <BitButton OnClick="OpenDismissIconName">Dismiss Icon Name</BitButton>
         <br /><br />
@@ -104,9 +104,9 @@
             </BodyTemplate>
         </BitSnackBar>
         <BitButton OnClick="OpenBodyTemplate">Body Template</BitButton>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Style & Class" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <DemoExample Title="Style & Class" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div>
             <div>Item's Style & Class:</div><br />
             <BitSnackBar @ref="snackBarStyleRef" />
@@ -126,5 +126,5 @@
                                                 ProgressBar = "custom-progress" })" />
             <BitButton OnClick="OpenSnackBarClasses">Custom classes</BitButton>
         </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

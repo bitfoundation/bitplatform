@@ -10,21 +10,21 @@
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <BitLink Href="https://github.com/bitfoundation/bitplatform">Basic Link</BitLink>
         <br /><br />
         <BitLink Href="https://github.com/bitfoundation/bitplatform" IsEnabled="false">Disabled Link</BitLink>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Underlined" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Underlined" RazorCode="@example2RazorCode" Id="example2">
         <BitLink Href="https://github.com/bitfoundation/bitplatform" Underlined>Underlined link</BitLink>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="NoUnderline" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="NoUnderline" RazorCode="@example3RazorCode" Id="example3">
         <BitLink Href="https://github.com/bitfoundation/bitplatform" NoUnderline>NoUnderline link</BitLink>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Target" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Target" RazorCode="@example4RazorCode" Id="example4">
         <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_blank">Blank target link</BitLink>
         <br /><br />
         <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_parent">Parent target link</BitLink>
@@ -32,13 +32,13 @@
         <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_self">Self target link</BitLink>
         <br /><br />
         <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_top">Top target link</BitLink>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="OnClick" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoExample Title="OnClick" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <BitLink OnClick="HandleOnClick">Click to navigate to the bit platform GitHub repo!</BitLink>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Navigate to elements" RazorCode="@example6RazorCode" Id="example6">
+    <DemoExample Title="Navigate to elements" RazorCode="@example6RazorCode" Id="example6">
         <div class="example-desc">If you start the Href parameter with a # character, it'll look for the an element with that id and tries to scroll the view into that element.</div>
         <br /><br />
         <BitLink Style="scroll-margin: 70px" Id="start-article" Href="#end-article">Go To End of this Article</BitLink>
@@ -83,23 +83,23 @@
             a mattis est. In augue dolor, faucibus vel metus at, convallis rhoncus dui.
         </p>
         <BitLink Style="scroll-margin: 70px" Id="end-article" Href="#start-article">Go To Start of this Article</BitLink>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Rel" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="Rel" RazorCode="@example7RazorCode" Id="example7">
         <BitLink Rel="BitLinkRel.NoFollow" Href="https://github.com/bitfoundation/bitplatform">Link with a rel attribute (nofollow)</BitLink>
         <br /><br />
         <BitLink Rel="BitLinkRel.NoFollow | BitLinkRel.NoReferrer" Href="https://github.com/bitfoundation/bitplatform">Link with a rel attribute (nofollow & noreferrer)</BitLink>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
+    <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
         <BitLink Style="color: goldenrod; font-weight:bold" Href="https://github.com/bitfoundation/bitplatform">Link with style</BitLink>
         <br /><br />
         <BitLink Class="custom-class" Href="https://github.com/bitfoundation/bitplatform">Link with class</BitLink>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="RTL" RazorCode="@example9RazorCode" Id="example9">
+    <DemoExample Title="RTL" RazorCode="@example9RazorCode" Id="example9">
         <div dir="rtl">
             <BitLink Dir="BitDir.Rtl" Href="https://github.com/bitfoundation/bitplatform">پیوند راست به چپ</BitLink>
         </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

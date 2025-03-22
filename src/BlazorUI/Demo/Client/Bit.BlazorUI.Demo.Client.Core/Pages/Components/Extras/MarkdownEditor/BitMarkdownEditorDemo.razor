@@ -12,13 +12,13 @@
           PublicMembers="componentPublicMembers"
           SubEnums="componentSubEnums">
     
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div style="height:300px">
             <BitMarkdownEditor />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Value" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <DemoExample Title="Value" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <div style="display:flex;gap:1rem;height:300px">
             <BitMarkdownEditor @ref="editorRef" />
             <BitButton OnClick="GetValue">=></BitButton>
@@ -26,27 +26,27 @@
                 @value
             </pre>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="OnChange" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <DemoExample Title="OnChange" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <div style="display:flex;gap:1rem;height:300px">
             <BitMarkdownEditor DefaultValue="# This is the default value" OnChange="v => onChangeValue = v" />
             <pre style="padding:1rem;width:100%">
                 @onChangeValue
             </pre>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Binding" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <DemoExample Title="Binding" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div style="display:flex;gap:1rem;height:300px">
             <BitMarkdownEditor @bind-Value="bindingValue" />
             <pre style="padding:1rem;width:100%">
                 @bindingValue
             </pre>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Advanced" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoExample Title="Advanced" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <div style="display:flex;gap:1rem;margin-bottom:1rem">
             <BitToggleButton Color="BitColor.Tertiary" Variant="BitVariant.Outline" OnText="Write" OffText="Preview" @bind-IsChecked="showPreview" />
             
@@ -72,5 +72,5 @@
             <BitMarkdownEditor @ref="advancedRef" @bind-Value="advancedValue" Style="@($"display:{(showPreview ? "none" : "block")}")" />
             <BitMarkdownViewer Markdown="@advancedValue" Style="@($"display:{(showPreview ? "block" : "none")}")" />
         </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

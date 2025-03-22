@@ -13,11 +13,11 @@
           Parameters="componentParameters"
           SubEnums="componentSubEnums"
           SubClasses="componentSubClasses">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <BitButton>Button</BitButton>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Primary & Secondary" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Primary & Secondary" RazorCode="@example2RazorCode" Id="example2">
         <div class="example-content">
             <BitButton>Primary text</BitButton>
             <BitButton SecondaryText="secondary text" />
@@ -26,9 +26,9 @@
         <div class="example-content">
             <BitButton SecondaryText="this is the secondary text">Primary text</BitButton>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Variant" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="Variant" RazorCode="@example3RazorCode" Id="example3">
         <div>The Button offers three style variants: Fill (default), Outline, and Text.</div>
         <br />
         <div class="example-content">
@@ -54,9 +54,9 @@
             <BitButton Variant="BitVariant.Outline" SecondaryText="this is the secondary text" IsEnabled="false">Outline</BitButton>
             <BitButton Variant="BitVariant.Text" SecondaryText="this is the secondary text" IsEnabled="false">Text</BitButton>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Icon" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Icon" RazorCode="@example4RazorCode" Id="example4">
         <div>BitButton has an icon slot that, if specified, renders an icon that can be set at the start (default) or revered positioned at the end of component.</div>
         <br />
         <div class="example-content">
@@ -100,9 +100,9 @@
             <BitButton IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" SecondaryText="IconUrl" Variant="BitVariant.Outline" ReversedIcon>End</BitButton>
             <BitButton IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" SecondaryText="IconUrl" Variant="BitVariant.Text" ReversedIcon>End</BitButton>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Loading" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoExample Title="Loading" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <div>Demonstrate the dynamic loading state of buttons using the "IsLoading" property. Customize the loading label to provide users with feedback on ongoing processes.</div>
         <br /><br />
         <div class="example-content">
@@ -143,9 +143,9 @@
             <BitButton OnClick="AutoLoadingReclick" AutoLoading Reclickable>Reclickable</BitButton>
             <div>Re-clickable AutoLoading click count: @reclickableAutoLoadCount</div>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Loading Label" RazorCode="@example6RazorCode" Id="example6">
+    <DemoExample Title="Loading Label" RazorCode="@example6RazorCode" Id="example6">
         <div>Explore customizing the loading label and its different positions, including start, end, bottom, and top.</div>
         <br />
         <div class="example-content">
@@ -183,9 +183,9 @@
                 Top
             </BitButton>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Href" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="Href" RazorCode="@example7RazorCode" Id="example7">
         <div>Use BitButton as a hyperlink to external URLs, opening either in a new tab or the same tab.</div>
         <br />
         <div class="example-content">
@@ -197,9 +197,9 @@
                 Go to bitplatform GitHub
             </BitButton>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Rel" RazorCode="@example8RazorCode" Id="example8">
+    <DemoExample Title="Rel" RazorCode="@example8RazorCode" Id="example8">
         <div>Use BitButton as a hyperlink to external URLs, with a rel attribute.</div>
         <br />
         <div class="example-content">
@@ -211,9 +211,9 @@
                 Open bitplatform.dev with a rel attribute (nofollow & noreferrer)
             </BitButton>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Float" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoExample Title="Float" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>Demonstrates a floating button with adjustable float modes and customizable positions.</div>
         <br />
         <div class="example-content">
@@ -232,9 +232,9 @@
                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
             </div>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Button Type" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <DemoExample Title="Button Type" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>BitButton supports three different types, 'Submit' for sending form data, 'Reset' to clear form inputs, and 'Button' to provide flexibility for different interaction purposes.</div>
         <br />
         <div class="form-container">
@@ -262,9 +262,9 @@
                 </BitMessage>
             }
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Templates" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="Templates" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>Here are some examples of customizing the button content.</div>
         <br />
         <div>
@@ -310,9 +310,9 @@
                 </LoadingTemplate>
             </BitButton>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Events" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <DemoExample Title="Events" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>
             Managing button click event (OnClick).
         </div>
@@ -320,9 +320,9 @@
         <div class="example-content">
             <BitButton OnClick="() => clickCounter++">Click me (@clickCounter)</BitButton>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Size" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="Size" RazorCode="@example13RazorCode" Id="example13">
         <div>Varying sizes for buttons tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.</div>
         <br />
         <div>
@@ -360,15 +360,15 @@
             <BitButton Size="BitSize.Large" SecondaryText="this is the secondary text" IconName="@BitIconName.Emoji2" Variant="BitVariant.Outline">Outline</BitButton>
             <BitButton Size="BitSize.Large" SecondaryText="this is the secondary text" IconName="@BitIconName.Emoji2" Variant="BitVariant.Text">Text</BitButton>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="FullWidth" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="FullWidth" RazorCode="@example14RazorCode" Id="example14">
         <div>Setting the FullWidth makes the button occupy 100% of its container's width.</div>
         <br />
         <BitButton FullWidth IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill">Full Width Button</BitButton>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="FixedColor" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="FixedColor" RazorCode="@example15RazorCode" Id="example15">
         <div>FixedColor flag parameter makes the foreground color to be fixed regardless of its hovering state.</div>
         <br />
         <BitButton FixedColor IconOnly
@@ -382,9 +382,9 @@
                    Variant="BitVariant.Text"
                    IconName="@BitIconName.Emoji2"
                    Color="BitColor.TertiaryBackground" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Color" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="Color" RazorCode="@example16RazorCode" Id="example16">
         <div>Offering a range of specialized color variants with Primary being the default, providing visual cues for specific actions or states within your application.</div>
         <br />
         <div>
@@ -494,9 +494,9 @@
                 <BitButton Color="BitColor.TertiaryBorder" Variant="BitVariant.Text">TertiaryBorder</BitButton>
             </div>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Style & Class" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+    <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
         <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
         <br /><br />
         <div>Component's Style & Class:</div>
@@ -535,9 +535,9 @@
                 Click me
             </BitButton>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="RTL" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
         <div>Use BitButton in right-to-left (RTL).</div>
         <br />
         <div class="example-content" dir="rtl">
@@ -569,5 +569,5 @@
             <BitButton IsLoading Dir="BitDir.Rtl" LoadingLabel="در حال بارگذاری" Variant="BitVariant.Outline" />
             <BitButton IsLoading Dir="BitDir.Rtl" LoadingLabel="در حال بارگذاری" Variant="BitVariant.Text" />
         </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

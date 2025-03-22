@@ -10,7 +10,7 @@
               Parameters="componentParameters"
               SubClasses="componentSubClasses"
               SubEnums="componentSubEnums">
-        <DemoSection Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <div>Try swipe or drag on the container:</div><br />
             <BitSwipeTrap Style="width:100%"
                           OnStart="HandleOnStartBasic"
@@ -29,9 +29,9 @@
                     <div>Trigger diffY: @swipeTrapTriggerArgsBasic?.DiffY</div>
                 </div>
             </BitSwipeTrap>
-        </DemoSection>
+        </DemoExample>
 
-        <DemoSection Title="Panel" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <DemoExample Title="Panel" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div>Open the panel and try to close it by swiping it to the left:</div><br />
             <div class="panel-container">
                 <button @onclick="OpenPanel">
@@ -54,9 +54,9 @@
                     </BitSwipeTrap>
                 </div>
             </div>
-        </DemoSection>
+        </DemoExample>
 
-        <DemoSection Title="List" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <DemoExample Title="List" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>Swipe each row to the right to trigger the delete action:</div><br />
             <div class="list-container">
                 @foreach (int idx in itemsList)
@@ -84,9 +84,9 @@
                        Message="Are you sure you want to delete this item?"
                        OnOk="HandleOnOkList"
                        OnCancel="HandleOnCancelList" />
-        </DemoSection>
+        </DemoExample>
 
-        <DemoSection Title="Advanced" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <DemoExample Title="Advanced" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>An illustrative example of integrating this component into a straightforward mobile application.</div>
             <br />
             <div class="mobile-frame">
@@ -132,6 +132,6 @@
                     </div>
                 </div>
             </div>
-        </DemoSection>
+        </DemoExample>
     </DemoPage>
 </div>

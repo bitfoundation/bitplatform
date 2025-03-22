@@ -9,7 +9,7 @@
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <BitButton OnClick="() => isOpenBasic = true">Open Modal</BitButton>
         <BitModal @bind-IsOpen="isOpenBasic">
             <div style="padding:1rem;max-width:40rem">
@@ -23,9 +23,9 @@
                 efficitur.
             </div>
         </BitModal>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Customizing content" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <DemoExample Title="Customizing content" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <BitButton OnClick="() => isOpenCustomContent = true">Open Modal</BitButton>
         <BitModal @bind-IsOpen="isOpenCustomContent">
             <div class="modal-header">
@@ -59,9 +59,9 @@
                 </p>
             </div>
         </BitModal>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Advanced options" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <DemoExample Title="Advanced options" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <div>BitModal has some advanced options.</div><br />
         <BitButton OnClick="() => isOpenBlocking = true">Open Modal (Blocking)</BitButton>
         <br /><br />
@@ -139,9 +139,9 @@
                 </p>
             </div>
         </BitModal>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Absolute positioning" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <DemoExample Title="Absolute positioning" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div>BitModal has an absolute position option to further customize its location.</div><br />
         <BitButton OnClick="() => isOpenAbsolutePosition = true">Open Modal (AbsolutePosition)</BitButton>
         <br /><br />
@@ -224,9 +224,9 @@
                 efficitur.
             </div>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Position" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoExample Title="Position" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <div>To set the modal position on the page you can use the Position parameter.</div><br />
         <div class="position-btn-container">
             <div>
@@ -254,9 +254,9 @@
                 BitModal with custom positioning. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
             </div>
         </BitModal>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Draggable" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <DemoExample Title="Draggable" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>The Draggable parameter of the BitModal allows users to move the modal around the screen.</div><br />
         <BitButton OnClick="() => isOpenDraggable = true">Open Modal</BitButton>
         <BitModal @bind-IsOpen="isOpenDraggable" Draggable>
@@ -298,9 +298,9 @@
                 </p>
             </div>
         </BitModal>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="FullSize" RazorCode="@example7RazorCode" CSharpCode="@example7CsharpCode" Id="example7">
+    <DemoExample Title="FullSize" RazorCode="@example7RazorCode" CSharpCode="@example7CsharpCode" Id="example7">
         <div>The FullSize parameter of the BitModal allows the modal to be full-screen.</div><br />
         <BitButton OnClick="() => isOpenFullSize = true">Open Modal</BitButton>
         <BitModal @bind-IsOpen="isOpenFullSize" FullSize="isFullSize">
@@ -328,9 +328,9 @@
                 </p>
             </div>
         </BitModal>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Events" RazorCode="@example8RazorCode" CSharpCode="@example8CsharpCode" Id="example8">
+    <DemoExample Title="Events" RazorCode="@example8RazorCode" CSharpCode="@example8CsharpCode" Id="example8">
         <div>Discover different events available in the BitModal component.</div><br />
         <BitButton OnClick="() => isEventsOpen = true">Open Modal</BitButton>
         <br /><br />
@@ -361,9 +361,9 @@
                 </p>
             </div>
         </BitModal>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Style & Class" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoExample Title="Style & Class" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>
             <div>Using css related parameter users can further customize the modal based on their needs.</div>
             <br /><br />
@@ -453,9 +453,9 @@
                 </div>
             </BitModal>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="RTL" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <DemoExample Title="RTL" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>Use BitModal in right-to-left (RTL).</div><br />
         <BitButton Dir="BitDir.Rtl" OnClick="() => isOpenRtl = true">باز کردن مُدال</BitButton>
         <BitModal Dir="BitDir.Rtl" @bind-IsOpen="isOpenRtl">
@@ -484,5 +484,5 @@
                 </p>
             </div>
         </BitModal>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

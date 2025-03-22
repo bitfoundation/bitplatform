@@ -46,23 +46,28 @@
             </section>
         }
 
-        @if (VideoUrl.HasValue())
+        @if (IntroductionVideoUrl.HasValue() || Introduction.HasValue() || IntroductionTemplate is not null)
         {
-            <section id="video-section" class="page-section">
-                <BitText Typography="BitTypography.H4" Class="subtitle">Introduction video</BitText>
-                <div class="video-container">
-                    <video src="@VideoUrl" controls />
-                </div>
-                @if (VideoDescription.HasValue() || VideoDescriptionTemplate is not null)
+            <section id="introduction-section" class="page-section">
+                <BitText Typography="BitTypography.H4" Class="subtitle">Introduction</BitText>
+                @if (IntroductionVideoUrl.HasValue())
                 {
+                    <div class="video-container">
+                        <video src="@IntroductionVideoUrl" controls />
+                    </div>
                     <br />
-                    @if (VideoDescriptionTemplate is not null)
+                }
+                @if (Introduction.HasValue() || IntroductionTemplate is not null)
+                {
+                    @if (IntroductionTemplate is not null)
                     {
-                        @VideoDescriptionTemplate
+                        @IntroductionTemplate
                     }
                     else
                     {
-                        <BitText Typography="BitTypography.Body2">@VideoDescription</BitText>
+                        <BitText Typography="BitTypography.Body2">
+                            @Introduction
+                        </BitText>
                     }
                 }
             </section>
@@ -109,6 +114,25 @@
             @if (_notInheritedComponents.Contains(Name) is false)
             {
                 <DemoSubEnumsTable Enums="_componentBaseSubEnums" />
+            }
+        </section>
+
+        <section id="feedback-section" class="page-section">
+            <BitText Typography="BitTypography.H4" Class="subtitle">Feedback</BitText>
+            <BitText>
+                You can give us your feedback through our 
+                <BitLink Href="@GITHUB_URL" Target="_blank">GitHub repo</BitLink>.
+            </BitText>
+            @if (GitHubUrl.HasValue())
+            {
+                <br />
+                <BitText>
+                    Or you can
+                    <BitLink Href="@($"{GITHUB_URL}/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubUrl}")" Target="_blank">review</BitLink>
+                    or
+                    <BitLink Href="@($"{GITHUB_URL}/edit/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubUrl}")" Target="_blank">edit</BitLink>
+                     this page on GitHub.
+                </BitText>
             }
         </section>
     </div>

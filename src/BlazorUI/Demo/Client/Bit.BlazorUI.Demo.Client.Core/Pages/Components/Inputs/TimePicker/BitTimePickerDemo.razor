@@ -10,7 +10,7 @@
           Parameters="componentParameters"
           SubEnums="componentSubEnums"
           SubClasses="componentSubClasses">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>Explore the basic usage of the BitTimePicker component, including a disabled state and a placeholder option.</div>
         <br />
         <div class="example-content">
@@ -22,9 +22,9 @@
             <br /><br />
             <BitTimePicker Label="Placeholder" Placeholder="Select a time..." />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Time format" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Time format" RazorCode="@example2RazorCode" Id="example2">
         <div>Use of different time formats in the BitTimePicker, specifically the 12-hour (AM/PM) and 24-hour formats.</div>
         <br />
         <div class="example-content">
@@ -36,9 +36,9 @@
                            Placeholder="Select a time..."
                            Label="24 hours" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Text input" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="Text input" RazorCode="@example3RazorCode" Id="example3">
         <div class="example-desc">
             The input field will open the BitTimePicker, and clicking the field again will dismiss the BitTimePicker and
             allow text input. Please note to use this feature, you must enter the time in the exact <code>TimeFormat</code> provided for the BitTimePicker.
@@ -46,9 +46,9 @@
         <div class="example-content">
             <BitTimePicker AllowTextInput Label="Start time" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Icon" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Icon" RazorCode="@example4RazorCode" Id="example4">
         <div>Customize the icon of the BitTimePicker, including placing the icon on either the left or right side.</div>
         <br />
         <div class="example-content">
@@ -58,9 +58,9 @@
                            IconLocation="BitIconLocation.Left"
                            Placeholder="Select a time..." />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Formatting" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="Formatting" RazorCode="@example5RazorCode" Id="example5">
         <div class="example-desc">
             Applications can customize how times are formatted and parsed. Formatted times can be ambiguous, so the control will avoid parsing the formatted strings of times selected using the UI when text input is allowed.
             In this example, we are formatting and parsing times as hh-mm.ss.
@@ -68,18 +68,18 @@
         <div class="example-content">
             <BitTimePicker Placeholder="Select a time..." ValueFormat="hh-mm.ss" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <DemoExample Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>Bind the selected time value of the BitTimePicker to a variable and display the selected time below the picker.</div>
         <br />
         <div class="example-content">
             <BitTimePicker @bind-Value="@selectedTime" Placeholder="Select a time..." />
             <div>Selected time: @selectedTime.ToString()</div>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Standalone" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="Standalone" RazorCode="@example7RazorCode" Id="example7">
         <div>Use the BitTimePicker as a standalone component, including options for time format and disabled state.</div>
         <br />
         <div class="example-content">
@@ -95,9 +95,9 @@
                            Value="new(10, 24, 0)"
                            TimeFormat="BitTimeFormat.TwelveHours" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="ReadOnly" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoExample Title="ReadOnly" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <div>The ReadOnly parameter makes the time picker input non-editable, preventing users from manually changing the time value.</div>
         <br />
         <div class="example-content">
@@ -111,9 +111,9 @@
             <br /><br />
             <BitTimePicker Label="Standalone TimeFormat (AM/PM)" Standalone ReadOnly TimeFormat="BitTimeFormat.TwelveHours" @bind-Value="@readOnlyTime" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Validation" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoExample Title="Validation" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>
             Validation will happen when the <code>Submit</code> button is clicked.
             This example demonstrates how to use the BitTimePicker within a form to validate the selected time.
@@ -144,9 +144,9 @@
             <br />
             <BitMessage Color="BitColor.Success">@successMessage</BitMessage>
         }
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Responsive" RazorCode="@example10RazorCode" Id="example10">
+    <DemoExample Title="Responsive" RazorCode="@example10RazorCode" Id="example10">
         <div>Enable responsive design for the BitTimePicker, allowing it to adjust its layout and appearance based on the screen size.</div>
         <br />
         <div class="example-content">
@@ -154,9 +154,9 @@
                            ShowCloseButton
                            Placeholder="Select a time..." />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Templates" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="Templates" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>Customize the BitTimePicker using templates, including a custom label template with an action button and a custom icon template.</div>
         <br />
         <div class="example-content">
@@ -172,9 +172,9 @@
                 </IconTemplate>
             </BitTimePicker>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Hour/minute step" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="Hour/minute step" RazorCode="@example12RazorCode" Id="example12">
         <div>Customize the hour and minute steps in the BitTimePicker, allowing users to increment time by a specified interval.</div>
         <br />
         <div class="example-content">
@@ -186,9 +186,9 @@
                            Label="MinuteStep = 15"
                            Placeholder="Select a time..." />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>Explore styling and class customization for BitTimePicker, including component styles, custom classes, and detailed styles.</div>
         <br /><br />
         <div>Component's Style & Class:</div>
@@ -224,9 +224,9 @@
                                                   IncreaseMinuteButton = "custom-button",
                                                   DecreaseMinuteButton = "custom-button" })" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="RTL" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
         <div>Use BitTimePicker in right-to-left (RTL).</div>
         <br />
         <div dir="rtl">
@@ -246,5 +246,5 @@
                                Placeholder="تایم خود را انتخاب کنید..." />
             </div>
         </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

@@ -15,7 +15,7 @@
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
           PublicMembers="componentPublicMembers">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>Displays various basic configurations for the BitNumberField, including placeholders, disabled state, default values, step values, and required fields.</div>
         <br />
         <div class="example-box">
@@ -27,9 +27,9 @@
             <br />
             <BitNumberField Label="Required" TValue="int?" Required />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Label" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Label" RazorCode="@example2RazorCode" Id="example2">
         <div>Demonstrates various label configurations for BitNumberField, including different label positions and custom label templates.</div>
         <br />
         <div class="example-box">
@@ -54,9 +54,9 @@
                 </LabelTemplate>
             </BitNumberField>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Icons" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="Icons" RazorCode="@example3RazorCode" Id="example3">
         <div>Demonstrates BitNumberField with different icons, including component icon and increment/decrement icons in various modes.</div>
         <br />
         <div class="example-box">
@@ -81,9 +81,9 @@
                             IncrementIconName="@BitIconName.CalculatorAddition"
                             DecrementIconName="@BitIconName.CalculatorSubtract" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="NumberFormat" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="NumberFormat" RazorCode="@example4RazorCode" Id="example4">
         <div>Demonstrates various number formatting options for BitNumberField, including examples with different number formats.</div>
         <br />
         <div class="example-box">
@@ -93,9 +93,9 @@
             <br />
             <BitNumberField Label="000000" DefaultValue="1363" NumberFormat="000000" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Prefix & Suffix" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="Prefix & Suffix" RazorCode="@example5RazorCode" Id="example5">
         <div>Demonstrates the use of prefixes and suffixes in BitNumberField, including examples with different prefix and suffix values.</div>
         <br />
         <div class="example-box">
@@ -109,9 +109,9 @@
             <br />
             <BitNumberField TValue="int" Label="Disabled" Prefix="Distance:" Suffix="km" IsEnabled="false" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <DemoExample Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>Demonstrates various binding scenarios with BitNumberField, including one-way and two-way binding.</div>
         <br />
         <div class="example-box">
@@ -125,9 +125,9 @@
                 <BitRating @bind-Value="twoWayValue" />
             </div>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Min & Max" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <DemoExample Title="Min & Max" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>Demonstrates setting minimum and maximum values in BitNumberField, including examples with various min and max constraints.</div>
         <br />
         <div class="example-box">
@@ -140,17 +140,17 @@
             <BitNumberField Label="Min & Max (-10, 10)" Min="-10" Max="10" @bind-Value="minMaxValue" />
             <div>value: [@minMaxValue]</div>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Precision" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoExample Title="Precision" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <div>Specifies how many decimal places the value is rounded to.</div>
         <br />
         <div class="example-box">
             <BitNumberField Precision="2" @bind-Value="precisionInputValue" Label="Rounding to 2 Decimal Places" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="HideInput" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoExample Title="HideInput" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>Demonstrates hiding the input field in BitNumberField while still allowing value changes.</div>
         <br />
         <div class="example-box">
@@ -161,9 +161,9 @@
                             Mode="BitSpinButtonMode.Inline"
                             Label="@hideInputValue.ToString()" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Events" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <DemoExample Title="Events" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>Handle events in BitNumberField, including increment, decrement, and change events.</div>
         <br />
         <div class="example-box">
@@ -176,9 +176,9 @@
             <BitNumberField Label="OnChange" OnChange="(double v) => onChangeCounter++" />
             <div>OnChange Counter: @onChangeCounter</div>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Validation" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="Validation" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>Demonstrates validation for BitNumberField within a form, including required fields and custom validation messages.</div>
         <br />
         <div class="example-box">
@@ -198,9 +198,9 @@
                 <BitMessage Color="BitColor.Success">@SuccessMessage</BitMessage>
             }
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
         <div>Explores styling and class customization for BitNumberField, including component styles, custom classes, and detailed style options.</div>
         <br /><br />
         <div class="example-box">
@@ -229,9 +229,9 @@
                                                Input = "custom-input",
                                                Label = $"custom-label{(classesValue is null ? string.Empty : " custom-label-top")}" })" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="RTL" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
         <div>Use BitNumberField in right-to-left (RTL).</div>
         <br />
         <div dir="rtl">
@@ -247,5 +247,5 @@
                 </CascadingValue>
             </div>
         </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

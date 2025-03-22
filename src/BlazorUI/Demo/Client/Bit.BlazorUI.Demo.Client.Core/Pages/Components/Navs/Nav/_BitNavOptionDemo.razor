@@ -1,4 +1,4 @@
-﻿<DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
     <BitNav TItem="BitNavOption">
         <BitNavOption Text="bit platform"
                       Description="the bit platform description"
@@ -28,9 +28,9 @@
 
         <BitNavOption Text="Iconography" IconName="@BitIconName.AppIconDefault" Url="/iconography" Target="_blank" />
     </BitNav>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="FitWidth" RazorCode="@example2RazorCode" Id="example2">
+<DemoExample Title="FitWidth" RazorCode="@example2RazorCode" Id="example2">
     <BitNav TItem="BitNavOption" FitWidth>
         <BitNavOption Text="bit platform"
                       Description="the bit platform description"
@@ -60,9 +60,9 @@
 
         <BitNavOption Text="Iconography" IconName="@BitIconName.AppIconDefault" Url="/iconography" Target="_blank" />
     </BitNav>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Grouped" RazorCode="@example3RazorCode" Id="example3">
+<DemoExample Title="Grouped" RazorCode="@example3RazorCode" Id="example3">
     <BitNav TItem="BitNavOption" RenderType="BitNavRenderType.Grouped">
         <BitNavOption Text="Mercedes-Benz"
                       Description="Cars manufactured under the brand of Mercedes-Benz"
@@ -95,9 +95,9 @@
             <BitNavOption Text="Model Y" Url="https://www.tesla.com/modely" Target="_blank" />
         </BitNavOption>
     </BitNav>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Manual Mode" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+<DemoExample Title="Manual Mode" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <div>Basic</div><br />
     <BitNav TItem="BitNavOption" Mode="BitNavMode.Manual">
         <BitNavOption Text="Fast foods" Description="List of fast foods"
@@ -159,9 +159,9 @@
                      Label="Select Item"
                      Items="FoodMenuDropdownItems" />
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="IconOnly" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<DemoExample Title="IconOnly" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
     <BitToggle @bind-Value="iconOnly" Label="Hide texts?" Inline />
     <br />
     <BitNav TItem="BitNavOption" Mode="BitNavMode.Manual" IconOnly="iconOnly">
@@ -176,9 +176,9 @@
         <BitNavOption Text="Bit academy" IconName="@BitIconName.LearningTools" IsEnabled="false" />
         <BitNavOption Text="Contact us" IconName="@BitIconName.Contact" />
     </BitNav>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Custom Templates" RazorCode="@example6RazorCode" Id="example6">
+<DemoExample Title="Custom Templates" RazorCode="@example6RazorCode" Id="example6">
     <div>Header Template (Grouped)</div><br />
     <BitNav TItem="BitNavOption" RenderType="BitNavRenderType.Grouped">
         <HeaderTemplate Context="item">
@@ -255,9 +255,9 @@
             <BitNavOption Text="Cookie" />
         </ChildContent>
     </BitNav>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<DemoExample Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
     <div class="example-box">
         <BitNav Mode="BitNavMode.Manual"
                 OnItemClick="(BitNavOption option) => ClickedOption = option"
@@ -293,9 +293,9 @@
             <span>Toggled Option: <b>@(ToggledOption is null ? "N/A" : $"{ToggledOption.Text} ({(ToggledOption.IsExpanded ? "Expanded" : "Collapsed")})")</b></span>
         </div>
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Custom Styles" RazorCode="@example8RazorCode" Id="example8">
+<DemoExample Title="Custom Styles" RazorCode="@example8RazorCode" Id="example8">
     <BitNav TItem="BitNavOption"
             Styles="@(new() { ItemContainer = "border: 1px solid green; margin: 2px;",
                                   ToggleButton = "color: cyan;",
@@ -328,9 +328,9 @@
         </BitNavOption>
         <BitNavOption Text="Iconography" IconName="@BitIconName.AppIconDefault" Url="/iconography" Target="_blank" />
     </BitNav>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="RTL" RazorCode="@example9RazorCode" Id="example9">
+<DemoExample Title="RTL" RazorCode="@example9RazorCode" Id="example9">
     <div dir="rtl">
         <BitNav Dir="BitDir.Rtl" TItem="BitNavOption">
             <BitNavOption Text="پلتفرمِ بیت" Description="توضیحاتِ پلتفرمِ بیت">
@@ -356,4 +356,4 @@
             <BitNavOption Text="شمایل نگاری" IconName="@BitIconName.AppIconDefault" Url="/iconography" Target="_blank" />
         </BitNav>
     </div>
-</DemoSection>
+</DemoExample>
