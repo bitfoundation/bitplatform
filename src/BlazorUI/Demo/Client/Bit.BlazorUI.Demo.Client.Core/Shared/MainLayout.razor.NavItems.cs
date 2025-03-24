@@ -27,7 +27,7 @@ public partial class MainLayout
                 new() { Text = "Calendar", Url = "/components/calendar" },
                 new() { Text = "Checkbox", Url = "/components/checkbox", AdditionalUrls = ["/components/check-box"] },
                 new() { Text = "ChoiceGroup", Url = "/components/choicegroup", AdditionalUrls = ["/components/choice-group"], Description = "Radio, RadioButton" },
-                new() { Text = "Dropdown", Url = "/components/dropdown", Description = "Select, MultiSelect, ComboBox", Data = "Chips" },
+                new() { Text = "Dropdown", Url = "/components/dropdown", Description = "Select, ComboBox", Data = "Chips" },
                 new() { Text = "FileUpload", Url = "/components/fileupload", AdditionalUrls = ["/components/file-upload"] },
                 new() { Text = "NumberField", Url = "/components/numberfield", AdditionalUrls = ["/components/numerictextfield", "/components/numeric-text-field", "/components/spinbutton", "/components/spin-button"], Description = "NumberInput" },
                 new() { Text = "OtpInput", Url = "/components/otpinput", AdditionalUrls = ["/components/otp-input"] },

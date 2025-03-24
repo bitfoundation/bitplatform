@@ -18,6 +18,18 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Buttons/ActionButton/BitActionButtonDemo.razor.css",
+        "inputFile": "Pages/Components/Buttons/ActionButton/BitActionButtonDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Buttons/Button/BitButtonDemo.razor.css",
+        "inputFile": "Pages/Components/Buttons/Button/BitButtonDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Buttons/ButtonGroup/BitButtonGroupDemo.razor.css",
         "inputFile": "Pages/Components/Buttons/ButtonGroup/BitButtonGroupDemo.razor.scss",
         "minify": { "enabled": false },
@@ -30,20 +42,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Components/Buttons/BitActionButtonDemo.razor.css",
-        "inputFile": "Pages/Components/Buttons/BitActionButtonDemo.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Pages/Components/Buttons/BitButtonDemo.razor.css",
-        "inputFile": "Pages/Components/Buttons/BitButtonDemo.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Pages/Components/Buttons/BitToggleButtonDemo.razor.css",
-        "inputFile": "Pages/Components/Buttons/BitToggleButtonDemo.razor.scss",
+        "outputFile": "Pages/Components/Buttons/ToggleButton/BitToggleButtonDemo.razor.css",
+        "inputFile": "Pages/Components/Buttons/ToggleButton/BitToggleButtonDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

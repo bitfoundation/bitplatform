@@ -2,7 +2,7 @@
 
 public partial class DemoPage
 {
-    private const string GITHUB_URL = "https://github.com/bitfoundation/bitplatform";
+    private const string REPO_URL = "https://github.com/bitfoundation/bitplatform";
 
     [Parameter] public string Name { get; set; } = default!;
     [Parameter] public string[]? SecondaryNames { get; set; }
@@ -20,6 +20,8 @@ public partial class DemoPage
     [Parameter] public List<ComponentSubEnum> SubEnums { get; set; } = [];
     [Parameter] public List<ComponentParameter> PublicMembers { get; set; } = [];
     [Parameter] public string? GitHubUrl { get; set; }
+    [Parameter] public string? GitHubExtrasUrl { get; set; }
+    [Parameter] public string? GitHubDemoUrl { get; set; }
 
 
 

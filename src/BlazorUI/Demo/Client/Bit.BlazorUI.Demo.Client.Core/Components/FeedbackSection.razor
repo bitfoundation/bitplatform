@@ -8,14 +8,18 @@
     <BitText Typography="BitTypography.H4" Class="subtitle">Feedback</BitText>
     <BitText>
         You can give us your feedback through our
-        <BitLink Href="@GITHUB_URL" Target="_blank">GitHub repo</BitLink>.
+        <BitLink Href="@GITHUB_URL" Target="_blank">GitHub repo</BitLink>
+        by filing a new
+        <BitLink Href="@($"{GITHUB_URL}/issues/new/choose")" Target="_blank">Issue</BitLink>
+        or starting a new
+        <BitLink Href="@($"{GITHUB_URL}/discussions/new/choose")" Target="_blank">Discussion</BitLink>.
     </BitText>
     <br />
     <BitText>
         Or you can
         <BitLink Href="@($"{GITHUB_URL}/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/{Url}")"
                  Target="_blank">review</BitLink>
-        and
+        /
         <BitLink Href="@($"{GITHUB_URL}/edit/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/{Url}")"
                  Target="_blank">edit</BitLink>
         this page on GitHub.
