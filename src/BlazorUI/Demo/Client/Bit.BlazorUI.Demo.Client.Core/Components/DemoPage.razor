@@ -120,18 +120,39 @@
         <section id="feedback-section" class="page-section">
             <BitText Typography="BitTypography.H4" Class="subtitle">Feedback</BitText>
             <BitText>
-                You can give us your feedback through our 
-                <BitLink Href="@GITHUB_URL" Target="_blank">GitHub repo</BitLink>.
+                You can give us your feedback through our
+                <BitLink Href="@REPO_URL" Target="_blank">GitHub repo</BitLink>
+                by filing a new
+                <BitLink Href="@($"{REPO_URL}/issues/new/choose")" Target="_blank">Issue</BitLink>
+                or starting a new
+                <BitLink Href="@($"{REPO_URL}/discussions/new/choose")" Target="_blank">Discussion</BitLink>.
             </BitText>
+
+            @if (GitHubDemoUrl.HasValue())
+            {
+                <br />
+                <BitText>
+                    Or you can
+                    <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubDemoUrl}")"
+                             Target="_blank">review</BitLink>
+                    or
+                    <BitLink Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubDemoUrl}")"
+                             Target="_blank">edit</BitLink>
+                    this page on GitHub.
+                </BitText>
+            }
+
             @if (GitHubUrl.HasValue())
             {
                 <br />
                 <BitText>
                     Or you can
-                    <BitLink Href="@($"{GITHUB_URL}/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubUrl}")" Target="_blank">review</BitLink>
+                    <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI/Components/{GitHubUrl}")"
+                             Target="_blank">review</BitLink>
                     or
-                    <BitLink Href="@($"{GITHUB_URL}/edit/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubUrl}")" Target="_blank">edit</BitLink>
-                     this page on GitHub.
+                    <BitLink Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Bit.BlazorUI/Components/{GitHubUrl}")"
+                             Target="_blank">edit</BitLink>
+                    this component on GitHub.
                 </BitText>
             }
         </section>
