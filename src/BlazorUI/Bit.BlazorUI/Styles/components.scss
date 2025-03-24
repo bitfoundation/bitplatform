@@ -1,12 +1,16 @@
-﻿@import "../Components/Buttons/BitActionButton/BitActionButton.scss";
-@import "../Components/Buttons/BitButton/BitButton.scss";
-@import "../Components/Buttons/BitButtonGroup/BitButtonGroup.scss";
-@import "../Components/Buttons/BitMenuButton/BitMenuButton.scss";
-@import "../Components/Buttons/BitToggleButton/BitToggleButton.scss";
+﻿@import "../Components/Buttons/ActionButton/BitActionButton.scss";
+@import "../Components/Buttons/Button/BitButton.scss";
+@import "../Components/Buttons/ButtonGroup/BitButtonGroup.scss";
+@import "../Components/Buttons/MenuButton/BitMenuButton.scss";
+@import "../Components/Buttons/ToggleButton/BitToggleButton.scss";
 
 @import "../Components/Inputs/Calendar/BitCalendar.scss";
 @import "../Components/Inputs/Checkbox/BitCheckbox.scss";
 @import "../Components/Inputs/ChoiceGroup/BitChoiceGroup.scss";
+@import "../Components/Inputs/CircularTimePicker/BitCircularTimePicker.scss";
+@import "../Components/Inputs/ColorPicker/BitColorPicker.scss";
+@import "../Components/Inputs/DatePicker/BitDatePicker.scss";
+@import "../Components/Inputs/DateRangePicker/BitDateRangePicker.scss";
 @import "../Components/Inputs/Dropdown/BitDropdown.scss";
 @import "../Components/Inputs/FileUpload/BitFileUpload.scss";
 @import "../Components/Inputs/NumberField/BitNumberField.scss";
@@ -15,12 +19,8 @@
 @import "../Components/Inputs/SearchBox/BitSearchBox.scss";
 @import "../Components/Inputs/Slider/BitSlider.scss";
 @import "../Components/Inputs/TextField/BitTextField.scss";
+@import "../Components/Inputs/TimePicker/BitTimePicker.scss";
 @import "../Components/Inputs/Toggle/BitToggle.scss";
-@import "../Components/Inputs/_Pickers/CircularTimePicker/BitCircularTimePicker.scss";
-@import "../Components/Inputs/_Pickers/ColorPicker/BitColorPicker.scss";
-@import "../Components/Inputs/_Pickers/DatePicker/BitDatePicker.scss";
-@import "../Components/Inputs/_Pickers/DateRangePicker/BitDateRangePicker.scss";
-@import "../Components/Inputs/_Pickers/TimePicker/BitTimePicker.scss";
 
 @import "../Components/Layouts/Footer/BitFooter.scss";
 @import "../Components/Layouts/Grid/BitGrid.scss";

@@ -135,7 +135,7 @@
                     Or you can
                     <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubDemoUrl}")"
                              Target="_blank">review</BitLink>
-                    or
+                    /
                     <BitLink Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubDemoUrl}")"
                              Target="_blank">edit</BitLink>
                     this page on GitHub.
@@ -149,8 +149,22 @@
                     Or you can
                     <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI/Components/{GitHubUrl}")"
                              Target="_blank">review</BitLink>
-                    or
+                    /
                     <BitLink Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Bit.BlazorUI/Components/{GitHubUrl}")"
+                             Target="_blank">edit</BitLink>
+                    this component on GitHub.
+                </BitText>
+            }
+
+            @if (GitHubExtrasUrl.HasValue())
+            {
+                <br />
+                <BitText>
+                    Or you can
+                    <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.Extras/Components/{GitHubExtrasUrl}")"
+                             Target="_blank">review</BitLink>
+                    /
+                    <BitLink Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Bit.BlazorUI.Extras/Components/{GitHubExtrasUrl}")"
                              Target="_blank">edit</BitLink>
                     this component on GitHub.
                 </BitText>

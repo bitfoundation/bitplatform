@@ -20,6 +20,7 @@ public partial class DemoPage
     [Parameter] public List<ComponentSubEnum> SubEnums { get; set; } = [];
     [Parameter] public List<ComponentParameter> PublicMembers { get; set; } = [];
     [Parameter] public string? GitHubUrl { get; set; }
+    [Parameter] public string? GitHubExtrasUrl { get; set; }
     [Parameter] public string? GitHubDemoUrl { get; set; }
 
 
