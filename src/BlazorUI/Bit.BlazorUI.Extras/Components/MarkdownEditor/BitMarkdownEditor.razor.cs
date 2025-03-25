@@ -54,6 +54,8 @@ public partial class BitMarkdownEditor : BitComponentBase
             BitMarkdownEditorCommand.Picture => "p",
             BitMarkdownEditorCommand.Quote => "q",
             BitMarkdownEditorCommand.Code => "`",
+            // -----------------------------------------
+            BitMarkdownEditorCommand.CodeBlock => "```",
             _ => string.Empty
         });
     }

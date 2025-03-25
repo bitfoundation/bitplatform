@@ -84,7 +84,7 @@
                     <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Code"
                                OnClick="async () => await advancedRef.Run(BitMarkdownEditorCommand.Code)">C</BitButton>
                     <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Code block"
-                               OnClick="@(async () => await advancedRef.Add("\n```\n", BitMarkdownEditorContentType.Wrap))">CB</BitButton>
+                               OnClick="async () => await advancedRef.Run(BitMarkdownEditorCommand.CodeBlock)">CB</BitButton>
                 </div>
             </div>
             <div style="height:300px">

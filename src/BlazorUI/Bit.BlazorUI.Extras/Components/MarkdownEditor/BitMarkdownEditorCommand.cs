@@ -38,5 +38,10 @@ public enum BitMarkdownEditorCommand
     /// <summary>
     /// Makes the current selection text a code phrase.
     /// </summary>
-    Code
+    Code,
+
+    /// <summary>
+    /// Makes the current selection text a code block.
+    /// </summary>
+    CodeBlock,
 }

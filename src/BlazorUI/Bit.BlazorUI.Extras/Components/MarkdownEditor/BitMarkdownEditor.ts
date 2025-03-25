@@ -404,6 +404,10 @@ namespace BitBlazorUI {
                 content = { type: 'wrap', value: '`' };
             }
 
+            if (cmd === '```') { // code block
+                content = { type: 'wrap', value: '\n```\n' };
+            }
+
             if (content) {
                 this.add(content);
             }
