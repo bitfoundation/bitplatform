@@ -53,8 +53,17 @@ public partial class BitMarkdownEditor : BitComponentBase
             BitMarkdownEditorCommand.Link => "l",
             BitMarkdownEditorCommand.Picture => "p",
             BitMarkdownEditorCommand.Quote => "q",
+            BitMarkdownEditorCommand.Code => "`",
             _ => string.Empty
         });
+    }
+
+    /// <summary>
+    /// Adds a specific content to the editor.
+    /// </summary>
+    public async ValueTask Add(string value, BitMarkdownEditorContentType type = BitMarkdownEditorContentType.Block)
+    {
+        await _js.BitMarkdownEditorAdd(_Id, value, type.ToString().ToLower());
     }
 
 
@@ -81,7 +90,7 @@ public partial class BitMarkdownEditor : BitComponentBase
             _dotnetObj = DotNetObjectReference.Create(this);
         }
 
-        await _js.BitMarkdownEditorInit(_Id, _textAreaRef, _dotnetObj, DefaultValue);
+        await _js.BitMarkdownEditorInit(_Id, _textAreaRef, _dotnetObj, Value ?? DefaultValue);
     }
 
 

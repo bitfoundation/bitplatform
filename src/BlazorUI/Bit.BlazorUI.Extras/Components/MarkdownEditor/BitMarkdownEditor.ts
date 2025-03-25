@@ -27,6 +27,13 @@ namespace BitBlazorUI {
             editor.command(cmd);
         }
 
+        public static add(id: string, value: string, type: ContentType) {
+            const editor = MarkdownEditor._editors[id];
+            if (!editor) return;
+
+            editor.addContent(value, type);
+        }
+
         public static dispose(id: string) {
             if (!MarkdownEditor._editors[id]) return;
 
@@ -44,11 +51,7 @@ namespace BitBlazorUI {
             '[': ']',
             '<': '>',
             '"': '"',
-            '`': '`',
-            '*': '*',
-            '**': '**',
-            ' [': '](url)',
-            '![': '](url)',
+            "'": "'",
         };
 
         private textArea: HTMLTextAreaElement;
@@ -73,6 +76,11 @@ namespace BitBlazorUI {
             this.textArea.addEventListener('input', this.changeHandler);
             this.textArea.addEventListener('dblclick', this.dblClickHandler);
             this.textArea.addEventListener('keydown', this.keydownHandler);
+        }
+
+
+        addContent(value: string, type: ContentType = 'block') {
+            this.add({ type, value });
         }
 
         get value() {
@@ -133,10 +141,12 @@ namespace BitBlazorUI {
                 this.value = insert(this.value, content.value, start);
                 this.value = insert(
                     this.value,
-                    this._pairs[content.value] as string,
+                    this._pairs[content.value] ? this._pairs[content.value] : content.value,
                     end + content.value.length,
                 );
-                if (content.value.length < 2) this._opens.push(content.value);
+                if (this._pairs[content.value]) {
+                    this._opens.push(content.value);
+                }
             } else if (content.type === 'block') {
                 const { total, num } = this.getLine();
                 const first = content.value.at(0);
@@ -235,69 +245,14 @@ namespace BitBlazorUI {
             if (reseters.includes(e.key)) {
                 this._opens = [];
             } else if (e.key === 'Backspace') {
-                const prev = this.value[this.start - 1];
-                if (
-                    prev &&
-                    prev in this._pairs &&
-                    next === this._pairs[prev]
-                ) {
-                    e.preventDefault();
-                    const start = this.start - 1;
-                    const end = this.end - 1;
-                    this.value = remove(this.value, start);
-                    this.value = remove(this.value, end);
-                    setTimeout(() => {
-                        this.set(start, end);
-                    }, 0);
-                    this._opens.pop();
-                }
-                if (prev === '\n' && this.start === this.end) {
-                    e.preventDefault();
-                    const pos = this.start - 1;
-                    const { num } = this.getLine();
-                    this.correct(num, true);
-                    this.value = remove(this.value, pos);
-                    setTimeout(async () => {
-                        this.set(pos, pos);
-                    }, 0);
-                }
+                this.backspace(e, next);
             } else if (e.key === 'Tab') {
                 if (this.block % 2 !== 0) {
                     e.preventDefault();
                     this.add({ type: 'inline', value: '\t' });
                 }
             } else if (e.key === 'Enter') {
-                const { total, num, col } = this.getLine();
-                const line = total.at(num);
-                let rep = this.getRepeat(line);
-                const orig = rep;
-
-                const n = startsWithNumber(rep);
-                if (n) rep = `${n + 1}. `;
-
-                if (rep && (orig && orig.length < col)) {
-                    e.preventDefault();
-                    const start = this.start;
-                    const end = this.end;
-
-                    if (n) this.correct(num);
-                    this.add({ type: 'inline', value: `\n${rep}` }, start, end);
-                } else if (rep && (orig && orig.length === col)) {
-                    e.preventDefault();
-
-                    const origEnd = this.end;
-                    const pos = origEnd - orig.length;
-
-                    for (let i = 0; i < orig.length; i++) {
-                        this.value = remove(this.value, origEnd - (i + 1));
-                    }
-
-                    setTimeout(async () => {
-                        this.set(pos, pos);
-                        this.textArea.focus();
-                        this.add({ type: 'inline', value: `\n` });
-                    }, 0);
-                }
+                this.enter(e);
             } else {
                 const nextIsPaired = Object.values(this._pairs).includes(next);
                 const isSelected = this.start !== this.end;
@@ -324,12 +279,7 @@ namespace BitBlazorUI {
                     if (content) {
                         e.preventDefault();
                     }
-                } else if (
-                    nextIsPaired &&
-                    (next === e.key || e.key === 'ArrowRight') &&
-                    this._opens.length &&
-                    !isSelected
-                ) {
+                } else if (nextIsPaired && (next === e.key || e.key === 'ArrowRight') && this._opens.length && !isSelected) {
                     e.preventDefault();
                     this.set(this.start + 1, this.end + 1);
                     this._opens.pop();
@@ -338,6 +288,69 @@ namespace BitBlazorUI {
                     this.add({ type: 'wrap', value: e.key });
                     this._opens.push(e.key);
                 }
+            }
+        }
+
+        backspace(e: KeyboardEvent, next: string) {
+            const prev = this.value[this.start - 1];
+            if (
+                prev &&
+                prev in this._pairs &&
+                next === this._pairs[prev]
+            ) {
+                e.preventDefault();
+                const start = this.start - 1;
+                const end = this.end - 1;
+                this.value = remove(this.value, start);
+                this.value = remove(this.value, end);
+                setTimeout(() => {
+                    this.set(start, end);
+                }, 0);
+                this._opens.pop();
+            }
+            if (prev === '\n' && this.start === this.end) {
+                e.preventDefault();
+                const pos = this.start - 1;
+                const { num } = this.getLine();
+                this.correct(num, true);
+                this.value = remove(this.value, pos);
+                setTimeout(async () => {
+                    this.set(pos, pos);
+                }, 0);
+            }
+        }
+
+        enter(e: KeyboardEvent) {
+            const { total, num, col } = this.getLine();
+            const line = total.at(num);
+            let rep = this.getRepeat(line);
+            const orig = rep;
+
+            const n = startsWithNumber(rep);
+            if (n) rep = `${n + 1}. `;
+
+            if (rep && (orig && orig.length < col)) {
+                e.preventDefault();
+                const start = this.start;
+                const end = this.end;
+
+                if (n) this.correct(num);
+                this.add({ type: 'inline', value: `\n${rep}` }, start, end);
+            } else if (rep && (orig && orig.length === col)) {
+                e.preventDefault();
+
+                const origEnd = this.end;
+                const pos = origEnd - orig.length;
+
+                for (let i = 0; i < orig.length; i++) {
+                    this.value = remove(this.value, origEnd - (i + 1));
+                }
+
+                setTimeout(async () => {
+                    this.set(pos, pos);
+                    this.textArea.focus();
+                    this.add({ type: 'inline', value: `\n` });
+                }, 0);
             }
         }
 
@@ -376,15 +389,19 @@ namespace BitBlazorUI {
             }
 
             if (cmd === 'l') { // link
-                content = { type: 'wrap', value: ' [' };
+                content = { type: 'inline', value: '[text](href)' };
             }
 
             if (cmd === 'p') { // picture
-                content = { type: 'wrap', value: '![' };
+                content = { type: 'inline', value: '![alt](href)' };
             }
 
             if (cmd === 'q') { // quote
                 content = { type: 'block', value: '> ' };
+            }
+
+            if (cmd === '`') { // code
+                content = { type: 'wrap', value: '`' };
             }
 
             if (content) {
@@ -395,9 +412,11 @@ namespace BitBlazorUI {
         }
     }
 
+    type ContentType = 'inline' | 'block' | 'wrap';
+
     type Content = {
         value: string;
-        type: 'inline' | 'block' | 'wrap';
+        type: ContentType;
     };
 
     const startsWithDash = (str: string | undefined) => {

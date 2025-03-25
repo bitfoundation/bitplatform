@@ -13,65 +13,84 @@
           SubEnums="componentSubEnums"
           GitHubExtrasUrl="MarkdownEditor/BitMarkdownEditor.razor"
           GitHubDemoUrl="Extras/MarkdownEditor/BitMarkdownEditorDemo.razor">
-    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <div style="height:300px">
-            <BitMarkdownEditor />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Value" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-        <div style="display:flex;gap:1rem;height:300px">
-            <BitMarkdownEditor @ref="editorRef" />
-            <BitButton OnClick="GetValue">=></BitButton>
-            <pre style="padding:1rem;width:100%">
-                @value
-            </pre>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="OnChange" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-        <div style="display:flex;gap:1rem;height:300px">
-            <BitMarkdownEditor DefaultValue="# This is the default value" OnChange="v => onChangeValue = v" />
-            <pre style="padding:1rem;width:100%">
-                @onChangeValue
-            </pre>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Binding" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-        <div style="display:flex;gap:1rem;height:300px">
-            <BitMarkdownEditor @bind-Value="bindingValue" />
-            <pre style="padding:1rem;width:100%">
-                @bindingValue
-            </pre>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Advanced" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-        <div style="display:flex;gap:1rem;margin-bottom:1rem">
-            <BitToggleButton Color="BitColor.Tertiary" Variant="BitVariant.Outline" OnText="Write" OffText="Preview" @bind-IsChecked="showPreview" />
-            
-            <div style="flex-grow:1"></div>
-
-            <div style="display:@(showPreview ? "none" : "flex");gap:0.5rem;align-items:center">
-                <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Heading" 
-                           OnClick="async () => await advancedRef.Run(BitMarkdownEditorCommand.Heading)">H</BitButton>
-                <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Bold"
-                           OnClick="async () => await advancedRef.Run(BitMarkdownEditorCommand.Bold)">B</BitButton>
-                <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Italic"
-                           OnClick="async () => await advancedRef.Run(BitMarkdownEditorCommand.Italic)">I</BitButton>
-                |
-                <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Link"
-                           OnClick="async () => await advancedRef.Run(BitMarkdownEditorCommand.Link)">L</BitButton>
-                <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Picture"
-                           OnClick="async () => await advancedRef.Run(BitMarkdownEditorCommand.Picture)">P</BitButton>
-                <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Quote"
-                           OnClick="async () => await advancedRef.Run(BitMarkdownEditorCommand.Quote)">Q</BitButton>
+          <IntroductionTemplate>
+              <BitText>
+                  Just like the simple MD editor used in GitHub, our MarkdownEditor has simple but useful features that you can start discovering them here.
+                  <br/>
+                  Start typing below in the editor and see the result in real-time:
+              </BitText>
+              <br/>
+              <div style="display:flex;gap:1rem;height:300px">
+                  <BitMarkdownEditor @bind-Value="@introValue" />
+                  <BitMarkdownViewer Markdown="@introValue" Style="overflow:auto" />
+              </div>
+          </IntroductionTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div style="height:300px">
+                <BitMarkdownEditor />
             </div>
-        </div>
-        <div style="height:300px">
-            <BitMarkdownEditor @ref="advancedRef" @bind-Value="advancedValue" Style="@($"display:{(showPreview ? "none" : "block")}")" />
-            <BitMarkdownViewer Markdown="@advancedValue" Style="@($"display:{(showPreview ? "block" : "none")}")" />
-        </div>
-    </DemoExample>
+        </DemoExample>
+
+        <DemoExample Title="Value" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div style="display:flex;gap:1rem;height:300px">
+                <BitMarkdownEditor @ref="editorRef" />
+                <BitButton OnClick="GetValue">=></BitButton>
+                <pre style="padding:1rem;width:100%">
+                    @value
+                </pre>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="OnChange" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div style="display:flex;gap:1rem;height:300px">
+                <BitMarkdownEditor DefaultValue="# This is the default value" OnChange="v => onChangeValue = v" />
+                <pre style="padding:1rem;width:100%">
+                    @onChangeValue
+                </pre>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Binding" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div style="display:flex;gap:1rem;height:300px">
+                <BitMarkdownEditor @bind-Value="bindingValue" />
+                <pre style="padding:1rem;width:100%">
+                    @bindingValue
+                </pre>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Advanced" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div style="display:flex;gap:1rem;margin-bottom:1rem">
+                <BitToggleButton Color="BitColor.Tertiary" Variant="BitVariant.Outline" OnText="Write" OffText="Preview" @bind-IsChecked="showPreview" />
+            
+                <div style="flex-grow:1"></div>
+
+                <div style="display:@(showPreview ? "none" : "flex");gap:0.5rem;align-items:center">
+                    <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Heading" 
+                               OnClick="async () => await advancedRef.Run(BitMarkdownEditorCommand.Heading)">H</BitButton>
+                    <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Bold"
+                               OnClick="async () => await advancedRef.Run(BitMarkdownEditorCommand.Bold)">B</BitButton>
+                    <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Italic"
+                               OnClick="async () => await advancedRef.Run(BitMarkdownEditorCommand.Italic)">I</BitButton>
+                    |
+                    <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Link"
+                               OnClick="async () => await advancedRef.Run(BitMarkdownEditorCommand.Link)">L</BitButton>
+                    <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Picture"
+                               OnClick="async () => await advancedRef.Run(BitMarkdownEditorCommand.Picture)">P</BitButton>
+                    <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Quote"
+                               OnClick="async () => await advancedRef.Run(BitMarkdownEditorCommand.Quote)">Q</BitButton>
+                    |
+                    <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Code"
+                               OnClick="async () => await advancedRef.Run(BitMarkdownEditorCommand.Code)">C</BitButton>
+                    <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Code block"
+                               OnClick="@(async () => await advancedRef.Add("\n```\n", BitMarkdownEditorContentType.Wrap))">CB</BitButton>
+                </div>
+            </div>
+            <div style="height:300px">
+                <BitMarkdownEditor @ref="advancedRef" @bind-Value="advancedValue" Style="@($"display:{(showPreview ? "none" : "block")}")" />
+                <BitMarkdownViewer Markdown="@advancedValue" Style="@($"display:{(showPreview ? "block" : "none")}")" />
+            </div>
+        </DemoExample>
+    </Examples>
 </DemoPage>

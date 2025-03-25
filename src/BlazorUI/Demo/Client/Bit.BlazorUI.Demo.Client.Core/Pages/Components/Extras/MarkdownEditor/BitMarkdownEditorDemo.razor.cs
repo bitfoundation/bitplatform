@@ -97,6 +97,7 @@ public partial class BitMarkdownEditorDemo
     ];
 
 
+    private string? introValue = "# BitMarkdownEditor in action\n\n- Ctrl+H  =>  Heading\n- Ctrl+B  =>  Bold\n- Ctrl+I  =>  Italic\n- Ctrl+L  =>  Link\n- Ctrl+P  =>  Picture/Image\n- Ctrl+Q  =>  Quote\n- auto handling ordered/unordered lists\n- auto handling Ctrl+X and Ctrl+C\n\n### Missing features:\n1. Undo/Redo\n2. Multi-level unordered lists\n3. Tab to go deeper list level\n\nStart typing here...";
 
     private BitMarkdownEditor editorRef = default!;
     private string? value;

@@ -21,6 +21,11 @@ internal static class BitMarkdownEditorJsRuntimeExtensions
         return jsRuntime.Invoke<string>("BitBlazorUI.MarkdownEditor.run", id, command);
     }
 
+    public static ValueTask<string> BitMarkdownEditorAdd(this IJSRuntime jsRuntime, string id, string value, string type)
+    {
+        return jsRuntime.Invoke<string>("BitBlazorUI.MarkdownEditor.add", id, value, type);
+    }
+
     public static ValueTask BitMarkdownEditorDispose(this IJSRuntime jsRuntime, string id)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.MarkdownEditor.dispose", id);
