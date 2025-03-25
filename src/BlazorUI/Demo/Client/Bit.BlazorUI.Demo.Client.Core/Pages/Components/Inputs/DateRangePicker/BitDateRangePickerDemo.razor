@@ -128,7 +128,45 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Standalone" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="TimeZone" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <div>
+            Specifies the timezone used to interpret and display the selected date/time.
+            <br />
+            Remeber using this feature in different runtimes needs more investigations, for example,
+            there are different data available based on the OS the code is running on or different settings
+            enabled for the project (like InvariantTimezone in the project file,
+            <BitLink Href="https://learn.microsoft.com/en-us/aspnet/core/blazor/globalization-localization?view=aspnetcore-9.0#timezone-information"
+                     Target="_blank">more info</BitLink>).
+        </div>
+        <br /><br />
+        <div>Defalt (local TimeZone):</div><br/>
+        <div class="example-content">
+            <BitDateRangePicker @bind-Value="@timeZoneDateRange1" />
+        </div>
+        <br />
+        <div>Selected date range: from @(timeZoneDateRange1?.StartDate?.ToString() ?? "-") to @(timeZoneDateRange1?.EndDate?.ToString() ?? "-")</div>
+
+        @{
+            TimeZoneInfo? timeZoneInfo = null;
+            var allTimeZones = TimeZoneInfo.GetSystemTimeZones();
+            if (allTimeZones.Count > 0)
+            {
+                timeZoneInfo = allTimeZones[0];
+            }
+        }
+
+        @if (timeZoneInfo is not null) {
+            <br /><br /><br /><br />
+            <div>"@timeZoneInfo.Id" TimeZone:</div><br/>
+            <div class="example-content">
+                <BitDateRangePicker TimeZone="timeZoneInfo" @bind-Value="@timeZoneDateRange2" />
+            </div>
+            <br />
+            <div>Selected date range: from @(timeZoneDateRange2?.StartDate?.ToString() ?? "-") to @(timeZoneDateRange2?.EndDate?.ToString() ?? "-")</div>
+        }
+    </DemoExample>
+
+    <DemoExample Title="Standalone" RazorCode="@example8RazorCode" Id="example8">
         <div>Use the BitDateRangePicker in a standalone mode, allowing it to function independently without a surrounding form or container.</div>
         <br />
         <div class="example-content-standalone">
@@ -144,7 +182,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="ReadOnly" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoExample Title="ReadOnly" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>The ReadOnly parameter makes the date range picker input non-editable, preventing users from manually changing the time value.</div>
         <br />
         <div class="example-content">
@@ -160,7 +198,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Templates" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoExample Title="Templates" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>Utilize various templates within the BitDateRangePicker, such as custom label templates, day cell templates, and year cell templates.</div>
         <br />
         <div class="example-content">
@@ -202,7 +240,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Responsive" RazorCode="@example10RazorCode" Id="example10">
+    <DemoExample Title="Responsive" RazorCode="@example11RazorCode" Id="example11">
         <div>Enable responsive design for the BitDateRangePicker, allowing it to adjust its layout and appearance based on the screen size.</div>
         <br />
         <div class="example-content">
@@ -213,7 +251,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>Explore styling and class customization for BitDateRangePicker, including component styles, custom classes, and detailed styles.</div>
         <br /><br />
         <div>Component's Style & Class:</div>
@@ -270,7 +308,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
         <div>Use BitDateRangePicker in right-to-left (RTL).</div>
         <br />
         <div dir="rtl">

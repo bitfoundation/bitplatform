@@ -374,6 +374,13 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "TimeZone",
+            Type = "TimeZoneInfo?",
+            DefaultValue = "null",
+            Description = "TimeZone for the DateRangePicker."
+        },
+        new()
+        {
             Name = "Underlined",
             Type = "bool",
             DefaultValue = "false",
@@ -1009,4 +1016,7 @@ public partial class BitDateRangePickerDemo
         StartDate = new DateTimeOffset(2024, 12, 8, 12, 15, 0, DateTimeOffset.Now.Offset),
         EndDate = new DateTimeOffset(2024, 12, 12, 16, 45, 0, DateTimeOffset.Now.Offset),
     };
+
+    private BitDateRangePickerValue? timeZoneDateRange1 = new();
+    private BitDateRangePickerValue? timeZoneDateRange2 = new();
 }
