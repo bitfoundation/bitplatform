@@ -27,12 +27,22 @@
           </IntroductionTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>
+                The simplest usage of a BitMarkdownEditor is without any specific configuration.
+                You can start typing and discover it's basic features.
+            </div>
+            <br />
             <div style="height:300px">
                 <BitMarkdownEditor />
             </div>
         </DemoExample>
 
-        <DemoExample Title="Value" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <DemoExample Title="GetValue" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                Using GetValue public api of the BitMarkdownEditor you can have access to the current value of it 
+                without creating any dotnet object that is the most optimized way to have the content of the editor.
+            </div>
+            <br />
             <div style="display:flex;gap:1rem;height:300px">
                 <BitMarkdownEditor @ref="editorRef" />
                 <BitButton OnClick="GetValue">=></BitButton>
@@ -43,6 +53,7 @@
         </DemoExample>
 
         <DemoExample Title="OnChange" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>By utilizing the OnChange and DefaultValue parameters you can have another way to access the content of the editor.</div><br />
             <div style="display:flex;gap:1rem;height:300px">
                 <BitMarkdownEditor DefaultValue="# This is the default value" OnChange="v => onChangeValue = v" />
                 <pre style="padding:1rem;width:100%">
@@ -52,15 +63,23 @@
         </DemoExample>
 
         <DemoExample Title="Binding" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                You can use the two-way bound parameter named Value (like any normal input component) 
+                to have access to the editor content or set its value.
+            </div>
+            <br />
             <div style="display:flex;gap:1rem;height:300px">
                 <BitMarkdownEditor @bind-Value="bindingValue" />
-                <pre style="padding:1rem;width:100%">
-                    @bindingValue
-                </pre>
+                <textarea @bind-value="@bindingValue" @bind-value:event="oninput" style="width:100%;background:transparent"/>
             </div>
         </DemoExample>
 
         <DemoExample Title="Advanced" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                In this example you can see all advanced features of the BitMarkdownEditor in shaping an editor very similar 
+                to the github one.
+            </div>
+            <br />
             <div style="display:flex;gap:1rem;margin-bottom:1rem">
                 <BitToggleButton Color="BitColor.Tertiary" Variant="BitVariant.Outline" OnText="Write" OffText="Preview" @bind-IsChecked="showPreview" />
             
@@ -87,9 +106,12 @@
                                OnClick="async () => await advancedRef.Run(BitMarkdownEditorCommand.CodeBlock)">CB</BitButton>
                 </div>
             </div>
+
             <div style="height:300px">
-                <BitMarkdownEditor @ref="advancedRef" @bind-Value="advancedValue" Style="@($"display:{(showPreview ? "none" : "block")}")" />
-                <BitMarkdownViewer Markdown="@advancedValue" Style="@($"display:{(showPreview ? "block" : "none")}")" />
+                <BitMarkdownEditor @ref="advancedRef" @bind-Value="advancedValue" 
+                                   Style="@($"display:{(showPreview ? "none" : "block")}")" />
+                <BitMarkdownViewer Markdown="@advancedValue" 
+                                   Style="@($"display:{(showPreview ? "block" : "none")}")" />
             </div>
         </DemoExample>
     </Examples>

@@ -27,7 +27,7 @@ public partial class BitMarkdownEditor : BitComponentBase
     /// <summary>
     /// The two-way bound text value of the editor.
     /// </summary>
-    [Parameter, TwoWayBound]
+    [Parameter, TwoWayBound, CallOnSet(nameof(OnValueSet))]
     public string? Value { get; set; }
 
 
@@ -93,6 +93,13 @@ public partial class BitMarkdownEditor : BitComponentBase
         }
 
         await _js.BitMarkdownEditorInit(_Id, _textAreaRef, _dotnetObj, Value ?? DefaultValue);
+    }
+
+
+
+    private async ValueTask OnValueSet()
+    {
+        await _js.BitMarkdownEditorSetValue(_Id, Value);
     }
 
 

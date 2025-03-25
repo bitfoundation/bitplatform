@@ -20,6 +20,13 @@ namespace BitBlazorUI {
             return editor.value;
         }
 
+        public static setValue(id: string, value: string) {
+            const editor = MarkdownEditor._editors[id];
+            if (!editor) return;
+
+            return editor.value = value;
+        }
+
         public static run(id: string, cmd: string) {
             const editor = MarkdownEditor._editors[id];
             if (!editor) return;
@@ -88,6 +95,8 @@ namespace BitBlazorUI {
         }
 
         set value(value) {
+            if (this.textArea.value === value) return;
+
             this.textArea.value = value;
             setTimeout(() => this.change({} as Event), 0);
         }
