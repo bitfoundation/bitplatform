@@ -24,7 +24,7 @@ public partial class MauiWebAuthnService : WebAuthnServiceBase
         }
     }
 
-    private async Task CloseExternalBrowser()
+    private static async Task CloseExternalBrowser()
     {
         _ = MauiExternalJsRunner.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "close" }, JsonSerializerOptions.Web));
     }
