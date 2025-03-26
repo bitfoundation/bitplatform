@@ -26,6 +26,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private string _monthTitle = string.Empty;
     private bool _showTimePickerAsOverlayInternal;
     private bool _showMonthPickerAsOverlayInternal;
+    private TimeZoneInfo _timeZone = TimeZoneInfo.Local;
     private CultureInfo _culture = CultureInfo.CurrentUICulture;
     private CancellationTokenSource _cancellationTokenSource = new();
     private DotNetObjectReference<BitDateRangePicker> _dotnetObj = default!;
@@ -424,6 +425,13 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public BitTimeFormat TimeFormat { get; set; }
 
     /// <summary>
+    /// TimeZone for the DateRangePicker.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public TimeZoneInfo? TimeZone { get; set; }
+
+    /// <summary>
     /// Whether or not the Text field of the DateRangePicker is underlined.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -607,7 +615,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         //if (DateTime.TryParseExact(value, DateFormat ?? Culture.DateTimeFormat.ShortDatePattern, Culture, DateTimeStyles.None, out DateTime parsedValue))
         //{
-        //    result = new DateTimeOffset(parsedValue, DateTimeOffset.Now.Offset);
+        //    result = new DateTimeOffset(parsedValue, _timeZone.GetUtcOffset(parsedValue));
         //    validationErrorMessage = null;
         //    return true;
         //}
@@ -740,6 +748,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private void OnSetParameters()
     {
+        _timeZone = TimeZone ?? TimeZoneInfo.Local;
         _culture = Culture ?? CultureInfo.CurrentUICulture;
 
         if (CurrentValue is not null)
@@ -835,7 +844,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         selectedDate = selectedDate.AddHours(hour);
         selectedDate = selectedDate.AddMinutes(minute);
 
-        var selectedDateTimeOffset = new DateTimeOffset(selectedDate, DateTimeOffset.Now.Offset);
+        var selectedDateTimeOffset = new DateTimeOffset(selectedDate, _timeZone.GetUtcOffset(selectedDate));
         if (curValue.StartDate.HasValue is false)
         {
             curValue.StartDate = selectedDateTimeOffset;
@@ -1423,12 +1432,13 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private DateTimeOffset GetDateTimeOfDayCell(DateTime date)
     {
-        return new(date, DateTimeOffset.Now.Offset);
+        return new(date, _timeZone.GetUtcOffset(date));
     }
 
     private DateTimeOffset GetDateTimeOfMonthCell(int monthIndex)
     {
-        return new(_culture.Calendar.ToDateTime(_currentYear, monthIndex, 1, 0, 0, 0, 0), DateTimeOffset.Now.Offset);
+        var date = _culture.Calendar.ToDateTime(_currentYear, monthIndex, 1, 0, 0, 0, 0);
+        return new(date, _timeZone.GetUtcOffset(date));
     }
 
     private bool IsBetweenTwoSelectedDate(DateTime date)
@@ -1495,7 +1505,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         var month = _culture.Calendar.GetMonth(date.Value.LocalDateTime);
         var day = _culture.Calendar.GetDayOfMonth(date.Value.LocalDateTime);
 
-        return new DateTimeOffset(_culture.Calendar.ToDateTime(year, month, day, hour, minute, 0, 0), DateTimeOffset.Now.Offset);
+        var resultDate = _culture.Calendar.ToDateTime(year, month, day, hour, minute, 0, 0);
+        return new(resultDate, _timeZone.GetUtcOffset(resultDate));
     }
 
     private async Task HandleOnHourInputFocus(bool isStartTime)
