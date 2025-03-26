@@ -156,7 +156,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData("UserId", user.Id);
         }
 
-        DbContext.UserSessions.Add(userSession);
+        await DbContext.UserSessions.AddAsync(userSession);
         user.TwoFactorTokenRequestedOn = null;
         var addUserSessionResult = await userManager.UpdateAsync(user);
         if (addUserSessionResult.Succeeded is false)

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Text;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -48,6 +46,14 @@ public class NonAsyncEFCoreMethodsUsageAnalyzer : DiagnosticAnalyzer
         if (symbol == null)
             return;
 
+        var parentExpression = invocation.Parent;
+        while (parentExpression != null)
+        {
+            if (parentExpression.IsKind(SyntaxKind.SimpleLambdaExpression) || parentExpression.IsKind(SyntaxKind.QueryExpression))
+                return;
+            parentExpression = parentExpression.Parent;
+        }
+
         if (invocation.Expression is MemberAccessExpressionSyntax memberAccess && memberAccess.Expression != null)
         {
             INamedTypeSymbol? instanceType = (context.SemanticModel.GetTypeInfo(memberAccess.Expression).Type as INamedTypeSymbol)?.ConstructedFrom;
@@ -59,7 +65,7 @@ public class NonAsyncEFCoreMethodsUsageAnalyzer : DiagnosticAnalyzer
 
             if (instanceType.ToString().Contains("Microsoft.EntityFrameworkCore.DbSet") || instanceType.ToString().Contains("System.Linq.IQueryable"))
             {
-                if (invocation.Expression.DescendantNodes()
+                if (invocation.DescendantNodes(s => s.IsKind(SyntaxKind.SimpleLambdaExpression) is false && s.IsKind(SyntaxKind.QueryExpression) is false)
                     .OfType<IdentifierNameSyntax>()
                     .Any(identifier => identifier.Identifier.ValueText is nameof(Enumerable.ToList) or nameof(Enumerable.ToArray) or nameof(Enumerable.ToDictionary)
                             or nameof(Enumerable.Any) or nameof(Enumerable.All) or nameof(Enumerable.Max) or nameof(Enumerable.Min) or nameof(Enumerable.Average) or nameof(Enumerable.Sum) or nameof(Enumerable.Contains) or nameof(Enumerable.LongCount) or nameof(Enumerable.Count)
@@ -100,6 +106,16 @@ public class NonAsyncEFCoreMethodsUsageAnalyzer : DiagnosticAnalyzer
                 }
             }
 
+            if (instanceType.ToString().Contains("Microsoft.EntityFrameworkCore.IDbContextFactory"))
+            {
+                if (invocation.Expression.DescendantNodes()
+                    .OfType<IdentifierNameSyntax>()
+                    .Any(identifier => identifier.Identifier.ValueText is "CreateDbContext"))
+                {
+                    isUsingNonAsyncMethod = true;
+                }
+            }
+
             do
             {
                 if (instanceType.ToString() is "Microsoft.EntityFrameworkCore.DbContext")
@@ -123,4 +139,3 @@ public class NonAsyncEFCoreMethodsUsageAnalyzer : DiagnosticAnalyzer
         }
     }
 }
-
