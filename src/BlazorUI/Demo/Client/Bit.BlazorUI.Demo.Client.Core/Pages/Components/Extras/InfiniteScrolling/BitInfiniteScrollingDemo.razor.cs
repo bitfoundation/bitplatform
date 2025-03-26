@@ -20,10 +20,24 @@ public partial class BitInfiniteScrollingDemo
          },
          new()
          {
+            Name = "LastElementClass",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The CSS class of the last element that triggers the loading.",
+         },
+         new()
+         {
             Name = "LastElementHeight",
             Type = "string?",
             DefaultValue = "null",
             Description = "The height of the last element that triggers the loading.",
+         },
+         new()
+         {
+            Name = "LastElementStyle",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The CSS style of the last element that triggers the loading.",
          },
          new()
          {
@@ -45,6 +59,13 @@ public partial class BitInfiniteScrollingDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The CSS selector of the scroll container, by default the root element of the component is selected for this purpose.",
+         },
+         new()
+         {
+            Name = "Threshold",
+            Type = "decimal?",
+            DefaultValue = "null",
+            Description = "The threshold parameter for the IntersectionObserver that specifies a ratio of intersection area to total bounding box area of the last element.",
          },
     ];
 
@@ -68,6 +89,7 @@ public partial class BitInfiniteScrollingDemo
 
     private async ValueTask<IEnumerable<int>> LoadAdvancedItems(BitInfiniteScrollingItemsProviderRequest request)
     {
+        if (request.Skip > 200) return [];
         await Task.Delay(1000);
         return Enumerable.Range(request.Skip, 50);
     }
@@ -86,6 +108,7 @@ public partial class BitInfiniteScrollingDemo
     private readonly string example1CsharpCode = @"
 private async ValueTask<IEnumerable<int>> LoadBasicItems(BitInfiniteScrollingItemsProviderRequest request)
 {
+    if (request.Skip > 200) return [];
     await Task.Delay(1000);
     return Enumerable.Range(request.Skip, 20);
 }";
@@ -96,7 +119,6 @@ private async ValueTask<IEnumerable<int>> LoadBasicItems(BitInfiniteScrollingIte
         gap: 1rem;
         display: flex;
         flex-wrap: wrap;
-        max-height: 20rem;
         position: relative;
     }
 
@@ -114,7 +136,7 @@ private async ValueTask<IEnumerable<int>> LoadBasicItems(BitInfiniteScrollingIte
     }
 </style>
 
-<BitInfiniteScrolling ItemsProvider=""LoadAdvancedItems"" Class=""advanced"" LastElementHeight=""96px"">
+<BitInfiniteScrolling ItemsProvider=""LoadAdvancedItems"" Class=""advanced"" LastElementHeight=""96px"" ScrollerSelector=""body"" Preload>
     <ItemTemplate Context=""item"">
         <div class=""item"">Item @item</div>
     </ItemTemplate>

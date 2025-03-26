@@ -30,7 +30,7 @@ public partial class MainLayout : IDisposable
     private readonly List<BitNavItem> templatesNavItems =
     [
         new BitNavItem { Text = "Overview", Url = "/templates", AdditionalUrls = [ "/templates/overview", "/boilerplate", "/boilerplate/overview" ] },
-        new BitNavItem { Text = "Samples", Url = "/templates/samples", AdditionalUrls = [ "/boilerplate/samples" ] },
+        //new BitNavItem { Text = "Samples", Url = "/templates/samples", AdditionalUrls = [ "/boilerplate/samples" ] },
         new BitNavItem { Text = "Getting started", Url = "/templates/getting-started", AdditionalUrls = [ "/templates/development-prerequisites", "/boilerplate/getting-started", "/boilerplate/development-prerequisites" ] },
         new BitNavItem { Text = "Project structure", Url = "/templates/project-structure", AdditionalUrls = [ "/boilerplate/project-structure" ] },
         new BitNavItem { Text = "Create project", Url = "/templates/create-project", AdditionalUrls = [ "/boilerplate/create-project" ] },
@@ -98,11 +98,11 @@ public partial class MainLayout : IDisposable
     {
         var currentUrl = navigationManager.Uri.Replace(navigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
 
-        isTemplateDocRoute = currentUrl.Contains("templates") || currentUrl.Contains("boilerplate");
-        isBswupDocRoute = currentUrl.Contains("bswup");
-        isBesqlDocRoute = currentUrl.Contains("besql");
-        isButilDocRoute = currentUrl.Contains("butil");
-        isLcncDocRoute = currentUrl.Contains("lowcode-nocode");
+        isTemplateDocRoute = currentUrl.Contains("/templates") || currentUrl.Contains("/boilerplate");
+        isBswupDocRoute = currentUrl.Contains("/bswup");
+        isBesqlDocRoute = currentUrl.Contains("/besql");
+        isButilDocRoute = currentUrl.Contains("/butil");
+        isLcncDocRoute = currentUrl.Contains("/lowcode-nocode");
         isDocsRoute = isTemplateDocRoute || isBswupDocRoute || isBesqlDocRoute || isButilDocRoute /*|| isLcncDocRoute*/;
 
         navItems = isTemplateDocRoute ? templatesNavItems

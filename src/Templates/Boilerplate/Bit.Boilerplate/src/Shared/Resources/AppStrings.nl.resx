@@ -526,7 +526,7 @@
     <value>Account</value>
   </data>
     <data name="AccountSubtitle" xml:space="preserve">
-    <value>Het e-mailadres of telefoonnummer van je account wijzigen</value>
+    <value>Wijzig uw account-e-mailadres, telefoonnummer of wachtwoordloze instellingen</value>
   </data>
     <data name="DeleteAccount" xml:space="preserve">
     <value>Account verwijderen</value>
@@ -717,8 +717,8 @@
     <data name="TermsMessage" xml:space="preserve">
     <value>Ik ga akkoord met de</value>
   </data>
-    <data name="UploadNewProfileImage" xml:space="preserve">
-    <value>Upload een nieuwe profielafbeelding</value>
+    <data name="UploadNewImage" xml:space="preserve">
+    <value>Upload een nieuwe afbeelding</value>
   </data>
     <data name="Yes" xml:space="preserve">
     <value>Ja</value>
@@ -1050,6 +1050,9 @@
   </data>
     <!--#endif -->
     <!--#if (module == "Admin" || module == "Sales") -->
+    <data name="ProductImageCouldNotBeFound" xml:space="preserve">
+    <value>Productafbeelding kan niet worden gevonden</value>
+  </data>
     <data name="CategoryCouldNotBeFound" xml:space="preserve">
     <value>Categorie-entiteit kan niet worden gevonden</value>
   </data>
@@ -1207,4 +1210,22 @@
     <value>Producten in dezelfde categorie</value>
   </data>
     <!--#endif -->
+    <data name="Passwordless" xml:space="preserve">
+    <value>Wachtwoordloos</value>
+  </data>
+    <data name="PasswordlessTitle" xml:space="preserve">
+    <value>Wachtwoordloos inloggen</value>
+  </data>
+    <data name="EnablePasswordless" xml:space="preserve">
+    <value>Wachtwoordloos inloggen inschakelen</value>
+  </data>
+    <data name="EnablePasswordlessSucsessMessage" xml:space="preserve">
+    <value>Wachtwoordloos inloggen succesvol ingeschakeld</value>
+  </data>
+    <data name="DisablePasswordless" xml:space="preserve">
+    <value>Wachtwoordloos inloggen uitschakelen</value>
+  </data>
+    <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
+    <value>Wachtwoordloos inloggen succesvol uitgeschakeld</value>
+  </data>
 </root>

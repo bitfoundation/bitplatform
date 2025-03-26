@@ -1,4 +1,4 @@
-﻿<DemoSection Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <div class="example-box">
         <div>
             <div>Basic</div>
@@ -17,9 +17,9 @@
                            NameSelectors="nameSelectors" />
         </div>
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="MaxDisplayedItems & OverflowIndex" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+<DemoExample Title="MaxDisplayedItems & OverflowIndex" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
     <div>
         You can specify how many items are displayed among the items you have and the rest of the items are displayed as overflow.
         You can also choose which index the overflow icon should be placed in.
@@ -66,9 +66,9 @@
                            OverflowIndex="2" />
         </div>
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Icons" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+<DemoExample Title="Icons" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <div>Customize the overflow icon, divider icon and item icons in BitBreadcrumb using different icon name values.</div>
     <br /><br />
     <div class="example-box">
@@ -92,9 +92,9 @@
                            ReversedIcon />
         </div>
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Templates" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+<DemoExample Title="Templates" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <div>Here are some examples of customizing the breadcrumb content.</div>
     <br /><br />
     <div class="example-box">
@@ -135,9 +135,9 @@
                            OverflowIndex="2" />
         </div>
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Events" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<DemoExample Title="Events" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
     <div>By clicking on the items, the selected item will change and match the SelectedItemStyle.</div>
     <br /><br />
     <div class="example-box">
@@ -148,9 +148,9 @@
                        OnItemClick="(PageInfo model) => HandleOnCustomClick(model)"
                        Styles="@(new() { SelectedItem = "color: dodgerblue;", OverflowSelectedItem = "color: red;" })" />
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Customizations" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+<DemoExample Title="Customizations" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
     <div>Explore advanced customization of BitBreadcrumb by adding or removing items dynamically and adjusting display settings.</div>
     <br />
     <div class="example-box">
@@ -173,9 +173,9 @@
             </div>
         </div>
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Class & Style" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<DemoExample Title="Class & Style" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
     <div>Customize the appearance of BitBreadcrumb using styles and CSS classes.</div>
     <br /><br />
     <div class="example-box">
@@ -210,9 +210,9 @@
                            Styles="@(new() { Item = "color: green;", SelectedItem = "color: lightseagreen; text-shadow: lightseagreen 0 0 1rem;" })" />
         </div>
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+<DemoExample Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <div>Use BitBreadcrumb in right-to-left (RTL).</div>
     <br />
     <div class="example-box">
@@ -222,7 +222,7 @@
                        Items="RtlCustomBreadcrumbItems"
                        NameSelectors="nameSelectors" />
     </div>
-</DemoSection>
+</DemoExample>
 
 @code {
     private readonly List<PageInfo> CustomBreadcrumbItemTemplateItems =

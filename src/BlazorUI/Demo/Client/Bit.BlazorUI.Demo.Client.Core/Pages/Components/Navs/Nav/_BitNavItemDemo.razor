@@ -1,16 +1,16 @@
-﻿<DemoSection Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <BitNav Items="BitPlatformNavMenu" />
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="FitWidth" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+<DemoExample Title="FitWidth" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
     <BitNav Items="BitPlatformNavMenu" FitWidth />
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Grouped" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+<DemoExample Title="Grouped" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <BitNav Items="CarNavMenu" RenderType="BitNavRenderType.Grouped" />
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Manual Mode" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+<DemoExample Title="Manual Mode" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <div>Basic</div><br />
     <BitNav Items="FoodNavMenu"
             DefaultSelectedItem="FoodNavMenu[0].ChildItems[2]"
@@ -29,15 +29,15 @@
                      Items="FoodMenuDropdownItems"
                      OnSelectItem="(BitDropdownItem<string> item) => SelectedItemNav = Flatten(FoodNavMenu).First(i => i.Text == item.Value)" />
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="IconOnly" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<DemoExample Title="IconOnly" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
     <BitToggle @bind-Value="iconOnly" Label="Hide texts?" Inline />
     <br />
     <BitNav Items="IconOnlyNavMenu" Mode="BitNavMode.Manual" IconOnly="iconOnly" />
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Custom Templates" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+<DemoExample Title="Custom Templates" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
     <div>Header Template (Grouped)</div><br />
     <BitNav Items="CarNavMenu" RenderType="BitNavRenderType.Grouped">
         <HeaderTemplate Context="item">
@@ -58,9 +58,9 @@
             </div>
         </ItemTemplate>
     </BitNav>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<DemoExample Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
     <div class="example-box">
         <BitNav Items="FoodNavMenu"
                 Mode="BitNavMode.Manual"
@@ -74,18 +74,18 @@
             <span>Toggled Item: <b>@(ToggledItem is null ? "N/A" : $"{ToggledItem.Text} ({(ToggledItem.IsExpanded ? "Expanded" : "Collapsed")})")</b></span>
         </div>
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Custom Styles" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+<DemoExample Title="Custom Styles" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <BitNav Items="CustomStyleNavMenu"
             Styles="@(new() { ItemContainer = "border: 1px solid green; margin: 2px;",
                                   ToggleButton = "color: cyan;",
                                   Item = "color: red;",
                                   ItemIcon = "color: gold; margin-right: 15px;" })" />
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+<DemoExample Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
     <div dir="rtl">
         <BitNav Dir="BitDir.Rtl" Items="RtlBitPlatformNavMenu" />
     </div>
-</DemoSection>
+</DemoExample>

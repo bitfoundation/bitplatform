@@ -1,0 +1,53 @@
+<html>
+<head>
+    <base href="/" />
+    <title>&#128274; Passwordless login</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <style>
+        body {
+            background-color: #FFFFFF;
+        }
+
+        .fluent {
+            color: #010409;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #010409;
+            }
+
+            .fluent {
+                color: #FFFFFF;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Webview is not capable to provide some browser services such as WebAuthn etc.
+    So, we need to run the external js in the browser to get the browser services.
+    -->
+
+    <div class="container">
+        <button class="primary" onclick="window.close()">&#x1F519;</button>
+    </div>
+
+    <script src="app.js"></script>
+
+    <script type="text/javascript">
+        ExternalJsRunner.run();
+    </script>
+</body>
+</html>

@@ -6,13 +6,15 @@
 
 <DemoPage Name="Header"
           Description="The BitHeader component is used to display a title (and possibly other components) in a colored bar at the top of a site or application. For the background color it uses the current primary background color."
-          Parameters="componentParameters">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+          Parameters="componentParameters"
+          GitHubUrl="Layouts/Header/BitHeader.razor"
+          GitHubDemoUrl="Layouts/Header/BitHeaderDemo.razor">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div class="container">
             <BitHeader>I'm a Header</BitHeader>
         </div>
-    </DemoSection>
-    <DemoSection Title="Usage" RazorCode="@example2RazorCode" Id="example2">
+    </DemoExample>
+    <DemoExample Title="Usage" RazorCode="@example2RazorCode" Id="example2">
         <div class="container">
             <BitHeader Style="gap: 1rem;">
                 <BitButton Variant="BitVariant.Text" IconName="@BitIconName.GlobalNavButton" Title="Open Navigation" />
@@ -30,5 +32,5 @@
                 </BitMenuButton>
             </BitHeader>
         </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

@@ -313,7 +313,7 @@ public partial class BitTooltipDemo
 </BitTooltip>
 
 <BitDropdown Label=""Tooltip positions"" Items=""tooltipPositionList"" @bind-Value=""tooltipPosition"" />
-<BitSpinButton Label=""Hide delay"" @bind-Value=""hideDelay"" Mode=""BitSpinButtonMode.Inline"" />
+<BitNumberField Label=""Hide delay"" @bind-Value=""hideDelay"" Mode=""BitSpinButtonMode.Inline"" />
 <BitToggle @bind-Value=""isShown"" Text=""Toggle tooltip state"" />
 <BitToggle @bind-Value=""hideArrow"" Text=""Hide tooltip arrow"" />
 <BitToggle @bind-Value=""showOnClick"" Text=""Show tooltip on click"" />

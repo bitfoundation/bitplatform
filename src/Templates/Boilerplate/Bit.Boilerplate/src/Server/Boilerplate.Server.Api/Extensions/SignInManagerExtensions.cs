@@ -16,8 +16,9 @@ public static partial class SignInManagerExtensions
     /// 4. After a successful phone number confirmation after sign-up, to automatically sign in the confirmed user for a smoother user experience.
     /// 5. When the browser is redirected to a magic link created after a social sign-in, to automatically authenticate the user.
     /// 6. When the user opts to sign in using a 6-digit code delivered via native push notification, web push or SignalR message (if configured).
+    /// 7. When the system opts to sign in the user using a 6-digit code generated after a successful WebAuthn process.
     /// 
-    /// It's important to clarify the authentication method (e.g., Social, SMS, Email, or Push) 
+    /// It's important to clarify the authentication method (e.g., Social, Email, SMS, Push, Social, or WebAuth) 
     /// to avoid sending a second step to the same communication channel: For successful two-step authentication, the user must use a different method for the second step.
     /// </summary>
 
@@ -38,12 +39,15 @@ public static partial class SignInManagerExtensions
 
         bool tokenIsValid = false;
         string? authenticationMethod = null;
-        string[] authenticationMethods = ["Email",
+        string[] authenticationMethods = [
+            "Email",
             "Sms",
             //#if (notification == true || signalR == true)
             "Push", // => Native push notification, web push or SignalR message.
             //#endif
-            "Social"];
+            "Social",
+            "WebAuthn"
+        ];
 
         foreach (var authMethod in authenticationMethods)
         {

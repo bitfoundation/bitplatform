@@ -10,6 +10,7 @@
     <Link rel="icon" href="/favicon.ico" type="image/x-icon" />
     <HeadOutlet @rendermode=RenderModeProvider.Current />
     <Link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
+    <Link rel="manifest" href="manifest.json" />
     <style>
         * {
             box-sizing: border-box;
@@ -35,27 +36,22 @@
     <Link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
     <Link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
     <Link rel="stylesheet" href="styles/app.css" />
-    <Link rel="stylesheet" href="Bit.Websites.Sales.Server.styles.css" />
+    <Link rel="stylesheet" href="Bit.Websites.Sales.Client.bundle.scp.css" />
 </head>
 
 <body class="bit-blazor-web">
 
     <Routes @rendermode=RenderModeProvider.Current />
 
-    <Script src="_framework/blazor.web.js" autostart="false"></Script>
-    <Script>
-        Blazor.start({
-            webAssembly: {
-                loadBootResource: function (type, name, defaultUri, integrity) {
-                    if (integrity != null && integrity != '')
-                        return `${defaultUri}?v=${integrity}`;
-                    return null; // default blazor asset loading mechanism.
-                }
-            }
-        });
-    </Script>
-    <Script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
-    <Script src="scripts/app.js"></Script>
+    @if (HttpContext.Request.IsLightHouseRequest() is false)
+    {
+        <Script Src="_content/Bit.BlazorES2019/blazor.web.js" autostart="false"></Script>
+        <Script Src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_content/Bit.BlazorES2019/blazor.web.js"></Script>
+        <Script src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
+        <AppBswupProgressBar />
+        <Script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
+        <Script src="scripts/app.js"></Script>
+    }
 </body>
 
 </html>

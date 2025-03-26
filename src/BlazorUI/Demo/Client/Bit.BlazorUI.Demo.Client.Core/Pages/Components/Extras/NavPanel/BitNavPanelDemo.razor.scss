@@ -1,4 +1,4 @@
-@import "../../../../Styles/abstracts/_media-queries.scss";
+﻿@import "../../../../Styles/abstracts/_media-queries.scss";
 
 .open-btn {
     display: none;
@@ -6,5 +6,52 @@
 
     @include lt-lg {
         display: flex;
+    }
+}
+
+::deep {
+    .custom-nav-item {
+        @media (hover: hover) {
+            &:hover {
+                color: white;
+                border-radius: 7px;
+                background-color: rgba(255,255,255,0.1);
+            }
+        }
+    }
+
+    .custom-nav-item-ico {
+        color: white;
+        font-weight: 600;
+    }
+
+    .custom-nav-item-txt {
+        color: white;
+    }
+
+    .custom-input-container-searchbox {
+        overflow: hidden;
+        border-radius: 7px;
+        align-items: center;
+        border-color: #ffffff76;
+        background-color: #b1b1b175;
+    }
+
+    .custom-focused-searchbox .custom-input-container-searchbox {
+        border-width: 1px;
+        border-color: #ffffff76;
+    }
+
+    .custom-clear-searchbox:hover {
+        background: transparent;
+    }
+
+    .custom-icon-searchbox {
+        color: #3a0647;
+    }
+
+    .custom-icon-wrapper-searchbox {
+        border-radius: 5px;
+        background-color: transparent;
     }
 }

@@ -65,7 +65,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
         }
     }
 
-    protected bool InPrerenderSession => AppPlatform.IsBlazorHybrid is false && JSRuntime.IsInitialized() is false;
+    protected bool InPrerenderSession => AppPlatform.IsBlazorHybrid is false && RendererInfo.IsInteractive is false;
 
     protected sealed override void OnInitialized()
     {
@@ -86,7 +86,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>
-    /// Replacement for <see cref="OnInitializedAsync"/> which catches all possible exceptions in order to prevent app crash.
+    /// A safer alternative to `<see cref="OnInitializedAsync"/>` that catches and handles all exceptions internally, preventing them from triggering the application's error boundary.
     /// </summary>
     protected virtual Task OnInitAsync()
     {
@@ -108,7 +108,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>
-    /// Replacement for <see cref="OnParametersSetAsync"/> which catches all possible exceptions in order to prevent app crash.
+    /// A safer alternative to `<see cref="OnParametersSetAsync"/>` that catches and handles all exceptions internally, preventing them from triggering the application's error boundary.
     /// </summary>
     protected virtual Task OnParamsSetAsync()
     {
@@ -134,7 +134,8 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>
-    /// Method invoked after first time the component has been rendered.
+    /// This method is executed only during the initial render of the component.
+    /// It ensures that all potential exceptions are handled gracefully, preventing them from triggering the application's error boundary.
     /// </summary>
     protected virtual Task OnAfterFirstRenderAsync()
     {
@@ -143,7 +144,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 
 
     /// <summary>
-    /// Executes passed action while catching all possible exceptions to prevent app crash.
+    /// Executes passed action that catches and handles all exceptions internally, preventing them from triggering the application's error boundary.
     /// </summary>
     public virtual Action WrapHandled(Action action,
         [CallerLineNumber] int lineNumber = 0,
@@ -164,7 +165,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>
-    /// Executes passed action while catching all possible exceptions to prevent app crash.
+    /// Executes passed action that catches and handles all exceptions internally, preventing them from triggering the application's error boundary.
     /// </summary>
     public virtual Action<T> WrapHandled<T>(Action<T> func,
         [CallerLineNumber] int lineNumber = 0,
@@ -185,7 +186,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>
-    /// Executes passed function while catching all possible exceptions to prevent app crash.
+    /// Executes passed action that catches and handles all exceptions internally, preventing them from triggering the application's error boundary.
     /// </summary>
     public virtual Func<Task> WrapHandled(Func<Task> func,
         [CallerLineNumber] int lineNumber = 0,
@@ -206,7 +207,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>
-    /// Executes passed function while catching all possible exceptions to prevent app crash.
+    /// Executes passed action that catches and handles all exceptions internally, preventing them from triggering the application's error boundary.
     /// </summary>
     public virtual Func<T, Task> WrapHandled<T>(Func<T, Task> func,
         [CallerLineNumber] int lineNumber = 0,
@@ -227,7 +228,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>
-    /// Cancells running codes inside current component.
+    /// Terminates any ongoing operations within the current component.
     /// </summary>
     protected async Task Abort()
     {

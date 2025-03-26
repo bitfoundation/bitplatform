@@ -8,13 +8,15 @@
     <DemoPage Name="Dropdown"
               SecondaryNames="@(["Select", "MultiSelect", "ComboBox"])"
               Description="A dropdown is a list in which the selected item is always visible while other items are visible on demand by clicking a dropdown button. Dropdowns are typically used for forms."
+              Notes="The BitDropdown is a Multi-API component which can accept the list of Items in 3 different ways: BitDropdownItem class, a custom Generic class, and BitDropdownOption component."
               Parameters="componentParameters"
               SubClasses="componentSubClasses"
               SubEnums="componentSubEnums"
               PublicMembers="componentPublicMembers"
-              Notes="The BitDropdown is a Multi-API component which can accept the list of Items in 3 different ways: BitDropdownItem class, a custom Generic class, and BitDropdownOption component."
-              VideoUrl="https://videos.bitplatform.dev/bit%20Dropdown.mp4">
-        <VideoDescriptionTemplate>
+              GitHubUrl="Inputs/Dropdown/BitDropdown.razor"
+              GitHubDemoUrl="Inputs/Dropdown/BitDropdownDemo.razor"
+              IntroductionVideoUrl="https://videos.bitplatform.dev/bit%20Dropdown.mp4">
+        <IntroductionTemplate>
             <BitScrollablePane>
                 <BitText Typography="BitTypography.Body2" Color="BitColor.TertiaryForeground">
                     Music: Music Cocktails, Musician: AlexGuz, URL:
@@ -24,7 +26,7 @@
                     </a>
                 </BitText>
             </BitScrollablePane>
-        </VideoDescriptionTemplate>
+        </IntroductionTemplate>
         <Examples>
             <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })">
                 <BitPivotItem HeaderText="Item">

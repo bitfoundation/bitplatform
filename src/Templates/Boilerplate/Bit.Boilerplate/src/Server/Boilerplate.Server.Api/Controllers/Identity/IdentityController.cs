@@ -91,9 +91,16 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     public async Task SignIn(SignInRequestDto request, CancellationToken cancellationToken)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
-        signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 
-        var user = await userManager.FindUserAsync(request) ?? throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]).WithData("Identifier", request);
+        var user = await userManager.FindUserAsync(request)
+                    ?? throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]).WithData("Identifier", request);
+
+        await SignIn(request, user, cancellationToken);
+    }
+
+    private async Task SignIn(SignInRequestDto request, User user, CancellationToken cancellationToken)
+    {
+        signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 
         var userSession = await CreateUserSession(user.Id, request.DeviceInfo, cancellationToken);
 
@@ -149,7 +156,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData("UserId", user.Id);
         }
 
-        DbContext.UserSessions.Add(userSession);
+        await DbContext.UserSessions.AddAsync(userSession);
         user.TwoFactorTokenRequestedOn = null;
         var addUserSessionResult = await userManager.UpdateAsync(user);
         if (addUserSessionResult.Succeeded is false)
@@ -201,6 +208,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     /// </summary>
     private async Task<bool> IsUserSessionPrivileged(UserSession userSession, CancellationToken cancellationToken)
     {
+        if (userSession.UserId == Guid.Parse("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"))
+            return true; // Unlimited privileged sessions for this user: Customize policies based on user roles, subscriptions, and other criteria.
+
         var maxConcurrentPrivilegedSessions = AppSettings.Identity.MaxConcurrentPrivilegedSessions;
 
         return maxConcurrentPrivilegedSessions == -1 || // -1 means no limit
@@ -331,8 +341,15 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     public async Task SendTwoFactorToken(SignInRequestDto request, CancellationToken cancellationToken)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
-        var user = await userManager.FindUserAsync(request) ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]).WithData("Identifier", request);
 
+        var user = await userManager.FindUserAsync(request)
+                    ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]).WithData("Identifier", request);
+
+        await SendTwoFactorToken(request, user, cancellationToken);
+    }
+
+    private async Task SendTwoFactorToken(SignInRequestDto request, User user, CancellationToken cancellationToken)
+    {
         if (user.TwoFactorEnabled is false)
             throw new BadRequestException().WithData("UserId", user.Id);
 

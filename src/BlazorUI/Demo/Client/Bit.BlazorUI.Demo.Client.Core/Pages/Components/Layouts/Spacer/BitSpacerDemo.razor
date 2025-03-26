@@ -6,8 +6,10 @@
 
 <DemoPage Name="Spacer"
           Description="The purpose of the BitSpacer is to generate space between other components. You can either create a space with a set width (in number of pixels) or create a space with a flexible width."
-          Parameters="componentParameters">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+          Parameters="componentParameters"
+          GitHubUrl="Layouts/Spacer/BitSpacer.razor"
+          GitHubDemoUrl="Layouts/Spacer/BitSpacerDemo.razor">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div style="display: flex; width: 100%;">
             <BitButton Variant="BitVariant.Text" IconName="@BitIconName.GlobalNavButton" />
             <BitSpacer />
@@ -15,8 +17,8 @@
             <BitSpacer />
             <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Contact" />
         </div>
-    </DemoSection>
-    <DemoSection Title="Width" RazorCode="@example2RazorCode" Id="example2">
+    </DemoExample>
+    <DemoExample Title="Width" RazorCode="@example2RazorCode" Id="example2">
         <div style="display: flex; width: 100%;">
             <BitProgress Circular Indeterminate />
             <BitSpacer Width="64" />
@@ -24,5 +26,5 @@
             <BitSpacer Width="64" />
             <BitProgress Circular Indeterminate />
         </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

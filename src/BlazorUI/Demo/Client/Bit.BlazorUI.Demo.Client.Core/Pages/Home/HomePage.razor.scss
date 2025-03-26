@@ -1,5 +1,4 @@
-﻿@import '../../Styles/abstracts/_colors.scss';
-@import '../../Styles/abstracts/_functions.scss';
+﻿@import '../../Styles/abstracts/_functions.scss';
 @import '../../Styles/abstracts/_media-queries.scss';
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
@@ -123,41 +122,5 @@
         align-items: flex-start;
         flex-flow: column nowrap;
         justify-content: flex-start;
-    }
-
-    .section-btn {
-        color: $White;
-        cursor: pointer;
-        box-shadow: none;
-        font-weight: 700;
-        user-select: none;
-        letter-spacing: 0;
-        line-height: 1.3125;
-        display: inline-flex;
-        font-size: rem2(16px);
-        text-decoration: none;
-        -ms-user-select: none;
-        -moz-user-select: none;
-        border-radius: rem2(2px);
-        justify-content: center;
-        -webkit-user-select: none;
-        background-color: $B2Color;
-        padding: rem2(14px) rem2(16px);
-        transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-
-        @include sm {
-            width: 100%;
-        }
-
-        .github-icon {
-            width: rem2(22px);
-            height: rem2(22px);
-            display: inline-block;
-            margin-right: rem2(8px);
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-image: url('images/icon/github-blue-icon.svg');
-        }
     }
 }

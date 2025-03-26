@@ -209,6 +209,18 @@ public partial class BitCarouselDemo
             Name = "GoTo",
             Type = "Task",
             Description = "Navigates to the given carousel item index.",
+        },
+        new()
+        {
+            Name = "Pause",
+            Type = "Task",
+            Description = "Pauses the AutoPlay if enabled.",
+        },
+        new()
+        {
+            Name = "Resume",
+            Type = "Task",
+            Description = "Resumes the AutoPlay if enabled.",
         }
     ];
 

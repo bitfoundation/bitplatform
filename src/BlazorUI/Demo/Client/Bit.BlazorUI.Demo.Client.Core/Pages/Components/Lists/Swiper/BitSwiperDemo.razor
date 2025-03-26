@@ -7,8 +7,10 @@
 <DemoPage Name="Swiper"
           SecondaryNames="@(["TouchSlider"])"
           Description="Swipers (touch slider) let people show their slides in a swiping row."
-          Parameters="componentParameters">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+          Parameters="componentParameters"
+          GitHubUrl="Lists/Swiper/BitSwiper.razor"
+          GitHubDemoUrl="Lists/Swiper/BitSwiperDemo.razor">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>
             <BitSwiper>
                 @for (int i = 1; i <= 32; i++)
@@ -22,9 +24,9 @@
                 }
             </BitSwiper>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="ScrollItemsCount" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="ScrollItemsCount" RazorCode="@example2RazorCode" Id="example2">
         <div>Configure BitSwiper to scroll multiple items at once.</div>
         <br />
         <div>
@@ -40,9 +42,9 @@
                 }
             </BitSwiper>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="HideNextPrev" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="HideNextPrev" RazorCode="@example3RazorCode" Id="example3">
         <div>Use BitSwiper without showing the next and previous navigation buttons.</div>
         <br />
         <div>
@@ -58,9 +60,9 @@
                 }
             </BitSwiper>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="RTL" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="RTL" RazorCode="@example4RazorCode" Id="example4">
         <div>Use BitSwiper in right-to-left (RTL).</div>
         <br />
         <div>
@@ -76,5 +78,5 @@
                 }
             </BitSwiper>
         </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

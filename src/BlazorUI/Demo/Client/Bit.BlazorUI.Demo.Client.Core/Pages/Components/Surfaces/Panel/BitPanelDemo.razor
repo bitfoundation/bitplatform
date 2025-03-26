@@ -9,8 +9,10 @@
               Description="Panels are overlays that contain supplementary content and are used for complex creation, edit, or management experiences. For example, viewing details about an item in a list or editing settings."
               Parameters="componentParameters"
               SubClasses="componentSubClasses"
-              SubEnums="componentSubEnums">
-        <DemoSection Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+              SubEnums="componentSubEnums"
+              GitHubUrl="Surfaces/Panel/BitPanel.razor"
+              GitHubDemoUrl="Surfaces/Panel/BitPanelDemo.razor">
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <BitButton OnClick="() => isBasicPanelOpen = true">Open Panel</BitButton>
             <BitPanel @bind-IsOpen="isBasicPanelOpen">
                 <div style="max-width:300px;padding:1rem">
@@ -20,9 +22,9 @@
                     turpis.
                 </div>
             </BitPanel>
-        </DemoSection>
+        </DemoExample>
 
-        <DemoSection Title="Advanced options" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <DemoExample Title="Advanced options" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div>BitPanel has some advanced options to be customized.</div>
             <br /><br />
             <div>Blocking:</div><br />
@@ -63,13 +65,13 @@
                     sagittis nunc, ut interdum ipsum vestibulum non.
                 </div>
             </BitPanel>
-        </DemoSection>
+        </DemoExample>
 
-        <DemoSection Title="Position and size" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <DemoExample Title="Position and size" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>To set the Panel position on the page you can use the Position parameter.</div>
             <br /><br />
             <div class="position-btn">
-                <BitSpinButton @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
+                <BitNumberField @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
                 <div>
                     <BitButton OnClick="() => isOpenInPositionStart = true">Start</BitButton>
                     <BitButton OnClick="() => isOpenPositionEnd = true">End</BitButton>
@@ -85,7 +87,7 @@
                       Position="BitPanelPosition.Start">
                 <div style="padding:1rem">
                     BitPanel with Start position and custom Size.
-                    <BitSpinButton @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
+                    <BitNumberField @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
                 </div>
             </BitPanel>
 
@@ -94,14 +96,14 @@
                       Position="BitPanelPosition.End">
                 <div style="padding:1rem">
                     BitPanel with End position and custom Size.
-                    <BitSpinButton @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
+                    <BitNumberField @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
                 </div>
             </BitPanel>
 
             <BitPanel @bind-Size="customPanelSize" @bind-IsOpen="isOpenInPositionTop" Position="BitPanelPosition.Top">
                 <div style="padding:1rem">
                     BitPanel with Top position and custom Size.
-                    <BitSpinButton @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
+                    <BitNumberField @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
                 </div>
             </BitPanel>
 
@@ -110,12 +112,12 @@
                       Position="BitPanelPosition.Bottom">
                 <div style="padding:1rem">
                     BitPanel with Bottom position and custom Size.
-                    <BitSpinButton @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
+                    <BitNumberField @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
                 </div>
             </BitPanel>
-        </DemoSection>
+        </DemoExample>
 
-        <DemoSection Title="Style & Class" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <DemoExample Title="Style & Class" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>Explore styling and class customization for BitPanel, including component styles, custom classes, and detailed styles.</div>
             <br /><br />
             <div>Component's Style & Class:</div><br />
@@ -150,9 +152,9 @@
                                              Overlay = "custom-overlay" })">
                 BitPanel with <b>Classes</b> to customize its elements.
             </BitPanel>
-        </DemoSection>
+        </DemoExample>
 
-        <DemoSection Title="RTL" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <DemoExample Title="RTL" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>Use BitPanel in right-to-left (RTL).</div>
             <br /><br />
             <div>
@@ -185,7 +187,7 @@
                     </div>
                 </BitPanel>
             </div>
-        </DemoSection>
+        </DemoExample>
 
     </DemoPage>
 </div>

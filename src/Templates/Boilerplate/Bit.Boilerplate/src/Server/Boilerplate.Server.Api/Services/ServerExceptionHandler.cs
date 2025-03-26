@@ -14,16 +14,19 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
 
     private static readonly Guid appSessionId = Guid.NewGuid();
 
-    public bool CanWrite(ProblemDetailsContext context) => context.Exception is not null;
+    public bool CanWrite(ProblemDetailsContext context) => true;
 
     public async ValueTask WriteAsync(ProblemDetailsContext context)
     {
-        var exception = UnWrapException(context.Exception!);
-
         var httpContext = context.HttpContext;
 
         // Using the Request-Id header, one can find the log for server-related exceptions
         httpContext.Response.Headers.Append(HeaderNames.RequestId, httpContext.TraceIdentifier);
+
+        if (context.Exception is null)
+            return;
+
+        var exception = UnWrapException(context.Exception);
 
         Handle(exception, null, httpContext, out var statusCode, out var problemDetail);
         httpContext.Response.StatusCode = statusCode;

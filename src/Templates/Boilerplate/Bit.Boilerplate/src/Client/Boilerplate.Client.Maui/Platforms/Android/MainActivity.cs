@@ -22,7 +22,7 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
                             Urls.ConfirmPage, Urls.ForgotPasswordPage, Urls.SettingsPage, Urls.ResetPasswordPage, Urls.SignInPage,
                             Urls.SignUpPage, Urls.NotAuthorizedPage, Urls.NotFoundPage, Urls.TermsPage, Urls.AboutPage, Urls.Authorize, Urls.AboutPage,
                             //#if (module == "Admin")
-                            Urls.AddOrEditCategoryPage, Urls.CategoriesPage, Urls.DashboardPage, Urls.ProductsPage,
+                            Urls.AddOrEditProductPage, Urls.CategoriesPage, Urls.DashboardPage, Urls.ProductsPage,
                             //#endif
                             //#if (module == "Sales")
                             Urls.ProductPage,

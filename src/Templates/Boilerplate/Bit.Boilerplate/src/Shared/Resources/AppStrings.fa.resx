@@ -526,7 +526,7 @@
     <value>حساب کاربری</value>
   </data>
     <data name="AccountSubtitle" xml:space="preserve">
-    <value>ایمیل یا شماره تلفن حساب کاربری خود را تغییر دهید</value>
+    <value>ایمیل، شماره تلفن یا تنظیمات بی رمز حساب کاربری خود را تغییر دهید</value>
   </data>
     <data name="DeleteAccount" xml:space="preserve">
     <value>حذف حساب</value>
@@ -717,8 +717,8 @@
     <data name="TermsMessage" xml:space="preserve">
     <value>من موافقم با</value>
   </data>
-    <data name="UploadNewProfileImage" xml:space="preserve">
-    <value>بارگذاری یک عکس پروفایل جدید</value>
+    <data name="UploadNewImage" xml:space="preserve">
+    <value>بارگذاری یک عکس جدید</value>
   </data>
     <data name="Yes" xml:space="preserve">
     <value>بله</value>
@@ -1050,6 +1050,9 @@
   </data>
     <!--#endif -->
     <!--#if (module == "Admin" || module == "Sales") -->
+    <data name="ProductImageCouldNotBeFound" xml:space="preserve">
+    <value>تصویر محصول پیدا نشد</value>
+  </data>
     <data name="CategoryCouldNotBeFound" xml:space="preserve">
     <value>دسته مورد نظر پیدا نشد</value>
   </data>
@@ -1207,4 +1210,22 @@
     <value>محصولات در همین دسته</value>
   </data>
     <!--#endif -->
+    <data name="Passwordless" xml:space="preserve">
+    <value>بی رمز</value>
+  </data>
+    <data name="PasswordlessTitle" xml:space="preserve">
+    <value>ورود بی رمز</value>
+  </data>
+    <data name="EnablePasswordless" xml:space="preserve">
+    <value>فعالسازی ورود بی رمز</value>
+  </data>
+    <data name="EnablePasswordlessSucsessMessage" xml:space="preserve">
+    <value>ورود بی رمز با موفقیت فعال شد</value>
+  </data>
+    <data name="DisablePasswordless" xml:space="preserve">
+    <value>غیرفعالسازی ورود بی رمز</value>
+  </data>
+    <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
+    <value>ورود بی رمز با موفقیت غیرفعال شد</value>
+  </data>
 </root>

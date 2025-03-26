@@ -8,10 +8,12 @@
     <DemoPage Name="NavBar"
               SecondaryNames="@(["NavMenu", "TabPanel"])"
               Description="A tab panel that provides navigation links to the main areas of an app."
+              Notes="The BitNavBar is a Multi-API component which can accept the list of Items in 3 different ways: BitNavBarItem class, a custom Generic class, and BitNavBarOption component."
               Parameters="componentParameters"
               SubClasses="componentSubClasses"
               SubEnums="componentSubEnums"
-              Notes="The BitNavBar is a Multi-API component which can accept the list of Items in 3 different ways: BitNavBarItem class, a custom Generic class, and BitNavBarOption component.">
+              GitHubUrl="Navs/NavBar/BitNavBar.razor"
+              GitHubDemoUrl="Navs/NavBar/BitNavBarDemo.razor">
         <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })">
             <BitPivotItem HeaderText="Item">
                 <_BitNavBarItemDemo />

@@ -6,10 +6,10 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Net.Http.Headers;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.ResponseCompression;
-using System.Security.Cryptography.X509Certificates;
 using Twilio;
+using System.Text;
+using Fido2NetLib;
 using PhoneNumbers;
 using FluentStorage;
 using FluentStorage.Blobs;
@@ -22,7 +22,6 @@ using Boilerplate.Server.Api.Services;
 using Boilerplate.Server.Api.Controllers;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Services.Identity;
-
 namespace Boilerplate.Server.Api;
 
 public static partial class Program
@@ -101,6 +100,7 @@ public static partial class Program
                 var builder = policy.AddPolicy<AppResponseCachePolicy>();
             }, excludeDefaultPolicy: true);
         });
+        services.AddDistributedMemoryCache();
 
         services.AddHttpContextAccessor();
 
@@ -297,6 +297,28 @@ public static partial class Program
             c.Timeout = TimeSpan.FromSeconds(10);
             c.BaseAddress = new Uri("https://api.cloudflare.com/client/v4/zones/");
         });
+
+        services.AddFido2(options =>
+        {
+
+        });
+
+        services.AddScoped(sp =>
+        {
+            var webAppUrl = sp.GetRequiredService<IHttpContextAccessor>()
+                .HttpContext!.Request.GetWebAppUrl();
+
+            var options = new Fido2Configuration
+            {
+                ServerDomain = webAppUrl.Host,
+                TimestampDriftTolerance = 1000,
+                ServerName = "Boilerplate WebAuthn",
+                Origins = new HashSet<string>([webAppUrl.AbsoluteUri]),
+                ServerIcon = new Uri(webAppUrl, "images/icons/bit-logo.png").ToString()
+            };
+
+            return options;
+        });
     }
 
     private static void AddIdentity(WebApplicationBuilder builder)
@@ -307,16 +329,6 @@ public static partial class Program
         ServerApiSettings appSettings = new();
         configuration.Bind(appSettings);
         var identityOptions = appSettings.Identity;
-
-        var certificatePath = Path.Combine(AppContext.BaseDirectory, "DataProtectionCertificate.pfx");
-        var certificate = new X509Certificate2(certificatePath, appSettings.DataProtectionCertificatePassword, AppPlatform.IsWindows ? X509KeyStorageFlags.EphemeralKeySet : X509KeyStorageFlags.DefaultKeySet);
-
-        if (env.IsDevelopment() is false && (DateTimeOffset.UtcNow < certificate.NotBefore || DateTimeOffset.UtcNow > certificate.NotAfter))
-            throw new InvalidOperationException($"The Data Protection certificate is invalid. Current UTC time: {DateTimeOffset.UtcNow}, Certificate valid from: {certificate.NotBefore.ToUniversalTime()}, Certificate valid until: {certificate.NotAfter.ToUniversalTime()}.");
-
-        services.AddDataProtection()
-            .PersistKeysToDbContext<AppDbContext>()
-            .ProtectKeysWithCertificate(certificate);
 
         services.AddIdentity<User, Role>()
             .AddEntityFrameworkStores<AppDbContext>()
@@ -344,7 +356,7 @@ public static partial class Program
                 RequireSignedTokens = true,
 
                 ValidateIssuerSigningKey = env.IsDevelopment() is false,
-                IssuerSigningKey = new X509SecurityKey(certificate),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(appSettings.Identity.JwtIssuerSigningKeySecret)),
 
                 RequireExpirationTime = true,
                 ValidateLifetime = true,

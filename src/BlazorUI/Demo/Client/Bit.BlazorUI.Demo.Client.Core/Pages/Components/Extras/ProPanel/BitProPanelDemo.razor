@@ -9,8 +9,10 @@
               Description="ProPanel is an advanced version of normal Panel with additional features that tailored to more usual use-cases."
               Parameters="componentParameters"
               SubClasses="componentSubClasses"
-              SubEnums="componentSubEnums">
-        <DemoSection Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+              SubEnums="componentSubEnums"
+              GitHubExtrasUrl="ProPanel/BitProPanel.razor"
+              GitHubDemoUrl="Extras/ProPanel/BitProPanelDemo.razor">
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <BitButton OnClick="() => isBasicProPanelOpen = true">Open ProPanel</BitButton>
             <BitProPanel @bind-IsOpen="isBasicProPanelOpen">
                 <div style="max-width:300px">
@@ -20,9 +22,9 @@
                     turpis.
                 </div>
             </BitProPanel>
-        </DemoSection>
+        </DemoExample>
 
-        <DemoSection Title="Header & Footer" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <DemoExample Title="Header & Footer" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <BitButton OnClick="() => isProPanelWithHeaderTextOpen = true">Open ProPanel with HeaderText</BitButton>
             <BitProPanel @bind-IsOpen="isProPanelWithHeaderTextOpen" HeaderText="BitProPanel with HeaderText">
                 <div style="max-width:300px">
@@ -93,9 +95,9 @@
                     <BitButton OnClick="() => isProPanelWithFooterOpen = false" Variant="BitVariant.Outline">Close</BitButton>
                 </Footer>
             </BitProPanel>
-        </DemoSection>
+        </DemoExample>
 
-        <DemoSection Title="Advanced options" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <DemoExample Title="Advanced options" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>BitProPanel has some advanced options to be customized.</div>
             <br /><br />
             <BitButton OnClick="() => bitProPanelRef.Open()">Open ProPanel with ShowCloseButton</BitButton>
@@ -142,13 +144,13 @@
                     sagittis nunc, ut interdum ipsum vestibulum non.
                 </div>
             </BitProPanel>
-        </DemoSection>
+        </DemoExample>
 
-        <DemoSection Title="Position and size" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <DemoExample Title="Position and size" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>To set the Panel position on the page you can use the Position parameter.</div>
             <br /><br />
             <div class="position-btn">
-                <BitSpinButton @bind-Value="customProPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
+                <BitNumberField @bind-Value="customProPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
                 <div>
                     <BitButton OnClick="() => isStartProPanelOpen = true">Start</BitButton>
                     <BitButton OnClick="() => isEndProPanelOpen = true">End</BitButton>
@@ -164,7 +166,7 @@
                          HeaderText="Start BitProPanel"
                          Position="BitPanelPosition.Start">
                 BitProPanel with Start position and custom Size.
-                <BitSpinButton @bind-Value="customProPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
+                <BitNumberField @bind-Value="customProPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
                 amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
                 sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
@@ -176,7 +178,7 @@
                          HeaderText="End BitProPanel"
                          Position="BitPanelPosition.End">
                 BitProPanel with End position and custom Size.
-                <BitSpinButton @bind-Value="customProPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
+                <BitNumberField @bind-Value="customProPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
                 amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
                 sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
@@ -188,7 +190,7 @@
                          HeaderText="Top BitProPanel"
                          Position="BitPanelPosition.Top">
                 BitProPanel with Top position and custom Size.
-                <BitSpinButton @bind-Value="customProPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
+                <BitNumberField @bind-Value="customProPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
                 amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
                 sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
@@ -200,15 +202,15 @@
                          HeaderText="Bottom BitProPanel"
                          Position="BitPanelPosition.Bottom">
                 BitProPanel with Bottom position and custom Size.
-                <BitSpinButton @bind-Value="customProPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
+                <BitNumberField @bind-Value="customProPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
                 amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
                 sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
                 turpis.
             </BitProPanel>
-        </DemoSection>
+        </DemoExample>
 
-        <DemoSection Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>Explore styling and class customization for BitProPanel, including component styles, custom classes, and detailed styles.</div>
             <br /><br />
             <div>Component's Style & Class:</div><br />
@@ -265,9 +267,9 @@
                     turpis.
                 </div>
             </BitProPanel>
-        </DemoSection>
+        </DemoExample>
 
-        <DemoSection Title="RTL" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <DemoExample Title="RTL" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>Use BitProPanel in right-to-left (RTL).</div>
             <br /><br />
             <div>
@@ -302,7 +304,7 @@
                     </div>
                 </BitProPanel>
             </div>
-        </DemoSection>
+        </DemoExample>
 
     </DemoPage>
 </div>

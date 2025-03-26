@@ -7,8 +7,10 @@
 <DemoPage Name="PullToRefresh"
           Description="The PullToRefresh component is used to add the pull down to refresh feature to a page or a specific element."
           Parameters="componentParameters"
-          SubClasses="componentSubClasses">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+          SubClasses="componentSubClasses"
+          GitHubUrl="Utilities/PullToRefresh/BitPullToRefresh.razor"
+          GitHubDemoUrl="Utilities/PullToRefresh/BitPullToRefreshDemo.razor">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <BitPullToRefresh OnRefresh="HandleOnRefreshBasic">
             <div class="anchor">
                 @foreach (var (idx, i) in basicItems)
@@ -17,9 +19,9 @@
                 }
             </div>
         </BitPullToRefresh>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Custom loading" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <DemoExample Title="Custom loading" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <BitPullToRefresh OnRefresh="HandleOnRefreshCustom">
             <Anchor>
                 <div class="anchor">
@@ -38,9 +40,9 @@
                 </svg>
             </Loading>
         </BitPullToRefresh>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Multiple" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <DemoExample Title="Multiple" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <div class="example-content">
             <div>
                 <BitPullToRefresh OnRefresh="HandleOnRefresh1">
@@ -64,9 +66,9 @@
                 </BitPullToRefresh>
             </div>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Advanced" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <DemoExample Title="Advanced" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div>An illustrative example of integrating this component into a straightforward mobile application.</div>
         <br />
         <div class="mobile-frame">
@@ -95,9 +97,9 @@
                 </BitLayout>
             </div>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
         <br /><br />
         <div class="example-content">
@@ -121,6 +123,6 @@
                 </div>
             </BitPullToRefresh>
         </div>
-    </DemoSection>
+    </DemoExample>
 
 </DemoPage>

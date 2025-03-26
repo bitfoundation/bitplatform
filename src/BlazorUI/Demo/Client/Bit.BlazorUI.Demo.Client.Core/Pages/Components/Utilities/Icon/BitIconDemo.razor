@@ -7,8 +7,10 @@
 <DemoPage Name="Icon"
           Description="An icon represents concept or meaning for the user. It's used to make better user experience (UX) and user-friendly applications."
           Parameters="componentParameters"
-          SubEnums="componentSubEnums">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+          SubEnums="componentSubEnums"
+          GitHubUrl="Utilities/Icon/BitIcon.razor"
+          GitHubDemoUrl="Utilities/Icon/BitIconDemo.razor">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <BitIcon IconName="@BitIconName.Accept" />
         &nbsp;
         <BitIcon IconName="@BitIconName.Bus" />
@@ -21,9 +23,9 @@
         <BitIcon IconName="@BitIconName.Bus" IsEnabled="false" />
         &nbsp;
         <BitIcon IconName="@BitIconName.Pinned" IsEnabled="false" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Variant" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Variant" RazorCode="@example2RazorCode" Id="example2">
         <div>Fill</div><br />
         <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Fill" />
         <br /><br /><br /><br />
@@ -32,9 +34,9 @@
         <br /><br /><br /><br />
         <div>Text (default)</div><br />
         <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Text" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Size" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="Size" RazorCode="@example3RazorCode" Id="example3">
         <div>Small</div><br />
         <BitIcon Size="BitSize.Small" IconName="@BitIconName.Accept" />
         &nbsp;
@@ -55,9 +57,9 @@
         <BitIcon Size="BitSize.Large" IconName="@BitIconName.Bus" />
         &nbsp;
         <BitIcon Size="BitSize.Large" IconName="@BitIconName.Pinned" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Color" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Color" RazorCode="@example4RazorCode" Id="example4">
         <div>Offering a range of specialized color variants, providing visual cues for specific actions or states within your application.</div>
         <br /><br /><br />
         <div>Primary</div><br />
@@ -115,13 +117,13 @@
         <BitIcon Color="BitColor.Error" IconName="@BitIconName.Bus" />
         &nbsp;
         <BitIcon Color="BitColor.Error" IconName="@BitIconName.Pinned" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
         <div>
             <BitIcon IconName="@BitIconName.Accept" Size="BitSize.Large"
                      Style="background-color: brown; border-radius: 4px" />
             <BitIcon IconName="@BitIconName.Accept" Class="icon-class" />
         </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

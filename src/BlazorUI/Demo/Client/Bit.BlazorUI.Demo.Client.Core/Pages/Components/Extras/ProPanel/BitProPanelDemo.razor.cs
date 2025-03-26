@@ -429,7 +429,7 @@ private bool isAutoToggleScrollProPanelOpen;
 private BitProPanel bitProPanelRef = default!;";
 
     private readonly string example4RazorCode = @"
-<BitSpinButton @bind-Value=""customProPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+<BitNumberField @bind-Value=""customProPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
 
 <BitButton OnClick=""() => isStartProPanelOpen = true"">Start</BitButton>
 <BitButton OnClick=""() => isEndProPanelOpen = true"">End</BitButton>
@@ -443,7 +443,7 @@ private BitProPanel bitProPanelRef = default!;";
              HeaderText=""Start BitProPanel""
              Position=""BitPanelPosition.Start"">
     BitProPanel with Start position and custom Size.
-    <BitSpinButton @bind-Value=""customProPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+    <BitNumberField @bind-Value=""customProPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
     amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
     sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
@@ -455,7 +455,7 @@ private BitProPanel bitProPanelRef = default!;";
              HeaderText=""End BitProPanel""
              Position=""BitPanelPosition.End"">
     BitProPanel with End position and custom Size.
-    <BitSpinButton @bind-Value=""customProPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+    <BitNumberField @bind-Value=""customProPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
     amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
     sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
@@ -467,7 +467,7 @@ private BitProPanel bitProPanelRef = default!;";
              HeaderText=""Top BitProPanel""
              Position=""BitPanelPosition.Top"">
     BitProPanel with Top position and custom Size.
-    <BitSpinButton @bind-Value=""customProPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+    <BitNumberField @bind-Value=""customProPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
     amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
     sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
@@ -479,7 +479,7 @@ private BitProPanel bitProPanelRef = default!;";
              HeaderText=""Bottom BitProPanel""
              Position=""BitPanelPosition.Bottom"">
     BitProPanel with Bottom position and custom Size.
-    <BitSpinButton @bind-Value=""customProPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+    <BitNumberField @bind-Value=""customProPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
     amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
     sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut

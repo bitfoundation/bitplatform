@@ -526,7 +526,7 @@
     <value>Account</value>
   </data>
     <data name="AccountSubtitle" xml:space="preserve">
-    <value>Change your account email or phone number</value>
+    <value>Change your account email, phone number, or passwordless settings</value>
   </data>
     <data name="DeleteAccount" xml:space="preserve">
     <value>Delete Account</value>
@@ -717,8 +717,8 @@
     <data name="TermsMessage" xml:space="preserve">
     <value>I agree to the</value>
   </data>
-    <data name="UploadNewProfileImage" xml:space="preserve">
-    <value>Upload a new profile image</value>
+    <data name="UploadNewImage" xml:space="preserve">
+    <value>Upload a new image</value>
   </data>
     <data name="Yes" xml:space="preserve">
     <value>Yes</value>
@@ -1050,6 +1050,9 @@
   </data>
     <!--#endif -->
     <!--#if (module == "Admin" || module == "Sales") -->
+    <data name="ProductImageCouldNotBeFound" xml:space="preserve">
+    <value>Product image could not be found</value>
+  </data>
     <data name="CategoryCouldNotBeFound" xml:space="preserve">
     <value>Category entity could not be found</value>
   </data>
@@ -1207,4 +1210,22 @@
     <value>Products in the same category</value>
   </data>
     <!--#endif -->
+    <data name="Passwordless" xml:space="preserve">
+    <value>Passwordless</value>
+  </data>
+    <data name="PasswordlessTitle" xml:space="preserve">
+    <value>Passwordless login</value>
+  </data>
+    <data name="EnablePasswordless" xml:space="preserve">
+    <value>Enable passwordless login</value>
+  </data>
+    <data name="EnablePasswordlessSucsessMessage" xml:space="preserve">
+    <value>Passwordless login enabled successfully</value>
+  </data>
+    <data name="DisablePasswordless" xml:space="preserve">
+    <value>Disable passwordless login</value>
+  </data>
+    <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
+    <value>Passwordless login disabled successfully</value>
+  </data>
 </root>

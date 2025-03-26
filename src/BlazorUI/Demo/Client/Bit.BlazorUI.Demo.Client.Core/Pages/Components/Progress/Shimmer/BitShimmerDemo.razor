@@ -9,14 +9,16 @@
           Description="Shimmer is a temporary animation placeholder for when a service call takes time to return data and you don't want to block rendering the rest of the UI."
           Parameters="componentParameters"
           SubEnums="componentSubEnums"
-          SubClasses="componentSubClasses">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+          SubClasses="componentSubClasses"
+          GitHubUrl="Progress/Shimmer/BitShimmer.razor"
+          GitHubDemoUrl="Progress/Shimmer/BitShimmerDemo.razor">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>Explore the fundamental use of the BitShimmer.</div>
         <br />
         <BitShimmer />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Size" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Size" RazorCode="@example2RazorCode" Id="example2">
         <div>The BitShimmer can be customized using the Height and Width parameters.</div>
         <br />
         <div>Height</div>
@@ -24,9 +26,9 @@
         <br />
         <div>Width</div>
         <BitShimmer Width="10rem" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Circle" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="Circle" RazorCode="@example3RazorCode" Id="example3">
         <div>The BitShimmer can be rendered in Circle shape instead of a rectangle.</div>
         <br /><br />
         <div>Height</div>
@@ -34,9 +36,9 @@
         <br />
         <div>Width</div>
         <BitShimmer Circle Width="4rem" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Animation" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Animation" RazorCode="@example4RazorCode" Id="example4">
         <div>Discover various animation options of BitShimmer for different effects.</div>
         <br /><br />
         <div>Wave (default)</div>
@@ -47,9 +49,9 @@
             <BitShimmer Pulse Circle Height="4rem" Duration="3000" Delay="1000" />
             <BitShimmer Pulse Height="4rem" Width="100%" Duration="3000" Delay="1000" />
         </BitStack>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Loaded" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoExample Title="Loaded" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <div>Utilize BitShimmer's Loaded feature, displaying content when data is loaded.</div>
         <br /><br />
         <BitShimmer Loaded="@isDataLoaded" AriaLabel="Loading content" Height="1.5rem">
@@ -57,9 +59,9 @@
         </BitShimmer>
         <br />
         <BitToggleButton @bind-IsChecked="@isDataLoaded" Text="Toggle shimmer" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Advanced" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <DemoExample Title="Advanced" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>Explore advanced usage of BitShimmer, including template, content and nested shimmers.</div>
         <br /><br />
         <BitShimmer Loaded="@isContentLoaded" AriaLabel="Loading content" Width="15rem" Height="unset">
@@ -87,9 +89,9 @@
         </BitShimmer>
         <br />
         <BitToggleButton @bind-IsChecked="@isContentLoaded" Text="Toggle shimmer" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Color" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="Color" RazorCode="@example7RazorCode" Id="example7">
         <div>Customize the BitShimmer using different colors available in bit BlazorUI.</div>
         <br /><br />
         <div>Primary</div>
@@ -142,9 +144,9 @@
         <br />
         <div>TertiaryBorder</div>
         <BitShimmer Height="1rem" Color="BitColor.TertiaryBorder" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="BackgroundColor" RazorCode="@example8RazorCode" Id="example8">
+    <DemoExample Title="BackgroundColor" RazorCode="@example8RazorCode" Id="example8">
         <div>Customize the BitShimmer using different colors available in bit BlazorUI.</div>
         <br /><br />
         <div>Primary</div>
@@ -197,9 +199,9 @@
         <br />
         <div>TertiaryBorder</div>
         <BitShimmer Height="2rem" Background="BitColor.TertiaryBorder" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Style & Class" RazorCode="@example9RazorCode" Id="example9">
+    <DemoExample Title="Style & Class" RazorCode="@example9RazorCode" Id="example9">
         <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
         <br /><br />
         <div>
@@ -216,5 +218,5 @@
                                                            Shimmer="custom-shimmer",
                                                            ShimmerWrapper = "custom-wrapper" })" />
         </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

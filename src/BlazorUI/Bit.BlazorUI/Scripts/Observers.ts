@@ -3,24 +3,36 @@
         private static _resizeObservers: Record<string, ResizeObserver> = {};
 
         public static registerResize(id: string, element: HTMLElement, obj: DotNetObject) {
-            const observer = new ResizeObserver(entries => {
-                const entry = entries[0];
-                if (!entry) return;
+            if (!element || !(element instanceof Element)) return;
 
-                obj.invokeMethodAsync("OnResize", entry.contentRect);
-            });
-            observer.observe(element);
+            try {
+                const observer = new ResizeObserver(entries => {
+                    const entry = entries[0];
+                    if (!entry) return;
 
-            Observers._resizeObservers[id] = observer;
+                    obj.invokeMethodAsync("OnResize", entry.contentRect);
+                });
+                observer.observe(element);
+
+                Observers._resizeObservers[id] = observer;
+            } catch (err) {
+                console.error(err);
+            }
         }
 
         public static unregisterResize(id: string, element: HTMLElement, obj: DotNetObject) {
-            const observer = Observers._resizeObservers[id];
-            if (!observer) return;
+            if (!element || !(element instanceof Element)) return;
 
-            observer.unobserve(element);
-            delete Observers._resizeObservers[id];
-            obj.dispose();
+            try {
+                const observer = Observers._resizeObservers[id];
+                if (!observer) return;
+
+                observer.unobserve(element);
+                delete Observers._resizeObservers[id];
+                obj.dispose();
+            } catch (err) {
+                console.error(err);
+            }
         }
     }
 }

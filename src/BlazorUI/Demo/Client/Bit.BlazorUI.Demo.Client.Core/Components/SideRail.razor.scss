@@ -1,14 +1,16 @@
-﻿@import '../Styles/abstracts/_colors.scss';
+﻿@import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
-@import '../Styles/abstracts/_functions.scss';
 
 .side-rail {
     top: 5rem;
     width: 20%;
+    overflow: auto;
     position: sticky;
     height: fit-content;
+    padding-bottom: 2rem;
     list-style-type: none;
     padding-inline-start: 2rem;
+    max-height: calc(var(--bit-env-win-height) - 65px);
 
     @include lt-xl {
         display: none;

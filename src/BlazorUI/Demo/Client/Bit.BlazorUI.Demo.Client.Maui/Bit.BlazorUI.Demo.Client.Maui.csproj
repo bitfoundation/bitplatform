@@ -12,7 +12,7 @@
         <EnableDefaultCssItems>false</EnableDefaultCssItems>
 
         <!-- Display name -->
-        <ApplicationTitle>bit&#x2004;BlazorUI</ApplicationTitle>
+        <ApplicationTitle>bit BlazorUI</ApplicationTitle>
 
         <!-- App Identifier -->
         <ApplicationId>com.bitplatform.BlazorUI.Demo</ApplicationId>
@@ -47,7 +47,7 @@
         <!-- Run the following commands to create custom.aprof file which improves the Android app performance -->
         <!-- dotnet add package Mono.AotProfiler.Android -->
         <!-- dotnet build -t:BuildAndStartAotProfiling -f net9.0-android -p:UseInterpreter=false -->
-        <!-- dotnet build -t:FinishAotProfiling -f net8.0-android -->
+        <!-- dotnet build -t:FinishAotProfiling -f net9.0-android -->
         <!-- dotnet remove package Mono.AotProfiler.Android -->
     </ItemGroup>
 
@@ -85,12 +85,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.CodeAnalyzers" Version="9.5.1">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="9.6.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.AppCenter.Crashes" Version="5.0.7" />
-        <PackageReference Include="Bit.SourceGenerators" Version="9.5.1">
+        <PackageReference Include="Bit.SourceGenerators" Version="9.6.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -103,8 +103,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.40" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.40" />
+        <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.50" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.50" />
     </ItemGroup>
 
     <!-- Build Properties must be defined within these property groups to ensure successful publishing

@@ -1,5 +1,4 @@
-﻿@import '../../Styles/abstracts/_colors.scss';
-@import '../../Styles/abstracts/_functions.scss';
+﻿@import '../../Styles/abstracts/_functions.scss';
 @import '../../Styles/abstracts/_media-queries.scss';
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
@@ -183,16 +182,16 @@
     .component-row--active {
         .component-icon {
             path {
-                fill: $B2Color;
-                stroke: $B2Color;
+                fill: $bit-color-primary;
+                stroke: $bit-color-primary;
             }
         }
     }
 
     .component-icon {
         path {
-            fill: $B2Color;
-            stroke: $B2Color;
+            fill: $bit-color-primary;
+            stroke: $bit-color-primary;
         }
     }
 

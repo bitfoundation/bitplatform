@@ -9,9 +9,11 @@
     <DemoPage Name="ChoiceGroup"
               SecondaryNames="@(["Radio", "RadioButton", "RadioGroup", "RadioButtonGroup"])"
               Description="ChoiceGroup let people select a single option from two or more choices."
+              Notes="The BitChoiceGroup is a Multi-API component which can accept the list of Items in 3 different ways: BitChoiceGroupItem class, a custom Generic class, and BitChoiceGroupOption component."
               Parameters="componentParameters"
               SubClasses="componentSubClasses"
-              Notes="The BitChoiceGroup is a Multi-API component which can accept the list of Items in 3 different ways: BitChoiceGroupItem class, a custom Generic class, and BitChoiceGroupOption component.">
+              GitHubUrl="Inputs/ChoiceGroup/BitChoiceGroup.razor"
+              GitHubDemoUrl="Inputs/ChoiceGroup/BitChoiceGroupDemo.razor">
         <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })">
             <BitPivotItem HeaderText="Item">
                 <_BitChoiceGroupItemDemo />

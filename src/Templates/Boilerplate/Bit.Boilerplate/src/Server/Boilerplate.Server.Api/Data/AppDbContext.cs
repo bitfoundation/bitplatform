@@ -6,21 +6,21 @@ using Boilerplate.Server.Api.Models.Categories;
 //#if (sample == true)
 using Boilerplate.Server.Api.Models.Todo;
 //#endif
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Data.Configurations;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 //#if (notification == true)
 using Boilerplate.Server.Api.Models.PushNotification;
+//#endif
+//#if (database == "Sqlite")
+using System.Security.Cryptography;
 //#endif
 
 namespace Boilerplate.Server.Api.Data;
 
 public partial class AppDbContext(DbContextOptions<AppDbContext> options)
-    : IdentityDbContext<User, Role, Guid>(options), IDataProtectionKeyContext
+    : IdentityDbContext<User, Role, Guid>(options)
 {
-    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = default!;
-
     public DbSet<UserSession> UserSessions { get; set; } = default!;
 
     //#if (sample == true)
@@ -33,6 +33,8 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     //#if (notification == true)
     public DbSet<PushNotificationSubscription> PushNotificationSubscriptions { get; set; } = default!;
     //#endif
+
+    public DbSet<WebAuthnCredential> WebAuthnCredential { get; set; } = default!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -54,18 +56,14 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
 
         ConfigureIdentityTableNames(modelBuilder);
 
-        //#if (database != "Sqlite")
         ConfigureConcurrencyStamp(modelBuilder);
-        //#endif
     }
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
         try
         {
-            //#if (database != "Sqlite")
-            ReplaceOriginalConcurrencyStamp();
-            //#endif
+            SetConcurrencyStamp();
 
             return base.SaveChanges(acceptAllChangesOnSuccess);
         }
@@ -79,9 +77,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         try
         {
-            //#if (database != "Sqlite")
-            ReplaceOriginalConcurrencyStamp();
-            //#endif
+            SetConcurrencyStamp();
 
             return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
         }
@@ -91,16 +87,8 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         }
     }
 
-    //#if (database != "Sqlite")
-    /// <summary>
-    /// https://github.com/dotnet/efcore/issues/35443
-    /// </summary>
-    private void ReplaceOriginalConcurrencyStamp()
+    private void SetConcurrencyStamp()
     {
-        //#if (IsInsideProjectTemplate == true)
-        if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))
-            return;
-        //#endif
         ChangeTracker.DetectChanges();
 
         foreach (var entityEntry in ChangeTracker.Entries().Where(e => e.State is EntityState.Modified or EntityState.Deleted))
@@ -109,10 +97,28 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
                 || currentConcurrencyStamp is not byte[])
                 continue;
 
-            entityEntry.OriginalValues.SetValues(new Dictionary<string, object> { { "ConcurrencyStamp", currentConcurrencyStamp } });
+            //#if (database != "Sqlite")
+            //#if (IsInsideProjectTemplate == true)
+            if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture) is false)
+            {
+                //#endif
+                // https://github.com/dotnet/efcore/issues/35443
+                entityEntry.OriginalValues.SetValues(new Dictionary<string, object> { { "ConcurrencyStamp", currentConcurrencyStamp } });
+                //#if (IsInsideProjectTemplate == true)
+            }
+            //#endif
+            //#else
+            //#if (IsInsideProjectTemplate == true)
+            if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))
+            {
+                //#endif
+                entityEntry.CurrentValues.SetValues(new Dictionary<string, object> { { "ConcurrencyStamp", RandomNumberGenerator.GetBytes(8) } });
+                //#if (IsInsideProjectTemplate == true)
+            }
+            //#endif
+            //#endif
         }
     }
-    //#endif
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -180,25 +186,31 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
             .ToTable("UserClaims");
     }
 
-    //#if (database != "Sqlite")
     private void ConfigureConcurrencyStamp(ModelBuilder modelBuilder)
     {
-        //#if (IsInsideProjectTemplate == true)
-        if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))
-            return;
-        //#endif
-
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
             foreach (var property in entityType.GetProperties()
                 .Where(p => p.Name is "ConcurrencyStamp" && p.PropertyInfo?.PropertyType == typeof(byte[])))
             {
                 var builder = new PropertyBuilder(property);
+
+                //#if (database == "Sqlite")
+                //#if (IsInsideProjectTemplate == true)
+                if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))
+                {
+                    //#endif
+                    builder.IsConcurrencyToken();
+                    //#if (IsInsideProjectTemplate == true)
+                    continue;
+                }
+                //#endif
+                //#else
                 builder.IsConcurrencyToken()
                     .IsRowVersion();
 
                 //#if (IsInsideProjectTemplate == true)
-                if (Database.ProviderName.EndsWith("PostgreSQL", StringComparison.InvariantCulture))
+                if (Database.ProviderName!.EndsWith("PostgreSQL", StringComparison.InvariantCulture))
                 {
                     //#endif
                     //#if (database == "PostgreSQL")
@@ -209,8 +221,8 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
                     //#if (IsInsideProjectTemplate == true)
                 }
                 //#endif
+                //#endif
             }
         }
     }
-    //#endif
 }

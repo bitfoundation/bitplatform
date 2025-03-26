@@ -1,6 +1,9 @@
-<BitImage Src="@(Src ?? "_content/Boilerplate.Client.Core/images/product-placeholder.svg")" Width="@Width" ShouldFadeIn="false" />
+<div style="width:@Width;overflow:hidden;position:relative;" class="@Class">
+    <img src="@(Src ?? "_content/Boilerplate.Client.Core/images/product-placeholder.svg")" style="width:100%;height:auto;display:block;" />
+</div>
 
 @code {
     [Parameter] public string? Src { get; set; }
     [Parameter] public string? Width { get; set; }
+    [Parameter] public string? Class { get; set; }
 }

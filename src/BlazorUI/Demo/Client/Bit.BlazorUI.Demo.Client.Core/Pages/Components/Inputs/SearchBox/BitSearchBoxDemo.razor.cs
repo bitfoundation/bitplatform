@@ -26,6 +26,15 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "Color",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The general color of the search box, used for colored parts like icons.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum",
+        },
+        new()
+        {
             Name = "DefaultValue",
             Type = "string?",
             DefaultValue = "null",
@@ -301,6 +310,117 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Id = "color-enum",
+            Name = "BitColor",
+            Description = "Defines the general colors available in the bit BlazorUI.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Primary",
+                    Description="Info Primary general color.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Secondary",
+                    Description="Secondary general color.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Tertiary",
+                    Description="Tertiary general color.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Info",
+                    Description="Info general color.",
+                    Value="3",
+                },
+                new()
+                {
+                    Name= "Success",
+                    Description="Success general color.",
+                    Value="4",
+                },
+                new()
+                {
+                    Name= "Warning",
+                    Description="Warning general color.",
+                    Value="5",
+                },
+                new()
+                {
+                    Name= "SevereWarning",
+                    Description="SevereWarning general color.",
+                    Value="6",
+                },
+                new()
+                {
+                    Name= "Error",
+                    Description="Error general color.",
+                    Value="7",
+                },
+                new()
+                {
+                    Name= "PrimaryBackground",
+                    Description="Primary background color.",
+                    Value="8",
+                },
+                new()
+                {
+                    Name= "SecondaryBackground",
+                    Description="Secondary background color.",
+                    Value="9",
+                },
+                new()
+                {
+                    Name= "TertiaryBackground",
+                    Description="Tertiary background color.",
+                    Value="10",
+                },
+                new()
+                {
+                    Name= "PrimaryForeground",
+                    Description="Primary foreground color.",
+                    Value="11",
+                },
+                new()
+                {
+                    Name= "SecondaryForeground",
+                    Description="Secondary foreground color.",
+                    Value="12",
+                },
+                new()
+                {
+                    Name= "TertiaryForeground",
+                    Description="Tertiary foreground color.",
+                    Value="13",
+                },
+                new()
+                {
+                    Name= "PrimaryBorder",
+                    Description="Primary border color.",
+                    Value="14",
+                },
+                new()
+                {
+                    Name= "SecondaryBorder",
+                    Description="Secondary border color.",
+                    Value="15",
+                },
+                new()
+                {
+                    Name= "TertiaryBorder",
+                    Description="Tertiary border color.",
+                    Value="16",
+                }
+            ]
+        },
+        new()
+        {
             Id = "input-mode",
             Name = "BitInputMode",
             Description = "This allows a browser to display an appropriate virtual keyboard.",
@@ -476,6 +596,146 @@ public partial class BitSearchBoxDemo
 <BitSearchBox Placeholder=""Disabled Underlined"" IsEnabled=""false"" Underlined ShowSearchButton />";
 
     private readonly string example7RazorCode = @"
+<BitSearchBox Placeholder=""Search"" @bind-Value=""twoWaySearchValue"" />
+<BitTextField Placeholder=""Search Value"" @bind-Value=""twoWaySearchValue"" />
+
+
+<BitSearchBox Placeholder=""Search"" Immediate @bind-Value=""immediateTwoWaySearchValue"" />
+<BitTextField Placeholder=""Search Value"" Immediate @bind-Value=""immediateTwoWaySearchValue"" />
+
+
+<BitSearchBox Placeholder=""Search"" Immediate
+              OnChange=""s => onChangeSearchValue = s""
+              OnClear=""() => onChangeSearchValue = string.Empty"" />
+<div>Search Value: @onChangeSearchValue</div>
+
+
+<BitSearchBox Placeholder=""Search"" Immediate
+              OnSearch=""s => onSearchValue = s""
+              OnClear=""() => onSearchValue = string.Empty"" />
+<div>Search Value: @onSearchValue</div>";
+    private readonly string example7CsharpCode = @"
+private string twoWaySearchValue;
+private string onChangeSearchValue;
+private string onSearchValue;";
+
+    private readonly string example8RazorCode = @"
+<BitSearchBox @bind-Value=""@searchValue""
+              Immediate
+              Placeholder=""e.g. Apple""
+              SuggestItems=""GetSuggestedItems()"" />
+
+
+<BitSearchBox @bind-Value=""@searchValueWithSuggestFilterFunction""
+              Immediate
+              Placeholder=""e.g. Apple""
+              SuggestItems=""GetSuggestedItems()""
+              SuggestFilterFunction=""@SearchFunc"" />
+
+
+<BitSearchBox @bind-Value=""@searchValueWithMinSearchLength""
+              Immediate
+              Placeholder=""e.g. Apple""
+              MinSuggestTriggerChars=""1""
+              SuggestItems=""GetSuggestedItems()"" />
+
+
+<BitSearchBox @bind-Value=""@searchValueWithMaxSuggestedItems""
+              Immediate
+              Placeholder=""e.g. Apple""
+              MaxSuggestCount=""2""
+              SuggestItems=""GetSuggestedItems()"" />
+
+
+<BitSearchBox @bind-Value=""@searchValueWithSearchDelay""
+              Immediate
+              DebounceTime=""2000""
+              Placeholder=""e.g. Apple""
+              SuggestItems=""GetSuggestedItems()"" />
+
+
+<BitSearchBox @bind-Value=""@searchValueWithItemsProvider""
+              Immediate
+              Placeholder=""e.g. Pro""
+              SuggestItemsProvider=""LoadItems"" />
+<div>SearchValue: @searchValueWithItemsProvider</div>";
+    private readonly string example8CsharpCode = @"
+private string searchValue;
+private string searchValueWithSuggestFilterFunction;
+private string searchValueWithSearchDelay;
+private string searchValueWithMinSearchLength;
+private string searchValueWithMaxSuggestedItems;
+private string searchValueWithItemsProvider;
+
+private List<string> GetSuggestedItems() =>
+[
+        ""Apple"",
+        ""Red Apple"",
+        ""Blue Apple"",
+        ""Green Apple"",
+        ""Banana"",
+        ""Orange"",
+        ""Grape"",
+        ""Broccoli"",
+        ""Carrot"",
+        ""Lettuce""
+];
+
+private Func<string, string, bool> SearchFunc = (string searchText, string itemText) =>
+{
+    if (string.IsNullOrEmpty(searchText) || string.IsNullOrEmpty(itemText)) return false;
+
+    return itemText.StartsWith(searchText, StringComparison.OrdinalIgnoreCase);
+};
+
+private async ValueTask<IEnumerable<string>> LoadItems(BitSearchBoxSuggestItemsProviderRequest request)
+{
+    try
+    {
+        var query = new Dictionary<string, object?>()
+        {
+            { ""$top"", request.Take < 1 ? 5 : request.Take },
+        };
+
+        if (string.IsNullOrEmpty(request.SearchTerm) is false)
+        {
+            query.Add(""$filter"", $""contains(toupper(Name),'{request.SearchTerm.ToUpper()}')"");
+        }
+
+        var url = NavManager.GetUriWithQueryParameters(""Products/GetProducts"", query);
+
+        var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto, request.CancellationToken);
+
+        return data!.Items!.Select(i => i.Name)!;
+    }
+    catch
+    {
+        return [];
+    }
+}";
+
+    private readonly string example9RazorCode = @"
+<EditForm Model=""validationBoxModel"">
+    <DataAnnotationsValidator />
+    <BitSearchBox Placeholder=""Search"" Immediate
+                  DefaultValue=""This is default value""
+                  @bind-Value=""validationBoxModel.Text"" />
+    <ValidationMessage For=""() => validationBoxModel.Text"" />
+</EditForm>";
+    private readonly string example9CsharpCode = @"
+public class ValidationSearchBoxModel
+{
+    [StringLength(6, MinimumLength = 2, ErrorMessage = ""Text must be between 2 and 6 chars."")]
+    public string Text { get; set; }
+}
+
+private ValidationSearchBoxModel validationBoxModel = new();";
+
+    private readonly string example10RazorCode = @"
+<BitSearchBox Placeholder=""Search"" />
+<BitSearchBox Placeholder=""Disabled"" IsEnabled=""false"" />";
+
+    private readonly string example11RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -544,143 +804,7 @@ public partial class BitSearchBoxDemo
                                  IconWrapper = ""custom-icon-wrapper"",
                                  InputContainer = ""custom-input-container"" })"" />";
 
-    private readonly string example8RazorCode = @"
-<BitSearchBox Placeholder=""Search"" @bind-Value=""twoWaySearchValue"" />
-<BitTextField Placeholder=""Search Value"" @bind-Value=""twoWaySearchValue"" />
-
-
-<BitSearchBox Placeholder=""Search"" Immediate @bind-Value=""immediateTwoWaySearchValue"" />
-<BitTextField Placeholder=""Search Value"" Immediate @bind-Value=""immediateTwoWaySearchValue"" />
-
-
-<BitSearchBox Placeholder=""Search"" Immediate
-              OnChange=""s => onChangeSearchValue = s""
-              OnClear=""() => onChangeSearchValue = string.Empty"" />
-<div>Search Value: @onChangeSearchValue</div>
-
-
-<BitSearchBox Placeholder=""Search"" Immediate
-              OnSearch=""s => onSearchValue = s""
-              OnClear=""() => onSearchValue = string.Empty"" />
-<div>Search Value: @onSearchValue</div>";
-    private readonly string example8CsharpCode = @"
-private string twoWaySearchValue;
-private string onChangeSearchValue;
-private string onSearchValue;";
-
-    private readonly string example9RazorCode = @"
-<EditForm Model=""validationBoxModel"">
-    <DataAnnotationsValidator />
-    <BitSearchBox Placeholder=""Search"" Immediate
-                  DefaultValue=""This is default value""
-                  @bind-Value=""validationBoxModel.Text"" />
-    <ValidationMessage For=""() => validationBoxModel.Text"" />
-</EditForm>";
-    private readonly string example9CsharpCode = @"
-public class ValidationSearchBoxModel
-{
-    [StringLength(6, MinimumLength = 2, ErrorMessage = ""Text must be between 2 and 6 chars."")]
-    public string Text { get; set; }
-}
-
-private ValidationSearchBoxModel validationBoxModel = new();";
-
-    private readonly string example10RazorCode = @"
-<BitSearchBox @bind-Value=""@searchValue""
-              Immediate
-              Placeholder=""e.g. Apple""
-              SuggestItems=""GetSuggestedItems()"" />
-
-
-<BitSearchBox @bind-Value=""@searchValueWithSuggestFilterFunction""
-              Immediate
-              Placeholder=""e.g. Apple""
-              SuggestItems=""GetSuggestedItems()""
-              SuggestFilterFunction=""@SearchFunc"" />
-
-
-<BitSearchBox @bind-Value=""@searchValueWithMinSearchLength""
-              Immediate
-              Placeholder=""e.g. Apple""
-              MinSuggestTriggerChars=""1""
-              SuggestItems=""GetSuggestedItems()"" />
-
-
-<BitSearchBox @bind-Value=""@searchValueWithMaxSuggestedItems""
-              Immediate
-              Placeholder=""e.g. Apple""
-              MaxSuggestCount=""2""
-              SuggestItems=""GetSuggestedItems()"" />
-
-
-<BitSearchBox @bind-Value=""@searchValueWithSearchDelay""
-              Immediate
-              DebounceTime=""2000""
-              Placeholder=""e.g. Apple""
-              SuggestItems=""GetSuggestedItems()"" />
-
-
-<BitSearchBox @bind-Value=""@searchValueWithItemsProvider""
-              Immediate
-              Placeholder=""e.g. Pro""
-              SuggestItemsProvider=""LoadItems"" />
-<div>SearchValue: @searchValueWithItemsProvider</div>";
-    private readonly string example10CsharpCode = @"
-private string searchValue;
-private string searchValueWithSuggestFilterFunction;
-private string searchValueWithSearchDelay;
-private string searchValueWithMinSearchLength;
-private string searchValueWithMaxSuggestedItems;
-private string searchValueWithItemsProvider;
-
-private List<string> GetSuggestedItems() =>
-[
-        ""Apple"",
-        ""Red Apple"",
-        ""Blue Apple"",
-        ""Green Apple"",
-        ""Banana"",
-        ""Orange"",
-        ""Grape"",
-        ""Broccoli"",
-        ""Carrot"",
-        ""Lettuce""
-];
-
-private Func<string, string, bool> SearchFunc = (string searchText, string itemText) =>
-{
-    if (string.IsNullOrEmpty(searchText) || string.IsNullOrEmpty(itemText)) return false;
-
-    return itemText.StartsWith(searchText, StringComparison.OrdinalIgnoreCase);
-};
-
-private async ValueTask<IEnumerable<string>> LoadItems(BitSearchBoxSuggestItemsProviderRequest request)
-{
-    try
-    {
-        var query = new Dictionary<string, object?>()
-        {
-            { ""$top"", request.Take < 1 ? 5 : request.Take },
-        };
-
-        if (string.IsNullOrEmpty(request.SearchTerm) is false)
-        {
-            query.Add(""$filter"", $""contains(toupper(Name),'{request.SearchTerm.ToUpper()}')"");
-        }
-
-        var url = NavManager.GetUriWithQueryParameters(""Products/GetProducts"", query);
-
-        var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto, request.CancellationToken);
-
-        return data!.Items!.Select(i => i.Name)!;
-    }
-    catch
-    {
-        return [];
-    }
-}";
-
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitSearchBox Placeholder=""جستجو"" Dir=""BitDir.Rtl"" />
 <BitSearchBox Placeholder=""جستجو"" Dir=""BitDir.Rtl"" ShowSearchButton />
 <BitSearchBox Placeholder=""جستجو"" Dir=""BitDir.Rtl"" Underlined />";

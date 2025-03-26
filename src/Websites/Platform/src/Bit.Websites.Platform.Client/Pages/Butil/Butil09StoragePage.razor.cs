@@ -93,7 +93,7 @@ public partial class Butil09StoragePage
 @"@inject Bit.Butil.LocalStorage localStorage
 @inject Bit.Butil.SessionStorage sessionStorage
 
-<BitSpinButton @bind-Value=""keyIndex"" />
+<BitNumberField @bind-Value=""keyIndex"" />
 
 <BitButton OnClick=""@GetKey"">GetKey</BitButton>
 

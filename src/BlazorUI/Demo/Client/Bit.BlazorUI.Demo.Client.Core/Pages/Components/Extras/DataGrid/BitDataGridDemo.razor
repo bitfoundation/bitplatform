@@ -12,8 +12,10 @@
           Notes="To use this component, you need to install the `Bit.BlazorUI.Extras` nuget package, as described in the Optional steps of the Getting started page."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
-          SubEnums="componentSubEnums">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+          SubEnums="componentSubEnums"
+          GitHubExtrasUrl="DataGrid/BitDataGrid.razor"
+          GitHubDemoUrl="Extras/DataGrid/BitDataGridDemo.razor">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <div class="grid1">
             <div class="grid1-container">
                 <BitDataGrid Items="@FilteredItems1" ResizableColumns="true" Pagination="@pagination1">
@@ -34,9 +36,9 @@
             </div>
             <BitDataGridPaginator Value="@pagination1" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Customized" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <DemoExample Title="Customized" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <div class="grid2">
             <div class="grid2-container">
                 <BitDataGrid Items="@FilteredItems2" ResizableColumns="true" Pagination="@pagination2">
@@ -65,9 +67,9 @@
                 <TextTemplate Context="state">@(state.CurrentPageIndex + 1) / @(state.LastPageIndex + 1)</TextTemplate>
             </BitDataGridPaginator>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Virtualizing" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <DemoExample Title="Virtualizing" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <div class="grid3">
             <BitDataGrid ItemsProvider="@foodRecallProvider" TGridItem="FoodRecall" Virtualize="true" @ref="dataGrid">
                 <BitDataGridPropertyColumn Property="@(c=>c.EventId)" />
@@ -83,9 +85,9 @@
                           Immediate DebounceTime="300"
                           Placeholder="Search on Company" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="OData" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <DemoExample Title="OData" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div class="grid3">
             <BitDataGrid ItemKey="(p => p.Id)" ItemsProvider="@productsItemsProvider" TGridItem="ProductDto" Virtualize="true" @ref="productsDataGrid">
                 <BitDataGridPropertyColumn Property="@(p => p.Id)" Sortable="true" IsDefaultSort="BitDataGridSortDirection.Ascending" />
@@ -98,5 +100,5 @@
                           Immediate DebounceTime="300"
                           Placeholder="Search on Name" />
         </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

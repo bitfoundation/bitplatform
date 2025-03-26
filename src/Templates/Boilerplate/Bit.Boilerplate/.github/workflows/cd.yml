@@ -38,8 +38,9 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'src/Shared/appsettings.json, src/Client/Boilerplate.Client.Core/appsettings.json, src/Client/Boilerplate.Client.Web/appsettings.json'
+        files: 'src/**/appsettings*json'
       env:
+        WebAppRender.BlazorMode: 'BlazorWebAssembly'
         ServerAddress: ${{ env.SERVER_ADDRESS }}
 #if (notifications == true)
         AdsPushVapid.PublicKey: ${{ secrets.PUBLIC_VAPIDKEY }}
@@ -98,19 +99,8 @@ jobs:
         with:
           files: 'appsettings.json'
         env:
-          ConnectionStrings_SqlServerConnectionString: ${{ secrets.DB_CONNECTION_STRING }}
-          DataProtectionCertificatePassword: ${{ secrets.API_DATA_PROTECTION_CERTIFICATE_PASSWORD }}
-
-      - name: Delete DataProtectionCertificate.pfx
-        run: |
-            rm DataProtectionCertificate.pfx
-
-      - name: Extract data protection certificate from env
-        uses: timheuer/base64-to-file@v1.2
-        with:
-            fileDir: './'
-            fileName: 'DataProtectionCertificate.pfx'
-            encodedString: ${{ secrets.API_DATA_PROTECTION_CERTIFICATE_FILE_BASE64 }}
+          ConnectionStrings.SqlServerConnectionString: ${{ secrets.DB_CONNECTION_STRING }}
+          Identity.JwtIssuerSigningKeySecret: ${{ secrets.Jwt_Issuer_Signing_Key_Secret }}
 
       - name: Run migrations
         run: |
@@ -148,7 +138,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'src\Shared\appsettings.json, src\Client\Boilerplate.Client.Core\appsettings.json, src\Client\Boilerplate.Client.Windows\appsettings.json'
+        files: 'src\**\appsettings*json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
         WindowsUpdate.FilesUrl: 'https://use-your-api-server-url-here.com/windows' # Deploy the published Windows application files to your desired hosting location and use the host url here.
@@ -197,7 +187,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'src/Shared/appsettings.json, src/Client/Boilerplate.Client.Core/appsettings.json, src/Client/Boilerplate.Client.Maui/appsettings.json'
+        files: 'src/**/appsettings*json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
 
@@ -246,7 +236,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'src/Shared/appsettings.json, src/Client/Boilerplate.Client.Core/appsettings.json, src/Client/Boilerplate.Client.Maui/appsettings.json'
+        files: 'src/**/appsettings*json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
 

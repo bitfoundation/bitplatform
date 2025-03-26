@@ -9,8 +9,10 @@
           Description="The Pivot control and related tabs pattern are used for navigating frequently accessed, distinct content categories. Pivots allow for navigation between two or more contentviews and relies on text headers to articulate the different sections of content. Tapping on a pivot item header navigates to that header's section content. Tabs are a visual variant of Pivot that use a combination of icons and textor just icons to articulate section content."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
-          SubEnums="componentSubEnums">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+          SubEnums="componentSubEnums"
+          GitHubUrl="Navs/Pivot/BitPivot.razor"
+          GitHubDemoUrl="Navs/Pivot/BitPivotDemo.razor">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <BitPivot>
             <BitPivotItem HeaderText="File">
                 <h3>Pivot #1</h3>
@@ -25,9 +27,9 @@
                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
             </BitPivotItem>
         </BitPivot>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Icon and Count" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Icon and Count" RazorCode="@example2RazorCode" Id="example2">
         <BitPivot>
             <BitPivotItem HeaderText="Files" IconName="@BitIconName.Info">
                 <h1>Pivot #1: Files</h1>
@@ -42,9 +44,9 @@
                 <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
             </BitPivotItem>
         </BitPivot>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Size" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="Size" RazorCode="@example3RazorCode" Id="example3">
         <BitPivot Size="@BitSize.Large">
             <BitPivotItem HeaderText="Large File">
                 <h1>Pivot #1: Large File</h1>
@@ -59,9 +61,9 @@
                 <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
             </BitPivotItem>
         </BitPivot>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="HeaderType" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="HeaderType" RazorCode="@example4RazorCode" Id="example4">
         <BitPivot HeaderType="@BitPivotHeaderType.Tab">
             <BitPivotItem HeaderText="File tab">
                 <h1>Pivot #1: File tab</h1>
@@ -76,9 +78,9 @@
                 <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
             </BitPivotItem>
         </BitPivot>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Binding" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoExample Title="Binding" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <BitPivot @bind-SelectedKey="selectedKey">
             <BitPivotItem Key="1" HeaderText="Samples">
                 <h1>Pivot #1: Samples</h1>
@@ -110,9 +112,9 @@
                    OnClick="(() => selectedKey = (int.Parse(selectedKey) + 1).ToString())">
             Next
         </BitButton>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Detached" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <DemoExample Title="Detached" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div style="border:1px solid gray;padding:10px;">
             @if (detachedSelectedKey == "Foo")
             {
@@ -142,9 +144,9 @@
             <BitPivotItem HeaderText="Bas" Key="Bas"></BitPivotItem>
             <BitPivotItem HeaderText="Biz" Key="Biz"></BitPivotItem>
         </BitPivot>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <DemoExample Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <BitPivot OnItemClick="@(item => selectedPivotItem = item)">
             <BitPivotItem HeaderText="Foo">
                 <h1>Pivot #1: Foo</h1>
@@ -165,9 +167,9 @@
         </BitPivot>
         <br /><br />
         <div>Last header clicked: <b>@selectedPivotItem?.HeaderText</b></div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Templates" RazorCode="@example8RazorCode" Id="example8">
+    <DemoExample Title="Templates" RazorCode="@example8RazorCode" Id="example8">
         <BitPivot>
             <BitPivotItem>
                 <Header>
@@ -199,9 +201,9 @@
                 </Body>
             </BitPivotItem>
         </BitPivot>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Alignment" RazorCode="@example9RazorCode" Id="example9">
+    <DemoExample Title="Alignment" RazorCode="@example9RazorCode" Id="example9">
         <BitPivot Alignment="BitAlignment.Center">
             <BitPivotItem HeaderText="File">
                 <h1>Pivot #1</h1>
@@ -216,9 +218,9 @@
                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. </p>
             </BitPivotItem>
         </BitPivot>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Position" RazorCode="@example10RazorCode" Id="example10">
+    <DemoExample Title="Position" RazorCode="@example10RazorCode" Id="example10">
         <div>Pivot Position: <b>Top</b></div><br />
         <div class="box">
             <BitPivot Position="BitPivotPosition.Top">
@@ -290,9 +292,9 @@
                 </BitPivotItem>
             </BitPivot>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
+    <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
         <div>
             <div>Component's Style & Class:</div><br />
             <BitPivot Style="border: 1px solid tomato;">
@@ -356,9 +358,9 @@
                 </BitPivotItem>
             </BitPivot>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="RTL" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="RTL" RazorCode="@example12RazorCode" Id="example12">
         <BitPivot Dir="BitDir.Rtl" OverflowBehavior="@BitPivotOverflowBehavior.Scroll">
             <BitPivotItem HeaderText="اسناد" IconName="@BitIconName.Info">
                 <p>
@@ -376,5 +378,5 @@
                 </p>
             </BitPivotItem>
         </BitPivot>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

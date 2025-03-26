@@ -9,8 +9,10 @@
               SecondaryNames="@(["ScrollView"])"
               Description="A ScrollablePane is a component for scrolling through content that doesn't fit entirely on the screen."
               Parameters="componentParameters"
-              SubEnums="componentSubEnums">
-        <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+              SubEnums="componentSubEnums"
+              GitHubUrl="Surfaces/ScrollablePane/BitScrollablePane.razor"
+              GitHubDemoUrl="Surfaces/ScrollablePane/BitScrollablePaneDemo.razor">
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
             <BitScrollablePane Style="height:350px;" Class="pane">
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
                 amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
@@ -48,9 +50,9 @@
                 Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
                 efficitur.
             </BitScrollablePane>
-        </DemoSection>
+        </DemoExample>
 
-        <DemoSection Title="Width & Height" RazorCode="@example2RazorCode" Id="example2">
+        <DemoExample Title="Width & Height" RazorCode="@example2RazorCode" Id="example2">
             <div><b>Height</b>:</div>
             <BitScrollablePane Height="15rem" Class="pane">
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
@@ -102,9 +104,9 @@
                 sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
                 turpis. In hac habitasse platea dictumst.
             </BitScrollablePane>
-        </DemoSection>
+        </DemoExample>
 
-        <DemoSection Title="Overflow" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <DemoExample Title="Overflow" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div style="max-width: 19rem;">
                 <BitChoiceGroup @bind-Value="overflow"
                                 Horizontal
@@ -116,7 +118,7 @@
                     <BitChoiceGroupOption Text="Visible" Value="BitOverflow.Visible" />
                 </BitChoiceGroup>
                 <br />
-                <BitSpinButton Label="Items count" Min="4" @bind-Value="@overflowItemsCount" />
+                <BitNumberField Label="Items count" Min="4" @bind-Value="@overflowItemsCount" />
                 <br />
                 <BitScrollablePane Overflow="@overflow" Height="16rem" Class="pane">
                     @for (int i = 0; i < overflowItemsCount; i++)
@@ -126,9 +128,9 @@
                     }
                 </BitScrollablePane>
             </div>
-        </DemoSection>
+        </DemoExample>
 
-        <DemoSection Title="Scrollbar gutter" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <DemoExample Title="Scrollbar gutter" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div style="max-width: 19rem;">
                 <BitChoiceGroup @bind-Value="gutter"
                                 Horizontal
@@ -139,7 +141,7 @@
                     <BitChoiceGroupOption Text="BothEdges" Value="BitScrollbarGutter.BothEdges" />
                 </BitChoiceGroup>
                 <br />
-                <BitSpinButton Label="Items count" Min="4" @bind-Value="@gutterItemsCount" />
+                <BitNumberField Label="Items count" Min="4" @bind-Value="@gutterItemsCount" />
                 <br />
                 <BitScrollablePane Gutter="@gutter" Height="16rem" Class="pane">
                     @for (int i = 0; i < gutterItemsCount; i++)
@@ -149,6 +151,6 @@
                     }
                 </BitScrollablePane>
             </div>
-        </DemoSection>
+        </DemoExample>
     </DemoPage>
 </div>

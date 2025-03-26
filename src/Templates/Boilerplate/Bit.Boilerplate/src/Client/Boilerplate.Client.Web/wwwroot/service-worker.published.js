@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-// bit version: 9.5.1
+// bit version: 9.6.0
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 //#if (notification == true)
@@ -25,19 +25,39 @@ self.assetsExclude = [
     /bit\.blazorui\.fluent\.css$/,
     /bit\.blazorui\.fluent-dark\.css$/,
     /bit\.blazorui\.fluent-light\.css$/,
-    // If a PDF viewer is needed in the PWA, remove these two lines:
+
+    // If a PDF reader (https://blazorui.bitplatform.dev/components/pdfreader) is needed in the PWA, remove these two lines:
     /pdfjs-4\.7\.76\.js$/,
-    /pdfjs-4\.7\.76-worker\.js$/
+    /pdfjs-4\.7\.76-worker\.js$/,
+
+    //#if (module != "Admin")
+    /chartjs-2\.9\.4\.js$/,
+    /chartjs-2\.9\.4-adapter\.js$/,
+    //#endif
+
+    // If a MarkDown viewer (https://blazorui.bitplatform.dev/components/markdownviewer) is needed in the PWA, remove this line:
+    /marked-15\.0\.7\.js$/,
+
+    // https://github.com/orgs/bitfoundation/discussions/10238#discussioncomment-12493737
+    /_content\/Bit\.BlazorES2019\/blazor\.server\.js$/,
+    /_content\/Bit\.BlazorES2019\/blazor\.webview\.js$/,
+    /_framework\/blazor\.web\.js$/,
+    /_framework\/blazor\.webassembly\.js$/
 ];
 self.externalAssets = [
     {
         "url": "/"
     },
+    /* If you don't plan to support older browsers and prefer to use the original `blazor.web.js`, follow the instructions in this link: https://github.com/orgs/bitfoundation/discussions/10238#discussioncomment-12493737
     {
         url: "_framework/blazor.web.js"
     },
+    */
     {
         "url": "Boilerplate.Server.Web.styles.css"
+    },
+    {
+        "url": "Boilerplate.Client.Web.bundle.scp.css"
     }
 ];
 
@@ -58,16 +78,12 @@ self.serverHandledUrls = [
     /\/sitemap_index.xml/
 ];
 
-self.defaultUrl = "/";
-self.isPassive = true;
-self.errorTolerance = 'lax';
-self.caseInsensitiveUrl = true;
-self.noPrerenderQuery = 'no-prerender=true';
+self.prerenderMode = 'none'; // Demo: https://adminpanel.bitplatform.dev/ (No-Prerendering + Offline support)
 
+// On apps with Prerendering enabled, to have the best experience for the end user un-comment one of the following lines:
+// self.prerenderMode = 'always'; // Demo: https://sales.bitplatform.dev/ (Always show pre-render without offline support)
+// self.prerenderMode = 'initial'; // Demo: https://todo.bitplatform.dev/ (Pre-Render on first site visit + Offline support)
 
-// on apps with Prerendering enabled, to have the best experience for the end user un-comment the following line.
-// more info: https://bitplatform.dev/bswup/service-worker
-// self.disablePassiveFirstBoot = true;
-
+self.enableIntegrityCheck = false;
 
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');

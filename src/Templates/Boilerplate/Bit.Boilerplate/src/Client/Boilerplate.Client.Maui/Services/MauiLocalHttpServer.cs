@@ -1,6 +1,7 @@
 ﻿using EmbedIO;
 using System.Net;
 using EmbedIO.Actions;
+using System.Reflection;
 using System.Net.Sockets;
 using Boilerplate.Client.Core.Components;
 
@@ -11,11 +12,19 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
     [AutoInject] private IExceptionHandler exceptionHandler;
     [AutoInject] private AbsoluteServerAddressProvider absoluteServerAddress;
 
+    private int port = -1;
     private WebServer? localHttpServer;
 
-    public int Start(CancellationToken cancellationToken)
+    public int Port => port;
+
+    public string Origin => $"http://localhost:{port}";
+
+    public int EnsureStarted()
     {
-        var port = GetAvailableTcpPort();
+        if (port != -1)
+            return port;
+
+        port = GetAvailableTcpPort();
 
         localHttpServer = new WebServer(o => o
             .WithUrlPrefix($"http://localhost:{port}")
@@ -55,7 +64,32 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
                 {
                     exceptionHandler.Handle(exp);
                 }
-            }));
+            }))
+            .WithModule(new ActionModule("/external-js-runner.html", HttpVerbs.Get, async ctx =>
+            {
+                try
+                {
+                    await using var file = Assembly.Load("Boilerplate.Client.Maui").GetManifestResourceStream("Boilerplate.Client.Maui.wwwroot.external-js-runner.html")!;
+                    await file.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
+                }
+                catch (Exception exp)
+                {
+                    exceptionHandler.Handle(exp);
+                }
+            }))
+            .WithModule(new ActionModule("/app.js", HttpVerbs.Get, async ctx =>
+            {
+                try
+                {
+                    await using var file = Assembly.Load("Boilerplate.Client.Maui").GetManifestResourceStream("Boilerplate.Client.Maui.wwwroot.scripts.app.js")!;
+                    await file.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
+                }
+                catch (Exception exp)
+                {
+                    exceptionHandler.Handle(exp);
+                }
+            }))
+            .WithModule(new MauiExternalJsRunner());
 
         localHttpServer.HandleHttpException(async (context, exception) =>
         {
@@ -66,14 +100,14 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             });
         });
 
-        _ = localHttpServer.RunAsync(cancellationToken)
+        _ = localHttpServer.RunAsync()
             .ContinueWith(task =>
             {
                 if (task.Exception is not null)
                 {
                     exceptionHandler.Handle(task.Exception);
                 }
-            }, cancellationToken);
+            });
 
         return port;
     }
@@ -85,6 +119,11 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
         var port = ((IPEndPoint)l.LocalEndpoint).Port;
         l.Stop();
         return port;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        localHttpServer?.Dispose();
     }
 
     /// <summary>

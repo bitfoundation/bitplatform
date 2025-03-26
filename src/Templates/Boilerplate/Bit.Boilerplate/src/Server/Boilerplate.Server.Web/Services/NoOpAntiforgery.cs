@@ -3,7 +3,7 @@
 namespace Boilerplate.Server.Web.Services;
 
 /// <summary>
-/// The anti-forgery cookie can interfere with ASP.NET Core's output caching mechanisms.
+/// The anti-forgery cookie can interfere with CDN cache mechanisms.
 /// This occurs because the cookie is tied to a user's session, causing the cache to be
 /// considered specific to the individual user, thereby preventing the caching of
 /// shared content that can be reused across multiple users.

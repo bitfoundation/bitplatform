@@ -2,6 +2,8 @@
 
 public partial class Routes
 {
+    [Parameter] public Type? Layout { get; set; }
+
     [AutoInject] NavigationManager? navigationManager { set => universalLinksNavigationManager = value; get => universalLinksNavigationManager; }
     private static NavigationManager? universalLinksNavigationManager;
 

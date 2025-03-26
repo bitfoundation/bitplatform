@@ -10,7 +10,8 @@ public partial class User : IdentityUser<Guid>
     [PersonalData]
     public string? FullName { get; set; }
 
-    public string? DisplayName => FullName ?? Email ?? PhoneNumber ?? UserName;
+    public string? DisplayName => FullName ?? DisplayUserName;
+    public string? DisplayUserName => FullName ?? Email ?? PhoneNumber ?? UserName;
 
     [PersonalData]
     public Gender? Gender { get; set; }
@@ -22,7 +23,7 @@ public partial class User : IdentityUser<Guid>
     public string? ProfileImageName { get; set; }
 
     /// <summary>
-    /// The date and time of the last token request. Ensures the generated token is valid and can only be used once.
+    /// The date and time of the last token request. Ensures only the latest generated token is valid and can only be used once.
     /// </summary>
     public DateTimeOffset? EmailTokenRequestedOn { get; set; }
 
@@ -44,4 +45,6 @@ public partial class User : IdentityUser<Guid>
     //#if (sample == true)
     public List<TodoItem> TodoItems { get; set; } = [];
     //#endif
+
+    public List<WebAuthnCredential> WebAuthnCredentials { get; set; } = [];
 }

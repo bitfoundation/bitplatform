@@ -9,12 +9,14 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : BitTextInputBase<TValue>
 {
+    private int _precision;
     private bool _hasFocus;
     private TValue _min = default!;
     private TValue _max = default!;
     private TValue _step = default!;
     private readonly string _labelId;
     private readonly string _inputId;
+    private readonly string _inputMode;
     private readonly Type _typeOfValue;
     private readonly TValue _zeroValue;
     private ElementReference _buttonIncrement;
@@ -36,6 +38,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         _inputId = $"BitNumberField-{UniqueId}-input";
         _labelId = $"BitNumberField-{UniqueId}-label";
+
+        _inputMode = (_typeOfValue == typeof(decimal) || _typeOfValue == typeof(double) || _typeOfValue == typeof(float)) ? "decimal" : "numeric";
     }
 
 
@@ -85,14 +89,24 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public string? DecrementIconName { get; set; }
 
     /// <summary>
+    /// The title to show when the mouse is placed on the decrement button.
+    /// </summary>
+    [Parameter] public string? DecrementTitle { get; set; }
+
+    /// <summary>
     /// Initial value of the number field.
     /// </summary>
     [Parameter] public TValue? DefaultValue { get; set; }
 
     /// <summary>
+    /// If true, the input is hidden.
+    /// </summary>
+    [Parameter] public bool HideInput { get; set; }
+
+    /// <summary>
     /// The aria label of the icon for the benefit of screen readers.
     /// </summary>
-    [Parameter] public string IconAriaLabel { get; set; } = string.Empty;
+    [Parameter] public string? IconAriaLabel { get; set; }
 
     /// <summary>
     /// Icon name for an icon to display alongside the number field's label.
@@ -110,15 +124,25 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public string? IncrementIconName { get; set; }
 
     /// <summary>
-    /// The position of the label in regards to the number field.
+    /// The title to show when the mouse is placed on the increment button.
+    /// </summary>
+    [Parameter] public string? IncrementTitle { get; set; }
+
+    /// <summary>
+    /// If true, the input is readonly.
+    /// </summary>
+    [Parameter] public bool IsInputReadOnly { get; set; }
+
+    /// <summary>
+    /// The position of the label in regards to the spin button.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public bool InlineLabel { get; set; }
+    public BitLabelPosition? LabelPosition { get; set; }
 
     /// <summary>
     /// Descriptive label for the number field, Label displayed above the number field and read by screen readers.
     /// </summary>
-    [Parameter] public string Label { get; set; } = string.Empty;
+    [Parameter] public string? Label { get; set; }
 
     /// <summary>
     /// Shows the custom Label for number field. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.
@@ -138,6 +162,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter]
     [CallOnSet(nameof(OnSetMax))]
     public string? Max { get; set; }
+
+    /// <summary>
+    /// Determines how the spinning buttons should be rendered.
+    /// </summary>
+    [Parameter] public BitSpinButtonMode? Mode { get; set; }
 
     /// <summary>
     /// The format of the number in the number field.
@@ -185,6 +214,13 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public string? Placeholder { get; set; }
 
     /// <summary>
+    /// How many decimal places the value should be rounded to.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetPrecision))]
+    public int? Precision { get; set; }
+
+    /// <summary>
     /// Prefix displayed before the numeric field contents. This is not included in the value.
     /// Ensure a descriptive label is present to assist screen readers, as the value does not include the prefix.
     /// </summary>
@@ -194,11 +230,6 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Shows the custom prefix for numeric field.
     /// </summary>
     [Parameter] public RenderFragment? PrefixTemplate { get; set; }
-
-    /// <summary>
-    /// Whether to show the increment and decrement buttons.
-    /// </summary>
-    [Parameter] public bool ShowButtons { get; set; }
 
     /// <summary>
     /// Difference between two adjacent values of the number field.
@@ -238,7 +269,13 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         ClassBuilder.Register(() => _hasFocus ? $"bit-nfl-fcs {Classes?.Focused}" : string.Empty);
 
-        ClassBuilder.Register(() => $"bit-nfl-{(InlineLabel ? "ilb" : "tlb")}");
+        ClassBuilder.Register(() => LabelPosition switch
+        {
+            BitLabelPosition.Bottom => "bit-nfl-lbt",
+            BitLabelPosition.Start => "bit-nfl-lst",
+            BitLabelPosition.End => "bit-nfl-led",
+            _ => "bit-nfl-ltp"
+        });
 
         ClassBuilder.Register(() => IsEnabled && Required ? "bit-nfl-req" : string.Empty);
 
@@ -254,10 +291,14 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     protected override async Task OnInitializedAsync()
     {
+        OnValueChanged += HandleOnValueChanged;
+
         if (ValueHasBeenSet is false && DefaultValue is not null)
         {
             Value = DefaultValue;
         }
+
+        NormalizeValue();
 
         await base.OnInitializedAsync();
     }
@@ -272,6 +313,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         if (BindConverter.TryConvertTo(value, CultureInfo.InvariantCulture, out result))
         {
             result = CheckMinAndMax(result);
+
+            result = Normalize(result);
 
             parsingErrorMessage = null;
             return true;
@@ -579,11 +622,66 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
     }
 
-    private string GetInputMode()
+    private void OnSetPrecision()
     {
-        return (_typeOfValue == typeof(decimal) || _typeOfValue == typeof(double) || _typeOfValue == typeof(float))
-            ? "decimal"
-            : "numeric";
+        _precision = Precision is not null ? Precision.Value : CalculatePrecision();
+    }
+
+    private TValue Normalize(TValue value)
+    {
+        if (value is double doubleValue)
+        {
+            return (TValue)Convert.ChangeType(Math.Round(doubleValue, _precision), typeof(TValue));
+        }
+        else if (value is float floatValue)
+        {
+            return (TValue)Convert.ChangeType(Math.Round(floatValue, _precision), typeof(TValue));
+        }
+        else if (value is decimal decimalValue)
+        {
+            return (TValue)Convert.ChangeType(Math.Round(decimalValue, _precision), typeof(TValue));
+        }
+
+        return value;
+    }
+
+    private int CalculatePrecision()
+    {
+        var step = Step ?? _step?.ToString() ?? "1";
+        var regex = new Regex(@"[1-9]([0]+$)|\.([0-9]*)");
+        if (regex.IsMatch(step) is false) return 0;
+
+        var matches = regex.Matches(step);
+        if (matches.Count == 0) return 0;
+
+        var groups = matches[0].Groups;
+        if (groups[1] != null && groups[1].Length != 0)
+        {
+            return -groups[1].Length;
+        }
+
+        if (groups[2] != null && groups[2].Length != 0)
+        {
+            return groups[2].Length;
+        }
+
+        return 0;
+    }
+
+    private void NormalizeValue()
+    {
+        if (Value is null) return;
+
+        var val = Normalize(Value);
+
+        if (EqualityComparer<TValue>.Default.Equals(val, Value)) return;
+
+        Value = val;
+    }
+
+    private void HandleOnValueChanged(object? sender, EventArgs args)
+    {
+        NormalizeValue();
     }
 
 
@@ -591,6 +689,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return;
+
+        OnValueChanged -= HandleOnValueChanged;
 
         _continuousChangeValueCts?.Dispose();
 

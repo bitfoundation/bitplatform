@@ -8,8 +8,10 @@
           Description="Tooltip component briefly describes unlabeled controls or provides a bit of additional information about labeled controls."
           Parameters="componentParameters"
           SubEnums="componentSubEnums"
-          SubClasses="componentSubClasses">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+          SubClasses="componentSubClasses"
+          GitHubUrl="Surfaces/Tooltip/BitTooltip.razor"
+          GitHubDemoUrl="Surfaces/Tooltip/BitTooltipDemo.razor">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>Explore the fundamental use of BitTooltip with a simple hover interaction on a BitButton.</div>
         <br />
         <div class="tooltips-container">
@@ -17,9 +19,9 @@
                 <BitButton Variant="BitVariant.Outline">Hover over me</BitButton>
             </BitTooltip>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Position" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Position" RazorCode="@example2RazorCode" Id="example2">
         <div>You can customize the Tooltip position to enhance the user experience.</div>
         <br />
         <div class="tooltips-container center">
@@ -41,9 +43,9 @@
                 </BitTooltip>
             </div>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Custom content" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="Custom content" RazorCode="@example3RazorCode" Id="example3">
         <div>Here are some examples of customizing the tooltip content.</div>
         <br />
         <div class="tooltips-container">
@@ -59,9 +61,9 @@
                 </Anchor>
             </BitTooltip>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Advanced" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <DemoExample Title="Advanced" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div>Here are some examples of advanced usage of tooltip.</div>
         <br />
         <div class="tooltips-container center">
@@ -78,7 +80,7 @@
                 <br />
                 <BitDropdown Label="Tooltip positions" Items="tooltipPositionList" @bind-Value="tooltipPosition" Style="width: 8rem;" />
                 <br />
-                <BitSpinButton Label="Hide delay" @bind-Value="hideDelay" Mode="BitSpinButtonMode.Inline" Style="width: 8rem;" />
+                <BitNumberField Label="Hide delay" @bind-Value="hideDelay" Mode="BitSpinButtonMode.Inline" Style="width: 8rem;" />
             </div>
 
             <div class="tooltips-container">
@@ -91,9 +93,9 @@
                 <BitToggle @bind-Value="showOnHover" Text="Show tooltip on hover" />
             </div>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Styles & Classes" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="Styles & Classes" RazorCode="@example5RazorCode" Id="example5">
         <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
         <br /><br />
         <div class="tooltips-container">
@@ -107,9 +109,9 @@
                 <BitButton Variant="BitVariant.Outline">Hover over me</BitButton>
             </BitTooltip>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="RTL" RazorCode="@example6RazorCode" Id="example6">
+    <DemoExample Title="RTL" RazorCode="@example6RazorCode" Id="example6">
         <div>Use BitTooltip in right-to-left (RTL).</div>
         <br /><br />
         <div class="tooltips-container">
@@ -125,5 +127,5 @@
                 </Anchor>
             </BitTooltip>
         </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

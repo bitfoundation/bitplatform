@@ -1,0 +1,7 @@
+﻿@* The `MainLayout` does not support Blazor Static SSR.  
+   Therefore, `App.razor` passes this layout to `Routes.razor`, where it is used as the layout in `<LayoutView />`,  
+   as long as `@rendermode` is null for pages marked with `@attribute [ExcludeFromInteractiveRouting]`. *@
+
+@inherits LayoutComponentBase
+
+@Body

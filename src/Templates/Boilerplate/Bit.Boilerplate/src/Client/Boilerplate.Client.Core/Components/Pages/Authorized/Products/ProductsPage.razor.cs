@@ -16,7 +16,6 @@ public partial class ProductsPage
     private bool isLoading;
     private bool isDeleteDialogOpen;
     private ProductDto? deletingProduct;
-    private AddOrEditProductModal? modal;
     private string productNameFilter = string.Empty;
     private string categoryNameFilter = string.Empty;
 
@@ -103,12 +102,12 @@ public partial class ProductsPage
 
     private async Task CreateProduct()
     {
-        await modal!.ShowModal(new ProductDto());
+        NavigationManager.NavigateTo(Urls.AddOrEditProductPage);
     }
 
     private async Task EditProduct(ProductDto product)
     {
-        await modal!.ShowModal(product);
+        NavigationManager.NavigateTo($"{Urls.AddOrEditProductPage}/{product.Id}");
     }
 
     private async Task DeleteProduct()

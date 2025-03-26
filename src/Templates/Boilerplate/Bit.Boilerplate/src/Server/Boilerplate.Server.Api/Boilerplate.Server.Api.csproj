@@ -4,6 +4,10 @@
         <TargetFramework>net9.0</TargetFramework>
         <UserSecretsId>AC87AA5B-4B37-4E52-8468-2D5DF24AF256</UserSecretsId>
         <CoreCompileDependsOn>PrepareResources;$(CompileDependsOn)</CoreCompileDependsOn>
+
+        <SelfContained>true</SelfContained>
+        <PublishReadyToRun>true</PublishReadyToRun>
+        <PublishReadyToRunComposite>true</PublishReadyToRunComposite>
     </PropertyGroup>
 
     <ItemGroup>
@@ -15,6 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Fido2.AspNet" />
         <PackageReference Include="libphonenumber-csharp" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.ApplicationInsights.AspNetCore" />
         <PackageReference Include="Humanizer" />
@@ -26,7 +31,6 @@
         <PackageReference Include="FluentStorage" />
         <PackageReference Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="FluentStorage.Azure.Blobs" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
-        <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
         <PackageReference Include="Microsoft.AspNetCore.OData" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
@@ -58,10 +62,6 @@
         <Using Include="Microsoft.EntityFrameworkCore" />
         <Using Include="Microsoft.AspNetCore.OData.Query" />
         <Using Include="Microsoft.AspNetCore.Mvc" />
-
-        <None Update="DataProtectionCertificate.pfx">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
 
         <Content Include=".config\dotnet-tools.json" />
     </ItemGroup>

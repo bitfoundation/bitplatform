@@ -1,0 +1,29 @@
+@page "/components/markdownviewer"
+
+<PageOutlet Url="components/markdownviewer"
+            Title="MarkdownViewer"
+            Description="markdownviewer component of the bit BlazorUI components" />
+
+<DemoPage Name="MarkdownViewer"
+          Description="BitMarkdownViewer is a SEO friendly Blazor wrapper around the famous markedjs library."
+          SecondaryNames="@(["MdViewer", "MD"])"
+          Parameters="componentParameters"
+          GitHubExtrasUrl="MarkdownViewer/BitMarkdownViewer.razor"
+          GitHubDemoUrl="Extras/MarkdownViewer/BitMarkdownViewerDemo.razor">
+    <NotesTemplate>
+        <BitMarkdownViewer Markdown="@("To use this component, you need to install the **`Bit.BlazorUI.Extras`** nuget package, as described in the Optional steps of the Getting started page.")" />
+        <BitMarkdownViewer Markdown="@("To utilize the **prerender** mode you need to install the [**`Jint`**](https://www.nuget.org/packages/Jint) nuget package on the Server project that is responsible for the prerendering.")" />
+    </NotesTemplate>
+
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <BitMarkdownViewer Markdown="@("# Marked in the browser\n\nRendered by **marked**.")" />
+        </DemoExample>
+
+        <DemoExample Title="Advanced" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                <BitMarkdownViewer Markdown="@advancedMarkdown" Class="advanced" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

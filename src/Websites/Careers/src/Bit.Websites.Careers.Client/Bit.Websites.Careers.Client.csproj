@@ -6,14 +6,21 @@
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
         <InvariantTimezone>true</InvariantTimezone>
         <InvariantGlobalization>true</InvariantGlobalization>
+        <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+        <BlazorCacheBootResources>false</BlazorCacheBootResources>
         <ResolveStaticWebAssetsInputsDependsOn>
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
+
+        <WasmFingerprintAssets>false</WasmFingerprintAssets>
+        <StaticWebAssetsFingerprintContent>false</StaticWebAssetsFingerprintContent>
+        <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.2" />
+        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.3" />
     </ItemGroup>
 
     <ItemGroup>
@@ -22,19 +29,20 @@
 
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
-
-        <PackageReference Include="Bit.BlazorUI" Version="9.5.1" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="9.5.1" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="9.5.1" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="9.5.1">
+        <PackageReference Include="Bit.Bswup" Version="9.6.0" />
+        <PackageReference Include="Bit.BlazorUI" Version="9.6.0" />
+        <PackageReference Include="Bit.BlazorES2019" Version="9.6.0" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="9.6.0" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="9.6.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="9.6.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="9.5.1">
+        <PackageReference Include="Bit.SourceGenerators" Version="9.6.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.3" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
@@ -101,5 +109,12 @@
         <None Include="package*json" />
         <None Include="tsconfig.json" />
     </ItemGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+        <!-- https://emscripten.org/docs/tools_reference/emcc.html -->
+        <!-- https://github.com/dotnet/runtime/blob/main/src/mono/wasm/build/WasmApp.Common.targets -->
+        <EmccLinkOptimizationFlag>-O3</EmccLinkOptimizationFlag>
+        <EmccCompileOptimizationFlag>-O3</EmccCompileOptimizationFlag>
+    </PropertyGroup>
 
 </Project>

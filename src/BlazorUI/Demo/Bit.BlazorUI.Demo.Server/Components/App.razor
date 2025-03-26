@@ -19,39 +19,16 @@
     <script>
         // disable auto-zoom of iOS Safari when focusing an input
         (/iPad|iPhone|iPod/.test(navigator.userAgent)) &&
-            (document.querySelector('meta[name="viewport"]').content = 'width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0')
+        (document.querySelector('meta[name="viewport"]').content = 'width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0')
     </script>
 
     <Link rel="icon" href="favicon.ico" type="image/x-icon" />
     <HeadOutlet @rendermode=renderMode />
     <Link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
-    @if (AppRenderMode.PwaEnabled)
-    {
-        <Link rel="manifest" href="manifest.json" />
-    }
+    <Link rel="manifest" href="manifest.json" />
 </head>
 
 <body class="@BitCss.Class.Color.Background.Primary @BitCss.Class.Color.Foreground.Primary bit-blazor-web">
-
-    <!-- Google tag (gtag.js) -->
-    <Script async Src="https://www.googletagmanager.com/gtag/js?id=G-G1ET5L69QF"></Script>
-    <Script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-
-        gtag('config', 'G-G1ET5L69QF');
-    </Script>
-    <!-- Google tag -->
-    <!-- Microsoft Clarity
-    <Script>
-        (function (c, l, a, r, i, t, y) {
-            c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments) };
-            t = l.createElement(r); t.async = 1; t.src = "https://www.clarity.ms/tag/" + i;
-            y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
-        })(window, document, "clarity", "script", "ipec21ezsa");
-    </Script>
-    Microsoft Clarity -->
 
     <Link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
     <Link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
@@ -67,31 +44,21 @@
     }
     <Routes @rendermode=renderMode />
 
-    <Script src="_framework/blazor.web.js?v=9.0.0" autostart="false"></Script>
-    @if (AppRenderMode.PwaEnabled)
+    @if (HttpContext.Request.IsLightHouseRequest() is false)
     {
-        <Script src="_content/Bit.Bswup/bit-bswup.js"></Script>
-        <Script src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
+        if (AppRenderMode.PrerenderEnabled)
+        {
+            <Script Src="_content/Bit.BlazorUI.Extras/marked/marked-15.0.7.js" AppendVersion="false"></Script>
+        }
+        <Script Src="_content/Bit.BlazorES2019/blazor.web.js" autostart="false"></Script>
+        <Script Src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_content/Bit.BlazorES2019/blazor.web.js"></Script>
+        <Script Src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
         <AppBswupProgressBar />
+        <Script Src="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism.js"></Script>
+        <Script Src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
+        <Script Src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></Script>
+        <Script Src="_content/Bit.BlazorUI.Demo.Client.Core/scripts/app.js"></Script>
     }
-    else
-    {
-        <Script>
-            Blazor.start({
-                webAssembly: {
-                    loadBootResource: function (type, name, defaultUri, integrity) {
-                        if (integrity != null && integrity != '')
-                            return `${defaultUri}?v=${integrity}`;
-                        return null; // default blazor asset loading mechanism.
-                    }
-                }
-            });
-        </Script>
-    }
-    <Script src="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism.js"></Script>
-    <Script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
-    <Script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></Script>
-    <Script src="_content/Bit.BlazorUI.Demo.Client.Core/scripts/app.js"></Script>
 </body>
 
 </html>

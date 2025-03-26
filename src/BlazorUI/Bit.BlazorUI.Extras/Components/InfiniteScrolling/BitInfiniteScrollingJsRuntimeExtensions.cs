@@ -7,9 +7,10 @@ internal static class BitInfiniteScrollingJsRuntimeExtensions
                                                               string? scrollerSelector,
                                                               ElementReference rootElement,
                                                               ElementReference lastElement,
+                                                              decimal? threshold,
                                                               DotNetObjectReference<BitInfiniteScrolling<T>> dotnetObj)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.InfiniteScrolling.setup", id, scrollerSelector, rootElement, lastElement, dotnetObj);
+        return jsRuntime.InvokeVoid("BitBlazorUI.InfiniteScrolling.setup", id, scrollerSelector, rootElement, lastElement, threshold, dotnetObj);
     }
 
     public static ValueTask BitInfiniteScrollingReobserve(this IJSRuntime jsRuntime,

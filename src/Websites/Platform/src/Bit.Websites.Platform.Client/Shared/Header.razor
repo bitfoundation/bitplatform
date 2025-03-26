@@ -15,7 +15,7 @@
                     </svg>
                 </BitButton>
             }
-            <a class="header-logo" href="@Urls.HomePage" aria-label="Home page" />
+            <a class="header-logo" href="@Urls.Home" aria-label="Home page" />
             <div class="header-link header-ps-btn @(isDocsRoute ? "header-link--active" : null)">
                 Products
                 <div class="header-menu-popup">
@@ -51,7 +51,7 @@
                         <a class="menu-item @(isBesqlDocRoute ? "active" : "")" href="@Urls.Besql">
                             <div class="menu-item-content">
                                 <div class="item-title">Besql</div>
-                                <div class="item-desc">Blazor Entity Framework Sqlite</div>
+                                <div class="item-desc">Blazor Entity Framework SQLite</div>
                             </div>
                         </a>
 
@@ -71,6 +71,7 @@
                     </div>
                 </div>
             </div>
+            <a class="header-link @(currentUrl == Urls.Demos ? "header-link--active" : null)" href="@Urls.Demos">Demos</a>
             <a class="header-link @(currentUrl == Urls.Pricing ? "header-link--active" : null)" href="@Urls.Pricing">Pricing</a>
             <a class="header-link @(currentUrl == Urls.AboutUs ? "header-link--active" : null)" href="@Urls.AboutUs">About us</a>
             <a class="header-link @(currentUrl == Urls.ContactUs ? "header-link--active" : null)" href="@Urls.ContactUs">Contact us</a>
@@ -82,7 +83,7 @@
 
             <button @onclick="WrapHandled(ToggleTheme)" class="toggle-theme-btn dark-theme" title="Turn on light">
                 <span class="icon-container">
-                    <img src="/images/sun.svg" />
+                    <img src="/images/sun.png" />
                 </span>
             </button>
             <button @onclick="WrapHandled(ToggleTheme)" class="toggle-theme-btn light-theme" title="Turn off light">
@@ -145,7 +146,7 @@
                     <a class="menu-item @(isBesqlDocRoute ? "active" : "")" href="@Urls.Besql" @onclick=@WrapHandled(ToggleHeaderMenu)>
                         <div class="menu-item-content">
                             <div class="item-title">Besql</div>
-                            <div class="item-desc">Blazor Entity Framework Sqlite</div>
+                            <div class="item-desc">Blazor Entity Framework SQLite</div>
                         </div>
                     </a>
 
@@ -165,6 +166,7 @@
                 </div>
             </div>
         </div>
+        <a class="header-nav-link @(currentUrl == Urls.Demos ? "header-nav-link--active" : null)" href="@Urls.Demos" @onclick=@WrapHandled(ToggleHeaderMenu)>Demos</a>
         <a class="header-nav-link @(currentUrl == Urls.Pricing ? "header-nav-link--active" : null)" href="@Urls.Pricing" @onclick=@WrapHandled(ToggleHeaderMenu)>Pricing</a>
         <a class="header-nav-link @(currentUrl == Urls.AboutUs ? "header-nav-link--active" : null)" href="@Urls.AboutUs" @onclick=@WrapHandled(ToggleHeaderMenu)>About us</a>
         <a class="header-nav-link @(currentUrl == Urls.ContactUs ? "header-nav-link--active" : null)" href="@Urls.ContactUs" @onclick=@WrapHandled(ToggleHeaderMenu)>Contact us</a>

@@ -2,21 +2,26 @@
 
 public partial class DemoPage
 {
+    private const string REPO_URL = "https://github.com/bitfoundation/bitplatform";
+
     [Parameter] public string Name { get; set; } = default!;
     [Parameter] public string[]? SecondaryNames { get; set; }
     [Parameter] public string? Description { get; set; }
     [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
     [Parameter] public string? Notes { get; set; }
     [Parameter] public RenderFragment? NotesTemplate { get; set; }
-    [Parameter] public string? VideoUrl { get; set; }
-    [Parameter] public string? VideoDescription { get; set; }
-    [Parameter] public RenderFragment? VideoDescriptionTemplate { get; set; }
+    [Parameter] public string? IntroductionVideoUrl { get; set; }
+    [Parameter] public string? Introduction { get; set; }
+    [Parameter] public RenderFragment? IntroductionTemplate { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public RenderFragment? Examples { get; set; }
     [Parameter] public List<ComponentParameter> Parameters { get; set; } = [];
     [Parameter] public List<ComponentSubClass> SubClasses { get; set; } = [];
     [Parameter] public List<ComponentSubEnum> SubEnums { get; set; } = [];
     [Parameter] public List<ComponentParameter> PublicMembers { get; set; } = [];
+    [Parameter] public string? GitHubUrl { get; set; }
+    [Parameter] public string? GitHubExtrasUrl { get; set; }
+    [Parameter] public string? GitHubDemoUrl { get; set; }
 
 
 
@@ -163,7 +168,7 @@ public partial class DemoPage
 
     private readonly List<string> _inputComponents = [
         "Calendar", "Checkbox", "ChoiceGroup", "DatePicker", "DateRangePicker", "Dropdown", "NumberField", "OtpInput", "Rating",
-        "SearchBox", "SpinButton", "TextField", "TimePicker", "CircularTimePicker", "Toggle"
+        "SearchBox", "TextField", "TimePicker", "CircularTimePicker", "Toggle"
     ];
 
     private readonly List<ComponentParameter> _inputBaseParameters =

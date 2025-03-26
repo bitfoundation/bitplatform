@@ -25,11 +25,11 @@ public partial class PushNotificationService
             .Where(s => s.DeviceId == dto.DeviceId || s.UserSessionId == userSessionId /* pushManager's subscription has been renewed. */)
             .ExecuteDeleteAsync(cancellationToken);
 
-        var subscription = dbContext.PushNotificationSubscriptions.Add(new()
+        var subscription = (await dbContext.PushNotificationSubscriptions.AddAsync(new()
         {
             DeviceId = dto.DeviceId,
             Platform = dto.Platform
-        }).Entity;
+        })).Entity;
 
         dto.Patch(subscription);
 

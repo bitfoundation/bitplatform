@@ -1,0 +1,187 @@
+﻿@page "/demo"
+@page "/demos"
+@inherits AppComponentBase
+
+<PageOutlet Url="demos"
+            Title="Demos"
+            Description="Open source, Ultra fast, High quality, Cross platform web, desktop and mobile apps developed by C# .NET">
+    <link rel="prerender" href="https://todo.bitplatform.dev/" />
+    <link rel="prerender" href="https://sales.bitplatform.dev/" />
+    <link rel="prerender" href="https://blazorui.bitplatform.dev/" />
+    <link rel="prerender" href="https://adminpanel.bitplatform.dev/" />
+</PageOutlet>
+
+<div class="page-container">
+    <div class="page-content">
+        <div class="page-section-content">
+            <BitText Typography="BitTypography.H1" Align="BitTextAlign.Center" Gutter>Products Demo</BitText>
+
+            <BitText Typography="BitTypography.H3" Align="BitTextAlign.Center" Gutter>It's not just another Blazor component library!</BitText>
+
+            <BitText Typography="BitTypography.H5" Align="BitTextAlign.Center" Gutter>
+                A complete E2E solution for C# .NET developers from one of the best technology partners available
+            </BitText>
+
+            <br />
+
+            <BitStack Alignment="BitAlignment.Center">
+                <BitStack Horizontal Wrap Alignment="BitAlignment.Center" Style="max-width:800px">
+                    <BitTag Color="BitColor.Info">Free</BitTag>
+                    <BitTag Color="BitColor.Info">Open source</BitTag>
+                    <BitTag Color="BitColor.Info">Full stack</BitTag>
+                    <BitTag Color="BitColor.Info">Cross platform</BitTag>
+                    <BitTag Color="BitColor.Info">SEO friendly</BitTag>
+                    <BitTag Color="BitColor.Info">Localization</BitTag>
+                    <BitTag Color="BitColor.Info">OTP</BitTag>
+                    <BitTag Color="BitColor.Info">Magic link</BitTag>
+                    <BitTag Color="BitColor.Info">2FA</BitTag>
+                    <BitTag Color="BitColor.Info">Social sign-in</BitTag>
+                    <BitTag Color="BitColor.Info">EF core in browser</BitTag>
+                    <BitTag Color="BitColor.Info">reCAPTCHA</BitTag>
+                    <BitTag Color="BitColor.Info">PWA</BitTag>
+                    <BitTag Color="BitColor.Info">Dark/Light theme</BitTag>
+                    <BitTag Color="BitColor.Info">Logging</BitTag>
+                    <BitTag Color="BitColor.Info">Realtime dashboard</BitTag>
+                    <BitTag Color="BitColor.Info">In-app updates</BitTag>
+                    <BitTag Color="BitColor.Info">Super-optimized</BitTag>
+                </BitStack>
+            </BitStack>
+        </div>
+
+        <br /><br /><br />
+
+        <BitText id="boilerplate" Style="scroll-margin-top:100px" Typography="BitTypography.H4" Gutter>Boilerplate</BitText>
+        <BitText Gutter>
+            The bit Boilerplate is a feature-packed project template that accelerates your development. Watch the video to see its built-in capabilities in action.
+        </BitText>
+        <br />
+        <div class="video-container">
+            <iframe src="https://www.youtube.com/embed/MCrF1iwN1h4"
+                    width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
+            </iframe>
+        </div>
+        <br />
+        <BitText Typography="BitTypography.H6" Gutter>
+            You can start playing with its source code here: <a href="https://codespaces.new/bitfoundation/bit-templates-playground/tree/develop" target="_blank">Boilerplate playground</a>
+        </BitText>
+        <br />
+        <BitText Gutter>
+            Both <a href="https://bitplatform.dev" target="_blank">bitplatform.dev</a> and <a href="https://blazorui.bitplatform.dev" target="_blank">blazorui.bitplatform.dev</a>
+            were built using this project template. With our straightforward setup and a bit of time to get familiar with the Boilerplate,
+            you’ll have a project with the same functionality deployed in production in less than a week.
+            Check out our samples to see the Boilerplate in action across various platforms
+            (you can use  <BitTag Size="BitSize.Small" Color="BitColor.Tertiary" Variant="BitVariant.Outline">test@bitplatform.dev</BitTag> as
+            the email and <BitTag Size="BitSize.Small" Color="BitColor.Tertiary" Variant="BitVariant.Outline">123456</BitTag> as the password to login):
+        </BitText>
+
+        <br /><br /><br /><br />
+
+        <BitText id="adminpanel" Style="scroll-margin-top:100px" Typography="BitTypography.H4" Gutter>AdminPanel</BitText>
+        <div class="page-flex-container">
+            <div class="page-content-container">
+                <img class="template-img dark-image" src="/images/demos/admin-dark.webp" alt="AdminPanel sample" />
+                <img class="template-img light-image" src="/images/demos/admin-light.webp" alt="AdminPanel sample" />
+            </div>
+
+            <div class="page-content-container">
+                <BitText Gutter>
+                    Our AdminPanel app delivers a seamless and high-performance experience on both mobile and desktop, ensuring optimal functionality across devices.
+                </BitText>
+                <a class="primary-btn" href="@Urls.AdminPanelPwa" target="_blank" title="PWA">PWA</a>
+                <a class="secondary-btn" href="@Urls.AdminPanelGooglePlay" target="_blank" title="Google Play"><span class="btn-img google-play"></span>Android</a>
+                <a class="secondary-btn" href="@Urls.AdminPanelAppleStore" target="_blank" title="Apple Store"><span class="btn-img apple-store"></span>iOS - macOS</a>
+                <a class="secondary-btn" href="@Urls.AdminPanelWindows" target="_blank" title="Windows"><span class="btn-img windows"></span>Windows</a>
+                <a class="secondary-btn" href="@Urls.AdminPanelPlayground" target="_blank" title="GitHub codespace"><span class="btn-img github"></span>Playground</a>
+            </div>
+        </div>
+
+        <BitText id="sales" Style="scroll-margin-top:100px" Typography="BitTypography.H4" Gutter>Sales (still shaping up)</BitText>
+        <div class="page-flex-container">
+            <div class="page-content-container">
+                <img class="template-img dark-image" src="/images/demos/sales-dark.webp" alt="Sales sample" />
+                <img class="template-img light-image" src="/images/demos/sales-light.webp" alt="Sales sample" />
+            </div>
+
+            <div class="page-content-container">
+                <BitText Gutter>
+                    See the speed of a website built with our Boilerplate.
+                </BitText>
+                <a class="primary-btn" href="@Urls.SalesPwa" target="_blank" title="PWA">PWA</a>
+                <a class="secondary-btn disabled" title="Google Play"><span class="btn-img google-play"></span>Android (Coming soon)</a>
+                <a class="secondary-btn disabled" title="Apple Store"><span class="btn-img apple-store"></span>iOS - macOS (Coming soon)</a>
+                <a class="secondary-btn" href="@Urls.SalesWindows" target="_blank" title="Windows"><span class="btn-img windows"></span>Windows</a>
+            </div>
+        </div>
+
+        <BitText id="todo" Style="scroll-margin-top:100px" Typography="BitTypography.H4" Gutter>Todo</BitText>
+        <div class="page-flex-container">
+            <div class="page-content-container">
+                <img class="template-img dark-image" src="/images/demos/todo-dark.webp" alt="Todo sample" />
+                <img class="template-img light-image" src="/images/demos/todo-light.webp" alt="Todo sample" />
+            </div>
+
+            <div class="page-content-container">
+                <BitText Gutter>
+                    Experience the rapid performance of our sample app on mobile, desktop, and web, all built with our Boilerplate.
+                </BitText>
+                <a class="primary-btn" href="@Urls.TodoTemplatePwa" target="_blank" title="PWA">PWA</a>
+                <a class="secondary-btn" href="@Urls.TodoOfflineWebApp" target="_blank" title="EF-Core / SQLite inside browser">EF-Core / SQLite inside browser</a>
+                <a class="secondary-btn" href="@Urls.TodoTemplateGooglePlay" target="_blank" title="Google Play"><i class="btn-img google-play" />Android</a>
+                <a class="secondary-btn" href="@Urls.TodoTemplateAppleStore" target="_blank" title="Apple Store"><span class="btn-img apple-store"></span>iOS - macOS</a>
+                <a class="secondary-btn" href="@Urls.TodoTemplateWindows" target="_blank" title="Windows"><span class="btn-img windows"></span>Windows</a>
+            </div>
+        </div>
+
+        <BitText id="platform" Style="scroll-margin-top:100px" Typography="BitTypography.H4" Gutter>Platform website</BitText>
+        <div class="page-flex-container">
+            <div class="page-content-container">
+                <img class="template-img dark-image" src="/images/demos/platform-dark.webp" alt="bitplatform website" />
+                <img class="template-img light-image" src="/images/demos/platform-light.webp" alt="bitplatform website" />
+            </div>
+
+            <div class="page-content-container">
+                <BitText Gutter>
+                    Experience the blazing speed of bitplatform.dev! This site was built using our own product, showcasing the exceptional performance you can achieve for your projects.
+                </BitText>
+                <a class="primary-btn" href="@Urls.PlatformPwa" target="_blank" title="PWA">PWA</a>
+                <a class="secondary-btn" href="@Urls.PlatformPageSpeed" target="_blank" title="PageSpeed Insights">PageSpeed Insights</a>
+            </div>
+        </div>
+
+        <BitText id="blazorui" Style="scroll-margin-top:100px" Typography="BitTypography.H4" Gutter>BlazorUI</BitText>
+        <div class="page-flex-container">
+            <div class="page-content-container">
+                <img class="template-img dark-image" src="/images/demos/blazorui-dark.webp" alt="BlazorUI sample" />
+                <img class="template-img light-image" src="/images/demos/blazorui-light.webp" alt="BlazorUI sample" />
+            </div>
+
+            <div class="page-content-container">
+                <BitText Gutter>
+                    Meet bit BlazorUI, a lightweight yet powerful component library for C# developers.
+                    It’s ideal for building consumer-facing apps and websites that are fast, responsive, and optimized for both desktop and mobile.
+                </BitText>
+                <a class="primary-btn" href="@Urls.BlazorUiPwa" target="_blank" title="PWA">PWA</a>
+                <a class="secondary-btn" href="@Urls.BlazorUiGooglePlay" target="_blank" title="Google Play"><span class="btn-img google-play"></span>Android</a>
+                <a class="secondary-btn" href="@Urls.BlazorUiAppleStore" target="_blank" title="Apple Store"><span class="btn-img apple-store"></span>iOS - macOS</a>
+                <a class="secondary-btn" href="@Urls.BlazorUiWindows" target="_blank" title="Windows"><span class="btn-img windows"></span>Windows</a>
+                <a class="secondary-btn" href="@Urls.BlazorUiPlayground" target="_blank" title="GitHub codespace"><span class="btn-img github"></span>Playground</a>
+                <a class="secondary-btn" href="@Urls.BlazorUiBenchmarks" target="_blank" title="Benchmark repo"><span class="btn-img github"></span>Benchmarks</a>
+            </div>
+        </div>
+
+        <BitText>
+            <b>Note:</b> These websites are all deployed on a single app service plan, leveraging the cheapest available plan.
+        </BitText>
+
+        <br /><br /><br /><br />
+
+        <BitText Typography="BitTypography.H2" Align="BitTextAlign.Center">
+            a few words from our customers
+        </BitText>
+
+        <br />
+
+        <CustomerCarousel />
+    </div>
+</div>

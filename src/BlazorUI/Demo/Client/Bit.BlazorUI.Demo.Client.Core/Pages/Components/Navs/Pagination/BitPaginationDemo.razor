@@ -8,12 +8,14 @@
           Description="Pagination component helps users easily navigate through content, allowing swift browsing across multiple pages or sections, commonly used in lists, tables, and content-rich interfaces."
           Parameters="componentParameters"
           SubEnums="componentSubEnums"
-          SubClasses="componentSubClasses">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+          SubClasses="componentSubClasses"
+          GitHubUrl="Navs/Pagination/BitPagination.razor"
+          GitHubDemoUrl="Navs/Pagination/BitPaginationDemo.razor">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <BitPagination Count="5" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Variants" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Variants" RazorCode="@example2RazorCode" Id="example2">
         <div>The pagination offers three variants: Fill (default), Outline, and Text.</div>
         <br /><br />
         <div>Fill</div>
@@ -24,42 +26,42 @@
         <br /><br />
         <div>Text</div>
         <BitPagination Count="5" Variant="BitVariant.Text" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Default selected" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="Default selected" RazorCode="@example3RazorCode" Id="example3">
         <div>Displays default selected page within the BitPagination component.</div>
         <br />
         <BitPagination Count="5" DefaultSelectedPage="3" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="BoundaryCount" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="BoundaryCount" RazorCode="@example4RazorCode" Id="example4">
         <div>Set a limit to the number of pages shown at the beginning and end of the pagination range.</div>
         <br />
         <BitPagination Count="11" DefaultSelectedPage="6" BoundaryCount="1" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="MiddleCount" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="MiddleCount" RazorCode="@example5RazorCode" Id="example5">
         <div>
             Allowing users to set the count of pages displayed in the middle portion of the pagination control.
             It also demonstrates how pages are rendered within the defined middle count range.
         </div>
         <br />
         <BitPagination Count="11" MiddleCount="3" BoundaryCount="1" DefaultSelectedPage="6" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Navigation buttons" RazorCode="@example6RazorCode" Id="example6">
+    <DemoExample Title="Navigation buttons" RazorCode="@example6RazorCode" Id="example6">
         <div>There are additional navigation buttons within the Pagination component, providing quick access to the initial and final pages.</div>
         <br />
         <BitPagination Count="24" ShowFirstButton ShowLastButton />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Icon" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="Icon" RazorCode="@example7RazorCode" Id="example7">
         <div>Displaying custom icons feature within the Pagination navigation buttons.</div>
         <br />
         <BitPagination Count="5" NextIcon="@BitIconName.Next" PreviousIcon="@BitIconName.Previous" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Color" RazorCode="@example8RazorCode" Id="example8">
+    <DemoExample Title="Color" RazorCode="@example8RazorCode" Id="example8">
         <div>Offering a range of specialized color variants, providing visual cues for specific actions or states within your application.</div>
         <br /><br />
         <div>Primary</div><br />
@@ -117,9 +119,9 @@
         <BitPagination Count="5" Color="BitColor.Error" Variant="BitVariant.Outline" />
         <br /><br />
         <BitPagination Count="5" Color="BitColor.Error" Variant="BitVariant.Text" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Size" RazorCode="@example9RazorCode" Id="example9">
+    <DemoExample Title="Size" RazorCode="@example9RazorCode" Id="example9">
         <div>Varying sizes for paginations tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.</div>
         <br /><br />
         <div>Small</div><br />
@@ -142,9 +144,9 @@
         <BitPagination Count="5" Size="BitSize.Large" Variant="BitVariant.Text" />
         <br /><br />
         <BitPagination Count="5" Size="BitSize.Large" Variant="BitVariant.Outline" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Style & Class" RazorCode="@example10RazorCode" Id="example10">
+    <DemoExample Title="Style & Class" RazorCode="@example10RazorCode" Id="example10">
         <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
         <br /><br />
         <div>
@@ -169,9 +171,9 @@
                                                   Button = "custom-button",
                                                   SelectedButton = "custom-selected-button"})" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Binding" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="Binding" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>Examples of one-way and two-way data binding with BitPagination.</div>
         <br /><br />
         <div style="max-width: 250px;">
@@ -193,9 +195,9 @@
             <br /><br />
             <div>Changed page: <b>@onChangeSelectedPage</b></div>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="RTL" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="RTL" RazorCode="@example12RazorCode" Id="example12">
         <div>Use BitPagination in right-to-left (RTL).</div>
         <br /><br />
         <div dir="rtl">
@@ -205,5 +207,5 @@
             <br /><br />
             <BitPagination Dir="BitDir.Rtl" Count="5" Variant="BitVariant.Text" />
         </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

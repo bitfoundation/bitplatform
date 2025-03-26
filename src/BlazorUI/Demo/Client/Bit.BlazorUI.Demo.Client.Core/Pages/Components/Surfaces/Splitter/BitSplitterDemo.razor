@@ -6,8 +6,10 @@
 
 <DemoPage Name="Splitter"
           Description="The BitSplitter component divides a container into two adjustable sections, either horizontally or vertically. Users can resize these sections by dragging the divider."
-          Parameters="componentParameters">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+          Parameters="componentParameters"
+          GitHubUrl="Surfaces/Splitter/BitSplitter.razor"
+          GitHubDemoUrl="Surfaces/Splitter/BitSplitterDemo.razor">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <BitSplitter>
             <FirstPanel>
                 <p style="padding: 4px;">
@@ -22,8 +24,8 @@
                 </p>
             </SecondPanel>
         </BitSplitter>
-    </DemoSection>
-    <DemoSection Title="Vertical" RazorCode="@example2RazorCode" Id="example2">
+    </DemoExample>
+    <DemoExample Title="Vertical" RazorCode="@example2RazorCode" Id="example2">
         <BitSplitter Vertical>
             <FirstPanel>
                 <p style="padding: 4px;">
@@ -38,8 +40,8 @@
                 </p>
             </SecondPanel>
         </BitSplitter>
-    </DemoSection>
-    <DemoSection Title="Panel Size" RazorCode="@example3RazorCode" Id="example3">
+    </DemoExample>
+    <DemoExample Title="Panel Size" RazorCode="@example3RazorCode" Id="example3">
         <BitSplitter FirstPanelMinSize="128" FirstPanelSize="128" SecondPanelMinSize="64">
             <FirstPanel>
                 <p style="padding: 4px;">
@@ -54,8 +56,8 @@
                 </p>
             </SecondPanel>
         </BitSplitter>
-    </DemoSection>
-    <DemoSection Title="Nested" RazorCode="@example4RazorCode" Id="example4">
+    </DemoExample>
+    <DemoExample Title="Nested" RazorCode="@example4RazorCode" Id="example4">
         <BitSplitter>
             <FirstPanel>
                 <p style="padding: 4px;">
@@ -80,8 +82,8 @@
                 </BitSplitter>
             </SecondPanel>
         </BitSplitter>
-    </DemoSection>
-    <DemoSection Title="Gutter Size" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    </DemoExample>
+    <DemoExample Title="Gutter Size" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <div>
             <BitSlider @bind-Value="gutterSize" Max="50" />
             <br />
@@ -100,8 +102,8 @@
                 </SecondPanel>
             </BitSplitter>
         </div>
-    </DemoSection>
-    <DemoSection Title="Gutter Icon" RazorCode="@example6RazorCode" Id="example6">
+    </DemoExample>
+    <DemoExample Title="Gutter Icon" RazorCode="@example6RazorCode" Id="example6">
         <BitSplitter GutterIcon="@BitIconName.GripperDotsVertical">
             <FirstPanel>
                 <p style="padding: 4px;">
@@ -116,5 +118,5 @@
                 </p>
             </SecondPanel>
         </BitSplitter>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

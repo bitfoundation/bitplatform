@@ -27,14 +27,14 @@ public partial class HomePage
     {
         await base.OnInitAsync();
 
-        // If required, you should typically manage the authorization header for external APIs in **AuthDelegatingHandler.cs**
-        // and handle error extraction from failed responses in **ExceptionDelegatingHandler.cs**.  
+        // If required, you should typically manage the authorization header for external APIs in **AuthDelegatingHandler.cs**,
+        // and error handling in **ExceptionDelegatingHandler.cs**.  
 
-        // These external API calls are provided as sample references for anonymous API usage in pre-rendering anonymous pages,
+        // These external API calls are provided as sample references for anonymous API usage in anonymous pages,
         // and comprehensive exception handling is not intended for these examples.  
 
         // However, the logic in other HTTP message handlers, such as **LoggingDelegatingHandler** and **RetryDelegatingHandler**,
-        // effectively addresses most scenarios.
+        // effectively cover all requests regardless of their destination.
 
         await Task.WhenAll(LoadNuget(), LoadGitHub());
     }

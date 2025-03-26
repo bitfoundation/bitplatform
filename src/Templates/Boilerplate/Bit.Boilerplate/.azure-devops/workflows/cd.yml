@@ -7,9 +7,10 @@ variables:
   APP_SERVICE_NAME: 'app-service-bp-test'
   AZURE_SUBSCRIPTION: 'bp-test-service-connection' # https://learn.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml#azure-resource-manager-service-connection
   ConnectionStrings.SqlServerConnectionString: $(DB_CONNECTION_STRING)
-  DataProtectionCertificatePassword: $(API_DATA_PROTECTION_CERTIFICATE_PASSWORD)
+  Identity.JwtIssuerSigningKeySecret: $(Jwt_Issuer_Signing_Key_Secret)
   ServerAddress: 'https://use-your-api-server-url-here.com/'
   WindowsUpdate.FilesUrl: 'https://use-your-api-server-url-here.com/windows' # Deploy the published Windows application files to your desired hosting location and use the host url here.
+  WebAppRender.BlazorMode: 'BlazorWebAssembly'
 
 jobs:
 
@@ -43,7 +44,7 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Shared/appsettings.json, src/Client/Boilerplate.Client.Core/appsettings.json, src/Client/Boilerplate.Client.Web/appsettings.json'
+      targetFiles: 'src/**/appsettings*json'
 
   - script: |
       dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release
@@ -105,18 +106,6 @@ jobs:
       folderPath: './'
       targetFiles: 'appsettings.json'
 
-  - task: DownloadSecureFile@1
-    displayName: Download .pfx file
-    name: DataProtectionCertificate
-    inputs:
-      secureFile: 'DataProtectionCertificate.pfx'
-          
-  - script: |
-      rm DataProtectionCertificate.pfx
-      cp "$(DataProtectionCertificate.secureFilePath)" "DataProtectionCertificate.pfx"
-    failOnStderr: true
-    displayName: Copy .pfx file
-
   - task: Bash@3
     displayName: 'Run migrations'
     inputs:
@@ -159,7 +148,7 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Shared/appsettings.json, src/Client/Boilerplate.Client.Core/appsettings.json, src/Client/Boilerplate.Client.Windows/appsettings.json'
+      targetFiles: 'src/**/appsettings*json'
 
   - task: Bash@3
     displayName: 'Generate CSS/JS files'
@@ -230,7 +219,7 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Shared/appsettings.json, src/Client/Boilerplate.Client.Core/appsettings.json, src/Client/Boilerplate.Client.Maui/appsettings.json'
+      targetFiles: 'src/**/appsettings*json'
   
   - script: |
       dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release

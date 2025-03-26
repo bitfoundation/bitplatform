@@ -16,23 +16,6 @@
     "sourceName": "Boilerplate",
     "preferNameDirectory": true,
     "symbols": {
-        "framework": {
-            "type": "parameter",
-            "description": "The target framework for the project.",
-            "datatype": "choice",
-            "defaultValue": "net9.0",
-            "choices": [
-                {
-                    "choice": "net8.0",
-                    "description": "Target net8.0"
-                },
-                {
-                    "choice": "net9.0",
-                    "description": "Target net9.0"
-                }
-            ],
-            "replaces": "net9.0"
-        },
         "helpUrl": {
             "displayName": "More info at",
             "type": "parameter",
@@ -436,8 +419,7 @@
                         "src/Shared/Controllers/Products/IProductViewController.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Home/ProductsCarousel.*",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Home/ProductsSection.*",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/ProductPage.*",
-                        "src/Client/Boilerplate.Client.Core/wwwroot/images/product-placeholder.svg"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/ProductPage.*"
                     ]
                 },
                 {
@@ -450,7 +432,8 @@
                         "src/Server/Boilerplate.Server.Api/Mappers/CategoriesMapper.cs",
                         "src/Server/Boilerplate.Server.Api/Mappers/ProductsMapper.cs",
                         "src/Server/Boilerplate.Server.Api/Models/Categories/**",
-                        "src/Server/Boilerplate.Server.Api/Models/Products/**"
+                        "src/Server/Boilerplate.Server.Api/Models/Products/**",
+                        "src/Client/Boilerplate.Client.Core/wwwroot/images/product-placeholder.svg"
                     ]
                 },
                 {
@@ -469,11 +452,11 @@
                     "condition": "(offlineDb != true)",
                     "exclude": [
                         "src/Client/Boilerplate.Client.Core/Data/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Offline/**"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/OfflineEditProfile*"
                     ]
                 },
                 {
-                    "condition": "(offlineDb != true || framework == \"net8.0\")",
+                    "condition": "(offlineDb != true)",
                     "exclude": [
                         "src/Client/Boilerplate.Client.Core/Data/CompiledModel/**"
                     ]
@@ -571,24 +554,6 @@
                     "exclude": [
                         "src/Tests/IdentityApiTests.cs",
                         "src/Tests/IdentityPagesTests.cs"
-                    ]
-                },
-                {
-                    "condition": "(framework == \"net8.0\")",
-                    "exclude": [
-                        "global.json",
-                        "src/Directory.Packages.props"
-                    ],
-                    "rename": {
-                        "global8.json": "global.json",
-                        "src/Directory.Packages8.props": "src/Directory.Packages.props"
-                    }
-                },
-                {
-                    "condition": "(framework == \"net9.0\")",
-                    "exclude": [
-                        "global8.json",
-                        "src/Directory.Packages8.props"
                     ]
                 }
             ]

@@ -1,8 +1,6 @@
 ﻿//+:cnd:noEmit
 
-//#if (framework == 'net9.0')
 using Maui.AppStores;
-//#endif
 
 namespace Boilerplate.Client.Maui.Components.Pages;
 
@@ -32,9 +30,7 @@ public partial class AboutPage
         oem = DeviceInfo.Current.Manufacturer;
         appVersion = telemetryContext.AppVersion!;
         processId = Environment.ProcessId.ToString();
-        //#if (framework == 'net9.0')
         appVersion += $" / {(AppStoreInfo.Current.CachedInformation?.LatestVersion?.ToString() ?? "?")}";
-        //#endif
 
         await base.OnInitAsync();
     }

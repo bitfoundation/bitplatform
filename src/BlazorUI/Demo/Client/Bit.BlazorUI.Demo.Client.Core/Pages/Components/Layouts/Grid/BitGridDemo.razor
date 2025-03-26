@@ -9,8 +9,10 @@
               Description="The BitGrid component is a flexible and customizable grid layout, offering responsive columns and alignment flexibility for structured content presentation."
               Parameters="componentParameters"
               SubClasses="componentSubClasses"
-              SubEnums="componentSubEnums">
-        <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+              SubEnums="componentSubEnums"
+              GitHubUrl="Layouts/Grid/BitGrid.razor"
+              GitHubDemoUrl="Layouts/Grid/BitGridDemo.razor">
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
             <BitGrid Columns="4">
                 @for (int i = 0; i < 8; i++)
                 {
@@ -21,8 +23,8 @@
                     </BitGridItem>
                 }
             </BitGrid>
-        </DemoSection>
-        <DemoSection Title="Columns" RazorCode="@example2RazorCode" Id="example2">
+        </DemoExample>
+        <DemoExample Title="Columns" RazorCode="@example2RazorCode" Id="example2">
             <BitGrid Columns="4">
                 <BitGridItem Class="grid-item" ColumnSpan="4">
                     Column span 4
@@ -46,8 +48,8 @@
                     Column span 1
                 </BitGridItem>
             </BitGrid>
-        </DemoSection>
-        <DemoSection Title="Alignment" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        </DemoExample>
+        <DemoExample Title="Alignment" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <BitChoiceGroup @bind-Value="horizontalAlign"
                             Horizontal
                             Label="Horizontal Align"
@@ -73,8 +75,8 @@
                     </BitGridItem>
                 }
             </BitGrid>
-        </DemoSection>
-        <DemoSection Title="Spacings" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        </DemoExample>
+        <DemoExample Title="Spacings" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <BitSlider Label="Vertical spacing between items" Max="5" ValueFormat="0.0 rem" Step="0.1" @bind-Value="@verticalSpacing" />
             <br />
             <BitSlider Label="Horizontal spacing between items" Max="5" ValueFormat="0.0 rem" Step="0.1" @bind-Value="@horizontalSpacing" />
@@ -93,8 +95,8 @@
                     </BitGridItem>
                 }
             </BitGrid>
-        </DemoSection>
-        <DemoSection Title="Breakpoints" RazorCode="@example5RazorCode" Id="example5">
+        </DemoExample>
+        <DemoExample Title="Breakpoints" RazorCode="@example5RazorCode" Id="example5">
             <div>Grid item breakpoints:</div>
             <br />
             <BitGrid Columns="4">
@@ -133,6 +135,6 @@
                     </BitGridItem>
                 }
             </BitGrid>
-        </DemoSection>
+        </DemoExample>
     </DemoPage>
 </div>

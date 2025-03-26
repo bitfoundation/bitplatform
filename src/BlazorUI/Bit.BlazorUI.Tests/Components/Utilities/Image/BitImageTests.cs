@@ -14,7 +14,7 @@ public class BitImageTests : BunitTestContext
     {
         var component = RenderComponent<BitImage>();
 
-        component.MarkupMatches(@"<div class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
     [DataTestMethod,
@@ -30,7 +30,7 @@ public class BitImageTests : BunitTestContext
 
         var cssClass = isEnabled ? null : " bit-dis";
 
-        component.MarkupMatches(@$"<div class=""bit-img bit-img-fde{cssClass}"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@$"<div class=""bit-img{cssClass}"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
     [DataTestMethod]
@@ -38,14 +38,14 @@ public class BitImageTests : BunitTestContext
     {
         var component = RenderComponent<BitImage>();
 
-        component.MarkupMatches(@"<div class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
 
         component.SetParametersAndRender(parameters =>
         {
             parameters.Add(p => p.IsEnabled, false);
         });
 
-        component.MarkupMatches(@"<div class=""bit-img bit-img-fde bit-dis"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@"<div class=""bit-img bit-dis"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
     [DataTestMethod,
@@ -62,11 +62,11 @@ public class BitImageTests : BunitTestContext
 
         if (style.HasValue())
         {
-            component.MarkupMatches(@$"<div style=""{style}"" class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+            component.MarkupMatches(@$"<div style=""{style}"" class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
         }
         else
         {
-            component.MarkupMatches(@"<div class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+            component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
         }
     }
 
@@ -75,7 +75,7 @@ public class BitImageTests : BunitTestContext
     {
         var component = RenderComponent<BitImage>();
 
-        component.MarkupMatches(@"<div class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
 
         var style = "padding: 1rem;";
         component.SetParametersAndRender(parameters =>
@@ -83,7 +83,7 @@ public class BitImageTests : BunitTestContext
             parameters.Add(p => p.Style, style);
         });
 
-        component.MarkupMatches(@$"<div style=""{style}"" class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@$"<div style=""{style}"" class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
     [DataTestMethod,
@@ -97,7 +97,7 @@ public class BitImageTests : BunitTestContext
             parameters.Add(p => p.Styles, new() { Root = rootStyle, Image = imageStyle });
         });
 
-        component.MarkupMatches(@$"<div style=""{rootStyle}"" class=""bit-img bit-img-fde"" id:ignore><img style=""{imageStyle}"" class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@$"<div style=""{rootStyle}"" class=""bit-img"" id:ignore><img style=""{imageStyle}"" class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
     [DataTestMethod, Ignore]
@@ -105,7 +105,7 @@ public class BitImageTests : BunitTestContext
     {
         var component = RenderComponent<BitImage>();
 
-        component.MarkupMatches(@"<div class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
 
         var rootStyle = "padding: 1rem;";
         var imageStyle = "margin: 1rem;";
@@ -114,7 +114,7 @@ public class BitImageTests : BunitTestContext
             parameters.Add(p => p.Styles, new() { Root = rootStyle, Image = imageStyle });
         });
 
-        component.MarkupMatches(@$"<div style=""{rootStyle}"" class=""bit-img bit-img-fde"" id:ignore><img style=""{imageStyle}"" class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@$"<div style=""{rootStyle}"" class=""bit-img"" id:ignore><img style=""{imageStyle}"" class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
     [DataTestMethod,
@@ -130,7 +130,7 @@ public class BitImageTests : BunitTestContext
 
         var cssClass = @class.HasValue() ? $" {@class}" : null;
 
-        component.MarkupMatches(@$"<div class=""bit-img bit-img-fde{cssClass}"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@$"<div class=""bit-img{cssClass}"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
     [DataTestMethod]
@@ -138,7 +138,7 @@ public class BitImageTests : BunitTestContext
     {
         var component = RenderComponent<BitImage>();
 
-        component.MarkupMatches(@"<div class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
 
         var cssClass = "test-class";
 
@@ -147,7 +147,7 @@ public class BitImageTests : BunitTestContext
             parameters.Add(p => p.Class, cssClass);
         });
 
-        component.MarkupMatches(@$"<div class=""bit-img bit-img-fde {cssClass}"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@$"<div class=""bit-img {cssClass}"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
     [DataTestMethod,
@@ -160,7 +160,7 @@ public class BitImageTests : BunitTestContext
             parameters.Add(p => p.Classes, new() { Root = rootClass, Image = imageClass });
         });
 
-        component.MarkupMatches(@$"<div class=""{rootClass} bit-img bit-img-fde"" id:ignore><img class=""{imageClass} bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@$"<div class=""{rootClass} bit-img"" id:ignore><img class=""{imageClass} bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
     [DataTestMethod, Ignore]
@@ -168,7 +168,7 @@ public class BitImageTests : BunitTestContext
     {
         var component = RenderComponent<BitImage>();
 
-        component.MarkupMatches(@"<div class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
 
         var rootClass = "test-root-class";
         var imageClass = "test-image-class";
@@ -177,7 +177,7 @@ public class BitImageTests : BunitTestContext
             parameters.Add(p => p.Classes, new() { Root = rootClass, Image = imageClass });
         });
 
-        component.MarkupMatches(@$"<div class=""{rootClass} bit-img bit-img-fde"" id:ignore><img class=""{imageClass} bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@$"<div class=""{rootClass} bit-img"" id:ignore><img class=""{imageClass} bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
     [DataTestMethod,
@@ -193,7 +193,7 @@ public class BitImageTests : BunitTestContext
 
         var expectedId = id.HasValue() ? id : component.Instance.UniqueId.ToString();
 
-        component.MarkupMatches(@$"<div id=""{expectedId}"" class=""bit-img bit-img-fde""><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@$"<div id=""{expectedId}"" class=""bit-img""><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
     [DataTestMethod,
@@ -212,11 +212,11 @@ public class BitImageTests : BunitTestContext
         if (dir.HasValue)
         {
             var cssClass = dir is BitDir.Rtl ? " bit-rtl" : null;
-            component.MarkupMatches(@$"<div dir=""{dir.Value.ToString().ToLower()}"" class=""bit-img bit-img-fde{cssClass}"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+            component.MarkupMatches(@$"<div dir=""{dir.Value.ToString().ToLower()}"" class=""bit-img{cssClass}"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
         }
         else
         {
-            component.MarkupMatches(@"<div class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+            component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
         }
     }
 
@@ -225,14 +225,14 @@ public class BitImageTests : BunitTestContext
     {
         var component = RenderComponent<BitImage>();
 
-        component.MarkupMatches(@"<div class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
 
         component.SetParametersAndRender(parameters =>
         {
             parameters.Add(p => p.Dir, BitDir.Ltr);
         });
 
-        component.MarkupMatches(@"<div dir=""ltr"" class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@"<div dir=""ltr"" class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
     [DataTestMethod,
@@ -254,7 +254,7 @@ public class BitImageTests : BunitTestContext
             _ => null
         };
 
-        component.MarkupMatches(@$"<div {styleAttribute} class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@$"<div {styleAttribute} class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
     [DataTestMethod]
@@ -262,14 +262,14 @@ public class BitImageTests : BunitTestContext
     {
         var component = RenderComponent<BitImage>();
 
-        component.MarkupMatches(@"<div class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
 
         component.SetParametersAndRender(parameters =>
         {
             parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
         });
 
-        component.MarkupMatches(@"<div style=""display: none;"" class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@"<div style=""display: none;"" class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
     [DataTestMethod]
@@ -277,7 +277,7 @@ public class BitImageTests : BunitTestContext
     {
         var component = RenderComponent<BitImageHtmlAttributesTest>();
 
-        component.MarkupMatches(@"<div data-val-test=""bit"" class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" src=""images/bit-logo-blue.png"" /></div>");
+        component.MarkupMatches(@"<div data-val-test=""bit"" class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" src=""images/bit-logo-blue.png"" /></div>");
     }
 
     [DataTestMethod,
@@ -294,33 +294,33 @@ public class BitImageTests : BunitTestContext
 
         if (alt.HasValue())
         {
-            component.MarkupMatches(@$"<div class=""bit-img bit-img-fde"" id:ignore><img alt=""{alt}"" class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+            component.MarkupMatches(@$"<div class=""bit-img"" id:ignore><img alt=""{alt}"" class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
         }
         else
         {
-            component.MarkupMatches(@"<div class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+            component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
         }
     }
 
     [DataTestMethod,
-        DataRow(BitImageCoverStyle.Landscape),
-        DataRow(BitImageCoverStyle.Portrait),
+        DataRow(BitImageCover.Landscape),
+        DataRow(BitImageCover.Portrait),
         DataRow(null)
     ]
-    public void BitImageShouldRespectCoverStyle(BitImageCoverStyle? coverStyle)
+    public void BitImageShouldRespectCoverStyle(BitImageCover? coverStyle)
     {
         var component = RenderComponent<BitImage>(parameters =>
         {
-            parameters.Add(p => p.CoverStyle, coverStyle);
+            parameters.Add(p => p.Cover, coverStyle);
         });
 
-        if (coverStyle is BitImageCoverStyle.Landscape)
+        if (coverStyle is BitImageCover.Landscape)
         {
-            component.MarkupMatches(@"<div class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-lan bit-img-img bit-img-vis"" /></div>");
+            component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-lan bit-img-img bit-img-hid"" /></div>");
         }
         else
         {
-            component.MarkupMatches(@"<div class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-por bit-img-img bit-img-vis"" /></div>");
+            component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
         }
     }
 
@@ -349,11 +349,11 @@ public class BitImageTests : BunitTestContext
                 style = $"height:{height}";
             }
 
-            component.MarkupMatches(@$"<div style=""{style}"" class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-ihh bit-img-img bit-img-por bit-img-vis"" /></div>");
+            component.MarkupMatches(@$"<div style=""{style}"" class=""bit-img"" id:ignore><img class=""bit-img-ihh bit-img-img bit-img-por bit-img-hid"" /></div>");
         }
         else
         {
-            component.MarkupMatches(@"<div class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+            component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
         }
     }
 
@@ -362,14 +362,14 @@ public class BitImageTests : BunitTestContext
     {
         var component = RenderComponent<BitImage>();
 
-        component.MarkupMatches(@"<div class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
 
         component.SetParametersAndRender(parameters =>
         {
             parameters.Add(p => p.Height, "85px");
         });
 
-        component.MarkupMatches(@"<div style=""height:85px"" class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-ihh bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@"<div style=""height:85px"" class=""bit-img"" id:ignore><img class=""bit-img-ihh bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
     [DataTestMethod,
@@ -397,11 +397,11 @@ public class BitImageTests : BunitTestContext
                 style = $"width:{width}";
             }
 
-            component.MarkupMatches(@$"<div style=""{style}"" class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-ihw bit-img-img bit-img-por bit-img-vis"" /></div>");
+            component.MarkupMatches(@$"<div style=""{style}"" class=""bit-img"" id:ignore><img class=""bit-img-ihw bit-img-img bit-img-por bit-img-hid"" /></div>");
         }
         else
         {
-            component.MarkupMatches(@"<div class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+            component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
         }
     }
 
@@ -410,14 +410,14 @@ public class BitImageTests : BunitTestContext
     {
         var component = RenderComponent<BitImage>();
 
-        component.MarkupMatches(@"<div class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
 
         component.SetParametersAndRender(parameters =>
         {
             parameters.Add(p => p.Width, "85px");
         });
 
-        component.MarkupMatches(@"<div style=""width:85px"" class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-ihw bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@"<div style=""width:85px"" class=""bit-img"" id:ignore><img class=""bit-img-ihw bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
     [DataTestMethod,
@@ -453,7 +453,7 @@ public class BitImageTests : BunitTestContext
             style.Append($"height:{height};");
         }
 
-        component.MarkupMatches(@$"<div style=""{style}"" class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@$"<div style=""{style}"" class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
     [DataTestMethod,
@@ -470,7 +470,7 @@ public class BitImageTests : BunitTestContext
 
         string attr = @$"{attrKey}=""{attrValue}""";
 
-        component.MarkupMatches(@$"<div class=""bit-img bit-img-fde"" id:ignore><img {attr} class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@$"<div class=""bit-img"" id:ignore><img {attr} class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
     [DataTestMethod,
@@ -500,7 +500,7 @@ public class BitImageTests : BunitTestContext
             _ => null
         };
 
-        component.MarkupMatches(@$"<div class=""bit-img bit-img-fde"" id:ignore><img class=""{cssClass} bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@$"<div class=""bit-img"" id:ignore><img class=""{cssClass} bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
     [DataTestMethod,
@@ -552,32 +552,32 @@ public class BitImageTests : BunitTestContext
 
         if (style.Length > 0)
         {
-            component.MarkupMatches(@$"<div style=""{style}"" class=""bit-img bit-img-fde"" id:ignore><img class=""{cssClass} bit-img-img bit-img-por bit-img-vis"" /></div>");
+            component.MarkupMatches(@$"<div style=""{style}"" class=""bit-img"" id:ignore><img class=""{cssClass} bit-img-img bit-img-por bit-img-hid"" /></div>");
         }
         else
         {
-            component.MarkupMatches(@$"<div class=""bit-img bit-img-fde"" id:ignore><img class=""{cssClass} bit-img-img bit-img-por bit-img-vis"" /></div>");
+            component.MarkupMatches(@$"<div class=""bit-img"" id:ignore><img class=""{cssClass} bit-img-img bit-img-por bit-img-hid"" /></div>");
         }
     }
 
     [DataTestMethod,
-        DataRow("lazy"),
+        DataRow(BitImageLoading.Lazy),
         DataRow(null)
     ]
-    public void BitImageShouldRespectLoading(string loading)
+    public void BitImageShouldRespectLoading(BitImageLoading? loading)
     {
         var component = RenderComponent<BitImage>(parameters =>
         {
             parameters.Add(p => p.Loading, loading);
         });
 
-        if (loading.HasValue())
+        if (loading.HasValue)
         {
-            component.MarkupMatches(@$"<div class=""bit-img bit-img-fde"" id:ignore><img loading=""{loading}"" class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+            component.MarkupMatches(@$"<div class=""bit-img"" id:ignore><img loading=""{loading.ToString()!.ToLower()}"" class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
         }
         else
         {
-            component.MarkupMatches(@"<div class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+            component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
         }
     }
 
@@ -594,7 +594,7 @@ public class BitImageTests : BunitTestContext
 
         var cssClass = maximizeFrame ? " bit-img-max" : null;
 
-        component.MarkupMatches(@$"<div class=""bit-img bit-img-fde{cssClass}"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@$"<div class=""bit-img{cssClass}"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
     [DataTestMethod,
@@ -621,32 +621,32 @@ public class BitImageTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitImageShouldRespectShouldFadeIn(bool shouldFadeIn)
+    public void BitImageShouldRespectFadeIn(bool fadeIn)
     {
         var component = RenderComponent<BitImage>(parameters =>
         {
-            parameters.Add(p => p.ShouldFadeIn, shouldFadeIn);
+            parameters.Add(p => p.FadeIn, fadeIn);
         });
 
-        var cssClass = shouldFadeIn ? " bit-img-fde" : null;
+        var cssClass = fadeIn ? " bit-img-fde" : null;
 
-        component.MarkupMatches(@$"<div class=""bit-img{cssClass}"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+        component.MarkupMatches(@$"<div class=""bit-img{cssClass}"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
     [DataTestMethod,
         DataRow(true),
         DataRow(false)
     ]
-    public void BitImageShouldRespectShouldStartVisible(bool shouldStartVisible)
+    public void BitImageShouldRespectStartVisible(bool startVisible)
     {
         var component = RenderComponent<BitImage>(parameters =>
         {
-            parameters.Add(p => p.ShouldStartVisible, shouldStartVisible);
+            parameters.Add(p => p.StartVisible, startVisible);
         });
 
-        var cssClass = shouldStartVisible ? " bit-img-vis" : null;
+        var cssClass = startVisible ? " bit-img-vis" : " bit-img-hid";
 
-        component.MarkupMatches(@$"<div class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por {cssClass}"" /></div>");
+        component.MarkupMatches(@$"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por{cssClass}"" /></div>");
     }
 
     [DataTestMethod,
@@ -663,11 +663,11 @@ public class BitImageTests : BunitTestContext
 
         if (src.HasValue())
         {
-            component.MarkupMatches(@$"<div class=""bit-img bit-img-fde"" id:ignore><img src=""{src}"" class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+            component.MarkupMatches(@$"<div class=""bit-img"" id:ignore><img src=""{src}"" class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
         }
         else
         {
-            component.MarkupMatches(@"<div class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+            component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
         }
     }
 
@@ -684,11 +684,11 @@ public class BitImageTests : BunitTestContext
 
         if (title.HasValue())
         {
-            component.MarkupMatches(@$"<div class=""bit-img bit-img-fde"" id:ignore><img title=""{title}"" class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+            component.MarkupMatches(@$"<div class=""bit-img"" id:ignore><img title=""{title}"" class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
         }
         else
         {
-            component.MarkupMatches(@"<div class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+            component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
         }
     }
 }

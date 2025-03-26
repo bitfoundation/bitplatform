@@ -6,13 +6,15 @@
 
 <DemoPage Name="MediaQuery"
           Description="A component to easily use predefined bit BlazorUI media queries in Blazor components."
-          Parameters="componentParameters">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+          Parameters="componentParameters"
+          GitHubUrl="Utilities/MediaQuery/BitMediaQuery.cs"
+          GitHubDemoUrl="Utilities/MediaQuery/BitMediaQueryDemo.razor">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <BitMediaQuery Query="BitScreenQuery.Xs">This is Xs!</BitMediaQuery>
         <BitMediaQuery Query="BitScreenQuery.Sm">This is Sm!</BitMediaQuery>
         <BitMediaQuery Query="BitScreenQuery.Md">This is Md!</BitMediaQuery>
         <BitMediaQuery Query="BitScreenQuery.Lg">This is Lg!</BitMediaQuery>
         <BitMediaQuery Query="BitScreenQuery.Xl">This is Xl!</BitMediaQuery>
         <BitMediaQuery Query="BitScreenQuery.Xxl">This is Xxl!</BitMediaQuery>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

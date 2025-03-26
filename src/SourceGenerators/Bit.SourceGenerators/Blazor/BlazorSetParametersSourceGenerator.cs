@@ -56,10 +56,9 @@ namespace {namespaceName}
         //{
         //    source.AppendLine($"            {property.PropertySymbol.Name}HasBeenSet = false;");
         //} 
-        source.AppendLine("            var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;");
-        source.AppendLine("            foreach (var parameter in parametersDictionary!)");
+        source.AppendLine("            foreach (var parameter in parameters)");
         source.AppendLine("            {");
-        source.AppendLine("                switch (parameter.Key)");
+        source.AppendLine("                switch (parameter.Name)");
         source.AppendLine("                {");
 
         // create cases for each property
@@ -71,7 +70,6 @@ namespace {namespaceName}
             //    source.AppendLine($"                       {bitProperty.PropertySymbol.Name}HasBeenSet = true;");
             //}
             source.AppendLine($"                       {bitProperty.PropertySymbol.Name} = parameter.Value is null ? default! : ({bitProperty.PropertySymbol.Type.ToDisplayString()})parameter.Value;");
-            source.AppendLine("                       parametersDictionary.Remove(parameter.Key);");
             source.AppendLine("                       break;");
         }
 
@@ -84,7 +82,7 @@ namespace {namespaceName}
         }
         else
         {
-            source.AppendLine("            return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary as IDictionary<string, object?>));");
+            source.AppendLine("            return base.SetParametersAsync(parameters);");
         }
 
         source.AppendLine("        }");

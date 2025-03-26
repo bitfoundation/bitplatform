@@ -9,6 +9,8 @@ public static class IServiceCollectionExtensions
     {
         services.TryAddScoped<BitThemeManager>();
 
+        services.TryAddScoped<BitPageVisibility>();
+
         return services;
     }
 }

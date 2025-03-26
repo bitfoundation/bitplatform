@@ -46,21 +46,21 @@
                             <img src="@IconUrl"
                                  class="bit-npn-img @Classes?.HeaderIcon"
                                  style="@(isToggled ? "display:none;" : "") @Styles?.HeaderIcon" />
-                        }                        
+                        }
                     }
 
                     <div class="bit-npn-spc" style="@(isToggled ? "display:none;" : "")" />
 
                     @if (NoToggle is false)
                     {
-                        <BitButton IconOnly FixedColor
+                        <BitButton IconOnly
+                                   Color="Color"
                                    Size="BitSize.Large"
                                    OnClick="ToggleNavPanel"
                                    Variant="BitVariant.Text"
                                    Style="@Styles?.ToggleButton"
-                                   Class="@Classes?.ToggleButton"
                                    IconName="ColumnRightTwoThirds"
-                                   Color="BitColor.TertiaryBackground"
+                                   Class="@($"bit-npn-tbn {Classes?.ToggleButton}".Trim())"
                                    Classes="@(new() { Icon = "bit-icon-ex bit-icon-ex--ColumnRightTwoThirds" })" />
                     }
                 </div>
@@ -68,24 +68,25 @@
 
             <BitSearchBox @ref="_searchBoxRef"
                           Underlined
+                          Color="Color"
                           OnChange="SearchNavItems"
-                          Immediate DebounceTime="500"
-                          Placeholder="@SearchBoxPlaceholder"
                           Styles="SearchBoxStyles"
                           Classes="SearchBoxClasses"
                           Class="@Classes?.SearchBox"
+                          Immediate DebounceTime="500"
+                          Placeholder="@SearchBoxPlaceholder"
                           Style="@($"{(isToggled ? "display:none;" : "")}{Styles?.SearchBox}".Trim())" />
 
             @if (isToggled)
             {
-                <BitButton IconOnly FixedColor
+                <BitButton IconOnly
+                           Color="Color"
                            IconName="Search"
                            Size="BitSize.Large"
                            OnClick="ToggleForSearch"
                            Variant="BitVariant.Text"
                            Style="@Styles?.ToggleSearchButton"
-                           Class="@Classes?.ToggleSearchButton"
-                           Color="BitColor.TertiaryBackground" />
+                           Class="@Classes?.ToggleSearchButton" />
             }
 
             @if (_filteredNavItems.Any() is false)
@@ -108,14 +109,29 @@
             {
                 <BitNav @ref=_bitNavRef
                         FullWidth
+                        Color="Color"
+                        Accent="Accent"
                         Styles="NavStyles"
                         Classes="NavClasses"
                         IconOnly="isToggled"
                         Style="@Styles?.Nav"
                         Class="@Classes?.Nav"
+                        RenderType="RenderType"
                         Items="_filteredNavItems"
+                        IndentValue="IndentValue"
+                        SingleExpand="SingleExpand"
+                        Reselectable="Reselectable"
+                        ItemTemplate="ItemTemplate"
+                        OnItemToggle="OnItemToggle"
+                        OnSelectItem="OnSelectItem"
+                        IndentPadding="IndentPadding"
+                        HeaderTemplate="HeaderTemplate"
+                        ReversedChevron="ReversedChevron"
+                        ChevronDownIcon="@ChevronDownIcon"
                         DefaultSelectedItem="_filteredNavItems[0]"
-                        Accent="NoPad ? null : BitColor.SecondaryBackground"
+                        IndentReversedPadding="IndentReversedPadding"
+                        ItemTemplateRenderMode="ItemTemplateRenderMode"
+                        HeaderTemplateRenderMode="HeaderTemplateRenderMode"
                         OnItemClick="(TItem item) => HandleNavItemClick(item)" />
             }
 

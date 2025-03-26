@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿// a fork from the Blazor QuickGrid at https://github.com/dotnet/aspnetcore/tree/main/src/Components/QuickGrid
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitDataGrid is a robust way to display an information-rich collection of items, and allow people to sort, and filter the content.

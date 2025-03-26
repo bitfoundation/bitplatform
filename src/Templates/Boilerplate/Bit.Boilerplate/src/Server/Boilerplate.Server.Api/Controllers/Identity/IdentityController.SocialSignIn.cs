@@ -21,7 +21,7 @@ public partial class IdentityController
     [HttpGet]
     public async Task<ActionResult> SocialSignIn(string provider,
         string? returnUrl = null, /* Specifies the relative page address to navigate to after completion. */
-        int? localHttpPort = null, /* Defines the local HTTP server port awaiting the social sign-in result on Windows/macOS versions of the app. */
+        int? localHttpPort = null, /* Defines the local HTTP server port awaiting the social sign-in result on Windows/macOS/iOS versions of the app. */
         [FromQuery] string? origin = null /* Indicates the base address URL for redirection after the process completes. */ )
     {
         var redirectUrl = Url.Action(nameof(SocialSignInCallback), "Identity", new { returnUrl, localHttpPort, origin });
@@ -50,9 +50,14 @@ public partial class IdentityController
 
             if (user is null)
             {
+                var name = info.Principal.FindFirstValue(ClaimTypes.Name) ?? info.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
                 // Instead of automatically creating a user here, you can navigate to the sign-up page and pass the email and phone number in the query string.
 
-                user = new() { LockoutEnabled = true };
+                user = new()
+                {
+                    FullName = name,
+                    LockoutEnabled = true
+                };
 
                 await userStore.SetUserNameAsync(user, Guid.NewGuid().ToString(), cancellationToken);
 
