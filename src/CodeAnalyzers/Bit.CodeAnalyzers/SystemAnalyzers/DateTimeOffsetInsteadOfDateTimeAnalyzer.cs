@@ -26,6 +26,8 @@ public class DateTimeOffsetInsteadOfDateTimeAnalyzer : DiagnosticAnalyzer
         if (context == null)
             throw new ArgumentNullException(nameof(context));
 
+        context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
+
         context.EnableConcurrentExecution();
         context.RegisterSyntaxNodeAction(AnalyzeSyntax, SyntaxKind.IdentifierName);
     }
