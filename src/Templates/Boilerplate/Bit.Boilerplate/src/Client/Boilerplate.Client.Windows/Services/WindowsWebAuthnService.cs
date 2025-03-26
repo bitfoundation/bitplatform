@@ -26,7 +26,7 @@ public partial class WindowsWebAuthnService : WebAuthnServiceBase
 
     private static async Task CloseExternalBrowser()
     {
-        await WindowsExternalJsRunner.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "close" }, JsonSerializerOptions.Web));
+        _ = WindowsExternalJsRunner.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "close" }, JsonSerializerOptions.Web));
 
         Application.OpenForms[0]!.Invoke(() =>
         {
