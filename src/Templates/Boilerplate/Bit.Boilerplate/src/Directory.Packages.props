@@ -12,7 +12,7 @@
         <PackageVersion Include="Bit.SourceGenerators" Version="9.6.0-pre-13" />
         <PackageVersion Include="Fido2.AspNet" Version="4.0.0-beta.16" />
         <PackageVersion Include="Fido2.Models" Version="4.0.0-beta.16" />
-        <PackageVersion Include="libphonenumber-csharp" Version="8.13.55" />
+        <PackageVersion Include="libphonenumber-csharp" Version="9.0.1" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.3" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.3" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="9.0.3" />
@@ -85,9 +85,9 @@
         <PackageVersion Include="Swashbuckle.AspNetCore" Version="8.0.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.3" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="9.0.3" />
-        <PackageVersion Include="AspNet.Security.OAuth.Apple" Version="9.1.0" />
-        <PackageVersion Include="AspNet.Security.OAuth.GitHub" Version="9.1.0" />
-        <PackageVersion Include="Riok.Mapperly" Version="4.1.1" />
+        <PackageVersion Include="AspNet.Security.OAuth.Apple" Version="9.2.0" />
+        <PackageVersion Include="AspNet.Security.OAuth.GitHub" Version="9.2.0" />
+        <PackageVersion Include="Riok.Mapperly" Version="4.2.0" />
         <PackageVersion Include="Twilio" Version="7.9.1" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.3" />
         <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="9.0.3" />
