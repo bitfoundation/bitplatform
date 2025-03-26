@@ -672,13 +672,10 @@
     <data name="Continue" xml:space="preserve">
     <value>ادامه</value>
   </data>
-    <data name="SocialSignedInTitle" xml:space="preserve">
-    <value>ورود سوشال</value>
+    <data name="CloseBrowserMessageTitle" xml:space="preserve">
+    <value>بازگشت به برنامه</value>
   </data>
-    <data name="SocialSignedInMessageTitle" xml:space="preserve">
-    <value>ورود سوشال انجام شد</value>
-  </data>
-    <data name="SocialSignedInMessageBody" xml:space="preserve">
+    <data name="CloseBrowserMessageBody" xml:space="preserve">
     <value>حالا میتوانید به برنامه بازگردید</value>
   </data>
     <data name="GoogleSignInButtonText" xml:space="preserve">

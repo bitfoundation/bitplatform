@@ -35,17 +35,11 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
-                    var url = new Uri(absoluteServerAddress, $"/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}").ToString();
-
-                    ctx.Redirect(url);
+                    ctx.Redirect("/close-browser");
 
                     _ = Task.Delay(1)
                         .ContinueWith(async _ =>
                         {
-                            Application.OpenForms[0]!.Invoke(() =>
-                            {
-                                Application.OpenForms[0]!.Activate();
-                            });
                             await Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
                         });
                 }
@@ -53,6 +47,17 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
                 {
                     exceptionHandler.Handle(exp);
                 }
+            }))
+            .WithModule(new ActionModule("/close-browser", HttpVerbs.Get, async ctx =>
+            {
+                // Redirect to CloseBrowserPage.razor that will close the browser window.
+                var url = new Uri(absoluteServerAddress, $"/api/Identity/CloseBrowserPage?culture={CultureInfo.CurrentUICulture.Name}").ToString();
+                ctx.Redirect(url);
+
+                Application.OpenForms[0]!.Invoke(() =>
+                {
+                    Application.OpenForms[0]!.Activate();
+                });
             }))
             .WithModule(new ActionModule("/external-js-runner.html", HttpVerbs.Get, async ctx =>
             {

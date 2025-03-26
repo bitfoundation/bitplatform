@@ -33,23 +33,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
-                    // Redirect to SocialSignedInPage.razor that will close the browser window.
-                    var url = new Uri(absoluteServerAddress, $"/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}").ToString();
-                    ctx.Redirect(url);
-
-                    if (AppPlatform.IsIOS)
-                    {
-                        // SocialSignedInPage.razor's `window.close()` does NOT work on iOS's in app browser.
-                        await MainThread.InvokeOnMainThreadAsync(() =>
-                        {
-#if iOS
-                            if (UIKit.UIApplication.SharedApplication.KeyWindow?.RootViewController?.PresentedViewController is SafariServices.SFSafariViewController controller)
-                            {
-                                controller.DismissViewController(animated: true, completionHandler: null);
-                            }
-#endif
-                        });
-                    }
+                    ctx.Redirect("/close-browser");
 
                     _ = Task.Delay(1)
                     .ContinueWith(async _ =>
@@ -63,6 +47,26 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
                 catch (Exception exp)
                 {
                     exceptionHandler.Handle(exp);
+                }
+            }))
+            .WithModule(new ActionModule("/close-browser", HttpVerbs.Get, async ctx =>
+            {
+                // Redirect to CloseBrowserPage.razor that will close the browser window.
+                var url = new Uri(absoluteServerAddress, $"/api/Identity/CloseBrowserPage?culture={CultureInfo.CurrentUICulture.Name}").ToString();
+                ctx.Redirect(url);
+
+                if (AppPlatform.IsIOS)
+                {
+                    // CloseBrowserPage.razor's `window.close()` does NOT work on iOS's in app browser.
+                    await MainThread.InvokeOnMainThreadAsync(() =>
+                    {
+#if iOS
+                            if (UIKit.UIApplication.SharedApplication.KeyWindow?.RootViewController?.PresentedViewController is SafariServices.SFSafariViewController controller)
+                            {
+                                controller.DismissViewController(animated: true, completionHandler: null);
+                            }
+#endif
+                    });
                 }
             }))
             .WithModule(new ActionModule("/external-js-runner.html", HttpVerbs.Get, async ctx =>

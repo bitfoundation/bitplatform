@@ -24,23 +24,9 @@ public partial class MauiWebAuthnService : WebAuthnServiceBase
         }
     }
 
-    private static async Task CloseExternalBrowser()
+    private async Task CloseExternalBrowser()
     {
         _ = MauiExternalJsRunner.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "close" }, JsonSerializerOptions.Web));
-
-        if (AppPlatform.IsIOS)
-        {
-            // SocialSignedInPage.razor's `window.close()` does NOT work on iOS's in app browser.
-            await MainThread.InvokeOnMainThreadAsync(() =>
-            {
-#if iOS
-                if (UIKit.UIApplication.SharedApplication.KeyWindow?.RootViewController?.PresentedViewController is SafariServices.SFSafariViewController controller)
-                {
-                    controller.DismissViewController(animated: true, completionHandler: null);
-                }
-#endif
-            });
-        }
     }
 
     public override async ValueTask<AuthenticatorAttestationRawResponse> CreateWebAuthnCredential(CredentialCreateOptions options)

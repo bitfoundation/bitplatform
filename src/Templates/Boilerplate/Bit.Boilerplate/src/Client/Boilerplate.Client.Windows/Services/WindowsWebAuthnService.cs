@@ -27,11 +27,6 @@ public partial class WindowsWebAuthnService : WebAuthnServiceBase
     private static async Task CloseExternalBrowser()
     {
         _ = WindowsExternalJsRunner.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "close" }, JsonSerializerOptions.Web));
-
-        Application.OpenForms[0]!.Invoke(() =>
-        {
-            Application.OpenForms[0]!.Activate();
-        });
     }
 
     public override async ValueTask<AuthenticatorAttestationRawResponse> CreateWebAuthnCredential(CredentialCreateOptions options)
