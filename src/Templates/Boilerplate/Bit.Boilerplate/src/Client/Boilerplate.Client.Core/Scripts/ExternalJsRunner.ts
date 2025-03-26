@@ -12,11 +12,11 @@ class ExternalJsRunner {
                 } else if (request.type == 'createCredential') {
                     result = await WebAuthn.createCredential(request.options);
                 } else if (request.type == 'close') {
-                    result = {};
                     localWebSocket.close();
                     setTimeout(() => {
                         window.close();
                     }, 100);
+                    return;
                 }
                 localWebSocket.send(JSON.stringify({ body: result }));
             }
