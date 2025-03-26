@@ -19,7 +19,7 @@ public partial class UserService(AppDbContext dbContext)
             PasswordHash = "AQAAAAIAAYagAAAAEP0v3wxkdWtMkHA3Pp5/JfS+42/Qto9G05p2mta6dncSK37hPxEHa3PGE4aqN30Aag==", // 123456
         };
 
-        dbContext.Users.Add(user);
+        await dbContext.Users.AddAsync(user);
         await dbContext.SaveChangesAsync();
 
         return user;
