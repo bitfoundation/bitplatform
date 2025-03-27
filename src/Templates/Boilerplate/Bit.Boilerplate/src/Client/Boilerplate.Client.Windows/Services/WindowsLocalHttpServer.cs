@@ -63,6 +63,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
+                    ctx.Response.ContentType = "text/html";
                     await using var fileStream = File.OpenRead("wwwroot/external-js-runner.html");
                     await fileStream.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
                 }
@@ -75,6 +76,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
+                    ctx.Response.ContentType = "application/javascript";
                     var filePath = Path.Combine(AppContext.BaseDirectory, @"wwwroot\_content\Boilerplate.Client.Core\scripts\app.js");
                     if (File.Exists(filePath) is false)
                     {

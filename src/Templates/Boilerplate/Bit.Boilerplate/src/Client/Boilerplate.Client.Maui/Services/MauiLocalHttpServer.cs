@@ -74,7 +74,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
                     await MainThread.InvokeOnMainThreadAsync(() =>
                     {
                         var intent = new Android.Content.Intent(Platform.AppContext, typeof(Platforms.Android.MainActivity));
-                        intent.SetFlags(Android.Content.ActivityFlags.NewTask | Android.Content.ActivityFlags.SingleTop);
+                        intent.SetFlags(Android.Content.ActivityFlags.NewTask | Android.Content.ActivityFlags.ClearTop);
                         Platform.AppContext.StartActivity(intent);
                     });
 #endif
@@ -84,6 +84,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
+                    ctx.Response.ContentType = "text/html";
                     await using var file = Assembly.Load("Boilerplate.Client.Maui").GetManifestResourceStream("Boilerplate.Client.Maui.wwwroot.external-js-runner.html")!;
                     await file.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
                 }
@@ -96,6 +97,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
+                    ctx.Response.ContentType = "application/javascript";
                     await using var file = Assembly.Load("Boilerplate.Client.Maui").GetManifestResourceStream("Boilerplate.Client.Maui.wwwroot.scripts.app.js")!;
                     await file.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
                 }
