@@ -6,12 +6,24 @@
 
 <DemoPage Name="NavPanel"
           Description="BitNavPanel is a navigation component specialized to be rendered in a vertical panel."
-          Notes="To use this component, you need to install the `Bit.BlazorUI.Extras` nuget package, as described in the Optional steps of the Getting started page."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
           GitHubExtrasUrl="NavPanel/BitNavPanel.razor"
           GitHubDemoUrl="Extras/NavPanel/BitNavPanelDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Extras"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+    </NotesTemplate>
     <DescriptionTemplate>
         BitNavPanel is a navigation component specialized to be rendered in a vertical panel. In its core it's utilizing the <BitLink Href="/components/nav">BitNav</BitLink> component to render the nav items.
     </DescriptionTemplate>
