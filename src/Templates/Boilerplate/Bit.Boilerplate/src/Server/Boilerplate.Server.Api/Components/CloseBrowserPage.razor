@@ -7,13 +7,15 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <link rel="icon" href="data:image/png;base64,iVBORw0KGgo=">
     <title>@Localizer[nameof(AppStrings.CloseBrowserMessageTitle)]</title>
     <style>
-        html, body, main {
+        html, body {
             margin: 0;
             padding: 0;
             height: 100%;
+            color: #161B22;
+            background: #E8E8E8;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
@@ -24,8 +26,13 @@
             justify-content: center;
         }
 
-        div {
-            margin-bottom: 1rem;
+        .fluent-button {
+            border: none;
+            cursor: pointer;
+            font-size: 50px;
+            border-radius: 2px;
+            padding: 12px 24px;
+            background-color: transparent;
         }
 
         @@media (prefers-color-scheme: dark) {
@@ -38,6 +45,9 @@
 </head>
 
 <body>
+    <script type="text/javascript">
+        window.close();
+    </script>
     <main>
         <div>
             <h1>@Localizer[nameof(AppStrings.CloseBrowserMessageTitle)]</h1>
@@ -45,10 +55,8 @@
         <div>
             <h3>@Localizer[nameof(AppStrings.CloseBrowserMessageBody)]</h3>
         </div>
+        <button class="fluent-button" onclick="window.close()">&#x1F519;</button>
     </main>
-    <script type="text/javascript">
-        window.close();
-    </script>
 </body>
 
 </html>
