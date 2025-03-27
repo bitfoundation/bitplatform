@@ -105,6 +105,52 @@
     --bit-tag-clr-txt: #{$clr-err-text};
 }
 
+.bit-tag-pbg {
+    --bit-tag-clr: #{$clr-bg-pri};
+    --bit-tag-clr-txt: #{$clr-fg-pri};
+}
+
+.bit-tag-sbg {
+    --bit-tag-clr: #{$clr-bg-sec};
+    --bit-tag-clr-txt: #{$clr-fg-pri};
+}
+
+.bit-tag-tbg {
+    --bit-tag-clr: #{$clr-bg-ter};
+    --bit-tag-clr-txt: #{$clr-fg-pri};
+}
+
+.bit-tag-pfg {
+    --bit-tag-clr: #{$clr-fg-pri};
+    --bit-tag-clr-txt: #{$clr-bg-pri};
+}
+
+.bit-tag-sfg {
+    --bit-tag-clr: #{$clr-fg-sec};
+    --bit-tag-clr-txt: #{$clr-bg-pri};
+}
+
+.bit-tag-tfg {
+    --bit-tag-clr: #{$clr-fg-ter};
+    --bit-tag-clr-txt: #{$clr-bg-pri};
+}
+
+.bit-tag-pbr {
+    --bit-tag-clr: #{$clr-brd-pri};
+    --bit-tag-clr-txt: #{$clr-fg-pri};
+}
+
+.bit-tag-sbr {
+    --bit-tag-clr: #{$clr-brd-sec};
+    --bit-tag-clr-txt: #{$clr-fg-pri};
+}
+
+.bit-tag-tbr {
+    --bit-tag-clr: #{$clr-brd-ter};
+    --bit-tag-clr-txt: #{$clr-fg-pri};
+}
+
+
 .bit-tag-sm {
     --bit-tag-fontsize: #{spacing(1.5)};
     --bit-tag-padding: #{spacing(0.5)} #{spacing(1)};
