@@ -111,12 +111,6 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
         return port;
     }
 
-    /// <summary>
-    /// <inheritdoc cref="ILocalHttpServer.ShouldUseForSocialSignIn"/>
-    /// </summary>
-
-    public bool ShouldUseForSocialSignIn() => true;
-
     public async ValueTask DisposeAsync()
     {
         localHttpServer?.Dispose();

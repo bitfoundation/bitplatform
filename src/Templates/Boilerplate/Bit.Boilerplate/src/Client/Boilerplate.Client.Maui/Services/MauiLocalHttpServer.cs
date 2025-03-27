@@ -61,12 +61,23 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
                     await MainThread.InvokeOnMainThreadAsync(() =>
                     {
 #if iOS
-                            if (UIKit.UIApplication.SharedApplication.KeyWindow?.RootViewController?.PresentedViewController is SafariServices.SFSafariViewController controller)
-                            {
-                                controller.DismissViewController(animated: true, completionHandler: null);
-                            }
+                        if (UIKit.UIApplication.SharedApplication.KeyWindow?.RootViewController?.PresentedViewController is SafariServices.SFSafariViewController controller)
+                        {
+                            controller.DismissViewController(animated: true, completionHandler: null);
+                        }
 #endif
                     });
+                }
+                else if (AppPlatform.IsAndroid)
+                {
+#if Android
+                    await MainThread.InvokeOnMainThreadAsync(() =>
+                    {
+                        var intent = new Android.Content.Intent(Platform.AppContext, typeof(Platforms.Android.MainActivity));
+                        intent.SetFlags(Android.Content.ActivityFlags.NewTask | Android.Content.ActivityFlags.SingleTop);
+                        Platform.AppContext.StartActivity(intent);
+                    });
+#endif
                 }
             }))
             .WithModule(new ActionModule("/external-js-runner.html", HttpVerbs.Get, async ctx =>
@@ -130,11 +141,4 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
         localHttpServer?.Dispose();
     }
 
-    /// <summary>
-    /// <inheritdoc cref="ILocalHttpServer.ShouldUseForSocialSignIn"/>
-    /// </summary>
-    public bool ShouldUseForSocialSignIn()
-    {
-        return AppPlatform.IsAndroid is false;
-    }
 }
