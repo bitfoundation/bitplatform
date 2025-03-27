@@ -76,6 +76,15 @@ public partial class BitTag : BitComponentBase
             BitColor.Warning => "bit-tag-wrn",
             BitColor.SevereWarning => "bit-tag-swr",
             BitColor.Error => "bit-tag-err",
+            BitColor.PrimaryBackground => "bit-tag-pbg",
+            BitColor.SecondaryBackground => "bit-tag-sbg",
+            BitColor.TertiaryBackground => "bit-tag-tbg",
+            BitColor.PrimaryForeground => "bit-tag-pfg",
+            BitColor.SecondaryForeground => "bit-tag-sfg",
+            BitColor.TertiaryForeground => "bit-tag-tfg",
+            BitColor.PrimaryBorder => "bit-tag-pbr",
+            BitColor.SecondaryBorder => "bit-tag-sbr",
+            BitColor.TertiaryBorder => "bit-tag-tbr",
             _ => "bit-tag-pri"
         });
 
