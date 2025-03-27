@@ -1,6 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-tag {
+    line-height: 1;
     gap: spacing(1);
     overflow: hidden;
     align-items: center;
@@ -10,8 +11,8 @@
     border-style: $shp-border-style;
     border-width: $shp-border-width;
     border-radius: $shp-border-radius;
-    font-size: var(--bit-tag-fontsize);
     padding: var(--bit-tag-padding);
+    font-size: var(--bit-tag-fontsize);
 
     &.bit-dis {
         cursor: default;
@@ -29,6 +30,7 @@
     cursor: pointer;
     box-sizing: border-box;
     background-color: transparent;
+    font-size: var(--bit-tag-fontsize);
 }
 
 
@@ -153,15 +155,15 @@
 
 .bit-tag-sm {
     --bit-tag-fontsize: #{spacing(1.5)};
-    --bit-tag-padding: #{spacing(0.5)} #{spacing(1)};
+    --bit-tag-padding: #{spacing(0.250)};
 }
 
 .bit-tag-md {
     --bit-tag-fontsize: #{spacing(1.75)};
-    --bit-tag-padding: #{spacing(0.75)} #{spacing(1.5)};
+    --bit-tag-padding: #{spacing(0.375)};
 }
 
 .bit-tag-lg {
-    --bit-tag-fontsize: #{spacing(2)};
-    --bit-tag-padding: #{spacing(1)} #{spacing(2)};
+    --bit-tag-fontsize: #{spacing(2.25)};
+    --bit-tag-padding: #{spacing(0.500)};
 }
