@@ -8,25 +8,36 @@
     <DemoPage Name="Nav"
               SecondaryNames="@(["Tree", "TreeView"])"
               Description="A navigation pane (Nav) provides links to the main areas of an app or site. This component can also be sued as a TreeView to show parent-child data in a tree."
-              Notes="The BitNav is a Multi-API component which can accept the list of Items in 3 different ways: BitNavItem class, a custom Generic class, and BitNavOption component."
               Parameters="componentParameters"
               PublicMembers="componentPublicMembers"
               SubClasses="componentSubClasses"
               SubEnums="componentSubEnums"
               GitHubUrl="Navs/Nav/BitNav.razor"
               GitHubDemoUrl="Navs/Nav/BitNavDemo.razor">
-        <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })">
-            <BitPivotItem HeaderText="Item">
-                <_BitNavItemDemo />
-            </BitPivotItem>
+        <NotesTemplate>
+            <BitText>
+                The BitNav is a <BitTag Color="BitColor.SecondaryBackground">Multi-API</BitTag> component
+                which can accept the list of Items in 3 different ways:
+                <br />
+                1. The <BitLink Href="#nav-item"><BitTag Color="BitColor.SecondaryBackground">BitNavItem</BitTag></BitLink> class <br />
+                2. A <BitTag Color="BitColor.SecondaryBackground">Custom Generic</BitTag> class <br />
+                3. The <BitLink Href="#nav-option"><BitTag Color="BitColor.SecondaryBackground">BitNavOption</BitTag></BitLink> component
+            </BitText>
+        </NotesTemplate>
+        <Examples>
+            <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })">
+                <BitPivotItem HeaderText="Item">
+                    <_BitNavItemDemo />
+                </BitPivotItem>
 
-            <BitPivotItem HeaderText="Custom">
-                <_BitNavCustomDemo />
-            </BitPivotItem>
+                <BitPivotItem HeaderText="Custom">
+                    <_BitNavCustomDemo />
+                </BitPivotItem>
 
-            <BitPivotItem HeaderText="Option">
-                <_BitNavOptionDemo />
-            </BitPivotItem>
-        </BitPivot>
+                <BitPivotItem HeaderText="Option">
+                    <_BitNavOptionDemo />
+                </BitPivotItem>
+            </BitPivot>
+        </Examples>
     </DemoPage>
 </div>

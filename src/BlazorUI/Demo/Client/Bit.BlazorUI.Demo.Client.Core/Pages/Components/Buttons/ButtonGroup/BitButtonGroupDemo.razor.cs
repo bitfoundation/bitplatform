@@ -50,7 +50,7 @@ public partial class BitButtonGroupDemo
             DefaultValue = "new List<TItem>()",
             Description = "List of Item, each of which can be a Button with different action in the ButtonGroup.",
             LinkType = LinkType.Link,
-            Href = "#button-group-items",
+            Href = "#button-group-item",
         },
         new()
         {
@@ -128,7 +128,7 @@ public partial class BitButtonGroupDemo
     [
         new()
         {
-            Id = "button-group-items",
+            Id = "button-group-item",
             Title = "BitButtonGroupItem",
             Parameters =
             [
@@ -248,7 +248,7 @@ public partial class BitButtonGroupDemo
         },
         new()
         {
-            Id = "button-group-options",
+            Id = "button-group-option",
             Title = "BitButtonGroupOption",
             Parameters =
             [

@@ -53,7 +53,9 @@ public partial class BitChoiceGroupDemo
             Name = "Items",
             Type = "IEnumerable<TItem>",
             DefaultValue = "new List<TItem>()",
-            Description = "Sets the data source that populates the items of the list."
+            Description = "Sets the data source that populates the items of the list.",
+            LinkType = LinkType.Link,
+            Href = "#choice-group-item"
         },
         new()
         {

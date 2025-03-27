@@ -94,7 +94,7 @@ public partial class BitMenuButtonDemo
             DefaultValue = "new List<TItem>()",
             Description = "List of items to show in the menu button.",
             LinkType = LinkType.Link,
-            Href = "#menu-button-items"
+            Href = "#menu-button-item"
         },
         new()
         {
@@ -192,7 +192,7 @@ public partial class BitMenuButtonDemo
     [
         new()
         {
-            Id = "menu-button-items",
+            Id = "menu-button-item",
             Title = "BitMenuButtonItem",
             Parameters =
             [
@@ -263,7 +263,7 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
-            Id = "menu-button-options",
+            Id = "menu-button-option",
             Title = "BitMenuButtonOption",
             Parameters =
             [
