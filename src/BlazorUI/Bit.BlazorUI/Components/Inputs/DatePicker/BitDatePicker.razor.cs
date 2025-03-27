@@ -1305,16 +1305,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task HandleOnTimeMinuteFocus()
     {
-        if (IsEnabled is false || ShowTimePicker is false) return;
+        if (IsEnabled is false || ShowTimePicker is false || ReadOnly) return;
 
         await _js.BitUtilsSelectText(_inputTimeMinuteRef);
-    }
-
-    private void ToggleAmPmTime()
-    {
-        if (IsEnabled is false) return;
-
-        _hourView = _hour + (_hour >= 12 ? -12 : 12);
     }
 
     private async Task HandleOnAmClick()
