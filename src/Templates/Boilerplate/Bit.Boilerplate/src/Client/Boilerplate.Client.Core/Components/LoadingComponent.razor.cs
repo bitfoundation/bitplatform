@@ -14,7 +14,7 @@ public partial class LoadingComponent
     /// This component is used in different parts of the application under varying conditions.
     ///
     /// 1. In App.razor, for non-prerendered applications, this component displays minimal content before
-    /// Blazor fully loads. Since it doesn’t automatically get removed after the app loads, the z-index is set to -1 
+    /// Blazor fully loads. Since it doesn't automatically get removed after the app loads, the z-index is set to -1 
     /// to ensure that once Blazor renders the main components, the loader falls behind the main content and becomes hidden.
     /// Additionally, the z-index will not change because @rendermode in App.razor is null, which prevents the OnAfterRender 
     /// method from being invoked.
