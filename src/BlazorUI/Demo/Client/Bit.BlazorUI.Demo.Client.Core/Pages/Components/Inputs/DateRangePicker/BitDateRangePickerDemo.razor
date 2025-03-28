@@ -141,7 +141,7 @@
         <br /><br />
         <div>Defalt (local TimeZone):</div><br/>
         <div class="example-content">
-            <BitDateRangePicker @bind-Value="@timeZoneDateRange1" />
+            <BitDateRangePicker @bind-Value="@timeZoneDateRange1" ShowTimePicker />
         </div>
         <br />
         <div>Selected date range: from @(timeZoneDateRange1?.StartDate?.ToString() ?? "-") to @(timeZoneDateRange1?.EndDate?.ToString() ?? "-")</div>
@@ -159,7 +159,7 @@
             <br /><br /><br /><br />
             <div>"@timeZoneInfo.Id" TimeZone:</div><br/>
             <div class="example-content">
-                <BitDateRangePicker TimeZone="timeZoneInfo" @bind-Value="@timeZoneDateRange2" />
+                <BitDateRangePicker TimeZone="timeZoneInfo" @bind-Value="@timeZoneDateRange2" ShowTimePicker />
             </div>
             <br />
             <div>Selected date range: from @(timeZoneDateRange2?.StartDate?.ToString() ?? "-") to @(timeZoneDateRange2?.EndDate?.ToString() ?? "-")</div>
