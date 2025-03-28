@@ -407,18 +407,21 @@ public partial class UserController : AppControllerBase, IUserController
             sendMessagesTasks.Add(phoneService.SendSms(smsMessage, user.PhoneNumber!, cancellationToken));
         }
 
-        //#if (signalR == true)
-        // Checkout AppHub's comments for more info.
-        var userSessionIdsExceptCurrentUserSessionId = await DbContext.UserSessions
-            .Where(us => us.UserId == user.Id && us.Id != currentUserSessionId && us.SignalRConnectionId != null)
-            .Select(us => us.SignalRConnectionId!)
-            .ToArrayAsync(cancellationToken);
-        sendMessagesTasks.Add(appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId).SendAsync(SignalREvents.SHOW_MESSAGE, message, cancellationToken));
-        //#endif
+        if (user.TwoFactorEnabled || (user.EmailConfirmed is false && user.PhoneNumberConfirmed is false /* Users signed-in through social sign-in */))
+        {
+            //#if (signalR == true)
+            // Checkout AppHub's comments for more info.
+            var userSessionIdsExceptCurrentUserSessionId = await DbContext.UserSessions
+                .Where(us => us.UserId == user.Id && us.Id != currentUserSessionId && us.SignalRConnectionId != null)
+                .Select(us => us.SignalRConnectionId!)
+                .ToArrayAsync(cancellationToken);
+            sendMessagesTasks.Add(appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId).SendAsync(SignalREvents.SHOW_MESSAGE, message, cancellationToken));
+            //#endif
 
-        //#if (notification == true)
-        sendMessagesTasks.Add(pushNotificationService.RequestPush(message: message, userRelatedPush: true, customSubscriptionFilter: us => us.UserSession!.UserId == user.Id && us.UserSessionId != currentUserSessionId, cancellationToken: cancellationToken));
-        //#endif
+            //#if (notification == true)
+            sendMessagesTasks.Add(pushNotificationService.RequestPush(message: message, userRelatedPush: true, customSubscriptionFilter: us => us.UserSession!.UserId == user.Id && us.UserSessionId != currentUserSessionId, cancellationToken: cancellationToken));
+            //#endif
+        }
 
         await Task.WhenAll(sendMessagesTasks);
     }
