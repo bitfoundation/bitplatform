@@ -1,0 +1,71 @@
+﻿@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_bit-css-variables.scss';
+
+.code-box {
+    display: grid;
+    position: relative;
+}
+
+.code-box-content {
+    all:revert;
+    overflow: auto;
+    font-weight: 400;
+    font-size: rem2(16px);
+    line-height: rem2(24px);
+    border-left: rem2(2px) solid $bit-color-primary;
+    background-color: $bit-color-background-secondary;
+    padding: rem2(12px) rem2(48px) rem2(12px) rem2(16px);
+    font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+
+    &::-webkit-scrollbar {
+        width: rem2(8px);
+        background-color: white;
+    }
+
+    &::-webkit-scrollbar-track {
+        background-color: white;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border-radius: rem2(8px);
+        background-color: #c8c6c4;
+        border: rem2(4px) solid #c8c6c4;
+    }
+
+    &::-webkit-scrollbar-button {
+        display: none;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background-color: gray;
+        border-radius: rem2(8px);
+        border: rem2(4px) solid gray;
+    }
+
+    &::-webkit-scrollbar:horizontal {
+        height: rem2(8px);
+    }
+}
+
+::deep .copy-btn {
+    padding: 0;
+    top: rem2(24px);
+    right: rem2(8px);
+    width: rem2(32px);
+    height: rem2(32px);
+    position: absolute;
+    padding-left: rem2(4px);
+    transition: width 0.2s ease-in-out;
+
+    &:hover {
+        background-color: $bit-color-background-primary;
+    }
+
+    &.copied {
+        overflow: hidden;
+        width: rem2(128px);
+        white-space: nowrap;
+        pointer-events: none;
+        background-color: $bit-color-background-primary;
+    }
+}

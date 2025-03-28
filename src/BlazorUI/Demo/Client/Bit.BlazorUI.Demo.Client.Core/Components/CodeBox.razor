@@ -1,0 +1,31 @@
+﻿@inherits AppComponentBase
+
+@if (ChildContent is not null)
+{
+    <div class="code-box">
+        @if (HideCopyButton is false)
+        {
+            <BitActionButton IconName="@codeIcon"
+                             Title="@copyCodeMessage"
+                             OnClick="@CopyCodeToClipboard"
+                             Class="@($"copy-btn {(isCodeCopied ? "copied" : string.Empty)}")"
+                             Styles="@(new() { Content = (isCodeCopied ? string.Empty : "margin: unset") })">
+                @if (isCodeCopied)
+                {
+                    <span>@copyCodeMessage</span>
+                }
+                else
+                {
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <rect x="6.5" y="6.5" width="9" height="12" rx="1.5" stroke="currentColor" />
+                        <path d="M8.5 6C8.5 5.17157 9.17157 4.5 10 4.5H16C16.8284 4.5 17.5 5.17157 17.5 6V15C17.5 15.8284 16.8284 16.5 16 16.5" stroke="currentColor" />
+                    </svg>
+                }
+            </BitActionButton>
+        }
+
+        <pre @ref="preElementRef"
+             class="code-box-content"
+             style="@(string.IsNullOrWhiteSpace(MaxHeight) ? null : $"max-height:{MaxHeight}")">@ChildContent</pre>
+    </div>
+}
