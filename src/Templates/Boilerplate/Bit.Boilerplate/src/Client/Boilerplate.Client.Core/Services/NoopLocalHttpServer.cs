@@ -8,10 +8,5 @@ public partial class NoOpLocalHttpServer : ILocalHttpServer
 
     public int Port => -1;
 
-    /// <summary>
-    /// <inheritdoc cref="ILocalHttpServer.ShouldUseForSocialSignIn"/>
-    /// </summary>
-    public bool ShouldUseForSocialSignIn() => false;
-
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }

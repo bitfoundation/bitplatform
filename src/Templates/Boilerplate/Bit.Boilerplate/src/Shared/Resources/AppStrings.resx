@@ -672,13 +672,10 @@
     <data name="Continue" xml:space="preserve">
     <value>Continue</value>
   </data>
-    <data name="SocialSignedInTitle" xml:space="preserve">
-    <value>Social signed in</value>
+    <data name="CloseBrowserMessageTitle" xml:space="preserve">
+    <value>Go back to app</value>
   </data>
-    <data name="SocialSignedInMessageTitle" xml:space="preserve">
-    <value>The social sign-in is done</value>
-  </data>
-    <data name="SocialSignedInMessageBody" xml:space="preserve">
+    <data name="CloseBrowserMessageBody" xml:space="preserve">
     <value>You can go back to the application now</value>
   </data>
     <data name="GoogleSignInButtonText" xml:space="preserve">

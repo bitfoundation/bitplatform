@@ -1,4 +1,4 @@
-// Checkout external-js-runner.html
+﻿// Checkout external-js-runner.html
 class ExternalJsRunner {
     public static async run() {
         const host = window.origin.replace('http://', '');
@@ -12,11 +12,10 @@ class ExternalJsRunner {
                 } else if (request.type == 'createCredential') {
                     result = await WebAuthn.createCredential(request.options);
                 } else if (request.type == 'close') {
-                    result = {};
                     localWebSocket.close();
-                    setTimeout(() => {
-                        window.close();
-                    }, 100);
+                    window.close();
+                    window.location.assign('/close-browser');
+                    return;
                 }
                 localWebSocket.send(JSON.stringify({ body: result }));
             }

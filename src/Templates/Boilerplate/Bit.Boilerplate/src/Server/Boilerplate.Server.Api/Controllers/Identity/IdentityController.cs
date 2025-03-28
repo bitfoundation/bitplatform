@@ -404,10 +404,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
     [HttpGet]
     [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5)]
-    public async Task<ActionResult> SocialSignedIn()
+    public async Task<ActionResult> CloseBrowserPage()
     {
         var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
-                    (await htmlRenderer.RenderComponentAsync<SocialSignedInPage>()).ToHtmlString());
+                    (await htmlRenderer.RenderComponentAsync<CloseBrowserPage>()).ToHtmlString());
 
         return Content(html, "text/html");
     }
