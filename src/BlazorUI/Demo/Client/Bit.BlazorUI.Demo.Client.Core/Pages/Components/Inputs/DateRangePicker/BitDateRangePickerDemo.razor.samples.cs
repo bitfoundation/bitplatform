@@ -63,7 +63,7 @@ private BitDateRangePickerValue? selectedDateRange = new()
                     Culture=""CultureInfoHelper.GetFaIrCultureWithFingilishNames()"" />";
 
     private readonly string example7RazorCode = @"
-<BitDateRangePicker @bind-Value=""@timeZoneDateRange1"" />
+<BitDateRangePicker @bind-Value=""@timeZoneDateRange1"" ShowTimePicker />
 <div>Selected date range: from @(timeZoneDateRange1?.StartDate?.ToString() ?? ""-"") to @(timeZoneDateRange1?.EndDate?.ToString() ?? ""-"")</div>
 
 @{
@@ -77,7 +77,7 @@ private BitDateRangePickerValue? selectedDateRange = new()
 
 @if (timeZoneInfo is not null) {
     <div>""@timeZoneInfo.Id"" TimeZone:</div><br/>
-    <BitDateRangePicker TimeZone=""timeZoneInfo"" @bind-Value=""@timeZoneDateRange2"" />
+    <BitDateRangePicker TimeZone=""timeZoneInfo"" @bind-Value=""@timeZoneDateRange2"" ShowTimePicker />
     <div>Selected date range: from @(timeZoneDateRange2?.StartDate?.ToString() ?? ""-"") to @(timeZoneDateRange2?.EndDate?.ToString() ?? ""-"")</div>
 }";
     private readonly string example7CsharpCode = @"
