@@ -1,13 +1,19 @@
 ﻿[
     {
-        "outputFile": "Components/DemoPage.razor.css",
-        "inputFile": "Components/DemoPage.razor.scss",
+        "outputFile": "Components/CodeBox.razor.css",
+        "inputFile": "Components/CodeBox.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
         "outputFile": "Components/DemoExample.razor.css",
         "inputFile": "Components/DemoExample.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/DemoPage.razor.css",
+        "inputFile": "Components/DemoPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -506,12 +512,6 @@
     {
         "outputFile": "Pages/Home/ComponentsSection.razor.css",
         "inputFile": "Pages/Home/ComponentsSection.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Pages/GettingStartedPage.razor.css",
-        "inputFile": "Pages/GettingStartedPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
