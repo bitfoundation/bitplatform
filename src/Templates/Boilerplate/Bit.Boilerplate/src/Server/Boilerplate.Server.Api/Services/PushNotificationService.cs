@@ -59,7 +59,7 @@ public partial class PushNotificationService
     {
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-        // userRelatedPush: If the BearerTokenExpiration is 14 days, it’s not practical to send push notifications 
+        // userRelatedPush: If the BearerTokenExpiration is 14 days, it's not practical to send push notifications 
         // with sensitive information, like an OTP code to a device where the user hasn't used the app for over 14 days.  
         // This is because, even if the user opens the app, they will be automatically signed out as their session has expired.  
 

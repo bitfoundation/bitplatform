@@ -51,7 +51,7 @@ public partial class NoRetryPolicyAttribute : Attribute
 /// and the refresh token can be invoked immediately if the access token is expired. 
 /// Since access tokens are intentionally set to expire frequently for security and other benefits, this scenario is expected to occur often. 
 /// Performing this validation on the client improves overall application performance by reducing redundant network calls. 
-/// Note: This attribute requires the client’s date and time settings to be accurate, as incorrect settings may cause degraded performance.
+/// Note: This attribute requires the client's date and time settings to be accurate, as incorrect settings may cause degraded performance.
 /// </summary>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface)]
 public partial class AuthorizedApiAttribute : Attribute
