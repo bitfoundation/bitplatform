@@ -43,7 +43,7 @@ public partial class BitTimelineDemo
             DefaultValue = "new List<TItem>()",
             Description = "List of Item, each of which can be a timeline with different action in the timeline.",
             LinkType = LinkType.Link,
-            Href = "#timeline-group-items",
+            Href = "#timeline-item",
         },
         new()
         {
@@ -107,7 +107,7 @@ public partial class BitTimelineDemo
     [
         new()
         {
-            Id = "timeline-group-items",
+            Id = "timeline-item",
             Title = "BitTimelineItem",
             Parameters =
             [
@@ -227,7 +227,7 @@ public partial class BitTimelineDemo
         },
         new()
         {
-            Id = "timeline-group-options",
+            Id = "timeline-option",
             Title = "BitTimelineOption",
             Parameters =
             [

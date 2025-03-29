@@ -21,4 +21,9 @@ public static class IJSRuntimeExtensions
     {
         await jsRuntime.InvokeVoid("applyBodyElementClasses", cssClasses, cssVariables);
     }
+
+    public static async Task<string> GetInnerText(this IJSRuntime jsRuntime, ElementReference element)
+    {
+        return await jsRuntime.Invoke<string>("getInnerText", element);
+    }
 }

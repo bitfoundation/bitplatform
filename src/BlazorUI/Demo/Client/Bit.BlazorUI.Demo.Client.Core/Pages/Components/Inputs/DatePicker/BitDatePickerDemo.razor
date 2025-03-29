@@ -138,7 +138,7 @@
         <br /><br />
         <div>Defalt (local TimeZone):</div><br/>
         <div class="example-content">
-            <BitDatePicker @bind-Value="@timeZoneDate1" />
+            <BitDatePicker @bind-Value="@timeZoneDate1" ShowTimePicker />
         </div>
         <br />
         <div>Selected date: @timeZoneDate1?.ToString()</div>
@@ -156,7 +156,7 @@
             <br /><br /><br /><br />
             <div>"@timeZoneInfo.Id" TimeZone:</div><br/>
             <div class="example-content">
-                <BitDatePicker TimeZone="timeZoneInfo" @bind-Value="@timeZoneDate2" />
+                <BitDatePicker TimeZone="timeZoneInfo" @bind-Value="@timeZoneDate2" ShowTimePicker />
             </div>
             <br />
             <div>Selected date: @timeZoneDate2?.ToString()</div>

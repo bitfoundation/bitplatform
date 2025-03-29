@@ -669,17 +669,14 @@
     <data name="SignInPanelSubtitle" xml:space="preserve">
     <value>Log in bij jouw account met</value>
   </data>
-    <data name="SocialSignedInTitle" xml:space="preserve">
-    <value>Aangemeld bij social media</value>
+    <data name="CloseBrowserMessageTitle" xml:space="preserve">
+    <value>Ga terug naar de app</value>
+  </data>
+    <data name="CloseBrowserMessageBody" xml:space="preserve">
+    <value>U kunt nu teruggaan naar de applicatie</value>
   </data>
     <data name="Continue" xml:space="preserve">
     <value>Verzenden</value>
-  </data>
-    <data name="SocialSignedInMessageTitle" xml:space="preserve">
-    <value>De sociale aanmelding is voltooid</value>
-  </data>
-    <data name="SocialSignedInMessageBody" xml:space="preserve">
-    <value>U kunt nu teruggaan naar de applicatie</value>
   </data>
     <data name="GoogleSignInButtonText" xml:space="preserve">
     <value>Inloggen met Google</value>

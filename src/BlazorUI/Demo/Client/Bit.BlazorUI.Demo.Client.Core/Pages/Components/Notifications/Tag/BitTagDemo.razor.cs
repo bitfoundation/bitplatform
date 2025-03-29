@@ -52,6 +52,13 @@ public partial class BitTagDemo
         },
         new()
         {
+            Name = "Reversed",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Reverses the direction flow of the content of the tag."
+        },
+        new()
+        {
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
@@ -308,7 +315,43 @@ private bool isDismissed;";
 
 <BitTag Text=""Error"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Error"" Variant=""BitVariant.Fill"" />
 <BitTag Text=""Error"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Error"" Variant=""BitVariant.Outline"" />
-<BitTag Text=""Error"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Error"" Variant=""BitVariant.Text"" />";
+<BitTag Text=""Error"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Error"" Variant=""BitVariant.Text"" />
+
+<BitTag Text=""PrimaryBackground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Fill"" />&nbsp;
+<BitTag Text=""PrimaryBackground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Outline"" />&nbsp;
+<BitTag Text=""PrimaryBackground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Text"" />
+
+<BitTag Text=""SecondaryBackground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Fill"" />&nbsp;
+<BitTag Text=""SecondaryBackground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Outline"" />&nbsp;
+<BitTag Text=""SecondaryBackground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Text"" />
+
+<BitTag Text=""TertiaryBackground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Fill"" />&nbsp;
+<BitTag Text=""TertiaryBackground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Outline"" />&nbsp;
+<BitTag Text=""TertiaryBackground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Text"" />
+
+<BitTag Text=""PrimaryForeground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.PrimaryForeground"" Variant=""BitVariant.Fill"" />&nbsp;
+<BitTag Text=""PrimaryForeground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.PrimaryForeground"" Variant=""BitVariant.Outline"" />&nbsp;
+<BitTag Text=""PrimaryForeground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.PrimaryForeground"" Variant=""BitVariant.Text"" />
+
+<BitTag Text=""SecondaryForeground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.SecondaryForeground"" Variant=""BitVariant.Fill"" />&nbsp;
+<BitTag Text=""SecondaryForeground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.SecondaryForeground"" Variant=""BitVariant.Outline"" />&nbsp;
+<BitTag Text=""SecondaryForeground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.SecondaryForeground"" Variant=""BitVariant.Text"" />
+
+<BitTag Text=""TertiaryForeground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.TertiaryForeground"" Variant=""BitVariant.Fill"" />&nbsp;
+<BitTag Text=""TertiaryForeground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.TertiaryForeground"" Variant=""BitVariant.Outline"" />&nbsp;
+<BitTag Text=""TertiaryForeground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.TertiaryForeground"" Variant=""BitVariant.Text"" />
+<br />
+<BitTag Text=""PrimaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.PrimaryBorder"" Variant=""BitVariant.Fill"" />&nbsp;
+<BitTag Text=""PrimaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.PrimaryBorder"" Variant=""BitVariant.Outline"" />&nbsp;
+<BitTag Text=""PrimaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.PrimaryBorder"" Variant=""BitVariant.Text"" />
+
+<BitTag Text=""SecondaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.SecondaryBorder"" Variant=""BitVariant.Fill"" />&nbsp;
+<BitTag Text=""SecondaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.SecondaryBorder"" Variant=""BitVariant.Outline"" />&nbsp;
+<BitTag Text=""SecondaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.SecondaryBorder"" Variant=""BitVariant.Text"" />
+
+<BitTag Text=""TertiaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Fill"" />&nbsp;
+<BitTag Text=""TertiaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Outline"" />&nbsp;
+<BitTag Text=""TertiaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Text"" />";
 
     private readonly string example6RazorCode = @"
 <BitTag Text=""Small"" IconName=""@BitIconName.Calendar"" Size=""BitSize.Small"" Variant=""BitVariant.Fill"" />

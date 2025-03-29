@@ -8,24 +8,35 @@
 <div>
     <DemoPage Name="Timeline"
               Description="The Timeline component organizes and displays events or data chronologically in a linear fashion, often featuring points or segments representing individual items with associated details or actions."
-              Notes="The BitTimeline is a Multi-API component which can accept the list of Items in 3 different ways: BitTimelineItem class, a custom Generic class, and BitTimelineOption component."
               Parameters="componentParameters"
               SubClasses="componentSubClasses"
               SubEnums="componentSubEnums"
               GitHubUrl="Lists/Timeline/BitTimeline.razor"
               GitHubDemoUrl="Lists/Timeline/BitTimelineDemo.razor">
-        <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })">
-            <BitPivotItem HeaderText="Item">
-                <_BitTimelineItemDemo />
-            </BitPivotItem>
+        <NotesTemplate>
+            <BitText>
+                The BitTimeline is a <BitTag Color="BitColor.SecondaryBackground">Multi-API</BitTag> component
+                which can accept the list of Items in 3 different ways:
+                <br />
+                1. The <BitLink Href="#timeline-item"><BitTag Color="BitColor.SecondaryBackground">BitTimelineItem</BitTag></BitLink> class <br />
+                2. A <BitTag Color="BitColor.SecondaryBackground">Custom Generic</BitTag> class <br />
+                3. The <BitLink Href="#timeline-option"><BitTag Color="BitColor.SecondaryBackground">BitTimelineOption</BitTag></BitLink> component
+            </BitText>
+        </NotesTemplate>
+        <Examples>
+            <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })">
+                <BitPivotItem HeaderText="Item">
+                    <_BitTimelineItemDemo />
+                </BitPivotItem>
 
-            <BitPivotItem HeaderText="Custom">
-                <_BitTimelineCustomDemo />
-            </BitPivotItem>
+                <BitPivotItem HeaderText="Custom">
+                    <_BitTimelineCustomDemo />
+                </BitPivotItem>
 
-            <BitPivotItem HeaderText="Option">
-                <_BitTimelineOptionDemo />
-            </BitPivotItem>
-        </BitPivot>
+                <BitPivotItem HeaderText="Option">
+                    <_BitTimelineOptionDemo />
+                </BitPivotItem>
+            </BitPivot>
+        </Examples>
     </DemoPage>
 </div>

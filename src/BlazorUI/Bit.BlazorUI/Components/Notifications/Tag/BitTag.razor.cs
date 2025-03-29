@@ -37,6 +37,12 @@ public partial class BitTag : BitComponentBase
     [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
 
     /// <summary>
+    /// Reverses the direction flow of the content of the tag.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Reversed { get; set; }
+
+    /// <summary>
     /// The size of the tag.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -76,8 +82,19 @@ public partial class BitTag : BitComponentBase
             BitColor.Warning => "bit-tag-wrn",
             BitColor.SevereWarning => "bit-tag-swr",
             BitColor.Error => "bit-tag-err",
+            BitColor.PrimaryBackground => "bit-tag-pbg",
+            BitColor.SecondaryBackground => "bit-tag-sbg",
+            BitColor.TertiaryBackground => "bit-tag-tbg",
+            BitColor.PrimaryForeground => "bit-tag-pfg",
+            BitColor.SecondaryForeground => "bit-tag-sfg",
+            BitColor.TertiaryForeground => "bit-tag-tfg",
+            BitColor.PrimaryBorder => "bit-tag-pbr",
+            BitColor.SecondaryBorder => "bit-tag-sbr",
+            BitColor.TertiaryBorder => "bit-tag-tbr",
             _ => "bit-tag-pri"
         });
+
+        ClassBuilder.Register(() => Reversed ? "bit-tag-rvs" : string.Empty);
 
         ClassBuilder.Register(() => Size switch
         {

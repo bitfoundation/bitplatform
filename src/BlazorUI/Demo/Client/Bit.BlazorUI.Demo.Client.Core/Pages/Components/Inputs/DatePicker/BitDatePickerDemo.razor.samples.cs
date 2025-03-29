@@ -57,7 +57,7 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, 
                Culture=""CultureInfoHelper.GetFaIrCultureWithFingilishNames()"" />";
 
     private readonly string example8RazorCode = @"
-<BitDatePicker @bind-Value=""@timeZoneDate1"" />
+<BitDatePicker @bind-Value=""@timeZoneDate1"" ShowTimePicker />
 <div>Selected date: @timeZoneDate1?.ToString()</div>
 
 @{
@@ -70,7 +70,7 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, 
 }
 @if (timeZoneInfo is not null) {
     <div>""@timeZoneInfo.Id"" TimeZone:</div><br/>
-    <BitDatePicker TimeZone=""timeZoneInfo"" @bind-Value=""@timeZoneDate2"" />
+    <BitDatePicker TimeZone=""timeZoneInfo"" @bind-Value=""@timeZoneDate2"" ShowTimePicker />
     <div>Selected date: @timeZoneDate2?.ToString()</div>
 }";
     private readonly string example8CsharpCode = @"

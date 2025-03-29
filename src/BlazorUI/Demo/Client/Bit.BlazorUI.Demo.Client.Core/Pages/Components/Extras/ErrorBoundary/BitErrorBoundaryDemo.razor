@@ -6,13 +6,27 @@
 
 <DemoPage Name="ErrorBoundary"
           Description="BitErrorBoundary is a simple error boundary to handle exceptions happening in its children."
-          Notes="To use this component, you need to install the `Bit.BlazorUI.Extras` nuget package, as described in the Optional steps of the Getting started page."
           Parameters="componentParameters"
           GitHubExtrasUrl="ErrorBoundary/BitErrorBoundary.razor"
           GitHubDemoUrl="Extras/ErrorBoundary/BitErrorBoundaryDemo.razor">
-    <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-        <BitErrorBoundary>
-            <BitButton OnClick="ThrowException">Throw an exception</BitButton>
-        </BitErrorBoundary>
-    </DemoExample>
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Extras"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <BitErrorBoundary>
+                <BitButton OnClick="ThrowException">Throw an exception</BitButton>
+            </BitErrorBoundary>
+        </DemoExample>
+    </Examples>
 </DemoPage>

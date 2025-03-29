@@ -39,7 +39,9 @@ public partial class BitBreadcrumbDemo
             Name = "Items",
             Type = "IList<TItem>",
             DefaultValue = "[]",
-            Description = "Collection of BreadLists to render."
+            Description = "Collection of BreadLists to render.",
+            LinkType = LinkType.Link,
+            Href = "#breadcrumb-item",
         },
         new()
         {
@@ -134,7 +136,7 @@ public partial class BitBreadcrumbDemo
     [
         new()
         {
-            Id = "bit-breadcrumb-item",
+            Id = "breadcrumb-item",
             Title = "BitBreadcrumbItem",
             Parameters =
             [
@@ -215,7 +217,7 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
-            Id = "bit-breadcrumb-option",
+            Id = "breadcrumb-option",
             Title = "BitBreadcrumbOption",
             Parameters =
             [
