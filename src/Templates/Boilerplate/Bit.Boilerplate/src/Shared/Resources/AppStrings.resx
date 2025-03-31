@@ -484,7 +484,7 @@
     <value>Your email address ({0}) has been confirmed.</value>
   </data>
     <data name="EmailConfirmationSuccessMessage" xml:space="preserve">
-    <value>You can now login with your account.</value>
+    <value>You can now sign-in with your account.</value>
   </data>
     <data name="ConfirmPhoneHeaderText" xml:space="preserve">
     <value>Phone Number</value>
@@ -520,7 +520,7 @@
     <value>Your phone number ({0}) has been confirmed.</value>
   </data>
     <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
-    <value>You can now login with your account.</value>
+    <value>You can now sign-in with your account.</value>
   </data>
     <data name="AccountTitle" xml:space="preserve">
     <value>Account</value>
@@ -652,7 +652,7 @@
     <value>Your password has been reset.</value>
   </data>
     <data name="ResetPasswordSuccessBody" xml:space="preserve">
-    <value>You can now login with your password.</value>
+    <value>You can now sign-in with your password.</value>
   </data>
     <data name="ResetPasswordMessageInForgot" xml:space="preserve">
     <value>Already have a reset password token?</value>
@@ -814,7 +814,7 @@
     <value>The 2fa token provided by the request was invalid. A valid 2fa token is required to enable 2fa.</value>
   </data>
     <data name="TfaProtectedSignInSubtitle" xml:space="preserve">
-    <value>Your login is protected with an authenticator app.</value>
+    <value>Your sign-in is protected with an authenticator app.</value>
   </data>
     <data name="TfaEnterCodeInSignInMessage" xml:space="preserve">
     <value>Enter your authenticator code:</value>
@@ -862,7 +862,7 @@
     <value>You have no recovery codes left.</value>
   </data>
     <data name="TfaRecoveryCodesZeroLeftSubtitle" xml:space="preserve">
-    <value>You must generate a new set of recovery codes before you can log in with a recovery code.</value>
+    <value>You must generate a new set of recovery codes before you can sign in with a recovery code.</value>
   </data>
     <data name="TfaRecoveryCodesOneLeftTitle" xml:space="preserve">
     <value>You have 1 recovery code left.</value>
@@ -1211,18 +1211,18 @@
     <value>Passwordless</value>
   </data>
     <data name="PasswordlessTitle" xml:space="preserve">
-    <value>Passwordless login</value>
+    <value>Passwordless sign-in</value>
   </data>
     <data name="EnablePasswordless" xml:space="preserve">
-    <value>Enable passwordless login</value>
+    <value>Enable passwordless sign-in</value>
   </data>
     <data name="EnablePasswordlessSucsessMessage" xml:space="preserve">
-    <value>Passwordless login enabled successfully</value>
+    <value>Passwordless sign-in enabled successfully</value>
   </data>
     <data name="DisablePasswordless" xml:space="preserve">
-    <value>Disable passwordless login</value>
+    <value>Disable passwordless sign-in</value>
   </data>
     <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
-    <value>Passwordless login disabled successfully</value>
+    <value>Passwordless sign-in disabled successfully</value>
   </data>
 </root>
