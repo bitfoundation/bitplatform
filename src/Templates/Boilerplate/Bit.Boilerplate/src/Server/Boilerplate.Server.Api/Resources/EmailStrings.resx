@@ -158,16 +158,16 @@
     <value>Hello {0}</value>
   </data>
     <data name="OtpSubtitle" xml:space="preserve">
-    <value>Someone has requested an OTP to login to the app.</value>
+    <value>Someone has requested an OTP to sign-in to the app.</value>
   </data>
     <data name="OtpBody" xml:space="preserve">
     <value>If you did not request the OTP, you can ignore this email.</value>
   </data>
     <data name="OtpMessage" xml:space="preserve">
-    <value>You can copy the below OTP and enter it in the login page.</value>
+    <value>You can copy the below OTP and enter it in the sign-in page.</value>
   </data>
     <data name="OtpLinkMessage" xml:space="preserve">
-    <value>Or you can click on the following link to login.</value>
+    <value>Or you can click on the following link to sign-in.</value>
   </data>
     <data name="AppName" xml:space="preserve">
     <value>Boilerplate</value>
@@ -182,7 +182,7 @@
     <value>Hello dear {0}</value>
   </data>
     <data name="TfaTokenMessage" xml:space="preserve">
-    <value>Here is your new 2FA token to login:</value>
+    <value>Here is your new 2FA token to sign-in:</value>
   </data>
     <data name="ElevatedAccessTokenEmailSubject" xml:space="preserve">
     <value>Boilerplate {0} - Elevated access token</value>
