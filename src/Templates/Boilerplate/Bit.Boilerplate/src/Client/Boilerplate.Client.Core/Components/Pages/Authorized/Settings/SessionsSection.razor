@@ -47,7 +47,7 @@
                                             Presence="@GetPresence(session.RenewedOn)"
                                             Styles="@(new() { Image = "width:50%;height:50%" })"
                                             ImageInitials="@(session.Privileged ? "✓" : "✘")"
-                                            CoinColor="@(session.Privileged ? null : BitColor.TertiaryBackground)"
+                                            CoinVariant="@(session.Privileged ? BitVariant.Fill : BitVariant.Outline)"
                                             ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(session.DeviceInfo)}")" />
                                 <BitSpacer />
                                 <BitButton Color="BitColor.Error"
