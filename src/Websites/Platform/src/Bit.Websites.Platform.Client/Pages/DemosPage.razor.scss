@@ -184,4 +184,28 @@
     width: 100%;
     display: flex;
     justify-content: center;
+
+    .video-wrapper {
+        width: 100%;
+        max-width: 800px;
+        position: relative;
+    }
+
+    video {
+        width: 100%;
+    }
+
+    .skip-button {
+        left: 0;
+        bottom: -20px;
+        cursor: pointer;
+        position: absolute;
+        border-radius: 2px;
+        background: transparent;
+
+        &:hover {
+            opacity: .75;
+            background-color: gray;
+        }
+    }
 }

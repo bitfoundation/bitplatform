@@ -56,13 +56,14 @@
         </BitText>
         <br />
         <div class="video-container">
-            <video 
-                width="560"
-                height="315" 
-                controls 
-                title="bitplatform intro"
-                src="https://videos.bitplatform.dev/bitplatform-intro.mp4" />
+            <div class="video-wrapper">
+                <video controls
+                       title="bitplatform intro"
+                       src="https://videos.bitplatform.dev/bitplatform-intro.mp4" />
+                <button onclick="jumpToDemos(event)" class="skip-button">Jump to demos</button>
+            </div>
         </div>
+        <br />
         <br />
         <BitText Typography="BitTypography.H6" Gutter>
             You can start playing with its source code here: <a href="https://codespaces.new/bitfoundation/bit-templates-playground/tree/develop" target="_blank">Boilerplate playground</a>
