@@ -34,7 +34,7 @@
                 {
                     <TfaPanel Model="model"
                               IsWaiting="isWaiting"
-                              Continue="WrapHandled(DoSignIn)"
+                              OnTokenProvided="DoSignIn"
                               OnSendTfaToken="HandleOnSendTfaToken" />
                 }
             </BitStack>

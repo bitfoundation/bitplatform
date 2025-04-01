@@ -12,7 +12,7 @@
                      Size="BitSize.Large"
                      Type="BitInputType.Number"
                      OnChange="@(value => Model.TwoFactorCode = value)"
-                     OnFill="WrapHandled(async (string? otp) => await Continue.InvokeAsync(otp))"
+                     OnFill="WrapHandled(OnTokenProvided.InvokeAsync)"
                      Label="@Localizer[nameof(AppStrings.Code)]" />
 
         <BitTextField NoValidate
@@ -36,7 +36,7 @@
                                Color="BitColor.Tertiary"
                                Variant="BitVariant.Outline"
                                ButtonType="BitButtonType.Button"
-                               OnClick="WrapHandled(async () => await OnSendTfaToken.InvokeAsync())">
+                               OnClick="WrapHandled(OnSendTfaToken.InvokeAsync)">
                         @Localizer[nameof(AppStrings.TfaPanelAnotherWayGetCode)]
                     </BitButton>
                 </BitStack>
