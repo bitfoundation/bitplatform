@@ -21,4 +21,9 @@ internal static class ExtrasJsRuntimeExtensions
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Extras.initScripts", scripts, isModule);
     }
+
+    public static ValueTask BitExtrasInitStylesheets(this IJSRuntime jsRuntime, IEnumerable<string> stylesheets)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Extras.initStylesheets", stylesheets);
+    }
 }
