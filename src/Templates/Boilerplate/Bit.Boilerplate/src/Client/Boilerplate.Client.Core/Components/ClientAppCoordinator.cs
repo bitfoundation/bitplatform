@@ -25,7 +25,6 @@ public partial class ClientAppCoordinator : AppComponentBase
     //#if (appInsights == true)
     [AutoInject] private IApplicationInsights appInsights = default!;
     //#endif
-    [AutoInject] private Navigator navigator = default!;
     [AutoInject] private UserAgent userAgent = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private IStorageService storageService = default!;
@@ -56,14 +55,22 @@ public partial class ClientAppCoordinator : AppComponentBase
                 var forceLoad = uriValue.Contains("forceLoad=true", StringComparison.InvariantCultureIgnoreCase);
                 NavigationManager.NavigateTo(uriValue.Replace("replace=true", "", StringComparison.InvariantCultureIgnoreCase).Replace("forceLoad=true", "", StringComparison.InvariantCultureIgnoreCase).TrimEnd('&'), forceLoad, replace);
             });
+            if (AppPlatform.IsBlazorHybrid is false)
+            {
+                try
+                {
+                    BitButil.UseFastInvoke(); // Ensures that `TelemetryContext.Platform` is available to components using this value in their `OnInitAsync` method, such as `SignInPage.razor.cs`.
+                    var userAgentData = await userAgent.Extract();
+                    TelemetryContext.Platform = string.Join(' ', [userAgentData.Manufacturer, userAgentData.OsName, userAgentData.Name, "browser"]);
+                }
+                finally
+                {
+                    BitButil.UseNormalInvoke();
+                }
+            }
             TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
             TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
             TelemetryContext.PageUrl = HttpUtility.UrlDecode(NavigationManager.Uri);
-            if (AppPlatform.IsBlazorHybrid is false)
-            {
-                var userAgentData = await userAgent.Extract();
-                TelemetryContext.Platform = string.Join(' ', [userAgentData.Manufacturer, userAgentData.OsName, userAgentData.Name, "browser"]);
-            }
 
             //#if (appInsights == true)
             _ = appInsights.AddTelemetryInitializer(new()

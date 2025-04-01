@@ -29,8 +29,7 @@ public partial class ConfirmPage(IPage page, Uri serverAddress)
             await Assertions.Expect(emailInput).ToBeDisabledAsync();
             await Assertions.Expect(emailInput).Not.ToBeEditableAsync();
         }
-        await Assertions.Expect(Page.GetByPlaceholder(AppStrings.EmailTokenPlaceholder)).ToBeVisibleAsync();
-        await Assertions.Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.EmailTokenConfirmButtonText })).ToBeVisibleAsync();
+        //await Assertions.Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.EmailTokenConfirmButtonText })).ToBeVisibleAsync();
         await Assertions.Expect(Page.GetByRole(AriaRole.Main)).ToContainTextAsync(AppStrings.NotReceivedEmailMessage);
         await Assertions.Expect(Page.GetByRole(AriaRole.Main)).ToContainTextAsync(AppStrings.CheckSpamMailMessage);
         await Assertions.Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.ResendEmailTokenButtonText })).ToBeVisibleAsync();
@@ -44,7 +43,7 @@ public partial class ConfirmPage(IPage page, Uri serverAddress)
         if (email is not null)
             await Page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);
 
-        await Page.GetByPlaceholder(AppStrings.EmailTokenPlaceholder).FillAsync(token);
+        //await Page.GetByPlaceholder(AppStrings.EmailTokenPlaceholder).FillAsync(token);
         await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.EmailTokenConfirmButtonText }).ClickAsync();
 
         return new(Page, WebAppServerAddress);

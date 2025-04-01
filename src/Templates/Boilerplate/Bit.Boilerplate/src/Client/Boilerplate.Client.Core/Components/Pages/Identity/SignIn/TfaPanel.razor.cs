@@ -9,4 +9,5 @@ public partial class TfaPanel
     [Parameter] public SignInRequestDto Model { get; set; } = default!;
 
     [Parameter] public EventCallback OnSendTfaToken { get; set; }
+    [Parameter] public EventCallback Continue { get; set; }
 }

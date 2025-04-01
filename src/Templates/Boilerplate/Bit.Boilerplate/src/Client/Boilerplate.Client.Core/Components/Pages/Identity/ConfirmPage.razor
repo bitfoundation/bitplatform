@@ -35,12 +35,13 @@
                                                       Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
                                         <ValidationMessage For="@(() => emailModel.Email)" />
 
-                                        <BitTextField @bind-Value="emailModel.Token"
-                                                      TabIndex="2"
-                                                      Type="BitInputType.Number"
-                                                      AutoComplete="@BitAutoCompleteValue.OneTimeCode"
-                                                      Label="@Localizer[nameof(AppStrings.EmailToken)]"
-                                                      Placeholder="@Localizer[nameof(AppStrings.EmailTokenPlaceholder)]" />
+                                        <BitOtpInput @bind-Value="emailModel.Token"
+                                                     TabIndex="2"
+                                                     Length="6"
+                                                     Size="BitSize.Large"
+                                                     Type="BitInputType.Number"
+                                                     OnFill="WrapHandled(ConfirmEmail)"
+                                                     Label="@Localizer[nameof(AppStrings.EmailToken)]" />
                                         <ValidationMessage For="@(() => emailModel.Token)" />
 
                                         <BitButton IsLoading="isWaiting" ButtonType="BitButtonType.Submit">
@@ -104,12 +105,12 @@
                                                       Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
                                         <ValidationMessage For="@(() => phoneModel.PhoneNumber)" />
 
-                                        <BitTextField @bind-Value="phoneModel.Token"
-                                                      TabIndex="2"
-                                                      Type="BitInputType.Number"
-                                                      AutoComplete="@BitAutoCompleteValue.OneTimeCode"
-                                                      Label="@Localizer[nameof(AppStrings.PhoneToken)]"
-                                                      Placeholder="@Localizer[nameof(AppStrings.PhoneTokenPlaceholder)]" />
+                                        <BitOtpInput @bind-Value="phoneModel.Token"
+                                                     Length="6"
+                                                     Size="BitSize.Large"
+                                                     Type="BitInputType.Number"
+                                                     OnFill="WrapHandled(ConfirmPhone)"
+                                                     Label="@Localizer[nameof(AppStrings.PhoneToken)]" />
                                         <ValidationMessage For="@(() => phoneModel.Token)" />
 
                                         <BitButton IsLoading="isWaiting" ButtonType="BitButtonType.Submit">
