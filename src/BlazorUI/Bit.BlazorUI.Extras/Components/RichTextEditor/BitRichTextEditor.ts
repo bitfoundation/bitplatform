@@ -42,17 +42,29 @@ namespace BitBlazorUI {
             RichTextEditor._editors[id] = editor;
         }
 
-        public static getValue(id: string) {
+        public static getText(id: string) {
             const editor = RichTextEditor._editors[id];
             if (!editor) return;
 
-            //return editor.value;
+            return editor.quill.getText();
+        }
+
+        public static getHtml(id: string) {
+            const editor = RichTextEditor._editors[id];
+            if (!editor) return;
+
+            return editor.quill.root.innerHTML;
+        }
+
+        public static getContent(id: string) {
+            const editor = RichTextEditor._editors[id];
+            if (!editor) return;
+
+            return JSON.stringify(editor.quill.getContents());
         }
 
         public static dispose(id: string) {
             if (!RichTextEditor._editors[id]) return;
-
-            //RichTextEditor._editors[id].dispose();
 
             delete RichTextEditor._editors[id];
         }

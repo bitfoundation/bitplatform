@@ -15,6 +15,28 @@ public partial class BitRichTextEditorDemo
         },
     ];
 
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "GetText",
+            Type = "Func<ValueTask<string>>",
+            Description = "Gets the current text content of the editor."
+        },
+        new()
+        {
+            Name = "GetHtml",
+            Type = "Func<ValueTask<string>>",
+            Description = "Gets the current html content of the editor."
+        },
+        new()
+        {
+            Name = "GetContent",
+            Type = "Func<ValueTask<string>>",
+            Description = "Gets the current content of the editor in JSON format."
+        },
+    ];
+
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         new()
@@ -29,6 +51,22 @@ public partial class BitRichTextEditorDemo
             ]
         }
     ];
+
+
+    private BitRichTextEditor editorRef = default!;
+    private string? result;
+    private async Task GetText()
+    {
+        result = await editorRef.GetText();
+    }
+    private async Task GetHtml()
+    {
+        result = await editorRef.GetHtml();
+    }
+    private async Task GetContent()
+    {
+        result = await editorRef.GetContent();
+    }
 
 
 

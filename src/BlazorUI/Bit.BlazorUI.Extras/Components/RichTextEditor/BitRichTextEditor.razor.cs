@@ -23,6 +23,31 @@ public partial class BitRichTextEditor : BitComponentBase
     [Parameter] public BitRichTextEditorTheme? Theme { get; set; }
 
 
+    /// <summary>
+    /// Gets the current text content of the editor.
+    /// </summary>
+    public ValueTask<string> GetText()
+    {
+        return _js.BitRichTextEditorGetText(_Id);
+    }
+
+    /// <summary>
+    /// Gets the current html content of the editor.
+    /// </summary>
+    public ValueTask<string> GetHtml()
+    {
+        return _js.BitRichTextEditorGetHtml(_Id);
+    }
+    
+    /// <summary>
+     /// Gets the current content of the editor in JSON format.
+     /// </summary>
+    public ValueTask<string> GetContent()
+    {
+        return _js.BitRichTextEditorGetContent(_Id);
+    }
+
+
 
     protected override string RootElementClass => "bit-rte";
 

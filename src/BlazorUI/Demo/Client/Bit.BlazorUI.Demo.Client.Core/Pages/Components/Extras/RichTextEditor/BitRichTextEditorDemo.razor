@@ -9,6 +9,7 @@
               Description="RichTextEditor is a WYSIWYG text editor."
               Parameters="componentParameters"
               SubEnums="componentSubEnums"
+              PublicMembers="componentPublicMembers"
               GitHubExtrasUrl="RichTextEditor/BitRichTextEditor.razor"
               GitHubDemoUrl="Extras/RichTextEditor/BitRichTextEditorDemo.razor">
         <NotesTemplate>
@@ -26,7 +27,14 @@
         </NotesTemplate>
         <Examples>
             <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-                <BitRichTextEditor />
+                <BitRichTextEditor @ref="editorRef" />
+                <br/>
+                <BitButton OnClick="GetText">GetText</BitButton>
+                <BitButton OnClick="GetHtml">GetHtml</BitButton>
+                <BitButton OnClick="GetContent">GetContent</BitButton>
+                <br/>
+                <div>result:</div>
+                <pre>@result</pre>
             </DemoExample>
         </Examples>
     </DemoPage>
