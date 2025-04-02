@@ -109,10 +109,10 @@ public partial class AppMenu
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
+        await base.DisposeAsync(disposing);
+
         unsubscribeUerDataUpdated?.Invoke();
         NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
         AuthManager.AuthenticationStateChanged -= AuthManager_AuthenticationStateChanged;
-
-        await base.DisposeAsync(disposing);
     }
 }

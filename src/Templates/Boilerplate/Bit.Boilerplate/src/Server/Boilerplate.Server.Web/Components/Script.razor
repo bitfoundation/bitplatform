@@ -12,6 +12,7 @@
 
     protected override void OnInitialized()
     {
+        base.OnInitialized();
         src = (Src is not null && AppendVersion) ? _fileVersionProvider.AddFileVersionToPath(_httpContextAccessor.HttpContext!.Request.PathBase, Src) : Src;
     }
 }
