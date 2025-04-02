@@ -14,7 +14,7 @@
             @if (showGoBackButton)
             {
                 <BitButton Variant="BitVariant.Text"
-                           IconName="@BitIconName.Back"
+                           IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)"
                            OnClick="GoBack"
                            Title="@Localizer[nameof(AppStrings.Back)]" />
             }

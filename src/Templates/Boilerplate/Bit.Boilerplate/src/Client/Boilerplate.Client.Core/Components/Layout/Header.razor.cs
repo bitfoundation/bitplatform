@@ -9,6 +9,8 @@ public partial class Header : AppComponentBase
     private bool showGoBackButton;
     private Action unsubscribePageTitleChanged = default!;
 
+    [CascadingParameter] private BitDir? currentDir { get; set; }
+
     [AutoInject] private History history = default!;
 
     protected override async Task OnInitAsync()

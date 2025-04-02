@@ -17,13 +17,13 @@ public partial class AddOrEditProductPage
             }
             else
             {
-                return Localizer[nameof(AppStrings.EditProduct)];
+                return Localizer[nameof(AppStrings.EditProduct), ""];
             }
         }
     }
 
     protected override bool ShowGoBackButton => true;
-    
+
     [AutoInject] IProductController productController = default!;
     [AutoInject] ICategoryController categoryController = default!;
     [AutoInject] IAttachmentController attachmentController = default!;

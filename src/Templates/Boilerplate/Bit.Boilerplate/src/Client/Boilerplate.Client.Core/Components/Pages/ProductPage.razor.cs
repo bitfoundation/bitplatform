@@ -5,7 +5,6 @@ namespace Boilerplate.Client.Core.Components.Pages;
 
 public partial class ProductPage
 {
-    protected override string? Title => product?.Name;
     protected override bool ShowGoBackButton => true;
 
     /// <summary>
