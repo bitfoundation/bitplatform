@@ -441,9 +441,6 @@
     <data name="ExpiredToken" xml:space="preserve">
     <value>Expired token.</value>
   </data>
-    <data name="TokenPlaceholder" xml:space="preserve">
-    <value>Enter token</value>
-  </data>
     <data name="SignInMessageInSignUp" xml:space="preserve">
     <value>Already have an account?</value>
   </data>
@@ -472,10 +469,7 @@
     <value>Enter email address</value>
   </data>
     <data name="EmailToken" xml:space="preserve">
-    <value>Email Token</value>
-  </data>
-    <data name="EmailTokenPlaceholder" xml:space="preserve">
-    <value>Enter email token</value>
+    <value>Code</value>
   </data>
     <data name="EmailTokenConfirmButtonText" xml:space="preserve">
     <value>Confirm Email Address</value>
@@ -499,10 +493,7 @@
     <value>Enter phone number</value>
   </data>
     <data name="PhoneToken" xml:space="preserve">
-    <value>Phone Token</value>
-  </data>
-    <data name="PhoneTokenPlaceholder" xml:space="preserve">
-    <value>Enter phone token</value>
+    <value>Code</value>
   </data>
     <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
     <value>Confirm Phone Number</value>
@@ -514,7 +505,7 @@
     <value>The confirmation token has been re-sent to your phone.</value>
   </data>
     <data name="ResendPhoneTokenButtonText" xml:space="preserve">
-    <value>Resend Phone Token</value>
+    <value>Resend code</value>
   </data>
     <data name="PhoneConfirmationSuccessTitle" xml:space="preserve">
     <value>Your phone number ({0}) has been confirmed.</value>
@@ -628,7 +619,7 @@
     <value>Remove</value>
   </data>
     <data name="ResendEmailTokenButtonText" xml:space="preserve">
-    <value>Resend Email Token</value>
+    <value>Resend code</value>
   </data>
     <data name="ResetPasswordPageTitle" xml:space="preserve">
     <value>Reset password</value>

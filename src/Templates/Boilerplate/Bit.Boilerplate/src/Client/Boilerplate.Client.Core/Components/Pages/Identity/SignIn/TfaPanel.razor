@@ -6,11 +6,21 @@
 
         <BitText Color="BitColor.SecondaryForeground">@Localizer[nameof(AppStrings.TfaPanelSubtitle)]</BitText>
 
-        <BitTextField AutoFocus
-                      @bind-Value="Model.TwoFactorCode"
-                      Label="@Localizer[nameof(AppStrings.Code)]"
+        <BitOtpInput AutoFocus
+                     NoValidate
+                     Length="6"
+                     Size="BitSize.Large"
+                     Type="BitInputType.Number"
+                     OnChange="@(value => Model.TwoFactorCode = value)"
+                     OnFill="WrapHandled(OnTokenProvided.InvokeAsync)"
+                     Label="@Localizer[nameof(AppStrings.Code)]" />
+
+        <BitTextField NoValidate
+                      Immediate
+                      OnChange="@(value => Model.TwoFactorCode = value)"
+                      Label="@Localizer[nameof(AppStrings.TwoFactorRecoveryCode)]"
                       AutoComplete="@BitAutoCompleteValue.OneTimeCode"
-                      Placeholder="@Localizer[nameof(AppStrings.TwoFactorCode)]" />
+                      Placeholder="@Localizer[nameof(AppStrings.TwoFactorRecoveryCode)]" />
 
         <BitButton IsLoading="IsWaiting" ButtonType="BitButtonType.Submit">
             @Localizer[nameof(AppStrings.Continue)]
@@ -26,7 +36,7 @@
                                Color="BitColor.Tertiary"
                                Variant="BitVariant.Outline"
                                ButtonType="BitButtonType.Button"
-                               OnClick="WrapHandled(async () => await OnSendTfaToken.InvokeAsync())">
+                               OnClick="WrapHandled(OnSendTfaToken.InvokeAsync)">
                         @Localizer[nameof(AppStrings.TfaPanelAnotherWayGetCode)]
                     </BitButton>
                 </BitStack>

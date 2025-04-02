@@ -441,9 +441,6 @@
     <data name="ExpiredToken" xml:space="preserve">
     <value>Verlopen token.</value>
   </data>
-    <data name="TokenPlaceholder" xml:space="preserve">
-    <value>Token invoeren</value>
-  </data>
     <data name="SignInMessageInSignUp" xml:space="preserve">
     <value>Heb je al een account?</value>
   </data>
@@ -474,9 +471,6 @@
     <data name="EmailToken" xml:space="preserve">
     <value>E-mail token</value>
   </data>
-    <data name="EmailTokenPlaceholder" xml:space="preserve">
-    <value>Voer e-mailtoken in</value>
-  </data>
     <data name="EmailTokenConfirmButtonText" xml:space="preserve">
     <value>Bevestig e-mailadres</value>
   </data>
@@ -500,9 +494,6 @@
   </data>
     <data name="PhoneToken" xml:space="preserve">
     <value>Telefoon Token</value>
-  </data>
-    <data name="PhoneTokenPlaceholder" xml:space="preserve">
-    <value>Telefoontoken invoeren</value>
   </data>
     <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
     <value>Telefoonnummer bevestigen</value>

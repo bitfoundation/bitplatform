@@ -441,9 +441,6 @@
     <data name="ExpiredToken" xml:space="preserve">
     <value>توکن منقضی شده است.</value>
   </data>
-    <data name="TokenPlaceholder" xml:space="preserve">
-    <value>توکن را وارد کنید</value>
-  </data>
     <data name="SignInMessageInSignUp" xml:space="preserve">
     <value>از قبل حساب کاربری دارید؟</value>
   </data>
@@ -474,9 +471,6 @@
     <data name="EmailToken" xml:space="preserve">
     <value>توکن ایمیل</value>
   </data>
-    <data name="EmailTokenPlaceholder" xml:space="preserve">
-    <value>توکن ایمیل را وارد کنید</value>
-  </data>
     <data name="EmailTokenConfirmButtonText" xml:space="preserve">
     <value>تایید آدرس ایمیل</value>
   </data>
@@ -500,9 +494,6 @@
   </data>
     <data name="PhoneToken" xml:space="preserve">
     <value>توکن تلفن</value>
-  </data>
-    <data name="PhoneTokenPlaceholder" xml:space="preserve">
-    <value>توکن تلفن را وارد کنید</value>
   </data>
     <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
     <value>تایید شماره تلفن</value>
