@@ -11,4 +11,6 @@ public partial class OtpPanel
     [Parameter] public EventCallback<string?> OnSignIn { get; set; }
 
     [Parameter] public EventCallback OnResendOtp { get; set; }
+
+    [Parameter] public EventCallback ShowSignInPanel { get; set; }
 }
