@@ -1,9 +1,15 @@
 ﻿@inherits AppPageBase
 
+@if (isOpen)
+{
+    <!-- Close this dialog when the OS back button is pressed instead of navigating back from the categories page -->
+    <NavigationLock OnBeforeInternalNavigation="@((args) => { args.PreventNavigation(); isOpen = false; })"></NavigationLock>
+}
+
 <BitModal @bind-IsOpen="isOpen" Blocking AutoToggleScroll="false">
     <section>
-        <BitStack>
-            <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0.5rem">
+        <BitStack Gap="0.5rem" Style="padding:0.5rem">
+            <BitStack Horizontal VerticalAlign="BitAlignment.Center">
                 <BitButton Variant="BitVariant.Text"
                            Href="@Urls.CategoriesPage"
                            IconName="@BitIconName.Back"
