@@ -138,6 +138,11 @@ public partial class SignInPage
                     sucssefulSignIn = true;
                 }
             }
+
+            if (sucssefulSignIn)
+            {
+                NavigationManager.NavigateTo(ReturnUrlQueryString ?? Urls.HomePage, replace: true);
+            }
         }
         catch (KnownException e)
         {
@@ -147,11 +152,6 @@ public partial class SignInPage
         }
         finally
         {
-            if (sucssefulSignIn)
-            {
-                NavigationManager.NavigateTo(ReturnUrlQueryString ?? Urls.HomePage, replace: true);
-            }
-
             isWaiting = false;
         }
     }
