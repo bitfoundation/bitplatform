@@ -194,8 +194,6 @@ public partial class BitCarousel : BitComponentBase
 
     protected override void OnInitialized()
     {
-        _dotnetObj = DotNetObjectReference.Create(this);
-
         _pageVisibility.OnChange += PageVisibilityChange;
 
         base.OnInitialized();
@@ -212,6 +210,8 @@ public partial class BitCarousel : BitComponentBase
     {
         if (firstRender)
         {
+            _dotnetObj = DotNetObjectReference.Create(this);
+
             await _js.BitObserversRegisterResize(UniqueId, RootElement, _dotnetObj);
 
             if (ScrollItemsCount > VisibleItemsCount)
@@ -481,7 +481,7 @@ public partial class BitCarousel : BitComponentBase
 
         if (_dotnetObj is not null)
         {
-            //_dotnetObjRef.Dispose(); // it is getting disposed in the following js call:
+            //_dotnetObj.Dispose(); // it is getting disposed in the following js call:
             try
             {
                 await _js.BitObserversUnregisterResize(UniqueId, RootElement, _dotnetObj);

@@ -521,8 +521,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     protected override void OnInitialized()
     {
-        _dotnetObj = DotNetObjectReference.Create(this);
-
         _datePickerId = $"DatePicker-{UniqueId}";
         _labelId = $"{_datePickerId}-label";
         _calloutId = $"{_datePickerId}-callout";
@@ -540,6 +538,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender is false) return;
+
+        _dotnetObj = DotNetObjectReference.Create(this);
+
         if (Responsive is false) return;
 
         await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, BitSwipeOrientation.Vertical, _dotnetObj);
@@ -1502,7 +1503,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private async Task<bool> ToggleCallout()
     {
         if (Standalone) return false;
-        if (IsEnabled is false) return false;
+        if (IsEnabled is false || IsDisposed) return false;
 
         return await _js.BitCalloutToggleCallout(_dotnetObj,
                                        _datePickerId,
@@ -1544,6 +1545,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         if (IsDisposed || disposing is false) return;
 
+        await base.DisposeAsync(disposing);
+
         _cancellationTokenSource?.Dispose();
         OnValueChanged -= HandleOnValueChanged;
 
@@ -1553,7 +1556,5 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             await _js.BitSwipesDispose(_calloutId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
-
-        await base.DisposeAsync(disposing);
     }
 }

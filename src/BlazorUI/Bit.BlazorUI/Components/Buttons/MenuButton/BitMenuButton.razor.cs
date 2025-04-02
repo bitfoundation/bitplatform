@@ -252,8 +252,6 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
     protected override async Task OnInitializedAsync()
     {
-        _dotnetObj = DotNetObjectReference.Create(this);
-
         _calloutId = $"BitMenuButton-{UniqueId}-callout";
 
         if (SelectedItemHasBeenSet is false && DefaultSelectedItem is not null)
@@ -288,6 +286,16 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             item = _items.FirstOrDefault(GetIsEnabled);
             await AssignSelectedItem(item);
         }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotnetObj = DotNetObjectReference.Create(this);
+        }
+
+        base.OnAfterRender(firstRender);
     }
 
 
@@ -568,7 +576,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
     private async Task ToggleCallout()
     {
-        if (IsEnabled is false) return;
+        if (IsEnabled is false || IsDisposed) return;
 
         await _js.BitCalloutToggleCallout(_dotnetObj,
                                 _Id,
@@ -602,6 +610,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     {
         if (IsDisposed || disposing is false) return;
 
+        await base.DisposeAsync(disposing);
+
         if (_dotnetObj is not null)
         {
             _dotnetObj.Dispose();
@@ -612,7 +622,5 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
-
-        await base.DisposeAsync(disposing);
     }
 }

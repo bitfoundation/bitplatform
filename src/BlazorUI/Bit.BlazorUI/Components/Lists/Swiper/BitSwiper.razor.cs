@@ -120,13 +120,6 @@ public partial class BitSwiper : BitComponentBase
 
     protected override string RootElementClass => "bit-swp";
 
-    protected override void OnInitialized()
-    {
-        _dotnetObj = DotNetObjectReference.Create(this);
-
-        base.OnInitialized();
-    }
-
     protected override async Task OnParametersSetAsync()
     {
         _directionStyle = Dir == BitDir.Rtl ? "direction:rtl" : string.Empty;
@@ -145,6 +138,8 @@ public partial class BitSwiper : BitComponentBase
 
         if (firstRender)
         {
+            _dotnetObj = DotNetObjectReference.Create(this);
+
             //if (AutoPlay)
             //{
             //    _autoPlayTimer = new System.Timers.Timer(AutoPlayInterval);
@@ -153,6 +148,8 @@ public partial class BitSwiper : BitComponentBase
             //}
 
             await _js.BitObserversRegisterResize(UniqueId, RootElement, _dotnetObj);
+
+            if (IsDisposed) return;
 
             await _js.BitSwiperRegisterPointerLeave(RootElement, _dotnetObj);
 
@@ -282,6 +279,8 @@ public partial class BitSwiper : BitComponentBase
     {
         if (IsDisposed || disposing is false) return;
 
+        await base.DisposeAsync(disposing);
+
         if (_autoPlayTimer is not null)
         {
             _autoPlayTimer.Elapsed -= AutoPlayTimerElapsed;
@@ -293,11 +292,9 @@ public partial class BitSwiper : BitComponentBase
             //_dotnetObj.Dispose(); // it is getting disposed in the following js call:
             try
             {
-               await _js.BitObserversUnregisterResize(UniqueId, RootElement, _dotnetObj);
+                await _js.BitObserversUnregisterResize(UniqueId, RootElement, _dotnetObj);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
-
-        await base.DisposeAsync(disposing);
     }
 }
