@@ -10,11 +10,11 @@ public partial class AppJsBridge
     /// </summary>
     protected override async Task OnAfterFirstRenderAsync()
     {
+        await base.OnAfterFirstRenderAsync();
+
         dotnetObj = DotNetObjectReference.Create(this);
 
         await JSRuntime.InvokeVoidAsync("App.registerJsBridge", dotnetObj);
-
-        await base.OnAfterFirstRenderAsync();
     }
 
 

@@ -41,6 +41,8 @@ public partial class Authorize
 
     protected override async Task OnAfterFirstRenderAsync()
     {
+        await base.OnAfterFirstRenderAsync();
+
         if (clients.TryGetValue(ClientId!, out var clientAllowedRedirectUrls) is false)
         {
             NavigationManager.NavigateTo($"{RedirectUri}#error=invalid_missing_client_id&state={Uri.EscapeDataString(State ?? "")}");
@@ -64,7 +66,5 @@ public partial class Authorize
         var expiresIn = long.Parse(token.FindFirst("exp")!.Value) - long.Parse(token.FindFirst("iat")!.Value);
 
         NavigationManager.NavigateTo($"{RedirectUri}?access_token={accessToken}&token_type=Bearer&expires_in={expiresIn}&state={Uri.EscapeDataString(State ?? "")}");
-
-        await base.OnAfterFirstRenderAsync();
     }
 }
