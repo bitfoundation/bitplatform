@@ -11,13 +11,10 @@
                    IconName="@BitIconName.CollapseMenu" />
 
         <BitStack AutoSize VerticalAlign="BitAlignment.Center" Gap="0.5rem" Horizontal>
-            @if(AppPlatform.IsAndroid is false)
-            {
-                <BitButton Variant="BitVariant.Text"
-                           IconName="@BitIconName.Back"
-                           OnClick="GoBack"
-                           Title="@Localizer[nameof(AppStrings.Back)]" />
-            }
+            <BitButton Variant="BitVariant.Text"
+                        IconName="@BitIconName.Back"
+                        OnClick="GoBack"
+                        Title="@Localizer[nameof(AppStrings.Back)]" />
             <BitText Typography="BitTypography.H5">
                 @pageTitle
             </BitText>

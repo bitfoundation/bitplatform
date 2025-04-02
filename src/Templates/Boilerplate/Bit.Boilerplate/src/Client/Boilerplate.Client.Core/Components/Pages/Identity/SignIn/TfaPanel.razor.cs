@@ -10,5 +10,4 @@ public partial class TfaPanel
 
     [Parameter] public EventCallback OnSendTfaToken { get; set; }
     [Parameter] public EventCallback OnTokenProvided { get; set; }
-    [Parameter] public EventCallback ShowSignInPanel { get; set; }
 }

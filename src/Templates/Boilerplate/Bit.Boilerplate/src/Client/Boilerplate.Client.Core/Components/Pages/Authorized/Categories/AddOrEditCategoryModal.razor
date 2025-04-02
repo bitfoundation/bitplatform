@@ -3,7 +3,7 @@
 @if (isOpen)
 {
     <!-- Close this dialog when the OS back button is pressed instead of navigating back from the categories page -->
-    <NavigationLock OnBeforeInternalNavigation="@((args) => { args.PreventNavigation(); isOpen = false; })"></NavigationLock>
+    <NavigationLock OnBeforeInternalNavigation="@((args) => { args.PreventNavigation(); isOpen = false; })" />
 }
 
 <BitModal @bind-IsOpen="isOpen" Blocking AutoToggleScroll="false">

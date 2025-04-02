@@ -5,6 +5,9 @@
 
 <PageTitle>@Title</PageTitle>
 
+<!-- Checkout ShowSignInPanel's comments -->
+<NavigationLock OnBeforeInternalNavigation="ShowSignInPanel"></NavigationLock>
+
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center" FillContent>
         <EditForm Model="model" OnSubmit="WrapHandled(DoSignIn)" novalidate>
@@ -27,7 +30,6 @@
                         <OtpPanel Model="model"
                                   OnSignIn="DoSignIn"
                                   IsWaiting="isWaiting"
-                                  ShowSignInPanel="ShowSignInPanel"
                                   OnResendOtp="HandleOnResendOtp" />
                     }
                 }
@@ -36,7 +38,6 @@
                     <TfaPanel Model="model"
                               IsWaiting="isWaiting"
                               OnTokenProvided="DoSignIn"
-                              ShowSignInPanel="ShowSignInPanel"
                               OnSendTfaToken="HandleOnSendTfaToken" />
                 }
             </BitStack>

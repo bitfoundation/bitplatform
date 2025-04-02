@@ -2,6 +2,9 @@
 using Fido2NetLib;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
+using Microsoft.AspNetCore.Components.Routing;
+using System.Diagnostics;
+using System;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
 
@@ -37,15 +40,12 @@ public partial class SignInPage
 
     private bool isWaiting;
     private bool isOtpSent;
+    private bool sucssefulSignIn;
     private bool requiresTwoFactor;
     private SignInPanelTab currentSignInPanelTab;
     private readonly SignInRequestDto model = new();
     private AppDataAnnotationsValidator? validatorRef;
     private AuthenticatorAssertionRawResponse? webAuthnAssertion;
-
-    private const string OtpPayload = nameof(OtpPayload);
-    private const string TfaPayload = nameof(TfaPayload);
-
 
     protected override async Task OnInitAsync()
     {
@@ -74,12 +74,24 @@ public partial class SignInPage
         }
     }
 
-    private async Task ShowSignInPanel()
+    private async Task ShowSignInPanel(LocationChangingContext args)
     {
+        // We're treating OtpPanel and TfaPanel as modal dialogs. This means that no matter where the user tries to navigate,
+        // we will block the navigation and close either the TfaPanel or OtpPanel if it's visible.
+        // The only exception to this is when the sign-in process is successful.
+        if (sucssefulSignIn)
+            return;
+
+        if (isOtpSent is false && requiresTwoFactor is false)
+            return;
+
+        args.PreventNavigation();
+
+        webAuthnAssertion = null;
+
         isOtpSent = false;
         model.Otp = null;
 
-        webAuthnAssertion = null;
         requiresTwoFactor = false;
         model.TwoFactorCode = null;
 
@@ -91,13 +103,27 @@ public partial class SignInPage
         if (isOtpSent && string.IsNullOrWhiteSpace(model.Otp)) return;
 
         isWaiting = true;
-        var sucssefulSignIn = false;
+        sucssefulSignIn = false;
 
         try
         {
             if (requiresTwoFactor && string.IsNullOrWhiteSpace(model.TwoFactorCode)) return;
 
-            if (webAuthnAssertion is null)
+            if (webAuthnAssertion is not null)
+            {
+                var response = await identityController
+                    .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
+                    .VerifyWebAuthAndSignIn(new() { ClientResponse = webAuthnAssertion, TfaCode = model.TwoFactorCode }, CurrentCancellationToken);
+
+                requiresTwoFactor = response.RequiresTwoFactor;
+
+                if (requiresTwoFactor is false)
+                {
+                    sucssefulSignIn = true;
+                    await AuthManager.StoreTokens(response!, model.RememberMe);
+                }
+            }
+            else
             {
                 CleanModel();
 
@@ -112,20 +138,6 @@ public partial class SignInPage
                     sucssefulSignIn = true;
                 }
             }
-            else
-            {
-                var response = await identityController
-                    .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
-                    .VerifyWebAuthAndSignIn(new() { ClientResponse = webAuthnAssertion, TfaCode = model.TwoFactorCode }, CurrentCancellationToken);
-
-                requiresTwoFactor = response.RequiresTwoFactor;
-
-                if (requiresTwoFactor is false)
-                {
-                    sucssefulSignIn = true;
-                    await AuthManager.StoreTokens(response!, model.RememberMe);
-                }
-            }
         }
         catch (KnownException e)
         {
@@ -137,7 +149,6 @@ public partial class SignInPage
         {
             if (sucssefulSignIn)
             {
-                StateHasChanged();
                 NavigationManager.NavigateTo(ReturnUrlQueryString ?? Urls.HomePage, replace: true);
             }
 

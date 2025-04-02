@@ -5,9 +5,6 @@
     var emailOrPhone = Localizer[(hasEmail ? nameof(AppStrings.Email) : nameof(AppStrings.PhoneNumber))];
 }
 
-<!-- Show sign-in panel again when the OS back button is pressed instead of navigating back to the previous page -->
-<NavigationLock OnBeforeInternalNavigation="@((args) => { args.PreventNavigation(); ShowSignInPanel.InvokeAsync(); })"></NavigationLock>
-
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center" FillContent Gap="2rem">
         <BitStack>
