@@ -242,6 +242,7 @@ _book
 /src/BlazorUI/Bit.BlazorUI.Extras/Scripts/*.js
 /src/BlazorUI/Bit.BlazorUI.Extras/wwwroot/scripts/*.js
 /src/BlazorUI/Bit.BlazorUI.Extras/wwwroot/**/*.css.gz
+!/src/BlazorUI/Bit.BlazorUI.Extras/wwwroot/quilljs/*.css
 
 /src/BlazorUI/Bit.BlazorUI.Assets/**/*.css
 /src/BlazorUI/Bit.BlazorUI.Assets/wwwroot/scripts/*.js

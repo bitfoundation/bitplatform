@@ -1,0 +1,41 @@
+﻿@page "/components/richtexteditor"
+
+<PageOutlet Url="components/RichTextEditor"
+            Title="RichTextEditor"
+            Description="richtexteditor component of the bit BlazorUI components" />
+
+<div>
+    <DemoPage Name="RichTextEditor"
+              Description="RichTextEditor is a WYSIWYG text editor."
+              Parameters="componentParameters"
+              SubEnums="componentSubEnums"
+              PublicMembers="componentPublicMembers"
+              GitHubExtrasUrl="RichTextEditor/BitRichTextEditor.razor"
+              GitHubDemoUrl="Extras/RichTextEditor/BitRichTextEditorDemo.razor">
+        <NotesTemplate>
+            <BitText>
+                To use this component, you need to install the
+                <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                    <BitTag Reversed
+                            Text="Bit.BlazorUI.Extras"
+                            Color="BitColor.SecondaryBackground"
+                            IconName="@BitIconName.NavigateExternalInline" />
+                </BitLink>
+                nuget package, as described in the Optional steps of the
+                <BitLink Href="/getting-started">Getting started</BitLink> page.
+            </BitText>
+        </NotesTemplate>
+        <Examples>
+            <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+                <BitRichTextEditor @ref="editorRef" />
+                <br />
+                <BitButton OnClick="GetText">GetText</BitButton>
+                <BitButton OnClick="GetHtml">GetHtml</BitButton>
+                <BitButton OnClick="GetContent">GetContent</BitButton>
+                <br /><br />
+                <div>result:</div>
+                <pre>@result</pre>
+            </DemoExample>
+        </Examples>
+    </DemoPage>
+</div>
