@@ -115,12 +115,20 @@ public partial class BitCallout : BitComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        _dotnetObj = DotNetObjectReference.Create(this);
-
         _anchorId = $"BitCallout-{UniqueId}-anchor";
         _contentId = $"BitCallout-{UniqueId}-content";
 
         await base.OnInitializedAsync();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotnetObj = DotNetObjectReference.Create(this);
+        }
+
+        base.OnAfterRender(firstRender);
     }
 
 

@@ -120,13 +120,6 @@ public partial class BitSwiper : BitComponentBase
 
     protected override string RootElementClass => "bit-swp";
 
-    protected override void OnInitialized()
-    {
-        _dotnetObj = DotNetObjectReference.Create(this);
-
-        base.OnInitialized();
-    }
-
     protected override async Task OnParametersSetAsync()
     {
         _directionStyle = Dir == BitDir.Rtl ? "direction:rtl" : string.Empty;
@@ -145,6 +138,8 @@ public partial class BitSwiper : BitComponentBase
 
         if (firstRender)
         {
+            _dotnetObj = DotNetObjectReference.Create(this);
+
             //if (AutoPlay)
             //{
             //    _autoPlayTimer = new System.Timers.Timer(AutoPlayInterval);

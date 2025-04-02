@@ -289,8 +289,6 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     protected override void OnInitialized()
     {
-        _dotnetObj = DotNetObjectReference.Create(this);
-
         _circularTimePickerId = $"BitCircularTimePicker-{UniqueId}";
         _labelId = $"{_circularTimePickerId}-label";
         _inputId = $"{_circularTimePickerId}-input";
@@ -309,6 +307,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender is false) return;
+
+        _dotnetObj = DotNetObjectReference.Create(this);
 
         await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, BitSwipeOrientation.Vertical, _dotnetObj);
 

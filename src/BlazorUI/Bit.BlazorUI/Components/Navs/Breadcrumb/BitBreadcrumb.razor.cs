@@ -159,8 +159,6 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         _overflowAnchorId = $"BitBreadcrumb-{UniqueId}-overflow-anchor";
         _scrollContainerId = $"BitBreadcrumb-{UniqueId}-scroll-container";
 
-        _dotnetObj = DotNetObjectReference.Create(this);
-
         return base.OnInitializedAsync();
     }
 
@@ -187,6 +185,16 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         SetItemsToShow();
 
         base.OnParametersSet();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotnetObj = DotNetObjectReference.Create(this);
+        }
+
+        base.OnAfterRender(firstRender);
     }
 
 

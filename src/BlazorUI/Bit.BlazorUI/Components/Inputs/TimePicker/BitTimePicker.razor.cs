@@ -327,8 +327,6 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     protected override void OnInitialized()
     {
-        _dotnetObj = DotNetObjectReference.Create(this);
-
         _timePickerId = $"BitTimePicker-{UniqueId}";
         _labelId = $"BitTimePicker-{UniqueId}-label";
         _inputId = $"BitTimePicker-{UniqueId}-input";
@@ -347,6 +345,9 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender is false) return;
+
+        _dotnetObj = DotNetObjectReference.Create(this);
+        
         if (Responsive is false) return;
 
         await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, BitSwipeOrientation.Vertical, _dotnetObj);

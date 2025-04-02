@@ -138,8 +138,6 @@ public partial class BitDropMenu : BitComponentBase
 
     protected override void OnInitialized()
     {
-        _dotnetObj = DotNetObjectReference.Create(this);
-
         _calloutId = $"BitDropMenu-{UniqueId}-callout";
 
         base.OnInitialized();
@@ -150,6 +148,9 @@ public partial class BitDropMenu : BitComponentBase
         await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender is false) return;
+        
+        _dotnetObj = DotNetObjectReference.Create(this);
+
         if (Responsive is false) return;
 
         await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.End, Dir is BitDir.Rtl, BitSwipeOrientation.Horizontal, _dotnetObj);

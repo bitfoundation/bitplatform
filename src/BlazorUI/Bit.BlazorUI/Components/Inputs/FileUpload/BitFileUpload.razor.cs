@@ -415,14 +415,14 @@ public partial class BitFileUpload : BitComponentBase
     {
         InputId = $"FileUpload-{UniqueId}-input";
 
-        _dotnetObj = DotNetObjectReference.Create(this);
-
         return base.OnInitializedAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender is false) return;
+
+        _dotnetObj = DotNetObjectReference.Create(this);
 
         _dropZoneRef = await _js.BitFileUploadSetupDragDrop(RootElement, _inputRef);
     }

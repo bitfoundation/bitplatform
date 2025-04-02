@@ -253,9 +253,17 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         OnValueChanged += HandleOnValueChanged;
 
-        _dotnetObj = DotNetObjectReference.Create(this);
-
         await base.OnInitializedAsync();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotnetObj = DotNetObjectReference.Create(this);
+        }
+
+        base.OnAfterRender(firstRender);
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)

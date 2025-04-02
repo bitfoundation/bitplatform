@@ -789,8 +789,6 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     protected override async Task OnInitializedAsync()
     {
-        _dotnetObj = DotNetObjectReference.Create(this);
-
         _dropdownId = $"Dropdown-{UniqueId}";
         _calloutId = $"{_dropdownId}-callout";
         _scrollContainerId = $"{_dropdownId}-scroll-container";
@@ -852,6 +850,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender is false) return;
+        
+        _dotnetObj = DotNetObjectReference.Create(this);
+
         if (Responsive is false) return;
 
         await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.End, Dir is BitDir.Rtl, BitSwipeOrientation.Horizontal, _dotnetObj);
