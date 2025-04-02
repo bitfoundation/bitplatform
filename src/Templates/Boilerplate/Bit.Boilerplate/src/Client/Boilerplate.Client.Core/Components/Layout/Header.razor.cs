@@ -8,6 +8,8 @@ public partial class Header : AppComponentBase
     private string? pageSubtitle;
     private Action unsubscribePageTitleChanged = default!;
 
+    [AutoInject] private History history = default!;
+
     protected override async Task OnInitAsync()
     {
         unsubscribePageTitleChanged = PubSubService.Subscribe(ClientPubSubMessages.PAGE_TITLE_CHANGED, async payload =>
@@ -33,6 +35,10 @@ public partial class Header : AppComponentBase
         PubSubService.Publish(ClientPubSubMessages.OPEN_NAV_PANEL);
     }
 
+    private async Task GoBack()
+    {
+        await history.GoBack();
+    }
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {

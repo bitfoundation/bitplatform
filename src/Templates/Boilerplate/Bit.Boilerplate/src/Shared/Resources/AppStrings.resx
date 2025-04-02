@@ -1164,7 +1164,7 @@
     <value>Default color picker</value>
   </data>
     <data name="EditProduct" xml:space="preserve">
-    <value>Edit product</value>
+    <value>Edit product {0}</value>
   </data>
     <data name="DuplicateProductName" xml:space="preserve">
     <value>Duplicate product name</value>

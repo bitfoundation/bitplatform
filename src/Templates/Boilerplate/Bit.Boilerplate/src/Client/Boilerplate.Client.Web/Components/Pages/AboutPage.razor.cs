@@ -6,11 +6,10 @@ namespace Boilerplate.Client.Web.Components.Pages;
 
 public partial class AboutPage
 {
+    protected override string? Title => Localizer[nameof(AppStrings.AboutPageTitle)];
+
     [AutoInject] private UserAgent userAgent = default!;
     [AutoInject] private ITelemetryContext telemetryContext = default!;
-
-    protected override string? Title => Localizer[nameof(AppStrings.About)];
-    protected override string? Subtitle => string.Empty;
 
 
     private string oem = default!;

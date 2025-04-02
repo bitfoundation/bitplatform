@@ -1164,7 +1164,7 @@
     <value>Standaard kleurkiezer</value>
   </data>
     <data name="EditProduct" xml:space="preserve">
-    <value>Product bewerken</value>
+    <value>Product bewerken {0}</value>
   </data>
     <data name="DuplicateProductName" xml:space="preserve">
     <value>Dubbele productnaam</value>

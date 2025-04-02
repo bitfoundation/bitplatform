@@ -5,6 +5,8 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
 public partial class ConfirmPage
 {
+    protected override string? Title => Localizer[nameof(AppStrings.ConfirmPageTitle)];
+
     private bool isWaiting;
     private bool isEmailConfirmed;
     private bool isPhoneConfirmed;

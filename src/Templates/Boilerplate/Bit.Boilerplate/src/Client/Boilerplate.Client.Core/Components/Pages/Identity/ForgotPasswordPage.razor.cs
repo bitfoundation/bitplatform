@@ -6,6 +6,8 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
 public partial class ForgotPasswordPage
 {
+    protected override string? Title => Localizer[nameof(AppStrings.ForgotPasswordPageTitle)];
+
     [AutoInject] IIdentityController identityController = default!;
 
     private bool isWaiting;

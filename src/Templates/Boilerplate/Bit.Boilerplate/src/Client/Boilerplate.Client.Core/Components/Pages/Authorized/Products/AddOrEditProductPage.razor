@@ -1,27 +1,13 @@
 ﻿@attribute [Route(Urls.AddOrEditProductPage + "/{Id:guid?}")]
 @attribute [Route("{culture?}" + Urls.AddOrEditProductPage + "/{Id:guid?}")]
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
-@inherits AppComponentBase
+@inherits AppPageBase
 
-<PageTitle>
-    @if (product.Id == default)
-    {
-        @Localizer[nameof(AppStrings.AddProduct)]
-    }
-    else
-    {
-        @Localizer[nameof(AppStrings.EditProduct)]
-    }
-</PageTitle>
-
+<PageTitle>@Title</PageTitle>
 
 <section>
     <BitStack FillContent>
         <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0.5rem">
-            <BitButton Variant="BitVariant.Text"
-                       Href="@Urls.ProductsPage"
-                       IconName="@BitIconName.Back"
-                       Title="@Localizer[nameof(AppStrings.Back)]" />
             <BitText Typography="BitTypography.H5">
                 @if (product.Id == default)
                 {
@@ -29,7 +15,7 @@
                 }
                 else
                 {
-                    @Localizer[nameof(AppStrings.EditProduct)]
+                    @Localizer[nameof(AppStrings.EditProduct), product.Name!]
                 }
             </BitText>
         </BitStack>

@@ -5,9 +5,7 @@ namespace Boilerplate.Client.Core.Components.Pages;
 
 public partial class ProductPage
 {
-    protected override string? Title => string.Empty;
-    protected override string? Subtitle => string.Empty;
-
+    protected override string? Title => product?.Name;
 
     /// <summary>
     /// <inheritdoc cref="ProductDto.ShortId"/>

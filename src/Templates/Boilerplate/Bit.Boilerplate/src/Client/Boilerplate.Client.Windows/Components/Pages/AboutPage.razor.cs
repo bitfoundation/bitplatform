@@ -4,10 +4,9 @@ namespace Boilerplate.Client.Windows.Components.Pages;
 
 public partial class AboutPage
 {
-    [AutoInject] private ITelemetryContext telemetryContext = default!;
+    protected override string? Title => Localizer[nameof(AppStrings.AboutPageTitle)];
 
-    protected override string? Title => Localizer[nameof(AppStrings.About)];
-    protected override string? Subtitle => string.Empty;
+    [AutoInject] private ITelemetryContext telemetryContext = default!;
 
 
     private string appName = default!;

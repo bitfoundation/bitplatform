@@ -7,6 +7,8 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
 
 public partial class SignInPage
 {
+    protected override string? Title => Localizer[nameof(AppStrings.SignInPageTitle)];
+
     [Parameter, SupplyParameterFromQuery(Name = "return-url")]
     public string? ReturnUrlQueryString { get; set; }
 

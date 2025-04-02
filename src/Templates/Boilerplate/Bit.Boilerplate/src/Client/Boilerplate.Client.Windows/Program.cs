@@ -24,6 +24,17 @@ public partial class Program
 
         Application.SetColorMode(SystemColorMode.System);
 
+        var form = new Form()
+        {
+            Text = "Boilerplate",
+            Height = 768,
+            Width = 1024,
+            MinimumSize = new Size(375, 667),
+            WindowState = FormWindowState.Maximized,
+            BackColor = ColorTranslator.FromHtml("#0D2960"),
+            Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath)
+        };
+
         var configuration = new ConfigurationBuilder().AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Windows").Build();
         var services = new ServiceCollection();
         services.AddClientWindowsProjectServices(configuration);
@@ -39,9 +50,18 @@ public partial class Program
                 culture ?? // 1- User settings
                 CultureInfo.CurrentUICulture.Name); // 2- OS Settings
         }
-        Services.GetRequiredService<PubSubService>().Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async culture =>
+        var pubSubService = Services.GetRequiredService<PubSubService>();
+        pubSubService.Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async culture =>
         {
             Application.Restart();
+        });
+        pubSubService.Subscribe(ClientPubSubMessages.PAGE_TITLE_CHANGED, async args =>
+        {
+            var (title, subTitle) = ((string title, string subTitle))args!;
+            await form.InvokeAsync(() =>
+            {
+                form.Text = title ?? "Boilerplate";
+            });
         });
 
         // https://github.com/velopack/velopack
@@ -71,17 +91,6 @@ public partial class Program
                 Services.GetRequiredService<IExceptionHandler>().Handle(exp);
             }
         });
-
-        var form = new Form()
-        {
-            Text = "Boilerplate",
-            Height = 768,
-            Width = 1024,
-            MinimumSize = new Size(375, 667),
-            WindowState = FormWindowState.Maximized,
-            BackColor = ColorTranslator.FromHtml("#0D2960"),
-            Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath)
-        };
 
         Environment.SetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--unsafely-treat-insecure-origin-as-secure=https://0.0.0.1 --enable-notifications");
 
