@@ -7,23 +7,6 @@ namespace Boilerplate.Client.Core.Components.Pages.Authorized.Products;
 
 public partial class AddOrEditProductPage
 {
-    protected override string? Title
-    {
-        get
-        {
-            if (Id is null)
-            {
-                return Localizer[nameof(AppStrings.AddProduct)];
-            }
-            else
-            {
-                return Localizer[nameof(AppStrings.EditProduct), ""];
-            }
-        }
-    }
-
-    protected override bool ShowGoBackButton => true;
-
     [AutoInject] IProductController productController = default!;
     [AutoInject] ICategoryController categoryController = default!;
     [AutoInject] IAttachmentController attachmentController = default!;

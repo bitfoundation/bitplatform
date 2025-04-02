@@ -2,8 +2,6 @@
 
 public partial class NotAuthorizedPage
 {
-    protected override string? Title => Localizer[nameof(AppStrings.NotAuthorizedPageTitle)];
-
     private bool lacksValidPrivilege;
     private bool isUpdatingAuthState = true;
     private ClaimsPrincipal user = default!;

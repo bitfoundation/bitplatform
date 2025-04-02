@@ -5,8 +5,6 @@ namespace Boilerplate.Client.Core.Components.Pages;
 
 public partial class ProductPage
 {
-    protected override bool ShowGoBackButton => true;
-
     /// <summary>
     /// <inheritdoc cref="ProductDto.ShortId"/>
     /// </summary>

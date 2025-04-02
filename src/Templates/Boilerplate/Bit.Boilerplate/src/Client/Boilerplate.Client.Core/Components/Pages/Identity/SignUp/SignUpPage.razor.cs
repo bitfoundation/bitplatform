@@ -6,8 +6,6 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity.SignUp;
 
 public partial class SignUpPage
 {
-    protected override string? Title => Localizer[nameof(AppStrings.SignUp)];
-
     [Parameter, SupplyParameterFromQuery(Name = "return-url")]
     public string? ReturnUrlQueryString { get; set; }
 

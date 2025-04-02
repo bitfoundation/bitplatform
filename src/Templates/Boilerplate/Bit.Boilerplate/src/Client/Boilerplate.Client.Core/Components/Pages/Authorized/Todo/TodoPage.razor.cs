@@ -6,8 +6,6 @@ namespace Boilerplate.Client.Core.Components.Pages.Authorized.Todo;
 
 public partial class TodoPage
 {
-    protected override string? Title => Localizer[nameof(AppStrings.Todo)];
-
     [AutoInject] Keyboard keyboard = default!;
     [AutoInject] ITodoItemController todoItemController = default!;
 

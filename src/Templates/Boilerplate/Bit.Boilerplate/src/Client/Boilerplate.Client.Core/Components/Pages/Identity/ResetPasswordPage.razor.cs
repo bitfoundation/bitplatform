@@ -5,8 +5,6 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
 public partial class ResetPasswordPage
 {
-    protected override string? Title => Localizer[nameof(AppStrings.ResetPassword)];
-
     [Parameter, SupplyParameterFromQuery(Name = "email")]
     public string? EmailQueryString { get; set; }
 

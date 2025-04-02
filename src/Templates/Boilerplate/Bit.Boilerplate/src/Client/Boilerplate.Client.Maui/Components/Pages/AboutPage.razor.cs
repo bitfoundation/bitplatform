@@ -6,8 +6,6 @@ namespace Boilerplate.Client.Maui.Components.Pages;
 
 public partial class AboutPage
 {
-    protected override string? Title => Localizer[nameof(AppStrings.AboutPageTitle)];
-
     [AutoInject] private ITelemetryContext telemetryContext = default!;
 
 

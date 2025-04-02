@@ -3,16 +3,8 @@
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
 @inherits AppPageBase
 
-<PageTitle>
-    @if (product.Id == default)
-    {
-        @Localizer[nameof(AppStrings.AddProduct)]
-    }
-    else
-    {
-        @Localizer[nameof(AppStrings.EditProduct), product.Name!]
-    }
-</PageTitle>
+<AppPageData ShowGoBackButton=true
+             Title="@(product.Id == default ? @Localizer[nameof(AppStrings.AddProduct)] : @Localizer[nameof(AppStrings.EditProduct), product.Name!])" />
 
 <section>
     <BitStack FillContent>

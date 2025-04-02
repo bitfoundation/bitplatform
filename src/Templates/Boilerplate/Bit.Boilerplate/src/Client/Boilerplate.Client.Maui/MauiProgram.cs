@@ -105,7 +105,7 @@ public static partial class MauiProgram
         var mauiApp = builder.Build();
 
         mauiApp.Services.GetRequiredService<PubSubService>()
-            .Subscribe(ClientPubSubMessages.PAGE_CHANGED, async (args) =>
+            .Subscribe(ClientPubSubMessages.PAGE_DATA_CHANGED, async (args) =>
             {
                 var (title, _, __) = ((string?, string?, bool))args!;
                 await MainThread.InvokeOnMainThreadAsync(() =>

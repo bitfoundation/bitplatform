@@ -6,8 +6,6 @@ namespace Boilerplate.Client.Core.Components.Pages;
 
 public partial class OfflineEditProfilePage
 {
-    protected override string? Title => Localizer[nameof(AppStrings.OfflineEditProfileTitle)];
-
     [AutoInject] IDbContextFactory<OfflineDbContext> dbContextFactory = default!;
 
     private bool isSaving;

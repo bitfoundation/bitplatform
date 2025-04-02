@@ -17,7 +17,7 @@ public partial class Header : AppComponentBase
     {
         await base.OnInitAsync();
 
-        unsubscribePageTitleChanged = PubSubService.Subscribe(ClientPubSubMessages.PAGE_CHANGED, async payload =>
+        unsubscribePageTitleChanged = PubSubService.Subscribe(ClientPubSubMessages.PAGE_DATA_CHANGED, async payload =>
         {
             (pageTitle, pageSubtitle, showGoBackButton) = ((string?, string?,bool))payload!;
 

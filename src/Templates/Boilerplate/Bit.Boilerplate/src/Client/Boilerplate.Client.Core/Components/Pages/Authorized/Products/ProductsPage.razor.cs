@@ -6,8 +6,6 @@ namespace Boilerplate.Client.Core.Components.Pages.Authorized.Products;
 
 public partial class ProductsPage
 {
-    protected override string? Title => Localizer[nameof(AppStrings.Products)];
-
     [AutoInject] IProductController productController = default!;
 
 

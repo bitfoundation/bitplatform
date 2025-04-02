@@ -19,7 +19,7 @@ public partial class ClientPubSubMessages
     /// <inheritdoc cref="Parameters.IsOnline"/>
     /// </summary>
     public const string IS_ONLINE_CHANGED = nameof(IS_ONLINE_CHANGED);
-    public const string PAGE_CHANGED = nameof(PAGE_CHANGED);
+    public const string PAGE_DATA_CHANGED = nameof(PAGE_DATA_CHANGED);
     public const string ROUTE_DATA_UPDATED = nameof(ROUTE_DATA_UPDATED);
 
     /// <summary>
