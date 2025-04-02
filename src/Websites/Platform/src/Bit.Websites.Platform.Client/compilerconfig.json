@@ -60,14 +60,14 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Home/HomePage.razor.css",
-        "inputFile": "Pages/Home/HomePage.razor.scss",
+        "outputFile": "Pages/CustomerCarousel.razor.css",
+        "inputFile": "Pages/CustomerCarousel.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Home/Products.razor.css",
-        "inputFile": "Pages/Home/Products.razor.scss",
+        "outputFile": "Pages/DemosPage.razor.css",
+        "inputFile": "Pages/DemosPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -80,6 +80,18 @@
     {
         "outputFile": "Pages/PricingPage.razor.css",
         "inputFile": "Pages/PricingPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Home/HomePage.razor.css",
+        "inputFile": "Pages/Home/HomePage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Home/Products.razor.css",
+        "inputFile": "Pages/Home/Products.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
