@@ -3,7 +3,7 @@
 @attribute [AppResponseCache(SharedMaxAge = 3600 * 24, MaxAge = 60 * 5)]
 @inherits AppPageBase
 
-<PageTitle>@Title</PageTitle>
+<PageTitle>@product?.Name</PageTitle>
 
 <section>
     <BitStack Gap="2rem" Class="root-stack">

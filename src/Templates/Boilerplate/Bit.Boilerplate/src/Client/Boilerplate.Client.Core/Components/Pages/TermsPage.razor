@@ -3,7 +3,7 @@
 @attribute [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5)]
 @inherits AppPageBase
 
-<PageTitle>@Title</PageTitle>
+<PageTitle>@Localizer[nameof(AppStrings.TermsPageTitle)]</PageTitle>
 
 <article>
     <BitStack>

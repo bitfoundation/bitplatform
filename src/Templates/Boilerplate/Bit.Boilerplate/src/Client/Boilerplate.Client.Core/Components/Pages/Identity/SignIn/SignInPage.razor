@@ -3,7 +3,7 @@
 @attribute [Route("{culture?}" + Urls.SignInPage)]
 @inherits AppPageBase
 
-<PageTitle>@Title</PageTitle>
+<PageTitle>@Localizer[nameof(AppStrings.SignInPageTitle)]</PageTitle>
 
 <!-- Checkout ShowSignInPanel's comments -->
 <NavigationLock OnBeforeInternalNavigation="ShowSignInPanel"></NavigationLock>

@@ -3,7 +3,7 @@
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
 @inherits AppPageBase
 
-<PageTitle>@Title</PageTitle>
+<PageTitle>@Localizer[nameof(AppStrings.TodoPageTitle)]</PageTitle>
 
 <section>
     <BitStack Class="stack">

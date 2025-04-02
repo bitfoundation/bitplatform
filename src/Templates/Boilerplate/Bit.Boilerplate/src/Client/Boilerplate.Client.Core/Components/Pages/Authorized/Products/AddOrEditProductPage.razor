@@ -3,21 +3,19 @@
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
 @inherits AppPageBase
 
-<PageTitle>@Title</PageTitle>
+<PageTitle>
+    @if (product.Id == default)
+    {
+        @Localizer[nameof(AppStrings.AddProduct)]
+    }
+    else
+    {
+        @Localizer[nameof(AppStrings.EditProduct), product.Name!]
+    }
+</PageTitle>
 
 <section>
     <BitStack FillContent>
-
-        <BitText Typography="BitTypography.H5">
-            @if (product.Id == default)
-            {
-                @Localizer[nameof(AppStrings.AddProduct)]
-            }
-            else
-            {
-                @Localizer[nameof(AppStrings.EditProduct), product.Name!]
-            }
-        </BitText>
 
         <EditForm Model="product" OnValidSubmit="WrapHandled(Save)" novalidate>
             <AppDataAnnotationsValidator @ref="validatorRef" />

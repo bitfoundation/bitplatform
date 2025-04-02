@@ -17,7 +17,7 @@ public partial class AddOrEditProductPage
             }
             else
             {
-                return Localizer[nameof(AppStrings.EditProduct), product?.Name!];
+                return Localizer[nameof(AppStrings.EditProduct)];
             }
         }
     }

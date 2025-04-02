@@ -2,5 +2,5 @@
 
 public partial class TermsPage
 {
-    protected override string? Title => Localizer[nameof(AppStrings.TermsPageTitle)];
+    protected override string? Title => Localizer[nameof(AppStrings.Terms)];
 }

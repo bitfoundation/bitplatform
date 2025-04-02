@@ -2,7 +2,7 @@
 @attribute [Route("{culture?}" + Urls.NotFoundPage)]
 @inherits AppPageBase
 
-<PageTitle>@Title</PageTitle>
+<PageTitle>@Localizer[nameof(AppStrings.NotFoundPageTitle)]</PageTitle>
 
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center">

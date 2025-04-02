@@ -6,7 +6,7 @@ namespace Boilerplate.Client.Core.Components.Pages.Home;
 
 public partial class HomePage
 {
-    protected override string? Title => Localizer[nameof(AppStrings.HomePageTitle)];
+    protected override string? Title => Localizer[nameof(AppStrings.Home)];
 
     [CascadingParameter] private BitDir? currentDir { get; set; }
 

@@ -6,7 +6,7 @@ namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings;
 
 public partial class SettingsPage
 {
-    protected override string? Title => Localizer[nameof(AppStrings.SettingsPageTitle)];
+    protected override string? Title => Localizer[nameof(AppStrings.Settings)];
 
     private bool showPasswordless;
 
