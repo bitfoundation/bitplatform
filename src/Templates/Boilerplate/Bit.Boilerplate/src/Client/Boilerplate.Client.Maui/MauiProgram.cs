@@ -104,6 +104,16 @@ public static partial class MauiProgram
 
         var mauiApp = builder.Build();
 
+        mauiApp.Services.GetRequiredService<PubSubService>()
+            .Subscribe(ClientPubSubMessages.PAGE_TITLE_CHANGED, async (args) =>
+            {
+                var (title, subTitle) = ((string title, string subTitle))args!;
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    Application.Current!.Windows.First().Title = title;
+                });
+            });
+
         return mauiApp;
     }
 

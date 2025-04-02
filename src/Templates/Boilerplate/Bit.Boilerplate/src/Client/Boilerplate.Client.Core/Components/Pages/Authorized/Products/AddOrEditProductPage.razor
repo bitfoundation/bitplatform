@@ -7,18 +7,17 @@
 
 <section>
     <BitStack FillContent>
-        <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0.5rem">
-            <BitText Typography="BitTypography.H5">
-                @if (product.Id == default)
-                {
-                    @Localizer[nameof(AppStrings.AddProduct)]
-                }
-                else
-                {
-                    @Localizer[nameof(AppStrings.EditProduct), product.Name!]
-                }
-            </BitText>
-        </BitStack>
+
+        <BitText Typography="BitTypography.H5">
+            @if (product.Id == default)
+            {
+                @Localizer[nameof(AppStrings.AddProduct)]
+            }
+            else
+            {
+                @Localizer[nameof(AppStrings.EditProduct), product.Name!]
+            }
+        </BitText>
 
         <EditForm Model="product" OnValidSubmit="WrapHandled(Save)" novalidate>
             <AppDataAnnotationsValidator @ref="validatorRef" />
