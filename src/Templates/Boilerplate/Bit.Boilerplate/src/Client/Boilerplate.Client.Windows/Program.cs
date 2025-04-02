@@ -24,17 +24,6 @@ public partial class Program
 
         Application.SetColorMode(SystemColorMode.System);
 
-        var form = new Form()
-        {
-            Text = "Boilerplate",
-            Height = 768,
-            Width = 1024,
-            MinimumSize = new Size(375, 667),
-            WindowState = FormWindowState.Maximized,
-            BackColor = ColorTranslator.FromHtml("#0D2960"),
-            Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath)
-        };
-
         var configuration = new ConfigurationBuilder().AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Windows").Build();
         var services = new ServiceCollection();
         services.AddClientWindowsProjectServices(configuration);
@@ -50,6 +39,17 @@ public partial class Program
                 culture ?? // 1- User settings
                 CultureInfo.CurrentUICulture.Name); // 2- OS Settings
         }
+
+        var form = new Form()
+        {
+            Text = "Boilerplate",
+            Height = 768,
+            Width = 1024,
+            MinimumSize = new Size(375, 667),
+            WindowState = FormWindowState.Maximized,
+            BackColor = ColorTranslator.FromHtml("#0D2960"),
+            Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath)
+        };
         var pubSubService = Services.GetRequiredService<PubSubService>();
         pubSubService.Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async culture =>
         {
