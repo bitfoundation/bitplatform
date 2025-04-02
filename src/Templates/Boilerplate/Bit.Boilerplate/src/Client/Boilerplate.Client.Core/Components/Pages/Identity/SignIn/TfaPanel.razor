@@ -1,5 +1,8 @@
 ﻿@inherits AppComponentBase
 
+<!-- Show sign-in panel again when the OS back button is pressed instead of navigating back to the previous page -->
+<NavigationLock OnBeforeInternalNavigation="@((args) => { args.PreventNavigation(); ShowSignInPanel.InvokeAsync(); })"></NavigationLock>
+
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center" FillContent Gap="2rem">
         <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.TfaPanelTitle)]</BitText>
