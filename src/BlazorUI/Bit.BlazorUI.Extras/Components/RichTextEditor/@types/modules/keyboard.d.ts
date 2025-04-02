@@ -36,10 +36,6 @@ interface KeyboardOptions {
     bindings: Record<string, Binding>;
 }
 
-interface KeyboardOptions {
-    bindings: Record<string, Binding>;
-}
-
 declare class Keyboard extends Module<KeyboardOptions> {
     static DEFAULTS: KeyboardOptions;
     static match(evt: KeyboardEvent, binding: BindingObject): boolean;
