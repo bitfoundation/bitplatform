@@ -3,8 +3,6 @@ using Fido2NetLib;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 using Microsoft.AspNetCore.Components.Routing;
-using System.Diagnostics;
-using System;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
 

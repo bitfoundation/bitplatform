@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-using Boilerplate.Client.Core.Services;
-using Boilerplate.Shared.Controllers.Identity;
+﻿using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 using Microsoft.AspNetCore.Components.Routing;
 

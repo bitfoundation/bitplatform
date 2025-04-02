@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.Routing;
-
-namespace Boilerplate.Client.Core.Components.Layout;
+﻿namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class IdentityHeader : AppComponentBase
 {
