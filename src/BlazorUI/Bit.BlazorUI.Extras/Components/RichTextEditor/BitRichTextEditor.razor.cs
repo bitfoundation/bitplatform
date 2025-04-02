@@ -34,7 +34,7 @@ public partial class BitRichTextEditor : BitComponentBase
         {
             var theme = (Theme ?? BitRichTextEditorTheme.Snow).ToString().ToLower();
             await _js.BitExtrasInitScripts(["_content/Bit.BlazorUI.Extras/quilljs/quill-2.0.3.js"]);
-            await _js.BitExtrasInitStylesheets([$"_content/Bit.BlazorUI.Extras/quilljs/quill.${theme}-2.0.3.css"]);
+            await _js.BitExtrasInitStylesheets([$"_content/Bit.BlazorUI.Extras/quilljs/quill.{theme}-2.0.3.css"]);
 
             _dotnetObj = DotNetObjectReference.Create(this); ;
             await _js.BitRichTextEditorSetup(_Id, _dotnetObj, _editorRef, _toolbarRef, theme);
