@@ -71,7 +71,27 @@ public partial class BitRichTextEditorDemo
 
 
     private readonly string example1RazorCode = @"
-<BitRichTextEditor />";
+<BitRichTextEditor @ref=""editorRef"" />
+
+<BitButton OnClick=""GetText"">GetText</BitButton>
+<BitButton OnClick=""GetHtml"">GetHtml</BitButton>
+<BitButton OnClick=""GetContent"">GetContent</BitButton>
+
+<div>result:</div>
+<pre>@result</pre>";
     private readonly string example1CsharpCode = @"
-private bool isBasicProPanelOpen;";
+private BitRichTextEditor editorRef = default!;
+private string? result;
+private async Task GetText()
+{
+    result = await editorRef.GetText();
+}
+private async Task GetHtml()
+{
+    result = await editorRef.GetHtml();
+}
+private async Task GetContent()
+{
+    result = await editorRef.GetContent();
+}";
 }

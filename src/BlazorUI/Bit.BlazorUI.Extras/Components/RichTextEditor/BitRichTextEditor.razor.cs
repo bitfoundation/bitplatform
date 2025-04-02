@@ -63,8 +63,6 @@ public partial class BitRichTextEditor : BitComponentBase
 
             _dotnetObj = DotNetObjectReference.Create(this); ;
             await _js.BitRichTextEditorSetup(_Id, _dotnetObj, _editorRef, _toolbarRef, theme);
-
-            return;
         }
     }
 
