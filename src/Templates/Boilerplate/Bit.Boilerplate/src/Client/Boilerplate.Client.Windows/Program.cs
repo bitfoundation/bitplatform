@@ -55,9 +55,9 @@ public partial class Program
         {
             Application.Restart();
         });
-        pubSubService.Subscribe(ClientPubSubMessages.PAGE_TITLE_CHANGED, async args =>
+        pubSubService.Subscribe(ClientPubSubMessages.PAGE_CHANGED, async args =>
         {
-            var (title, subTitle) = ((string? title, string? subTitle))args!;
+            var (title, _, __) = ((string? title, string?, bool))args!;
             await form.InvokeAsync(() =>
             {
                 form.Text = title ?? "Boilerplate";

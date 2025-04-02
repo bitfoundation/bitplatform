@@ -20,6 +20,8 @@ public partial class AboutPage
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         // You can add `.razor`, `.razor.cs`, and `.razor.scss` files to the `Client.Maui` and `Client.Windows` projects,  
         // allowing direct access to native platform features without dependency injection.  
         // The `AboutPage.razor` file in `Client.Web` demonstrates that you can use the same route (e.g., `/about`) on the web,  
@@ -34,7 +36,5 @@ public partial class AboutPage
         {
             oem = (await userAgent.Extract()).Manufacturer ?? "?";
         }
-
-        await base.OnInitAsync();
     }
 }

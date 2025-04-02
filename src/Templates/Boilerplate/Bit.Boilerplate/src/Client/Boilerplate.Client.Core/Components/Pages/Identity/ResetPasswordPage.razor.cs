@@ -35,6 +35,8 @@ public partial class ResetPasswordPage
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         model.Email = EmailQueryString;
         model.PhoneNumber = PhoneNumberQueryString;
         model.Token = TokenQueryString;
@@ -53,8 +55,6 @@ public partial class ResetPasswordPage
         }
 
         HandleContinue();
-
-        await base.OnInitAsync();
     }
 
     private void OnSelectedKeyChanged(string key)

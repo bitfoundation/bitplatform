@@ -22,6 +22,8 @@ public partial class AddOrEditProductPage
         }
     }
 
+    protected override bool ShowGoBackButton => true;
+    
     [AutoInject] IProductController productController = default!;
     [AutoInject] ICategoryController categoryController = default!;
     [AutoInject] IAttachmentController attachmentController = default!;
@@ -40,6 +42,8 @@ public partial class AddOrEditProductPage
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         try
         {
             var categoryList = await categoryController.Get(CurrentCancellationToken);

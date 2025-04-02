@@ -42,8 +42,10 @@ public partial class AppDiagnosticModal
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
     //#endif
 
-    protected override Task OnInitAsync()
+    protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL, async _ =>
         {
             isOpen = true;
@@ -51,8 +53,6 @@ public partial class AppDiagnosticModal
             HandleOnLogLevelFilter(defaultFilterLogLevels);
             await InvokeAsync(StateHasChanged);
         });
-
-        return base.OnInitAsync();
     }
 
 

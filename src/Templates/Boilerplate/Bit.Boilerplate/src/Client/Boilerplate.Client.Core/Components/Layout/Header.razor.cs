@@ -6,15 +6,18 @@ public partial class Header : AppComponentBase
 {
     private string? pageTitle;
     private string? pageSubtitle;
+    private bool showGoBackButton;
     private Action unsubscribePageTitleChanged = default!;
 
     [AutoInject] private History history = default!;
 
     protected override async Task OnInitAsync()
     {
-        unsubscribePageTitleChanged = PubSubService.Subscribe(ClientPubSubMessages.PAGE_TITLE_CHANGED, async payload =>
+        await base.OnInitAsync();
+
+        unsubscribePageTitleChanged = PubSubService.Subscribe(ClientPubSubMessages.PAGE_CHANGED, async payload =>
         {
-            (pageTitle, pageSubtitle) = ((string, string))payload!;
+            (pageTitle, pageSubtitle, showGoBackButton) = ((string?, string?,bool))payload!;
 
             StateHasChanged();
         });

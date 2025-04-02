@@ -18,14 +18,14 @@ public partial class IdentityHeader : AppComponentBase
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         if (CultureInfoManager.MultilingualEnabled)
         {
             cultures = CultureInfoManager.SupportedCultures
                         .Select(sc => new BitDropdownItem<string> { Value = sc.Culture.Name, Text = sc.DisplayName })
                         .ToArray();
         }
-
-        await base.OnInitAsync();
     }
 
     private async Task HandleBackLinkClick()

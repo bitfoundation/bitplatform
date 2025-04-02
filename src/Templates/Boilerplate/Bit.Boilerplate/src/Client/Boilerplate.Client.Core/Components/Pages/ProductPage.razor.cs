@@ -6,6 +6,7 @@ namespace Boilerplate.Client.Core.Components.Pages;
 public partial class ProductPage
 {
     protected override string? Title => product?.Name;
+    protected override bool ShowGoBackButton => true;
 
     /// <summary>
     /// <inheritdoc cref="ProductDto.ShortId"/>
@@ -29,9 +30,9 @@ public partial class ProductPage
 
     protected override async Task OnInitAsync()
     {
-        await Task.WhenAll(LoadProduct(), LoadSimilarProducts(), LoadSiblingProducts());
-
         await base.OnInitAsync();
+
+        await Task.WhenAll(LoadProduct(), LoadSimilarProducts(), LoadSiblingProducts());
     }
 
     private async Task LoadProduct()

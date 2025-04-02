@@ -45,9 +45,9 @@ public partial class ProductsPage
 
     protected override async Task OnInitAsync()
     {
-        PrepareGridDataProvider();
-
         await base.OnInitAsync();
+
+        PrepareGridDataProvider();
     }
 
     private void PrepareGridDataProvider()

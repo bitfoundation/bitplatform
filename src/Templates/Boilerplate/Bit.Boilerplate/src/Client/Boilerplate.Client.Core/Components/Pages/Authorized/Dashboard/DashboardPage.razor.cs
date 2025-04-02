@@ -17,6 +17,8 @@ public partial class DashboardPage
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         //#if (signalR == true)
         unsubscribe = PubSubService.Subscribe(SharedPubSubMessages.DASHBOARD_DATA_CHANGED, async _ =>
         {
@@ -40,8 +42,6 @@ public partial class DashboardPage
         {
             isLoadingAssemblies = false;
         }
-
-        await base.OnInitAsync();
     }
 
     //#if (signalR == true)

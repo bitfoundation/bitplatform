@@ -26,11 +26,11 @@ public partial class ProfileSection
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         var accessToken = await AuthTokenProvider.GetAccessToken();
 
         profileImageUploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadProfileImage?access_token={accessToken}").ToString();
-
-        await base.OnInitAsync();
     }
 
     protected override void OnParametersSet()

@@ -105,12 +105,12 @@ public static partial class MauiProgram
         var mauiApp = builder.Build();
 
         mauiApp.Services.GetRequiredService<PubSubService>()
-            .Subscribe(ClientPubSubMessages.PAGE_TITLE_CHANGED, async (args) =>
+            .Subscribe(ClientPubSubMessages.PAGE_CHANGED, async (args) =>
             {
-                var (title, subTitle) = ((string title, string subTitle))args!;
+                var (title, _, __) = ((string?, string?, bool))args!;
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
-                    Application.Current!.Windows.First().Title = title;
+                    Application.Current!.Windows.First().Title = title ?? "Boilerplate";
                 });
             });
 

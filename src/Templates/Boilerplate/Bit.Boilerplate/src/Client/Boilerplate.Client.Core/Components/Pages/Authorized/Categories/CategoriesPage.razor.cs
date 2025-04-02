@@ -31,9 +31,9 @@ public partial class CategoriesPage
 
     protected override async Task OnInitAsync()
     {
-        PrepareGridDataProvider();
-
         await base.OnInitAsync();
+
+        PrepareGridDataProvider();
     }
 
     private void PrepareGridDataProvider()

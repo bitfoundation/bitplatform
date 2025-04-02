@@ -18,13 +18,13 @@ public partial class AboutPage
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         var asm = typeof(AboutPage).Assembly;
         appName = asm.GetCustomAttribute<AssemblyTitleAttribute>()!.Title;
         appVersion = telemetryContext.AppVersion!;
         platform = telemetryContext.Platform!;
         webView = telemetryContext.WebView!;
         processId = Environment.ProcessId.ToString();
-
-        await base.OnInitAsync();
     }
 }

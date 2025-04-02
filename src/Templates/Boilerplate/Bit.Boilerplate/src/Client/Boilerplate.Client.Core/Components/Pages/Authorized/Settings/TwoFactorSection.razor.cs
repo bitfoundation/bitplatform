@@ -23,9 +23,9 @@ public partial class TwoFactorSection
 
     protected override async Task OnInitAsync()
     {
-        await SendTwoFactorAuthRequest(new());
-
         await base.OnInitAsync();
+
+        await SendTwoFactorAuthRequest(new());
     }
 
     private async Task EnableTwoFactorAuth()

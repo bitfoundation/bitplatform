@@ -18,6 +18,7 @@ public partial class OfflineEditProfilePage
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();
+
         try
         {
             await LoadEditProfileData();

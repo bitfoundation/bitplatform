@@ -26,6 +26,8 @@ public partial class SettingsPage
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+        
         openedAccordion = Section?.ToLower();
 
         isLoading = true;
@@ -42,7 +44,5 @@ public partial class SettingsPage
         {
             isLoading = false;
         }
-
-        await base.OnInitAsync();
     }
 }

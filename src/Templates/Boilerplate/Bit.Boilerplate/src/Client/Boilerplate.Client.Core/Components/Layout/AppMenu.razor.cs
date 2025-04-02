@@ -32,6 +32,8 @@ public partial class AppMenu
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         AuthManager.AuthenticationStateChanged += AuthManager_AuthenticationStateChanged;
         NavigationManager.LocationChanged += NavigationManager_LocationChanged;
 
@@ -54,8 +56,6 @@ public partial class AppMenu
         });
 
         await GetCurrentUser(AuthenticationStateTask);
-
-        await base.OnInitAsync();
     }
 
 

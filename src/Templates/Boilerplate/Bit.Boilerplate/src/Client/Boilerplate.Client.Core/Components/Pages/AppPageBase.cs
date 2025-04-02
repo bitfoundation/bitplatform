@@ -5,6 +5,7 @@ public abstract partial class AppPageBase : AppComponentBase
 {
     protected virtual string? Title { get; }
     protected virtual string? Subtitle { get; }
+    protected virtual bool ShowGoBackButton => false;
 
     [Parameter] public string? culture { get; set; }
 
@@ -12,7 +13,7 @@ public abstract partial class AppPageBase : AppComponentBase
     {
         await base.OnInitAsync();
 
-        PubSubService.Publish(ClientPubSubMessages.PAGE_TITLE_CHANGED, (Title, Subtitle), persistent: true);
+        PubSubService.Publish(ClientPubSubMessages.PAGE_CHANGED, (Title, Subtitle, ShowGoBackButton), persistent: true);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

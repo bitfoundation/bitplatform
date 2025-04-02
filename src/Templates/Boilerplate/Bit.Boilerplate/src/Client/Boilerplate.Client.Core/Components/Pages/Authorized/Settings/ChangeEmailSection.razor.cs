@@ -26,6 +26,8 @@ public partial class ChangeEmailSection
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         if (string.IsNullOrEmpty(EmailQueryString) is false)
         {
             showConfirmation = true;
@@ -42,8 +44,6 @@ public partial class ChangeEmailSection
                 }
             }
         }
-
-        await base.OnInitAsync();
     }
 
 

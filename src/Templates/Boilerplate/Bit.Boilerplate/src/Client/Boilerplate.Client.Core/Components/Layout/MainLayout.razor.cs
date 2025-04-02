@@ -39,6 +39,8 @@ public partial class MainLayout : IAsyncDisposable
 
     protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
+
         try
         {
             var inPrerenderSession = RendererInfo.IsInteractive is false;
@@ -94,8 +96,6 @@ public partial class MainLayout : IAsyncDisposable
             currentTheme = await themeService.GetCurrentTheme();
 
             await bitExtraServices.AddRootCssClasses();
-
-            await base.OnInitializedAsync();
         }
         catch (Exception exp)
         {

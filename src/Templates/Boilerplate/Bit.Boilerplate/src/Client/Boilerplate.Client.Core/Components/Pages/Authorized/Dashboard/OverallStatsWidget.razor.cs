@@ -12,6 +12,8 @@ public partial class OverallStatsWidget
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         await GetData();
     }
 

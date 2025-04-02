@@ -41,6 +41,8 @@ public partial class ClientAppCoordinator : AppComponentBase
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         if (AppPlatform.IsBlazorHybrid)
         {
             await ConfigureUISetup();
@@ -91,8 +93,6 @@ public partial class ClientAppCoordinator : AppComponentBase
             //#endif
             await PropagateAuthState(firstRun: true, AuthenticationStateTask);
         }
-
-        await base.OnInitAsync();
     }
 
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
