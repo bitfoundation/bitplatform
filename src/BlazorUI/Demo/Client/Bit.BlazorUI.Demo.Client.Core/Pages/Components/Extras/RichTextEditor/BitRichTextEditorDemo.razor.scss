@@ -1,0 +1,60 @@
+﻿@import '../../../../Styles/abstracts/functions';
+
+.btn-container {
+    display: flex;
+    gap: rem2(16px);
+    flex-flow: column;
+    max-width: max-content;
+}
+
+.position-btn {
+    gap: rem2(16px);
+    display: flex;
+    flex-flow: column nowrap;
+
+    div {
+        display: flex;
+        justify-content: space-between;
+    }
+}
+
+::deep {
+    .custom-class {
+        .item {
+            color: black;
+            padding: 1rem;
+            margin: 0.5rem;
+            border-radius: 0.5rem;
+            background-color: brown;
+        }
+    }
+
+    .custom-container {
+        border: 0.25rem solid #0054C6;
+    }
+
+    .custom-overlay {
+        background-color: #ffbd5a66;
+    }
+
+    .custom-header-container {
+        padding: 1.5rem;
+        background-color: tomato;
+    }
+
+    .custom-header {
+        font-size: 2rem;
+    }
+
+    .custom-body {
+        color: black;
+        background-color: lightseagreen;
+    }
+
+    .custom-footer {
+        color: brown;
+        padding: 1.5rem;
+        font-size: 1.5rem;
+        background-color: tomato;
+    }
+}
