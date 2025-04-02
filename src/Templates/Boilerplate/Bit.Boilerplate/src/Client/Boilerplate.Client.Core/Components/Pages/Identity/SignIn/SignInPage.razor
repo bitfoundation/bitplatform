@@ -27,7 +27,6 @@
                         <OtpPanel Model="model"
                                   OnSignIn="DoSignIn"
                                   IsWaiting="isWaiting"
-                                  ShowSignInPanel="ShowSignInPanel"
                                   OnResendOtp="HandleOnResendOtp" />
                     }
                 }
@@ -36,7 +35,6 @@
                     <TfaPanel Model="model"
                               IsWaiting="isWaiting"
                               OnTokenProvided="DoSignIn"
-                              ShowSignInPanel="ShowSignInPanel"
                               OnSendTfaToken="HandleOnSendTfaToken" />
                 }
             </BitStack>
