@@ -350,7 +350,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     private async Task ToggleCallout()
     {
-        if (IsEnabled is false) return;
+        if (IsEnabled is false || IsDisposed) return;
 
         await _js.BitCalloutToggleCallout(_dotnetObj,
                                 _Id,
@@ -497,6 +497,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     {
         if (IsDisposed || disposing is false) return;
 
+        await base.DisposeAsync(disposing);
+
         _cancellationTokenSource?.Dispose();
 
         OnValueChanged -= HandleOnValueChanged;
@@ -511,7 +513,5 @@ public partial class BitSearchBox : BitTextInputBase<string?>
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
-
-        await base.DisposeAsync(disposing);
     }
 }

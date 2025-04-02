@@ -312,6 +312,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, BitSwipeOrientation.Vertical, _dotnetObj);
 
+        if (IsDisposed) return;
+
         _abortControllerId = await _js.BitCircularTimePickerSetup(_dotnetObj, nameof(_HandlePointerUp), nameof(_HandlePointerMove));
     }
 
@@ -530,7 +532,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     private async Task ToggleCallout()
     {
         if (Standalone) return;
-        if (IsEnabled is false) return;
+        if (IsEnabled is false || IsDisposed) return;
 
         await _js.BitCalloutToggleCallout(_dotnetObj,
                                 _circularTimePickerId,
@@ -706,6 +708,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     {
         if (IsDisposed || disposing is false) return;
 
+        await base.DisposeAsync(disposing);
+
         OnValueChanged -= HandleOnValueChanged;
 
         // _dotnetObj.Dispose(); // it is getting disposed in the following js call:
@@ -717,7 +721,5 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             await _js.BitSwipesDispose(_calloutId); // _dotnetObj is getting disposed here!
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
-
-        await base.DisposeAsync(disposing);
     }
 }

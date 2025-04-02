@@ -483,12 +483,12 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     {
         if (IsDisposed || disposing is false) return;
 
+        await base.DisposeAsync(disposing);
+
         // When initialization in the SetParametersAsync method fails, the EditContext property can remain equal to null
         if (EditContext is not null)
         {
             EditContext.OnValidationStateChanged -= _validationStateChangedHandler;
         }
-
-        await base.DisposeAsync(disposing);
     }
 }

@@ -428,7 +428,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     private async Task ToggleCallout()
     {
         if (Standalone) return;
-        if (IsEnabled is false) return;
+        if (IsEnabled is false || IsDisposed) return;
 
         await _js.BitCalloutToggleCallout(_dotnetObj,
                                 _timePickerId,
@@ -670,6 +670,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     {
         if (IsDisposed || disposing is false) return;
 
+        await base.DisposeAsync(disposing);
+
         _cancellationTokenSource?.Dispose();
         OnValueChanged -= HandleOnValueChanged;
 
@@ -679,7 +681,5 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             await _js.BitSwipesDispose(_calloutId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
-
-        await base.DisposeAsync(disposing);
     }
 }

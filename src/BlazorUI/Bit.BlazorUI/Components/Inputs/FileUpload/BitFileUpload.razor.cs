@@ -26,7 +26,7 @@ public partial class BitFileUpload : BitComponentBase
     [Inject] private HttpClient _httpClient { get; set; } = default!;
 
 
-    
+
     /// <summary>
     /// The value of the accept attribute of the input element.
     /// </summary>
@@ -447,6 +447,8 @@ public partial class BitFileUpload : BitComponentBase
             _files.Clear();
         }
 
+        if (IsDisposed) return;
+
         _files.AddRange(await _js.BitFileUploadSetup(UniqueId, _dotnetObj, _inputRef, Append, url, UploadRequestHttpHeaders));
 
         if (_files.Any() is false) return;
@@ -708,6 +710,8 @@ public partial class BitFileUpload : BitComponentBase
     {
         if (IsDisposed || disposing is false) return;
 
+        await base.DisposeAsync(disposing);
+
         if (_dropZoneRef is not null)
         {
             try
@@ -734,7 +738,5 @@ public partial class BitFileUpload : BitComponentBase
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
-
-        await base.DisposeAsync(disposing);
     }
 }

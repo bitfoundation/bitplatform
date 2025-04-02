@@ -1915,7 +1915,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private async Task<bool> ToggleCallout()
     {
         if (Standalone) return false;
-        if (IsEnabled is false) return false;
+        if (IsEnabled is false || IsDisposed) return false;
 
         return await _js.BitCalloutToggleCallout(_dotnetObj,
                                        _dateRangePickerId,
@@ -1957,6 +1957,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     {
         if (IsDisposed || disposing is false) return;
 
+        await base.DisposeAsync(disposing);
+
         _cancellationTokenSource?.Dispose();
         OnValueChanged -= HandleOnValueChanged;
 
@@ -1966,7 +1968,5 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             await _js.BitSwipesDispose(_calloutId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
-
-        await base.DisposeAsync(disposing);
     }
 }

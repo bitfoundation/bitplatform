@@ -151,7 +151,7 @@ public partial class BitCallout : BitComponentBase
 
     private async Task ToggleCallout()
     {
-        if (IsEnabled is false) return;
+        if (IsEnabled is false || IsDisposed) return;
 
         var id = Anchor is not null ? _anchorId : AnchorId ?? _Id;
 
@@ -184,6 +184,8 @@ public partial class BitCallout : BitComponentBase
     {
         if (IsDisposed || disposing is false) return;
 
+        await base.DisposeAsync(disposing);
+
         if (_dotnetObj is not null)
         {
             _dotnetObj.Dispose();
@@ -194,7 +196,5 @@ public partial class BitCallout : BitComponentBase
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
-
-        await base.DisposeAsync(disposing);
     }
 }

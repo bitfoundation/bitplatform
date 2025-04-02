@@ -605,7 +605,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
     private async Task ToggleCallout()
     {
-        if (IsEnabled is false) return;
+        if (IsEnabled is false || IsDisposed) return;
 
         await _js.BitCalloutToggleCallout(_dotnetObj,
                                 _overflowAnchorId,
@@ -634,6 +634,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     {
         if (IsDisposed || disposing is false) return;
 
+        await base.DisposeAsync(disposing);
+
         if (_dotnetObj is not null)
         {
             _dotnetObj.Dispose();
@@ -644,7 +646,5 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
-
-        await base.DisposeAsync(disposing);
     }
 }
