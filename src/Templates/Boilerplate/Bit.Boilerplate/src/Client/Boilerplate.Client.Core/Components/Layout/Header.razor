@@ -10,7 +10,14 @@
                    Color="BitColor.SecondaryBackground"
                    IconName="@BitIconName.CollapseMenu" />
 
-        <BitStack AutoSize VerticalAlign="BitAlignment.Center" Gap="0">
+        <BitStack AutoSize VerticalAlign="BitAlignment.Center" Gap="0.5rem" Horizontal>
+            @if (showGoBackButton)
+            {
+                <BitButton Variant="BitVariant.Text"
+                           IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)"
+                           OnClick="GoBack"
+                           Title="@Localizer[nameof(AppStrings.Back)]" />
+            }
             <BitText Typography="BitTypography.H5">
                 @pageTitle
             </BitText>

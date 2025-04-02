@@ -19,10 +19,8 @@ public partial class ClientPubSubMessages
     /// <inheritdoc cref="Parameters.IsOnline"/>
     /// </summary>
     public const string IS_ONLINE_CHANGED = nameof(IS_ONLINE_CHANGED);
-    public const string PAGE_TITLE_CHANGED = nameof(PAGE_TITLE_CHANGED);
+    public const string PAGE_DATA_CHANGED = nameof(PAGE_DATA_CHANGED);
     public const string ROUTE_DATA_UPDATED = nameof(ROUTE_DATA_UPDATED);
-    public const string UPDATE_IDENTITY_HEADER_BACK_LINK = nameof(UPDATE_IDENTITY_HEADER_BACK_LINK);
-    public const string IDENTITY_HEADER_BACK_LINK_CLICKED = nameof(IDENTITY_HEADER_BACK_LINK_CLICKED);
 
     /// <summary>
     /// Supposed to be called using JavaScript to navigate between pages without reloading the app.

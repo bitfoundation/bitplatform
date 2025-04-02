@@ -1,5 +1,4 @@
 ﻿namespace Boilerplate.Client.Core.Components.Pages;
-
-public partial class TermsPage
+public partial class NotFoundPage
 {
 }

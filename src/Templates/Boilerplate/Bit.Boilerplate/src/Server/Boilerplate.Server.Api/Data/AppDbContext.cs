@@ -65,7 +65,9 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         {
             SetConcurrencyStamp();
 
+#pragma warning disable NonAsyncEFCoreMethodsUsageAnalyzer
             return base.SaveChanges(acceptAllChangesOnSuccess);
+#pragma warning restore NonAsyncEFCoreMethodsUsageAnalyzer
         }
         catch (DbUpdateConcurrencyException exception)
         {

@@ -11,6 +11,8 @@ public partial class ProductsCountPerCategoryWidget
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         config = new BitChartBarConfig
         {
             Options = new BitChartBarOptions

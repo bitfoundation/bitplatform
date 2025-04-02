@@ -3,17 +3,7 @@ namespace Boilerplate.Client.Core.Components.Pages;
 
 public abstract partial class AppPageBase : AppComponentBase
 {
-    protected virtual string? Title { get; }
-    protected virtual string? Subtitle { get; }
-
     [Parameter] public string? culture { get; set; }
-
-    protected override async Task OnInitAsync()
-    {
-        await base.OnInitAsync();
-
-        PubSubService.Publish(ClientPubSubMessages.PAGE_TITLE_CHANGED, (Title, Subtitle), persistent: true);
-    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

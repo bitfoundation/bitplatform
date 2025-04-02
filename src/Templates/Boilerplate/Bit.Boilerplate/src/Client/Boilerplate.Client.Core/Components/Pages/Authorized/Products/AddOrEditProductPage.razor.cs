@@ -25,6 +25,8 @@ public partial class AddOrEditProductPage
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         try
         {
             var categoryList = await categoryController.Get(CurrentCancellationToken);

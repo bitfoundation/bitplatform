@@ -3,7 +3,8 @@
 @attribute [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5)]
 @inherits AppPageBase
 
-<PageTitle>@Localizer[nameof(AppStrings.AboutPageTitle)]</PageTitle>
+<AppPageData Title="@Localizer[nameof(AppStrings.About)]"
+             PageTitle="@Localizer[nameof(AppStrings.AboutPageTitle)]" />
 
 <section>
     <BitStack Gap="3rem">

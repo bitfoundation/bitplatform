@@ -1164,7 +1164,7 @@
     <value>انتخاب کننده رنگ پیش فرض</value>
   </data>
     <data name="EditProduct" xml:space="preserve">
-    <value>ویرایش محصول</value>
+    <value>ویرایش محصول {0}</value>
   </data>
     <data name="DuplicateProductName" xml:space="preserve">
     <value>نام محصول تکراری است</value>

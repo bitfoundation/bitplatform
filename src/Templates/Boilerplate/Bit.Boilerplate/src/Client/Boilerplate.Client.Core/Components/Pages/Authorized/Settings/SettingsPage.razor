@@ -4,7 +4,8 @@
 @attribute [Authorize]
 @inherits AppPageBase
 
-<PageTitle>@Localizer[nameof(AppStrings.SettingsPageTitle)]</PageTitle>
+<AppPageData Title="@Localizer[nameof(AppStrings.Settings)]"
+             PageTitle="@Localizer[nameof(AppStrings.SettingsPageTitle)]" />
 
 <section>
     <BitStack Class="stack">

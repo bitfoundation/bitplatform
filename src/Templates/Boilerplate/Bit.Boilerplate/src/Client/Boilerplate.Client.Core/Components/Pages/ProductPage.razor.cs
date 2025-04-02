@@ -5,10 +5,6 @@ namespace Boilerplate.Client.Core.Components.Pages;
 
 public partial class ProductPage
 {
-    protected override string? Title => string.Empty;
-    protected override string? Subtitle => string.Empty;
-
-
     /// <summary>
     /// <inheritdoc cref="ProductDto.ShortId"/>
     /// </summary>
@@ -31,9 +27,9 @@ public partial class ProductPage
 
     protected override async Task OnInitAsync()
     {
-        await Task.WhenAll(LoadProduct(), LoadSimilarProducts(), LoadSiblingProducts());
-
         await base.OnInitAsync();
+
+        await Task.WhenAll(LoadProduct(), LoadSimilarProducts(), LoadSiblingProducts());
     }
 
     private async Task LoadProduct()

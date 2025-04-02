@@ -6,9 +6,6 @@ namespace Boilerplate.Client.Core.Components.Pages.Authorized.Todo;
 
 public partial class TodoPage
 {
-    protected override string? Title => Localizer[nameof(AppStrings.Todo)];
-    protected override string? Subtitle => string.Empty;
-
     [AutoInject] Keyboard keyboard = default!;
     [AutoInject] ITodoItemController todoItemController = default!;
 
@@ -28,14 +25,14 @@ public partial class TodoPage
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         _ = keyboard.Add(ButilKeyCodes.KeyF, () => searchBox.FocusAsync(), ButilModifiers.Ctrl);
 
         selectedFilter = nameof(AppStrings.All);
         selectedSort = nameof(AppStrings.Alphabetical);
 
         await LoadTodoItems();
-
-        await base.OnInitAsync();
     }
 
     private async Task LoadTodoItems(bool showLoading = true)

@@ -11,6 +11,8 @@ public partial class ProductsPercentageWidget
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         config = new BitChartPieConfig
         {
             Options = new BitChartPieOptions

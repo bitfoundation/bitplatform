@@ -3,7 +3,8 @@
 @attribute [Route("{culture?}" + Urls.ConfirmPage)]
 @inherits AppPageBase
 
-<PageTitle>@Localizer[nameof(AppStrings.ConfirmPageTitle)]</PageTitle>
+<AppPageData Title="@Localizer[nameof(AppStrings.Confirm)]"
+             PageTitle="@Localizer[nameof(AppStrings.ConfirmPageTitle)]" />
 
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center">

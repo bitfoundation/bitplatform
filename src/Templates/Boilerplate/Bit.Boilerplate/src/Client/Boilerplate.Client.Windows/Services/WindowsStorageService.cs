@@ -64,12 +64,10 @@ public partial class WindowsStorageService : IStorageService
         {
             await ioLock.WaitAsync();
             using IsolatedStorageFile storage = IsolatedStorageFile.GetUserStoreForDomain();
-            using IsolatedStorageFileStream stream = new IsolatedStorageFileStream(WindowsStorageFilename, FileMode.Open, storage);
+            using IsolatedStorageFileStream stream = new IsolatedStorageFileStream(WindowsStorageFilename, FileMode.OpenOrCreate, storage);
+            if (stream.Length == 0)
+                return [];
             return (await JsonSerializer.DeserializeAsync(stream, AppJsonContext.Default.DictionaryStringString))!;
-        }
-        catch (IsolatedStorageException exp) when (exp.InnerException is FileNotFoundException)
-        {
-            return [];
         }
         finally
         {

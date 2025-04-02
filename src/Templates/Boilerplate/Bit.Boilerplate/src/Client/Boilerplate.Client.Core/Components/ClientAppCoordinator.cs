@@ -41,6 +41,8 @@ public partial class ClientAppCoordinator : AppComponentBase
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         if (AppPlatform.IsBlazorHybrid)
         {
             await ConfigureUISetup();
@@ -91,8 +93,6 @@ public partial class ClientAppCoordinator : AppComponentBase
             //#endif
             await PropagateAuthState(firstRun: true, AuthenticationStateTask);
         }
-
-        await base.OnInitAsync();
     }
 
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
@@ -261,6 +261,8 @@ public partial class ClientAppCoordinator : AppComponentBase
     private List<IDisposable> signalROnDisposables = [];
     protected override async ValueTask DisposeAsync(bool disposing)
     {
+        await base.DisposeAsync(disposing);
+
         unsubscribe?.Invoke();
 
         NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
@@ -272,7 +274,5 @@ public partial class ClientAppCoordinator : AppComponentBase
         hubConnection.Reconnecting -= HubConnectionStateChange;
         signalROnDisposables.ForEach(d => d.Dispose());
         //#endif
-
-        await base.DisposeAsync(disposing);
     }
 }
