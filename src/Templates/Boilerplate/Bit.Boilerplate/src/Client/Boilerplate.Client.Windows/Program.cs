@@ -57,7 +57,7 @@ public partial class Program
         });
         pubSubService.Subscribe(ClientPubSubMessages.PAGE_TITLE_CHANGED, async args =>
         {
-            var (title, subTitle) = ((string title, string subTitle))args!;
+            var (title, subTitle) = ((string? title, string? subTitle))args!;
             await form.InvokeAsync(() =>
             {
                 form.Text = title ?? "Boilerplate";
