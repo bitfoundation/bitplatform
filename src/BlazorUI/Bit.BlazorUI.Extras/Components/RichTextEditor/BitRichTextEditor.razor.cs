@@ -16,11 +16,31 @@ public partial class BitRichTextEditor : BitComponentBase
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
+    /// <summary>
+    /// Custom template for the editor content.
+    /// </summary>
+    [Parameter] public RenderFragment? EditorTemplate { get; set; }
+
+    /// <summary>
+    /// The placeholder value of the editor.
+    /// </summary>
+    [Parameter] public string? Placeholder { get; set; }
+
+    /// <summary>
+    /// Makes the editor readonly.
+    /// </summary>
+    [Parameter] public bool ReadOnly { get; set; }
 
     /// <summary>
     /// The theme of the editor.
     /// </summary>
     [Parameter] public BitRichTextEditorTheme? Theme { get; set; }
+
+    /// <summary>
+    /// Custom template for the toolbar content.
+    /// </summary>
+    [Parameter] public RenderFragment? ToolbarTemplate { get; set; }
+
 
 
     /// <summary>
@@ -38,13 +58,37 @@ public partial class BitRichTextEditor : BitComponentBase
     {
         return _js.BitRichTextEditorGetHtml(_Id);
     }
-    
+
     /// <summary>
-     /// Gets the current content of the editor in JSON format.
-     /// </summary>
+    /// Gets the current content of the editor in JSON format.
+    /// </summary>
     public ValueTask<string> GetContent()
     {
         return _js.BitRichTextEditorGetContent(_Id);
+    }
+
+    /// <summary>
+    /// Sets the current text content of the editor.
+    /// </summary>
+    public ValueTask SetText(string? text)
+    {
+        return _js.BitRichTextEditorSetText(_Id, text);
+    }
+
+    /// <summary>
+    /// Sets the current html content of the editor.
+    /// </summary>
+    public ValueTask SetHtml(string? html)
+    {
+        return _js.BitRichTextEditorSetHtml(_Id, html);
+    }
+
+    /// <summary>
+    /// Sets the current content of the editor in JSON format.
+    /// </summary>
+    public ValueTask SetContent(string? content)
+    {
+        return _js.BitRichTextEditorSetContent(_Id, content);
     }
 
 
@@ -62,7 +106,8 @@ public partial class BitRichTextEditor : BitComponentBase
             await _js.BitExtrasInitStylesheets([$"_content/Bit.BlazorUI.Extras/quilljs/quill.{theme}-2.0.3.css"]);
 
             _dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitRichTextEditorSetup(_Id, _dotnetObj, _editorRef, _toolbarRef, theme);
+            ElementReference? toolbarRef = ToolbarTemplate is null ? null : _toolbarRef;
+            await _js.BitRichTextEditorSetup(_Id, _dotnetObj, _editorRef, toolbarRef, theme, Placeholder, ReadOnly);
         }
     }
 

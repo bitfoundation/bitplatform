@@ -1,13 +1,35 @@
 ﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
 
 .bit-rte {
-    
+    .ql-editor.ql-blank::before {
+        color: $clr-fg-ter;
+    }
+
+    .ql-snow {
+        &.ql-toolbar {
+            .ql-formats {
+                .ql-stroke {
+                    stroke: $clr-fg-sec;
+                }
+
+                .ql-fill {
+                    fill: $clr-fg-sec;
+                }
+
+                .ql-picker {
+                    color: $clr-fg-sec;
+                }
+
+                .ql-picker-options {
+                    background-color: $clr-bg-pri;
+                }
+            }
+        }
+    }
 }
 
 .bit-rte-tlb {
-    display: none;
 }
 
 .bit-rte-edt {
-    height: 300px;
 }

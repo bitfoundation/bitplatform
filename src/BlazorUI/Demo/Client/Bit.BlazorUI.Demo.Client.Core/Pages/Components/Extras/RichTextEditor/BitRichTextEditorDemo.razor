@@ -26,8 +26,20 @@
             </BitText>
         </NotesTemplate>
         <Examples>
-            <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-                <BitRichTextEditor @ref="editorRef" />
+            <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+                <BitRichTextEditor />
+            </DemoExample>
+
+            <DemoExample Title="Placeholder" RazorCode="@example2RazorCode" Id="example2">
+                <BitRichTextEditor Placeholder="This is a custom placeholder" />
+            </DemoExample>
+
+            <DemoExample Title="Readonly" RazorCode="@example3RazorCode" Id="example3">
+                <BitRichTextEditor Placeholder="This editor is readonly!" ReadOnly />
+            </DemoExample>
+
+            <DemoExample Title="Get APIs" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+                <BitRichTextEditor @ref="getEditorRef" />
                 <br />
                 <BitButton OnClick="GetText">GetText</BitButton>
                 <BitButton OnClick="GetHtml">GetHtml</BitButton>
@@ -35,6 +47,67 @@
                 <br /><br />
                 <div>result:</div>
                 <pre>@result</pre>
+            </DemoExample>
+
+            <DemoExample Title="Set APIs" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+                <textarea @bind-value="setValue" @bind-value:event="oninput" style="width:100%;height:100px" />
+                <br /><br />
+                <BitButton OnClick="SetText">SetText</BitButton>
+                <BitButton OnClick="SetHtml">SetHtml</BitButton>
+                <BitButton OnClick="SetContent">SetContent</BitButton>
+                <br /><br />
+                <BitRichTextEditor @ref="setEditorRef" />
+            </DemoExample>
+
+            <DemoExample Title="Templates" RazorCode="@example6RazorCode" Id="example6">
+                <BitRichTextEditor>
+                    <ToolbarTemplate>
+                        <span class="ql-formats">
+                            <select class="ql-font"></select>
+                            <select class="ql-size"></select>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-bold"></button>
+                            <button class="ql-italic"></button>
+                            <button class="ql-underline"></button>
+                            <button class="ql-strike"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <select class="ql-color"></select>
+                            <select class="ql-background"></select>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-blockquote"></button>
+                            <button class="ql-code-block"></button>
+                            <button class="ql-link"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-header" value="1"></button>
+                            <button class="ql-header" value="2"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-list" value="ordered"></button>
+                            <button class="ql-list" value="bullet"></button>
+                            <button class="ql-indent" value="-1"></button>
+                            <button class="ql-indent" value="+1"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-direction" value="rtl"></button>
+                            <select class="ql-align"></select>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-script" value="sub"></button>
+                            <button class="ql-script" value="super"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-clean"></button>
+                        </span>
+                    </ToolbarTemplate>
+                    <EditorTemplate>
+                        <div><b>this is bold</b></div>
+                        <div><em>this is italic</em></div>
+                    </EditorTemplate>
+                </BitRichTextEditor>
             </DemoExample>
         </Examples>
     </DemoPage>
