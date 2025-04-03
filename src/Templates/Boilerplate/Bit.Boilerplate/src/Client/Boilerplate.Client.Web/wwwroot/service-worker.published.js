@@ -35,8 +35,13 @@ self.assetsExclude = [
     /chartjs-2\.9\.4-adapter\.js$/,
     //#endif
 
-    // If a MarkDown viewer (https://blazorui.bitplatform.dev/components/markdownviewer) is needed in the PWA, remove this line:
+    // If a MarkDownViewer (https://blazorui.bitplatform.dev/components/markdownviewer) is needed in the PWA, remove this line:
     /marked-15\.0\.7\.js$/,
+
+    // If a RichTextEditor (https://blazorui.bitplatform.dev/components/richtexteditor) is needed in the PWA, remove the following lines:
+    /quill-2\.0\.3\.js$/,
+    /quill.snow-2\.0\.3\.css$/,
+    /quill.bubble-2\.0\.3\.css$/,
 
     // https://github.com/orgs/bitfoundation/discussions/10238#discussioncomment-12493737
     /_content\/Bit\.BlazorES2019\/blazor\.server\.js$/,
