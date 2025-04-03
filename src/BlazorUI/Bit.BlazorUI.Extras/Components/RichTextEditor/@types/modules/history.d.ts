@@ -5,7 +5,7 @@ interface HistoryOptions {
 }
 interface StackItem {
     delta: Delta;
-    range: Range | null;
+    range: QuillRange | null;
 }
 interface Stack {
     undo: StackItem[];
@@ -16,7 +16,7 @@ declare class QuillHistory extends Module<HistoryOptions> {
     lastRecorded: number;
     ignoreChange: boolean;
     stack: Stack;
-    currentRange: Range | null;
+    currentRange: QuillRange | null;
     constructor(quill: Quill, options: Partial<HistoryOptions>);
     change(source: 'undo' | 'redo', dest: 'redo' | 'undo'): void;
     clear(): void;

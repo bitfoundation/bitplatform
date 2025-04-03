@@ -18,7 +18,7 @@ declare class Toolbar extends Module<ToolbarProps> {
     constructor(quill: Quill, options: Partial<ToolbarProps>);
     addHandler(format: string, handler: Handler): void;
     attach(input: HTMLElement): void;
-    update(range: Range | null): void;
+    update(range: QuillRange | null): void;
 }
 
 declare function addControls(container: HTMLElement, groups: (string | Record<string, unknown>)[][] | (string | Record<string, unknown>)[]): void;

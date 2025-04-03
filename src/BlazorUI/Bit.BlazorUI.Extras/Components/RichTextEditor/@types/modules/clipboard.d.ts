@@ -19,11 +19,11 @@ declare class QuillClipboard extends Module<ClipboardOptions> {
     onCaptureCopy(e: ClipboardEvent, isCut?: boolean): void;
     private normalizeURIList;
     onCapturePaste(e: ClipboardEvent): void;
-    onCopy(range: Range, isCut: boolean): {
+    onCopy(range: QuillRange, isCut: boolean): {
         html: string;
         text: string;
     };
-    onPaste(range: Range, { text, html }: {
+    onPaste(range: QuillRange, { text, html }: {
         text?: string;
         html?: string;
     }): void;

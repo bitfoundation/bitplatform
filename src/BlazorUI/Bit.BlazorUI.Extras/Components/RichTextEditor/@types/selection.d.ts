@@ -18,20 +18,20 @@ interface Bounds {
     top: number;
     width: number;
 }
-declare class Range {
+declare class QuillRange {
     index: number;
     length: number;
     constructor(index: number, length?: number);
 }
-declare class Selection {
+declare class QuillSelection {
     scroll: Scroll;
     emitter: Emitter;
     composing: boolean;
     mouseDown: boolean;
     root: HTMLElement;
     cursor: Cursor;
-    savedRange: Range;
-    lastRange: Range | null;
+    savedRange: QuillRange;
+    lastRange: QuillRange | null;
     lastNative: NormalizedRange | null;
     constructor(scroll: Scroll, emitter: Emitter);
     handleComposition(): void;
@@ -47,9 +47,9 @@ declare class Selection {
         width: number;
     } | null;
     getNativeRange(): NormalizedRange | null;
-    getRange(): [Range, NormalizedRange] | [null, null];
+    getRange(): [QuillRange, NormalizedRange] | [null, null];
     hasFocus(): boolean;
-    normalizedToRange(range: NormalizedRange): Range;
+    normalizedToRange(range: NormalizedRange): QuillRange;
     normalizeNative(nativeRange: NativeRange): {
         start: {
             node: Node;
@@ -61,9 +61,9 @@ declare class Selection {
         };
         native: AbstractRange;
     } | null;
-    rangeToNative(range: Range): [Node | null, number, Node | null, number];
+    rangeToNative(range: QuillRange): [Node | null, number, Node | null, number];
     setNativeRange(startNode: Node | null, startOffset?: number, endNode?: Node | null, endOffset?: number | undefined, force?: boolean): void;
-    setRange(range: Range | null, force: boolean, source?: EmitterSource): void;
-    setRange(range: Range | null, source?: EmitterSource): void;
+    setRange(range: QuillRange | null, force: boolean, source?: EmitterSource): void;
+    setRange(range: QuillRange | null, source?: EmitterSource): void;
     update(source?: EmitterSource): void;
 }

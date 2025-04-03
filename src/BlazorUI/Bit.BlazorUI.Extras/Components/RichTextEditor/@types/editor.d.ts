@@ -1,6 +1,6 @@
 declare type SelectionInfo = {
-    newRange: Range;
-    oldRange: Range;
+    newRange: QuillRange;
+    oldRange: QuillRange;
 };
 
 declare class Editor {

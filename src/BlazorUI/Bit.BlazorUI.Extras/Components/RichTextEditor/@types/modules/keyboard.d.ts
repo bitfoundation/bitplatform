@@ -23,7 +23,7 @@ interface BindingObject extends Partial<Omit<Context, 'prefix' | 'suffix' | 'for
     format?: Record<string, unknown> | string[];
     handler?: (this: {
         quill: Quill;
-    }, range: Range, curContext: Context, binding: NormalizedBinding) => boolean | void;
+    }, range: QuillRange, curContext: Context, binding: NormalizedBinding) => boolean | void;
 }
 
 type Binding = BindingObject | string | number;
@@ -43,15 +43,15 @@ declare class Keyboard extends Module<KeyboardOptions> {
     constructor(quill: Quill, options: Partial<KeyboardOptions>);
     addBinding(keyBinding: Binding, context?: Required<BindingObject['handler']> | Partial<Omit<BindingObject, 'key' | 'handler'>>, handler?: Required<BindingObject['handler']> | Partial<Omit<BindingObject, 'key' | 'handler'>>): void;
     listen(): void;
-    handleBackspace(range: Range, context: Context): void;
-    handleDelete(range: Range, context: Context): void;
-    handleDeleteRange(range: Range): void;
-    handleEnter(range: Range, context: Context): void;
+    handleBackspace(range: QuillRange, context: Context): void;
+    handleDelete(range: QuillRange, context: Context): void;
+    handleDeleteRange(range: QuillRange): void;
+    handleEnter(range: QuillRange, context: Context): void;
 }
 
 declare function normalize(binding: Binding): BindingObject | null;
 
 declare function deleteRange({ quill, range }: {
     quill: Quill;
-    range: Range;
+    range: QuillRange;
 }): void;
