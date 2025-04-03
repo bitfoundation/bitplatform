@@ -91,7 +91,7 @@ declare class Quill {
     protected allowReadOnlyEdits: boolean;
     editor: Editor;
     composition: Composition;
-    selection: Selection;
+    selection: QuillSelection;
     theme: Theme;
     keyboard: Keyboard;
     clipboard: QuillClipboard;
@@ -102,7 +102,7 @@ declare class Quill {
     addContainer(container: string, refNode?: Node | null): HTMLDivElement;
     addContainer(container: HTMLElement, refNode?: Node | null): HTMLElement;
     blur(): void;
-    deleteText(range: Range, source?: EmitterSource): Delta;
+    deleteText(range: QuillRange, source?: EmitterSource): Delta;
     deleteText(index: number, length: number, source?: EmitterSource): Delta;
     disable(): void;
     editReadOnly<T>(modifier: () => T): T;
@@ -113,29 +113,29 @@ declare class Quill {
     format(name: string, value: unknown, source?: EmitterSource): Delta;
     formatLine(index: number, length: number, formats: Record<string, unknown>, source?: EmitterSource): Delta;
     formatLine(index: number, length: number, name: string, value?: unknown, source?: EmitterSource): Delta;
-    formatText(range: Range, name: string, value: unknown, source?: EmitterSource): Delta;
+    formatText(range: QuillRange, name: string, value: unknown, source?: EmitterSource): Delta;
     formatText(index: number, length: number, name: string, value: unknown, source?: EmitterSource): Delta;
     formatText(index: number, length: number, formats: Record<string, unknown>, source?: EmitterSource): Delta;
-    getBounds(index: number | Range, length?: number): Bounds | null;
+    getBounds(index: number | QuillRange, length?: number): Bounds | null;
     getContents(index?: number, length?: number): Delta;
     getFormat(index?: number, length?: number): {
         [format: string]: unknown;
     };
-    getFormat(range?: Range): {
+    getFormat(range?: QuillRange): {
         [format: string]: unknown;
     };
     getIndex(blot: Blot): number;
     getLength(): number;
     getLeaf(index: number): [LeafBlot | null, number];
     getLine(index: number): [Block | BlockEmbed | null, number];
-    getLines(range: Range): (Block | BlockEmbed)[];
+    getLines(range: QuillRange): (Block | BlockEmbed)[];
     getLines(index?: number, length?: number): (Block | BlockEmbed)[];
     getModule(name: string): unknown;
-    getSelection(focus: true): Range;
-    getSelection(focus?: boolean): Range | null;
-    getSemanticHTML(range: Range): string;
+    getSelection(focus: true): QuillRange;
+    getSelection(focus?: boolean): QuillRange | null;
+    getSemanticHTML(range: QuillRange): string;
     getSemanticHTML(index?: number, length?: number): string;
-    getText(range?: Range): string;
+    getText(range?: QuillRange): string;
     getText(index?: number, length?: number): string;
     hasFocus(): boolean;
     insertEmbed(index: number, embed: string, value: unknown, source?: EmitterSource): Delta;
@@ -145,7 +145,7 @@ declare class Quill {
     isEnabled(): boolean;
     off(...args: Parameters<(typeof Emitter)['prototype']['off']>): Emitter;
     on(event: (typeof Emitter)['events']['TEXT_CHANGE'], handler: (delta: Delta, oldContent: Delta, source: EmitterSource) => void): Emitter;
-    on(event: (typeof Emitter)['events']['SELECTION_CHANGE'], handler: (range: Range, oldRange: Range, source: EmitterSource) => void): Emitter;
+    on(event: (typeof Emitter)['events']['SELECTION_CHANGE'], handler: (range: QuillRange, oldRange: QuillRange, source: EmitterSource) => void): Emitter;
     on(event: (typeof Emitter)['events']['EDITOR_CHANGE'], handler: (...args: [
         (typeof Emitter)['events']['TEXT_CHANGE'],
         Delta,
@@ -153,8 +153,8 @@ declare class Quill {
         EmitterSource
     ] | [
         (typeof Emitter)['events']['SELECTION_CHANGE'],
-        Range,
-        Range,
+        QuillRange,
+        QuillRange,
         EmitterSource
     ]) => void): Emitter;
     on(event: string, ...args: unknown[]): Emitter;
@@ -171,7 +171,7 @@ declare class Quill {
      */
     scrollSelectionIntoView(): void;
     setContents(delta: Delta | Op[], source?: EmitterSource): Delta;
-    setSelection(range: Range | null, source?: EmitterSource): void;
+    setSelection(range: QuillRange | null, source?: EmitterSource): void;
     setSelection(index: number, source?: EmitterSource): void;
     setSelection(index: number, length?: number, source?: EmitterSource): void;
     setSelection(index: number, source?: EmitterSource): void;
@@ -190,6 +190,6 @@ declare function overload(index: number, source?: EmitterSource): NormalizedInde
 declare function overload(index: number, length: number, source?: EmitterSource): NormalizedIndexLength;
 declare function overload(index: number, length: number, format: string, value: unknown, source?: EmitterSource): NormalizedIndexLength;
 declare function overload(index: number, length: number, format: Record<string, unknown>, source?: EmitterSource): NormalizedIndexLength;
-declare function overload(range: Range, source?: EmitterSource): NormalizedIndexLength;
-declare function overload(range: Range, format: string, value: unknown, source?: EmitterSource): NormalizedIndexLength;
-declare function overload(range: Range, format: Record<string, unknown>, source?: EmitterSource): NormalizedIndexLength;
+declare function overload(range: QuillRange, source?: EmitterSource): NormalizedIndexLength;
+declare function overload(range: QuillRange, format: string, value: unknown, source?: EmitterSource): NormalizedIndexLength;
+declare function overload(range: QuillRange, format: Record<string, unknown>, source?: EmitterSource): NormalizedIndexLength;

@@ -6,7 +6,7 @@ declare class BaseTheme extends Theme {
     addModule(name: 'keyboard'): Keyboard;
     addModule(name: 'uploader'): Uploader;
     addModule(name: 'history'): QuillHistory;
-    addModule(name: 'selection'): Selection;
+    addModule(name: 'selection'): QuillSelection;
     addModule(name: string): unknown;
     buildButtons(buttons: NodeListOf<HTMLElement>, icons: Record<string, Record<string, string> | string>): void;
     buildPickers(selects: NodeListOf<HTMLSelectElement>, icons: Record<string, string | Record<string, string>>): void;
@@ -14,7 +14,7 @@ declare class BaseTheme extends Theme {
 
 declare class BaseTooltip extends Tooltip {
     textbox: HTMLInputElement | null;
-    linkRange?: Range;
+    linkRange?: QuillRange;
     constructor(quill: Quill, boundsContainer?: HTMLElement);
     listen(): void;
     cancel(): void;

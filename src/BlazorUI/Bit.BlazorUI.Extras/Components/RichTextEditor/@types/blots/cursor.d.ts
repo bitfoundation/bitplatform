@@ -4,10 +4,10 @@ declare class Cursor extends EmbedBlot {
     static tagName: string;
     static CONTENTS: string;
     static value(): undefined;
-    selection: Selection;
+    selection: QuillSelection;
     textNode: QuillText;
     savedLength: number;
-    constructor(scroll: ScrollBlot, domNode: HTMLElement, selection: Selection);
+    constructor(scroll: ScrollBlot, domNode: HTMLElement, selection: QuillSelection);
     detach(): void;
     format(name: string, value: unknown): void;
     index(node: Node, offset: number): number;

@@ -5,7 +5,7 @@ declare class Table extends Module {
     deleteColumn(): void;
     deleteRow(): void;
     deleteTable(): void;
-    getTable(range?: Range | null): [null, null, null, -1] | [Table, TableRow, TableCell, number];
+    getTable(range?: QuillRange | null): [null, null, null, -1] | [Table, TableRow, TableCell, number];
     insertColumn(offset: number): void;
     insertColumnLeft(): void;
     insertColumnRight(): void;
