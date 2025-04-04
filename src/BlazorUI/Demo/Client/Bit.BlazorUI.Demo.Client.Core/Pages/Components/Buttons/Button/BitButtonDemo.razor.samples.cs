@@ -207,10 +207,31 @@ private Task AutoLoadingReclick(bool isLoading)
 
 <div style=""position: relative; border: 1px gray solid"">
     <BitButton FloatAbsolute FloatPosition=""floatPosition"" FloatOffset=""@floatOffset"" IconName=""@BitIconName.Edit"" IconOnly />
-    <div style=""height: 300px; overflow: auto"">
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
+    <div style=""height:300px;overflow:auto;padding:0.5rem"">
+        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        <br />
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. 
+        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape. 
+        Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and 
+        inspirations will be built. Soon, these lines will transform into narratives that provoke thought, 
+        spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty 
+        in potential—the quiet magic of beginnings, where everything is still to come, and the possibilities 
+        are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+        <br />
+        In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
+        to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
+        possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
+        vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
+        shaped into meaning, and the emotions ready to resonate with every reader.
+        <br />
+        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
+        each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+        opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
+        idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
+        begins here, in this quiet moment where everything is possible.
     </div>
 </div>";
     private readonly string example9CsharpCode = @"

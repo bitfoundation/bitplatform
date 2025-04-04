@@ -439,15 +439,34 @@ public partial class BitPivotDemo
 <BitPivot>
     <BitPivotItem HeaderText=""File"">
         <h3>Pivot #1</h3>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        <div>
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me"">
         <h3>Pivot #2</h3>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        <div>
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+            in potential—the quiet magic of beginnings, where everything is still to come, and the possibilities
+            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Recent"">
         <h3>Pivot #3</h3>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        <div>
+            In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits
+            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+            possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+            vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+            shaped into meaning, and the emotions ready to resonate with every reader.
+        </div>
     </BitPivotItem>
 </BitPivot>";
 
@@ -455,15 +474,34 @@ public partial class BitPivotDemo
 <BitPivot>
     <BitPivotItem HeaderText=""Files"" IconName=""@BitIconName.Info"">
         <h1>Pivot #1: Files</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        <div>
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me"" ItemCount=""32"">
         <h1>Pivot #2: Shared with me</h1>
-        <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
+        <div>
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+            in potential—the quiet magic of beginnings, where everything is still to come, and the possibilities
+            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Recent"" IconName=""@BitIconName.Info"" ItemCount=""12"">
         <h1>Pivot #3: Recent</h1>
-        <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
+        <div>
+            In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits
+            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+            possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+            vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+            shaped into meaning, and the emotions ready to resonate with every reader.
+        </div>
     </BitPivotItem>
 </BitPivot>";
 
@@ -471,15 +509,34 @@ public partial class BitPivotDemo
 <BitPivot Size=""@BitSize.Large"">
     <BitPivotItem HeaderText=""Large File"">
         <h1>Pivot #1: Large File</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        <div>
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Large Shared with me"">
         <h1>Pivot #2: Large Shared with me</h1>
-        <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
+        <div>
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+            in potential—the quiet magic of beginnings, where everything is still to come, and the possibilities
+            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Large Recent"">
         <h1>Pivot #3: Large Recent</h1>
-        <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
+        <div>
+            In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits
+            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+            possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+            vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+            shaped into meaning, and the emotions ready to resonate with every reader.
+        </div>
     </BitPivotItem>
 </BitPivot>";
 
@@ -487,15 +544,34 @@ public partial class BitPivotDemo
 <BitPivot HeaderType=""@BitPivotHeaderType.Tab"">
     <BitPivotItem HeaderText=""File tab"">
         <h1>Pivot #1: File tab</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        <div>
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me tab"">
         <h1>Pivot #2: Shared with me tab</h1>
-        <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
+        <div>
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+            in potential—the quiet magic of beginnings, where everything is still to come, and the possibilities
+            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Recent tab"">
         <h1>Pivot #3: Recent tab</h1>
-        <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
+        <div>
+            In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits
+            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+            possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+            vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+            shaped into meaning, and the emotions ready to resonate with every reader.
+        </div>
     </BitPivotItem>
 </BitPivot>";
 
@@ -503,19 +579,44 @@ public partial class BitPivotDemo
 <BitPivot @bind-SelectedKey=""selectedKey"">
     <BitPivotItem Key=""1"" HeaderText=""Samples"">
         <h1>Pivot #1: Samples</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        <div>
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        </div>
     </BitPivotItem>
     <BitPivotItem Key=""2"" HeaderText=""Files"">
         <h1>Pivot #2: Files</h1>
-        <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
+        <div>
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+            in potential—the quiet magic of beginnings, where everything is still to come, and the possibilities
+            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+        </div>
     </BitPivotItem>
     <BitPivotItem Key=""3"" HeaderText=""Recent"">
         <h1>Pivot #3: Recent</h1>
-        <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
+        <div>
+            In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits
+            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+            possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+            vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+            shaped into meaning, and the emotions ready to resonate with every reader.
+        </div>
     </BitPivotItem>
     <BitPivotItem Key=""4"" HeaderText=""Last"">
         <h1>Pivot #4: Last</h1>
-        <p>Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi.</p>
+        <div>
+            In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+            each word has the power to transform into something extraordinary. Here lies the start of something new—an
+            opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+            idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+            begins here, in this quiet moment where everything is possible.
+        </div>
     </BitPivotItem>
 </BitPivot>
 
@@ -555,8 +656,8 @@ private string selectedKey = ""1"";";
 </div>
 <hr />
 <BitPivot HeaderOnly=""true""
-            DefaultSelectedKey=""Foo""
-            OnItemClick=""@(item => detachedSelectedKey = item?.Key)"">
+          DefaultSelectedKey=""Foo""
+          OnItemClick=""@(item => detachedSelectedKey = item?.Key)"">
     <BitPivotItem HeaderText=""Foo"" Key=""Foo""></BitPivotItem>
     <BitPivotItem HeaderText=""Bar"" Key=""Bar""></BitPivotItem>
     <BitPivotItem HeaderText=""Bas"" Key=""Bas""></BitPivotItem>
@@ -569,19 +670,44 @@ private string detachedSelectedKey = ""Foo"";";
 <BitPivot OnItemClick=""@(item => selectedPivotItem = item)"">
     <BitPivotItem HeaderText=""Foo"">
         <h1>Pivot #1: Foo</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        <div>
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Bar"">
         <h1>Pivot #2: Bar</h1>
-        <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
+        <div>
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+            in potential—the quiet magic of beginnings, where everything is still to come, and the possibilities
+            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Bas"">
         <h1>Pivot #3: Bas</h1>
-        <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
+        <div>
+            In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits
+            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+            possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+            vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+            shaped into meaning, and the emotions ready to resonate with every reader.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Biz"">
         <h1>Pivot #4: Biz</h1>
-        <p>Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan.</p>
+        <div>
+            In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+            each word has the power to transform into something extraordinary. Here lies the start of something new—an
+            opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+            idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+            begins here, in this quiet moment where everything is possible.
+        </div>
     </BitPivotItem>
 </BitPivot>
 
@@ -597,7 +723,12 @@ private BitPivotItem selectedPivotItem;";
         </Header>
         <Body>
             <h1>Pivot #1</h1>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+            <div>
+                Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+                Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+                when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+                for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+            </div>
         </Body>
     </BitPivotItem>
     <BitPivotItem ItemCount=""99"">
@@ -608,7 +739,15 @@ private BitPivotItem selectedPivotItem;";
         </Header>
         <Body>
             <h1>Pivot #2</h1>
-            <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
+            <div>
+                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+                Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+                inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+                spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+                in potential—the quiet magic of beginnings, where everything is still to come, and the possibilities
+                are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+            </div>
         </Body>
     </BitPivotItem>
     <BitPivotItem IconName=""@BitIconName.Inbox"">
@@ -617,7 +756,13 @@ private BitPivotItem selectedPivotItem;";
         </Header>
         <Body>
             <h1>Pivot #3</h1>
-            <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
+            <div>
+                In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits
+                to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+                vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+                shaped into meaning, and the emotions ready to resonate with every reader.
+            </div>
         </Body>
     </BitPivotItem>
 </BitPivot>";
@@ -626,15 +771,34 @@ private BitPivotItem selectedPivotItem;";
 <BitPivot Alignment=""BitAlignment.Center"">
     <BitPivotItem HeaderText=""File"">
         <h1>Pivot #1</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. </p>
+        <div>
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me"">
         <h2>Pivot #2</h2>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        <div>
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+            in potential—the quiet magic of beginnings, where everything is still to come, and the possibilities
+            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Recent"">
         <h3>Pivot #3</h3>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. </p>
+        <div>
+            In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits
+            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+            possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+            vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+            shaped into meaning, and the emotions ready to resonate with every reader.
+        </div>
     </BitPivotItem>
 </BitPivot>";
 
@@ -642,60 +806,136 @@ private BitPivotItem selectedPivotItem;";
 <BitPivot Position=""BitPivotPosition.Top"">
     <BitPivotItem HeaderText=""File"">
         <h1>Pivot #1: File</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. </p>
+        <div>
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Shared"">
         <h1>Pivot #2: Shared</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet.</p>
+        <div>
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+            in potential—the quiet magic of beginnings, where everything is still to come, and the possibilities
+            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Recent"">
         <h1>Pivot #3: Recent</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. </p>
+        <div>
+            In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits
+            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+            possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+            vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+            shaped into meaning, and the emotions ready to resonate with every reader.
+        </div>
     </BitPivotItem>
 </BitPivot>
 
 <BitPivot Position=""BitPivotPosition.Bottom"">
     <BitPivotItem HeaderText=""File"">
         <h1>Pivot #1: File</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. </p>
+        <div>
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Shared"">
         <h1>Pivot #2: Shared</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet.</p>
+        <div>
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+            in potential—the quiet magic of beginnings, where everything is still to come, and the possibilities
+            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Recent"">
         <h1>Pivot #3: Recent</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. </p>
+        <div>
+            In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits
+            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+            possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+            vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+            shaped into meaning, and the emotions ready to resonate with every reader.
+        </div>
     </BitPivotItem>
 </BitPivot>
 
 <BitPivot Position=""BitPivotPosition.Left"">
     <BitPivotItem HeaderText=""File"">
         <h1>Pivot #1: File</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. </p>
+        <div>
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me"" Style=""width:130px"">
         <h1>Pivot #2: Shared with me</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet.</p>
+        <div>
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+            in potential—the quiet magic of beginnings, where everything is still to come, and the possibilities
+            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Recent"">
         <h1>Pivot #3: Recent</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. </p>
+        <div>
+            In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits
+            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+            possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+            vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+            shaped into meaning, and the emotions ready to resonate with every reader.
+        </div>
     </BitPivotItem>
 </BitPivot>
 
 <BitPivot Position=""BitPivotPosition.Right"">
     <BitPivotItem HeaderText=""File"">
         <h1>Pivot #1: File</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. </p>
+        <div>
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me"" Style=""width:130px"">
         <h1>Pivot #2: Shared with me</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet.</p>
+        <div>
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+            in potential—the quiet magic of beginnings, where everything is still to come, and the possibilities
+            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Recent"">
         <h1>Pivot #3: Recent</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. </p>
+        <div>
+            In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits
+            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+            possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+            vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+            shaped into meaning, and the emotions ready to resonate with every reader.
+        </div>
     </BitPivotItem>
 </BitPivot>";
 
@@ -718,7 +958,7 @@ private BitPivotItem selectedPivotItem;";
     }
 
     .custom-body {
-        margin-top: 1rem;
+        padding: 0.5rem;
         background-color: deepskyblue;
     }
 </style>
@@ -726,79 +966,160 @@ private BitPivotItem selectedPivotItem;";
 <BitPivot Style=""border: 1px solid tomato;"">
     <BitPivotItem HeaderText=""File"">
         <h1>Pivot #1</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.</p>
+        <div>
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me"">
         <h2>Pivot #2</h2>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        <div>
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+            in potential—the quiet magic of beginnings, where everything is still to come, and the possibilities
+            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Recent"">
         <h3>Pivot #3</h3>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
+        <div>
+            In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits
+            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+            possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+            vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+            shaped into meaning, and the emotions ready to resonate with every reader.
+        </div>
     </BitPivotItem>
 </BitPivot>
 
 <BitPivot Class=""custom-class"">
     <BitPivotItem HeaderText=""File"">
         <h1>Pivot #1</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.</p>
+        <div>
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me"">
         <h2>Pivot #2</h2>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        <div>
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+            in potential—the quiet magic of beginnings, where everything is still to come, and the possibilities
+            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Recent"">
         <h3>Pivot #3</h3>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
+        <div>
+            In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits
+            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+            possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+            vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+            shaped into meaning, and the emotions ready to resonate with every reader.
+        </div>
     </BitPivotItem>
 </BitPivot>
 
 <BitPivot Styles=""@(new() { HeaderIcon = ""color: tomato;"", HeaderText = ""color: purple;"" })"">
     <BitPivotItem HeaderText=""File"" IconName=""Info"">
         <h1>Pivot #1</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.</p>
+        <div>
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me"">
         <h2>Pivot #2</h2>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        <div>
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+            in potential—the quiet magic of beginnings, where everything is still to come, and the possibilities
+            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Recent"">
         <h3>Pivot #3</h3>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
+        <div>
+            In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits
+            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+            possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+            vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+            shaped into meaning, and the emotions ready to resonate with every reader.
+        </div>
     </BitPivotItem>
 </BitPivot>
 
 <BitPivot Classes=""@(new() { Body = ""custom-body"", SelectedItem = ""custom-selected-item"", Header = ""custom-header"" })"">
     <BitPivotItem HeaderText=""File"">
         <h1>Pivot #1</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.</p>
+        <div>
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me"">
         <h2>Pivot #2</h2>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        <div>
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+            in potential—the quiet magic of beginnings, where everything is still to come, and the possibilities
+            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""Recent"">
         <h3>Pivot #3</h3>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
+        <div>
+            In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits
+            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+            possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+            vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+            shaped into meaning, and the emotions ready to resonate with every reader.
+        </div>
     </BitPivotItem>
 </BitPivot>";
 
     private readonly string example12RazorCode = @"
 <BitPivot Dir=""BitDir.Rtl"" OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"">
     <BitPivotItem HeaderText=""اسناد"" IconName=""@BitIconName.Info"">
-        <p>
+        <div>
             لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
-        </p>
+            چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و
+            برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""آخرین ها"" ItemCount=""8"">
-        <p>
-            چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
-        </p>
+        <div>
+            کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها
+            شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
+        </div>
     </BitPivotItem>
     <BitPivotItem HeaderText=""شخصی"" IconName=""@BitIconName.Info"" ItemCount=""6"">
-        <p>
-            کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
-        </p>
+        <div>
+            در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه
+            راهکارها و شرایط سخت تایپ به پایان رسد وزمان مورد نیاز شامل حروفچینی دستاوردهای
+            اصلی و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد
+        </div>
     </BitPivotItem>
 </BitPivot>";
 }

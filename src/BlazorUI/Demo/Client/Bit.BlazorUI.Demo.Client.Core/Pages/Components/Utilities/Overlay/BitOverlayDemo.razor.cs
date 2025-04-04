@@ -117,13 +117,13 @@ private bool BasicIsOpen;";
 <BitOverlay @bind-IsOpen=""AutoCloseIsOpen"" Class=""overlay"" NoAutoClose>
     <div class=""content"">
         <BitButton Class=""close-button"" Variant=""BitVariant.Text"" OnClick=@(() => AutoCloseIsOpen = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
-        <h3>Lorem Ipsum</h3>
-        <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-            turpis. In hac habitasse platea dictumst.
-        </p>
+        <h3>Short story</h3>
+        <div>
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+        </div>
     </div>
 </BitOverlay>";
     private readonly string example2CsharpCode = @"
@@ -229,13 +229,13 @@ private bool AutoToggleIsOpen;";
                 ScrollerSelector="".scroller""
                 AbsolutePosition>
         <div class=""content"">
-            <h3>Lorem Ipsum</h3>
-            <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-                amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-                sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-                turpis. In hac habitasse platea dictumst.
-            </p>
+            <h3>Short story</h3>
+            <div>
+                Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+                Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+                when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+                for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+            </div>
         </div>
     </BitOverlay>
 
@@ -247,38 +247,46 @@ private bool AutoToggleIsOpen;";
         <BitProgress Circular Indeterminate Thickness=""10"" />
     </BitOverlay>
 
-    <h3>Lorem Ipsum</h3>
-    <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-        efficitur.
-    </p>
-    <p>
-        Mauris at nunc eget lectus lobortis facilisis et eget magna. Vestibulum venenatis augue sapien, rhoncus
-        faucibus magna semper eget. Proin rutrum libero sagittis sapien aliquet auctor. Suspendisse tristique a
-        magna at facilisis. Duis rhoncus feugiat magna in rutrum. Suspendisse semper, dolor et vestibulum lacinia,
-        nunc felis malesuada ex, nec hendrerit justo ex et massa. Quisque quis mollis nulla. Nam commodo est ornare,
-        rhoncus odio eu, pharetra tellus. Nunc sed velit mi.
-    </p>
-    <p>
-        Sed condimentum ultricies turpis convallis pharetra. Sed sagittis quam pharetra luctus porttitor. Cras vel
-        consequat lectus. Sed nec fringilla urna, a aliquet libero. Aenean sed nisl purus. Vivamus vulputate felis
-        et odio efficitur suscipit. Ut volutpat dictum lectus, ac rutrum massa accumsan at. Sed pharetra auctor
-        finibus. In augue libero, commodo vitae nisi non, sagittis convallis ante. Phasellus malesuada eleifend
-        mollis. Curabitur ultricies leo ac metus venenatis elementum.
-    </p>
-    <p>
-        Nam id mi justo. Nam vehicula vulputate augue, ac pretium enim rutrum ultricies. Sed aliquet accumsan
-        varius. Quisque ac auctor ligula. Fusce fringilla, odio et dignissim iaculis, est lacus ultrices risus,
-        vitae condimentum enim urna eu nunc. In risus est, mattis non suscipit at, mattis ut ante. Maecenas
-        consectetur urna vel erat maximus, non molestie massa consequat. Duis a feugiat nibh. Sed a hendrerit diam,
-        a mattis est. In augue dolor, faucibus vel metus at, convallis rhoncus dui.
-    </p>
+    <h3>Short story</h3>
+    <div>
+        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+        for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+        <br />
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+        inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+        spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+        in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
+        are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+        <br />
+        In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+        to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+        possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+        vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+        shaped into meaning, and the emotions ready to resonate with every reader.
+        <br />
+        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+        each word has the power to transform into something extraordinary. Here lies the start of something new—an
+        opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+        idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+        begins here, in this quiet moment where everything is possible.
+        <br />
+        Imagine this space as a window into the future empty yet alive with the energy of endless possibilities.
+        These words stand as temporary guides, placeholders that whisper of what is to come.
+        They hold the promise of stories waiting to unfold, ideas eager to take shape, and
+        connections that will soon emerge to inspire and resonate. This is not an empty page;
+        it is a canvas, rich with potential and ready to transform into something meaningful.
+        <br />
+        For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the symphony,
+        the foundation upon which your creativity will build. Soon, this space will hold your thoughts, your visions,
+        and your voice a reflection of who you are and what you wish to share with the world. Every sentence will carry
+        purpose, every word will invite others to connect, to think, to feel. So take a moment to dream, to imagine
+        what this blank slate can become. Whether it’s a story, an idea, or a message that matters, this is your
+        starting point. The possibilities are endless, and the journey begins now.
+    </div>
 </div>";
     private readonly string example5CsharpCode = @"
 private bool EnabledScrollerIsOpen;
@@ -309,13 +317,13 @@ private bool DisabledScrollerIsOpen;";
 <BitButton OnClick=""() => EventOnCloseIsOpen = true"">Show Overlay</BitButton>
 <BitOverlay @bind-IsOpen=""EventOnCloseIsOpen"" Class=""overlay"" OnClick=@(() => EventOnCloseIsOpen = false) NoAutoClose>
     <div class=""content"">
-        <h3>Lorem Ipsum</h3>
-        <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-            turpis. In hac habitasse platea dictumst.
-        </p>
+        <h3>Short story</h3>
+        <div>
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+        </div>
     </div>
 </BitOverlay>";
     private readonly string example6CsharpCode = @"
