@@ -1,4 +1,4 @@
-﻿/*
+/*
 based on: https://www.codedesigntips.com/2021/06/28/swagger-ui-with-login-form-and-role-based-api-visibility/
 */
 (() => {

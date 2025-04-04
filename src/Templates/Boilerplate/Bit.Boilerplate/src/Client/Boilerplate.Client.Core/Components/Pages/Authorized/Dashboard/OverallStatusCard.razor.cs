@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Components.Pages.Authorized.Dashboard;
+namespace Boilerplate.Client.Core.Components.Pages.Authorized.Dashboard;
 
 public partial class OverallStatusCard
 {

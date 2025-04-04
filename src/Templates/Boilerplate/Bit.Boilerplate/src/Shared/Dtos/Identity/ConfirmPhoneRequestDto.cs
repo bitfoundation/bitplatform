@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Dtos.Identity;
+namespace Boilerplate.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
 public partial class ConfirmPhoneRequestDto

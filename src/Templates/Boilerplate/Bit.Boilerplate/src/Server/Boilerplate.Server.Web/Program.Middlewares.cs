@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Net;
 using System.Reflection;
 using System.Runtime.Loader;

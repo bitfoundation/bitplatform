@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Controllers;
+using Boilerplate.Shared.Controllers;
 using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Shared.Controllers.Products;
 using Boilerplate.Shared.Controllers.Categories;

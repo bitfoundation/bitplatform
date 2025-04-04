@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 //#if (sample == true)
 using Boilerplate.Server.Api.Models.Todo;
 //#endif

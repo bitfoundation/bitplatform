@@ -1,4 +1,4 @@
-﻿using EmbedIO;
+using EmbedIO;
 using System.Net;
 using EmbedIO.Actions;
 using System.Reflection;

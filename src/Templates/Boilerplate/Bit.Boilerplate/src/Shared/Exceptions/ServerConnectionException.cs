@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Exceptions;
+namespace Boilerplate.Shared.Exceptions;
 public partial class ServerConnectionException : KnownException
 {
     public ServerConnectionException()

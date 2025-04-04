@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 //#if (module == "Sales" || module == "Admin")
 using Boilerplate.Shared.Dtos.Products;
 //#endif

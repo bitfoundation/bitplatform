@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Server.Api.Models.Identity;
 
 namespace Boilerplate.Server.Api.Data.Configurations.Identity;

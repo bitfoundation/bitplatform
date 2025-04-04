@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Humanizer;
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Identity;

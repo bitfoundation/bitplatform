@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Maui;
+namespace Boilerplate.Client.Maui;
 
 partial class Program : MauiApplication
 {

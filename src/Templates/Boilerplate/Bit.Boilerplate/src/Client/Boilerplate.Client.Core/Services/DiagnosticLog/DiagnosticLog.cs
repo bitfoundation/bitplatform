@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Services.DiagnosticLog;
+namespace Boilerplate.Client.Core.Services.DiagnosticLog;
 
 public class DiagnosticLog
 {

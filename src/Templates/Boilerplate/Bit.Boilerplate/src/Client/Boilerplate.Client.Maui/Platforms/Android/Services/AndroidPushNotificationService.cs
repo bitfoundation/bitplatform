@@ -1,4 +1,4 @@
-﻿using Android.Gms.Common;
+using Android.Gms.Common;
 using Plugin.LocalNotification;
 using static Android.Provider.Settings;
 using Boilerplate.Shared.Dtos.PushNotification;

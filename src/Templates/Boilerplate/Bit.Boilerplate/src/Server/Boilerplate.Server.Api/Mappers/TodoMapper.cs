@@ -1,4 +1,4 @@
-﻿using Boilerplate.Server.Api.Models.Todo;
+using Boilerplate.Server.Api.Models.Todo;
 using Boilerplate.Shared.Dtos.Todo;
 using Riok.Mapperly.Abstractions;
 

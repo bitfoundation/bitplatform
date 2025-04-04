@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Fido2NetLib;
 using Fido2NetLib.Objects;
 using Boilerplate.Shared.Dtos.Identity;

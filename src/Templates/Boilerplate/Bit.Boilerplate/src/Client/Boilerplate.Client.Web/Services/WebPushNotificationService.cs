@@ -1,4 +1,4 @@
-﻿using Bit.Butil;
+using Bit.Butil;
 using Boilerplate.Shared.Dtos.PushNotification;
 
 namespace Boilerplate.Client.Web.Services;

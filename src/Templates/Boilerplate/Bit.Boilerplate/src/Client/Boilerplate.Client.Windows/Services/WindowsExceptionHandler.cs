@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Windows.Services;
+namespace Boilerplate.Client.Windows.Services;
 
 public partial class WindowsExceptionHandler : ClientExceptionHandlerBase
 {

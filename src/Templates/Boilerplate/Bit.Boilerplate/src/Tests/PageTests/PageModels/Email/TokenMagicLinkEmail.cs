@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 using Boilerplate.Tests.Extensions;
 using Boilerplate.Tests.PageTests.PageModels.Layout;
 using Boilerplate.Tests.Services;

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System.Security.Authentication;
 using Boilerplate.Client.Maui.Services;
 

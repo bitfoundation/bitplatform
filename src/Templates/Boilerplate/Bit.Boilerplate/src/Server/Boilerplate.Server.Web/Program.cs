@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 //#if (api == "Integrated")
 using Boilerplate.Server.Api.Data;
 //#endif

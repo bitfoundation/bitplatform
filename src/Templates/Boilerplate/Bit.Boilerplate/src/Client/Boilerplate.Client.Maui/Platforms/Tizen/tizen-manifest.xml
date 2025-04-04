@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <manifest package="com.bitplatform.template" version="1.0.0" api-version="7" xmlns="http://tizen.org/ns/packages">
   <profile name="common" />
   <ui-application appid="com.bitplatform.template" exec="Boilerplate.Client.Maui.dll" multiple="false" nodisplay="false" taskmanage="true" type="dotnet" launch_mode="single">

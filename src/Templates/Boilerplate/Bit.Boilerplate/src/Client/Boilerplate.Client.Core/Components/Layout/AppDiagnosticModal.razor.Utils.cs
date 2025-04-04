@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Boilerplate.Shared.Controllers.Identity;

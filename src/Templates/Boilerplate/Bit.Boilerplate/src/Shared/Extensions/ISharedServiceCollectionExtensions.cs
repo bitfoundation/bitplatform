@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared;
+using Boilerplate.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 

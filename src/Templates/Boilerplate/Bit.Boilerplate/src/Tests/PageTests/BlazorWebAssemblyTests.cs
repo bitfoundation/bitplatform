@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Client.Web;
 using Boilerplate.Tests.Extensions;
 using Boilerplate.Tests.PageTests.PageModels;

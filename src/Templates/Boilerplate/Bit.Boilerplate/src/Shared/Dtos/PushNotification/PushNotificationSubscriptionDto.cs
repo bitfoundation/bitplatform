@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Dtos.PushNotification;
+namespace Boilerplate.Shared.Dtos.PushNotification;
 
 [DtoResourceType(typeof(AppStrings))]
 public partial class PushNotificationSubscriptionDto

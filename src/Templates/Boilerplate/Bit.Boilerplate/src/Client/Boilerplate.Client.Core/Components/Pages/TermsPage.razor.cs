@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Components.Pages;
+namespace Boilerplate.Client.Core.Components.Pages;
 
 public partial class TermsPage
 {

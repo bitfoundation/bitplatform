@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Styles;
+namespace Boilerplate.Client.Core.Styles;
 
 public partial class ThemeColors
 {

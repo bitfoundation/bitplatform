@@ -1,4 +1,4 @@
-﻿//-:cnd:noEmit
+//-:cnd:noEmit
 using Boilerplate.Client.Core.Styles;
 
 namespace Boilerplate.Client.Maui.Services;

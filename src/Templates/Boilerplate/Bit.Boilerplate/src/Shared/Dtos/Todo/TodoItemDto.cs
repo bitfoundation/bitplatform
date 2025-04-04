@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Dtos.Todo;
+namespace Boilerplate.Shared.Dtos.Todo;
 
 [DtoResourceType(typeof(AppStrings))]
 public partial class TodoItemDto

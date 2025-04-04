@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Controllers.Identity;
+using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 using Microsoft.AspNetCore.Components.Routing;
 

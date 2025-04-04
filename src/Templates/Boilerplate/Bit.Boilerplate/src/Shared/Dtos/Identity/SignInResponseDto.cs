@@ -1,4 +1,4 @@
-﻿
+
 namespace Boilerplate.Shared.Dtos.Identity;
 
 public partial class SignInResponseDto : TokenResponseDto

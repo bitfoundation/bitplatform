@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Services.Contracts;
+namespace Boilerplate.Client.Core.Services.Contracts;
 
 public interface IExternalNavigationService
 {

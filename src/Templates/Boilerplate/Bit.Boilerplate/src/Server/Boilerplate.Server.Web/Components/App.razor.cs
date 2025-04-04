@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components;
 using Boilerplate.Client.Core.Services;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Components.Web;

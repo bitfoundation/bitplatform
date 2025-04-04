@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Enums;
+namespace Boilerplate.Shared.Enums;
 
 [JsonConverter(typeof(JsonStringEnumConverter<Gender>))]
 public enum Gender

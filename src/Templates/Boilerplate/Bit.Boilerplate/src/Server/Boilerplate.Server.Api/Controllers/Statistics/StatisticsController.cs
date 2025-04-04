@@ -1,4 +1,4 @@
-﻿using Boilerplate.Server.Api.Services;
+using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Statistics;
 using Boilerplate.Shared.Controllers.Statistics;
 

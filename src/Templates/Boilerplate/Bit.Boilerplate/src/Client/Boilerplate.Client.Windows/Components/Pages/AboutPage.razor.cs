@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 
 namespace Boilerplate.Client.Windows.Components.Pages;
 

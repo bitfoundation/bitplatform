@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Maui.Services;
+namespace Boilerplate.Client.Maui.Services;
 
 public class MauiTelemetryContext : AppTelemetryContext
 {

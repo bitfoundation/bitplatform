@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Controllers;
+using Boilerplate.Shared.Controllers;
 
 namespace Boilerplate.Shared.Controllers
 {

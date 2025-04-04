@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Server.Api.Models.Categories;
 
 namespace Boilerplate.Server.Api.Models.Products;

@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Server.Api.Services.Identity;
+namespace Boilerplate.Server.Api.Services.Identity;
 
 public partial class AppIdentityErrorDescriber : IdentityErrorDescriber
 {

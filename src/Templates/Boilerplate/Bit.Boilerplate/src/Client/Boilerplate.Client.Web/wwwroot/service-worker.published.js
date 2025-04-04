@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 // bit version: 9.7.0-pre-02
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 

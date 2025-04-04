@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
+namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 /// <summary>
 /// The generated HTTP client proxy by Bit.SourceGenerators will automatically include these request options in the constructed HttpRequestMessage.

@@ -1,4 +1,4 @@
-﻿using AdsPush;
+using AdsPush;
 using AdsPush.Vapid;
 using AdsPush.Abstraction;
 using System.Linq.Expressions;

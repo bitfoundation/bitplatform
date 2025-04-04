@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 //#if (module == "Admin" || module == "Sales")
 using Boilerplate.Server.Api.Models.Products;
 using Boilerplate.Server.Api.Models.Categories;

@@ -1,4 +1,4 @@
-﻿//-:cnd:noEmit
+//-:cnd:noEmit
 using Boilerplate.Shared.Controllers.Products;
 using Boilerplate.Shared.Dtos.Products;
 
