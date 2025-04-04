@@ -92,72 +92,108 @@ public partial class BitSplitterDemo
     private readonly string example1RazorCode = @"
 <BitSplitter>
     <FirstPanel>
-        <p style=""padding: 4px;"">
-            First Panel -  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
-        </p>
+        <div style=""padding: 4px;"">
+            First Panel
+            <br />
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+        </div>
     </FirstPanel>
     <SecondPanel>
-        <p style=""padding: 4px;"">
-            Second Panel -  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
-        </p>
+        <div style=""padding: 4px;"">
+            Second Panel
+            <br />
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+        </div>
     </SecondPanel>
 </BitSplitter>";
 
     private readonly string example2RazorCode = @"
 <BitSplitter Vertical>
     <FirstPanel>
-        <p style=""padding: 4px;"">
-            First Panel -  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
-        </p>
+        <div style=""padding: 4px;"">
+            First Panel
+            <div />
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+        </div>
     </FirstPanel>
     <SecondPanel>
-        <p style=""padding: 4px;"">
-            Second Panel -  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
-        </p>
+        <div style=""padding: 4px;"">
+            Second Panel
+            <br />
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+        </div>
     </SecondPanel>
 </BitSplitter>";
 
     private readonly string example3RazorCode = @"
 <BitSplitter FirstPanelMinSize=""128"" FirstPanelSize=""128"" SecondPanelMinSize=""64"">
     <FirstPanel>
-        <p style=""padding: 4px;"">
-            First Panel -  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
-        </p>
+        <div style=""padding: 4px;"">
+            First Panel
+            <br />
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+        </div>
     </FirstPanel>
     <SecondPanel>
-        <p style=""padding: 4px;"">
-            Second Panel -  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
-        </p>
+        <div style=""padding: 4px;"">
+            Second Panel
+            <br />
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+        </div>
     </SecondPanel>
 </BitSplitter>";
 
     private readonly string example4RazorCode = @"
 <BitSplitter>
     <FirstPanel>
-        <p style=""padding: 4px;"">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
-        </p>
+        <div style=""padding: 4px;"">
+            Root's first panel
+            <br />
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+        </div>
     </FirstPanel>
     <SecondPanel>
         <BitSplitter Vertical>
             <FirstPanel>
-                <p style=""padding: 4px;"">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                    Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
-                </p>
+                <div style=""padding: 4px;"">
+                    Nested's first panel
+                    <br />
+                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+                </div>
             </FirstPanel>
             <SecondPanel>
-                <p style=""padding: 4px;"">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                    Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
-                </p>
+                <div style=""padding: 4px;"">
+                    Nested's second panel
+                    <br />
+                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+                </div>
             </SecondPanel>
         </BitSplitter>
     </SecondPanel>
@@ -168,16 +204,24 @@ public partial class BitSplitterDemo
 
 <BitSplitter GutterSize=""@((int)gutterSize)"">
     <FirstPanel>
-        <p style=""padding: 4px;"">
-            First Panel -  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
-        </p>
+        <div style=""padding: 4px;"">
+            First Panel
+            <br />
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+        </div>
     </FirstPanel>
     <SecondPanel>
-        <p style=""padding: 4px;"">
-            Second Panel -  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
-        </p>
+        <div style=""padding: 4px;"">
+            Second Panel
+            <br />
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+        </div>
     </SecondPanel>
 </BitSplitter>";
     private readonly string example5CsharpCode = @"
@@ -187,16 +231,24 @@ private double gutterSize = 10;
     private readonly string example6RazorCode = @"
 <BitSplitter GutterIcon=""@BitIconName.GripperDotsVertical"">
     <FirstPanel>
-        <p style=""padding: 4px;"">
-            First Panel -  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
-        </p>
+        <div style=""padding: 4px;"">
+            First Panel
+            <br />
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+        </div>
     </FirstPanel>
     <SecondPanel>
-        <p style=""padding: 4px;"">
-            Second Panel -  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
-        </p>
+        <div style=""padding: 4px;"">
+            Second Panel
+            <br />
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+        </div>
     </SecondPanel>
 </BitSplitter>";
 }
