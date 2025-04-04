@@ -7,8 +7,8 @@
     width: fit-content;
     padding: spacing(1);
     flex-direction: column;
-    font-size: spacing(1.75);
     font-family: $tg-font-family;
+    font-size: var(--bit-chg-fontsize);
 
     &.bit-chg-req {
         .bit-chg-lbl {
@@ -88,9 +88,7 @@
     display: block;
     box-shadow: none;
     font-weight: 600;
-    color: $clr-fg-pri;
     box-sizing: border-box;
-    font-size: spacing(1.75);
     overflow-wrap: break-word;
 }
 
@@ -109,12 +107,9 @@
     display: flex;
     font-weight: 400;
     position: relative;
-    color: $clr-fg-pri;
     align-items: center;
     box-sizing: border-box;
-    font-size: spacing(1.75);
-    min-height: spacing(3.25);
-    font-family: $tg-font-family;
+    min-height: calc(var(--bit-chg-circle-size) + spacing(0.75));
 }
 
 .bit-chg-ihi {
@@ -123,7 +118,7 @@
     width: fit-content;
     display: inline-flex;
     padding-inline-start: 0;
-    background-color: $clr-bg-sec;
+    background-color: var(--bit-chg-clr-bg);
 }
 
 .bit-chg-ilw {
@@ -134,14 +129,6 @@
     margin-block-start: 0;
     display: inline-block;
     min-height: spacing(2.5);
-
-    @media (hover: hover) {
-        &:hover {
-            .bit-chg-itx {
-                color: $clr-fg-pri-hover;
-            }
-        }
-    }
 }
 
 .bit-chg-ilwi {
@@ -173,20 +160,19 @@
 
 .bit-chg-wcr {
     .bit-chg-ilw {
-        padding-inline-start: spacing(3.25);
+        padding-inline-start: calc(var(--bit-chg-circle-size) + spacing(0.75));
 
         &:before {
             top: 50%;
             content: "";
+            aspect-ratio: 1;
             position: absolute;
             border-radius: 50%;
-            width: spacing(2.5);
-            height: spacing(2.5);
             display: inline-block;
             inset-inline-start: 0;
             box-sizing: border-box;
             transform: translateY(-50%);
-            background-color: $clr-bg-pri;
+            width: var(--bit-chg-circle-size);
             transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
             border: $shp-border-width $shp-border-style $clr-brd-pri;
         }
@@ -195,16 +181,16 @@
             top: 50%;
             opacity: 0;
             content: "";
+            aspect-ratio: 1;
             position: absolute;
             border-radius: 50%;
-            width: spacing(1.25);
-            height: spacing(1.25);
             box-sizing: border-box;
             transform: translateY(-50%);
-            inset-inline-start: spacing(0.625);
             background-color: $clr-fg-sec-hover;
             transition-property: background-color;
+            width: calc(var(--bit-chg-circle-size) / 2);
             transition: border-width 0.2s cubic-bezier(0.4, 0, 0.23, 1);
+            inset-inline-start: calc((var(--bit-chg-circle-size) - (var(--bit-chg-circle-size) / 2)) / 2);
         }
 
         @media (hover: hover) {
@@ -224,16 +210,15 @@
         &:before {
             opacity: 0;
             content: "";
+            aspect-ratio: 1;
             position: absolute;
             border-radius: 50%;
-            width: spacing(2.5);
-            height: spacing(2.5);
             display: inline-block;
             box-sizing: border-box;
             inset-inline-start: auto;
-            background-color: $clr-bg-pri;
             inset-inline-end: spacing(0.375);
             inset-block-start: spacing(0.375);
+            height: var(--bit-chg-circle-size);
             transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
             border: $shp-border-width $shp-border-style $clr-brd-pri;
         }
@@ -277,7 +262,7 @@
                 padding: unset;
 
                 .bit-chg-icw {
-                    font-size: spacing(2);
+                    font-size: calc(var(--bit-chg-fontsize) + spacing(0.25));
                 }
             }
 
@@ -301,9 +286,9 @@
     position: relative;
     max-width: spacing(8);
     white-space: pre-wrap;
-    font-size: spacing(1.75);
     line-height: spacing(1.875);
     font-family: $tg-font-family;
+    font-size: var(--bit-chg-fontsize);
     margin: spacing(0.5) spacing(1) spacing(0.25);
 
     .bit-chg-itx {
@@ -342,9 +327,9 @@
 }
 
 .bit-chg-icw {
-    height: spacing(4);
-    font-size: spacing(4);
-    line-height: spacing(4);
+    height: var(--bit-chg-ico-size);
+    font-size: var(--bit-chg-ico-size);
+    line-height: var(--bit-chg-ico-size);
 
     i {
         speak: none;
@@ -354,62 +339,60 @@
 
 .bit-chg-ich {
     .bit-chg-ilw {
-        border-color: $clr-pri;
+        border-color: var(--bit-chg-clr);
 
         &:before {
-            border-color: $clr-pri;
+            border-color: var(--bit-chg-clr);
         }
 
         &:after {
             opacity: 1;
-            background-color: $clr-pri;
-            border: spacing(0.625) $shp-border-style $clr-pri;
+            background-color: var(--bit-chg-clr);
         }
 
         @media (hover: hover) {
             &:hover {
                 &:before {
-                    border-color: $clr-pri-hover;
+                    border-color: var(--bit-chg-clr-hover);
                 }
 
                 &:after {
-                    border-color: $clr-pri-hover;
-                    background-color: $clr-pri-hover;
+                    border-color: var(--bit-chg-clr-hover);
+                    background-color: var(--bit-chg-clr-hover);
                 }
             }
         }
     }
 
     .bit-chg-ilwi {
-        border-color: $clr-pri;
+        border-color: var(--bit-chg-clr);
 
         &:before {
             opacity: 1;
-            border-color: $clr-pri;
+            border-color: var(--bit-chg-clr);
         }
 
         &:after {
-            width: spacing(1.25);
-            height: spacing(1.25);
             inset-inline-start: auto;
-            inset-inline-end: spacing(1);
-            inset-block-start: spacing(1);
-            background-color: $clr-pri;
-            border: spacing(0.625) $shp-border-style $clr-pri;
+            inset-inline-end: var(--bit-chg-dot-position);
+            inset-block-start: var(--bit-chg-dot-position);
+            background-color: var(--bit-chg-clr);
+            width: calc(var(--bit-chg-circle-size) / 2);
+            height: calc(var(--bit-chg-circle-size) / 2);
         }
 
         @media (hover: hover) {
             &:hover {
-                border-color: $clr-pri-hover;
+                border-color: var(--bit-chg-clr-hover);
 
                 &:before {
                     opacity: 1;
-                    border-color: $clr-pri-hover;
+                    border-color: var(--bit-chg-clr-hover);
                 }
 
                 &:after {
-                    border-color: $clr-pri-hover;
-                    background-color: $clr-pri-hover;
+                    border-color: var(--bit-chg-clr-hover);
+                    background-color: var(--bit-chg-clr-hover);
                 }
             }
         }
@@ -496,4 +479,144 @@
             }
         }
     }
+}
+
+.bit-chg-pri {
+    --bit-chg-clr: #{$clr-pri};
+    --bit-chg-clr-brd: #{$clr-brd-pri};
+    --bit-chg-clr-hover: #{$clr-pri-hover};
+    --bit-chg-clr-bg: #{$clr-bg-sec};
+}
+
+.bit-chg-sec {
+    --bit-chg-clr: #{$clr-sec};
+    --bit-chg-clr-brd: #{$clr-brd-sec};
+    --bit-chg-clr-hover: #{$clr-sec-hover};
+    --bit-chg-clr-bg: #{$clr-bg-sec};
+}
+
+.bit-chg-ter {
+    --bit-chg-clr: #{$clr-ter};
+    --bit-chg-clr-brd: #{$clr-brd-ter};
+    --bit-chg-clr-hover: #{$clr-ter-hover};
+    --bit-chg-clr-bg: #{$clr-bg-sec};
+}
+
+.bit-chg-inf {
+    --bit-chg-clr: #{$clr-inf};
+    --bit-chg-clr-brd: #{$clr-inf};
+    --bit-chg-clr-hover: #{$clr-inf-hover};
+    --bit-chg-clr-bg: #{$clr-bg-sec};
+}
+
+.bit-chg-suc {
+    --bit-chg-clr: #{$clr-suc};
+    --bit-chg-clr-brd: #{$clr-suc};
+    --bit-chg-clr-hover: #{$clr-suc-hover};
+    --bit-chg-clr-bg: #{$clr-bg-sec};
+}
+
+.bit-chg-wrn {
+    --bit-chg-clr: #{$clr-wrn};
+    --bit-chg-clr-brd: #{$clr-wrn};
+    --bit-chg-clr-hover: #{$clr-wrn-hover};
+    --bit-chg-clr-bg: #{$clr-bg-sec};
+}
+
+.bit-chg-swr {
+    --bit-chg-clr: #{$clr-swr};
+    --bit-chg-clr-brd: #{$clr-swr};
+    --bit-chg-clr-hover: #{$clr-swr-hover};
+    --bit-chg-clr-bg: #{$clr-bg-sec};
+}
+
+.bit-chg-err {
+    --bit-chg-clr: #{$clr-err};
+    --bit-chg-clr-brd: #{$clr-err};
+    --bit-chg-clr-hover: #{$clr-err-hover};
+    --bit-chg-clr-bg: #{$clr-bg-sec};
+}
+
+.bit-chg-pbg {
+    --bit-chg-clr: #{$clr-bg-pri};
+    --bit-chg-clr-brd: #{$clr-bg-pri};
+    --bit-chg-clr-hover: #{$clr-bg-pri-hover};
+    --bit-chg-clr-bg: #{$clr-fg-pri};
+}
+
+.bit-chg-sbg {
+    --bit-chg-clr: #{$clr-bg-sec};
+    --bit-chg-clr-brd: #{$clr-bg-sec};
+    --bit-chg-clr-hover: #{$clr-bg-sec-hover};
+    --bit-chg-clr-bg: #{$clr-fg-pri};
+}
+
+.bit-chg-tbg {
+    --bit-chg-clr: #{$clr-bg-ter};
+    --bit-chg-clr-brd: #{$clr-bg-ter};
+    --bit-chg-clr-hover: #{$clr-bg-ter-hover};
+    --bit-chg-clr-bg: #{$clr-fg-pri};
+}
+
+.bit-chg-pfg {
+    --bit-chg-clr: #{$clr-fg-pri};
+    --bit-chg-clr-brd: #{$clr-fg-pri};
+    --bit-chg-clr-hover: #{$clr-fg-pri-hover};
+    --bit-chg-clr-bg: #{$clr-bg-sec};
+}
+
+.bit-chg-sfg {
+    --bit-chg-clr: #{$clr-fg-sec};
+    --bit-chg-clr-brd: #{$clr-fg-sec};
+    --bit-chg-clr-hover: #{$clr-fg-sec-hover};
+    --bit-chg-clr-bg: #{$clr-bg-sec};
+}
+
+.bit-chg-tfg {
+    --bit-chg-clr: #{$clr-fg-ter};
+    --bit-chg-clr-brd: #{$clr-fg-ter};
+    --bit-chg-clr-hover: #{$clr-fg-ter-hover};
+    --bit-chg-clr-bg: #{$clr-bg-sec};
+}
+
+.bit-chg-pbr {
+    --bit-chg-clr: #{$clr-brd-pri};
+    --bit-chg-clr-brd: #{$clr-brd-pri};
+    --bit-chg-clr-hover: #{$clr-brd-pri-hover};
+    --bit-chg-clr-bg: #{$clr-bg-sec};
+}
+
+.bit-chg-sbr {
+    --bit-chg-clr: #{$clr-brd-sec};
+    --bit-chg-clr-brd: #{$clr-brd-sec};
+    --bit-chg-clr-hover: #{$clr-brd-sec-hover};
+    --bit-chg-clr-bg: #{$clr-bg-sec};
+}
+
+.bit-chg-tbr {
+    --bit-chg-clr: #{$clr-brd-ter};
+    --bit-chg-clr-brd: #{$clr-brd-ter};
+    --bit-chg-clr-hover: #{$clr-brd-ter-hover};
+    --bit-chg-clr-bg: #{$clr-bg-sec};
+}
+
+.bit-chg-sm {
+    --bit-chg-ico-size: #{spacing(3)};
+    --bit-chg-fontsize: #{spacing(1.5)};
+    --bit-chg-circle-size: #{spacing(1.75)};
+    --bit-chg-dot-position: #{spacing(0.8125)};
+}
+
+.bit-chg-md {
+    --bit-chg-ico-size: #{spacing(4)};
+    --bit-chg-fontsize: #{spacing(1.75)};
+    --bit-chg-circle-size: #{spacing(2.5)};
+    --bit-chg-dot-position: #{spacing(1)};
+}
+
+.bit-chg-lg {
+    --bit-chg-ico-size: #{spacing(5)};
+    --bit-chg-fontsize: #{spacing(2)};
+    --bit-chg-circle-size: #{spacing(3.25)};
+    --bit-chg-dot-position: #{spacing(1.25)};
 }

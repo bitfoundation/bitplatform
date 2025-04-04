@@ -1,5 +1,5 @@
-﻿using System.Text;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace Bit.BlazorUI;
 
@@ -28,6 +28,12 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// Custom CSS classes for different parts of the BitChoiceGroup.
     /// </summary>
     [Parameter] public BitChoiceGroupClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The general color of the BitChoiceGroup.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
 
     /// <summary>
     /// Default selected item for ChoiceGroup.
@@ -96,6 +102,12 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     [Parameter] public RenderFragment? Options { get; set; }
 
     /// <summary>
+    /// The size of the BitChoiceGroup.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the BitChoiceGroup.
     /// </summary>
     [Parameter] public BitChoiceGroupClassStyles? Styles { get; set; }
@@ -154,6 +166,36 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         ClassBuilder.Register(() => NoCircle ? "bit-chg-ncr" : "bit-chg-wcr");
 
         ClassBuilder.Register(() => IsEnabled && Required ? "bit-chg-req" : string.Empty);
+
+        ClassBuilder.Register(() => Color switch
+        {
+            BitColor.Primary => "bit-chg-pri",
+            BitColor.Secondary => "bit-chg-sec",
+            BitColor.Tertiary => "bit-chg-ter",
+            BitColor.Info => "bit-chg-inf",
+            BitColor.Success => "bit-chg-suc",
+            BitColor.Warning => "bit-chg-wrn",
+            BitColor.SevereWarning => "bit-chg-swr",
+            BitColor.Error => "bit-chg-err",
+            BitColor.PrimaryBackground => "bit-chg-pbg",
+            BitColor.SecondaryBackground => "bit-chg-sbg",
+            BitColor.TertiaryBackground => "bit-chg-tbg",
+            BitColor.PrimaryForeground => "bit-chg-pfg",
+            BitColor.SecondaryForeground => "bit-chg-sfg",
+            BitColor.TertiaryForeground => "bit-chg-tfg",
+            BitColor.PrimaryBorder => "bit-chg-pbr",
+            BitColor.SecondaryBorder => "bit-chg-sbr",
+            BitColor.TertiaryBorder => "bit-chg-tbr",
+            _ => "bit-chg-pri"
+        });
+
+        ClassBuilder.Register(() => Size switch
+        {
+            BitSize.Small => "bit-chg-sm",
+            BitSize.Medium => "bit-chg-md",
+            BitSize.Large => "bit-chg-lg",
+            _ => "bit-chg-md"
+        });
     }
 
     protected override void RegisterCssStyles()
@@ -198,14 +240,14 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
     private async Task HandleClick(TItem item)
     {
-        if (IsEnabled is false || GetIsEnabled(item) is false) return;
+        if (IsEnabled is false || ReadOnly || GetIsEnabled(item) is false) return;
 
         await OnClick.InvokeAsync(item);
     }
 
     private async Task HandleChange(TItem item)
     {
-        if (IsEnabled is false || GetIsEnabled(item) is false) return;
+        if (IsEnabled is false || ReadOnly || GetIsEnabled(item) is false) return;
 
         SetIsSelectedForSelectedItem(item);
 

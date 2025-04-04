@@ -52,7 +52,308 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<DemoExample Title="LabelTemplate" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <div>Demonstrates how to customize the label of the BitChoiceGroup using a template.</div>
+    <br />
+    <div class="example-content">
+        <BitChoiceGroup Items="basicItems" DefaultValue="@("A")">
+            <LabelTemplate>
+                <div class="custom-label">
+                    Custom label <BitIcon IconName="@BitIconName.Filter" />
+                </div>
+            </LabelTemplate>
+        </BitChoiceGroup>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Item templates" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <div>Illustrates how to customize the appearance of BitChoiceGroup options using item templates.</div>
+    <br />
+    <div class="example-content">
+        <BitChoiceGroup Label="ItemPrefixTemplate" Items="basicItems" DefaultValue="@string.Empty">
+            <ItemPrefixTemplate Context="item">
+                @(item.Index + 1).&nbsp;
+            </ItemPrefixTemplate>
+        </BitChoiceGroup>
+
+        <BitChoiceGroup Label="ItemLabelTemplate" Items="itemTemplateItems" @bind-Value="itemLabelTemplateValue">
+            <ItemLabelTemplate Context="item">
+                <div class="custom-container @(itemLabelTemplateValue == item.Value ? "selected" : string.Empty)">
+                    <BitIcon IconName="@item.IconName" />
+                    <span>@item.Text</span>
+                </div>
+            </ItemLabelTemplate>
+        </BitChoiceGroup>
+    </div>
+    <br /><br /><br />
+    <div class="example-content">
+        <BitChoiceGroup Label="ItemTemplate" Items="itemTemplateItems" @bind-Value="itemTemplateValue">
+            <ItemTemplate Context="item">
+                <div class="custom-container @(itemTemplateValue == item.Value ? "selected" : string.Empty)">
+                    <div class="custom-circle"></div>
+                    <span>@item.Text</span>
+                </div>
+            </ItemTemplate>
+        </BitChoiceGroup>
+
+        <BitChoiceGroup Label="Item's Template"
+                        Items="itemTemplateItems2"
+                        @bind-Value="itemTemplateValue2" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <div>Shows how to use one-way and two-way data binding with BitChoiceGroup.</div>
+    <br />
+    <div class="example-content">
+        <div>
+            <BitChoiceGroup Label="One-way" Items="basicItems" Value="@oneWayValue" />
+            <br />
+            <BitTextField @bind-Value="oneWayValue" />
+        </div>
+
+        <div>
+            <BitChoiceGroup Label="Two-way" Items="basicItems" @bind-Value="twoWayValue" />
+            <br />
+            <BitTextField @bind-Value="twoWayValue" />
+        </div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Validation" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <div>Shows how to use data annotations for validating the selected value in BitChoiceGroup.</div>
+    <br />
+    @if (string.IsNullOrEmpty(successMessage))
+    {
+        <EditForm Model="@validationModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
+            <DataAnnotationsValidator />
+
+            <BitChoiceGroup Items="basicItems" @bind-Value="validationModel.Value" />
+            <ValidationMessage For="@(() => validationModel.Value)" />
+
+            <br />
+
+            <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+        </EditForm>
+    }
+    else
+    {
+        <BitMessage Color="BitColor.Success">@successMessage</BitMessage>
+    }
+    <br />
+    <BitButton Variant="BitVariant.Outline" OnClick="() => { validationModel = new(); successMessage=string.Empty; }">Reset</BitButton>
+</DemoExample>
+
+<DemoExample Title="Size" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <div>Varying sizes for BitChoiceGroup tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.</div>
+    <br /><br />
+    <div class="example-content column">
+        <BitChoiceGroup Size="BitSize.Small"
+                        Label="Small"
+                        Items="basicItems"
+                        DefaultValue="basicItems[1].Value" Horizontal />
+
+        <BitChoiceGroup Size="BitSize.Medium"
+                        Label="Medium"
+                        Items="basicItems"
+                        DefaultValue="basicItems[1].Value" Horizontal />
+
+        <BitChoiceGroup Size="BitSize.Large"
+                        Label="Large"
+                        Items="basicItems"
+                        DefaultValue="basicItems[1].Value" Horizontal />
+    </div>
+    <br /><br />
+    <div class="example-content column">
+        <BitChoiceGroup Size="BitSize.Small"
+                        Label="Small"
+                        Items="iconItems" 
+                        DefaultValue="@("Day")"
+                        Horizontal Inline />
+
+        <BitChoiceGroup Size="BitSize.Medium"
+                        Label="Medium"
+                        Items="iconItems" 
+                        DefaultValue="@("Day")"
+                        Horizontal Inline />
+
+        <BitChoiceGroup Size="BitSize.Large"
+                        Label="Large"
+                        Items="iconItems" 
+                        DefaultValue="@("Day")"
+                        Horizontal Inline />
+    </div>
+    <br /><br />
+    <div class="example-content column">
+        <BitChoiceGroup Size="BitSize.Small"
+                        Label="Small"
+                        Items="iconItems" 
+                        DefaultValue="@("Day")"
+                        Horizontal />
+
+        <BitChoiceGroup Size="BitSize.Medium"
+                        Label="Medium"
+                        Items="iconItems" 
+                        DefaultValue="@("Day")"
+                        Horizontal />
+
+        <BitChoiceGroup Size="BitSize.Large"
+                        Label="Large"
+                        Items="iconItems" 
+                        DefaultValue="@("Day")"
+                        Horizontal />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>Offering a range of specialized color variants with Primary being the default, providing visual cues for specific actions or states within your application.</div>
+        <br />
+        <div>
+            <div class="example-box">
+                <BitChoiceGroup Color="BitColor.Primary" 
+                                Label="Primary" 
+                                Horizontal
+                                Items="basicItems"
+                                DefaultValue="basicItems[1].Value" />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitChoiceGroup Color="BitColor.Secondary" 
+                                Label="Secondary" 
+                                Horizontal
+                                Items="basicItems"
+                                DefaultValue="basicItems[1].Value" />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitChoiceGroup Color="BitColor.Tertiary" 
+                                Label="Tertiary" 
+                                Horizontal
+                                Items="basicItems"
+                                DefaultValue="basicItems[1].Value" />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitChoiceGroup Color="BitColor.Info" 
+                                Label="Info" 
+                                Horizontal
+                                Items="basicItems"
+                                DefaultValue="basicItems[1].Value" />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitChoiceGroup Color="BitColor.Success" 
+                                Label="Success" 
+                                Horizontal
+                                Items="basicItems"
+                                DefaultValue="basicItems[1].Value" />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitChoiceGroup Color="BitColor.Warning" 
+                                Label="Warning" 
+                                Horizontal
+                                Items="basicItems"
+                                DefaultValue="basicItems[1].Value" />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitChoiceGroup Color="BitColor.SevereWarning" 
+                                Label="SevereWarning" 
+                                Horizontal
+                                Items="basicItems"
+                                DefaultValue="basicItems[1].Value" />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitChoiceGroup Color="BitColor.Error" 
+                                Label="Error" 
+                                Horizontal
+                                Items="basicItems"
+                                DefaultValue="basicItems[1].Value" />
+            </div>
+            <br /><br />
+            <div style="background:var(--bit-clr-fg-sec);color:var(--bit-clr-bg-sec);padding:1rem">
+                <div class="example-box">
+                    <BitChoiceGroup Color="BitColor.PrimaryBackground" 
+                                    Label="PrimaryBackground" 
+                                    Horizontal
+                                    Items="basicItems"
+                                    DefaultValue="basicItems[1].Value" />
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitChoiceGroup Color="BitColor.SecondaryBackground" 
+                                    Label="SecondaryBackground" 
+                                    Horizontal
+                                    Items="basicItems"
+                                    DefaultValue="basicItems[1].Value" />
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitChoiceGroup Color="BitColor.TertiaryBackground" 
+                                    Label="TertiaryBackground" 
+                                    Horizontal
+                                    Items="basicItems"
+                                    DefaultValue="basicItems[1].Value" />
+                </div>
+            </div>
+            <br />
+            <div style="padding:1rem">
+                <div class="example-box">
+                    <BitChoiceGroup Color="BitColor.PrimaryForeground" 
+                                    Label="PrimaryForeground" 
+                                    Horizontal
+                                    Items="basicItems"
+                                    DefaultValue="basicItems[1].Value" />
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitChoiceGroup Color="BitColor.SecondaryForeground" 
+                                    Label="SecondaryForeground" 
+                                    Horizontal
+                                    Items="basicItems"
+                                    DefaultValue="basicItems[1].Value" />
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitChoiceGroup Color="BitColor.TertiaryForeground" 
+                                    Label="TertiaryForeground" 
+                                    Horizontal
+                                    Items="basicItems"
+                                    DefaultValue="basicItems[1].Value" />
+                </div>
+            </div>
+            <br />
+            <div style="padding:1rem">
+                <div class="example-box">
+                    <BitChoiceGroup Color="BitColor.PrimaryBorder" 
+                                    Label="PrimaryBorder" 
+                                    Horizontal
+                                    Items="basicItems"
+                                    DefaultValue="basicItems[1].Value" />
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitChoiceGroup Color="BitColor.SecondaryBorder" 
+                                    Label="SecondaryBorder" 
+                                    Horizontal
+                                    Items="basicItems"
+                                    DefaultValue="basicItems[1].Value" />
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitChoiceGroup Color="BitColor.TertiaryBorder" 
+                                    Label="TertiaryBorder" 
+                                    Horizontal
+                                    Items="basicItems"
+                                    DefaultValue="basicItems[1].Value" />
+                </div>
+            </div>
+        </div>
+    </DemoExample>
+
+<DemoExample Title="Style & Class" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
     <div>Explores styling and class customization for BitChoiceGroup, including component styles, custom classes, and detailed style items.</div>
     <br /><br />
     <div>Component's Style & Class:</div>
@@ -96,105 +397,13 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="LabelTemplate" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-    <div>Demonstrates how to customize the label of the BitChoiceGroup using a template.</div>
-    <br />
-    <div class="example-content">
-        <BitChoiceGroup Items="basicItems" DefaultValue="@("A")">
-            <LabelTemplate>
-                <div class="custom-label">
-                    Custom label <BitIcon IconName="@BitIconName.Filter" />
-                </div>
-            </LabelTemplate>
-        </BitChoiceGroup>
-    </div>
-</DemoExample>
-
-<DemoExample Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-    <div>Shows how to use one-way and two-way data binding with BitChoiceGroup.</div>
-    <br />
-    <div class="example-content">
-        <div>
-            <BitChoiceGroup Label="One-way" Items="basicItems" Value="@oneWayValue" />
-            <br />
-            <BitTextField @bind-Value="oneWayValue" />
-        </div>
-
-        <div>
-            <BitChoiceGroup Label="Two-way" Items="basicItems" @bind-Value="twoWayValue" />
-            <br />
-            <BitTextField @bind-Value="twoWayValue" />
-        </div>
-    </div>
-</DemoExample>
-
-<DemoExample Title="Item templates" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-    <div>Illustrates how to customize the appearance of BitChoiceGroup options using item templates.</div>
-    <br />
-    <div class="example-content">
-        <BitChoiceGroup Label="ItemPrefixTemplate" Items="basicItems" DefaultValue="@string.Empty">
-            <ItemPrefixTemplate Context="item">
-                @(item.Index + 1).&nbsp;
-            </ItemPrefixTemplate>
-        </BitChoiceGroup>
-
-        <BitChoiceGroup Label="ItemLabelTemplate" Items="itemTemplateItems" @bind-Value="itemLabelTemplateValue">
-            <ItemLabelTemplate Context="item">
-                <div class="custom-container @(itemLabelTemplateValue == item.Value ? "selected" : string.Empty)">
-                    <BitIcon IconName="@item.IconName" />
-                    <span>@item.Text</span>
-                </div>
-            </ItemLabelTemplate>
-        </BitChoiceGroup>
-    </div>
-    <br /><br /><br />
-    <div class="example-content">
-        <BitChoiceGroup Label="ItemTemplate" Items="itemTemplateItems" @bind-Value="itemTemplateValue">
-            <ItemTemplate Context="item">
-                <div class="custom-container @(itemTemplateValue == item.Value ? "selected" : string.Empty)">
-                    <div class="custom-circle"></div>
-                    <span>@item.Text</span>
-                </div>
-            </ItemTemplate>
-        </BitChoiceGroup>
-
-        <BitChoiceGroup Label="Item's Template"
-                        Items="itemTemplateItems2"
-                        @bind-Value="itemTemplateValue2" />
-    </div>
-</DemoExample>
-
-<DemoExample Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+<DemoExample Title="RTL" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
     <div>Use BitChoiceGroup in right-to-left (RTL).</div>
     <br />
     <div dir="rtl" class="example-content">
         <BitChoiceGroup Label="ساده" Items="rtlItems" DefaultValue="@("A")" Dir="BitDir.Rtl" />
         <BitChoiceGroup Label="غیرفعال" Items="rtlItems" IsEnabled="false" DefaultValue="@("A")" Dir="BitDir.Rtl" />
     </div>
-</DemoExample>
-
-<DemoExample Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
-    <div>Shows how to use data annotations for validating the selected value in BitChoiceGroup.</div>
-    <br />
-    @if (string.IsNullOrEmpty(successMessage))
-    {
-        <EditForm Model="@validationModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
-            <DataAnnotationsValidator />
-
-            <BitChoiceGroup Items="basicItems" @bind-Value="validationModel.Value" />
-            <ValidationMessage For="@(() => validationModel.Value)" />
-
-            <br />
-
-            <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
-        </EditForm>
-    }
-    else
-    {
-        <BitMessage Color="BitColor.Success">@successMessage</BitMessage>
-    }
-    <br />
-    <BitButton Variant="BitVariant.Outline" OnClick="() => { validationModel = new(); successMessage=string.Empty; }">Reset</BitButton>
 </DemoExample>
 
 @code {
