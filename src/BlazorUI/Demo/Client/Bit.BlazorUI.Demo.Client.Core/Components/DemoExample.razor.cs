@@ -16,7 +16,7 @@ public partial class DemoExample
     {
         showCode = NavigationManager.Uri.Contains("showallcodes");
     }
-    
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await JSRuntime.InvokeVoid("highlightSnippet");
@@ -24,7 +24,7 @@ public partial class DemoExample
 
 
 
-    private string AppendCodePhraseToCsharpCode(string cSharpSourceCode)
+    private string AppendCodePhraseToCsharpCode()
     {
         string code = $@"{"\n\n"}@code {{
 {CsharpCode.Trim().Replace("\n", "\n\t")}
@@ -38,8 +38,8 @@ public partial class DemoExample
     private async Task CopyCodeToClipboard()
     {
         var code = string.IsNullOrEmpty(CsharpCode) is false
-            ? AppendCodePhraseToCsharpCode(CsharpCode)
-            : "";
+                    ? AppendCodePhraseToCsharpCode()
+                    : "";
 
         await JSRuntime.CopyToClipboard(RazorCode.Trim() + code);
 
