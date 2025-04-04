@@ -117,13 +117,13 @@ private bool BasicIsOpen;";
 <BitOverlay @bind-IsOpen=""AutoCloseIsOpen"" Class=""overlay"" NoAutoClose>
     <div class=""content"">
         <BitButton Class=""close-button"" Variant=""BitVariant.Text"" OnClick=@(() => AutoCloseIsOpen = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
-        <h3>Lorem Ipsum</h3>
-        <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-            turpis. In hac habitasse platea dictumst.
-        </p>
+        <h3>Short story</h3>
+        <div>
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+        </div>
     </div>
 </BitOverlay>";
     private readonly string example2CsharpCode = @"
@@ -229,13 +229,13 @@ private bool AutoToggleIsOpen;";
                 ScrollerSelector="".scroller""
                 AbsolutePosition>
         <div class=""content"">
-            <h3>Lorem Ipsum</h3>
-            <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-                amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-                sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-                turpis. In hac habitasse platea dictumst.
-            </p>
+            <h3>Short story</h3>
+            <div>
+                Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+                Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+                when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+                for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+            </div>
         </div>
     </BitOverlay>
 
@@ -309,13 +309,13 @@ private bool DisabledScrollerIsOpen;";
 <BitButton OnClick=""() => EventOnCloseIsOpen = true"">Show Overlay</BitButton>
 <BitOverlay @bind-IsOpen=""EventOnCloseIsOpen"" Class=""overlay"" OnClick=@(() => EventOnCloseIsOpen = false) NoAutoClose>
     <div class=""content"">
-        <h3>Lorem Ipsum</h3>
-        <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-            turpis. In hac habitasse platea dictumst.
-        </p>
+        <h3>Short story</h3>
+        <div>
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+            for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+        </div>
     </div>
 </BitOverlay>";
     private readonly string example6CsharpCode = @"
