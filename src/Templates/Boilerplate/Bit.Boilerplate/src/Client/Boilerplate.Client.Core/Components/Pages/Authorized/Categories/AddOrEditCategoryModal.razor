@@ -6,7 +6,7 @@
     <NavigationLock OnBeforeInternalNavigation="@((args) => { args.PreventNavigation(); isOpen = false; })" />
 }
 
-<BitModal @bind-IsOpen="isOpen" Blocking AutoToggleScroll="false">
+<BitModal @bind-IsOpen="isOpen" AutoToggleScroll="false">
     <section>
         <BitStack Gap="0.5rem" Style="padding:0.5rem">
             <BitStack Horizontal VerticalAlign="BitAlignment.Center">

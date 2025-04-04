@@ -5,8 +5,11 @@
 
 <AppPageData Title="@Localizer[nameof(AppStrings.SignInPageTitle)]" />
 
-<!-- Checkout ShowSignInPanel's comments -->
-<NavigationLock OnBeforeInternalNavigation="ShowSignInPanel"></NavigationLock>
+@if (isOtpSent || requiresTwoFactor)
+{
+	<!-- Checkout ShowSignInPanel's comments -->
+	<NavigationLock OnBeforeInternalNavigation="ShowSignInPanel" />
+}
 
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center" FillContent>

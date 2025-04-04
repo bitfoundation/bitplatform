@@ -79,9 +79,6 @@ public partial class SignInPage
         if (sucssefulSignIn)
             return;
 
-        if (isOtpSent is false && requiresTwoFactor is false)
-            return;
-
         args.PreventNavigation();
 
         webAuthnAssertion = null;
