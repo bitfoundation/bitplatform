@@ -92,13 +92,13 @@
             } catch (e) { console.error("BitBlazorUI.Utils.setStyle:", e); }
         }
 
-        public static toggleOverflow(selector: string, isHidden: boolean) {
+        public static toggleOverflow(selector: string, isOpen: boolean) {
             const element = document.querySelector(selector) as HTMLElement;
 
             if (!element) return 0;
 
             try {
-                element.style.overflow = isHidden ? "hidden" : "";
+                element.style.overflow = isOpen ? "hidden" : "";
                 return element.scrollTop;
             } catch (e) {
                 console.error("BitBlazorUI.Utils.toggleOverflow:", e);
