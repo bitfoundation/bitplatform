@@ -310,7 +310,7 @@ private bool isOpenBasic;";
 
 <BitModal @bind-IsOpen=""isOpenCustomContent"">
     <div class=""modal-header"">
-        <span class=""modal-header-text"">Lorem Ipsum</span>
+        <span class=""modal-header-text"">Story title</span>
         <BitButton Variant=""BitVariant.Text"" OnClick=""() => isOpenCustomContent = false"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
@@ -588,7 +588,7 @@ private bool isOpenScrollerSelector;";
         <BitButton Variant=""BitVariant.Text"" OnClick=""() => isOpenPosition = false"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
-        BitModal with custom positioning. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+        BitModal with custom positioning. Once upon a time, stories wove connections between people.
     </div>
 </BitModal>";
     private readonly string example5CsharpCode = @"
