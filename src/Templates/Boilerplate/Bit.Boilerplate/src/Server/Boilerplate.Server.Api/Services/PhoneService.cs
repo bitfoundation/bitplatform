@@ -1,4 +1,4 @@
-﻿using PhoneNumbers;
+using PhoneNumbers;
 using Twilio.Rest.Api.V2010.Account;
 
 namespace Boilerplate.Server.Api.Services;

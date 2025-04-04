@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Tests;
+namespace Boilerplate.Tests;
 
 public partial class TestData
 {

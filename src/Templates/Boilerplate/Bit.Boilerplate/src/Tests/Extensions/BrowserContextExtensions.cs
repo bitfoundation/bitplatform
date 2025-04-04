@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Tests.Extensions;
+namespace Boilerplate.Tests.Extensions;
 
 public static class PlaywrightInitialScriptExtensions
 {

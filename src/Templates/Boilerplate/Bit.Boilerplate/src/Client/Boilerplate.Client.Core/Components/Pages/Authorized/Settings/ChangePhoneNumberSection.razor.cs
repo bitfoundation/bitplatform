@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Controllers.Identity;
+using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings;

@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Humanizer;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 //#if (signalR == true)

@@ -1,4 +1,4 @@
-﻿using Boilerplate.Server.Api.Services;
+using Boilerplate.Server.Api.Services;
 
 namespace Boilerplate.Tests.Services;
 

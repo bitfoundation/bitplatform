@@ -1,4 +1,4 @@
-﻿using Maui.AppStores;
+using Maui.AppStores;
 using Maui.InAppReviews;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;

@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using Boilerplate.Client.Core.Services;
 using Boilerplate.Client.Core.Services.Contracts;
 

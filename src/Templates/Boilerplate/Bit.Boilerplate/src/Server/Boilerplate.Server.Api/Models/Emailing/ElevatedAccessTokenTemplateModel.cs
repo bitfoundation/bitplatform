@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Server.Api.Models.Emailing;
+namespace Boilerplate.Server.Api.Models.Emailing;
 
 public partial class ElevatedAccessTokenTemplateModel
 {

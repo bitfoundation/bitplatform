@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Reflection;
 using Boilerplate.Server.Api;
 using Boilerplate.Server.Api.Models.Identity;

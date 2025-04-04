@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.IO.Compression;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.ResponseCompression;

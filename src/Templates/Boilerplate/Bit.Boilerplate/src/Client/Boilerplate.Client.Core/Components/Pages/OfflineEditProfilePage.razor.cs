@@ -1,4 +1,4 @@
-﻿using Boilerplate.Client.Core.Data;
+using Boilerplate.Client.Core.Data;
 using Boilerplate.Shared.Dtos.Identity;
 using Microsoft.EntityFrameworkCore;
 

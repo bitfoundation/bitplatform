@@ -1,4 +1,4 @@
-﻿using Boilerplate.Client.Core.Services.HttpMessageHandlers;
+using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 namespace Boilerplate.Client.Core.Components;
 

@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Diagnostics;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.Authentication;

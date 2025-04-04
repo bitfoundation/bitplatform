@@ -1,4 +1,4 @@
-﻿using Boilerplate.Server.Api.Models.PushNotification;
+using Boilerplate.Server.Api.Models.PushNotification;
 using Boilerplate.Shared.Dtos.PushNotification;
 using Riok.Mapperly.Abstractions;
 

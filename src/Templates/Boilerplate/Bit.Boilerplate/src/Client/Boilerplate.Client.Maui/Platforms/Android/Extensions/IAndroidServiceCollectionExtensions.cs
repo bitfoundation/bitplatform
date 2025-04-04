@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 //#if (notification == true)
 using Boilerplate.Client.Maui.Platforms.Android.Services;
 //#endif

@@ -1,4 +1,4 @@
-﻿namespace Microsoft.AspNetCore.Components;
+namespace Microsoft.AspNetCore.Components;
 
 public static partial class NavigationManagerExtensions
 {

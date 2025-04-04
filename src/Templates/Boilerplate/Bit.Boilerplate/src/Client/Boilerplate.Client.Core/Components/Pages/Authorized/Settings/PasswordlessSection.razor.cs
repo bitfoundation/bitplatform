@@ -1,4 +1,4 @@
-﻿using Fido2NetLib;
+using Fido2NetLib;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 

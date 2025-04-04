@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Microsoft.AspNetCore.OutputCaching;
 //#if (module == "Sales" || module == "Admin")
 using Boilerplate.Server.Api.Models.Products;

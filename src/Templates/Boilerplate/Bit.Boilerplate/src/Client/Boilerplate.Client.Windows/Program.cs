@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Velopack;
 using Microsoft.Web.WebView2.Core;
 using Boilerplate.Client.Core.Components;

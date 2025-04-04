@@ -1,4 +1,4 @@
-﻿using System.Net.Sockets;
+using System.Net.Sockets;
 using System.Net;
 using Boilerplate.Server.Api;
 using Boilerplate.Server.Web;

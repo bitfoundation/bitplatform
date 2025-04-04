@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Controllers.Todo;
+using Boilerplate.Shared.Controllers.Todo;
 using Boilerplate.Shared.Dtos.Todo;
 using Microsoft.AspNetCore.Components.Web;
 

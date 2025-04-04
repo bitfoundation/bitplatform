@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Dtos.Categories;
+using Boilerplate.Shared.Dtos.Categories;
 using Boilerplate.Shared.Controllers.Categories;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Categories;

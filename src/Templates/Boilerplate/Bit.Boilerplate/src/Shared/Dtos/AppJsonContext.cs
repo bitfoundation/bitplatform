@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Fido2NetLib;
 using Fido2NetLib.Objects;
 //#if (sample == true)

@@ -1,4 +1,4 @@
-﻿//-:cnd:noEmit
+//-:cnd:noEmit
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.PushNotification;
 using Boilerplate.Shared.Controllers.PushNotification;

@@ -1,4 +1,4 @@
-﻿using PhoneNumbers;
+using PhoneNumbers;
 using Boilerplate.Server.Api;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

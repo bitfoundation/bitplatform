@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Services;
+namespace Boilerplate.Client.Core.Services;
 
 /// <summary>
 /// The `ServerAddress` setting in `Client.Core/appsettings.json` can be either relative (in Blazor Server and WebAssembly) or absolute.

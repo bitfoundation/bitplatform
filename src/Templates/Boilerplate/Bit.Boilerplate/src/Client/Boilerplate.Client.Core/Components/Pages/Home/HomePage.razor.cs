@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Shared.Dtos.Statistics;
 using Boilerplate.Shared.Controllers.Statistics;
 

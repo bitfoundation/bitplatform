@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 namespace Boilerplate.Shared;
 
 public partial class SharedSettings : IValidatableObject

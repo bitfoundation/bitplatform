@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Text;
 using Fido2NetLib;
 using Fido2NetLib.Objects;

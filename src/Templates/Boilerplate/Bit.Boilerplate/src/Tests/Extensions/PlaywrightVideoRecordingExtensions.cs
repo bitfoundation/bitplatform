@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Reflection;
 
 namespace Boilerplate.Tests.Extensions;

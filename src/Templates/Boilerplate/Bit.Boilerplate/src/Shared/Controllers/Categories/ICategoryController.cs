@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Shared.Dtos.Categories;
 
 namespace Boilerplate.Shared.Controllers.Categories;

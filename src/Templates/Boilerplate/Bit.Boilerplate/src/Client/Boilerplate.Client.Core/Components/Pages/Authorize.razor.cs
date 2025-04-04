@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Components.Pages;
+namespace Boilerplate.Client.Core.Components.Pages;
 
 /// <summary>
 /// If you need an authentication process similar to SSO/OAuth, navigate to /authorize with `client_id`, 
