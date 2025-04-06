@@ -16,13 +16,10 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
 
     private bool _hasFocus;
-    private int _currentDay;
     private int _currentYear;
     private int _currentMonth;
-    private int? _selectedDateWeek;
     private int _yearPickerEndYear;
     private int _yearPickerStartYear;
-    private int? _selectedDateDayOfWeek;
     private bool _showMonthPicker = true;
     private bool _isTimePickerOverlayOnTop;
     private bool _isMonthPickerOverlayOnTop;
@@ -33,7 +30,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private CultureInfo _culture = CultureInfo.CurrentUICulture;
     private CancellationTokenSource _cancellationTokenSource = new();
     private DotNetObjectReference<BitDatePicker> _dotnetObj = default!;
-    private readonly int[,] _daysOfCurrentMonth = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
+    private readonly DateTime?[,] _daysOfCurrentMonth = new DateTime?[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
 
     private string? _labelId;
     private string? _inputId;
@@ -680,9 +677,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         _hour = 0;
         _minute = 0;
 
-        _selectedDateWeek = null;
-        _selectedDateDayOfWeek = null;
-
         await InputElement.FocusAsync();
     }
 
@@ -734,28 +728,15 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         }
     }
 
-    private async Task SelectDate(int dayIndex, int weekIndex)
+    private async Task SelectDate(DateTime selectedDate)
     {
         if (ReadOnly) return;
         if (IsEnabled is false || InvalidValueBinding()) return;
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
-        if (IsWeekDayOutOfMinAndMaxDate(dayIndex, weekIndex)) return;
+        if (IsWeekDayOutOfMinAndMaxDate(selectedDate)) return;
 
-        _currentDay = _daysOfCurrentMonth[weekIndex, dayIndex];
-        int selectedMonth = FindMonth(weekIndex, dayIndex);
-        var isNotInCurrentMonth = IsInCurrentMonth(weekIndex, dayIndex) is false;
-
-        //The number of days displayed in the picker is about 34 days, and if the selected day is less than 15, it means that the next month has been selected in next year.
-        if (selectedMonth < _currentMonth && _currentMonth == 12 && isNotInCurrentMonth && _currentDay < 15)
-        {
-            _currentYear++;
-        }
-
-        //The number of days displayed in the picker is about 34 days, and if the selected day is greater than 15, it means that the previous month has been selected in previous year.
-        if (selectedMonth > _currentMonth && _currentMonth == 1 && isNotInCurrentMonth && _currentDay > 15)
-        {
-            _currentYear--;
-        }
+        selectedDate = selectedDate.AddHours(_hour);
+        selectedDate = selectedDate.AddMinutes(_minute);
 
         if (AutoClose && Standalone is false)
         {
@@ -764,9 +745,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             await ToggleCallout();
         }
 
-        _currentMonth = selectedMonth;
+        CurrentValue = new DateTimeOffset(selectedDate, _timeZone.GetUtcOffset(selectedDate));
 
-        CurrentValue = GetDateTimeOffset(_currentYear, _currentMonth, _currentDay, _hour, _minute);
+        _currentMonth = _culture.Calendar.GetMonth(selectedDate);
 
         GenerateMonthData(_currentYear, _currentMonth);
     }
@@ -891,99 +872,71 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private void GenerateMonthData(int year, int month)
     {
-        _selectedDateWeek = null;
-        _selectedDateDayOfWeek = null;
         _monthTitle = $"{_culture.DateTimeFormat.GetMonthName(month)} {year}";
 
-        for (int weekIndex = 0; weekIndex < DEFAULT_WEEK_COUNT; weekIndex++)
+        var calendar = _culture.Calendar;
+        var firstDayOfMonth = new DateTime(year, month, 1, calendar);
+        int daysInMonth = calendar.GetDaysInMonth(year, month);
+        int dayOfWeek = (int)calendar.GetDayOfWeek(firstDayOfMonth);
+        int firstDayOfWeek = (int)_culture.DateTimeFormat.FirstDayOfWeek;
+
+        // Adjust dayOfWeek to match the culture's first day of week
+        dayOfWeek = (dayOfWeek - firstDayOfWeek + 7) % 7;
+
+        DateTime previousMonth;
+        if (month == 1)
         {
-            for (int dayIndex = 0; dayIndex < DEFAULT_DAY_COUNT_PER_WEEK; dayIndex++)
+            previousMonth = new(year - 1, 12, 1);
+        }
+        else
+        {
+            previousMonth = new(year, month - 1, 1);
+        }
+        int daysInPreviousMonth = calendar.GetDaysInMonth(previousMonth.Year, previousMonth.Month);
+
+        DateTime nextMonth;
+        if (month == 12)
+        {
+            nextMonth = new(year + 1, 1, 1);
+        }
+        else
+        {
+            nextMonth = new(year, month + 1, 1);
+        }
+
+        int day = daysInPreviousMonth - dayOfWeek + 1;
+
+        for (int i = 0; i < 1; i++)
+        {
+            for (int j = 0; j < dayOfWeek; j++)
             {
-                _daysOfCurrentMonth[weekIndex, dayIndex] = 0;
+                _daysOfCurrentMonth[i, j] = new(previousMonth.Year, previousMonth.Month, day, calendar);
+                day++;
             }
         }
 
-        var monthDays = _culture.Calendar.GetDaysInMonth(year, month);
-        var firstDayOfMonth = _culture.Calendar.ToDateTime(year, month, 1, 0, 0, 0, 0);
-        var startWeekDay = (int)_culture.DateTimeFormat.FirstDayOfWeek;
-        var weekDayOfFirstDay = (int)firstDayOfMonth.DayOfWeek;
-        var correctedWeekDayOfFirstDay = weekDayOfFirstDay > startWeekDay ? startWeekDay : startWeekDay - 7;
-
-        var currentDay = 1;
-        var isCurrentMonthEnded = false;
-        for (int weekIndex = 0; weekIndex < DEFAULT_WEEK_COUNT; weekIndex++)
+        day = 1;
+        var ended = false;
+        for (int i = 0; i < 6; i++)
         {
-            for (int dayIndex = 0; dayIndex < DEFAULT_DAY_COUNT_PER_WEEK; dayIndex++)
+            for (int j = 0; j < 7; j++)
             {
-                if (weekIndex == 0 && currentDay == 1 && weekDayOfFirstDay > dayIndex + correctedWeekDayOfFirstDay)
+                if (i == 0 && j < dayOfWeek) continue;
+
+                if (day <= daysInMonth)
                 {
-                    int prevMonth;
-                    int prevMonthDays;
-                    if (month > 1)
-                    {
-                        prevMonth = month - 1;
-                        prevMonthDays = _culture.Calendar.GetDaysInMonth(year, prevMonth);
-                    }
-                    else
-                    {
-                        prevMonth = 12;
-                        prevMonthDays = _culture.Calendar.GetDaysInMonth(year - 1, prevMonth);
-                    }
-
-                    if (weekDayOfFirstDay > startWeekDay)
-                    {
-                        _daysOfCurrentMonth[weekIndex, dayIndex] = prevMonthDays + dayIndex - (weekDayOfFirstDay - startWeekDay - 1);
-                    }
-                    else
-                    {
-                        _daysOfCurrentMonth[weekIndex, dayIndex] = prevMonthDays + dayIndex - (7 + weekDayOfFirstDay - startWeekDay - 1);
-                    }
+                    _daysOfCurrentMonth[i, j] = new(year, month, day, calendar);
+                    day++;
                 }
-                else if (currentDay <= monthDays)
+                else
                 {
-                    _daysOfCurrentMonth[weekIndex, dayIndex] = currentDay;
-                    currentDay++;
+                    if (j == 0)
+                    {
+                        ended = true;
+                    }
+                    _daysOfCurrentMonth[i, j] = ended ? null : new(nextMonth.Year, nextMonth.Month, day - daysInMonth, calendar);
+                    day++;
                 }
-
-                if (currentDay > monthDays)
-                {
-                    currentDay = 1;
-                    isCurrentMonthEnded = true;
-                }
-            }
-
-            if (isCurrentMonthEnded)
-            {
-                break;
-            }
-        }
-
-        SetSelectedDateWeek();
-    }
-
-    private void SetSelectedDateWeek()
-    {
-        if (CurrentValue.HasValue is false || (_selectedDateWeek.HasValue && _selectedDateDayOfWeek.HasValue)) return;
-
-        var year = _culture.Calendar.GetYear(CurrentValue.Value.DateTime);
-        var month = _culture.Calendar.GetMonth(CurrentValue.Value.DateTime);
-
-        if (year == _currentYear && month == _currentMonth)
-        {
-            var dayOfMonth = _culture.Calendar.GetDayOfMonth(CurrentValue.Value.DateTime);
-            var startWeekDay = (int)_culture.DateTimeFormat.FirstDayOfWeek;
-            var weekDayOfFirstDay = (int)_culture.Calendar.ToDateTime(year, month, 1, 0, 0, 0, 0).DayOfWeek;
-            var indexOfWeekDayOfFirstDay = (weekDayOfFirstDay - startWeekDay + DEFAULT_DAY_COUNT_PER_WEEK) % DEFAULT_DAY_COUNT_PER_WEEK;
-
-            _selectedDateDayOfWeek = ((int)CurrentValue.Value.DayOfWeek - startWeekDay + DEFAULT_DAY_COUNT_PER_WEEK) % DEFAULT_DAY_COUNT_PER_WEEK;
-
-            var days = indexOfWeekDayOfFirstDay + dayOfMonth;
-
-            _selectedDateWeek = days % DEFAULT_DAY_COUNT_PER_WEEK == 0 ? (days / DEFAULT_DAY_COUNT_PER_WEEK) - 1 : days / DEFAULT_DAY_COUNT_PER_WEEK;
-
-            if (indexOfWeekDayOfFirstDay is 0)
-            {
-                _selectedDateWeek++;
             }
         }
     }
@@ -994,31 +947,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         _yearPickerEndYear = fromYear + 11;
     }
 
-    private bool IsInCurrentMonth(int week, int day)
+    private int GetDayOfCurrentMonth(DateTime date)
     {
-        return (
-                ((week == 0 || week == 1) && _daysOfCurrentMonth[week, day] > 20) ||
-                ((week == 4 || week == 5) && _daysOfCurrentMonth[week, day] < 7)
-               ) is false;
-    }
-
-    private int FindMonth(int week, int day)
-    {
-        int month = _currentMonth;
-
-        if (IsInCurrentMonth(week, day) is false)
-        {
-            if (week >= 4)
-            {
-                month = _currentMonth < 12 ? _currentMonth + 1 : 1;
-            }
-            else
-            {
-                month = _currentMonth > 1 ? _currentMonth - 1 : 12;
-            }
-        }
-
-        return month;
+        return _culture.Calendar.GetDayOfMonth(date);
     }
 
     private bool IsGoToTodayButtonDisabled(int todayYear, int todayMonth, bool showYearPicker = false)
@@ -1053,25 +984,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private int GetWeekNumber(int weekIndex)
     {
-        int year = _currentYear;
-        int month = FindMonth(weekIndex, 0);
-
-        if (IsInCurrentMonth(weekIndex, 0) is false)
-        {
-            if (_currentMonth == 12 && month == 1)
-            {
-                year++;
-            }
-            else if (_currentMonth == 1 && month == 12)
-            {
-                year--;
-            }
-        }
-
-        int day = _daysOfCurrentMonth[weekIndex, 0];
-        var date = _culture.Calendar.ToDateTime(year, month, day, 0, 0, 0, 0);
-
-        return _culture.Calendar.GetWeekOfYear(date, CalendarWeekRule.FirstFullWeek, _culture.DateTimeFormat.FirstDayOfWeek);
+        return _culture.Calendar.GetWeekOfYear(_daysOfCurrentMonth[weekIndex, 0]!.Value, CalendarWeekRule.FirstFullWeek, _culture.DateTimeFormat.FirstDayOfWeek);
     }
 
     private void ToggleMonthPickerOverlay()
@@ -1124,31 +1037,16 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                ) is false;
     }
 
-    private bool IsWeekDayOutOfMinAndMaxDate(int dayIndex, int weekIndex)
+    private bool IsWeekDayOutOfMinAndMaxDate(DateTime date)
     {
-        var day = _daysOfCurrentMonth[weekIndex, dayIndex];
-        var month = FindMonth(weekIndex, dayIndex);
-
         if (MaxDate.HasValue)
         {
-            var MaxDateYear = _culture.Calendar.GetYear(MaxDate.Value.DateTime);
-            var MaxDateMonth = _culture.Calendar.GetMonth(MaxDate.Value.DateTime);
-            var MaxDateDay = _culture.Calendar.GetDayOfMonth(MaxDate.Value.DateTime);
-
-            if (_currentYear > MaxDateYear ||
-                (_currentYear == MaxDateYear && month > MaxDateMonth) ||
-                (_currentYear == MaxDateYear && month == MaxDateMonth && day > MaxDateDay)) return true;
+            if (date > MaxDate.Value.LocalDateTime.Date) return true;
         }
 
         if (MinDate.HasValue)
         {
-            var MinDateYear = _culture.Calendar.GetYear(MinDate.Value.DateTime);
-            var MinDateMonth = _culture.Calendar.GetMonth(MinDate.Value.DateTime);
-            var MinDateDay = _culture.Calendar.GetDayOfMonth(MinDate.Value.DateTime);
-
-            if (_currentYear < MinDateYear ||
-                (_currentYear == MinDateYear && month < MinDateMonth) ||
-                (_currentYear == MinDateYear && month == MinDateMonth && day < MinDateDay)) return true;
+            if (date < MinDate.Value.LocalDateTime.Date) return true;
         }
 
         return false;
@@ -1188,7 +1086,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         var currentValueMonth = _culture.Calendar.GetMonth(currentValue.DateTime);
         var currentValueDay = _culture.Calendar.GetDayOfMonth(currentValue.DateTime);
 
-        if (currentValueYear != _currentYear || currentValueMonth != _currentMonth || (AllowTextInput && currentValueDay != _currentDay))
+        if (currentValueYear != _currentYear || currentValueMonth != _currentMonth)
         {
             _currentYear = currentValueYear;
             _currentMonth = currentValueMonth;
@@ -1196,12 +1094,12 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         }
     }
 
-    private (string style, string klass) GetDayButtonCss(int day, int week, int todayYear, int todayMonth, int todayDay)
+    private (string style, string klass) GetDayButtonCss(DateTime date)
     {
         StringBuilder klass = new StringBuilder();
         StringBuilder style = new StringBuilder();
 
-        if (week == _selectedDateWeek && day == _selectedDateDayOfWeek)
+        if (CurrentValue.HasValue && date == CurrentValue.Value.LocalDateTime.Date)
         {
             klass.Append(" bit-dtp-dbs");
 
@@ -1216,13 +1114,16 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             }
         }
 
-        if (IsInCurrentMonth(week, day) is false)
+        var month = _culture.Calendar.GetMonth(date);
+
+        //Isn't in current month
+        if (month != _currentMonth)
         {
             klass.Append(" bit-dtp-dbo");
         }
 
-        var currentDay = _daysOfCurrentMonth[week, day];
-        if (IsInCurrentMonth(week, day) && todayYear == _currentYear && todayMonth == _currentMonth && todayDay == currentDay)
+        //Is today
+        if (month == _currentMonth && date == DateTimeOffset.Now.LocalDateTime.Date)
         {
             klass.Append(" bit-dtp-dtd");
 
@@ -1256,27 +1157,22 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         return className.ToString();
     }
 
-    private DateTimeOffset GetDateTimeOfDayCell(int dayIndex, int weekIndex)
+    private DateTimeOffset GetDateTimeOfDayCell(DateTime date)
     {
-        int selectedMonth = FindMonth(weekIndex, dayIndex);
-        var currentDay = _daysOfCurrentMonth[weekIndex, dayIndex];
-        var currentYear = _currentYear;
-        if (selectedMonth < _currentMonth && _currentMonth == 12 && IsInCurrentMonth(weekIndex, dayIndex) is false)
-        {
-            currentYear++;
-        }
-
-        if (selectedMonth > _currentMonth && _currentMonth == 1 && IsInCurrentMonth(weekIndex, dayIndex) is false)
-        {
-            currentYear--;
-        }
-
-        return GetDateTimeOffset(currentYear, selectedMonth, currentDay);
+        return new(date, _timeZone.GetUtcOffset(date));
     }
 
     private DateTimeOffset GetDateTimeOfMonthCell(int monthIndex)
     {
-        return GetDateTimeOffset(_currentYear, monthIndex);
+        var date = _culture.Calendar.ToDateTime(_currentYear, monthIndex, 1, 0, 0, 0, 0);
+        return new(date, _timeZone.GetUtcOffset(date));
+    }
+
+    private bool IsSelectedDate(DateTime date)
+    {
+        if (CurrentValue is null) return false;
+
+        return date == CurrentValue.Value.LocalDateTime.Date;
     }
 
     private async Task UpdateCurrentValue()
@@ -1286,15 +1182,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         var currentValueYear = _culture.Calendar.GetYear(CurrentValue.Value.LocalDateTime);
         var currentValueMonth = _culture.Calendar.GetMonth(CurrentValue.Value.LocalDateTime);
         var currentValueDay = _culture.Calendar.GetDayOfMonth(CurrentValue.Value.LocalDateTime);
+        var dateTime = _culture.Calendar.ToDateTime(currentValueYear, currentValueMonth, currentValueDay, _hour, _minute, 0, 0);
 
-        CurrentValue = GetDateTimeOffset(currentValueYear, currentValueMonth, currentValueDay, _hour, _minute);
-    }
-
-    private DateTimeOffset GetDateTimeOffset(int year, int month = 1, int day = 1, int hour = 0, int minute = 0)
-    {
-        var dateTime = _culture.Calendar.ToDateTime(year, month, day, hour, minute, 0, 0);
-        var offSet = _timeZone.GetUtcOffset(dateTime);
-        return new(dateTime, offSet);
+        CurrentValue = new(dateTime, _timeZone.GetUtcOffset(dateTime));
     }
 
     private async Task HandleOnTimeHourFocus()
