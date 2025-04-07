@@ -1,12 +1,17 @@
 ﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
 
 .bit-rte {
+    display: flex;
+    flex-direction: column;
+
     .ql-editor.ql-blank::before {
         color: $clr-fg-ter;
     }
 
     .ql-snow {
         &.ql-toolbar {
+            border-color: $clr-brd-pri;
+
             .ql-formats {
                 .ql-stroke {
                     stroke: $clr-fg-sec;
@@ -18,6 +23,11 @@
 
                 .ql-picker {
                     color: $clr-fg-sec;
+
+                    &.ql-expanded .ql-picker-label,
+                    &.ql-expanded .ql-picker-options {
+                        border-color: $clr-brd-pri;
+                    }
                 }
 
                 .ql-picker-options {
@@ -28,8 +38,31 @@
     }
 }
 
+.bit-rte-rvs {
+    flex-direction: column-reverse;
+
+    .bit-rte-edt {
+        &.ql-container.ql-snow {
+            border-bottom: 0;
+            border-top: 1px solid $clr-brd-pri;
+        }
+    }
+}
+
 .bit-rte-tlb {
 }
 
 .bit-rte-edt {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+
+    &.ql-container {
+        border-color: $clr-brd-pri;
+    }
+
+    .ql-editor {
+        width: 100%;
+        flex-grow: 1;
+    }
 }
