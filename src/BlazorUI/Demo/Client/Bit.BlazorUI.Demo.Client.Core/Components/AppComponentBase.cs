@@ -25,6 +25,8 @@ public partial class AppComponentBase : ComponentBase, IDisposable
     private readonly CancellationTokenSource cts = new();
     protected CancellationToken CurrentCancellationToken => cts.Token;
 
+    protected bool InPrerenderSession => AppRenderMode.IsBlazorHybrid is false && RendererInfo.IsInteractive is false;
+
     protected sealed override async Task OnInitializedAsync()
     {
         try

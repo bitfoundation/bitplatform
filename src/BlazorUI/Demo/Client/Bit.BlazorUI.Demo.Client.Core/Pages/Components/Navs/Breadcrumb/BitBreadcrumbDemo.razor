@@ -1,4 +1,5 @@
 ﻿@page "/components/breadcrumb"
+@inherits AppComponentBase
 
 <PageOutlet Url="components/breadcrumb"
             Title="Breadcrumb"
@@ -22,7 +23,7 @@
             </BitText>
         </NotesTemplate>
         <Examples>
-            <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })" MountAll>
+            <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })" MountAll="InPrerenderSession">
                 <BitPivotItem HeaderText="Item">
                     <_BitBreadcrumbItemDemo />
                 </BitPivotItem>

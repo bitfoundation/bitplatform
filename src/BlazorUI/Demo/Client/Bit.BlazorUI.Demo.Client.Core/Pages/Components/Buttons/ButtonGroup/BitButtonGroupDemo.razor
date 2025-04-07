@@ -1,5 +1,6 @@
 ﻿@page "/components/buttongroup"
 @page "/components/button-group"
+@inherits AppComponentBase
 
 
 <PageOutlet Url="components/button-group"
@@ -25,7 +26,7 @@
             </BitText>
         </NotesTemplate>
         <Examples>
-            <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })" MountAll>
+            <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })" MountAll="InPrerenderSession">
                 <BitPivotItem HeaderText="Item">
                     <_BitButtonGroupItemDemo />
                 </BitPivotItem>
