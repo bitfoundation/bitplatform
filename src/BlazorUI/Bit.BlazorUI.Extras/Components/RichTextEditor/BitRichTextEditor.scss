@@ -28,10 +28,28 @@
                     &.ql-expanded .ql-picker-options {
                         border-color: $clr-brd-pri;
                     }
+
+                    .ql-picker-label.ql-active {
+                        color: $clr-pri;
+                    }
                 }
 
                 .ql-picker-options {
                     background-color: $clr-bg-pri;
+                }
+
+                .ql-active {
+                    .ql-stroke {
+                        stroke: $clr-pri;
+                    }
+
+                    .ql-fill {
+                        fill: $clr-pri;
+                    }
+
+                    .ql-picker {
+                        color: $clr-pri;
+                    }
                 }
             }
         }
