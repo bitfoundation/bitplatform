@@ -54,6 +54,13 @@ public partial class BitPivotDemo
         },
         new()
         {
+            Name = "MountAll",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Mounts all tabs at render time and hide non-selected tabs with CSS styles instead of not-rendering them (useful for processing/extracting data).",
+        },
+        new()
+        {
             Name = "OnItemClick",
             Type = "EventCallback<BitPivotItem>",
             Description = "Callback for when the a pivot item is clicked.",

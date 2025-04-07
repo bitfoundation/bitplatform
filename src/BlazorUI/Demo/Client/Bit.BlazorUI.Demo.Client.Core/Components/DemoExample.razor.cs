@@ -14,7 +14,7 @@ public partial class DemoExample
 
     protected override async Task OnInitAsync()
     {
-        showCode = NavigationManager.Uri.Contains("showallcodes");
+        showCode = ShowAllCodes;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
