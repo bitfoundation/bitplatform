@@ -257,7 +257,7 @@ private async Task SetContent()
 }";
 
     private readonly string example9RazorCode = @"
-<BitRichTextEditor>
+<BitRichTextEditor Style=""min-height: 300px"">
     <ToolbarTemplate>
         <span class=""ql-formats"">
             <select class=""ql-font""></select>
@@ -303,6 +303,7 @@ private async Task SetContent()
     <EditorTemplate>
         <div><b>this is bold</b></div>
         <div><em>this is italic</em></div>
+        <div><b><em>this is italic & bold</em></b></div>
     </EditorTemplate>
 </BitRichTextEditor>";
 }
