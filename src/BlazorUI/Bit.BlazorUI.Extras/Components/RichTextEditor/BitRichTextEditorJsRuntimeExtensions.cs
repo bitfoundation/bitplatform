@@ -9,10 +9,13 @@ internal static class BitRichTextEditorJsRuntimeExtensions
                                                         ElementReference? toolbarContainer,
                                                         string? theme,
                                                         string? placeholder,
-                                                        bool readOnly)
+                                                        bool readOnly,
+                                                        bool fullToolbar,
+                                                        string? toolbarStyle,
+                                                        string? toolbarClass)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.setup",
-            id, dotnetObj, editorContainer, toolbarContainer, theme, placeholder, readOnly);
+            id, dotnetObj, editorContainer, toolbarContainer, theme, placeholder, readOnly, fullToolbar, toolbarStyle, toolbarClass);
     }
 
     public static ValueTask<string> BitRichTextEditorGetText(this IJSRuntime jsRuntime, string id)

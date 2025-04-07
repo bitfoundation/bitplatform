@@ -10,6 +10,7 @@
               Parameters="componentParameters"
               SubEnums="componentSubEnums"
               PublicMembers="componentPublicMembers"
+              SubClasses="componentSubClasses"
               GitHubExtrasUrl="RichTextEditor/BitRichTextEditor.razor"
               GitHubDemoUrl="Extras/RichTextEditor/BitRichTextEditorDemo.razor">
         <NotesTemplate>
@@ -38,7 +39,19 @@
                 <BitRichTextEditor Placeholder="This editor is readonly!" ReadOnly />
             </DemoExample>
 
-            <DemoExample Title="Get APIs" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <DemoExample Title="Reversed" RazorCode="@example4RazorCode" Id="example4">
+                <BitRichTextEditor Placeholder="The toolbar location is reversed!" Reversed />
+            </DemoExample>
+
+            <DemoExample Title="FullToolbar" RazorCode="@example5RazorCode" Id="example5">
+                <BitRichTextEditor Style="min-height: 300px" FullToolbar />
+            </DemoExample>
+
+            <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
+                <BitRichTextEditor Styles="@(new() { Toolbar = "border-color: red", Editor = "border-color: blue" })" />
+            </DemoExample>
+
+            <DemoExample Title="Get APIs" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
                 <BitRichTextEditor @ref="getEditorRef" />
                 <br />
                 <BitButton OnClick="GetText">GetText</BitButton>
@@ -49,7 +62,7 @@
                 <pre>@result</pre>
             </DemoExample>
 
-            <DemoExample Title="Set APIs" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <DemoExample Title="Set APIs" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
                 <textarea @bind-value="setValue" @bind-value:event="oninput" style="width:100%;height:100px" />
                 <br /><br />
                 <BitButton OnClick="SetText">SetText</BitButton>
@@ -59,8 +72,8 @@
                 <BitRichTextEditor @ref="setEditorRef" />
             </DemoExample>
 
-            <DemoExample Title="Templates" RazorCode="@example6RazorCode" Id="example6">
-                <BitRichTextEditor>
+            <DemoExample Title="Templates" RazorCode="@example9RazorCode" Id="example9">
+                <BitRichTextEditor Style="min-height: 300px">
                     <ToolbarTemplate>
                         <span class="ql-formats">
                             <select class="ql-font"></select>
@@ -106,6 +119,7 @@
                     <EditorTemplate>
                         <div><b>this is bold</b></div>
                         <div><em>this is italic</em></div>
+                        <div><b><em>this is italic & bold</em></b></div>
                     </EditorTemplate>
                 </BitRichTextEditor>
             </DemoExample>

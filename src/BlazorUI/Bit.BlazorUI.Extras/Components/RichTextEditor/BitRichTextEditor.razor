@@ -10,12 +10,12 @@
 
     @if (ToolbarTemplate is not null)
     {
-        <div @ref="_toolbarRef" class="bit-rte-tlb">
+        <div @ref="_toolbarRef" style="@Styles?.Toolbar" class="bit-rte-tlb @Classes?.Toolbar">
             @ToolbarTemplate
         </div>
     }
 
-    <div @ref="_editorRef" class="bit-rte-edt">
+    <div @ref="_editorRef" style="@Styles?.Editor" class="bit-rte-edt @Classes?.Editor">
         @EditorTemplate
     </div>
 </div>

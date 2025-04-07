@@ -6,6 +6,15 @@ public partial class BitRichTextEditorDemo
     [
         new()
         {
+            Name = "Classes",
+            Type = "BitRichTextEditorClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the rich text editor.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles"
+        },
+        new()
+        {
             Name = "EditorTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -24,6 +33,22 @@ public partial class BitRichTextEditorDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Makes the editor readonly."
+        },
+        new()
+        {
+            Name = "Reversed",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Reverses the location of the Toolbar and the Editor."
+        },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitRichTextEditorClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the rich text editor.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles"
         },
         new()
         {
@@ -81,6 +106,39 @@ public partial class BitRichTextEditorDemo
             Type = "Action<ValueTask<string?>>",
             Description = "Sets the current content of the editor in JSON format."
         },
+    ];
+
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
+        new()
+        {
+            Id = "class-styles",
+            Title = "BitRichTextEditorClassStyles",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the root of the BitRichTextEditor.",
+                },
+                new()
+                {
+                    Name = "Toolbar",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the toolbar of the BitRichTextEditor.",
+                },
+                new()
+                {
+                    Name = "Editor",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the editor container of the BitRichTextEditor.",
+                },
+            ]
+        }
     ];
 
     private readonly List<ComponentSubEnum> componentSubEnums =
@@ -141,6 +199,15 @@ public partial class BitRichTextEditorDemo
 <BitRichTextEditor Placeholder=""This is a custom placeholder"" />";
 
     private readonly string example4RazorCode = @"
+<BitRichTextEditor Placeholder=""The toolbar location is reversed!"" Reversed />";
+
+    private readonly string example5RazorCode = @"
+<BitRichTextEditor Style=""min-height: 300px"" FullToolbar />";
+
+    private readonly string example6RazorCode = @"
+<BitRichTextEditor Styles=""@(new() { Toolbar = ""border-color: red"", Editor = ""border-color: blue""})"" />";
+
+    private readonly string example7RazorCode = @"
 <BitRichTextEditor @ref=""getEditorRef"" />
 
 <BitButton OnClick=""GetText"">GetText</BitButton>
@@ -149,7 +216,7 @@ public partial class BitRichTextEditorDemo
 
 <div>result:</div>
 <pre>@result</pre>";
-    private readonly string example4CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private BitRichTextEditor getEditorRef = default!;
 private string? result;
 private async Task GetText()
@@ -165,7 +232,7 @@ private async Task GetContent()
     result = await getEditorRef.GetContent();
 }";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example8RazorCode = @"
 <textarea @bind-value=""setValue"" @bind-value:event=""oninput"" style=""width:100%;height:100px"" />
 
 <BitButton OnClick=""SetText"">SetText</BitButton>
@@ -173,7 +240,7 @@ private async Task GetContent()
 <BitButton OnClick=""SetContent"">SetContent</BitButton>
 
 <BitRichTextEditor @ref=""setEditorRef"" />";
-    private readonly string example5CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private BitRichTextEditor setEditorRef = default!;
 private string? setValue;
 private async Task SetText()
@@ -189,8 +256,8 @@ private async Task SetContent()
     await setEditorRef.SetContent(setValue);
 }";
 
-    private readonly string example6RazorCode = @"
-<BitRichTextEditor>
+    private readonly string example9RazorCode = @"
+<BitRichTextEditor Style=""min-height: 300px"">
     <ToolbarTemplate>
         <span class=""ql-formats"">
             <select class=""ql-font""></select>
@@ -236,6 +303,7 @@ private async Task SetContent()
     <EditorTemplate>
         <div><b>this is bold</b></div>
         <div><em>this is italic</em></div>
+        <div><b><em>this is italic & bold</em></b></div>
     </EditorTemplate>
 </BitRichTextEditor>";
 }

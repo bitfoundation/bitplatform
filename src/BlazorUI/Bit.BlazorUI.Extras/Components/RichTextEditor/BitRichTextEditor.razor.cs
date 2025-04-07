@@ -16,10 +16,21 @@ public partial class BitRichTextEditor : BitComponentBase
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the rich text editor.
+    /// </summary>
+    [Parameter] public BitRichTextEditorClassStyles? Classes { get; set; }
+
     /// <summary>
     /// Custom template for the editor content.
     /// </summary>
     [Parameter] public RenderFragment? EditorTemplate { get; set; }
+
+    /// <summary>
+    /// Renders the full toolbar with all of the available features.
+    /// </summary>
+    [Parameter] public bool FullToolbar { get; set; }
 
     /// <summary>
     /// The placeholder value of the editor.
@@ -30,6 +41,16 @@ public partial class BitRichTextEditor : BitComponentBase
     /// Makes the editor readonly.
     /// </summary>
     [Parameter] public bool ReadOnly { get; set; }
+
+    /// <summary>
+    /// Reverses the location of the Toolbar and the Editor.
+    /// </summary>
+    [Parameter] public bool Reversed { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the rich text editor.
+    /// </summary>
+    [Parameter] public BitRichTextEditorClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The theme of the editor.
@@ -95,6 +116,18 @@ public partial class BitRichTextEditor : BitComponentBase
 
     protected override string RootElementClass => "bit-rte";
 
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => Reversed ? "bit-rte-rvs" : string.Empty);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
@@ -107,7 +140,7 @@ public partial class BitRichTextEditor : BitComponentBase
 
             _dotnetObj = DotNetObjectReference.Create(this);
             ElementReference? toolbarRef = ToolbarTemplate is null ? null : _toolbarRef;
-            await _js.BitRichTextEditorSetup(_Id, _dotnetObj, _editorRef, toolbarRef, theme, Placeholder, ReadOnly);
+            await _js.BitRichTextEditorSetup(_Id, _dotnetObj, _editorRef, toolbarRef, theme, Placeholder, ReadOnly, FullToolbar, Styles?.Toolbar, Classes?.Toolbar);
         }
     }
 
