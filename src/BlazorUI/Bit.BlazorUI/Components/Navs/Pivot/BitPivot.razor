@@ -17,12 +17,29 @@
 
     @if (HeaderOnly is false)
     {
-        <div role="tabpanel"
-             aria-hidden="false"
-             style="@GetSelectedItemStyle()"
-             aria-labelledby="@(_selectedItem?._Id)"
-             class="bit-pvt-cct @GetSelectedItemClass()">
-            @(_selectedItem?.Body ?? _selectedItem?.ChildContent)
-        </div>
+        if (MountAll)
+        {
+            @foreach (var item in _allItems)
+            {
+                <div role="tabpanel"
+                aria-hidden="false"
+                aria-labelledby="@(item?._Id)"
+                style="@GetItemStyle(item)"
+                class="bit-pvt-cct @GetItemClass(item)">
+                    @(item?.Body ?? item?.ChildContent)
+                </div>
+            }
+
+        }
+        else
+        {
+            <div role="tabpanel"
+                 aria-hidden="false"
+                 aria-labelledby="@(_selectedItem?._Id)"
+                 style="@GetItemStyle(_selectedItem)"
+                 class="bit-pvt-cct @GetItemClass(_selectedItem)">
+                @(_selectedItem?.Body ?? _selectedItem?.ChildContent)
+            </div>
+        }
     }
 </div>
