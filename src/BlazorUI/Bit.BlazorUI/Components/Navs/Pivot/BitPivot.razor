@@ -22,10 +22,10 @@
             @foreach (var item in _allItems)
             {
                 <div role="tabpanel"
-                aria-hidden="false"
-                aria-labelledby="@(item?._Id)"
-                style="@GetItemStyle(item)"
-                class="bit-pvt-cct @GetItemClass(item)">
+                     aria-hidden="false"
+                     aria-labelledby="@(item?._Id)"
+                     style="@GetItemStyle(item)"
+                     class="bit-pvt-cct @GetItemClass(item)">
                     @(item?.Body ?? item?.ChildContent)
                 </div>
             }

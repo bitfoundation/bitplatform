@@ -2,6 +2,10 @@
 
 public partial class AppComponentBase : ComponentBase, IDisposable
 {
+    protected bool ShowAllCodes { get; private set; }
+
+
+
     [AutoInject] protected IJSRuntime JSRuntime = default!;
 
     [AutoInject] protected HttpClient HttpClient = default!;
@@ -31,6 +35,8 @@ public partial class AppComponentBase : ComponentBase, IDisposable
     {
         try
         {
+            ShowAllCodes = NavigationManager.Uri.Contains("showallcodes");
+
             await OnInitAsync();
             await base.OnInitializedAsync();
         }
