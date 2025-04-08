@@ -7,23 +7,24 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitSwiper : BitComponentBase
 {
-    private double _lastX;
     //private int _pagesCount;
     //private int _currentPage;
+
+    private double _lastX;
     private double _lastDiffX;
     private double _translateX;
     private double _rootWidth;
-    private double _swiperWidth;
     private bool _isPointerDown;
     private double _pointerDownX;
     private long _pointerDownTime;
-    private double _swiperEffectiveWidth;
+    private double _effectiveWidth;
+    private double _containerWidth;
     private int _internalScrollItemsCount = 1;
-    private ElementReference _swiper = default!;
     private string _directionStyle = string.Empty;
     private string _leftButtonStyle = string.Empty;
     private string _rightButtonStyle = string.Empty;
     private readonly List<BitSwiperItem> _allItems = [];
+    private ElementReference _swiperContainer = default!;
     private System.Timers.Timer _autoPlayTimer = default!;
     private DotNetObjectReference<BitSwiper> _dotnetObj = default!;
 
@@ -93,8 +94,10 @@ public partial class BitSwiper : BitComponentBase
 
 
     [JSInvokable("OnResize")]
-    public async Task _OnResize(ContentRect rect)
+    public async Task _OnResize(ContentRect _)
     {
+        if (IsDisposed) return;
+
         await GetDimensions();
         await Swipe(0);
     }
@@ -129,6 +132,8 @@ public partial class BitSwiper : BitComponentBase
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (IsDisposed) return;
+
         await GetDimensions();
 
         var itemsCount = _allItems.Count;
@@ -147,11 +152,9 @@ public partial class BitSwiper : BitComponentBase
             //    _autoPlayTimer.Start();
             //}
 
-            await _js.BitObserversRegisterResize(UniqueId, RootElement, _dotnetObj);
+            await _js.BitObserversRegisterResize(_Id, RootElement, _dotnetObj);
 
-            if (IsDisposed) return;
-
-            await _js.BitSwiperRegisterPointerLeave(RootElement, _dotnetObj);
+            await _js.BitSwiperSetup(_Id, RootElement, _dotnetObj);
 
             SetNavigationButtonsVisibility(_translateX);
         }
@@ -161,23 +164,28 @@ public partial class BitSwiper : BitComponentBase
 
 
 
-    private async void AutoPlayTimerElapsed(object? sender, ElapsedEventArgs e) => await InvokeAsync(async () => await Go(true));
+    private async void AutoPlayTimerElapsed(object? sender, ElapsedEventArgs e)
+    {
+        await InvokeAsync(async () => await Go(true));
+    }
 
     private void SetNavigationButtonsVisibility(double translateX)
     {
-        _rightButtonStyle = (/*InfiniteScrolling is false && */translateX == (Dir == BitDir.Rtl ? 0 : -_swiperEffectiveWidth)) ? "display:none" : string.Empty;
-        _leftButtonStyle = (/*InfiniteScrolling is false && */translateX == (Dir == BitDir.Rtl ? _swiperEffectiveWidth : 0)) ? "display:none" : string.Empty;
+        _rightButtonStyle = (/*InfiniteScrolling is false && */translateX == (Dir == BitDir.Rtl ? 0 : -_effectiveWidth)) ? "display:none" : string.Empty;
+        _leftButtonStyle = (/*InfiniteScrolling is false && */translateX == (Dir == BitDir.Rtl ? _effectiveWidth : 0)) ? "display:none" : string.Empty;
 
         StateHasChanged();
     }
 
     private async Task Go(bool isNext)
     {
+        if (IsDisposed) return;
+
         await GetDimensions();
-        await _js.BitUtilsSetStyle(_swiper, "transitionDuration", string.Empty);
+        await _js.BitUtilsSetStyle(_swiperContainer, "transitionDuration", string.Empty);
 
         var sign = isNext ? -1 : 1;
-        var scrollX = _swiperWidth / _allItems.Count * _internalScrollItemsCount;
+        var scrollX = _containerWidth / _allItems.Count * _internalScrollItemsCount;
         var passedSlidesX = (int)(_translateX / scrollX);
         var x = sign * scrollX + passedSlidesX * scrollX;
 
@@ -191,7 +199,7 @@ public partial class BitSwiper : BitComponentBase
 
     private async Task HandlePointerMove(MouseEventArgs e)
     {
-        if (_isPointerDown is false) return;
+        if (IsDisposed || _isPointerDown is false) return;
 
         var clientX = e.ClientX;
         var newDiffX = _lastX - clientX;
@@ -211,24 +219,31 @@ public partial class BitSwiper : BitComponentBase
 
     private async Task HandlePointerDown(MouseEventArgs e)
     {
+        if (IsDisposed) return;
+
         _isPointerDown = true;
         _pointerDownX = e.ClientX;
         _pointerDownTime = DateTime.Now.Ticks;
 
         await GetDimensions();
 
-        await _js.BitUtilsSetStyle(_swiper, "cursor", "grabbing");
-        await _js.BitUtilsSetStyle(_swiper, "transitionDuration", string.Empty);
+        await _js.BitUtilsSetStyle(_swiperContainer, "cursor", "grabbing");
+        await _js.BitUtilsSetStyle(_swiperContainer, "transitionDuration", string.Empty);
     }
 
-    private async Task HandlePointerUp(MouseEventArgs e) => await HandlePointerLeave(e.ClientX);
+    private async Task HandlePointerUp(MouseEventArgs e)
+    {
+        if (IsDisposed) return;
+
+        await HandlePointerLeave(e.ClientX);
+    }
 
     public async Task HandlePointerLeave(double clientX)
     {
-        if (_isPointerDown is false) return;
+        if (IsDisposed || _isPointerDown is false) return;
 
         _isPointerDown = false;
-        await _js.BitUtilsSetStyle(_swiper, "cursor", string.Empty);
+        await _js.BitUtilsSetStyle(_swiperContainer, "cursor", string.Empty);
 
         var time = (DateTime.Now.Ticks - _pointerDownTime) / 10_000;
         var distance = Math.Abs(clientX - _pointerDownX);
@@ -238,39 +253,41 @@ public partial class BitSwiper : BitComponentBase
         var swipeSpeed = distance / time;
 
         var transitionTime = swipeSpeed > 2 ? 300 : swipeSpeed > 1 ? 600 : 1000;
-        await _js.BitUtilsSetStyle(_swiper, "transitionDuration", FormattableString.Invariant($"{transitionTime}ms"));
+        await _js.BitUtilsSetStyle(_swiperContainer, "transitionDuration", FormattableString.Invariant($"{transitionTime}ms"));
 
-        var x = -(_lastDiffX / Math.Abs(_lastDiffX)) * (_swiperEffectiveWidth * swipeSpeed / 10) + _translateX;
+        var x = -(_lastDiffX / Math.Abs(_lastDiffX)) * (_effectiveWidth * swipeSpeed / 10) + _translateX;
         await Swipe(x);
     }
 
     private async Task Swipe(double x)
     {
-        if (_rootWidth > _swiperWidth || IsEnabled is false) return;
+        if (IsDisposed || IsEnabled is false || _rootWidth > _containerWidth) return;
 
         if (Dir == BitDir.Rtl)
         {
             if (x < 0) x = 0;
-            if (x > _swiperEffectiveWidth) x = _swiperEffectiveWidth;
+            if (x > _effectiveWidth) x = _effectiveWidth;
         }
         else
         {
             if (x > 0) x = 0;
-            if (x < -_swiperEffectiveWidth) x = -_swiperEffectiveWidth;
+            if (x < -_effectiveWidth) x = -_effectiveWidth;
         }
 
-        await _js.BitUtilsSetStyle(_swiper, "transform", FormattableString.Invariant($"translateX({x}px)"));
+        await _js.BitUtilsSetStyle(_swiperContainer, "transform", FormattableString.Invariant($"translateX({x}px)"));
 
         SetNavigationButtonsVisibility(x);
     }
 
     private async Task GetDimensions()
     {
-        var dimensions = await _js.BitSwiperGetDimensions(RootElement, _swiper);
+        if (IsDisposed) return;
+
+        var dimensions = await _js.BitSwiperGetDimensions(RootElement, _swiperContainer);
         _rootWidth = dimensions?.RootWidth ?? 0;
-        _swiperWidth = dimensions?.SwiperWidth ?? 0;
-        _swiperEffectiveWidth = dimensions?.EffectiveSwiperWidth ?? 0;
-        _translateX = dimensions?.SwiperTranslateX ?? 0;
+        _containerWidth = dimensions?.ContainerWidth ?? 0;
+        _effectiveWidth = dimensions?.EffectiveWidth ?? 0;
+        _translateX = dimensions?.TranslateX ?? 0;
     }
 
 
@@ -292,6 +309,7 @@ public partial class BitSwiper : BitComponentBase
             //_dotnetObj.Dispose(); // it is getting disposed in the following js call:
             try
             {
+                await _js.BitSwiperDispose(_Id);
                 await _js.BitObserversUnregisterResize(UniqueId, RootElement, _dotnetObj);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
