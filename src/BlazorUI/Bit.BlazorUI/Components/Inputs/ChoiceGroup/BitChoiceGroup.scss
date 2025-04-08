@@ -9,6 +9,7 @@
     flex-direction: column;
     font-family: $tg-font-family;
     font-size: var(--bit-chg-fontsize);
+    --bit-chg-item-gap: #{spacing(1)};
 
     &.bit-chg-req {
         .bit-chg-lbl {
@@ -84,6 +85,10 @@
     }
 }
 
+.bit-chg-ims {
+    --bit-chg-item-gap: #{spacing(2)};
+}
+
 .bit-chg-lbl {
     display: block;
     box-shadow: none;
@@ -94,7 +99,7 @@
 
 .bit-chg-cnt {
     display: flex;
-    gap: spacing(1);
+    gap: var(--bit-chg-item-gap);
     flex-flow: column nowrap;
 }
 
@@ -190,7 +195,7 @@
             transition-property: background-color;
             width: calc(var(--bit-chg-circle-size) / 2);
             transition: border-width 0.2s cubic-bezier(0.4, 0, 0.23, 1);
-            inset-inline-start: calc((var(--bit-chg-circle-size) - (var(--bit-chg-circle-size) / 2)) / 2);
+            inset-inline-start: calc(var(--bit-chg-circle-size) / 4);
         }
 
         @media (hover: hover) {
@@ -414,7 +419,7 @@
         }
 
         &:after {
-            border-color: $clr-brd-dis;
+            background-color: $clr-bg-dis;
         }
 
         .bit-chg-itx {

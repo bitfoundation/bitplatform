@@ -520,6 +520,7 @@ private void HandleInvalidSubmit() { }";
     private readonly string example11RazorCode = @"
 <style>
     .custom-class {
+        color: dodgerblue;
         margin-inline: 16px;
         text-shadow: dodgerblue 0 0 8px;
     }
@@ -564,7 +565,7 @@ private void HandleInvalidSubmit() { }";
 
 <BitChoiceGroup Label=""Styled ChoiceGroup"" DefaultValue=""@(""B"")""
                 TItem=""BitChoiceGroupOption<string>"" TValue=""string""
-                Style=""margin-inline: 16px; text-shadow: red 0 0 8px;"">
+                Style=""margin-inline: 16px; color:lightseagreen; text-shadow: lightseagreen 0 0 8px;"">
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />

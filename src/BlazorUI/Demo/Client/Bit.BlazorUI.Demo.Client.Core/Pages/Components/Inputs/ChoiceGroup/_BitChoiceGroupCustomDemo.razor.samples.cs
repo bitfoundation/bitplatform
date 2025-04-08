@@ -724,6 +724,7 @@ private readonly List<Order> basicCustoms =
     private readonly string example11RazorCode = @"
 <style>
     .custom-class {
+        color: dodgerblue;
         margin-inline: 16px;
         text-shadow: dodgerblue 0 0 8px;
     }
@@ -769,7 +770,7 @@ private readonly List<Order> basicCustoms =
 <BitChoiceGroup Label=""Styled ChoiceGroup""
                 Items=""basicCustoms""
                 DefaultValue=""basicCustoms[1].ItemValue""
-                Style=""margin-inline: 16px; text-shadow: red 0 0 8px;""
+                Style=""margin-inline: 16px; color:lightseagreen; text-shadow: lightseagreen 0 0 8px;""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
 <BitChoiceGroup Label=""Classed ChoiceGroup""

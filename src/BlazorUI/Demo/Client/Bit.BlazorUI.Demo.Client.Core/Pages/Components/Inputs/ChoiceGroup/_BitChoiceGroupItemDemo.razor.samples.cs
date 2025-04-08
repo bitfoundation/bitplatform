@@ -522,6 +522,7 @@ private readonly List<BitChoiceGroupItem<string>> basicItems =
     private readonly string example11RazorCode = @"
 <style>
     .custom-class {
+        color: dodgerblue;
         margin-inline: 16px;
         text-shadow: dodgerblue 0 0 8px;
     }
@@ -567,7 +568,7 @@ private readonly List<BitChoiceGroupItem<string>> basicItems =
 <BitChoiceGroup Label=""Styled ChoiceGroup""
                 Items=""basicItems""
                 DefaultValue=""basicItems[1].Value""
-                Style=""margin-inline: 16px; text-shadow: red 0 0 8px;"" />
+                Style=""margin-inline: 16px; color:lightseagreen; text-shadow: lightseagreen 0 0 8px;"" />
 
 <BitChoiceGroup Label=""Classed ChoiceGroup""
                 Items=""basicItems""
