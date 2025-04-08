@@ -2,7 +2,7 @@
 
 internal static class BitSwiperJsRuntimeExtensions
 {
-    internal static ValueTask BitSwiperRegisterSetup(this IJSRuntime jsRuntime, string id, ElementReference element, DotNetObjectReference<BitSwiper> dotnetObj)
+    internal static ValueTask BitSwiperSetup(this IJSRuntime jsRuntime, string id, ElementReference element, DotNetObjectReference<BitSwiper> dotnetObj)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Swiper.setup", id, element, dotnetObj);
     }

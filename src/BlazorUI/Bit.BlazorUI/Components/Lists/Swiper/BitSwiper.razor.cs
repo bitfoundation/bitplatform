@@ -7,23 +7,24 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitSwiper : BitComponentBase
 {
-    private double _lastX;
     //private int _pagesCount;
     //private int _currentPage;
+
+    private double _lastX;
     private double _lastDiffX;
     private double _translateX;
     private double _rootWidth;
-    private double _containerWidth;
     private bool _isPointerDown;
     private double _pointerDownX;
     private long _pointerDownTime;
-    private double _EffectiveWidth;
+    private double _effectiveWidth;
+    private double _containerWidth;
     private int _internalScrollItemsCount = 1;
-    private ElementReference _swiperContainer = default!;
     private string _directionStyle = string.Empty;
     private string _leftButtonStyle = string.Empty;
     private string _rightButtonStyle = string.Empty;
     private readonly List<BitSwiperItem> _allItems = [];
+    private ElementReference _swiperContainer = default!;
     private System.Timers.Timer _autoPlayTimer = default!;
     private DotNetObjectReference<BitSwiper> _dotnetObj = default!;
 
@@ -93,7 +94,7 @@ public partial class BitSwiper : BitComponentBase
 
 
     [JSInvokable("OnResize")]
-    public async Task _OnResize(ContentRect rect)
+    public async Task _OnResize(ContentRect _)
     {
         if (IsDisposed) return;
 
@@ -153,7 +154,7 @@ public partial class BitSwiper : BitComponentBase
 
             await _js.BitObserversRegisterResize(_Id, RootElement, _dotnetObj);
 
-            await _js.BitSwiperRegisterSetup(_Id, RootElement, _dotnetObj);
+            await _js.BitSwiperSetup(_Id, RootElement, _dotnetObj);
 
             SetNavigationButtonsVisibility(_translateX);
         }
@@ -170,8 +171,8 @@ public partial class BitSwiper : BitComponentBase
 
     private void SetNavigationButtonsVisibility(double translateX)
     {
-        _rightButtonStyle = (/*InfiniteScrolling is false && */translateX == (Dir == BitDir.Rtl ? 0 : -_EffectiveWidth)) ? "display:none" : string.Empty;
-        _leftButtonStyle = (/*InfiniteScrolling is false && */translateX == (Dir == BitDir.Rtl ? _EffectiveWidth : 0)) ? "display:none" : string.Empty;
+        _rightButtonStyle = (/*InfiniteScrolling is false && */translateX == (Dir == BitDir.Rtl ? 0 : -_effectiveWidth)) ? "display:none" : string.Empty;
+        _leftButtonStyle = (/*InfiniteScrolling is false && */translateX == (Dir == BitDir.Rtl ? _effectiveWidth : 0)) ? "display:none" : string.Empty;
 
         StateHasChanged();
     }
@@ -254,7 +255,7 @@ public partial class BitSwiper : BitComponentBase
         var transitionTime = swipeSpeed > 2 ? 300 : swipeSpeed > 1 ? 600 : 1000;
         await _js.BitUtilsSetStyle(_swiperContainer, "transitionDuration", FormattableString.Invariant($"{transitionTime}ms"));
 
-        var x = -(_lastDiffX / Math.Abs(_lastDiffX)) * (_EffectiveWidth * swipeSpeed / 10) + _translateX;
+        var x = -(_lastDiffX / Math.Abs(_lastDiffX)) * (_effectiveWidth * swipeSpeed / 10) + _translateX;
         await Swipe(x);
     }
 
@@ -265,12 +266,12 @@ public partial class BitSwiper : BitComponentBase
         if (Dir == BitDir.Rtl)
         {
             if (x < 0) x = 0;
-            if (x > _EffectiveWidth) x = _EffectiveWidth;
+            if (x > _effectiveWidth) x = _effectiveWidth;
         }
         else
         {
             if (x > 0) x = 0;
-            if (x < -_EffectiveWidth) x = -_EffectiveWidth;
+            if (x < -_effectiveWidth) x = -_effectiveWidth;
         }
 
         await _js.BitUtilsSetStyle(_swiperContainer, "transform", FormattableString.Invariant($"translateX({x}px)"));
@@ -285,7 +286,7 @@ public partial class BitSwiper : BitComponentBase
         var dimensions = await _js.BitSwiperGetDimensions(RootElement, _swiperContainer);
         _rootWidth = dimensions?.RootWidth ?? 0;
         _containerWidth = dimensions?.ContainerWidth ?? 0;
-        _EffectiveWidth = dimensions?.EffectiveWidth ?? 0;
+        _effectiveWidth = dimensions?.EffectiveWidth ?? 0;
         _translateX = dimensions?.TranslateX ?? 0;
     }
 
