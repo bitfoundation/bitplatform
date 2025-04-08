@@ -28,6 +28,13 @@
     </div>
 
     <div class="box-content">
+        @if (ShowAllCodes)
+        {
+            <div class="example-container">
+                @ChildContent
+            </div>
+        }
+
         @if (showCode)
         {
             <BitActionButton Class="@($"copy-btn {(isCodeCopied ? "copied" : "")}")"
@@ -58,8 +65,11 @@
             </pre>
         }
 
-        <div class="example-container">
-            @ChildContent
-        </div>
+        @if (ShowAllCodes is false)
+        {
+            <div class="example-container">
+                @ChildContent
+            </div>
+        }
     </div>
 </section>
