@@ -252,10 +252,6 @@ _book
 /src/BlazorUI/Bit.BlazorUI.Icons/wwwroot/scripts/*.js
 /src/BlazorUI/Bit.BlazorUI.Icons/wwwroot/**/*.css.gz
 
-/src/Bup/Bit.Bup/Scripts/**/*.js
-/src/Bup/Bit.Bup/wwwroot/**/*.js
-/src/Bup/Bit.Bup/wwwroot/**/*.css
-
 /src/Bswup/Bit.Bswup/Scripts/**/*.js
 /src/Bswup/Bit.Bswup/wwwroot/**/*.js
 /src/Bswup/Bit.Bswup/wwwroot/**/*.css
