@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.LifecycleEvents;
 //#if (notification == true)
@@ -6,9 +6,6 @@ using Plugin.LocalNotification;
 //#endif
 using Boilerplate.Client.Core.Styles;
 using Boilerplate.Client.Maui.Services;
-using Maui.AppStores;
-using Maui.InAppReviews;
-using Maui.Android.InAppUpdates;
 //-:cnd:noEmit
 #if iOS || Mac
 using UIKit;
@@ -40,9 +37,6 @@ public static partial class MauiProgram
         //+:cnd:noEmit
         builder
             .UseMauiApp<App>()
-            .UseInAppReviews()
-            .UseAppStoreInfo()
-            .UseAndroidInAppUpdates()
             //#if (sentry == true)
             .UseSentry(options =>
             {

@@ -1,6 +1,4 @@
-//+:cnd:noEmit
-
-using Maui.AppStores;
+﻿//+:cnd:noEmit
 
 namespace Boilerplate.Client.Maui.Components.Pages;
 
@@ -29,6 +27,5 @@ public partial class AboutPage
         oem = DeviceInfo.Current.Manufacturer;
         appVersion = telemetryContext.AppVersion!;
         processId = Environment.ProcessId.ToString();
-        appVersion += $" / {(AppStoreInfo.Current.CachedInformation?.LatestVersion?.ToString() ?? "?")}";
     }
 }

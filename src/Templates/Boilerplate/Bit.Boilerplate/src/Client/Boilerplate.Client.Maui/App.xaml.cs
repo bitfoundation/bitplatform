@@ -1,6 +1,4 @@
-using Maui.AppStores;
-using Maui.InAppReviews;
-using System.Runtime.InteropServices;
+﻿using Plugin.Maui.AppRating;
 using Microsoft.Extensions.Logging;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
@@ -10,7 +8,6 @@ namespace Boilerplate.Client.Maui;
 public partial class App
 {
     private readonly Page mainPage;
-    private readonly IStorageService storageService;
 
     private readonly ILogger<App> logger;
     private readonly IExceptionHandler exceptionHandler;
@@ -27,7 +24,6 @@ public partial class App
     {
         this.logger = logger;
         this.localizer = localizer;
-        this.storageService = storageService;
         this.exceptionHandler = exceptionHandler;
         this.deviceCoordinator = deviceCoordinator;
         this.mainPage = new NavigationPage(mainPage);
@@ -40,7 +36,7 @@ public partial class App
                 if ((await storageService.GetItem("StoreReviewRequested")) is not "true")
                 {
                     await storageService.SetItem("StoreReviewRequested", "true");
-                    ReviewStatus status = await InAppReview.Current.RequestAsync();
+                    await AppRating.Default!.PerformInAppRateAsync(isTestOrDebugMode: AppEnvironment.IsDev());
                 }
             });
         });
@@ -77,40 +73,10 @@ public partial class App
             }
 #endif
             //+:cnd:noEmit
-            await CheckForUpdates();
         }
         catch (Exception exp)
         {
             exceptionHandler.Handle(exp);
         }
-    }
-
-    private async Task CheckForUpdates()
-    {
-        await Task.Delay(TimeSpan.FromSeconds(3)); // No rush to check for updates.
-
-        try
-        {
-            if (await AppStoreInfo.Current.IsUsingLatestVersionAsync() is false)
-            {
-                var newVersion = await AppStoreInfo.Current.GetLatestVersionAsync();
-                var releaseNotes = (await AppStoreInfo.Current.GetInformationAsync()).ReleaseNotes;
-
-                if (await storageService.GetItem($"{newVersion}_UpdateFromVersionIsRequested") is not "true")
-                {
-                    await storageService.SetItem($"{newVersion}_UpdateFromVersionIsRequested", "true");
-
-                    // It's an opportune moment to request an update. (:
-                    // https://github.com/oscoreio/Maui.AppStoreInfo
-                    if (await App.Current!.Windows[0].Page!.DisplayAlert(localizer[nameof(AppStrings.NewVersionIsAvailable), newVersion], localizer[nameof(AppStrings.UpdateToNewVersion), releaseNotes], localizer[nameof(AppStrings.Yes)], localizer[nameof(AppStrings.No)]) is true)
-                    {
-                        await AppStoreInfo.Current.OpenApplicationInStoreAsync();
-                    }
-                }
-            }
-        }
-        catch (InvalidOperationException) when ((AppPlatform.IsIOS || AppPlatform.IsMacOS) && AppEnvironment.IsDev()) { }
-        catch (FileNotFoundException) { }
-        catch (COMException) { }
     }
 }
