@@ -168,16 +168,11 @@
         <PackageReference Include="Microsoft.Extensions.Logging.EventSource" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition="'$(module)' == 'Admin' OR '$(module)' == ''" Include="Newtonsoft.Json" />
+        <PackageReference Include="Plugin.Maui.AppRating" />
         <PackageReference Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.Extensions.Logging.ApplicationInsights" />
         <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Plugin.LocalNotification" />
         <!--/-:msbuild-conditional:noEmit -->
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Oscore.Maui.AppStoreInfo" />
-        <PackageReference Include="Oscore.Maui.InAppReviews" />
-        <PackageReference Include="Oscore.Maui.Android.InAppUpdates" />
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
