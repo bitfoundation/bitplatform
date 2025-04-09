@@ -125,7 +125,7 @@
                 </BitRichTextEditor>
             </DemoExample>
 
-            <DemoExample Title="Custom font" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <DemoExample Title="Custom fonts" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
                 <BitRichTextEditor OnQuillReady="HandleOnQuillReady"
                                    Classes="@(new() { Editor = "custom-font-editor", Toolbar = "custom-font-toolbar" })">
                     <ToolbarTemplate>
@@ -150,7 +150,6 @@
 <script>
     function registerQuillCustomFonts() {
         const Font = Quill.import('formats/font');
-
         Font.whitelist = (Font.whitelist || []).concat['aref-ruqaa', 'mirza', 'roboto'];
         Quill.register(Font, true);
     };

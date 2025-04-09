@@ -368,7 +368,6 @@ private async Task SetContent()
 <script>
     function registerQuillCustomFonts() {
         const Font = Quill.import('formats/font');
-
         Font.whitelist = ['aref-ruqaa', 'mirza', 'roboto'];
         Quill.register(Font, true);
     };
