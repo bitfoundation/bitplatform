@@ -33,6 +33,16 @@ public partial class BitRichTextEditor : BitComponentBase
     [Parameter] public bool FullToolbar { get; set; }
 
     /// <summary>
+    /// Callback for when the editor instance is created and ready to use.
+    /// </summary>
+    [Parameter] public EventCallback<string> OnEditorReady { get; set; }
+
+    /// <summary>
+    /// Callback for when the Quill scripts is loaded and the Quill api is ready to use. It allows for custom actions to be performed at that moment.
+    /// </summary>
+    [Parameter]public EventCallback OnQuillReady { get; set; }
+
+    /// <summary>
     /// The placeholder value of the editor.
     /// </summary>
     [Parameter] public string? Placeholder { get; set; }
@@ -136,11 +146,16 @@ public partial class BitRichTextEditor : BitComponentBase
         {
             var theme = (Theme ?? BitRichTextEditorTheme.Snow).ToString().ToLower();
             await _js.BitExtrasInitScripts(["_content/Bit.BlazorUI.Extras/quilljs/quill-2.0.3.js"]);
+
+            await OnQuillReady.InvokeAsync();
+
             await _js.BitExtrasInitStylesheets([$"_content/Bit.BlazorUI.Extras/quilljs/quill.{theme}-2.0.3.css"]);
 
             _dotnetObj = DotNetObjectReference.Create(this);
             ElementReference? toolbarRef = ToolbarTemplate is null ? null : _toolbarRef;
             await _js.BitRichTextEditorSetup(_Id, _dotnetObj, _editorRef, toolbarRef, theme, Placeholder, ReadOnly, FullToolbar, Styles?.Toolbar, Classes?.Toolbar);
+
+            await OnEditorReady.InvokeAsync(_Id);
         }
     }
 

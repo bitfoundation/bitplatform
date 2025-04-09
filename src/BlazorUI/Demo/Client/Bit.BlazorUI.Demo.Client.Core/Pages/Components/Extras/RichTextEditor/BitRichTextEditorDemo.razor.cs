@@ -22,6 +22,20 @@ public partial class BitRichTextEditorDemo
         },
         new()
         {
+            Name = "OnEditorReady",
+            Type = "EventCallback<string>",
+            DefaultValue = "",
+            Description = "Callback for when the editor instance is created and ready to use."
+        },
+        new()
+        {
+            Name = "OnQuillReady",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "Callback for when the Quill scripts is loaded and the Quill api is ready to use. It allows for custom actions to be performed at that moment."
+        },
+        new()
+        {
             Name = "Placeholder",
             Type = "string?",
             DefaultValue = "null",
@@ -187,6 +201,11 @@ public partial class BitRichTextEditorDemo
         await setEditorRef.SetContent(setValue);
     }
 
+    private async Task HandleOnQuillReady()
+    {
+        await JSRuntime.InvokeVoidAsync("registerQuillCustomFonts");
+    }
+
 
 
     private readonly string example1RazorCode = @"
@@ -306,4 +325,72 @@ private async Task SetContent()
         <div><b><em>this is italic & bold</em></b></div>
     </EditorTemplate>
 </BitRichTextEditor>";
+
+    private readonly string example10RazorCode = @"
+<link rel=""stylesheet"" href=""https://fonts.googleapis.com/css?family=Aref+Ruqaa|Mirza|Roboto"" />
+
+<style>
+    .custom-font-editor {
+        font-family: 'Segoe UI';
+        font-size: 18px;
+        height: 375px;
+    }
+
+    .custom-font-editor .ql-font-aref-ruqaa {
+        font-family: 'Aref Ruqaa';
+    }
+
+    .custom-font-editor .ql-font-mirza {
+        font-family: 'Mirza';
+    }
+
+    .custom-font-editor .ql-font-roboto {
+        font-family: 'Roboto';
+    }
+
+    .custom-font-toolbar .ql-font span[data-label='Segoe UI']::before {
+        font-family: 'Segoe UI';
+    }
+
+    .custom-font-toolbar .ql-font span[data-label='Aref Ruqaa']::before {
+        font-family: 'Aref Ruqaa';
+    }
+
+    .custom-font-toolbar .ql-font span[data-label='Mirza']::before {
+        font-family: 'Mirza';
+    }
+
+    .custom-font-toolbar .ql-font span[data-label='Roboto']::before {
+        font-family: 'Roboto';
+    }
+</style>
+
+<script>
+    function registerQuillCustomFonts() {
+        const Font = Quill.import('formats/font');
+
+        Font.whitelist = ['aref-ruqaa', 'mirza', 'roboto'];
+        Quill.register(Font, true);
+    };
+</script>
+
+<BitRichTextEditor OnQuillReady=""HandleOnQuillReady""
+                   Classes=""@(new() { Editor = ""custom-font-editor"", Toolbar = ""custom-font-toolbar"" })"">
+    <ToolbarTemplate>
+        <select class=""ql-font"">
+            <option selected>Segoe UI</option>
+            <option value=""aref-ruqaa"">Aref Ruqaa</option>
+            <option value=""mirza"">Mirza</option>
+            <option value=""roboto"">Roboto</option>
+        </select>
+    </ToolbarTemplate>
+    <EditorTemplate>
+        <p>this is a sample of adding custom fonts to the BitRichTextEditor!</p>
+    </EditorTemplate>
+</BitRichTextEditor>";
+    private readonly string example10CsharpCode = @"
+private async Task HandleOnQuillReady()
+{
+    await JSRuntime.InvokeVoidAsync(""registerQuillCustomFonts"");
+}";
 }

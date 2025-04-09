@@ -12,44 +12,60 @@
         &.ql-toolbar {
             border-color: $clr-brd-pri;
 
-            .ql-formats {
+            .ql-stroke {
+                stroke: $clr-fg-sec;
+            }
+
+            .ql-fill {
+                fill: $clr-fg-sec;
+            }
+
+            button:hover,
+            .ql-picker-label:hover,
+            .ql-picker-item:hover {
+                color: $clr-pri-hover;
+
                 .ql-stroke {
-                    stroke: $clr-fg-sec;
+                    stroke: $clr-pri-hover;
                 }
 
                 .ql-fill {
-                    fill: $clr-fg-sec;
+                    fill: $clr-pri-hover;
+                }
+            }
+
+            .ql-picker {
+                color: $clr-fg-sec;
+
+                &.ql-expanded .ql-picker-label,
+                &.ql-expanded .ql-picker-options {
+                    border-color: $clr-brd-pri;
+                }
+
+                .ql-picker-item.ql-selected {
+                    color: $clr-pri-active;
+                }
+            }
+
+            .ql-picker-options {
+                background-color: $clr-bg-pri;
+            }
+
+            .ql-active {
+                .ql-stroke {
+                    stroke: $clr-pri;
+                }
+
+                .ql-fill {
+                    fill: $clr-pri;
                 }
 
                 .ql-picker {
-                    color: $clr-fg-sec;
-
-                    &.ql-expanded .ql-picker-label,
-                    &.ql-expanded .ql-picker-options {
-                        border-color: $clr-brd-pri;
-                    }
-
-                    .ql-picker-label.ql-active {
-                        color: $clr-pri;
-                    }
+                    color: $clr-pri;
                 }
 
-                .ql-picker-options {
-                    background-color: $clr-bg-pri;
-                }
-
-                .ql-active {
-                    .ql-stroke {
-                        stroke: $clr-pri;
-                    }
-
-                    .ql-fill {
-                        fill: $clr-pri;
-                    }
-
-                    .ql-picker {
-                        color: $clr-pri;
-                    }
+                &.ql-picker-label {
+                    color: $clr-pri;
                 }
             }
         }

@@ -57,4 +57,41 @@
         font-size: 1.5rem;
         background-color: tomato;
     }
+
+
+    .custom-font-editor {
+        font-family: 'Segoe UI';
+        font-size: 18px;
+        height: 375px;
+
+        .ql-font-aref-ruqaa {
+            font-family: 'Aref Ruqaa';
+        }
+
+        .ql-font-mirza {
+            font-family: 'Mirza';
+        }
+
+        .ql-font-roboto {
+            font-family: 'Roboto';
+        }
+    }
+
+    .custom-font-toolbar {
+        .ql-font span[data-label='Segoe UI']::before {
+            font-family: 'Segoe UI';
+        }
+
+        .ql-font span[data-label='Aref Ruqaa']::before {
+            font-family: 'Aref Ruqaa';
+        }
+
+        .ql-font span[data-label='Mirza']::before {
+            font-family: 'Mirza';
+        }
+
+        .ql-font span[data-label='Roboto']::before {
+            font-family: 'Roboto';
+        }
+    }
 }

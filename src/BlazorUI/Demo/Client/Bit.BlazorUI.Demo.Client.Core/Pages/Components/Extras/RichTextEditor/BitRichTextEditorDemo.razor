@@ -1,4 +1,5 @@
 ﻿@page "/components/richtexteditor"
+@inherits AppComponentBase
 
 <PageOutlet Url="components/RichTextEditor"
             Title="RichTextEditor"
@@ -6,7 +7,7 @@
 
 <div>
     <DemoPage Name="RichTextEditor"
-              Description="RichTextEditor is a WYSIWYG text editor."
+              Description="RichTextEditor is a WYSIWYG text editor, utilizing the famous Quill js library."
               Parameters="componentParameters"
               SubEnums="componentSubEnums"
               PublicMembers="componentPublicMembers"
@@ -123,6 +124,34 @@
                     </EditorTemplate>
                 </BitRichTextEditor>
             </DemoExample>
+
+            <DemoExample Title="Custom font" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+                <BitRichTextEditor OnQuillReady="HandleOnQuillReady"
+                                   Classes="@(new() { Editor = "custom-font-editor", Toolbar = "custom-font-toolbar" })">
+                    <ToolbarTemplate>
+                        <select class="ql-font">
+                            <option selected>Segoe UI</option>
+                            <option value="aref-ruqaa">Aref Ruqaa</option>
+                            <option value="mirza">Mirza</option>
+                            <option value="roboto">Roboto</option>
+                        </select>
+                    </ToolbarTemplate>
+                    <EditorTemplate>
+                        <p>this is a sample of adding custom fonts to the BitRichTextEditor!</p>
+                    </EditorTemplate>
+                </BitRichTextEditor>
+            </DemoExample>
         </Examples>
     </DemoPage>
 </div>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Aref+Ruqaa|Mirza|Roboto" />
+
+<script>
+    function registerQuillCustomFonts() {
+        const Font = Quill.import('formats/font');
+
+        Font.whitelist = (Font.whitelist || []).concat['aref-ruqaa', 'mirza', 'roboto'];
+        Quill.register(Font, true);
+    };
+</script>

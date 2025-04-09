@@ -1,6 +1,12 @@
 namespace BitBlazorUI {
 
     export class RichTextEditor {
+        public static getQuillInstance(id: string) {
+            return RichTextEditor._editors[id]?.quill;
+        }
+
+        // ====================================================================
+
         private static _editors: { [key: string]: QuillEditor } = {};
 
         private static _toolbarFullOptions = [
