@@ -22,8 +22,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// <summary>
     /// The content of the ChoiceGroup, a list of BitChoiceGroupOption components.
     /// </summary>
-    [Parameter, ResetClassBuilder]
-    public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the BitChoiceGroup.
@@ -50,14 +49,12 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// <summary>
     /// Renders the icons and images in a single line with the items in the ChoiceGroup.
     /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool Inline { get; set; }
+    [Parameter] public bool Inline { get; set; }
 
     /// <summary>
     /// Sets the data source that populates the items of the list.
     /// </summary>
-    [Parameter, ResetClassBuilder]
-    public IEnumerable<TItem> Items { get; set; } = [];
+    [Parameter] public IEnumerable<TItem> Items { get; set; } = [];
 
     /// <summary>
     /// Used to customize the label for the Item Label content.
@@ -103,8 +100,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// <summary>
     /// Alias of ChildContent.
     /// </summary>
-    [Parameter, ResetClassBuilder]
-    public RenderFragment? Options { get; set; }
+    [Parameter] public RenderFragment? Options { get; set; }
 
     /// <summary>
     /// The size of the BitChoiceGroup.
@@ -172,7 +168,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
         ClassBuilder.Register(() => IsEnabled && Required ? "bit-chg-req" : string.Empty);
 
-        ClassBuilder.Register(() => Horizontal && (Inline || _items.Any(i => GetIconName(i).HasValue() || GetImageSrc(i).HasValue()) is false) ? "bit-chg-ims" : string.Empty);
+        ClassBuilder.Register(() => Horizontal ? "bit-chg-hor" : string.Empty);
 
         ClassBuilder.Register(() => Color switch
         {

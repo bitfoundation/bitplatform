@@ -9,7 +9,7 @@
     flex-direction: column;
     font-family: $tg-font-family;
     font-size: var(--bit-chg-fontsize);
-    --bit-chg-item-gap: #{spacing(1)};
+    --bit-chg-flex-flow: column nowrap;
 
     &.bit-chg-req {
         .bit-chg-lbl {
@@ -85,10 +85,6 @@
     }
 }
 
-.bit-chg-ims {
-    --bit-chg-item-gap: #{spacing(2)};
-}
-
 .bit-chg-lbl {
     display: block;
     box-shadow: none;
@@ -100,11 +96,11 @@
 .bit-chg-cnt {
     display: flex;
     gap: var(--bit-chg-item-gap);
-    flex-flow: column nowrap;
+    flex-flow: var(--bit-chg-flex-flow);
 }
 
 .bit-chg-hor {
-    flex-flow: row wrap;
+    --bit-chg-flex-flow: row wrap;
 }
 
 .bit-chg-icn {
@@ -624,4 +620,18 @@
     --bit-chg-fontsize: #{spacing(2)};
     --bit-chg-circle-size: #{spacing(3.25)};
     --bit-chg-dot-position: #{spacing(1.25)};
+}
+
+.bit-chg-hor {
+    &.bit-chg-sm {
+        --bit-chg-item-gap: #{spacing(1)};
+    }
+
+    &.bit-chg-md {
+        --bit-chg-item-gap: #{spacing(2)};
+    }
+
+    &.bit-chg-lg {
+        --bit-chg-item-gap: #{spacing(3)};
+    }
 }
