@@ -150,7 +150,7 @@
 <script>
     function registerQuillCustomFonts() {
         const Font = Quill.import('formats/font');
-        Font.whitelist = (Font.whitelist || []).concat['aref-ruqaa', 'mirza', 'roboto'];
+        Font.whitelist = (Font.whitelist || []).concat(['aref-ruqaa', 'mirza', 'roboto']);
         Quill.register(Font, true);
     };
 </script>
