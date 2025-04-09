@@ -1,7 +1,8 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using System.Net;
 using System.Net.Mail;
 using System.IO.Compression;
+using System.ClientModel.Primitives;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Net.Http.Headers;
@@ -22,6 +23,7 @@ using Boilerplate.Server.Api.Services;
 using Boilerplate.Server.Api.Controllers;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Services.Identity;
+
 namespace Boilerplate.Server.Api;
 
 public static partial class Program
@@ -221,7 +223,7 @@ public static partial class Program
             //#elif (database == "Other")
             throw new NotImplementedException("Install and configure any database supported by ef core (https://learn.microsoft.com/en-us/ef/core/providers)");
             //#endif
-        };
+        }
 
         services.AddOptions<IdentityOptions>()
             .Bind(configuration.GetRequiredSection(nameof(ServerApiSettings.Identity)))
@@ -283,6 +285,12 @@ public static partial class Program
         {
             c.Timeout = TimeSpan.FromSeconds(10);
             c.BaseAddress = new Uri("https://www.google.com/recaptcha/");
+            c.DefaultRequestVersion = HttpVersion.Version20;
+            c.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+        }).ConfigurePrimaryHttpMessageHandler(sp => new SocketsHttpHandler()
+        {
+            EnableMultipleHttp2Connections = true,
+            EnableMultipleHttp3Connections = true
         });
         //#endif
 
@@ -290,12 +298,24 @@ public static partial class Program
         {
             c.Timeout = TimeSpan.FromSeconds(3);
             c.BaseAddress = new Uri("https://azuresearch-usnc.nuget.org");
+            c.DefaultRequestVersion = HttpVersion.Version20;
+            c.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+        }).ConfigurePrimaryHttpMessageHandler(sp => new SocketsHttpHandler()
+        {
+            EnableMultipleHttp2Connections = true,
+            EnableMultipleHttp3Connections = true
         });
 
         services.AddHttpClient<ResponseCacheService>(c =>
         {
             c.Timeout = TimeSpan.FromSeconds(10);
             c.BaseAddress = new Uri("https://api.cloudflare.com/client/v4/zones/");
+            c.DefaultRequestVersion = HttpVersion.Version20;
+            c.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+        }).ConfigurePrimaryHttpMessageHandler(sp => new SocketsHttpHandler()
+        {
+            EnableMultipleHttp2Connections = true,
+            EnableMultipleHttp3Connections = true
         });
 
         services.AddFido2(options =>
@@ -319,6 +339,28 @@ public static partial class Program
 
             return options;
         });
+
+        if (string.IsNullOrEmpty(appSettings.AI?.ApiKey) is false)
+        {
+            services.AddHttpClient("AI", c =>
+            {
+                c.DefaultRequestVersion = HttpVersion.Version20;
+                c.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+            }).ConfigurePrimaryHttpMessageHandler(sp => new SocketsHttpHandler()
+            {
+                EnableMultipleHttp2Connections = true,
+                EnableMultipleHttp3Connections = true
+            });
+
+            services.AddChatClient(sp => new OpenAIChatClient(new(appSettings.AI.Model, new(appSettings.AI.ApiKey), options: new()
+            {
+                Endpoint = appSettings.AI.Endpoint,
+                Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
+            }))).UseLogging()
+                .UseFunctionInvocation()
+                .UseDistributedCache()
+                .UseOpenTelemetry();
+        }
     }
 
     private static void AddIdentity(WebApplicationBuilder builder)

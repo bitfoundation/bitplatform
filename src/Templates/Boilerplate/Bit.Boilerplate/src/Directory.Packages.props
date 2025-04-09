@@ -18,6 +18,8 @@
         <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="9.0.4" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.4" />
         <PackageVersion Include="EmbedIO" Version="3.5.2" />
+        <PackageVersion Include="Microsoft.Extensions.AI" Version="9.3.0-preview.1.25161.3" />
+        <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="9.3.0-preview.1.25161.3" />
         <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="9.0.4" />
         <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.4" />
         <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="9.0.4" />

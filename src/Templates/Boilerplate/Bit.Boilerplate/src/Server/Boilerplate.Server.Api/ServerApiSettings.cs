@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 //#if (notification == true)
 using AdsPush.Abstraction.Settings;
 //#endif
@@ -15,6 +15,8 @@ public partial class ServerApiSettings : SharedSettings
 
     [Required]
     public EmailOptions Email { get; set; } = default!;
+
+    public AIOptions? AI { get; set; }
 
     public SmsOptions? Sms { get; set; }
 
@@ -58,6 +60,11 @@ public partial class ServerApiSettings : SharedSettings
 
         if (Identity is null)
             throw new InvalidOperationException("Identity configuration is required.");
+
+        if (AI is not null)
+        {
+            Validator.TryValidateObject(AI, new ValidationContext(AI), validationResults, true);
+        }
 
         if (Email is null)
             throw new InvalidOperationException("Email configuration is required.");
@@ -170,6 +177,18 @@ public partial class AppIdentityOptions : IdentityOptions
     /// <inheritdoc cref="AuthPolicies.PRIVILEGED_ACCESS"/>
     /// </summary>
     public int MaxConcurrentPrivilegedSessions { get; set; }
+}
+
+public partial class AIOptions
+{
+    [Required]
+    public string? Model { get; set; }
+
+    [Required]
+    public Uri? Endpoint { get; set; }
+
+    [Required]
+    public string? ApiKey { get; set; }
 }
 
 public partial class EmailOptions
