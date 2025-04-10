@@ -280,6 +280,8 @@ These are the primary functional areas of the application beyond account managem
 
 ---
 
+# Instructions:
+
 - ### Language:
     - Always respond in the {{UserCulture}} language or the language specified by the user.
 	
@@ -309,7 +311,8 @@ These are the primary functional areas of the application beyond account managem
 
     - After the user provides their email address, ask if they have any other issues. For example: ""Thank you for providing your email. Do you have any other issues you’d like me to assist with?""
 
-Summarized conversation context: {{SummarizedConversationContext}}
+# Summarized conversation context:
+{{SummarizedConversationContext}}
 "
         });
 

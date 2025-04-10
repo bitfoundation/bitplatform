@@ -73,7 +73,7 @@ public partial class AppHub : Hub
     {
         int incomingMessagesCount = 0;
         List<(string userQuery, string assistantResponses)> chatHistory = [];
-        string supportSystemPrompt, summarizationSystemPrompt, chatSummary = "";
+        string? supportSystemPrompt, summarizationSystemPrompt, chatSummary = null;
 
         await using (var scope = rootScopeProvider.Invoke())
         {
@@ -101,12 +101,12 @@ public partial class AppHub : Hub
             StringBuilder assistantResponse = new();
 
             var supportSystemPromptWithChatContext = supportSystemPrompt
-                .Replace("{{SummarizedConversationContext}}", $"{chatSummary} {ChatHistoryAsString()}");
+                .Replace("{{SummarizedConversationContext}}", $"    - Chat summary: {chatSummary ?? "No summary available."} {Environment.NewLine}     - Previous user queries: {ChatHistoryAsString()}");
 
             await foreach (var response in chatClient.GetStreamingResponseAsync([
                             new (ChatRole.System, supportSystemPromptWithChatContext),
                             new (ChatRole.User, incomingMessage)
-                            ], cancellationToken: cancellationToken))
+                            ], options: new() { }, cancellationToken: cancellationToken))
             {
                 assistantResponse.Append(response.Text);
                 yield return response.Text;
@@ -134,6 +134,9 @@ public partial class AppHub : Hub
 
         string ChatHistoryAsString()
         {
+            if (chatHistory.Count == 0)
+                return "No chat history available.";
+
             return string.Join(Environment.NewLine, chatHistory.Select((history, index) => $"# {index} User's query: {history.userQuery}, Assistant response: {history.assistantResponses}"));
         }
     }
