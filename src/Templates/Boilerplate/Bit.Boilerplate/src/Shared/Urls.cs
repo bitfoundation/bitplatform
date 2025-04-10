@@ -31,5 +31,7 @@ public static partial class Urls
     public const string ProductPage = "/product";
     //#endif
 
+    public const string EditSystemPrompts = "/edit-system-prompts";
+
     public const string Authorize = "/authorize";
 }

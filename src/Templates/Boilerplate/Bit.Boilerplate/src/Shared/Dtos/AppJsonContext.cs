@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Fido2NetLib;
 using Fido2NetLib.Objects;
 //#if (sample == true)
@@ -16,6 +16,7 @@ using Boilerplate.Shared.Dtos.PushNotification;
 //#endif
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Dtos.Statistics;
+using Boilerplate.Shared.Dtos.Chatbot;
 
 namespace Boilerplate.Shared.Dtos;
 
@@ -59,6 +60,8 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(VerifyAssertionResult))]
 [JsonSerializable(typeof(VerifyWebAuthnAndSignInDto))]
 [JsonSerializable(typeof(WebAuthnAssertionOptionsRequestDto))]
+
+[JsonSerializable(typeof(UpdateSystemPromptDto))]
 public partial class AppJsonContext : JsonSerializerContext
 {
 }

@@ -1,0 +1,42 @@
+@attribute [Route(Urls.EditSystemPrompts)]
+@attribute [Route("{culture?}" + Urls.EditSystemPrompts)]
+@attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+@inherits AppPageBase
+
+<AppPageData Title="Edit system prompts"
+             SubTitle="You can modify the system prompts for chatbots here." />
+
+@if (isLoading)
+{
+    <BitEllipsisLoading CustomSize="32" />
+}
+else
+{
+    <BitButton IconName="@BitIconName.Save" IconOnly OnClick="WrapHandled(SaveChanges)" AutoLoading />
+
+    <BitPivot>
+        <BitPivotItem HeaderText="Support">
+            <BitStack HorizontalAlign="BitAlignment.Stretch" VerticalAlign="BitAlignment.Stretch" Horizontal>
+                <BitStack Grows AutoHeight>
+                    <BitMarkdownEditor @bind-Value=systemPromptMarkdown Style="overflow:auto" />
+                </BitStack>
+                <BitStack Grows AutoHeight>
+                    <BitMarkdownViewer Markdown="@systemPromptMarkdown" Style="overflow:auto" />
+                </BitStack>
+            </BitStack>
+        </BitPivotItem>
+        <BitPivotItem HeaderText="Summarize conversation context">
+            <BitStack HorizontalAlign="BitAlignment.Stretch" VerticalAlign="BitAlignment.Stretch" Horizontal>
+                <BitStack Grows AutoHeight>
+                    <BitMarkdownEditor @bind-Value=summarizeConversationContextPrompt Style="overflow:auto" />
+                </BitStack>
+                <BitStack Grows AutoHeight>
+                    <BitMarkdownViewer Markdown="@summarizeConversationContextPrompt" Style="overflow:auto" />
+                </BitStack>
+            </BitStack>
+        </BitPivotItem>
+    </BitPivot>
+}
+
+
+
