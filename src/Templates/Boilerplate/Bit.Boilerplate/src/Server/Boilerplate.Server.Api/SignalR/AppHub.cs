@@ -65,8 +65,9 @@ public partial class AppHub : Hub
 
     public async IAsyncEnumerable<string> Chatbot(
         //#if (captcha == "reCaptcha")
-        string googleRecpatcha,
+        string googleRecpatchaToken,
         //#endif
+        string cultureNativeName,
         IAsyncEnumerable<string> incomingMessages,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
@@ -78,7 +79,7 @@ public partial class AppHub : Hub
         {
             //#if (captcha == "reCaptcha")
             var googleRecaptchaService = scope.ServiceProvider.GetRequiredService<GoogleRecaptchaService>();
-            if (await googleRecaptchaService.Verify(googleRecpatcha, cancellationToken) is false)
+            if (await googleRecaptchaService.Verify(googleRecpatchaToken, cancellationToken) is false)
                 throw new BadRequestException(nameof(AppStrings.InvalidGoogleRecaptchaResponse));
             //#endif
 
@@ -87,7 +88,7 @@ public partial class AppHub : Hub
             supportSystemPrompt = (await dbContext
                     .SystemPrompts.FirstOrDefaultAsync(p => p.PromptKind == PromptKind.Support, cancellationToken))?.Markdown ?? throw new ResourceNotFoundException();
 
-            supportSystemPrompt = supportSystemPrompt.Replace("{{UserCulture}}", CultureInfo.CurrentUICulture.NativeName);
+            supportSystemPrompt = supportSystemPrompt.Replace("{{UserCulture}}", cultureNativeName);
 
             summarizationSystemPrompt = (await dbContext
                 .SystemPrompts.FirstOrDefaultAsync(p => p.PromptKind == PromptKind.SummarizeConversationContext, cancellationToken))?.Markdown ?? throw new ResourceNotFoundException();
