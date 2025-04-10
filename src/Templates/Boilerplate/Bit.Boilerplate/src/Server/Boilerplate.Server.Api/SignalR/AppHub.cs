@@ -101,7 +101,7 @@ public partial class AppHub : Hub
             StringBuilder assistantResponse = new();
 
             var supportSystemPromptWithChatContext = supportSystemPrompt
-                .Replace("SummarizedConversationContext", $"{chatSummary} {ChatHistoryAsString()}");
+                .Replace("{{SummarizedConversationContext}}", $"{chatSummary} {ChatHistoryAsString()}");
 
             await foreach (var response in chatClient.GetStreamingResponseAsync([
                             new (ChatRole.System, supportSystemPromptWithChatContext),
