@@ -114,11 +114,12 @@ public partial class AppHub : Hub
 
             if (incomingMessagesCount % 5 == 0) // Summarize every 5 message into one.
             {
+                var chatHistoryString = ChatHistoryAsString();
                 chatHistory.Clear();
 
                 var response = await chatClient.GetResponseAsync([
                         new (ChatRole.System, summarizationSystemPrompt),
-                        new (ChatRole.User, ChatHistoryAsString())
+                        new (ChatRole.User, chatHistoryString)
                 ], cancellationToken: cancellationToken);
 
                 chatSummary = response.Text;
