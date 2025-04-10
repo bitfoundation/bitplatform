@@ -3,6 +3,7 @@ using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Controllers.Identity;
 using System.Text;
 using Microsoft.AspNetCore.SignalR;
+using System.Runtime.CompilerServices;
 
 namespace Boilerplate.Server.Api.SignalR;
 
@@ -62,7 +63,7 @@ public partial class AppHub : Hub
         await base.OnDisconnectedAsync(exception);
     }
 
-    public async IAsyncEnumerable<string> Chatbot(IAsyncEnumerable<string> incomingMessages, CancellationToken cancellationToken)
+    public async IAsyncEnumerable<string> Chatbot(IAsyncEnumerable<string> incomingMessages, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         int incomingMessagesCount = 0;
         List<(string userQuery, string assistantResponses)> chatHistory = [];
@@ -81,7 +82,7 @@ public partial class AppHub : Hub
                 .SystemPrompts.FirstOrDefaultAsync(p => p.PromptKind == PromptKind.SummarizeConversationContext, cancellationToken))?.Markdown ?? throw new ResourceNotFoundException();
         }
 
-        await foreach (var incomingMessage in incomingMessages)
+        await foreach (var incomingMessage in incomingMessages.WithCancellation(cancellationToken))
         {
             incomingMessagesCount++;
 
