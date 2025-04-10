@@ -63,7 +63,12 @@ public partial class AppHub : Hub
         await base.OnDisconnectedAsync(exception);
     }
 
-    public async IAsyncEnumerable<string> Chatbot(IAsyncEnumerable<string> incomingMessages, [EnumeratorCancellation] CancellationToken cancellationToken)
+    public async IAsyncEnumerable<string> Chatbot(
+        //#if (captcha == "reCaptcha")
+        string googleRecpatcha,
+        //#endif
+        IAsyncEnumerable<string> incomingMessages,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         int incomingMessagesCount = 0;
         List<(string userQuery, string assistantResponses)> chatHistory = [];
@@ -71,6 +76,12 @@ public partial class AppHub : Hub
 
         await using (var scope = rootScopeProvider.Invoke())
         {
+            //#if (captcha == "reCaptcha")
+            var googleRecaptchaService = scope.ServiceProvider.GetRequiredService<GoogleRecaptchaService>();
+            if (await googleRecaptchaService.Verify(googleRecpatcha, cancellationToken) is false)
+                throw new BadRequestException(nameof(AppStrings.InvalidGoogleRecaptchaResponse));
+            //#endif
+
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
             supportSystemPrompt = (await dbContext
@@ -85,20 +96,6 @@ public partial class AppHub : Hub
         await foreach (var incomingMessage in incomingMessages.WithCancellation(cancellationToken))
         {
             incomingMessagesCount++;
-
-            if (incomingMessagesCount == 3) // The incoming message is a google reCaptcha token that has to be sent on 3rd message to verify the user is human.
-            {
-                var googleRecpatcha = incomingMessage;
-
-                //#if (captcha == "reCaptcha")
-                await using var scope = rootScopeProvider.Invoke();
-                var googleRecaptchaService = scope.ServiceProvider.GetRequiredService<GoogleRecaptchaService>();
-                if (await googleRecaptchaService.Verify(googleRecpatcha, cancellationToken) is false)
-                    throw new BadRequestException(nameof(AppStrings.InvalidGoogleRecaptchaResponse)); // The attcker can re-initiate the conversation by sending a new message, but the chat history will gone, makes this feature almost useless!
-                //#endif
-
-                continue;
-            }
 
             StringBuilder assistantResponse = new();
 
@@ -130,7 +127,7 @@ public partial class AppHub : Hub
                 chatHistory.Add((incomingMessage, assistantResponse.ToString()));
             }
 
-            yield return "ASSISTANT_RESPONSE_COMPLETED";
+            yield return "MESSAGE_PROCESSED";
         }
 
         string ChatHistoryAsString()
