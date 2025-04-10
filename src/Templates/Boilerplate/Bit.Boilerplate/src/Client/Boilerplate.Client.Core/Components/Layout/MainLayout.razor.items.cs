@@ -1,4 +1,4 @@
-namespace Boilerplate.Client.Core.Components.Layout;
+﻿namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class MainLayout
 {
@@ -71,21 +71,6 @@ public partial class MainLayout
             Url = Urls.AboutPage,
         };
 
-        //#if (offlineDb == true)
-        navPanelAuthenticatedItems.Add(new()
-        {
-            Text = localizer[nameof(AppStrings.OfflineEditProfileTitle)],
-            IconName = BitIconName.EditContact,
-            Url = Urls.OfflineEditProfilePage,
-        });
-        navPanelUnAuthenticatedItems.Add(new()
-        {
-            Text = localizer[nameof(AppStrings.OfflineEditProfileTitle)],
-            IconName = BitIconName.EditContact,
-            Url = Urls.OfflineEditProfilePage,
-        });
-        //#endif
-
         navPanelAuthenticatedItems.Add(aboutNavItem);
         navPanelUnAuthenticatedItems.Add(aboutNavItem);
 
@@ -101,6 +86,28 @@ public partial class MainLayout
                 $"{Urls.SettingsPage}/{Urls.SettingsSections.Tfa}",
                 $"{Urls.SettingsPage}/{Urls.SettingsSections.Sessions}",
             ]
+        });
+
+        //#if (offlineDb == true)
+        navPanelAuthenticatedItems.Add(new()
+        {
+            Text = localizer[nameof(AppStrings.OfflineEditProfileTitle)],
+            IconName = BitIconName.EditContact,
+            Url = Urls.OfflineEditProfilePage,
+        });
+        navPanelUnAuthenticatedItems.Add(new()
+        {
+            Text = localizer[nameof(AppStrings.OfflineEditProfileTitle)],
+            IconName = BitIconName.EditContact,
+            Url = Urls.OfflineEditProfilePage,
+        });
+        //#endif
+
+        navPanelAuthenticatedItems.Add(new()
+        {
+            Text = localizer[nameof(AppStrings.EditSystemPromptsTitle)],
+            IconName = BitIconName.TextDocumentSettings,
+            Url = Urls.EditSystemPrompts,
         });
     }
 }

@@ -3,7 +3,7 @@ using Boilerplate.Shared.Controllers.Chatbot;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Chatbot;
 
-public partial class EditSystemPropmptsPage
+public partial class EditSystemPromptsPage
 {
     [AutoInject] private IChatbotController chatbotController = default!;
 
@@ -30,7 +30,10 @@ public partial class EditSystemPropmptsPage
 
     private async Task SaveChanges()
     {
-        await Task.WhenAll(chatbotController.UpdateSystemPrompt(new() { Kind = PromptKind.Support, Markdown = systemPromptMarkdown }, CurrentCancellationToken),
-            chatbotController.UpdateSystemPrompt(new() { Kind = PromptKind.SummarizeConversationContext, Markdown = summarizeConversationContextPrompt }, CurrentCancellationToken));
+        if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken))
+        {
+            await Task.WhenAll(chatbotController.UpdateSystemPrompt(new() { Kind = PromptKind.Support, Markdown = systemPromptMarkdown }, CurrentCancellationToken),
+                chatbotController.UpdateSystemPrompt(new() { Kind = PromptKind.SummarizeConversationContext, Markdown = summarizeConversationContextPrompt }, CurrentCancellationToken));
+        }
     }
 }

@@ -197,8 +197,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Authorized/Chatbot/EditSystemPropmptsPage.razor.css",
-        "inputFile": "Components/Pages/Authorized/Chatbot/EditSystemPropmptsPage.razor.scss",
+        "outputFile": "Components/Pages/Authorized/Chatbot/EditSystemPromptsPage.razor.css",
+        "inputFile": "Components/Pages/Authorized/Chatbot/EditSystemPromptsPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

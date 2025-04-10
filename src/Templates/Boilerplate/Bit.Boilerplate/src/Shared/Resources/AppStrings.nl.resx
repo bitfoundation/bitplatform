@@ -277,6 +277,12 @@
     <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
     <value>Zorg ervoor dat je niet meerdere sessies van de app tegelijkertijd uitvoert op hetzelfde apparaat of in dezelfde browser.</value>
   </data>
+    <data name="EditSystemPromptsTitle" xml:space="preserve">
+    <value>Systeemprompts bewerken</value>
+  </data>
+    <data name="EditSystemPromptsSubTitle" xml:space="preserve">
+    <value>Hier kunt u de systeemprompts voor chatbots wijzigen.</value>
+  </data>
     <!--#if (offlineDb == true) -->
     <data name="OfflineEditProfileTitle" xml:space="preserve">
     <value>Offline Profiel bewerken</value>
