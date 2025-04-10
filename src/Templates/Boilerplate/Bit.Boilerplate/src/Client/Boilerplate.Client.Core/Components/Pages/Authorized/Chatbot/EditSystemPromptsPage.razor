@@ -22,9 +22,7 @@
                     <BitStack Grows AutoHeight>
                         <BitMarkdownEditor @bind-Value=systemPromptMarkdown Style="overflow:auto" />
                     </BitStack>
-                    <BitStack Grows AutoHeight>
-                        <BitMarkdownViewer Markdown="@systemPromptMarkdown" Style="overflow:auto" />
-                    </BitStack>
+                    <BitMarkdownViewer Markdown="@systemPromptMarkdown" Style="overflow:auto" />
                 </BitStack>
             </BitPivotItem>
             <BitPivotItem HeaderText="Summarize conversation context">
@@ -32,9 +30,7 @@
                     <BitStack Grows AutoHeight>
                         <BitMarkdownEditor @bind-Value=summarizeConversationContextPrompt Style="overflow:auto" />
                     </BitStack>
-                    <BitStack Grows AutoHeight>
-                        <BitMarkdownViewer Markdown="@summarizeConversationContextPrompt" Style="overflow:auto" />
-                    </BitStack>
+                    <BitMarkdownViewer Markdown="@summarizeConversationContextPrompt" Style="overflow:auto" />
                 </BitStack>
             </BitPivotItem>
         </BitPivot>
