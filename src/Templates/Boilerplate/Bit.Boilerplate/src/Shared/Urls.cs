@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 namespace Boilerplate.Shared;
 
 public static partial class Urls
@@ -32,9 +32,4 @@ public static partial class Urls
     //#endif
 
     public const string Authorize = "/authorize";
-
-    public static readonly string[] All = typeof(Urls).GetFields()
-                                                      .Where(f => f.FieldType == typeof(string))
-                                                      .Select(f => f.GetValue(null)!.ToString()!)
-                                                      .ToArray();
 }
