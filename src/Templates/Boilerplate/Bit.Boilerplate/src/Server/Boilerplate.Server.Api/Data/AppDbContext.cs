@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 //#if (module == "Admin" || module == "Sales")
 using Boilerplate.Server.Api.Models.Products;
 using Boilerplate.Server.Api.Models.Categories;
@@ -19,7 +19,7 @@ using System.Security.Cryptography;
 namespace Boilerplate.Server.Api.Data;
 
 public partial class AppDbContext(DbContextOptions<AppDbContext> options)
-    : IdentityDbContext<User, Role, Guid>(options)
+    : IdentityDbContext<User, Role, Guid, UserClaim, UserRole, IdentityUserLogin<Guid>, RoleClaim, IdentityUserToken<Guid>>(options)
 {
     public DbSet<UserSession> UserSessions { get; set; } = default!;
 
@@ -172,20 +172,20 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         builder.Entity<Role>()
             .ToTable("Roles");
 
-        builder.Entity<IdentityUserRole<Guid>>()
+        builder.Entity<UserRole>()
             .ToTable("UserRoles");
+
+        builder.Entity<RoleClaim>()
+            .ToTable("RoleClaims");
+
+        builder.Entity<UserClaim>()
+            .ToTable("UserClaims");
 
         builder.Entity<IdentityUserLogin<Guid>>()
             .ToTable("UserLogins");
 
         builder.Entity<IdentityUserToken<Guid>>()
             .ToTable("UserTokens");
-
-        builder.Entity<IdentityRoleClaim<Guid>>()
-            .ToTable("RoleClaims");
-
-        builder.Entity<IdentityUserClaim<Guid>>()
-            .ToTable("UserClaims");
     }
 
     private void ConfigureConcurrencyStamp(ModelBuilder modelBuilder)

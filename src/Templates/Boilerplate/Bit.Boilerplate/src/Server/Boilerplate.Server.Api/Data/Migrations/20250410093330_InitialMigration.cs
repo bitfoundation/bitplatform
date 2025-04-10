@@ -1,4 +1,4 @@
-#nullable disable
+﻿#nullable disable
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
@@ -22,20 +22,6 @@ public partial class InitialMigration : Migration
             constraints: table =>
             {
                 table.PrimaryKey("PK_Categories", x => x.Id);
-            });
-
-        migrationBuilder.CreateTable(
-            name: "DataProtectionKeys",
-            columns: table => new
-            {
-                Id = table.Column<int>(type: "INTEGER", nullable: false)
-                    .Annotation("Sqlite:Autoincrement", true),
-                FriendlyName = table.Column<string>(type: "TEXT", nullable: true),
-                Xml = table.Column<string>(type: "TEXT", nullable: true)
-            },
-            constraints: table =>
-            {
-                table.PrimaryKey("PK_DataProtectionKeys", x => x.Id);
             });
 
         migrationBuilder.CreateTable(
@@ -332,6 +318,11 @@ public partial class InitialMigration : Migration
             });
 
         migrationBuilder.InsertData(
+            table: "Roles",
+            columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+            values: new object[] { new Guid("8ff71671-a1d6-5f97-abb9-d87d7b47d6e7"), "8ff71671-a1d6-5f97-abb9-d87d7b47d6e7", "SuperAdmin", "SUPER_ADMIN" });
+
+        migrationBuilder.InsertData(
             table: "Users",
             columns: new[] { "Id", "AccessFailedCount", "BirthDate", "ConcurrencyStamp", "ElevatedAccessTokenRequestedOn", "Email", "EmailConfirmed", "EmailTokenRequestedOn", "FullName", "Gender", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "OtpRequestedOn", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "PhoneNumberTokenRequestedOn", "ProfileImageName", "ResetPasswordTokenRequestedOn", "SecurityStamp", "TwoFactorEnabled", "TwoFactorTokenRequestedOn", "UserName" },
             values: new object[] { new Guid("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"), 0, 1306790461440000000L, "315e1a26-5b3a-4544-8e91-2760cd28e231", null, "test@bitplatform.dev", true, 1306790461440000000L, "Boilerplate test account", 0, true, null, "TEST@BITPLATFORM.DEV", "TEST", null, "AQAAAAIAAYagAAAAEP0v3wxkdWtMkHA3Pp5/JfS+42/Qto9G05p2mta6dncSK37hPxEHa3PGE4aqN30Aag==", "+31684207362", true, null, null, null, "959ff4a9-4b07-4cc1-8141-c5fc033daf83", false, null, "test" });
@@ -481,6 +472,16 @@ public partial class InitialMigration : Migration
                 { new Guid("fb41cc51-9abd-4b45-b0d9-ea8f565ec506"), new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"), new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }, 1306440105984000000L, "Zippy and fuel-efficient powertrain, and sure-footed handling", null, "530i - 6", 55195m, 9154 }
             });
 
+        migrationBuilder.InsertData(
+            table: "RoleClaims",
+            columns: new[] { "Id", "ClaimType", "ClaimValue", "RoleId" },
+            values: new object[] { 1, "edit-ai-system-prompts", "true", new Guid("8ff71671-a1d6-5f97-abb9-d87d7b47d6e7") });
+
+        migrationBuilder.InsertData(
+            table: "UserRoles",
+            columns: new[] { "RoleId", "UserId" },
+            values: new object[] { new Guid("8ff71671-a1d6-5f97-abb9-d87d7b47d6e7"), new Guid("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7") });
+
         migrationBuilder.CreateIndex(
             name: "IX_Categories_Name",
             table: "Categories",
@@ -512,9 +513,15 @@ public partial class InitialMigration : Migration
             filter: "[UserSessionId] IS NOT NULL");
 
         migrationBuilder.CreateIndex(
-            name: "IX_RoleClaims_RoleId",
+            name: "IX_RoleClaims_RoleId_ClaimType",
             table: "RoleClaims",
-            column: "RoleId");
+            columns: new[] { "RoleId", "ClaimType" });
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Roles_Name",
+            table: "Roles",
+            column: "Name",
+            unique: true);
 
         migrationBuilder.CreateIndex(
             name: "RoleNameIndex",
@@ -528,9 +535,9 @@ public partial class InitialMigration : Migration
             column: "UserId");
 
         migrationBuilder.CreateIndex(
-            name: "IX_UserClaims_UserId",
+            name: "IX_UserClaims_UserId_ClaimType",
             table: "UserClaims",
-            column: "UserId");
+            columns: new[] { "UserId", "ClaimType" });
 
         migrationBuilder.CreateIndex(
             name: "IX_UserLogins_UserId",
@@ -538,9 +545,10 @@ public partial class InitialMigration : Migration
             column: "UserId");
 
         migrationBuilder.CreateIndex(
-            name: "IX_UserRoles_RoleId",
+            name: "IX_UserRoles_RoleId_UserId",
             table: "UserRoles",
-            column: "RoleId");
+            columns: new[] { "RoleId", "UserId" },
+            unique: true);
 
         migrationBuilder.CreateIndex(
             name: "EmailIndex",
@@ -581,9 +589,6 @@ public partial class InitialMigration : Migration
     /// <inheritdoc />
     protected override void Down(MigrationBuilder migrationBuilder)
     {
-        migrationBuilder.DropTable(
-            name: "DataProtectionKeys");
-
         migrationBuilder.DropTable(
             name: "Products");
 

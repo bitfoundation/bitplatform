@@ -298,7 +298,7 @@ public static partial class Program
         {
             c.Timeout = TimeSpan.FromSeconds(3);
             c.BaseAddress = new Uri("https://azuresearch-usnc.nuget.org");
-            c.DefaultRequestVersion = HttpVersion.Version20;
+            c.DefaultRequestVersion = HttpVersion.Version11;
             c.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
         }).ConfigurePrimaryHttpMessageHandler(sp => new SocketsHttpHandler()
         {
