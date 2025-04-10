@@ -132,7 +132,7 @@
                 @for (var week = 0; week < 6; week++)
                 {
                     //to ignore the last empty week of the month || to ignore the first whole week of the month
-                    if (_daysOfCurrentMonth[week, 0] == 0 || (week == 0 && _daysOfCurrentMonth[week, 6] > 20)) continue;
+                    if (_daysOfCurrentMonth[week, 0].HasValue is false) continue;
 
                     <div style="@Styles?.DaysRow" class="bit-cal-dgr @Classes?.DaysRow">
                         @if (ShowWeekNumbers)
@@ -149,11 +149,11 @@
                         }
                         @for (var day = 0; day < 7; day++)
                         {
-                            var w = week;
-                            var d = day;
-                            var disabled = IsEnabled is false || IsWeekDayOutOfMinAndMaxDate(d, w);
-                            var (style, klass) = GetDayButtonCss(d, w, todayYear, todayMonth, todayDay);
-                            <button @onclick="() => SelectDate(d, w)"
+                            var date = _daysOfCurrentMonth[week, day]!.Value;
+                            var disabled = IsEnabled is false || IsWeekDayOutOfMinAndMaxDate(date);
+                            var isSelected = IsSelectedDate(date);
+                            var (style, klass) = GetDayButtonCss(date);
+                            <button @onclick="() => SelectDate(date)"
                                     type="button"
                                     role="gridcell"
                                     disabled="@disabled"
@@ -161,15 +161,15 @@
                                     aria-disabled="@disabled"
                                     style="@style @Styles?.DayButton"
                                     class="bit-cal-dbt@(klass) @Classes?.DayButton"
-                                    tabindex="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? 0 : -1)"
-                                    aria-selected="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? "true" : "false")">
+                                    tabindex="@(isSelected ? 0 : -1)"
+                                    aria-selected="@(isSelected ? "true" : "false")">
                                 @if (DayCellTemplate is not null)
                                 {
-                                    @DayCellTemplate(GetDateTimeOfDayCell(d, w))
+                                    @DayCellTemplate(GetDateTimeOfDayCell(date))
                                 }
                                 else
                                 {
-                                    @_daysOfCurrentMonth[w, d]
+                                    @GetDayOfCurrentMonth(date)
                                 }
                             </button>
                         }
@@ -461,6 +461,7 @@
                                max="@(TimeFormat == BitTimeFormat.TwelveHours ? "12" : "23")"
                                type="number"
                                inputmode="numeric"
+                               readonly="@ReadOnly"
                                disabled="@(IsEnabled is false)"
                                aria-disabled="@(IsEnabled is false)"
                                style="@Styles?.TimePickerHourInput"
@@ -497,6 +498,7 @@
                                max="59"
                                type="number"
                                inputmode="numeric"
+                               readonly="@ReadOnly"
                                disabled="@(IsEnabled is false)"
                                aria-disabled="@(IsEnabled is false)"
                                style="@Styles?.TimePickerMinuteInput"
