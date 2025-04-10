@@ -59,6 +59,7 @@
         <Using Include="Boilerplate.Shared" />
         <Using Include="Boilerplate.Shared.Attributes" />
         <Using Include="Boilerplate.Server.Api.Data" />
+        <Using Include="Boilerplate.Server.Api.Models.Chatbot" />
         <Using Include="Boilerplate.Server.Api.Mappers" />
         <Using Include="Microsoft.AspNetCore.Identity" />
         <Using Include="Microsoft.EntityFrameworkCore" />

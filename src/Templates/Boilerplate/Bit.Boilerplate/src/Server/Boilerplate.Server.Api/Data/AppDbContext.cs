@@ -36,6 +36,8 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<WebAuthnCredential> WebAuthnCredential { get; set; } = default!;
 
+    public DbSet<SystemPrompt> SystemPrompts { get; set; } = default!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

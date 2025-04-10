@@ -1,6 +1,8 @@
-using Microsoft.AspNetCore.SignalR;
+﻿using Boilerplate.Server.Api.Services;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Controllers.Identity;
+using System.Text;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Boilerplate.Server.Api.SignalR;
 
@@ -19,6 +21,7 @@ namespace Boilerplate.Server.Api.SignalR;
 [AllowAnonymous]
 public partial class AppHub : Hub
 {
+    [AutoInject] private IChatClient chatClient = default;
     [AutoInject] private RootServiceScopeProvider rootScopeProvider = default!;
 
     public override async Task OnConnectedAsync()
@@ -57,5 +60,81 @@ public partial class AppHub : Hub
         }
 
         await base.OnDisconnectedAsync(exception);
+    }
+
+    public async IAsyncEnumerable<string> Chatbot(IAsyncEnumerable<string> incomingMessages, CancellationToken cancellationToken)
+    {
+        int incomingMessagesCount = 0;
+        List<(string userQuery, string assistantResponses)> chatHistory = [];
+        string supportSystemPrompt, summarizationSystemPrompt, chatSummary = "";
+
+        await using (var scope = rootScopeProvider.Invoke())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            supportSystemPrompt = (await dbContext
+                    .SystemPrompts.FirstOrDefaultAsync(p => p.PromptKind == PromptKind.Support, cancellationToken))?.Markdown ?? throw new ResourceNotFoundException();
+
+            supportSystemPrompt = supportSystemPrompt.Replace("{{UserCulture}}", CultureInfo.CurrentUICulture.NativeName);
+
+            summarizationSystemPrompt = (await dbContext
+                .SystemPrompts.FirstOrDefaultAsync(p => p.PromptKind == PromptKind.SummarizeConversationContext, cancellationToken))?.Markdown ?? throw new ResourceNotFoundException();
+        }
+
+        await foreach (var incomingMessage in incomingMessages)
+        {
+            incomingMessagesCount++;
+
+            if (incomingMessagesCount == 3) // The incoming message is a google reCaptcha token that has to be sent on 3rd message to verify the user is human.
+            {
+                var googleRecpatcha = incomingMessage;
+
+                //#if (captcha == "reCaptcha")
+                await using var scope = rootScopeProvider.Invoke();
+                var googleRecaptchaService = scope.ServiceProvider.GetRequiredService<GoogleRecaptchaService>();
+                if (await googleRecaptchaService.Verify(googleRecpatcha, cancellationToken) is false)
+                    throw new BadRequestException(nameof(AppStrings.InvalidGoogleRecaptchaResponse)); // The attcker can re-initiate the conversation by sending a new message, but the chat history will gone, makes this feature almost useless!
+                //#endif
+
+                continue;
+            }
+
+            StringBuilder assistantResponse = new();
+
+            var supportSystemPromptWithChatContext = supportSystemPrompt
+                .Replace("SummarizedConversationContext", $"{chatSummary} {ChatHistoryAsString()}");
+
+            await foreach (var response in chatClient.GetStreamingResponseAsync([
+                            new (ChatRole.System, supportSystemPromptWithChatContext),
+                            new (ChatRole.User, incomingMessage)
+                            ], cancellationToken: cancellationToken))
+            {
+                assistantResponse.Append(response.Text);
+                yield return response.Text;
+            }
+
+            if (incomingMessagesCount % 5 == 0) // Summarize every 5 message into one.
+            {
+                chatHistory.Clear();
+
+                var response = await chatClient.GetResponseAsync([
+                        new (ChatRole.System, summarizationSystemPrompt),
+                        new (ChatRole.User, ChatHistoryAsString())
+                ], cancellationToken: cancellationToken);
+
+                chatSummary = response.Text;
+            }
+            else
+            {
+                chatHistory.Add((incomingMessage, assistantResponse.ToString()));
+            }
+
+            yield return "ASSISTANT_RESPONSE_COMPLETED";
+        }
+
+        string ChatHistoryAsString()
+        {
+            return string.Join(Environment.NewLine, chatHistory.Select((history, index) => $"# {index} User's query: {history.userQuery}, Assistant response: {history.assistantResponses}"));
+        }
     }
 }

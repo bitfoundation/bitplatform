@@ -42,3 +42,8 @@ public class AppClaimTypes
 
     public const string EDIT_AI_SYSTEM_PROMPTS = "edit-ai-system-prompts";
 }
+
+public class AppRoles
+{
+    public const string SUPER_ADMIN = "SuperAdmin";
+}
