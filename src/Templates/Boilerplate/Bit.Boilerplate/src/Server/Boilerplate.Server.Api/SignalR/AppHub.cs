@@ -79,7 +79,7 @@ public partial class AppHub : Hub
         {
             //#if (captcha == "reCaptcha")
             var googleRecaptchaService = scope.ServiceProvider.GetRequiredService<GoogleRecaptchaService>();
-            if (await googleRecaptchaService.Verify(googleRecpatchaToken, cancellationToken) is false)
+            if (string.IsNullOrEmpty(googleRecpatchaToken) /*Temporarily disable google reCaptcha check*/ || await googleRecaptchaService.Verify(googleRecpatchaToken, cancellationToken) is false)
                 throw new BadRequestException(nameof(AppStrings.InvalidGoogleRecaptchaResponse));
             //#endif
 

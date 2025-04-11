@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Boilerplate.Server.Api.Models.Categories;
 
 namespace Boilerplate.Server.Api.Models.Products;
@@ -22,7 +22,7 @@ public partial class Product
     [Range(0, double.MaxValue)]
     public decimal Price { get; set; }
 
-    [MaxLength(512)]
+    [MaxLength(4096)]
     public string? Description { get; set; }
 
     public DateTimeOffset CreatedOn { get; set; } = DateTimeOffset.UtcNow;

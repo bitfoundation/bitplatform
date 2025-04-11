@@ -33,11 +33,7 @@
                                 Label="@Localizer[(nameof(AppStrings.Price))]" />
                 <ValidationMessage For="() => product.Price" />
 
-                <BitTextField @bind-Value="product.Description"
-                              Multiline
-                              Rows="3"
-                              Label="@Localizer[(nameof(AppStrings.Description))]" />
-                <ValidationMessage For="() => product.Description" />
+                <BitRichTextEditor @ref=richTextEditorRef FullToolbar />
 
                 @if (Id is not null)
                 {

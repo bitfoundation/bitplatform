@@ -119,4 +119,19 @@
         </BitStack>
     </article>
 
+    <BitButton OnClick="WrapHandled(SendMessage)" IsEnabled=@(isCommunicating is false && string.IsNullOrEmpty(userQuery) is false) AutoLoading>Send message</BitButton>
+
+    <BitTextField Immediate Multiline @bind-Value=userQuery />
+
+    @if (isCommunicating)
+    {
+        <BitMarkdownViewer Markdown="@lastAssistantResponse" />
+    }
+
+    @foreach (var response in assistantResponses)
+    {
+        <hr />
+        <BitMarkdownViewer Markdown="@response" />
+    }
+
 </CascadingValue>

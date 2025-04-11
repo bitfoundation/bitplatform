@@ -1,4 +1,4 @@
-using Boilerplate.Shared.Controllers;
+﻿using Boilerplate.Shared.Controllers;
 using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Shared.Controllers.Products;
 using Boilerplate.Shared.Controllers.Categories;
@@ -18,6 +18,7 @@ public partial class AddOrEditProductPage
     private string? productImageUploadUrl;
     private BitFileUpload fileUploadRef = default!;
     private string selectedCategoryId = string.Empty;
+    private BitRichTextEditor richTextEditorRef = default!;
     private List<BitDropdownItem<string>> allCategoryList = [];
     private AppDataAnnotationsValidator validatorRef = default!;
 
@@ -47,6 +48,13 @@ public partial class AddOrEditProductPage
         finally
         {
             isLoading = false;
+
+            if (InPrerenderSession is false)
+            {
+                StateHasChanged();
+
+                await richTextEditorRef.SetHtml(product.Description);
+            }
         }
     }
 
@@ -55,6 +63,8 @@ public partial class AddOrEditProductPage
         if (isLoading || isSaving) return;
 
         isSaving = true;
+
+        product.Description = await richTextEditorRef.GetHtml();
 
         try
         {
