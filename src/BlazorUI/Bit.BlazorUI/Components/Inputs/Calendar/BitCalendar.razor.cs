@@ -709,12 +709,12 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     {
         if (MaxDate.HasValue)
         {
-            if (date > MaxDate.Value.LocalDateTime.Date) return true;
+            if (date > GetDateTime(MaxDate.Value)) return true;
         }
 
         if (MinDate.HasValue)
         {
-            if (date < MinDate.Value.LocalDateTime.Date) return true;
+            if (date < GetDateTime(MinDate.Value)) return true;
         }
 
         return false;
@@ -752,7 +752,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         StringBuilder klass = new StringBuilder();
         StringBuilder style = new StringBuilder();
 
-        if (CurrentValue.HasValue && date == CurrentValue.Value.LocalDateTime.Date)
+        if (CurrentValue.HasValue && date == GetDateTime(CurrentValue.Value).Date)
         {
             klass.Append(" bit-cal-dbs");
 
@@ -776,7 +776,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         }
 
         //Is today
-        if (month == _currentMonth && date == DateTimeOffset.Now.LocalDateTime.Date)
+        if (month == _currentMonth && date == GetDateTime(DateTimeOffset.Now))
         {
             klass.Append(" bit-cal-dtd");
 
@@ -825,19 +825,25 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     {
         if (CurrentValue is null) return false;
 
-        return date == CurrentValue.Value.LocalDateTime.Date;
+        return date == GetDateTime(CurrentValue.Value);
     }
 
     private void UpdateTime()
     {
         if (CurrentValue.HasValue is false) return;
 
-        var currentValueYear = _culture.Calendar.GetYear(CurrentValue.Value.LocalDateTime);
-        var currentValueMonth = _culture.Calendar.GetMonth(CurrentValue.Value.LocalDateTime);
-        var currentValueDay = _culture.Calendar.GetDayOfMonth(CurrentValue.Value.LocalDateTime.Date);
+        var currentValue = GetDateTime(CurrentValue.Value);
+        var currentValueYear = _culture.Calendar.GetYear(currentValue);
+        var currentValueMonth = _culture.Calendar.GetMonth(currentValue);
+        var currentValueDay = _culture.Calendar.GetDayOfMonth(currentValue);
 
         var date = _culture.Calendar.ToDateTime(currentValueYear, currentValueMonth, currentValueDay, _hour, _minute, 0, 0);
         CurrentValue = new(date, _timeZone.GetUtcOffset(date));
+    }
+
+    private DateTime GetDateTime(DateTimeOffset dateTimeOffset)
+    {
+        return TimeZoneInfo.ConvertTimeFromUtc(dateTimeOffset.UtcDateTime, _timeZone);
     }
 
     private async Task HandleOnTimeHourFocus()
