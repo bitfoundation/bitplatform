@@ -171,7 +171,7 @@ Accessible after signin in, these pages allow users to manage their profile, acc
 
 These are the primary functional areas of the application beyond account management.
 
-//#if (module == ""Admin"")
+//#if (module == 'Admin')
 ### 3.1. Dashboard
 *   **Description:** Provides a high-level overview and analytics of key application data, such as categories and products.
 *   **Features:**
@@ -225,7 +225,7 @@ These are the primary functional areas of the application beyond account managem
     4.  Click ""Save"" to apply changes or ""Cancel"" to discard.
 //#endif
 
-//#if (module == ""Sales"")
+//#if (module == 'Sales')
 ### 3.5. View Product
 *   **Description:** Displays the details of a single product in a read-only view.
 *   **Features:**
