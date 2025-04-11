@@ -33,7 +33,7 @@
                                 Label="@Localizer[(nameof(AppStrings.Price))]" />
                 <ValidationMessage For="() => product.Price" />
 
-                <BitRichTextEditor @ref=richTextEditorRef FullToolbar />
+                <BitRichTextEditor @ref=richTextEditorRef FullToolbar OnEditorReady="@(() => richTextEditorRef.SetHtml(product.Description))" />
 
                 @if (Id is not null)
                 {

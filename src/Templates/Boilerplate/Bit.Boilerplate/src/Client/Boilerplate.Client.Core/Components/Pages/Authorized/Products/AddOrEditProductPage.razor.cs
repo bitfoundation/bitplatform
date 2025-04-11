@@ -130,13 +130,4 @@ public partial class AddOrEditProductPage
             isManagingFile = false;
         }
     }
-
-    protected override async Task OnAfterFirstRenderAsync()
-    {
-        await Task.Delay(3_000, CurrentCancellationToken); // Temporary workaround
-
-        await richTextEditorRef.SetHtml(product.Description);
-
-        await base.OnAfterFirstRenderAsync();
-    }
 }
