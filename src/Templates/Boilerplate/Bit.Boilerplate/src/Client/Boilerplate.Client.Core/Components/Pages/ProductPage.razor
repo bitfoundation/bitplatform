@@ -52,7 +52,7 @@
                         <BitStack AutoWidth Grows>
                             <BitText Typography="BitTypography.H2">@product.Name</BitText>
                             <BitText Color="BitColor.Info">@product.CategoryName</BitText>
-                            <BitText Typography="BitTypography.H6">@product.Description</BitText>
+                            <BitText Typography="BitTypography.H6">@((MarkupString)product.Description!)</BitText>
                             <BitText Typography="BitTypography.H4">@product.FormattedPrice</BitText>
                         </BitStack>
                     </BitStack>
@@ -128,7 +128,7 @@
                                 <BitStack>
                                     <ProductImage Src="@GetProductImageUrl(prd)" Width="100%" />
                                     <BitText>@prd.Name</BitText>
-                                    <BitText Typography="BitTypography.Body2">@prd.Description</BitText>
+                                    <BitText Typography="BitTypography.Body2">@((MarkupString)prd.Description!)</BitText>
                                     <BitText Typography="BitTypography.H6">@prd.FormattedPrice</BitText>
                                 </BitStack>
                             </BitCard>
@@ -174,7 +174,7 @@
                                 <BitStack>
                                     <ProductImage Src="@GetProductImageUrl(prd)" Width="100%" />
                                     <BitText>@prd.Name</BitText>
-                                    <BitText Typography="BitTypography.Body2">@prd.Description</BitText>
+                                    <BitText Typography="BitTypography.Body2">@((MarkupString)prd.Description!)</BitText>
                                     <BitText Typography="BitTypography.H6">@prd.FormattedPrice</BitText>
                                 </BitStack>
                             </BitCard>
