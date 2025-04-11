@@ -776,7 +776,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         }
 
         //Is today
-        if (month == _currentMonth && date == GetDateTime(DateTimeOffset.Now))
+        if (month == _currentMonth && date == GetDateTime(DateTimeOffset.Now).Date)
         {
             klass.Append(" bit-cal-dtd");
 
