@@ -59,14 +59,14 @@
         <Using Include="Boilerplate.Shared" />
         <Using Include="Boilerplate.Shared.Attributes" />
         <Using Include="Boilerplate.Server.Api.Data" />
-        <Using Include="Boilerplate.Server.Api.Models.Chatbot" />
         <Using Include="Boilerplate.Server.Api.Mappers" />
         <Using Include="Microsoft.AspNetCore.Identity" />
         <Using Include="Microsoft.EntityFrameworkCore" />
         <Using Include="Microsoft.AspNetCore.OData.Query" />
         <Using Include="Microsoft.AspNetCore.Mvc" />
-        <Using Include="OpenAI.Chat" />
-        <Using Include="Microsoft.Extensions.AI" />
+
+        <Using Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Extensions.AI" />
+        <Using Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Boilerplate.Server.Api.Models.Chatbot" />
 
         <Content Include=".config\dotnet-tools.json" />
     </ItemGroup>

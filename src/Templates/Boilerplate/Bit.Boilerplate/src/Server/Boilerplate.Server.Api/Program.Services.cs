@@ -2,7 +2,9 @@
 using System.Net;
 using System.Net.Mail;
 using System.IO.Compression;
+//#if (signalR == true)
 using System.ClientModel.Primitives;
+//#endif
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Net.Http.Headers;
@@ -340,6 +342,7 @@ public static partial class Program
             return options;
         });
 
+        //#if (signalR == true)
         if (string.IsNullOrEmpty(appSettings.AI?.ApiKey) is false)
         {
             services.AddHttpClient("AI", c =>
@@ -361,6 +364,7 @@ public static partial class Program
                 .UseDistributedCache()
                 .UseOpenTelemetry();
         }
+        //#endif
     }
 
     private static void AddIdentity(WebApplicationBuilder builder)

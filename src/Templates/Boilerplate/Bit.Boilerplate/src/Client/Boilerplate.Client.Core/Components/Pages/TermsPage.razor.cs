@@ -1,10 +1,14 @@
-﻿using System.Threading.Channels;
+﻿//+:cnd:noEmit
+//#if (signalR == true)
+using System.Threading.Channels;
 using Microsoft.AspNetCore.SignalR.Client;
+//#endif
 
 namespace Boilerplate.Client.Core.Components.Pages;
 
 public partial class TermsPage
 {
+    //#if (signalR == true)
     [AutoInject] private HubConnection hubConnection = default!;
 
     private string userQuery = "";
@@ -57,4 +61,5 @@ public partial class TermsPage
 
         await base.DisposeAsync(disposing);
     }
+    //#endif
 }

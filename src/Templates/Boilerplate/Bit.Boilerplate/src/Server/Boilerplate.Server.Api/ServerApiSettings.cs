@@ -16,7 +16,9 @@ public partial class ServerApiSettings : SharedSettings
     [Required]
     public EmailOptions Email { get; set; } = default!;
 
+    //#if (signalR == true)
     public AIOptions? AI { get; set; }
+    //#endif
 
     public SmsOptions? Sms { get; set; }
 
@@ -61,10 +63,12 @@ public partial class ServerApiSettings : SharedSettings
         if (Identity is null)
             throw new InvalidOperationException("Identity configuration is required.");
 
+        //#if (signalR == true)
         if (AI is not null)
         {
             Validator.TryValidateObject(AI, new ValidationContext(AI), validationResults, true);
         }
+        //#endif
 
         if (Email is null)
             throw new InvalidOperationException("Email configuration is required.");
@@ -179,6 +183,7 @@ public partial class AppIdentityOptions : IdentityOptions
     public int MaxConcurrentPrivilegedSessions { get; set; }
 }
 
+//#if (signalR == true)
 public partial class AIOptions
 {
     [Required]
@@ -190,6 +195,7 @@ public partial class AIOptions
     [Required]
     public string? ApiKey { get; set; }
 }
+//#endif
 
 public partial class EmailOptions
 {

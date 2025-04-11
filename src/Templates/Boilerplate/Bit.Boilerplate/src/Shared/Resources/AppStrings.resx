@@ -277,12 +277,14 @@
     <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
     <value>Please ensure you're not running multiple sessions of the app simultaneously on the same device or browser.</value>
   </data>
+    <!--#if (signalR == true) -->
     <data name="EditSystemPromptsTitle" xml:space="preserve">
     <value>Edit system prompts</value>
   </data>
     <data name="EditSystemPromptsSubTitle" xml:space="preserve">
     <value>You can modify the system prompts for chatbots here.</value>
   </data>
+    <!--#endif-->
     <!--#if (offlineDb == true) -->
     <data name="OfflineEditProfileTitle" xml:space="preserve">
     <value>Offline Edit profile</value>

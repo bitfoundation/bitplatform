@@ -1,3 +1,4 @@
+@*+:cnd:noEmit*@
 @attribute [Route(Urls.TermsPage)]
 @attribute [Route("{culture?}" + Urls.TermsPage)]
 @attribute [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5)]
@@ -119,6 +120,7 @@
         </BitStack>
     </article>
 
+    @*#if (signalR == true)*@
     <BitButton OnClick="WrapHandled(SendMessage)" IsEnabled=@(isCommunicating is false && string.IsNullOrEmpty(userQuery) is false) AutoLoading>Send message</BitButton>
 
     <BitTextField Immediate Multiline @bind-Value=userQuery />
@@ -133,5 +135,6 @@
         <hr />
         <BitMarkdownViewer Markdown="@response" />
     }
+    @*#endif*@
 
 </CascadingValue>

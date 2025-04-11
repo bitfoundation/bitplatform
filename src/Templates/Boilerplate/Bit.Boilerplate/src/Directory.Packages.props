@@ -18,8 +18,6 @@
         <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="9.0.4" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.4" />
         <PackageVersion Include="EmbedIO" Version="3.5.2" />
-        <PackageVersion Include="Microsoft.Extensions.AI" Version="9.3.0-preview.1.25161.3" />
-        <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="9.3.0-preview.1.25161.3" />
         <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="9.0.4" />
         <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.4" />
         <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="9.0.4" />
@@ -58,6 +56,8 @@
         <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="9.7.0-pre-03" />
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.4" />
         <PackageVersion Condition="'$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Azure.SignalR" Version="1.30.2" />
+        <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Extensions.AI" Version="9.3.0-preview.1.25161.3" />
+        <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Extensions.AI.OpenAI" Version="9.3.0-preview.1.25161.3" />
         <PackageVersion Condition="'$(module)' == 'Admin' OR '$(module)' == ''" Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.23.0" />
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="BlazorApplicationInsights" Version="3.1.0" />

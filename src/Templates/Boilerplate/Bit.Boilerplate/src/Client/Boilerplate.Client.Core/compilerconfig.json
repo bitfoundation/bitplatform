@@ -196,12 +196,14 @@
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
+    //#if (signalR == true)
     {
         "outputFile": "Components/Pages/Authorized/Chatbot/EditSystemPromptsPage.razor.css",
         "inputFile": "Components/Pages/Authorized/Chatbot/EditSystemPromptsPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
+    //#endif
     //#if (offlineDb == true)
     {
         "outputFile": "Components/Pages/OfflineEditProfilePage.razor.css",
