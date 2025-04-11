@@ -103,11 +103,13 @@ public partial class MainLayout
         });
         //#endif
 
+        //#if (signalR == true)
         navPanelAuthenticatedItems.Add(new()
         {
             Text = localizer[nameof(AppStrings.EditSystemPromptsTitle)],
             IconName = BitIconName.TextDocumentSettings,
             Url = Urls.EditSystemPrompts,
         });
+        //#endif
     }
 }
