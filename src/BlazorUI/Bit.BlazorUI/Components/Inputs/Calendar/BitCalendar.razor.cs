@@ -825,7 +825,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     {
         if (CurrentValue is null) return false;
 
-        return date == GetDateTime(CurrentValue.Value);
+        return date == GetDateTime(CurrentValue.Value).Date;
     }
 
     private void UpdateTime()
