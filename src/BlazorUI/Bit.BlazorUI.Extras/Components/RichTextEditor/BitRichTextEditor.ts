@@ -45,6 +45,8 @@ namespace BitBlazorUI {
             toolbarStyle: string,
             toolbarClass: string) {
 
+            if (!editorContainer) return;
+
             const quill = new Quill(editorContainer, {
                 modules: {
                     toolbar: toolbarContainer || (fullToolbar ? RichTextEditor._toolbarFullOptions : RichTextEditor._toolbarMinOptions)
