@@ -18,6 +18,15 @@ public partial class BitTextField : BitTextInputBase<string?>
 
 
 
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Automatically adjust the height of the input in Multiline mode.
+    /// </summary>
+    [Parameter] public bool AutoHeight { get; set; }
+
     /// <summary>
     /// Whether to show the reveal password button for input type 'password'.
     /// </summary>
@@ -88,6 +97,11 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
+    /// Callback for when the Enter key is pressed while input has focus.
+    /// </summary>
+    [Parameter] public EventCallback<KeyboardEventArgs> OnEnter { get; set; }
+
+    /// <summary>
     /// Callback for when focus moves into the input
     /// </summary>
     [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
@@ -127,6 +141,11 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// Shows the custom prefix for text field.
     /// </summary>
     [Parameter] public RenderFragment? PrefixTemplate { get; set; }
+
+    /// <summary>
+    /// Prevents the enter to add new line character into the input in the Multiline mode.
+    /// </summary>
+    [Parameter] public bool PreventEnter { get; set; }
 
     /// <summary>
     /// For multiline text fields, whether or not the field is resizable.
@@ -203,6 +222,8 @@ public partial class BitTextField : BitTextInputBase<string?>
                                     ? $"bit-tfl-{(Resizable ? "mln" : "mlf")}"
                                     : string.Empty);
 
+        ClassBuilder.Register(() => Multiline && AutoHeight ? "bit-tfl-mla" : string.Empty);
+
         ClassBuilder.Register(() => IsEnabled && Required ? "bit-tfl-req" : string.Empty);
 
         ClassBuilder.Register(() => Underlined ? "bit-tfl-und" : string.Empty);
@@ -233,6 +254,18 @@ public partial class BitTextField : BitTextInputBase<string?>
         }
 
         await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender is false) return;
+
+        if (Multiline)
+        {
+            await _js.BitTextFieldSetupMultilineInput(_Id, InputElement, AutoHeight, PreventEnter);
+        }
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
@@ -300,7 +333,12 @@ public partial class BitTextField : BitTextInputBase<string?>
     {
         if (IsEnabled is false) return;
 
-        await OnKeyDown.InvokeAsync(e);
+        _ = OnKeyDown.InvokeAsync(e);
+
+        if (e.Key == "Enter")
+        {
+            _ = OnEnter.InvokeAsync(e);
+        }
     }
 
     private async Task HandleOnKeyUp(KeyboardEventArgs e)
@@ -315,5 +353,19 @@ public partial class BitTextField : BitTextInputBase<string?>
         if (IsEnabled is false) return;
 
         await OnClick.InvokeAsync(e);
+    }
+
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return;
+
+        await base.DisposeAsync(disposing);
+
+        try
+        {
+            await _js.BitTextFieldDispose(_Id);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 }
