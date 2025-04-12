@@ -84,6 +84,8 @@ public partial class AppHub : Hub
 
         async Task ReadIncomingMessages()
         {
+            List<ChatMessage> chatMessagesHistory = [];
+
             CancellationTokenSource? messageSpecificCancellationTokenSrc = null;
             try
             {
@@ -104,7 +106,6 @@ public partial class AppHub : Hub
             async Task HandleIncomingMessage(string incomingMessage, CancellationToken messageSpecificCancellationToken)
             {
                 StringBuilder assistantResponse = new();
-                List<ChatMessage> chatMessagesHistory = [];
                 try
                 {
                     int incomingMessagesCount = 0;
