@@ -1,9 +1,8 @@
-﻿using Boilerplate.Server.Api.Services;
+﻿using System.Text;
+using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Controllers.Identity;
-using System.Text;
-using Microsoft.AspNetCore.SignalR;
-using System.Runtime.CompilerServices;
 
 namespace Boilerplate.Server.Api.SignalR;
 
@@ -64,9 +63,6 @@ public partial class AppHub : Hub
     }
 
     public async IAsyncEnumerable<string> Chatbot(
-        //#if (captcha == "reCaptcha")
-        string googleRecpatchaToken,
-        //#endif
         string cultureNativeName,
         IAsyncEnumerable<string> incomingMessages,
         [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -77,12 +73,6 @@ public partial class AppHub : Hub
 
         await using (var scope = rootScopeProvider.Invoke())
         {
-            //#if (captcha == "reCaptcha")
-            var googleRecaptchaService = scope.ServiceProvider.GetRequiredService<GoogleRecaptchaService>();
-            if (string.IsNullOrEmpty(googleRecpatchaToken) is false /*Temporarily disable google reCaptcha check*/ && await googleRecaptchaService.Verify(googleRecpatchaToken, cancellationToken) is false)
-                throw new BadRequestException(nameof(AppStrings.InvalidGoogleRecaptchaResponse));
-            //#endif
-
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
             supportSystemPrompt = (await dbContext
@@ -104,9 +94,19 @@ public partial class AppHub : Hub
                 .Replace("{{SummarizedConversationContext}}", $"    - Chat summary: {chatSummary ?? "No summary available."} {Environment.NewLine}     - Previous user queries: {ChatHistoryAsString()}");
 
             await foreach (var response in chatClient.GetStreamingResponseAsync([
-                            new (ChatRole.System, supportSystemPromptWithChatContext),
+                            new (ChatRole.Assistant, supportSystemPromptWithChatContext),
                             new (ChatRole.User, incomingMessage)
-                            ], options: new() { }, cancellationToken: cancellationToken))
+                            ], options: new()
+                            {
+                                Tools = [AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
+                                {
+                                    await using var scope = rootScopeProvider();
+                                    // Ideally, store these in a CRM or app database,
+                                    // but for now, we'll log them!
+                                    scope.ServiceProvider.GetRequiredService<ILogger<IChatClient>>()
+                                        .LogError("Chat reported issue: User email: {emailAddress}, Conversation history: {conversationHistory}", emailAddress, conversationHistory);
+                                }, name: "SaveUserEmailAndConversationHistory", description: "Saves the user's email and their conversation history.")]
+                            }, cancellationToken: cancellationToken))
             {
                 assistantResponse.Append(response.Text);
                 yield return response.Text;

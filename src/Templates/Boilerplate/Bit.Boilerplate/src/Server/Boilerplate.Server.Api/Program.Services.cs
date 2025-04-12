@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Mail;
 using System.IO.Compression;
 //#if (signalR == true)
+using OpenAI.Chat;
 using System.ClientModel.Primitives;
 //#endif
 using Microsoft.OpenApi.Models;
@@ -345,6 +346,8 @@ public static partial class Program
         //#if (signalR == true)
         if (string.IsNullOrEmpty(appSettings.AI?.ApiKey) is false)
         {
+            // https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.AI.OpenAI
+
             services.AddHttpClient("AI", c =>
             {
                 c.DefaultRequestVersion = HttpVersion.Version20;
@@ -355,14 +358,16 @@ public static partial class Program
                 EnableMultipleHttp3Connections = true
             });
 
-            services.AddChatClient(sp => new OpenAIChatClient(new(appSettings.AI.Model, new(appSettings.AI.ApiKey), options: new()
+            services.AddChatClient(sp => new ChatClient(model: appSettings.AI.Model, credential: new(appSettings.AI.ApiKey), options: new()
             {
                 Endpoint = appSettings.AI.Endpoint,
                 Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
-            }))).UseLogging()
-                .UseFunctionInvocation()
-                .UseDistributedCache()
-                .UseOpenTelemetry();
+            }).AsIChatClient())
+                .UseLogging()
+                .UseFunctionInvocation();
+             // .UseDistributedCache()
+             // .UseOpenTelemetry()
+
         }
         //#endif
     }
