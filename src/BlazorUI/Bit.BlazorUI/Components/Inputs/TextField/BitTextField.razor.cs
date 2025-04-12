@@ -258,15 +258,14 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-        {
-            if (Multiline)
-            {
-                await _js.BitTextFieldSetupMultilineInput(_Id, InputElement, AutoHeight, PreventEnter);
-            }
-        }
-
         await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender is false) return;
+
+        if (Multiline)
+        {
+            await _js.BitTextFieldSetupMultilineInput(_Id, InputElement, AutoHeight, PreventEnter);
+        }
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
