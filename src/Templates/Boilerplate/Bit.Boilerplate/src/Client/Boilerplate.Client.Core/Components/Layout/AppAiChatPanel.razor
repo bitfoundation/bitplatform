@@ -14,54 +14,79 @@
     <BitProPanel Modeless
                  ShowCloseButton
                  @bind-IsOpen="isOpen"
-                 HeaderText="AI chat panel">
-        <BitStack Class="body">
-            <BitStack Grows Style="overflow:auto;padding:1rem">
-                @for (int i = 0; i < conversations.Count; i++)
+                 OnDismiss="WrapHandled(HandleOnDismissPanel)">
+        <Header>
+            <BitStack Horizontal Alignment="BitAlignment.Center">
+                <BitText Typography="BitTypography.H5">AI chat panel</BitText>
+                <BitSpacer />
+                <BitButton Title="Clear"
+                           IconOnly FixedColor
+                           Variant="BitVariant.Text"
+                           IconName="@BitIconName.Delete"
+                           Color="BitColor.SecondaryBackground"
+                           OnClick="WrapHandled(ClearChat)" />
+            </BitStack>
+        </Header>
+        <Body>
+            <BitStack Class="body">
+                <BitStack Grows Style="overflow:auto;padding:1rem">
+                    @for (int i = 0; i < conversation.Count; i++)
+                    {
+                        var message = conversation[i];
+                        if (i % 2 != 0)
+                        {
+                            <BitCard Background="BitColorKind.Tertiary" Style="align-self:end">
+                                <BitText>@message</BitText>
+                            </BitCard>
+                        }
+                        else
+                        {
+                            <BitMarkdownViewer Markdown="@message" />
+                        }
+                    }
+
+                    @if (isCommunicating)
+                    {
+                        @if (string.IsNullOrWhiteSpace(lastAssistantResponse))
+                        {
+                            <BitEllipsisLoading Size="BitSize.Small" />
+                        }
+                        else
+                        {
+                            <BitMarkdownViewer Markdown="@lastAssistantResponse" />
+                        }
+                    }
+                </BitStack>
+
+                @if (conversation.Count == 1)
                 {
-                    var message = conversations[i];
-                    if (i % 2 == 0)
-                    {
-                        <BitCard Background="BitColorKind.Tertiary" Style="align-self:end">
-                            <BitText>@message</BitText>
-                        </BitCard>
-                    }
-                    else
-                    {
-                        <BitMarkdownViewer Markdown="@message" />
-                    }
+                    <BitStack Alignment=" BitAlignment.Center" Horizontal FitHeight FillContent>
+                        <BitButton Variant="BitVariant.Outline" Color="BitColor.SecondaryBackground" FixedColor>Prompt 1</BitButton>
+                        <BitButton Variant="BitVariant.Outline" Color="BitColor.SecondaryBackground" FixedColor>Prompt 2</BitButton>
+                        <BitButton Variant="BitVariant.Outline" Color="BitColor.SecondaryBackground" FixedColor>Prompt 3</BitButton>
+                    </BitStack>
                 }
 
-                @if (isCommunicating)
-                {
-                    @if (string.IsNullOrWhiteSpace(lastAssistantResponse))
-                    {
-                        <BitEllipsisLoading Size="BitSize.Small" />
-                    }
-                    else
-                    {
-                        <BitMarkdownViewer Markdown="@lastAssistantResponse" />
-                    }
-                }
+                <BitStack FitHeight Style="position:relative">
+                    <BitTextField Rows="1"
+                                  Immediate
+                                  Multiline
+                                  Style="width:100%"
+                                  @ref="textFieldRef"
+                                  @bind-Value="@userInput"
+                                  Placeholder="@(isCommunicating ? "Thinking..." : "Write a message...")"
+                                  OnKeyDown="WrapHandled((KeyboardEventArgs e) => HandleOnUserInputKeyDown(e))"
+                                  Styles="@(new() { FieldGroup = "padding:1rem", Input = "min-height:unset" })" />
+                    <BitButton Float
+                               AutoLoading
+                               FloatAbsolute
+                               Class="send-message-button"
+                               OnClick="WrapHandled(SendMessage)"
+                               Title="@(isCommunicating ? "Stop" : "Send")"
+                               IsEnabled=@(string.IsNullOrEmpty(userInput) is false || isCommunicating)
+                               IconName="@(isCommunicating? BitIconName.StopSolid: (currentDir is BitDir.Rtl ? BitIconName.SendMirrored : BitIconName.Send))" />
+                </BitStack>
             </BitStack>
-
-            <BitStack FitHeight Style="position:relative">
-                <BitTextField Rows="1"
-                              Immediate
-                              Multiline
-                              Style="width:100%"
-                              @ref="textFieldRef"
-                              @bind-Value="@userInput"
-                              Placeholder="@(isCommunicating ? "Thinking..." : "Write a message...")"
-                              Styles="@(new() { FieldGroup = "padding:1rem", Input = "min-height:unset" })" />
-                <BitButton Float
-                           AutoLoading
-                           FloatAbsolute
-                           Class="send-message-button"
-                           OnClick="WrapHandled(SendMessage)"
-                           IsEnabled=@(string.IsNullOrEmpty(userInput) is false || isCommunicating)
-                           IconName="@(isCommunicating? BitIconName.StopSolid: (currentDir is BitDir.Rtl ? BitIconName.SendMirrored : BitIconName.Send))" />
-            </BitStack>
-        </BitStack>
+        </Body>
     </BitProPanel>
 </section>
