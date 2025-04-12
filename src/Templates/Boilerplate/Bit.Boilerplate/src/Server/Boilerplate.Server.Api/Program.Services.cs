@@ -3,7 +3,6 @@ using System.Net;
 using System.Net.Mail;
 using System.IO.Compression;
 //#if (signalR == true)
-using OpenAI.Chat;
 using System.ClientModel.Primitives;
 //#endif
 using Microsoft.OpenApi.Models;
@@ -344,30 +343,42 @@ public static partial class Program
         });
 
         //#if (signalR == true)
-        if (string.IsNullOrEmpty(appSettings.AI?.ApiKey) is false)
+        services.AddHttpClient("AI", c =>
         {
-            // https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.AI.OpenAI
+            c.DefaultRequestVersion = HttpVersion.Version20;
+            c.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+        }).ConfigurePrimaryHttpMessageHandler(sp => new SocketsHttpHandler()
+        {
+            EnableMultipleHttp2Connections = true,
+            EnableMultipleHttp3Connections = true
+        });
 
-            services.AddHttpClient("AI", c =>
+        if (string.IsNullOrEmpty(appSettings.AI!.OpenAI?.ApiKey) is false)
+        {
+            // https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.AI.OpenAI#microsoftextensionsaiopenai
+            services.AddChatClient(sp => new OpenAI.Chat.ChatClient(model: appSettings.AI.OpenAI.Model, credential: new(appSettings.AI.OpenAI.ApiKey), options: new()
             {
-                c.DefaultRequestVersion = HttpVersion.Version20;
-                c.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
-            }).ConfigurePrimaryHttpMessageHandler(sp => new SocketsHttpHandler()
-            {
-                EnableMultipleHttp2Connections = true,
-                EnableMultipleHttp3Connections = true
-            });
-
-            services.AddChatClient(sp => new ChatClient(model: appSettings.AI.Model, credential: new(appSettings.AI.ApiKey), options: new()
-            {
-                Endpoint = appSettings.AI.Endpoint,
+                Endpoint = appSettings.AI.OpenAI.Endpoint,
                 Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
             }).AsIChatClient())
-                .UseLogging()
-                .UseFunctionInvocation();
-             // .UseDistributedCache()
-             // .UseOpenTelemetry()
-
+            .UseLogging()
+            .UseFunctionInvocation();
+            // .UseDistributedCache()
+            // .UseOpenTelemetry()
+        }
+        else if (string.IsNullOrEmpty(appSettings.AI!.AzureOpenAI?.ApiKey) is false)
+        {
+            // https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.AI.AzureAIInference#microsoftextensionsaiazureaiinference
+            services.AddChatClient(sp => new Azure.AI.Inference.ChatCompletionsClient(endpoint: appSettings.AI.AzureOpenAI.Endpoint,
+                credential: new Azure.AzureKeyCredential(appSettings.AI.AzureOpenAI.ApiKey),
+                options: new()
+                {
+                    Transport = new Azure.Core.Pipeline.HttpClientTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
+                }).AsIChatClient(appSettings.AI.AzureOpenAI.Model))
+            .UseLogging()
+            .UseFunctionInvocation();
+            // .UseDistributedCache()
+            // .UseOpenTelemetry()
         }
         //#endif
     }

@@ -179,12 +179,17 @@ public partial class AppIdentityOptions : IdentityOptions
 //#if (signalR == true)
 public partial class AIOptions
 {
+    public MSExtAIOptions? OpenAI { get; set; }
+    public MSExtAIOptions? AzureOpenAI { get; set; }
+}
+
+public class MSExtAIOptions
+{
     public string? Model { get; set; }
-
     public Uri? Endpoint { get; set; }
-
     public string? ApiKey { get; set; }
 }
+
 //#endif
 
 public partial class EmailOptions
