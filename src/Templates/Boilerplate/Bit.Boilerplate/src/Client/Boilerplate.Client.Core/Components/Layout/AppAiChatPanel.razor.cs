@@ -6,6 +6,18 @@ namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class AppAiChatPanel
 {
+    private class ChatHistory
+    {
+        public string? Message { get; set; }
+        public ChatHistoryRole Role { get; set; }
+    }
+
+    public enum ChatHistoryRole
+    {
+        User,
+        Assistant
+    }
+
     private static string initialResponse = "This is the AI initial response to kick start the chat!";
 
     private bool isOpen;
@@ -14,7 +26,7 @@ public partial class AppAiChatPanel
     private bool isCommunicating = false;
     private BitTextField textFieldRef = default!;
     private string lastAssistantResponse = string.Empty;
-    private List<string> conversation = [initialResponse];
+    private List<ChatHistory> chatHistory = [new() { Message = initialResponse, Role = ChatHistoryRole.Assistant }];
 
 
     [AutoInject] private HubConnection hubConnection = default!;
@@ -34,25 +46,17 @@ public partial class AppAiChatPanel
             _ = StartChannel();
         }
 
-        if (isCommunicating)
-        {
-            // stopping the channel?
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(userInput)) return;
-
         isCommunicating = true;
 
         var input = userInput;
         userInput = string.Empty;
 
-        conversation.Add(input);
+        chatHistory.Add(new() { Message = input, Role = ChatHistoryRole.User });
         lastAssistantResponse = string.Empty;
 
         StateHasChanged();
 
-        await channel!.Writer.WriteAsync(input, CurrentCancellationToken);
+        await channel!.Writer.WriteAsync(input!, CurrentCancellationToken);
     }
 
     private async Task OpenPanel()
@@ -66,8 +70,8 @@ public partial class AppAiChatPanel
 
     private async Task ClearChat()
     {
-        conversation = [initialResponse];
         lastAssistantResponse = string.Empty;
+        chatHistory = [new() { Message = initialResponse, Role = ChatHistoryRole.Assistant }];
 
         await StopChannel();
         await StartChannel();
@@ -89,7 +93,7 @@ public partial class AppAiChatPanel
 
     private async Task StartChannel()
     {
-        channel = Channel.CreateUnbounded<string>(new() { SingleWriter = true, SingleReader = true });
+        channel = Channel.CreateUnbounded<string>();
 
         await foreach (var response in hubConnection.StreamAsync<string>("Chatbot",
                                                                          CultureInfo.CurrentCulture.NativeName,
@@ -99,7 +103,7 @@ public partial class AppAiChatPanel
             if (response is "MESSAGE_PROCESSED")
             {
                 isCommunicating = false;
-                conversation.Add(lastAssistantResponse);
+                chatHistory.Add(new() { Message = lastAssistantResponse, Role = ChatHistoryRole.Assistant });
             }
             else
             {

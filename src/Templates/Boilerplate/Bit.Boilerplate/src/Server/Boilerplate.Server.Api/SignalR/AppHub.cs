@@ -1,8 +1,9 @@
-﻿using System.Text;
+﻿using Boilerplate.Server.Api.Models.Identity;
+using Boilerplate.Server.Api.Controllers.Identity;
+using System.Text;
+using System.Threading.Channels;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.SignalR;
-using Boilerplate.Server.Api.Models.Identity;
-using Boilerplate.Server.Api.Controllers.Identity;
 
 namespace Boilerplate.Server.Api.SignalR;
 
@@ -67,9 +68,7 @@ public partial class AppHub : Hub
         IAsyncEnumerable<string> incomingMessages,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        int incomingMessagesCount = 0;
-        List<(string userQuery, string assistantResponses)> chatHistory = [];
-        string? supportSystemPrompt, summarizationSystemPrompt, chatSummary = null;
+        string? supportSystemPrompt, summarizationSystemPrompt;
 
         await using (var scope = rootScopeProvider.Invoke())
         {
@@ -84,60 +83,93 @@ public partial class AppHub : Hub
                 .SystemPrompts.FirstOrDefaultAsync(p => p.PromptKind == PromptKind.SummarizeConversationContext, cancellationToken))?.Markdown ?? throw new ResourceNotFoundException();
         }
 
-        await foreach (var incomingMessage in incomingMessages.WithCancellation(cancellationToken))
+        Channel<string> channel = Channel.CreateUnbounded<string>();
+
+        async Task ReadIncomingMessages()
         {
-            incomingMessagesCount++;
-
-            StringBuilder assistantResponse = new();
-
-            var supportSystemPromptWithChatContext = supportSystemPrompt
-                .Replace("{{SummarizedConversationContext}}", $"    - Chat summary: {chatSummary ?? "No summary available."} {Environment.NewLine}     - Previous user queries: {ChatHistoryAsString()}");
-
-            await foreach (var response in chatClient.GetStreamingResponseAsync([
-                            new (ChatRole.Assistant, supportSystemPromptWithChatContext),
-                            new (ChatRole.User, incomingMessage)
-                            ], options: new()
-                            {
-                                Tools = [AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
-                                {
-                                    await using var scope = rootScopeProvider();
-                                    // Ideally, store these in a CRM or app database,
-                                    // but for now, we'll log them!
-                                    scope.ServiceProvider.GetRequiredService<ILogger<IChatClient>>()
-                                        .LogError("Chat reported issue: User email: {emailAddress}, Conversation history: {conversationHistory}", emailAddress, conversationHistory);
-                                }, name: "SaveUserEmailAndConversationHistory", description: "Saves the user's email and their conversation history.")]
-                            }, cancellationToken: cancellationToken))
+            CancellationTokenSource? messageSpecificCancellationTokenSrc = null;
+            try
             {
-                assistantResponse.Append(response.Text);
-                yield return response.Text;
+                await foreach (var incomingMessage in incomingMessages)
+                {
+                    if (messageSpecificCancellationTokenSrc is not null)
+                    {
+                        await channel.Writer.WriteAsync("MESSAGE_PROCESSED", cancellationToken);
+                        await messageSpecificCancellationTokenSrc.CancelAsync();
+                    }
+
+                    messageSpecificCancellationTokenSrc = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                    _ = HandleIncomingMessage(incomingMessage, messageSpecificCancellationTokenSrc.Token);
+                }
+            }
+            finally
+            {
+                messageSpecificCancellationTokenSrc?.Dispose();
             }
 
-            if (incomingMessagesCount % 5 == 0) // Summarize every 5 message into one.
+            async Task HandleIncomingMessage(string incomingMessage, CancellationToken messageSpecificCancellationToken)
             {
-                var chatHistoryString = ChatHistoryAsString();
-                chatHistory.Clear();
+                int incomingMessagesCount = 0;
+                List<ChatMessage> chatMessagesHistory = [];
 
-                var response = await chatClient.GetResponseAsync([
-                        new (ChatRole.System, summarizationSystemPrompt),
-                        new (ChatRole.User, chatHistoryString)
-                ], cancellationToken: cancellationToken);
+                var chatSummary = "";
 
-                chatSummary = response.Text;
+                chatMessagesHistory.Add(new(ChatRole.User, incomingMessage));
+
+                incomingMessagesCount++;
+
+                StringBuilder assistantResponse = new();
+
+                foreach (var @char in incomingMessage)
+                {
+                    await Task.Delay(50, messageSpecificCancellationToken);
+                    assistantResponse.Append(@char);
+                    await channel.Writer.WriteAsync(@char.ToString(), messageSpecificCancellationToken);
+                }
+
+                /*await foreach (var response in chatClient.GetStreamingResponseAsync([
+                    new (ChatRole.System, supportSystemPrompt),
+                        new (ChatRole.System, chatSummary ?? string.Empty),
+                        .. chatMessagesHistory,
+                        new (ChatRole.User, incomingMessage)
+                    ], options: new()
+                    {
+                        Temperature = 0,
+                        Tools = [AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
+                        {
+                            await using var scope = rootScopeProvider();
+                            // Ideally, store these in a CRM or app database,
+                            // but for now, we'll log them!
+                            scope.ServiceProvider.GetRequiredService<ILogger<IChatClient>>()
+                                .LogError("Chat reported issue: User email: {emailAddress}, Conversation history: {conversationHistory}", emailAddress, conversationHistory);
+                        }, name: "SaveUserEmailAndConversationHistory", description: "Saves the user's email and their conversation history.")]
+                    }, cancellationToken: currentChatCts!.Token))
+                {
+                    assistantResponse.Append(response.Text);
+                    yield return response.Text;
+                }*/
+
+                chatMessagesHistory.Add(new(ChatRole.Assistant, assistantResponse.ToString()));
+
+                if (incomingMessagesCount % 5 == 0) // Summarize every 5 message into one.
+                {
+                    var response = await chatClient.GetResponseAsync(
+                        [new(ChatRole.System, summarizationSystemPrompt), .. chatMessagesHistory], cancellationToken: messageSpecificCancellationToken);
+
+                    chatMessagesHistory.Clear();
+                    chatSummary = response.Text;
+                }
+
+                await channel.Writer.WriteAsync("MESSAGE_PROCESSED", messageSpecificCancellationToken);
             }
-            else
-            {
-                chatHistory.Add((incomingMessage, assistantResponse.ToString()));
-            }
 
-            yield return "MESSAGE_PROCESSED";
         }
 
-        string ChatHistoryAsString()
-        {
-            if (chatHistory.Count == 0)
-                return "No chat history available.";
+        _ = ReadIncomingMessages();
 
-            return string.Join(Environment.NewLine, chatHistory.Select((history, index) => $"# {index} User's query: {history.userQuery}, Assistant response: {history.assistantResponses}"));
+        await foreach (var str in channel.Reader.ReadAllAsync(cancellationToken).WithCancellation(cancellationToken))
+        {
+            yield return str;
         }
     }
 }
