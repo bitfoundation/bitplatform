@@ -16,19 +16,9 @@
     {
         <BitButton IconName="@BitIconName.Save" IconOnly OnClick="WrapHandled(SaveChanges)" AutoLoading />
 
-        <BitPivot>
-            <BitPivotItem HeaderText="Support">
-                <BitStack VerticalAlign="BitAlignment.Stretch" Horizontal>
-                    <BitMarkdownEditor @bind-Value="systemPromptMarkdown" Style="height:auto" />
-                    <BitMarkdownViewer Markdown="@systemPromptMarkdown" />
-                </BitStack>
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Summarize conversation context">
-                <BitStack VerticalAlign="BitAlignment.Stretch" Horizontal>
-                    <BitMarkdownEditor @bind-Value="summarizeConversationContextPrompt" Style="height:auto" />
-                    <BitMarkdownViewer Markdown="@summarizeConversationContextPrompt" />
-                </BitStack>
-            </BitPivotItem>
-        </BitPivot>
+        <BitStack VerticalAlign="BitAlignment.Stretch" Horizontal>
+            <BitMarkdownEditor @bind-Value="systemPromptMarkdown" Style="height:auto" />
+            <BitMarkdownViewer Markdown="@systemPromptMarkdown" />
+        </BitStack>
     }
 </CascadingValue>

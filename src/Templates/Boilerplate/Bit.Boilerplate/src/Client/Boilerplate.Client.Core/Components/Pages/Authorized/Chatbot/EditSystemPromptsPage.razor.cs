@@ -8,7 +8,6 @@ public partial class EditSystemPromptsPage
     [AutoInject] private IChatbotController chatbotController = default!;
 
     private string? systemPromptMarkdown;
-    private string? summarizeConversationContextPrompt;
 
     private bool isLoading = true;
 
@@ -18,8 +17,7 @@ public partial class EditSystemPromptsPage
 
         try
         {
-            (systemPromptMarkdown, summarizeConversationContextPrompt) = await (chatbotController.GetSystemPromptMarkdown(PromptKind.Support, CurrentCancellationToken),
-            chatbotController.GetSystemPromptMarkdown(PromptKind.SummarizeConversationContext, CurrentCancellationToken));
+            systemPromptMarkdown = await chatbotController.GetSystemPromptMarkdown(PromptKind.Support, CurrentCancellationToken);
         }
         finally
         {
@@ -32,8 +30,7 @@ public partial class EditSystemPromptsPage
     {
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken))
         {
-            await Task.WhenAll(chatbotController.UpdateSystemPrompt(new() { Kind = PromptKind.Support, Markdown = systemPromptMarkdown }, CurrentCancellationToken),
-                chatbotController.UpdateSystemPrompt(new() { Kind = PromptKind.SummarizeConversationContext, Markdown = summarizeConversationContextPrompt }, CurrentCancellationToken));
+            await chatbotController.UpdateSystemPrompt(new() { Kind = PromptKind.Support, Markdown = systemPromptMarkdown }, CurrentCancellationToken);
         }
     }
 }

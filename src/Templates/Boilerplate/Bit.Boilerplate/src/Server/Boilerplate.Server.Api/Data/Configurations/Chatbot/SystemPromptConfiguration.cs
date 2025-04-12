@@ -168,22 +168,5 @@ These are the primary functional areas of the application beyond account managem
 **[[[INSTRUCTIONS_END]]]**
 "
         });
-
-        builder.HasData(new SystemPrompt
-        {
-            Id = Guid.Parse("a8c94d94-0004-4dd0-921c-255e0a581425"),
-            PromptKind = PromptKind.SummarizeConversationContext,
-            Markdown = @"
-You are an AI assistant tasked with summarizing a conversation history.
-Below is a series of questions asked by the user and the corresponding answers provided by the AI.
-Your goal is to create a concise summary of the key points from this conversation, capturing the main topics discussed and any important details or outcomes, while keeping it brief and clear.
-This summary will provide context for future interactions, so it must be brief, clear, and retain essential user-specific details.
-## Instructions:
-
-- Focus on the main topics and key details from the conversation.
-- Exclude redundant or repetitive information.
-- Write the summary in a clear and simple way.
-"
-        });
     }
 }

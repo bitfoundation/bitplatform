@@ -68,7 +68,7 @@ public partial class AppHub : Hub
         IAsyncEnumerable<string> incomingMessages,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        string? supportSystemPrompt, summarizationSystemPrompt;
+        string? supportSystemPrompt = null;
 
         await using (var scope = rootScopeProvider.Invoke())
         {
@@ -78,9 +78,6 @@ public partial class AppHub : Hub
                     .SystemPrompts.FirstOrDefaultAsync(p => p.PromptKind == PromptKind.Support, cancellationToken))?.Markdown ?? throw new ResourceNotFoundException();
 
             supportSystemPrompt = supportSystemPrompt.Replace("{{UserCulture}}", cultureNativeName);
-
-            summarizationSystemPrompt = (await dbContext
-                .SystemPrompts.FirstOrDefaultAsync(p => p.PromptKind == PromptKind.SummarizeConversationContext, cancellationToken))?.Markdown ?? throw new ResourceNotFoundException();
         }
 
         Channel<string> channel = Channel.CreateUnbounded<string>();
@@ -93,10 +90,7 @@ public partial class AppHub : Hub
                 await foreach (var incomingMessage in incomingMessages)
                 {
                     if (messageSpecificCancellationTokenSrc is not null)
-                    {
-                        await channel.Writer.WriteAsync("MESSAGE_PROCESSED", cancellationToken);
                         await messageSpecificCancellationTokenSrc.CancelAsync();
-                    }
 
                     messageSpecificCancellationTokenSrc = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                     _ = HandleIncomingMessage(incomingMessage, messageSpecificCancellationTokenSrc.Token);
@@ -109,60 +103,50 @@ public partial class AppHub : Hub
 
             async Task HandleIncomingMessage(string incomingMessage, CancellationToken messageSpecificCancellationToken)
             {
-                int incomingMessagesCount = 0;
-                List<ChatMessage> chatMessagesHistory = [];
-
-                var chatSummary = "";
-
-                chatMessagesHistory.Add(new(ChatRole.User, incomingMessage));
-
-                incomingMessagesCount++;
-
                 StringBuilder assistantResponse = new();
-
-                foreach (var @char in incomingMessage)
+                List<ChatMessage> chatMessagesHistory = [];
+                try
                 {
-                    await Task.Delay(50, messageSpecificCancellationToken);
-                    assistantResponse.Append(@char);
-                    await channel.Writer.WriteAsync(@char.ToString(), messageSpecificCancellationToken);
-                }
+                    int incomingMessagesCount = 0;
 
-                /*await foreach (var response in chatClient.GetStreamingResponseAsync([
-                    new (ChatRole.System, supportSystemPrompt),
-                        new (ChatRole.System, chatSummary ?? string.Empty),
-                        .. chatMessagesHistory,
-                        new (ChatRole.User, incomingMessage)
-                    ], options: new()
+                    chatMessagesHistory.Add(new(ChatRole.User, incomingMessage));
+
+                    incomingMessagesCount++;
+
+                    /*foreach (var @char in incomingMessage)
                     {
-                        Temperature = 0,
-                        Tools = [AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
+                        await Task.Delay(50, messageSpecificCancellationToken);
+                        assistantResponse.Append(@char);
+                        await channel.Writer.WriteAsync(@char.ToString(), messageSpecificCancellationToken);
+                    }*/
+
+                    await foreach (var response in chatClient.GetStreamingResponseAsync([
+                        new (ChatRole.System, supportSystemPrompt),
+                            .. chatMessagesHistory,
+                            new (ChatRole.User, incomingMessage)
+                        ], options: new()
                         {
-                            await using var scope = rootScopeProvider();
-                            // Ideally, store these in a CRM or app database,
-                            // but for now, we'll log them!
-                            scope.ServiceProvider.GetRequiredService<ILogger<IChatClient>>()
-                                .LogError("Chat reported issue: User email: {emailAddress}, Conversation history: {conversationHistory}", emailAddress, conversationHistory);
-                        }, name: "SaveUserEmailAndConversationHistory", description: "Saves the user's email and their conversation history.")]
-                    }, cancellationToken: currentChatCts!.Token))
-                {
-                    assistantResponse.Append(response.Text);
-                    yield return response.Text;
-                }*/
-
-                chatMessagesHistory.Add(new(ChatRole.Assistant, assistantResponse.ToString()));
-
-                if (incomingMessagesCount % 5 == 0) // Summarize every 5 message into one.
-                {
-                    var response = await chatClient.GetResponseAsync(
-                        [new(ChatRole.System, summarizationSystemPrompt), .. chatMessagesHistory], cancellationToken: messageSpecificCancellationToken);
-
-                    chatMessagesHistory.Clear();
-                    chatSummary = response.Text;
+                            Temperature = 0,
+                            Tools = [AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
+                            {
+                                await using var scope = rootScopeProvider();
+                                // Ideally, store these in a CRM or app database,
+                                // but for now, we'll log them!
+                                scope.ServiceProvider.GetRequiredService<ILogger<IChatClient>>()
+                                    .LogError("Chat reported issue: User email: {emailAddress}, Conversation history: {conversationHistory}", emailAddress, conversationHistory);
+                            }, name: "SaveUserEmailAndConversationHistory", description: "Saves the user's email and their conversation history.")]
+                        }, cancellationToken: messageSpecificCancellationToken))
+                    {
+                        assistantResponse.Append(response.Text);
+                        await channel.Writer.WriteAsync(response.Text, messageSpecificCancellationToken);
+                    }
                 }
-
-                await channel.Writer.WriteAsync("MESSAGE_PROCESSED", messageSpecificCancellationToken);
+                finally
+                {
+                    chatMessagesHistory.Add(new(ChatRole.Assistant, assistantResponse.ToString()));
+                    await channel.Writer.WriteAsync("MESSAGE_PROCESSED", cancellationToken);
+                }
             }
-
         }
 
         _ = ReadIncomingMessages();
