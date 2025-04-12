@@ -1,0 +1,26 @@
+@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
+
+::deep {
+    .open-panel-button {
+        left: unset;
+        right: unset;
+        inset-inline-end: 2rem;
+
+        @include lt-md {
+            bottom: 4rem;
+            inset-inline-end: 1rem;
+        }
+    }
+
+    .body {
+        width: 600px;
+        max-width: 100%;
+    }
+
+    .send-message-button {
+        left: unset;
+        right: unset;
+        inset-inline-end: 1rem;
+    }
+}
