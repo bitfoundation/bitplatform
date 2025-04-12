@@ -94,7 +94,13 @@ public partial class BitProPanelDemo
         {
             Name = "OnDismiss",
             Type = "EventCallback<MouseEventArgs>",
-            Description = "A callback function for when the Panel is dismissed.",
+            Description = "A callback function for when the panel is dismissed.",
+        },
+        new()
+        {
+            Name = "OnOpen",
+            Type = "EventCallback",
+            Description = "A callback function for when the panel is opened.",
         },
         new()
         {
@@ -128,21 +134,21 @@ public partial class BitProPanelDemo
             Name = "Size",
             Type = "double?",
             DefaultValue = "null",
-            Description = "The value of the height or width (based on the position) of the Panel.",
+            Description = "The value of the height or width (based on the position) of the panel.",
         },
         new()
         {
             Name = "ScrollerSelector",
             Type = "string",
             DefaultValue = "null",
-            Description = "Specifies the element selector for which the Panel disables its scroll if applicable.",
+            Description = "Specifies the element selector for which the panel disables its scroll if applicable.",
         },
         new()
         {
             Name = "ShowCloseButton",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Shows the close button of the Panel.",
+            Description = "Shows the close button of the panel.",
         },
         new()
         {
@@ -275,6 +281,11 @@ public partial class BitProPanelDemo
     private bool isTopProPanelOpen;
     private bool isBottomProPanelOpen;
 
+    private bool isOnOpenProPanelOpen;
+    private bool isOnDismissProPanelOpen;
+    private BitTextField onOpenTextFieldRef = default!;
+    private BitTextField onDismissTextFieldRef = default!;
+
     private bool isStyledProPanelOpen;
     private bool isClassedProPanelOpen;
     private bool isProPanelStylesOpen;
@@ -399,7 +410,7 @@ private bool isProPanelWithFooterOpen;";
     </div>
 </BitProPanel>
 
-<BitButton OnClick=""() => isModelessProPanelOpen = true"">Open ProPanel with Modeless</BitButton>
+<BitButton OnClick=""() => isModelessProPanelOpen = !isModelessProPanelOpen"">Toggle ProPanel with Modeless</BitButton>
 <BitProPanel @bind-IsOpen=""isModelessProPanelOpen"" HeaderText=""Modeless"" ShowCloseButton Modeless>
     <div style=""max-width:300px"">
         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
@@ -500,6 +511,38 @@ private bool isOpenInPositionTop;
 private bool isOpenInPositionBottom;";
 
     private readonly string example5RazorCode = @"
+<BitButton OnClick=""() => isOnOpenProPanelOpen = true"">Open OnOpen ProPanel</BitButton>
+<BitProPanel @bind-IsOpen=""isOnOpenProPanelOpen"" OnOpen=""() => onOpenTextFieldRef.FocusAsync()"">
+    <div style=""max-width:300px"">
+        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        <br /><br />
+        The following text field will be focused on open:
+        <br /><br />
+        <BitTextField @ref=""onOpenTextFieldRef"" />
+    </div>
+</BitProPanel>
+
+
+<BitButton OnClick=""() => isOnDismissProPanelOpen = true"">Open OnDismiss ProPanel</BitButton>
+<BitTextField @ref=""onDismissTextFieldRef"" Placeholder=""This will be focused on dismiss..."" />
+<BitProPanel @bind-IsOpen=""isOnDismissProPanelOpen"" OnDismiss=""() => onDismissTextFieldRef.FocusAsync()"">
+    <div style=""max-width:300px"">
+        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+    </div>
+</BitProPanel>";
+    private readonly string example5CsharpCode = @"
+private bool isOnOpenProPanelOpen;
+private bool isOnDismissProPanelOpen;
+private BitTextField onOpenTextFieldRef = default!;
+private BitTextField onDismissTextFieldRef = default!;";
+
+    private readonly string example6RazorCode = @"
 <style>
     .custom-class .item {
         color: black;
@@ -590,13 +633,13 @@ private bool isOpenInPositionBottom;";
         for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
     </div>
 </BitProPanel>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private bool isStyledPanelOpen;
 private bool isClassedPanelOpen;
 private bool isPanelStylesOpen;
 private bool isPanelClassesOpen;";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitButton OnClick=""() => isRtlPanelOpenStart = true"">آغاز</BitButton>
 <BitButton OnClick=""() => isRtlPanelOpenEnd = true"">پایان</BitButton>
 
@@ -622,7 +665,7 @@ private bool isPanelClassesOpen;";
         در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها و شرایط سخت تایپ به پایان رسد وزمان مورد نیاز شامل حروفچینی دستاوردهای اصلی و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد.
     </div>
 </BitProPanel>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private bool isRtlProPanelOpenStart;
 private bool isRtlProPanelOpenEnd;";
 }
