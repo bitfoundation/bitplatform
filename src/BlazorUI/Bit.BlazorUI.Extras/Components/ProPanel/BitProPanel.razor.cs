@@ -5,6 +5,10 @@
 /// </summary>
 public partial class BitProPanel : BitComponentBase
 {
+    private bool _internIsOpen;
+
+
+
     /// <summary>
     /// Enables the auto scrollbar toggle behavior of the panel.
     /// </summary>
@@ -67,9 +71,14 @@ public partial class BitProPanel : BitComponentBase
     [Parameter] public bool Modeless { get; set; }
 
     /// <summary>
-    /// A callback function for when the Panel is dismissed.
+    /// A callback function for when the panel is dismissed.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
+
+    /// <summary>
+    /// A callback function for when the panel is opened.
+    /// </summary>
+    [Parameter] public EventCallback OnOpen { get; set; }
 
     /// <summary>
     /// The event callback for when the swipe action starts on the container of the panel.
@@ -92,17 +101,17 @@ public partial class BitProPanel : BitComponentBase
     [Parameter] public BitPanelPosition? Position { get; set; }
 
     /// <summary>
-    /// The value of the height or width (based on the position) of the Panel.
+    /// The value of the height or width (based on the position) of the panel.
     /// </summary>
     [Parameter] public double? Size { get; set; }
 
     /// <summary>
-    /// Specifies the element selector for which the Panel disables its scroll if applicable.
+    /// Specifies the element selector for which the panel disables its scroll if applicable.
     /// </summary>
     [Parameter] public string? ScrollerSelector { get; set; }
 
     /// <summary>
-    /// Shows the close button of the Panel.
+    /// Shows the close button of the panel.
     /// </summary>
     [Parameter] public bool ShowCloseButton { get; set; }
 
@@ -141,6 +150,24 @@ public partial class BitProPanel : BitComponentBase
         ClassBuilder.Register(() => ModeFull ? "bit-ppl-mfl" : string.Empty);
     }
 
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (IsOpen)
+        {
+            if (_internIsOpen is false)
+            {
+                _internIsOpen = true;
+                OnOpen.InvokeAsync();
+            }
+        }
+        else
+        {
+            _internIsOpen = false;
+        }
+
+        return base.OnAfterRenderAsync(firstRender);
+    }
+
 
 
     private async Task ClosePanel(MouseEventArgs e)
@@ -149,6 +176,6 @@ public partial class BitProPanel : BitComponentBase
 
         if (await AssignIsOpen(false) is false) return;
 
-        await OnDismiss.InvokeAsync(e);
+        _ = OnDismiss.InvokeAsync(e);
     }
 }
