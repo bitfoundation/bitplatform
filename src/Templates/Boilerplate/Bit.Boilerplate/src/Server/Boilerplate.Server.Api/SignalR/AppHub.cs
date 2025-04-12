@@ -23,7 +23,6 @@ namespace Boilerplate.Server.Api.SignalR;
 [AllowAnonymous]
 public partial class AppHub : Hub
 {
-    [AutoInject] private IChatClient chatClient = default;
     [AutoInject] private RootServiceScopeProvider rootScopeProvider = default!;
 
     public override async Task OnConnectedAsync()
@@ -89,6 +88,7 @@ public partial class AppHub : Hub
         }
 
         Channel<string> channel = Channel.CreateUnbounded<string>();
+        var chatClient = rootScopeProvider().ServiceProvider.GetRequiredService<IChatClient>();
 
         async Task ReadIncomingMessages()
         {
@@ -117,7 +117,6 @@ public partial class AppHub : Hub
                 try
                 {
                     chatMessagesHistory.Add(new(ChatRole.User, incomingMessage));
-
 
                     await foreach (var response in chatClient.GetStreamingResponseAsync([
                         new (ChatRole.System, supportSystemPrompt),
