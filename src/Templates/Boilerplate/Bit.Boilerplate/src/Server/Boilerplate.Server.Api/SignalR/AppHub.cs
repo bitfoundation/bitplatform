@@ -1,9 +1,10 @@
-﻿using Boilerplate.Server.Api.Models.Identity;
-using Boilerplate.Server.Api.Controllers.Identity;
-using System.Text;
+﻿using System.Text;
 using System.Threading.Channels;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.SignalR;
+using Boilerplate.Server.Api.Services;
+using Boilerplate.Server.Api.Models.Identity;
+using Boilerplate.Server.Api.Controllers.Identity;
 
 namespace Boilerplate.Server.Api.SignalR;
 
@@ -141,6 +142,12 @@ public partial class AppHub : Hub
                         assistantResponse.Append(response.Text);
                         await channel.Writer.WriteAsync(response.Text, messageSpecificCancellationToken);
                     }
+                }
+                catch (Exception exp)
+                {
+                    await using var scope = rootScopeProvider();
+                    var serverExcptionHandler = scope.ServiceProvider.GetRequiredService<ServerExceptionHandler>();
+                    serverExcptionHandler.Handle(exp);
                 }
                 finally
                 {
