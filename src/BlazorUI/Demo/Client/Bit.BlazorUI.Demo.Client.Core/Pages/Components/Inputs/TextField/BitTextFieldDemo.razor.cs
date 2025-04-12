@@ -164,6 +164,13 @@ public partial class BitTextFieldDemo
         },
         new()
         {
+            Name = "PreventEnter",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Prevents the enter to add new line character into the input in the Multiline mode.",
+        },
+        new()
+        {
             Name = "Resizable",
             Type = "bool",
             DefaultValue = "false",
@@ -546,7 +553,9 @@ public partial class BitTextFieldDemo
     private readonly string example4RazorCode = @"
 <BitTextField Label=""Multiline"" Multiline />
 <BitTextField Label=""Resizable"" Multiline Resizable />
-<BitTextField Label=""Rows = 10"" Multiline Rows=""10"" />";
+<BitTextField Label=""Rows = 10"" Multiline Rows=""10"" />
+<BitTextField Label=""AutoHeight"" Multiline AutoHeight />
+<BitTextField Label=""PreventEnter (use Shift+Enter for new-line)"" Multiline AutoHeight PreventEnter />";
 
     private readonly string example5RazorCode = @"
 <BitTextField Label=""Email"" IconName=""@BitIconName.EditMail"" />

@@ -2,14 +2,24 @@
     export class TextField {
         private static _abortControllers: { [key: string]: AbortController } = {};
 
-        public static setupAutoHeight(id: string, inputElement: HTMLInputElement) {
+        public static setupMultilineInput(id: string, inputElement: HTMLInputElement, autoHeight: boolean, preventEnter: boolean) {
             const ac = new AbortController();
             TextField._abortControllers[id] = ac;
 
-            inputElement.addEventListener('input', function () {
-                this.style.height = 'auto';
-                this.style.height = this.scrollHeight + 'px';
-            }, { signal: ac.signal });
+            if (autoHeight) {
+                inputElement.addEventListener('input', e => {
+                    inputElement.style.height = 'auto';
+                    inputElement.style.height = inputElement.scrollHeight + 'px';
+                }, { signal: ac.signal });
+            }
+
+            if (preventEnter) {
+                inputElement.addEventListener('keydown', e => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                    }
+                }, { signal: ac.signal });
+            }
         }
 
         public static dispose(id: string) {

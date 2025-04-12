@@ -143,6 +143,11 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter] public RenderFragment? PrefixTemplate { get; set; }
 
     /// <summary>
+    /// Prevents the enter to add new line character into the input in the Multiline mode.
+    /// </summary>
+    [Parameter] public bool PreventEnter { get; set; }
+
+    /// <summary>
     /// For multiline text fields, whether or not the field is resizable.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -255,9 +260,9 @@ public partial class BitTextField : BitTextInputBase<string?>
     {
         if (firstRender)
         {
-            if (Multiline && AutoHeight)
+            if (Multiline)
             {
-                await _js.BitTextFieldSetupAutoHeight(_Id, InputElement);
+                await _js.BitTextFieldSetupMultilineInput(_Id, InputElement, AutoHeight, PreventEnter);
             }
         }
 
