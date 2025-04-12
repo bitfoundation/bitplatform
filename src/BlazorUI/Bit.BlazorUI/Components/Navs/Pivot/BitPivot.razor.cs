@@ -34,13 +34,18 @@ public partial class BitPivot : BitComponentBase
     /// <summary>
     /// Whether to skip rendering the tabpanel with the content of the selected tab.
     /// </summary>
-    [Parameter] public bool HeaderOnly { get; set; } = false;
+    [Parameter] public bool HeaderOnly { get; set; }
 
     /// <summary>
     /// The type of the pivot header items.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitPivotHeaderType? HeaderType { get; set; }
+
+    /// <summary>
+    /// Mounts all tabs at render time and hide non-selected tabs with CSS styles instead of not-rendering them (useful for processing/extracting data).
+    /// </summary>
+    [Parameter] public bool MountAll { get; set; }
 
     /// <summary>
     /// Callback for when a pivot header item is clicked.
@@ -217,30 +222,31 @@ public partial class BitPivot : BitComponentBase
         SelectItem(newItem);
     }
 
-    private string GetSelectedItemStyle()
+    private string GetItemStyle(BitPivotItem? item)
     {
         List<string?> list =
         [
-            _selectedItem?.Visibility switch
+            item?.Visibility switch
             {
                 BitVisibility.Collapsed => "visibility:hidden",
                 BitVisibility.Hidden => "display:none",
                 _ => string.Empty
             },
             Styles?.Body,
-            _selectedItem?.BodyStyle
+            item?.BodyStyle,
+            item != _selectedItem ? "display:none" : string.Empty
         ];
 
         return string.Join(';', list.Where(s => s.HasValue()));
     }
 
-    private string GetSelectedItemClass()
+    private string GetItemClass(BitPivotItem? item)
     {
         List<string?> list =
         [
-            (_selectedItem?.IsEnabled is false) ? "disabled" : string.Empty,
+            (item?.IsEnabled is false) ? "disabled" : string.Empty,
             Classes?.Body,
-            _selectedItem?.BodyClass
+            item?.BodyClass
         ];
 
         return string.Join(' ', list.Where(s => s.HasValue()));

@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Headers;
+using System.Net.Http.Headers;
 using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;

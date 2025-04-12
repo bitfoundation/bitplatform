@@ -1,37 +1,42 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Reflection;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
 public static class IJSRuntimeExtensions
 {
+    public const DynamicallyAccessedMemberTypes JsonSerialized = DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties;
+
+
+
     /// <summary>
     /// Only tries to Invoke the js call when the runtime is valid.
     /// </summary>
-    public static async ValueTask InvokeVoid(this IJSRuntime jsRuntime, string identifier, params object?[]? args)
+    public static ValueTask InvokeVoid(this IJSRuntime jsRuntime, string identifier, params object?[]? args)
     {
-        if (jsRuntime.IsRuntimeInvalid()) return;
+        if (jsRuntime.IsRuntimeInvalid()) return ValueTask.CompletedTask;
 
-        await jsRuntime.InvokeVoidAsync(identifier, args);
+        return jsRuntime.InvokeVoidAsync(identifier, args);
     }
 
     /// <summary>
     /// Only tries to Invoke the js call when the runtime is valid.
     /// </summary>
-    public static async ValueTask InvokeVoid(this IJSRuntime jsRuntime, string identifier, TimeSpan timeout, params object?[]? args)
+    public static ValueTask InvokeVoid(this IJSRuntime jsRuntime, string identifier, TimeSpan timeout, params object?[]? args)
     {
-        if (jsRuntime.IsRuntimeInvalid()) return;
+        if (jsRuntime.IsRuntimeInvalid()) return ValueTask.CompletedTask;
 
-        await jsRuntime.InvokeVoidAsync(identifier, timeout, args);
+        return jsRuntime.InvokeVoidAsync(identifier, timeout, args);
     }
 
     /// <summary>
     /// Only tries to Invoke the js call when the runtime is valid.
     /// </summary>
-    public static async ValueTask InvokeVoid(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object?[]? args)
+    public static ValueTask InvokeVoid(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object?[]? args)
     {
-        if (jsRuntime.IsRuntimeInvalid()) return;
+        if (jsRuntime.IsRuntimeInvalid()) return ValueTask.CompletedTask;
 
-        await jsRuntime.InvokeVoidAsync(identifier, cancellationToken, args);
+        return jsRuntime.InvokeVoidAsync(identifier, cancellationToken, args);
     }
 
 
@@ -39,7 +44,7 @@ public static class IJSRuntimeExtensions
     /// <summary>
     /// Only tries to Invoke the js call when the runtime is valid.
     /// </summary>
-    public static ValueTask<TValue> Invoke<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(this IJSRuntime jsRuntime, string identifier, params object?[]? args)
+    public static ValueTask<TValue> Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, params object?[]? args)
     {
         if (jsRuntime.IsRuntimeInvalid()) return default;
 
@@ -49,7 +54,7 @@ public static class IJSRuntimeExtensions
     /// <summary>
     /// Only tries to Invoke the js call when the runtime is valid.
     /// </summary>
-    public static ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(this IJSRuntime jsRuntime, string identifier, TimeSpan timeout, params object?[]? args)
+    public static ValueTask<TValue> Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, TimeSpan timeout, params object?[]? args)
     {
         if (jsRuntime.IsRuntimeInvalid()) return default;
 
@@ -59,7 +64,7 @@ public static class IJSRuntimeExtensions
     /// <summary>
     /// Only tries to Invoke the js call when the runtime is valid.
     /// </summary>
-    public static ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object?[]? args)
+    public static ValueTask<TValue> Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object?[]? args)
     {
         if (jsRuntime.IsRuntimeInvalid()) return default;
 
@@ -69,15 +74,18 @@ public static class IJSRuntimeExtensions
 
 
     [SuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "<Pending>")]
-    internal static bool IsRuntimeInvalid(this IJSRuntime jsRuntime)
+    public static bool IsRuntimeInvalid(this IJSRuntime jsRuntime)
     {
+        if (jsRuntime is null) return false;
+
         var type = jsRuntime.GetType();
 
         return type.Name switch
         {
             "UnsupportedJavaScriptRuntime" => true, // Prerendering
             "RemoteJSRuntime" => (bool)type.GetProperty("IsInitialized")!.GetValue(jsRuntime)! is false, // Blazor server
-            _ => false // Blazor WASM/Hybrid
+            "WebViewJSRuntime" => type.GetField("_ipcSender", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(jsRuntime) is null, // Blazor Hybrid
+            _ => false // Blazor WASM
         };
     }
 }

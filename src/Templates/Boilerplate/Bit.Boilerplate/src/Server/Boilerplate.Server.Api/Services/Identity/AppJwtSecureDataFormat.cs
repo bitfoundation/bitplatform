@@ -1,4 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication;
 
@@ -59,7 +59,7 @@ public partial class AppJwtSecureDataFormat(ServerApiSettings appSettings, Token
                 Audience = appSettings.Identity.Audience,
                 IssuedAt = DateTimeOffset.UtcNow.DateTime,
                 Expires = data.Properties.ExpiresUtc!.Value.UtcDateTime,
-                SigningCredentials = new SigningCredentials(validationParameters.IssuerSigningKey, SecurityAlgorithms.RsaSha512),
+                SigningCredentials = new SigningCredentials(validationParameters.IssuerSigningKey, SecurityAlgorithms.HmacSha512),
                 Subject = new ClaimsIdentity(data.Principal.Claims),
             });
 

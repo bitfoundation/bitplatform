@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
+namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 /// <summary>
 /// Represents a delegate that creates a chain of HTTP message handlers.

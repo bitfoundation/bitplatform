@@ -9,8 +9,10 @@
           Description="Carousel (slide-show) let people show their items in separate slides from two or more items."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
-          PublicMembers="componentPublicMembers">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+          PublicMembers="componentPublicMembers"
+          GitHubUrl="Lists/Carousel/BitCarousel.razor"
+          GitHubDemoUrl="Lists/Carousel/BitCarouselDemo.razor">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <BitCarousel>
             <BitCarouselItem>
                 <div class="number">1 / 4</div>
@@ -29,9 +31,9 @@
                 <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
             </BitCarouselItem>
         </BitCarousel>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="InfiniteScrolling" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="InfiniteScrolling" RazorCode="@example2RazorCode" Id="example2">
         <div>Configure the BitCarousel component for infinite scrolling, allowing the carousel to loop through slides continuously.</div>
         <br />
         <div>
@@ -58,9 +60,9 @@
                 </BitCarouselItem>
             </BitCarousel>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="HideDots" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="HideDots" RazorCode="@example3RazorCode" Id="example3">
         <div>Use the HideDots property to hide the navigation dots below the carousel slides.</div>
         <br />
         <div>
@@ -91,9 +93,9 @@
                 </BitCarouselItem>
             </BitCarousel>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Public API" RazorCode="@example4RazorCode" CsharpCode="@example4CsCode" Id="example4">
+    <DemoExample Title="Public API" RazorCode="@example4RazorCode" CsharpCode="@example4CsCode" Id="example4">
         <div>
             Use the public API of BitCarousel to control the slides programmatically.
             This example shows how to navigate slides using buttons.
@@ -137,9 +139,9 @@
                 <BitNumberField @bind-Value="index" />
             </div>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="AutoPlay" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="AutoPlay" RazorCode="@example5RazorCode" Id="example5">
         <div>
             Configure the BitCarousel to automatically transition between slides.
             The AutoPlay feature allows you to set the interval for automatic slide transitions.
@@ -173,9 +175,9 @@
                 </BitCarouselItem>
             </BitCarousel>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Advanced" RazorCode="@example6RazorCode" Id="example6">
+    <DemoExample Title="Advanced" RazorCode="@example6RazorCode" Id="example6">
         <div>Use BitCarousel with customized style, visible items count, and scroll items count for advanced scenarios.</div>
         <br />
         <div>
@@ -191,9 +193,9 @@
                 <BitCarouselItem Class="item"><div>9</div></BitCarouselItem>
             </BitCarousel>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="RTL" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="RTL" RazorCode="@example7RazorCode" Id="example7">
         <div>Use BitCarousel in right-to-left (RTL).</div>
         <br />
         <div>
@@ -209,5 +211,5 @@
                 <BitCarouselItem Class="item"><div>نه</div></BitCarouselItem>
             </BitCarousel>
         </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

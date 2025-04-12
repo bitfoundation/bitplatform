@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Dtos.Dashboard;
+using Boilerplate.Shared.Dtos.Dashboard;
 
 namespace Boilerplate.Shared.Controllers.Dashboard;
 

@@ -5,8 +5,8 @@
 /// </summary>
 public partial class BitDialog : BitComponentBase
 {
-    private int _offsetTop;
     private bool _isLoading;
+    private float _offsetTop;
     private bool _internalIsOpen;
     private string _containerId = default!;
     private TaskCompletionSource<BitDialogResult?>? _tcs = new();

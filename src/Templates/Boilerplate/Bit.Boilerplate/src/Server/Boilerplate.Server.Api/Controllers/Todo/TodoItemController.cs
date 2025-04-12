@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Dtos.Todo;
+using Boilerplate.Shared.Dtos.Todo;
 using Boilerplate.Shared.Controllers.Todo;
 
 namespace Boilerplate.Server.Api.Controllers.Todo;

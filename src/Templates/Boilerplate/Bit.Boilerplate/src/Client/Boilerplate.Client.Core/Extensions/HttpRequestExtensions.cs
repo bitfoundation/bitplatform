@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Boilerplate.Shared.Controllers;
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 

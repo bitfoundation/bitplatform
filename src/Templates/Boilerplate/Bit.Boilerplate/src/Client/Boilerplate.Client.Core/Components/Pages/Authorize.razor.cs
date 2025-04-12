@@ -1,20 +1,20 @@
-﻿namespace Boilerplate.Client.Core.Components.Pages;
+namespace Boilerplate.Client.Core.Components.Pages;
 
 /// <summary>
 /// If you need an authentication process similar to SSO/OAuth, navigate to /authorize with `client_id`, 
 /// an appropriately encoded `redirect_uri`, and `state`.
 /// 
 /// The user can sign in (or sign up if necessary) using various authentication methods provided by project template, 
-/// such as social login, 2FA, magic link, and OTP. After authentication, the system redirects to the specified app 
+/// such as social sign-in, 2FA, magic link, and OTP. After authentication, the system redirects to the specified app 
 /// with an access token and other relevant authentication details.
 /// 
 /// Example Usage:
 /// Opening:
-///     http://localhost:5030/authorize?client_id=SampleClient&redirect_uri=https://sampleclient.azurewebsites.net/loginCallback&state=/carts
-///     http://localhost:5030/authorize?client_id=NopClient&redirect_uri=https%3A%2F%2Fsampleclient.azurewebsites.net%2FLoginCallback&state=%2Fcarts
+///     http://localhost:5030/authorize?client_id=SampleClient&redirect_uri=https://sampleclient.azurewebsites.net/signInCallback&state=/carts
+///     http://localhost:5030/authorize?client_id=NopClient&redirect_uri=https%3A%2F%2Fsampleclient.azurewebsites.net%2FsignInCallback&state=%2Fcarts
 /// 
 /// Redirects to:
-///     https://sampleclient.azurewebsites.net/loginCallback?access_token=di1d98cxh913fh29ufhnfunxw9&token_type=Bearer&expires_in=3600&state=/carts
+///     https://sampleclient.azurewebsites.net/signInCallback?access_token=di1d98cxh913fh29ufhnfunxw9&token_type=Bearer&expires_in=3600&state=/carts
 ///
 /// Note:
 /// This route is **disabled by default** for security reasons.  
@@ -34,13 +34,15 @@ public partial class Authorize
         {
             "SampleClient",
             [
-                "https://sampleclient.azurewebsites.net/loginCallback"
+                "https://sampleclient.azurewebsites.net/signInCallback"
             ]
         }
     };
 
     protected override async Task OnAfterFirstRenderAsync()
     {
+        await base.OnAfterFirstRenderAsync();
+
         if (clients.TryGetValue(ClientId!, out var clientAllowedRedirectUrls) is false)
         {
             NavigationManager.NavigateTo($"{RedirectUri}#error=invalid_missing_client_id&state={Uri.EscapeDataString(State ?? "")}");
@@ -64,7 +66,5 @@ public partial class Authorize
         var expiresIn = long.Parse(token.FindFirst("exp")!.Value) - long.Parse(token.FindFirst("iat")!.Value);
 
         NavigationManager.NavigateTo($"{RedirectUri}?access_token={accessToken}&token_type=Bearer&expires_in={expiresIn}&state={Uri.EscapeDataString(State ?? "")}");
-
-        await base.OnAfterFirstRenderAsync();
     }
 }

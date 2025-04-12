@@ -3,7 +3,7 @@
 internal class SwiperDimensions
 {
     public double RootWidth { get; set; }
-    public double SwiperWidth { get; set; }
-    public double EffectiveSwiperWidth { get; set; }
-    public double SwiperTranslateX { get; set; }
+    public double ContainerWidth { get; set; }
+    public double EffectiveWidth { get; set; }
+    public double TranslateX { get; set; }
 }

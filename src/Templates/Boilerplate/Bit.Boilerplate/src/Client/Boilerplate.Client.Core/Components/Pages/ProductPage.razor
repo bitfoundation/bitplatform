@@ -1,19 +1,13 @@
-﻿@attribute [Route(Urls.ProductPage + "/{Id:int}")]
+@attribute [Route(Urls.ProductPage + "/{Id:int}")]
 @attribute [Route("{culture?}" + Urls.ProductPage + "/{Id:int}")]
 @attribute [AppResponseCache(SharedMaxAge = 3600 * 24, MaxAge = 60 * 5)]
 @inherits AppPageBase
 
-<PageTitle>@product?.Name</PageTitle>
+<AppPageData ShowGoBackButton=true
+             Title="@product?.Name" />
 
 <section>
     <BitStack Gap="2rem" Class="root-stack">
-
-        <BitLink NoUnderline Href="@Urls.HomePage">
-            <BitStack Horizontal Gap="0.5rem" VerticalAlign="BitAlignment.Center">
-                <BitIcon IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)" Size="BitSize.Small" />
-                <BitText Typography="BitTypography.Body2">@Localizer[nameof(AppStrings.BackToHome)]</BitText>
-            </BitStack>
-        </BitLink>
 
         @if (isLoadingProduct)
         {

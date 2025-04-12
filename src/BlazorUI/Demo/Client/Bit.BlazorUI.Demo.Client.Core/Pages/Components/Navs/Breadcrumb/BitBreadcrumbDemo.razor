@@ -1,4 +1,5 @@
 ﻿@page "/components/breadcrumb"
+@inherits AppComponentBase
 
 <PageOutlet Url="components/breadcrumb"
             Title="Breadcrumb"
@@ -6,22 +7,35 @@
 
 <div>
     <DemoPage Name="Breadcrumb"
-                   Description="Breadcrumbs should be used as a navigational aid in your app or site. They indicate the current page’s location within a hierarchy and help the user understand where they are in relation to the rest of that hierarchy. They also afford one-click access to higher levels of that hierarchy."
-                   Parameters="componentParameters"
-                   SubClasses="componentSubClasses"
-                   Notes="The BitBreadcrumb is a Multi-API component which can accept the list of Items in 3 different ways: BitBreadcrumbItem class, a custom Generic class, and BitBreadcrumbOption component.">
-        <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })">
-            <BitPivotItem HeaderText="Item">
-                <_BitBreadcrumbItemDemo />
-            </BitPivotItem>
+              Description="Breadcrumbs should be used as a navigational aid in your app or site. They indicate the current page’s location within a hierarchy and help the user understand where they are in relation to the rest of that hierarchy. They also afford one-click access to higher levels of that hierarchy."
+              Parameters="componentParameters"
+              SubClasses="componentSubClasses"
+              GitHubUrl="Navs/Breadcrumb/BitBreadcrumb.razor"
+              GitHubDemoUrl="Navs/Breadcrumb/BitBreadcrumbDemo.razor">
+        <NotesTemplate>
+            <BitText>
+                The BitBreadcrumb is a <BitTag Color="BitColor.SecondaryBackground">Multi-API</BitTag> component
+                which can accept the list of Items in 3 different ways:
+                <br />
+                1. The <BitLink Href="#breadcrumb-item"><BitTag Color="BitColor.SecondaryBackground">BitBreadcrumbItem</BitTag></BitLink> class <br />
+                2. A <BitTag Color="BitColor.SecondaryBackground">Custom Generic</BitTag> class <br />
+                3. The <BitLink Href="#breadcrumb-option"><BitTag Color="BitColor.SecondaryBackground">BitBreadcrumbOption</BitTag></BitLink> component
+            </BitText>
+        </NotesTemplate>
+        <Examples>
+            <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })" MountAll="ShowAllCodes">
+                <BitPivotItem HeaderText="Item">
+                    <_BitBreadcrumbItemDemo />
+                </BitPivotItem>
 
-            <BitPivotItem HeaderText="Custom">
-                <_BitBreadcrumbCustomDemo />
-            </BitPivotItem>
+                <BitPivotItem HeaderText="Custom">
+                    <_BitBreadcrumbCustomDemo />
+                </BitPivotItem>
 
-            <BitPivotItem HeaderText="Option">
-                <_BitBreadcrumbOptionDemo />
-            </BitPivotItem>
-        </BitPivot>
+                <BitPivotItem HeaderText="Option">
+                    <_BitBreadcrumbOptionDemo />
+                </BitPivotItem>
+            </BitPivot>
+        </Examples>
     </DemoPage>
 </div>

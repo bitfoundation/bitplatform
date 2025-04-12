@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Controllers.Identity;
 

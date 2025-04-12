@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Tests.PageTests.PageModels.Identity;
+namespace Boilerplate.Tests.PageTests.PageModels.Identity;
 
 public partial class SettingsPage
 {

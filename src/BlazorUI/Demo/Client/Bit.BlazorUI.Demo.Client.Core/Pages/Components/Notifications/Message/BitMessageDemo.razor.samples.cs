@@ -68,15 +68,32 @@ private double elevation = 7;";
 
     private readonly string example6RazorCode = @"
 <BitMessage Multiline Color=""BitColor.Success"">
-    <b>Multiline</b> parameter makes the content to be rendered in multiple lines.
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
+    In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
+    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
+    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
+    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
+    shaped into meaning, and the emotions ready to resonate with every reader.
+    <br />
+    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
+    each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
+    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
+    begins here, in this quiet moment where everything is possible.
 </BitMessage>";
 
     private readonly string example7RazorCode = @"
 <BitMessage Truncate Color=""BitColor.Warning"">
-    <b>Truncate</b> parameter cut the overflowed content at the end of the single line Message.
-    Truncation is not available if you use multiline and should be used sparingly.
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
+    In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
+    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
+    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
+    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
+    shaped into meaning, and the emotions ready to resonate with every reader.
+    <br />
+    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
+    each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
+    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
+    begins here, in this quiet moment where everything is possible.
 </BitMessage>";
 
     private readonly string example8RazorCode = @"
@@ -124,19 +141,36 @@ private bool isDismissed;";
 <BitMessage Truncate Color=""BitColor.Warning""
             ExpandIcon=""@BitIconName.ChevronDownEnd""
             CollapseIcon=""@BitIconName.ChevronUpEnd"">
-    Message with custom expand and collapse icon.
-    Truncation is not available if you use multiline and should be used sparingly.
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
+    In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
+    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
+    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
+    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
+    shaped into meaning, and the emotions ready to resonate with every reader.
+    <br />
+    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
+    each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
+    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
+    begins here, in this quiet moment where everything is possible.
 </BitMessage>";
 
     private readonly string example12RazorCode = @"
 <BitMessage Truncate OnDismiss=""() => isWarningDismissed = true"" Color=""BitColor.Warning"">
     <Content>
-        <b>Truncate</b> with <b>OnDismiss</b> and <b>Actions</b>.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
+        In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
+        to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
+        possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
+        vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
+        shaped into meaning, and the emotions ready to resonate with every reader.
+        <br />
+        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
+        each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+        opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
+        idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
+        begins here, in this quiet moment where everything is possible.
     </Content>
     <Actions>
-        <div style=""display:flex;align-items:center;gap:4px"">
+        <div style=""display:flex;align-items:center;gap:4px;min-height:32px"">
             <button>Yes</button>
             <button>No</button>
         </div>
@@ -145,8 +179,17 @@ private bool isDismissed;";
 
 <BitMessage Multiline OnDismiss=""() => isErrorDismissed = true"" Color=""BitColor.Error"">
     <Content>
-        <b>Multiline</b> with <b>OnDismiss</b> and <b>Actions</b>.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
+        In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
+        to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
+        possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
+        vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
+        shaped into meaning, and the emotions ready to resonate with every reader.
+        <br />
+        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
+        each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+        opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
+        idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
+        begins here, in this quiet moment where everything is possible.
     </Content>
     <Actions>
         <BitButton Variant=""BitVariant.Outline"">Yes</BitButton>
@@ -191,42 +234,90 @@ private bool isErrorDismissed;";
     }
 </style>
 
-<BitMessage Color=""BitColor.Info"" Multiline OnDismiss=""() => {}""
+<BitMessage Multiline 
+            OnDismiss=""() => {}""
+            Color=""BitColor.Info"" 
             Style=""padding:8px;color:red;"">
     <b>Styled Message.</b>
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
+    In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
+    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
+    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
+    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
+    shaped into meaning, and the emotions ready to resonate with every reader.
+    <br />
+    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
+    each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
+    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
+    begins here, in this quiet moment where everything is possible.
 </BitMessage>
 
-<BitMessage Color=""BitColor.Success"" Truncate Class=""custom-class"">
+<BitMessage Truncate 
+            Class=""custom-class""
+            Color=""BitColor.Success"">
     <b>Classed Message.</b>
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
+    In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
+    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
+    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
+    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
+    shaped into meaning, and the emotions ready to resonate with every reader.
+    <br />
+    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
+    each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
+    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
+    begins here, in this quiet moment where everything is possible.
 </BitMessage>
 
 
-<BitMessage Color=""BitColor.Warning"" OnDismiss=""() => {}"" Multiline
-            Styles=""@(new() { Root=""padding:1rem"",
-                              IconContainer=""line-height:1.25"",
-                              Content=""color:blueviolet"",
-                              ContentContainer=""margin:0 10px"",
-                              DismissIcon=""font-size:1rem"",
-                              Actions=""justify-content:center;gap:1rem"" })"">
-    <Content>
-        <b>Styles.</b>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
-    </Content>
-    <Actions>
-        <BitButton Variant=""BitVariant.Text"">Ok</BitButton>
-        <BitButton Variant=""BitVariant.Text"">Cancel</BitButton>
-    </Actions>
+<BitMessage Multiline
+        OnDismiss=""() => {}"" 
+        Color=""BitColor.Warning"" 
+        Styles=""@(new() { Root=""padding:1rem"",
+                          IconContainer=""line-height:1.25"",
+                          Content=""color:blueviolet"",
+                          ContentContainer=""margin:0 10px"",
+                          DismissIcon=""font-size:1rem"",
+                          Actions=""justify-content:center;gap:1rem"" })"">
+<Content>
+    <b>Styles.</b>
+    In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
+    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
+    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
+    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
+    shaped into meaning, and the emotions ready to resonate with every reader.
+    <br />
+    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
+    each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
+    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
+    begins here, in this quiet moment where everything is possible.
+</Content>
+<Actions>
+    <BitButton Variant=""BitVariant.Text"">Ok</BitButton>
+    <BitButton Variant=""BitVariant.Text"">Cancel</BitButton>
+</Actions>
 </BitMessage>
 
-<BitMessage Color=""BitColor.SevereWarning"" OnDismiss=""() => {}"" Truncate
+<BitMessage Truncate
+            OnDismiss=""() => {}"" 
+            Color=""BitColor.SevereWarning"" 
             Classes=""@(new() { Icon=""custom-icon"",
                                Content=""custom-content"",
                                ExpanderIcon=""custom-expander-icon"",
                                DismissIcon=""custom-dismiss-icon"" })"">
     <b>Classes.</b>
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
+    In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
+    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
+    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
+    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
+    shaped into meaning, and the emotions ready to resonate with every reader.
+    <br />
+    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
+    each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
+    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
+    begins here, in this quiet moment where everything is possible.
 </BitMessage>";
 
     private readonly string example15RazorCode = @"
@@ -236,12 +327,21 @@ private bool isErrorDismissed;";
 
 <BitMessage Dir=""BitDir.Rtl"" Color=""BitColor.Success"" Truncate OnDismiss=""() => {}"">
     پیام موفق. <BitLink Href=""https://bitplatform.dev"">به وبسایت ما سر بزنید.</BitLink>
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
+    لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
+    چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است
+    و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
+    کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها
+    شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
 </BitMessage>
 
 <BitMessage Dir=""BitDir.Rtl"" Color=""BitColor.Warning"" Multiline OnDismiss=""() => {}"">
     پیام هشدار. <BitLink Href=""https://bitplatform.dev"">به وبسایت ما سر بزنید.</BitLink>
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
+    <br />
+    لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
+    چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است
+    و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
+    کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها
+    شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
 </BitMessage>
 
 <BitMessage Dir=""BitDir.Rtl"" Color=""BitColor.SevereWarning"">

@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Microsoft.Extensions.Logging;
 using System.Security.Authentication;
 using Boilerplate.Client.Windows.Services;
@@ -12,6 +12,7 @@ public static partial class Program
         // Services being registered here can get injected in windows project only.
         services.AddClientCoreProjectServices(configuration);
 
+        services.AddScoped<IWebAuthnService, WindowsWebAuthnService>();
         services.AddScoped<IExceptionHandler, WindowsExceptionHandler>();
         services.AddScoped<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
 
@@ -31,9 +32,7 @@ public static partial class Program
         services.AddKeyedScoped<HttpMessageHandler, SocketsHttpHandler>("PrimaryHttpMessageHandler", (sp, key) => new()
         {
             EnableMultipleHttp2Connections = true,
-            //#if (framework == 'net9.0')
             EnableMultipleHttp3Connections = true,
-            //#endif
             PooledConnectionLifetime = TimeSpan.FromMinutes(15),
             AutomaticDecompression = System.Net.DecompressionMethods.All,
             SslOptions = new()

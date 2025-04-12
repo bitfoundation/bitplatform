@@ -35,6 +35,7 @@ public class ComponentSourceGenerator : ISourceGenerator
         var className = GetClassName(classSymbol);
         var twoWayParameters = parameters.Where(p => p.IsTwoWayBound).ToArray();
         var isBaseTypeComponentBase = classSymbol.BaseType?.ToDisplayString() == "Microsoft.AspNetCore.Components.ComponentBase";
+        var doesSupporteParametersViewCache = InheritsFromBitComponentBase(classSymbol);
 
         StringBuilder builder = new StringBuilder($@"using System;
 using System.Threading.Tasks;
@@ -62,7 +63,14 @@ namespace {namespaceName}
         {
             builder.AppendLine($"            {par.PropertySymbol.Name}HasBeenSet = false;");
         }
-        builder.AppendLine("            var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;");
+        if (doesSupporteParametersViewCache)
+        {
+            builder.AppendLine("            var parametersDictionary = (ParametersCache ??= parameters.ToDictionary() as Dictionary<string, object>);");
+        }
+        else
+        {
+            builder.AppendLine("            var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;");
+        }
         builder.AppendLine("            foreach (var parameter in parametersDictionary!)");
         builder.AppendLine("            {");
         builder.AppendLine("                switch (parameter.Key)");
@@ -117,7 +125,14 @@ namespace {namespaceName}
         }
         else
         {
-            builder.AppendLine("            return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary as IDictionary<string, object?>));");
+            if (doesSupporteParametersViewCache)
+            {
+                builder.AppendLine("            return base.SetParametersAsync(ParameterView.Empty);");
+            }
+            else
+            {
+                builder.AppendLine("            return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary as IDictionary<string, object?>));");
+            }
         }
         builder.AppendLine(@"        }");
 
@@ -170,5 +185,19 @@ namespace {namespaceName}
         }
 
         return sbName.ToString();
+    }
+
+    private static bool InheritsFromBitComponentBase(INamedTypeSymbol? typeSymbol)
+    {
+        if (typeSymbol is null)
+            return false;
+
+        if (typeSymbol.TypeKind is not TypeKind.Class)
+            return false;
+
+        if (typeSymbol.Name == "BitComponentBase")
+            return true;
+
+        return InheritsFromBitComponentBase(typeSymbol.BaseType);
     }
 }

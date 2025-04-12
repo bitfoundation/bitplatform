@@ -115,12 +115,20 @@ public partial class BitCallout : BitComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        _dotnetObj = DotNetObjectReference.Create(this);
-
         _anchorId = $"BitCallout-{UniqueId}-anchor";
         _contentId = $"BitCallout-{UniqueId}-content";
 
         await base.OnInitializedAsync();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotnetObj = DotNetObjectReference.Create(this);
+        }
+
+        base.OnAfterRender(firstRender);
     }
 
 
@@ -143,7 +151,7 @@ public partial class BitCallout : BitComponentBase
 
     private async Task ToggleCallout()
     {
-        if (IsEnabled is false) return;
+        if (IsEnabled is false || IsDisposed) return;
 
         var id = Anchor is not null ? _anchorId : AnchorId ?? _Id;
 
@@ -176,6 +184,8 @@ public partial class BitCallout : BitComponentBase
     {
         if (IsDisposed || disposing is false) return;
 
+        await base.DisposeAsync(disposing);
+
         if (_dotnetObj is not null)
         {
             _dotnetObj.Dispose();
@@ -186,7 +196,5 @@ public partial class BitCallout : BitComponentBase
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
-
-        await base.DisposeAsync(disposing);
     }
 }

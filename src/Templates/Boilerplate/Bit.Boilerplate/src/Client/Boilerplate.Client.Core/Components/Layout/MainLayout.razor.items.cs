@@ -1,7 +1,10 @@
-﻿namespace Boilerplate.Client.Core.Components.Layout;
+namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class MainLayout
 {
+    private List<BitNavItem> navPanelAuthenticatedItems = [];
+    private List<BitNavItem> navPanelUnAuthenticatedItems = [];
+
     [AutoInject] protected IStringLocalizer<AppStrings> localizer = default!;
 
     private void InitializeNavPanelItems()
@@ -58,14 +61,6 @@ public partial class MainLayout
                 Url = Urls.TodoPage,
             },
             //#endif
-            //#if (offlineDb == true)
-            new()
-            {
-                Text = localizer[nameof(AppStrings.OfflineEditProfileTitle)],
-                IconName = BitIconName.EditContact,
-                Url = Urls.OfflineEditProfilePage,
-            },
-            //#endif
             termsNavItem
         ];
 
@@ -75,6 +70,21 @@ public partial class MainLayout
             IconName = BitIconName.Info,
             Url = Urls.AboutPage,
         };
+
+        //#if (offlineDb == true)
+        navPanelAuthenticatedItems.Add(new()
+        {
+            Text = localizer[nameof(AppStrings.OfflineEditProfileTitle)],
+            IconName = BitIconName.EditContact,
+            Url = Urls.OfflineEditProfilePage,
+        });
+        navPanelUnAuthenticatedItems.Add(new()
+        {
+            Text = localizer[nameof(AppStrings.OfflineEditProfileTitle)],
+            IconName = BitIconName.EditContact,
+            Url = Urls.OfflineEditProfilePage,
+        });
+        //#endif
 
         navPanelAuthenticatedItems.Add(aboutNavItem);
         navPanelUnAuthenticatedItems.Add(aboutNavItem);

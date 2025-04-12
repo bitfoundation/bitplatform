@@ -1,5 +1,6 @@
 ﻿@page "/components/buttongroup"
 @page "/components/button-group"
+@inherits AppComponentBase
 
 
 <PageOutlet Url="components/button-group"
@@ -8,23 +9,36 @@
 
 <div>
     <DemoPage Name="ButtonGroup"
-                   Description="The ButtonGroup component can be used to group related buttons."
-                   Parameters="componentParameters"
-                   SubClasses="componentSubClasses"
-                   SubEnums="componentSubEnums"
-                   Notes="The BitButtonGroupGroup is a Multi-API component which can accept the list of Items in 3 different ways: BitButtonGroupGroupItem class, a custom Generic class, and BitButtonGroupGroupOption component.">
-        <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })">
-            <BitPivotItem HeaderText="Item">
-                <_BitButtonGroupItemDemo />
-            </BitPivotItem>
+              Description="The ButtonGroup component can be used to group related buttons."
+              Parameters="componentParameters"
+              SubClasses="componentSubClasses"
+              SubEnums="componentSubEnums"
+              GitHubUrl="Buttons/ButtonGroup/BitButtonGroup.razor"
+              GitHubDemoUrl="Buttons/ButtonGroup/BitButtonGroupDemo.razor">
+        <NotesTemplate>
+            <BitText>
+                The BitButtonGroup is a <BitTag Color="BitColor.SecondaryBackground">Multi-API</BitTag> component 
+                which can accept the list of Items in 3 different ways:
+                <br />
+                1. The <BitLink Href="#button-group-item"><BitTag Color="BitColor.SecondaryBackground">BitButtonGroupItem</BitTag></BitLink> class <br />
+                2. A <BitTag Color="BitColor.SecondaryBackground">Custom Generic</BitTag> class <br />
+                3. The <BitLink Href="#button-group-option"><BitTag Color="BitColor.SecondaryBackground">BitButtonGroupOption</BitTag></BitLink> component
+            </BitText>
+        </NotesTemplate>
+        <Examples>
+            <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })" MountAll="ShowAllCodes">
+                <BitPivotItem HeaderText="Item">
+                    <_BitButtonGroupItemDemo />
+                </BitPivotItem>
 
-            <BitPivotItem HeaderText="Custom">
-                <_BitButtonGroupCustomDemo />
-            </BitPivotItem>
+                <BitPivotItem HeaderText="Custom">
+                    <_BitButtonGroupCustomDemo />
+                </BitPivotItem>
 
-            <BitPivotItem HeaderText="Option">
-                <_BitButtonGroupOptionDemo />
-            </BitPivotItem>
-        </BitPivot>
+                <BitPivotItem HeaderText="Option">
+                    <_BitButtonGroupOptionDemo />
+                </BitPivotItem>
+            </BitPivot>
+        </Examples>
     </DemoPage>
 </div>

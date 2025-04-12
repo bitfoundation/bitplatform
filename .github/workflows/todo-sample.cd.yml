@@ -23,15 +23,11 @@ jobs:
     
     - name: Checkout source code
       uses: actions/checkout@v4
-    
-    - name: Remove .NET 9 based global.json
-      run: |
-        rm src/global.json
-    
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global8.json
+        global-json-file: src/global.json
 
     - uses: actions/setup-node@v4
       with:
@@ -42,7 +38,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --framework net8.0
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
@@ -70,7 +66,7 @@ jobs:
           dotnet build TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
 
     - name: Publish
-      run: dotnet publish TodoSample/src/Server/TodoSample.Server.Web/TodoSample.Server.Web.csproj -c Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
+      run: dotnet publish TodoSample/src/Server/TodoSample.Server.Web/TodoSample.Server.Web.csproj -c Release -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:WasmEnableSIMD=false
 
     - name: Upload server artifact
       uses: actions/upload-artifact@v4
@@ -93,17 +89,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: server-bundle
-
-      - name: Delete DataProtectionCertificate.pfx
-        run: |
-            rm DataProtectionCertificate.pfx
-
-      - name: Extract identity certificate from env
-        uses: timheuer/base64-to-file@v1.2
-        with:
-            fileDir: './'
-            fileName: 'DataProtectionCertificate.pfx'
-            encodedString: ${{ secrets.API_DATA_PROTECTION_CERTIFICATE_FILE_BASE64 }}
 
       - name: Retrieve AppleAuthKey.p8
         run: echo "${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY_TODO }}" > AppleAuthKey.p8
@@ -142,7 +127,7 @@ jobs:
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --framework net9.0
+       cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha
        
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
@@ -189,7 +174,7 @@ jobs:
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --offlineDb --signalR --framework net9.0
+       cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --offlineDb
        
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
@@ -207,10 +192,10 @@ jobs:
       run:  cd src && dotnet workload install wasm-tools
       
     - name: Generate CSS/JS files
-      run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
+      run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:MultilingualEnabled=false --no-restore -c Release
       
     - name: Publish
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/client -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/client -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:MultilingualEnabled=false
 
     - name: Upload to asw
       run: |
@@ -236,7 +221,7 @@ jobs:
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --framework net9.0
+       cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha
        
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
@@ -273,14 +258,10 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v4
 
-    - name: Remove .NET 9 based global.json
-      run: |
-        rm src/global.json
-    
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        global-json-file: src\Templates\Boilerplate\Bit.Boilerplate\global8.json
+        global-json-file: src/global.json
 
     - uses: actions/setup-node@v4
       with:
@@ -291,7 +272,7 @@ jobs:
         cd src\Templates\Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ..\..\..\ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --captcha reCaptcha --signalR --framework net8.0
+        cd ..\..\..\ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --captcha reCaptcha --signalR
   
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
@@ -330,14 +311,10 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v4
      
-    - name: Remove .NET 9 based global.json
-      run: |
-        rm src/global.json
-    
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global8.json
+        global-json-file: src/global.json
 
     - uses: actions/setup-node@v4
       with:
@@ -348,7 +325,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --framework net8.0
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1.2
@@ -407,13 +384,13 @@ jobs:
           dotnet build TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
   
     - name: Publish aab
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoSample.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:ApplicationTitle="TodoSample" -p:ApplicationId="com.bitplatform.Todo.Template" -f net8.0-android
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoSample.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:ApplicationTitle="TodoSample" -p:ApplicationId="com.bitplatform.Todo.Template" -f net9.0-android
   
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: android-bundle
-        path: TodoSample/src/Client/TodoSample.Client.Maui/bin/Release/net8.0-android/*-Signed.*
+        path: TodoSample/src/Client/TodoSample.Client.Maui/bin/Release/net9.0-android/*-Signed.*
         
   build_blazor_hybrid_ios:
     name: build blazor hybrid (iOS-macOS)
@@ -424,14 +401,10 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v4
      
-    - name: Remove .NET 9 based global.json
-      run: |
-        rm src/global.json
-    
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global8.json
+        global-json-file: src/global.json
 
     - uses: actions/setup-node@v4
       with:
@@ -439,14 +412,14 @@ jobs:
 
     - uses: maxim-lobanov/setup-xcode@v1.6.0
       with:
-        xcode-version: '16.2'
+        xcode-version: '16.3'
 
     - name: Create project from Boilerplate
       run: |
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --framework net8.0
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR
       
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
@@ -502,10 +475,10 @@ jobs:
           dotnet build TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
   
     - name: Build ipa
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="TodoTemplate" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:ApplicationTitle="Todo" -p:ApplicationId="com.bitplatform.Todo.Template" -f net8.0-ios
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="TodoTemplate" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:ApplicationTitle="Todo" -p:ApplicationId="com.bitplatform.Todo.Template" -f net9.0-ios
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: ios-bundle
-        path: TodoSample/src/Client/TodoSample.Client.Maui/bin/release/net8.0-ios/ios-arm64/publish/*.ipa
+        path: TodoSample/src/Client/TodoSample.Client.Maui/bin/release/net9.0-ios/ios-arm64/publish/*.ipa

@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Velopack;
 using Microsoft.Web.WebView2.Core;
 using Boilerplate.Client.Core.Components;
@@ -22,9 +22,7 @@ public partial class Program
         AppPlatform.IsBlazorHybrid = true;
         ITelemetryContext.Current = new WindowsTelemetryContext();
 
-        //#if (framework == 'net9.0')
         Application.SetColorMode(SystemColorMode.System);
-        //#endif
 
         var configuration = new ConfigurationBuilder().AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Windows").Build();
         var services = new ServiceCollection();
@@ -41,9 +39,29 @@ public partial class Program
                 culture ?? // 1- User settings
                 CultureInfo.CurrentUICulture.Name); // 2- OS Settings
         }
-        Services.GetRequiredService<PubSubService>().Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async culture =>
+
+        var form = new Form()
+        {
+            Text = "Boilerplate",
+            Height = 768,
+            Width = 1024,
+            MinimumSize = new Size(375, 667),
+            WindowState = FormWindowState.Maximized,
+            BackColor = ColorTranslator.FromHtml("#0D2960"),
+            Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath)
+        };
+        var pubSubService = Services.GetRequiredService<PubSubService>();
+        pubSubService.Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async culture =>
         {
             Application.Restart();
+        });
+        pubSubService.Subscribe(ClientPubSubMessages.PAGE_DATA_CHANGED, async args =>
+        {
+            var (title, _, __) = ((string? title, string?, bool))args!;
+            await form.InvokeAsync(() =>
+            {
+                form.Text = title ?? "Boilerplate";
+            });
         });
 
         // https://github.com/velopack/velopack
@@ -73,17 +91,6 @@ public partial class Program
                 Services.GetRequiredService<IExceptionHandler>().Handle(exp);
             }
         });
-
-        var form = new Form()
-        {
-            Text = "Boilerplate",
-            Height = 768,
-            Width = 1024,
-            MinimumSize = new Size(375, 667),
-            WindowState = FormWindowState.Maximized,
-            BackColor = ColorTranslator.FromHtml("#0D2960"),
-            Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath)
-        };
 
         Environment.SetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--unsafely-treat-insecure-origin-as-secure=https://0.0.0.1 --enable-notifications");
 

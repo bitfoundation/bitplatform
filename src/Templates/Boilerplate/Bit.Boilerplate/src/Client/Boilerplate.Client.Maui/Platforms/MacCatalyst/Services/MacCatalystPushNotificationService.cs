@@ -1,4 +1,4 @@
-﻿using UIKit;
+using UIKit;
 using Plugin.LocalNotification;
 using Boilerplate.Shared.Dtos.PushNotification;
 

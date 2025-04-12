@@ -1,4 +1,4 @@
-﻿
+
 namespace Boilerplate.Client.Maui.Services;
 
 /// <summary>

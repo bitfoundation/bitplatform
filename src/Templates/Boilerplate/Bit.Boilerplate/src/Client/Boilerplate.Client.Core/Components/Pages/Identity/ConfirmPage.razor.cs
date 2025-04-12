@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
@@ -34,6 +34,8 @@ public partial class ConfirmPage
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         if (string.IsNullOrEmpty(EmailQueryString) is false)
         {
             emailModel.Email = EmailQueryString;
@@ -68,8 +70,6 @@ public partial class ConfirmPage
         {
             showEmailConfirmation = showPhoneConfirmation = true;
         }
-
-        await base.OnInitAsync();
     }
 
     private async Task ConfirmEmail()

@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 //#if (sample == true)
 using Boilerplate.Server.Api.Models.Todo;
 //#endif
@@ -10,7 +10,8 @@ public partial class User : IdentityUser<Guid>
     [PersonalData]
     public string? FullName { get; set; }
 
-    public string? DisplayName => FullName ?? Email ?? PhoneNumber ?? UserName;
+    public string? DisplayName => FullName ?? DisplayUserName;
+    public string? DisplayUserName => FullName ?? Email ?? PhoneNumber ?? UserName;
 
     [PersonalData]
     public Gender? Gender { get; set; }
@@ -44,4 +45,6 @@ public partial class User : IdentityUser<Guid>
     //#if (sample == true)
     public List<TodoItem> TodoItems { get; set; } = [];
     //#endif
+
+    public List<WebAuthnCredential> WebAuthnCredentials { get; set; } = [];
 }

@@ -26,41 +26,44 @@
 
             <BitStack Alignment="BitAlignment.Center">
                 <BitStack Horizontal Wrap Alignment="BitAlignment.Center" Style="max-width:800px">
-                    <BitTag Color="BitColor.Info">Free</BitTag>
-                    <BitTag Color="BitColor.Info">Open source</BitTag>
-                    <BitTag Color="BitColor.Info">Full stack</BitTag>
-                    <BitTag Color="BitColor.Info">Cross platform</BitTag>
-                    <BitTag Color="BitColor.Info">SEO friendly</BitTag>
-                    <BitTag Color="BitColor.Info">Localization</BitTag>
-                    <BitTag Color="BitColor.Info">OTP</BitTag>
-                    <BitTag Color="BitColor.Info">Magic link</BitTag>
-                    <BitTag Color="BitColor.Info">2FA</BitTag>
-                    <BitTag Color="BitColor.Info">Social sign-in</BitTag>
-                    <BitTag Color="BitColor.Info">EF core in browser</BitTag>
-                    <BitTag Color="BitColor.Info">reCAPTCHA</BitTag>
-                    <BitTag Color="BitColor.Info">PWA</BitTag>
-                    <BitTag Color="BitColor.Info">Dark/Light theme</BitTag>
-                    <BitTag Color="BitColor.Info">Logging</BitTag>
-                    <BitTag Color="BitColor.Info">Realtime dashboard</BitTag>
-                    <BitTag Color="BitColor.Info">In-app updates</BitTag>
-                    <BitTag Color="BitColor.Info">Super-optimized</BitTag>
+                    <BitTag Size="BitSize.Large" Color="BitColor.Info">Free</BitTag>
+                    <BitTag Size="BitSize.Large" Color="BitColor.Info">Open source</BitTag>
+                    <BitTag Size="BitSize.Large" Color="BitColor.Info">Full stack</BitTag>
+                    <BitTag Size="BitSize.Large" Color="BitColor.Info">Cross platform</BitTag>
+                    <BitTag Size="BitSize.Large" Color="BitColor.Info">SEO friendly</BitTag>
+                    <BitTag Size="BitSize.Large" Color="BitColor.Info">Localization</BitTag>
+                    <BitTag Size="BitSize.Large" Color="BitColor.Info">OTP</BitTag>
+                    <BitTag Size="BitSize.Large" Color="BitColor.Info">Magic link</BitTag>
+                    <BitTag Size="BitSize.Large" Color="BitColor.Info">2FA</BitTag>
+                    <BitTag Size="BitSize.Large" Color="BitColor.Info">Social sign-in</BitTag>
+                    <BitTag Size="BitSize.Large" Color="BitColor.Info">EF core in browser</BitTag>
+                    <BitTag Size="BitSize.Large" Color="BitColor.Info">reCAPTCHA</BitTag>
+                    <BitTag Size="BitSize.Large" Color="BitColor.Info">PWA</BitTag>
+                    <BitTag Size="BitSize.Large" Color="BitColor.Info">Dark/Light theme</BitTag>
+                    <BitTag Size="BitSize.Large" Color="BitColor.Info">Logging</BitTag>
+                    <BitTag Size="BitSize.Large" Color="BitColor.Info">Realtime dashboard</BitTag>
+                    <BitTag Size="BitSize.Large" Color="BitColor.Info">In-app updates</BitTag>
+                    <BitTag Size="BitSize.Large" Color="BitColor.Info">Super-optimized</BitTag>
                 </BitStack>
             </BitStack>
         </div>
 
         <br /><br /><br />
 
-        <BitText Typography="BitTypography.H4" Gutter>Boilerplate</BitText>
+        <BitText id="boilerplate" Style="scroll-margin-top:100px" Typography="BitTypography.H4" Gutter>Boilerplate</BitText>
         <BitText Gutter>
             The bit Boilerplate is a feature-packed project template that accelerates your development. Watch the video to see its built-in capabilities in action.
         </BitText>
         <br />
         <div class="video-container">
-            <iframe src="https://www.youtube.com/embed/MCrF1iwN1h4"
-                    width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
-            </iframe>
+            <div class="video-wrapper">
+                <video controls
+                       title="bitplatform intro"
+                       src="https://videos.bitplatform.dev/bitplatform-intro.mp4" />
+                <button onclick="jumpToDemos(event)" class="skip-button">Jump to demos ⏩</button>
+            </div>
         </div>
+        <br />
         <br />
         <BitText Typography="BitTypography.H6" Gutter>
             You can start playing with its source code here: <a href="https://codespaces.new/bitfoundation/bit-templates-playground/tree/develop" target="_blank">Boilerplate playground</a>
@@ -77,7 +80,7 @@
 
         <br /><br /><br /><br />
 
-        <BitText Typography="BitTypography.H4" Gutter>AdminPanel</BitText>
+        <BitText id="adminpanel" Style="scroll-margin-top:100px" Typography="BitTypography.H4" Gutter>AdminPanel</BitText>
         <div class="page-flex-container">
             <div class="page-content-container">
                 <img class="template-img dark-image" src="/images/demos/admin-dark.webp" alt="AdminPanel sample" />
@@ -96,7 +99,7 @@
             </div>
         </div>
 
-        <BitText Typography="BitTypography.H4" Gutter>Sales (still shaping up)</BitText>
+        <BitText id="sales" Style="scroll-margin-top:100px" Typography="BitTypography.H4" Gutter>Sales (still shaping up)</BitText>
         <div class="page-flex-container">
             <div class="page-content-container">
                 <img class="template-img dark-image" src="/images/demos/sales-dark.webp" alt="Sales sample" />
@@ -114,7 +117,7 @@
             </div>
         </div>
 
-        <BitText Typography="BitTypography.H4" Gutter>Todo</BitText>
+        <BitText id="todo" Style="scroll-margin-top:100px" Typography="BitTypography.H4" Gutter>Todo</BitText>
         <div class="page-flex-container">
             <div class="page-content-container">
                 <img class="template-img dark-image" src="/images/demos/todo-dark.webp" alt="Todo sample" />
@@ -126,13 +129,14 @@
                     Experience the rapid performance of our sample app on mobile, desktop, and web, all built with our Boilerplate.
                 </BitText>
                 <a class="primary-btn" href="@Urls.TodoTemplatePwa" target="_blank" title="PWA">PWA</a>
+                <a class="secondary-btn" href="@Urls.TodoOfflineWebApp" target="_blank" title="EF-Core / SQLite inside browser">EF-Core / SQLite inside browser</a>
                 <a class="secondary-btn" href="@Urls.TodoTemplateGooglePlay" target="_blank" title="Google Play"><i class="btn-img google-play" />Android</a>
                 <a class="secondary-btn" href="@Urls.TodoTemplateAppleStore" target="_blank" title="Apple Store"><span class="btn-img apple-store"></span>iOS - macOS</a>
                 <a class="secondary-btn" href="@Urls.TodoTemplateWindows" target="_blank" title="Windows"><span class="btn-img windows"></span>Windows</a>
             </div>
         </div>
 
-        <BitText Typography="BitTypography.H4" Gutter>Platform website</BitText>
+        <BitText id="platform" Style="scroll-margin-top:100px" Typography="BitTypography.H4" Gutter>Platform website</BitText>
         <div class="page-flex-container">
             <div class="page-content-container">
                 <img class="template-img dark-image" src="/images/demos/platform-dark.webp" alt="bitplatform website" />
@@ -148,7 +152,7 @@
             </div>
         </div>
 
-        <BitText Typography="BitTypography.H4" Gutter>BlazorUI</BitText>
+        <BitText id="blazorui" Style="scroll-margin-top:100px" Typography="BitTypography.H4" Gutter>BlazorUI</BitText>
         <div class="page-flex-container">
             <div class="page-content-container">
                 <img class="template-img dark-image" src="/images/demos/blazorui-dark.webp" alt="BlazorUI sample" />

@@ -10,6 +10,37 @@
     background-color: $clr-bg-pri;
     height: $bit-env-height-available;
 
+    &.bit-npn-tgl {
+        min-width: spacing(12);
+        max-width: spacing(12);
+
+        .bit-npn-cnt {
+            align-items: center;
+        }
+    }
+
+    &.bit-npn-npd {
+        padding: 0;
+
+        &.bit-npn-tgl {
+            min-width: spacing(6);
+            max-width: spacing(6);
+        }
+
+        .bit-npn-cnt {
+            padding: 0;
+        }
+    }
+
+    &::-webkit-scrollbar {
+        width: 0;
+    }
+
+    .bit-srb,
+    .bit-srb-cnt {
+        width: 100%;
+    }
+
     @include lt-md {
         left: 0;
         padding: 0;
@@ -39,48 +70,15 @@
             min-width: spacing(8);
             max-width: spacing(8);
         }
-    }
 
-    &.bit-npn-tgl {
-        min-width: spacing(12);
-        max-width: spacing(12);
-
-        .bit-npn-cnt {
-            align-items: center;
-        }
-
-        &.bit-npn-npd {
-            min-width: spacing(6);
-            max-width: spacing(6);
-        }
-    }
-
-    &.bit-npn-npd {
-        padding: 0;
-
-        &.bit-npn-tgl {
+        &.bit-npn-npd.bit-npn-tgl {
             min-width: spacing(6);
             max-width: spacing(6);
         }
 
-        .bit-npn-cnt {
-            padding: 0;
+        .bit-npn-tbn {
+            display: none;
         }
-
-        @include lt-md {
-            &.bit-npn-tgl {
-                min-width: spacing(6);
-                max-width: spacing(6);
-            }
-        }
-    }
-
-    &::-webkit-scrollbar {
-        width: 0;
-    }
-
-    .bit-srb, .bit-srb-cnt {
-        width: 100%;
     }
 }
 

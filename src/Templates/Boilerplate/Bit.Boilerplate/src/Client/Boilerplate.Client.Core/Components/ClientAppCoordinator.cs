@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Web;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
@@ -25,7 +25,6 @@ public partial class ClientAppCoordinator : AppComponentBase
     //#if (appInsights == true)
     [AutoInject] private IApplicationInsights appInsights = default!;
     //#endif
-    [AutoInject] private Navigator navigator = default!;
     [AutoInject] private UserAgent userAgent = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private IStorageService storageService = default!;
@@ -42,6 +41,8 @@ public partial class ClientAppCoordinator : AppComponentBase
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         if (AppPlatform.IsBlazorHybrid)
         {
             await ConfigureUISetup();
@@ -51,16 +52,27 @@ public partial class ClientAppCoordinator : AppComponentBase
         {
             unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.NAVIGATE_TO, async (uri) =>
             {
-                NavigationManager.NavigateTo(uri!.ToString()!);
+                var uriValue = uri?.ToString()!;
+                var replace = uriValue.Contains("replace=true", StringComparison.InvariantCultureIgnoreCase);
+                var forceLoad = uriValue.Contains("forceLoad=true", StringComparison.InvariantCultureIgnoreCase);
+                NavigationManager.NavigateTo(uriValue.Replace("replace=true", "", StringComparison.InvariantCultureIgnoreCase).Replace("forceLoad=true", "", StringComparison.InvariantCultureIgnoreCase).TrimEnd('&'), forceLoad, replace);
             });
+            if (AppPlatform.IsBlazorHybrid is false)
+            {
+                try
+                {
+                    BitButil.UseFastInvoke(); // Ensures that `TelemetryContext.Platform` is available to components using this value in their `OnInitAsync` method, such as `SignInPage.razor.cs`.
+                    var userAgentData = await userAgent.Extract();
+                    TelemetryContext.Platform = string.Join(' ', [userAgentData.Manufacturer, userAgentData.OsName, userAgentData.Name, "browser"]);
+                }
+                finally
+                {
+                    BitButil.UseNormalInvoke();
+                }
+            }
             TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
             TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
             TelemetryContext.PageUrl = HttpUtility.UrlDecode(NavigationManager.Uri);
-            if (AppPlatform.IsBlazorHybrid is false)
-            {
-                var userAgentData = await userAgent.Extract();
-                TelemetryContext.Platform = string.Join(' ', [userAgentData.Manufacturer, userAgentData.OsName, userAgentData.Name, "browser"]);
-            }
 
             //#if (appInsights == true)
             _ = appInsights.AddTelemetryInitializer(new()
@@ -79,10 +91,8 @@ public partial class ClientAppCoordinator : AppComponentBase
             //#if (signalR == true)
             SubscribeToSignalREventsMessages();
             //#endif
-            await PropagateUserId(firstRun: true, AuthenticationStateTask);
+            await PropagateAuthState(firstRun: true, AuthenticationStateTask);
         }
-
-        await base.OnInitAsync();
     }
 
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
@@ -96,7 +106,7 @@ public partial class ClientAppCoordinator : AppComponentBase
     /// This code manages the association of a user with sensitive services, such as SignalR, push notifications, App Insights, and others, 
     /// ensuring the user is correctly set or cleared as needed.
     /// </summary>
-    public async Task PropagateUserId(bool firstRun, Task<AuthenticationState> task)
+    public async Task PropagateAuthState(bool firstRun, Task<AuthenticationState> task)
     {
         try
         {
@@ -142,6 +152,10 @@ public partial class ClientAppCoordinator : AppComponentBase
             //#endif
 
             //#if (notification == true)
+            if (firstRun)
+            {
+                await Task.Delay(10_000, CurrentCancellationToken); // No rush to subscribe to push notifications.
+            }
             await pushNotificationService.Subscribe(CurrentCancellationToken);
             //#endif
         }
@@ -153,7 +167,7 @@ public partial class ClientAppCoordinator : AppComponentBase
 
     private void AuthenticationStateChanged(Task<AuthenticationState> task)
     {
-        _ = PropagateUserId(firstRun: false, task);
+        _ = PropagateAuthState(firstRun: false, task);
     }
 
     //#if (signalR == true)
@@ -247,6 +261,8 @@ public partial class ClientAppCoordinator : AppComponentBase
     private List<IDisposable> signalROnDisposables = [];
     protected override async ValueTask DisposeAsync(bool disposing)
     {
+        await base.DisposeAsync(disposing);
+
         unsubscribe?.Invoke();
 
         NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
@@ -258,7 +274,5 @@ public partial class ClientAppCoordinator : AppComponentBase
         hubConnection.Reconnecting -= HubConnectionStateChange;
         signalROnDisposables.ForEach(d => d.Dispose());
         //#endif
-
-        await base.DisposeAsync(disposing);
     }
 }

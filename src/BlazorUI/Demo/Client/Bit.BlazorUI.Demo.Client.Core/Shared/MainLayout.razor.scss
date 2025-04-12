@@ -128,30 +128,4 @@
         border-radius: 16px;
         background-color: $bit-color-foreground-secondary;
     }
-
-    .code-box {
-        width: 100%;
-        display: flex;
-        padding: 1rem;
-        overflow-x: auto;
-        user-select: text;
-        white-space: nowrap;
-        align-items: center;
-        margin: rem2(16px) 0;
-        box-sizing: border-box;
-        -webkit-user-select: text;
-        justify-content: flex-start;
-        background-color: $bit-color-background-secondary;
-        border-left: rem2(4px) solid $bit-color-border-secondary;
-        font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
-
-        &::-webkit-scrollbar {
-            height: rem2(5px);
-        }
-
-        &::-webkit-scrollbar-thumb {
-            border-radius: rem2(8px);
-            background-color: $bit-color-border-secondary;
-        }
-    }
 }

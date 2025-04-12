@@ -6,11 +6,13 @@
 
 <DemoPage Name="Element"
           Description="A simple component with a customizable HTML tag, offering full control over styling, attributes, and directional flow, designed to integrate seamlessly into the bit BlazorUI."
-          Parameters="componentParameters">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+          Parameters="componentParameters"
+          GitHubUrl="Utilities/Element/BitElement.cs"
+          GitHubDemoUrl="Utilities/Element/BitElementDemo.razor">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <BitElement>This is default (div)</BitElement>
-    </DemoSection>
-    <DemoSection Title="Element" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    </DemoExample>
+    <DemoExample Title="Element" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <div>Render different HTML elements by setting the Element property of BitElement.</div>
         <br />
         <BitElement Element="input" placeholder="Input" />
@@ -18,8 +20,8 @@
         <BitElement Element="a" href="https://bitplatform.dev/" target="_blank">Anchor (Link)</BitElement>
         <br /><br />
         <BitElement Element="button" @onclick="@(() => counter++)">Button (Click count @counter)</BitElement>
-    </DemoSection>
-    <DemoSection Title="Advanced" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    </DemoExample>
+    <DemoExample Title="Advanced" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <div>Change the HTML tag dynamically using the Element property.</div>
         <br /><br />
         <BitElement Element="@element"
@@ -29,5 +31,5 @@
             @element
         </BitElement>
         <BitDropdown Label="Elements" Items="elementsList" @bind-Value="element" Style="width: 8rem; margin-top: 0.5rem;" />
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

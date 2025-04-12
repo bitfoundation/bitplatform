@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Controllers;
+using Boilerplate.Shared.Controllers;
 
 namespace Boilerplate.Shared.Controllers
 {
@@ -30,6 +30,16 @@ namespace Boilerplate.Shared
             where TAppController : IAppController
         {
             controller.AddQueryStrings(queryString);
+            return controller;
+        }
+
+        public static TAppController WithQueryIf<TAppController>(this TAppController controller, bool condition, string key, object? value)
+            where TAppController : IAppController
+        {
+            if (condition)
+            {
+                controller.WithQuery(key, value);
+            }
             return controller;
         }
     }

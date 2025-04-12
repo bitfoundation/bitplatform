@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.IO.Compression;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -168,11 +168,7 @@ public static partial class Program
         services.AddKeyedScoped<HttpMessageHandler, SocketsHttpHandler>("PrimaryHttpMessageHandler", (sp, key) => new()
         {
             EnableMultipleHttp2Connections = true,
-            //+:cnd:noEmit
-            //#if (framework == 'net9.0')
             EnableMultipleHttp3Connections = true
-            //#endif
-            //-:cnd:noEmit
         });
 
         services.AddRazorComponents()

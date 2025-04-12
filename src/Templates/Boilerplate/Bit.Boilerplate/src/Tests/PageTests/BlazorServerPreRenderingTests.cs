@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Tests.PageTests.BlazorServer.PreRendering;
+namespace Boilerplate.Tests.PageTests.BlazorServer.PreRendering;
 
 [TestClass]
 public partial class IdentityPagesTests : BlazorServer.IdentityPagesTests

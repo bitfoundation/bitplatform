@@ -289,10 +289,10 @@ public partial class BitProPanelDemo
 <BitButton OnClick=""() => isBasicProPanelOpen = true"">Open ProPanel</BitButton>
 <BitProPanel @bind-IsOpen=""isBasicProPanelOpen"">
     <div style=""max-width:300px"">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-        turpis.
+        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
     </div>
 </BitProPanel>";
     private readonly string example1CsharpCode = @"
@@ -302,14 +302,13 @@ private bool isBasicProPanelOpen;";
 <BitButton OnClick=""() => isProPanelWithHeaderTextOpen = true"">Open ProPanel with HeaderText</BitButton>
 <BitProPanel @bind-IsOpen=""isProPanelWithHeaderTextOpen"" HeaderText=""BitProPanel with HeaderText"">
     <div style=""max-width:300px"">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-        efficitur.
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. 
+        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape. 
+        Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and 
+        inspirations will be built. Soon, these lines will transform into narratives that provoke thought, 
+        spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty 
+        in potential—the quiet magic of beginnings, where everything is still to come, and the possibilities 
+        are boundless. This space is yours to craft, yours to shape, yours to bring to life.
     </div>
 </BitProPanel>
 
@@ -323,14 +322,13 @@ private bool isBasicProPanelOpen;";
     </Header>
     <Body>
         <div style=""max-width:300px"">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-            efficitur.
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. 
+            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape. 
+            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and 
+            inspirations will be built. Soon, these lines will transform into narratives that provoke thought, 
+            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty 
+            in potential—the quiet magic of beginnings, where everything is still to come, and the possibilities 
+            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
         </div>
     </Body>
 </BitProPanel>
@@ -339,14 +337,16 @@ private bool isBasicProPanelOpen;";
 <BitButton OnClick=""() => isProPanelWithFooterTextOpen = true"">Open ProPanel with FooterText</BitButton>
 <BitProPanel @bind-IsOpen=""isProPanelWithFooterTextOpen"" FooterText=""BitProPanel with FooterText"">
     <div style=""max-width:300px"">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-        efficitur.
+        In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
+        to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
+        possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
+        vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
+        shaped into meaning, and the emotions ready to resonate with every reader.
+        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
+        each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+        opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
+        idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
+        begins here, in this quiet moment where everything is possible.
     </div>
 </BitProPanel>
 
@@ -354,14 +354,16 @@ private bool isBasicProPanelOpen;";
 <BitProPanel @bind-IsOpen=""isProPanelWithFooterOpen"">
     <Body>
         <div style=""max-width:300px"">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-            efficitur.
+            In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
+            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
+            possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
+            vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
+            shaped into meaning, and the emotions ready to resonate with every reader.
+            In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
+            each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+            opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
+            idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
+            begins here, in this quiet moment where everything is possible.
         </div>
     </Body>
     <Footer>
@@ -380,45 +382,50 @@ private bool isProPanelWithFooterOpen;";
 <BitButton OnClick=""() => bitProPanelRef.Open()"">Open ProPanel with ShowCloseButton</BitButton>
 <BitProPanel @ref=""bitProPanelRef"" HeaderText=""ShowCloseButton"" ShowCloseButton>
     <div style=""max-width:300px"">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non.
+        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
     </div>
 </BitProPanel>
 
 <BitButton OnClick=""() => isBlockingProPanelOpen = true"">Open ProPanel with Blocking</BitButton>
 <BitProPanel @bind-IsOpen=""isBlockingProPanelOpen"" HeaderText=""Blocking"" ShowCloseButton Blocking>
     <div style=""max-width:300px"">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non.
+        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
     </div>
 </BitProPanel>
 
 <BitButton OnClick=""() => isModelessProPanelOpen = true"">Open ProPanel with Modeless</BitButton>
 <BitProPanel @bind-IsOpen=""isModelessProPanelOpen"" HeaderText=""Modeless"" ShowCloseButton Modeless>
     <div style=""max-width:300px"">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non.
+        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
     </div>
 </BitProPanel>
 
 <BitButton OnClick=""() => isModeFullProPanelOpen = true"">Open ProPanel with ModeFull</BitButton>
 <BitProPanel @bind-IsOpen=""isModeFullProPanelOpen"" HeaderText=""ModeFull"" ShowCloseButton ModeFull>
     <div style=""max-width:300px"">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non.
+        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
     </div>
 </BitProPanel>
 
 <BitButton OnClick=""() => isAutoToggleScrollProPanelOpen = true"">Open ProPanel with AutoToggleScroll</BitButton>
 <BitProPanel @bind-IsOpen=""isAutoToggleScrollProPanelOpen"" HeaderText=""AutoToggleScroll"" AutoToggleScroll>
     <div style=""max-width:300px"">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non.
+        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
     </div>
 </BitProPanel>";
     private readonly string example3CsharpCode = @"
@@ -429,7 +436,7 @@ private bool isAutoToggleScrollProPanelOpen;
 private BitProPanel bitProPanelRef = default!;";
 
     private readonly string example4RazorCode = @"
-<BitSpinButton @bind-Value=""customProPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+<BitNumberField @bind-Value=""customProPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
 
 <BitButton OnClick=""() => isStartProPanelOpen = true"">Start</BitButton>
 <BitButton OnClick=""() => isEndProPanelOpen = true"">End</BitButton>
@@ -443,11 +450,11 @@ private BitProPanel bitProPanelRef = default!;";
              HeaderText=""Start BitProPanel""
              Position=""BitPanelPosition.Start"">
     BitProPanel with Start position and custom Size.
-    <BitSpinButton @bind-Value=""customProPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-    amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-    sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-    turpis.
+    <BitNumberField @bind-Value=""customProPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+    for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
 </BitProPanel>
 
 <BitProPanel @bind-Size=""customProPanelSize""
@@ -455,11 +462,11 @@ private BitProPanel bitProPanelRef = default!;";
              HeaderText=""End BitProPanel""
              Position=""BitPanelPosition.End"">
     BitProPanel with End position and custom Size.
-    <BitSpinButton @bind-Value=""customProPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-    amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-    sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-    turpis.
+    <BitNumberField @bind-Value=""customProPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+    for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
 </BitProPanel>
 
 <BitProPanel @bind-Size=""customProPanelSize""
@@ -467,11 +474,11 @@ private BitProPanel bitProPanelRef = default!;";
              HeaderText=""Top BitProPanel""
              Position=""BitPanelPosition.Top"">
     BitProPanel with Top position and custom Size.
-    <BitSpinButton @bind-Value=""customProPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-    amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-    sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-    turpis.
+    <BitNumberField @bind-Value=""customProPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+    for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
 </BitProPanel>
 
 <BitProPanel @bind-Size=""customProPanelSize""
@@ -479,11 +486,11 @@ private BitProPanel bitProPanelRef = default!;";
              HeaderText=""Bottom BitProPanel""
              Position=""BitPanelPosition.Bottom"">
     BitProPanel with Bottom position and custom Size.
-    <BitSpinButton @bind-Value=""customProPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-    amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-    sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-    turpis.
+    <BitNumberField @bind-Value=""customProPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+    for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
 </BitProPanel>";
     private readonly string example4CsharpCode = @"
 private double customPanelSize = 300;
@@ -544,10 +551,10 @@ private bool isOpenInPositionBottom;";
     <div class=""item"">Item 2</div>
     <div class=""item"">Item 3</div
     <div style=""max-width:300px"">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-        turpis.
+        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
     </div>
 </BitProPanel>
 
@@ -558,10 +565,10 @@ private bool isOpenInPositionBottom;";
                                Container = ""box-shadow: 0 0 1rem tomato;"" })"">
     BitProPanel with <b>Styles</b> to customize its elements.
     <div style=""max-width:300px"">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-        turpis.
+        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
     </div>
 </BitProPanel>
 
@@ -577,10 +584,10 @@ private bool isOpenInPositionBottom;";
                                 Footer = ""custom-footer"" })"">
     BitProPanel with <b>Classes</b> to customize its elements.
     <div style=""max-width:300px"">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-        turpis.
+        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
     </div>
 </BitProPanel>";
     private readonly string example5CsharpCode = @"

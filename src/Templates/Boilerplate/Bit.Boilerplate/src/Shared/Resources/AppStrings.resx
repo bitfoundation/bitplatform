@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
     <!-- 
@@ -441,9 +441,6 @@
     <data name="ExpiredToken" xml:space="preserve">
     <value>Expired token.</value>
   </data>
-    <data name="TokenPlaceholder" xml:space="preserve">
-    <value>Enter token</value>
-  </data>
     <data name="SignInMessageInSignUp" xml:space="preserve">
     <value>Already have an account?</value>
   </data>
@@ -472,10 +469,7 @@
     <value>Enter email address</value>
   </data>
     <data name="EmailToken" xml:space="preserve">
-    <value>Email Token</value>
-  </data>
-    <data name="EmailTokenPlaceholder" xml:space="preserve">
-    <value>Enter email token</value>
+    <value>Code</value>
   </data>
     <data name="EmailTokenConfirmButtonText" xml:space="preserve">
     <value>Confirm Email Address</value>
@@ -484,7 +478,7 @@
     <value>Your email address ({0}) has been confirmed.</value>
   </data>
     <data name="EmailConfirmationSuccessMessage" xml:space="preserve">
-    <value>You can now login with your account.</value>
+    <value>You can now sign-in with your account.</value>
   </data>
     <data name="ConfirmPhoneHeaderText" xml:space="preserve">
     <value>Phone Number</value>
@@ -499,34 +493,31 @@
     <value>Enter phone number</value>
   </data>
     <data name="PhoneToken" xml:space="preserve">
-    <value>Phone Token</value>
-  </data>
-    <data name="PhoneTokenPlaceholder" xml:space="preserve">
-    <value>Enter phone token</value>
+    <value>Code</value>
   </data>
     <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
     <value>Confirm Phone Number</value>
   </data>
     <data name="NotReceivedPhoneMessage" xml:space="preserve">
-    <value>Haven’t you received the token on your phone?</value>
+    <value>Haven't you received the token on your phone?</value>
   </data>
     <data name="ResendConfirmationPhoneTokenMessage" xml:space="preserve">
     <value>The confirmation token has been re-sent to your phone.</value>
   </data>
     <data name="ResendPhoneTokenButtonText" xml:space="preserve">
-    <value>Resend Phone Token</value>
+    <value>Resend code</value>
   </data>
     <data name="PhoneConfirmationSuccessTitle" xml:space="preserve">
     <value>Your phone number ({0}) has been confirmed.</value>
   </data>
     <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
-    <value>You can now login with your account.</value>
+    <value>You can now sign-in with your account.</value>
   </data>
     <data name="AccountTitle" xml:space="preserve">
     <value>Account</value>
   </data>
     <data name="AccountSubtitle" xml:space="preserve">
-    <value>Change your account email or phone number</value>
+    <value>Change your account email, phone number, or passwordless settings</value>
   </data>
     <data name="DeleteAccount" xml:space="preserve">
     <value>Delete Account</value>
@@ -535,7 +526,7 @@
     <value>Are you sure you want to delete your account?</value>
   </data>
     <data name="DontHaveAccountMessage" xml:space="preserve">
-    <value>Don’t have an account?</value>
+    <value>Don't have an account?</value>
   </data>
     <data name="Edit" xml:space="preserve">
     <value>Edit</value>
@@ -616,7 +607,7 @@
     <value>No</value>
   </data>
     <data name="NotReceivedEmailMessage" xml:space="preserve">
-    <value>Haven’t you received the email?</value>
+    <value>Haven't you received the email?</value>
   </data>
     <data name="Or" xml:space="preserve">
     <value>or</value>
@@ -628,7 +619,7 @@
     <value>Remove</value>
   </data>
     <data name="ResendEmailTokenButtonText" xml:space="preserve">
-    <value>Resend Email Token</value>
+    <value>Resend code</value>
   </data>
     <data name="ResetPasswordPageTitle" xml:space="preserve">
     <value>Reset password</value>
@@ -652,7 +643,7 @@
     <value>Your password has been reset.</value>
   </data>
     <data name="ResetPasswordSuccessBody" xml:space="preserve">
-    <value>You can now login with your password.</value>
+    <value>You can now sign-in with your password.</value>
   </data>
     <data name="ResetPasswordMessageInForgot" xml:space="preserve">
     <value>Already have a reset password token?</value>
@@ -672,13 +663,10 @@
     <data name="Continue" xml:space="preserve">
     <value>Continue</value>
   </data>
-    <data name="SocialSignedInTitle" xml:space="preserve">
-    <value>Social signed in</value>
+    <data name="CloseBrowserMessageTitle" xml:space="preserve">
+    <value>Go back to app</value>
   </data>
-    <data name="SocialSignedInMessageTitle" xml:space="preserve">
-    <value>The social sign-in is done</value>
-  </data>
-    <data name="SocialSignedInMessageBody" xml:space="preserve">
+    <data name="CloseBrowserMessageBody" xml:space="preserve">
     <value>You can go back to the application now</value>
   </data>
     <data name="GoogleSignInButtonText" xml:space="preserve">
@@ -817,7 +805,7 @@
     <value>The 2fa token provided by the request was invalid. A valid 2fa token is required to enable 2fa.</value>
   </data>
     <data name="TfaProtectedSignInSubtitle" xml:space="preserve">
-    <value>Your login is protected with an authenticator app.</value>
+    <value>Your sign-in is protected with an authenticator app.</value>
   </data>
     <data name="TfaEnterCodeInSignInMessage" xml:space="preserve">
     <value>Enter your authenticator code:</value>
@@ -865,7 +853,7 @@
     <value>You have no recovery codes left.</value>
   </data>
     <data name="TfaRecoveryCodesZeroLeftSubtitle" xml:space="preserve">
-    <value>You must generate a new set of recovery codes before you can log in with a recovery code.</value>
+    <value>You must generate a new set of recovery codes before you can sign in with a recovery code.</value>
   </data>
     <data name="TfaRecoveryCodesOneLeftTitle" xml:space="preserve">
     <value>You have 1 recovery code left.</value>
@@ -1176,7 +1164,7 @@
     <value>Default color picker</value>
   </data>
     <data name="EditProduct" xml:space="preserve">
-    <value>Edit product</value>
+    <value>Edit product {0}</value>
   </data>
     <data name="DuplicateProductName" xml:space="preserve">
     <value>Duplicate product name</value>
@@ -1210,4 +1198,22 @@
     <value>Products in the same category</value>
   </data>
     <!--#endif -->
+    <data name="Passwordless" xml:space="preserve">
+    <value>Passwordless</value>
+  </data>
+    <data name="PasswordlessTitle" xml:space="preserve">
+    <value>Passwordless sign-in</value>
+  </data>
+    <data name="EnablePasswordless" xml:space="preserve">
+    <value>Enable passwordless sign-in</value>
+  </data>
+    <data name="EnablePasswordlessSucsessMessage" xml:space="preserve">
+    <value>Passwordless sign-in enabled successfully</value>
+  </data>
+    <data name="DisablePasswordless" xml:space="preserve">
+    <value>Disable passwordless sign-in</value>
+  </data>
+    <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
+    <value>Passwordless sign-in disabled successfully</value>
+  </data>
 </root>

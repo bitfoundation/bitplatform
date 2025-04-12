@@ -8,15 +8,17 @@
           Description="An image is a graphic representation of something (e.g photo or illustration). The backgrounds have been added to some of examples in order to help visualize empty space in the image frame."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
-          SubEnums="componentSubEnums">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+          SubEnums="componentSubEnums"
+          GitHubUrl="Utilities/Image/BitImage.razor"
+          GitHubDemoUrl="Utilities/Image/BitImageDemo.razor">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <BitImage Alt="Basic BitImage" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
         <br /><br />
         <div>Disabled</div>
         <BitImage Alt="Disabled BitImage" IsEnabled="false" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Width & Height" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Width & Height" RazorCode="@example2RazorCode" Id="example2">
         <div>Width</div>
         <BitImage Width="9rem"
                   Alt="BitImage with width"
@@ -35,9 +37,9 @@
                   Alt="BitImage with width and height"
                   Style="background-color: #00ffff17"
                   Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="ImageFit" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="ImageFit" RazorCode="@example3RazorCode" Id="example3">
         <div>None</div>
         <BitImage Height="96"
                   Alt="ImageFit: None BitImage"
@@ -79,9 +81,9 @@
                   ImageFit="BitImageFit.CenterCover"
                   Style="background-color: #00ffff17"
                   Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Cover" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Cover" RazorCode="@example4RazorCode" Id="example4">
         <div>ImageFit: CenterCover</div><br />
         <div>Landscape</div>
         <BitImage Height="96"
@@ -117,13 +119,13 @@
                   ImageFit="BitImageFit.CenterContain"
                   Cover="BitImageCover.Portrait"
                   Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="MaximizeFrame" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="MaximizeFrame" RazorCode="@example5RazorCode" Id="example5">
         <BitImage Alt="Maximized BitImage" MaximizeFrame="true" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="ImageState" RazorCode="@example6RazorCode" CsharpCode="example6CsharpCode" Id="example6">
+    <DemoExample Title="ImageState" RazorCode="@example6RazorCode" CsharpCode="example6CsharpCode" Id="example6">
         <div>Loading</div><br />
         <BitButton OnClick="() => loadLoading = true">Load image</BitButton>
         @if (loadLoading)
@@ -146,9 +148,9 @@
                 </ErrorTemplate>
             </BitImage>
         }
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
         <div>
             <div>Component's Style & Class:</div><br />
             <div>Styled</div>
@@ -172,5 +174,5 @@
                       Classes="@(new() { Image = "custom-image" })"
                       Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
         </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

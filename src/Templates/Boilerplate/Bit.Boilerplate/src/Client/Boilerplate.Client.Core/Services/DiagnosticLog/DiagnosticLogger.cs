@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Services.DiagnosticLog;
+namespace Boilerplate.Client.Core.Services.DiagnosticLog;
 
 public partial class DiagnosticLogger : ILogger, IDisposable
 {

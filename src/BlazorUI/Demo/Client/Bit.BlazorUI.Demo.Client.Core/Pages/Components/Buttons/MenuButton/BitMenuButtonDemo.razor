@@ -1,5 +1,6 @@
 ﻿@page "/components/menubutton"
 @page "/components/menu-button"
+@inherits AppComponentBase
 
 <PageOutlet Url="components/menubutton"
             Title="MenuButton"
@@ -7,23 +8,36 @@
 
 <div>
     <DemoPage Name="MenuButton"
-                   Description="A menu button is a menu item that displays a word or phrase that the user can click to initiate an operation."
-                   Parameters="componentParameters"
-                   SubClasses="componentSubClasses"
-                   SubEnums="componentSubEnums"
-                   Notes="The BitMenuButton is a Multi-API component which can accept the list of Items in 3 different ways: BitMenuButtonItem class, a custom Generic class, and BitMenuButtonOption component.">
-        <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })">
-            <BitPivotItem HeaderText="Item">
-                <_BitMenuButtonItemDemo />
-            </BitPivotItem>
+              Description="A menu button is a menu item that displays a word or phrase that the user can click to initiate an operation."
+              Parameters="componentParameters"
+              SubClasses="componentSubClasses"
+              SubEnums="componentSubEnums"
+              GitHubUrl="Buttons/MenuButton/BitMenuButton.razor"
+              GitHubDemoUrl="Buttons/MenuButton/BitMenuButtonDemo.razor">
+        <NotesTemplate>
+            <BitText>
+                The BitMenuButton is a <BitTag Color="BitColor.SecondaryBackground">Multi-API</BitTag> component
+                which can accept the list of Items in 3 different ways:
+                <br />
+                1. The <BitLink Href="#menu-button-item"><BitTag Color="BitColor.SecondaryBackground">BitMenuButtonItem</BitTag></BitLink> class <br />
+                2. A <BitTag Color="BitColor.SecondaryBackground">Custom Generic</BitTag> class <br />
+                3. The <BitLink Href="#menu-button-option"><BitTag Color="BitColor.SecondaryBackground">BitMenuButtonOption</BitTag></BitLink> component
+            </BitText>
+        </NotesTemplate>
+        <Examples>
+            <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })" MountAll="ShowAllCodes">
+                <BitPivotItem HeaderText="Item">
+                    <_BitMenuButtonItemDemo />
+                </BitPivotItem>
 
-            <BitPivotItem HeaderText="Custom">
-                <_BitMenuButtonCustomDemo />
-            </BitPivotItem>
+                <BitPivotItem HeaderText="Custom">
+                    <_BitMenuButtonCustomDemo />
+                </BitPivotItem>
 
-            <BitPivotItem HeaderText="Option">
-                <_BitMenuButtonOptionDemo />
-            </BitPivotItem>
-        </BitPivot>
+                <BitPivotItem HeaderText="Option">
+                    <_BitMenuButtonOptionDemo />
+                </BitPivotItem>
+            </BitPivot>
+        </Examples>
     </DemoPage>
 </div>

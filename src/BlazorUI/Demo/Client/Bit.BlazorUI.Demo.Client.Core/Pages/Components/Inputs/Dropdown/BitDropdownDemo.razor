@@ -1,4 +1,5 @@
 ﻿@page "/components/dropdown"
+@inherits AppComponentBase
 
 <PageOutlet Url="components/dropdown"
             Title="Dropdown"
@@ -12,9 +13,20 @@
               SubClasses="componentSubClasses"
               SubEnums="componentSubEnums"
               PublicMembers="componentPublicMembers"
-              Notes="The BitDropdown is a Multi-API component which can accept the list of Items in 3 different ways: BitDropdownItem class, a custom Generic class, and BitDropdownOption component."
-              VideoUrl="https://videos.bitplatform.dev/bit%20Dropdown.mp4">
-        <VideoDescriptionTemplate>
+              GitHubUrl="Inputs/Dropdown/BitDropdown.razor"
+              GitHubDemoUrl="Inputs/Dropdown/BitDropdownDemo.razor"
+              IntroductionVideoUrl="https://videos.bitplatform.dev/bit%20Dropdown.mp4">
+        <NotesTemplate>
+            <BitText>
+                The BitDropdown is a <BitTag Color="BitColor.SecondaryBackground">Multi-API</BitTag> component
+                which can accept the list of Items in 3 different ways:
+                <br />
+                1. The <BitLink Href="#dropdown-item"><BitTag Color="BitColor.SecondaryBackground">BitDropdownItem</BitTag></BitLink> class <br />
+                2. A <BitTag Color="BitColor.SecondaryBackground">Custom Generic</BitTag> class <br />
+                3. The <BitLink Href="#dropdown-option"><BitTag Color="BitColor.SecondaryBackground">BitDropdownOption</BitTag></BitLink> component
+            </BitText>
+        </NotesTemplate>
+        <IntroductionTemplate>
             <BitScrollablePane>
                 <BitText Typography="BitTypography.Body2" Color="BitColor.TertiaryForeground">
                     Music: Music Cocktails, Musician: AlexGuz, URL:
@@ -24,9 +36,9 @@
                     </a>
                 </BitText>
             </BitScrollablePane>
-        </VideoDescriptionTemplate>
+        </IntroductionTemplate>
         <Examples>
-            <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })">
+            <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })" MountAll="ShowAllCodes">
                 <BitPivotItem HeaderText="Item">
                     <_BitDropdownItemDemo />
                 </BitPivotItem>

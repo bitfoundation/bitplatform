@@ -8,8 +8,10 @@
           SecondaryNames="@(["Range"])"
           Description="A slider provides a visual indication of adjustable content, as well as the current setting in the total range of content. Use a slider when you want people to set defined values (such as volume or brightness), or when people would benefit from instant feedback on the effect of setting changes."
           Parameters="componentParameters"
-          SubClasses="componentSubClasses">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+          SubClasses="componentSubClasses"
+          GitHubUrl="Inputs/Slider/BitSlider.razor"
+          GitHubDemoUrl="Inputs/Slider/BitSliderDemo.razor">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <BitSlider Label="Basic slider" />
         <br />
         <BitSlider Label="Disabled slider" DefaultValue="5" IsEnabled="false" />
@@ -19,9 +21,9 @@
         <BitSlider Label="Formatted value" Max="1" Step="0.01" DefaultValue="0.69" ValueFormat="0 %" />
         <br />
         <BitSlider Label="Origin from zero" Min="-5" Max="5" DefaultValue="0" IsOriginFromZero="true" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Visibility" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Visibility" RazorCode="@example2RazorCode" Id="example2">
         <div>Demonstrates different visibility states of BitSlider: Visible, Hidden, and Collapsed.</div>
         <br /><br />
         <div class="flex-container column">
@@ -29,9 +31,9 @@
             <div style="display:flex">Hidden: [ <BitSlider Visibility="BitVisibility.Hidden" /> ]</div>
             <div style="display:flex">Collapsed: [ <BitSlider Visibility="BitVisibility.Collapsed" /> ]</div>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Vertical" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="Vertical" RazorCode="@example3RazorCode" Id="example3">
         <div>Change BitSlider orientation easily to vertical.</div>
         <br /><br />
         <div class="flex-container">
@@ -43,9 +45,9 @@
 
             <BitSlider Label="Origin from zero" IsVertical="true" Min="-5" Max="5" DefaultValue="0" IsOriginFromZero="true" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Range" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Range" RazorCode="@example4RazorCode" Id="example4">
         <div>Use BitSlider in ranged mode enabled with various configurations.</div>
         <br /><br />
         <BitSlider Label="Basic" IsRanged="true" />
@@ -63,9 +65,9 @@
                    Max="5"
                    DefaultUpperValue="2"
                    IsOriginFromZero="true" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Vertical & Range" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="Vertical & Range" RazorCode="@example5RazorCode" Id="example5">
         <div>Combine vertical orientation and range together selection in BitSlider.</div>
         <br /><br />
         <div class="flex-container">
@@ -90,9 +92,9 @@
                        DefaultUpperValue="3"
                        IsOriginFromZero="true" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
+    <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
         <div>Customize the appearance of BitSlider using styles and CSS classes.</div>
         <br />
         <div class="custom-wrapper">
@@ -113,9 +115,9 @@
                                               UpperValueInput = "custom-range-input",
                                               SliderBox = "custom-slider-box" } )" />
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <DemoExample Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>Bind value one-way and two-way in BitSlider.</div>
         <br /><br />
         <BitSlider Label="One-way" Value="oneWayBinding" />
@@ -126,9 +128,9 @@
         <br /><br />
         <BitSlider Label="OnChange" DefaultValue="2" OnChange="v => onChangeValue = v.Value" />
         <BitLabel>OnChange value: @onChangeValue</BitLabel>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="RTL" RazorCode="@example8RazorCode" Id="example8">
+    <DemoExample Title="RTL" RazorCode="@example8RazorCode" Id="example8">
         <div>Use BitSlider in right-to-left (RTL).</div>
         <br /><br />
         <BitSlider Label="RTL slider" Dir="BitDir.Rtl" />
@@ -137,5 +139,5 @@
                    Dir="BitDir.Rtl"
                    DefaultLowerValue="2"
                    DefaultUpperValue="5" />
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

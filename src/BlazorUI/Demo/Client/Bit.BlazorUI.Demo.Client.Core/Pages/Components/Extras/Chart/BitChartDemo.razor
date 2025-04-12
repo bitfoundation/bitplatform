@@ -12,31 +12,47 @@
     else
     {
         <DemoPage Name="Chart"
-                       Description="Simple and flexible charting component for data visualization, which supports eight chart types: bar, line, area, pie, bubble, radar, polar, and scatter."
-                       Notes="To use this component, you need to install the `Bit.BlazorUI.Extras` nuget package, as described in the Optional steps of the Getting started page."
-                       Parameters="componentParameters"
-                       SubClasses="componentSubClasses">
-            <_BitChartBarDemo />
+                  Description="Simple and flexible charting component for data visualization, which supports eight chart types: bar, line, area, pie, bubble, radar, polar, and scatter."
+                  Parameters="componentParameters"
+                  SubClasses="componentSubClasses"
+                  GitHubExtrasUrl="Chart/BitChart.razor"
+                  GitHubDemoUrl="Extras/Chart/BitChartDemo.razor">
+            <NotesTemplate>
+                <BitText>
+                    To use this component, you need to install the
+                    <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                        <BitTag Reversed
+                                Text="Bit.BlazorUI.Extras"
+                                Color="BitColor.SecondaryBackground"
+                                IconName="@BitIconName.NavigateExternalInline" />
+                    </BitLink>
+                    nuget package, as described in the Optional steps of the
+                    <BitLink Href="/getting-started">Getting started</BitLink> page.
+                </BitText>
+            </NotesTemplate>
+            <Examples>
+                <_BitChartBarDemo />
 
-            <_BitChartHorizontalBarDemo />
+                <_BitChartHorizontalBarDemo />
 
-            <_BitChartStackedBarDemo />
+                <_BitChartStackedBarDemo />
 
-            <_BitChartLineDemo />
+                <_BitChartLineDemo />
 
-            <_BitChartPieDemo />
+                <_BitChartPieDemo />
 
-            <_BitChartDoughnutDemo />
+                <_BitChartDoughnutDemo />
 
-            <_BitChartPolarAreaDemo />
+                <_BitChartPolarAreaDemo />
 
-            <_BitChartTimeDemo />
+                <_BitChartTimeDemo />
 
-            <_BitChartScatterDemo />
+                <_BitChartScatterDemo />
 
-            <_BitChartBubbleDemo />
+                <_BitChartBubbleDemo />
 
-            <_BitChartRadarDemo />
+                <_BitChartRadarDemo />
+            </Examples>
         </DemoPage>
     }
 </div>

@@ -5,7 +5,7 @@ public partial class MainLayout
 
     private readonly List<BitNavItem> _navItems =
     [
-        new() { Text = "Overview", Url = "/overview" },
+        new() { Text = "Overview", Url = "/overview", AdditionalUrls = ["/components"] },
         new() { Text = "Getting started", Url = "/getting-started" },
         new()
         {
@@ -27,14 +27,13 @@ public partial class MainLayout
                 new() { Text = "Calendar", Url = "/components/calendar" },
                 new() { Text = "Checkbox", Url = "/components/checkbox", AdditionalUrls = ["/components/check-box"] },
                 new() { Text = "ChoiceGroup", Url = "/components/choicegroup", AdditionalUrls = ["/components/choice-group"], Description = "Radio, RadioButton" },
-                new() { Text = "Dropdown", Url = "/components/dropdown", Description = "Select, MultiSelect, ComboBox", Data = "Chips" },
+                new() { Text = "Dropdown", Url = "/components/dropdown", Description = "Select, ComboBox", Data = "Chips" },
                 new() { Text = "FileUpload", Url = "/components/fileupload", AdditionalUrls = ["/components/file-upload"] },
-                new() { Text = "NumberField", Url = "/components/numberfield", AdditionalUrls = ["/components/numerictextfield", "/components/numeric-text-field"], Description = "NumberInput" },
+                new() { Text = "NumberField", Url = "/components/numberfield", AdditionalUrls = ["/components/numerictextfield", "/components/numeric-text-field", "/components/spinbutton", "/components/spin-button"], Description = "NumberInput" },
                 new() { Text = "OtpInput", Url = "/components/otpinput", AdditionalUrls = ["/components/otp-input"] },
                 new() { Text = "Rating", Url = "/components/rating" },
                 new() { Text = "SearchBox", Url = "/components/searchbox", AdditionalUrls = ["/components/search-box"], Data = "AutoComplete" },
                 new() { Text = "Slider", Url = "/components/slider", Description = "Range" },
-                new() { Text = "SpinButton", Url = "/components/spinbutton", AdditionalUrls = ["/components/spin-button"] },
                 new() { Text = "TextField", Url = "/components/textfield", AdditionalUrls = ["/components/text-field"], Description = "TextInput" },
                 new() { Text = "Toggle", Url = "/components/toggle", Description = "Switch" },
                 new()
@@ -156,10 +155,13 @@ public partial class MainLayout
                 new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"] },
                 new() { Text = "ErrorBoundary", Url = "/components/errorboundary" },
                 new() { Text = "InfiniteScrolling", Url = "/components/infinitescrolling" },
+                new() { Text = "MarkdownEditor", Url = "/components/markdowneditor", Description = "MdEditor" },
+                new() { Text = "MarkdownViewer", Url = "/components/markdownviewer", Description = "MdViewer, MD" },
                 new() { Text = "MessageBox", Url = "/components/messagebox" },
                 new() { Text = "NavPanel", Url = "/components/navpanel" },
                 new() { Text = "PdfReader", Url = "/components/pdfreader" },
                 new() { Text = "ProPanel", Url = "/components/propanel" },
+                new() { Text = "RichTextEditor", Url = "/components/richtexteditor" },
                 new()
                 {
                     Text = "Services",

@@ -5,7 +5,7 @@
 /// </summary>
 public partial class BitModal : BitComponentBase
 {
-    private int _offsetTop;
+    private float _offsetTop;
     private bool _internalIsOpen;
     private string _containerId = default!;
 
@@ -196,8 +196,6 @@ public partial class BitModal : BitComponentBase
 
         _offsetTop = 0;
 
-        //if (ModalParameters.AutoToggleScroll is false) return;
-        //_offsetTop = await _js.ToggleOverflow(ModalParameters.ScrollerSelector ?? "body", IsOpen);
         await ToggleScroll(IsOpen);
 
         if (ModalParameters.AbsolutePosition is false) return;

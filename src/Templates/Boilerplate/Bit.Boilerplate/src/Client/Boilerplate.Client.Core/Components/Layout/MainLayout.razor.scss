@@ -1,4 +1,4 @@
-﻿@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
 main {
@@ -103,5 +103,13 @@ main {
         text-align: start;
         line-height: 16px;
         color: $bit-color-error;
+    }
+
+    .nav-panel {
+        width: 280px;
+
+        @include lt-md {
+            width: 210px;
+        }
     }
 }

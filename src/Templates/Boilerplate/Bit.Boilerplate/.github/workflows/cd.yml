@@ -1,4 +1,4 @@
-﻿name: Boilerplate CD
+name: Boilerplate CD
 
 # https://bitplatform.dev/templates/dev-ops
 
@@ -99,19 +99,8 @@ jobs:
         with:
           files: 'appsettings.json'
         env:
-          ConnectionStrings_SqlServerConnectionString: ${{ secrets.DB_CONNECTION_STRING }}
-          DataProtectionCertificatePassword: ${{ secrets.API_DATA_PROTECTION_CERTIFICATE_PASSWORD }}
-
-      - name: Delete DataProtectionCertificate.pfx
-        run: |
-            rm DataProtectionCertificate.pfx
-
-      - name: Extract data protection certificate from env
-        uses: timheuer/base64-to-file@v1.2
-        with:
-            fileDir: './'
-            fileName: 'DataProtectionCertificate.pfx'
-            encodedString: ${{ secrets.API_DATA_PROTECTION_CERTIFICATE_FILE_BASE64 }}
+          ConnectionStrings.SqlServerConnectionString: ${{ secrets.DB_CONNECTION_STRING }}
+          Identity.JwtIssuerSigningKeySecret: ${{ secrets.Jwt_Issuer_Signing_Key_Secret }}
 
       - name: Run migrations
         run: |
@@ -238,7 +227,7 @@ jobs:
 
     - uses: maxim-lobanov/setup-xcode@v1.6.0
       with:
-        xcode-version: '16.2'
+        xcode-version: '16.3'
 
     - uses: actions/setup-node@v4
       with:

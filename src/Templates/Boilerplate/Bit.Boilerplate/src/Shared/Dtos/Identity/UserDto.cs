@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Dtos.Identity;
+namespace Boilerplate.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
 public partial class UserDto : IValidatableObject
@@ -35,7 +35,8 @@ public partial class UserDto : IValidatableObject
 
     public string? ConcurrencyStamp { get; set; }
 
-    public string? DisplayName => FullName ?? Email ?? PhoneNumber ?? UserName;
+    public string? DisplayName => FullName ?? DisplayUserName;
+    public string? DisplayUserName => FullName ?? Email ?? PhoneNumber ?? UserName;
 
     public string? GetProfileImageUrl(Uri absoluteServerAddress)
     {

@@ -1,4 +1,6 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
+using Fido2NetLib;
+using Fido2NetLib.Objects;
 //#if (sample == true)
 using Boilerplate.Shared.Dtos.Todo;
 //#endif
@@ -12,6 +14,7 @@ using Boilerplate.Shared.Dtos.Categories;
 //#if (notification == true)
 using Boilerplate.Shared.Dtos.PushNotification;
 //#endif
+using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Dtos.Statistics;
 
 namespace Boilerplate.Shared.Dtos;
@@ -24,6 +27,7 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(Dictionary<string, string?>))]
 [JsonSerializable(typeof(TimeSpan))]
 [JsonSerializable(typeof(string[]))]
+[JsonSerializable(typeof(Guid[]))]
 [JsonSerializable(typeof(GitHubStats))]
 [JsonSerializable(typeof(NugetStatsDto))]
 [JsonSerializable(typeof(AppProblemDetails))]
@@ -48,6 +52,13 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(OverallAnalyticsStatsDataResponseDto))]
 [JsonSerializable(typeof(List<ProductPercentagePerCategoryResponseDto>))]
 //#endif
+[JsonSerializable(typeof(AssertionOptions))]
+[JsonSerializable(typeof(AuthenticatorAssertionRawResponse))]
+[JsonSerializable(typeof(AuthenticatorAttestationRawResponse))]
+[JsonSerializable(typeof(CredentialCreateOptions))]
+[JsonSerializable(typeof(VerifyAssertionResult))]
+[JsonSerializable(typeof(VerifyWebAuthnAndSignInDto))]
+[JsonSerializable(typeof(WebAuthnAssertionOptionsRequestDto))]
 public partial class AppJsonContext : JsonSerializerContext
 {
 }

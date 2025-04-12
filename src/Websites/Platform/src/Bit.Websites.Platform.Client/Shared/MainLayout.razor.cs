@@ -98,11 +98,11 @@ public partial class MainLayout : IDisposable
     {
         var currentUrl = navigationManager.Uri.Replace(navigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
 
-        isTemplateDocRoute = currentUrl.Contains("templates") || currentUrl.Contains("boilerplate");
-        isBswupDocRoute = currentUrl.Contains("bswup");
-        isBesqlDocRoute = currentUrl.Contains("besql");
-        isButilDocRoute = currentUrl.Contains("butil");
-        isLcncDocRoute = currentUrl.Contains("lowcode-nocode");
+        isTemplateDocRoute = currentUrl.Contains("/templates") || currentUrl.Contains("/boilerplate");
+        isBswupDocRoute = currentUrl.Contains("/bswup");
+        isBesqlDocRoute = currentUrl.Contains("/besql");
+        isButilDocRoute = currentUrl.Contains("/butil");
+        isLcncDocRoute = currentUrl.Contains("/lowcode-nocode");
         isDocsRoute = isTemplateDocRoute || isBswupDocRoute || isBesqlDocRoute || isButilDocRoute /*|| isLcncDocRoute*/;
 
         navItems = isTemplateDocRoute ? templatesNavItems

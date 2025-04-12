@@ -1,11 +1,12 @@
-﻿namespace Boilerplate.Client.Core.Services;
+namespace Boilerplate.Client.Core.Services;
 
 public partial class NoOpLocalHttpServer : ILocalHttpServer
 {
-    public int Start(CancellationToken cancellationToken) => throw new NotImplementedException();
+    public int EnsureStarted() => -1;
 
-    /// <summary>
-    /// <inheritdoc cref="ILocalHttpServer.ShouldUseForSocialSignIn"/>
-    /// </summary>
-    public bool ShouldUseForSocialSignIn() => false;
+    public string Origin => $"http://localhost:{Port}";
+
+    public int Port => -1;
+
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }

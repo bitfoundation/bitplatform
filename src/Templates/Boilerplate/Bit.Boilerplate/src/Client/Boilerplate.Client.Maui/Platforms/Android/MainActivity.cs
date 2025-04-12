@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Android.OS;
 using Android.App;
 using Android.Content;

@@ -25,6 +25,7 @@ public static class IServiceCollectionExtensions
         }
 
         services.TryAddScoped<BitExtraServices>();
+        services.TryAddScoped<BitMarkdownService>();
 
         return services;
     }

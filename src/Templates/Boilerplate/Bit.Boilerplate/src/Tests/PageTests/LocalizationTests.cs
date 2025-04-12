@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Boilerplate.Tests.Services;
 using Boilerplate.Tests.PageTests.PageModels;
 using Boilerplate.Tests.Extensions;

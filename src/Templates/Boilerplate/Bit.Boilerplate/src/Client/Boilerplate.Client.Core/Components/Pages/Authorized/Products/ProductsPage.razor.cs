@@ -1,4 +1,4 @@
-﻿//-:cnd:noEmit
+//-:cnd:noEmit
 using Boilerplate.Shared.Controllers.Products;
 using Boilerplate.Shared.Dtos.Products;
 
@@ -6,10 +6,6 @@ namespace Boilerplate.Client.Core.Components.Pages.Authorized.Products;
 
 public partial class ProductsPage
 {
-    protected override string? Title => Localizer[nameof(AppStrings.Products)];
-    protected override string? Subtitle => string.Empty;
-
-
     [AutoInject] IProductController productController = default!;
 
 
@@ -47,9 +43,9 @@ public partial class ProductsPage
 
     protected override async Task OnInitAsync()
     {
-        PrepareGridDataProvider();
-
         await base.OnInitAsync();
+
+        PrepareGridDataProvider();
     }
 
     private void PrepareGridDataProvider()

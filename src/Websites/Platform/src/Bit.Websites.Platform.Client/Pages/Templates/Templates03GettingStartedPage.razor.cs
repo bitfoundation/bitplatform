@@ -12,7 +12,6 @@ public partial class Templates03GettingStartedPage
     private bool enableCrossPlatform;
     private string devOS = "Windows";
     private bool enableVirtualization;
-    private string dotnetVersion = "net9.0";
     private string copyButtonText = "Copy commands";
 
     private List<(string text, string command)> GetSelectedCommands()
@@ -26,7 +25,7 @@ public partial class Templates03GettingStartedPage
             command:"$ProgressPreference = 'SilentlyContinue'; Install-PackageProvider -Name \"NuGet\" -Force; Set-PSRepository -Name \"PSGallery\" -InstallationPolicy Trusted; Install-Script winget-install -Force; winget-install -Force;"),
 
             (text:@"echo 'Install .NET SDK https://dotnet.microsoft.com/en-us/download';",
-            command: $"winget install Microsoft.DotNet.SDK.{(dotnetVersion is "net9.0" ? "9" : "8")} --accept-source-agreements --accept-package-agreements;"),
+            command: $"winget install Microsoft.DotNet.SDK.9 --accept-source-agreements --accept-package-agreements;"),
 
             (text:@"echo 'Discover installed .NET SDK';",
             command:"$env:Path = [System.Environment]::GetEnvironmentVariable(\"Path\",\"Machine\") + \";\" + [System.Environment]::GetEnvironmentVariable(\"Path\",\"User\");"),
@@ -38,7 +37,7 @@ public partial class Templates03GettingStartedPage
             command:"dotnet nuget add source \"https://api.nuget.org/v3/index.json\" --name \"nuget.org\"; dotnet workload install wasm-tools;"),
 
             (text:@"echo 'Install the Bit.Boilerplate project template https://www.nuget.org/packages/Boilerplate.Templates';",
-            command:"dotnet new install Bit.Boilerplate::9.6.0-pre-05;")
+            command:"dotnet new install Bit.Boilerplate::9.7.0-pre-03;")
         ];
 
         if (enableVirtualization)

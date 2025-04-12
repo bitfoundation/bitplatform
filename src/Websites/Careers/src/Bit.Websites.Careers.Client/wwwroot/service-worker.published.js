@@ -1,4 +1,4 @@
-// bit version: 9.6.0-pre-05
+// bit version: 9.7.0-pre-03
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 self.assetsInclude = [];
@@ -8,9 +8,6 @@ self.assetsExclude = [
     /bit\.blazorui\.fluent-light\.css$/
 ];
 self.externalAssets = [
-    {
-        "url": "_framework/blazor.web.js"
-    },
     {
         "url": "Bit.Websites.Carrers.Server.styles.css"
     },

@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 namespace Boilerplate.Client.Core.Components;
 
@@ -65,7 +65,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
         }
     }
 
-    protected bool InPrerenderSession => AppPlatform.IsBlazorHybrid is false && JSRuntime.IsInitialized() is false;
+    protected bool InPrerenderSession => AppPlatform.IsBlazorHybrid is false && RendererInfo.IsInteractive is false;
 
     protected sealed override void OnInitialized()
     {
@@ -76,8 +76,8 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     {
         try
         {
-            await OnInitAsync();
             await base.OnInitializedAsync();
+            await OnInitAsync();
         }
         catch (Exception exp)
         {
@@ -98,8 +98,8 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     {
         try
         {
-            await OnParamsSetAsync();
             await base.OnParametersSetAsync();
+            await OnParamsSetAsync();
         }
         catch (Exception exp)
         {
@@ -118,6 +118,8 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        await base.OnAfterRenderAsync(firstRender);
+
         if (firstRender)
         {
             try
@@ -129,8 +131,6 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
                 HandleException(exp);
             }
         }
-
-        await base.OnAfterRenderAsync(firstRender);
     }
 
     /// <summary>

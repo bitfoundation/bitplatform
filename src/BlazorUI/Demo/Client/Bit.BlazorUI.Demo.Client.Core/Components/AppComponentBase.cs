@@ -2,6 +2,10 @@
 
 public partial class AppComponentBase : ComponentBase, IDisposable
 {
+    protected bool ShowAllCodes { get; private set; }
+
+
+
     [AutoInject] protected IJSRuntime JSRuntime = default!;
 
     [AutoInject] protected HttpClient HttpClient = default!;
@@ -25,10 +29,14 @@ public partial class AppComponentBase : ComponentBase, IDisposable
     private readonly CancellationTokenSource cts = new();
     protected CancellationToken CurrentCancellationToken => cts.Token;
 
+    protected bool InPrerenderSession => AppRenderMode.IsBlazorHybrid is false && RendererInfo.IsInteractive is false;
+
     protected sealed override async Task OnInitializedAsync()
     {
         try
         {
+            ShowAllCodes = NavigationManager.Uri.Contains("showallcodes");
+
             await OnInitAsync();
             await base.OnInitializedAsync();
         }

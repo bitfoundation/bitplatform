@@ -31,7 +31,7 @@ jobs:
       run: dotnet build Boilerplate.sln -c Release
 
     - name: Install Playwright
-      run: pwsh src/Tests/bin/Debug/net8.0/playwright.ps1 install --with-deps
+      run: pwsh src/Tests/bin/Debug/net9.0/playwright.ps1 install --with-deps
 
     - name: Test
       id: test

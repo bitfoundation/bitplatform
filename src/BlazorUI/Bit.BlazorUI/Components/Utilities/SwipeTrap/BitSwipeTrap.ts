@@ -165,7 +165,7 @@
 
         public dispose() {
             this.removeHandlers();
-            this.dotnetObj.dispose();
+            this.dotnetObj?.dispose();
         }
     }
 

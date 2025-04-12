@@ -1,4 +1,4 @@
-﻿using Boilerplate.Server.Api.Resources;
+using Boilerplate.Server.Api.Resources;
 using System.Text.RegularExpressions;
 using MsgReader.Mime;
 

@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Controllers;
+namespace Boilerplate.Shared.Controllers;
 
 public interface IMinimalApiController : IAppController
 {

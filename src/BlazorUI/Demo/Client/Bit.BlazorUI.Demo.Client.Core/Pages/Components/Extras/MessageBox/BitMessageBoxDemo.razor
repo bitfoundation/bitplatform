@@ -6,55 +6,71 @@
 
 <DemoPage Name="MessageBox"
           Description="BitMessageBox is a pre-implemented box for showing messages with title and body."
-          Notes="To use this component, you need to install the `Bit.BlazorUI.Extras` nuget package, as described in the Optional steps of the Getting started page."
           Parameters="componentParameters"
-          SubClasses="componentSubClasses">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <BitCard Style="padding:0">
-            <BitMessageBox Title="It's a title" Body="It's a body." />
-        </BitCard>
-    </DemoSection>
-
-    <DemoSection Title="BitModal" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-        <BitButton OnClick="() => isModalOpen = true">Show</BitButton>
-        <BitModal @bind-IsOpen="isModalOpen">
-            <BitMessageBox OnClose="() => isModalOpen = false" Title="This is the Title" Body="This is the Body!" />
-        </BitModal>
-    </DemoSection>
-
-    <DemoSection Title="BitModalService" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-        <BitButton OnClick="ShowMessageBox">Show MessageBox</BitButton>
-    </DemoSection>
-
-    <DemoSection Title="BitMessageBoxService" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-        <BitButton OnClick="ShowMessageBoxService">Show MessageBox</BitButton>
-    </DemoSection>
-
-    <DemoSection Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
-        <div>Customize the appearance of BitActionButton using styles and CSS classes.</div>
-        <br />
-        <div>
+          SubClasses="componentSubClasses"
+          GitHubExtrasUrl="MessageBox/BitMessageBox.razor"
+          GitHubDemoUrl="Extras/MessageBox/BitMessageBoxDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Extras"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
             <BitCard Style="padding:0">
-                <BitMessageBox Title="It's a title"
-                               Body="It's a body."
-                               Styles="@(new() { Root = "background: linear-gradient(180deg, #222444, transparent) #000", OkButton = new() { Root = "border-radius:1rem" } })" />
+                <BitMessageBox Title="It's a title" Body="It's a body." />
             </BitCard>
+        </DemoExample>
+
+        <DemoExample Title="BitModal" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <BitButton OnClick="() => isModalOpen = true">Show</BitButton>
+            <BitModal @bind-IsOpen="isModalOpen">
+                <BitMessageBox OnClose="() => isModalOpen = false" Title="This is the Title" Body="This is the Body!" />
+            </BitModal>
+        </DemoExample>
+
+        <DemoExample Title="BitModalService" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <BitButton OnClick="ShowMessageBox">Show MessageBox</BitButton>
+        </DemoExample>
+
+        <DemoExample Title="BitMessageBoxService" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <BitButton OnClick="ShowMessageBoxService">Show MessageBox</BitButton>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
+            <div>Customize the appearance of BitActionButton using styles and CSS classes.</div>
             <br />
-            <BitCard Style="padding:0">
-                <BitMessageBox Title="It's a title"
-                               Body="It's a body."
-                               Classes="@(new() { Root = "custom-msg", OkButton = new() { Root = "custom-msg-btn" } })" />
-            </BitCard>
-        </div>
-    </DemoSection>
+            <div>
+                <BitCard Style="padding:0">
+                    <BitMessageBox Title="It's a title"
+                                   Body="It's a body."
+                                   Styles="@(new() { Root = "background: linear-gradient(180deg, #222444, transparent) #000", OkButton = new() { Root = "border-radius:1rem" } })" />
+                </BitCard>
+                <br />
+                <BitCard Style="padding:0">
+                    <BitMessageBox Title="It's a title"
+                                   Body="It's a body."
+                                   Classes="@(new() { Root = "custom-msg", OkButton = new() { Root = "custom-msg-btn" } })" />
+                </BitCard>
+            </div>
+        </DemoExample>
 
-    <DemoSection Title="RTL" RazorCode="@example6RazorCode" Id="example6">
-        <div>Use BitMessageBox in right-to-left (RTL).</div>
-        <br /><br />
-        <div dir="rtl">
-            <BitCard Style="padding:0">
-                <BitMessageBox Dir="BitDir.Rtl" Title="عنوان پیام" Body="متن تست پیام..." OkText="تایید" />
-            </BitCard>
-        </div>
-    </DemoSection>
+        <DemoExample Title="RTL" RazorCode="@example6RazorCode" Id="example6">
+            <div>Use BitMessageBox in right-to-left (RTL).</div>
+            <br /><br />
+            <div dir="rtl">
+                <BitCard Style="padding:0">
+                    <BitMessageBox Dir="BitDir.Rtl" Title="عنوان پیام" Body="متن تست پیام..." OkText="تایید" />
+                </BitCard>
+            </div>
+        </DemoExample>
+    </Examples>
 </DemoPage>

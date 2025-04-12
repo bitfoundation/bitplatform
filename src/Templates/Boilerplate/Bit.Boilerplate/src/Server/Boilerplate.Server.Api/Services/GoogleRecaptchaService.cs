@@ -1,10 +1,12 @@
-﻿namespace Boilerplate.Server.Api.Services;
+namespace Boilerplate.Server.Api.Services;
 
 public partial class GoogleRecaptchaService
 {
     [AutoInject] protected ServerApiSettings AppSettings = default!;
 
     [AutoInject] protected HttpClient httpClient = default!;
+
+    [AutoInject] protected JsonSerializerOptions jsonSerializerOptions = default!;
 
     public virtual async ValueTask<bool> Verify(string? googleRecaptchaResponse, CancellationToken cancellationToken)
     {
@@ -15,7 +17,7 @@ public partial class GoogleRecaptchaService
 
         response.EnsureSuccessStatusCode();
 
-        var result = await response.Content.ReadFromJsonAsync(ServerJsonContext.Default.GoogleRecaptchaVerificationResponse, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync(jsonSerializerOptions.GetTypeInfo<GoogleRecaptchaVerificationResponse>(), cancellationToken);
 
         return result?.Success is true;
     }

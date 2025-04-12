@@ -3,7 +3,7 @@
     "hostRequirements": {
         "cpus": 4
     },
-    "onCreateCommand": "wget https://download.visualstudio.microsoft.com/download/pr/3606de37-1325-4f5f-bbe9-1bc44b3c1c7f/91872629e9f0c205cace9c462d5e89a4/dotnet-sdk-9.0.200-linux-x64.tar.gz -O $HOME/dotnet.tar.gz && export DOTNET_ROOT=$HOME/.dotnet && mkdir -p \"$DOTNET_ROOT\" && tar zxf $HOME/dotnet.tar.gz -C \"$DOTNET_ROOT\" && export PATH=$DOTNET_ROOT:$DOTNET_ROOT/tools:$PATH && find . -type f -name '*.csproj' -exec sed -i 's/Microsoft.NET.Sdk.BlazorWebAssembly/Microsoft.NET.Sdk.Web/g' {} \\;",
+    "onCreateCommand": "wget https://builds.dotnet.microsoft.com/dotnet/Sdk/9.0.203/dotnet-sdk-9.0.203-linux-x64.tar.gz -O $HOME/dotnet.tar.gz && export DOTNET_ROOT=$HOME/.dotnet && mkdir -p \"$DOTNET_ROOT\" && tar zxf $HOME/dotnet.tar.gz -C \"$DOTNET_ROOT\" && export PATH=$DOTNET_ROOT:$DOTNET_ROOT/tools:$PATH && find . -type f -name '*.csproj' -exec sed -i 's/Microsoft.NET.Sdk.BlazorWebAssembly/Microsoft.NET.Sdk.Web/g' {} \\;",
     "waitFor": "onCreateCommand",
     "customizations": {
         "codespaces": {

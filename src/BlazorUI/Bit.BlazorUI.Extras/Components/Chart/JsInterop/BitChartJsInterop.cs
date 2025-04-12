@@ -20,11 +20,6 @@ internal static class BitChartJsInterop
         Converters = { new IsoDateTimeConverter() }
     };
 
-    public static ValueTask BitChartJsInitChartJs(this IJSRuntime jsRuntime, IEnumerable<string> scripts)
-    {
-        return jsRuntime.InvokeVoid("BitBlazorUI.BitChart.initChartJs", scripts);
-    }
-
     public static ValueTask BitChartJsRemoveChart(this IJSRuntime jsRuntime, string? canvasId)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.BitChart.removeChart", canvasId);

@@ -1,5 +1,6 @@
 ﻿@page "/components/choicegroup"
 @page "/components/choice-group"
+@inherits AppComponentBase
 
 <PageOutlet Url="components/choicegroup"
             Title="ChoiceGroup"
@@ -10,20 +11,34 @@
               SecondaryNames="@(["Radio", "RadioButton", "RadioGroup", "RadioButtonGroup"])"
               Description="ChoiceGroup let people select a single option from two or more choices."
               Parameters="componentParameters"
+              SubEnums="componentSubEnums"
               SubClasses="componentSubClasses"
-              Notes="The BitChoiceGroup is a Multi-API component which can accept the list of Items in 3 different ways: BitChoiceGroupItem class, a custom Generic class, and BitChoiceGroupOption component.">
-        <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })">
-            <BitPivotItem HeaderText="Item">
-                <_BitChoiceGroupItemDemo />
-            </BitPivotItem>
+              GitHubUrl="Inputs/ChoiceGroup/BitChoiceGroup.razor"
+              GitHubDemoUrl="Inputs/ChoiceGroup/BitChoiceGroupDemo.razor">
+        <NotesTemplate>
+            <BitText>
+                The BitChoiceGroup is a <BitTag Color="BitColor.SecondaryBackground">Multi-API</BitTag> component
+                which can accept the list of Items in 3 different ways:
+                <br />
+                1. The <BitLink Href="#choice-group-item"><BitTag Color="BitColor.SecondaryBackground">BitChoiceGroupItem</BitTag></BitLink> class <br />
+                2. A <BitTag Color="BitColor.SecondaryBackground">Custom Generic</BitTag> class <br />
+                3. The <BitLink Href="#choice-group-option"><BitTag Color="BitColor.SecondaryBackground">BitChoiceGroupOption</BitTag></BitLink> component
+            </BitText>
+        </NotesTemplate>
+        <Examples>
+            <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })" MountAll="ShowAllCodes">
+                <BitPivotItem HeaderText="Item">
+                    <_BitChoiceGroupItemDemo />
+                </BitPivotItem>
 
-            <BitPivotItem HeaderText="Custom">
-                <_BitChoiceGroupCustomDemo />
-            </BitPivotItem>
+                <BitPivotItem HeaderText="Custom">
+                    <_BitChoiceGroupCustomDemo />
+                </BitPivotItem>
 
-            <BitPivotItem HeaderText="Option">
-                <_BitChoiceGroupOptionDemo />
-            </BitPivotItem>
-        </BitPivot>
+                <BitPivotItem HeaderText="Option">
+                    <_BitChoiceGroupOptionDemo />
+                </BitPivotItem>
+            </BitPivot>
+        </Examples>
     </DemoPage>
 </div>

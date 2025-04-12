@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Shared.Controllers;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
@@ -26,18 +26,18 @@ public partial class ProfileSection
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         var accessToken = await AuthTokenProvider.GetAccessToken();
 
         profileImageUploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadProfileImage?access_token={accessToken}").ToString();
-
-        await base.OnInitAsync();
     }
 
     protected override void OnParametersSet()
     {
-        User?.Patch(editUserDto);
-
         base.OnParametersSet();
+
+        User?.Patch(editUserDto);
     }
 
 

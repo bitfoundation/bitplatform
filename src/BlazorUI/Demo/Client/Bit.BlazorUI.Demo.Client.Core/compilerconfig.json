@@ -1,19 +1,37 @@
 ﻿[
     {
+        "outputFile": "Components/CodeBox.razor.css",
+        "inputFile": "Components/CodeBox.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/DemoExample.razor.css",
+        "inputFile": "Components/DemoExample.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Components/DemoPage.razor.css",
         "inputFile": "Components/DemoPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/DemoSection.razor.css",
-        "inputFile": "Components/DemoSection.razor.scss",
+        "outputFile": "Components/SideRail.razor.css",
+        "inputFile": "Components/SideRail.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/SideRail.razor.css",
-        "inputFile": "Components/SideRail.razor.scss",
+        "outputFile": "Pages/Components/Buttons/ActionButton/BitActionButtonDemo.razor.css",
+        "inputFile": "Pages/Components/Buttons/ActionButton/BitActionButtonDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Buttons/Button/BitButtonDemo.razor.css",
+        "inputFile": "Pages/Components/Buttons/Button/BitButtonDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -30,20 +48,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Components/Buttons/BitActionButtonDemo.razor.css",
-        "inputFile": "Pages/Components/Buttons/BitActionButtonDemo.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Pages/Components/Buttons/BitButtonDemo.razor.css",
-        "inputFile": "Pages/Components/Buttons/BitButtonDemo.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Pages/Components/Buttons/BitToggleButtonDemo.razor.css",
-        "inputFile": "Pages/Components/Buttons/BitToggleButtonDemo.razor.scss",
+        "outputFile": "Pages/Components/Buttons/ToggleButton/BitToggleButtonDemo.razor.css",
+        "inputFile": "Pages/Components/Buttons/ToggleButton/BitToggleButtonDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -78,6 +84,18 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Extras/MarkdownEditor/BitMarkdownEditorDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/MarkdownEditor/BitMarkdownEditorDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Extras/MarkdownViewer/BitMarkdownViewerDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/MarkdownViewer/BitMarkdownViewerDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Extras/MessageBox/BitMessageBoxDemo.razor.css",
         "inputFile": "Pages/Components/Extras/MessageBox/BitMessageBoxDemo.razor.scss",
         "minify": { "enabled": false },
@@ -98,6 +116,12 @@
     {
         "outputFile": "Pages/Components/Extras/ProPanel/BitProPanelDemo.razor.css",
         "inputFile": "Pages/Components/Extras/ProPanel/BitProPanelDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Extras/RichTextEditor/BitRichTextEditorDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/RichTextEditor/BitRichTextEditorDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -182,12 +206,6 @@
     {
         "outputFile": "Pages/Components/Inputs/Slider/BitSliderDemo.razor.css",
         "inputFile": "Pages/Components/Inputs/Slider/BitSliderDemo.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Pages/Components/Inputs/SpinButton/BitSpinButtonDemo.razor.css",
-        "inputFile": "Pages/Components/Inputs/SpinButton/BitSpinButtonDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -500,12 +518,6 @@
     {
         "outputFile": "Pages/Home/ComponentsSection.razor.css",
         "inputFile": "Pages/Home/ComponentsSection.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Pages/GettingStartedPage.razor.css",
-        "inputFile": "Pages/GettingStartedPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

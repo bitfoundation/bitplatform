@@ -1,10 +1,10 @@
-﻿<DemoSection Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <div>The buttons can be grouped by putting them in a ButtonGroup component.</div>
         <br />
         <BitButtonGroup Items="basicItems" />
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Variant" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+<DemoExample Title="Variant" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <div>The ButtonGroup has three variants: Fill (default), Outline, and Text..</div>
         <br /><br />
         <div class="example-content">
@@ -27,9 +27,9 @@
             <BitButtonGroup Variant="BitVariant.Text" Items="disabledItems" />
             <BitButtonGroup Variant="BitVariant.Text" Items="basicItems" IsEnabled="false" />
         </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Icon" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+<DemoExample Title="Icon" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <div>Each item in the ButtonGroup can have an icon.</div>
         <br /><br />
         <div class="example-content">
@@ -46,9 +46,9 @@
             <div>Text</div>
             <BitButtonGroup Variant="BitVariant.Text" Items="iconItems" />
         </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="IconOnly" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+<DemoExample Title="IconOnly" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div>The IconOnly allows buttons to display only icons without any text, ideal for minimalistic designs or limited space.</div>
         <br /><br />
         <div class="example-content">
@@ -82,9 +82,9 @@
             <div>Text</div>
             <BitButtonGroup Variant="BitVariant.Text" Items="onlyIconItems" />
         </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="ReversedIcon" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<DemoExample Title="ReversedIcon" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <div>Reverses the positions of the icon and the main content of the button.</div>
         <br /><br />
         <div class="example-content">
@@ -101,9 +101,9 @@
             <div>Text</div>
             <BitButtonGroup Variant="BitVariant.Text" Items="reversedIconItems" />
         </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Toggle" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+<DemoExample Title="Toggle" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>The Toggle in BitButtonGroup allows you to control the active or inactive state of each button, providing clear visual feedback to users about which buttons are selected or currently in use.</div>
         <br /><br />
         <div class="example-content">
@@ -120,9 +120,9 @@
             <div>Text</div>
             <BitButtonGroup Toggle Variant="BitVariant.Text" Items="toggledItems" />
         </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Vertical" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<DemoExample Title="Vertical" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>By default the BitButtonGroup component is horizontal, but can be turned vertical by adding the <strong>Vertical</strong> property.</div>
         <br /><br />
         <div class="buttons-container">
@@ -141,9 +141,9 @@
                 <BitButtonGroup Variant="BitVariant.Text" Items="basicItems" Vertical />
             </div>
         </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+<DemoExample Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <div>Managing button click events.</div>
         <br /><br />
         <div class="example-content">
@@ -157,9 +157,9 @@
             <BitButtonGroup Items="eventsItems" />
             <div>Click count: <b>@clickCounter</b></div>
         </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Size" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+<DemoExample Title="Size" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>Different sizes for buttons to meet design needs, ensuring flexibility within your application.</div>
         <br /><br />
         <div class="example-content">
@@ -182,9 +182,9 @@
             <BitButtonGroup Size="BitSize.Large" Variant="BitVariant.Outline" Items="basicItems" />
             <BitButtonGroup Size="BitSize.Large" Variant="BitVariant.Text" Items="basicItems" />
         </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="FullWidth" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+<DemoExample Title="FullWidth" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>Setting the FullWidth makes the button group occupy 100% of its container's width.</div>
         <br /><br />
         <div class="example-content">
@@ -192,9 +192,9 @@
             <BitButtonGroup FullWidth Variant="BitVariant.Outline" Items="basicItems" />
             <BitButtonGroup FullWidth Variant="BitVariant.Text" Items="basicItems" />
         </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Color" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+<DemoExample Title="Color" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
         <br /><br />
         <div class="example-content">
@@ -317,9 +317,9 @@
             <BitButtonGroup Color="BitColor.TertiaryBorder" Variant="BitVariant.Outline" Items="basicItems" />
             <BitButtonGroup Color="BitColor.TertiaryBorder" Variant="BitVariant.Text" Items="basicItems" />
         </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+<DemoExample Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
         <br /><br />
         <div class="example-content">
@@ -343,9 +343,9 @@
                             Variant="BitVariant.Text"
                             Classes="@(new() { Button = "custom-btn" })" />
         </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+<DemoExample Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>Use BitButtonGroup in right-to-left (RTL).</div>
         <br />
         <div dir="rtl">
@@ -355,4 +355,4 @@
             <br /><br />
             <BitButtonGroup Dir="BitDir.Rtl" Variant="BitVariant.Text" Items="rtlItems" />
         </div>
-</DemoSection>
+</DemoExample>

@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 //#if (module == "Admin" || module == "Sales")
 using Boilerplate.Server.Api.Models.Products;
 using Boilerplate.Server.Api.Models.Categories;
@@ -6,10 +6,9 @@ using Boilerplate.Server.Api.Models.Categories;
 //#if (sample == true)
 using Boilerplate.Server.Api.Models.Todo;
 //#endif
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Data.Configurations;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 //#if (notification == true)
 using Boilerplate.Server.Api.Models.PushNotification;
 //#endif
@@ -20,10 +19,8 @@ using System.Security.Cryptography;
 namespace Boilerplate.Server.Api.Data;
 
 public partial class AppDbContext(DbContextOptions<AppDbContext> options)
-    : IdentityDbContext<User, Role, Guid>(options), IDataProtectionKeyContext
+    : IdentityDbContext<User, Role, Guid>(options)
 {
-    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = default!;
-
     public DbSet<UserSession> UserSessions { get; set; } = default!;
 
     //#if (sample == true)
@@ -36,6 +33,8 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     //#if (notification == true)
     public DbSet<PushNotificationSubscription> PushNotificationSubscriptions { get; set; } = default!;
     //#endif
+
+    public DbSet<WebAuthnCredential> WebAuthnCredential { get; set; } = default!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -66,7 +65,9 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         {
             SetConcurrencyStamp();
 
+#pragma warning disable NonAsyncEFCoreMethodsUsageAnalyzer
             return base.SaveChanges(acceptAllChangesOnSuccess);
+#pragma warning restore NonAsyncEFCoreMethodsUsageAnalyzer
         }
         catch (DbUpdateConcurrencyException exception)
         {

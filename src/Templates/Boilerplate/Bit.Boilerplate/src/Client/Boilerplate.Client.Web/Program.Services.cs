@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Client.Web.Services;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -50,6 +50,7 @@ public static partial class Program
         //#if (notification == true)
         services.AddScoped<IPushNotificationService, WebPushNotificationService>();
         //#endif
+        services.AddScoped<IWebAuthnService, WebAuthnService>();
 
         services.AddSingleton(sp =>
         {

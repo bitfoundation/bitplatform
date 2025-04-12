@@ -174,7 +174,7 @@ public partial class BitPdfReader : BitComponentBase
                 "_content/Bit.BlazorUI.Extras/pdf.js/pdfjs-4.7.76-worker.js"
             ];
 
-            await _js.BitPdfReaderInit(scripts);
+            await _js.BitExtrasInitScripts(scripts, true);
 
             _numberOfPages = await _js.BitPdfReaderSetup(Config);
 

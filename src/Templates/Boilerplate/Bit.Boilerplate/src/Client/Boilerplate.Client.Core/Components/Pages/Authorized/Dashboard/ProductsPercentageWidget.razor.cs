@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Controllers.Dashboard;
+using Boilerplate.Shared.Controllers.Dashboard;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Dashboard;
 
@@ -11,6 +11,8 @@ public partial class ProductsPercentageWidget
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         config = new BitChartPieConfig
         {
             Options = new BitChartPieOptions

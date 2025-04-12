@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
     <!--
@@ -441,9 +441,6 @@
     <data name="ExpiredToken" xml:space="preserve">
     <value>Verlopen token.</value>
   </data>
-    <data name="TokenPlaceholder" xml:space="preserve">
-    <value>Token invoeren</value>
-  </data>
     <data name="SignInMessageInSignUp" xml:space="preserve">
     <value>Heb je al een account?</value>
   </data>
@@ -474,9 +471,6 @@
     <data name="EmailToken" xml:space="preserve">
     <value>E-mail token</value>
   </data>
-    <data name="EmailTokenPlaceholder" xml:space="preserve">
-    <value>Voer e-mailtoken in</value>
-  </data>
     <data name="EmailTokenConfirmButtonText" xml:space="preserve">
     <value>Bevestig e-mailadres</value>
   </data>
@@ -501,9 +495,6 @@
     <data name="PhoneToken" xml:space="preserve">
     <value>Telefoon Token</value>
   </data>
-    <data name="PhoneTokenPlaceholder" xml:space="preserve">
-    <value>Telefoontoken invoeren</value>
-  </data>
     <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
     <value>Telefoonnummer bevestigen</value>
   </data>
@@ -526,7 +517,7 @@
     <value>Account</value>
   </data>
     <data name="AccountSubtitle" xml:space="preserve">
-    <value>Het e-mailadres of telefoonnummer van je account wijzigen</value>
+    <value>Wijzig uw account-e-mailadres, telefoonnummer of wachtwoordloze instellingen</value>
   </data>
     <data name="DeleteAccount" xml:space="preserve">
     <value>Account verwijderen</value>
@@ -669,17 +660,14 @@
     <data name="SignInPanelSubtitle" xml:space="preserve">
     <value>Log in bij jouw account met</value>
   </data>
-    <data name="SocialSignedInTitle" xml:space="preserve">
-    <value>Aangemeld bij social media</value>
+    <data name="CloseBrowserMessageTitle" xml:space="preserve">
+    <value>Ga terug naar de app</value>
+  </data>
+    <data name="CloseBrowserMessageBody" xml:space="preserve">
+    <value>U kunt nu teruggaan naar de applicatie</value>
   </data>
     <data name="Continue" xml:space="preserve">
     <value>Verzenden</value>
-  </data>
-    <data name="SocialSignedInMessageTitle" xml:space="preserve">
-    <value>De sociale aanmelding is voltooid</value>
-  </data>
-    <data name="SocialSignedInMessageBody" xml:space="preserve">
-    <value>U kunt nu teruggaan naar de applicatie</value>
   </data>
     <data name="GoogleSignInButtonText" xml:space="preserve">
     <value>Inloggen met Google</value>
@@ -1176,7 +1164,7 @@
     <value>Standaard kleurkiezer</value>
   </data>
     <data name="EditProduct" xml:space="preserve">
-    <value>Product bewerken</value>
+    <value>Product bewerken {0}</value>
   </data>
     <data name="DuplicateProductName" xml:space="preserve">
     <value>Dubbele productnaam</value>
@@ -1210,4 +1198,22 @@
     <value>Producten in dezelfde categorie</value>
   </data>
     <!--#endif -->
+    <data name="Passwordless" xml:space="preserve">
+    <value>Wachtwoordloos</value>
+  </data>
+    <data name="PasswordlessTitle" xml:space="preserve">
+    <value>Wachtwoordloos inloggen</value>
+  </data>
+    <data name="EnablePasswordless" xml:space="preserve">
+    <value>Wachtwoordloos inloggen inschakelen</value>
+  </data>
+    <data name="EnablePasswordlessSucsessMessage" xml:space="preserve">
+    <value>Wachtwoordloos inloggen succesvol ingeschakeld</value>
+  </data>
+    <data name="DisablePasswordless" xml:space="preserve">
+    <value>Wachtwoordloos inloggen uitschakelen</value>
+  </data>
+    <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
+    <value>Wachtwoordloos inloggen succesvol uitgeschakeld</value>
+  </data>
 </root>

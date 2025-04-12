@@ -192,10 +192,10 @@ public partial class BitPanelDemo
 <BitButton OnClick=""() => isBasicPanelOpen = true"">Open Panel</BitButton>
 <BitPanel @bind-IsOpen=""isBasicPanelOpen"">
     <div style=""max-width:300px;padding:1rem"">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-        turpis.
+        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+        for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
     </div>
 </BitPanel>";
     private readonly string example1CsharpCode = @"
@@ -207,9 +207,10 @@ private bool isBasicPanelOpen;";
     <div style=""max-width:300px;padding:1rem"">
         <h3>Blocking</h3>
         <div>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non.
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+            for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
         </div>
         <BitButton OnClick=""() => isBlockingPanelOpen = false"">Close</BitButton>
     </div>
@@ -220,9 +221,10 @@ private bool isBasicPanelOpen;";
     <div style=""max-width:300px;padding:1rem"">
         <h3>Modeless</h3>
         <div>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non.
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+            for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
         </div>
         <BitButton OnClick=""() => modelessPanelRef.Close()"">Close</BitButton>
     </div>
@@ -232,9 +234,10 @@ private bool isBasicPanelOpen;";
 <BitPanel @bind-IsOpen=""isAutoToggleScrollPanelOpen"" AutoToggleScroll>
     <div style=""max-width:300px;padding:1rem"">
         <h3>AutoToggleScroll</h3>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non.
+        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+        for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
     </div>
 </BitPanel>";
     private readonly string example2CsharpCode = @"
@@ -244,7 +247,7 @@ private BitPanel modelessPanelRef = default!;
 private bool isAutoToggleScrollPanelOpen;";
 
     private readonly string example3RazorCode = @"
-<BitSpinButton @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+<BitNumberField @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
 
 <BitButton OnClick=""() => isOpenInPositionStart = true"">Start</BitButton>
 <BitButton OnClick=""() => isOpenPositionEnd = true"">End</BitButton>
@@ -256,7 +259,7 @@ private bool isAutoToggleScrollPanelOpen;";
             Position=""BitPanelPosition.Start"">
     <div style=""padding:1rem"">
         BitPanel with Start position and custom Size.
-        <BitSpinButton @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+        <BitNumberField @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
     </div>
 </BitPanel>
 
@@ -265,14 +268,14 @@ private bool isAutoToggleScrollPanelOpen;";
             Position=""BitPanelPosition.End"">
     <div style=""padding:1rem"">
         BitPanel with End position and custom Size.
-        <BitSpinButton @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+        <BitNumberField @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
     </div>
 </BitPanel>
 
 <BitPanel @bind-Size=""customPanelSize"" @bind-IsOpen=""isOpenInPositionTop"" Position=""BitPanelPosition.Top"">
     <div style=""padding:1rem"">
         BitPanel with Top position and custom Size.
-        <BitSpinButton @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+        <BitNumberField @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
     </div>
 </BitPanel>
 
@@ -281,7 +284,7 @@ private bool isAutoToggleScrollPanelOpen;";
             Position=""BitPanelPosition.Bottom"">
     <div style=""padding:1rem"">
         BitPanel with Bottom position and custom Size.
-        <BitSpinButton @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+        <BitNumberField @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
     </div>
 </BitPanel>";
     private readonly string example3CsharpCode = @"

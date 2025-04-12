@@ -52,7 +52,13 @@ public static class IServiceCollectionBesqlExtentions
         else
         {
             services.TryAddSingleton<IBitBesqlStorage, BitBesqlNoopStoage>();
-            services.AddDbContextFactory<TDbContext, PooledDbContextFactoryBase<TDbContext>>(optionsAction);
+            services.AddDbContextFactory<TDbContext, PooledDbContextFactoryBase<TDbContext>>((serviceProvider, options) =>
+            {
+#if NET9_0_OR_GREATER
+                options.ReplaceService<IHistoryRepository, BesqlHistoryRepository>();
+#endif
+                optionsAction.Invoke(serviceProvider, options);
+            });
         }
 
         return services;

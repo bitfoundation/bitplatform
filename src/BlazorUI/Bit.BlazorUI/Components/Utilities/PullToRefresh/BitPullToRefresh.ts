@@ -168,7 +168,7 @@
 
         public dispose() {
             this.disposer();
-            this.dotnetObj.dispose();
+            this.dotnetObj?.dispose();
         }
     }
 }

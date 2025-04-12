@@ -5,7 +5,7 @@
 /// </summary>
 public partial class BitOverlay : BitComponentBase
 {
-    private int _offsetTop;
+    private float _offsetTop;
     private bool _internalIsOpen;
 
 
@@ -80,7 +80,7 @@ public partial class BitOverlay : BitComponentBase
 
         var scrollerSelector = ScrollerSelector.HasValue() ? ScrollerSelector! : "body";
 
-        _offsetTop = await _js.BitOverlayToggleScroll(scrollerSelector, IsOpen);
+        _offsetTop = await _js.BitUtilsToggleOverflow(scrollerSelector, IsOpen);
 
         if (AbsolutePosition is false) return;
 

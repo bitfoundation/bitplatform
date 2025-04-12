@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Dtos.Products;
+using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Shared.Controllers.Products;
 
 namespace Boilerplate.Server.Api.Controllers.Products;

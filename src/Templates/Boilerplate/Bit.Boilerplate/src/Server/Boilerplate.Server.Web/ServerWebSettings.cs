@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Boilerplate.Client.Web;
@@ -57,11 +57,13 @@ public partial class WebAppRenderOptions
             // you can switch between configurations like `DebugBlazorServer` and `DebugBlazorWasm`.  
             // If `DebugBlazorServer` is selected, `BlazorMode` will be set to `BlazorServer`  
             // regardless of its value in appsettings.json
+            //-:cnd:noEmit
 #if DebugBlazorServer
             mode = BlazorWebAppMode.BlazorServer;
 #elif DebugBlazorWasm
             mode = BlazorWebAppMode.BlazorWebAssembly;
 #endif
+            //+:cnd:noEmit
 
             return mode switch
             {

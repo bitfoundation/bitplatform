@@ -1,9 +1,10 @@
-﻿@*+:cnd:noEmit*@
+@*+:cnd:noEmit*@
 @attribute [Route(Urls.SignUpPage)]
 @attribute [Route("{culture?}" + Urls.SignUpPage)]
 @inherits AppPageBase
 
-<PageTitle>@Localizer[nameof(AppStrings.SignUpPageTitle)]</PageTitle>
+<AppPageData Title="@Localizer[nameof(AppStrings.SignUp)]"
+             PageTitle="@Localizer[nameof(AppStrings.SignUpPageTitle)]" />
 
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center">

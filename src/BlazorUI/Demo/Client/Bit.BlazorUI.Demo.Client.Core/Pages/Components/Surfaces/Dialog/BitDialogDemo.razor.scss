@@ -11,8 +11,8 @@
 }
 
 .dialog-body {
+    max-width: 40rem;
     overflow-y: hidden;
-    max-width: rem2(448px);
     padding: 0 rem2(24px) rem2(24px);
 }
 
@@ -43,8 +43,9 @@
 .relative-container {
     width: 100%;
     overflow: auto;
+    padding: 0.5rem;
     margin-top: 1rem;
-    height: rem2(400px);
     position: relative;
+    height: rem2(400px);
     border: rem2(2px) lightgreen solid;
 }

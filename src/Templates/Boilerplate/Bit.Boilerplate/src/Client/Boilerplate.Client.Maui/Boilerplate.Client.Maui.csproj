@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
         <TargetFrameworks>net9.0-android;net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
@@ -150,6 +150,12 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Content Remove="wwwroot\external-js-runner.html" />
+        <EmbeddedResource Include="wwwroot\external-js-runner.html" />
+        <EmbeddedResource Include="..\Boilerplate.Client.Core\wwwroot\scripts\app.js" Link="wwwroot\scripts\app.js" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj" />
     </ItemGroup>
 
@@ -162,19 +168,12 @@
         <PackageReference Include="Microsoft.Extensions.Logging.EventSource" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition="'$(module)' == 'Admin' OR '$(module)' == ''" Include="Newtonsoft.Json" />
+        <PackageReference Include="Plugin.Maui.AppRating" />
         <PackageReference Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.Extensions.Logging.ApplicationInsights" />
         <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Plugin.LocalNotification" />
         <!--/-:msbuild-conditional:noEmit -->
     </ItemGroup>
-
-    <!--/+:msbuild-conditional:noEmit -->
-    <ItemGroup Condition="'$(framework)' == 'net9.0' OR '$(framework)' == ''">
-        <PackageReference Include="Oscore.Maui.AppStoreInfo" />
-        <PackageReference Include="Oscore.Maui.InAppReviews" />
-        <PackageReference Include="Oscore.Maui.Android.InAppUpdates" />
-    </ItemGroup>
-    <!--/-:msbuild-conditional:noEmit -->
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
         <Error Text="Enable long paths in Windows. https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell#enable-long-paths-in-windows-10-version-1607-and-later" Condition=" $([MSBuild]::IsOSPlatform('windows')) AND $([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem', 'LongPathsEnabled', null, RegistryView.Registry64)) != '1' " />

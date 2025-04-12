@@ -1,4 +1,4 @@
-﻿using Boilerplate.Tests.PageTests.PageModels.Layout;
+using Boilerplate.Tests.PageTests.PageModels.Layout;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace Boilerplate.Tests.PageTests.PageModels.Identity;

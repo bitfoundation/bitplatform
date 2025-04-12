@@ -1,38 +1,13 @@
-﻿@attribute [Route(Urls.AddOrEditProductPage + "/{Id:guid?}")]
+@attribute [Route(Urls.AddOrEditProductPage + "/{Id:guid?}")]
 @attribute [Route("{culture?}" + Urls.AddOrEditProductPage + "/{Id:guid?}")]
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
-@inherits AppComponentBase
+@inherits AppPageBase
 
-<PageTitle>
-    @if (product.Id == default)
-    {
-        @Localizer[nameof(AppStrings.AddProduct)]
-    }
-    else
-    {
-        @Localizer[nameof(AppStrings.EditProduct)]
-    }
-</PageTitle>
-
+<AppPageData ShowGoBackButton=true
+             Title="@(product.Id == default ? @Localizer[nameof(AppStrings.AddProduct)] : @Localizer[nameof(AppStrings.EditProduct), product.Name!])" />
 
 <section>
     <BitStack FillContent>
-        <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0.5rem">
-            <BitButton Variant="BitVariant.Text"
-                       Href="@Urls.CategoriesPage"
-                       IconName="@BitIconName.Back"
-                       Title="@Localizer[nameof(AppStrings.Back)]" />
-            <BitText Typography="BitTypography.H5">
-                @if (product.Id == default)
-                {
-                    @Localizer[nameof(AppStrings.AddProduct)]
-                }
-                else
-                {
-                    @Localizer[nameof(AppStrings.EditProduct)]
-                }
-            </BitText>
-        </BitStack>
 
         <EditForm Model="product" OnValidSubmit="WrapHandled(Save)" novalidate>
             <AppDataAnnotationsValidator @ref="validatorRef" />

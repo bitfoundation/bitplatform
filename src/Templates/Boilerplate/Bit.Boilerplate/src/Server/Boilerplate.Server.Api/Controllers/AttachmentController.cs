@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using ImageMagick;
 using FluentStorage.Blobs;
 //#if (signalR == true)

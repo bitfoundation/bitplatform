@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Components.Pages.Identity.Components;
+namespace Boilerplate.Client.Core.Components.Pages.Identity.Components;
 
 public partial class SocialRow
 {

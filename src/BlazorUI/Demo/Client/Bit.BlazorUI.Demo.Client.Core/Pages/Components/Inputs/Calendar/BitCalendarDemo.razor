@@ -6,11 +6,13 @@
             Description="calendar component of the bit BlazorUI components" />
 
 <DemoPage Name="Calendar"
-               Description="The calendar control lets people select and view a single date or a range of dates in their calendar. It’s made up of 3 separate views: the month view, year view, and decade view."
-               Parameters="componentParameters"
-               SubClasses="componentSubClasses"
-               SubEnums="componentSubEnums">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+          Description="The calendar control lets people select and view a single date or a range of dates in their calendar. It’s made up of 3 separate views: the month view, year view, and decade view."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          GitHubUrl="Inputs/Calendar/BitCalendar.razor"
+          GitHubDemoUrl="Inputs/Calendar/BitCalendarDemo.razor">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <div>Basic Calendar configuration showcasing default usage, disabled state, week numbers, highlighted months, and time picker.</div>
             <br /><br />
             <div class="example-content">
@@ -29,9 +31,9 @@
                 <div>StartingValue: December 2020, Time: 20:45:</div>
                 <BitCalendar ShowTimePicker="true" StartingValue="startingValue" />
             </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Min & Max" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Min & Max" RazorCode="@example2RazorCode" Id="example2">
             <div>Demonstrates setting minimum and maximum selectable dates in the calendar.</div>
             <br /><br />
             <div class="example-content">
@@ -47,56 +49,23 @@
                 <div>Max: Now.AddYears(+1)</div>
                 <BitCalendar MinDate="DateTimeOffset.Now.AddYears(-5)" MaxDate="DateTimeOffset.Now.AddYears(1)" />
             </div>
-    </DemoSection>
-
-    <DemoSection Title="Style & Class" RazorCode="@example3RazorCode" Id="example3">
-            <div>Showcases custom styling and class usage for the calendar component.</div>
+    </DemoExample>
+    
+    <DemoExample Title="Hour/Minute step" RazorCode="@example3RazorCode" Id="example3">
+            <div>Customizes the step increments for hours and minutes in the time picker.</div>
             <br /><br />
-            <div>Component's Style & Class:</div>
-            <br />
             <div class="example-content">
-                <BitCalendar Style="margin: 1rem; border-radius: 1rem; background: #a5104457;" />
-
-                <BitCalendar Class="custom-class" />
+                <div>HourStep = 2:</div>
+                <br />
+                <BitCalendar ShowTimePicker="true" HourStep="2" />
+                <br />
+                <div>MinuteStep = 15:</div>
+                <br />
+                <BitCalendar ShowTimePicker="true" MinuteStep="15" />
             </div>
-            <br /><br /><br />
-            <div><b>Styles</b> & <b>Classes</b>:</div>
-            <br />
-            <div class="example-content">
-                <BitCalendar ShowTimePicker="true"
-                             Styles="@(new() { Root = "margin: 1rem; border: 1px solid mediumseagreen; background: #1c73324d;",
-                                               Divider = "border-color: mediumseagreen;",
-                                               DayPickerMonth = "color: darkgreen;",
-                                               TodayDayButton = "background-color: green;",
-                                               SelectedDayButton = "background-color: limegreen;",
-                                               TimePickerIncreaseHourButton = "background-color: limegreen;",
-                                               TimePickerIncreaseMinuteButton = "background-color: limegreen;",
-                                               TimePickerDecreaseHourButton = "background-color: limegreen;",
-                                               TimePickerDecreaseMinuteButton = "background-color: limegreen;" })" />
+    </DemoExample>
 
-                <BitCalendar Classes="@(new() { Root = "custom-root",
-                                                DayPickerWrapper = "custom-day-picker",
-                                                DayButton = "custom-day",
-                                                TodayDayButton = "custom-today-day",
-                                                PrevMonthNavButton = "custom-prev-month",
-                                                NextMonthNavButton = "custom-next-month",
-                                                DayPickerMonth = "custom-day-month",
-                                                DayPickerHeader = "custom-day-header",
-                                                WeekNumbersHeader = "custom-week-header",
-                                                YearMonthPickerWrapper = "custom-year-picker" })" />
-            </div>
-    </DemoSection>
-
-    <DemoSection Title="Binding" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-            <div>Illustrates binding the selected date value to a variable.</div>
-            <br />
-            <div class="example-content">
-                <BitCalendar @bind-Value="@selectedDate" />
-                <div>Selected date: @selectedDate.ToString()</div>
-            </div>
-    </DemoSection>
-
-    <DemoSection Title="Culture" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="Culture" RazorCode="@example4RazorCode" Id="example4">
             <div>
                 By default, BitCalendar picks the current culture. But you can provide your own instance of CultureInfo for any custom culture.
                 <br />
@@ -115,9 +84,118 @@
                 <br />
                 <BitCalendar GoToTodayTitle="Boro be emrouz" Culture="CultureInfoHelper.GetFaIrCultureWithFingilishNames()" />
             </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Templates" RazorCode="@example6RazorCode" Id="example6">
+    <DemoExample Title="TimeZone" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <div>
+            Specifies the timezone used to interpret and display the selected date/time.
+            <br />
+            Remeber using this feature in different runtimes needs more investigations, for example,
+            there are different data available based on the OS the code is running on or different settings
+            enabled for the project (like InvariantTimezone in the project file,
+            <BitLink Href="https://learn.microsoft.com/en-us/aspnet/core/blazor/globalization-localization?view=aspnetcore-9.0#timezone-information"
+                     Target="_blank">more info</BitLink>).
+        </div>
+        <br /><br />
+        <div>Defalt (local TimeZone):</div><br/>
+        <div class="example-content">
+            <BitCalendar @bind-Value="@timeZoneDate1" ShowTimePicker />
+        </div>
+        <br />
+        <div>Selected date: @timeZoneDate1?.ToString()</div>
+
+        @{
+            TimeZoneInfo? timeZoneInfo = null;
+            var allTimeZones = TimeZoneInfo.GetSystemTimeZones();
+            if (allTimeZones.Count > 0)
+            {
+                timeZoneInfo = allTimeZones[0];
+            }
+        }
+
+        @if (timeZoneInfo is not null) {
+            <br /><br /><br /><br />
+            <div>"@timeZoneInfo.Id" TimeZone:</div><br/>
+            <div class="example-content">
+                <BitCalendar TimeZone="timeZoneInfo" @bind-Value="@timeZoneDate2" ShowTimePicker />
+            </div>
+            <br />
+            <div>Selected date: @timeZoneDate2?.ToString()</div>
+        }
+    </DemoExample>
+
+    <DemoExample Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>Illustrates binding the selected date value to a variable.</div>
+            <br />
+            <div class="example-content">
+                <BitCalendar @bind-Value="@selectedDate" />
+                <div>Selected date: @selectedDate.ToString()</div>
+            </div>
+    </DemoExample>
+
+    <DemoExample Title="ReadOnly" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <div>The ReadOnly parameter makes the date picker input non-editable, preventing users from manually changing the time value.</div>
+        <br />
+        <div class="example-content-standalone">
+            <BitCalendar ReadOnly @bind-Value="readOnlyDate" />
+            <br /><br />
+            <BitCalendar ReadOnly ShowTimePicker @bind-Value="readOnlyDate" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="MonthPicker" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>Demonstrates controlling the visibility and position of the month picker.</div>
+            <br /><br />
+            <div class="example-content">
+                <div>IsMonthPickerVisible:</div>
+                <br />
+                <BitCalendar ShowMonthPicker="@showMonthPicker" />
+                <BitToggleButton OnText="MonthPicker visible" OffText="MonthPicker invisible" @bind-IsChecked="@showMonthPicker" />
+                <br /><br /><br />
+                <div>ShowMonthPickerAsOverlay:</div>
+                <br />
+                <BitCalendar ShowMonthPickerAsOverlay="@showMonthPickerAsOverlay" />
+                <BitToggleButton OnText="Position Overlay" OffText="Position Besides" @bind-IsChecked="@showMonthPickerAsOverlay" />
+            </div>
+    </DemoExample>
+
+    <DemoExample Title="TimePicker" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>Demonstrates the time picker functionality integrated within the calendar component.</div>
+            <br />
+            <div class="example-content">
+                <BitCalendar @bind-Value="@selectedDateTime" ShowTimePicker="true" />
+                <br />
+                <div>Selected DateTime: @selectedDateTime.ToString()</div>
+            </div>
+    </DemoExample>
+
+    <DemoExample Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>Demonstrates validation for BitCalendar within a form, including required fields and custom validation messages.</div>
+            <br />
+            <div>
+                <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                    <DataAnnotationsValidator />
+
+                    <BitCalendar @bind-Value="validationModel.Date" />
+                    <ValidationMessage For="@(() => validationModel.Date)" />
+                    <br />
+                    <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+                    <BitButton ButtonType="BitButtonType.Reset" Variant="BitVariant.Outline"
+                               OnClick="() => { validationModel = new(); SuccessMessage=string.Empty; }">
+                        Reset
+                    </BitButton>
+                </EditForm>
+
+                <br />
+
+                @if (string.IsNullOrEmpty(SuccessMessage) is false)
+                {
+                    <BitMessage Color="BitColor.Success">@SuccessMessage</BitMessage>
+                }
+            </div>
+    </DemoExample>
+
+    <DemoExample Title="Templates" RazorCode="@example11RazorCode" Id="example11">
             <div>Use custom templates for day cells, month cells, and year cells.</div>
             <br /><br />
             <div class="example-content">
@@ -157,79 +235,51 @@
                     </YearCellTemplate>
                 </BitCalendar>
             </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="MonthPicker" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-            <div>Demonstrates controlling the visibility and position of the month picker.</div>
+    <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
+            <div>Showcases custom styling and class usage for the calendar component.</div>
             <br /><br />
-            <div class="example-content">
-                <div>IsMonthPickerVisible:</div>
-                <br />
-                <BitCalendar ShowMonthPicker="@showMonthPicker" />
-                <BitToggleButton OnText="MonthPicker visible" OffText="MonthPicker invisible" @bind-IsChecked="@showMonthPicker" />
-                <br /><br /><br />
-                <div>ShowMonthPickerAsOverlay:</div>
-                <br />
-                <BitCalendar ShowMonthPickerAsOverlay="@showMonthPickerAsOverlay" />
-                <BitToggleButton OnText="Position Overlay" OffText="Position Besides" @bind-IsChecked="@showMonthPickerAsOverlay" />
-            </div>
-    </DemoSection>
-
-    <DemoSection Title="TimePicker" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-            <div>Demonstrates the time picker functionality integrated within the calendar component.</div>
+            <div>Component's Style & Class:</div>
             <br />
             <div class="example-content">
-                <BitCalendar @bind-Value="@selectedDateTime" ShowTimePicker="true" />
-                <br />
-                <div>Selected DateTime: @selectedDateTime.ToString()</div>
-            </div>
-    </DemoSection>
+                <BitCalendar Style="margin: 1rem; border-radius: 1rem; background: #a5104457;" />
 
-    <DemoSection Title="Hour/Minute step" RazorCode="@example9RazorCode" Id="example9">
-            <div>Customizes the step increments for hours and minutes in the time picker.</div>
-            <br /><br />
-            <div class="example-content">
-                <div>HourStep = 2:</div>
-                <br />
-                <BitCalendar ShowTimePicker="true" HourStep="2" />
-                <br />
-                <div>MinuteStep = 15:</div>
-                <br />
-                <BitCalendar ShowTimePicker="true" MinuteStep="15" />
+                <BitCalendar Class="custom-class" />
             </div>
-    </DemoSection>
-
-    <DemoSection Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
-            <div>Demonstrates validation for BitCalendar within a form, including required fields and custom validation messages.</div>
+            <br /><br /><br />
+            <div><b>Styles</b> & <b>Classes</b>:</div>
             <br />
-            <div>
-                <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
-                    <DataAnnotationsValidator />
+            <div class="example-content">
+                <BitCalendar ShowTimePicker="true"
+                             Styles="@(new() { Root = "margin: 1rem; border: 1px solid mediumseagreen; background: #1c73324d;",
+                                               Divider = "border-color: mediumseagreen;",
+                                               DayPickerMonth = "color: darkgreen;",
+                                               TodayDayButton = "background-color: green;",
+                                               SelectedDayButton = "background-color: limegreen;",
+                                               TimePickerIncreaseHourButton = "background-color: limegreen;",
+                                               TimePickerIncreaseMinuteButton = "background-color: limegreen;",
+                                               TimePickerDecreaseHourButton = "background-color: limegreen;",
+                                               TimePickerDecreaseMinuteButton = "background-color: limegreen;" })" />
 
-                    <BitCalendar @bind-Value="validationModel.Date" />
-                    <ValidationMessage For="@(() => validationModel.Date)" />
-                    <br />
-                    <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
-                    <BitButton ButtonType="BitButtonType.Reset" Variant="BitVariant.Outline"
-                               OnClick="() => { validationModel = new(); SuccessMessage=string.Empty; }">
-                        Reset
-                    </BitButton>
-                </EditForm>
-
-                <br />
-
-                @if (string.IsNullOrEmpty(SuccessMessage) is false)
-                {
-                    <BitMessage Color="BitColor.Success">@SuccessMessage</BitMessage>
-                }
+                <BitCalendar Classes="@(new() { Root = "custom-root",
+                                                DayPickerWrapper = "custom-day-picker",
+                                                DayButton = "custom-day",
+                                                TodayDayButton = "custom-today-day",
+                                                PrevMonthNavButton = "custom-prev-month",
+                                                NextMonthNavButton = "custom-next-month",
+                                                DayPickerMonth = "custom-day-month",
+                                                DayPickerHeader = "custom-day-header",
+                                                WeekNumbersHeader = "custom-week-header",
+                                                YearMonthPickerWrapper = "custom-year-picker" })" />
             </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="RTL" RazorCode="@example11RazorCode" Id="example11">
+    <DemoExample Title="RTL" RazorCode="@example11RazorCode" Id="example13">
             <div>Use BitCalendar in right-to-left (RTL).</div>
             <br />
             <div class="example-content">
                 <BitCalendar Dir="BitDir.Rtl" />
             </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

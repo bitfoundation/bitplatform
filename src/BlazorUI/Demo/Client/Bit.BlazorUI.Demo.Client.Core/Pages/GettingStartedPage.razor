@@ -11,89 +11,111 @@
         <BitText Typography="BitTypography.H4" Class="subtitle">1. Install</BitText>
 
         <BitText Typography="BitTypography.Body1" Gutter>
-            <b>bit BlazorUI</b> components are distributed as the <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI/" Target="_blank">Bit.BlazorUI</BitLink> NuGet package. You can add them to your project in one of the following ways:
+            <b>bit BlazorUI</b> components are available as the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI/"
+                     Target="_blank">Bit.BlazorUI</BitLink>
+            NuGet package, which can be integrated into your project using one of the methods below:
         </BitText>
-        <br/>
+        <br />
         <BitText Typography="BitTypography.Body1">
-            Install the package from command line by running this command:
+            1. <b>Command Line</b>: Run the following command to install the package:
         </BitText>
-        <div class="code-box">dotnet add package Bit.BlazorUI</div>
-        <br/>
+        <CodeBox>dotnet add package Bit.BlazorUI</CodeBox>
+        <br />
         <BitText Typography="BitTypography.Body1">
-            Or install the package from Package Manager Console by running this command:
+            2. <b>Package Manager Console</b>: Execute the command below to install the package:
         </BitText>
-        <div class="code-box">Install-Package Bit.BlazorUI</div>
-        <br/>
+        <CodeBox>Install-Package Bit.BlazorUI</CodeBox>
+        <br />
         <BitText Typography="BitTypography.Body1">
-            Or add the package to the project from the Visual Studio's Nuget Package Manager.
+            3. <b>Visual Studio</b>: Use Visual Studio's NuGet Package Manager interface to add the package to your project.
         </BitText>
 
         <br /><br />
 
         <BitAccordion Title="Optional steps">
             <BitText Typography="BitTypography.Body1">
-                <b>Note:</b> If you want to use the Extra components (like <b>BitChart</b>) you need to add the <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras/" Target="_blank">Bit.BlazorUI.Extras</BitLink> package:
+                <b>Extra components</b>: If you want to use the Extra components (like <b>BitChart</b>)
+                you need to add the
+                <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras/"
+                         Target="_blank">Bit.BlazorUI.Extras</BitLink> package:
             </BitText>
-            <div class="code-box">dotnet add package Bit.BlazorUI.Extras</div>
-            <div class="code-box">Install-Package Bit.BlazorUI.Extras</div>
+            <CodeBox>dotnet add package Bit.BlazorUI.Extras</CodeBox>
+            Or
+            <CodeBox>Install-Package Bit.BlazorUI.Extras</CodeBox>
 
-            <br /><br />
+            <br /><br /><br /><br />
 
             <BitText Typography="BitTypography.Body1">
-                <b>Note:</b> If you need the asset files of the bit BlazorUI (like <b>Segoe UI</b> font for non-Windows clients) you need to add the <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Assets/" Target="_blank">Bit.BlazorUI.Assets</BitLink> package:
+                <b>Optional assets</b>: If you need the asset files of the bit BlazorUI (like <b>Segoe UI</b>
+                font for non-Windows clients) you need to add the
+                <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Assets/"
+                         Target="_blank">Bit.BlazorUI.Assets</BitLink> package:
             </BitText>
-            <div class="code-box">dotnet add package Bit.BlazorUI.Assets</div>
-            <div class="code-box">Install-Package Bit.BlazorUI.Assets</div>
+            <CodeBox>dotnet add package Bit.BlazorUI.Assets</CodeBox>
+            Or
+            <CodeBox>Install-Package Bit.BlazorUI.Assets</CodeBox>
 
-            <br /><br />
+            <br /><br /><br /><br />
 
             <BitText Typography="BitTypography.Body1">
-                <b>Note:</b> If you want to use the Fabric Icons of the bit BlazorUI (using <b>BitIconName</b> class) you need to add the <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Icons/" Target="_blank">Bit.BlazorUI.Icons</BitLink> package:
+                <b>Icon pack:</b> If you want to use the Fabric Icons of the bit BlazorUI (using <b>BitIconName</b> class)
+                you need to add the
+                <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Icons/"
+                         Target="_blank">Bit.BlazorUI.Icons</BitLink> package:
             </BitText>
-            <div class="code-box">dotnet add package Bit.BlazorUI.Icons</div>
-            <div class="code-box">Install-Package Bit.BlazorUI.Icons</div>
+            <CodeBox>dotnet add package Bit.BlazorUI.Icons</CodeBox>
+            Or
+            <CodeBox>Install-Package Bit.BlazorUI.Icons</CodeBox>
         </BitAccordion>
     </section>
 
     <section class="page-section">
         <BitText Typography="BitTypography.H4" Class="subtitle">2. Namespace</BitText>
-        <div class="section-desc">Open the <span class="txt--blue">_Imports.razor</span> file of your Blazor application and add this line:</div>
-        <div class="code-box">&#64;using Bit.BlazorUI</div>
+        <div class="section-desc">Open the <BitTag Color="BitColor.TertiaryBackground">_Imports.razor</BitTag> 
+            file of your Blazor application and add this line:</div>
+        <CodeBox>&#64;using Bit.BlazorUI</CodeBox>
     </section>
 
     <section class="page-section">
         <BitText Typography="BitTypography.H4" Class="subtitle">3. Styles and Scripts</BitText>
 
         <BitText Typography="BitTypography.Body1">
-            Open the <span class="txt--blue">App.razor</span>, or <span class="txt--blue">wwwroot/index.html</span> file and add the CSS file reference:
+            Open <BitTag Color="BitColor.TertiaryBackground">App.razor</BitTag> or 
+            <BitTag Color="BitColor.TertiaryBackground">index.html</BitTag> file and add the CSS file reference:
         </BitText>
-        <div class="code-box">&lt;link href="_content/Bit.BlazorUI/styles/bit.blazorui.css" rel="stylesheet" /></div>
+        <CodeBox>&lt;link href="_content/Bit.BlazorUI/styles/bit.blazorui.css" rel="stylesheet" /></CodeBox>
 
         <BitText Typography="BitTypography.Body1">then add the JS file file reference:</BitText>
-        <div class="code-box">&lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js">&lt;/script></div>
+        <CodeBox>&lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js">&lt;/script></CodeBox>
 
         <br />
 
         <BitAccordion Title="Optional steps">
             <BitText Typography="BitTypography.Body1">
-                <b>Note:</b> If you are using the <span class="txt--blue">Extras</span> package you also need to add these resources:
+                <b>Extra components:</b> If you are using the <BitTag Color="BitColor.TertiaryBackground">Extras</BitTag>
+                package you also need to add these resources:
             </BitText>
-            <div class="code-box">&lt;link href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" rel="stylesheet" /></div>
-            <div class="code-box">&lt;script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js">&lt;/script></div>
+            <CodeBox>&lt;link href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" rel="stylesheet" /></CodeBox>
+            <CodeBox>&lt;script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js">&lt;/script></CodeBox>
 
-            <br />
+            <br /><br /><br /><br />
 
             <BitText Typography="BitTypography.Body1">
-                <b>Note:</b> If you are using the <span class="txt--blue">Assets</span> package you also need to add this resource:
+                <b>Optional assets:</b> If you are using the <BitTag Color="BitColor.TertiaryBackground">Assets</BitTag>
+                package you also need to add this resource:
             </BitText>
-            <div class="code-box">&lt;link href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" rel="stylesheet" /></div>
+            <CodeBox>&lt;link href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" rel="stylesheet" /></CodeBox>
 
-            <br />
+            <br /><br /><br /><br />
 
             <BitText Typography="BitTypography.Body1">
-                <b>Note:</b> If you are using the <span class="txt--blue">Icons</span> package you also need to add this resource:
+                <b>Icon pack:</b> If you are using the <BitTag Color="BitColor.TertiaryBackground">Icons</BitTag>
+                package you also need to add this resource:
             </BitText>
-            <div class="code-box">&lt;link href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" rel="stylesheet" /></div>
+            <CodeBox>&lt;link href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" rel="stylesheet" /></CodeBox>
         </BitAccordion>
     </section>
+
+    <FeedbackSection Url="GettingStartedPage.razor" />
 </div>

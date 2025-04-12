@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Controllers;
+using Boilerplate.Shared.Controllers;
 using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Shared.Controllers.Products;
 using Boilerplate.Shared.Controllers.Categories;
@@ -25,6 +25,8 @@ public partial class AddOrEditProductPage
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         try
         {
             var categoryList = await categoryController.Get(CurrentCancellationToken);

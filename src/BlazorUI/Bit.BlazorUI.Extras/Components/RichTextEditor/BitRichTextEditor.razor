@@ -1,0 +1,21 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+
+    @if (ToolbarTemplate is not null)
+    {
+        <div @ref="_toolbarRef" style="@Styles?.Toolbar" class="bit-rte-tlb @Classes?.Toolbar">
+            @ToolbarTemplate
+        </div>
+    }
+
+    <div @ref="_editorRef" style="@Styles?.Editor" class="bit-rte-edt @Classes?.Editor">
+        @EditorTemplate
+    </div>
+</div>

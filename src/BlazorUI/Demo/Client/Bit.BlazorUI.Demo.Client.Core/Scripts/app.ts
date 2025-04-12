@@ -29,6 +29,10 @@ function highlightSnippet() {
     });
 }
 
+function getInnerText(element: HTMLElement) {
+    return element?.innerText;
+}
+
 declare class BitTheme { static init(options: any): void; };
 
 BitTheme.init({

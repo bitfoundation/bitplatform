@@ -1,6 +1,9 @@
-﻿@attribute [Route(Urls.AboutPage)]
+@attribute [Route(Urls.AboutPage)]
 @attribute [Route("{culture?}" + Urls.AboutPage)]
 @inherits AppPageBase
+
+<AppPageData Title="@Localizer[nameof(AppStrings.About)]"
+             PageTitle="@Localizer[nameof(AppStrings.AboutPageTitle)]" />
 
 <section>
     <BitStack Gap="3rem">
@@ -15,7 +18,10 @@
             <BitText>App Name: <b>@appName</b></BitText>
             <BitText>App Version: <b>@appVersion</b></BitText>
             <BitText>OS: <b>@platform</b></BitText>
-            <BitText>Web View: <b>@webView</b></BitText>
+            @if (AppPlatform.IsIOS is false && AppPlatform.IsMacOS is false)
+            {
+                <BitText>Web View: <b>@webView</b></BitText>
+            }
             <BitText>OEM: <b>@oem</b></BitText>
             <BitText>Environment: <b>@AppEnvironment.Current</b></BitText>
             <BitText>Process Id: <b>@processId</b></BitText>

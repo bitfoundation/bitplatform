@@ -1,4 +1,4 @@
-﻿using Boilerplate.Server.Api.Models.Identity;
+using Boilerplate.Server.Api.Models.Identity;
 
 namespace Boilerplate.Server.Api.Models.PushNotification;
 

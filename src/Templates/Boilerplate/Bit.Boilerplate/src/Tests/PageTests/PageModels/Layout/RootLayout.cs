@@ -1,4 +1,4 @@
-﻿using Boilerplate.Tests.Extensions;
+using Boilerplate.Tests.Extensions;
 
 namespace Boilerplate.Tests.PageTests.PageModels.Layout;
 

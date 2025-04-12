@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Tests.PageTests.PageModels.Layout;
+namespace Boilerplate.Tests.PageTests.PageModels.Layout;
 
 public abstract partial class MainLayout(IPage page, Uri serverAddress)
     : RootLayout(page, serverAddress)

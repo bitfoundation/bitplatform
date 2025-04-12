@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Microsoft.EntityFrameworkCore;
 using Boilerplate.Server.Api.Data;
 //#if (database  == 'Sqlite')

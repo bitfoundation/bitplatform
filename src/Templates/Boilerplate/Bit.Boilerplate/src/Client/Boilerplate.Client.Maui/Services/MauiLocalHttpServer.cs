@@ -1,6 +1,7 @@
-﻿using EmbedIO;
+using EmbedIO;
 using System.Net;
 using EmbedIO.Actions;
+using System.Reflection;
 using System.Net.Sockets;
 using Boilerplate.Client.Core.Components;
 
@@ -11,11 +12,19 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
     [AutoInject] private IExceptionHandler exceptionHandler;
     [AutoInject] private AbsoluteServerAddressProvider absoluteServerAddress;
 
+    private int port = -1;
     private WebServer? localHttpServer;
 
-    public int Start(CancellationToken cancellationToken)
+    public int Port => port;
+
+    public string Origin => $"http://localhost:{port}";
+
+    public int EnsureStarted()
     {
-        var port = GetAvailableTcpPort();
+        if (port != -1)
+            return port;
+
+        port = GetAvailableTcpPort();
 
         localHttpServer = new WebServer(o => o
             .WithUrlPrefix($"http://localhost:{port}")
@@ -24,23 +33,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
-                    // Redirect to SocialSignedInPage.razor that will close the browser window.
-                    var url = new Uri(absoluteServerAddress, $"/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}").ToString();
-                    ctx.Redirect(url);
-
-                    if (AppPlatform.IsIOS)
-                    {
-                        // SocialSignedInPage.razor's `window.close()` does NOT work on iOS's in app browser.
-                        await MainThread.InvokeOnMainThreadAsync(() =>
-                        {
-#if iOS
-                            if (UIKit.UIApplication.SharedApplication.KeyWindow?.RootViewController?.PresentedViewController is SafariServices.SFSafariViewController controller)
-                            {
-                                controller.DismissViewController(animated: true, completionHandler: null);
-                            }
-#endif
-                        });
-                    }
+                    ctx.Redirect("/close-browser");
 
                     _ = Task.Delay(1)
                     .ContinueWith(async _ =>
@@ -55,7 +48,65 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
                 {
                     exceptionHandler.Handle(exp);
                 }
-            }));
+            }))
+            .WithModule(new ActionModule("/close-browser", HttpVerbs.Get, async ctx =>
+            {
+                // Redirect to CloseBrowserPage.razor that will close the browser window.
+                var url = new Uri(absoluteServerAddress, $"/api/Identity/CloseBrowserPage?culture={CultureInfo.CurrentUICulture.Name}").ToString();
+                ctx.Redirect(url);
+
+                if (AppPlatform.IsIOS)
+                {
+                    // CloseBrowserPage.razor's `window.close()` does NOT work on iOS's in app browser.
+                    await MainThread.InvokeOnMainThreadAsync(() =>
+                    {
+#if iOS
+                        if (UIKit.UIApplication.SharedApplication.KeyWindow?.RootViewController?.PresentedViewController is SafariServices.SFSafariViewController controller)
+                        {
+                            controller.DismissViewController(animated: true, completionHandler: null);
+                        }
+#endif
+                    });
+                }
+                else if (AppPlatform.IsAndroid)
+                {
+#if Android
+                    await MainThread.InvokeOnMainThreadAsync(() =>
+                    {
+                        var intent = new Android.Content.Intent(Platform.AppContext, typeof(Platforms.Android.MainActivity));
+                        intent.SetFlags(Android.Content.ActivityFlags.NewTask | Android.Content.ActivityFlags.ClearTop);
+                        Platform.AppContext.StartActivity(intent);
+                    });
+#endif
+                }
+            }))
+            .WithModule(new ActionModule("/external-js-runner.html", HttpVerbs.Get, async ctx =>
+            {
+                try
+                {
+                    ctx.Response.ContentType = "text/html";
+                    await using var file = Assembly.Load("Boilerplate.Client.Maui").GetManifestResourceStream("Boilerplate.Client.Maui.wwwroot.external-js-runner.html")!;
+                    await file.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
+                }
+                catch (Exception exp)
+                {
+                    exceptionHandler.Handle(exp);
+                }
+            }))
+            .WithModule(new ActionModule("/app.js", HttpVerbs.Get, async ctx =>
+            {
+                try
+                {
+                    ctx.Response.ContentType = "application/javascript";
+                    await using var file = Assembly.Load("Boilerplate.Client.Maui").GetManifestResourceStream("Boilerplate.Client.Maui.wwwroot.scripts.app.js")!;
+                    await file.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
+                }
+                catch (Exception exp)
+                {
+                    exceptionHandler.Handle(exp);
+                }
+            }))
+            .WithModule(new MauiExternalJsRunner());
 
         localHttpServer.HandleHttpException(async (context, exception) =>
         {
@@ -66,14 +117,14 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             });
         });
 
-        _ = localHttpServer.RunAsync(cancellationToken)
+        _ = localHttpServer.RunAsync()
             .ContinueWith(task =>
             {
                 if (task.Exception is not null)
                 {
                     exceptionHandler.Handle(task.Exception);
                 }
-            }, cancellationToken);
+            });
 
         return port;
     }
@@ -87,11 +138,9 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
         return port;
     }
 
-    /// <summary>
-    /// <inheritdoc cref="ILocalHttpServer.ShouldUseForSocialSignIn"/>
-    /// </summary>
-    public bool ShouldUseForSocialSignIn()
+    public async ValueTask DisposeAsync()
     {
-        return AppPlatform.IsAndroid is false;
+        localHttpServer?.Dispose();
     }
+
 }

@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 //#if (offlineDb == true)
 using Boilerplate.Client.Core.Data;
 using Microsoft.EntityFrameworkCore;
@@ -117,12 +117,10 @@ public static partial class IClientCoreServiceCollectionExtensions
             optionsBuilder
                 .UseSqlite($"Data Source={dbPath}");
 
-            //#if (framework == 'net9.0')
             if (AppEnvironment.IsDev() is false)
             {
                 optionsBuilder.UseModel(OfflineDbContextModel.Instance);
             }
-            //#endif
 
             optionsBuilder.EnableSensitiveDataLogging(AppEnvironment.IsDev())
                     .EnableDetailedErrors(AppEnvironment.IsDev());

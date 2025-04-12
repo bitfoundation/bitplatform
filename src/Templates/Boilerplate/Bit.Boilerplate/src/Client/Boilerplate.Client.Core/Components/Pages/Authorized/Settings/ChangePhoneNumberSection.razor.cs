@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Controllers.Identity;
+using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings;
@@ -26,6 +26,8 @@ public partial class ChangePhoneNumberSection
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         if (string.IsNullOrEmpty(PhoneNumberQueryString) is false)
         {
             showConfirmation = true;
@@ -42,8 +44,6 @@ public partial class ChangePhoneNumberSection
                 }
             }
         }
-
-        await base.OnInitAsync();
     }
 
 

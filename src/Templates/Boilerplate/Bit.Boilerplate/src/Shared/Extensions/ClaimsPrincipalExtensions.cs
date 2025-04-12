@@ -1,4 +1,4 @@
-﻿namespace System.Security.Claims;
+namespace System.Security.Claims;
 
 public static partial class ClaimsPrincipalExtensions
 {

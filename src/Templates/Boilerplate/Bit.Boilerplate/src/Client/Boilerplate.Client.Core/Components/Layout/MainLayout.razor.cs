@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Routing;
 
@@ -21,11 +21,9 @@ public partial class MainLayout : IAsyncDisposable
     private AppThemeType? currentTheme;
     private RouteData? currentRouteData;
     private List<Action> unsubscribers = [];
-    private List<BitNavItem> navPanelAuthenticatedItems = [];
-    private List<BitNavItem> navPanelUnAuthenticatedItems = [];
-
 
     [AutoInject] private Keyboard keyboard = default!;
+    [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private AuthManager authManager = default!;
     [AutoInject] private ThemeService themeService = default!;
     [AutoInject] private PubSubService pubSubService = default!;
@@ -41,8 +39,19 @@ public partial class MainLayout : IAsyncDisposable
 
     protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
+
         try
         {
+            var inPrerenderSession = RendererInfo.IsInteractive is false;
+            isOnline = await prerenderStateService.GetValue<bool?>(nameof(isOnline), async () => isOnline ?? inPrerenderSession is true ? true : null);
+            // During pre-rendering, if any API calls are made, the `isOnline` value will be set 
+            // using PubSub's `ClientPubSubMessages.IS_ONLINE_CHANGED`, depending on the success 
+            // or failure of the API call. However, if a pre-rendered page has no HTTP API call 
+            // dependencies, its value remains null. 
+            // Even though Server.Web and Server.Api may be deployed on different servers, 
+            // we can still assume that if the client is displaying a pre-rendered result, it is online.
+
             InitializeNavPanelItems();
 
             navigationManager.LocationChanged += NavigationManager_LocationChanged;
@@ -87,8 +96,6 @@ public partial class MainLayout : IAsyncDisposable
             currentTheme = await themeService.GetCurrentTheme();
 
             await bitExtraServices.AddRootCssClasses();
-
-            await base.OnInitializedAsync();
         }
         catch (Exception exp)
         {
@@ -107,12 +114,12 @@ public partial class MainLayout : IAsyncDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        await base.OnAfterRenderAsync(firstRender);
+
         if (firstRender)
         {
             await keyboard.Add(ButilKeyCodes.KeyX, OpenDiagnosticModal, ButilModifiers.Ctrl | ButilModifiers.Shift);
         }
-
-        await base.OnAfterRenderAsync(firstRender);
     }
 
 

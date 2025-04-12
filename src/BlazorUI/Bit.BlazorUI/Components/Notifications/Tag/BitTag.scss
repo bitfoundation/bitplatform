@@ -1,6 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-tag {
+    line-height: 1;
     gap: spacing(1);
     overflow: hidden;
     align-items: center;
@@ -10,8 +11,8 @@
     border-style: $shp-border-style;
     border-width: $shp-border-width;
     border-radius: $shp-border-radius;
-    font-size: var(--bit-tag-fontsize);
     padding: var(--bit-tag-padding);
+    font-size: var(--bit-tag-fontsize);
 
     &.bit-dis {
         cursor: default;
@@ -19,6 +20,10 @@
         color: $clr-fg-dis;
         pointer-events: none;
     }
+}
+
+.bit-tag-rvs {
+    flex-direction: row-reverse;
 }
 
 .bit-tag-cls {
@@ -29,6 +34,7 @@
     cursor: pointer;
     box-sizing: border-box;
     background-color: transparent;
+    font-size: var(--bit-tag-fontsize);
 }
 
 
@@ -105,17 +111,63 @@
     --bit-tag-clr-txt: #{$clr-err-text};
 }
 
+.bit-tag-pbg {
+    --bit-tag-clr: #{$clr-bg-pri};
+    --bit-tag-clr-txt: #{$clr-fg-pri};
+}
+
+.bit-tag-sbg {
+    --bit-tag-clr: #{$clr-bg-sec};
+    --bit-tag-clr-txt: #{$clr-fg-pri};
+}
+
+.bit-tag-tbg {
+    --bit-tag-clr: #{$clr-bg-ter};
+    --bit-tag-clr-txt: #{$clr-fg-pri};
+}
+
+.bit-tag-pfg {
+    --bit-tag-clr: #{$clr-fg-pri};
+    --bit-tag-clr-txt: #{$clr-bg-pri};
+}
+
+.bit-tag-sfg {
+    --bit-tag-clr: #{$clr-fg-sec};
+    --bit-tag-clr-txt: #{$clr-bg-pri};
+}
+
+.bit-tag-tfg {
+    --bit-tag-clr: #{$clr-fg-ter};
+    --bit-tag-clr-txt: #{$clr-bg-pri};
+}
+
+.bit-tag-pbr {
+    --bit-tag-clr: #{$clr-brd-pri};
+    --bit-tag-clr-txt: #{$clr-fg-pri};
+}
+
+.bit-tag-sbr {
+    --bit-tag-clr: #{$clr-brd-sec};
+    --bit-tag-clr-txt: #{$clr-fg-pri};
+}
+
+.bit-tag-tbr {
+    --bit-tag-clr: #{$clr-brd-ter};
+    --bit-tag-clr-txt: #{$clr-fg-pri};
+}
+
+
 .bit-tag-sm {
     --bit-tag-fontsize: #{spacing(1.5)};
-    --bit-tag-padding: #{spacing(0.5)} #{spacing(1)};
+    --bit-tag-padding: #{spacing(0.250)};
 }
 
 .bit-tag-md {
     --bit-tag-fontsize: #{spacing(1.75)};
-    --bit-tag-padding: #{spacing(0.75)} #{spacing(1.5)};
+    --bit-tag-padding: #{spacing(0.375)};
 }
 
 .bit-tag-lg {
-    --bit-tag-fontsize: #{spacing(2)};
-    --bit-tag-padding: #{spacing(1)} #{spacing(2)};
+    --bit-tag-fontsize: #{spacing(2.25)};
+    --bit-tag-padding: #{spacing(0.500)};
 }

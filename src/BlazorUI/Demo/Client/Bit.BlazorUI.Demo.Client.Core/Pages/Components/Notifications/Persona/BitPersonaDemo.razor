@@ -9,9 +9,10 @@
           Description="A BitPersona is a visual representation of a person across products, typically showcasing the image that person has chosen to upload themselves. The control can also be used to show that person's online status. The complete control includes an individual's avatar (an uploaded image or a composition of the person’s initials on a background color), their name or identification, and online status. The BitPersona control is used in the PeoplePicker and Facepile controls."
           Parameters="componentParameters"
           SubEnums="componentSubEnums"
-          SubClasses="componentSubClasses">
-
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+          SubClasses="componentSubClasses"
+          GitHubUrl="Notifications/Persona/BitPersona.razor"
+          GitHubDemoUrl="Notifications/Persona/BitPersonaDemo.razor">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <BitPersona PrimaryText="Saleh Khafan"
                     Size="BitPersonaSize.Size72" />
         <br /><br />
@@ -23,9 +24,9 @@
                     SecondaryText="Developer"
                     Size="BitPersonaSize.Size72"
                     Unknown />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Size" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <DemoExample Title="Size" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <BitCheckbox @bind-Value="isDetailsShown" Label="Include BitPersona details" />
         <br /><br /><br /><br />
         <div>Size 8 Persona:</div><br />
@@ -105,9 +106,9 @@
                     Size="BitPersonaSize.Size120"
                     HidePersonaDetails="!isDetailsShown"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Color" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="Color" RazorCode="@example3RazorCode" Id="example3">
         <BitPersona PrimaryText="Primary" CoinColor="BitColor.Primary" />
         <br /><br />
         <BitPersona PrimaryText="Secondary" CoinColor="BitColor.Secondary" />
@@ -146,9 +147,9 @@
         <BitPersona PrimaryText="SecondaryBorder" CoinColor="BitColor.SecondaryBorder" />
         <br /><br />
         <BitPersona PrimaryText="TertiaryBorder" CoinColor="BitColor.TertiaryBorder" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Variant" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Variant" RazorCode="@example4RazorCode" Id="example4">
         <BitPersona PrimaryText="Saleh Xafan"
                     SecondaryText="Developer"
                     Size="BitPersonaSize.Size72"
@@ -163,9 +164,9 @@
                     SecondaryText="Developer"
                     Size="BitPersonaSize.Size72"
                     CoinVariant="BitVariant.Text" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Shape" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="Shape" RazorCode="@example5RazorCode" Id="example5">
         <BitPersona PrimaryText="Saleh Xafan"
                     SecondaryText="Developer"
                     Size="BitPersonaSize.Size72"
@@ -177,9 +178,9 @@
                     Size="BitPersonaSize.Size72"
                     CoinShape="BitPersonaCoinShape.Square"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Action" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <DemoExample Title="Action" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>Custom action can be revealed by hovering on the bottom of the image:</div><br />
         <BitPersona PrimaryText="Annie Lindqvist"
                     SecondaryText="Software Engineer"
@@ -202,9 +203,9 @@
                     OnImageClick="() => imageClickCount++"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         <p>Image Click Count: @imageClickCount</p>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Initials" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="Initials" RazorCode="@example7RazorCode" Id="example7">
         <div>Invalid ImageUrl:</div><br />
         <BitPersona PrimaryText="Saleh Khafan"
                     Size="BitPersonaSize.Size72"
@@ -216,9 +217,9 @@
         <br /><br /><br /><br />
         <div>ImageInitials:</div><br />
         <BitPersona Size="BitPersonaSize.Size72" PrimaryText="Saleh Khafan" ImageInitials="S" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="PersonaPresence" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoExample Title="PersonaPresence" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <div>None:</div><br />
         <BitPersona PrimaryText="Annie Lindqvist"
                     SecondaryText="Software Engineer"
@@ -273,9 +274,9 @@
                     PresenceIcons="_icons"
                     Size="BitPersonaSize.Size120"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Templates" RazorCode="@example9RazorCode" Id="example9">
+    <DemoExample Title="Templates" RazorCode="@example9RazorCode" Id="example9">
         <div>Text templates:</div><br />
         <div>
             <BitPersona Size="BitPersonaSize.Size100" ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" OnImageClick="() => {}">
@@ -310,9 +311,9 @@
                 </CoinTemplate>
             </BitPersona>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Style & Class" RazorCode="@example10RazorCode" Id="example10">
+    <DemoExample Title="Style & Class" RazorCode="@example10RazorCode" Id="example10">
         <div>Component's Style & Class:</div><br />
         <BitPersona PrimaryText="Saleh Khafan"
                     Size="BitPersonaSize.Size72"
@@ -332,14 +333,14 @@
                     Size="BitPersonaSize.Size72"
                     Classes="@(new() { ImageContainer = "custom-img-container",
                                                PrimaryTextContainer = "custom-primary-text" })" />
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="RTL" RazorCode="@example11RazorCode" Id="example11">
+    <DemoExample Title="RTL" RazorCode="@example11RazorCode" Id="example11">
         <div dir="rtl">
             <BitPersona Dir="BitDir.Rtl"
                         PrimaryText="صالح یوسف نژاد"
                         SecondaryText="مهندس نرم افزار"
                         Size="@BitPersonaSize.Size56" />
         </div>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>

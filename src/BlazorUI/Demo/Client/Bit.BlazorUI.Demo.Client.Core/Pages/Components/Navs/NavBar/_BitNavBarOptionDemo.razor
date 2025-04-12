@@ -1,4 +1,4 @@
-﻿<DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
     <div class="container">
         <BitNavBar TItem="BitNavBarOption">
             <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
@@ -7,9 +7,9 @@
             <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
         </BitNavBar>
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Disabled" RazorCode="@example2RazorCode" Id="example2">
+<DemoExample Title="Disabled" RazorCode="@example2RazorCode" Id="example2">
     <div>Disabled:</div><br />
     <div class="container">
         <BitNavBar TItem="BitNavBarOption" IsEnabled="false">
@@ -29,9 +29,9 @@
             <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
         </BitNavBar>
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Manual Mode" RazorCode="@example3RazorCode" Id="example3">
+<DemoExample Title="Manual Mode" RazorCode="@example3RazorCode" Id="example3">
     <div>Defines the mode in which the selected item is handled manually, instead of automatically using the current url.</div>
     <br /><br />
     <div class="container">
@@ -42,9 +42,9 @@
             <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
         </BitNavBar>
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="IconOnly" RazorCode="@example4RazorCode" Id="example4">
+<DemoExample Title="IconOnly" RazorCode="@example4RazorCode" Id="example4">
     <div>Only renders the icon of each navbar item.</div>
     <br /><br />
     <div class="container">
@@ -55,9 +55,9 @@
             <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
         </BitNavBar>
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="FitWidth" RazorCode="@example5RazorCode" Id="example5">
+<DemoExample Title="FitWidth" RazorCode="@example5RazorCode" Id="example5">
     <div>Enables fit-content width for the nav bar that sets the width of the component based on its content size.</div>
     <br /><br />
     <div class="container">
@@ -68,9 +68,9 @@
             <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
         </BitNavBar>
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Templates" RazorCode="@example6RazorCode" Id="example6">
+<DemoExample Title="Templates" RazorCode="@example6RazorCode" Id="example6">
     <div>Explore BitNavBar's customization capabilities.</div>
     <br /><br />
     <div>ItemTemplate:</div><br />
@@ -102,9 +102,9 @@
             <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
         </BitNavBar>
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<DemoExample Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
     <div>Managing NavBar item click event (OnItemClick).</div>
     <br /><br />
     <div class="container">
@@ -117,9 +117,9 @@
     </div>
     <br /><br />
     Clicked item: @eventsClickedOption?.Text
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Binding" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+<DemoExample Title="Binding" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <div>This example demonstrates different ways to handle item selection and changes within the component.</div>
     <br /><br />
     <div>DefaultSelectedItem (not available):</div><br />
@@ -150,9 +150,9 @@
         <BitChoiceGroupOption Text="Academy" Id="Academy" Value="optionAcademy" />
         <BitChoiceGroupOption Text="Profile" Id="Profile" Value="optionProfile" />
     </BitChoiceGroup>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Reselectable" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+<DemoExample Title="Reselectable" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
     <div>Enables the ability to trigger select event even when the same item is selected again.</div>
     <br /><br />
     <BitToggle @bind-Value="reselectable" OnText="Enabled recalling" OffText="Disabled recalling" />
@@ -167,9 +167,9 @@
     </div>
     <br />
     Item click count: @countClick
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Advanced" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+<DemoExample Title="Advanced" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
     <div>An illustrative example of integrating this component into a straightforward mobile application.</div>
     <br /><br />
     <div class="mobile-frame">
@@ -202,9 +202,9 @@
             </BitSticky>
         </div>
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Color" RazorCode="@example11RazorCode" Id="example11">
+<DemoExample Title="Color" RazorCode="@example11RazorCode" Id="example11">
     <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
     <br /><br />
     <div>Primary:</div><br />
@@ -378,9 +378,9 @@
             <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
         </BitNavBar>
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
+<DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
     <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
     <br /><br />
     <div>Component's Style:</div><br />
@@ -432,9 +432,9 @@
             <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
         </BitNavBar>
     </div>
-</DemoSection>
+</DemoExample>
 
-<DemoSection Title="RTL" RazorCode="@example13RazorCode" Id="example13">
+<DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
     <div>Use BitNavBar in right-to-left (RTL).</div>
     <br /><br />
     <div dir="rtl" class="container">
@@ -445,4 +445,4 @@
             <BitNavBarOption Text="پروفایل" IconName="@BitIconName.Contact" />
         </BitNavBar>
     </div>
-</DemoSection>
+</DemoExample>

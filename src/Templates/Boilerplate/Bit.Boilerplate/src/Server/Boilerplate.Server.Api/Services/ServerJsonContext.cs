@@ -1,4 +1,5 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
+using Fido2NetLib;
 using Boilerplate.Shared.Dtos.Statistics;
 
 namespace Boilerplate.Server.Api.Services;
@@ -12,6 +13,7 @@ namespace Boilerplate.Server.Api.Services;
 [JsonSerializable(typeof(GoogleRecaptchaVerificationResponse))]
 //#endif
 [JsonSerializable(typeof(ProblemDetails))]
+[JsonSerializable(typeof(AuthenticatorResponse))]
 public partial class ServerJsonContext : JsonSerializerContext
 {
 }

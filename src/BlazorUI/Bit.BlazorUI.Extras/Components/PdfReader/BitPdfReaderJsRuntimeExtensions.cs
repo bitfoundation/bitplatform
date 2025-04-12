@@ -2,11 +2,6 @@
 
 internal static class BitPdfReaderJsRuntimeExtensions
 {
-    public static ValueTask BitPdfReaderInit(this IJSRuntime jsRuntime, IEnumerable<string> scripts)
-    {
-        return jsRuntime.InvokeVoid("BitBlazorUI.PdfReader.init", scripts);
-    }
-
     public static ValueTask<int> BitPdfReaderSetup(this IJSRuntime jsRuntime, BitPdfReaderConfig config)
     {
         return jsRuntime.Invoke<int>("BitBlazorUI.PdfReader.setup", config);

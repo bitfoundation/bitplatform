@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Reflection;
 //#if (notification == true)
 using Boilerplate.Shared.Dtos.PushNotification;

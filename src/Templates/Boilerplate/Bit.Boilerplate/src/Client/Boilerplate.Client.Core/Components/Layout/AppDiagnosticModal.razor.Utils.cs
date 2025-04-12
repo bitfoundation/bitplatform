@@ -1,6 +1,7 @@
-﻿using System.Text;
+using System.Text;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Boilerplate.Shared.Controllers.Identity;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR.Client;
 //#endif
@@ -9,9 +10,10 @@ namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class AppDiagnosticModal
 {
-    [AutoInject] Cookie cookie = default!;
-    [AutoInject] AuthManager authManager = default!;
-    [AutoInject] IStorageService storageService = default!;
+    [AutoInject] private Cookie cookie = default!;
+    [AutoInject] private AuthManager authManager = default!;
+    [AutoInject] private IStorageService storageService = default!;
+    [AutoInject] private IUserController userController = default!;
 
     private static async Task ThrowTestException()
     {
@@ -97,14 +99,20 @@ public partial class AppDiagnosticModal
         SnackBarService.Show("Memory After GC", GetMemoryUsage());
     }
 
-    string GetMemoryUsage()
+    private string GetMemoryUsage()
     {
         long memory = Environment.WorkingSet;
         return $"{memory / (1024.0 * 1024.0):F2} MB";
     }
 
-    async Task ClearCache()
+    private async Task ClearCache()
     {
+        try
+        {
+            await userController.DeleteAllWebAuthnCredentials(CurrentCancellationToken);
+        }
+        catch { }
+
         try
         {
             await authManager.SignOut(default);

@@ -286,12 +286,12 @@ public class BitOverlayTests : BunitTestContext
 
         if (autoToggleScroll)
         {
-            //AutoToggleScroll is false by default so it should invoke "BitBlazorUI.Overlay.toggleScroll" once and then once again on closing component
-            Context.JSInterop.VerifyInvoke("BitBlazorUI.Overlay.toggleScroll", 2);
+            //AutoToggleScroll is false by default so it should invoke "BitBlazorUI.Utils.toggleOverflow" once and then once again on closing component
+            Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.toggleOverflow", 2);
         }
         else
         {
-            Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Overlay.toggleScroll");
+            Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.toggleOverflow");
         }
     }
 

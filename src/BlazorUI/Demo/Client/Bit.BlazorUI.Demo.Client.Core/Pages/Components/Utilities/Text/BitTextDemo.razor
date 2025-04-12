@@ -8,8 +8,10 @@
 <DemoPage Name="Text"
           Description="Use text to present your design and content as clearly and efficiently as possible."
           Parameters="componentParameters"
-          SubEnums="componentSubEnums">
-    <DemoSection Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+          SubEnums="componentSubEnums"
+          GitHubUrl="Utilities/Text/BitText.cs"
+          GitHubDemoUrl="Utilities/Text/BitTextDemo.razor">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <BitText>This is default (Subtitle1)</BitText>
         <br /><br />
         <BitText Typography="BitTypography.H1">H1. Heading</BitText>
@@ -24,13 +26,13 @@
         <br />
         <BitText Typography="BitTypography.H6">H6. Heading</BitText>
         <br /><br />
-        <BitText Typography="BitTypography.Subtitle1">Subtitle1. Lorem ipsum dolor sit amet</BitText>
+        <BitText Typography="BitTypography.Subtitle1">Subtitle1. Once upon a time</BitText>
         <br />
-        <BitText Typography="BitTypography.Subtitle2">Subtitle2. Lorem ipsum dolor sit amet</BitText>
+        <BitText Typography="BitTypography.Subtitle2">Subtitle2. Once upon a time</BitText>
         <br /><br />
-        <BitText Typography="BitTypography.Body1">Body1. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos blanditiis tenetur unde suscipit, quam beatae rerum inventore consectetur, neque doloribus, cupiditate numquam dignissimos laborum fugiat deleniti? Eum quasi quidem quibusdam.</BitText>
+        <BitText Typography="BitTypography.Body1">Body1. Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
         <br />
-        <BitText Typography="BitTypography.Body2">Body2. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos blanditiis tenetur unde suscipit, quam beatae rerum inventore consectetur, neque doloribus, cupiditate numquam dignissimos laborum fugiat deleniti? Eum quasi quidem quibusdam.</BitText>
+        <BitText Typography="BitTypography.Body2">Body2. Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
         <br /><br />
         <BitText Typography="BitTypography.Button">Button. Click Me</BitText>
         <br />
@@ -39,17 +41,17 @@
         <BitText Typography="BitTypography.Caption2">Caption2. Hello World!</BitText>
         <br />
         <BitText Typography="BitTypography.Overline">Overline. this is overline text.</BitText>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Align" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Align" RazorCode="@example2RazorCode" Id="example2">
         <BitText Align="BitTextAlign.Start">Start</BitText>
         <br />
         <BitText Align="BitTextAlign.Center">Center</BitText>
         <br />
         <BitText Align="BitTextAlign.End">End</BitText>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Foreground" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="Foreground" RazorCode="@example3RazorCode" Id="example3">
         <BitText Foreground="BitColorKind.Primary">Primary foreground</BitText>
         <br />
         <BitText Foreground="BitColorKind.Secondary">Secondary foreground</BitText>
@@ -59,9 +61,9 @@
         <div style="background:linear-gradient(blue, pink);background-clip:text;">
             <BitText Foreground="BitColorKind.Transparent">Transparent foreground</BitText>
         </div>
-    </DemoSection>
+    </DemoExample>
 
-    <DemoSection Title="Color" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Color" RazorCode="@example4RazorCode" Id="example4">
         <BitText Color="BitColor.Primary">Primary color</BitText>
         <br />
         <BitText Color="BitColor.Secondary">Secondary color</BitText>
@@ -97,5 +99,5 @@
         <BitText Color="BitColor.SecondaryBorder">SecondaryBorder color</BitText>
         <br />
         <BitText Color="BitColor.TertiaryBorder">TertiaryBorder color</BitText>
-    </DemoSection>
+    </DemoExample>
 </DemoPage>
