@@ -6,10 +6,10 @@ public partial class BitTextFieldDemo
     [
         new()
         {
-            Name = "AutoComplete",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "AutoComplete is a string that maps to the autocomplete attribute of the HTML input element.",
+            Name = "AutoHeight",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Automatically adjust the height of the input in Multiline mode.",
         },
         new()
         {
@@ -107,6 +107,12 @@ public partial class BitTextFieldDemo
         },
         new()
         {
+            Name = "OnEnter",
+            Type = "EventCallback<KeyboardEventArgs>",
+            Description = "Callback for when the Enter key is pressed while input has focus.",
+        },
+        new()
+        {
             Name = "OnFocus",
             Type = "EventCallback<FocusEventArgs>",
             Description = "Callback for when focus moves into the input.",
@@ -199,6 +205,13 @@ public partial class BitTextFieldDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Shows the custom suffix for text field.",
+        },
+        new()
+        {
+            Name = "TabIndex",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The value of the tabindex html attribute of the input element.",
         },
         new()
         {
