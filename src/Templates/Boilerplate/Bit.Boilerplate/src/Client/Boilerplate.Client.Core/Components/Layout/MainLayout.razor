@@ -1,5 +1,5 @@
+@*+:cnd:noEmit*@
 @inherits LayoutComponentBase
-
 
 <CascadingValue Value=currentDir>
     <CascadingValue Name=@Parameters.IsOnline Value=isOnline>
@@ -76,7 +76,9 @@
                     </main>
                 </BitAppShell>
 
+                @*#if (signalR == true)*@
                 <AppAiChatPanel />
+                @*#endif*@
                 <AppSnackBar />
                 <AppDiagnosticModal />
                 <BitModalContainer ModalParameters="modalParameters" />
