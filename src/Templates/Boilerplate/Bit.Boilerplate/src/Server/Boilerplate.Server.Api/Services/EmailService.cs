@@ -1,4 +1,4 @@
-using FluentEmail.Core;
+﻿using FluentEmail.Core;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Boilerplate.Server.Api.Models.Emailing;
@@ -136,7 +136,7 @@ public partial class EmailService
 
         _ = Task.Run(async () => // Let's not wait for the email to be sent. Consider using a proper message queue or background job system like Hangfire.
         {
-            await using var scope = rootServiceScopeProvider.Invoke();
+            await using var scope = rootServiceScopeProvider();
             var serverExceptionHandler = scope.ServiceProvider.GetRequiredService<ServerExceptionHandler>();
 
             try

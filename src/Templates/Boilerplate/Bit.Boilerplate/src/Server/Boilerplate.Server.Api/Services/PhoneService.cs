@@ -1,4 +1,4 @@
-using PhoneNumbers;
+﻿using PhoneNumbers;
 using Twilio.Rest.Api.V2010.Account;
 
 namespace Boilerplate.Server.Api.Services;
@@ -40,7 +40,7 @@ public partial class PhoneService
 
         _ = Task.Run(async () => // Let's not wait for the sms to be sent. Consider using a proper message queue or background job system like Hangfire.
         {
-            await using var scope = rootServiceScopeProvider.Invoke();
+            await using var scope = rootServiceScopeProvider();
             var serverExceptionHandler = scope.ServiceProvider.GetRequiredService<ServerExceptionHandler>();
             MessageResource? smsMessage = null;
             try

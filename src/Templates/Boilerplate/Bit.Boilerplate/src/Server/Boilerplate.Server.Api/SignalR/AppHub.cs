@@ -40,7 +40,7 @@ public partial class AppHub : Hub
         }
         else
         {
-            await using var scope = rootScopeProvider.Invoke();
+            await using var scope = rootScopeProvider();
             await using var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             await dbContext.UserSessions.Where(us => us.Id == Context.User!.GetSessionId()).ExecuteUpdateAsync(us => us.SetProperty(x => x.SignalRConnectionId, Context.ConnectionId));
 
@@ -56,7 +56,7 @@ public partial class AppHub : Hub
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, "AuthenticatedClients");
 
-            await using var scope = rootScopeProvider.Invoke();
+            await using var scope = rootScopeProvider();
             await using var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             await dbContext.UserSessions.Where(us => us.Id == Context.User!.GetSessionId()).ExecuteUpdateAsync(us => us.SetProperty(x => x.SignalRConnectionId, (string?)null));
         }
@@ -71,7 +71,7 @@ public partial class AppHub : Hub
     {
         string? supportSystemPrompt = null;
 
-        await using (var scope = rootScopeProvider.Invoke())
+        await using (var scope = rootScopeProvider())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
