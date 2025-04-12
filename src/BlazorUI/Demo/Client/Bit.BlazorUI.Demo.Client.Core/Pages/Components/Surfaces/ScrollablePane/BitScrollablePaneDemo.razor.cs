@@ -6,6 +6,13 @@ public partial class BitScrollablePaneDemo
     [
         new()
         {
+            Name = "AutoScroll",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Automatically scrolls to the end of the pane after each render.",
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -69,6 +76,17 @@ public partial class BitScrollablePaneDemo
         }
     ];
 
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "ScrollToEnd",
+            Type = "Func<ValueTask>",
+            DefaultValue = "",
+            Description = "Scrolls the pane to the end of its content, both horizontally and vertically.",
+        },
+    ];
+
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         new()
@@ -78,14 +96,14 @@ public partial class BitScrollablePaneDemo
             Description = "",
             Items =
             [
-                new() 
+                new()
                 {
                     Name = "Auto",
                     Value = "0",
                     Description = "Scrollbars are displayed automatically when needed based on the content size, and hidden when not needed."
                 },
-                new() 
-                { 
+                new()
+                {
                     Name = "Hidden",
                     Value = "1",
                     Description = "Scrollbars are always hidden, even if the content overflows the visible area."
@@ -111,20 +129,20 @@ public partial class BitScrollablePaneDemo
             Description = "",
             Items =
             [
-                new() 
+                new()
                 {
                     Name = "Auto",
                     Value = "0",
                     Description = "The initial value. Classic scrollbars create a gutter when overflow is scroll, or when overflow is auto and the box is overflowing. Overlay scrollbars do not consume space."
                 },
-                new() 
-                { 
+                new()
+                {
                     Name = "Stable",
                     Value = "1",
                     Description = "When using classic scrollbars, the gutter will be present if overflow is auto, scroll, or hidden even if the box is not overflowing.When using overlay scrollbars, the gutter will not be present."
                 },
-                new() 
-                { 
+                new()
+                {
                     Name = "BothEdges",
                     Value = "2",
                     Description = "If a gutter would be present on one of the inline start/end edges of the box, another will be present on the opposite edge as well."
@@ -140,6 +158,23 @@ public partial class BitScrollablePaneDemo
 
     private double gutterItemsCount = 6;
     private BitScrollbarGutter gutter;
+
+
+    private string autoScrollContent = "";
+    private async Task AddAutoScrollContent()
+    {
+        for (var i = 0; i < 10; i++)
+        {
+            await Task.Delay(1000);
+
+            autoScrollContent += $@"
+Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding. 
+Placeholder text reminds us of that moment when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, for ideas that change 
+minds and spark emotions. This is where the journey begins your words will lead the way. this is a random number: {Random.Shared.Next(1, 100)}
+";
+            StateHasChanged();
+        }
+    }
 
 
 
@@ -331,4 +366,57 @@ private BitOverflow overflow;
 private double gutterItemsCount = 6;
 private BitScrollbarGutter gutter;
 ";
+
+    private readonly string example5RazorCode = @"
+<BitButton OnClick=""AddAutoScrollContent"">Add content periodically</BitButton>
+
+<BitScrollablePane Style=""height:300px;"" Class=""pane"" AutoScroll>
+    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+    <br />
+    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+    These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
+    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+    <br />
+    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+    shaped into meaning, and the emotions ready to resonate with every reader.
+    <br />
+    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+    each word has the power to transform into something extraordinary. Here lies the start of something new—an
+    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+    begins here, in this quiet moment where everything is possible.
+    <br /><br /><br />
+    <div>additional content:</div>
+
+    <pre style=""all:revert"">
+        @autoScrollContent
+    </pre>
+</BitScrollablePane>";
+    private readonly string example5CsharpCode = @"
+private string autoScrollContent = """";
+private async Task AddAutoScrollContent()
+{
+    for (var i = 0; i < 10; i++)
+    {
+        await Task.Delay(1000);
+
+        autoScrollContent += $@""
+Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding. 
+Placeholder text reminds us of that moment when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, for ideas that change 
+minds and spark emotions. This is where the journey begins your words will lead the way. this is a random number: {Random.Shared.Next(1, 100)}
+"";
+
+        StateHasChanged();
+    }
+}";
 }
