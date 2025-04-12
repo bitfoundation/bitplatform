@@ -71,14 +71,21 @@ public partial class AppHub : Hub
     {
         string? supportSystemPrompt = null;
 
-        await using (var scope = rootScopeProvider())
+        try
         {
+            await using var scope = rootScopeProvider();
+
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
             supportSystemPrompt = (await dbContext
                     .SystemPrompts.FirstOrDefaultAsync(p => p.PromptKind == PromptKind.Support, cancellationToken))?.Markdown ?? throw new ResourceNotFoundException();
 
             supportSystemPrompt = supportSystemPrompt.Replace("{{UserCulture}}", cultureNativeName);
+        }
+        catch (Exception exp)
+        {
+            await HandleException(exp);
+            yield break;
         }
 
         Channel<string> channel = Channel.CreateUnbounded<string>();
@@ -109,18 +116,8 @@ public partial class AppHub : Hub
                 StringBuilder assistantResponse = new();
                 try
                 {
-                    int incomingMessagesCount = 0;
-
                     chatMessagesHistory.Add(new(ChatRole.User, incomingMessage));
 
-                    incomingMessagesCount++;
-
-                    /*foreach (var @char in incomingMessage)
-                    {
-                        await Task.Delay(50, messageSpecificCancellationToken);
-                        assistantResponse.Append(@char);
-                        await channel.Writer.WriteAsync(@char.ToString(), messageSpecificCancellationToken);
-                    }*/
 
                     await foreach (var response in chatClient.GetStreamingResponseAsync([
                         new (ChatRole.System, supportSystemPrompt),
@@ -145,9 +142,7 @@ public partial class AppHub : Hub
                 }
                 catch (Exception exp)
                 {
-                    await using var scope = rootScopeProvider();
-                    var serverExcptionHandler = scope.ServiceProvider.GetRequiredService<ServerExceptionHandler>();
-                    serverExcptionHandler.Handle(exp);
+                    await HandleException(exp);
                 }
                 finally
                 {
@@ -162,6 +157,22 @@ public partial class AppHub : Hub
         await foreach (var str in channel.Reader.ReadAllAsync(cancellationToken).WithCancellation(cancellationToken))
         {
             yield return str;
+        }
+    }
+
+    private async Task HandleException(Exception exp)
+    {
+        await using var scope = rootScopeProvider();
+        var serverExceptionHandler = scope.ServiceProvider.GetRequiredService<ServerExceptionHandler>();
+        var problemDetails = serverExceptionHandler.Handle(exp);
+
+        if (problemDetails is not null)
+        {
+            try
+            {
+                await Clients.Caller.SendAsync(SignalREvents.EXCEPTION_THROWN, problemDetails, Context.ConnectionAborted);
+            }
+            catch { }
         }
     }
 }

@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Diagnostics;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.Authentication;
@@ -124,7 +124,6 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
         if (instance is null || traceIdentifier is null)
         {
             problemDetails = null;
-            return;
         }
 
         if (exception is KnownException && message == exceptionKey)
@@ -159,9 +158,10 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
         }
     }
 
-    public void Handle(Exception exp,
+    public ProblemDetails? Handle(Exception exp,
         Dictionary<string, object?>? parameters = null)
     {
-        Handle(UnWrapException(exp), parameters, httpContextAccessor.HttpContext, out var _, out var _);
+        Handle(UnWrapException(exp), parameters, httpContextAccessor.HttpContext, out var _, out var problemDetails);
+        return problemDetails;
     }
 }
