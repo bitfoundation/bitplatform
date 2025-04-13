@@ -203,10 +203,22 @@ private Task AutoLoadingReclick(bool isLoading)
 <BitDropdown Label=""FloatPosition"" Items=""floatPositionList"" @bind-Value=""floatPosition"" FitWidth />
 <BitTextField Label=""FloatOffset"" @bind-Value=""floatOffset"" Immediate />
 
-<BitButton Float FloatPosition=""floatPosition"" FloatOffset=""@floatOffset"" IconName=""@BitIconName.Add"" Size=""BitSize.Large"" IconOnly />
+<BitButton IconOnly 
+           Size=""BitSize.Large"" 
+           IconName=""@BitIconName.Add"" 
+           OnClick=""ScrollToFloat"" 
+           Float 
+           FloatPosition=""floatPosition"" 
+           FloatOffset=""@floatOffset"" />
+
 
 <div style=""position: relative; border: 1px gray solid"">
-    <BitButton FloatAbsolute FloatPosition=""floatPosition"" FloatOffset=""@floatOffset"" IconName=""@BitIconName.Edit"" IconOnly />
+    <BitButton IconOnly 
+               IconName=""@BitIconName.Edit"" 
+               Draggable
+               FloatAbsolute
+               FloatPosition=""floatPosition"" 
+               FloatOffset=""@floatOffset"" />
     <div style=""height:300px;overflow:auto;padding:0.5rem"">
         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
         Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
