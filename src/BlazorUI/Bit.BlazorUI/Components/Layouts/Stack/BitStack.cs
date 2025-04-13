@@ -119,7 +119,7 @@ public partial class BitStack : BitComponentBase
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => FillContent ? "bit-stc-fcn" : string.Empty);
+        ClassBuilder.Register(() => FillContent ? (Horizontal ? "bit-stc-fch" : "bit-stc-fcv") : string.Empty);
     }
 
     protected override void RegisterCssStyles()
