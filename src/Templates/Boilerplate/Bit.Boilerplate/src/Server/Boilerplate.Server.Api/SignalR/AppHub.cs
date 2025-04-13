@@ -69,6 +69,11 @@ public partial class AppHub : Hub
         IAsyncEnumerable<string> incomingMessages,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
+        // Incoming user messages are received via `incomingMessages`.
+        // We utilize `Channel` to read incoming messages and send responses using `ChatClient`.
+        // While processing a user message, a new message may arrive.
+        // To handle this, we cancel the ongoing message processing using `messageSpecificCancellationTokenSrc` and start processing the new message.
+
         string? supportSystemPrompt = null;
 
         try
@@ -86,7 +91,7 @@ public partial class AppHub : Hub
         }
         catch (Exception exp)
         {
-            await HandleException(exp);
+            await HandleException(exp, cancellationToken);
             yield break;
         }
 
@@ -138,14 +143,17 @@ public partial class AppHub : Hub
                             }, name: "SaveUserEmailAndConversationHistory", description: "Saves the user's email and their conversation history.")]
                         }, cancellationToken: messageSpecificCancellationToken))
                     {
-                        assistantResponse.Append(response.Text);
-                        await channel.Writer.WriteAsync(response.Text, messageSpecificCancellationToken);
+                        if (messageSpecificCancellationToken.IsCancellationRequested is false)
+                        {
+                            assistantResponse.Append(response.Text);
+                            await channel.Writer.WriteAsync(response.Text, messageSpecificCancellationToken);
+                        }
                     }
                     await channel.Writer.WriteAsync(SharedChatProcessMessages.MESSAGE_RPOCESS_SUCESS, cancellationToken);
                 }
                 catch (Exception exp)
                 {
-                    await HandleException(exp);
+                    await HandleException(exp, cancellationToken);
                     await channel.Writer.WriteAsync(SharedChatProcessMessages.MESSAGE_RPOCESS_ERROR, cancellationToken);
                 }
                 finally
@@ -163,17 +171,19 @@ public partial class AppHub : Hub
         }
     }
 
-    private async Task HandleException(Exception exp)
+    private async Task HandleException(Exception exp, CancellationToken cancellationToken)
     {
         await using var scope = rootScopeProvider();
         var serverExceptionHandler = scope.ServiceProvider.GetRequiredService<ServerExceptionHandler>();
+        if (serverExceptionHandler.IgnoreException(serverExceptionHandler.UnWrapException(exp)))
+            return;
         var problemDetails = serverExceptionHandler.Handle(exp);
 
         if (problemDetails is not null)
         {
             try
             {
-                await Clients.Caller.SendAsync(SignalREvents.EXCEPTION_THROWN, problemDetails, Context.ConnectionAborted);
+                await Clients.Caller.SendAsync(SignalREvents.EXCEPTION_THROWN, problemDetails, cancellationToken);
             }
             catch { }
         }
