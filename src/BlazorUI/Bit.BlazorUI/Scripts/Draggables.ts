@@ -8,8 +8,11 @@
             const ac = new AbortController();
             Draggables._abortControllers[id] = ac;
 
-            const element = document.getElementById(id)! as HTMLElement;
-            const dragElement = selector ? document.querySelector(selector)! as HTMLElement : element;
+            const element = document.getElementById(id) as HTMLElement;
+            const dragElement = selector ? document.querySelector(selector) as HTMLElement : element;
+
+            if (!element || !dragElement) return;
+
             const origCursor = dragElement.style.cursor;
 
             let x = 0;
