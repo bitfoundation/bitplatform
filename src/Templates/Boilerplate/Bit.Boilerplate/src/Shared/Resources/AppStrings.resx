@@ -278,11 +278,11 @@
     <value>Please ensure you're not running multiple sessions of the app simultaneously on the same device or browser.</value>
   </data>
     <!--#if (signalR == true) -->
-    <data name="EditSystemPromptsTitle" xml:space="preserve">
-    <value>Edit system prompts</value>
+    <data name="SystemPromptsTitle" xml:space="preserve">
+    <value>System prompts</value>
   </data>
-    <data name="EditSystemPromptsSubTitle" xml:space="preserve">
-    <value>You can modify the system prompts for chatbots here.</value>
+    <data name="SystemPromptsSubTitle" xml:space="preserve">
+    <value>You can view/modify the system prompts for chatbot here.</value>
   </data>
     <!--#endif-->
     <!--#if (offlineDb == true) -->

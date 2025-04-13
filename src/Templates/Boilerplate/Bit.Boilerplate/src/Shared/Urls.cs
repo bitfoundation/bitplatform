@@ -32,7 +32,7 @@ public static partial class Urls
     //#endif
 
     //#if (signalR == true)
-    public const string EditSystemPrompts = "/edit-system-prompts";
+    public const string SystemPrompts = "/system-prompts";
     //#endif
 
     public const string Authorize = "/authorize";

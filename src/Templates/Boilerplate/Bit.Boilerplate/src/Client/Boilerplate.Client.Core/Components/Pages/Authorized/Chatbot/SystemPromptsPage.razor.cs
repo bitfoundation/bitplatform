@@ -3,7 +3,7 @@ using Boilerplate.Shared.Controllers.Chatbot;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Chatbot;
 
-public partial class EditSystemPromptsPage
+public partial class SystemPromptsPage
 {
     [AutoInject] private IChatbotController chatbotController = default!;
 

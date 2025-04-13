@@ -106,9 +106,15 @@ public partial class MainLayout
         //#if (signalR == true)
         navPanelAuthenticatedItems.Add(new()
         {
-            Text = localizer[nameof(AppStrings.EditSystemPromptsTitle)],
+            Text = localizer[nameof(AppStrings.SystemPromptsTitle)],
             IconName = BitIconName.TextDocumentSettings,
-            Url = Urls.EditSystemPrompts,
+            Url = Urls.SystemPrompts,
+        });
+        navPanelUnAuthenticatedItems.Add(new()
+        {
+            Text = localizer[nameof(AppStrings.SystemPromptsTitle)],
+            IconName = BitIconName.TextDocumentSettings,
+            Url = Urls.SystemPrompts,
         });
         //#endif
     }

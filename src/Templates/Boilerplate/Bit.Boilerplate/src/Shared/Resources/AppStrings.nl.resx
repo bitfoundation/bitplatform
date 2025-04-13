@@ -278,11 +278,11 @@
     <value>Zorg ervoor dat je niet meerdere sessies van de app tegelijkertijd uitvoert op hetzelfde apparaat of in dezelfde browser.</value>
   </data>
     <!--#if (signalR == true) -->
-    <data name="EditSystemPromptsTitle" xml:space="preserve">
+    <data name="SystemPromptsTitle" xml:space="preserve">
     <value>Systeemprompts bewerken</value>
   </data>
-    <data name="EditSystemPromptsSubTitle" xml:space="preserve">
-    <value>Hier kunt u de systeemprompts voor chatbots wijzigen.</value>
+    <data name="SystemPromptsSubTitle" xml:space="preserve">
+    <value>Hier kunt u de systeemprompts voor chatbot wijzigen.</value>
   </data>
     <!--#endif-->
     <!--#if (offlineDb == true) -->
