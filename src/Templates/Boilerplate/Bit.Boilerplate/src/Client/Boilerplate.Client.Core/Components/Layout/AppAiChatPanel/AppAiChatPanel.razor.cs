@@ -113,7 +113,10 @@ public partial class AppAiChatPanel
             }
             else
             {
-                lastAssistantMessage.Content += response;
+                if ((responseCounter + 1) == (chatMessages.Count - 1) / 2)
+                {
+                    lastAssistantMessage.Content += response;
+                }
             }
 
             StateHasChanged();
