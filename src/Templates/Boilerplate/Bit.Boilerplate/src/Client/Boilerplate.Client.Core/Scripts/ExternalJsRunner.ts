@@ -1,4 +1,4 @@
-// Checkout external-js-runner.html
+// Checkout Boilerplate.Client.Maui/wwwroot/external-js-runner.html
 class ExternalJsRunner {
     public static async run() {
         const host = window.origin.replace('http://', '');

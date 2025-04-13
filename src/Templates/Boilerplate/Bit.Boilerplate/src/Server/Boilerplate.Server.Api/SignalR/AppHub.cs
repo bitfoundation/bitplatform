@@ -2,6 +2,7 @@
 using System.Threading.Channels;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.SignalR;
+using Boilerplate.Shared.Dtos.Chatbot;
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Controllers.Identity;
@@ -138,12 +139,12 @@ public partial class AppHub : Hub
                         assistantResponse.Append(response.Text);
                         await channel.Writer.WriteAsync(response.Text, messageSpecificCancellationToken);
                     }
-                    await channel.Writer.WriteAsync(SharedHubMessages.AI_PROCESS_SUCCESS, cancellationToken);
+                    await channel.Writer.WriteAsync(ChatMessageProcessStatus.MESSAGE_RPOCESS_SUCESS, cancellationToken);
                 }
                 catch (Exception exp)
                 {
                     await HandleException(exp);
-                    await channel.Writer.WriteAsync(SharedHubMessages.AI_PROCESS_ERROR, cancellationToken);
+                    await channel.Writer.WriteAsync(ChatMessageProcessStatus.MESSAGE_RPOCESS_ERROR, cancellationToken);
                 }
                 finally
                 {

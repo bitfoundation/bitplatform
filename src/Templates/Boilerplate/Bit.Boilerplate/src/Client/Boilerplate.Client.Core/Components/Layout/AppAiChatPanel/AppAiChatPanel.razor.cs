@@ -1,4 +1,5 @@
 ﻿using System.Threading.Channels;
+using Boilerplate.Shared.Dtos.Chatbot;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
 
@@ -94,12 +95,12 @@ public partial class AppAiChatPanel
                                                                          channel.Reader.ReadAllAsync(CurrentCancellationToken),
                                                                          cancellationToken: CurrentCancellationToken))
         {
-            if (response is SharedHubMessages.AI_PROCESS_SUCCESS)
+            if (response is ChatMessageProcessStatus.MESSAGE_RPOCESS_SUCESS)
             {
                 responseCounter++;
                 isLoading = false;
             }
-            else if (response is SharedHubMessages.AI_PROCESS_ERROR)
+            else if (response is ChatMessageProcessStatus.MESSAGE_RPOCESS_ERROR)
             {
                 if (++responseCounter == (chatMessages.Count - 1) / 2)
                 {

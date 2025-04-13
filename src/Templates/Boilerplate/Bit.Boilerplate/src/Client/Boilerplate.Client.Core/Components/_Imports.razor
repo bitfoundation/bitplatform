@@ -1,3 +1,4 @@
+@*+:cnd:noEmit*@
 @using System.Reflection
 @using System.Globalization
 @using System.Runtime.Loader
@@ -23,4 +24,6 @@
 @using Boilerplate.Client.Core.Components.Pages
 @using Boilerplate.Client.Core.Components.Layout
 @using Boilerplate.Client.Core.Services.Contracts
+@*#if (signalR == true)*@
 @using Boilerplate.Client.Core.Components.Layout.AppAiChatPanel
+@*#endif*@
