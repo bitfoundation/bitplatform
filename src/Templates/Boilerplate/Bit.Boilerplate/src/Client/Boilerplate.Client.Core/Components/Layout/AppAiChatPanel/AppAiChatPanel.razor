@@ -43,13 +43,19 @@
                             var message = chatMessages[i];
                             if (message.Role is AiChatMessageRole.User)
                             {
-                                <BitCard Background="BitColorKind.Tertiary" Style="align-self:end">
+                                <BitCard Background="BitColorKind.Tertiary" Style="align-self:end;padding:0.5rem 1rem">
                                     <BitText>@message.Content</BitText>
                                 </BitCard>
                             }
                             else
                             {
                                 <BitMarkdownViewer Markdown="@message.Content" />
+                                @if (message.Successful is false)
+                                {
+                                    <BitTag Color="BitColor.Error" Size="BitSize.Small" Style="min-height:18px">
+                                        @Localizer[nameof(AppStrings.Canceled)]
+                                    </BitTag>
+                                }
                             }
                         }
 

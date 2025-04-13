@@ -138,7 +138,6 @@ public partial class AppHub : Hub
                         assistantResponse.Append(response.Text);
                         await channel.Writer.WriteAsync(response.Text, messageSpecificCancellationToken);
                     }
-                    chatMessages.Add(new(ChatRole.Assistant, assistantResponse.ToString()));
                     await channel.Writer.WriteAsync(SharedHubMessages.AI_PROCESS_SUCCESS, cancellationToken);
                 }
                 catch (Exception exp)
@@ -148,7 +147,7 @@ public partial class AppHub : Hub
                 }
                 finally
                 {
-                    //chatMessages.Add(new(ChatRole.Assistant, assistantResponse.ToString()));
+                    chatMessages.Add(new(ChatRole.Assistant, assistantResponse.ToString()));
                     //await channel.Writer.WriteAsync(SharedHubMessages.AI_PROCESS_FINISHED, cancellationToken);
                 }
             }

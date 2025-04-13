@@ -9,6 +9,7 @@ public partial class AppAiChatPanel
     private bool isOpen;
     private bool isLoading;
     private string? userInput;
+    private int responseCounter;
     private Channel<string>? channel;
     private BitTextField textFieldRef = default!;
     private List<AiChatMessage> chatMessages = [];
@@ -64,8 +65,7 @@ public partial class AppAiChatPanel
         lastAssistantMessage = new();
         chatMessages = [new() { Content = Localizer[nameof(AppStrings.AiChatPanelInitialResponse)], Role = AiChatMessageRole.Assistant }];
 
-        await StopChannel();
-        await StartChannel();
+        await RestartChannel();
     }
 
     private async Task HandleOnOpenPanel()
@@ -96,11 +96,19 @@ public partial class AppAiChatPanel
         {
             if (response is SharedHubMessages.AI_PROCESS_SUCCESS)
             {
+                responseCounter++;
                 isLoading = false;
             }
             else if (response is SharedHubMessages.AI_PROCESS_ERROR)
             {
-                //isLoading = false;
+                if (++responseCounter == (chatMessages.Count - 1) / 2)
+                {
+                    isLoading = false;
+                }
+
+                var index = responseCounter * 2;
+
+                chatMessages[index].Successful = false;
             }
             else
             {
@@ -117,6 +125,12 @@ public partial class AppAiChatPanel
 
         channel.Writer.Complete();
         channel = null;
+    }
+
+    private async Task RestartChannel()
+    {
+        await StopChannel();
+        await StartChannel();
     }
 
 

@@ -1230,6 +1230,9 @@
     <data name="Send" xml:space="preserve">
     <value>Send</value>
   </data>
+    <data name="Canceled" xml:space="preserve">
+    <value>Canceled</value>
+  </data>
     <data name="AiChatPanelTitle" xml:space="preserve">
     <value>AI chat panel</value>
   </data>
