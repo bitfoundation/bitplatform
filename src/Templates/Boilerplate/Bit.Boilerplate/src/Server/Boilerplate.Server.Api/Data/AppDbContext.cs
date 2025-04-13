@@ -56,10 +56,19 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         */
         //#endif
 
-        modelBuilder.HasDefaultSchema("dbo");
-        
+        //#if (IsInsideProjectTemplate == true)
+        if (Database.ProviderName!.EndsWith("SqlServer", StringComparison.InvariantCulture))
+        {
+            //#endif
+            //#if (database == "SqlServer")
+            modelBuilder.HasDefaultSchema("dbo");
+            //#endif
+            //#if (IsInsideProjectTemplate == true)
+        }
+        //#endif
+
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
-        
+
         ConfigureIdentityTableNames(modelBuilder);
 
         ConfigureConcurrencyStamp(modelBuilder);
