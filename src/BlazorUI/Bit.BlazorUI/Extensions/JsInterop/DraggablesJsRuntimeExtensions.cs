@@ -1,14 +1,20 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 internal static class DraggablesJsRuntimeExtensions
 {
-    internal static ValueTask BitDraggablesEnableDrag(this IJSRuntime jsRuntime, string id, string? selector = null)
+    internal static ValueTask BitDraggablesSetup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(
+        this IJSRuntime jsRuntime,
+        string id,
+        DotNetObjectReference<T>? dotnetObj,
+        string? selector = null) where T : class
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Draggables.enableDrag", id, selector);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Draggables.setup", id, dotnetObj, selector);
     }
 
-    internal static ValueTask BitDraggablesDisableDrag(this IJSRuntime jsRuntime, string id)
+    internal static ValueTask BitDraggablesDispose(this IJSRuntime jsRuntime, string id)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Draggables.disableDrag", id);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Draggables.dispose", id);
     }
 }

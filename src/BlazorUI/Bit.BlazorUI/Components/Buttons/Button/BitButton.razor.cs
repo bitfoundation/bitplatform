@@ -9,7 +9,9 @@ public partial class BitButton : BitComponentBase
 {
     private string? _rel;
     private int? _tabIndex;
+    private bool _dragging;
     private BitButtonType _buttonType;
+    private DotNetObjectReference<BitButton>? _dotnetObj;
 
 
 
@@ -220,6 +222,26 @@ public partial class BitButton : BitComponentBase
 
 
 
+    [JSInvokable("OnDragStart")]
+    public async ValueTask _OnDragStart()
+    {
+        //_dragging = true;
+    }
+
+    [JSInvokable("OnDragging")]
+    public async ValueTask _OnDragging()
+    {
+        _dragging = true;
+    }
+
+    [JSInvokable("OnDragEnd")]
+    public async ValueTask _OnDragEnd()
+    {
+        //_dragging = false;
+    }
+
+
+
     protected override string RootElementClass => "bit-btn";
 
     protected override void RegisterCssClasses()
@@ -321,13 +343,17 @@ public partial class BitButton : BitComponentBase
 
         if (Float || FloatAbsolute)
         {
+            if (IsDisposed) return;
+
             if (Draggable)
             {
-                await _js.BitDraggablesEnableDrag(_Id);
+                _dotnetObj ??= DotNetObjectReference.Create(this);
+
+                await _js.BitDraggablesSetup(_Id, _dotnetObj);
             }
             else
             {
-                await _js.BitDraggablesDisableDrag(_Id);
+                await _js.BitDraggablesDispose(_Id);
             }
         }
     }
@@ -356,7 +382,14 @@ public partial class BitButton : BitComponentBase
             if (await AssignIsLoading(true) is false) return;
         }
 
-        await OnClick.InvokeAsync(isLoading);
+        if (_dragging)
+        {
+            _dragging = false;
+        }
+        else
+        {
+            await OnClick.InvokeAsync(isLoading);
+        }
 
         if (AutoLoading)
         {
@@ -383,10 +416,15 @@ public partial class BitButton : BitComponentBase
 
         await base.DisposeAsync(disposing);
 
-        try
+        if (_dotnetObj is not null)
         {
-            await _js.BitDraggablesDisableDrag(_Id);
+            _dotnetObj.Dispose();
+
+            try
+            {
+                await _js.BitDraggablesDispose(_Id);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
         }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 }

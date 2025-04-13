@@ -2,7 +2,7 @@
     export class Draggables {
         private static _abortControllers: { [key: string]: AbortController } = {};
 
-        public static enableDrag(id: string, selector: string | undefined) {
+        public static setup(id: string, dotnetObj: DotNetObject | undefined, selector: string | undefined) {
             if (Draggables._abortControllers[id]) return;
 
             const ac = new AbortController();
@@ -20,8 +20,9 @@
 
             dragElement.addEventListener('pointerdown', handlePointerDown, { signal: ac.signal });
 
-            function handlePointerDown(e: PointerEvent) {
+            async function handlePointerDown(e: PointerEvent) {
                 //e.preventDefault();
+                //e.stopPropagation();
 
                 x = e.clientX;
                 y = e.clientY;
@@ -31,10 +32,13 @@
 
                 dragElement.style.cursor = 'grabbing';
                 dragElement.classList.add('bit-nta');
+
+                try { await dotnetObj?.invokeMethodAsync('OnDragStart'); } catch { }
             }
 
-            function handlePointerMove(e: PointerEvent) {
+            async function handlePointerMove(e: PointerEvent) {
                 //e.preventDefault();
+                //e.stopPropagation();
 
                 element.style.left = `${element.offsetLeft - (x - e.clientX)}px`;
                 element.style.top = `${element.offsetTop - (y - e.clientY)}px`;
@@ -44,20 +48,25 @@
 
                 x = e.clientX;
                 y = e.clientY;
+
+                try { await dotnetObj?.invokeMethodAsync('OnDragging'); } catch { }
             }
 
-            function handlePointerUp(e: PointerEvent) {
+            async function handlePointerUp(e: PointerEvent) {
                 //e.preventDefault();
+                //e.stopPropagation();
 
                 document.removeEventListener('pointerup', handlePointerUp);
                 document.removeEventListener('pointermove', handlePointerMove);
 
                 dragElement.style.cursor = origCursor;
                 dragElement.classList.remove('bit-nta');
+
+                try { await dotnetObj?.invokeMethodAsync('OnDragEnd'); } catch { }
             }
         }
 
-        public static disableDrag(id: string) {
+        public static dispose(id: string) {
             const ac = Draggables._abortControllers[id];
             if (!ac) return;
 
