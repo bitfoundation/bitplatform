@@ -149,7 +149,6 @@ public partial class AppHub : Hub
                 finally
                 {
                     chatMessages.Add(new(ChatRole.Assistant, assistantResponse.ToString()));
-                    //await channel.Writer.WriteAsync(SharedHubMessages.AI_PROCESS_FINISHED, cancellationToken);
                 }
             }
         }

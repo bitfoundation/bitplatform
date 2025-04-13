@@ -1233,6 +1233,7 @@
     <data name="Canceled" xml:space="preserve">
     <value>Canceled</value>
   </data>
+    <!--#if (signalR == true) -->
     <data name="AiChatPanelTitle" xml:space="preserve">
     <value>AI chat panel</value>
   </data>
@@ -1254,4 +1255,5 @@
     <data name="AiChatPanelCommunicatingPlaceholder" xml:space="preserve">
     <value>Thinking...</value>
   </data>
+    <!--#endif -->
 </root>

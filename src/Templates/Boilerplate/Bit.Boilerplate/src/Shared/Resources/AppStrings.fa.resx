@@ -1230,6 +1230,7 @@
     <data name="Send" xml:space="preserve">
     <value>ارسال</value>
   </data>
+    <!--#if (signalR == true) -->
     <data name="AiChatPanelTitle" xml:space="preserve">
     <value>پنل هوش مصنوعی</value>
   </data>
@@ -1251,4 +1252,5 @@
     <data name="AiChatPanelCommunicatingPlaceholder" xml:space="preserve">
     <value>درحال فکر کردن...</value>
   </data>
+    <!--#endif -->
 </root>

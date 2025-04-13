@@ -472,7 +472,7 @@
                         "src/Server/Boilerplate.Server.Api/Models/Chatbot/**",
                         "src/Server/Boilerplate.Server.Api/Controllers/Chatbot/**",
                         "src/Server/Boilerplate.Server.Api/Data/Configurations/Chatbot/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Layout/AppAiChatPanel.*",
+                        "src/Client/Boilerplate.Client.Core/Components/Layout/AppAiChatPanel/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Chatbot/**",
                         "src/Client/Boilerplate.Client.Core/Services/SignalRInfiniteRetryPolicy.cs"
                     ]
