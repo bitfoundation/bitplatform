@@ -107,12 +107,13 @@
                                   @ref="textFieldRef"
                                   @bind-Value="@userInput"
                                   OnEnter="WrapHandled((KeyboardEventArgs e) => HandleOnUserInputEnter(e))"
-                                  Styles="@(new() { FieldGroup = "padding:1rem", Input = "min-height:unset" })"
+                                  Styles="@(new() { FieldGroup = "padding:0.5rem", Input = "min-height:unset" })"
                                   Placeholder="@(Localizer[isLoading ? nameof(AppStrings.AiChatPanelCommunicatingPlaceholder) : nameof(AppStrings.AiChatPanelPlaceholder)])" />
 
                     <BitButton Float
                                AutoLoading
                                FloatAbsolute
+                               FloatOffset="0.5rem"
                                Class="send-message-button"
                                OnClick="WrapHandled(SendMessage)"
                                Title="@Localizer[nameof(AppStrings.Send)]"
