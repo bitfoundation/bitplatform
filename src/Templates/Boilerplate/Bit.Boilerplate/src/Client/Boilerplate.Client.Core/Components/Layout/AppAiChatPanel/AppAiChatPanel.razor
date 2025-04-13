@@ -1,0 +1,116 @@
+@inherits AppComponentBase
+
+<section>
+    <BitButton Float
+               FloatOffset="2rem"
+               OnClick="OpenPanel"
+               Size="BitSize.Large"
+               Class="open-panel-button"
+               Color="BitColor.Secondary"
+               Variant="BitVariant.Outline"
+               FloatPosition="BitPosition.BottomRight"
+               IconUrl="@($"_content/Boilerplate.Client.Core/images/icons/ai-icon-{currentTheme?.ToString().ToLower()}.png")" />
+
+    <BitProPanel Modeless
+                 ShowCloseButton
+                 @bind-IsOpen="isOpen"
+                 OnDismiss="WrapHandled(HandleOnDismissPanel)">
+        <Header>
+            <BitStack Horizontal Alignment="BitAlignment.Center">
+                <BitText Typography="BitTypography.H5">@Localizer[nameof(AppStrings.AiChatPanelTitle)]</BitText>
+                <BitSpacer />
+                <BitButton Title="@Localizer[nameof(AppStrings.Clear)]"
+                           IconOnly FixedColor
+                           Variant="BitVariant.Text"
+                           IconName="@BitIconName.Delete"
+                           Color="BitColor.SecondaryBackground"
+                           OnClick="WrapHandled(ClearChat)" />
+            </BitStack>
+        </Header>
+        <Body>
+            <BitStack Class="body">
+                <BitScrollablePane Class="scr-container">
+                    <BitStack>
+                        @for (int i = 0; i < conversation.Count; i++)
+                        {
+                            var message = conversation[i];
+                            if (message.Author is AiChatMessageAuthor.User)
+                            {
+                                <BitCard Background="BitColorKind.Tertiary" Style="align-self:end">
+                                    <BitText>@message.Text</BitText>
+                                </BitCard>
+                            }
+                            else
+                            {
+                                <BitMarkdownViewer Markdown="@message.Text" />
+                            }
+                        }
+
+                        @if (isCommunicating)
+                        {
+                            @if (string.IsNullOrWhiteSpace(lastAssistantResponse))
+                            {
+                                <BitEllipsisLoading Size="BitSize.Small" />
+                            }
+                            else
+                            {
+                                <BitMarkdownViewer Markdown="@lastAssistantResponse" />
+                            }
+                        }
+                    </BitStack>
+                </BitScrollablePane>
+
+                @if (conversation.Count == 1)
+                {
+                    <BitStack Alignment=" BitAlignment.Center" Horizontal FitHeight FillContent>
+                        <BitButton FixedColor
+                                   Style="height:100%"
+                                   Variant="BitVariant.Outline"
+                                   Color="BitColor.SecondaryBackground"
+                                   OnClick="() => SendPromptMessage(Localizer[nameof(AppStrings.AiChatPanelPromp1)])">
+                            @Localizer[nameof(AppStrings.AiChatPanelPromp1)]
+                        </BitButton>
+
+                        <BitButton FixedColor
+                                   Style="height:100%"
+                                   Variant="BitVariant.Outline"
+                                   Color="BitColor.SecondaryBackground"
+                                   OnClick="() => SendPromptMessage(Localizer[nameof(AppStrings.AiChatPanelPromp2)])">
+                            @Localizer[nameof(AppStrings.AiChatPanelPromp2)]
+                        </BitButton>
+
+                        <BitButton FixedColor
+                                   Style="height:100%"
+                                   Variant="BitVariant.Outline"
+                                   Color="BitColor.SecondaryBackground"
+                                   OnClick="() => SendPromptMessage(Localizer[nameof(AppStrings.AiChatPanelPromp3)])">
+                            @Localizer[nameof(AppStrings.AiChatPanelPromp3)]
+                        </BitButton>
+                    </BitStack>
+                }
+
+                <BitStack FitHeight Style="position:relative">
+                    <BitTextField Rows="1"
+                                  Immediate
+                                  Multiline
+                                  MaxLength="1024"
+                                  Style="width:100%"
+                                  @ref="textFieldRef"
+                                  @bind-Value="@userInput"
+                                  Styles="@(new() { FieldGroup = "padding:1rem", Input = "min-height:unset" })"
+                                  OnKeyDown="WrapHandled((KeyboardEventArgs e) => HandleOnUserInputKeyDown(e))"
+                                  Placeholder="@(Localizer[isCommunicating ? nameof(AppStrings.AiChatPanelCommunicatingPlaceholder) : nameof(AppStrings.AiChatPanelPlaceholder)])" />
+
+                    <BitButton Float
+                               AutoLoading
+                               FloatAbsolute
+                               Class="send-message-button"
+                               OnClick="WrapHandled(SendMessage)"
+                               Title="@Localizer[nameof(AppStrings.Send)]"
+                               IsEnabled=@(string.IsNullOrEmpty(userInput) is false)
+                               IconName="@(currentDir is BitDir.Rtl ? BitIconName.SendMirrored : BitIconName.Send)" />
+                </BitStack>
+            </BitStack>
+        </Body>
+    </BitProPanel>
+</section>

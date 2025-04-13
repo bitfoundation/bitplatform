@@ -2,31 +2,17 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
 
-namespace Boilerplate.Client.Core.Components.Layout;
+namespace Boilerplate.Client.Core.Components.Layout.AppAiChatPanel;
 
 public partial class AppAiChatPanel
 {
-    private class ChatHistory
-    {
-        public string? Message { get; set; }
-        public ChatHistoryRole Role { get; set; }
-    }
-
-    public enum ChatHistoryRole
-    {
-        User,
-        Assistant
-    }
-
-    private static string initialResponse = "This is the AI initial response to kick start the chat!";
-
     private bool isOpen;
     private string? userInput;
     private Channel<string>? channel;
     private bool isCommunicating = false;
     private BitTextField textFieldRef = default!;
+    private List<AiChatMessage> conversation = [];
     private string lastAssistantResponse = string.Empty;
-    private List<ChatHistory> chatHistory = [new() { Message = initialResponse, Role = ChatHistoryRole.Assistant }];
 
 
     [AutoInject] private HubConnection hubConnection = default!;
@@ -39,6 +25,19 @@ public partial class AppAiChatPanel
     private BitDir? currentDir { get; set; }
 
 
+    protected override Task OnInitAsync()
+    {
+        conversation.Add(new() { Text = Localizer[nameof(AppStrings.AiChatPanelInitialResponse)], Author = AiChatMessageAuthor.Assistant });
+
+        return base.OnInitAsync();
+    }
+
+
+    private async Task SendPromptMessage(string message)
+    {
+        userInput = message;
+        await SendMessage();
+    }
     private async Task SendMessage()
     {
         if (channel is null)
@@ -51,7 +50,7 @@ public partial class AppAiChatPanel
         var input = userInput;
         userInput = string.Empty;
 
-        chatHistory.Add(new() { Message = input, Role = ChatHistoryRole.User });
+        conversation.Add(new() { Text = input, Author = AiChatMessageAuthor.User });
         lastAssistantResponse = string.Empty;
 
         StateHasChanged();
@@ -71,7 +70,7 @@ public partial class AppAiChatPanel
     private async Task ClearChat()
     {
         lastAssistantResponse = string.Empty;
-        chatHistory = [new() { Message = initialResponse, Role = ChatHistoryRole.Assistant }];
+        conversation = [new() { Text = Localizer[nameof(AppStrings.AiChatPanelInitialResponse)], Author = AiChatMessageAuthor.Assistant }];
 
         await StopChannel();
         await StartChannel();
@@ -103,7 +102,7 @@ public partial class AppAiChatPanel
             if (response is "MESSAGE_PROCESSED")
             {
                 isCommunicating = false;
-                chatHistory.Add(new() { Message = lastAssistantResponse, Role = ChatHistoryRole.Assistant });
+                conversation.Add(new() { Text = lastAssistantResponse, Author = AiChatMessageAuthor.Assistant });
             }
             else
             {
