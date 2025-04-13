@@ -1,7 +1,7 @@
 ﻿namespace Boilerplate.Client.Core.Components.Layout.AppAiChatPanel;
 
-public enum AiChatMessageAuthor
+public enum AiChatMessageRole
 {
+    Assistant,
     User,
-    Assistant
 }

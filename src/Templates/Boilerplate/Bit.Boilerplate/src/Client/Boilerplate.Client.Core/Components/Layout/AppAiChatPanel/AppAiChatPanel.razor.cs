@@ -7,12 +7,12 @@ namespace Boilerplate.Client.Core.Components.Layout.AppAiChatPanel;
 public partial class AppAiChatPanel
 {
     private bool isOpen;
+    private bool isLoading;
     private string? userInput;
     private Channel<string>? channel;
-    private bool isCommunicating = false;
     private BitTextField textFieldRef = default!;
-    private List<AiChatMessage> conversation = [];
-    private string lastAssistantResponse = string.Empty;
+    private List<AiChatMessage> chatMessages = [];
+    private AiChatMessage lastAssistantMessage = new();
 
 
     [AutoInject] private HubConnection hubConnection = default!;
@@ -27,7 +27,7 @@ public partial class AppAiChatPanel
 
     protected override Task OnInitAsync()
     {
-        conversation.Add(new() { Text = Localizer[nameof(AppStrings.AiChatPanelInitialResponse)], Author = AiChatMessageAuthor.Assistant });
+        chatMessages.Add(new() { Content = Localizer[nameof(AppStrings.AiChatPanelInitialResponse)], Role = AiChatMessageRole.Assistant });
 
         return base.OnInitAsync();
     }
@@ -45,13 +45,14 @@ public partial class AppAiChatPanel
             _ = StartChannel();
         }
 
-        isCommunicating = true;
+        isLoading = true;
 
         var input = userInput;
         userInput = string.Empty;
 
-        conversation.Add(new() { Text = input, Author = AiChatMessageAuthor.User });
-        lastAssistantResponse = string.Empty;
+        chatMessages.Add(new() { Content = input, Role = AiChatMessageRole.User });
+        lastAssistantMessage = new();
+        chatMessages.Add(lastAssistantMessage);
 
         StateHasChanged();
 
@@ -60,8 +61,8 @@ public partial class AppAiChatPanel
 
     private async Task ClearChat()
     {
-        lastAssistantResponse = string.Empty;
-        conversation = [new() { Text = Localizer[nameof(AppStrings.AiChatPanelInitialResponse)], Author = AiChatMessageAuthor.Assistant }];
+        lastAssistantMessage = new();
+        chatMessages = [new() { Content = Localizer[nameof(AppStrings.AiChatPanelInitialResponse)], Role = AiChatMessageRole.Assistant }];
 
         await StopChannel();
         await StartChannel();
@@ -93,14 +94,17 @@ public partial class AppAiChatPanel
                                                                          channel.Reader.ReadAllAsync(CurrentCancellationToken),
                                                                          cancellationToken: CurrentCancellationToken))
         {
-            if (response is "MESSAGE_PROCESSED")
+            if (response is SharedHubMessages.AI_PROCESS_SUCCESS)
             {
-                isCommunicating = false;
-                conversation.Add(new() { Text = lastAssistantResponse, Author = AiChatMessageAuthor.Assistant });
+                isLoading = false;
+            }
+            else if (response is SharedHubMessages.AI_PROCESS_ERROR)
+            {
+                //isLoading = false;
             }
             else
             {
-                lastAssistantResponse += response;
+                lastAssistantMessage.Content += response;
             }
 
             StateHasChanged();

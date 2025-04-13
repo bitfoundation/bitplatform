@@ -2,6 +2,6 @@
 
 public class AiChatMessage
 {
-    public string? Text { get; set; }
-    public AiChatMessageAuthor Author { get; set; }
+    public string? Content { get; set; }
+    public AiChatMessageRole Role { get; set; }
 }

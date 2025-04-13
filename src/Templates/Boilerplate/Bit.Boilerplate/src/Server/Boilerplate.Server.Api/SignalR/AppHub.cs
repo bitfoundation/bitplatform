@@ -92,7 +92,7 @@ public partial class AppHub : Hub
 
         async Task ReadIncomingMessages()
         {
-            List<ChatMessage> chatMessagesHistory = [];
+            List<ChatMessage> chatMessages = [];
 
             CancellationTokenSource? messageSpecificCancellationTokenSrc = null;
             try
@@ -116,11 +116,11 @@ public partial class AppHub : Hub
                 StringBuilder assistantResponse = new();
                 try
                 {
-                    chatMessagesHistory.Add(new(ChatRole.User, incomingMessage));
+                    chatMessages.Add(new(ChatRole.User, incomingMessage));
 
                     await foreach (var response in chatClient.GetStreamingResponseAsync([
                         new (ChatRole.System, supportSystemPrompt),
-                            .. chatMessagesHistory,
+                            .. chatMessages,
                             new (ChatRole.User, incomingMessage)
                         ], options: new()
                         {
@@ -138,15 +138,18 @@ public partial class AppHub : Hub
                         assistantResponse.Append(response.Text);
                         await channel.Writer.WriteAsync(response.Text, messageSpecificCancellationToken);
                     }
+                    chatMessages.Add(new(ChatRole.Assistant, assistantResponse.ToString()));
+                    await channel.Writer.WriteAsync(SharedHubMessages.AI_PROCESS_SUCCESS, cancellationToken);
                 }
                 catch (Exception exp)
                 {
                     await HandleException(exp);
+                    await channel.Writer.WriteAsync(SharedHubMessages.AI_PROCESS_ERROR, cancellationToken);
                 }
                 finally
                 {
-                    chatMessagesHistory.Add(new(ChatRole.Assistant, assistantResponse.ToString()));
-                    await channel.Writer.WriteAsync("MESSAGE_PROCESSED", cancellationToken);
+                    //chatMessages.Add(new(ChatRole.Assistant, assistantResponse.ToString()));
+                    //await channel.Writer.WriteAsync(SharedHubMessages.AI_PROCESS_FINISHED, cancellationToken);
                 }
             }
         }

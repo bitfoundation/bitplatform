@@ -21,12 +21,16 @@
         <Header>
             <BitStack Horizontal Alignment="BitAlignment.Center">
                 <BitText Typography="BitTypography.H5">@Localizer[nameof(AppStrings.AiChatPanelTitle)]</BitText>
+                @if (isLoading)
+                {
+                    <BitEllipsisLoading Size="BitSize.Small" />
+                }
                 <BitSpacer />
                 <BitButton IconOnly FixedColor
                            Variant="BitVariant.Text"
                            IconName="@BitIconName.Delete"
                            Color="BitColor.SecondaryBackground"
-                           OnClick="WrapHandled(ClearChat)" 
+                           OnClick="WrapHandled(ClearChat)"
                            Title="@Localizer[nameof(AppStrings.Clear)]" />
             </BitStack>
         </Header>
@@ -34,36 +38,29 @@
             <BitStack Class="body">
                 <BitScrollablePane AutoScroll Class="scr-container">
                     <BitStack>
-                        @for (int i = 0; i < conversation.Count; i++)
+                        @for (int i = 0; i < chatMessages.Count; i++)
                         {
-                            var message = conversation[i];
-                            if (message.Author is AiChatMessageAuthor.User)
+                            var message = chatMessages[i];
+                            if (message.Role is AiChatMessageRole.User)
                             {
                                 <BitCard Background="BitColorKind.Tertiary" Style="align-self:end">
-                                    <BitText>@message.Text</BitText>
+                                    <BitText>@message.Content</BitText>
                                 </BitCard>
                             }
                             else
                             {
-                                <BitMarkdownViewer Markdown="@message.Text" />
+                                <BitMarkdownViewer Markdown="@message.Content" />
                             }
                         }
 
-                        @if (isCommunicating)
+                        @if (isLoading && string.IsNullOrWhiteSpace(lastAssistantMessage.Content))
                         {
-                            @if (string.IsNullOrWhiteSpace(lastAssistantResponse))
-                            {
-                                <BitEllipsisLoading Size="BitSize.Small" />
-                            }
-                            else
-                            {
-                                <BitMarkdownViewer Markdown="@lastAssistantResponse" />
-                            }
+                            <BitEllipsisLoading Size="BitSize.Small" />
                         }
                     </BitStack>
                 </BitScrollablePane>
 
-                @if (conversation.Count == 1)
+                @if (chatMessages.Count == 1)
                 {
                     <BitStack Alignment=" BitAlignment.Center" Horizontal FitHeight FillContent>
                         <BitButton FixedColor
@@ -106,7 +103,7 @@
                                   @bind-Value="@userInput"
                                   OnEnter="WrapHandled((KeyboardEventArgs e) => HandleOnUserInputEnter(e))"
                                   Styles="@(new() { FieldGroup = "padding:1rem", Input = "min-height:unset" })"
-                                  Placeholder="@(Localizer[isCommunicating ? nameof(AppStrings.AiChatPanelCommunicatingPlaceholder) : nameof(AppStrings.AiChatPanelPlaceholder)])" />
+                                  Placeholder="@(Localizer[isLoading ? nameof(AppStrings.AiChatPanelCommunicatingPlaceholder) : nameof(AppStrings.AiChatPanelPlaceholder)])" />
 
                     <BitButton Float
                                AutoLoading
