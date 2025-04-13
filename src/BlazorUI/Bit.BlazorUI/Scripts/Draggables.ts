@@ -3,7 +3,7 @@
         private static _abortControllers: { [key: string]: AbortController } = {};
 
         public static enableDrag(id: string, selector: string | undefined) {
-            Draggables.disableDrag(id);
+            if (Draggables._abortControllers[id]) return;
 
             const ac = new AbortController();
             Draggables._abortControllers[id] = ac;

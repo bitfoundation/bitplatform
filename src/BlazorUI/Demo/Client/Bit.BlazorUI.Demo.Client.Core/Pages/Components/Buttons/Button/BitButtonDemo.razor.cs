@@ -2,8 +2,6 @@
 
 public partial class BitButtonDemo
 {
-    private bool draggable;
-
     private readonly List<ComponentParameter> componentParameters =
     [
         new()
