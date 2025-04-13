@@ -42,7 +42,7 @@ public partial class BitStack : BitComponentBase
     [Parameter] public string? Element { get; set; }
 
     /// <summary>
-    /// Expand the direct children to occupy all of the root element's width.
+    /// Expand the direct children to occupy all of the root element's width and height.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool FillContent { get; set; }
