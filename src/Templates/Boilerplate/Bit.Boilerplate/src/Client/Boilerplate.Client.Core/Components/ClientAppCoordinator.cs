@@ -204,7 +204,7 @@ public partial class ClientAppCoordinator : AppComponentBase
 
         signalROnDisposables.Add(hubConnection.On<AppProblemDetails>(SignalREvents.EXCEPTION_THROWN, async (appProblemDetails) =>
         {
-            ExceptionHandler.Handle(appProblemDetails);
+            ExceptionHandler.Handle(appProblemDetails, displayKind: ExceptionDisplayKind.NonInterrupting);
         }));
 
         hubConnection.Closed += HubConnectionStateChange;
