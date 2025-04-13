@@ -282,7 +282,7 @@
     <value>Systeemprompts bewerken</value>
   </data>
     <data name="SystemPromptsSubTitle" xml:space="preserve">
-    <value>Hier kunt u de systeemprompts voor chatbot wijzigen.</value>
+    <value>Bekijk hier de systeemprompts voor de chatbot.</value>
   </data>
     <!--#endif-->
     <!--#if (offlineDb == true) -->

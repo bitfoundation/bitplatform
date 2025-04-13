@@ -282,7 +282,7 @@
     <value>پرامپت‌های سیستمی</value>
   </data>
     <data name="SystemPromptsSubTitle" xml:space="preserve">
-    <value>این‌جا میتونید پرامپت‌های سیستمی مورد استفاده چت بات رو مشاهده کنید و تغییر بدید</value>
+    <value>این‌جا میتونید پرامپت‌های سیستمی مورد استفاده چت بات رو مشاهده کنید</value>
   </data>
     <!--#endif-->
     <!--#if (offlineDb == true) -->

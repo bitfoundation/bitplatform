@@ -282,7 +282,7 @@
     <value>System prompts</value>
   </data>
     <data name="SystemPromptsSubTitle" xml:space="preserve">
-    <value>You can view/modify the system prompts for chatbot here.</value>
+    <value>View the system prompts for chatbot here.</value>
   </data>
     <!--#endif-->
     <!--#if (offlineDb == true) -->

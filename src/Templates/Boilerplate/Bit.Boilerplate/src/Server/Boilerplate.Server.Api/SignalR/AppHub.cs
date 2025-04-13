@@ -175,17 +175,13 @@ public partial class AppHub : Hub
     {
         await using var scope = rootScopeProvider();
         var serverExceptionHandler = scope.ServiceProvider.GetRequiredService<ServerExceptionHandler>();
-        if (serverExceptionHandler.IgnoreException(serverExceptionHandler.UnWrapException(exp)))
-            return;
         var problemDetails = serverExceptionHandler.Handle(exp);
-
-        if (problemDetails is not null)
+        if (problemDetails is null || serverExceptionHandler.IgnoreException(serverExceptionHandler.UnWrapException(exp)))
+            return;
+        try
         {
-            try
-            {
-                await Clients.Caller.SendAsync(SignalREvents.EXCEPTION_THROWN, problemDetails, cancellationToken);
-            }
-            catch { }
+            await Clients.Caller.SendAsync(SignalREvents.EXCEPTION_THROWN, problemDetails, cancellationToken);
         }
+        catch { }
     }
 }

@@ -23,7 +23,7 @@
         </AuthorizeView>
         
         <BitStack VerticalAlign="BitAlignment.Stretch" Horizontal>
-            <AuthorizeView>
+            <AuthorizeView Roles="@AppRoles.SUPER_ADMIN">
                 <BitMarkdownEditor @bind-Value="systemPromptMarkdown" Style="height:auto" />
             </AuthorizeView>
             <BitMarkdownViewer Markdown="@systemPromptMarkdown" />
