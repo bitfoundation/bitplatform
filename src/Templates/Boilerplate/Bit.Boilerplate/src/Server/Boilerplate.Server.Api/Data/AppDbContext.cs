@@ -53,7 +53,9 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         //#endif
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
-
+        
+        modelBuilder.HasDefaultSchema("dbo");
+        
         ConfigureIdentityTableNames(modelBuilder);
 
         ConfigureConcurrencyStamp(modelBuilder);
