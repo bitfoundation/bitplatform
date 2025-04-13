@@ -136,7 +136,7 @@
                     </div>
                 </BitProPanel>
                 <br /><br /><br />
-                <BitButton OnClick="() => isModelessProPanelOpen = true">Open ProPanel with Modeless</BitButton>
+                <BitButton OnClick="() => isModelessProPanelOpen = !isModelessProPanelOpen">Toggle ProPanel with Modeless</BitButton>
                 <BitProPanel @bind-IsOpen="isModelessProPanelOpen" HeaderText="Modeless" ShowCloseButton Modeless>
                     <div style="max-width:300px">
                         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
@@ -231,7 +231,39 @@
                 </BitProPanel>
             </DemoExample>
 
-            <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <DemoExample Title="Events" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+                <div>Explore different events available in the BitProPanel component:</div>
+                <br /><br />
+                <div>OnOpen:</div><br />
+                <BitButton OnClick="() => isOnOpenProPanelOpen = true">Open OnOpen ProPanel</BitButton>
+                <BitProPanel @bind-IsOpen="isOnOpenProPanelOpen" OnOpen="() => onOpenTextFieldRef.FocusAsync()">
+                    <div style="max-width:300px">
+                        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+                        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+                        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+                        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+                        <br /><br />
+                        The following text field will be focused on open:
+                        <br /><br />
+                        <BitTextField @ref="onOpenTextFieldRef" />
+                    </div>
+                </BitProPanel>
+                <br /><br /><br /><br />
+                <div>OnDismiss:</div><br />
+                <BitButton OnClick="() => isOnDismissProPanelOpen = true">Open OnDismiss ProPanel</BitButton>
+                <br /><br />
+                <BitTextField @ref="onDismissTextFieldRef" Placeholder="This will be focused on dismiss..." />
+                <BitProPanel @bind-IsOpen="isOnDismissProPanelOpen" OnDismiss="() => onDismissTextFieldRef.FocusAsync()">
+                    <div style="max-width:300px">
+                        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+                        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+                        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+                        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+                    </div>
+                </BitProPanel>
+            </DemoExample>
+
+            <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
                 <div>Explore styling and class customization for BitProPanel, including component styles, custom classes, and detailed styles.</div>
                 <br /><br />
                 <div>Component's Style & Class:</div><br />
@@ -290,42 +322,42 @@
                 </BitProPanel>
             </DemoExample>
 
-            <DemoExample Title="RTL" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-            <div>Use BitProPanel in right-to-left (RTL).</div>
-            <br /><br />
-            <div>
-                <div class="position-btn" dir="rtl">
-                    <div>
-                        <BitButton OnClick="() => isRtlProPanelOpenStart = true">آغاز</BitButton>
-                        <BitButton OnClick="() => isRtlProPanelOpenEnd = true">پایان</BitButton>
+            <DemoExample Title="RTL" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+                <div>Use BitProPanel in right-to-left (RTL).</div>
+                <br /><br />
+                <div>
+                    <div class="position-btn" dir="rtl">
+                        <div>
+                            <BitButton OnClick="() => isRtlProPanelOpenStart = true">آغاز</BitButton>
+                            <BitButton OnClick="() => isRtlProPanelOpenEnd = true">پایان</BitButton>
+                        </div>
                     </div>
+
+                    <BitProPanel @bind-IsOpen="isRtlProPanelOpenStart"
+                                 Dir="BitDir.Rtl"
+                                 HeaderText="سرصفحه ی آغاز"
+                                 Position="BitPanelPosition.Start">
+                        <div style="max-width:300px">
+                            لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
+                            چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
+                            کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
+                            در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها و شرایط سخت تایپ به پایان رسد وزمان مورد نیاز شامل حروفچینی دستاوردهای اصلی و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد.
+                        </div>
+                    </BitProPanel>
+
+                    <BitProPanel @bind-IsOpen="isRtlProPanelOpenEnd"
+                                 Dir="BitDir.Rtl"
+                                 HeaderText="سرصفحه ی پایان"
+                                 Position="BitPanelPosition.End">
+                        <div style="max-width:300px">
+                            لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
+                            چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
+                            کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
+                            در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها و شرایط سخت تایپ به پایان رسد وزمان مورد نیاز شامل حروفچینی دستاوردهای اصلی و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد.
+                        </div>
+                    </BitProPanel>
                 </div>
-
-                <BitProPanel @bind-IsOpen="isRtlProPanelOpenStart"
-                             Dir="BitDir.Rtl"
-                             HeaderText="سرصفحه ی آغاز"
-                             Position="BitPanelPosition.Start">
-                    <div style="max-width:300px">
-                        لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
-                        چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
-                        کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
-                        در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها و شرایط سخت تایپ به پایان رسد وزمان مورد نیاز شامل حروفچینی دستاوردهای اصلی و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد.
-                    </div>
-                </BitProPanel>
-
-                <BitProPanel @bind-IsOpen="isRtlProPanelOpenEnd"
-                             Dir="BitDir.Rtl"
-                             HeaderText="سرصفحه ی پایان"
-                             Position="BitPanelPosition.End">
-                    <div style="max-width:300px">
-                        لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
-                        چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
-                        کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
-                        در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها و شرایط سخت تایپ به پایان رسد وزمان مورد نیاز شامل حروفچینی دستاوردهای اصلی و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد.
-                    </div>
-                </BitProPanel>
-            </div>
-        </DemoExample>
+            </DemoExample>
         </Examples>
     </DemoPage>
 </div>

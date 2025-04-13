@@ -223,11 +223,22 @@
             <BitTextField Label="FloatOffset" @bind-Value="floatOffset" Immediate />
         </div>
         <br />
-        <BitButton Float FloatPosition="floatPosition" FloatOffset="@floatOffset" IconName="@BitIconName.Add" Size="BitSize.Large" IconOnly OnClick="ScrollToFloat" />
+        <BitButton IconOnly 
+                   Size="BitSize.Large" 
+                   IconName="@BitIconName.Add" 
+                   OnClick="ScrollToFloat" 
+                   Float 
+                   FloatPosition="floatPosition" 
+                   FloatOffset="@floatOffset" />
         <br /><br />
-        <div><b>FloatAbsolute</b>:</div><br />
+        <div><b>FloatAbsolute & Draggable</b>:</div><br />
         <div style="position: relative; border:1px gray solid">
-            <BitButton FloatAbsolute FloatPosition="floatPosition" FloatOffset="@floatOffset" IconName="@BitIconName.Edit" IconOnly />
+            <BitButton IconOnly 
+                       IconName="@BitIconName.Edit" 
+                       Draggable
+                       FloatAbsolute
+                       FloatPosition="floatPosition" 
+                       FloatOffset="@floatOffset" />
             <div style="height:300px;overflow:auto;padding:0.5rem">
                 Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
                 Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 

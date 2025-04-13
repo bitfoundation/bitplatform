@@ -1,10 +1,20 @@
-﻿namespace Bit.BlazorUI;
+﻿
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// A ScrollablePane is a component for scrolling through content that doesn't fit entirely on the screen.
 /// </summary>
 public partial class BitScrollablePane : BitComponentBase
 {
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Automatically scrolls to the end of the pane after each render.
+    /// </summary>
+    [Parameter] public bool AutoScroll { get; set; }
+
     /// <summary>
     /// The content of the ScrollablePane, it can be any custom tag or text.
     /// </summary>
@@ -52,6 +62,16 @@ public partial class BitScrollablePane : BitComponentBase
     public string? Width { get; set; }
 
 
+    
+    /// <summary>
+    /// Scrolls the pane to the end of its content, both horizontally and vertically.
+    /// </summary>
+    public ValueTask ScrollToEnd()
+    {
+        return _js.BitScrollablePaneScrollToEnd(RootElement);
+    }
+
+
 
     protected override string RootElementClass => "bit-scp";
 
@@ -90,6 +110,16 @@ public partial class BitScrollablePane : BitComponentBase
         StyleBuilder.Register(() => Gutter is not null && Gutter is not BitScrollbarGutter.Auto
                 ? $"scrollbar-gutter:stable{(Gutter is BitScrollbarGutter.BothEdges ? " both-edges" : "")}"
                 : string.Empty);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (AutoScroll)
+        {
+            await _js.BitScrollablePaneScrollToEnd(RootElement);
+        }
     }
 
 

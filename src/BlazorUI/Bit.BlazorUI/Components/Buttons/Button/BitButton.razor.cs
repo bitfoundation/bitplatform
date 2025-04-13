@@ -13,6 +13,10 @@ public partial class BitButton : BitComponentBase
 
 
 
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
     /// <summary>
     /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>.
     /// </summary>
@@ -61,6 +65,11 @@ public partial class BitButton : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
+
+    /// <summary>
+    /// Makes the Float/FloatAbsolute button draggable on the page.
+    /// </summary>
+    [Parameter] public bool Draggable { get; set; }
 
     /// <summary>
     /// Preserves the foreground color of the button through hover and focus.
@@ -306,6 +315,23 @@ public partial class BitButton : BitComponentBase
         base.OnParametersSet();
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (Float || FloatAbsolute)
+        {
+            if (Draggable)
+            {
+                await _js.BitDraggablesEnableDrag(_Id);
+            }
+            else
+            {
+                await _js.BitDraggablesDisableDrag(_Id);
+            }
+        }
+    }
+
 
 
     private string GetLabelPositionClass()
@@ -347,5 +373,20 @@ public partial class BitButton : BitComponentBase
         }
 
         _rel = BitLinkRelUtils.GetRels(Rel.Value);
+    }
+
+
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return;
+
+        await base.DisposeAsync(disposing);
+
+        try
+        {
+            await _js.BitDraggablesDisableDrag(_Id);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 }
