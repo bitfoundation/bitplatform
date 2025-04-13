@@ -2,22 +2,20 @@
     export class Draggables {
         private static _abortControllers: { [key: string]: AbortController } = {};
 
-        public static setupDragDrop(id: string, selector: string) {
-            Draggables.removeDragDrop(id, selector);
+        public static enableDrag(id: string, selector: string | undefined) {
+            Draggables.disableDrag(id);
 
             const ac = new AbortController();
             Draggables._abortControllers[id] = ac;
 
             const element = document.getElementById(id)! as HTMLElement;
-            const dragElement = document.querySelector(selector)! as HTMLElement;
+            const dragElement = selector ? document.querySelector(selector)! as HTMLElement : element;
+            const origCursor = dragElement.style.cursor;
 
             let x = 0;
             let y = 0;
 
-            listeners['pointerdown'] = handlePointerDown;
-            dragElement.addEventListener('pointerdown', handlePointerDown);
-            dragElement.style.cursor = 'move';
-            dragElement.classList.add('bit-mdl-nta');
+            dragElement.addEventListener('pointerdown', handlePointerDown, { signal: ac.signal });
 
             function handlePointerDown(e: PointerEvent) {
                 //e.preventDefault();
@@ -25,57 +23,44 @@
                 x = e.clientX;
                 y = e.clientY;
 
-                const { width } = element.getBoundingClientRect();
-                element.style.width = `${width}px`;
+                document.addEventListener('pointerup', handlePointerUp, { signal: ac.signal });
+                document.addEventListener('pointermove', handlePointerMove, { signal: ac.signal });
 
-                document.addEventListener('pointermove', handlePointerMove);
-                listeners['pointermove'] = handlePointerMove;
-
-                document.addEventListener('pointerup', handlePointerUp);
-                //document.addEventListener('pointerout', handlePointerUp);
-                //document.addEventListener('pointerleave', handlePointerUp);
-                listeners['pointerup'] = handlePointerUp;
+                dragElement.style.cursor = 'grabbing';
+                dragElement.classList.add('bit-nta');
             }
 
             function handlePointerMove(e: PointerEvent) {
-                e.preventDefault();
+                //e.preventDefault();
 
                 element.style.left = `${element.offsetLeft - (x - e.clientX)}px`;
                 element.style.top = `${element.offsetTop - (y - e.clientY)}px`;
+
+                element.style.right = 'unset';
+                element.style.bottom = 'unset';
 
                 x = e.clientX;
                 y = e.clientY;
             }
 
-            function handlePointerUp() {
-                document.removeEventListener('pointermove', handlePointerMove);
+            function handlePointerUp(e: PointerEvent) {
+                //e.preventDefault();
 
                 document.removeEventListener('pointerup', handlePointerUp);
-                //document.removeEventListener('pointerout', handlePointerUp);
-                //document.removeEventListener('pointerleave', handlePointerUp);
+                document.removeEventListener('pointermove', handlePointerMove);
+
+                dragElement.style.cursor = origCursor;
+                dragElement.classList.remove('bit-nta');
             }
         }
 
-        public static removeDragDrop(id: string, dragElementSelector: string) {
-            const listeners = Modal._dragDropListeners[id];
-            if (!listeners) return;
+        public static disableDrag(id: string) {
+            const ac = Draggables._abortControllers[id];
+            if (!ac) return;
 
-            const dragElement = document.querySelector(dragElementSelector)! as HTMLElement;
+            ac.abort();
 
-            dragElement.removeEventListener('pointerdown', listeners['pointerdown']);
-            dragElement.style.cursor = '';
-            dragElement.classList.remove('bit-mdl-nta');
-
-            document.removeEventListener('pointermove', listeners['pointermove']);
-
-            document.removeEventListener('pointerup', listeners['pointerup']);
-            //document.removeEventListener('pointerout', listeners['pointerup']);
-            //document.removeEventListener('pointerleave', listeners['pointerup']);
-
-            delete listeners['pointerdown'];
-            delete listeners['pointermove'];
-            delete listeners['pointerup'];
-            delete Modal._dragDropListeners[id];
+            delete Draggables._abortControllers[id];
         }
     }
 }

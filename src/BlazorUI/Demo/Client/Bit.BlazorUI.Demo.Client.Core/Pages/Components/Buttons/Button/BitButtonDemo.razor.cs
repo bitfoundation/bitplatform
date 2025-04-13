@@ -2,6 +2,8 @@
 
 public partial class BitButtonDemo
 {
+    private bool draggable;
+
     private readonly List<ComponentParameter> componentParameters =
     [
         new()
@@ -65,6 +67,13 @@ public partial class BitButtonDemo
             Description = "The general color of the button.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
+        },
+        new()
+        {
+            Name = "Draggable",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the Float/FloatAbsolute button draggable on the page.",
         },
         new()
         {
