@@ -68,6 +68,13 @@ public partial class BitButtonDemo
         },
         new()
         {
+            Name = "Draggable",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the Float/FloatAbsolute button draggable on the page.",
+        },
+        new()
+        {
             Name = "FixedColor",
             Type = "bool",
             DefaultValue = "false",
