@@ -1244,7 +1244,7 @@
     <value>How can I reset my password?</value>
   </data>
     <data name="AiChatPanelPromp2" xml:space="preserve">
-    <value>How can I install the PWA version of the iOS app?</value>
+    <value>How can I install the PWA version of the app?</value>
   </data>
     <data name="AiChatPanelPromp3" xml:space="preserve">
     <value>Where can I find reports about products and categories?</value>

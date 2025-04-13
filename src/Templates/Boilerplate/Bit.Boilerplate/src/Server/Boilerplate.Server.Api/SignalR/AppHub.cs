@@ -65,7 +65,7 @@ public partial class AppHub : Hub
     }
 
     public async IAsyncEnumerable<string> Chatbot(
-        string cultureNativeName,
+        StartChatbotRequest request,
         IAsyncEnumerable<string> incomingMessages,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
@@ -80,7 +80,9 @@ public partial class AppHub : Hub
             supportSystemPrompt = (await dbContext
                     .SystemPrompts.FirstOrDefaultAsync(p => p.PromptKind == PromptKind.Support, cancellationToken))?.Markdown ?? throw new ResourceNotFoundException();
 
-            supportSystemPrompt = supportSystemPrompt.Replace("{{UserCulture}}", cultureNativeName);
+            supportSystemPrompt = supportSystemPrompt
+                .Replace("{{UserCulture}}", request.Culture)
+                .Replace("{{DeviceInfo}}", request.DeviceInfo);
         }
         catch (Exception exp)
         {

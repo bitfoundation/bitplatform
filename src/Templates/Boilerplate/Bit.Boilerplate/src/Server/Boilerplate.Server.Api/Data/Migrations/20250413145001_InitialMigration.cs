@@ -10,8 +10,12 @@ public partial class InitialMigration : Migration
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
     {
+        migrationBuilder.EnsureSchema(
+            name: "dbo");
+
         migrationBuilder.CreateTable(
             name: "Categories",
+            schema: "dbo",
             columns: table => new
             {
                 Id = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -26,6 +30,7 @@ public partial class InitialMigration : Migration
 
         migrationBuilder.CreateTable(
             name: "Roles",
+            schema: "dbo",
             columns: table => new
             {
                 Id = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -39,7 +44,22 @@ public partial class InitialMigration : Migration
             });
 
         migrationBuilder.CreateTable(
+            name: "SystemPrompts",
+            schema: "dbo",
+            columns: table => new
+            {
+                Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                PromptKind = table.Column<int>(type: "INTEGER", nullable: false),
+                Markdown = table.Column<string>(type: "TEXT", nullable: false)
+            },
+            constraints: table =>
+            {
+                table.PrimaryKey("PK_SystemPrompts", x => x.Id);
+            });
+
+        migrationBuilder.CreateTable(
             name: "Users",
+            schema: "dbo",
             columns: table => new
             {
                 Id = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -75,13 +95,14 @@ public partial class InitialMigration : Migration
 
         migrationBuilder.CreateTable(
             name: "Products",
+            schema: "dbo",
             columns: table => new
             {
                 Id = table.Column<Guid>(type: "TEXT", nullable: false),
                 ShortId = table.Column<int>(type: "INTEGER", nullable: false),
                 Name = table.Column<string>(type: "TEXT", maxLength: 64, nullable: false),
                 Price = table.Column<decimal>(type: "TEXT", nullable: false),
-                Description = table.Column<string>(type: "TEXT", maxLength: 512, nullable: true),
+                Description = table.Column<string>(type: "TEXT", maxLength: 4096, nullable: true),
                 CreatedOn = table.Column<long>(type: "INTEGER", nullable: false),
                 CategoryId = table.Column<Guid>(type: "TEXT", nullable: false),
                 ConcurrencyStamp = table.Column<byte[]>(type: "BLOB", nullable: false),
@@ -93,6 +114,7 @@ public partial class InitialMigration : Migration
                 table.ForeignKey(
                     name: "FK_Products_Categories_CategoryId",
                     column: x => x.CategoryId,
+                    principalSchema: "dbo",
                     principalTable: "Categories",
                     principalColumn: "Id",
                     onDelete: ReferentialAction.Cascade);
@@ -100,6 +122,7 @@ public partial class InitialMigration : Migration
 
         migrationBuilder.CreateTable(
             name: "RoleClaims",
+            schema: "dbo",
             columns: table => new
             {
                 Id = table.Column<int>(type: "INTEGER", nullable: false)
@@ -114,6 +137,7 @@ public partial class InitialMigration : Migration
                 table.ForeignKey(
                     name: "FK_RoleClaims_Roles_RoleId",
                     column: x => x.RoleId,
+                    principalSchema: "dbo",
                     principalTable: "Roles",
                     principalColumn: "Id",
                     onDelete: ReferentialAction.Cascade);
@@ -121,6 +145,7 @@ public partial class InitialMigration : Migration
 
         migrationBuilder.CreateTable(
             name: "TodoItems",
+            schema: "dbo",
             columns: table => new
             {
                 Id = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -135,6 +160,7 @@ public partial class InitialMigration : Migration
                 table.ForeignKey(
                     name: "FK_TodoItems_Users_UserId",
                     column: x => x.UserId,
+                    principalSchema: "dbo",
                     principalTable: "Users",
                     principalColumn: "Id",
                     onDelete: ReferentialAction.Cascade);
@@ -142,6 +168,7 @@ public partial class InitialMigration : Migration
 
         migrationBuilder.CreateTable(
             name: "UserClaims",
+            schema: "dbo",
             columns: table => new
             {
                 Id = table.Column<int>(type: "INTEGER", nullable: false)
@@ -156,6 +183,7 @@ public partial class InitialMigration : Migration
                 table.ForeignKey(
                     name: "FK_UserClaims_Users_UserId",
                     column: x => x.UserId,
+                    principalSchema: "dbo",
                     principalTable: "Users",
                     principalColumn: "Id",
                     onDelete: ReferentialAction.Cascade);
@@ -163,6 +191,7 @@ public partial class InitialMigration : Migration
 
         migrationBuilder.CreateTable(
             name: "UserLogins",
+            schema: "dbo",
             columns: table => new
             {
                 LoginProvider = table.Column<string>(type: "TEXT", nullable: false),
@@ -176,6 +205,7 @@ public partial class InitialMigration : Migration
                 table.ForeignKey(
                     name: "FK_UserLogins_Users_UserId",
                     column: x => x.UserId,
+                    principalSchema: "dbo",
                     principalTable: "Users",
                     principalColumn: "Id",
                     onDelete: ReferentialAction.Cascade);
@@ -183,6 +213,7 @@ public partial class InitialMigration : Migration
 
         migrationBuilder.CreateTable(
             name: "UserRoles",
+            schema: "dbo",
             columns: table => new
             {
                 UserId = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -194,12 +225,14 @@ public partial class InitialMigration : Migration
                 table.ForeignKey(
                     name: "FK_UserRoles_Roles_RoleId",
                     column: x => x.RoleId,
+                    principalSchema: "dbo",
                     principalTable: "Roles",
                     principalColumn: "Id",
                     onDelete: ReferentialAction.Cascade);
                 table.ForeignKey(
                     name: "FK_UserRoles_Users_UserId",
                     column: x => x.UserId,
+                    principalSchema: "dbo",
                     principalTable: "Users",
                     principalColumn: "Id",
                     onDelete: ReferentialAction.Cascade);
@@ -207,6 +240,7 @@ public partial class InitialMigration : Migration
 
         migrationBuilder.CreateTable(
             name: "UserSessions",
+            schema: "dbo",
             columns: table => new
             {
                 Id = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -225,6 +259,7 @@ public partial class InitialMigration : Migration
                 table.ForeignKey(
                     name: "FK_UserSessions_Users_UserId",
                     column: x => x.UserId,
+                    principalSchema: "dbo",
                     principalTable: "Users",
                     principalColumn: "Id",
                     onDelete: ReferentialAction.Cascade);
@@ -232,6 +267,7 @@ public partial class InitialMigration : Migration
 
         migrationBuilder.CreateTable(
             name: "UserTokens",
+            schema: "dbo",
             columns: table => new
             {
                 UserId = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -245,6 +281,7 @@ public partial class InitialMigration : Migration
                 table.ForeignKey(
                     name: "FK_UserTokens_Users_UserId",
                     column: x => x.UserId,
+                    principalSchema: "dbo",
                     principalTable: "Users",
                     principalColumn: "Id",
                     onDelete: ReferentialAction.Cascade);
@@ -252,6 +289,7 @@ public partial class InitialMigration : Migration
 
         migrationBuilder.CreateTable(
             name: "WebAuthnCredential",
+            schema: "dbo",
             columns: table => new
             {
                 Id = table.Column<byte[]>(type: "BLOB", nullable: false),
@@ -274,6 +312,7 @@ public partial class InitialMigration : Migration
                 table.ForeignKey(
                     name: "FK_WebAuthnCredential_Users_UserId",
                     column: x => x.UserId,
+                    principalSchema: "dbo",
                     principalTable: "Users",
                     principalColumn: "Id",
                     onDelete: ReferentialAction.Cascade);
@@ -281,6 +320,7 @@ public partial class InitialMigration : Migration
 
         migrationBuilder.CreateTable(
             name: "PushNotificationSubscriptions",
+            schema: "dbo",
             columns: table => new
             {
                 DeviceId = table.Column<string>(type: "TEXT", nullable: false),
@@ -300,12 +340,14 @@ public partial class InitialMigration : Migration
                 table.ForeignKey(
                     name: "FK_PushNotificationSubscriptions_UserSessions_UserSessionId",
                     column: x => x.UserSessionId,
+                    principalSchema: "dbo",
                     principalTable: "UserSessions",
                     principalColumn: "Id",
                     onDelete: ReferentialAction.SetNull);
             });
 
         migrationBuilder.InsertData(
+            schema: "dbo",
             table: "Categories",
             columns: new[] { "Id", "Color", "ConcurrencyStamp", "Name" },
             values: new object[,]
@@ -318,16 +360,25 @@ public partial class InitialMigration : Migration
             });
 
         migrationBuilder.InsertData(
+            schema: "dbo",
             table: "Roles",
             columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
-            values: new object[] { new Guid("8ff71671-a1d6-5f97-abb9-d87d7b47d6e7"), "8ff71671-a1d6-5f97-abb9-d87d7b47d6e7", "SuperAdmin", "SUPER_ADMIN" });
+            values: new object[] { new Guid("8ff71671-a1d6-5f97-abb9-d87d7b47d6e7"), "8ff71671-a1d6-5f97-abb9-d87d7b47d6e7", "SuperAdmin", "SUPERADMIN" });
 
         migrationBuilder.InsertData(
+            schema: "dbo",
+            table: "SystemPrompts",
+            columns: new[] { "Id", "Markdown", "PromptKind" },
+            values: new object[] { new Guid("a8c94d94-0004-4dd0-921c-255e0a581424"), "\r\nYou are a support assistant for Boilerplate app. Below, you will find a markdown document containing information about the app, and then the user's query.\r\n\r\n# Boilerplate app - Features and usage guide\r\n\r\n**[[[GENERAL_INFORMATION_BEGIN]]]**\r\n\r\n*   **Platforms:** The application is available on Android, iOS, Windows, macOS, and as a Web (PWA) application.\r\n*   **Languages:** The app supports multiple languages: English, Dutch, and Persian.\r\n\r\n* Website address: https://adminpanel.bitplatform.dev/\r\n* Google Play: https://play.google.com/store/apps/details?id=com.bitplatform.AdminPanel.Template\r\n* Apple Store: https://apps.apple.com/us/app/bit-adminpanel/id6450611349\r\n* Windows EXE installer: https://windows-admin.bitplatform.dev/AdminPanel.Client.Windows-win-Setup.exe\r\n\r\n## 1. Account Management & Authentication\r\n\r\nThese features cover user sign-up, sign-in, account recovery, and security settings.\r\n\r\n### 1.1. Sign Up\r\n*   **Description:** Allows new users to create an account. Users can sign up using their email address, phone number, or via social providers.\r\n*   **How to Use:**\r\n        - Navigate to the [Sign Up page](/sign-up).\r\n\r\n### 1.2. Sign In\r\n*   **Description:** Allows existing users to sign into their accounts using various methods.\r\n*   **How to Use:**\r\n        - Navigate to the [Sign In page](/sign-in).\r\n\r\n### 1.3. Confirm Account\r\n*   **Description:** Verifies a user's email address or phone number after sign-up, typically by entering a code sent to them.\r\n*   **How to Use:**\r\n        - Navigate to the [Confirmation page](/confirm) (often automatic redirection after sign-up).\r\n\r\n### 1.4. Forgot Password\r\n*   **Description:** Initiates the password reset process by sending a reset token (code) to the user's registered email or phone number.\r\n*   **How to Use:**\r\n        - Navigate to the [Forgot Password page](/forgot-password), often linked from the Sign In page.\r\n\r\n### 1.5. Reset Password\r\n*   **Description:** Allows users to set a new password after requesting a reset token via the Forgot Password flow.\r\n*   **How to Use:**\r\n        - Navigate to the [Reset Password page](/reset-password).\r\n\r\n## 2. User Settings\r\n\r\nAccessible after signin in, these pages allow users to manage their profile, account details, security settings, and active sessions.\r\n\r\n### 2.1. Profile Settings\r\n*   **Description:** Manage personal user information like name, profile picture, birthdate, and gender.\r\n*   **How to Use:**\r\n        - Navigate to the [profile page](/settings/profile).\r\n\r\n### 2.2. Account Settings\r\n*   **Description:** Manage account-specific details like email, phone number, enable passwordless sign-in, and account deletion.\r\n*   **How to Use:**\r\n        - Navigate to the [account page](/settings/account).\r\n\r\n### 2.3. Two-Factor Authentication (2FA)\r\n*   **Description:** Enhance account security by requiring a second form of verification (typically a code from an authenticator app) during sign-in.\r\n*   **How to Use:**\r\n        - Navigate to the [two factor authentication page](/settings/tfa).\r\n\r\n### 2.4. Session Management\r\n*   **Description:** View all devices and browsers where the user is currently signed in and provides the ability to sign out (revoke) specific sessions remotely.\r\n*   **How to Use:**\r\n        - Navigate to the [sessions page](/settings/sessions).\r\n\r\n## 3. Core Application Features\r\n\r\nThese are the primary functional areas of the application beyond account management.\r\n\r\n//#if (module == 'Admin')\r\n### 3.1. Dashboard\r\n*   **Description:** Provides a high-level overview and analytics of key application data, such as categories and products.\r\n*   **How to Use:**\r\n        - Navigate to the [dashboard page](/dashboard).\r\n\r\n### 3.2. Categories Management\r\n*   **Description:** Allows users to view, create, edit, and delete categories, often used to organize products.\r\n*   **How to Use:**\r\n        - Navigate to the [categories page](/categories).\r\n\r\n### 3.3. Products Management\r\n*   **Description:** Allows users to view, create, edit, and delete products.\r\n*   **How to Use:**\r\n        - Navigate to the [products page](/products).\r\n\r\n### 3.4. Add/Edit Product\r\n*   **Description:** A form page for creating a new product or modifying an existing one.\r\n*   **How to Use:**\r\n        - Navigate to the [add/edit products page](/add-edit-product).\r\n//#endif\r\n\r\n//#if (module == 'Sales')\r\n### 3.5. View Product\r\n*   **Description:** Displays the details of a single product in a read-only view.\r\n*   **How to Use:**\r\n        - Navigate to the [view products page](/).\r\n//#endif\r\n\r\n//#if (sample == true)\r\n### 3.6. Todo List\r\n*   **Description:** A simple task management feature to keep track of personal tasks.\r\n*   **How to Use:**\r\n        - Navigate to the [todo page](/todo).\r\n//#endif\r\n\r\n## 4. Informational Pages\r\n\r\n### 4.1. About Page\r\n*   **Description:** Provides information about the application itself.\r\n*   **How to Use:**\r\n        - Navigate to the [about page](/about).\r\n\r\n### 4.2. Terms Page\r\n*   **Description:** Displays the legal terms and conditions, including the End-User License Agreement (EULA) and potentially the Privacy Policy.\r\n*   **How to Use:**\r\n        - Navigate to the [terms page](/terms).\r\n\r\n---\r\n\r\n**[[[GENERAL_INFORMATION_END]]]**\r\n\r\n**[[[INSTRUCTIONS_BEGIN]]]**\r\n\r\n- ### Language:\r\n    - Always respond in the {{UserCulture}} language or the language specified by the user.\r\n\r\n- ### User's device info:\r\n        - User's device is {{DeviceInfo}} or the one specifid by user. Tailor your platform specific responses accordingly.\r\n	\r\n- ### Relevance:  \r\n    - Before answering, determine if the user's query is related to the Boilerplate app. A query is considered related only if it pertains to the features, usage, or support topics. A query is considered related only if it pertains to the features, usage, or support topics covered in the provided markdown document.\r\n\r\n- ## App-Related Queries:  \r\n    - Use the provided markdown document to deliver accurate and concise answers in {{UserCulture}} language or the language specified by the user.  \r\n\r\n    - When mentioning specific app pages, include the relative URL from the markdown document, formatted in markdown (e.g., [sign-up page](/sign-up)).  \r\n\r\n    - Maintain a helpful and professional tone throughout your response.  \r\n\r\n    - Structure your response clearly, utilizing bullet points or numbered steps where appropriate.\r\n	\r\n	- If the user asks multiple questions, address each one separately with clear headings or bullet points. If needed, ask them to prioritize: \"I see you have multiple questions. Which issue would you like me to address first?\"\r\n	  \r\n	- Never request sensitive information (e.g., passwords, PINs). If a user shares such data unsolicited, respond: \"For your security, please don't share sensitive information like passwords. Rest assured, your data is safe with us\"\r\n	  \r\n- ## User Feedback and Suggestions:\r\n  - If a user provides feedback or suggests a feature, respond: \"Thank you for your feedback! It's valuable to us, and I'll pass it on to the product team\"\r\n  \r\n  - If a user seems frustrated or confused, use calming language and offer to clarify: \"I'm sorry if this is confusing. I'm here to help—would you like me to explain it again?\"\r\n\r\n- ## Unresolved Issues:  \r\n    - If you cannot resolve the user's issue, respond with: \"I'm sorry I couldn't resolve your issue. I understand how frustrating this must be for you. Please provide your email address so a human operator can follow up with you soon\"\r\n\r\n    - After the user provides their email address, save the user's email and their conversation history. Then ask if they have any other issues. For example: \"Thank you for providing your email. Do you have any other issues you'd like me to assist with?\"\r\n\r\n**[[[INSTRUCTIONS_END]]]**\r\n", 0 });
+
+        migrationBuilder.InsertData(
+            schema: "dbo",
             table: "Users",
             columns: new[] { "Id", "AccessFailedCount", "BirthDate", "ConcurrencyStamp", "ElevatedAccessTokenRequestedOn", "Email", "EmailConfirmed", "EmailTokenRequestedOn", "FullName", "Gender", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "OtpRequestedOn", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "PhoneNumberTokenRequestedOn", "ProfileImageName", "ResetPasswordTokenRequestedOn", "SecurityStamp", "TwoFactorEnabled", "TwoFactorTokenRequestedOn", "UserName" },
             values: new object[] { new Guid("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"), 0, 1306790461440000000L, "315e1a26-5b3a-4544-8e91-2760cd28e231", null, "test@bitplatform.dev", true, 1306790461440000000L, "Boilerplate test account", 0, true, null, "TEST@BITPLATFORM.DEV", "TEST", null, "AQAAAAIAAYagAAAAEP0v3wxkdWtMkHA3Pp5/JfS+42/Qto9G05p2mta6dncSK37hPxEHa3PGE4aqN30Aag==", "+31684207362", true, null, null, null, "959ff4a9-4b07-4cc1-8141-c5fc033daf83", false, null, "test" });
 
         migrationBuilder.InsertData(
+            schema: "dbo",
             table: "Products",
             columns: new[] { "Id", "CategoryId", "ConcurrencyStamp", "CreatedOn", "Description", "ImageFileName", "Name", "Price", "ShortId" },
             values: new object[,]
@@ -473,40 +524,47 @@ public partial class InitialMigration : Migration
             });
 
         migrationBuilder.InsertData(
+            schema: "dbo",
             table: "RoleClaims",
             columns: new[] { "Id", "ClaimType", "ClaimValue", "RoleId" },
             values: new object[] { 1, "edit-ai-system-prompts", "true", new Guid("8ff71671-a1d6-5f97-abb9-d87d7b47d6e7") });
 
         migrationBuilder.InsertData(
+            schema: "dbo",
             table: "UserRoles",
             columns: new[] { "RoleId", "UserId" },
             values: new object[] { new Guid("8ff71671-a1d6-5f97-abb9-d87d7b47d6e7"), new Guid("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7") });
 
         migrationBuilder.CreateIndex(
             name: "IX_Categories_Name",
+            schema: "dbo",
             table: "Categories",
             column: "Name",
             unique: true);
 
         migrationBuilder.CreateIndex(
             name: "IX_Products_CategoryId",
+            schema: "dbo",
             table: "Products",
             column: "CategoryId");
 
         migrationBuilder.CreateIndex(
             name: "IX_Products_Name",
+            schema: "dbo",
             table: "Products",
             column: "Name",
             unique: true);
 
         migrationBuilder.CreateIndex(
             name: "IX_Products_ShortId",
+            schema: "dbo",
             table: "Products",
             column: "ShortId",
             unique: true);
 
         migrationBuilder.CreateIndex(
             name: "IX_PushNotificationSubscriptions_UserSessionId",
+            schema: "dbo",
             table: "PushNotificationSubscriptions",
             column: "UserSessionId",
             unique: true,
@@ -514,49 +572,58 @@ public partial class InitialMigration : Migration
 
         migrationBuilder.CreateIndex(
             name: "IX_RoleClaims_RoleId_ClaimType",
+            schema: "dbo",
             table: "RoleClaims",
             columns: new[] { "RoleId", "ClaimType" });
 
         migrationBuilder.CreateIndex(
             name: "IX_Roles_Name",
+            schema: "dbo",
             table: "Roles",
             column: "Name",
             unique: true);
 
         migrationBuilder.CreateIndex(
             name: "RoleNameIndex",
+            schema: "dbo",
             table: "Roles",
             column: "NormalizedName",
             unique: true);
 
         migrationBuilder.CreateIndex(
             name: "IX_TodoItems_UserId",
+            schema: "dbo",
             table: "TodoItems",
             column: "UserId");
 
         migrationBuilder.CreateIndex(
             name: "IX_UserClaims_UserId_ClaimType",
+            schema: "dbo",
             table: "UserClaims",
             columns: new[] { "UserId", "ClaimType" });
 
         migrationBuilder.CreateIndex(
             name: "IX_UserLogins_UserId",
+            schema: "dbo",
             table: "UserLogins",
             column: "UserId");
 
         migrationBuilder.CreateIndex(
             name: "IX_UserRoles_RoleId_UserId",
+            schema: "dbo",
             table: "UserRoles",
             columns: new[] { "RoleId", "UserId" },
             unique: true);
 
         migrationBuilder.CreateIndex(
             name: "EmailIndex",
+            schema: "dbo",
             table: "Users",
             column: "NormalizedEmail");
 
         migrationBuilder.CreateIndex(
             name: "IX_Users_Email",
+            schema: "dbo",
             table: "Users",
             column: "Email",
             unique: true,
@@ -564,6 +631,7 @@ public partial class InitialMigration : Migration
 
         migrationBuilder.CreateIndex(
             name: "IX_Users_PhoneNumber",
+            schema: "dbo",
             table: "Users",
             column: "PhoneNumber",
             unique: true,
@@ -571,17 +639,20 @@ public partial class InitialMigration : Migration
 
         migrationBuilder.CreateIndex(
             name: "UserNameIndex",
+            schema: "dbo",
             table: "Users",
             column: "NormalizedUserName",
             unique: true);
 
         migrationBuilder.CreateIndex(
             name: "IX_UserSessions_UserId",
+            schema: "dbo",
             table: "UserSessions",
             column: "UserId");
 
         migrationBuilder.CreateIndex(
             name: "IX_WebAuthnCredential_UserId",
+            schema: "dbo",
             table: "WebAuthnCredential",
             column: "UserId");
     }
@@ -590,42 +661,59 @@ public partial class InitialMigration : Migration
     protected override void Down(MigrationBuilder migrationBuilder)
     {
         migrationBuilder.DropTable(
-            name: "Products");
+            name: "Products",
+            schema: "dbo");
 
         migrationBuilder.DropTable(
-            name: "PushNotificationSubscriptions");
+            name: "PushNotificationSubscriptions",
+            schema: "dbo");
 
         migrationBuilder.DropTable(
-            name: "RoleClaims");
+            name: "RoleClaims",
+            schema: "dbo");
 
         migrationBuilder.DropTable(
-            name: "TodoItems");
+            name: "SystemPrompts",
+            schema: "dbo");
 
         migrationBuilder.DropTable(
-            name: "UserClaims");
+            name: "TodoItems",
+            schema: "dbo");
 
         migrationBuilder.DropTable(
-            name: "UserLogins");
+            name: "UserClaims",
+            schema: "dbo");
 
         migrationBuilder.DropTable(
-            name: "UserRoles");
+            name: "UserLogins",
+            schema: "dbo");
 
         migrationBuilder.DropTable(
-            name: "UserTokens");
+            name: "UserRoles",
+            schema: "dbo");
 
         migrationBuilder.DropTable(
-            name: "WebAuthnCredential");
+            name: "UserTokens",
+            schema: "dbo");
 
         migrationBuilder.DropTable(
-            name: "Categories");
+            name: "WebAuthnCredential",
+            schema: "dbo");
 
         migrationBuilder.DropTable(
-            name: "UserSessions");
+            name: "Categories",
+            schema: "dbo");
 
         migrationBuilder.DropTable(
-            name: "Roles");
+            name: "UserSessions",
+            schema: "dbo");
 
         migrationBuilder.DropTable(
-            name: "Users");
+            name: "Roles",
+            schema: "dbo");
+
+        migrationBuilder.DropTable(
+            name: "Users",
+            schema: "dbo");
     }
 }

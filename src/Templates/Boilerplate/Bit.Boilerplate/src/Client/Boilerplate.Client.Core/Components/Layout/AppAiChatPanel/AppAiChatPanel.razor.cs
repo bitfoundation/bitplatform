@@ -1,4 +1,5 @@
 ﻿using System.Threading.Channels;
+using Boilerplate.Shared.Dtos.Chatbot;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
 
@@ -102,7 +103,11 @@ public partial class AppAiChatPanel
         channel = Channel.CreateUnbounded<string>();
 
         await foreach (var response in hubConnection.StreamAsync<string>("Chatbot",
-                                                                         CultureInfo.CurrentCulture.NativeName,
+                                                                         new StartChatbotRequest()
+                                                                         {
+                                                                             Culture = CultureInfo.CurrentCulture.Name,
+                                                                             DeviceInfo = TelemetryContext.Platform
+                                                                         },
                                                                          channel.Reader.ReadAllAsync(CurrentCancellationToken),
                                                                          cancellationToken: CurrentCancellationToken))
         {
