@@ -58,15 +58,6 @@ public partial class AppAiChatPanel
         await channel!.Writer.WriteAsync(input!, CurrentCancellationToken);
     }
 
-    private async Task OpenPanel()
-    {
-        isOpen = true;
-
-        await Task.Delay(100);
-
-        await textFieldRef.FocusAsync();
-    }
-
     private async Task ClearChat()
     {
         lastAssistantResponse = string.Empty;
@@ -76,18 +67,21 @@ public partial class AppAiChatPanel
         await StartChannel();
     }
 
+    private async Task HandleOnOpenPanel()
+    {
+        await textFieldRef.FocusAsync();
+    }
+
     private async Task HandleOnDismissPanel()
     {
         await StopChannel();
     }
 
-    private async Task HandleOnUserInputKeyDown(KeyboardEventArgs e)
+    private async Task HandleOnUserInputEnter(KeyboardEventArgs e)
     {
-        if (e.Key == "Enter" && e.ShiftKey is false)
-        {
-            await Task.Delay(10);
-            await SendMessage();
-        }
+        if (e.ShiftKey) return;
+
+        await SendMessage();
     }
 
     private async Task StartChannel()

@@ -11,6 +11,10 @@
             bottom: 4rem;
             inset-inline-end: 1rem;
         }
+
+        img {
+            pointer-events: none;
+        }
     }
 
     .body {
@@ -22,6 +26,16 @@
         width: 100%;
         height: 100%;
         padding: 0.5rem;
+    }
+
+    .default-prompt-button {
+        height: 100%;
+
+        @include lt-md {
+            &:not(:first-child) {
+                display: none;
+            }
+        }
     }
 
     .send-message-button {
