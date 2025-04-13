@@ -38,9 +38,8 @@
             <BitStack Class="body">
                 <BitScrollablePane AutoScroll Class="scr-container">
                     <BitStack>
-                        @for (int i = 0; i < chatMessages.Count; i++)
+                        @foreach (var message in chatMessages)
                         {
-                            var message = chatMessages[i];
                             if (message.Role is AiChatMessageRole.User)
                             {
                                 <BitCard Background="BitColorKind.Tertiary" Style="align-self:end;padding:0.5rem 1rem">
@@ -59,7 +58,7 @@
                             }
                         }
 
-                        @if (isLoading && string.IsNullOrWhiteSpace(lastAssistantMessage.Content))
+                        @if (isLoading && string.IsNullOrWhiteSpace(lastAssistantMessage?.Content))
                         {
                             <BitEllipsisLoading Size="BitSize.Small" />
                         }

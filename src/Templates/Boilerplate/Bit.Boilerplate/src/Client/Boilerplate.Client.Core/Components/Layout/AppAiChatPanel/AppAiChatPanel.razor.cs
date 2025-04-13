@@ -1,5 +1,4 @@
 ﻿using System.Threading.Channels;
-using Boilerplate.Shared.Dtos.Chatbot;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
 
@@ -12,9 +11,9 @@ public partial class AppAiChatPanel
     private string? userInput;
     private int responseCounter;
     private Channel<string>? channel;
+    private AiChatMessage? lastAssistantMessage;
     private BitTextField textFieldRef = default!;
     private List<AiChatMessage> chatMessages = [];
-    private AiChatMessage lastAssistantMessage = new();
 
 
     [AutoInject] private HubConnection hubConnection = default!;
@@ -26,20 +25,26 @@ public partial class AppAiChatPanel
     [CascadingParameter]
     private BitDir? currentDir { get; set; }
 
-
-    protected override Task OnInitAsync()
+    protected override async Task OnAfterFirstRenderAsync()
     {
-        chatMessages.Add(new() { Content = Localizer[nameof(AppStrings.AiChatPanelInitialResponse)], Role = AiChatMessageRole.Assistant });
+        SetDefaultValues();
+        StateHasChanged();
+        hubConnection.Reconnected += HubConnection_Reconnected;
 
-        return base.OnInitAsync();
+        await base.OnAfterFirstRenderAsync();
     }
 
+    private async Task HubConnection_Reconnected(string? _)
+    {
+        await RestartChannel();
+    }
 
     private async Task SendPromptMessage(string message)
     {
         userInput = message;
         await SendMessage();
     }
+
     private async Task SendMessage()
     {
         if (channel is null)
@@ -53,7 +58,7 @@ public partial class AppAiChatPanel
         userInput = string.Empty;
 
         chatMessages.Add(new() { Content = input, Role = AiChatMessageRole.User });
-        lastAssistantMessage = new();
+        lastAssistantMessage = new() { Role = AiChatMessageRole.Assistant };
         chatMessages.Add(lastAssistantMessage);
 
         StateHasChanged();
@@ -63,10 +68,16 @@ public partial class AppAiChatPanel
 
     private async Task ClearChat()
     {
-        lastAssistantMessage = new();
-        chatMessages = [new() { Content = Localizer[nameof(AppStrings.AiChatPanelInitialResponse)], Role = AiChatMessageRole.Assistant }];
+        SetDefaultValues();
 
         await RestartChannel();
+    }
+
+    private void SetDefaultValues()
+    {
+        lastAssistantMessage = new() { Role = AiChatMessageRole.Assistant };
+        chatMessages = [new() { Content = Localizer[nameof(AppStrings.AiChatPanelInitialResponse)], Role = AiChatMessageRole.Assistant }];
+        responseCounter = 0;
     }
 
     private async Task HandleOnOpenPanel()
@@ -95,27 +106,27 @@ public partial class AppAiChatPanel
                                                                          channel.Reader.ReadAllAsync(CurrentCancellationToken),
                                                                          cancellationToken: CurrentCancellationToken))
         {
-            if (response is ChatMessageProcessStatus.MESSAGE_RPOCESS_SUCESS)
+            int expectedResponsesCount = chatMessages.Count(c => c.Role is AiChatMessageRole.User);
+
+            if (response is SharedChatProcessMessages.MESSAGE_RPOCESS_SUCESS)
             {
                 responseCounter++;
                 isLoading = false;
             }
-            else if (response is ChatMessageProcessStatus.MESSAGE_RPOCESS_ERROR)
+            else if (response is SharedChatProcessMessages.MESSAGE_RPOCESS_ERROR)
             {
-                if (++responseCounter == (chatMessages.Count - 1) / 2)
+                responseCounter++;
+                if (responseCounter == expectedResponsesCount)
                 {
-                    isLoading = false;
+                    isLoading = false; // Hide loading only if this is a error for the last user's message.
                 }
-
-                var index = responseCounter * 2;
-
-                chatMessages[index].Successful = false;
+                chatMessages[responseCounter * 2].Successful = false;
             }
             else
             {
-                if ((responseCounter + 1) == (chatMessages.Count - 1) / 2)
+                if ((responseCounter + 1) == expectedResponsesCount)
                 {
-                    lastAssistantMessage.Content += response;
+                    lastAssistantMessage!.Content += response;
                 }
             }
 
@@ -140,6 +151,8 @@ public partial class AppAiChatPanel
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
+        hubConnection.Reconnected -= HubConnection_Reconnected;
+
         await StopChannel();
 
         await base.DisposeAsync(disposing);

@@ -139,12 +139,12 @@ public partial class AppHub : Hub
                         assistantResponse.Append(response.Text);
                         await channel.Writer.WriteAsync(response.Text, messageSpecificCancellationToken);
                     }
-                    await channel.Writer.WriteAsync(ChatMessageProcessStatus.MESSAGE_RPOCESS_SUCESS, cancellationToken);
+                    await channel.Writer.WriteAsync(SharedChatProcessMessages.MESSAGE_RPOCESS_SUCESS, cancellationToken);
                 }
                 catch (Exception exp)
                 {
                     await HandleException(exp);
-                    await channel.Writer.WriteAsync(ChatMessageProcessStatus.MESSAGE_RPOCESS_ERROR, cancellationToken);
+                    await channel.Writer.WriteAsync(SharedChatProcessMessages.MESSAGE_RPOCESS_ERROR, cancellationToken);
                 }
                 finally
                 {
