@@ -349,11 +349,11 @@ public partial class BitButton : BitComponentBase
             {
                 _dotnetObj ??= DotNetObjectReference.Create(this);
 
-                await _js.BitDraggablesSetup(_Id, _dotnetObj);
+                await _js.BitDraggablesEnable(_Id, _dotnetObj);
             }
             else
             {
-                await _js.BitDraggablesDispose(_Id);
+                await _js.BitDraggablesDisable(_Id);
             }
         }
     }
@@ -422,7 +422,7 @@ public partial class BitButton : BitComponentBase
 
             try
             {
-                await _js.BitDraggablesDispose(_Id);
+                await _js.BitDraggablesDisable(_Id);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
