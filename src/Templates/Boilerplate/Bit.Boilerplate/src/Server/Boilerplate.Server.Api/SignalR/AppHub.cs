@@ -153,7 +153,7 @@ public partial class AppHub : Hub
                 }
                 catch (Exception exp)
                 {
-                    await HandleException(exp, cancellationToken);
+                    _ = HandleException(exp, cancellationToken);
                     await channel.Writer.WriteAsync(SharedChatProcessMessages.MESSAGE_RPOCESS_ERROR, cancellationToken);
                 }
                 finally
