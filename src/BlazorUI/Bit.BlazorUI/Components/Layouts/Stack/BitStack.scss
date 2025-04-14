@@ -8,9 +8,14 @@
     justify-content: flex-start;
 }
 
-.bit-stc-fcn {
+.bit-stc-fch {
+    > * {
+        height: 100%;
+    }
+}
+
+.bit-stc-fcv {
     > * {
         width: 100%;
-        height: 100%;
     }
 }
