@@ -3,7 +3,7 @@ using Boilerplate.Shared.Dtos.Chatbot;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
 
-namespace Boilerplate.Client.Core.Components.Layout.AppAiChatPanel;
+namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class AppAiChatPanel
 {
@@ -14,7 +14,7 @@ public partial class AppAiChatPanel
     private Channel<string>? channel;
     private AiChatMessage? lastAssistantMessage;
     private BitTextField textFieldRef = default!;
-    private List<AiChatMessage> chatMessages = [];
+    private List<AiChatMessage> chatMessages = []; // TODO: Persist these values in client-side storage to retain them across app restarts.
 
 
     [AutoInject] private HubConnection hubConnection = default!;
@@ -106,7 +106,8 @@ public partial class AppAiChatPanel
                                                                          new StartChatbotRequest()
                                                                          {
                                                                              Culture = CultureInfo.CurrentCulture.Name,
-                                                                             DeviceInfo = TelemetryContext.Platform
+                                                                             DeviceInfo = TelemetryContext.Platform,
+                                                                             ChatMessagesHistory = chatMessages
                                                                          },
                                                                          channel.Reader.ReadAllAsync(CurrentCancellationToken),
                                                                          cancellationToken: CurrentCancellationToken))

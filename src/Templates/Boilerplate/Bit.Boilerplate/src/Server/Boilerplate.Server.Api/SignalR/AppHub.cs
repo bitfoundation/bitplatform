@@ -100,7 +100,9 @@ public partial class AppHub : Hub
 
         async Task ReadIncomingMessages()
         {
-            List<ChatMessage> chatMessages = [];
+            List<ChatMessage> chatMessages = request.ChatMessagesHistory
+                .Select(c => new ChatMessage(c.Role is AiChatMessageRole.Assistant ? ChatRole.Assistant : ChatRole.User, c.Content))
+                .ToList();
 
             CancellationTokenSource? messageSpecificCancellationTokenSrc = null;
             try
