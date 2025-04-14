@@ -16,63 +16,86 @@ public partial class BitScrollablePaneDemo
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content of ScrollablePane, It can be Any custom tag or a text.",
+            Description = "The content of pane, It can be Any custom tag or a text.",
+        },
+        new()
+        {
+            Name = "Gutter",
+            Type = "BitScrollbarGutter?",
+            DefaultValue= "null",
+            Description = "Allows to reserve space for the scrollbar, preventing unwanted layout changes as the content grows while also avoiding unnecessary visuals when scrolling isn't needed.",
+            LinkType = LinkType.Link,
+            Href = "#scrollbar-gutter-enum",
         },
         new()
         {
             Name = "Height",
             Type = "double?",
             DefaultValue= "null",
-            Description = "The height of the ScrollablePane.",
+            Description = "The height of the pane.",
+        },
+        new()
+        {
+            Name = "Modern",
+            Type = "bool",
+            DefaultValue= "false",
+            Description = "Enables a modern style for the scrollbar of the pane.",
         },
         new()
         {
             Name = "OnScroll",
             Type = "EventCallback",
-            Description = "Callback for when the ScrollablePane scrolled.",
+            Description = "Callback for when the pane scrolled.",
         },
         new()
         {
             Name = "Overflow",
             Type = "BitOverflow?",
             DefaultValue= "null",
-            Description = "Controls the visibility of scrollbars in the ScrollablePane.",
-            Href = "#overflow-enum",
+            Description = "Controls the visibility of scrollbars in the pane.",
             LinkType = LinkType.Link,
+            Href = "#overflow-enum",
         },
         new()
         {
             Name = "OverflowX",
             Type = "BitOverflow?",
             DefaultValue= "null",
-            Description = "Controls the visibility of X-axis scrollbar in the ScrollablePane.",
-            Href = "#overflow-enum",
+            Description = "Controls the visibility of X-axis scrollbar in the pane.",
             LinkType = LinkType.Link,
+            Href = "#overflow-enum",
         },
         new()
         {
             Name = "OverflowY",
             Type = "BitOverflow?",
             DefaultValue= "null",
-            Description = "Controls the visibility of Y-axis scrollbar in the ScrollablePane.",
-            Href = "#overflow-enum",
+            Description = "Controls the visibility of Y-axis scrollbar in the pane.",
             LinkType = LinkType.Link,
+            Href = "#overflow-enum",
         },
         new()
         {
-            Name = "ScrollbarGutter",
-            Type = "BitScrollbarGutter?",
+            Name = "ScrollbarColor",
+            Type = "string?",
             DefaultValue= "null",
-            Description = "Allows to reserve space for the scrollbar, preventing unwanted layout changes as the content grows while also avoiding unnecessary visuals when scrolling isn't needed.",
-            Href = "#scrollbarGutter-enum",
+            Description = "Sets the color of the scrollbar track and thumb. For specific colors, it has to contain both colors separated by a space or otherwise it won't work.",
+        },
+        new()
+        {
+            Name = "ScrollbarWidth",
+            Type = "BitScrollbarWidth?",
+            DefaultValue= "null",
+            Description = "Sets the desired thickness of scrollbars when they are shown.",
             LinkType = LinkType.Link,
+            Href = "#scrollbar-width-enum",
         },
         new()
         {
             Name = "Width",
             Type = "double?",
             DefaultValue= "null",
-            Description = "The width of the ScrollablePane.",
+            Description = "The width of the pane.",
         }
     ];
 
@@ -124,7 +147,7 @@ public partial class BitScrollablePaneDemo
         },
         new()
         {
-            Id = "scrollbarGutter-enum",
+            Id = "scrollbar-gutter-enum",
             Name = "BitScrollbarGutter",
             Description = "",
             Items =
@@ -146,6 +169,33 @@ public partial class BitScrollablePaneDemo
                     Name = "BothEdges",
                     Value = "2",
                     Description = "If a gutter would be present on one of the inline start/end edges of the box, another will be present on the opposite edge as well."
+                }
+            ]
+        },
+        new()
+        {
+            Id = "scrollbar-width-enum",
+            Name = "BitScrollbarWidth",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name = "Auto",
+                    Value = "0",
+                    Description = "The default scrollbar width for the platform."
+                },
+                new()
+                {
+                    Name = "Thin",
+                    Value = "1",
+                    Description = "A thin scrollbar width variant on platforms that provide that option, or a thinner scrollbar than the default platform scrollbar width."
+                },
+                new()
+                {
+                    Name = "None",
+                    Value = "2",
+                    Description = "No scrollbar shown, however the element will still be scrollable."
                 }
             ]
         }
@@ -368,6 +418,103 @@ private BitScrollbarGutter gutter;
 ";
 
     private readonly string example5RazorCode = @"
+<style>
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid #999;
+    }
+</style>
+
+<BitScrollablePane Style=""height:300px;"" Class=""pane"" ScrollbarWidth=""BitScrollbarWidth.Thin"">
+    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+    <br />
+    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+    These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
+    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+    <br />
+    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+    shaped into meaning, and the emotions ready to resonate with every reader.
+    <br />
+    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+    each word has the power to transform into something extraordinary. Here lies the start of something new—an
+    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+    begins here, in this quiet moment where everything is possible.
+</BitScrollablePane>
+
+<BitScrollablePane Style=""height:300px;"" Class=""pane"" ScrollbarWidth=""BitScrollbarWidth.None"">
+    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+    <br />
+    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+    These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
+    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+    <br />
+    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+    shaped into meaning, and the emotions ready to resonate with every reader.
+    <br />
+    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+    each word has the power to transform into something extraordinary. Here lies the start of something new—an
+    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+    begins here, in this quiet moment where everything is possible.
+</BitScrollablePane>";
+
+    private readonly string example6RazorCode = @"
+<style>
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid #999;
+    }
+</style>
+
+<BitScrollablePane Style=""height:300px;"" Class=""pane"" ScrollbarColor=""red blue"">
+    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+    <br />
+    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+    These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
+    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+    <br />
+    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+    shaped into meaning, and the emotions ready to resonate with every reader.
+    <br />
+    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+    each word has the power to transform into something extraordinary. Here lies the start of something new—an
+    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+    begins here, in this quiet moment where everything is possible.
+</BitScrollablePane>";
+
+    private readonly string example7RazorCode = @"
 <BitButton OnClick=""AddAutoScrollContent"">Add content periodically</BitButton>
 
 <BitScrollablePane Style=""height:300px;"" Class=""pane"" AutoScroll>
@@ -402,7 +549,7 @@ private BitScrollbarGutter gutter;
         @autoScrollContent
     </pre>
 </BitScrollablePane>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private string autoScrollContent = """";
 private async Task AddAutoScrollContent()
 {
@@ -419,4 +566,50 @@ minds and spark emotions. This is where the journey begins your words will lead 
         StateHasChanged();
     }
 }";
+
+    private readonly string example8RazorCode = @"
+<style>
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid #999;
+    }
+</style>
+
+<BitScrollablePane Style=""height:300px;"" Class=""pane"" Modern>
+    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+    <br />
+    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+    These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
+    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+    <br />
+    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+    shaped into meaning, and the emotions ready to resonate with every reader.
+    <br />
+    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+    each word has the power to transform into something extraordinary. Here lies the start of something new—an
+    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+    begins here, in this quiet moment where everything is possible.
+</BitScrollablePane>
+
+<BitScrollablePane Style=""width:300px;white-space:nowrap"" Class=""pane"" Modern>
+    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+    Each word carried meaning, each pause brought understanding.
+    <br />
+    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+    Each word carried meaning, each pause brought understanding.
+    <br />
+    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+    Each word carried meaning, each pause brought understanding.
+</BitScrollablePane>";
 }
