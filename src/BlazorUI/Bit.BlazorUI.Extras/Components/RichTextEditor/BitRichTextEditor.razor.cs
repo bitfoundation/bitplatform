@@ -7,8 +7,9 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitRichTextEditor : BitComponentBase
 {
-    private ElementReference _toolbarRef = default!;
     private ElementReference _editorRef = default!;
+    private ElementReference _toolbarRef = default!;
+    private TaskCompletionSource _readyTcs = new();
     private DotNetObjectReference<BitRichTextEditor>? _dotnetObj = null;
 
 
@@ -77,49 +78,55 @@ public partial class BitRichTextEditor : BitComponentBase
     /// <summary>
     /// Gets the current text content of the editor.
     /// </summary>
-    public ValueTask<string> GetText()
+    public async ValueTask<string> GetText()
     {
-        return _js.BitRichTextEditorGetText(_Id);
+        await _readyTcs.Task;
+        return await _js.BitRichTextEditorGetText(_Id);
     }
 
     /// <summary>
     /// Gets the current html content of the editor.
     /// </summary>
-    public ValueTask<string> GetHtml()
+    public async ValueTask<string> GetHtml()
     {
-        return _js.BitRichTextEditorGetHtml(_Id);
+        await _readyTcs.Task;
+        return await _js.BitRichTextEditorGetHtml(_Id);
     }
 
     /// <summary>
     /// Gets the current content of the editor in JSON format.
     /// </summary>
-    public ValueTask<string> GetContent()
+    public async ValueTask<string> GetContent()
     {
-        return _js.BitRichTextEditorGetContent(_Id);
+        await _readyTcs.Task;
+        return await _js.BitRichTextEditorGetContent(_Id);
     }
 
     /// <summary>
     /// Sets the current text content of the editor.
     /// </summary>
-    public ValueTask SetText(string? text)
+    public async ValueTask SetText(string? text)
     {
-        return _js.BitRichTextEditorSetText(_Id, text);
+        await _readyTcs.Task;
+        await _js.BitRichTextEditorSetText(_Id, text);
     }
 
     /// <summary>
     /// Sets the current html content of the editor.
     /// </summary>
-    public ValueTask SetHtml(string? html)
+    public async ValueTask SetHtml(string? html)
     {
-        return _js.BitRichTextEditorSetHtml(_Id, html);
+        await _readyTcs.Task;
+        await _js.BitRichTextEditorSetHtml(_Id, html);
     }
 
     /// <summary>
     /// Sets the current content of the editor in JSON format.
     /// </summary>
-    public ValueTask SetContent(string? content)
+    public async ValueTask SetContent(string? content)
     {
-        return _js.BitRichTextEditorSetContent(_Id, content);
+        await _readyTcs.Task;
+        await _js.BitRichTextEditorSetContent(_Id, content);
     }
 
 
@@ -144,16 +151,17 @@ public partial class BitRichTextEditor : BitComponentBase
 
         if (firstRender)
         {
-            var theme = (Theme ?? BitRichTextEditorTheme.Snow).ToString().ToLower();
             await _js.BitExtrasInitScripts(["_content/Bit.BlazorUI.Extras/quilljs/quill-2.0.3.js"]);
 
             await OnQuillReady.InvokeAsync();
 
+            var theme = (Theme ?? BitRichTextEditorTheme.Snow).ToString().ToLower();
             await _js.BitExtrasInitStylesheets([$"_content/Bit.BlazorUI.Extras/quilljs/quill.{theme}-2.0.3.css"]);
 
             _dotnetObj = DotNetObjectReference.Create(this);
             ElementReference? toolbarRef = ToolbarTemplate is null ? null : _toolbarRef;
             await _js.BitRichTextEditorSetup(_Id, _dotnetObj, _editorRef, toolbarRef, theme, Placeholder, ReadOnly, FullToolbar, Styles?.Toolbar, Classes?.Toolbar);
+            _readyTcs.SetResult();
 
             await OnEditorReady.InvokeAsync(_Id);
         }
