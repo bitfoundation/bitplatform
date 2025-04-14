@@ -198,8 +198,8 @@
     },
     //#if (signalR == true)
     {
-        "outputFile": "Components/Layout/AppAiChatPanel/AppAiChatPanel.razor.css",
-        "inputFile": "Components/Layout/AppAiChatPanel/AppAiChatPanel.razor.scss",
+        "outputFile": "Components/Layout/AppAiChatPanel.razor.css",
+        "inputFile": "Components/Layout/AppAiChatPanel.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
