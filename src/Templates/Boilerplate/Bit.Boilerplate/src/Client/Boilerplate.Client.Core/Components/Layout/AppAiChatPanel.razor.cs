@@ -26,6 +26,7 @@ public partial class AppAiChatPanel
     [CascadingParameter]
     private BitDir? currentDir { get; set; }
 
+
     protected override async Task OnAfterFirstRenderAsync()
     {
         SetDefaultValues();
@@ -34,6 +35,7 @@ public partial class AppAiChatPanel
 
         await base.OnAfterFirstRenderAsync();
     }
+
 
     private async Task HubConnection_Reconnected(string? _)
     {
@@ -83,7 +85,7 @@ public partial class AppAiChatPanel
 
     private async Task HandleOnOpenPanel()
     {
-        await textFieldRef.FocusAsync();
+        //await textFieldRef.FocusAsync();
     }
 
     private async Task HandleOnDismissPanel()

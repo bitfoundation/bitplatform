@@ -28,6 +28,15 @@
         padding: 0.5rem;
     }
 
+    .user-message {
+        align-self: end;
+        padding: 0.5rem 1rem;
+
+        pre {
+            white-space: pre-wrap;
+        }
+    }
+
     .default-prompt-container {
         @include gt-xs {
             flex-flow: row !important;
