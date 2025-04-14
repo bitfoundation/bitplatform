@@ -13,10 +13,52 @@ public partial class BitScrollablePaneDemo
         },
         new()
         {
+            Name = "AutoHeight",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the height of the pane auto.",
+        },
+        new()
+        {
+            Name = "AutoWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the width of the pane auto.",
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The content of pane, It can be Any custom tag or a text.",
+        },
+        new()
+        {
+            Name = "FitHeight",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the height of the pane fit-content.",
+        },
+        new()
+        {
+            Name = "FitWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the width of the pane fit-content.",
+        },
+        new()
+        {
+            Name = "FullHeight",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the height of the pane 100%.",
+        },
+        new()
+        {
+            Name = "FullWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the width of the pane 100%.",
         },
         new()
         {
