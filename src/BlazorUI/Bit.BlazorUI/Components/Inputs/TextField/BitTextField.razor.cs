@@ -8,6 +8,7 @@ namespace Bit.BlazorUI;
 public partial class BitTextField : BitTextInputBase<string?>
 {
     private bool _hasFocus;
+    private string? _oldValue;
     private string? _inputMode;
     private bool _isPasswordRevealed;
     private BitInputType? _elementType;
@@ -260,11 +261,20 @@ public partial class BitTextField : BitTextInputBase<string?>
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (firstRender is false) return;
-
-        if (Multiline)
+        if (firstRender)
         {
-            await _js.BitTextFieldSetupMultilineInput(_Id, InputElement, AutoHeight, PreventEnter);
+            if (Multiline)
+            {
+                await _js.BitTextFieldSetupMultilineInput(_Id, InputElement, AutoHeight, PreventEnter);
+            }
+        }
+        else
+        {
+            if (Multiline && AutoHeight && _oldValue != Value)
+            {
+                _oldValue = Value;
+                await _js.BitTextFieldAdjustHeight(InputElement);
+            }
         }
     }
 
