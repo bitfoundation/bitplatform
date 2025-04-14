@@ -1240,13 +1240,13 @@
     <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>این یک پیام اولیه است برای آغاز صحبت با هوش مصنوعی!</value>
   </data>
-    <data name="AiChatPanelPromp1" xml:space="preserve">
+    <data name="AiChatPanelPrompt1" xml:space="preserve">
     <value>چگونه میتوانم رمزعبور خود را ریست کنم؟</value>
   </data>
-    <data name="AiChatPanelPromp2" xml:space="preserve">
+    <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>چگونه میتوانم نسخه PWA برنامه رو نصب کنم؟</value>
   </data>
-    <data name="AiChatPanelPromp3" xml:space="preserve">
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
     <value>کجا میتوانم گزارشات محصولات و دسته بندیها را پبدا کنم؟</value>
   </data>
     <data name="AiChatPanelPlaceholder" xml:space="preserve">

@@ -1240,13 +1240,13 @@
     <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>This is the AI initial response to kick start the chat!</value>
   </data>
-    <data name="AiChatPanelPromp1" xml:space="preserve">
+    <data name="AiChatPanelPrompt1" xml:space="preserve">
     <value>How can I reset my password?</value>
   </data>
-    <data name="AiChatPanelPromp2" xml:space="preserve">
+    <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>How can I install the PWA version of the app?</value>
   </data>
-    <data name="AiChatPanelPromp3" xml:space="preserve">
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
     <value>Where can I find reports about products and categories?</value>
   </data>
     <data name="AiChatPanelPlaceholder" xml:space="preserve">

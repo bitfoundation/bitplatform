@@ -28,14 +28,14 @@
         padding: 0.5rem;
     }
 
+    .default-prompt-container {
+        @include gt-md {
+            flex-flow: row !important;
+        }
+    }
+
     .default-prompt-button {
         height: 100%;
-
-        @include lt-md {
-            &:not(:first-child) {
-                display: none;
-            }
-        }
     }
 
     .send-message-button {

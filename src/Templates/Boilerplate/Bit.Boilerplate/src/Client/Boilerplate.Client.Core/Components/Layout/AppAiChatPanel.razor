@@ -68,21 +68,21 @@
 
                 @if (chatMessages.Count == 1)
                 {
-                    <BitStack Alignment=" BitAlignment.Center" Horizontal FitHeight FillContent>
+                    <BitStack Alignment=" BitAlignment.Center" FitHeight FillContent Class="default-prompt-container">
                         <BitButton FixedColor
                                    Variant="BitVariant.Outline"
                                    Class="default-prompt-button"
                                    Color="BitColor.SecondaryBackground"
-                                   OnClick="() => SendPromptMessage(Localizer[nameof(AppStrings.AiChatPanelPromp1)])">
-                            @Localizer[nameof(AppStrings.AiChatPanelPromp1)]
+                                   OnClick="() => SendPromptMessage(Localizer[nameof(AppStrings.AiChatPanelPrompt1)])">
+                            @Localizer[nameof(AppStrings.AiChatPanelPrompt1)]
                         </BitButton>
 
                         <BitButton FixedColor
                                    Variant="BitVariant.Outline"
                                    Class="default-prompt-button"
                                    Color="BitColor.SecondaryBackground"
-                                   OnClick="() => SendPromptMessage(Localizer[nameof(AppStrings.AiChatPanelPromp2)])">
-                            @Localizer[nameof(AppStrings.AiChatPanelPromp2)]
+                                   OnClick="() => SendPromptMessage(Localizer[nameof(AppStrings.AiChatPanelPrompt2)])">
+                            @Localizer[nameof(AppStrings.AiChatPanelPrompt2)]
                         </BitButton>
 
                         @*#if (module == "Admin")*@
@@ -90,8 +90,8 @@
                                    Variant="BitVariant.Outline"
                                    Class="default-prompt-button"
                                    Color="BitColor.SecondaryBackground"
-                                   OnClick="() => SendPromptMessage(Localizer[nameof(AppStrings.AiChatPanelPromp3)])">
-                            @Localizer[nameof(AppStrings.AiChatPanelPromp3)]
+                                   OnClick="() => SendPromptMessage(Localizer[nameof(AppStrings.AiChatPanelPrompt3)])">
+                            @Localizer[nameof(AppStrings.AiChatPanelPrompt3)]
                         </BitButton>
                         @*#endif*@
                     </BitStack>
