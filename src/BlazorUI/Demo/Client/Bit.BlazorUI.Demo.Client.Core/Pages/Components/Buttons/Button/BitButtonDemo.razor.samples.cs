@@ -207,7 +207,7 @@ private Task AutoLoadingReclick(bool isLoading)
            Size=""BitSize.Large"" 
            IconName=""@BitIconName.Add"" 
            OnClick=""ScrollToFloat"" 
-           Float 
+           Float Draggable
            FloatPosition=""floatPosition"" 
            FloatOffset=""@floatOffset"" />
 
