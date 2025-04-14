@@ -29,7 +29,7 @@
     }
 
     .default-prompt-container {
-        @include gt-md {
+        @include gt-xs {
             flex-flow: row !important;
         }
     }
