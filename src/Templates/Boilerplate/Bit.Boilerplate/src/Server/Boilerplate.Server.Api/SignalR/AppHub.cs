@@ -95,7 +95,7 @@ public partial class AppHub : Hub
             yield break;
         }
 
-        Channel<string> channel = Channel.CreateUnbounded<string>();
+        Channel<string> channel = Channel.CreateUnbounded<string>(new() { SingleReader = true, SingleWriter = true });
         var chatClient = rootScopeProvider().ServiceProvider.GetRequiredService<IChatClient>();
 
         async Task ReadIncomingMessages()
@@ -145,12 +145,13 @@ public partial class AppHub : Hub
                             }, name: "SaveUserEmailAndConversationHistory", description: "Saves the user's email and their conversation history.")]
                         }, cancellationToken: messageSpecificCancellationToken))
                     {
-                        if (messageSpecificCancellationToken.IsCancellationRequested is false)
-                        {
-                            assistantResponse.Append(response.Text);
-                            await channel.Writer.WriteAsync(response.Text, messageSpecificCancellationToken);
-                        }
+                        if (messageSpecificCancellationToken.IsCancellationRequested)
+                            break;
+
+                        assistantResponse.Append(response.Text);
+                        await channel.Writer.WriteAsync(response.Text, messageSpecificCancellationToken);
                     }
+
                     await channel.Writer.WriteAsync(SharedChatProcessMessages.MESSAGE_RPOCESS_SUCESS, cancellationToken);
                 }
                 catch (Exception exp)

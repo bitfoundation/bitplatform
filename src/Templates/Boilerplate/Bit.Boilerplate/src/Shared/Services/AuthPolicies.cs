@@ -28,19 +28,19 @@ public class AuthPolicies
 
 public class AppClaimTypes
 {
-    public const string SESSION_ID = "session-id";
+    public const string SESSION_ID = "SessionId";
 
     /// <summary>
     /// <inheritdoc cref="AuthPolicies.PRIVILEGED_ACCESS"/>
     /// </summary>
-    public const string PRIVILEGED_SESSION = "privileged-session";
+    public const string PRIVILEGED_SESSION = "PrivilegedSession";
 
     /// <summary>
     /// <inheritdoc cref="AuthPolicies.ELEVATED_ACCESS"/>
     /// </summary>
-    public const string ELEVATED_SESSION = "elevated-session";
+    public const string ELEVATED_SESSION = "ElevatedSession";
 
-    public const string EDIT_AI_SYSTEM_PROMPTS = "edit-ai-system-prompts";
+    public const string EDIT_AI_SYSTEM_PROMPTS = "EditAiSystemPrompts";
 }
 
 public class AppRoles
