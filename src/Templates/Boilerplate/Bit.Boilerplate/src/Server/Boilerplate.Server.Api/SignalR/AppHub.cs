@@ -164,7 +164,7 @@ public partial class AppHub : Hub
 
                                     var markdown = new StringBuilder();
 
-                                    foreach (var product in recommendedProduts)
+                                    foreach (var product in recommendedProducts)
                                     {
                                         markdown.AppendLine($"## [{product.Name}](/product/{product.ShortId})");
                                         markdown.AppendLine();
