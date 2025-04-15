@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿//+:cnd:noEmit
+using System.Text;
 using System.Threading.Channels;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.SignalR;
@@ -6,6 +7,7 @@ using Boilerplate.Shared.Dtos.Chatbot;
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Controllers.Identity;
+using System.ComponentModel;
 
 namespace Boilerplate.Server.Api.SignalR;
 
@@ -75,6 +77,7 @@ public partial class AppHub : Hub
         // To handle this, we cancel the ongoing message processing using `messageSpecificCancellationTokenSrc` and start processing the new message.
 
         string? supportSystemPrompt = null;
+        var culture = CultureInfo.GetCultureInfo(request.CultureId);
 
         try
         {
@@ -86,7 +89,7 @@ public partial class AppHub : Hub
                     .SystemPrompts.FirstOrDefaultAsync(p => p.PromptKind == PromptKind.Support, cancellationToken))?.Markdown ?? throw new ResourceNotFoundException();
 
             supportSystemPrompt = supportSystemPrompt
-                .Replace("{{UserCulture}}", request.Culture)
+                .Replace("{{UserCulture}}", culture.NativeName)
                 .Replace("{{DeviceInfo}}", request.DeviceInfo);
         }
         catch (Exception exp)
@@ -135,21 +138,69 @@ public partial class AppHub : Hub
                         ], options: new()
                         {
                             Temperature = 0,
-                            Tools = [AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
-                            {
-                                await using var scope = rootScopeProvider();
-                                // Ideally, store these in a CRM or app database,
-                                // but for now, we'll log them!
-                                scope.ServiceProvider.GetRequiredService<ILogger<IChatClient>>()
-                                    .LogError("Chat reported issue: User email: {emailAddress}, Conversation history: {conversationHistory}", emailAddress, conversationHistory);
-                            }, name: "SaveUserEmailAndConversationHistory", description: "Saves the user's email and their conversation history.")]
+                            Tools = [
+                                AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
+                                {
+                                    await using var scope = rootScopeProvider();
+                                    // Ideally, store these in a CRM or app database,
+                                    // but for now, we'll log them!
+                                    scope.ServiceProvider.GetRequiredService<ILogger<IChatClient>>()
+                                        .LogError("Chat reported issue: User email: {emailAddress}, Conversation history: {conversationHistory}", emailAddress, conversationHistory);
+                                }, name: "SaveUserEmailAndConversationHistory", description: "Saves the user's email address and the conversation history for future reference. Use this tool when the user provides their email address during the conversation. Parameters: emailAddress (string), conversationHistory (string)"),
+                                //#if (module == "Sales")
+                                AIFunctionFactory.Create(async ([Description("Concise summary of these user requirements")] string userNeeds) =>
+                                {
+                                    if (messageSpecificCancellationToken.IsCancellationRequested)
+                                        return null;
+
+                                    await using var scope = rootScopeProvider();
+                                    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                                    var recommendedProduts = await dbContext.Products
+                                        .Project()
+                                        .OrderByDescending(p => string.IsNullOrEmpty(p.ImageFileName) == false)
+                                        .ThenBy(p => EF.Functions.Random())
+                                        .Take(3)
+                                        .ToArrayAsync(messageSpecificCancellationToken);
+
+                                    var markdown = new StringBuilder();
+
+                                    foreach (var product in recommendedProduts)
+                                    {
+                                        markdown.AppendLine($"## [{product.Name}](/product/{product.ShortId})");
+                                        markdown.AppendLine();
+                                        markdown.AppendLine($"**Price**: ${product.Price:F2}");
+                                        markdown.AppendLine();
+
+                                        if (string.IsNullOrEmpty(product.Description) is false)
+                                        {
+                                            markdown.AppendLine("```html");
+                                            markdown.AppendLine(product.Description);
+                                            markdown.AppendLine("```");
+                                            markdown.AppendLine();
+                                        }
+
+                                        if (string.IsNullOrEmpty(product.ImageFileName) is false)
+                                        {
+                                            markdown.AppendLine($"![{product.Name}]({product.GetProductImageUrl(Context.GetHttpContext()!.Request.GetBaseUrl())})");
+                                            markdown.AppendLine();
+                                        }
+
+                                        markdown.AppendLine("---");
+                                        markdown.AppendLine();
+                                    }
+
+                                    return markdown.ToString();
+                                }, name: "GetProductRecommendations", description: "This tool searches for and recommends products based on a detailed description of the user's needs and preferences. It should only be used after the user explicitly asks for recommendations and provides specific criteria (e.g., product type, intended use, required features, budget hints, etc.)")
+                                //#endif
+                                ]
                         }, cancellationToken: messageSpecificCancellationToken))
                     {
                         if (messageSpecificCancellationToken.IsCancellationRequested)
                             break;
 
-                        assistantResponse.Append(response.Text);
-                        await channel.Writer.WriteAsync(response.Text, messageSpecificCancellationToken);
+                        var result = response.Text;
+                        assistantResponse.Append(result);
+                        await channel.Writer.WriteAsync(result, messageSpecificCancellationToken);
                     }
 
                     await channel.Writer.WriteAsync(SharedChatProcessMessages.MESSAGE_RPOCESS_SUCESS, cancellationToken);

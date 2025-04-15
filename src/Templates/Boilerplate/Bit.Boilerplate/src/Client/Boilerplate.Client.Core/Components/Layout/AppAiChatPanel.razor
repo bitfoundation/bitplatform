@@ -87,7 +87,6 @@
                             @Localizer[nameof(AppStrings.AiChatPanelPrompt2)]
                         </BitButton>
 
-                        @*#if (module == "Admin")*@
                         <BitButton FixedColor
                                    Variant="BitVariant.Outline"
                                    Class="default-prompt-button"
@@ -95,7 +94,6 @@
                                    OnClick="() => SendPromptMessage(Localizer[nameof(AppStrings.AiChatPanelPrompt3)])">
                             @Localizer[nameof(AppStrings.AiChatPanelPrompt3)]
                         </BitButton>
-                        @*#endif*@
                     </BitStack>
                 }
 

@@ -1246,9 +1246,19 @@
     <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>چگونه میتوانم نسخه PWA برنامه رو نصب کنم؟</value>
   </data>
+    <!--#if (module == "Admin") -->
     <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>کجا میتوانم گزارشات محصولات و دسته بندیها را پبدا کنم؟</value>
+    <value>کجا میتونم گزارشات محصولات رو ببینم؟</value>
   </data>
+    <!--#elif (module == "Sales") -->
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>ایده ای داری که چه محصولی بخرم؟</value>
+  </data>
+    <!--#else -->
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>یه سری فیدبک دارم که بگم!</value>
+  </data>
+    <!--#endif -->
     <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>پیامی را وارد کنید...</value>
   </data>

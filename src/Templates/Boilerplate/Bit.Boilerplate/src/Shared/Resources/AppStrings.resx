@@ -1246,9 +1246,19 @@
     <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>How can I install the PWA version of the app?</value>
   </data>
+    <!--#if (module == "Admin") -->
     <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>Where can I find reports about products and categories?</value>
+    <value>Where can I find reports about products?</value>
   </data>
+    <!--#elif (module == "Sales") -->
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>Got any product ideas I should look into?</value>
+  </data>
+    <!--#else -->
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>I have some feedback I'd like to share!</value>
+  </data>
+    <!--#endif -->
     <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>Write a message...</value>
   </data>

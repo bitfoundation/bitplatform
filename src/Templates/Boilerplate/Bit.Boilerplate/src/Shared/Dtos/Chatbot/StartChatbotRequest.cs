@@ -2,7 +2,7 @@
 
 public class StartChatbotRequest
 {
-    public string? Culture { get; set; }
+    public int CultureId { get; set; }
 
     public string? DeviceInfo { get; set; }
 
