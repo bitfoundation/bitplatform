@@ -2,6 +2,15 @@
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
 ::deep {
+
+    .chat-messages-container {
+        padding: 0.5rem;
+
+        img {
+            max-width: 100%;
+        }
+    }
+
     .open-panel-button {
         left: unset;
         right: unset;
