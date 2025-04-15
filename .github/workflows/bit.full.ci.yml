@@ -37,7 +37,6 @@ jobs:
         node-version: 23
 
     - name: Uninstall Bit.Boilerplate if running on ACT
-      continue-on-error: true
       if: ${{ env.ACT }}
       run: dotnet new uninstall Bit.Boilerplate
 
@@ -58,7 +57,6 @@ jobs:
 
     - name: Simple tests (no --advancedTests)
       id: simple-test
-      continue-on-error: true
       run: |
         dotnet new bit-bp --name SimpleTest --database Sqlite
         cd SimpleTest/src/Server/SimpleTest.Server.Api/
@@ -67,7 +65,7 @@ jobs:
         dotnet ef database update
         cd ../../Tests
         dotnet build
-        pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
+        pwsh bin/Debug/net9.0/playwright.ps1 install --with-deps
         dotnet test --logger GitHubActions --filter "${{ env.SIMPLE_TEST_FILTER }}"
 
     - name: Upload Tests Artifact
@@ -80,7 +78,6 @@ jobs:
 
     - name: Test Sqlite database option
       id: sqlite-test
-      continue-on-error: true
       run: |
         dotnet new bit-bp --name TestSqlite --database Sqlite --advancedTests
         cd TestSqlite/src/Server/TestSqlite.Server.Api/
@@ -103,7 +100,6 @@ jobs:
 
     - name: Test SqlServer database option
       id: sqlserver-test
-      continue-on-error: true
       run: |
         dotnet new bit-bp --name TestSqlServer --database SqlServer --advancedTests
         cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
@@ -124,7 +120,6 @@ jobs:
 
     - name: Test Multilingual disabled option
       id: multilingual-disabled-test
-      continue-on-error: true
       run: |
         dotnet new bit-bp --name MultilingualDisabled --database Sqlite --advancedTests
         cd MultilingualDisabled/src/Server/MultilingualDisabled.Server.Api/
@@ -143,7 +138,6 @@ jobs:
         retention-days: 14
 
     - name: Test PostgreSQL, MySql, Other database options
-      continue-on-error: true
       run: |
         dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL --module Sales --signalR
         cd TestPostgreSQL/src/Server/TestPostgreSQL.Server.Web/
@@ -162,7 +156,6 @@ jobs:
         rm -r "TestOther"
 
     - name: Test file storage options
-      continue-on-error: true
       run: |
         dotnet new bit-bp --name TestLocal --filesStorage Local --appInsights
         cd TestLocal/src/Server/TestLocal.Server.Web/
@@ -176,7 +169,6 @@ jobs:
         rm -r "TestAzureBlobStorage"
 
     - name: Test backend setup options
-      continue-on-error: true
       run: |
         dotnet new bit-bp --name TestStandalone --api Standalone
         cd TestStandalone/src/Server/TestStandalone.Server.Api/
@@ -193,14 +185,12 @@ jobs:
         rm -r "TestIntegrated"
 
     - name: Test sample configuration 1
-      continue-on-error: true
       run: |
         dotnet new bit-bp --name TestProject --database SqlServer --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --module Admin --offlineDb --appInsights --sentry --signalR --notification --cloudflare
         dotnet build TestProject/TestProject.sln -p:MultilingualEnabled=true -p:Environment=Staging
         rm -r "TestProject"
 
     - name: Test sample configuration 2
-      continue-on-error: true
       run: |
         dotnet new bit-bp --name TestProject2 --database Other --filesStorage Other --api Standalone --captcha None --pipeline None --module None --offlineDb false --appInsights false --sentry false --signalR false --notification false --cloudflare false
         dotnet build TestProject2/TestProject2.sln -p:MultilingualEnabled=false -p:Environment=Development

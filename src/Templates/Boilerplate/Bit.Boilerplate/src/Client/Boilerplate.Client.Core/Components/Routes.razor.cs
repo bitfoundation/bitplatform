@@ -1,4 +1,4 @@
-namespace Boilerplate.Client.Core.Components;
+﻿namespace Boilerplate.Client.Core.Components;
 
 public partial class Routes
 {
@@ -9,13 +9,7 @@ public partial class Routes
 
     public static async Task OpenUniversalLink(string url, bool forceLoad = false, bool replace = false)
     {
-        await Task.Run(async () =>
-        {
-            while (universalLinksNavigationManager is null)
-            {
-                await Task.Yield();
-            }
-        });
+        await EnsureNavigationManagerIsReady();
 
         if (CultureInfoManager.MultilingualEnabled &&
             forceLoad == false &&
@@ -28,5 +22,16 @@ public partial class Routes
         }
 
         universalLinksNavigationManager!.NavigateTo(url, forceLoad, replace);
+    }
+
+    private static async Task EnsureNavigationManagerIsReady()
+    {
+        await Task.Run(async () =>
+        {
+            while (universalLinksNavigationManager is null)
+            {
+                await Task.Yield();
+            }
+        });
     }
 }

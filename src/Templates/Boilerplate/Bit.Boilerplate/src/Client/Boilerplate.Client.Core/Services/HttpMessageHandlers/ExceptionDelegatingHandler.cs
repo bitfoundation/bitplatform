@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using System.Net;
 using System.Net.Sockets;
 
@@ -38,20 +38,7 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
                 {
                     var problemDetails = (await response.Content.ReadFromJsonAsync(jsonSerializerOptions.GetTypeInfo<AppProblemDetails>(), cancellationToken))!;
 
-                    Type exceptionType = typeof(KnownException).Assembly.GetType(problemDetails.Type!) ?? typeof(UnknownException);
-
-                    var args = new List<object?> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(problemDetails.Key!.ToString()!, problemDetails.Title!) : (object?)problemDetails.Title! };
-
-                    Exception exp = exceptionType == typeof(ResourceValidationException)
-                                        ? new ResourceValidationException(problemDetails.Title!, problemDetails.Payload)
-                                        : (Exception)Activator.CreateInstance(exceptionType, args.ToArray())!;
-
-                    foreach (var data in problemDetails.Extensions)
-                    {
-                        exp.Data[data.Key] = data.Value;
-                    }
-
-                    throw exp;
+                    throw problemDetails;
                 }
 
                 if (response.StatusCode is HttpStatusCode.Unauthorized)

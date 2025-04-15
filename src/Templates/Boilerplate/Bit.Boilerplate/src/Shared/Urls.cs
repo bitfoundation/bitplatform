@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 namespace Boilerplate.Shared;
 
 public static partial class Urls
@@ -31,10 +31,9 @@ public static partial class Urls
     public const string ProductPage = "/product";
     //#endif
 
-    public const string Authorize = "/authorize";
+    //#if (signalR == true)
+    public const string SystemPrompts = "/system-prompts";
+    //#endif
 
-    public static readonly string[] All = typeof(Urls).GetFields()
-                                                      .Where(f => f.FieldType == typeof(string))
-                                                      .Select(f => f.GetValue(null)!.ToString()!)
-                                                      .ToArray();
+    public const string Authorize = "/authorize";
 }

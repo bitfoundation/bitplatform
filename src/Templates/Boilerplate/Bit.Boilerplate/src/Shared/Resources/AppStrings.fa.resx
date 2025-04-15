@@ -277,6 +277,14 @@
     <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
     <value>لطفاً اطمینان حاصل کنید که این اپلیکیشن بیش از یک‌بار، به طور هم‌زمان روی یک دستگاه یا مرورگر باز نیست.</value>
   </data>
+    <!--#if (signalR == true) -->
+    <data name="SystemPromptsTitle" xml:space="preserve">
+    <value>پرامپت‌های سیستمی</value>
+  </data>
+    <data name="SystemPromptsSubTitle" xml:space="preserve">
+    <value>این‌جا میتونید پرامپت‌های سیستمی مورد استفاده چت بات رو مشاهده کنید</value>
+  </data>
+    <!--#endif-->
     <!--#if (offlineDb == true) -->
     <data name="OfflineEditProfileTitle" xml:space="preserve">
     <value>ویرایش پروفایل آفلاین</value>
@@ -1216,4 +1224,36 @@
     <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
     <value>ورود بی رمز با موفقیت غیرفعال شد</value>
   </data>
+    <data name="Clear" xml:space="preserve">
+    <value>پاک کردن</value>
+  </data>
+    <data name="Send" xml:space="preserve">
+    <value>ارسال</value>
+  </data>
+    <data name="Canceled" xml:space="preserve">
+    <value>لغو شده</value>
+  </data>
+    <!--#if (signalR == true) -->
+    <data name="AiChatPanelTitle" xml:space="preserve">
+    <value>پنل هوش مصنوعی</value>
+  </data>
+    <data name="AiChatPanelInitialResponse" xml:space="preserve">
+    <value>این یک پیام اولیه است برای آغاز صحبت با هوش مصنوعی!</value>
+  </data>
+    <data name="AiChatPanelPrompt1" xml:space="preserve">
+    <value>چگونه میتوانم رمزعبور خود را ریست کنم؟</value>
+  </data>
+    <data name="AiChatPanelPrompt2" xml:space="preserve">
+    <value>چگونه میتوانم نسخه PWA برنامه رو نصب کنم؟</value>
+  </data>
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>کجا میتوانم گزارشات محصولات و دسته بندیها را پبدا کنم؟</value>
+  </data>
+    <data name="AiChatPanelPlaceholder" xml:space="preserve">
+    <value>پیامی را وارد کنید...</value>
+  </data>
+    <data name="AiChatPanelCommunicatingPlaceholder" xml:space="preserve">
+    <value>درحال فکر کردن...</value>
+  </data>
+    <!--#endif -->
 </root>

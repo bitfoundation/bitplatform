@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 namespace Boilerplate.Shared.Dtos.Products;
 
 [DtoResourceType(typeof(AppStrings))]
@@ -22,7 +22,7 @@ public partial class ProductDto
     [Display(Name = nameof(AppStrings.Price))]
     public decimal Price { get; set; }
 
-    [MaxLength(512, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_InvalidMaxLength))]
+    [MaxLength(4096, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_InvalidMaxLength))]
     [Display(Name = nameof(AppStrings.Description))]
     public string? Description { get; set; }
 

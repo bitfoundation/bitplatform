@@ -1,4 +1,4 @@
-using Boilerplate.Shared.Controllers;
+﻿using Boilerplate.Shared.Controllers;
 using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Shared.Controllers.Products;
 using Boilerplate.Shared.Controllers.Categories;
@@ -18,6 +18,7 @@ public partial class AddOrEditProductPage
     private string? productImageUploadUrl;
     private BitFileUpload fileUploadRef = default!;
     private string selectedCategoryId = string.Empty;
+    private BitRichTextEditor richTextEditorRef = default!;
     private List<BitDropdownItem<string>> allCategoryList = [];
     private AppDataAnnotationsValidator validatorRef = default!;
 
@@ -31,16 +32,18 @@ public partial class AddOrEditProductPage
         {
             var categoryList = await categoryController.Get(CurrentCancellationToken);
 
-            allCategoryList = categoryList.Select(c => new BitDropdownItem<string>()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = c.Name ?? string.Empty,
-                Value = c.Id.ToString()
-            }).ToList();
+            allCategoryList = [.. categoryList.Select(c => new BitDropdownItem<string>()
+                                                           {
+                                                               ItemType = BitDropdownItemType.Normal,
+                                                               Text = c.Name ?? string.Empty,
+                                                               Value = c.Id.ToString()
+                                                           })];
 
             if (Id is null) return;
+            
             product = await productController.Get(Id.Value, CurrentCancellationToken);
             selectedCategoryId = (product.CategoryId ?? default).ToString();
+
             var accessToken = await AuthTokenProvider.GetAccessToken();
             productImageUploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadProductImage/{product.Id}?access_token={accessToken}").ToString();
         }
@@ -55,6 +58,8 @@ public partial class AddOrEditProductPage
         if (isLoading || isSaving) return;
 
         isSaving = true;
+
+        product.Description = await richTextEditorRef.GetHtml();
 
         try
         {

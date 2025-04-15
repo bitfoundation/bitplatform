@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace Boilerplate.Shared.Services;
 
@@ -31,7 +31,7 @@ public partial class SharedExceptionHandler
         return exceptionMessageToLog;
     }
 
-    protected Exception UnWrapException(Exception exception)
+    public Exception UnWrapException(Exception exception)
     {
         if (exception is AggregateException aggregateException)
         {
@@ -45,7 +45,7 @@ public partial class SharedExceptionHandler
         return exception;
     }
 
-    protected bool IgnoreException(Exception exception)
+    public bool IgnoreException(Exception exception)
     {
         if (exception is KnownException)
             return false;

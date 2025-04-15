@@ -1,4 +1,4 @@
-using AdsPush;
+﻿using AdsPush;
 using AdsPush.Vapid;
 using AdsPush.Abstraction;
 using System.Linq.Expressions;
@@ -77,7 +77,7 @@ public partial class PushNotificationService
 
         _ = Task.Run(async () => // Let's not wait for the push notification to be sent. Consider using a proper message queue or background job system like Hangfire.
         {
-            await using var scope = rootServiceScopeProvider.Invoke();
+            await using var scope = rootServiceScopeProvider();
             var adsPushSender = scope.ServiceProvider.GetRequiredService<IAdsPushSender>();
             var serverExceptionHandler = scope.ServiceProvider.GetRequiredService<ServerExceptionHandler>();
 

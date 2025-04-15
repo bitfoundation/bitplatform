@@ -277,6 +277,14 @@
     <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
     <value>Zorg ervoor dat je niet meerdere sessies van de app tegelijkertijd uitvoert op hetzelfde apparaat of in dezelfde browser.</value>
   </data>
+    <!--#if (signalR == true) -->
+    <data name="SystemPromptsTitle" xml:space="preserve">
+    <value>Systeemprompts bewerken</value>
+  </data>
+    <data name="SystemPromptsSubTitle" xml:space="preserve">
+    <value>Bekijk hier de systeemprompts voor de chatbot.</value>
+  </data>
+    <!--#endif-->
     <!--#if (offlineDb == true) -->
     <data name="OfflineEditProfileTitle" xml:space="preserve">
     <value>Offline Profiel bewerken</value>
@@ -1216,4 +1224,36 @@
     <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
     <value>Wachtwoordloos inloggen succesvol uitgeschakeld</value>
   </data>
+    <data name="Clear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+    <data name="Send" xml:space="preserve">
+    <value>Verzenden</value>
+  </data>
+    <data name="Canceled" xml:space="preserve">
+    <value>Geannuleerd</value>
+  </data>
+<!--#if (signalR == true) -->
+    <data name="AiChatPanelTitle" xml:space="preserve">
+    <value>AI-chatpaneel</value>
+  </data>
+    <data name="AiChatPanelInitialResponse" xml:space="preserve">
+    <value>Dit is de eerste reactie van AI om de chat op gang te brengen!</value>
+  </data>
+    <data name="AiChatPanelPrompt1" xml:space="preserve">
+    <value>Hoe kan ik mijn wachtwoord opnieuw instellen?</value>
+  </data>
+    <data name="AiChatPanelPrompt2" xml:space="preserve">
+    <value>Hoe kan ik de PWA-versie van de app installeren?</value>
+  </data>
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>Waar kan ik rapporten over producten en categorieën vinden?</value>
+  </data>
+    <data name="AiChatPanelPlaceholder" xml:space="preserve">
+    <value>Schrijf een bericht...</value>
+  </data>
+    <data name="AiChatPanelCommunicatingPlaceholder" xml:space="preserve">
+    <value>Nadenkend...</value>
+  </data>
+    <!--#endif -->
 </root>

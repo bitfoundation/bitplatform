@@ -7,7 +7,7 @@
                 <BitStack Class="product-stack">
                     <ProductImage Src="@GetProductImageUrl(product)" Width="100%" />
                     <BitText>@product.Name</BitText>
-                    <BitText Typography="BitTypography.Body2">@product.Description</BitText>
+                    <BitText Typography="BitTypography.Body2">@((MarkupString)product.Description!)</BitText>
                     <BitText Typography="BitTypography.H6">@product.FormattedPrice</BitText>
                 </BitStack>
             </BitCard>

@@ -1,4 +1,4 @@
-namespace Boilerplate.Shared.Services;
+﻿namespace Boilerplate.Shared.Services;
 
 public class AuthPolicies
 {
@@ -39,4 +39,11 @@ public class AppClaimTypes
     /// <inheritdoc cref="AuthPolicies.ELEVATED_ACCESS"/>
     /// </summary>
     public const string ELEVATED_SESSION = "elevated-session";
+
+    public const string EDIT_AI_SYSTEM_PROMPTS = "edit-ai-system-prompts";
+}
+
+public class AppRoles
+{
+    public const string SUPER_ADMIN = "SuperAdmin";
 }

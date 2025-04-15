@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using System.Web;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
@@ -200,6 +200,11 @@ public partial class ClientAppCoordinator : AppComponentBase
         {
             logger.LogInformation("SignalR Message {Message} received from server to publish.", message);
             PubSubService.Publish(message, payload);
+        }));
+
+        signalROnDisposables.Add(hubConnection.On<AppProblemDetails>(SignalREvents.EXCEPTION_THROWN, async (appProblemDetails) =>
+        {
+            ExceptionHandler.Handle(appProblemDetails, displayKind: ExceptionDisplayKind.NonInterrupting);
         }));
 
         hubConnection.Closed += HubConnectionStateChange;

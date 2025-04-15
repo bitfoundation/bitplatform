@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 //#if (notification == true)
 using AdsPush.Abstraction.Settings;
 //#endif
@@ -15,6 +15,10 @@ public partial class ServerApiSettings : SharedSettings
 
     [Required]
     public EmailOptions Email { get; set; } = default!;
+
+    //#if (signalR == true)
+    public AIOptions? AI { get; set; }
+    //#endif
 
     public SmsOptions? Sms { get; set; }
 
@@ -171,6 +175,29 @@ public partial class AppIdentityOptions : IdentityOptions
     /// </summary>
     public int MaxConcurrentPrivilegedSessions { get; set; }
 }
+
+//#if (signalR == true)
+public partial class AIOptions
+{
+    public OpenAIOptions? OpenAI { get; set; }
+    public AzureOpenAIOptions? AzureOpenAI { get; set; }
+}
+
+public class OpenAIOptions
+{
+    public string? Model { get; set; }
+    public Uri? Endpoint { get; set; }
+    public string? ApiKey { get; set; }
+}
+
+public class AzureOpenAIOptions
+{
+    public string? Model { get; set; }
+    public Uri? Endpoint { get; set; }
+    public string? ApiKey { get; set; }
+}
+
+//#endif
 
 public partial class EmailOptions
 {

@@ -277,6 +277,14 @@
     <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
     <value>Please ensure you're not running multiple sessions of the app simultaneously on the same device or browser.</value>
   </data>
+    <!--#if (signalR == true) -->
+    <data name="SystemPromptsTitle" xml:space="preserve">
+    <value>System prompts</value>
+  </data>
+    <data name="SystemPromptsSubTitle" xml:space="preserve">
+    <value>View the system prompts for chatbot here.</value>
+  </data>
+    <!--#endif-->
     <!--#if (offlineDb == true) -->
     <data name="OfflineEditProfileTitle" xml:space="preserve">
     <value>Offline Edit profile</value>
@@ -1216,4 +1224,36 @@
     <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
     <value>Passwordless sign-in disabled successfully</value>
   </data>
+    <data name="Clear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+    <data name="Send" xml:space="preserve">
+    <value>Send</value>
+  </data>
+    <data name="Canceled" xml:space="preserve">
+    <value>Canceled</value>
+  </data>
+    <!--#if (signalR == true) -->
+    <data name="AiChatPanelTitle" xml:space="preserve">
+    <value>AI chat panel</value>
+  </data>
+    <data name="AiChatPanelInitialResponse" xml:space="preserve">
+    <value>This is the AI initial response to kick start the chat!</value>
+  </data>
+    <data name="AiChatPanelPrompt1" xml:space="preserve">
+    <value>How can I reset my password?</value>
+  </data>
+    <data name="AiChatPanelPrompt2" xml:space="preserve">
+    <value>How can I install the PWA version of the app?</value>
+  </data>
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>Where can I find reports about products and categories?</value>
+  </data>
+    <data name="AiChatPanelPlaceholder" xml:space="preserve">
+    <value>Write a message...</value>
+  </data>
+    <data name="AiChatPanelCommunicatingPlaceholder" xml:space="preserve">
+    <value>Thinking...</value>
+  </data>
+    <!--#endif -->
 </root>
