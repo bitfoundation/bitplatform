@@ -155,7 +155,7 @@ public partial class AppHub : Hub
 
                                     await using var scope = rootScopeProvider();
                                     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                                    var recommendedProduts = await dbContext.Products
+                                    var recommendedProducts = await dbContext.Products
                                         .Project()
                                         .OrderByDescending(p => string.IsNullOrEmpty(p.ImageFileName) == false)
                                         .ThenBy(p => EF.Functions.Random())
