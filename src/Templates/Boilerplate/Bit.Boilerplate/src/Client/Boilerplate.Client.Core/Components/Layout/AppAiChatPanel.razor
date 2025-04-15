@@ -1,5 +1,4 @@
 @using Boilerplate.Shared.Dtos.Chatbot
-@*+:cnd:noEmit*@
 @inherits AppComponentBase
 
 <section>
@@ -17,7 +16,6 @@
     <BitProPanel Modeless
                  ShowCloseButton
                  @bind-IsOpen="isOpen"
-                 OnOpen="WrapHandled(HandleOnOpenPanel)"
                  OnDismiss="WrapHandled(HandleOnDismissPanel)">
         <Header>
             <BitStack Horizontal Alignment="BitAlignment.Center">
@@ -37,7 +35,7 @@
         </Header>
         <Body>
             <BitStack Class="body">
-                <BitScrollablePane Class="chat-messages-container"
+                <BitScrollablePane Class="scr-container"
                                    AutoScroll FullHeight FullWidth
                                    ScrollbarWidth="BitScrollbarWidth.Thin">
                     <BitStack>
@@ -105,7 +103,6 @@
                                   PreventEnter
                                   MaxLength="1024"
                                   Style="width:100%"
-                                  @ref="textFieldRef"
                                   @bind-Value="@userInput"
                                   OnEnter="WrapHandled((KeyboardEventArgs e) => HandleOnUserInputEnter(e))"
                                   Styles="@(new() { FieldGroup = "padding:0.5rem", Input = "min-height:unset" })"
