@@ -37,7 +37,9 @@
         </Header>
         <Body>
             <BitStack Class="body">
-                <BitScrollablePane AutoScroll ScrollbarWidth="BitScrollbarWidth.Thin" Class="scr-container">
+                <BitScrollablePane Style="padding:0.5rem"
+                                   AutoScroll FullHeight FullWidth
+                                   ScrollbarWidth="BitScrollbarWidth.Thin">
                     <BitStack>
                         @foreach (var message in chatMessages)
                         {
