@@ -1252,7 +1252,7 @@
   </data>
     <!--#elif (module == "Sales") -->
     <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>Heb je productideeën die ik zou moeten bekijken?</value>
+    <value>Beveel mij een grote auto aan!</value>
   </data>
     <!--#else -->
     <data name="AiChatPanelPrompt3" xml:space="preserve">
