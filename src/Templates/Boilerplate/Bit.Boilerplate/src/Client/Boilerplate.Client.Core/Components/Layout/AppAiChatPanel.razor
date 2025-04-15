@@ -37,7 +37,7 @@
         </Header>
         <Body>
             <BitStack Class="body">
-                <BitScrollablePane Style="padding:0.5rem"
+                <BitScrollablePane Class="chat-messages-container"
                                    AutoScroll FullHeight FullWidth
                                    ScrollbarWidth="BitScrollbarWidth.Thin">
                     <BitStack>
@@ -87,7 +87,6 @@
                             @Localizer[nameof(AppStrings.AiChatPanelPrompt2)]
                         </BitButton>
 
-                        @*#if (module == "Admin")*@
                         <BitButton FixedColor
                                    Variant="BitVariant.Outline"
                                    Class="default-prompt-button"
@@ -95,7 +94,6 @@
                                    OnClick="() => SendPromptMessage(Localizer[nameof(AppStrings.AiChatPanelPrompt3)])">
                             @Localizer[nameof(AppStrings.AiChatPanelPrompt3)]
                         </BitButton>
-                        @*#endif*@
                     </BitStack>
                 }
 

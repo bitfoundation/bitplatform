@@ -102,12 +102,12 @@ public partial class AppAiChatPanel
 
     private async Task StartChannel()
     {
-        channel = Channel.CreateUnbounded<string>();
+        channel = Channel.CreateUnbounded<string>(new() { SingleReader = true, SingleWriter = true });
 
         await foreach (var response in hubConnection.StreamAsync<string>("Chatbot",
                                                                          new StartChatbotRequest()
                                                                          {
-                                                                             Culture = CultureInfo.CurrentCulture.Name,
+                                                                             CultureId = CultureInfo.CurrentCulture.LCID,
                                                                              DeviceInfo = TelemetryContext.Platform,
                                                                              ChatMessagesHistory = chatMessages
                                                                          },

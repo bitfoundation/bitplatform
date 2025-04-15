@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.SignalR;
@@ -7,6 +7,7 @@ using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Server.Api.Models.Products;
 using Boilerplate.Shared.Controllers.Products;
+using System.Text.Encodings.Web;
 
 namespace Boilerplate.Server.Api.Controllers.Products;
 
@@ -51,6 +52,8 @@ public partial class ProductController : AppControllerBase, IProductController
     [HttpPost]
     public async Task<ProductDto> Create(ProductDto dto, CancellationToken cancellationToken)
     {
+        dto.Description = HtmlEncoder.Default.Encode(dto.Description ?? string.Empty);
+
         var entityToAdd = dto.Map();
 
         await DbContext.Products.AddAsync(entityToAdd, cancellationToken);
@@ -69,10 +72,13 @@ public partial class ProductController : AppControllerBase, IProductController
     [HttpPut]
     public async Task<ProductDto> Update(ProductDto dto, CancellationToken cancellationToken)
     {
+        dto.Description = HtmlEncoder.Default.Encode(dto.Description ?? string.Empty);
+
         var entityToUpdate = await DbContext.Products.FindAsync([dto.Id], cancellationToken)
             ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
 
         dto.Patch(entityToUpdate);
+
 
         await Validate(entityToUpdate, cancellationToken);
 
