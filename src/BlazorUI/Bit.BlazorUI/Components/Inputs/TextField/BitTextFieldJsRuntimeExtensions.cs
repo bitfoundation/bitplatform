@@ -7,6 +7,11 @@ internal static class BitTextFieldJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.TextField.setupMultilineInput", id, input, autoHeight, preventEnter);
     }
 
+    internal static ValueTask BitTextFieldAdjustHeight(this IJSRuntime jsRuntime, ElementReference input)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.TextField.adjustHeight", input);
+    }
+
     internal static ValueTask BitTextFieldDispose(this IJSRuntime jsRuntime, string id)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.TextField.dispose", id);

@@ -2,5 +2,34 @@
 
 .bit-scp {
     overflow: auto;
+    scrollbar-width: auto;
     scrollbar-gutter: auto;
+}
+
+.bit-scp-mod {
+    &::-webkit-scrollbar {
+        width: spacing(0.5);
+        height: spacing(0.75);
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border-radius: spacing(0.5);
+        background-color: $clr-fg-ter;
+
+        &:hover {
+            background-color: $clr-fg-ter-hover;
+        }
+
+        &:active {
+            background-color: $clr-fg-ter-active;
+        }
+    }
+
+    &::-webkit-scrollbar-button {
+        display: none;
+    }
 }
