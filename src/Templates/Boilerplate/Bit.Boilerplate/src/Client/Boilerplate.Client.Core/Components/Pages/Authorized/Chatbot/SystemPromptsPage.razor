@@ -30,7 +30,7 @@
             <AuthorizeView Roles="@AppRoles.SUPER_ADMIN">
                 <BitMarkdownEditor @bind-Value="systemPromptMarkdown" Style="height:auto" />
             </AuthorizeView>
-            <BitMarkdownViewer Markdown="@systemPromptMarkdown" />
+            <BitMarkdownViewer Markdown="@systemPromptMarkdown" Style="word-break:break-all" />
         </BitStack>
     }
 </CascadingValue>
