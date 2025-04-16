@@ -9,14 +9,153 @@ public partial class BitMediaQueryDemo
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content of the element.",
+            Description = "The content of the element to render if the specified query is matched.",
+        },
+        new()
+        {
+            Name = "Matched",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The content to be rendered if the provided query is matched (an alias for ChildContent).",
+        },
+        new()
+        {
+            Name = "NotMatched",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The content to be rendered if the provided query is not matched.",
+        },
+        new()
+        {
+            Name = "OnChange",
+            Type = "EventCallback<bool>",
+            DefaultValue = "",
+            Description = "The event callback to be called when the state of the media query has been changed.",
         },
         new()
         {
             Name = "Query",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Specifies the custom query to be matched.",
+        },
+        new()
+        {
+            Name = "ScreenQuery",
             Type = "BitScreenQuery?",
             DefaultValue = "null",
-            Description = "Specifies the media query to match for the child content.",
+            Description = "Defines the screen query to be matched, amongst the predefined Bit screen media queries.",
+            LinkType = LinkType.Link,
+            Href = "#screen-query-enum"
+        },
+    ];
+
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        new()
+        {
+            Id = "screen-query-enum",
+            Name = "BitScreenQuery",
+            Description = "The predefined screen media queries in the bit BlazorUI.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Xs",
+                    Description="Extra small query: [@media screen and (max-width: 600px)]",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Sm",
+                    Description="Small query: [@media screen and (min-width: 601px) and (max-width: 960px)]",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Md",
+                    Description="Medium query: [@media screen and (min-width: 961px) and (max-width: 1280px)]",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Lg",
+                    Description="Large query: [@media screen and (min-width: 1281px) and (max-width: 1920px)]",
+                    Value="3",
+                },
+                new()
+                {
+                    Name= "Xl",
+                    Description="Extra large query: [@media screen and (min-width: 1921px) and (max-width: 2560px)]",
+                    Value="4",
+                },
+                new()
+                {
+                    Name= "Xxl",
+                    Description="Extra extra large query: [@media screen and (min-width: 2561px)]",
+                    Value="5",
+                },
+                new()
+                {
+                    Name= "LtSm",
+                    Description="Less than small query: [@media screen and (max-width: 600px)]",
+                    Value="6",
+                },
+                new()
+                {
+                    Name= "LtMd",
+                    Description="Less than medium query: [@media screen and (max-width: 960px)]",
+                    Value="7",
+                },
+                new()
+                {
+                    Name= "LtLg",
+                    Description="Less than large query: [@media screen and (max-width: 1280px)]",
+                    Value="8",
+                },
+                new()
+                {
+                    Name= "LtXl",
+                    Description="Less than extra large query: [@media screen and (max-width: 1920px)]",
+                    Value="9",
+                },
+                new()
+                {
+                    Name= "LtXxl",
+                    Description="Less than extra extra large query: [@media screen and (max-width: 2560px)]",
+                    Value="10",
+                },
+                new()
+                {
+                    Name= "GtXs",
+                    Description="Greater than extra small query: [@media screen and (min-width: 601px)]",
+                    Value="11",
+                },
+                new()
+                {
+                    Name= "GtSm",
+                    Description="Greater than extra small query: [@media screen and (min-width: 601px)]",
+                    Value="12",
+                },
+                new()
+                {
+                    Name= "GtMd",
+                    Description="Greater than medium query: [@media screen and (min-width: 1281px)]",
+                    Value="13",
+                },
+                new()
+                {
+                    Name= "GtLg",
+                    Description="Greater than large query: [@media screen and (min-width: 1921px)]",
+                    Value="14",
+                },
+                new()
+                {
+                    Name= "GtXl",
+                    Description="Greater than extra large query: [@media screen and (min-width: 2561px)]",
+                    Value="15",
+                },
+            ]
         }
     ];
 

@@ -16,17 +16,17 @@ public partial class BitMediaQuery : BitComponentBase
 
 
     /// <summary>
-    /// The content of the element.
+    /// The content of the element to render if the specified query is matched.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// The content to be rendered if the provided Query is matched.
+    /// The content to be rendered if the provided query is matched (an alias for ChildContent).
     /// </summary>
     [Parameter] public RenderFragment? Matched { get; set; }
 
     /// <summary>
-    /// The content to be rendered if the provided Query is not matched.
+    /// The content to be rendered if the provided query is not matched.
     /// </summary>
     [Parameter] public RenderFragment? NotMatched { get; set; }
 
@@ -36,7 +36,7 @@ public partial class BitMediaQuery : BitComponentBase
     [Parameter] public EventCallback<bool> OnChange { get; set; }
 
     /// <summary>
-    /// Specified the custom query to be matched.
+    /// Specifies the custom query to be matched.
     /// </summary>
     [Parameter] public string? Query { get; set; }
 
