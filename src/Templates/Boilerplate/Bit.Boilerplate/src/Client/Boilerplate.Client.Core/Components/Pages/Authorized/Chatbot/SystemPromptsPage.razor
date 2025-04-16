@@ -15,18 +15,22 @@
     {
         <AuthorizeView Roles="@AppRoles.SUPER_ADMIN">
             <Authorized>
-                <BitButton IconName="@BitIconName.Save" IconOnly OnClick="WrapHandled(SaveChanges)" AutoLoading />
+                <BitSticky Top="4rem" Style="margin-bottom:8px">
+                    <BitButton IconName="@BitIconName.Save" OnClick="WrapHandled(SaveChanges)" AutoLoading>
+                        Save prompt
+                    </BitButton>
+                </BitSticky>
             </Authorized>
             <NotAuthorized>
                 <BitText Typography="BitTypography.H4" Color="BitColor.Warning">You don't have access to change the system prompts.</BitText>
             </NotAuthorized>
         </AuthorizeView>
-        
+
         <BitStack VerticalAlign="BitAlignment.Stretch" Horizontal>
             <AuthorizeView Roles="@AppRoles.SUPER_ADMIN">
                 <BitMarkdownEditor @bind-Value="systemPromptMarkdown" Style="height:auto" />
             </AuthorizeView>
-            <BitMarkdownViewer Markdown="@systemPromptMarkdown" />
+            <BitMarkdownViewer Markdown="@systemPromptMarkdown" Style="word-break:break-all" />
         </BitStack>
     }
 </CascadingValue>

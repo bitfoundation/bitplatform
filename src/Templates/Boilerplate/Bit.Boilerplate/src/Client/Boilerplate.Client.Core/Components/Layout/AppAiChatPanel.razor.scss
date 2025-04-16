@@ -3,7 +3,7 @@
 
 ::deep {
 
-    .chat-messages-container {
+    .scr-container {
         padding: 0.5rem;
 
         img {
@@ -38,6 +38,7 @@
 
         pre {
             white-space: pre-wrap;
+            word-break: break-all;
         }
     }
 

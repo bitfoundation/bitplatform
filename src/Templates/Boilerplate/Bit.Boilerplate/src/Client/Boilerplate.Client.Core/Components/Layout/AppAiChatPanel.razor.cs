@@ -13,7 +13,6 @@ public partial class AppAiChatPanel
     private int responseCounter;
     private Channel<string>? channel;
     private AiChatMessage? lastAssistantMessage;
-    private BitTextField textFieldRef = default!;
     private List<AiChatMessage> chatMessages = []; // TODO: Persist these values in client-side storage to retain them across app restarts.
 
 
@@ -78,14 +77,16 @@ public partial class AppAiChatPanel
 
     private void SetDefaultValues()
     {
-        lastAssistantMessage = new() { Role = AiChatMessageRole.Assistant };
-        chatMessages = [new() { Content = Localizer[nameof(AppStrings.AiChatPanelInitialResponse)], Role = AiChatMessageRole.Assistant }];
+        isLoading = false;
         responseCounter = 0;
-    }
-
-    private async Task HandleOnOpenPanel()
-    {
-        //await textFieldRef.FocusAsync();
+        lastAssistantMessage = new() { Role = AiChatMessageRole.Assistant };
+        chatMessages = [
+            new()
+            {
+                Role = AiChatMessageRole.Assistant,
+                Content = Localizer[nameof(AppStrings.AiChatPanelInitialResponse)],
+            }
+        ];
     }
 
     private async Task HandleOnDismissPanel()
