@@ -12,6 +12,7 @@
         <PackageVersion Include="Bit.SourceGenerators" Version="9.7.0-pre-07" />
         <PackageVersion Include="Fido2.AspNet" Version="4.0.0-beta.16" />
         <PackageVersion Include="Fido2.Models" Version="4.0.0-beta.16" />
+        <PackageVersion Include="HtmlSanitizer" Version="9.0.876" />
         <PackageVersion Include="libphonenumber-csharp" Version="9.0.2" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.4" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.4" />

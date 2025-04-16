@@ -11,6 +11,7 @@ using Microsoft.Net.Http.Headers;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.ResponseCompression;
 using Twilio;
+using Ganss.Xss;
 using System.Text;
 using Fido2NetLib;
 using PhoneNumbers;
@@ -154,6 +155,8 @@ public static partial class Program
         });
 
         services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.AddRange([AppJsonContext.Default, IdentityJsonContext.Default, ServerJsonContext.Default]));
+
+        services.AddSingleton<HtmlSanitizer>();
 
         services
             .AddControllers()
