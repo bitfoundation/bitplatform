@@ -46,6 +46,7 @@ public static partial class Program
         services.AddScoped<EmailService>();
         services.AddScoped<EmailServiceJobsRunner>();
         services.AddScoped<PhoneService>();
+        services.AddScoped<PhoneServiceJobsRunner>();
         if (appSettings.Sms?.Configured is true)
         {
             TwilioClient.Init(appSettings.Sms.TwilioAccountSid, appSettings.Sms.TwilioAutoToken);
@@ -397,6 +398,7 @@ public static partial class Program
 
         builder.Services.AddHangfireServer(options =>
         {
+            options.ServerName = $"Boilerplate-{Environment.MachineName}-{Environment.ProcessId}-{Guid.NewGuid()}";
         });
     }
 
