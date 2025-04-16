@@ -237,7 +237,8 @@ public partial class BitButton : BitComponentBase
     [JSInvokable("OnDragEnd")]
     public async ValueTask _OnDragEnd()
     {
-        //_dragging = false;
+        await Task.Delay(100);
+        _dragging = false;
     }
 
 
