@@ -167,26 +167,19 @@ public partial class AppHub : Hub
                                     foreach (var product in recommendedProducts)
                                     {
                                         markdown.AppendLine($"## [{product.Name}](/product/{product.ShortId})");
-                                        markdown.AppendLine();
                                         markdown.AppendLine($"**Price**: ${product.FormattedPrice}");
-                                        markdown.AppendLine();
 
-                                        if (string.IsNullOrEmpty(product.DescriptionHTML) is false)
+                                        if (string.IsNullOrEmpty(product.DescriptionText) is false)
                                         {
-                                            markdown.AppendLine("```html");
-                                            markdown.AppendLine(product.DescriptionHTML);
-                                            markdown.AppendLine("```");
-                                            markdown.AppendLine();
+                                            markdown.AppendLine(product.DescriptionText);
                                         }
 
                                         if (string.IsNullOrEmpty(product.MediumSizeImageFileName) is false)
                                         {
                                             markdown.AppendLine($"![{product.Name}]({product.GetProductImageUrl(Context.GetHttpContext()!.Request.GetBaseUrl())})");
-                                            markdown.AppendLine();
                                         }
 
                                         markdown.AppendLine("---");
-                                        markdown.AppendLine();
                                     }
 
                                     return markdown.ToString();
