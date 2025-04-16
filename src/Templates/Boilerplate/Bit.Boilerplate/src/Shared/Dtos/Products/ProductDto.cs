@@ -29,9 +29,6 @@ public partial class ProductDto
     [MaxLength(4096, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_InvalidMaxLength))]
     public string? DescriptionText { get; set; }
 
-    [MaxLength(4096, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_InvalidMaxLength))]
-    public string? DescriptionJson { get; set; }
-
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Category))]
     public Guid? CategoryId { get; set; }

@@ -40,7 +40,7 @@ public partial class AddOrEditProductPage
                                                            })];
 
             var accessToken = await AuthTokenProvider.GetAccessToken();
-            productImageUploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadProductPrimaryImage/{product.Id}?access_token={accessToken}").ToString();
+            productImageUploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadProductPrimaryImage/{Id ?? product.Id}?access_token={accessToken}").ToString();
 
             if (Id is null) return;
 
@@ -60,7 +60,6 @@ public partial class AddOrEditProductPage
         isSaving = true;
 
         product.DescriptionHTML = await richTextEditorRef.GetHtml();
-        product.DescriptionJson = await richTextEditorRef.GetContent();
         product.DescriptionText = await richTextEditorRef.GetText();
 
         try
@@ -94,6 +93,7 @@ public partial class AddOrEditProductPage
     private async Task HandleOnUploadComplete()
     {
         product.HasPrimaryImage = true;
+        product.ConcurrencyStamp = Guid.NewGuid().ToByteArray(); // To update the product image's url when user changes product image multiple time within the same page.
         isManagingFile = false;
     }
 

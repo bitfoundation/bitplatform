@@ -1,6 +1,5 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Server.Api.Models.Categories;
-using Boilerplate.Server.Api.Models.Attachments;
 
 namespace Boilerplate.Server.Api.Models.Products;
 
@@ -15,7 +14,7 @@ public partial class Product
     public int ShortId { get; set; }
         //#if (database != "PostgreSQL" && database != "SqlServer")
         = Environment.TickCount; // Using a database sequence for this is recommended.
-                                 //#endif
+        //#endif
 
     [Required, MaxLength(64)]
     public string? Name { get; set; }
@@ -28,9 +27,6 @@ public partial class Product
 
     [MaxLength(4096)]
     public string? DescriptionText { get; set; }
-
-    [MaxLength(4096)]
-    public string? DescriptionJson { get; set; }
 
     public DateTimeOffset CreatedOn { get; set; } = DateTimeOffset.UtcNow;
 
