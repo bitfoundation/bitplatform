@@ -64,30 +64,6 @@ public partial class MainLayout
             termsNavItem
         ];
 
-        BitNavItem aboutNavItem = new()
-        {
-            Text = localizer[nameof(AppStrings.About)],
-            IconName = BitIconName.Info,
-            Url = Urls.AboutPage,
-        };
-
-        navPanelAuthenticatedItems.Add(aboutNavItem);
-        navPanelUnAuthenticatedItems.Add(aboutNavItem);
-
-        navPanelAuthenticatedItems.Add(new()
-        {
-            Text = localizer[nameof(AppStrings.Settings)],
-            IconName = BitIconName.Equalizer,
-            Url = Urls.SettingsPage,
-            AdditionalUrls =
-            [
-                $"{Urls.SettingsPage}/{Urls.SettingsSections.Profile}",
-                $"{Urls.SettingsPage}/{Urls.SettingsSections.Account}",
-                $"{Urls.SettingsPage}/{Urls.SettingsSections.Tfa}",
-                $"{Urls.SettingsPage}/{Urls.SettingsSections.Sessions}",
-            ]
-        });
-
         //#if (offlineDb == true)
         navPanelAuthenticatedItems.Add(new()
         {
@@ -117,5 +93,29 @@ public partial class MainLayout
             Url = Urls.SystemPrompts,
         });
         //#endif
+
+        BitNavItem aboutNavItem = new()
+        {
+            Text = localizer[nameof(AppStrings.About)],
+            IconName = BitIconName.Info,
+            Url = Urls.AboutPage,
+        };
+
+        navPanelAuthenticatedItems.Add(aboutNavItem);
+        navPanelUnAuthenticatedItems.Add(aboutNavItem);
+
+        navPanelAuthenticatedItems.Add(new()
+        {
+            Text = localizer[nameof(AppStrings.Settings)],
+            IconName = BitIconName.Equalizer,
+            Url = Urls.SettingsPage,
+            AdditionalUrls =
+            [
+                $"{Urls.SettingsPage}/{Urls.SettingsSections.Profile}",
+                $"{Urls.SettingsPage}/{Urls.SettingsSections.Account}",
+                $"{Urls.SettingsPage}/{Urls.SettingsSections.Tfa}",
+                $"{Urls.SettingsPage}/{Urls.SettingsSections.Sessions}",
+            ]
+        });
     }
 }
