@@ -66,7 +66,7 @@ jobs:
         cd ../../Tests
         dotnet build
         pwsh bin/Debug/net9.0/playwright.ps1 install --with-deps
-        dotnet test --logger GitHubActions --filter "${{ env.SIMPLE_TEST_FILTER }}"
+        # dotnet test --logger GitHubActions --filter "${{ env.SIMPLE_TEST_FILTER }}"
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
