@@ -14,9 +14,9 @@ using Boilerplate.Server.Api.Models.PushNotification;
 //#endif
 //#if (database == "Sqlite")
 using System.Security.Cryptography;
-using Boilerplate.Server.Api.Models.Attachments;
 //#endif
 using Hangfire.EntityFrameworkCore;
+using Boilerplate.Server.Api.Models.Attachments;
 
 namespace Boilerplate.Server.Api.Data;
 
