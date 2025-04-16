@@ -6,6 +6,7 @@ public partial class PhoneServiceJobsRunner
 {
     [AutoInject] private ServerExceptionHandler serverExceptionHandler = default!;
 
+    [AutomaticRetry(Attempts = 3)]
     public async Task SendSms(string phoneNumber, string from, string messageText, CancellationToken cancellationToken)
     {
         try

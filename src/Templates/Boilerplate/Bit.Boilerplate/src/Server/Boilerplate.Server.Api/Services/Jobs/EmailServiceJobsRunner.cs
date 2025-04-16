@@ -10,6 +10,7 @@ public partial class EmailServiceJobsRunner
     [AutoInject] ServerExceptionHandler serverExceptionHandler = default!;
     [AutoInject] private IStringLocalizer<EmailStrings> emailLocalizer = default!;
 
+    [AutomaticRetry(Attempts = 3)]
     public async Task SendEmailJob(string toEmailAddress, string toName, string subject, string body, CancellationToken cancellationToken)
     {
         try
