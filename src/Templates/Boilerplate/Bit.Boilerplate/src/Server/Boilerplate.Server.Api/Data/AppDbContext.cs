@@ -52,7 +52,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         //#endif
         //#if (database == "PostgreSQL" || database == "SqlServer")
         modelBuilder.HasSequence<int>("ProductShortId")
-            .StartsAt(10_000)
+            .StartsAt(10_051) // There are 50 products added by ProductConfiguration.cs
             .IncrementsBy(1);
         //#endif
         //#if (IsInsideProjectTemplate == true)

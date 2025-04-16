@@ -153,34 +153,24 @@ public partial class AppHub : Hub
                                     if (messageSpecificCancellationToken.IsCancellationRequested)
                                         return null;
 
+                                    var baseUrl = Context.GetHttpContext()!.Request.GetBaseUrl();
+
                                     await using var scope = rootScopeProvider();
                                     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                                     var recommendedProducts = await dbContext.Products // TODO: Implement RAG & Instruct LLM to accept recommended products as is.
                                         .Project()
                                         .OrderByDescending(p => p.HasPrimaryImage)
+                                        .Select(p => new
+                                        {
+                                            p.Name,
+                                            PageUrl = new Uri(baseUrl, p.PageUrl),
+                                            PreviewImageUrl = p.HasPrimaryImage ? p.GetPrimaryMediumImageUrl(baseUrl) : null,
+                                            p.FormattedPrice,
+                                            Description = p.DescriptionText
+                                        })
                                         .ToArrayAsync(messageSpecificCancellationToken);
 
-                                    var markdown = new StringBuilder();
-
-                                    foreach (var product in recommendedProducts)
-                                    {
-                                        markdown.AppendLine($"## [{product.Name}]({product.PageUrl})");
-                                        markdown.AppendLine($"**Price**: ${product.FormattedPrice}");
-
-                                        if (string.IsNullOrEmpty(product.DescriptionText) is false)
-                                        {
-                                            markdown.AppendLine(product.DescriptionText);
-                                        }
-
-                                        if (product.HasPrimaryImage)
-                                        {
-                                            markdown.AppendLine($"![{product.Name}]({product.GetPrimaryMediumImageUrl(Context.GetHttpContext()!.Request.GetBaseUrl())})");
-                                        }
-
-                                        markdown.AppendLine("---");
-                                    }
-
-                                    return markdown.ToString();
+                                    return recommendedProducts;
                                 }, name: "GetProductRecommendations", description: "This tool searches for and recommends products based on a detailed description of the user's needs and preferences. It should only be used after the user explicitly asks for recommendations and provides specific criteria (e.g., product type, intended use, required features, budget hints, etc.)")
                                 //#endif
                                 ]
