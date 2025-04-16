@@ -153,7 +153,9 @@ public partial class AppHub : Hub
                                     if (messageSpecificCancellationToken.IsCancellationRequested)
                                         return null;
 
-                                    var baseUrl = Context.GetHttpContext()!.Request.GetBaseUrl();
+                                    var baseApiUrl = Context.GetHttpContext()!.Request.GetBaseUrl();
+                                    var baseWebAppUrl = Context.GetHttpContext()!.Request.GetWebAppUrl();
+                                    var productPlaceholder = new Uri(baseWebAppUrl, "_content/Boilerplate.Client.Core/images/product-placeholder.svg").ToString();
 
                                     await using var scope = rootScopeProvider();
                                     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -163,15 +165,15 @@ public partial class AppHub : Hub
                                         .Select(p => new
                                         {
                                             p.Name,
-                                            PageUrl = new Uri(baseUrl, p.PageUrl),
-                                            PreviewImageUrl = p.HasPrimaryImage ? p.GetPrimaryMediumImageUrl(baseUrl) : null,
+                                            PageUrl = new Uri(baseApiUrl, p.PageUrl),
+                                            PreviewImageUrl = p.HasPrimaryImage ? p.GetPrimaryMediumImageUrl(baseApiUrl) : productPlaceholder,
                                             p.FormattedPrice,
                                             Description = p.DescriptionText
                                         })
                                         .ToArrayAsync(messageSpecificCancellationToken);
 
                                     return recommendedProducts;
-                                }, name: "GetProductRecommendations", description: "This tool searches for and recommends products based on a detailed description of the user's needs and preferences. It should only be used after the user explicitly asks for recommendations and provides specific criteria (e.g., product type, intended use, required features, budget hints, etc.)")
+                                }, name: "GetProductRecommendations", description: "This tool searches for and recommends products based on a detailed description of the user's needs and preferences and returns recommended products.")
                                 //#endif
                                 ]
                         }, cancellationToken: messageSpecificCancellationToken))

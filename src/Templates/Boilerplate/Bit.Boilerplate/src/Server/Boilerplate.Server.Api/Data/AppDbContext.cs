@@ -16,6 +16,7 @@ using Boilerplate.Server.Api.Models.PushNotification;
 using System.Security.Cryptography;
 using Boilerplate.Server.Api.Models.Attachments;
 //#endif
+using Hangfire.EntityFrameworkCore;
 
 namespace Boilerplate.Server.Api.Data;
 
@@ -46,6 +47,8 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.OnHangfireModelCreating("jobs");
 
         //#if (IsInsideProjectTemplate == true)
         /*

@@ -16,14 +16,16 @@ using System.Text;
 using Fido2NetLib;
 using PhoneNumbers;
 using FluentStorage;
-using FluentStorage.Blobs;
 using FluentEmail.Core;
+using FluentStorage.Blobs;
+using Hangfire.EntityFrameworkCore;
 //#if (notification == true)
 using AdsPush;
 using AdsPush.Abstraction;
 //#endif
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Server.Api.Controllers;
+using Boilerplate.Server.Api.Services.Jobs;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Services.Identity;
 
@@ -42,6 +44,7 @@ public static partial class Program
         configuration.Bind(appSettings);
 
         services.AddScoped<EmailService>();
+        services.AddScoped<EmailServiceJobsRunner>();
         services.AddScoped<PhoneService>();
         if (appSettings.Sms?.Configured is true)
         {
@@ -384,6 +387,17 @@ public static partial class Program
             // .UseOpenTelemetry()
         }
         //#endif
+
+        builder.Services.AddHangfire(configuration => configuration.UseEFCoreStorage(AddDbContext, new EFCoreStorageOptions
+        {
+            // It would be better to use https://docs.hangfire.io/en/latest/configuration/using-redis.html in production.
+            Schema = "jobs",
+            QueuePollInterval = new TimeSpan(0, 0, 1)
+        }));
+
+        builder.Services.AddHangfireServer(options =>
+        {
+        });
     }
 
     private static void AddIdentity(WebApplicationBuilder builder)
