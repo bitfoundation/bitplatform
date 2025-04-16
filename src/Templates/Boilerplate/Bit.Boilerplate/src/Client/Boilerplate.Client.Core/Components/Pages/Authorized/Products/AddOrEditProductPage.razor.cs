@@ -59,7 +59,7 @@ public partial class AddOrEditProductPage
 
         isSaving = true;
 
-        product.Description = await richTextEditorRef.GetHtml();
+        product.DescriptionHTML = await richTextEditorRef.GetHtml();
 
         try
         {

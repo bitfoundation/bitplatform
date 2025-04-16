@@ -157,7 +157,7 @@ public partial class AppHub : Hub
                                     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                                     var recommendedProducts = await dbContext.Products
                                         .Project()
-                                        .OrderByDescending(p => string.IsNullOrEmpty(p.ImageFileName) == false)
+                                        .OrderByDescending(p => string.IsNullOrEmpty(p.MediumSizeImageFileName) == false)
                                         .ThenBy(p => EF.Functions.Random())
                                         .Take(3)
                                         .ToArrayAsync(messageSpecificCancellationToken);
@@ -168,18 +168,18 @@ public partial class AppHub : Hub
                                     {
                                         markdown.AppendLine($"## [{product.Name}](/product/{product.ShortId})");
                                         markdown.AppendLine();
-                                        markdown.AppendLine($"**Price**: ${product.Price:F2}");
+                                        markdown.AppendLine($"**Price**: ${product.FormattedPrice}");
                                         markdown.AppendLine();
 
-                                        if (string.IsNullOrEmpty(product.Description) is false)
+                                        if (string.IsNullOrEmpty(product.DescriptionHTML) is false)
                                         {
                                             markdown.AppendLine("```html");
-                                            markdown.AppendLine(product.Description);
+                                            markdown.AppendLine(product.DescriptionHTML);
                                             markdown.AppendLine("```");
                                             markdown.AppendLine();
                                         }
 
-                                        if (string.IsNullOrEmpty(product.ImageFileName) is false)
+                                        if (string.IsNullOrEmpty(product.MediumSizeImageFileName) is false)
                                         {
                                             markdown.AppendLine($"![{product.Name}]({product.GetProductImageUrl(Context.GetHttpContext()!.Request.GetBaseUrl())})");
                                             markdown.AppendLine();

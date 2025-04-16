@@ -1,5 +1,6 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Server.Api.Models.Categories;
+using Boilerplate.Server.Api.Models.Attachments;
 
 namespace Boilerplate.Server.Api.Models.Products;
 
@@ -14,7 +15,7 @@ public partial class Product
     public int ShortId { get; set; }
         //#if (database != "PostgreSQL" && database != "SqlServer")
         = Environment.TickCount; // Using a database sequence for this is recommended.
-        //#endif
+                                 //#endif
 
     [Required, MaxLength(64)]
     public string? Name { get; set; }
@@ -23,7 +24,13 @@ public partial class Product
     public decimal Price { get; set; }
 
     [MaxLength(4096)]
-    public string? Description { get; set; }
+    public string? DescriptionHTML { get; set; }
+
+    [MaxLength(4096)]
+    public string? DescriptionText { get; set; }
+
+    [MaxLength(4096)]
+    public string? DescriptionJson { get; set; }
 
     public DateTimeOffset CreatedOn { get; set; } = DateTimeOffset.UtcNow;
 
@@ -34,5 +41,6 @@ public partial class Product
 
     public byte[] ConcurrencyStamp { get; set; } = [];
 
-    public string? ImageFileName { get; set; }
+    public Attachment? OriginalImage { get; set; }
+    public Attachment? MediumImage { get; set; }
 }

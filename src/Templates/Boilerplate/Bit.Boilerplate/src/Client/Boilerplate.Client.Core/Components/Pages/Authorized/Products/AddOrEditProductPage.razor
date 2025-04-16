@@ -40,7 +40,7 @@
                                     Label="@Localizer[(nameof(AppStrings.Price))]" />
                     <ValidationMessage For="() => product.Price" />
 
-                    <BitRichTextEditor @ref=richTextEditorRef FullToolbar OnEditorReady="@(() => richTextEditorRef.SetHtml(product.Description))" />
+                    <BitRichTextEditor @ref=richTextEditorRef FullToolbar OnEditorReady="@(() => richTextEditorRef.SetHtml(product.DescriptionHTML))" />
 
                     @if (Id is not null)
                     {
@@ -61,7 +61,7 @@
                                     {
                                         <ProductImage Src="@product.GetProductImageUrl(AbsoluteServerAddress)" Width="50%" />
 
-                                        @if (product.ImageFileName is not null)
+                                        @if (product.MediumSizeImageFileName is not null)
                                         {
                                             <BitButton AutoLoading
                                                        Color="BitColor.Error"

@@ -52,7 +52,7 @@ public partial class ProductController : AppControllerBase, IProductController
     [HttpPost]
     public async Task<ProductDto> Create(ProductDto dto, CancellationToken cancellationToken)
     {
-        dto.Description = HtmlEncoder.Default.Encode(dto.Description ?? string.Empty);
+        dto.DescriptionHTML = HtmlEncoder.Default.Encode(dto.DescriptionHTML ?? string.Empty);
 
         var entityToAdd = dto.Map();
 
@@ -72,7 +72,7 @@ public partial class ProductController : AppControllerBase, IProductController
     [HttpPut]
     public async Task<ProductDto> Update(ProductDto dto, CancellationToken cancellationToken)
     {
-        dto.Description = HtmlEncoder.Default.Encode(dto.Description ?? string.Empty);
+        dto.DescriptionHTML = HtmlEncoder.Default.Encode(dto.DescriptionHTML ?? string.Empty);
 
         var entityToUpdate = await DbContext.Products.FindAsync([dto.Id], cancellationToken)
             ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);

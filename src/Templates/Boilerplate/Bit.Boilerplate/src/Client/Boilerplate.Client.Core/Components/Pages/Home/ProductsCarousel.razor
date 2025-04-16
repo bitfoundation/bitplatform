@@ -31,7 +31,7 @@ else
                             <BitStack AutoHeight>
                                 <br />
                                 <BitText Typography="BitTypography.H1" Color="BitColor.Secondary">@product.Name</BitText>
-                                <BitText Typography="BitTypography.H6" Class="carousel-desc" Color="BitColor.SecondaryForeground">@((MarkupString)product.Description!)</BitText>
+                                <BitText Typography="BitTypography.H6" Class="carousel-desc" Color="BitColor.SecondaryForeground">@((MarkupString)product.DescriptionHTML!)</BitText>
                                 <BitButton Color="BitColor.Tertiary">Buy</BitButton>
                             </BitStack>
                         </BitStack>

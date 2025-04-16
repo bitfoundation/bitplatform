@@ -1,7 +1,8 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 //#if (sample == true)
 using Boilerplate.Server.Api.Models.Todo;
 //#endif
+using Boilerplate.Server.Api.Models.Attachments;
 
 namespace Boilerplate.Server.Api.Models.Identity;
 
@@ -18,9 +19,6 @@ public partial class User : IdentityUser<Guid>
 
     [PersonalData]
     public DateTimeOffset? BirthDate { get; set; }
-
-    [PersonalData]
-    public string? ProfileImageName { get; set; }
 
     /// <summary>
     /// The date and time of the last token request. Ensures only the latest generated token is valid and can only be used once.
@@ -47,4 +45,7 @@ public partial class User : IdentityUser<Guid>
     //#endif
 
     public List<WebAuthnCredential> WebAuthnCredentials { get; set; } = [];
+
+    public Attachment? OriginalImage { get; set; }
+    public Attachment? SmallImage { get; set; }
 }
