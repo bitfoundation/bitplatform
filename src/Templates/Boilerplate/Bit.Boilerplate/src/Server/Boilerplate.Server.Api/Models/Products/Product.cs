@@ -23,7 +23,10 @@ public partial class Product
     public decimal Price { get; set; }
 
     [MaxLength(4096)]
-    public string? Description { get; set; }
+    public string? DescriptionHTML { get; set; }
+
+    [MaxLength(4096)]
+    public string? DescriptionText { get; set; }
 
     public DateTimeOffset CreatedOn { get; set; } = DateTimeOffset.UtcNow;
 
@@ -34,5 +37,5 @@ public partial class Product
 
     public byte[] ConcurrencyStamp { get; set; } = [];
 
-    public string? ImageFileName { get; set; }
+    public bool HasPrimaryImage { get; set; } = false;
 }

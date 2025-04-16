@@ -356,8 +356,8 @@
     <data name="ResetPasswordTokenSentMessage" xml:space="preserve">
     <value>Het token voor het opnieuw instellen van het wachtwoord is naar uw e-mailadres verzonden.</value>
   </data>
-    <data name="UserImageCouldNotBeFound" xml:space="preserve">
-    <value>Gebruikersafbeelding kan niet worden gevonden</value>
+    <data name="ImageCouldNotBeFound" xml:space="preserve">
+    <value>Afbeelding kon niet worden gevonden</value>
   </data>
     <data name="Error" xml:space="preserve">
     <value>Fout</value>
@@ -1046,9 +1046,6 @@
   </data>
     <!--#endif -->
     <!--#if (module == "Admin" || module == "Sales") -->
-    <data name="ProductImageCouldNotBeFound" xml:space="preserve">
-    <value>Productafbeelding kan niet worden gevonden</value>
-  </data>
     <data name="CategoryCouldNotBeFound" xml:space="preserve">
     <value>Categorie-entiteit kan niet worden gevonden</value>
   </data>
@@ -1252,7 +1249,7 @@
   </data>
     <!--#elif (module == "Sales") -->
     <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>Beveel mij een grote auto aan!</value>
+    <value>Ik ben op zoek naar een elektrische Benz SUV met een budget van 75K!</value>
   </data>
     <!--#else -->
     <data name="AiChatPanelPrompt3" xml:space="preserve">

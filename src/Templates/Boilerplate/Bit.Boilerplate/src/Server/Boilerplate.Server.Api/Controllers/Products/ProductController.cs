@@ -8,6 +8,7 @@ using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Server.Api.Models.Products;
 using Boilerplate.Shared.Controllers.Products;
 using System.Text.Encodings.Web;
+using Ganss.Xss;
 
 namespace Boilerplate.Server.Api.Controllers.Products;
 
@@ -15,6 +16,8 @@ namespace Boilerplate.Server.Api.Controllers.Products;
 [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
 public partial class ProductController : AppControllerBase, IProductController
 {
+    [AutoInject] private HtmlSanitizer htmlSanitizer = default!;
+
     //#if (signalR == true)
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
@@ -52,7 +55,7 @@ public partial class ProductController : AppControllerBase, IProductController
     [HttpPost]
     public async Task<ProductDto> Create(ProductDto dto, CancellationToken cancellationToken)
     {
-        dto.Description = HtmlEncoder.Default.Encode(dto.Description ?? string.Empty);
+        dto.DescriptionHTML = htmlSanitizer.Sanitize(dto.DescriptionHTML ?? string.Empty);
 
         var entityToAdd = dto.Map();
 
@@ -72,7 +75,7 @@ public partial class ProductController : AppControllerBase, IProductController
     [HttpPut]
     public async Task<ProductDto> Update(ProductDto dto, CancellationToken cancellationToken)
     {
-        dto.Description = HtmlEncoder.Default.Encode(dto.Description ?? string.Empty);
+        dto.DescriptionHTML = htmlSanitizer.Sanitize(dto.DescriptionHTML ?? string.Empty);
 
         var entityToUpdate = await DbContext.Products.FindAsync([dto.Id], cancellationToken)
             ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);

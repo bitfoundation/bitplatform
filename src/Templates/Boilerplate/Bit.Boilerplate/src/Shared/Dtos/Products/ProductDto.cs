@@ -24,7 +24,10 @@ public partial class ProductDto
 
     [MaxLength(4096, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_InvalidMaxLength))]
     [Display(Name = nameof(AppStrings.Description))]
-    public string? Description { get; set; }
+    public string? DescriptionHTML { get; set; }
+
+    [MaxLength(4096, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_InvalidMaxLength))]
+    public string? DescriptionText { get; set; }
 
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Category))]
@@ -35,14 +38,13 @@ public partial class ProductDto
 
     public byte[] ConcurrencyStamp { get; set; } = [];
 
-    public string? ImageFileName { get; set; }
+    public bool HasPrimaryImage { get; set; } = false;
 
-
-    public string? GetProductImageUrl(Uri absoluteServerAddress)
+    public string? GetPrimaryMediumImageUrl(Uri absoluteServerAddress)
     {
-        return ImageFileName is null
+        return HasPrimaryImage is false
             ? null
-            : new Uri(absoluteServerAddress, $"/api/Attachment/GetProductImage/{Id}?v={ConcurrencyStamp.ToStampString()}").ToString();
+            : new Uri(absoluteServerAddress, $"/api/Attachment/GetAttachment/{Id}/{AttachmentKind.ProductPrimaryImageMedium}?v={ConcurrencyStamp.ToStampString()}").ToString();
     }
 
     public string FormattedPrice => FormatPrice();

@@ -1,4 +1,4 @@
-using Boilerplate.Shared.Dtos.Products;
+﻿using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Shared.Controllers.Products;
 
 namespace Boilerplate.Client.Core.Components.Pages;
@@ -76,5 +76,5 @@ public partial class ProductPage
     }
 
 
-    private string? GetProductImageUrl(ProductDto product) => product.GetProductImageUrl(AbsoluteServerAddress);
+    private string? GetProductImageUrl(ProductDto product) => product.GetPrimaryMediumImageUrl(AbsoluteServerAddress);
 }

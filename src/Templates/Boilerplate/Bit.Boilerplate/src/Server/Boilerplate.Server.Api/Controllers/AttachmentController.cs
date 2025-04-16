@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using ImageMagick;
 using FluentStorage.Blobs;
 //#if (signalR == true)
@@ -7,11 +7,8 @@ using Boilerplate.Server.Api.SignalR;
 //#endif
 using Boilerplate.Shared.Controllers;
 using Boilerplate.Server.Api.Services;
-using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
-//#if (module == "Sales" || module == "Admin")
-using Boilerplate.Shared.Dtos.Products;
-//#endif
+using Boilerplate.Server.Api.Models.Attachments;
 
 namespace Boilerplate.Server.Api.Controllers;
 
@@ -21,6 +18,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 {
     [AutoInject] private IBlobStorage blobStorage = default!;
     [AutoInject] private UserManager<User> userManager = default!;
+
     //#if (signalR == true)
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
@@ -31,208 +29,211 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
     [HttpPost]
     [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
-    public async Task UploadProfileImage(IFormFile? file, CancellationToken cancellationToken)
+    public async Task UploadUserProfilePicture(IFormFile? file, CancellationToken cancellationToken)
     {
-        if (file is null)
-            throw new BadRequestException();
+        await UploadAttachment(
+            User.GetUserId(),
+            [AttachmentKind.UserProfileImageSmall, AttachmentKind.UserProfileImageOriginal],
+            file,
+            cancellationToken);
+    }
 
-        var userId = User.GetUserId();
+    //#if (module == "Sales" || module == "Admin")
+    [HttpPost("{productId}")]
+    [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
+    public async Task UploadProductPrimaryImage(Guid productId, IFormFile? file, CancellationToken cancellationToken)
+    {
+        await UploadAttachment(
+            productId,
+            [AttachmentKind.ProductPrimaryImageMedium, AttachmentKind.ProductPrimaryImageOriginal],
+            file,
+            cancellationToken);
+    }
+    //#endif
 
-        var user = await userManager.FindByIdAsync(userId.ToString()) ?? throw new ResourceNotFoundException();
+    [AllowAnonymous]
+    [HttpGet("{attachmentId}/{kind}")]
+    [AppResponseCache(MaxAge = 3600 * 24 * 7, UserAgnostic = true)]
+    public async Task<IActionResult> GetAttachment(Guid attachmentId, AttachmentKind kind, CancellationToken cancellationToken)
+    {
+        var attachment = await DbContext.Attachments.FindAsync([attachmentId, kind], cancellationToken)
+            ?? throw new ResourceNotFoundException();
 
-        var destFileName = $"{userId}_{file.FileName}";
+        var filePath = attachment.Path;
 
-        if (user.ProfileImageName is not null)
+        if (await blobStorage.ExistsAsync(filePath, cancellationToken) is false)
+            throw new ResourceNotFoundException();
+
+        var mimeType = attachment.Kind switch
         {
-            var oldFilePath = $"{AppSettings.UserProfileImagesDir}{user.ProfileImageName}";
+            _ => "image/webp" // Currently, all attachment types are images.
+        };
 
-            if (await blobStorage.ExistsAsync(oldFilePath, cancellationToken))
-            {
-                await blobStorage.DeleteAsync(oldFilePath, cancellationToken);
-            }
-        }
-
-        destFileName = destFileName.Replace(Path.GetExtension(destFileName), "_256.webp");
-        var resizedFilePath = $"{AppSettings.UserProfileImagesDir}{destFileName}";
-
-        try
-        {
-            using MagickImage sourceImage = new(file.OpenReadStream());
-
-            MagickGeometry resizedImageSize = new(256, 256);
-
-            sourceImage.Resize(resizedImageSize);
-
-            await blobStorage.WriteAsync(resizedFilePath, sourceImage.ToByteArray(MagickFormat.WebP), cancellationToken: cancellationToken);
-
-            user.ProfileImageName = destFileName;
-
-            var result = await userManager.UpdateAsync(user);
-            if (!result.Succeeded)
-                throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
-        }
-        catch
-        {
-            await blobStorage.DeleteAsync(resizedFilePath, cancellationToken);
-
-            throw;
-        }
-
-        //#if (signalR == true)
-        await PublishUserProfileUpdated(user.Map(), cancellationToken);
-        //#endif
+        return File(await blobStorage.OpenReadAsync(filePath, cancellationToken), mimeType, enableRangeProcessing: true);
     }
 
     [HttpDelete]
-    public async Task RemoveProfileImage(CancellationToken cancellationToken)
+    public async Task DeleteUserProfilePicture(CancellationToken cancellationToken)
     {
-        var userId = User.GetUserId();
-
-        var user = await userManager.FindByIdAsync(userId.ToString());
-
-        if (user?.ProfileImageName is null)
-            throw new ResourceNotFoundException();
-
-        var filePath = $"{AppSettings.UserProfileImagesDir}{user.ProfileImageName}";
-
-        if (await blobStorage.ExistsAsync(filePath, cancellationToken) is false)
-            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserImageCouldNotBeFound)]);
-
-        user.ProfileImageName = null;
-
-        var result = await userManager.UpdateAsync(user);
-        if (!result.Succeeded)
-            throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
-
-        await blobStorage.DeleteAsync(filePath, cancellationToken);
-
-        //#if (signalR == true)
-        await PublishUserProfileUpdated(user.Map(), cancellationToken);
-        //#endif
+        await DeleteAttachment(User.GetUserId(), [AttachmentKind.UserProfileImageSmall, AttachmentKind.UserProfileImageOriginal], cancellationToken);
     }
 
-    [AllowAnonymous]
-    [HttpGet("{userId}")]
-    [AppResponseCache(MaxAge = 3600 * 24 * 7, UserAgnostic = true)]
-    public async Task<IActionResult> GetProfileImage(Guid userId, CancellationToken cancellationToken)
+    //#if (module == "Sales" || module == "Admin")
+    [HttpDelete("{productId}")]
+    public async Task DeleteProductPrimaryImage(Guid productId, CancellationToken cancellationToken)
     {
-        var user = await userManager.FindByIdAsync(userId.ToString());
-
-        if (user?.ProfileImageName is null)
-            throw new ResourceNotFoundException();
-
-        var filePath = $"{AppSettings.UserProfileImagesDir}{user.ProfileImageName}";
-
-        if (await blobStorage.ExistsAsync(filePath, cancellationToken) is false)
-            return new EmptyResult();
-
-        return File(await blobStorage.OpenReadAsync(filePath, cancellationToken), "image/webp", enableRangeProcessing: true);
+        await DeleteAttachment(productId, [AttachmentKind.ProductPrimaryImageMedium, AttachmentKind.ProductPrimaryImageOriginal], cancellationToken);
     }
+    //#endif
 
     //#if (signalR == true)
-    private async Task PublishUserProfileUpdated(UserDto user, CancellationToken cancellationToken)
+    private async Task PublishUserProfileUpdated(User user, CancellationToken cancellationToken)
     {
         // Notify other sessions of the user that user's info has been updated, so they'll update their UI.
         var currentUserSessionId = User.GetSessionId();
         var userSessionIdsExceptCurrentUserSessionId = await DbContext.UserSessions
             .Where(us => us.UserId == user.Id && us.Id != currentUserSessionId && us.SignalRConnectionId != null)
-        .Select(us => us.SignalRConnectionId!)
+            .Select(us => us.SignalRConnectionId!)
             .ToArrayAsync(cancellationToken);
         await appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId).SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.PROFILE_UPDATED, user, cancellationToken);
     }
     //#endif
 
-    //#if (module == "Sales" || module == "Admin")
-    [AllowAnonymous]
-    [HttpGet("{productId}")]
-    [AppResponseCache(MaxAge = 3600 * 24 * 7, UserAgnostic = true)]
-    public async Task<IActionResult> GetProductImage(Guid productId, CancellationToken cancellationToken)
+    private async Task DeleteAttachment(Guid attachmentId, AttachmentKind[] kinds, CancellationToken cancellationToken)
     {
-        var product = await DbContext.Products.FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
+        var attachments = await DbContext.Attachments.Where(p => p.Id == attachmentId && kinds.Contains(p.Kind)).ToArrayAsync(cancellationToken);
 
-        if (product?.ImageFileName is null)
-            throw new ResourceNotFoundException();
+        foreach (var attachment in attachments)
+        {
+            var filePath = attachment.Path;
 
-        var filePath = $"{AppSettings.ProductImagesDir}{product.ImageFileName}";
+            if (await blobStorage.ExistsAsync(filePath, cancellationToken) is false)
+                throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ImageCouldNotBeFound)]);
 
-        if (await blobStorage.ExistsAsync(filePath, cancellationToken) is false)
-            return new EmptyResult();
+            await blobStorage.DeleteAsync(filePath, cancellationToken);
 
-        return File(await blobStorage.OpenReadAsync(filePath, cancellationToken), "image/webp", enableRangeProcessing: true);
+            //#if (module == "Sales" || module == "Admin")
+            if (attachment.Kind is AttachmentKind.ProductPrimaryImageOriginal)
+            {
+                var product = await DbContext.Products.FindAsync([attachment.Id], cancellationToken);
+                if (product is not null) // else means product is being added to the database.
+                {
+                    product.HasPrimaryImage = false;
+                    await DbContext.SaveChangesAsync(cancellationToken);
+                    await responseCacheService.PurgeProductCache(product.ShortId);
+                }
+            }
+            //#endif
+
+            if (attachment.Kind is AttachmentKind.UserProfileImageOriginal)
+            {
+                var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
+                user!.HasProfilePicture = false;
+
+                var result = await userManager.UpdateAsync(user);
+                if (!result.Succeeded)
+                    throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
+
+                //#if (signalR == true)
+                await PublishUserProfileUpdated(user, cancellationToken);
+                //#endif
+            }
+
+            DbContext.Attachments.Remove(attachment);
+            await DbContext.SaveChangesAsync(cancellationToken);
+        }
     }
 
-    [HttpDelete("{id}")]
-    public async Task<ProductDto> RemoveProductImage(Guid id, CancellationToken cancellationToken)
-    {
-        var product = await DbContext.Products
-            .FindAsync([id], cancellationToken);
-
-        if (product?.ImageFileName is null)
-            throw new ResourceNotFoundException();
-
-        var filePath = $"{AppSettings.ProductImagesDir}{product.ImageFileName}";
-
-        if (await blobStorage.ExistsAsync(filePath, cancellationToken) is false)
-            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductImageCouldNotBeFound)]);
-
-        product.ImageFileName = null;
-
-        var result = await DbContext.SaveChangesAsync(cancellationToken);
-
-        await blobStorage.DeleteAsync(filePath, cancellationToken);
-
-        await responseCacheService.PurgeProductCache(product.ShortId);
-
-        return product.Map();
-    }
-
-    [HttpPost("{id}")]
-    [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
-    public async Task UploadProductImage(Guid id, IFormFile? file, CancellationToken cancellationToken)
+    private async Task UploadAttachment(Guid attacmentId, AttachmentKind[] kinds, IFormFile? file, CancellationToken cancellationToken)
     {
         if (file is null)
             throw new BadRequestException();
 
-        var product = await DbContext.Products
-            .FindAsync([id], cancellationToken) ?? throw new ResourceNotFoundException();
+        await DbContext.Attachments.Where(att => att.Id == attacmentId).ExecuteDeleteAsync(cancellationToken);
 
-        var destFileName = $"{id}_{file.FileName}";
-
-        if (product.ImageFileName is not null)
+        foreach (var kind in kinds)
         {
-            var oldFilePath = $"{AppSettings.ProductImagesDir}{product.ImageFileName}";
-
-            if (await blobStorage.ExistsAsync(oldFilePath, cancellationToken))
+            var attachment = new Attachment
             {
-                await blobStorage.DeleteAsync(oldFilePath, cancellationToken);
+                Id = attacmentId,
+                Kind = kind,
+                Path = kind switch
+                {
+                    AttachmentKind.UserProfileImageOriginal => $"{AppSettings.UserProfileImagesDir}{attacmentId}_{kind}{Path.GetExtension(file.FileName)}",
+                    AttachmentKind.UserProfileImageSmall => $"{AppSettings.UserProfileImagesDir}{attacmentId}_{kind}.webp",
+                    //#if (module == "Sales" || module == "Admin")
+                    AttachmentKind.ProductPrimaryImageOriginal => $"{AppSettings.ProductImagesDir}{attacmentId}_{kind}{Path.GetExtension(file.FileName)}",
+                    AttachmentKind.ProductPrimaryImageMedium => $"{AppSettings.ProductImagesDir}{attacmentId}_{kind}.webp",
+                    //#endif
+                    _ => throw new NotImplementedException()
+                }
+            };
+
+            if (await blobStorage.ExistsAsync(attachment.Path, cancellationToken))
+            {
+                await blobStorage.DeleteAsync(attachment.Path, cancellationToken);
+            }
+
+            var needsResize = kind switch
+            {
+                AttachmentKind.UserProfileImageSmall => true,
+                //#if (module == "Sales" || module == "Admin")
+                AttachmentKind.ProductPrimaryImageMedium => true,
+                //#endif
+                _ => false
+            };
+
+            if (needsResize)
+            {
+                var resizedImageSize = kind switch
+                {
+                    AttachmentKind.UserProfileImageSmall => new MagickGeometry(256, 256),
+                    //#if (module == "Sales" || module == "Admin")
+                    AttachmentKind.ProductPrimaryImageMedium => new MagickGeometry(512, 512),
+                    //#endif
+                    _ => throw new NotImplementedException()
+                };
+
+                using MagickImage sourceImage = new(file.OpenReadStream());
+
+                sourceImage.Resize(resizedImageSize);
+
+                await blobStorage.WriteAsync(attachment.Path, sourceImage.ToByteArray(MagickFormat.WebP), cancellationToken: cancellationToken);
+            }
+            else
+            {
+                await blobStorage.WriteAsync(attachment.Path, file.OpenReadStream(), cancellationToken: cancellationToken);
+            }
+
+            await DbContext.Attachments.AddAsync(attachment, cancellationToken);
+            await DbContext.SaveChangesAsync(cancellationToken);
+
+            //#if (module == "Sales" || module == "Admin")
+            if (attachment.Kind is AttachmentKind.ProductPrimaryImageOriginal)
+            {
+                var product = await DbContext.Products.FindAsync([attachment.Id], cancellationToken);
+                if (product is not null) // else means product is being added to the database.
+                {
+                    product.HasPrimaryImage = true;
+                    await DbContext.SaveChangesAsync(cancellationToken);
+                    await responseCacheService.PurgeProductCache(product.ShortId);
+                }
+            }
+            //#endif
+
+            if (kind is AttachmentKind.UserProfileImageOriginal)
+            {
+                var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
+                user!.HasProfilePicture = true;
+
+                var result = await userManager.UpdateAsync(user);
+                if (!result.Succeeded)
+                    throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
+
+                //#if (signalR == true)
+                await PublishUserProfileUpdated(user, cancellationToken);
+                //#endif
             }
         }
-
-        destFileName = destFileName.Replace(Path.GetExtension(destFileName), "_512.webp");
-        var resizedFilePath = $"{AppSettings.ProductImagesDir}{destFileName}";
-
-        try
-        {
-            using MagickImage sourceImage = new(file.OpenReadStream());
-
-            MagickGeometry resizedImageSize = new(512, 512);
-
-            sourceImage.Resize(resizedImageSize);
-
-            await blobStorage.WriteAsync(resizedFilePath, sourceImage.ToByteArray(MagickFormat.WebP), cancellationToken: cancellationToken);
-
-            product.ImageFileName = destFileName;
-
-            await DbContext.SaveChangesAsync(cancellationToken);
-        }
-        catch
-        {
-            await blobStorage.DeleteAsync(resizedFilePath, cancellationToken);
-
-            throw;
-        }
-
-        await responseCacheService.PurgeProductCache(product.ShortId);
     }
-    //#endif
 }

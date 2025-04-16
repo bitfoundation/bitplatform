@@ -14,6 +14,7 @@ using Boilerplate.Server.Api.Models.PushNotification;
 //#endif
 //#if (database == "Sqlite")
 using System.Security.Cryptography;
+using Boilerplate.Server.Api.Models.Attachments;
 //#endif
 
 namespace Boilerplate.Server.Api.Data;
@@ -40,6 +41,8 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<SystemPrompt> SystemPrompts { get; set; } = default!;
     //#endif
 
+    public DbSet<Attachment> Attachments { get; set; } = default!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -49,7 +52,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         //#endif
         //#if (database == "PostgreSQL" || database == "SqlServer")
         modelBuilder.HasSequence<int>("ProductShortId")
-            .StartsAt(10_000)
+            .StartsAt(10_051) // There are 50 products added by ProductConfiguration.cs
             .IncrementsBy(1);
         //#endif
         //#if (IsInsideProjectTemplate == true)
