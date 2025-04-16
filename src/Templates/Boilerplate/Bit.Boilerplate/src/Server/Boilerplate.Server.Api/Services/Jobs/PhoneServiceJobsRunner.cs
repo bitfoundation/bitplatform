@@ -8,6 +8,7 @@ public partial class PhoneServiceJobsRunner
 
     [AutomaticRetry(Attempts = 3)]
     public async Task SendSms(string phoneNumber, string from, string messageText, CancellationToken cancellationToken)
+    
     {
         try
         {
