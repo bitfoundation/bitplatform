@@ -35,7 +35,7 @@
         <BitMediaQuery ScreenQuery="BitScreenQuery.GtXl">This is <b>GtXl</b> (Greater Than Extra Large).</BitMediaQuery>
     </DemoExample>
 
-    <DemoExample Title="Matched & NotMatched" RazorCode="@example1RazorCode" Id="example1">
+    <DemoExample Title="Matched & NotMatched" RazorCode="@example2RazorCode" Id="example2">
         <div>You can utilize the Matched and NotMatched parameters to render your desired UI.</div>
         <br />
         <BitMediaQuery ScreenQuery="BitScreenQuery.Md">
@@ -43,12 +43,12 @@
                 This is <b>Matched</b> (BitScreenQuery.Md).
             </Matched>
             <NotMatched>
-                This is <b>NotMatched!</b> (BitScreenQuery.Md).
+                [BitScreenQuery.Md] <b>NotMatched!</b>.
             </NotMatched>
         </BitMediaQuery>
     </DemoExample>
 
-    <DemoExample Title="Custom query" RazorCode="@example1RazorCode" Id="example1">
+    <DemoExample Title="Custom query" RazorCode="@example3RazorCode" Id="example3">
         <div>
             You can provide any valid media query as a custom query
             (<BitLink Target="_blank"
@@ -59,7 +59,19 @@
         <br /><br />
         <div>screen and (max-width: 999px):</div><br />
         <BitMediaQuery Query="screen and (max-width: 999px)">
-            This is <b>screen and (max-width: 999px)</b>.
+            <Matched>
+                This is <b>screen and (max-width: 999px)</b>.
+            </Matched>
+            <NotMatched>
+                Not matched yet!
+            </NotMatched>
         </BitMediaQuery>
+    </DemoExample>
+
+    <DemoExample Title="OnChange" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <div>Using the OnChange event one can be notified about the matching of the provided query.</div>
+        <br />
+        <BitMediaQuery ScreenQuery="BitScreenQuery.Md" OnChange="v => isMatched = v" />
+        <div>IsMatched: @isMatched</div>
     </DemoExample>
 </DemoPage>

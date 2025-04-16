@@ -61,30 +61,6 @@ public partial class BitMediaQuery : BitComponentBase
 
     protected override string RootElementClass => "bit-mdq";
 
-    protected override void RegisterCssClasses()
-    {
-        //ClassBuilder.Register(() => Query switch
-        //{
-        //    BitScreenQuery.Xs => "bit-mdq-xs",
-        //    BitScreenQuery.Sm => "bit-mdq-sm",
-        //    BitScreenQuery.Md => "bit-mdq-md",
-        //    BitScreenQuery.Lg => "bit-mdq-lg",
-        //    BitScreenQuery.Xl => "bit-mdq-xl",
-        //    BitScreenQuery.Xxl => "bit-mdq-xxl",
-        //    BitScreenQuery.LtSm => "bit-mdq-ltsm",
-        //    BitScreenQuery.LtMd => "bit-mdq-ltmd",
-        //    BitScreenQuery.LtLg => "bit-mdq-ltlg",
-        //    BitScreenQuery.LtXl => "bit-mdq-ltxl",
-        //    BitScreenQuery.LtXxl => "bit-mdq-ltxxl",
-        //    BitScreenQuery.GtXs => "bit-mdq-gtxs",
-        //    BitScreenQuery.GtSm => "bit-mdq-gtsm",
-        //    BitScreenQuery.GtMd => "bit-mdq-gtmd",
-        //    BitScreenQuery.GtLg => "bit-mdq-gtlg",
-        //    BitScreenQuery.GtXl => "bit-mdq-gtxl",
-        //    _ => string.Empty
-        //});
-    }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
