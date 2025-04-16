@@ -16,14 +16,15 @@
 
             if (!element || !dragElement) return;
 
-            const origCursor = dragElement.style.cursor;
-
             let x = 0;
             let y = 0;
 
             let sx = 0;
             let sy = 0;
             let thresholdDragged = false;
+
+            dragElement.classList.add('bit-nta');
+            const origCursor = dragElement.style.cursor;
 
             dragElement.addEventListener('pointerdown', handlePointerDown, { signal: ac.signal });
 
@@ -39,9 +40,8 @@
                 document.addEventListener('pointermove', handlePointerMove, { signal: ac.signal });
 
                 dragElement.style.cursor = 'grabbing';
-                dragElement.classList.add('bit-nta');
 
-                try { await dotnetObj?.invokeMethodAsync('OnDragStart'); } catch { }
+                try { await dotnetObj?.invokeMethodAsync('OnDragStart', x, y); } catch { }
             }
 
             async function handlePointerMove(e: PointerEvent) {
@@ -66,7 +66,7 @@
                 x = e.clientX;
                 y = e.clientY;
 
-                try { await dotnetObj?.invokeMethodAsync('OnDragging'); } catch { }
+                try { await dotnetObj?.invokeMethodAsync('OnDragging', x, y); } catch { }
             }
 
             async function handlePointerUp(e: PointerEvent) {
@@ -77,9 +77,9 @@
                 document.removeEventListener('pointermove', handlePointerMove);
 
                 dragElement.style.cursor = origCursor;
-                dragElement.classList.remove('bit-nta');
+                //dragElement.classList.remove('bit-nta');
 
-                try { await dotnetObj?.invokeMethodAsync('OnDragEnd'); } catch { }
+                try { await dotnetObj?.invokeMethodAsync('OnDragEnd', x, y); } catch { }
             }
         }
 
