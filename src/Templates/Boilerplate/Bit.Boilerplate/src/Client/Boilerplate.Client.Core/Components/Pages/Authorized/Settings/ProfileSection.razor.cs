@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Boilerplate.Shared.Controllers;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
@@ -20,7 +20,7 @@ public partial class ProfileSection
     private BitFileUpload fileUploadRef = default!;
     private readonly EditUserDto editUserDto = new();
 
-    
+
     private string? ProfileImageUrl => User?.GetProfileImageUrl(AbsoluteServerAddress);
 
 
@@ -30,7 +30,7 @@ public partial class ProfileSection
 
         var accessToken = await AuthTokenProvider.GetAccessToken();
 
-        profileImageUploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadProfileImage?access_token={accessToken}").ToString();
+        profileImageUploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadUserProfilePicture?access_token={accessToken}").ToString();
     }
 
     protected override void OnParametersSet()
@@ -74,9 +74,9 @@ public partial class ProfileSection
 
         try
         {
-            await attachmentController.RemoveProfileImage(CurrentCancellationToken);
+            await attachmentController.DeleteUserProfilePicture(CurrentCancellationToken);
 
-            User.ProfileImageName = null;
+            User.HasProfilePicture = false;
 
             PublishUserDataUpdated();
         }

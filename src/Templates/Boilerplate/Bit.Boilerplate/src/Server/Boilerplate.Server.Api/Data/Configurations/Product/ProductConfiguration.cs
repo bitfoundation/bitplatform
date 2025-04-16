@@ -1,5 +1,6 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Server.Api.Models.Products;
+using Boilerplate.Server.Api.Models.Attachments;
 
 namespace Boilerplate.Server.Api.Data.Configurations.Identity;
 

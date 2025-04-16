@@ -356,8 +356,8 @@
     <data name="ResetPasswordTokenSentMessage" xml:space="preserve">
     <value>توکن ریست رمز عبور به آدرس ایمیل شما ارسال شده است.</value>
   </data>
-    <data name="UserImageCouldNotBeFound" xml:space="preserve">
-    <value>تصویر کاربر پیدا نشد</value>
+    <data name="ImageCouldNotBeFound" xml:space="preserve">
+    <value>تصویر پیدا نشد</value>
   </data>
     <data name="Error" xml:space="preserve">
     <value>خطا</value>
@@ -1046,9 +1046,6 @@
   </data>
     <!--#endif -->
     <!--#if (module == "Admin" || module == "Sales") -->
-    <data name="ProductImageCouldNotBeFound" xml:space="preserve">
-    <value>تصویر محصول پیدا نشد</value>
-  </data>
     <data name="CategoryCouldNotBeFound" xml:space="preserve">
     <value>دسته مورد نظر پیدا نشد</value>
   </data>

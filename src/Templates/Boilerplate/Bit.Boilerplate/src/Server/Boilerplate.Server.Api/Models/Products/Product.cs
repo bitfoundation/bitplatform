@@ -41,6 +41,5 @@ public partial class Product
 
     public byte[] ConcurrencyStamp { get; set; } = [];
 
-    public Attachment? OriginalImage { get; set; }
-    public Attachment? MediumImage { get; set; }
+    public bool HasPrimaryImage { get; set; } = false;
 }

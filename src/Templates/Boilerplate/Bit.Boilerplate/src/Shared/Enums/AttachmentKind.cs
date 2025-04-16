@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-namespace Boilerplate.Server.Api.Models.Attachments;
+namespace Boilerplate.Shared.Enums;
 
 public enum AttachmentKind
 {
@@ -12,7 +12,7 @@ public enum AttachmentKind
     /// <summary>
     /// 512*515px
     /// </summary>
-    ProductImageMedium,
-    ProductImageOriginal
+    ProductPrimaryImageMedium,
+    ProductPrimaryImageOriginal
     //#endif
 }

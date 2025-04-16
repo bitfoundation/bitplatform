@@ -41,14 +41,13 @@ public partial class ProductDto
 
     public byte[] ConcurrencyStamp { get; set; } = [];
 
-    public string? MediumSizeImageFileName { get; set; }
+    public bool HasPrimaryImage { get; set; } = false;
 
-
-    public string? GetProductImageUrl(Uri absoluteServerAddress)
+    public string? GetPrimaryMediumImageUrl(Uri absoluteServerAddress)
     {
-        return MediumSizeImageFileName is null
+        return HasPrimaryImage is false
             ? null
-            : new Uri(absoluteServerAddress, $"/api/Attachment/GetProductImage/{Id}?v={ConcurrencyStamp.ToStampString()}").ToString();
+            : new Uri(absoluteServerAddress, $"/api/Attachment/GetAttachment/{Id}/{AttachmentKind.ProductPrimaryImageMedium}?v={ConcurrencyStamp.ToStampString()}").ToString();
     }
 
     public string FormattedPrice => FormatPrice();

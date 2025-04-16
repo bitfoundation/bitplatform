@@ -155,18 +155,16 @@ public partial class AppHub : Hub
 
                                     await using var scope = rootScopeProvider();
                                     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                                    var recommendedProducts = await dbContext.Products
+                                    var recommendedProducts = await dbContext.Products // TODO: Implement RAG & Instruct LLM to accept recommended products as is.
                                         .Project()
-                                        .OrderByDescending(p => string.IsNullOrEmpty(p.MediumSizeImageFileName) == false)
-                                        .ThenBy(p => EF.Functions.Random())
-                                        .Take(3)
+                                        .OrderByDescending(p => p.HasPrimaryImage)
                                         .ToArrayAsync(messageSpecificCancellationToken);
 
                                     var markdown = new StringBuilder();
 
                                     foreach (var product in recommendedProducts)
                                     {
-                                        markdown.AppendLine($"## [{product.Name}](/product/{product.ShortId})");
+                                        markdown.AppendLine($"## [{product.Name}]({product.PageUrl})");
                                         markdown.AppendLine($"**Price**: ${product.FormattedPrice}");
 
                                         if (string.IsNullOrEmpty(product.DescriptionText) is false)
@@ -174,9 +172,9 @@ public partial class AppHub : Hub
                                             markdown.AppendLine(product.DescriptionText);
                                         }
 
-                                        if (string.IsNullOrEmpty(product.MediumSizeImageFileName) is false)
+                                        if (product.HasPrimaryImage)
                                         {
-                                            markdown.AppendLine($"![{product.Name}]({product.GetProductImageUrl(Context.GetHttpContext()!.Request.GetBaseUrl())})");
+                                            markdown.AppendLine($"![{product.Name}]({product.GetPrimaryMediumImageUrl(Context.GetHttpContext()!.Request.GetBaseUrl())})");
                                         }
 
                                         markdown.AppendLine("---");

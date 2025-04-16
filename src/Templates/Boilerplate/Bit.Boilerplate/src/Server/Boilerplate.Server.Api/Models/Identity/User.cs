@@ -46,6 +46,5 @@ public partial class User : IdentityUser<Guid>
 
     public List<WebAuthnCredential> WebAuthnCredentials { get; set; } = [];
 
-    public Attachment? OriginalImage { get; set; }
-    public Attachment? SmallImage { get; set; }
+    public bool HasProfilePicture { get; set; }
 }

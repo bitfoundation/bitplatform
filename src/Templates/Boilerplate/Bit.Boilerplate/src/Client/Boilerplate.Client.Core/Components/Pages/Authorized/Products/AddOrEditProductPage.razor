@@ -42,48 +42,45 @@
 
                     <BitRichTextEditor @ref=richTextEditorRef FullToolbar OnEditorReady="@(() => richTextEditorRef.SetHtml(product.DescriptionHTML))" />
 
-                    @if (Id is not null)
-                    {
-                        <BitFileUpload @ref="fileUploadRef"
-                                       AutoReset
-                                       AutoUpload
-                                       HideFileView
-                                       Accept="image/*"
-                                       Style="max-width:unset;"
-                                       MaxSize="1024 * 1024 * 10"
-                                       UploadUrl="@productImageUploadUrl"
-                                       OnUploading="() => isManagingFile = true"
-                                       OnUploadFailed="WrapHandled(HandleOnUploadFailed)"
-                                       OnUploadComplete="WrapHandled(HandleOnUploadComplete)">
-                            <LabelTemplate>
-                                <BitStack HorizontalAlign="BitAlignment.Center">
-                                    @if (isManagingFile is false)
-                                    {
-                                        <ProductImage Src="@product.GetProductImageUrl(AbsoluteServerAddress)" Width="50%" />
+                    <BitFileUpload @ref="fileUploadRef"
+                                    AutoReset
+                                    AutoUpload
+                                    HideFileView
+                                    Accept="image/*"
+                                    Style="max-width:unset;"
+                                    MaxSize="1024 * 1024 * 10"
+                                    UploadUrl="@productImageUploadUrl"
+                                    OnUploading="() => isManagingFile = true"
+                                    OnUploadFailed="WrapHandled(HandleOnUploadFailed)"
+                                    OnUploadComplete="WrapHandled(HandleOnUploadComplete)">
+                        <LabelTemplate>
+                            <BitStack HorizontalAlign="BitAlignment.Center">
+                                @if (isManagingFile is false)
+                                {
+                                    <ProductImage Src="@product.GetPrimaryMediumImageUrl(AbsoluteServerAddress)" Width="50%" />
 
-                                        @if (product.MediumSizeImageFileName is not null)
-                                        {
-                                            <BitButton AutoLoading
-                                                       Color="BitColor.Error"
-                                                       ButtonType="BitButtonType.Button"
-                                                       OnClick="WrapHandled(RemoveProductImage)">
-                                                @Localizer[nameof(AppStrings.Remove)]
-                                            </BitButton>
-                                        }
-
-                                        <BitLink OnClick="() => fileUploadRef.Browse()" NoUnderline>
-                                            <BitText>@Localizer[nameof(AppStrings.UploadNewImage)]</BitText>
-                                        </BitLink>
-                                    }
-                                    else
+                                    @if (product.HasPrimaryImage)
                                     {
-                                        <BitShimmer Shape="BitShimmerShape.Circle" Height="4.5rem" />
-                                        <BitShimmer Shape="BitShimmerShape.Rectangle" Height="1.5rem" Width="12.5rem" />
+                                        <BitButton AutoLoading
+                                                    Color="BitColor.Error"
+                                                    ButtonType="BitButtonType.Button"
+                                                    OnClick="WrapHandled(RemoveProductImage)">
+                                            @Localizer[nameof(AppStrings.Remove)]
+                                        </BitButton>
                                     }
-                                </BitStack>
-                            </LabelTemplate>
-                        </BitFileUpload>
-                    }
+
+                                    <BitLink OnClick="() => fileUploadRef.Browse()" NoUnderline>
+                                        <BitText>@Localizer[nameof(AppStrings.UploadNewImage)]</BitText>
+                                    </BitLink>
+                                }
+                                else
+                                {
+                                    <BitShimmer Shape="BitShimmerShape.Circle" Height="4.5rem" />
+                                    <BitShimmer Shape="BitShimmerShape.Rectangle" Height="1.5rem" Width="12.5rem" />
+                                }
+                            </BitStack>
+                        </LabelTemplate>
+                    </BitFileUpload>
 
                     <BitStack Horizontal HorizontalAlign="BitAlignment.End">
                         <BitButton ButtonType="BitButtonType.Button" OnClick="GoBack" Variant="BitVariant.Outline">
