@@ -1233,7 +1233,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         if (MinDate.HasValue)
         {
-            if (date < GetDateTime(MinDate.Value).Date) return true;
+            if (date < GetDateTime(MinDate.Value)) return true;
         }
 
         if (MaxRange.HasValue && MaxRange.Value.TotalDays > 0 && CurrentValue?.StartDate is not null && CurrentValue.EndDate.HasValue is false)
