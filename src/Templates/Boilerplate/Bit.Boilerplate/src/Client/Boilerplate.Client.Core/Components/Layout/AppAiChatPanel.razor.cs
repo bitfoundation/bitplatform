@@ -191,7 +191,9 @@ public partial class AppAiChatPanel
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
+        //#if(module == "Sales")
         unsubSearchProducts();
+        //#endif
 
         hubConnection.Reconnected -= HubConnection_Reconnected;
 
