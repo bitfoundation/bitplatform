@@ -37,6 +37,8 @@ public partial class AppAiChatPanel
 
             StateHasChanged();
 
+            if (chatMessages.Count > 1) return;
+
             var message = (string?)value;
 
             if (string.IsNullOrWhiteSpace(message))
