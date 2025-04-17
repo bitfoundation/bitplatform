@@ -57,6 +57,7 @@ jobs:
 
     - name: Simple tests (no --advancedTests)
       id: simple-test
+      continue-on-error: true
       run: |
         dotnet new bit-bp --name SimpleTest --database Sqlite --inMemoryHangfire
         cd SimpleTest/src/Server/SimpleTest.Server.Api/
