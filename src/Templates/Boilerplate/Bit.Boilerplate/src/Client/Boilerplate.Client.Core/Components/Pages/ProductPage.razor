@@ -3,8 +3,7 @@
 @attribute [AppResponseCache(SharedMaxAge = 3600 * 24, MaxAge = 60 * 5)]
 @inherits AppPageBase
 
-<AppPageData ShowGoBackButton=true
-             Title="@product?.Name" />
+<AppPageData ShowGoBackButton="true" Title="@product?.Name" />
 
 <section>
     <BitStack Gap="2rem" Class="root-stack">
@@ -12,8 +11,8 @@
         @if (isLoadingProduct)
         {
             <BitCard FullWidth Background="BitColorKind.Tertiary" Style="padding:3rem 1rem;">
-                <BitStack Horizontal HorizontalAlign="BitAlignment.Center" Gap="2rem">
-                    <ProductImage Width="30%" />
+                <BitStack Horizontal HorizontalAlign="BitAlignment.Center" Gap="2rem" Class="product-stack">
+                    <ProductImage Width="50%" />
                     <BitStack AutoHeight Grows>
                         <BitShimmer Height="6rem" Width="100%" />
                         <BitShimmer Height="1rem" Width="100%" />
@@ -47,8 +46,8 @@
             else
             {
                 <BitCard FullWidth Style="padding:3rem 1rem;">
-                    <BitStack Horizontal HorizontalAlign="BitAlignment.Center" Gap="2rem">
-                        <ProductImage Src="@GetProductImageUrl(product)" Width="30%" />
+                    <BitStack Horizontal HorizontalAlign="BitAlignment.Center" Gap="2rem" Class="product-stack">
+                        <ProductImage Src="@GetProductImageUrl(product)" Width="50%" />
                         <BitStack AutoWidth Grows>
                             <BitText Typography="BitTypography.H2">@product.Name</BitText>
                             <BitText Color="BitColor.Info">@product.CategoryName</BitText>
@@ -64,6 +63,8 @@
 
                 <BitCard FullWidth>
                     <BitText>
+                        The following text is just a sample placeholder.
+                        <br />
                         A <b>standard car</b> is designed with a focus on <b>functionality</b>, and <b>performance</b>.
                         It generally features a four-cylinder <b>internal combustion engine</b>, although some models come with six or eight-cylinder engines for added power.
                         The car's engine is paired with either an automatic or manual transmission to control gear shifts.

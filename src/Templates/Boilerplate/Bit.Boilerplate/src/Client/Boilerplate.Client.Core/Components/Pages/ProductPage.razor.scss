@@ -11,4 +11,12 @@ section {
     .root-stack {
         max-width: 60rem;
     }
+
+    .product-stack {
+        display: flex !important;
+
+        @include lt-sm {
+            flex-direction: column !important;
+        }
+    }
 }
