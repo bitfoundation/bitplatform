@@ -164,6 +164,7 @@ public partial class AppHub : Hub
                                         {
                                             p.Name,
                                             PageUrl = new Uri(baseApiUrl, p.PageUrl),
+                                            Manufactor = p.CategoryName,
                                             p.FormattedPrice,
                                             Description = p.DescriptionText
                                         })
