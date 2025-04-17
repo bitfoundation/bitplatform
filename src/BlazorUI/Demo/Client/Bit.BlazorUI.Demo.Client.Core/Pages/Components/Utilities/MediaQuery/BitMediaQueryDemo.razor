@@ -7,14 +7,72 @@
 <DemoPage Name="MediaQuery"
           Description="A component to easily use predefined bit BlazorUI media queries in Blazor components."
           Parameters="componentParameters"
+          SubEnums="componentSubEnums"
           GitHubUrl="Utilities/MediaQuery/BitMediaQuery.cs"
           GitHubDemoUrl="Utilities/MediaQuery/BitMediaQueryDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <BitMediaQuery Query="BitScreenQuery.Xs">This is Xs!</BitMediaQuery>
-        <BitMediaQuery Query="BitScreenQuery.Sm">This is Sm!</BitMediaQuery>
-        <BitMediaQuery Query="BitScreenQuery.Md">This is Md!</BitMediaQuery>
-        <BitMediaQuery Query="BitScreenQuery.Lg">This is Lg!</BitMediaQuery>
-        <BitMediaQuery Query="BitScreenQuery.Xl">This is Xl!</BitMediaQuery>
-        <BitMediaQuery Query="BitScreenQuery.Xxl">This is Xxl!</BitMediaQuery>
+        <div>Explore the media query interaction with the UI by resizing the window (you can try zoom in/out too).</div>
+        <br />
+        <div><b>Normal screen queries</b>:</div><br />
+        <BitMediaQuery ScreenQuery="BitScreenQuery.Xs">This is <b>Xs</b> (Extra Small).</BitMediaQuery>
+        <BitMediaQuery ScreenQuery="BitScreenQuery.Sm">This is <b>Sm</b> (Small).</BitMediaQuery>
+        <BitMediaQuery ScreenQuery="BitScreenQuery.Md">This is <b>Md</b> (Medium).</BitMediaQuery>
+        <BitMediaQuery ScreenQuery="BitScreenQuery.Lg">This is <b>Lg</b> (Large).</BitMediaQuery>
+        <BitMediaQuery ScreenQuery="BitScreenQuery.Xl">This is <b>Xl</b> (Extra Large).</BitMediaQuery>
+        <BitMediaQuery ScreenQuery="BitScreenQuery.Xxl">This is <b>Xxl</b> (Extra Extra Large).</BitMediaQuery>
+        <br /><br /><br /><br />
+        <div><b>Range screen queries (less than)</b>:</div><br />
+        <BitMediaQuery ScreenQuery="BitScreenQuery.LtSm">This is <b>LtSm</b> (Less Than Small).</BitMediaQuery>
+        <BitMediaQuery ScreenQuery="BitScreenQuery.LtMd">This is <b>LtMd</b> (Less Than Medium).</BitMediaQuery>
+        <BitMediaQuery ScreenQuery="BitScreenQuery.LtLg">This is <b>LtLg</b> (Less Than Large).</BitMediaQuery>
+        <BitMediaQuery ScreenQuery="BitScreenQuery.LtXl">This is <b>LtXl</b> (Less Than Extra Large).</BitMediaQuery>
+        <BitMediaQuery ScreenQuery="BitScreenQuery.LtXxl">This is <b>LtXxl</b> (Less Than Extra Extra Large).</BitMediaQuery>
+        <br /><br /><br /><br />
+        <div><b>Range screen queries (greater than)</b>:</div><br />
+        <BitMediaQuery ScreenQuery="BitScreenQuery.GtXs">This is <b>GtXs</b> (Greater Than Extra Small).</BitMediaQuery>
+        <BitMediaQuery ScreenQuery="BitScreenQuery.GtSm">This is <b>GtSm</b> (Greater Than Small).</BitMediaQuery>
+        <BitMediaQuery ScreenQuery="BitScreenQuery.GtMd">This is <b>GtMd</b> (Greater Than Medium).</BitMediaQuery>
+        <BitMediaQuery ScreenQuery="BitScreenQuery.GtLg">This is <b>GtLg</b> (Greater Than Large).</BitMediaQuery>
+        <BitMediaQuery ScreenQuery="BitScreenQuery.GtXl">This is <b>GtXl</b> (Greater Than Extra Large).</BitMediaQuery>
+    </DemoExample>
+
+    <DemoExample Title="Matched & NotMatched" RazorCode="@example2RazorCode" Id="example2">
+        <div>You can utilize the Matched and NotMatched parameters to render your desired UI.</div>
+        <br />
+        <BitMediaQuery ScreenQuery="BitScreenQuery.Md">
+            <Matched>
+                This is <b>Matched</b> (BitScreenQuery.Md).
+            </Matched>
+            <NotMatched>
+                [BitScreenQuery.Md] <b>NotMatched!</b>.
+            </NotMatched>
+        </BitMediaQuery>
+    </DemoExample>
+
+    <DemoExample Title="Custom query" RazorCode="@example3RazorCode" Id="example3">
+        <div>
+            You can provide any valid media query as a custom query
+            (<BitLink Target="_blank"
+                      Href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_media_queries/Using_media_queries">
+                more info
+            </BitLink>).
+        </div>
+        <br /><br />
+        <div>screen and (max-width: 999px):</div><br />
+        <BitMediaQuery Query="screen and (max-width: 999px)">
+            <Matched>
+                This is <b>screen and (max-width: 999px)</b>.
+            </Matched>
+            <NotMatched>
+                Not matched yet!
+            </NotMatched>
+        </BitMediaQuery>
+    </DemoExample>
+
+    <DemoExample Title="OnChange" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <div>Using the OnChange event one can be notified about the matching of the provided query.</div>
+        <br />
+        <BitMediaQuery ScreenQuery="BitScreenQuery.Md" OnChange="v => isMatched = v" />
+        <div>IsMatched: @isMatched</div>
     </DemoExample>
 </DemoPage>
