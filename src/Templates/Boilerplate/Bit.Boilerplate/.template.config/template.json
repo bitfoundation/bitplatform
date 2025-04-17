@@ -167,14 +167,14 @@
             "type": "parameter",
             "datatype": "bool",
             "defaultValue": "false",
-            "description": "Add push notification."
+            "description": "Adds push notification."
         },
         "sample": {
             "displayName": "Sample",
             "type": "parameter",
             "datatype": "bool",
             "defaultValue": "false",
-            "description": "Add todo page sample."
+            "description": "Adds todo page sample."
         },
         "sentry": {
             "displayName": "Add Sentry logging to project?",
@@ -193,21 +193,21 @@
             "type": "parameter",
             "datatype": "bool",
             "defaultValue": "false",
-            "description": "Add SignalR sample."
+            "description": "Adds SignalR sample."
         },
         "offlineDb": {
             "displayName": "Add Offline db?",
             "type": "parameter",
             "datatype": "bool",
             "defaultValue": "false",
-            "description": "Add support for EF Core DbContext on the client side. If your app doesn't need offline data storage, we recommend not enabling this feature."
+            "description": "Adds support for EF Core DbContext on the client side. If your app doesn't need offline data storage, we recommend not enabling this feature."
         },
         "cloudflare": {
             "displayName": "Add cloudflare CDN integration?",
             "type": "parameter",
             "datatype": "bool",
             "defaultValue": "true",
-            "description": "Add cloudflare CDN integration."
+            "description": "Adds cloudflare CDN integration."
         },
         "nameToLower": {
             "type": "generated",
@@ -324,7 +324,14 @@
             "type": "parameter",
             "datatype": "bool",
             "defaultValue": "false",
-            "description": "Include advanced automated tests."
+            "description": "Includes advanced automated tests."
+        },
+        "inMemoryHangfire": {
+            "displayName": "Use in-memory version of the hangfire?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false",
+            "description": "Uses in-memory version of the hangfire."
         }
     },
     "postActions": [

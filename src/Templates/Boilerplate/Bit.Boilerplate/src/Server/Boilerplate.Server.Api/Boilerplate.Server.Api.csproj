@@ -20,6 +20,9 @@
 
     <ItemGroup>
         <PackageReference Include="Fido2.AspNet" />
+        <PackageReference Include="Hangfire.AspNetCore" />
+        <PackageReference Include="Hangfire.EntityFrameworkCore" />
+        <PackageReference Condition=" '$(inMemoryHangfire)' == 'true' OR '$(inMemoryHangfire)' == '' " Include="Hangfire.InMemory" />
         <PackageReference Include="HtmlSanitizer" />
         <PackageReference Include="libphonenumber-csharp" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.ApplicationInsights.AspNetCore" />
@@ -58,6 +61,7 @@
         <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
         <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />
         <Using Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+        <Using Include="Hangfire" />
         <Using Include="Boilerplate.Shared" />
         <Using Include="Boilerplate.Shared.Attributes" />
         <Using Include="Boilerplate.Server.Api.Data" />

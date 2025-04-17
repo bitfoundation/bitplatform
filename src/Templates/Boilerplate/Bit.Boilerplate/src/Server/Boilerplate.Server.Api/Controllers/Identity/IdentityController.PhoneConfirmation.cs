@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Humanizer;
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Identity;
@@ -83,6 +83,6 @@ public partial class IdentityController
 
         var message = Localizer[nameof(AppStrings.ConfirmPhoneTokenShortText), token];
         var smsMessage = $"{message}{Environment.NewLine}@{HttpContext.Request.GetWebAppUrl().Host} #{token}" /* Web OTP */;
-        await phoneService.SendSms(smsMessage, phoneNumber, cancellationToken);
+        await phoneService.SendSms(smsMessage, phoneNumber);
     }
 }

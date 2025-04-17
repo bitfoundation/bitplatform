@@ -61,6 +61,10 @@
         {
             "id": "advancedTests",
             "isVisible": false
+        },
+        {
+            "id": "inMemoryHangfire",
+            "isVisible": false
         }
     ]
 }

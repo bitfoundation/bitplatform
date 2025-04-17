@@ -16,14 +16,16 @@ using System.Text;
 using Fido2NetLib;
 using PhoneNumbers;
 using FluentStorage;
-using FluentStorage.Blobs;
 using FluentEmail.Core;
+using FluentStorage.Blobs;
+using Hangfire.EntityFrameworkCore;
 //#if (notification == true)
 using AdsPush;
 using AdsPush.Abstraction;
 //#endif
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Server.Api.Controllers;
+using Boilerplate.Server.Api.Services.Jobs;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Services.Identity;
 
@@ -42,7 +44,9 @@ public static partial class Program
         configuration.Bind(appSettings);
 
         services.AddScoped<EmailService>();
+        services.AddScoped<EmailServiceJobsRunner>();
         services.AddScoped<PhoneService>();
+        services.AddScoped<PhoneServiceJobsRunner>();
         if (appSettings.Sms?.Configured is true)
         {
             TwilioClient.Init(appSettings.Sms.TwilioAccountSid, appSettings.Sms.TwilioAutoToken);
@@ -384,6 +388,37 @@ public static partial class Program
             // .UseOpenTelemetry()
         }
         //#endif
+
+        builder.Services.AddHangfire(configuration =>
+        {
+            //#if (inMemoryHangfire == true)
+            configuration.UseInMemoryStorage(new()
+            {
+
+            });
+            //#else
+            //#if (IsInsideProjectTemplate == true)
+            /*
+            //#endif
+            configuration.UseEFCoreStorage(AddDbContext, new()
+            {
+                Schema = "jobs",
+                QueuePollInterval = new TimeSpan(0, 0, 1)
+            });
+            //#if (IsInsideProjectTemplate == true)
+            */
+            //#endif
+            //#endif
+            configuration.UseRecommendedSerializerSettings();
+            configuration.UseSimpleAssemblyNameTypeSerializer();
+            configuration.UseIgnoredAssemblyVersionTypeResolver();
+            configuration.SetDataCompatibilityLevel(CompatibilityLevel.Version_180);
+        });
+
+        builder.Services.AddHangfireServer(options =>
+        {
+            options.SchedulePollingInterval = TimeSpan.FromSeconds(5);
+        });
     }
 
     private static void AddIdentity(WebApplicationBuilder builder)
