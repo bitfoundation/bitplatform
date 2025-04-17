@@ -17,9 +17,6 @@ public partial class HomePage
 
     [AutoInject] private IStatisticsController statisticsController = default!;
     //#endif
-    //#if(module == "Sales")
-    private string? searchValue;
-    //#endif
 
 
     //#if(module != "Sales")
@@ -79,12 +76,9 @@ public partial class HomePage
     //#endif
 
     //#if(module == "Sales")
-    private async Task HandleOnSearch(string value)
+    private async Task HandleOnSearchBoxClick()
     {
-        PubSubService.Publish(ClientPubSubMessages.SEARCH_PRODUCTS, value);
-
-        searchValue = string.Empty;
-        StateHasChanged();
+        PubSubService.Publish(ClientPubSubMessages.SEARCH_PRODUCTS);
     }
     //#endif
 }

@@ -20,12 +20,12 @@
         </BitText>
 
         @*#if (module == "Sales")*@
-        <BitSearchBox Underlined
+        <BitSearchBox ReadOnly
+                      Underlined
                       ShowSearchButton
                       Style="width:80%"
                       Color="BitColor.Secondary"
-                      OnSearch="HandleOnSearch"
-                      @bind-Value="searchValue"/>
+                      @onclick="HandleOnSearchBoxClick" />
 
         <ProductsCarousel />
         <br />

@@ -31,6 +31,8 @@ public partial class AppAiChatPanel
     {
         unsubSearchProducts = PubSubService.Subscribe(ClientPubSubMessages.SEARCH_PRODUCTS, async (value) =>
         {
+            if (isOpen) return;
+
             isOpen = true;
 
             StateHasChanged();
