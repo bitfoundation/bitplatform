@@ -45,7 +45,7 @@ To implement this optimization, follow these steps in the Package Manager Consol
 2. Run the following command:
 
     ```powershell
-    Optimize-DbContext -Context OfflineDbContext -OutputDir Data/CompiledModel -Namespace Boilerplate.Client.Core.Data
+    Optimize-DbContext -Context OfflineDbContext -OutputDir Data/CompiledModel -Namespace Boilerplate.Client.Core.Data -Verbose
     ```
 
 By adhering to these steps, you leverage EF Core compiled models to boost the performance of your application, ensuring an optimized and efficient data access method.

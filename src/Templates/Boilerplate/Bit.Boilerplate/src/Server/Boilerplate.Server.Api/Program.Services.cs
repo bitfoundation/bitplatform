@@ -389,16 +389,22 @@ public static partial class Program
         }
         //#endif
 
-        builder.Services.AddHangfire(configuration => configuration.UseEFCoreStorage(AddDbContext, new EFCoreStorageOptions
+        builder.Services.AddHangfire(configuration =>
         {
-            // It would be better to use https://docs.hangfire.io/en/latest/configuration/using-redis.html in production.
-            Schema = "jobs",
-            QueuePollInterval = new TimeSpan(0, 0, 1)
-        }));
+            configuration.UseEFCoreStorage(AddDbContext, new()
+            {
+                Schema = "jobs",
+                QueuePollInterval = new TimeSpan(0, 0, 1)
+            });
+            configuration.UseRecommendedSerializerSettings();
+            configuration.UseSimpleAssemblyNameTypeSerializer();
+            configuration.UseIgnoredAssemblyVersionTypeResolver();
+            configuration.SetDataCompatibilityLevel(CompatibilityLevel.Version_180);
+        });
 
         builder.Services.AddHangfireServer(options =>
         {
-            options.ServerName = $"Boilerplate-{Environment.MachineName}-{Environment.ProcessId}-{Guid.NewGuid()}";
+            options.SchedulePollingInterval = TimeSpan.FromSeconds(5);
         });
     }
 

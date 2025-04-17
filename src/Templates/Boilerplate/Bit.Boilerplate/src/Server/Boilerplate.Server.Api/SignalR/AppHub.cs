@@ -154,8 +154,6 @@ public partial class AppHub : Hub
                                         return null;
 
                                     var baseApiUrl = Context.GetHttpContext()!.Request.GetBaseUrl();
-                                    var baseWebAppUrl = Context.GetHttpContext()!.Request.GetWebAppUrl();
-                                    var productPlaceholder = new Uri(baseWebAppUrl, "_content/Boilerplate.Client.Core/images/product-placeholder.svg").ToString();
 
                                     await using var scope = rootScopeProvider();
                                     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -166,7 +164,6 @@ public partial class AppHub : Hub
                                         {
                                             p.Name,
                                             PageUrl = new Uri(baseApiUrl, p.PageUrl),
-                                            PreviewImageUrl = p.HasPrimaryImage ? p.GetPrimaryMediumImageUrl(baseApiUrl) : productPlaceholder,
                                             p.FormattedPrice,
                                             Description = p.DescriptionText
                                         })

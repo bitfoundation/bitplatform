@@ -1,4 +1,5 @@
-﻿using FluentEmail.Core;
+﻿//+:cnd:noEmit
+using FluentEmail.Core;
 
 namespace Boilerplate.Server.Api.Services.Jobs;
 
@@ -10,7 +11,7 @@ public partial class EmailServiceJobsRunner
     [AutoInject] ServerExceptionHandler serverExceptionHandler = default!;
     [AutoInject] private IStringLocalizer<EmailStrings> emailLocalizer = default!;
 
-    [AutomaticRetry(Attempts = 3)]
+    [AutomaticRetry(Attempts = 3, DelaysInSeconds = [30] /*We primarily send tokens via email, which expire after 2 minutes by default. It's not worth retrying more than 3 times, with a 30-second delay between attempts.*/)]
     public async Task SendEmailJob(string toEmailAddress, string toName, string subject, string body, CancellationToken cancellationToken)
     {
         try
