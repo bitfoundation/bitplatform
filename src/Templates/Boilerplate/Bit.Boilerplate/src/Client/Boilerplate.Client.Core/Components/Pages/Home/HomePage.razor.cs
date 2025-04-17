@@ -1,7 +1,6 @@
 ﻿//+:cnd:noEmit
-using System.Buffers;
-using Boilerplate.Shared.Controllers.Statistics;
 using Boilerplate.Shared.Dtos.Statistics;
+using Boilerplate.Shared.Controllers.Statistics;
 
 namespace Boilerplate.Client.Core.Components.Pages.Home;
 
@@ -11,11 +10,15 @@ public partial class HomePage
 
 
     //#if(module != "Sales")
-    [AutoInject] private IStatisticsController statisticsController = default!;
-    private bool isLoadingGitHub = true;
-    private bool isLoadingNuget = true;
     private GitHubStats? gitHubStats;
     private NugetStatsDto? nugetStats;
+    private bool isLoadingNuget = true;
+    private bool isLoadingGitHub = true;
+
+    [AutoInject] private IStatisticsController statisticsController = default!;
+    //#endif
+    //#if(module == "Sales")
+    private string? searchValue;
     //#endif
 
 
@@ -76,7 +79,6 @@ public partial class HomePage
     //#endif
 
     //#if(module == "Sales")
-    private string? searchValue;
     private async Task HandleOnSearch(string value)
     {
         PubSubService.Publish(ClientPubSubMessages.SEARCH_PRODUCTS, value);

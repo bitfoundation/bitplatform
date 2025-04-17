@@ -2,7 +2,6 @@
 using Boilerplate.Shared.Dtos.Chatbot;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Extensions.Primitives;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -36,9 +35,12 @@ public partial class AppAiChatPanel
 
             StateHasChanged();
 
-            var message = value is null 
-                            ? Localizer[nameof(AppStrings.AiChatPanelPrompt3)] 
-                            : (string)value;
+            var message = (string?)value;
+
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                message = Localizer[nameof(AppStrings.AiChatPanelPrompt3)];
+            }
 
             await SendPromptMessage(message);
         });
