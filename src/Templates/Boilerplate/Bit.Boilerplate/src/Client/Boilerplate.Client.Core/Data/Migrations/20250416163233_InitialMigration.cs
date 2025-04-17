@@ -1,7 +1,6 @@
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
-#pragma warning disable DateTimeOffsetInsteadOfDateTimeAnalyzer
 
 namespace Boilerplate.Client.Core.Data.Migrations;
 
@@ -23,7 +22,7 @@ public partial class InitialMigration : Migration
                 FullName = table.Column<string>(type: "TEXT", nullable: false),
                 Gender = table.Column<int>(type: "INTEGER", nullable: true),
                 BirthDate = table.Column<long>(type: "INTEGER", nullable: true),
-                ProfileImageName = table.Column<string>(type: "TEXT", nullable: true),
+                HasProfilePicture = table.Column<bool>(type: "INTEGER", nullable: false),
                 ConcurrencyStamp = table.Column<string>(type: "TEXT", nullable: true)
             },
             constraints: table =>
@@ -33,8 +32,8 @@ public partial class InitialMigration : Migration
 
         migrationBuilder.InsertData(
             table: "Users",
-            columns: new[] { "Id", "BirthDate", "ConcurrencyStamp", "Email", "FullName", "Gender", "Password", "PhoneNumber", "ProfileImageName", "UserName" },
-            values: new object[] { new Guid("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"), 1306790461440000000L, null, "test@bitplatform.dev", "Boilerplate test account", 0, "123456", "+31684207362", null, "test" });
+            columns: new[] { "Id", "BirthDate", "ConcurrencyStamp", "Email", "FullName", "Gender", "HasProfilePicture", "Password", "PhoneNumber", "UserName" },
+            values: new object[] { new Guid("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"), 1306790461440000000L, null, "test@bitplatform.dev", "Boilerplate test account", 0, false, "123456", "+31684207362", "test" });
     }
 
     /// <inheritdoc />

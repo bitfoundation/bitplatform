@@ -1,4 +1,4 @@
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Net;
 using Boilerplate.Server.Api;
 using Boilerplate.Server.Web;
@@ -61,7 +61,11 @@ public partial class AppTestServer : IAsyncDisposable
     {
         if (webApp != null)
         {
-            await webApp.StopAsync();
+            try
+            {
+                await webApp.StopAsync();
+            }
+            catch (OperationCanceledException) { }
             await webApp.DisposeAsync();
         }
     }

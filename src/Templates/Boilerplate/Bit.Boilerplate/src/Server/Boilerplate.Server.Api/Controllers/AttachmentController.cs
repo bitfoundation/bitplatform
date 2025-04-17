@@ -56,15 +56,19 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     [AppResponseCache(MaxAge = 3600 * 24 * 7, UserAgnostic = true)]
     public async Task<IActionResult> GetAttachment(Guid attachmentId, AttachmentKind kind, CancellationToken cancellationToken)
     {
-        var attachment = await DbContext.Attachments.FindAsync([attachmentId, kind], cancellationToken)
-            ?? throw new ResourceNotFoundException();
-
-        var filePath = attachment.Path;
+        var filePath = kind switch
+        {
+            //#if (module == "Sales" || module == "Admin")
+            AttachmentKind.ProductPrimaryImageMedium => $"{AppSettings.ProductImagesDir}{attachmentId}_{kind}.webp",
+            //#endif
+            AttachmentKind.UserProfileImageSmall => $"{AppSettings.UserProfileImagesDir}{attachmentId}_{kind}.webp",
+            _ => throw new NotImplementedException()
+        };
 
         if (await blobStorage.ExistsAsync(filePath, cancellationToken) is false)
             throw new ResourceNotFoundException();
 
-        var mimeType = attachment.Kind switch
+        var mimeType = kind switch
         {
             _ => "image/webp" // Currently, all attachment types are images.
         };
@@ -144,26 +148,26 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
         }
     }
 
-    private async Task UploadAttachment(Guid attacmentId, AttachmentKind[] kinds, IFormFile? file, CancellationToken cancellationToken)
+    private async Task UploadAttachment(Guid attachmentId, AttachmentKind[] kinds, IFormFile? file, CancellationToken cancellationToken)
     {
         if (file is null)
             throw new BadRequestException();
 
-        await DbContext.Attachments.Where(att => att.Id == attacmentId).ExecuteDeleteAsync(cancellationToken);
+        await DbContext.Attachments.Where(att => att.Id == attachmentId).ExecuteDeleteAsync(cancellationToken);
 
         foreach (var kind in kinds)
         {
             var attachment = new Attachment
             {
-                Id = attacmentId,
+                Id = attachmentId,
                 Kind = kind,
                 Path = kind switch
                 {
-                    AttachmentKind.UserProfileImageOriginal => $"{AppSettings.UserProfileImagesDir}{attacmentId}_{kind}{Path.GetExtension(file.FileName)}",
-                    AttachmentKind.UserProfileImageSmall => $"{AppSettings.UserProfileImagesDir}{attacmentId}_{kind}.webp",
+                    AttachmentKind.UserProfileImageOriginal => $"{AppSettings.UserProfileImagesDir}{attachmentId}_{kind}{Path.GetExtension(file.FileName)}",
+                    AttachmentKind.UserProfileImageSmall => $"{AppSettings.UserProfileImagesDir}{attachmentId}_{kind}.webp",
                     //#if (module == "Sales" || module == "Admin")
-                    AttachmentKind.ProductPrimaryImageOriginal => $"{AppSettings.ProductImagesDir}{attacmentId}_{kind}{Path.GetExtension(file.FileName)}",
-                    AttachmentKind.ProductPrimaryImageMedium => $"{AppSettings.ProductImagesDir}{attacmentId}_{kind}.webp",
+                    AttachmentKind.ProductPrimaryImageOriginal => $"{AppSettings.ProductImagesDir}{attachmentId}_{kind}{Path.GetExtension(file.FileName)}",
+                    AttachmentKind.ProductPrimaryImageMedium => $"{AppSettings.ProductImagesDir}{attachmentId}_{kind}.webp",
                     //#endif
                     _ => throw new NotImplementedException()
                 }

@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using System.Net;
 using System.Reflection;
 using System.Runtime.Loader;
@@ -11,6 +11,10 @@ using Microsoft.AspNetCore.Localization.Routing;
 using System.Text.RegularExpressions;
 using Boilerplate.Shared;
 using Boilerplate.Shared.Attributes;
+//#if (api == "Integrated")
+using Hangfire;
+using Boilerplate.Server.Api.Services;
+//#endif
 using Boilerplate.Client.Core.Services;
 //#if(module == "Sales")
 using Boilerplate.Shared.Dtos.Products;
@@ -134,6 +138,12 @@ public static partial class Program
         app.UseSwaggerUI(options =>
         {
             options.InjectJavascript($"/_content/Boilerplate.Server.Api/scripts/swagger-utils.js?v={Environment.TickCount64}");
+        });
+
+        app.UseHangfireDashboard(options: new()
+        {
+            DarkModeEnabled = true,
+            Authorization = [new HangfireDashboardAuthorizationFilter()]
         });
 
         app.MapGet("/api/minimal-api-sample/{routeParameter}", [AppResponseCache(MaxAge = 3600 * 24)] (string routeParameter, [FromQuery] string queryStringParameter) => new

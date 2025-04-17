@@ -39,8 +39,6 @@ public class AppClaimTypes
     /// <inheritdoc cref="AuthPolicies.ELEVATED_ACCESS"/>
     /// </summary>
     public const string ELEVATED_SESSION = "ElevatedSession";
-
-    public const string EDIT_AI_SYSTEM_PROMPTS = "EditAiSystemPrompts";
 }
 
 public class AppRoles

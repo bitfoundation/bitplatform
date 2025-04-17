@@ -1,5 +1,5 @@
 ﻿using PhoneNumbers;
-using Twilio.Rest.Api.V2010.Account;
+using Boilerplate.Server.Api.Services.Jobs;
 
 namespace Boilerplate.Server.Api.Services;
 
@@ -10,7 +10,7 @@ public partial class PhoneService
     [AutoInject] private readonly IHostEnvironment hostEnvironment = default!;
     [AutoInject] private readonly ILogger<PhoneService> phoneLogger = default!;
     [AutoInject] private readonly IHttpContextAccessor httpContextAccessor = default!;
-    [AutoInject] private readonly RootServiceScopeProvider rootServiceScopeProvider = default!;
+    [AutoInject] private readonly IBackgroundJobClient backgroundJobClient = default!;
 
     public virtual string? NormalizePhoneNumber(string? phoneNumber)
     {
@@ -27,7 +27,7 @@ public partial class PhoneService
         return phoneNumberUtil.Format(parsedPhoneNumber, PhoneNumberFormat.E164);
     }
 
-    public virtual async Task SendSms(string messageText, string phoneNumber, CancellationToken cancellationToken)
+    public virtual async Task SendSms(string messageText, string phoneNumber)
     {
         if (hostEnvironment.IsDevelopment())
         {
@@ -36,31 +36,9 @@ public partial class PhoneService
 
         if (appSettings.Sms?.Configured is false) return;
 
-        var from = appSettings.Sms!.FromPhoneNumber;
+        var from = appSettings.Sms!.FromPhoneNumber!;
 
-        _ = Task.Run(async () => // Let's not wait for the sms to be sent. Consider using a proper message queue or background job system like Hangfire.
-        {
-            await using var scope = rootServiceScopeProvider();
-            var serverExceptionHandler = scope.ServiceProvider.GetRequiredService<ServerExceptionHandler>();
-            MessageResource? smsMessage = null;
-            try
-            {
-                var messageOptions = new CreateMessageOptions(new(phoneNumber))
-                {
-                    From = new(from),
-                    Body = messageText
-                };
-
-                smsMessage = MessageResource.Create(messageOptions);
-
-                if (smsMessage.ErrorCode is not null)
-                    throw new InvalidOperationException(smsMessage.ErrorMessage).WithData(new() { { "Code", smsMessage.ErrorCode } });
-            }
-            catch (Exception exp)
-            {
-                serverExceptionHandler.Handle(exp, new() { { "PhoneNumber", phoneNumber } });
-            }
-        }, default);
+        backgroundJobClient.Enqueue<PhoneServiceJobsRunner>(x => x.SendSms(phoneNumber, from, messageText, default));
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "SMS: {message} to {phoneNumber}.")]

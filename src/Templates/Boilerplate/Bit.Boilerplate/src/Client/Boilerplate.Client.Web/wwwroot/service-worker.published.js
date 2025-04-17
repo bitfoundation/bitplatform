@@ -66,7 +66,7 @@ self.externalAssets = [
 self.serverHandledUrls = [
     /\/api\//,
     /\/odata\//,
-    /\/jobs\//,
+    /\/hangfire\//,
     /\/core\//,
     /\/healthchecks-ui/,
     /\/healthz/,
