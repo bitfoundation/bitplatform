@@ -7,7 +7,7 @@
             <CascadingValue Name=@Parameters.CurrentRouteData Value=currentRouteData>
                 <BitAppShell PersistScroll>
                     <main class="@GetMainCssClass()">
-                        <div class="root">
+                        <div class="main-container">
                             @if (isIdentityPage is false or null)
                             {
                                 if (isAuthenticated is true)
@@ -45,7 +45,7 @@
                                 }
                             }
 
-                            <div class="stack">
+                            <div class="main-body">
                                 @if (isIdentityPage is true)
                                 {
                                     <IdentityHeader />

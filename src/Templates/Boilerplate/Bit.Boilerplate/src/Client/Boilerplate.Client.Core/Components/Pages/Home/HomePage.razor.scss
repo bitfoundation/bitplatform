@@ -26,11 +26,15 @@ section {
 
         .carousel-description {
             overflow: hidden;
-            max-height: 80px;
+            max-height: 70px;
         }
 
         @include lt-sm {
             flex-direction: column !important;
+
+            .carousel-image {
+                min-height: 30%;
+            }
         }
     }
 
