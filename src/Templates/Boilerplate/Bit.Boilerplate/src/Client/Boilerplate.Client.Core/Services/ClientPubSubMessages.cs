@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Boilerplate.Client.Core.Components;
 
 namespace Boilerplate.Client.Core.Services;
@@ -30,5 +30,9 @@ public partial class ClientPubSubMessages
 
     //#if (signalR != true)
     public const string PROFILE_UPDATED = nameof(PROFILE_UPDATED);
+    //#endif
+
+    //#if(module == "Sales")
+    public const string SEARCH_PRODUCTS = nameof(SEARCH_PRODUCTS);
     //#endif
 }

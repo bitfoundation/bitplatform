@@ -14,6 +14,7 @@ public partial class AppAiChatPanel
     private Channel<string>? channel;
     private AiChatMessage? lastAssistantMessage;
     private List<AiChatMessage> chatMessages = []; // TODO: Persist these values in client-side storage to retain them across app restarts.
+    private Action unsubSearchProducts = default!;
 
 
     [AutoInject] private HubConnection hubConnection = default!;
@@ -25,6 +26,31 @@ public partial class AppAiChatPanel
     [CascadingParameter]
     private BitDir? currentDir { get; set; }
 
+
+    protected override Task OnInitAsync()
+    {
+        unsubSearchProducts = PubSubService.Subscribe(ClientPubSubMessages.SEARCH_PRODUCTS, async (value) =>
+        {
+            if (isOpen) return;
+
+            isOpen = true;
+
+            StateHasChanged();
+
+            if (chatMessages.Count > 1) return;
+
+            var message = (string?)value;
+
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                message = Localizer[nameof(AppStrings.AiChatPanelPrompt3)];
+            }
+
+            await SendPromptMessage(message);
+        });
+
+        return base.OnInitAsync();
+    }
 
     protected override async Task OnAfterFirstRenderAsync()
     {
@@ -160,6 +186,8 @@ public partial class AppAiChatPanel
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
+        unsubSearchProducts();
+
         hubConnection.Reconnected -= HubConnection_Reconnected;
 
         await StopChannel();
