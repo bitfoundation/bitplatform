@@ -391,11 +391,24 @@ public static partial class Program
 
         builder.Services.AddHangfire(configuration =>
         {
+            //#if (inMemoryHangfire == true)
+            configuration.UseInMemoryStorage(new()
+            {
+
+            });
+            //#else
+            //#if (IsInsideProjectTemplate == true)
+            /*
+            //#endif
             configuration.UseEFCoreStorage(AddDbContext, new()
             {
                 Schema = "jobs",
                 QueuePollInterval = new TimeSpan(0, 0, 1)
             });
+            //#if (IsInsideProjectTemplate == true)
+            */
+            //#endif
+            //#endif
             configuration.UseRecommendedSerializerSettings();
             configuration.UseSimpleAssemblyNameTypeSerializer();
             configuration.UseIgnoredAssemblyVersionTypeResolver();
