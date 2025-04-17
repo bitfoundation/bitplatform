@@ -19,9 +19,14 @@
             @Localizer[nameof(AppStrings.HomeMessage)]
         </BitText>
 
-        <br />
-
         @*#if (module == "Sales")*@
+        <BitSearchBox Underlined
+                      ShowSearchButton
+                      Style="width:80%"
+                      Color="BitColor.Secondary"
+                      OnSearch="HandleOnSearch"
+                      @bind-Value="searchValue"/>
+
         <ProductsCarousel />
         <br />
         <ProductsSection />

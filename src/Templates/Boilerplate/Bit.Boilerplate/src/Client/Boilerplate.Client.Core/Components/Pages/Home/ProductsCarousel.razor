@@ -30,8 +30,12 @@ else
                             <ProductImage Src="@GetProductImageUrl(product)" Width="50%" />
                             <BitStack AutoHeight>
                                 <br />
-                                <BitText Typography="BitTypography.H1" Color="BitColor.Secondary">@product.Name</BitText>
-                                <BitText Typography="BitTypography.H6" Class="carousel-desc" Color="BitColor.SecondaryForeground">@((MarkupString)product.DescriptionHTML!)</BitText>
+                                <BitText Typography="BitTypography.H3" Color="BitColor.Secondary">
+                                    @product.Name
+                                </BitText>
+                                <div class="carousel-description">
+                                    @((MarkupString)product.DescriptionHTML!)
+                                </div>
                                 <BitButton Color="BitColor.Tertiary">Buy</BitButton>
                             </BitStack>
                         </BitStack>

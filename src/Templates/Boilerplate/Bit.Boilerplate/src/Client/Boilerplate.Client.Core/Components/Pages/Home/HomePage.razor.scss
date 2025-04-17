@@ -24,13 +24,13 @@ section {
     .carousel-stack {
         display: flex !important;
 
+        .carousel-description {
+            overflow: hidden;
+            max-height: 80px;
+        }
+
         @include lt-sm {
             flex-direction: column !important;
-
-            .carousel-desc {
-                overflow: hidden;
-                max-height: 60px;
-            }
         }
     }
 

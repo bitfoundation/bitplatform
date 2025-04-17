@@ -1,6 +1,7 @@
-//+:cnd:noEmit
-using Boilerplate.Shared.Dtos.Statistics;
+﻿//+:cnd:noEmit
+using System.Buffers;
 using Boilerplate.Shared.Controllers.Statistics;
+using Boilerplate.Shared.Dtos.Statistics;
 
 namespace Boilerplate.Client.Core.Components.Pages.Home;
 
@@ -71,6 +72,17 @@ public partial class HomePage
             isLoadingGitHub = false;
             StateHasChanged();
         }
+    }
+    //#endif
+
+    //#if(module == "Sales")
+    private string? searchValue;
+    private async Task HandleOnSearch(string value)
+    {
+        PubSubService.Publish(ClientPubSubMessages.SEARCH_PRODUCTS, value);
+
+        searchValue = string.Empty;
+        StateHasChanged();
     }
     //#endif
 }
