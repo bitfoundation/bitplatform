@@ -5,6 +5,8 @@
         public static async setup(id: string, query: string, dotnetObj: DotNetObject) {
             if (!query || !dotnetObj) return;
 
+            MediaQuery.dispose(id);
+
             const ac = new AbortController();
             MediaQuery._abortControllers[id] = ac;
 
