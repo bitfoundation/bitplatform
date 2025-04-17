@@ -6,82 +6,82 @@
 public enum BitScreenQuery
 {
     /// <summary>
-    /// @media screen and (max-width: 600px)
+    /// Extra small query: [@media screen and (max-width: 600px)]
     /// </summary>
     Xs,
 
     /// <summary>
-    /// @media screen and (min-width: 601px) and (max-width: 960px)
+    /// Small query: [@media screen and (min-width: 601px) and (max-width: 960px)]
     /// </summary>
     Sm,
 
     /// <summary>
-    /// @media screen and (min-width: 961px) and (max-width: 1280px)
+    /// Medium query: [@media screen and (min-width: 961px) and (max-width: 1280px)]
     /// </summary>
     Md,
 
     /// <summary>
-    /// @media screen and (min-width: 1281px) and (max-width: 1920px)
+    /// Large query: [@media screen and (min-width: 1281px) and (max-width: 1920px)]
     /// </summary>
     Lg,
 
     /// <summary>
-    /// @media screen and (min-width: 1921px) and (max-width: 2560px)
+    /// Extra large query: [@media screen and (min-width: 1921px) and (max-width: 2560px)]
     /// </summary>
     Xl,
 
     /// <summary>
-    /// @media screen and (min-width: 2561px)
+    /// Extra extra large query: [@media screen and (min-width: 2561px)]
     /// </summary>
     Xxl,
 
     /// <summary>
-    /// @media screen and (max-width: 600px)
+    /// Less than small query: [@media screen and (max-width: 600px)]
     /// </summary>
     LtSm,
 
     /// <summary>
-    /// @media screen and (max-width: 960px)
+    /// Less than medium query: [@media screen and (max-width: 960px)]
     /// </summary>
     LtMd,
 
     /// <summary>
-    /// @media screen and (max-width: 1280px)
+    /// Less than large query: [@media screen and (max-width: 1280px)]
     /// </summary>
     LtLg,
 
     /// <summary>
-    /// @media screen and (max-width: 1920px)
+    /// Less than extra large query: [@media screen and (max-width: 1920px)]
     /// </summary>
     LtXl,
 
     /// <summary>
-    /// @media screen and (max-width: 2560px)
+    /// Less than extra extra large query: [@media screen and (max-width: 2560px)]
     /// </summary>
     LtXxl,
 
     /// <summary>
-    /// @media screen and (min-width: 601px)
+    /// Greater than extra small query: [@media screen and (min-width: 601px)]
     /// </summary>
     GtXs,
 
     /// <summary>
-    /// @media screen and (min-width: 961px)
+    /// Greater than small query: [@media screen and (min-width: 961px)]
     /// </summary>
     GtSm,
 
     /// <summary>
-    /// @media screen and (min-width: 1281px)
+    /// Greater than medium query: [@media screen and (min-width: 1281px)]
     /// </summary>
     GtMd,
 
     /// <summary>
-    /// @media screen and (min-width: 1921px)
+    /// Greater than large query: [@media screen and (min-width: 1921px)]
     /// </summary>
     GtLg,
 
     /// <summary>
-    /// @media screen and (min-width: 2561px)
+    /// Greater than extra large query: [@media screen and (min-width: 2561px)]
     /// </summary>
     GtXl
 }
