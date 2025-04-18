@@ -52,7 +52,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         if (Database.ProviderName!.EndsWith("PostgreSQL", StringComparison.InvariantCulture))
         {
             //#endif
-            //#if (database == "PostgreSQL" && (module == "Sales" || module == "Admin") && signalR == true)
+            //#if (database == "PostgreSQL")
             if (EmbeddingIsEnabled)
             {
                 modelBuilder.HasPostgresExtension("vector");
