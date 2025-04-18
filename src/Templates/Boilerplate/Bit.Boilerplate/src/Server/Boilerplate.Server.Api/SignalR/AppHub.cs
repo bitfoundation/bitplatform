@@ -26,7 +26,7 @@ namespace Boilerplate.Server.Api.SignalR;
 [AllowAnonymous]
 public partial class AppHub : Hub
 {
-    [AutoInject] private RootServiceScopeProvider rootScopeProvider = default!;
+    [AutoInject] private IServiceProvider serviceProvider = default!;
 
     public override async Task OnConnectedAsync()
     {
@@ -42,7 +42,7 @@ public partial class AppHub : Hub
         }
         else
         {
-            await using var scope = rootScopeProvider();
+            await using var scope = serviceProvider.CreateAsyncScope();
             await using var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             await dbContext.UserSessions.Where(us => us.Id == Context.User!.GetSessionId()).ExecuteUpdateAsync(us => us.SetProperty(x => x.SignalRConnectionId, Context.ConnectionId));
 
@@ -58,7 +58,7 @@ public partial class AppHub : Hub
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, "AuthenticatedClients");
 
-            await using var scope = rootScopeProvider();
+            await using var scope = serviceProvider.CreateAsyncScope();
             await using var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             await dbContext.UserSessions.Where(us => us.Id == Context.User!.GetSessionId()).ExecuteUpdateAsync(us => us.SetProperty(x => x.SignalRConnectionId, (string?)null));
         }
@@ -81,7 +81,7 @@ public partial class AppHub : Hub
 
         try
         {
-            await using var scope = rootScopeProvider();
+            await using var scope = serviceProvider.CreateAsyncScope();
 
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
@@ -99,7 +99,7 @@ public partial class AppHub : Hub
         }
 
         Channel<string> channel = Channel.CreateUnbounded<string>(new() { SingleReader = true, SingleWriter = true });
-        var chatClient = rootScopeProvider().ServiceProvider.GetRequiredService<IChatClient>();
+        var chatClient = serviceProvider.CreateAsyncScope().ServiceProvider.GetRequiredService<IChatClient>();
 
         async Task ReadIncomingMessages()
         {
@@ -141,7 +141,7 @@ public partial class AppHub : Hub
                             Tools = [
                                 AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
                                 {
-                                    await using var scope = rootScopeProvider();
+                                    await using var scope = serviceProvider.CreateAsyncScope();
                                     // Ideally, store these in a CRM or app database,
                                     // but for now, we'll log them!
                                     scope.ServiceProvider.GetRequiredService<ILogger<IChatClient>>()
@@ -155,17 +155,16 @@ public partial class AppHub : Hub
 
                                     var baseApiUrl = Context.GetHttpContext()!.Request.GetBaseUrl();
 
-                                    await using var scope = rootScopeProvider();
-                                    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                                    var recommendedProducts = await dbContext.Products // TODO: Implement RAG & Instruct LLM to accept recommended products as is.
+                                    await using var scope = serviceProvider.CreateAsyncScope();
+                                    var vectorizedProductsService = scope.ServiceProvider.GetRequiredService<VectorizedProductsService>();
+                                    var recommendedProducts = await (await vectorizedProductsService.GetVectorizedProducts(userNeeds, messageSpecificCancellationToken))
                                         .Project()
-                                        .OrderByDescending(p => p.HasPrimaryImage)
                                         .Select(p => new
                                         {
                                             p.Name,
                                             PageUrl = new Uri(baseApiUrl, p.PageUrl),
                                             Manufactor = p.CategoryName,
-                                            p.FormattedPrice,
+                                            Price = p.FormattedPrice,
                                             Description = p.DescriptionText
                                         })
                                         .ToArrayAsync(messageSpecificCancellationToken);
@@ -208,7 +207,7 @@ public partial class AppHub : Hub
 
     private async Task HandleException(Exception exp, CancellationToken cancellationToken)
     {
-        await using var scope = rootScopeProvider();
+        await using var scope = serviceProvider.CreateAsyncScope();
         var serverExceptionHandler = scope.ServiceProvider.GetRequiredService<ServerExceptionHandler>();
         var problemDetails = serverExceptionHandler.Handle(exp);
         if (problemDetails is null || serverExceptionHandler.IgnoreException(serverExceptionHandler.UnWrapException(exp)))
