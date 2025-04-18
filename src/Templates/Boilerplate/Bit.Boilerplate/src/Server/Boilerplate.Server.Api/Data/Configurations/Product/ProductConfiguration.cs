@@ -1,6 +1,5 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Server.Api.Models.Products;
-using Microsoft.EntityFrameworkCore;
 
 namespace Boilerplate.Server.Api.Data.Configurations.Identity;
 
@@ -29,6 +28,10 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
         //#endif
         //#if (IsInsideProjectTemplate == true)
         */
+        //#endif
+
+        //#if (IsInsideProjectTemplate == true)
+        builder.Ignore(p => p.Embedding);
         //#endif
 
         var defaultConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };

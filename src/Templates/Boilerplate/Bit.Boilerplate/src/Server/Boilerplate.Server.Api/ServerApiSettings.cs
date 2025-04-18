@@ -56,6 +56,8 @@ public partial class ServerApiSettings : SharedSettings
     public string ProductImagesDir { get; set; } = default!;
     //#endif
 
+    public HangfireOptions? Hangfire { get; set; }
+
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         var validationResults = base.Validate(validationContext).ToList();
@@ -259,4 +261,12 @@ public class ResponseCachingOptions
     /// Enables CDN's edge servers caching
     /// </summary>
     public bool EnableCdnEdgeCaching { get; set; }
+}
+
+public class HangfireOptions
+{
+    /// <summary>
+    /// Useful for testing or in production when managing multiple codebases with a single database.
+    /// </summary>
+    public bool UseIsoaltedStorage { get; set; }
 }

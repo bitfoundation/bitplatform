@@ -59,7 +59,7 @@ jobs:
       id: simple-test
       continue-on-error: true
       run: |
-        dotnet new bit-bp --name SimpleTest --database Sqlite --inMemoryHangfire
+        dotnet new bit-bp --name SimpleTest --database Sqlite
         cd SimpleTest/src/Server/SimpleTest.Server.Api/
         dotnet tool restore
         dotnet ef migrations add InitialMigration --verbose

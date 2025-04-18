@@ -7,7 +7,6 @@ using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Server.Api.Models.Products;
 using Boilerplate.Shared.Controllers.Products;
-using System.Text.Encodings.Web;
 using Ganss.Xss;
 
 namespace Boilerplate.Server.Api.Controllers.Products;
@@ -19,6 +18,9 @@ public partial class ProductController : AppControllerBase, IProductController
     [AutoInject] private HtmlSanitizer htmlSanitizer = default!;
 
     //#if (signalR == true)
+    //#if (database == "PostgreSQL")
+    [AutoInject] private ProductEmbeddingService productEmbeddingService = default!;
+    //#endif
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
     [AutoInject] private ResponseCacheService responseCacheService = default!;
@@ -63,6 +65,17 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await Validate(entityToAdd, cancellationToken);
 
+        //#if (database == "PostgreSQL" && signalR == true)
+        //#if (IsInsideProjectTemplate == true)
+        if (DbContext.Database.ProviderName!.EndsWith("PostgreSQL", StringComparison.InvariantCulture) is false)
+        {
+            //#endif
+            entityToAdd.Embedding = new(await productEmbeddingService.EmbedProduct(entityToAdd, cancellationToken));
+            //#if (IsInsideProjectTemplate == true)
+        }
+        //#endif
+        //#endif
+
         await DbContext.SaveChangesAsync(cancellationToken);
 
         //#if (signalR == true)
@@ -82,8 +95,18 @@ public partial class ProductController : AppControllerBase, IProductController
 
         dto.Patch(entityToUpdate);
 
-
         await Validate(entityToUpdate, cancellationToken);
+
+        //#if (database == "PostgreSQL" && signalR == true)
+        //#if (IsInsideProjectTemplate == true)
+        if (DbContext.Database.ProviderName!.EndsWith("PostgreSQL", StringComparison.InvariantCulture) is false)
+        {
+            //#endif
+            entityToUpdate.Embedding = new(await productEmbeddingService.EmbedProduct(entityToUpdate, cancellationToken));
+            //#if (IsInsideProjectTemplate == true)
+        }
+        //#endif
+        //#endif
 
         await DbContext.SaveChangesAsync(cancellationToken);
 

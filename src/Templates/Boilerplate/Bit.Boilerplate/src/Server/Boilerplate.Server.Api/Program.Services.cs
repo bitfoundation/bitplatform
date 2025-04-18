@@ -48,7 +48,7 @@ public static partial class Program
         services.AddScoped<PhoneService>();
         services.AddScoped<PhoneServiceJobsRunner>();
         //#if ((module == "Sales" || module == "Admin") && signalR == true )
-        services.AddScoped<ProductsVectorService>();
+        services.AddScoped<ProductEmbeddingService>();
         //#endif
         if (appSettings.Sms?.Configured is true)
         {
@@ -60,9 +60,9 @@ public static partial class Program
         {
             //#if (filesStorage == "Local")
             var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
-            var attachmentsDirPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
-            Directory.CreateDirectory(attachmentsDirPath);
-            return StorageFactory.Blobs.DirectoryFiles(attachmentsDirPath);
+            var appDataDirPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
+            Directory.CreateDirectory(appDataDirPath);
+            return StorageFactory.Blobs.DirectoryFiles(appDataDirPath);
             //#elif (filesStorage == "AzureBlobStorage")
             var azureBlobStorageSasUrl = configuration.GetConnectionString("AzureBlobStorageSasUrl");
             return (IBlobStorage)(azureBlobStorageSasUrl is "emulator"
@@ -396,24 +396,30 @@ public static partial class Program
 
         builder.Services.AddHangfire(configuration =>
         {
-            //#if (inMemoryHangfire == true)
-            configuration.UseInMemoryStorage(new()
+            var efCoreStorage = configuration.UseEFCoreStorage(optionsBuilder =>
             {
-
-            });
-            //#else
-            //#if (IsInsideProjectTemplate == true)
-            /*
-            //#endif
-            configuration.UseEFCoreStorage(AddDbContext, new()
+                if (appSettings.Hangfire?.UseIsoaltedStorage is true)
+                {
+                    var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
+                    var appDataDirPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
+                    Directory.CreateDirectory(appDataDirPath);
+                    optionsBuilder.UseSqlite($"Data Source={Path.Combine(appDataDirPath, "BoilerplateJobsDb")};");
+                }
+                else
+                {
+                    AddDbContext(optionsBuilder);
+                }
+            }, new()
             {
                 Schema = "jobs",
                 QueuePollInterval = new TimeSpan(0, 0, 1)
             });
-            //#if (IsInsideProjectTemplate == true)
-            */
-            //#endif
-            //#endif
+
+            if (appSettings.Hangfire?.UseIsoaltedStorage is true)
+            {
+                efCoreStorage.UseDatabaseCreator();
+            }
+
             configuration.UseRecommendedSerializerSettings();
             configuration.UseSimpleAssemblyNameTypeSerializer();
             configuration.UseIgnoredAssemblyVersionTypeResolver();

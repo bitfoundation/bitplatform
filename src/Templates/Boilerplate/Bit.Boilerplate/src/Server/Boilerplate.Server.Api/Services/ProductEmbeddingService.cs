@@ -9,7 +9,7 @@ namespace Boilerplate.Server.Api.Services;
 /// <summary>
 /// This class stores vectorized products and provides methods to query/manage them.
 /// </summary>
-public partial class ProductsVectorService
+public partial class ProductEmbeddingService
 {
     [AutoInject] private AppDbContext dbContext = default!;
 
@@ -24,6 +24,11 @@ public partial class ProductsVectorService
             .OrderBy(p => p.Embedding!.CosineDistance(embeddedUserQuery))
             .Take(5);
         //#endif
+    }
+
+    public async Task<float[]> EmbedProduct(Product product, CancellationToken cancellationToken)
+    {
+        return null!;
     }
 
     private async Task<float[]> EmbedText(string input, CancellationToken cancellationToken)
