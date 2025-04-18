@@ -27,7 +27,7 @@ public partial class ProductEmbeddingService
         var value = new Pgvector.Vector(embeddedUserQuery.Value);
         return dbContext.Products
             .OrderBy(p => p.Embedding!.CosineDistance(value!))
-            .Take(5);
+            .Take(10);
         //#endif
     }
 
