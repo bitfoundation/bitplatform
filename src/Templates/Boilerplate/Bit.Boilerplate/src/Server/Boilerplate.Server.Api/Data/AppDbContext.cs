@@ -48,6 +48,17 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         base.OnModelCreating(modelBuilder);
 
+        //#if (database == "PostgreSQL" && (module == "Sales" || module == "Admin") && signalR == true)
+        //#if (IsInsideProjectTemplate == true)
+        if (Database.ProviderName!.EndsWith("PostgreSQL", StringComparison.InvariantCulture))
+        {
+            //#endif
+            modelBuilder.HasPostgresExtension("vector");
+            //#if (IsInsideProjectTemplate == true)
+        }
+        //#endif
+        //#endif
+
         modelBuilder.OnHangfireModelCreating("jobs");
 
         //#if (IsInsideProjectTemplate == true)

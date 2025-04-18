@@ -225,7 +225,9 @@ public static partial class Program
             //#elif (database == "PostgreSQL")
             options.UseNpgsql(configuration.GetConnectionString("PostgreSQLConnectionString"), dbOptions =>
             {
-
+                //#if ((module == "Sales" || module == "Admin") && signalR == true )
+                dbOptions.UseVector();
+                //#endif
             });
             //#elif (database == "MySql")
             options.UseMySql(configuration.GetConnectionString("MySqlSQLConnectionString"), ServerVersion.AutoDetect(configuration.GetConnectionString("MySqlSQLConnectionString")), dbOptions =>

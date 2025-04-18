@@ -63,7 +63,7 @@
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Extensions.AI" Version="9.4.0-preview.1.25207.5" />
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Extensions.AI.OpenAI" Version="9.4.0-preview.1.25207.5" />
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Extensions.AI.AzureAIInference" Version="9.4.0-preview.1.25207.5" />
-        <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') AND ('$(module)' == 'Sales' OR '$(module)' == 'Admin' OR '$(module)' == '') AND ('$(database)' == 'PostgreSQL' OR '$(database)' == '')" Include="Pgvector" Version="0.3.1" />
+        <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') AND ('$(module)' == 'Sales' OR '$(module)' == 'Admin' OR '$(module)' == '') AND ('$(database)' == 'PostgreSQL' OR '$(database)' == '')" Include="Pgvector.EntityFrameworkCore" Version="0.2.2" />
         <PackageVersion Condition="'$(module)' == 'Admin' OR '$(module)' == ''" Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.23.0" />
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="BlazorApplicationInsights" Version="3.1.0" />

@@ -1,5 +1,6 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Server.Api.Models.Products;
+using Microsoft.EntityFrameworkCore;
 
 namespace Boilerplate.Server.Api.Data.Configurations.Identity;
 
@@ -15,6 +16,16 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
         //#endif
         //#if (database == "PostgreSQL" || database == "SqlServer")
         builder.Property(p => p.ShortId).UseSequence("ProductShortId");
+        //#endif
+        //#if (IsInsideProjectTemplate == true)
+        */
+        //#endif
+
+        //#if (IsInsideProjectTemplate == true)
+        /*
+        //#endif
+        //#if (database == "PostgreSQL")
+        builder.Property(p => p.Embedding).HasColumnType("vector(4)");
         //#endif
         //#if (IsInsideProjectTemplate == true)
         */
