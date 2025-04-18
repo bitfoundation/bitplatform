@@ -274,10 +274,6 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     }
 
 
-    private void SetInputMode()
-    {
-        _inputMode = InputMode?.ToString().ToLower();
-    }
 
     private void HandleOnValueChanged(object? sender, EventArgs args)
     {
@@ -311,7 +307,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     private async Task HandleOnClearButtonClick()
     {
-        if (IsEnabled is false) return;
+        if (IsEnabled is false || ReadOnly) return;
 
         await HandleOnStringValueChangeAsync(new() { Value = string.Empty });
 
@@ -324,6 +320,16 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     {
         if (IsEnabled is false || InvalidValueBinding()) return;
 
+        if (eventArgs.Key == "Enter")
+        {
+            CurrentValue = await _js.BitUtilsGetProperty(InputElement, "value");
+            await CloseCallout();
+            await OnSearch.InvokeAsync(CurrentValue);
+            return;
+        }
+
+        if (ReadOnly) return;
+
         if (eventArgs.Key == "Escape")
         {
             CurrentValue = string.Empty;
@@ -331,21 +337,38 @@ public partial class BitSearchBox : BitTextInputBase<string?>
             await OnEscape.InvokeAsync();
             await OnClear.InvokeAsync();
             //await InputElement.FocusAsync(); // is it required when the keydown event is captured on the input itself?
+            return;
         }
-        else if (eventArgs.Key == "Enter")
-        {
-            CurrentValue = await _js.BitUtilsGetProperty(InputElement, "value");
-            await CloseCallout();
-            await OnSearch.InvokeAsync(CurrentValue);
-        }
-        else if (eventArgs.Key == "ArrowUp")
+
+        if (eventArgs.Key == "ArrowUp")
         {
             await ChangeSelectedItem(true);
+            return;
         }
-        else if (eventArgs.Key == "ArrowDown")
+
+        if (eventArgs.Key == "ArrowDown")
         {
             await ChangeSelectedItem(false);
+            return;
         }
+    }
+
+    private async Task HandleOnItemClick(string item)
+    {
+        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
+
+        CurrentValue = item;
+
+        await CloseCallout();
+
+        await OnSearch.InvokeAsync(CurrentValueAsString);
+
+        StateHasChanged();
+    }
+
+    private void SetInputMode()
+    {
+        _inputMode = InputMode?.ToString().ToLower();
     }
 
     private async Task ToggleCallout()
@@ -353,19 +376,19 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         if (IsEnabled is false || IsDisposed) return;
 
         await _js.BitCalloutToggleCallout(_dotnetObj,
-                                _Id,
-                                null,
-                                _calloutId,
-                                null,
-                                _isOpen,
-                                BitResponsiveMode.None,
-                                BitDropDirection.TopAndBottom,
-                                Dir is BitDir.Rtl,
-                                _scrollContainerId,
-                                0,
-                                string.Empty,
-                                string.Empty,
-                                true);
+                                          _Id,
+                                          null,
+                                          _calloutId,
+                                          null,
+                                          _isOpen,
+                                          BitResponsiveMode.None,
+                                          BitDropDirection.TopAndBottom,
+                                          Dir is BitDir.Rtl,
+                                          _scrollContainerId,
+                                          0,
+                                          string.Empty,
+                                          string.Empty,
+                                          true);
     }
 
     private async Task CloseCallout()
@@ -404,10 +427,10 @@ public partial class BitSearchBox : BitTextInputBase<string?>
             _searchItems = [];
         }
 
-        await HandleCallout();
+        await OpenOrCloseCallout();
     }
 
-    private async Task HandleCallout()
+    private async Task OpenOrCloseCallout()
     {
         if (IsEnabled is false) return;
 
@@ -459,19 +482,6 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         CurrentValue = _searchItems[_selectedIndex];
 
         await _js.BitSearchBoxMoveCursorToEnd(InputElement);
-    }
-
-    private async Task HandleOnItemClick(string item)
-    {
-        if (IsEnabled is false || InvalidValueBinding()) return;
-
-        CurrentValue = item;
-
-        await CloseCallout();
-
-        await OnSearch.InvokeAsync(CurrentValueAsString);
-
-        StateHasChanged();
     }
 
     private int? GetTotalItems()
