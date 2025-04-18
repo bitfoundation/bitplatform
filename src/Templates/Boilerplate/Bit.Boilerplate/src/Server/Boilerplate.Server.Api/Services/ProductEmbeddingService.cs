@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-//#if (database != "PostgreSQL")
+//#if (database == "PostgreSQL")
 using Pgvector.EntityFrameworkCore;
 //#endif
 using Boilerplate.Server.Api.Models.Products;
@@ -23,7 +23,7 @@ public partial class ProductEmbeddingService
         //#else
         var embeddedUserQuery = await EmbedText(userNeedsQuery, cancellationToken);
         return dbContext.Products
-            .OrderBy(p => p.Embedding!.CosineDistance(embeddedUserQuery))
+            .OrderBy(p => p.Embedding!.CosineDistance(embeddedUserQuery!))
             .Take(5);
         //#endif
     }
