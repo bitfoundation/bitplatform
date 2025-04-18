@@ -377,6 +377,15 @@ public static partial class Program
             .UseFunctionInvocation();
             // .UseDistributedCache()
             // .UseOpenTelemetry()
+
+            services.AddEmbeddingGenerator(sp => new OpenAI.Embeddings.EmbeddingClient(model: appSettings.AI.OpenAI.Model, credential: new(appSettings.AI.OpenAI.ApiKey), options: new()
+            {
+                Endpoint = appSettings.AI.OpenAI.Endpoint,
+                Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
+            }).AsIEmbeddingGenerator())
+            .UseLogging();
+            // .UseDistributedCache()
+            // .UseOpenTelemetry()
         }
         else if (string.IsNullOrEmpty(appSettings.AI!.AzureOpenAI?.ApiKey) is false)
         {
@@ -389,6 +398,16 @@ public static partial class Program
                 }).AsIChatClient(appSettings.AI.AzureOpenAI.Model))
             .UseLogging()
             .UseFunctionInvocation();
+            // .UseDistributedCache()
+            // .UseOpenTelemetry()
+
+            services.AddEmbeddingGenerator(sp => new Azure.AI.Inference.EmbeddingsClient(endpoint: appSettings.AI.AzureOpenAI.Endpoint,
+                credential: new Azure.AzureKeyCredential(appSettings.AI.AzureOpenAI.ApiKey),
+                options: new()
+                {
+                    Transport = new Azure.Core.Pipeline.HttpClientTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
+                }).AsIEmbeddingGenerator(appSettings.AI.AzureOpenAI.Model))
+            .UseLogging();
             // .UseDistributedCache()
             // .UseOpenTelemetry()
         }

@@ -70,7 +70,7 @@ public partial class ProductController : AppControllerBase, IProductController
         if (DbContext.Database.ProviderName!.EndsWith("PostgreSQL", StringComparison.InvariantCulture) is false)
         {
             //#endif
-            entityToAdd.Embedding = new(await productEmbeddingService.EmbedProduct(entityToAdd, cancellationToken));
+            await productEmbeddingService.Embed(entityToAdd, cancellationToken);
             //#if (IsInsideProjectTemplate == true)
         }
         //#endif
@@ -102,7 +102,7 @@ public partial class ProductController : AppControllerBase, IProductController
         if (DbContext.Database.ProviderName!.EndsWith("PostgreSQL", StringComparison.InvariantCulture) is false)
         {
             //#endif
-            entityToUpdate.Embedding = new(await productEmbeddingService.EmbedProduct(entityToUpdate, cancellationToken));
+            await productEmbeddingService.Embed(entityToUpdate, cancellationToken);
             //#if (IsInsideProjectTemplate == true)
         }
         //#endif

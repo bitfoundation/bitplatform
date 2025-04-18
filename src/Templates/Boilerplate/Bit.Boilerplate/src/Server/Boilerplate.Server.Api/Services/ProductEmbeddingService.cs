@@ -12,12 +12,14 @@ namespace Boilerplate.Server.Api.Services;
 public partial class ProductEmbeddingService
 {
     [AutoInject] private AppDbContext dbContext = default!;
+    [AutoInject] private IWebHostEnvironment env = default!;
+    [AutoInject] private IServiceProvider serviceProvider = default!;
 
     public async Task<IQueryable<Product>> GetProductsByUserNeedsQuery(string userNeedsQuery, CancellationToken cancellationToken)
     {
         //#if (database != "PostgreSQL")
-        // The RAG has been implemented for PostgreSQL only. Checkout https://github.com/bitfoundation/bitplatform/blob/develop/src/Templates/Boilerplate/Bit.Boilerplate/src/Server/Boilerplate.Server.Api/Services/ProductsVectorService.cs
-        return dbContext.Products.Take(10);
+        // The RAG has been implemented for PostgreSQL only. Checkout https://github.com/bitfoundation/bitplatform/blob/develop/src/Templates/Boilerplate/Bit.Boilerplate/src/Server/Boilerplate.Server.Api/Services/ProductEmbeddingService.cs
+        return dbContext.Products.OrderBy(_ => EF.Functions.Random()).Take(15);
         //#else
         var embeddedUserQuery = await EmbedText(userNeedsQuery, cancellationToken);
         return dbContext.Products
@@ -26,13 +28,29 @@ public partial class ProductEmbeddingService
         //#endif
     }
 
-    public async Task<float[]> EmbedProduct(Product product, CancellationToken cancellationToken)
+    public async Task Embed(Product product, CancellationToken cancellationToken)
     {
-        return null!;
+        //#if (database != "PostgreSQL")
+        return;
+        //#else
+        await dbContext.Entry(product).Reference(p => p.Category).LoadAsync(cancellationToken);
+
+        var embedding = await EmbedText($"Name: {product.Name}, Manufactor: {product.Category!.Name}, Description: {product.DescriptionText}, Price: {product.Price}", cancellationToken);
+
+        product.Embedding = new(embedding);
+        //#endif
     }
 
-    private async Task<float[]> EmbedText(string input, CancellationToken cancellationToken)
+    private async Task<float[]?> EmbedText(string input, CancellationToken cancellationToken)
     {
-        return null!;
+        //#if (database != "PostgreSQL")
+        return null;
+        //#else
+        var embeddingGenerator = serviceProvider.GetService<IEmbeddingGenerator<string, Embedding<float>>>();
+        if (embeddingGenerator is null)
+            return env.IsDevelopment() ? throw new InvalidOperationException("Embedding generator is not registered.") : null;
+        var embedding = await embeddingGenerator.GenerateEmbeddingVectorAsync(input, options: new() { }, cancellationToken);
+        return embedding.ToArray();
+        //#endif
     }
 }
