@@ -48,18 +48,18 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         base.OnModelCreating(modelBuilder);
 
-        //#if (database == "PostgreSQL" && (module == "Sales" || module == "Admin") && signalR == true)
         //#if (IsInsideProjectTemplate == true)
         if (Database.ProviderName!.EndsWith("PostgreSQL", StringComparison.InvariantCulture))
         {
             //#endif
+            //#if (database == "PostgreSQL" && (module == "Sales" || module == "Admin") && signalR == true)
             if (EmbeddingIsEnabled)
             {
                 modelBuilder.HasPostgresExtension("vector");
             }
+            //#endif
             //#if (IsInsideProjectTemplate == true)
         }
-        //#endif
         //#endif
 
         modelBuilder.OnHangfireModelCreating("jobs");
