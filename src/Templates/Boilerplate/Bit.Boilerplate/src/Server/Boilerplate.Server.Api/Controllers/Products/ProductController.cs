@@ -7,7 +7,6 @@ using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Server.Api.Models.Products;
 using Boilerplate.Shared.Controllers.Products;
-using System.Text.Encodings.Web;
 using Ganss.Xss;
 
 namespace Boilerplate.Server.Api.Controllers.Products;
@@ -20,6 +19,9 @@ public partial class ProductController : AppControllerBase, IProductController
 
     //#if (signalR == true)
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
+    //#endif
+    //#if (signalR == true || database == "PostgreSQL")
+    [AutoInject] private ProductEmbeddingService productEmbeddingService = default!;
     //#endif
     [AutoInject] private ResponseCacheService responseCacheService = default!;
 
@@ -43,6 +45,21 @@ public partial class ProductController : AppControllerBase, IProductController
         return new PagedResult<ProductDto>(await query.ToArrayAsync(cancellationToken), totalCount);
     }
 
+    //#if (database == "PostgreSQL")
+    [HttpGet("{searchQuery}")]
+    public async Task<PagedResult<ProductDto>> GetProductsBySearchQuery(string searchQuery, ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
+    {
+        var query = (IQueryable<ProductDto>)odataQuery.ApplyTo((await (productEmbeddingService.GetProductsBySearchQuery(searchQuery, cancellationToken))).Project(), ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
+
+        var totalCount = await query.LongCountAsync(cancellationToken);
+
+        query = query.SkipIf(odataQuery.Skip is not null, odataQuery.Skip?.Value)
+                     .TakeIf(odataQuery.Top is not null, odataQuery.Top?.Value);
+
+        return new PagedResult<ProductDto>(await query.ToArrayAsync(cancellationToken), totalCount);
+    }
+    //#endif
+
     [HttpGet("{id}")]
     public async Task<ProductDto> Get(Guid id, CancellationToken cancellationToken)
     {
@@ -63,6 +80,17 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await Validate(entityToAdd, cancellationToken);
 
+        //#if (database == "PostgreSQL" || signalR == true)
+        //#if (IsInsideProjectTemplate == true)
+        if (DbContext.Database.ProviderName!.EndsWith("PostgreSQL", StringComparison.InvariantCulture) is false)
+        {
+            //#endif
+            await productEmbeddingService.Embed(entityToAdd, cancellationToken);
+            //#if (IsInsideProjectTemplate == true)
+        }
+        //#endif
+        //#endif
+
         await DbContext.SaveChangesAsync(cancellationToken);
 
         //#if (signalR == true)
@@ -82,8 +110,18 @@ public partial class ProductController : AppControllerBase, IProductController
 
         dto.Patch(entityToUpdate);
 
-
         await Validate(entityToUpdate, cancellationToken);
+
+        //#if (database == "PostgreSQL" || signalR == true)
+        //#if (IsInsideProjectTemplate == true)
+        if (DbContext.Database.ProviderName!.EndsWith("PostgreSQL", StringComparison.InvariantCulture) is false)
+        {
+            //#endif
+            await productEmbeddingService.Embed(entityToUpdate, cancellationToken);
+            //#if (IsInsideProjectTemplate == true)
+        }
+        //#endif
+        //#endif
 
         await DbContext.SaveChangesAsync(cancellationToken);
 

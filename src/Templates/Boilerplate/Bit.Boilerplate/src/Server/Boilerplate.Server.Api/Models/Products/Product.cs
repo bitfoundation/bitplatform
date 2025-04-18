@@ -38,4 +38,8 @@ public partial class Product
     public byte[] ConcurrencyStamp { get; set; } = [];
 
     public bool HasPrimaryImage { get; set; } = false;
+
+    //#if (database == "PostgreSQL")
+    public Pgvector.Vector? Embedding { get; set; }
+    //#endif
 }

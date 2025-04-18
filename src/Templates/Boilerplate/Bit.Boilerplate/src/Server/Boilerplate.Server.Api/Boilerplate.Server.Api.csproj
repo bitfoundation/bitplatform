@@ -22,7 +22,6 @@
         <PackageReference Include="Fido2.AspNet" />
         <PackageReference Include="Hangfire.AspNetCore" />
         <PackageReference Include="Hangfire.EntityFrameworkCore" />
-        <PackageReference Condition=" '$(inMemoryHangfire)' == 'true' OR '$(inMemoryHangfire)' == '' " Include="Hangfire.InMemory" />
         <PackageReference Include="HtmlSanitizer" />
         <PackageReference Include="libphonenumber-csharp" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.ApplicationInsights.AspNetCore" />
@@ -40,7 +39,7 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" />
         <PackageReference Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" />
-        <PackageReference Condition=" '$(database)' == 'Sqlite' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.Sqlite" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
         <PackageReference Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
         <PackageReference Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Pomelo.EntityFrameworkCore.MySql" />
         <PackageReference Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" />
@@ -54,9 +53,10 @@
         <PackageReference Include="Riok.Mapperly" />
         <PackageReference Include="Twilio" />
         <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="AdsPush" />
-        <PackageReference Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Extensions.AI" />
-        <PackageReference Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Extensions.AI.AzureAIInference" />
-        <PackageReference Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Extensions.AI.OpenAI" />
+        <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Microsoft.Extensions.AI" />
+        <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Microsoft.Extensions.AI.AzureAIInference" />
+        <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Microsoft.Extensions.AI.OpenAI" />
+        <PackageReference Condition=" ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Pgvector.EntityFrameworkCore" />
 
         <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
         <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />
@@ -71,7 +71,7 @@
         <Using Include="Microsoft.AspNetCore.OData.Query" />
         <Using Include="Microsoft.AspNetCore.Mvc" />
 
-        <Using Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Extensions.AI" />
+        <Using Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Microsoft.Extensions.AI" />
         <Using Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Boilerplate.Server.Api.Models.Chatbot" />
 
         <Content Include=".config\dotnet-tools.json" />

@@ -114,8 +114,10 @@ public static partial class IClientCoreServiceCollectionExtensions
 
             var dbPath = Path.Combine(dirPath, "Offline.db");
 
-            optionsBuilder
-                .UseSqlite($"Data Source={dbPath}");
+            optionsBuilder.UseSqlite($"Data Source={dbPath}", dbOptions =>
+            {
+
+            });
 
             if (AppEnvironment.IsDev() is false)
             {

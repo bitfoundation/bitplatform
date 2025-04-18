@@ -16,8 +16,22 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
         //#if (database == "PostgreSQL" || database == "SqlServer")
         builder.Property(p => p.ShortId).UseSequence("ProductShortId");
         //#endif
+        //#if (database == "PostgreSQL")
+        if (AppDbContext.EmbeddingIsEnabled)
+        {
+            builder.Property(p => p.Embedding).HasColumnType("vector(1536)"); // 1536 for text-embedding-3-small
+        }
+        else
+        {
+            builder.Ignore(p => p.Embedding);
+        }
+        //#endif
         //#if (IsInsideProjectTemplate == true)
         */
+        //#endif
+
+        //#if (IsInsideProjectTemplate == true)
+        builder.Ignore(p => p.Embedding);
         //#endif
 
         var defaultConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
