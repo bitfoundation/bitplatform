@@ -2,7 +2,7 @@
 using System.Net;
 using System.Net.Mail;
 using System.IO.Compression;
-//#if (signalR == true)
+//#if (signalR == true || database == "PostgreSQL")
 using System.ClientModel.Primitives;
 //#endif
 using Microsoft.OpenApi.Models;
@@ -47,7 +47,7 @@ public static partial class Program
         services.AddScoped<EmailServiceJobsRunner>();
         services.AddScoped<PhoneService>();
         services.AddScoped<PhoneServiceJobsRunner>();
-        //#if ((module == "Sales" || module == "Admin") && signalR == true )
+        //#if ((module == "Sales" || module == "Admin") && (signalR == true || database == "PostgreSQL"))
         services.AddScoped<ProductEmbeddingService>();
         //#endif
         if (appSettings.Sms?.Configured is true)
@@ -225,9 +225,7 @@ public static partial class Program
             //#elif (database == "PostgreSQL")
             options.UseNpgsql(configuration.GetConnectionString("PostgreSQLConnectionString"), dbOptions =>
             {
-                //#if ((module == "Sales" || module == "Admin") && signalR == true )
                 dbOptions.UseVector();
-                //#endif
             });
             //#elif (database == "MySql")
             options.UseMySql(configuration.GetConnectionString("MySqlSQLConnectionString"), ServerVersion.AutoDetect(configuration.GetConnectionString("MySqlSQLConnectionString")), dbOptions =>
@@ -354,7 +352,7 @@ public static partial class Program
             return options;
         });
 
-        //#if (signalR == true)
+        //#if (signalR == true || database == "PostgreSQL")
         services.AddHttpClient("AI", c =>
         {
             c.DefaultRequestVersion = HttpVersion.Version20;

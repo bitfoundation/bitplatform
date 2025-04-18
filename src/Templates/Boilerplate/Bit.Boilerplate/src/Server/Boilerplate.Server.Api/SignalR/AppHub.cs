@@ -157,7 +157,7 @@ public partial class AppHub : Hub
 
                                     await using var scope = serviceProvider.CreateAsyncScope();
                                     var productEmbeddingService = scope.ServiceProvider.GetRequiredService<ProductEmbeddingService>();
-                                    var recommendedProducts = await (await productEmbeddingService.GetProductsByUserNeedsQuery($"{userNeeds}, Manufactor: {manufactor}", messageSpecificCancellationToken))
+                                    var recommendedProducts = await (await productEmbeddingService.GetProductsBySearchQuery($"{userNeeds}, Manufactor: {manufactor}", messageSpecificCancellationToken))
                                         .Project()
                                         .Select(p => new
                                         {

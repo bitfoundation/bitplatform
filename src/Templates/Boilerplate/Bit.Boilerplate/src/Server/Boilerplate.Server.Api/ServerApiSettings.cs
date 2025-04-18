@@ -16,7 +16,7 @@ public partial class ServerApiSettings : SharedSettings
     [Required]
     public EmailOptions Email { get; set; } = default!;
 
-    //#if (signalR == true)
+    //#if (signalR == true || database == "PostgreSQL")
     public AIOptions? AI { get; set; }
     //#endif
 
@@ -178,7 +178,7 @@ public partial class AppIdentityOptions : IdentityOptions
     public int MaxConcurrentPrivilegedSessions { get; set; }
 }
 
-//#if (signalR == true)
+//#if (signalR == true || database == "PostgreSQL")
 public partial class AIOptions
 {
     public OpenAIOptions? OpenAI { get; set; }

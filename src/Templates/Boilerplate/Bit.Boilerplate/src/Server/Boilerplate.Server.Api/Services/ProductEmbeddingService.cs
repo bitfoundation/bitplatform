@@ -15,13 +15,13 @@ public partial class ProductEmbeddingService
     [AutoInject] private IWebHostEnvironment env = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
 
-    public async Task<IQueryable<Product>> GetProductsByUserNeedsQuery(string userNeedsQuery, CancellationToken cancellationToken)
+    public async Task<IQueryable<Product>> GetProductsBySearchQuery(string searchQuery, CancellationToken cancellationToken)
     {
         //#if (database != "PostgreSQL")
         // The RAG has been implemented for PostgreSQL only. Checkout https://github.com/bitfoundation/bitplatform/blob/develop/src/Templates/Boilerplate/Bit.Boilerplate/src/Server/Boilerplate.Server.Api/Services/ProductEmbeddingService.cs
         return dbContext.Products.OrderBy(_ => EF.Functions.Random()).Take(15);
         //#else
-        var embeddedUserQuery = await EmbedText(userNeedsQuery, cancellationToken);
+        var embeddedUserQuery = await EmbedText(searchQuery, cancellationToken);
         if (embeddedUserQuery is null)
             return dbContext.Products.OrderBy(_ => EF.Functions.Random()).Take(15);
         var value = new Pgvector.Vector(embeddedUserQuery.Value);
