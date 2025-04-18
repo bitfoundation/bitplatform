@@ -10,6 +10,7 @@ public partial class ProductsPage
 
 
     private bool isLoading;
+    private string? searchQuery;
     private bool isDeleteDialogOpen;
     private ProductDto? deletingProduct;
     private string productNameFilter = string.Empty;
@@ -73,7 +74,10 @@ public partial class ProductsPage
                     odataQ.AndFilter = $"contains(tolower({nameof(ProductDto.CategoryName)}),'{CategoryNameFilter.ToLower()}')";
                 }
 
-                var data = await productController.WithQuery(odataQ.ToString()).GetProducts(req.CancellationToken);
+                var queriedRequest = productController.WithQuery(odataQ.ToString());
+                var data = await (string.IsNullOrWhiteSpace(searchQuery)
+                                    ? queriedRequest.GetProducts(req.CancellationToken)
+                                    : queriedRequest.GetProductsBySearchQuery(searchQuery, req.CancellationToken));
 
                 return BitDataGridItemsProviderResult.From(data!.Items!, (int)data!.TotalCount);
             }
@@ -124,7 +128,8 @@ public partial class ProductsPage
 
     private async Task HandleOnSearch(string value)
     {
-        // TODO: implement the new search
+        searchQuery = value;
+        await RefreshData();
     }
 }
 
