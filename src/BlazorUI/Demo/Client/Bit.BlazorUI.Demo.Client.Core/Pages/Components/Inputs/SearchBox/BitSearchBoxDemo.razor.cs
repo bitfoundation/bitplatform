@@ -566,6 +566,7 @@ public partial class BitSearchBoxDemo
 
     private readonly string example1RazorCode = @"
 <BitSearchBox Placeholder=""Search"" />
+<BitSearchBox Placeholder=""ReadOnly"" ReadOnly />
 <BitSearchBox Placeholder=""Disabled"" IsEnabled=""false"" />";
 
     private readonly string example2RazorCode = @"
