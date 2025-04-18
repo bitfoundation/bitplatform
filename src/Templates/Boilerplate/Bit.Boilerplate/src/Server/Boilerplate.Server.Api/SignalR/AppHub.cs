@@ -156,8 +156,8 @@ public partial class AppHub : Hub
                                     var baseApiUrl = Context.GetHttpContext()!.Request.GetBaseUrl();
 
                                     await using var scope = serviceProvider.CreateAsyncScope();
-                                    var vectorizedProductsService = scope.ServiceProvider.GetRequiredService<VectorizedProductsService>();
-                                    var recommendedProducts = await (await vectorizedProductsService.GetVectorizedProducts(userNeeds, messageSpecificCancellationToken))
+                                    var productsVectorService = scope.ServiceProvider.GetRequiredService<ProductsVectorService>();
+                                    var recommendedProducts = await productsVectorService.GetProductsByUserNeedsQuery(userNeeds)
                                         .Project()
                                         .Select(p => new
                                         {

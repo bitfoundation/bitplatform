@@ -441,7 +441,7 @@
                         "src/Server/Boilerplate.Server.Api/Models/Categories/**",
                         "src/Server/Boilerplate.Server.Api/Models/Products/**",
                         "src/Server/Boilerplate.Server.Api/Models/Products/**",
-                        "src/Server/Boilerplate.Server.Api/Services/VectorizedProductsService.cs",
+                        "src/Server/Boilerplate.Server.Api/Services/ProductsVectorService.cs",
                         "src/Client/Boilerplate.Client.Core/wwwroot/images/car_placeholder*"
                     ]
                 },
@@ -485,7 +485,7 @@
                         "src/Client/Boilerplate.Client.Core/Components/Layout/AppAiChatPanel.*",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Chatbot/**",
                         "src/Client/Boilerplate.Client.Core/Services/SignalRInfiniteRetryPolicy.cs",
-                        "src/Server/Boilerplate.Server.Api/Services/VectorizedProductsService.cs"
+                        "src/Server/Boilerplate.Server.Api/Services/ProductsVectorService.cs"
                     ]
                 },
                 {

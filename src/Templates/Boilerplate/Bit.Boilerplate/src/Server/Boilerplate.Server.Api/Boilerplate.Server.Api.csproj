@@ -57,9 +57,7 @@
         <PackageReference Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Extensions.AI" />
         <PackageReference Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Extensions.AI.AzureAIInference" />
         <PackageReference Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Extensions.AI.OpenAI" />
-        <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') AND ('$(module)' == 'Sales' OR '$(module)' == 'Admin' OR '$(module)' == '')" Include="Microsoft.Extensions.VectorData.Abstractions" />
-        <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') AND ('$(module)' == 'Sales' OR '$(module)' == 'Admin' OR '$(module)' == '') AND ('$(database)' != 'PostgreSQL' OR '$(database)' == '')" Include="Microsoft.SemanticKernel.Connectors.InMemory" />
-        <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') AND ('$(module)' == 'Sales' OR '$(module)' == 'Admin' OR '$(module)' == '') AND ('$(database)' == 'PostgreSQL' OR '$(database)' == '')" Include="Microsoft.SemanticKernel.Connectors.Postgres" />
+        <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') AND ('$(module)' == 'Sales' OR '$(module)' == 'Admin' OR '$(module)' == '') AND ('$(database)' == 'PostgreSQL' OR '$(database)' == '')" Include="Pgvector" />
 
         <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
         <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />

@@ -48,7 +48,7 @@ public static partial class Program
         services.AddScoped<PhoneService>();
         services.AddScoped<PhoneServiceJobsRunner>();
         //#if ((module == "Sales" || module == "Admin") && signalR == true )
-        services.AddScoped<VectorizedProductsService>();
+        services.AddScoped<ProductsVectorService>();
         //#endif
         if (appSettings.Sms?.Configured is true)
         {
