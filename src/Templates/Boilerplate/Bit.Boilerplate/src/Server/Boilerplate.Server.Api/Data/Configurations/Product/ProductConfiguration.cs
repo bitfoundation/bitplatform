@@ -16,15 +16,15 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
         //#if (database == "PostgreSQL" || database == "SqlServer")
         builder.Property(p => p.ShortId).UseSequence("ProductShortId");
         //#endif
-        //#if (IsInsideProjectTemplate == true)
-        */
-        //#endif
-
-        //#if (IsInsideProjectTemplate == true)
-        /*
-        //#endif
         //#if (database == "PostgreSQL")
-        builder.Property(p => p.Embedding).HasColumnType("vector(4)");
+        if (AppDbContext.EmbeddingIsEnabled)
+        {
+            builder.Property(p => p.Embedding).HasColumnType("vector(4)");
+        }
+        else
+        {
+            builder.Ignore(p => p.Embedding);
+        }
         //#endif
         //#if (IsInsideProjectTemplate == true)
         */

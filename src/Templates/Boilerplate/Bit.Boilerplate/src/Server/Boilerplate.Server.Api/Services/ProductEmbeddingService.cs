@@ -21,6 +21,9 @@ public partial class ProductEmbeddingService
         // The RAG has been implemented for PostgreSQL only. Checkout https://github.com/bitfoundation/bitplatform/blob/develop/src/Templates/Boilerplate/Bit.Boilerplate/src/Server/Boilerplate.Server.Api/Services/ProductEmbeddingService.cs
         return dbContext.Products.OrderBy(_ => EF.Functions.Random()).Take(15);
         //#else
+        if (AppDbContext.EmbeddingIsEnabled is false)
+            return dbContext.Products.OrderBy(_ => EF.Functions.Random()).Take(15);
+
         var embeddedUserQuery = await EmbedText(userNeedsQuery, cancellationToken);
         return dbContext.Products
             .OrderBy(p => p.Embedding!.CosineDistance(embeddedUserQuery!))
@@ -37,15 +40,20 @@ public partial class ProductEmbeddingService
 
         var embedding = await EmbedText($"Name: {product.Name}, Manufactor: {product.Category!.Name}, Description: {product.DescriptionText}, Price: {product.Price}", cancellationToken);
 
-        product.Embedding = new(embedding);
+        if (embedding.HasValue)
+        {
+            product.Embedding = new(embedding.Value);
+        }
         //#endif
     }
 
-    private async Task<float[]?> EmbedText(string input, CancellationToken cancellationToken)
+    private async Task<ReadOnlyMemory<float>?> EmbedText(string input, CancellationToken cancellationToken)
     {
         //#if (database != "PostgreSQL")
         return null;
         //#else
+        if (AppDbContext.EmbeddingIsEnabled is false)
+            return null;
         var embeddingGenerator = serviceProvider.GetService<IEmbeddingGenerator<string, Embedding<float>>>();
         if (embeddingGenerator is null)
             return env.IsDevelopment() ? throw new InvalidOperationException("Embedding generator is not registered.") : null;

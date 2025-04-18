@@ -187,16 +187,24 @@ public partial class AIOptions
 
 public class OpenAIOptions
 {
-    public string? Model { get; set; }
-    public Uri? Endpoint { get; set; }
-    public string? ApiKey { get; set; }
+    public string? ChatModel { get; set; }
+    public Uri? ChatEndpoint { get; set; }
+    public string? ChatApiKey { get; set; }
+
+    public string? EmbeddingModel { get; set; }
+    public Uri? EmbeddingEndpoint { get; set; }
+    public string? EmbeddingApiKey { get; set; }
 }
 
 public class AzureOpenAIOptions
 {
-    public string? Model { get; set; }
-    public Uri? Endpoint { get; set; }
-    public string? ApiKey { get; set; }
+    public string? ChatModel { get; set; }
+    public Uri? ChatEndpoint { get; set; }
+    public string? ChatApiKey { get; set; }
+
+    public string? EmbeddingModel { get; set; }
+    public Uri? EmbeddingEndpoint { get; set; }
+    public string? EmbeddingApiKey { get; set; }
 }
 
 //#endif

@@ -365,48 +365,53 @@ public static partial class Program
             EnableMultipleHttp3Connections = true
         });
 
-        if (string.IsNullOrEmpty(appSettings.AI!.OpenAI?.ApiKey) is false)
+        if (string.IsNullOrEmpty(appSettings.AI!.OpenAI?.ChatApiKey) is false)
         {
             // https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.AI.OpenAI#microsoftextensionsaiopenai
-            services.AddChatClient(sp => new OpenAI.Chat.ChatClient(model: appSettings.AI.OpenAI.Model, credential: new(appSettings.AI.OpenAI.ApiKey), options: new()
+            services.AddChatClient(sp => new OpenAI.Chat.ChatClient(model: appSettings.AI.OpenAI.ChatModel, credential: new(appSettings.AI.OpenAI.ChatApiKey), options: new()
             {
-                Endpoint = appSettings.AI.OpenAI.Endpoint,
+                Endpoint = appSettings.AI.OpenAI.ChatEndpoint,
                 Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
             }).AsIChatClient())
             .UseLogging()
             .UseFunctionInvocation();
             // .UseDistributedCache()
             // .UseOpenTelemetry()
+        }
+        else if (string.IsNullOrEmpty(appSettings.AI!.AzureOpenAI?.ChatApiKey) is false)
+        {
+            // https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.AI.AzureAIInference#microsoftextensionsaiazureaiinference
+            services.AddChatClient(sp => new Azure.AI.Inference.ChatCompletionsClient(endpoint: appSettings.AI.AzureOpenAI.ChatEndpoint,
+                credential: new Azure.AzureKeyCredential(appSettings.AI.AzureOpenAI.ChatApiKey),
+                options: new()
+                {
+                    Transport = new Azure.Core.Pipeline.HttpClientTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
+                }).AsIChatClient(appSettings.AI.AzureOpenAI.ChatModel))
+            .UseLogging()
+            .UseFunctionInvocation();
+            // .UseDistributedCache()
+            // .UseOpenTelemetry()
+        }
 
-            services.AddEmbeddingGenerator(sp => new OpenAI.Embeddings.EmbeddingClient(model: appSettings.AI.OpenAI.Model, credential: new(appSettings.AI.OpenAI.ApiKey), options: new()
+        if (string.IsNullOrEmpty(appSettings.AI!.OpenAI?.EmbeddingApiKey) is false)
+        {
+            services.AddEmbeddingGenerator(sp => new OpenAI.Embeddings.EmbeddingClient(model: appSettings.AI.OpenAI.EmbeddingModel, credential: new(appSettings.AI.OpenAI.EmbeddingApiKey), options: new()
             {
-                Endpoint = appSettings.AI.OpenAI.Endpoint,
+                Endpoint = appSettings.AI.OpenAI.EmbeddingEndpoint,
                 Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
             }).AsIEmbeddingGenerator())
             .UseLogging();
             // .UseDistributedCache()
             // .UseOpenTelemetry()
         }
-        else if (string.IsNullOrEmpty(appSettings.AI!.AzureOpenAI?.ApiKey) is false)
+        else if (string.IsNullOrEmpty(appSettings.AI!.AzureOpenAI?.EmbeddingApiKey) is false)
         {
-            // https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.AI.AzureAIInference#microsoftextensionsaiazureaiinference
-            services.AddChatClient(sp => new Azure.AI.Inference.ChatCompletionsClient(endpoint: appSettings.AI.AzureOpenAI.Endpoint,
-                credential: new Azure.AzureKeyCredential(appSettings.AI.AzureOpenAI.ApiKey),
+            services.AddEmbeddingGenerator(sp => new Azure.AI.Inference.EmbeddingsClient(endpoint: appSettings.AI.AzureOpenAI.EmbeddingEndpoint,
+                credential: new Azure.AzureKeyCredential(appSettings.AI.AzureOpenAI.EmbeddingApiKey),
                 options: new()
                 {
                     Transport = new Azure.Core.Pipeline.HttpClientTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
-                }).AsIChatClient(appSettings.AI.AzureOpenAI.Model))
-            .UseLogging()
-            .UseFunctionInvocation();
-            // .UseDistributedCache()
-            // .UseOpenTelemetry()
-
-            services.AddEmbeddingGenerator(sp => new Azure.AI.Inference.EmbeddingsClient(endpoint: appSettings.AI.AzureOpenAI.Endpoint,
-                credential: new Azure.AzureKeyCredential(appSettings.AI.AzureOpenAI.ApiKey),
-                options: new()
-                {
-                    Transport = new Azure.Core.Pipeline.HttpClientTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
-                }).AsIEmbeddingGenerator(appSettings.AI.AzureOpenAI.Model))
+                }).AsIEmbeddingGenerator(appSettings.AI.AzureOpenAI.EmbeddingModel))
             .UseLogging();
             // .UseDistributedCache()
             // .UseOpenTelemetry()
