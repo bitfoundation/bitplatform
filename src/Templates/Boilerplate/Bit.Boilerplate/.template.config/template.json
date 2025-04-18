@@ -484,7 +484,8 @@
                         "src/Server/Boilerplate.Server.Api/Data/Configurations/Chatbot/**",
                         "src/Client/Boilerplate.Client.Core/Components/Layout/AppAiChatPanel.*",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Chatbot/**",
-                        "src/Client/Boilerplate.Client.Core/Services/SignalRInfiniteRetryPolicy.cs"
+                        "src/Client/Boilerplate.Client.Core/Services/SignalRInfiniteRetryPolicy.cs",
+                        "src/Server/Boilerplate.Server.Api/Services/VectorizedProductsService.cs"
                     ]
                 },
                 {

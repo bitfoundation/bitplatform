@@ -57,6 +57,8 @@
         <PackageReference Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Extensions.AI" />
         <PackageReference Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Extensions.AI.AzureAIInference" />
         <PackageReference Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Extensions.AI.OpenAI" />
+        <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') AND ('$(module)' == 'Sales' OR '$(module)' == 'Admin' OR '$(module)' == '')" Include="Microsoft.Extensions.VectorData.Abstractions" />
+        <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') AND ('$(module)' == 'Sales' OR '$(module)' == 'Admin' OR '$(module)' == '') AND ('$(database)' == 'Sqlite' OR '$(database)' == '')" Include="Microsoft.SemanticKernel.Connectors.Sqlite" />
 
         <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
         <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />
