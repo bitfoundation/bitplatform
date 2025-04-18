@@ -1,4 +1,4 @@
-//-:cnd:noEmit
+﻿//-:cnd:noEmit
 using Boilerplate.Shared.Controllers.Products;
 using Boilerplate.Shared.Dtos.Products;
 
@@ -120,6 +120,11 @@ public partial class ProductsPage
         {
             deletingProduct = null;
         }
+    }
+
+    private async Task HandleOnSearch(string value)
+    {
+        // TODO: implement the new search
     }
 }
 
