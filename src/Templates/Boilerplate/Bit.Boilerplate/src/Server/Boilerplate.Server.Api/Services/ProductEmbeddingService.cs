@@ -21,12 +21,12 @@ public partial class ProductEmbeddingService
         // The RAG has been implemented for PostgreSQL only. Checkout https://github.com/bitfoundation/bitplatform/blob/develop/src/Templates/Boilerplate/Bit.Boilerplate/src/Server/Boilerplate.Server.Api/Services/ProductEmbeddingService.cs
         return dbContext.Products.OrderBy(_ => EF.Functions.Random()).Take(15);
         //#else
-        if (AppDbContext.EmbeddingIsEnabled is false)
-            return dbContext.Products.OrderBy(_ => EF.Functions.Random()).Take(15);
-
         var embeddedUserQuery = await EmbedText(userNeedsQuery, cancellationToken);
+        if (embeddedUserQuery is null)
+            return dbContext.Products.OrderBy(_ => EF.Functions.Random()).Take(15);
+        var value = new Pgvector.Vector(embeddedUserQuery.Value);
         return dbContext.Products
-            .OrderBy(p => p.Embedding!.CosineDistance(embeddedUserQuery!))
+            .OrderBy(p => p.Embedding!.CosineDistance(value!))
             .Take(5);
         //#endif
     }

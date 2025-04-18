@@ -148,7 +148,7 @@ public partial class AppHub : Hub
                                         .LogError("Chat reported issue: User email: {emailAddress}, Conversation history: {conversationHistory}", emailAddress, conversationHistory);
                                 }, name: "SaveUserEmailAndConversationHistory", description: "Saves the user's email address and the conversation history for future reference. Use this tool when the user provides their email address during the conversation. Parameters: emailAddress (string), conversationHistory (string)"),
                                 //#if (module == "Sales")
-                                AIFunctionFactory.Create(async ([Description("Concise summary of these user requirements")] string userNeeds) =>
+                                AIFunctionFactory.Create(async ([Description("Concise summary of these user requirements in English Language")] string userNeeds, [Description("Car manufactor's English name (Optional)")] string? manufactor) =>
                                 {
                                     if (messageSpecificCancellationToken.IsCancellationRequested)
                                         return null;
@@ -157,7 +157,7 @@ public partial class AppHub : Hub
 
                                     await using var scope = serviceProvider.CreateAsyncScope();
                                     var productEmbeddingService = scope.ServiceProvider.GetRequiredService<ProductEmbeddingService>();
-                                    var recommendedProducts = await (await productEmbeddingService.GetProductsByUserNeedsQuery(userNeeds, messageSpecificCancellationToken))
+                                    var recommendedProducts = await (await productEmbeddingService.GetProductsByUserNeedsQuery($"{userNeeds}, Manufactor: {manufactor}", messageSpecificCancellationToken))
                                         .Project()
                                         .Select(p => new
                                         {
