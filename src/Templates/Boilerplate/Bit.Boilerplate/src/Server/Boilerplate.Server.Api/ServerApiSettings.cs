@@ -16,7 +16,7 @@ public partial class ServerApiSettings : SharedSettings
     [Required]
     public EmailOptions Email { get; set; } = default!;
 
-    //#if (signalR == true)
+    //#if (signalR == true || database == "PostgreSQL")
     public AIOptions? AI { get; set; }
     //#endif
 
@@ -55,6 +55,8 @@ public partial class ServerApiSettings : SharedSettings
     [Required]
     public string ProductImagesDir { get; set; } = default!;
     //#endif
+
+    public HangfireOptions? Hangfire { get; set; }
 
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
@@ -176,7 +178,7 @@ public partial class AppIdentityOptions : IdentityOptions
     public int MaxConcurrentPrivilegedSessions { get; set; }
 }
 
-//#if (signalR == true)
+//#if (signalR == true || database == "PostgreSQL")
 public partial class AIOptions
 {
     public OpenAIOptions? OpenAI { get; set; }
@@ -185,16 +187,24 @@ public partial class AIOptions
 
 public class OpenAIOptions
 {
-    public string? Model { get; set; }
-    public Uri? Endpoint { get; set; }
-    public string? ApiKey { get; set; }
+    public string? ChatModel { get; set; }
+    public Uri? ChatEndpoint { get; set; }
+    public string? ChatApiKey { get; set; }
+
+    public string? EmbeddingModel { get; set; }
+    public Uri? EmbeddingEndpoint { get; set; }
+    public string? EmbeddingApiKey { get; set; }
 }
 
 public class AzureOpenAIOptions
 {
-    public string? Model { get; set; }
-    public Uri? Endpoint { get; set; }
-    public string? ApiKey { get; set; }
+    public string? ChatModel { get; set; }
+    public Uri? ChatEndpoint { get; set; }
+    public string? ChatApiKey { get; set; }
+
+    public string? EmbeddingModel { get; set; }
+    public Uri? EmbeddingEndpoint { get; set; }
+    public string? EmbeddingApiKey { get; set; }
 }
 
 //#endif
@@ -259,4 +269,12 @@ public class ResponseCachingOptions
     /// Enables CDN's edge servers caching
     /// </summary>
     public bool EnableCdnEdgeCaching { get; set; }
+}
+
+public class HangfireOptions
+{
+    /// <summary>
+    /// Useful for testing or in production when managing multiple codebases with a single database.
+    /// </summary>
+    public bool UseIsoaltedStorage { get; set; }
 }

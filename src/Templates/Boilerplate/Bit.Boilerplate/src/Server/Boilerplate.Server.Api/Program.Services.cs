@@ -2,7 +2,7 @@
 using System.Net;
 using System.Net.Mail;
 using System.IO.Compression;
-//#if (signalR == true)
+//#if (signalR == true || database == "PostgreSQL")
 using System.ClientModel.Primitives;
 //#endif
 using Microsoft.OpenApi.Models;
@@ -47,6 +47,9 @@ public static partial class Program
         services.AddScoped<EmailServiceJobsRunner>();
         services.AddScoped<PhoneService>();
         services.AddScoped<PhoneServiceJobsRunner>();
+        //#if ((module == "Sales" || module == "Admin") && (signalR == true || database == "PostgreSQL"))
+        services.AddScoped<ProductEmbeddingService>();
+        //#endif
         if (appSettings.Sms?.Configured is true)
         {
             TwilioClient.Init(appSettings.Sms.TwilioAccountSid, appSettings.Sms.TwilioAutoToken);
@@ -57,9 +60,9 @@ public static partial class Program
         {
             //#if (filesStorage == "Local")
             var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
-            var attachmentsDirPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
-            Directory.CreateDirectory(attachmentsDirPath);
-            return StorageFactory.Blobs.DirectoryFiles(attachmentsDirPath);
+            var appDataDirPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
+            Directory.CreateDirectory(appDataDirPath);
+            return StorageFactory.Blobs.DirectoryFiles(appDataDirPath);
             //#elif (filesStorage == "AzureBlobStorage")
             var azureBlobStorageSasUrl = configuration.GetConnectionString("AzureBlobStorageSasUrl");
             return (IBlobStorage)(azureBlobStorageSasUrl is "emulator"
@@ -222,7 +225,7 @@ public static partial class Program
             //#elif (database == "PostgreSQL")
             options.UseNpgsql(configuration.GetConnectionString("PostgreSQLConnectionString"), dbOptions =>
             {
-
+                dbOptions.UseVector();
             });
             //#elif (database == "MySql")
             options.UseMySql(configuration.GetConnectionString("MySqlSQLConnectionString"), ServerVersion.AutoDetect(configuration.GetConnectionString("MySqlSQLConnectionString")), dbOptions =>
@@ -349,7 +352,7 @@ public static partial class Program
             return options;
         });
 
-        //#if (signalR == true)
+        //#if (signalR == true || database == "PostgreSQL")
         services.AddHttpClient("AI", c =>
         {
             c.DefaultRequestVersion = HttpVersion.Version20;
@@ -360,12 +363,12 @@ public static partial class Program
             EnableMultipleHttp3Connections = true
         });
 
-        if (string.IsNullOrEmpty(appSettings.AI!.OpenAI?.ApiKey) is false)
+        if (string.IsNullOrEmpty(appSettings.AI!.OpenAI?.ChatApiKey) is false)
         {
             // https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.AI.OpenAI#microsoftextensionsaiopenai
-            services.AddChatClient(sp => new OpenAI.Chat.ChatClient(model: appSettings.AI.OpenAI.Model, credential: new(appSettings.AI.OpenAI.ApiKey), options: new()
+            services.AddChatClient(sp => new OpenAI.Chat.ChatClient(model: appSettings.AI.OpenAI.ChatModel, credential: new(appSettings.AI.OpenAI.ChatApiKey), options: new()
             {
-                Endpoint = appSettings.AI.OpenAI.Endpoint,
+                Endpoint = appSettings.AI.OpenAI.ChatEndpoint,
                 Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
             }).AsIChatClient())
             .UseLogging()
@@ -373,17 +376,41 @@ public static partial class Program
             // .UseDistributedCache()
             // .UseOpenTelemetry()
         }
-        else if (string.IsNullOrEmpty(appSettings.AI!.AzureOpenAI?.ApiKey) is false)
+        else if (string.IsNullOrEmpty(appSettings.AI!.AzureOpenAI?.ChatApiKey) is false)
         {
             // https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.AI.AzureAIInference#microsoftextensionsaiazureaiinference
-            services.AddChatClient(sp => new Azure.AI.Inference.ChatCompletionsClient(endpoint: appSettings.AI.AzureOpenAI.Endpoint,
-                credential: new Azure.AzureKeyCredential(appSettings.AI.AzureOpenAI.ApiKey),
+            services.AddChatClient(sp => new Azure.AI.Inference.ChatCompletionsClient(endpoint: appSettings.AI.AzureOpenAI.ChatEndpoint,
+                credential: new Azure.AzureKeyCredential(appSettings.AI.AzureOpenAI.ChatApiKey),
                 options: new()
                 {
                     Transport = new Azure.Core.Pipeline.HttpClientTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
-                }).AsIChatClient(appSettings.AI.AzureOpenAI.Model))
+                }).AsIChatClient(appSettings.AI.AzureOpenAI.ChatModel))
             .UseLogging()
             .UseFunctionInvocation();
+            // .UseDistributedCache()
+            // .UseOpenTelemetry()
+        }
+
+        if (string.IsNullOrEmpty(appSettings.AI!.OpenAI?.EmbeddingApiKey) is false)
+        {
+            services.AddEmbeddingGenerator(sp => new OpenAI.Embeddings.EmbeddingClient(model: appSettings.AI.OpenAI.EmbeddingModel, credential: new(appSettings.AI.OpenAI.EmbeddingApiKey), options: new()
+            {
+                Endpoint = appSettings.AI.OpenAI.EmbeddingEndpoint,
+                Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
+            }).AsIEmbeddingGenerator())
+            .UseLogging();
+            // .UseDistributedCache()
+            // .UseOpenTelemetry()
+        }
+        else if (string.IsNullOrEmpty(appSettings.AI!.AzureOpenAI?.EmbeddingApiKey) is false)
+        {
+            services.AddEmbeddingGenerator(sp => new Azure.AI.Inference.EmbeddingsClient(endpoint: appSettings.AI.AzureOpenAI.EmbeddingEndpoint,
+                credential: new Azure.AzureKeyCredential(appSettings.AI.AzureOpenAI.EmbeddingApiKey),
+                options: new()
+                {
+                    Transport = new Azure.Core.Pipeline.HttpClientTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
+                }).AsIEmbeddingGenerator(appSettings.AI.AzureOpenAI.EmbeddingModel))
+            .UseLogging();
             // .UseDistributedCache()
             // .UseOpenTelemetry()
         }
@@ -391,24 +418,30 @@ public static partial class Program
 
         builder.Services.AddHangfire(configuration =>
         {
-            //#if (inMemoryHangfire == true)
-            configuration.UseInMemoryStorage(new()
+            var efCoreStorage = configuration.UseEFCoreStorage(optionsBuilder =>
             {
-
-            });
-            //#else
-            //#if (IsInsideProjectTemplate == true)
-            /*
-            //#endif
-            configuration.UseEFCoreStorage(AddDbContext, new()
+                if (appSettings.Hangfire?.UseIsoaltedStorage is true)
+                {
+                    var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
+                    var appDataDirPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
+                    Directory.CreateDirectory(appDataDirPath);
+                    optionsBuilder.UseSqlite($"Data Source={Path.Combine(appDataDirPath, "BoilerplateJobsDb")};");
+                }
+                else
+                {
+                    AddDbContext(optionsBuilder);
+                }
+            }, new()
             {
                 Schema = "jobs",
                 QueuePollInterval = new TimeSpan(0, 0, 1)
             });
-            //#if (IsInsideProjectTemplate == true)
-            */
-            //#endif
-            //#endif
+
+            if (appSettings.Hangfire?.UseIsoaltedStorage is true)
+            {
+                efCoreStorage.UseDatabaseCreator();
+            }
+
             configuration.UseRecommendedSerializerSettings();
             configuration.UseSimpleAssemblyNameTypeSerializer();
             configuration.UseIgnoredAssemblyVersionTypeResolver();

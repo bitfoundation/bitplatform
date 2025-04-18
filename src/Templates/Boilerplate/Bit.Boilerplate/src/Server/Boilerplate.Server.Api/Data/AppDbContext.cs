@@ -48,6 +48,20 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         base.OnModelCreating(modelBuilder);
 
+        //#if (IsInsideProjectTemplate == true)
+        if (Database.ProviderName!.EndsWith("PostgreSQL", StringComparison.InvariantCulture))
+        {
+            //#endif
+            //#if (database == "PostgreSQL")
+            if (EmbeddingIsEnabled)
+            {
+                modelBuilder.HasPostgresExtension("vector");
+            }
+            //#endif
+            //#if (IsInsideProjectTemplate == true)
+        }
+        //#endif
+
         modelBuilder.OnHangfireModelCreating("jobs");
 
         //#if (IsInsideProjectTemplate == true)
@@ -248,4 +262,9 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
             }
         }
     }
+
+    //#if (database == "PostgreSQL")
+    // In order to enable embedding, the `pgvector` extension for must be installed in your PostgreSQL.
+    public static readonly bool EmbeddingIsEnabled = false;
+    //#endif
 }
