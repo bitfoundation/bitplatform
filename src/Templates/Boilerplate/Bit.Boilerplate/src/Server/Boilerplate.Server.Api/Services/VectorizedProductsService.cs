@@ -1,4 +1,6 @@
-﻿using Boilerplate.Server.Api.Models.Products;
+﻿using Microsoft.Extensions.VectorData;
+using Boilerplate.Server.Api.Models.Products;
+using Microsoft.SemanticKernel.Connectors.InMemory;
 
 namespace Boilerplate.Server.Api.Services;
 
@@ -23,4 +25,21 @@ public partial class VectorizedProductsService
     {
         return dbContext.Products;
     }
+
+    private async Task<IVectorStoreRecordCollection<Guid, VectorizedProduct>> GetStore(CancellationToken cancellationToken)
+    {
+        var vectorStore = new InMemoryVectorStore();
+        var productsStore = vectorStore.GetCollection<Guid, VectorizedProduct>("products");
+        await productsStore.CreateCollectionIfNotExistsAsync(cancellationToken);
+        return productsStore;
+    }
+}
+
+public class VectorizedProduct
+{
+    [VectorStoreRecordKey]
+    public Guid Id { get; set; }
+
+    [VectorStoreRecordVector(384, DistanceFunction.CosineSimilarity)]
+    public ReadOnlyMemory<float>? Embedding { get; set; }
 }
