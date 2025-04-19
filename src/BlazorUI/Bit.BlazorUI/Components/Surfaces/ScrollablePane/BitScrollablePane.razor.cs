@@ -22,6 +22,12 @@ public partial class BitScrollablePane : BitComponentBase
     public bool AutoHeight { get; set; }
 
     /// <summary>
+    /// Makes both height and width of the pane auto.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool AutoSize { get; set; }
+
+    /// <summary>
     /// Makes the width of the pane auto.
     /// </summary>
     [Parameter, ResetStyleBuilder]
@@ -39,6 +45,12 @@ public partial class BitScrollablePane : BitComponentBase
     public bool FitHeight { get; set; }
 
     /// <summary>
+    /// Makes both height and width of the pane fit-content.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool FitSize { get; set; }
+
+    /// <summary>
     /// Makes the width of the pane fit-content.
     /// </summary>
     [Parameter, ResetStyleBuilder]
@@ -51,7 +63,13 @@ public partial class BitScrollablePane : BitComponentBase
     public bool FullHeight { get; set; }
 
     /// <summary>
-    /// Makes the width of the pane auto.
+    /// Makes both height and width of the pane 100%.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool FullSize { get; set; }
+
+    /// <summary>
+    /// Makes the width of the pane 100%.
     /// </summary>
     [Parameter, ResetStyleBuilder]
     public bool FullWidth { get; set; }
@@ -136,12 +154,15 @@ public partial class BitScrollablePane : BitComponentBase
 
         StyleBuilder.Register(() => AutoWidth ? $"width:auto" : string.Empty);
         StyleBuilder.Register(() => AutoHeight ? $"height:auto" : string.Empty);
+        StyleBuilder.Register(() => AutoSize ? $"height:auto;width:auto" : string.Empty);
 
         StyleBuilder.Register(() => FitWidth ? $"width:fit-content" : string.Empty);
         StyleBuilder.Register(() => FitHeight ? $"height:fit-content" : string.Empty);
+        StyleBuilder.Register(() => FitSize ? $"height:fit-content;width:fit-content" : string.Empty);
 
         StyleBuilder.Register(() => FullWidth ? $"width:100%" : string.Empty);
         StyleBuilder.Register(() => FullHeight ? $"height:100%" : string.Empty);
+        StyleBuilder.Register(() => FullSize ? $"height:100%;width:100%" : string.Empty);
 
         // Auto is the default value which is already set on the root element
         StyleBuilder.Register(register =>
