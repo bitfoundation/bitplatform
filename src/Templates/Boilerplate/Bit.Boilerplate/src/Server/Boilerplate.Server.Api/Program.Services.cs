@@ -422,7 +422,7 @@ public static partial class Program
         {
             var efCoreStorage = configuration.UseEFCoreStorage(optionsBuilder =>
             {
-                if (appSettings.Hangfire?.UseIsoaltedStorage is true)
+                if (appSettings.Hangfire?.UseIsolatedStorage is true)
                 {
                     var dir = appSettings.Hangfire.IsolatedStorageDirectory;
                     if (string.IsNullOrEmpty(dir) is false)
@@ -447,7 +447,7 @@ public static partial class Program
                 QueuePollInterval = new TimeSpan(0, 0, 1)
             });
 
-            if (appSettings.Hangfire?.UseIsoaltedStorage is true)
+            if (appSettings.Hangfire?.UseIsolatedStorage is true)
             {
                 efCoreStorage.UseDatabaseCreator();
             }
