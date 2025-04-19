@@ -1090,6 +1090,9 @@
     <data name="AddProduct" xml:space="preserve">
     <value>Product toevoegen</value>
   </data>
+    <data name="SearchProductsPlaceholder" xml:space="preserve">
+    <value>Zoek hier door de naam, categorie en beschrijving van het product...</value>
+  </data>
     <data name="SelectCategory" xml:space="preserve">
     <value>Selecteer categorie</value>
   </data>

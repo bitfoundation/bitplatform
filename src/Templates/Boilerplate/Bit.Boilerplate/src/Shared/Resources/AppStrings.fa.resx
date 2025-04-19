@@ -1090,6 +1090,9 @@
     <data name="AddProduct" xml:space="preserve">
     <value>افزودن محصول</value>
   </data>
+    <data name="SearchProductsPlaceholder" xml:space="preserve">
+    <value>نام محصول، دسته بندی و توضیحات را در اینجا جستجو کنید...</value>
+  </data>
     <data name="SelectCategory" xml:space="preserve">
     <value>انتخاب دسته</value>
   </data>
