@@ -26,6 +26,7 @@ public partial class ProductEmbeddingService
             return dbContext.Products.OrderBy(_ => EF.Functions.Random()).Take(15);
         var value = new Pgvector.Vector(embeddedUserQuery.Value);
         return dbContext.Products
+            .Where(p => p.Embedding!.CosineDistance(value!) < 0.85f)
             .OrderBy(p => p.Embedding!.CosineDistance(value!))
             .Take(10);
         //#endif
