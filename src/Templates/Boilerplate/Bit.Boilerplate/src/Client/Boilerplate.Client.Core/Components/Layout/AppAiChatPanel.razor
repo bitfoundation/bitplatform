@@ -1,6 +1,8 @@
 @using Boilerplate.Shared.Dtos.Chatbot
 @inherits AppComponentBase
 
+<BitMediaQuery ScreenQuery="BitScreenQuery.LtSm" OnChange="isMatched => isSmallScreen = isMatched" />
+
 <section>
     <BitButton Float
                Draggable
@@ -13,9 +15,10 @@
                FloatPosition="BitPosition.BottomRight"
                IconUrl="@($"_content/Boilerplate.Client.Core/images/icons/ai-icon-{currentTheme?.ToString().ToLower()}.png")" />
 
-    <BitProPanel Modeless
-                 ShowCloseButton
+    <BitProPanel ShowCloseButton
                  @bind-IsOpen="isOpen"
+                 ModeFull="isSmallScreen is true"
+                 Modeless="isSmallScreen is false"
                  OnDismiss="WrapHandled(HandleOnDismissPanel)">
         <Header>
             <BitStack Horizontal Alignment="BitAlignment.Center">
@@ -35,8 +38,9 @@
         </Header>
         <Body>
             <BitStack Class="body">
-                <BitScrollablePane Class="scr-container"
-                                   AutoScroll FullHeight FullWidth
+                <BitScrollablePane FullSize
+                                   AutoScroll 
+                                   Class="scr-container"
                                    ScrollbarWidth="BitScrollbarWidth.Thin">
                     <BitStack>
                         @foreach (var message in chatMessages)
