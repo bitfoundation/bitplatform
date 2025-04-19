@@ -6,9 +6,11 @@
 <AppPageData Title="@Localizer[nameof(AppStrings.Products)]"
              PageTitle="@Localizer[nameof(AppStrings.ProductsPageTitle)]" />
 
+<BitMediaQuery ScreenQuery="BitScreenQuery.LtSm" OnChange="isMatched => isSmallScreen = isMatched" />
+
 <section>
     <BitStack>
-        <BitStack VerticalAlign="BitAlignment.Center" AutoHeight Horizontal>
+        <BitStack VerticalAlign="BitAlignment.Center" AutoHeight Horizontal="isSmallScreen is false">
             <BitButton IconName="@BitIconName.Add" ReversedIcon
                        OnClick="WrapHandled(CreateProduct)">
                 @Localizer[nameof(AppStrings.AddProduct)]
@@ -16,9 +18,9 @@
             <BitSpacer />
             <BitSearchBox Underlined
                           ShowSearchButton
-                          Style="width:50%"
                           OnSearch="HandleOnSearch"
                           Color="BitColor.Secondary"
+                          Style="@($"width:{(isSmallScreen ? 100 : 50)}%")"
                           Placeholder="@Localizer[nameof(AppStrings.SearchProductsPlaceholder)]" />
         </BitStack>
         <BitStack Gap="0" FillContent>
