@@ -8,10 +8,19 @@
 
 <section>
     <BitStack>
-        <BitButton IconName="@BitIconName.Add" ReversedIcon
-                   OnClick="WrapHandled(CreateProduct)">
-            @Localizer[nameof(AppStrings.AddProduct)]
-        </BitButton>
+        <BitStack VerticalAlign="BitAlignment.Center" AutoHeight Horizontal>
+            <BitButton IconName="@BitIconName.Add" ReversedIcon
+                       OnClick="WrapHandled(CreateProduct)">
+                @Localizer[nameof(AppStrings.AddProduct)]
+            </BitButton>
+            <BitSpacer />
+            <BitSearchBox Underlined
+                          ShowSearchButton
+                          Style="width:50%"
+                          OnSearch="HandleOnSearch"
+                          Color="BitColor.Secondary"
+                          Placeholder="@Localizer[nameof(AppStrings.SearchProductsPlaceholder)]" />
+        </BitStack>
         <BitStack Gap="0" FillContent>
             <div class="grid-container">
                 <BitDataGrid @ref="dataGrid"
