@@ -1,0 +1,53 @@
+.bit-ldn-sbr {
+}
+
+.bit-ldn-sbr-ccn {
+    position: relative;
+    display: inline-block;
+    width: var(--bit-ldn-size);
+    height: var(--bit-ldn-size);
+}
+
+.bit-ldn-sbr-chl {
+    float: left;
+    height: 100%;
+    display: inline-block;
+    width: var(--bit-ldn-sbr-8);
+    background: var(--bit-ldn-color);
+    margin-left: var(--bit-ldn-sbr-2);
+    animation: bit-ldn-sbr-anm 0.8s infinite ease-in-out;
+}
+
+.bit-ldn-sbr-ch1 {
+    animation-delay: 0s;
+}
+
+.bit-ldn-sbr-ch2 {
+    animation-delay: -0.7s;
+}
+
+.bit-ldn-sbr-ch3 {
+    animation-delay: -0.6s;
+}
+
+.bit-ldn-sbr-ch4 {
+    animation-delay: -0.5s;
+}
+
+.bit-ldn-sbr-ch5 {
+    animation-delay: -0.4s;
+}
+
+.bit-ldn-sbr-ch6 {
+    animation-delay: -0.3s;
+}
+
+@keyframes bit-ldn-sbr-anm {
+    0%, 40%, 100% {
+        transform: scaleY(0.05);
+    }
+
+    20% {
+        transform: scaleY(1.0);
+    }
+}
