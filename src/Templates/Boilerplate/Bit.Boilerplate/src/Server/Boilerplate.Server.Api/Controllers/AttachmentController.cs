@@ -65,6 +65,8 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             _ => throw new NotImplementedException()
         };
 
+        filePath = Environment.ExpandEnvironmentVariables(filePath);
+
         if (await blobStorage.ExistsAsync(filePath, cancellationToken) is false)
             throw new ResourceNotFoundException();
 
@@ -172,6 +174,8 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                     _ => throw new NotImplementedException()
                 }
             };
+
+            attachment.Path = Environment.ExpandEnvironmentVariables(attachment.Path);
 
             if (await blobStorage.ExistsAsync(attachment.Path, cancellationToken))
             {

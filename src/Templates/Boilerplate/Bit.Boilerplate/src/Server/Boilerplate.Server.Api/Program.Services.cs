@@ -47,8 +47,10 @@ public static partial class Program
         services.AddScoped<EmailServiceJobsRunner>();
         services.AddScoped<PhoneService>();
         services.AddScoped<PhoneServiceJobsRunner>();
-        //#if ((module == "Sales" || module == "Admin") && (signalR == true || database == "PostgreSQL"))
+        //#if (module == "Sales" || module == "Admin")
+        //#if (signalR == true || database == "PostgreSQL")
         services.AddScoped<ProductEmbeddingService>();
+        //#endif
         //#endif
         if (appSettings.Sms?.Configured is true)
         {
@@ -420,12 +422,20 @@ public static partial class Program
         {
             var efCoreStorage = configuration.UseEFCoreStorage(optionsBuilder =>
             {
-                if (appSettings.Hangfire?.UseIsoaltedStorage is true)
+                if (appSettings.Hangfire?.UseIsolatedStorage is true)
                 {
-                    var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
-                    var appDataDirPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
-                    Directory.CreateDirectory(appDataDirPath);
-                    optionsBuilder.UseSqlite($"Data Source={Path.Combine(appDataDirPath, "BoilerplateJobsDb")};");
+                    var dir = appSettings.Hangfire.IsolatedStorageDirectory;
+                    if (string.IsNullOrEmpty(dir) is false)
+                    {
+                        dir = Environment.ExpandEnvironmentVariables(dir);
+                    }
+                    else
+                    {
+                        var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
+                        dir = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
+                    }
+                    Directory.CreateDirectory(dir);
+                    optionsBuilder.UseSqlite($"Data Source={Path.Combine(dir, "BoilerplateJobsDb")};");
                 }
                 else
                 {
@@ -437,7 +447,7 @@ public static partial class Program
                 QueuePollInterval = new TimeSpan(0, 0, 1)
             });
 
-            if (appSettings.Hangfire?.UseIsoaltedStorage is true)
+            if (appSettings.Hangfire?.UseIsolatedStorage is true)
             {
                 efCoreStorage.UseDatabaseCreator();
             }

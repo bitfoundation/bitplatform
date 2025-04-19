@@ -55,6 +55,10 @@ jobs:
         
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools
+
+    - name: Configure text embedding
+      run: |
+          sed -i 's/EmbeddingIsEnabled = false/EmbeddingIsEnabled = true/' AdminPanel/src/Server/AdminPanel.Server.Api/Data/AppDbContext.cs
       
     - name: Generate CSS/JS files
       run: |
