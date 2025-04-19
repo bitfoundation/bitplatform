@@ -45,20 +45,22 @@ public partial class ProductController : AppControllerBase, IProductController
         return new PagedResult<ProductDto>(await query.ToArrayAsync(cancellationToken), totalCount);
     }
 
-    //#if (database == "PostgreSQL")
     [HttpGet("{searchQuery}")]
     public async Task<PagedResult<ProductDto>> GetProductsBySearchQuery(string searchQuery, ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
     {
+        //#if (database == "PostgreSQL")
         var query = (IQueryable<ProductDto>)odataQuery.ApplyTo((await (productEmbeddingService.GetProductsBySearchQuery(searchQuery, cancellationToken))).Project(), ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
-
         var totalCount = await query.LongCountAsync(cancellationToken);
 
         query = query.SkipIf(odataQuery.Skip is not null, odataQuery.Skip?.Value)
                      .TakeIf(odataQuery.Top is not null, odataQuery.Top?.Value);
 
         return new PagedResult<ProductDto>(await query.ToArrayAsync(cancellationToken), totalCount);
+        //#else
+        // Embedding based search is only implemented for PostgreSQL.
+        return await GetProducts(odataQuery, cancellationToken);
+        //#endif
     }
-    //#endif
 
     [HttpGet("{id}")]
     public async Task<ProductDto> Get(Guid id, CancellationToken cancellationToken)
