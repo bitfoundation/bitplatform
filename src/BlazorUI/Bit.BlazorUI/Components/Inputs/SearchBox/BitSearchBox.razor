@@ -15,9 +15,10 @@
         }
         <input @ref="InputElement" @attributes="InputHtmlAttributes"
                @onkeydown="@HandleOnKeyDown"
-               @onfocusout="HandleInputFocusOut"
                @onfocusin="HandleInputFocusIn"
+               @onfocusout="HandleInputFocusOut"
                @oninput="@HandleOnStringValueInputAsync"
+               @onchange="@HandleOnStringValueChangeAsync"
                type="text"
                name="@Name"
                id="@_inputId"
