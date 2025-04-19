@@ -20,6 +20,13 @@ public partial class BitScrollablePaneDemo
         },
         new()
         {
+            Name = "AutoSize",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes both height and width of the pane auto.",
+        },
+        new()
+        {
             Name = "AutoWidth",
             Type = "bool",
             DefaultValue = "false",
@@ -41,6 +48,13 @@ public partial class BitScrollablePaneDemo
         },
         new()
         {
+            Name = "FitSize",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes both height and width of the pane fit-content.",
+        },
+        new()
+        {
             Name = "FitWidth",
             Type = "bool",
             DefaultValue = "false",
@@ -52,6 +66,13 @@ public partial class BitScrollablePaneDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Makes the height of the pane 100%.",
+        },
+        new()
+        {
+            Name = "FullSize",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes both height and width of the pane 100%.",
         },
         new()
         {
