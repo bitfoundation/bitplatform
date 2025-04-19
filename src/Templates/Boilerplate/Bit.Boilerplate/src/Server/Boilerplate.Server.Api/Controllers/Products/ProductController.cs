@@ -58,6 +58,7 @@ public partial class ProductController : AppControllerBase, IProductController
         return new PagedResult<ProductDto>(await query.ToArrayAsync(cancellationToken), totalCount);
         //#else
         // Embedding based search is only implemented for PostgreSQL.
+        // Simply return whole products list.
         return await GetProducts(odataQuery, cancellationToken);
         //#endif
     }
