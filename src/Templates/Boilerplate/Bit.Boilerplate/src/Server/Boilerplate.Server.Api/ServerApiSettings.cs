@@ -277,4 +277,6 @@ public class HangfireOptions
     /// Useful for testing or in production when managing multiple codebases with a single database.
     /// </summary>
     public bool UseIsoaltedStorage { get; set; }
+
+    public string? IsolatedStorageDirectory { get; set; }
 }
