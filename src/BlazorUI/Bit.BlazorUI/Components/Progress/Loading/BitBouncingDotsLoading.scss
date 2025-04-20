@@ -20,27 +20,25 @@
 }
 
 .bit-ldn-bnd-ch1 {
-    animation-delay: 0.1s;
+    animation-delay: 0s;
 }
 
 .bit-ldn-bnd-ch2 {
-    animation-delay: 0.3s;
+    animation-delay: 0.15s;
 }
 
 .bit-ldn-bnd-ch3 {
-    animation-delay: 0.5s;
+    animation-delay: 0.3s;
 }
 
 @keyframes bit-ldn-bnd-anm {
-    0% {
-        transform: translate(0, 0);
+    0%, 100% {
+        transform: translateY(-75%);
+        animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
     }
 
     50% {
-        transform: translate(0, 15px);
-    }
-
-    100% {
-        transform: translate(0, 0);
+        transform: none;
+        animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
     }
 }
