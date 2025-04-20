@@ -1,0 +1,37 @@
+.bit-ldn-rld {
+}
+
+.bit-ldn-rld-ccn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--bit-ldn-size);
+    height: var(--bit-ldn-size);
+}
+
+.bit-ldn-rld-chl {
+    border-radius: 100%;
+    display: inline-block;
+    width: var(--bit-ldn-rld-15);
+    height: var(--bit-ldn-rld-15);
+    padding: var(--bit-ldn-rld-15);
+    border: var(--bit-ldn-rld-8) dashed var(--bit-ldn-color);
+    animation: bit-ldn-rld-anm 1.5s 0.3s cubic-bezier(0.17, 0.37, 0.43, 0.67) infinite;
+}
+
+.bit-ldn-rld-ch1 {
+}
+
+@keyframes bit-ldn-rld-anm {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    50% {
+        transform: rotate(180deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
