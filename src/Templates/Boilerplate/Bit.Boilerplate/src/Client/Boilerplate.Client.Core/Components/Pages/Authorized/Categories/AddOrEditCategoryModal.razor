@@ -2,7 +2,7 @@
 
 @if (isOpen)
 {
-    <!-- Close this dialog when navigation occures instead of navigating away from the categories page -->
+    <!-- Close this dialog when navigation occurs instead of navigating away from the categories page -->
     <NavigationLock OnBeforeInternalNavigation="@((args) => { args.PreventNavigation(); isOpen = false; })" />
 }
 

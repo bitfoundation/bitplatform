@@ -1,9 +1,19 @@
 @inherits AppComponentBase
 
-<BitDialog @bind-IsOpen="IsOpen"
+@if (IsOpen)
+{
+    <!-- Close this dialog when navigation occurs instead of navigating away from the categories page -->
+    <NavigationLock OnBeforeInternalNavigation="@((args) => { args.PreventNavigation(); IsOpen = false; IsOpenChanged.InvokeAsync(false); })" />
+}
+
+<BitDialog IsBlocking="true"
+           @bind-IsOpen="IsOpen"
            OnDismiss="CloseModal"
+           ShowCloseButton="false"
            OnOk="WrapHandled(SignOut)"
+           ShowCancelButton="isSigningOut is false"
+           Title="@Localizer[nameof(AppStrings.SignOut)]"
            OkText="@Localizer[nameof(AppStrings.SignOut)]"
            CancelText="@Localizer[nameof(AppStrings.Cancel)]"
-           Title="@Localizer[nameof(AppStrings.SignOut)]"
-           Message="@Localizer[nameof(AppStrings.SignOutPrompt)]" />
+           Message="@Localizer[nameof(AppStrings.SignOutPrompt)]"
+           Styles="@(new() { OkButton = "width:100%", CancelButton = "width:100%" })"/>
