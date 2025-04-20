@@ -26,7 +26,8 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// <summary>
     /// Automatically adjust the height of the input in Multiline mode.
     /// </summary>
-    [Parameter] public bool AutoHeight { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool AutoHeight { get; set; }
 
     /// <summary>
     /// Whether to show the reveal password button for input type 'password'.
@@ -68,7 +69,8 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// <summary>
     /// Label displayed above the text field and read by screen readers.
     /// </summary>
-    [Parameter] public string? Label { get; set; }
+    [Parameter, ResetClassBuilder]
+    public string? Label { get; set; }
 
     /// <summary>
     /// Shows the custom label for text field.

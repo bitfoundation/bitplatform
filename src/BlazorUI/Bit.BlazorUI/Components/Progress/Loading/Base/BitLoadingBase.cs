@@ -15,7 +15,8 @@ public abstract class BitLoadingBase : BitComponentBase
     /// <summary>
     /// The general color of the loading component.
     /// </summary>
-    [Parameter] public BitColor? Color { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public BitColor? Color { get; set; }
 
     /// <summary>
     /// The custom css color of the loading component.
@@ -35,7 +36,8 @@ public abstract class BitLoadingBase : BitComponentBase
     /// <summary>
     /// The position of the label of the loading component.
     /// </summary>
-    [Parameter] public BitLabelPosition? LabelPosition { get; set; }
+    [Parameter, ResetClassBuilder]
+    public BitLabelPosition? LabelPosition { get; set; }
 
     /// <summary>
     /// The custom content of the label of the loading component.
@@ -45,7 +47,8 @@ public abstract class BitLoadingBase : BitComponentBase
     /// <summary>
     /// The Size of the loading component.
     /// </summary>
-    [Parameter] public BitSize? Size { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public BitSize? Size { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the loading component.
@@ -117,6 +120,8 @@ public abstract class BitLoadingBase : BitComponentBase
 
 
 
+    protected virtual int OriginalSize => 80;
+
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => "bit-ldn");
@@ -154,8 +159,6 @@ public abstract class BitLoadingBase : BitComponentBase
         StyleBuilder.Register(() => $"--bit-ldn-size:{GetSize()}px");
         StyleBuilder.Register(() => $"--bit-ldn-font-size:{GetFontSize()}px");
     }
-
-    protected virtual int OriginalSize => 80;
 
     protected string Convert(double value)
     {

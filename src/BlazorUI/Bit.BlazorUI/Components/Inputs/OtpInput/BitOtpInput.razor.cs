@@ -84,7 +84,8 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// <summary>
     /// Defines whether to render inputs in the opposite direction.
     /// </summary>
-    [Parameter] public bool Reversed { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool Reversed { get; set; }
 
     /// <summary>
     /// The size of the inputs.
@@ -105,7 +106,8 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// <summary>
     /// Defines whether to render inputs vertically.
     /// </summary>
-    [Parameter] public bool Vertical { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool Vertical { get; set; }
 
 
 

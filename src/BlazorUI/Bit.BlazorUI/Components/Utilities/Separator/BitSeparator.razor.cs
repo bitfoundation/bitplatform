@@ -37,7 +37,7 @@ public partial class BitSeparator : BitComponentBase
     /// <summary>
     /// Whether the element is a vertical separator.
     /// </summary>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool Vertical { get; set; }
 
 

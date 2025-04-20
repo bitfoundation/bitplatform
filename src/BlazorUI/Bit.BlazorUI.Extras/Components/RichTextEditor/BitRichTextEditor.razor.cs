@@ -56,7 +56,8 @@ public partial class BitRichTextEditor : BitComponentBase
     /// <summary>
     /// Reverses the location of the Toolbar and the Editor.
     /// </summary>
-    [Parameter] public bool Reversed { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool Reversed { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the rich text editor.

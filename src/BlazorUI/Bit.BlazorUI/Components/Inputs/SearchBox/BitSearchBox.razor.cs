@@ -27,7 +27,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// <summary>
     /// The accent color kind of the search box.
     /// </summary>
-    [Parameter] public BitColorKind? Accent { get; set; }
+    [Parameter, ResetClassBuilder]
+    public BitColorKind? Accent { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the BitSearchBox.
@@ -93,7 +94,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// <summary>
     /// Removes the default border of the search box.
     /// </summary>
-    [Parameter] public bool NoBorder { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool NoBorder { get; set; }
 
     /// <summary>
     /// Callback executed when the user clears the search box by either clicking 'X' or hitting escape.

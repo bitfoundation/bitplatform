@@ -103,7 +103,8 @@ public partial class BitPersona : BitComponentBase
     /// <summary>
     /// Callback for when the image clicked.
     /// </summary>
-    [Parameter] public EventCallback<MouseEventArgs> OnImageClick { get; set; }
+    [Parameter, ResetClassBuilder]
+    public EventCallback<MouseEventArgs> OnImageClick { get; set; }
 
     /// <summary>
     /// Optional text to display, usually a custom message set.

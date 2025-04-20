@@ -25,7 +25,8 @@ public partial class BitDialog : BitComponentBase
     /// <summary>
     /// When true, the Dialog will be positioned absolute instead of fixed.
     /// </summary>
-    [Parameter] public bool AbsolutePosition { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool AbsolutePosition { get; set; }
 
     /// <summary>
     /// Alias for child content.

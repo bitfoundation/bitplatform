@@ -86,7 +86,7 @@ public partial class BitStack : BitComponentBase
     /// <summary>
     /// Defines whether to render Stack children horizontally.
     /// </summary>
-    [Parameter, ResetStyleBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool Horizontal { get; set; }
 
     /// <summary>

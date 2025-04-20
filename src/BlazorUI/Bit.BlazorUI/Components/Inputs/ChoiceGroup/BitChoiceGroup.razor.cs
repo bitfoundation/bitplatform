@@ -49,7 +49,8 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// <summary>
     /// Renders the icons and images in a single line with the items in the ChoiceGroup.
     /// </summary>
-    [Parameter] public bool Inline { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool Inline { get; set; }
 
     /// <summary>
     /// Sets the data source that populates the items of the list.
