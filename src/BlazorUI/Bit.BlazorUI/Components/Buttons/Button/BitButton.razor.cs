@@ -124,7 +124,8 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// Determines that only the icon should be rendered.
     /// </summary>
-    [Parameter] public bool IconOnly { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool IconOnly { get; set; }
 
     /// <summary>
     /// The url of the custom icon to render inside the button.

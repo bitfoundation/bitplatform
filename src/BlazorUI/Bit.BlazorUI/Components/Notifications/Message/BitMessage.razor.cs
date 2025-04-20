@@ -178,11 +178,15 @@ public partial class BitMessage : BitComponentBase
         });
     }
 
+
+
     private void ToggleExpand() => _isExpanded = _isExpanded is false;
 
     private string GetTextRole() => Role ?? (Color is BitColor.Success or BitColor.Info ? "status" : "alert");
 
     private string GetIconName() => IconName ?? _IconMap[Color ?? BitColor.Info];
+
+
 
     private static Dictionary<BitColor, string> _IconMap = new()
     {
