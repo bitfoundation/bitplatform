@@ -1,4 +1,6 @@
-﻿namespace Boilerplate.Client.Core.Components.Layout;
+﻿using Microsoft.AspNetCore.Components.Routing;
+
+namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class SignOutConfirmDialog
 {
@@ -34,5 +36,15 @@ public partial class SignOutConfirmDialog
         }
 
         await CloseModal();
+    }
+
+    private async Task HandleNavigation(LocationChangingContext context)
+    {
+        context.PreventNavigation();
+
+        if (isSigningOut) return;
+
+        IsOpen = false; 
+        await IsOpenChanged.InvokeAsync(false);
     }
 }
