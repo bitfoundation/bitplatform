@@ -59,6 +59,10 @@ jobs:
       run: |
           sed -i "s/\/\/ self.prerenderMode = 'always'/self.prerenderMode = 'always'/g" SalesModule/src/Client/SalesModule.Client.Web/wwwroot/service-worker.published.js
 
+    - name: Configure text embedding
+      run: |
+          sed -i 's/EmbeddingIsEnabled = false/EmbeddingIsEnabled = true/' SalesModule/src/Server/SalesModule.Server.Api/Data/AppDbContext.cs
+
     - name: Generate CSS/JS files
       run: |
           dotnet build SalesModule/src/Client/SalesModule.Client.Core/SalesModule.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:MultilingualEnabled=false --no-restore -c Release

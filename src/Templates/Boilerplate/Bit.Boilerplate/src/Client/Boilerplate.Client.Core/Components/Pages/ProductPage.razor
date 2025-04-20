@@ -5,6 +5,23 @@
 
 <AppPageData ShowGoBackButton="true" Title="@product?.Name" />
 
+<HeadContent>
+    <meta name="title" content="@product?.Name" />
+    <meta name="description" content="@product?.DescriptionText" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Boilerplate" />
+    <meta property="og:title" content="@product?.Name" />
+    <meta property="og:description" content="@product?.DescriptionText" />
+    <meta property="og:image" content="@GetProductImageUrl(product)" />
+    <meta property="og:url" content="@NavigationManager.Uri" />
+
+    <meta name="twitter:title" content="@product?.Name" />
+    <meta name="twitter:description" content="@product?.DescriptionText" />
+    <meta name="twitter:image" content="@GetProductImageUrl(product)" />
+    <meta name="twitter:card" content="summary_large_image" />
+</HeadContent>
+
 <section>
     <BitStack Gap="2rem" Class="root-stack">
 
@@ -12,7 +29,7 @@
         {
             <BitCard FullWidth Background="BitColorKind.Tertiary" Style="padding:3rem 1rem;">
                 <BitStack Horizontal HorizontalAlign="BitAlignment.Center" Gap="2rem" Class="product-stack">
-                    <ProductImage Width="50%" />
+                    <BitShimmer Height="256px" Width="50%" Background="BitColor.PrimaryBackground" />
                     <BitStack AutoHeight Grows>
                         <BitShimmer Height="6rem" Width="100%" />
                         <BitShimmer Height="1rem" Width="100%" />
@@ -105,11 +122,11 @@
                     {
                         <BitCard FullSize Style="width:250px">
                             <BitStack>
-                                <ProductImage Width="100%" />
-                                <BitShimmer Height="3rem" Width="100%" />
-                                <BitShimmer Height="1rem" Width="100%" />
-                                <BitShimmer Height="1rem" Width="100%" />
-                                <BitShimmer Height="2rem" Width="100%" />
+                                <BitShimmer Height="220px" Width="100%" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="2rem" Width="100%" Background="BitColor.PrimaryBackground" />
                             </BitStack>
                         </BitCard>
                     }
@@ -151,11 +168,11 @@
                     {
                         <BitCard FullSize Style="width:250px">
                             <BitStack>
-                                <ProductImage Width="100%" />
-                                <BitShimmer Height="3rem" Width="100%" />
-                                <BitShimmer Height="1rem" Width="100%" />
-                                <BitShimmer Height="1rem" Width="100%" />
-                                <BitShimmer Height="2rem" Width="100%" />
+                                <BitShimmer Height="220px" Width="100%" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="2rem" Width="100%" Background="BitColor.PrimaryBackground" />
                             </BitStack>
                         </BitCard>
                     }

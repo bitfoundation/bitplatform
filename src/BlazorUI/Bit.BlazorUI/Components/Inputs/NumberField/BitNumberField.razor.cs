@@ -142,7 +142,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// <summary>
     /// Descriptive label for the number field, Label displayed above the number field and read by screen readers.
     /// </summary>
-    [Parameter] public string? Label { get; set; }
+    [Parameter, ResetClassBuilder]
+    public string? Label { get; set; }
 
     /// <summary>
     /// Shows the custom Label for number field. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.

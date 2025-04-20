@@ -11,6 +11,7 @@ public partial class AppAiChatPanel
     private bool isOpen;
     private bool isLoading;
     private string? userInput;
+    private bool isSmallScreen;
     private int responseCounter;
     private Channel<string>? channel;
     private AiChatMessage? lastAssistantMessage;

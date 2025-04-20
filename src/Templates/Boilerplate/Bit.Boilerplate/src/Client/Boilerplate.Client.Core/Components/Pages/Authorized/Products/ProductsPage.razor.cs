@@ -1,15 +1,14 @@
-//-:cnd:noEmit
-using Boilerplate.Shared.Controllers.Products;
+﻿//-:cnd:noEmit
 using Boilerplate.Shared.Dtos.Products;
+using Boilerplate.Shared.Controllers.Products;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Products;
 
 public partial class ProductsPage
 {
-    [AutoInject] IProductController productController = default!;
-
-
     private bool isLoading;
+    private bool isSmallScreen;
+    private string? searchQuery;
     private bool isDeleteDialogOpen;
     private ProductDto? deletingProduct;
     private string productNameFilter = string.Empty;
@@ -20,7 +19,10 @@ public partial class ProductsPage
     private BitDataGridPaginationState pagination = new() { ItemsPerPage = 10 };
 
 
-    string ProductNameFilter
+    [AutoInject] IProductController productController = default!;
+
+
+    private string ProductNameFilter
     {
         get => productNameFilter;
         set
@@ -30,7 +32,7 @@ public partial class ProductsPage
         }
     }
 
-    string CategoryNameFilter
+    private string CategoryNameFilter
     {
         get => categoryNameFilter;
         set
@@ -73,7 +75,10 @@ public partial class ProductsPage
                     odataQ.AndFilter = $"contains(tolower({nameof(ProductDto.CategoryName)}),'{CategoryNameFilter.ToLower()}')";
                 }
 
-                var data = await productController.WithQuery(odataQ.ToString()).GetProducts(req.CancellationToken);
+                var queriedRequest = productController.WithQuery(odataQ.ToString());
+                var data = await (string.IsNullOrWhiteSpace(searchQuery)
+                                    ? queriedRequest.GetProducts(req.CancellationToken)
+                                    : queriedRequest.GetProductsBySearchQuery(searchQuery, req.CancellationToken));
 
                 return BitDataGridItemsProviderResult.From(data!.Items!, (int)data!.TotalCount);
             }
@@ -120,6 +125,12 @@ public partial class ProductsPage
         {
             deletingProduct = null;
         }
+    }
+
+    private async Task HandleOnSearch(string value)
+    {
+        searchQuery = value;
+        await RefreshData();
     }
 }
 

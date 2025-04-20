@@ -135,7 +135,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// Determines if the TimePicker has a border.
     /// </summary>
-    [Parameter] public bool HasBorder { get; set; } = true;
+    [Parameter, ResetClassBuilder]
+    public bool HasBorder { get; set; } = true;
 
     /// <summary>
     /// Determines increment/decrement steps for time-picker's hour.
@@ -248,7 +249,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// Whether or not the Text field of the TimePicker is underlined.
     /// </summary>
-    [Parameter] public bool Underlined { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool Underlined { get; set; }
 
     /// <summary>
     /// The format of the time in the time-picker

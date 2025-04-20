@@ -11,7 +11,8 @@ public partial class BitText : BitComponentBase
     /// <summary>
     /// Sets the horizontal alignment of the text content.
     /// </summary>
-    [Parameter] public BitTextAlign? Align { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public BitTextAlign? Align { get; set; }
 
     /// <summary>
     /// The content of the Text.

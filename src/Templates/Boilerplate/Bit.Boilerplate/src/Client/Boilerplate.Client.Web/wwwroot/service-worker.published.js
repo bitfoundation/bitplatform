@@ -1,5 +1,5 @@
 //+:cnd:noEmit
-// bit version: 9.7.0-pre-07
+// bit version: 9.7.0-pre-08
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 //#if (notification == true)
@@ -66,8 +66,8 @@ self.externalAssets = [
 self.serverHandledUrls = [
     /\/api\//,
     /\/odata\//,
-    /\/hangfire\//,
     /\/core\//,
+    /\/hangfire/,
     /\/healthchecks-ui/,
     /\/healthz/,
     /\/swagger/,
