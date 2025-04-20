@@ -1,7 +1,7 @@
 @inherits AppComponentBase
 
 <header>
-    <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+    <BitStack Horizontal>
         <BitButton IconOnly FixedColor
                    Class="menu-btn"
                    Size="BitSize.Large"
@@ -25,7 +25,7 @@
             </BitStack>
             @if (string.IsNullOrWhiteSpace(pageSubtitle) is false)
             {
-                <BitText Typography="BitTypography.Body1" Foreground="BitColorKind.Secondary" NoWrap>
+                <BitText Typography="BitTypography.Body1" Foreground="BitColorKind.Secondary">
                     @pageSubtitle
                 </BitText>
             }
