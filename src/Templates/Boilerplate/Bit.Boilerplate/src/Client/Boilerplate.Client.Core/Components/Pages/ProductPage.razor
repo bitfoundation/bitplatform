@@ -5,6 +5,22 @@
 
 <AppPageData ShowGoBackButton="true" Title="@product?.Name" />
 
+<HeadContent>
+    <meta name="title" content="@product?.Name" />
+    <meta name="description" content="@product?.DescriptionText" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Boilerplate" />
+    <meta property="og:title" content="@product?.Name" />
+    <meta property="og:description" content="@product?.DescriptionText" />
+    <meta property="og:image" content="@GetProductImageUrl(product)" />
+    <meta property="og:url" content="@NavigationManager.Uri" />
+
+    <meta name="twitter:title" content="@product?.Name" />
+    <meta name="twitter:description" content="@product?.DescriptionText" />
+    <meta name="twitter:image" content="@GetProductImageUrl(product)" />
+</HeadContent>
+
 <section>
     <BitStack Gap="2rem" Class="root-stack">
 

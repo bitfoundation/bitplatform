@@ -76,5 +76,5 @@ public partial class ProductPage
     }
 
 
-    private string? GetProductImageUrl(ProductDto product) => product.GetPrimaryMediumImageUrl(AbsoluteServerAddress);
+    private string? GetProductImageUrl(ProductDto? product) => product?.GetPrimaryMediumImageUrl(AbsoluteServerAddress);
 }
