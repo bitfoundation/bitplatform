@@ -1,0 +1,13 @@
+section {
+    width: 100%;
+}
+
+::deep {
+    .md-editor {
+        height: auto;
+        
+        textarea {
+            font-size: 1rem;
+        }
+    }
+}
