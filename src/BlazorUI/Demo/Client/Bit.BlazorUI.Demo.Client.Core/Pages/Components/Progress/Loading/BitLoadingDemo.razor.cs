@@ -207,7 +207,19 @@ public partial class BitLoadingDemo
 
 <BitRollerLoading />
 
-<BitSpinnerLoading />";
+<BitSpinnerLoading />
+
+<BitXboxLoading />
+
+<BitSlickBarsLoading />
+
+<BitBouncingDotsLoading />
+
+<BitRollingDashesLoading />
+
+<BitOrbitingDotsLoading />
+
+<BitRollingSquareLoading />";
 
     private readonly string example2RazorCode = @"
 <BitGridLoading Label=""Loading"" />";
