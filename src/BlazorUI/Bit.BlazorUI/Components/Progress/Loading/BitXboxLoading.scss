@@ -1,0 +1,52 @@
+.bit-ldn-xbx {
+}
+
+.bit-ldn-xbx-ccn {
+    position: relative;
+    display: inline-block;
+    width: var(--bit-ldn-size);
+    height: var(--bit-ldn-size);
+}
+
+.bit-ldn-xbx-chl {
+    position: absolute;
+    border-radius: 50%;
+    display: inline-block;
+    animation: bit-ldn-xbx-anm linear infinite;
+    border: var(--bit-ldn-xbx-3) solid transparent;
+    border-top-color: var(--bit-ldn-color);
+}
+
+.bit-ldn-xbx-ch1 {
+    top: var(--bit-ldn-xbx-25f);
+    left: var(--bit-ldn-xbx-25f);
+    width: var(--bit-ldn-xbx-50f);
+    height: var(--bit-ldn-xbx-50f);
+    animation-duration: 0.85s;
+}
+
+.bit-ldn-xbx-ch2 {
+    top: var(--bit-ldn-xbx-125f);
+    left: var(--bit-ldn-xbx-125f);
+    width: var(--bit-ldn-xbx-75f);
+    height: var(--bit-ldn-xbx-75f);
+    animation-duration: 0.95s;
+}
+
+.bit-ldn-xbx-ch3 {
+    top: 0;
+    left: 0;
+    width: var(--bit-ldn-size);
+    height: var(--bit-ldn-size);
+    animation-duration: 1.05s;
+}
+
+@keyframes bit-ldn-xbx-anm {
+    from {
+        transform: rotateZ(360deg);
+    }
+
+    to {
+        transform: rotateZ(0deg);
+    }
+}
