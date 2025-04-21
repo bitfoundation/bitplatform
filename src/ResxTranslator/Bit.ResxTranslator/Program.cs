@@ -7,13 +7,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using System.Net;
+using System.Xml.Linq;
 using System.ClientModel.Primitives;
 
 using Azure.AI.Inference;
 using Azure.Core.Pipeline;
 
 using OpenAI.Chat;
-using System.Globalization;
 
 var services = new ServiceCollection();
 var configuration = new ConfigurationManager();
@@ -79,7 +79,4 @@ await using var serviceProvider = services.BuildServiceProvider();
 
 var resxFilesManager = serviceProvider.GetRequiredService<ResxFilesManager>();
 
-foreach (var resxGroup in resxFilesManager.GetResxGroups())
-{
-    CultureInfo culture = new CultureInfo(resxGroup.Path);
-}
+await resxFilesManager.Run();

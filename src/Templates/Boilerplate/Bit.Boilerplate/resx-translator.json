@@ -3,7 +3,7 @@
 
     "DefaultLanguage": "en",
 
-    "AdditionalLanguages": [ "nl", "fa", "sv" ],
+    "AdditionalLanguages": [ "sv", "nl", "fa" ],
 
     "ResxPaths": [ "/src/**/*.resx" ],
 
