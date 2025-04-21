@@ -38,7 +38,7 @@ jobs:
     - name: Use Bit.ResxTranslator
       run: |
             cd src
-            dotnet tool install --global Bit.ResxTranslator --prerelease
+            dotnet tool install --global Bit.ResxTranslator
             bit-resx-translate
 
     - name: Update core appsettings.json
@@ -144,7 +144,7 @@ jobs:
     - name: Use Bit.ResxTranslator
       run: |
             cd src
-            dotnet tool install --global Bit.ResxTranslator --prerelease
+            dotnet tool install --global Bit.ResxTranslator
             bit-resx-translate
   
     - name: Update core appsettings.json
@@ -199,7 +199,7 @@ jobs:
     - name: Use Bit.ResxTranslator
       run: |
             cd src
-            dotnet tool install --global Bit.ResxTranslator --prerelease
+            dotnet tool install --global Bit.ResxTranslator
             bit-resx-translate
   
     - name: Update core appsettings.json
@@ -254,7 +254,7 @@ jobs:
     - name: Use Bit.ResxTranslator
       run: |
             cd src
-            dotnet tool install --global Bit.ResxTranslator --prerelease
+            dotnet tool install --global Bit.ResxTranslator
             bit-resx-translate
   
     - name: Update core appsettings.json

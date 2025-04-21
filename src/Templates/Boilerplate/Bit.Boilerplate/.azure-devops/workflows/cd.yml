@@ -41,7 +41,7 @@ jobs:
 
   - script: |
       cd src
-      dotnet tool install --global Bit.ResxTranslator --prerelease
+      dotnet tool install --global Bit.ResxTranslator
       bit-resx-translate
     failOnStderr: true
     displayName: Use Bit.ResxTranslator
@@ -150,6 +150,13 @@ jobs:
       versionSpec: '23.x'
     displayName: 'Install Node.js'
 
+  - script: |
+      cd src
+      dotnet tool install --global Bit.ResxTranslator
+      bit-resx-translate
+    failOnStderr: true
+    displayName: Use Bit.ResxTranslator
+
   - task: FileTransform@2
     displayName: Update appsettings.json
     inputs:
@@ -220,6 +227,13 @@ jobs:
       cp $(AndroidKeyStore.secureFilePath) src/Client/Boilerplate.Client.Maui/Boilerplate.keystore
     failOnStderr: true
     displayName: Copy keystore to app project folder
+
+  - script: |
+      cd src
+      dotnet tool install --global Bit.ResxTranslator
+      bit-resx-translate
+    failOnStderr: true
+    displayName: Use Bit.ResxTranslator
 
   - task: FileTransform@2
     displayName: Update appsettings.json
