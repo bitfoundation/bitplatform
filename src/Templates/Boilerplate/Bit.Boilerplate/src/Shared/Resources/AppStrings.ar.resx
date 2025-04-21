@@ -1,0 +1,1269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- +:cnd:noEmit -->
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <!-- .NET Validation messages -->
+    <data name="CompareAttribute_ValidationError" xml:space="preserve">
+    <value>'{0}' و '{1}' غير متطابقين.</value>
+  </data>
+    <data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
+    <value>حقل {0} ليس عنوان بريد إلكتروني صالح.</value>
+  </data>
+    <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
+    <value>يجب أن يحتوي MaxLengthAttribute على قيمة Length أكبر من الصفر. استخدم MaxLength() بدون معلمات للإشارة إلى أن السلسلة أو المصفوفة يمكن أن يكون لها الحد الأقصى للطول المسموح به.</value>
+  </data>
+    <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
+    <value>يجب أن يكون الحقل {0} من نوع سلسلة أو مصفوفة بطول أدنى '{1}'.</value>
+  </data>
+    <data name="RangeAttribute_ValidationError" xml:space="preserve">
+    <value>يجب أن يكون الحقل {0} بين {1} و {2}.</value>
+  </data>
+    <data name="RequiredAttribute_ValidationError" xml:space="preserve">
+    <value>حقل {0} مطلوب.</value>
+  </data>
+    <data name="PhoneAttribute_ValidationError" xml:space="preserve">
+    <value>حقل {0} ليس رقم هاتف صالح.</value>
+  </data>
+    <!-- Exceptions -->
+    <data name="BadRequestException" xml:space="preserve">
+    <value>طلب غير صالح</value>
+  </data>
+    <data name="ConflictException" xml:space="preserve">
+    <value>تعذر معالجة الطلب بسبب تعارض في الطلب</value>
+  </data>
+    <data name="NotAuthorizedPageTitle" xml:space="preserve">
+    <value>403</value>
+  </data>
+    <data name="ForbiddenException" xml:space="preserve">
+    <value>الوصول إلى المورد المطلوب ممنوع</value>
+  </data>
+    <data name="ResourceValidationException" xml:space="preserve">
+    <value>بيانات الطلب غير صالحة</value>
+  </data>
+    <data name="RestException" xml:space="preserve">
+    <value>حدث خطأ أثناء الاتصال بالخادم</value>
+  </data>
+    <data name="UnauthorizedException" xml:space="preserve">
+    <value>طلبك يفتقر إلى بيانات المصادقة الصالحة</value>
+  </data>
+    <data name="UnknownException" xml:space="preserve">
+    <value>حدث خطأ غير معروف</value>
+  </data>
+    <data name="UpdateConcurrencyException" xml:space="preserve">
+    <value>تم تعديل السجل بواسطة مستخدم آخر بعد حصولك على البيانات الأصلية. تم إلغاء العملية.</value>
+  </data>
+    <data name="ResourceNotFoundException" xml:space="preserve">
+    <value>المورد غير موجود</value>
+  </data>
+    <data name="TooManyRequestsExceptions" xml:space="preserve">
+    <value>طلبات كثيرة جداً</value>
+  </data>
+    <data name="ServerConnectionException" xml:space="preserve">
+    <value>غير قادر على الاتصال بالخادم.</value>
+  </data>
+    <!-- Boilerplate strings -->
+    <data name="Active" xml:space="preserve">
+    <value>نشط</value>
+  </data>
+    <data name="All" xml:space="preserve">
+    <value>الكل</value>
+  </data>
+    <data name="Alphabetical" xml:space="preserve">
+    <value>أ-ي</value>
+  </data>
+    <data name="Completed" xml:space="preserve">
+    <value>مكتمل</value>
+  </data>
+    <data name="Date" xml:space="preserve">
+    <value>تاريخ</value>
+  </data>
+    <data name="SettingsPageTitle" xml:space="preserve">
+    <value>الإعدادات</value>
+  </data>
+    <data name="Settings" xml:space="preserve">
+    <value>الإعدادات</value>
+  </data>
+    <data name="Dark" xml:space="preserve">
+    <value>داكن</value>
+  </data>
+    <data name="Light" xml:space="preserve">
+    <value>فاتح</value>
+  </data>
+    <data name="Language" xml:space="preserve">
+    <value>اللغة</value>
+  </data>
+    <data name="SelectLanguage" xml:space="preserve">
+    <value>اختر اللغة</value>
+  </data>
+    <data name="ProfileTitle" xml:space="preserve">
+    <value>الملف الشخصي</value>
+  </data>
+    <data name="ProfileSubtitle" xml:space="preserve">
+    <value>عدل بيانات ملفك الشخصي</value>
+  </data>
+    <data name="EditProfileTitle" xml:space="preserve">
+    <value>تعديل الملف الشخصي</value>
+  </data>
+    <data name="ChangeEmailTitle" xml:space="preserve">
+    <value>تغيير البريد الإلكتروني</value>
+  </data>
+    <data name="ChangePhoneNumberTitle" xml:space="preserve">
+    <value>تغيير رقم الهاتف</value>
+  </data>
+    <data name="SuccessfulSendChangeEmailTokenMessage" xml:space="preserve">
+    <value>تم إرسال رمز تغيير البريد الإلكتروني إليك</value>
+  </data>
+    <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
+    <value>تم إرسال رمز تغيير رقم الهاتف إليك</value>
+  </data>
+    <data name="SuccessfulSendTokenMessage" xml:space="preserve">
+    <value>تم إرسال الرمز إليك</value>
+  </data>
+    <data name="SessionsTitle" xml:space="preserve">
+    <value>الجلسات</value>
+  </data>
+    <data name="SessionsSubtitle" xml:space="preserve">
+    <value>جلساتك النشطة عبر أجهزة متعددة</value>
+  </data>
+    <data name="UserSessionsTitle" xml:space="preserve">
+    <value>جلساتك</value>
+  </data>
+    <data name="CurrentSession" xml:space="preserve">
+    <value>الجلسة الحالية</value>
+  </data>
+    <data name="OtherSessions" xml:space="preserve">
+    <value>جلسات أخرى</value>
+  </data>
+    <data name="RemoveSession" xml:space="preserve">
+    <value>إزالة الجلسة</value>
+  </data>
+    <data name="TryRemovingOtherSessions" xml:space="preserve">
+    <value>حاول إزالة الجلسات الأخرى</value>
+  </data>
+    <data name="RemoveSessionSuccessMessage" xml:space="preserve">
+    <value>تمت إزالة الجلسة بنجاح</value>
+  </data>
+    <data name="NotFoundPageTitle" xml:space="preserve">
+    <value>404</value>
+  </data>
+    <data name="NotFoundText" xml:space="preserve">
+    <value>لا يوجد شيء هنا.</value>
+  </data>
+    <data name="UnknownDevice" xml:space="preserve">
+    <value>جهاز غير معروف</value>
+  </data>
+    <data name="UpdateWebViewThroughGooglePlay" xml:space="preserve">
+    <value>يرجى تحديث الويب فيو عبر جوجل بلاي.</value>
+  </data>
+    <data name="Ok" xml:space="preserve">
+    <value>حسناً</value>
+  </data>
+    <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
+    <value>يرجى التأكد من عدم تشغيل عدة جلسات من التطبيق في نفس الوقت على نفس الجهاز أو المتصفح.</value>
+  </data>
+    <!--#if (signalR == true) -->
+    <data name="SystemPromptsTitle" xml:space="preserve">
+    <value>مطالبات النظام</value>
+  </data>
+    <data name="SystemPromptsSubTitle" xml:space="preserve">
+    <value>عرض مطالبات النظام لشات بوت هنا.</value>
+  </data>
+    <!--#endif-->
+    <!--#if (offlineDb == true) -->
+    <data name="OfflineEditProfileTitle" xml:space="preserve">
+    <value>تحرير الملف الشخصي دون اتصال</value>
+  </data>
+    <data name="OfflineEditProfileMessage" xml:space="preserve">
+    <value>نموذج تحرير دون اتصال مدعوم بـ EF Core / Sqlite مباشرةً في تطبيقات الويب/الموبايل/سطح المكتب!</value>
+  </data>
+    <!--#endif-->
+    <data name="FullName" xml:space="preserve">
+    <value>الاسم الكامل</value>
+  </data>
+    <data name="TermsPageTitle" xml:space="preserve">
+    <value>الشروط</value>
+  </data>
+    <data name="Terms" xml:space="preserve">
+    <value>الشروط</value>
+  </data>
+    <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
+    <value>تم تحديث الملف الشخصي بنجاح.</value>
+  </data>
+    <data name="ConfirmPassword" xml:space="preserve">
+    <value>تأكيد كلمة المرور</value>
+  </data>
+    <data name="ConfirmNewPassword" xml:space="preserve">
+    <value>تأكيد كلمة المرور الجديدة</value>
+  </data>
+    <data name="Email" xml:space="preserve">
+    <value>البريد الإلكتروني</value>
+  </data>
+    <data name="CurrentEmail" xml:space="preserve">
+    <value>البريد الإلكتروني الحالي</value>
+  </data>
+    <data name="NewEmail" xml:space="preserve">
+    <value>البريد الإلكتروني الجديد</value>
+  </data>
+    <data name="NewEmailPlaceholder" xml:space="preserve">
+    <value>أدخل البريد الإلكتروني الجديد</value>
+  </data>
+    <data name="Phone" xml:space="preserve">
+    <value>الهاتف</value>
+  </data>
+    <data name="PhoneNumber" xml:space="preserve">
+    <value>رقم الهاتف</value>
+  </data>
+    <data name="CurrentPhoneNumber" xml:space="preserve">
+    <value>رقم الهاتف الحالي</value>
+  </data>
+    <data name="NewPhoneNumber" xml:space="preserve">
+    <value>رقم الهاتف الجديد</value>
+  </data>
+    <data name="NewPhoneNumberPlaceholder" xml:space="preserve">
+    <value>أدخل رقم الهاتف الجديد</value>
+  </data>
+    <data name="GoBack" xml:space="preserve">
+    <value>عودة</value>
+  </data>
+    <data name="Password" xml:space="preserve">
+    <value>كلمة المرور</value>
+  </data>
+    <data name="PasswordPlaceholder" xml:space="preserve">
+    <value>أدخل كلمة المرور</value>
+  </data>
+    <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
+    <value>تم تغيير كلمة المرور بنجاح.</value>
+  </data>
+    <data name="ResendConfirmationEmailTokenMessage" xml:space="preserve">
+    <value>تم إعادة إرسال رمز التأكيد إلى عنوان بريدك الإلكتروني.</value>
+  </data>
+    <data name="ResetPasswordTokenSentMessage" xml:space="preserve">
+    <value>تم إرسال رمز إعادة تعيين كلمة المرور إلى عنوان بريدك الإلكتروني.</value>
+  </data>
+    <data name="ImageCouldNotBeFound" xml:space="preserve">
+    <value>لا يمكن العثور على الصورة</value>
+  </data>
+    <data name="Error" xml:space="preserve">
+    <value>خطأ</value>
+  </data>
+    <data name="YouHaveToAcceptTerms" xml:space="preserve">
+    <value>يجب أن توافق على الشروط الخاصة بنا.</value>
+  </data>
+    <data name="AcceptTermsMessage" xml:space="preserve">
+    <value>عند التسجيل، فإنك توافق على</value>
+  </data>
+    <data name="Gender" xml:space="preserve">
+    <value>الجنس</value>
+  </data>
+    <data name="BirthDate" xml:space="preserve">
+    <value>تاريخ الميلاد</value>
+  </data>
+    <data name="UserName" xml:space="preserve">
+    <value>اسم المستخدم</value>
+  </data>
+    <data name="Name" xml:space="preserve">
+    <value>الاسم</value>
+  </data>
+    <data name="Description" xml:space="preserve">
+    <value>الوصف</value>
+  </data>
+    <data name="Price" xml:space="preserve">
+    <value>السعر</value>
+  </data>
+    <data name="EitherProvideEmailOrPhoneNumber" xml:space="preserve">
+    <value>يجب توفير البريد الإلكتروني أو رقم الهاتف.</value>
+  </data>
+    <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
+    <value>يجب توفير اسم المستخدم أو البريد الإلكتروني أو رقم الهاتف.</value>
+  </data>
+    <data name="YouNeedToSignIn" xml:space="preserve">
+    <value>يجب تسجيل الدخول للمتابعة.</value>
+  </data>
+    <data name="InvalidUserCredentials" xml:space="preserve">
+    <value>بيانات مستخدم غير صالحة</value>
+  </data>
+    <data name="EmailAlreadyConfirmed" xml:space="preserve">
+    <value>بريدك الإلكتروني مؤكد بالفعل.</value>
+  </data>
+    <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
+    <value>رقم هاتفك مؤكد بالفعل.</value>
+  </data>
+    <data name="Title" xml:space="preserve">
+    <value>العنوان</value>
+  </data>
+    <data name="AreYouSureWannaDelete" xml:space="preserve">
+    <value>هل أنت متأكد أنك تريد حذف {0}؟</value>
+  </data>
+    <data name="Home" xml:space="preserve">
+    <value>الرئيسية</value>
+  </data>
+    <data name="Refresh" xml:space="preserve">
+    <value>تحديث</value>
+  </data>
+    <data name="Recover" xml:space="preserve">
+    <value>استرداد</value>
+  </data>
+    <data name="SomethingWentWrong" xml:space="preserve">
+    <value>عذراً، حدث خطأ ما...</value>
+  </data>
+    <data name="BackToHome" xml:space="preserve">
+    <value>العودة إلى الصفحة الرئيسية</value>
+  </data>
+    <data name="UserLockedOut" xml:space="preserve">
+    <value>تم قفل المستخدم. حاول مرة أخرى بعد {0}</value>
+  </data>
+    <data name="UserIsNotConfirmed" xml:space="preserve">
+    <value>المستخدم غير مؤكد.</value>
+  </data>
+    <data name="UserNotFound" xml:space="preserve">
+    <value>المستخدم غير موجود.</value>
+  </data>
+    <data name="DuplicateEmailOrPhoneNumber" xml:space="preserve">
+    <value>هذا البريد الإلكتروني أو رقم الهاتف مستخدم بالفعل.</value>
+  </data>
+    <data name="Add" xml:space="preserve">
+    <value>إضافة</value>
+  </data>
+    <data name="Token" xml:space="preserve">
+    <value>رمز</value>
+  </data>
+    <data name="InvalidToken" xml:space="preserve">
+    <value>رمز غير صالح.</value>
+  </data>
+    <data name="ExpiredToken" xml:space="preserve">
+    <value>انتهت مدة صلاحية الرمز.</value>
+  </data>
+    <data name="SignInMessageInSignUp" xml:space="preserve">
+    <value>هل لديك حساب بالفعل؟</value>
+  </data>
+    <data name="ConfirmMessageInSignUp" xml:space="preserve">
+    <value>هل تريد تأكيد حساب؟</value>
+  </data>
+    <data name="ConfirmMessageInProfile" xml:space="preserve">
+    <value>هل لديك رمز بالفعل؟</value>
+  </data>
+    <data name="ConfirmEmailHeaderText" xml:space="preserve">
+    <value>عنوان البريد الإلكتروني</value>
+  </data>
+    <data name="ConfirmEmailSubtitle" xml:space="preserve">
+    <value>لقد أرسلنا رمز تأكيد إلى عنوان بريدك الإلكتروني.</value>
+  </data>
+    <data name="ConfirmPageTitle" xml:space="preserve">
+    <value>تأكيد</value>
+  </data>
+    <data name="ConfirmTitle" xml:space="preserve">
+    <value>تأكيد حسابك</value>
+  </data>
+    <data name="ConfirmEmailMessage" xml:space="preserve">
+    <value>يرجى تأكيد بريدك الإلكتروني بكتابة الرمز هنا.</value>
+  </data>
+    <data name="EmailPlaceholder" xml:space="preserve">
+    <value>أدخل عنوان البريد الإلكتروني</value>
+  </data>
+    <data name="EmailToken" xml:space="preserve">
+    <value>رمز</value>
+  </data>
+    <data name="EmailTokenConfirmButtonText" xml:space="preserve">
+    <value>تأكيد عنوان البريد الإلكتروني</value>
+  </data>
+    <data name="EmailConfirmationSuccessTitle" xml:space="preserve">
+    <value>تم تأكيد بريدك الإلكتروني ({0}).</value>
+  </data>
+    <data name="EmailConfirmationSuccessMessage" xml:space="preserve">
+    <value>يمكنك الآن تسجيل الدخول إلى حسابك.</value>
+  </data>
+    <data name="ConfirmPhoneHeaderText" xml:space="preserve">
+    <value>رقم الهاتف</value>
+  </data>
+    <data name="ConfirmPhoneSubtitle" xml:space="preserve">
+    <value>لقد أرسلنا رمز تأكيد إلى هاتفك.</value>
+  </data>
+    <data name="ConfirmPhoneMessage" xml:space="preserve">
+    <value>يرجى تأكيد رقم هاتفك بكتابة الرمز هنا.</value>
+  </data>
+    <data name="PhoneNumberPlaceholder" xml:space="preserve">
+    <value>أدخل رقم الهاتف</value>
+  </data>
+    <data name="PhoneToken" xml:space="preserve">
+    <value>رمز</value>
+  </data>
+    <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
+    <value>تأكيد رقم الهاتف</value>
+  </data>
+    <data name="NotReceivedPhoneMessage" xml:space="preserve">
+    <value>لم تستلم الرمز على هاتفك؟</value>
+  </data>
+    <data name="ResendConfirmationPhoneTokenMessage" xml:space="preserve">
+    <value>تم إعادة إرسال رمز التأكيد إلى هاتفك.</value>
+  </data>
+    <data name="ResendPhoneTokenButtonText" xml:space="preserve">
+    <value>إعادة إرسال الرمز</value>
+  </data>
+    <data name="PhoneConfirmationSuccessTitle" xml:space="preserve">
+    <value>تم تأكيد رقم هاتفك ({0}).</value>
+  </data>
+    <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
+    <value>يمكنك الآن تسجيل الدخول إلى حسابك.</value>
+  </data>
+    <data name="AccountTitle" xml:space="preserve">
+    <value>الحساب</value>
+  </data>
+    <data name="AccountSubtitle" xml:space="preserve">
+    <value>غيّر بريدك الإلكتروني، رقم هاتفك، أو إعدادات عدم الحاجة إلى كلمة مرور</value>
+  </data>
+    <data name="DeleteAccount" xml:space="preserve">
+    <value>حذف الحساب</value>
+  </data>
+    <data name="DeleteAccountPrompt" xml:space="preserve">
+    <value>هل أنت متأكد أنك تريد حذف حسابك؟</value>
+  </data>
+    <data name="DontHaveAccountMessage" xml:space="preserve">
+    <value>ليس لديك حساب؟</value>
+  </data>
+    <data name="Edit" xml:space="preserve">
+    <value>تعديل</value>
+  </data>
+    <data name="EmailConfirmationFailedMessage" xml:space="preserve">
+    <value>فشل تأكيد البريد الإلكتروني!</value>
+  </data>
+    <data name="EmailConfirmationTitle" xml:space="preserve">
+    <value>تأكيد البريد الإلكتروني</value>
+  </data>
+    <data name="EmailConfirmedSuccessfullyMessage" xml:space="preserve">
+    <value>تم تأكيد البريد الإلكتروني بنجاح!</value>
+  </data>
+    <data name="FileUploadFailed" xml:space="preserve">
+    <value>حدث خطأ أثناء رفع الملف</value>
+  </data>
+    <data name="ForgotPasswordPageTitle" xml:space="preserve">
+    <value>نسيت كلمة المرور</value>
+  </data>
+    <data name="ForgotPasswordTitle" xml:space="preserve">
+    <value>نسيت كلمة المرور</value>
+  </data>
+    <data name="ForgotPasswordMessage" xml:space="preserve">
+    <value>يرجى إدخال بريدك الإلكتروني أو رقم هاتفك لنرسل لك رمز إعادة تعيين كلمة المرور.</value>
+  </data>
+    <data name="GenderMale" xml:space="preserve">
+    <value>ذكر</value>
+  </data>
+    <data name="GenderOther" xml:space="preserve">
+    <value>آخر</value>
+  </data>
+    <data name="GitHubRepo" xml:space="preserve">
+    <value>مستودع GitHub</value>
+  </data>
+    <data name="GoToToday" xml:space="preserve">
+    <value>اذهب إلى اليوم</value>
+  </data>
+    <data name="HomeMessage" xml:space="preserve">
+    <value>أنشئ تطبيق Blazor متعدد الأوضاع (WASM، الخادم، الهجين، العرض المسبق) بسهولة في أقصر وقت ممكن!</value>
+  </data>
+    <data name="HomePageTitle" xml:space="preserve">
+    <value>الرئيسية</value>
+  </data>
+    <data name="HomePanelTitle" xml:space="preserve">
+    <value>ابنِ كل تطبيقاتك</value>
+  </data>
+    <data name="HomePanelSubtitle" xml:space="preserve">
+    <value>باستخدام ما تعرفه وتحبه بالفعل</value>
+  </data>
+    <data name="WatchVideo" xml:space="preserve">
+    <value>شاهد الفيديو</value>
+  </data>
+    <data name="LearnMore" xml:space="preserve">
+    <value>تعلم المزيد</value>
+  </data>
+    <data name="BitPlatformMessage" xml:space="preserve">
+    <value>مجموعة أدوات لمطوري .NET عبر منصات متعددة</value>
+  </data>
+    <data name="BitBlazorUIMessage" xml:space="preserve">
+    <value>مجموعة مكونات Blazor ذات أداء عالٍ وسهلة التخصيص وجميلة</value>
+  </data>
+    <data name="BitProjectTemplateMessage" xml:space="preserve">
+    <value>قالب مشروع .NET غني بالميزات يعمل في كل مكان بسلاسة</value>
+  </data>
+    <data name="DescriptionMetaTagValue" xml:space="preserve">
+    <value>القالب المبني باستخدام ASP.NET Core وIdentity وWeb API وEF Core وBlazor.</value>
+  </data>
+    <data name="InvalidConfirmationTokenMessage" xml:space="preserve">
+    <value>يبدو أن رمز التأكيد إما غير صالح أو انتهت صلاحيته.</value>
+  </data>
+    <data name="NewPassword" xml:space="preserve">
+    <value>كلمة المرور الجديدة</value>
+  </data>
+    <data name="OldPassword" xml:space="preserve">
+    <value>كلمة المرور القديمة</value>
+  </data>
+    <data name="No" xml:space="preserve">
+    <value>لا</value>
+  </data>
+    <data name="NotReceivedEmailMessage" xml:space="preserve">
+    <value>لم تستلم البريد الإلكتروني؟</value>
+  </data>
+    <data name="Or" xml:space="preserve">
+    <value>أو</value>
+  </data>
+    <data name="ProfileImage" xml:space="preserve">
+    <value>صورة الملف الشخصي</value>
+  </data>
+    <data name="Remove" xml:space="preserve">
+    <value>إزالة</value>
+  </data>
+    <data name="ResendEmailTokenButtonText" xml:space="preserve">
+    <value>إعادة إرسال الرمز</value>
+  </data>
+    <data name="ResetPasswordPageTitle" xml:space="preserve">
+    <value>إعادة تعيين كلمة المرور</value>
+  </data>
+    <data name="ResetPassword" xml:space="preserve">
+    <value>إعادة تعيين كلمة المرور</value>
+  </data>
+    <data name="ResetPasswordTitle" xml:space="preserve">
+    <value>إعادة تعيين كلمة المرور</value>
+  </data>
+    <data name="ResetPasswordSubtitle" xml:space="preserve">
+    <value>لقد أرسلنا رمزًا إلى هاتفك أو بريدك الإلكتروني.</value>
+  </data>
+    <data name="ResetPasswordMessage" xml:space="preserve">
+    <value>يرجى إدخال الرمز مع كلمة المرور الجديدة هنا.</value>
+  </data>
+    <data name="ResetPasswordButtonText" xml:space="preserve">
+    <value>تعيين كلمة المرور</value>
+  </data>
+    <data name="ResetPasswordSuccessTitle" xml:space="preserve">
+    <value>تم إعادة تعيين كلمة المرور الخاصة بك.</value>
+  </data>
+    <data name="ResetPasswordSuccessBody" xml:space="preserve">
+    <value>يمكنك الآن تسجيل الدخول باستخدام كلمة المرور الخاصة بك.</value>
+  </data>
+    <data name="ResetPasswordMessageInForgot" xml:space="preserve">
+    <value>هل لديك رمز إعادة تعيين كلمة المرور؟</value>
+  </data>
+    <data name="Save" xml:space="preserve">
+    <value>حفظ</value>
+  </data>
+    <data name="SignInPageTitle" xml:space="preserve">
+    <value>تسجيل الدخول</value>
+  </data>
+    <data name="SignInPanelTitle" xml:space="preserve">
+    <value>مرحبًا بعودتك</value>
+  </data>
+    <data name="SignInPanelSubtitle" xml:space="preserve">
+    <value>سجّل الدخول إلى حسابك باستخدام</value>
+  </data>
+    <data name="Continue" xml:space="preserve">
+    <value>استمر</value>
+  </data>
+    <data name="CloseBrowserMessageTitle" xml:space="preserve">
+    <value>العودة إلى التطبيق</value>
+  </data>
+    <data name="CloseBrowserMessageBody" xml:space="preserve">
+    <value>يمكنك العودة إلى التطبيق الآن</value>
+  </data>
+    <data name="GoogleSignInButtonText" xml:space="preserve">
+    <value>تسجيل الدخول باستخدام جوجل</value>
+  </data>
+    <data name="GitHubSignInButtonText" xml:space="preserve">
+    <value>تسجيل الدخول باستخدام GitHub</value>
+  </data>
+    <data name="TwitterSignInButtonText" xml:space="preserve">
+    <value>تسجيل الدخول باستخدام تويتر (X)</value>
+  </data>
+    <data name="AppleSignInButtonText" xml:space="preserve">
+    <value>تسجيل الدخول باستخدام أبل</value>
+  </data>
+    <data name="SignOut" xml:space="preserve">
+    <value>تسجيل الخروج</value>
+  </data>
+    <data name="SignOutPrompt" xml:space="preserve">
+    <value>هل أنت متأكد أنك تريد تسجيل الخروج؟</value>
+  </data>
+    <data name="SignUp" xml:space="preserve">
+    <value>تسجيل</value>
+  </data>
+    <data name="SignUpPageTitle" xml:space="preserve">
+    <value>تسجيل</value>
+  </data>
+    <data name="SignUpPanelTitle" xml:space="preserve">
+    <value>ابدأ اليوم</value>
+  </data>
+    <data name="SignUpPanelSubtitle" xml:space="preserve">
+    <value>أنشئ حساب جديد باستخدام</value>
+  </data>
+    <data name="Submit" xml:space="preserve">
+    <value>إرسال</value>
+  </data>
+    <data name="TermsMessage" xml:space="preserve">
+    <value>أوافق على</value>
+  </data>
+    <data name="UploadNewImage" xml:space="preserve">
+    <value>ارفع صورة جديدة</value>
+  </data>
+    <data name="Yes" xml:space="preserve">
+    <value>نعم</value>
+  </data>
+    <data name="SelectBirthDate" xml:space="preserve">
+    <value>حدد تاريخ ميلادك</value>
+  </data>
+    <data name="Action" xml:space="preserve">
+    <value>إجراء</value>
+  </data>
+    <data name="Back" xml:space="preserve">
+    <value>عودة</value>
+  </data>
+    <data name="Cancel" xml:space="preserve">
+    <value>إلغاء</value>
+  </data>
+    <data name="CheckSpamMailMessage" xml:space="preserve">
+    <value>تحقق من مجلد الرسائل المزعجة/غير المرغوب فيها، إذا لم تجدها في صندوق الوارد.</value>
+  </data>
+    <data name="Color" xml:space="preserve">
+    <value>اللون</value>
+  </data>
+    <data name="CustomColor" xml:space="preserve">
+    <value>لون مخصص</value>
+  </data>
+    <data name="Delete" xml:space="preserve">
+    <value>حذف</value>
+  </data>
+    <data name="Id" xml:space="preserve">
+    <value>المعرف</value>
+  </data>
+    <data name="SignIn" xml:space="preserve">
+    <value>تسجيل الدخول</value>
+  </data>
+    <data name="Confirm" xml:space="preserve">
+    <value>تأكيد</value>
+  </data>
+    <data name="SignInAsDifferentUser" xml:space="preserve">
+    <value>تسجيل الدخول كمستخدم مختلف</value>
+  </data>
+    <data name="YouAreSignedInAs" xml:space="preserve">
+    <value>أنت مسجل الدخول باسم</value>
+  </data>
+    <data name="ForgotPasswordLink" xml:space="preserve">
+    <value>نسيت كلمة المرور؟</value>
+  </data>
+    <data name="GenderFemale" xml:space="preserve">
+    <value>أنثى</value>
+  </data>
+    <data name="RememberMe" xml:space="preserve">
+    <value>تذكرني؟</value>
+  </data>
+    <data name="Copy" xml:space="preserve">
+    <value>نسخ</value>
+  </data>
+    <data name="Copied" xml:space="preserve">
+    <value>تم النسخ</value>
+  </data>
+    <data name="TfaTitle" xml:space="preserve">
+    <value>التحقق بخطوتين</value>
+  </data>
+    <data name="TfaSubtitle" xml:space="preserve">
+    <value>إدارة التحقق متعدد العوامل لحسابك</value>
+  </data>
+    <data name="TwoFactorCode" xml:space="preserve">
+    <value>رمز التحقق الثنائي</value>
+  </data>
+    <data name="TwoFactorRecoveryCode" xml:space="preserve">
+    <value>رمز الاسترداد</value>
+  </data>
+    <data name="TfaPanelTitle" xml:space="preserve">
+    <value>التحقق بخطوتين</value>
+  </data>
+    <data name="TfaPanelSubtitle" xml:space="preserve">
+    <value>احصل على رمز جديد من تطبيق المصادقة أو استخدم رمز الاسترداد الخاص بك.</value>
+  </data>
+    <data name="TfaPanelAnotherWayTitle" xml:space="preserve">
+    <value>جرب طريقة أخرى</value>
+  </data>
+    <data name="TfaPanelAnotherWaySubtitle" xml:space="preserve">
+    <value>يمكنك الحصول على رمز جديد على بريدك الإلكتروني أو هاتفك.</value>
+  </data>
+    <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
+    <value>احصل على الرمز</value>
+  </data>
+    <data name="TwoFactorAuthTitle" xml:space="preserve">
+    <value>2FA</value>
+  </data>
+    <data name="TfaResetSharedKeyError" xml:space="preserve">
+    <value>إعادة تعيين مفتاح 2fa المشترك يجب أن يعطل 2fa حتى يتم التحقق من رمز 2fa الصالح المستند إلى المفتاح المشترك الجديد.</value>
+  </data>
+    <data name="TfaEmptyCodeError" xml:space="preserve">
+    <value>لم يتم تقديم رمز 2fa من الطلب. يتطلب تمكين 2fa رمز 2fa صالح.</value>
+  </data>
+    <data name="TfaInvalidCodeError" xml:space="preserve">
+    <value>رمز 2fa المقدّم في الطلب غير صالح. يتطلب تمكين 2fa رمز 2fa صالح.</value>
+  </data>
+    <data name="TfaProtectedSignInSubtitle" xml:space="preserve">
+    <value>تم حماية تسجيل دخولك بواسطة تطبيق المصادقة.</value>
+  </data>
+    <data name="TfaEnterCodeInSignInMessage" xml:space="preserve">
+    <value>أدخل رمز المصادقة الخاص بك:</value>
+  </data>
+    <data name="TfaEnterRecoveryCodeInSignInMessage" xml:space="preserve">
+    <value>أو أدخل رمز الاسترداد الخاص بك:</value>
+  </data>
+    <data name="TfaAuthenticatorAppVerifiedMessage" xml:space="preserve">
+    <value>تم التحقق من تطبيق المصادقة الخاص بك.</value>
+  </data>
+    <data name="TfaConfigureAutAppTitle" xml:space="preserve">
+    <value>إعداد تطبيق المصادقة</value>
+  </data>
+    <data name="TfaConfigureAutAppSubtitle" xml:space="preserve">
+    <value>لاستخدام تطبيق المصادقة، اتبع الخطوات التالية:</value>
+  </data>
+    <data name="TfaConfigureAutAppStep1" xml:space="preserve">
+    <value>قم بتنزيل تطبيق مصادقة ثنائي العوامل مثل Google Authenticator لـ {0} و {1}.</value>
+  </data>
+    <data name="TfaConfigureAutAppStep2" xml:space="preserve">
+    <value>امسح/انقر على رمز الاستجابة السريعة أو أدخل المفتاح التالي في تطبيق المصادقة الثنائية الخاص بك (المسافات وحالة الأحرف غير مهمة):</value>
+  </data>
+    <data name="TfaConfigureAutAppStep3" xml:space="preserve">
+    <value>بمجرد مسح رمز الاستجابة السريعة أو إدخال المفتاح أعلاه، سيزودك تطبيق المصادقة الثنائية برمز فريد. أدخل الرمز في مربع التأكيد أدناه.</value>
+  </data>
+    <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
+    <value>تم تفعيل التحقق بخطوتين.</value>
+  </data>
+    <data name="TwoFactorAuthenticationDisabled" xml:space="preserve">
+    <value>تم تعطيل التحقق بخطوتين.</value>
+  </data>
+    <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
+    <value>رمز التحقق:</value>
+  </data>
+    <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
+    <value>أدخل رمز التحقق.</value>
+  </data>
+    <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
+    <value>تحقق</value>
+  </data>
+    <data name="TfaRecoveryCodesHeader" xml:space="preserve">
+    <value>استرداد</value>
+  </data>
+    <data name="TfaRecoveryCodesZeroLeftTitle" xml:space="preserve">
+    <value>لم يتبق لديك أي رموز استرداد.</value>
+  </data>
+    <data name="TfaRecoveryCodesZeroLeftSubtitle" xml:space="preserve">
+    <value>يجب عليك إنشاء مجموعة جديدة من رموز الاسترداد قبل أن تتمكن من تسجيل الدخول باستخدام رمز استرداد.</value>
+  </data>
+    <data name="TfaRecoveryCodesOneLeftTitle" xml:space="preserve">
+    <value>تبقى لديك رمز استرداد واحد.</value>
+  </data>
+    <data name="TfaRecoveryCodesOneLeftSubtitle" xml:space="preserve">
+    <value>يمكنك إنشاء مجموعة جديدة من رموز الاسترداد.</value>
+  </data>
+    <data name="TfaRecoveryCodesThreeLeftTitle" xml:space="preserve">
+    <value>تبقى لديك {0} رموز استرداد.</value>
+  </data>
+    <data name="TfaRecoveryCodesThreeLeftSubtitle" xml:space="preserve">
+    <value>يجب عليك إنشاء مجموعة جديدة من رموز الاسترداد.</value>
+  </data>
+    <data name="TfaRecoveryCodesGenerateWraning" xml:space="preserve">
+    <value>إن إنشاء رموز استرداد جديدة لا يغير المفاتيح المستخدمة في تطبيقات المصادقة. إذا كنت ترغب في تغيير المفتاح المستخدم في تطبيق المصادقة، يجب عليك إعادة تعيين مفاتيح المصادقة في التبويب التالي.</value>
+  </data>
+    <data name="TfaRecoveryCodesGenerateButtonText" xml:space="preserve">
+    <value>إنشاء رموز الاسترداد</value>
+  </data>
+    <data name="TfaRecoveryCodesWarningTitle" xml:space="preserve">
+    <value>ضع هذه الرموز في مكان آمن.</value>
+  </data>
+    <data name="TfaRecoveryCodesWarning" xml:space="preserve">
+    <value>إذا فقدت جهاز المصادقة الخاص بك ولا تملك رموز الاسترداد، فستفقد الوصول إلى حسابك.</value>
+  </data>
+    <data name="TfaRecoveryCodesTitle" xml:space="preserve">
+    <value>رموز الاسترداد:</value>
+  </data>
+    <data name="TfaAuthAppHeader" xml:space="preserve">
+    <value>المصادق</value>
+  </data>
+    <data name="TfaAuthAppWarningTitle" xml:space="preserve">
+    <value>إذا قمت بإعادة تعيين مفتاح المصادق، فلن يعمل تطبيق المصادقة الخاص بك حتى تقوم بإعادة تهيئته.</value>
+  </data>
+    <data name="TfaAuthAppWarning" xml:space="preserve">
+    <value>تعطيل 2FA حتى تتحقق من تطبيق المصادقة الخاص بك. إذا لم تكمل إعداد تطبيق المصادقة، قد تفقد الوصول إلى حسابك.</value>
+  </data>
+    <data name="TfaAuthAppResetKeyButtonText" xml:space="preserve">
+    <value>إعادة تعيين مفتاح المصادق</value>
+  </data>
+    <data name="TfaDisable2faHeader" xml:space="preserve">
+    <value>تعطيل</value>
+  </data>
+    <data name="TfaDisable2faWarningTitle" xml:space="preserve">
+    <value>هذا الإجراء يعطل فقط التحقق بخطوتين.</value>
+  </data>
+    <data name="TfaDisable2faWarning" xml:space="preserve">
+    <value>تعطيل التحقق بخطوتين لا يغير المفاتيح المستخدمة في تطبيقات المصادقة. إذا كنت ترغب في تغيير المفتاح المستخدم في تطبيق المصادقة، يجب عليك إعادة تعيين مفاتيح المصادقة في التبويب السابق.</value>
+  </data>
+    <data name="TfaDisable2faButtonText" xml:space="preserve">
+    <value>تعطيل 2FA</value>
+  </data>
+    <data name="TwoFactorToken" xml:space="preserve">
+    <value>رمز 2FA</value>
+  </data>
+    <data name="TfaTokenSignInTitle" xml:space="preserve">
+    <value>لا يوجد وصول لتطبيق المصادقة؟</value>
+  </data>
+    <data name="TfaTokenGenerateButtonText" xml:space="preserve">
+    <value>انشاء و إرسال رمز 2FA</value>
+  </data>
+    <data name="TfaTokenSentMessage" xml:space="preserve">
+    <value>تم إنشاء وإرسال رمز 2FA لك.</value>
+  </data>
+    <data name="EnterElevatedAccessToken" xml:space="preserve">
+    <value>يرجى إدخال رمز الوصول المرتفع الذي أرسلناه لك أو رمز تطبيق المصادقة للمتابعة.</value>
+  </data>
+    <data name="ElevatedAccessTokenShortText" xml:space="preserve">
+    <value>{0} هو رمزك في Boilerplate.</value>
+  </data>
+    <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
+    <value>لقد طلبت بالفعل بريد التأكيد. حاول مرة أخرى بعد {0}</value>
+  </data>
+    <data name="WaitForPhoneNumberTokenRequestResendDelay" xml:space="preserve">
+    <value>لقد طلبت بالفعل رسالة التأكيد القصيرة. حاول مرة أخرى بعد {0}</value>
+  </data>
+    <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
+    <value>لقد طلبت بالفعل رمز إعادة تعيين كلمة المرور. حاول مرة أخرى بعد {0}</value>
+  </data>
+    <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
+    <value>لقد طلبت بالفعل رمز تحقق لمرة واحدة. حاول مرة أخرى بعد {0}</value>
+  </data>
+    <data name="WaitForElevatedAccessTokenRequestResendDelay" xml:space="preserve">
+    <value>لقد طلبت بالفعل رمز وصول مرتفع. حاول مرة أخرى بعد {0}</value>
+  </data>
+    <data name="Otp" xml:space="preserve">
+    <value>رمز التحقق لمرة واحدة (OTP)</value>
+  </data>
+    <data name="OtpPanelTitle" xml:space="preserve">
+    <value>تحقق من {0} الخاص بك</value>
+  </data>
+    <data name="OtpPanelSubtitle" xml:space="preserve">
+    <value>قم بتأكيد {0} الخاص بك عن طريق إدخال الرمز المرسل إلى {1}</value>
+  </data>
+    <data name="Code" xml:space="preserve">
+    <value>رمز</value>
+  </data>
+    <data name="OtpResendMessage" xml:space="preserve">
+    <value>لم تستلم الرمز؟</value>
+  </data>
+    <data name="Resend" xml:space="preserve">
+    <value>إعادة إرسال</value>
+  </data>
+    <data name="OtpPlaceholder" xml:space="preserve">
+    <value>أدخل رمز التحقق لمرة واحدة</value>
+  </data>
+    <data name="OtpSentMessage" xml:space="preserve">
+    <value>تم إنشاء رمز تحقق لمرة واحدة وإرساله لك.</value>
+  </data>
+    <data name="SendOtpButtonText" xml:space="preserve">
+    <value>إرسال رمز التحقق لمرة واحدة والرابط السحري</value>
+  </data>
+    <data name="OtpEmailOrPhoneNumberSubtitle" xml:space="preserve">
+    <value>أدخل بريدك الإلكتروني أو رقم هاتفك:</value>
+  </data>
+    <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
+    <value>يجب إما توفير كلمة المرور أو رمز التحقق لمرة واحدة</value>
+  </data>
+    <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
+    <value>لقد طلبت بالفعل رمز البريد الإلكتروني للتحقق بخطوتين. حاول مرة أخرى في {0}.</value>
+  </data>
+    <data name="ChangePhoneNumberTokenShortText" xml:space="preserve">
+    <value>{0} هو رمزك في Boilerplate.</value>
+  </data>
+    <data name="ConfirmPhoneTokenShortText" xml:space="preserve">
+    <value>{0} هو رمزك في Boilerplate.</value>
+  </data>
+    <data name="TwoFactorTokenShortText" xml:space="preserve">
+    <value>{0} هو رمزك في Boilerplate.</value>
+  </data>
+    <data name="OtpShortText" xml:space="preserve">
+    <value>{0} هو رمزك في Boilerplate.</value>
+  </data>
+    <data name="ResetPasswordTokenShortText" xml:space="preserve">
+    <value>{0} هو رمزك في Boilerplate.</value>
+  </data>
+    <data name="Online" xml:space="preserve">
+    <value>متصل</value>
+  </data>
+    <data name="Recently" xml:space="preserve">
+    <value>مؤخراً</value>
+  </data>
+    <data name="Update" xml:space="preserve">
+    <value>تحديث</value>
+  </data>
+    <data name="NewVersionIsAvailable" xml:space="preserve">
+    <value>النسخة الجديدة {0} متوفرة</value>
+  </data>
+    <data name="UpdateToNewVersion" xml:space="preserve">
+    <value>هل ترغب في التحديث إلى النسخة الجديدة؟ {0}</value>
+  </data>
+    <data name="About" xml:space="preserve">
+    <value>حول</value>
+  </data>
+    <data name="AboutPageTitle" xml:space="preserve">
+    <value>حول</value>
+  </data>
+    <data name="NothingFound" xml:space="preserve">
+    <value>لم يتم العثور على شيء!</value>
+  </data>
+    <!--#if (sample == true) -->
+    <data name="TodoAddPlaceholder" xml:space="preserve">
+    <value>أضف مهمة</value>
+  </data>
+    <data name="NoTodos" xml:space="preserve">
+    <value>لا توجد مهام حتى الآن</value>
+  </data>
+    <data name="TodoSearchPlaceholder" xml:space="preserve">
+    <value>ابحث عن مهمة...</value>
+  </data>
+    <data name="ToDoItemCouldNotBeFound" xml:space="preserve">
+    <value>تعذر العثور على عنصر المهمة</value>
+  </data>
+    <data name="TodoPageTitle" xml:space="preserve">
+    <value>مهمة</value>
+  </data>
+    <data name="Todo" xml:space="preserve">
+    <value>مهمة</value>
+  </data>
+    <data name="DeleteTodoItem" xml:space="preserve">
+    <value>حذف عنصر المهمة</value>
+  </data>
+    <!--#endif -->
+    <!--#if (module == "Admin" || module == "Sales") -->
+    <data name="CategoryCouldNotBeFound" xml:space="preserve">
+    <value>تعذر العثور على فئة</value>
+  </data>
+    <data name="ProductCouldNotBeFound" xml:space="preserve">
+    <value>تعذر العثور على منتج</value>
+  </data>
+    <data name="Category" xml:space="preserve">
+    <value>فئة</value>
+  </data>
+    <!--#endif -->
+    <!--#if (module == "Admin") -->
+    <data name="AdminPanel" xml:space="preserve">
+    <value>لوحة الإدارة</value>
+  </data>
+    <data name="PaginatorSummary" xml:space="preserve">
+    <value>{0} عناصر</value>
+  </data>
+    <data name="PaginatorFirstButtonTitle" xml:space="preserve">
+    <value>اذهب للصفحة الأولى</value>
+  </data>
+    <data name="PaginatorPrevButtonTitle" xml:space="preserve">
+    <value>اذهب للصفحة السابقة</value>
+  </data>
+    <data name="PaginatorNextButtonTitle" xml:space="preserve">
+    <value>اذهب للصفحة التالية</value>
+  </data>
+    <data name="PaginatorLastButtonTitle" xml:space="preserve">
+    <value>اذهب للصفحة الأخيرة</value>
+  </data>
+    <data name="Page" xml:space="preserve">
+    <value>صفحة</value>
+  </data>
+    <data name="Of" xml:space="preserve">
+    <value>من</value>
+  </data>
+    <data name="ProductsCount" xml:space="preserve">
+    <value>عدد المنتجات</value>
+  </data>
+    <data name="Last30DaysProductCount" xml:space="preserve">
+    <value>عدد المنتجات في الثلاثين يومًا الماضية</value>
+  </data>
+    <data name="AddProduct" xml:space="preserve">
+    <value>أضف منتج</value>
+  </data>
+    <data name="SearchProductsPlaceholder" xml:space="preserve">
+    <value>ابحث هنا في اسم المنتج والفئة والوصف...</value>
+  </data>
+    <data name="SelectCategory" xml:space="preserve">
+    <value>اختر فئة</value>
+  </data>
+    <data name="TotalCategories" xml:space="preserve">
+    <value>إجمالي الفئات</value>
+  </data>
+    <data name="TotalProducts" xml:space="preserve">
+    <value>إجمالي المنتجات</value>
+  </data>
+    <data name="EditCategory" xml:space="preserve">
+    <value>تعديل الفئة</value>
+  </data>
+    <data name="AddCategory" xml:space="preserve">
+    <value>فئة جديدة</value>
+  </data>
+    <data name="CategoriesPageTitle" xml:space="preserve">
+    <value>الفئات</value>
+  </data>
+    <data name="EnterCategoryName" xml:space="preserve">
+    <value>أدخل اسم الفئة</value>
+  </data>
+    <data name="EnterProductName" xml:space="preserve">
+    <value>أدخل اسم المنتج</value>
+  </data>
+    <data name="CategoriesWithProductCount" xml:space="preserve">
+    <value>الفئات وعدد المنتجات</value>
+  </data>
+    <data name="ProductSales" xml:space="preserve">
+    <value>مبيعات المنتجات</value>
+  </data>
+    <data name="ProductSalesText" xml:space="preserve">
+    <value>هذه الخريطة تبين عدد مبيعات كل منتج.</value>
+  </data>
+    <data name="SearchOnName" xml:space="preserve">
+    <value>البحث بالاسم</value>
+  </data>
+    <data name="ProductsCountPerCategoryChart" xml:space="preserve">
+    <value>مخطط عدد المنتجات حسب الفئة</value>
+  </data>
+    <data name="ProductsCountPerCategoryChartText" xml:space="preserve">
+    <value>هذه الخريطة تبين عدد المنتجات في كل فئة.</value>
+  </data>
+    <data name="ProductsPageTitle" xml:space="preserve">
+    <value>المنتجات</value>
+  </data>
+    <data name="ProductsPercentagePerCategory" xml:space="preserve">
+    <value>نسبة المنتجات حسب الفئة</value>
+  </data>
+    <data name="ProductsPercentagePerCategoryText" xml:space="preserve">
+    <value>هذه الخريطة تبين نسبة المنتجات في كل فئة.</value>
+  </data>
+    <data name="Categories" xml:space="preserve">
+    <value>الفئات</value>
+  </data>
+    <data name="ProductCategory" xml:space="preserve">
+    <value>فئة المنتج</value>
+  </data>
+    <data name="Products" xml:space="preserve">
+    <value>المنتجات</value>
+  </data>
+    <data name="CategoryNotEmpty" xml:space="preserve">
+    <value>هذه الفئة تحتوي على بعض المنتجات، لذا لا يمكنك حذفها</value>
+  </data>
+    <data name="AreYouSureWannaDeleteCategory" xml:space="preserve">
+    <value>هل أنت متأكد أنك تريد حذف الفئة {0}</value>
+  </data>
+    <data name="AreYouSureWannaDeleteProduct" xml:space="preserve">
+    <value>هل أنت متأكد أنك تريد حذف المنتج {0}</value>
+  </data>
+    <data name="DeleteCategory" xml:space="preserve">
+    <value>حذف الفئة</value>
+  </data>
+    <data name="DeleteProduct" xml:space="preserve">
+    <value>حذف المنتج</value>
+  </data>
+    <data name="DefaultColorPicker" xml:space="preserve">
+    <value>منتقي اللون الافتراضي</value>
+  </data>
+    <data name="EditProduct" xml:space="preserve">
+    <value>تعديل المنتج {0}</value>
+  </data>
+    <data name="DuplicateProductName" xml:space="preserve">
+    <value>تكرار اسم المنتج</value>
+  </data>
+    <data name="DuplicateCategoryName" xml:space="preserve">
+    <value>تكرار اسم الفئة</value>
+  </data>
+    <data name="DashboardPageTitle" xml:space="preserve">
+    <value>لوحة المعلومات</value>
+  </data>
+    <data name="Dashboard" xml:space="preserve">
+    <value>لوحة المعلومات</value>
+  </data>
+    <data name="DashboardSubtitle" xml:space="preserve">
+    <value>إليك بيانات التحليل الخاصة بك</value>
+  </data>
+    <!--#endif -->
+    <!--#if (captcha == "reCaptcha") -->
+    <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
+    <value>استجابة Google reCAPTCHA غير صالحة.</value>
+  </data>
+    <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
+    <value>تحتاج إلى اجتياز اختبار Google reCAPTCHA.</value>
+  </data>
+    <!--#endif -->
+    <!--#if (module == "Sales") -->
+    <data name="SimilarProducts" xml:space="preserve">
+    <value>منتجات مشابهة</value>
+  </data>
+    <data name="SiblingProducts" xml:space="preserve">
+    <value>منتجات في نفس الفئة</value>
+  </data>
+    <!--#endif -->
+    <data name="Passwordless" xml:space="preserve">
+    <value>دون كلمة مرور</value>
+  </data>
+    <data name="PasswordlessTitle" xml:space="preserve">
+    <value>تسجيل دخول بدون كلمة مرور</value>
+  </data>
+    <data name="EnablePasswordless" xml:space="preserve">
+    <value>تمكين تسجيل الدخول بدون كلمة مرور</value>
+  </data>
+    <data name="EnablePasswordlessSucsessMessage" xml:space="preserve">
+    <value>تم تمكين تسجيل الدخول بدون كلمة مرور بنجاح</value>
+  </data>
+    <data name="DisablePasswordless" xml:space="preserve">
+    <value>تعطيل تسجيل الدخول بدون كلمة مرور</value>
+  </data>
+    <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
+    <value>تم تعطيل تسجيل الدخول بدون كلمة مرور بنجاح</value>
+  </data>
+    <data name="Clear" xml:space="preserve">
+    <value>مسح</value>
+  </data>
+    <data name="Send" xml:space="preserve">
+    <value>إرسال</value>
+  </data>
+    <data name="Canceled" xml:space="preserve">
+    <value>ألغيت</value>
+  </data>
+    <!--#if (signalR == true) -->
+    <data name="AiChatPanelTitle" xml:space="preserve">
+    <value>لوحة دردشة الذكاء الاصطناعي</value>
+  </data>
+    <data name="AiChatPanelInitialResponse" xml:space="preserve">
+    <value>هذه هي استجابة الذكاء الاصطناعي الأولية لبدء الدردشة!</value>
+  </data>
+    <data name="AiChatPanelPrompt1" xml:space="preserve">
+    <value>كيف يمكنني إعادة تعيين كلمة المرور؟</value>
+  </data>
+    <data name="AiChatPanelPrompt2" xml:space="preserve">
+    <value>كيف يمكنني تثبيت نسخة PWA من التطبيق؟</value>
+  </data>
+    <!--#if (module == "Admin") -->
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>Where can I find reports about products?</value>
+  </data>
+    <!--#elif (module == "Sales") -->
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>I'm searching for a Benz SUV electric car with a 75K budget!</value>
+  </data>
+    <!--#else -->
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>لدي بعض الملاحظات أود مشاركتها!</value>
+  </data>
+    <!--#endif -->
+    <data name="AiChatPanelPlaceholder" xml:space="preserve">
+    <value>اكتب رسالة...</value>
+  </data>
+    <data name="AiChatPanelCommunicatingPlaceholder" xml:space="preserve">
+    <value>جار التفكير...</value>
+  </data>
+    <!--#endif -->
+</root>

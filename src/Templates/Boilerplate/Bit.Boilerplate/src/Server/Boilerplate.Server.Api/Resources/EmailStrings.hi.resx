@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- +:cnd:noEmit -->
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="ConfirmationEmailSubject" xml:space="preserve">
+    <value>बॉयलरप्लेट {0} - अपना ईमेल पता पुष्टि करें</value>
+  </data>
+    <data name="EmailConfirmationMessageSubtitle" xml:space="preserve">
+    <value>आप इस ईमेल को इसलिए प्राप्त कर रहे हैं क्योंकि हाल ही में आपने बॉयलरप्लेट खाते में {0} पंजीकृत किया है।</value>
+  </data>
+    <data name="EmailConfirmationMessageBodyToken" xml:space="preserve">
+    <value>ऐप में नीचे दिया गया नंबर दर्ज करके अपना ईमेल पता पुष्टि करें।</value>
+  </data>
+    <data name="EmailConfirmationMessageBodyLink" xml:space="preserve">
+    <value>या इस ईमेल पते को पुष्टि करने के लिए निम्नलिखित लिंक पर क्लिक करें।</value>
+  </data>
+    <data name="ResetPasswordEmailSubject" xml:space="preserve">
+    <value>बॉयलरप्लेट {0} - अपना पासवर्ड रीसेट करें</value>
+  </data>
+    <data name="ResetPasswordTitle" xml:space="preserve">
+    <value>नमस्ते {0}</value>
+  </data>
+    <data name="ResetPasswordSubtitle" xml:space="preserve">
+    <value>किसी ने आपका पासवर्ड बदलने के लिए टोकन का अनुरोध किया है।</value>
+  </data>
+    <data name="ResetPasswordBody" xml:space="preserve">
+    <value>यदि आपने पासवर्ड रीसेट का अनुरोध नहीं किया है, तो आप इस ईमेल की उपेक्षा कर सकते हैं।</value>
+  </data>
+    <data name="ResetPasswordTokenMessage" xml:space="preserve">
+    <value>आप नीचे दिए गए टोकन को कॉपी करके पासवर्ड रीसेट पेज में दर्ज कर सकते हैं।</value>
+  </data>
+    <data name="ResetPasswordLinkMessage" xml:space="preserve">
+    <value>या आप पासवर्ड रीसेट करने का प्रयास करने के लिए निम्नलिखित लिंक पर क्लिक कर सकते हैं।</value>
+  </data>
+    <data name="ResetYourPassword" xml:space="preserve">
+    <value>अपना पासवर्ड रीसेट करें</value>
+  </data>
+    <data name="OtpEmailSubject" xml:space="preserve">
+    <value>बॉयलरप्लेट {0} - ओटीपी</value>
+  </data>
+    <data name="OtpTitle" xml:space="preserve">
+    <value>नमस्ते {0}</value>
+  </data>
+    <data name="OtpSubtitle" xml:space="preserve">
+    <value>किसी ने ऐप में साइन-इन करने के लिए ओटीपी का अनुरोध किया है।</value>
+  </data>
+    <data name="OtpBody" xml:space="preserve">
+    <value>यदि आपने ओटीपी का अनुरोध नहीं किया है, तो आप इस ईमेल की उपेक्षा कर सकते हैं।</value>
+  </data>
+    <data name="OtpMessage" xml:space="preserve">
+    <value>आप नीचे दिए गए ओटीपी को कॉपी करके साइन-इन पेज पर दर्ज कर सकते हैं।</value>
+  </data>
+    <data name="OtpLinkMessage" xml:space="preserve">
+    <value>या आप साइन-इन करने के लिए निम्नलिखित लिंक पर क्लिक कर सकते हैं।</value>
+  </data>
+    <data name="AppName" xml:space="preserve">
+    <value>बॉयलरप्लेट</value>
+  </data>
+    <data name="WelcomeToApp" xml:space="preserve">
+    <value>बॉयलरप्लेट में आपका स्वागत है!</value>
+  </data>
+    <data name="TfaTokenEmailSubject" xml:space="preserve">
+    <value>बॉयलरप्लेट {0} - 2FA टोकन</value>
+  </data>
+    <data name="TfaTokenHello" xml:space="preserve">
+    <value>प्रिय {0} नमस्ते</value>
+  </data>
+    <data name="TfaTokenMessage" xml:space="preserve">
+    <value>यहाँ आपका नया 2FA टोकन है साइन-इन के लिए:</value>
+  </data>
+    <data name="ElevatedAccessTokenEmailSubject" xml:space="preserve">
+    <value>बॉयलरप्लेट {0} - उच्च स्तरीय पहुँच टोकन</value>
+  </data>
+    <data name="ElevatedAccessTokenHello" xml:space="preserve">
+    <value>प्रिय {0} नमस्ते</value>
+  </data>
+    <data name="ElevatedAccessTokenMessage" xml:space="preserve">
+    <value>यहाँ आपका नया उच्च स्तरीय पहुँच टोकन है:</value>
+  </data>
+    <data name="CopyTokenNote" xml:space="preserve">
+    <value>इस कोड को कॉपी करें और ऐप में इसका उपयोग करें।</value>
+  </data>
+    <data name="DefaultFromName" xml:space="preserve">
+    <value>बॉयलरप्लेट ऐप</value>
+  </data>
+</root>

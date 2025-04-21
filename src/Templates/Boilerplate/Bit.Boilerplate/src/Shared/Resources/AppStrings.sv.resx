@@ -1,0 +1,1269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- +:cnd:noEmit -->
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <!-- .NET Validation messages -->
+    <data name="CompareAttribute_ValidationError" xml:space="preserve">
+    <value>'{0}' och '{1}' matchar inte.</value>
+  </data>
+    <data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
+    <value>Fältet {0} är inte en giltig e-postadress.</value>
+  </data>
+    <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
+    <value>MaxLengthAttribute måste ha ett Length-värde som är större än noll. Använd MaxLength() utan parametrar för att indikera att strängen eller arrayen kan ha maximal tillåten längd.</value>
+  </data>
+    <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
+    <value>Fältet {0} måste vara en sträng- eller arraytyp med en minsta längd av '{1}'.</value>
+  </data>
+    <data name="RangeAttribute_ValidationError" xml:space="preserve">
+    <value>Fältet {0} måste vara mellan {1} och {2}.</value>
+  </data>
+    <data name="RequiredAttribute_ValidationError" xml:space="preserve">
+    <value>Fältet {0} är obligatoriskt.</value>
+  </data>
+    <data name="PhoneAttribute_ValidationError" xml:space="preserve">
+    <value>Fältet {0} är inte ett giltigt telefonnummer.</value>
+  </data>
+    <!-- Exceptions -->
+    <data name="BadRequestException" xml:space="preserve">
+    <value>Ogiltig förfrågan</value>
+  </data>
+    <data name="ConflictException" xml:space="preserve">
+    <value>Förfrågan kunde inte behandlas på grund av konflikt i förfrågan</value>
+  </data>
+    <data name="NotAuthorizedPageTitle" xml:space="preserve">
+    <value>403</value>
+  </data>
+    <data name="ForbiddenException" xml:space="preserve">
+    <value>Åtkomst till den begärda resursen är förbjuden</value>
+  </data>
+    <data name="ResourceValidationException" xml:space="preserve">
+    <value>Begärda data är inte giltiga</value>
+  </data>
+    <data name="RestException" xml:space="preserve">
+    <value>Ett fel uppstod vid kommunikationen med servern</value>
+  </data>
+    <data name="UnauthorizedException" xml:space="preserve">
+    <value>Din förfrågan saknar giltiga autentiseringsuppgifter</value>
+  </data>
+    <data name="UnknownException" xml:space="preserve">
+    <value>Ett okänt fel har inträffat</value>
+  </data>
+    <data name="UpdateConcurrencyException" xml:space="preserve">
+    <value>Posten modifierades av en annan användare efter att du hämtade den ursprungliga datan. Operationen avbröts.</value>
+  </data>
+    <data name="ResourceNotFoundException" xml:space="preserve">
+    <value>Resursen kunde inte hittas</value>
+  </data>
+    <data name="TooManyRequestsExceptions" xml:space="preserve">
+    <value>För många förfrågningar</value>
+  </data>
+    <data name="ServerConnectionException" xml:space="preserve">
+    <value>Kan inte ansluta till servern.</value>
+  </data>
+    <!-- Boilerplate strings -->
+    <data name="Active" xml:space="preserve">
+    <value>Aktiv</value>
+  </data>
+    <data name="All" xml:space="preserve">
+    <value>Alla</value>
+  </data>
+    <data name="Alphabetical" xml:space="preserve">
+    <value>A-Ö</value>
+  </data>
+    <data name="Completed" xml:space="preserve">
+    <value>Avslutad</value>
+  </data>
+    <data name="Date" xml:space="preserve">
+    <value>Datum</value>
+  </data>
+    <data name="SettingsPageTitle" xml:space="preserve">
+    <value>Inställningar</value>
+  </data>
+    <data name="Settings" xml:space="preserve">
+    <value>Inställningar</value>
+  </data>
+    <data name="Dark" xml:space="preserve">
+    <value>Mörk</value>
+  </data>
+    <data name="Light" xml:space="preserve">
+    <value>Ljus</value>
+  </data>
+    <data name="Language" xml:space="preserve">
+    <value>Språk</value>
+  </data>
+    <data name="SelectLanguage" xml:space="preserve">
+    <value>Välj språk</value>
+  </data>
+    <data name="ProfileTitle" xml:space="preserve">
+    <value>Profil</value>
+  </data>
+    <data name="ProfileSubtitle" xml:space="preserve">
+    <value>Redigera dina profildata</value>
+  </data>
+    <data name="EditProfileTitle" xml:space="preserve">
+    <value>Redigera profil</value>
+  </data>
+    <data name="ChangeEmailTitle" xml:space="preserve">
+    <value>Byt e-post</value>
+  </data>
+    <data name="ChangePhoneNumberTitle" xml:space="preserve">
+    <value>Byt telefonnummer</value>
+  </data>
+    <data name="SuccessfulSendChangeEmailTokenMessage" xml:space="preserve">
+    <value>Token för byte av e-post har skickats till dig</value>
+  </data>
+    <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
+    <value>Token för byte av telefonnummer har skickats till dig</value>
+  </data>
+    <data name="SuccessfulSendTokenMessage" xml:space="preserve">
+    <value>Token har skickats till dig</value>
+  </data>
+    <data name="SessionsTitle" xml:space="preserve">
+    <value>Sessioner</value>
+  </data>
+    <data name="SessionsSubtitle" xml:space="preserve">
+    <value>Dina aktiva sessioner på flera enheter</value>
+  </data>
+    <data name="UserSessionsTitle" xml:space="preserve">
+    <value>Dina sessioner</value>
+  </data>
+    <data name="CurrentSession" xml:space="preserve">
+    <value>Aktuell session</value>
+  </data>
+    <data name="OtherSessions" xml:space="preserve">
+    <value>Andra sessioner</value>
+  </data>
+    <data name="RemoveSession" xml:space="preserve">
+    <value>Ta bort session</value>
+  </data>
+    <data name="TryRemovingOtherSessions" xml:space="preserve">
+    <value>Försök att ta bort andra sessioner</value>
+  </data>
+    <data name="RemoveSessionSuccessMessage" xml:space="preserve">
+    <value>Session borttagen framgångsrikt</value>
+  </data>
+    <data name="NotFoundPageTitle" xml:space="preserve">
+    <value>404</value>
+  </data>
+    <data name="NotFoundText" xml:space="preserve">
+    <value>Det finns inget här.</value>
+  </data>
+    <data name="UnknownDevice" xml:space="preserve">
+    <value>Okänt enhet</value>
+  </data>
+    <data name="UpdateWebViewThroughGooglePlay" xml:space="preserve">
+    <value>Vänligen uppdatera webview via Google Play.</value>
+  </data>
+    <data name="Ok" xml:space="preserve">
+    <value>Ok</value>
+  </data>
+    <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
+    <value>Se till att du inte kör flera sessioner av appen samtidigt på samma enhet eller webbläsare.</value>
+  </data>
+    <!--#if (signalR == true) -->
+    <data name="SystemPromptsTitle" xml:space="preserve">
+    <value>Systemuppmaningar</value>
+  </data>
+    <data name="SystemPromptsSubTitle" xml:space="preserve">
+    <value>Visa systemuppmaningar för chatbot här.</value>
+  </data>
+    <!--#endif-->
+    <!--#if (offlineDb == true) -->
+    <data name="OfflineEditProfileTitle" xml:space="preserve">
+    <value>Offline redigera profil</value>
+  </data>
+    <data name="OfflineEditProfileMessage" xml:space="preserve">
+    <value>EF Core / Sqlite driven offline redigeringsform direkt i dina webb/mobil/dator-appar!</value>
+  </data>
+    <!--#endif-->
+    <data name="FullName" xml:space="preserve">
+    <value>Fullständigt namn</value>
+  </data>
+    <data name="TermsPageTitle" xml:space="preserve">
+    <value>Villkor</value>
+  </data>
+    <data name="Terms" xml:space="preserve">
+    <value>Villkor</value>
+  </data>
+    <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
+    <value>Profil uppdaterad framgångsrikt.</value>
+  </data>
+    <data name="ConfirmPassword" xml:space="preserve">
+    <value>Bekräfta lösenord</value>
+  </data>
+    <data name="ConfirmNewPassword" xml:space="preserve">
+    <value>Bekräfta nytt lösenord</value>
+  </data>
+    <data name="Email" xml:space="preserve">
+    <value>E-post</value>
+  </data>
+    <data name="CurrentEmail" xml:space="preserve">
+    <value>Nuvarande e-post</value>
+  </data>
+    <data name="NewEmail" xml:space="preserve">
+    <value>Ny e-post</value>
+  </data>
+    <data name="NewEmailPlaceholder" xml:space="preserve">
+    <value>Ange ny e-post</value>
+  </data>
+    <data name="Phone" xml:space="preserve">
+    <value>Telefon</value>
+  </data>
+    <data name="PhoneNumber" xml:space="preserve">
+    <value>Telefonnummer</value>
+  </data>
+    <data name="CurrentPhoneNumber" xml:space="preserve">
+    <value>Nuvarande telefonnummer</value>
+  </data>
+    <data name="NewPhoneNumber" xml:space="preserve">
+    <value>Nytt telefonnummer</value>
+  </data>
+    <data name="NewPhoneNumberPlaceholder" xml:space="preserve">
+    <value>Ange nytt telefonnummer</value>
+  </data>
+    <data name="GoBack" xml:space="preserve">
+    <value>Tillbaka</value>
+  </data>
+    <data name="Password" xml:space="preserve">
+    <value>Lösenord</value>
+  </data>
+    <data name="PasswordPlaceholder" xml:space="preserve">
+    <value>Ange lösenord</value>
+  </data>
+    <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
+    <value>Ditt lösenord har ändrats framgångsrikt.</value>
+  </data>
+    <data name="ResendConfirmationEmailTokenMessage" xml:space="preserve">
+    <value>Bekräftelsetoken har skickats igen till din e-postadress.</value>
+  </data>
+    <data name="ResetPasswordTokenSentMessage" xml:space="preserve">
+    <value>Token för återställning av lösenord har skickats till din e-postadress.</value>
+  </data>
+    <data name="ImageCouldNotBeFound" xml:space="preserve">
+    <value>Bild kunde inte hittas</value>
+  </data>
+    <data name="Error" xml:space="preserve">
+    <value>Fel</value>
+  </data>
+    <data name="YouHaveToAcceptTerms" xml:space="preserve">
+    <value>Du måste godkänna våra villkor.</value>
+  </data>
+    <data name="AcceptTermsMessage" xml:space="preserve">
+    <value>Genom att registrera dig godkänner du våra</value>
+  </data>
+    <data name="Gender" xml:space="preserve">
+    <value>Kön</value>
+  </data>
+    <data name="BirthDate" xml:space="preserve">
+    <value>Födelsedatum</value>
+  </data>
+    <data name="UserName" xml:space="preserve">
+    <value>Användarnamn</value>
+  </data>
+    <data name="Name" xml:space="preserve">
+    <value>Namn</value>
+  </data>
+    <data name="Description" xml:space="preserve">
+    <value>Beskrivning</value>
+  </data>
+    <data name="Price" xml:space="preserve">
+    <value>Pris</value>
+  </data>
+    <data name="EitherProvideEmailOrPhoneNumber" xml:space="preserve">
+    <value>Ange antingen e-post eller telefonnummer.</value>
+  </data>
+    <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
+    <value>Ange antingen användarnamn, e-post eller telefonnummer.</value>
+  </data>
+    <data name="YouNeedToSignIn" xml:space="preserve">
+    <value>Du måste vara inloggad för att fortsätta.</value>
+  </data>
+    <data name="InvalidUserCredentials" xml:space="preserve">
+    <value>Ogiltiga användaruppgifter</value>
+  </data>
+    <data name="EmailAlreadyConfirmed" xml:space="preserve">
+    <value>Din e-post är redan bekräftad.</value>
+  </data>
+    <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
+    <value>Ditt telefonnummer är redan bekräftat.</value>
+  </data>
+    <data name="Title" xml:space="preserve">
+    <value>Titel</value>
+  </data>
+    <data name="AreYouSureWannaDelete" xml:space="preserve">
+    <value>Är du säker på att du vill ta bort {0}?</value>
+  </data>
+    <data name="Home" xml:space="preserve">
+    <value>Hem</value>
+  </data>
+    <data name="Refresh" xml:space="preserve">
+    <value>Uppdatera</value>
+  </data>
+    <data name="Recover" xml:space="preserve">
+    <value>Återställ</value>
+  </data>
+    <data name="SomethingWentWrong" xml:space="preserve">
+    <value>Hoppsan, något gick fel...</value>
+  </data>
+    <data name="BackToHome" xml:space="preserve">
+    <value>Tillbaka till hem</value>
+  </data>
+    <data name="UserLockedOut" xml:space="preserve">
+    <value>Användaren är låst. Försök igen om {0}</value>
+  </data>
+    <data name="UserIsNotConfirmed" xml:space="preserve">
+    <value>Användaren är inte bekräftad.</value>
+  </data>
+    <data name="UserNotFound" xml:space="preserve">
+    <value>Användaren finns inte.</value>
+  </data>
+    <data name="DuplicateEmailOrPhoneNumber" xml:space="preserve">
+    <value>Denna e-post eller telefonnummer är redan upptagen.</value>
+  </data>
+    <data name="Add" xml:space="preserve">
+    <value>Lägg till</value>
+  </data>
+    <data name="Token" xml:space="preserve">
+    <value>Token</value>
+  </data>
+    <data name="InvalidToken" xml:space="preserve">
+    <value>Ogiltig token.</value>
+  </data>
+    <data name="ExpiredToken" xml:space="preserve">
+    <value>Token har gått ut.</value>
+  </data>
+    <data name="SignInMessageInSignUp" xml:space="preserve">
+    <value>Har du redan ett konto?</value>
+  </data>
+    <data name="ConfirmMessageInSignUp" xml:space="preserve">
+    <value>Vill du bekräfta ett konto?</value>
+  </data>
+    <data name="ConfirmMessageInProfile" xml:space="preserve">
+    <value>Har du redan en token?</value>
+  </data>
+    <data name="ConfirmEmailHeaderText" xml:space="preserve">
+    <value>E-postadress</value>
+  </data>
+    <data name="ConfirmEmailSubtitle" xml:space="preserve">
+    <value>Vi har skickat en bekräftelsetoken till din e-postadress.</value>
+  </data>
+    <data name="ConfirmPageTitle" xml:space="preserve">
+    <value>Bekräfta</value>
+  </data>
+    <data name="ConfirmTitle" xml:space="preserve">
+    <value>Bekräfta ditt konto</value>
+  </data>
+    <data name="ConfirmEmailMessage" xml:space="preserve">
+    <value>Bekräfta din e-post genom att skriva in token här.</value>
+  </data>
+    <data name="EmailPlaceholder" xml:space="preserve">
+    <value>Ange e-postadress</value>
+  </data>
+    <data name="EmailToken" xml:space="preserve">
+    <value>Kod</value>
+  </data>
+    <data name="EmailTokenConfirmButtonText" xml:space="preserve">
+    <value>Bekräfta e-postadress</value>
+  </data>
+    <data name="EmailConfirmationSuccessTitle" xml:space="preserve">
+    <value>Din e-postadress ({0}) har bekräftats.</value>
+  </data>
+    <data name="EmailConfirmationSuccessMessage" xml:space="preserve">
+    <value>Du kan nu logga in med ditt konto.</value>
+  </data>
+    <data name="ConfirmPhoneHeaderText" xml:space="preserve">
+    <value>Telefonnummer</value>
+  </data>
+    <data name="ConfirmPhoneSubtitle" xml:space="preserve">
+    <value>Vi har skickat en bekräftelsetoken till din telefon.</value>
+  </data>
+    <data name="ConfirmPhoneMessage" xml:space="preserve">
+    <value>Bekräfta ditt telefonnummer genom att skriva in token här.</value>
+  </data>
+    <data name="PhoneNumberPlaceholder" xml:space="preserve">
+    <value>Ange telefonnummer</value>
+  </data>
+    <data name="PhoneToken" xml:space="preserve">
+    <value>Kod</value>
+  </data>
+    <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
+    <value>Bekräfta telefonnummer</value>
+  </data>
+    <data name="NotReceivedPhoneMessage" xml:space="preserve">
+    <value>Har du inte fått token till din telefon?</value>
+  </data>
+    <data name="ResendConfirmationPhoneTokenMessage" xml:space="preserve">
+    <value>Bekräftelsetoken har skickats igen till din telefon.</value>
+  </data>
+    <data name="ResendPhoneTokenButtonText" xml:space="preserve">
+    <value>Skicka koden igen</value>
+  </data>
+    <data name="PhoneConfirmationSuccessTitle" xml:space="preserve">
+    <value>Ditt telefonnummer ({0}) har bekräftats.</value>
+  </data>
+    <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
+    <value>Du kan nu logga in med ditt konto.</value>
+  </data>
+    <data name="AccountTitle" xml:space="preserve">
+    <value>Konto</value>
+  </data>
+    <data name="AccountSubtitle" xml:space="preserve">
+    <value>Byt din kontoe-post, telefonnummer eller lösenordslösa inställningar</value>
+  </data>
+    <data name="DeleteAccount" xml:space="preserve">
+    <value>Radera konto</value>
+  </data>
+    <data name="DeleteAccountPrompt" xml:space="preserve">
+    <value>Är du säker på att du vill radera ditt konto?</value>
+  </data>
+    <data name="DontHaveAccountMessage" xml:space="preserve">
+    <value>Har du inget konto?</value>
+  </data>
+    <data name="Edit" xml:space="preserve">
+    <value>Redigera</value>
+  </data>
+    <data name="EmailConfirmationFailedMessage" xml:space="preserve">
+    <value>E-postbekräftelsen misslyckades!</value>
+  </data>
+    <data name="EmailConfirmationTitle" xml:space="preserve">
+    <value>E-postbekräftelse</value>
+  </data>
+    <data name="EmailConfirmedSuccessfullyMessage" xml:space="preserve">
+    <value>E-post bekräftad framgångsrikt!</value>
+  </data>
+    <data name="FileUploadFailed" xml:space="preserve">
+    <value>Ett fel uppstod vid uppladdning av fil</value>
+  </data>
+    <data name="ForgotPasswordPageTitle" xml:space="preserve">
+    <value>Glömt lösenord</value>
+  </data>
+    <data name="ForgotPasswordTitle" xml:space="preserve">
+    <value>Glömt lösenord</value>
+  </data>
+    <data name="ForgotPasswordMessage" xml:space="preserve">
+    <value>Ange din e-postadress eller telefonnummer så vi kan skicka en token för återställning av lösenord till dig.</value>
+  </data>
+    <data name="GenderMale" xml:space="preserve">
+    <value>Man</value>
+  </data>
+    <data name="GenderOther" xml:space="preserve">
+    <value>Annat</value>
+  </data>
+    <data name="GitHubRepo" xml:space="preserve">
+    <value>GitHub-repo</value>
+  </data>
+    <data name="GoToToday" xml:space="preserve">
+    <value>Gå till idag</value>
+  </data>
+    <data name="HomeMessage" xml:space="preserve">
+    <value>Skapa din multi-mode (WASM, Server, Hybrid, förrendering) Blazor-app enkelt på kortast möjliga tid!</value>
+  </data>
+    <data name="HomePageTitle" xml:space="preserve">
+    <value>Hem</value>
+  </data>
+    <data name="HomePanelTitle" xml:space="preserve">
+    <value>Bygg alla dina appar</value>
+  </data>
+    <data name="HomePanelSubtitle" xml:space="preserve">
+    <value>med det du redan kan och älskar</value>
+  </data>
+    <data name="WatchVideo" xml:space="preserve">
+    <value>Titta på video</value>
+  </data>
+    <data name="LearnMore" xml:space="preserve">
+    <value>Läs mer</value>
+  </data>
+    <data name="BitPlatformMessage" xml:space="preserve">
+    <value>En uppsättning verktyg för .NET-utvecklare över flera plattformar</value>
+  </data>
+    <data name="BitBlazorUIMessage" xml:space="preserve">
+    <value>En uppsättning presterande, lättanpassade och vackra Blazor-komponenter</value>
+  </data>
+    <data name="BitProjectTemplateMessage" xml:space="preserve">
+    <value>Ett funktionsrikt .NET-projektmall som fungerar sömlöst överallt</value>
+  </data>
+    <data name="DescriptionMetaTagValue" xml:space="preserve">
+    <value>Boilerplate är byggt med ASP.NET Core, Identity, Web API, EF Core och Blazor.</value>
+  </data>
+    <data name="InvalidConfirmationTokenMessage" xml:space="preserve">
+    <value>Det verkar som bekräftelsetoken antingen är ogiltig eller har gått ut.</value>
+  </data>
+    <data name="NewPassword" xml:space="preserve">
+    <value>Nytt lösenord</value>
+  </data>
+    <data name="OldPassword" xml:space="preserve">
+    <value>Gammalt lösenord</value>
+  </data>
+    <data name="No" xml:space="preserve">
+    <value>Nej</value>
+  </data>
+    <data name="NotReceivedEmailMessage" xml:space="preserve">
+    <value>Har du inte fått e-postmeddelandet?</value>
+  </data>
+    <data name="Or" xml:space="preserve">
+    <value>eller</value>
+  </data>
+    <data name="ProfileImage" xml:space="preserve">
+    <value>Profilbild</value>
+  </data>
+    <data name="Remove" xml:space="preserve">
+    <value>Ta bort</value>
+  </data>
+    <data name="ResendEmailTokenButtonText" xml:space="preserve">
+    <value>Skicka koden igen</value>
+  </data>
+    <data name="ResetPasswordPageTitle" xml:space="preserve">
+    <value>Återställ lösenord</value>
+  </data>
+    <data name="ResetPassword" xml:space="preserve">
+    <value>Återställ lösenord</value>
+  </data>
+    <data name="ResetPasswordTitle" xml:space="preserve">
+    <value>Återställ lösenord</value>
+  </data>
+    <data name="ResetPasswordSubtitle" xml:space="preserve">
+    <value>Vi har skickat en token till din telefon eller e-post.</value>
+  </data>
+    <data name="ResetPasswordMessage" xml:space="preserve">
+    <value>Ange token tillsammans med ditt nya lösenord här.</value>
+  </data>
+    <data name="ResetPasswordButtonText" xml:space="preserve">
+    <value>Sätt lösenord</value>
+  </data>
+    <data name="ResetPasswordSuccessTitle" xml:space="preserve">
+    <value>Ditt lösenord har återställts.</value>
+  </data>
+    <data name="ResetPasswordSuccessBody" xml:space="preserve">
+    <value>Du kan nu logga in med ditt lösenord.</value>
+  </data>
+    <data name="ResetPasswordMessageInForgot" xml:space="preserve">
+    <value>Har du redan en token för återställning av lösenord?</value>
+  </data>
+    <data name="Save" xml:space="preserve">
+    <value>Spara</value>
+  </data>
+    <data name="SignInPageTitle" xml:space="preserve">
+    <value>Logga in</value>
+  </data>
+    <data name="SignInPanelTitle" xml:space="preserve">
+    <value>Välkommen tillbaka</value>
+  </data>
+    <data name="SignInPanelSubtitle" xml:space="preserve">
+    <value>Logga in på ditt konto med</value>
+  </data>
+    <data name="Continue" xml:space="preserve">
+    <value>Fortsätt</value>
+  </data>
+    <data name="CloseBrowserMessageTitle" xml:space="preserve">
+    <value>Gå tillbaka till appen</value>
+  </data>
+    <data name="CloseBrowserMessageBody" xml:space="preserve">
+    <value>Du kan gå tillbaka till applikationen nu</value>
+  </data>
+    <data name="GoogleSignInButtonText" xml:space="preserve">
+    <value>Logga in med Google</value>
+  </data>
+    <data name="GitHubSignInButtonText" xml:space="preserve">
+    <value>Logga in med GitHub</value>
+  </data>
+    <data name="TwitterSignInButtonText" xml:space="preserve">
+    <value>Logga in med Twitter (X)</value>
+  </data>
+    <data name="AppleSignInButtonText" xml:space="preserve">
+    <value>Logga in med Apple</value>
+  </data>
+    <data name="SignOut" xml:space="preserve">
+    <value>Logga ut</value>
+  </data>
+    <data name="SignOutPrompt" xml:space="preserve">
+    <value>Är du säker på att du vill logga ut?</value>
+  </data>
+    <data name="SignUp" xml:space="preserve">
+    <value>Registrera</value>
+  </data>
+    <data name="SignUpPageTitle" xml:space="preserve">
+    <value>Registrera</value>
+  </data>
+    <data name="SignUpPanelTitle" xml:space="preserve">
+    <value>Kom igång idag</value>
+  </data>
+    <data name="SignUpPanelSubtitle" xml:space="preserve">
+    <value>Skapa nytt konto med</value>
+  </data>
+    <data name="Submit" xml:space="preserve">
+    <value>Skicka</value>
+  </data>
+    <data name="TermsMessage" xml:space="preserve">
+    <value>Jag godkänner</value>
+  </data>
+    <data name="UploadNewImage" xml:space="preserve">
+    <value>Ladda upp en ny bild</value>
+  </data>
+    <data name="Yes" xml:space="preserve">
+    <value>Ja</value>
+  </data>
+    <data name="SelectBirthDate" xml:space="preserve">
+    <value>Välj ditt födelsedatum</value>
+  </data>
+    <data name="Action" xml:space="preserve">
+    <value>Åtgärd</value>
+  </data>
+    <data name="Back" xml:space="preserve">
+    <value>Tillbaka</value>
+  </data>
+    <data name="Cancel" xml:space="preserve">
+    <value>Avbryt</value>
+  </data>
+    <data name="CheckSpamMailMessage" xml:space="preserve">
+    <value>Kolla i din skräppost/mapp för skräppost om du inte hittar det i inkorgen.</value>
+  </data>
+    <data name="Color" xml:space="preserve">
+    <value>Färg</value>
+  </data>
+    <data name="CustomColor" xml:space="preserve">
+    <value>Anpassad färg</value>
+  </data>
+    <data name="Delete" xml:space="preserve">
+    <value>Radera</value>
+  </data>
+    <data name="Id" xml:space="preserve">
+    <value>Id</value>
+  </data>
+    <data name="SignIn" xml:space="preserve">
+    <value>Logga in</value>
+  </data>
+    <data name="Confirm" xml:space="preserve">
+    <value>Bekräfta</value>
+  </data>
+    <data name="SignInAsDifferentUser" xml:space="preserve">
+    <value>Logga in som annan användare</value>
+  </data>
+    <data name="YouAreSignedInAs" xml:space="preserve">
+    <value>Du är inloggad som</value>
+  </data>
+    <data name="ForgotPasswordLink" xml:space="preserve">
+    <value>Glömt lösenord?</value>
+  </data>
+    <data name="GenderFemale" xml:space="preserve">
+    <value>Kvinna</value>
+  </data>
+    <data name="RememberMe" xml:space="preserve">
+    <value>Kom ihåg mig?</value>
+  </data>
+    <data name="Copy" xml:space="preserve">
+    <value>Kopiera</value>
+  </data>
+    <data name="Copied" xml:space="preserve">
+    <value>Kopierad</value>
+  </data>
+    <data name="TfaTitle" xml:space="preserve">
+    <value>Tvåfaktorsautentisering</value>
+  </data>
+    <data name="TfaSubtitle" xml:space="preserve">
+    <value>Hantera ditt kontos multifaktorautentisering</value>
+  </data>
+    <data name="TwoFactorCode" xml:space="preserve">
+    <value>2FA-kod</value>
+  </data>
+    <data name="TwoFactorRecoveryCode" xml:space="preserve">
+    <value>Återställningskod</value>
+  </data>
+    <data name="TfaPanelTitle" xml:space="preserve">
+    <value>2-faktorsautentisering</value>
+  </data>
+    <data name="TfaPanelSubtitle" xml:space="preserve">
+    <value>Få en ny kod från din autentiseringsapp eller använd din återställningskod.</value>
+  </data>
+    <data name="TfaPanelAnotherWayTitle" xml:space="preserve">
+    <value>Försök ett annat sätt</value>
+  </data>
+    <data name="TfaPanelAnotherWaySubtitle" xml:space="preserve">
+    <value>Du kan få en ny kod på din e-post eller telefon.</value>
+  </data>
+    <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
+    <value>Hämta kod</value>
+  </data>
+    <data name="TwoFactorAuthTitle" xml:space="preserve">
+    <value>2FA</value>
+  </data>
+    <data name="TfaResetSharedKeyError" xml:space="preserve">
+    <value>Återställning av 2fa delad nyckel måste inaktivera 2fa tills en 2fa-token baserad på den nya delade nyckeln har validerats.</value>
+  </data>
+    <data name="TfaEmptyCodeError" xml:space="preserve">
+    <value>Ingen 2fa-token tillhandahölls i förfrågan. En giltig 2fa-token krävs för att aktivera 2fa.</value>
+  </data>
+    <data name="TfaInvalidCodeError" xml:space="preserve">
+    <value>Den 2fa-token som tillhandahölls i förfrågan var ogiltig. En giltig 2fa-token krävs för att aktivera 2fa.</value>
+  </data>
+    <data name="TfaProtectedSignInSubtitle" xml:space="preserve">
+    <value>Din inloggning skyddas med en autentiseringsapp.</value>
+  </data>
+    <data name="TfaEnterCodeInSignInMessage" xml:space="preserve">
+    <value>Ange din autentiseringskod:</value>
+  </data>
+    <data name="TfaEnterRecoveryCodeInSignInMessage" xml:space="preserve">
+    <value>Eller ange din återställningskod:</value>
+  </data>
+    <data name="TfaAuthenticatorAppVerifiedMessage" xml:space="preserve">
+    <value>Din autentiseringsapp har verifierats.</value>
+  </data>
+    <data name="TfaConfigureAutAppTitle" xml:space="preserve">
+    <value>Konfigurera autentiseringsapp</value>
+  </data>
+    <data name="TfaConfigureAutAppSubtitle" xml:space="preserve">
+    <value>För att använda en autentiseringsapp, gå igenom följande steg:</value>
+  </data>
+    <data name="TfaConfigureAutAppStep1" xml:space="preserve">
+    <value>Ladda ner en tvåfaktorsautentiseringsapp som Google Authenticator för {0} och {1}.</value>
+  </data>
+    <data name="TfaConfigureAutAppStep2" xml:space="preserve">
+    <value>Skanna/klicka på QR-koden eller ange följande nyckel i din tvåfaktorsautentiseringsapp (mellanslag och versaler spelar ingen roll):</value>
+  </data>
+    <data name="TfaConfigureAutAppStep3" xml:space="preserve">
+    <value>När du har skannat QR-koden eller angett nyckeln ovan, kommer din tvåfaktorsautentiseringsapp att ge dig en unik kod. Ange koden i bekräftelsefönstret nedan.</value>
+  </data>
+    <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
+    <value>Tvåfaktorsautentisering har aktiverats.</value>
+  </data>
+    <data name="TwoFactorAuthenticationDisabled" xml:space="preserve">
+    <value>Tvåfaktorsautentisering har inaktiverats.</value>
+  </data>
+    <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
+    <value>Verifieringskod:</value>
+  </data>
+    <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
+    <value>Ange verifieringskod.</value>
+  </data>
+    <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
+    <value>Verifiera</value>
+  </data>
+    <data name="TfaRecoveryCodesHeader" xml:space="preserve">
+    <value>Återställning</value>
+  </data>
+    <data name="TfaRecoveryCodesZeroLeftTitle" xml:space="preserve">
+    <value>Du har inga återställningskoder kvar.</value>
+  </data>
+    <data name="TfaRecoveryCodesZeroLeftSubtitle" xml:space="preserve">
+    <value>Du måste generera en ny uppsättning återställningskoder innan du kan logga in med en återställningskod.</value>
+  </data>
+    <data name="TfaRecoveryCodesOneLeftTitle" xml:space="preserve">
+    <value>Du har 1 återställningskod kvar.</value>
+  </data>
+    <data name="TfaRecoveryCodesOneLeftSubtitle" xml:space="preserve">
+    <value>Du kan generera en ny uppsättning återställningskoder.</value>
+  </data>
+    <data name="TfaRecoveryCodesThreeLeftTitle" xml:space="preserve">
+    <value>Du har {0} återställningskoder kvar.</value>
+  </data>
+    <data name="TfaRecoveryCodesThreeLeftSubtitle" xml:space="preserve">
+    <value>Du bör generera en ny uppsättning återställningskoder.</value>
+  </data>
+    <data name="TfaRecoveryCodesGenerateWraning" xml:space="preserve">
+    <value>Att generera nya återställningskoder ändrar inte nycklarna som används i autentiseringsappar. Om du vill ändra nyckeln som används i en autentiseringsapp bör du återställa dina autentiseringsnycklar i nästa flik.</value>
+  </data>
+    <data name="TfaRecoveryCodesGenerateButtonText" xml:space="preserve">
+    <value>Generera återställningskoder</value>
+  </data>
+    <data name="TfaRecoveryCodesWarningTitle" xml:space="preserve">
+    <value>Spara dessa koder på en säker plats.</value>
+  </data>
+    <data name="TfaRecoveryCodesWarning" xml:space="preserve">
+    <value>Om du tappar bort din autentiseringsenhet och inte har återställningskoderna kommer du att förlora åtkomst till ditt konto.</value>
+  </data>
+    <data name="TfaRecoveryCodesTitle" xml:space="preserve">
+    <value>Återställningskoder:</value>
+  </data>
+    <data name="TfaAuthAppHeader" xml:space="preserve">
+    <value>Autentiserare</value>
+  </data>
+    <data name="TfaAuthAppWarningTitle" xml:space="preserve">
+    <value>Om du återställer din autentiseringsnyckel kommer din autentiseringsapp inte att fungera förrän du konfigurerar den igen.</value>
+  </data>
+    <data name="TfaAuthAppWarning" xml:space="preserve">
+    <value>Denna process inaktiverar 2FA tills du verifierar din autentiseringsapp. Om du inte slutför konfigurationen av din autentiseringsapp kan du förlora åtkomst till ditt konto.</value>
+  </data>
+    <data name="TfaAuthAppResetKeyButtonText" xml:space="preserve">
+    <value>Återställ autentiseringsnyckel</value>
+  </data>
+    <data name="TfaDisable2faHeader" xml:space="preserve">
+    <value>Inaktivera</value>
+  </data>
+    <data name="TfaDisable2faWarningTitle" xml:space="preserve">
+    <value>Denna åtgärd inaktiverar endast 2FA.</value>
+  </data>
+    <data name="TfaDisable2faWarning" xml:space="preserve">
+    <value>Att inaktivera 2FA ändrar inte nycklarna som används i autentiseringsappar. Om du vill ändra nyckeln som används i en autentiseringsapp bör du återställa dina autentiseringsnycklar i föregående flik.</value>
+  </data>
+    <data name="TfaDisable2faButtonText" xml:space="preserve">
+    <value>Inaktivera 2FA</value>
+  </data>
+    <data name="TwoFactorToken" xml:space="preserve">
+    <value>2FA-token</value>
+  </data>
+    <data name="TfaTokenSignInTitle" xml:space="preserve">
+    <value>Ingen tillgång till autentiseringsappen?</value>
+  </data>
+    <data name="TfaTokenGenerateButtonText" xml:space="preserve">
+    <value>Generera och skicka 2FA-token</value>
+  </data>
+    <data name="TfaTokenSentMessage" xml:space="preserve">
+    <value>2FA-token har genererats och skickats till dig.</value>
+  </data>
+    <data name="EnterElevatedAccessToken" xml:space="preserve">
+    <value>Ange det höjda åtkomsttoken vi precis skickade till dig eller din autentiseringsappkod för att fortsätta.</value>
+  </data>
+    <data name="ElevatedAccessTokenShortText" xml:space="preserve">
+    <value>{0} är din kod i Boilerplate.</value>
+  </data>
+    <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
+    <value>Du har redan begärt bekräftelsemejlet. Försök igen om {0}</value>
+  </data>
+    <data name="WaitForPhoneNumberTokenRequestResendDelay" xml:space="preserve">
+    <value>Du har redan begärt bekräftelse-sms:et. Försök igen om {0}</value>
+  </data>
+    <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
+    <value>Du har redan begärt token för återställning av lösenord. Försök igen om {0}</value>
+  </data>
+    <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
+    <value>Du har redan begärt en OTP. Försök igen om {0}</value>
+  </data>
+    <data name="WaitForElevatedAccessTokenRequestResendDelay" xml:space="preserve">
+    <value>Du har redan begärt ett höjt åtkomsttoken. Försök igen om {0}</value>
+  </data>
+    <data name="Otp" xml:space="preserve">
+    <value>OTP</value>
+  </data>
+    <data name="OtpPanelTitle" xml:space="preserve">
+    <value>Kolla din {0}</value>
+  </data>
+    <data name="OtpPanelSubtitle" xml:space="preserve">
+    <value>Bekräfta din {0} genom att ange koden som skickats till {1}</value>
+  </data>
+    <data name="Code" xml:space="preserve">
+    <value>Kod</value>
+  </data>
+    <data name="OtpResendMessage" xml:space="preserve">
+    <value>Fick du inte koden?</value>
+  </data>
+    <data name="Resend" xml:space="preserve">
+    <value>Skicka igen</value>
+  </data>
+    <data name="OtpPlaceholder" xml:space="preserve">
+    <value>Ange OTP</value>
+  </data>
+    <data name="OtpSentMessage" xml:space="preserve">
+    <value>En OTP har genererats och skickats till dig.</value>
+  </data>
+    <data name="SendOtpButtonText" xml:space="preserve">
+    <value>Skicka OTP och magisk länk</value>
+  </data>
+    <data name="OtpEmailOrPhoneNumberSubtitle" xml:space="preserve">
+    <value>Ange din e-post eller telefonnummer:</value>
+  </data>
+    <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
+    <value>Ange antingen lösenord eller OTP</value>
+  </data>
+    <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
+    <value>Du har redan begärt 2FA-token via e-post. Försök igen om {0}.</value>
+  </data>
+    <data name="ChangePhoneNumberTokenShortText" xml:space="preserve">
+    <value>{0} är din kod i Boilerplate.</value>
+  </data>
+    <data name="ConfirmPhoneTokenShortText" xml:space="preserve">
+    <value>{0} är din kod i Boilerplate.</value>
+  </data>
+    <data name="TwoFactorTokenShortText" xml:space="preserve">
+    <value>{0} är din kod i Boilerplate.</value>
+  </data>
+    <data name="OtpShortText" xml:space="preserve">
+    <value>{0} är din kod i Boilerplate.</value>
+  </data>
+    <data name="ResetPasswordTokenShortText" xml:space="preserve">
+    <value>{0} är din kod i Boilerplate.</value>
+  </data>
+    <data name="Online" xml:space="preserve">
+    <value>Online</value>
+  </data>
+    <data name="Recently" xml:space="preserve">
+    <value>Nyligen</value>
+  </data>
+    <data name="Update" xml:space="preserve">
+    <value>Uppdatera</value>
+  </data>
+    <data name="NewVersionIsAvailable" xml:space="preserve">
+    <value>Ny version {0} finns tillgänglig</value>
+  </data>
+    <data name="UpdateToNewVersion" xml:space="preserve">
+    <value>Vill du uppdatera till nya versionen? {0}</value>
+  </data>
+    <data name="About" xml:space="preserve">
+    <value>Om</value>
+  </data>
+    <data name="AboutPageTitle" xml:space="preserve">
+    <value>Om</value>
+  </data>
+    <data name="NothingFound" xml:space="preserve">
+    <value>Inget hittades!</value>
+  </data>
+    <!--#if (sample == true) -->
+    <data name="TodoAddPlaceholder" xml:space="preserve">
+    <value>Lägg till en att-göra</value>
+  </data>
+    <data name="NoTodos" xml:space="preserve">
+    <value>Inga att-göra än</value>
+  </data>
+    <data name="TodoSearchPlaceholder" xml:space="preserve">
+    <value>Sök att-göra...</value>
+  </data>
+    <data name="ToDoItemCouldNotBeFound" xml:space="preserve">
+    <value>Att-göra-objekt kunde inte hittas</value>
+  </data>
+    <data name="TodoPageTitle" xml:space="preserve">
+    <value>Att-göra</value>
+  </data>
+    <data name="Todo" xml:space="preserve">
+    <value>Att-göra</value>
+  </data>
+    <data name="DeleteTodoItem" xml:space="preserve">
+    <value>Ta bort att-göra-objekt</value>
+  </data>
+    <!--#endif -->
+    <!--#if (module == "Admin" || module == "Sales") -->
+    <data name="CategoryCouldNotBeFound" xml:space="preserve">
+    <value>Kategoriobjekt kunde inte hittas</value>
+  </data>
+    <data name="ProductCouldNotBeFound" xml:space="preserve">
+    <value>Produktobjekt kunde inte hittas</value>
+  </data>
+    <data name="Category" xml:space="preserve">
+    <value>Kategori</value>
+  </data>
+    <!--#endif -->
+    <!--#if (module == "Admin") -->
+    <data name="AdminPanel" xml:space="preserve">
+    <value>Adminpanel</value>
+  </data>
+    <data name="PaginatorSummary" xml:space="preserve">
+    <value>{0} objekt</value>
+  </data>
+    <data name="PaginatorFirstButtonTitle" xml:space="preserve">
+    <value>Gå till första sidan</value>
+  </data>
+    <data name="PaginatorPrevButtonTitle" xml:space="preserve">
+    <value>Gå till föregående sida</value>
+  </data>
+    <data name="PaginatorNextButtonTitle" xml:space="preserve">
+    <value>Gå till nästa sida</value>
+  </data>
+    <data name="PaginatorLastButtonTitle" xml:space="preserve">
+    <value>Gå till sista sidan</value>
+  </data>
+    <data name="Page" xml:space="preserve">
+    <value>Sida</value>
+  </data>
+    <data name="Of" xml:space="preserve">
+    <value>av</value>
+  </data>
+    <data name="ProductsCount" xml:space="preserve">
+    <value>Antal produkter</value>
+  </data>
+    <data name="Last30DaysProductCount" xml:space="preserve">
+    <value>Produktantal de senaste 30 dagarna</value>
+  </data>
+    <data name="AddProduct" xml:space="preserve">
+    <value>Lägg till produkt</value>
+  </data>
+    <data name="SearchProductsPlaceholder" xml:space="preserve">
+    <value>Sök igenom produktnamn, kategori och beskrivning här...</value>
+  </data>
+    <data name="SelectCategory" xml:space="preserve">
+    <value>Välj kategori</value>
+  </data>
+    <data name="TotalCategories" xml:space="preserve">
+    <value>Totalt antal kategorier</value>
+  </data>
+    <data name="TotalProducts" xml:space="preserve">
+    <value>Totalt antal produkter</value>
+  </data>
+    <data name="EditCategory" xml:space="preserve">
+    <value>Redigera kategori</value>
+  </data>
+    <data name="AddCategory" xml:space="preserve">
+    <value>Ny kategori</value>
+  </data>
+    <data name="CategoriesPageTitle" xml:space="preserve">
+    <value>Kategorier</value>
+  </data>
+    <data name="EnterCategoryName" xml:space="preserve">
+    <value>Ange kategorinamn</value>
+  </data>
+    <data name="EnterProductName" xml:space="preserve">
+    <value>Ange produktnamn</value>
+  </data>
+    <data name="CategoriesWithProductCount" xml:space="preserve">
+    <value>Kategorier med produktantal</value>
+  </data>
+    <data name="ProductSales" xml:space="preserve">
+    <value>Produktsalg</value>
+  </data>
+    <data name="ProductSalesText" xml:space="preserve">
+    <value>Den här diagrammet visar antal försäljningar för varje produkt.</value>
+  </data>
+    <data name="SearchOnName" xml:space="preserve">
+    <value>Sök på namn</value>
+  </data>
+    <data name="ProductsCountPerCategoryChart" xml:space="preserve">
+    <value>Diagram över antal produkter per kategori</value>
+  </data>
+    <data name="ProductsCountPerCategoryChartText" xml:space="preserve">
+    <value>Den här diagrammet visar antal produkter i varje kategori.</value>
+  </data>
+    <data name="ProductsPageTitle" xml:space="preserve">
+    <value>Produkter</value>
+  </data>
+    <data name="ProductsPercentagePerCategory" xml:space="preserve">
+    <value>Produkts procentandel per kategori</value>
+  </data>
+    <data name="ProductsPercentagePerCategoryText" xml:space="preserve">
+    <value>Den här diagrammet visar procentandelen produkter i varje kategori.</value>
+  </data>
+    <data name="Categories" xml:space="preserve">
+    <value>Kategorier</value>
+  </data>
+    <data name="ProductCategory" xml:space="preserve">
+    <value>Produktkategori</value>
+  </data>
+    <data name="Products" xml:space="preserve">
+    <value>Produkter</value>
+  </data>
+    <data name="CategoryNotEmpty" xml:space="preserve">
+    <value>Den här kategorin innehåller några produkter, så du kan inte ta bort den</value>
+  </data>
+    <data name="AreYouSureWannaDeleteCategory" xml:space="preserve">
+    <value>Är du säker på att du vill ta bort kategori {0}</value>
+  </data>
+    <data name="AreYouSureWannaDeleteProduct" xml:space="preserve">
+    <value>Är du säker på att du vill ta bort produkt {0}</value>
+  </data>
+    <data name="DeleteCategory" xml:space="preserve">
+    <value>Radera kategori</value>
+  </data>
+    <data name="DeleteProduct" xml:space="preserve">
+    <value>Radera produkt</value>
+  </data>
+    <data name="DefaultColorPicker" xml:space="preserve">
+    <value>Standardfärgsväljare</value>
+  </data>
+    <data name="EditProduct" xml:space="preserve">
+    <value>Redigera produkt {0}</value>
+  </data>
+    <data name="DuplicateProductName" xml:space="preserve">
+    <value>Dubblettproduktnamn</value>
+  </data>
+    <data name="DuplicateCategoryName" xml:space="preserve">
+    <value>Dubblett kategorinamn</value>
+  </data>
+    <data name="DashboardPageTitle" xml:space="preserve">
+    <value>Instrumentpanel</value>
+  </data>
+    <data name="Dashboard" xml:space="preserve">
+    <value>Instrumentpanel</value>
+  </data>
+    <data name="DashboardSubtitle" xml:space="preserve">
+    <value>Här är din analysdata</value>
+  </data>
+    <!--#endif -->
+    <!--#if (captcha == "reCaptcha") -->
+    <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
+    <value>Ogiltig Google reCAPTCHA-respons.</value>
+  </data>
+    <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
+    <value>Du måste klara Google reCAPTCHA-utmaningen.</value>
+  </data>
+    <!--#endif -->
+    <!--#if (module == "Sales") -->
+    <data name="SimilarProducts" xml:space="preserve">
+    <value>Liknande produkter</value>
+  </data>
+    <data name="SiblingProducts" xml:space="preserve">
+    <value>Produkter i samma kategori</value>
+  </data>
+    <!--#endif -->
+    <data name="Passwordless" xml:space="preserve">
+    <value>Lösenordslös</value>
+  </data>
+    <data name="PasswordlessTitle" xml:space="preserve">
+    <value>Lösenordslös inloggning</value>
+  </data>
+    <data name="EnablePasswordless" xml:space="preserve">
+    <value>Aktivera lösenordslös inloggning</value>
+  </data>
+    <data name="EnablePasswordlessSucsessMessage" xml:space="preserve">
+    <value>Lösenordslös inloggning aktiverades framgångsrikt</value>
+  </data>
+    <data name="DisablePasswordless" xml:space="preserve">
+    <value>Inaktivera lösenordslös inloggning</value>
+  </data>
+    <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
+    <value>Lösenordslös inloggning inaktiverades framgångsrikt</value>
+  </data>
+    <data name="Clear" xml:space="preserve">
+    <value>Rensa</value>
+  </data>
+    <data name="Send" xml:space="preserve">
+    <value>Skicka</value>
+  </data>
+    <data name="Canceled" xml:space="preserve">
+    <value>Avbruten</value>
+  </data>
+    <!--#if (signalR == true) -->
+    <data name="AiChatPanelTitle" xml:space="preserve">
+    <value>AI chattpanel</value>
+  </data>
+    <data name="AiChatPanelInitialResponse" xml:space="preserve">
+    <value>Detta är AI:s initiala svar för att starta chatten!</value>
+  </data>
+    <data name="AiChatPanelPrompt1" xml:space="preserve">
+    <value>Hur kan jag återställa mitt lösenord?</value>
+  </data>
+    <data name="AiChatPanelPrompt2" xml:space="preserve">
+    <value>Hur kan jag installera PWA-versionen av appen?</value>
+  </data>
+    <!--#if (module == "Admin") -->
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>Where can I find reports about products?</value>
+  </data>
+    <!--#elif (module == "Sales") -->
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>I'm searching for a Benz SUV electric car with a 75K budget!</value>
+  </data>
+    <!--#else -->
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>Jag har feedback jag vill dela!</value>
+  </data>
+    <!--#endif -->
+    <data name="AiChatPanelPlaceholder" xml:space="preserve">
+    <value>Skriv ett meddelande...</value>
+  </data>
+    <data name="AiChatPanelCommunicatingPlaceholder" xml:space="preserve">
+    <value>Tänker...</value>
+  </data>
+    <!--#endif -->
+</root>
