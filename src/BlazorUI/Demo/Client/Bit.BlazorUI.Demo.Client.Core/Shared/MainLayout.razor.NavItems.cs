@@ -154,6 +154,7 @@ public partial class MainLayout
                 new() { Text = "Chart", Url = "/components/chart" },
                 new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"] },
                 new() { Text = "ErrorBoundary", Url = "/components/errorboundary" },
+                new() { Text = "Flag", Url = "/components/flag" },
                 new() { Text = "InfiniteScrolling", Url = "/components/infinitescrolling" },
                 new() { Text = "MarkdownEditor", Url = "/components/markdowneditor", Description = "MdEditor" },
                 new() { Text = "MarkdownViewer", Url = "/components/markdownviewer", Description = "MdViewer, MD" },
