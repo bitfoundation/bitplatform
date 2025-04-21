@@ -5,29 +5,15 @@ using System.Xml.Linq;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
+using Bit.ResxTranslator.Models;
+
 namespace Bit.ResxTranslator.Services;
 
-public class ResxFile
-{
-    public required string Language { get; init; }
-
-    public required CultureInfo CultureInfo { get; init; }
-
-    public required string Path { get; init; }
-
-    public ResxFile[] RelatedResxFiles { get; set; } = [];
-
-    public override string ToString()
-    {
-        return Language;
-    }
-}
-
-public partial class ResxTranslatorService(ResxTranslatorSettings settings,
-    ILogger<ResxTranslatorService> logger,
+public partial class Translator(ResxTranslatorSettings settings,
+    ILogger<Translator> logger,
     IChatClient chatClient)
 {
-    public async Task Run()
+    public async Task UpdateResxTranslations()
     {
         await Parallel.ForEachAsync(GetResxGroups(), async (resxGroup, cancellationToken) =>
         {

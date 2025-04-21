@@ -1,7 +1,7 @@
 ﻿using Bit.ResxTranslator;
+using Bit.ResxTranslator.Services;
 
 using Microsoft.Extensions.AI;
-using Bit.ResxTranslator.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,7 +39,7 @@ services.AddLogging(loggingBuilder =>
     loggingBuilder.AddConsole();
 });
 
-services.AddScoped<ResxTranslatorService>();
+services.AddScoped<Translator>();
 
 services.AddHttpClient("AI", c =>
 {
@@ -77,6 +77,6 @@ else if (string.IsNullOrEmpty(settings.AzureOpenAI?.ApiKey) is false)
 
 await using var serviceProvider = services.BuildServiceProvider();
 
-var translatorService = serviceProvider.GetRequiredService<ResxTranslatorService>();
+var translatorService = serviceProvider.GetRequiredService<Translator>();
 
-await translatorService.Run();
+await translatorService.UpdateResxTranslations();
