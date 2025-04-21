@@ -15,7 +15,7 @@
     <File Path="global.json" />
     <File Path="README.md" />
 	<File Path="settings.VisualStudio.json" />
-    <File Path="resx-translator.json" />
+    <File Path="Bit.ResxTranslator.json" />
     <File Path="src/Directory.Build.props" />
     <File Path="src/Directory.Packages.props" />
   </Folder>

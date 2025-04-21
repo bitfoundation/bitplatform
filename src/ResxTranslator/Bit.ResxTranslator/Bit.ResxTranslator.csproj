@@ -8,7 +8,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <PackAsTool>true</PackAsTool>
-        <ToolCommandName>resx-translate</ToolCommandName>
+        <ToolCommandName>bit-resx-translate</ToolCommandName>
         <UserSecretsId>a7e11fa7-16df-4c99-b309-1616a8db9c37</UserSecretsId>
     </PropertyGroup>
 
