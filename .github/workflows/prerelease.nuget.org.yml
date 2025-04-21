@@ -128,5 +128,5 @@ jobs:
         name: nupkg-files
         path: ./*.nupkg
 
-    # - name: dotnet nuget push
-    #   run: dotnet nuget push **/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_ORG_API_KEY}} --skip-duplicate
+    - name: dotnet nuget push
+      run: dotnet nuget push **/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_ORG_API_KEY}} --skip-duplicate
