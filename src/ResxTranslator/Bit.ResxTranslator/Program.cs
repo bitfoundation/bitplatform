@@ -74,6 +74,10 @@ else if (string.IsNullOrEmpty(settings.AzureOpenAI?.ApiKey) is false)
     .UseLogging()
     .UseFunctionInvocation();
 }
+else
+{
+    throw new InvalidOperationException("No OpenAI or Azure OpenAI API key provided.");
+}
 
 await using var serviceProvider = services.BuildServiceProvider();
 
