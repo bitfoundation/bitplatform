@@ -32,8 +32,8 @@ This JSON file defines the source and target languages, the location of your res
   "DefaultLanguage": "en",
   "DefaultLanguage__Comment": "Required: .NET culture's name, en, en-US for example.",
 
-  "AdditionalLanguages": [ "nl", "fa", "sv", "hi", "zh", "es", "fr", "ar", "de" ],
-  "AdditionalLanguages__Comment": "Required: An array of .NET culture names.",
+  "SupportedLanguages": [ "nl", "fa", "sv", "hi", "zh", "es", "fr", "ar", "de" ],
+  "SupportedLanguages__Comment": "Required: An array of .NET culture names.",
 
   "ResxPaths": [ "src/**/*.resx" ],
   "ResxPaths__Comment": "Required: An array of glob patterns to find your *base* .resx files",

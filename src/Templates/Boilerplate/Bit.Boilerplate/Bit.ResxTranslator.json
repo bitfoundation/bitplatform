@@ -3,8 +3,8 @@
 
     "DefaultLanguage": "en",
 
-    "AdditionalLanguages": [ "nl", "fa", "sv", "hi", "zh", "es", "fr", "ar", "de" ],
-    "AdditionalLanguages__Comment": "Update MainActivity's DataPathPrefixes and CultureInfoManager's SupportedCultures as required.",
+    "SupportedLanguages": [ "nl", "fa", "sv", "hi", "zh", "es", "fr", "ar", "de" ],
+    "SupportedLanguages__Comment": "Update MainActivity's DataPathPrefixes and CultureInfoManager's SupportedCultures as required.",
 
     "ResxPaths": [ "/src/**/*.resx" ],
 

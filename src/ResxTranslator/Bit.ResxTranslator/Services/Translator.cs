@@ -85,7 +85,7 @@ After translating, call the `SaveTranslatedValues` tool and pass an array of the
                 Path = defaultResxFilePath,
                 Language = settings.DefaultLanguage!,
                 CultureInfo = new CultureInfo(settings.DefaultLanguage!),
-                RelatedResxFiles = [.. settings.AdditionalLanguages.Select(additionalLanguage => new ResxFile {
+                RelatedResxFiles = [.. settings.SupportedLanguages.Select(additionalLanguage => new ResxFile {
                     Language = additionalLanguage,
                     CultureInfo = new CultureInfo(additionalLanguage),
                     Path = defaultResxFilePath.Replace(".resx", $".{additionalLanguage}.resx"),

@@ -7,7 +7,7 @@ public class ResxTranslatorSettings
     [Required]
     public string? DefaultLanguage { get; set; } = "en";
 
-    public string[] AdditionalLanguages { get; set; } = [];
+    public string[] SupportedLanguages { get; set; } = [];
 
     public string[] ResxPaths { get; set; } = [];
 
