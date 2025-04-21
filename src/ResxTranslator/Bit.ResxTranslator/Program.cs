@@ -39,7 +39,7 @@ services.AddLogging(loggingBuilder =>
     loggingBuilder.AddConsole();
 });
 
-services.AddScoped<ResxFilesManager>();
+services.AddScoped<ResxTranslatorService>();
 
 services.AddHttpClient("AI", c =>
 {
@@ -77,6 +77,6 @@ else if (string.IsNullOrEmpty(settings.AzureOpenAI?.ApiKey) is false)
 
 await using var serviceProvider = services.BuildServiceProvider();
 
-var resxFilesManager = serviceProvider.GetRequiredService<ResxFilesManager>();
+var translatorService = serviceProvider.GetRequiredService<ResxTranslatorService>();
 
-await resxFilesManager.Run();
+await translatorService.Run();

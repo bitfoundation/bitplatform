@@ -16,56 +16,83 @@ public class ResxFile
     public required string Path { get; init; }
 
     public ResxFile[] RelatedResxFiles { get; set; } = [];
+
+    public override string ToString()
+    {
+        return Language;
+    }
 }
 
-public partial class ResxFilesManager(ResxTranslatorSettings settings,
-    ILogger<ResxFilesManager> logger,
+public partial class ResxTranslatorService(ResxTranslatorSettings settings,
+    ILogger<ResxTranslatorService> logger,
     IChatClient chatClient)
 {
     public async Task Run()
     {
-        foreach (var resxGroup in GetResxGroups())
+        await Parallel.ForEachAsync(GetResxGroups(), async (resxGroup, cancellationToken) =>
         {
-            var defaultLanguageKeyValues = await DeserializeXmlToDictionary(resxGroup.Path);
+            var defaultLanguageKeyValues = await DeserializeXmlToDictionary(resxGroup.Path, cancellationToken);
+
+            var defaultFileContent = await File.ReadAllTextAsync(resxGroup.Path, cancellationToken);
 
             foreach (var relatedResx in resxGroup.RelatedResxFiles)
             {
-                var relatedLanguageKeyValues = await DeserializeXmlToDictionary(relatedResx.Path);
+                var relatedLanguageKeyValues = await DeserializeXmlToDictionary(relatedResx.Path, cancellationToken);
 
                 var notTranslatedKeyValues = defaultLanguageKeyValues
                     .Where(kvp => relatedLanguageKeyValues.ContainsKey(kvp.Key) is false)
                     .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-                var _ = await chatClient.GetResponseAsync(new ChatMessage(ChatRole.System, @$"
-You act as a translator. Your task is to retrive the values by calling `GetSourceValuesToBeTranslated` task which have values in [{resxGroup.CultureInfo.NativeName} - {resxGroup.CultureInfo.EnglishName}] language. 
-Translate the values to {relatedResx.CultureInfo.NativeName} language and save them by calling `SaveTranslatedValues` tool and passing translated values."),
-                    options: new()
-                    {
-                        Tools = [
-                            AIFunctionFactory.Create(() =>
-                            {
-                                return notTranslatedKeyValues.Values.Take(10);
-                            }, name: "GetSourceValuesToBeTranslated", description: $"Returns [{resxGroup.CultureInfo.NativeName} - {resxGroup.CultureInfo.EnglishName}] values."),
+                if (notTranslatedKeyValues.Count == 0)
+                    continue;
 
-                            AIFunctionFactory.Create((string[] updatedRelatedLanguageKeyValues) =>
+                var _ = await chatClient.GetResponseAsync(new ChatMessage(ChatRole.System, @$"You act as a translator for software resource files.
+Your task is to retrieve the values that need translation by calling the `GetSourceValuesToBeTranslated` tool,
+which returns an array of strings in [{resxGroup.CultureInfo.NativeName} - {resxGroup.CultureInfo.EnglishName}] language.
+These strings are used in a software application and may contain placeholders such as {0}, {1}, etc.
+Translate each string to {relatedResx.CultureInfo.NativeName} language, ensuring that any placeholders are preserved exactly as they are,
+including their numbers, and are placed correctly in the translated sentence according to the target language's grammar and syntax.
+The translation should be accurate and suitable for a software application context.
+After translating, call the `SaveTranslatedValues` tool and pass an array of the translated strings in the same order as the source strings."), options: new()
+                {
+                    Tools =
+                    [
+                        AIFunctionFactory.Create(() =>
+                        {
+                            return notTranslatedKeyValues.Values;
+                        }, name: "GetSourceValuesToBeTranslated", description: $"Returns [{resxGroup.CultureInfo.NativeName} - {resxGroup.CultureInfo.EnglishName}] values."),
+
+                        AIFunctionFactory.Create((string[] updatedRelatedLanguageKeyValues) =>
+                        {
+                            foreach ((string translate, int index) in updatedRelatedLanguageKeyValues.Select((translate, index) => (translate, index)))
                             {
-                                foreach ((string translate, int index) in updatedRelatedLanguageKeyValues.Select((translate, index) => (translate, index)))
-                                {
-                                    relatedLanguageKeyValues.Add(notTranslatedKeyValues.ElementAt(index).Key, translate);
-                                }
-                            }, name: "SaveTranslatedValues", description: $"Saves [{relatedResx.CultureInfo.NativeName} - {relatedResx.CultureInfo.EnglishName}] values.")
-                        ]
-                    });
+                                relatedLanguageKeyValues.Add(notTranslatedKeyValues.ElementAt(index).Key, translate);
+                            }
+                        }, name: "SaveTranslatedValues", description: $"Saves [{relatedResx.CultureInfo.NativeName} - {relatedResx.CultureInfo.EnglishName}] values.")
+                    ]
+                }, cancellationToken: cancellationToken);
+
+                var relatedResxFileContent = defaultFileContent;
+
+                foreach (var item in defaultLanguageKeyValues)
+                {
+                    relatedResxFileContent = relatedResxFileContent.Replace($"<value>{item.Value}</value>", $"<value>{relatedLanguageKeyValues[item.Key]}</value>");
+                }
+
+                await File.WriteAllTextAsync(relatedResx.Path, relatedResxFileContent, cancellationToken);
             }
-        }
+        });
     }
 
     public ResxFile[] GetResxGroups()
     {
-        return [.. settings.ResxPaths
+        var primaryResxFiles =
+            settings.ResxPaths
             .SelectMany(path => FindResxFiles(Environment.CurrentDirectory, path))
             .Where(path => LanguageNameRegex.IsMatch(path) is false)
-            .Distinct()
+            .Distinct();
+
+        return [.. primaryResxFiles
             .Select(defaultResxFilePath => new ResxFile
             {
                 Path = defaultResxFilePath,
@@ -125,10 +152,10 @@ Translate the values to {relatedResx.CultureInfo.NativeName} language and save t
 
     private static readonly Regex LanguageNameRegex = LanguageNameRegexBuilder();
 
-    [GeneratedRegex(@"\.[a-zA-Z]{2}(?=\.resx$)")]
+    [GeneratedRegex(@"\.[a-zA-Z]{2,4}(-[a-zA-Z]{2,8})?(?=\.resx$)", RegexOptions.IgnoreCase)]
     private static partial Regex LanguageNameRegexBuilder();
 
-    static async Task<Dictionary<string, string?>> DeserializeXmlToDictionary(string filePath)
+    static async Task<Dictionary<string, string?>> DeserializeXmlToDictionary(string filePath, CancellationToken cancellationToken)
     {
         if (File.Exists(filePath) is false)
             return [];
@@ -137,17 +164,17 @@ Translate the values to {relatedResx.CultureInfo.NativeName} language and save t
 
         var dictionary = new Dictionary<string, string?>();
 
-        XDocument doc = await XDocument.LoadAsync(file, LoadOptions.None, default);
+        XDocument doc = await XDocument.LoadAsync(file, LoadOptions.None, cancellationToken);
 
         foreach (XElement dataElement in doc.Root!.Elements("data"))
         {
             string name = dataElement.Attribute("name")!.Value;
             string value = dataElement.Element("value")!.Value;
 
-            if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(value))
-            {
-                dictionary[name] = value;
-            }
+            if (string.IsNullOrWhiteSpace(name))
+                continue;
+
+            dictionary[name] = value;
         }
 
         return dictionary;
