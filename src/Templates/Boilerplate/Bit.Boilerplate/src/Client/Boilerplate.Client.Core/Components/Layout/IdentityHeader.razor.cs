@@ -18,7 +18,7 @@ public partial class IdentityHeader : AppComponentBase
     {
         await base.OnInitAsync();
 
-        if (CultureInfoManager.EnglishUSOnly is false)
+        if (CultureInfoManager.InvariantGlobalization is false)
         {
             cultures = CultureInfoManager.SupportedCultures
                         .Select(sc => new BitDropdownItem<string> { Value = sc.Culture.Name, Text = sc.DisplayName })

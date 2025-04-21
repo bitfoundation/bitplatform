@@ -21,7 +21,7 @@ public static partial class UriExtensions
     /// </summary>
     public static string? GetCulture(this Uri uri)
     {
-        if (CultureInfoManager.EnglishUSOnly)
+        if (CultureInfoManager.InvariantGlobalization)
             return null;
 
         if (AppQueryStringCollection.Parse(uri.Query).TryGetValue("culture", out var culture))

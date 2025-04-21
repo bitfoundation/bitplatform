@@ -11,7 +11,7 @@ public partial class Routes
     {
         await EnsureNavigationManagerIsReady();
 
-        if (CultureInfoManager.EnglishUSOnly is alse &&
+        if (CultureInfoManager.InvariantGlobalization is alse &&
             forceLoad == false &&
             (AppPlatform.IsAndroid || AppPlatform.IsIOS))
         {

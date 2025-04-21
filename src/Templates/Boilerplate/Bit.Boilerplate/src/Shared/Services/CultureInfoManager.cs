@@ -5,10 +5,10 @@ namespace Boilerplate.Shared.Services;
 public partial class CultureInfoManager
 {
     /// <summary>
-    /// To enable/disable multilingual support, navigate to Directory.Build.props and modify the EnglishUSOnly flag.
+    /// To enable/disable multilingual support, navigate to Directory.Build.props and modify the InvariantGlobalization flag.
     /// </summary>
-    public static bool EnglishUSOnly { get; } =
-#if EnglishUSOnly
+    public static bool InvariantGlobalization { get; } =
+#if InvariantGlobalization
     true;
 #else
     false;

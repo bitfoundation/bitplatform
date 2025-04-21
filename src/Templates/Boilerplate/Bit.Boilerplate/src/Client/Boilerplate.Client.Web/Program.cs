@@ -51,7 +51,7 @@ public static partial class Program
             e.SetObserved();
         };
 
-        if (CultureInfoManager.EnglishUSOnly is false)
+        if (CultureInfoManager.InvariantGlobalization is false)
         {
             var cultureCookie = await host.Services.GetRequiredService<Cookie>().GetValue(".AspNetCore.Culture");
 

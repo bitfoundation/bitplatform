@@ -20,7 +20,7 @@ public partial class PhoneService
         // Get region from Cloudflare "CF-IPCountry" header if available, otherwise use UI culture's region if multilingual is enabled, or fallback to the default region.
         var region = httpContextAccessor.HttpContext!.Request.Headers.TryGetValue("CF-IPCountry", out var value)
                          ? value.ToString()
-                         : new RegionInfo((CultureInfoManager.EnglishUSOnly is false ? CultureInfo.CurrentUICulture : CultureInfoManager.DefaultCulture).Name).TwoLetterISORegionName;
+                         : new RegionInfo((CultureInfoManager.InvariantGlobalization is false ? CultureInfo.CurrentUICulture : CultureInfoManager.DefaultCulture).Name).TwoLetterISORegionName;
 
         var parsedPhoneNumber = phoneNumberUtil.Parse(phoneNumber, region);
 

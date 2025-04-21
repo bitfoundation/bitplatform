@@ -68,7 +68,7 @@
                             </BitActionButton>
                         }
 
-                        @if (CultureInfoManager.EnglishUSOnly is false)
+                        @if (CultureInfoManager.InvariantGlobalization is false)
                         {
                             <BitActionButton IconName="@BitIconName.Globe" FullWidth OnClick="() => showCultures = true">
                                 <BitStack Horizontal Gap="0" Grows VerticalAlign="BitAlignment.Center">

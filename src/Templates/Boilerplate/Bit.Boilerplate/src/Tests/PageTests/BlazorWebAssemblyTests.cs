@@ -21,10 +21,10 @@ public partial class LocalizationTests : BlazorServer.LocalizationTests
     [TestCategory("MultilingualDisabled")]
     public async Task MultilingualDisabled()
     {
-        if (CultureInfoManager.EnglishUSOnly is false)
+        if (CultureInfoManager.InvariantGlobalization is false)
         {
             Assert.Inconclusive("Multilingual is enabled. " +
-                "You can disable it via <EnglishUSOnly>true</EnglishUSOnly> setting in Directiory.Build.props.");
+                "You can disable it via <InvariantGlobalization>true</InvariantGlobalization> setting in Directiory.Build.props.");
             return;
         }
 

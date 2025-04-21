@@ -23,7 +23,7 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerApiSettings sett
         context.AllowLocking = true;
         context.EnableOutputCaching = true;
         context.CacheVaryByRules.QueryKeys = "*";
-        if (CultureInfoManager.EnglishUSOnly is false)
+        if (CultureInfoManager.InvariantGlobalization is false)
         {
             context.CacheVaryByRules.VaryByValues.Add("Culture", CultureInfo.CurrentUICulture.Name);
         }
@@ -60,7 +60,7 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerApiSettings sett
         }
 
         //#if (api == "Integrated")
-        if (context.HttpContext.IsBlazorPageContext() && CultureInfoManager.EnglishUSOnly is false)
+        if (context.HttpContext.IsBlazorPageContext() && CultureInfoManager.InvariantGlobalization is false)
         {
             // Note: Currently, we are not keeping the current culture in the URL. 
             // The edge and client caches do not support such variations, although the output cache does. 

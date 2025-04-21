@@ -148,7 +148,7 @@ jobs:
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
       
     - name: Publish
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/client -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:RunAOTCompilation=true -p:EnglishUSOnly=true
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/client -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:RunAOTCompilation=true -p:InvariantGlobalization=true
 
     - name: Upload to asw
       run: |
@@ -192,10 +192,10 @@ jobs:
       run:  cd src && dotnet workload install wasm-tools
       
     - name: Generate CSS/JS files
-      run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:EnglishUSOnly=true --no-restore -c Release
+      run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:InvariantGlobalization=true --no-restore -c Release
       
     - name: Publish
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/client -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:EnglishUSOnly=true
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/client -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:InvariantGlobalization=true
 
     - name: Upload to asw
       run: |
@@ -242,7 +242,7 @@ jobs:
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
       
     - name: Publish
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/client -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:EnglishUSOnly=true
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/client -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:InvariantGlobalization=true
 
     - name: Upload to asw
       run: |
