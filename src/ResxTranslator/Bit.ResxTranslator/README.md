@@ -35,9 +35,7 @@ This JSON file defines the source and target languages, the location of your res
   "AdditionalLanguages": [ "nl", "fa", "sv", "hi", "zh", "es", "fr", "ar", "de" ],
   "AdditionalLanguages__Comment": "Required: An array of .NET culture names."
 
-  "ResxPaths": [
-    "src/**/*.resx"
-  ],
+  "ResxPaths": [ "src/**/*.resx" ],
   "RextPaths__Comment": "Required: An array of glob patterns to find your *base* .resx files",
 
   "OpenAI": {
