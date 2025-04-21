@@ -32,7 +32,7 @@ public class BitCountries
     public static BitCountry BosniaAndHerzegovina = new("Bosnia and Herzegovina", "387", "BA", "BIH");
     public static BitCountry Botswana = new("Botswana", "267", "BW", "BWA");
     public static BitCountry Brazil = new("Brazil", "55", "BR", "BRA");
-    public static BitCountry BritishIndianOceanTerritory = new("British Indian Ocean Territory", "246", "IO", "IOT");
+    //public static BitCountry BritishIndianOceanTerritory = new("British Indian Ocean Territory", "246", "IO", "IOT");
     public static BitCountry BritishVirginIslands = new("British Virgin Islands", "1-284", "VG", "VGB");
     public static BitCountry Brunei = new("Brunei", "673", "BN", "BRN");
     public static BitCountry Bulgaria = new("Bulgaria", "359", "BG", "BGR");
@@ -115,7 +115,7 @@ public class BitCountries
     public static BitCountry Kazakhstan = new("Kazakhstan", "7", "KZ", "KAZ");
     public static BitCountry Kenya = new("Kenya", "254", "KE", "KEN");
     public static BitCountry Kiribati = new("Kiribati", "686", "KI", "KIR");
-    public static BitCountry Kosovo = new("Kosovo", "383", "XK", "XKX");
+    //public static BitCountry Kosovo = new("Kosovo", "383", "XK", "XKX");
     public static BitCountry Kuwait = new("Kuwait", "965", "KW", "KWT");
     public static BitCountry Kyrgyzstan = new("Kyrgyzstan", "996", "KG", "KGZ");
     public static BitCountry Laos = new("Laos", "856", "LA", "LAO");
@@ -185,12 +185,12 @@ public class BitCountries
     public static BitCountry Romania = new("Romania", "40", "RO", "ROU");
     public static BitCountry Russia = new("Russia", "7", "RU", "RUS");
     public static BitCountry Rwanda = new("Rwanda", "250", "RW", "RWA");
-    public static BitCountry SaintBarthelemy = new("Saint Barthelemy", "590", "BL", "BLM");
+    //public static BitCountry SaintBarthelemy = new("Saint Barthelemy", "590", "BL", "BLM");
     public static BitCountry SaintHelena = new("Saint Helena", "290", "SH", "SHN");
     public static BitCountry SaintKittsAndNevis = new("Saint Kitts and Nevis", "1-869", "KN", "KNA");
     public static BitCountry SaintLucia = new("Saint Lucia", "1-758", "LC", "LCA");
     public static BitCountry SaintMartin = new("Saint Martin", "590", "MF", "MAF");
-    public static BitCountry SaintPierreAndMiquelon = new("Saint Pierre and Miquelon", "508", "PM", "SPM");
+    //public static BitCountry SaintPierreAndMiquelon = new("Saint Pierre and Miquelon", "508", "PM", "SPM");
     public static BitCountry SaintVincentAndTheGrenadines = new("Saint Vincent and the Grenadines", "1-784", "VC", "VCT");
     public static BitCountry Samoa = new("Samoa", "685", "WS", "WSM");
     public static BitCountry SanMarino = new("San Marino", "378", "SM", "SMR");
@@ -201,7 +201,7 @@ public class BitCountries
     public static BitCountry Seychelles = new("Seychelles", "248", "SC", "SYC");
     public static BitCountry SierraLeone = new("Sierra Leone", "232", "SL", "SLE");
     public static BitCountry Singapore = new("Singapore", "65", "SG", "SGP");
-    public static BitCountry Sint = new("Sint Maarten", "1-721", "SX", "SXM");
+    //public static BitCountry Sint = new("Sint Maarten", "1-721", "SX", "SXM");
     public static BitCountry Slovakia = new("Slovakia", "421", "SK", "SVK");
     public static BitCountry Slovenia = new("Slovenia", "386", "SI", "SVN");
     public static BitCountry SolomonIslands = new("Solomon Islands", "677", "SB", "SLB");
@@ -214,7 +214,7 @@ public class BitCountries
     public static BitCountry SriLanka = new("Sri Lanka", "94", "LK", "LKA");
     public static BitCountry Sudan = new("Sudan", "249", "SD", "SDN");
     public static BitCountry Suriname = new("Suriname", "597", "SR", "SUR");
-    public static BitCountry SvalbardAndJanMayen = new("Svalbard and Jan Mayen", "47", "SJ", "SJM");
+    //public static BitCountry SvalbardAndJanMayen = new("Svalbard and Jan Mayen", "47", "SJ", "SJM");
     public static BitCountry Swaziland = new("Swaziland", "268", "SZ", "SWZ");
     public static BitCountry Sweden = new("Sweden", "46", "SE", "SWE");
     public static BitCountry Switzerland = new("Switzerland", "41", "CH", "CHE");
@@ -282,7 +282,7 @@ public class BitCountries
         BosniaAndHerzegovina,
         Botswana,
         Brazil,
-        BritishIndianOceanTerritory,
+        //BritishIndianOceanTerritory,
         BritishVirginIslands,
         Brunei,
         Bulgaria,
@@ -364,7 +364,7 @@ public class BitCountries
         Kazakhstan,
         Kenya,
         Kiribati,
-        Kosovo,
+        //Kosovo,
         Kuwait,
         Kyrgyzstan,
         Laos,
@@ -433,12 +433,12 @@ public class BitCountries
         Romania,
         Russia,
         Rwanda,
-        SaintBarthelemy,
+        //SaintBarthelemy,
         SaintHelena,
         SaintKittsAndNevis,
         SaintLucia,
         SaintMartin,
-        SaintPierreAndMiquelon,
+        //SaintPierreAndMiquelon,
         SaintVincentAndTheGrenadines,
         Samoa,
         SanMarino,
@@ -449,7 +449,7 @@ public class BitCountries
         Seychelles,
         SierraLeone,
         Singapore,
-        Sint,
+        //Sint,
         Slovakia,
         Slovenia,
         SolomonIslands,
@@ -462,7 +462,7 @@ public class BitCountries
         SriLanka,
         Sudan,
         Suriname,
-        SvalbardAndJanMayen,
+        //SvalbardAndJanMayen,
         Swaziland,
         Sweden,
         Switzerland,

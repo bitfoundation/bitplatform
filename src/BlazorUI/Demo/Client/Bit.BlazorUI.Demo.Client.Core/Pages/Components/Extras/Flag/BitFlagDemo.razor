@@ -1,0 +1,36 @@
+@page "/components/flag"
+
+<PageOutlet Url="components/flag"
+            Title="Flag"
+            Description="flag component of the bit BlazorUI components" />
+
+<DemoPage Name="Flag"
+          Description="BitFlag is a component that renders the flag image of a country."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          GitHubExtrasUrl="Flag/BitFlag.razor"
+          GitHubDemoUrl="Extras/Flag/BitFlagDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Extras"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div style="display:flex;gap:2px;flex-wrap:wrap">
+                @foreach (var country in BitCountries.All)
+                {
+                    <BitFlag Country="country" Title="@($"{country.Name} - {country.Iso2}")" />
+                }
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>
