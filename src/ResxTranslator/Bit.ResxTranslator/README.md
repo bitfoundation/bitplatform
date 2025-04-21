@@ -73,7 +73,5 @@ especially if this file is checked into version control. The tool uses standard 
 ## Usage
 
 ```bash
-dotnet tool install --global Bit.ResxTranslator
-
 resx-translate
 ```
