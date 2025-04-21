@@ -26,7 +26,7 @@ public static partial class Program
             app.UseForwardedHeaders(forwardedHeadersOptions);
         }
 
-        if (CultureInfoManager.MultilingualEnabled)
+        if (CultureInfoManager.EnglishUSOnly is false)
         {
             var supportedCultures = CultureInfoManager.SupportedCultures.Select(sc => sc.Culture).ToArray();
             var options = new RequestLocalizationOptions

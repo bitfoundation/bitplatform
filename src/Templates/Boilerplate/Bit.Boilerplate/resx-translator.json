@@ -1,0 +1,21 @@
+{
+    "Docs_Comment": "Checkout https://github.com/bitfoundation/bitplatform/blob/develop/src/ResxTranslator/README.md",
+
+    "DefaultLanguage": "en",
+
+    "AdditionalLanguages": [ "nl", "fa", "sv" ],
+
+    "ResxPaths": [ "/src/**/*.resx" ],
+
+    "OpenAI": {
+        "Model": "gpt-4.1-mini",
+        "Endpoint": "https://models.inference.ai.azure.com",
+        "ApiKey": null
+    },
+
+    "AzureOpenAI": {
+        "Model": "gpt-4.1-mini",
+        "Endpoint": "https://yourResourceName.openai.azure.com/openai/deployments/yourDeployment",
+        "ApiKey": null
+    }
+}

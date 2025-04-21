@@ -29,7 +29,7 @@ public partial class Program
         services.AddClientWindowsProjectServices(configuration);
         Services = services.BuildServiceProvider();
 
-        if (CultureInfoManager.MultilingualEnabled)
+        if (CultureInfoManager.EnglishUSOnly is false)
         {
             var culture = Services.GetRequiredService<IStorageService>()
                 .GetItem("Culture")

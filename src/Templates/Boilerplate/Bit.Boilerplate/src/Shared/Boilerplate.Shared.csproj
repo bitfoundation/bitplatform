@@ -57,6 +57,7 @@
     <ItemGroup>
         <Content Remove="appsettings*.json" />
         <EmbeddedResource Include="appsettings*.json" />
+        <Content Include="..\..\resx-translator.json" Link="Resources\resx-translator.json" />
         <EmbeddedResource Update="appsettings.*.json">
             <DependentUpon>appsettings.json</DependentUpon>
         </EmbeddedResource>

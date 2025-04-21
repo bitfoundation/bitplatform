@@ -128,7 +128,7 @@ jobs:
         dotnet ef migrations add InitialMigration --verbose
         dotnet ef database update
         cd ../../Tests
-        # dotnet test -p:MultilingualEnabled=false --logger GitHubActions --filter "${{ env.MULTILINGUAL_DISABLED_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
+        # dotnet test -p:EnglishUSOnly=true --logger GitHubActions --filter "${{ env.MULTILINGUAL_DISABLED_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
@@ -188,13 +188,13 @@ jobs:
     - name: Test sample configuration 1
       run: |
         dotnet new bit-bp --name TestProject --database SqlServer --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --module Admin --offlineDb --appInsights --sentry --signalR --notification --cloudflare
-        dotnet build TestProject/TestProject.sln -p:MultilingualEnabled=true -p:Environment=Staging
+        dotnet build TestProject/TestProject.sln -p:EnglishUSOnly=false -p:Environment=Staging
         rm -r "TestProject"
 
     - name: Test sample configuration 2
       run: |
         dotnet new bit-bp --name TestProject2 --database Other --filesStorage Other --api Standalone --captcha None --pipeline None --module None --offlineDb false --appInsights false --sentry false --signalR false --notification false --cloudflare false
-        dotnet build TestProject2/TestProject2.sln -p:MultilingualEnabled=false -p:Environment=Development
+        dotnet build TestProject2/TestProject2.sln -p:EnglishUSOnly=true -p:Environment=Development
         rm -r "TestProject2"
 
     - name: Create projects from BlazorEmpty project template with different parameters

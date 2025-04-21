@@ -18,7 +18,7 @@
                    Color="BitColor.SecondaryBackground"
                    IconName="@(currentTheme == AppThemeType.Light ? BitIconName.ClearNight : BitIconName.Sunny)" />
 
-        @if (CultureInfoManager.MultilingualEnabled)
+        @if (CultureInfoManager.EnglishUSOnly is false)
         {
             <BitDropdown Items="cultures"
                          FitWidth NoBorder Transparent
