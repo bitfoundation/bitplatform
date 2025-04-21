@@ -30,7 +30,7 @@ This JSON file defines the source and target languages, the location of your res
 ```jsonc
 {
   "DefaultLanguage": "en",
-  "DefaultLanguage__Comment": ".NET culture's name, en, en-US for example.",
+  "DefaultLanguage__Comment": "Required: .NET culture's name, en, en-US for example.",
 
   "AdditionalLanguages": [ "nl", "fa", "sv", "hi", "zh", "es", "fr", "ar", "de" ],
   "AdditionalLanguages__Comment": "Required: An array of .NET culture names.",
