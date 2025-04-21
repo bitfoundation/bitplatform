@@ -37,7 +37,7 @@ This JSON file defines the source and target languages, the location of your res
 
   "ResxPaths": [
     "src/**/*.resx"
-   ],
+  ],
   "RextPaths__Comment": "Required: An array of glob patterns to find your *base* .resx files",
 
   "OpenAI": {
