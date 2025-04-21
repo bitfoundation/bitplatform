@@ -25,7 +25,7 @@ dotnet tool install --global Bit.ResxTranslator
 
 This JSON file defines the source and target languages, the location of your resource files, and the connection details for the LLM service (OpenAI or Azure OpenAI).
 
-**Example `Bit.RexTranslator.json`:**
+**Example `Bit.ResxTranslator.json`:**
 
 ```jsonc
 {
@@ -36,7 +36,7 @@ This JSON file defines the source and target languages, the location of your res
   "AdditionalLanguages__Comment": "Required: An array of .NET culture names.",
 
   "ResxPaths": [ "src/**/*.resx" ],
-  "RextPaths__Comment": "Required: An array of glob patterns to find your *base* .resx files",
+  "ResxPaths__Comment": "Required: An array of glob patterns to find your *base* .resx files",
 
   "OpenAI": {
     "Model": "gpt-4.1-mini",

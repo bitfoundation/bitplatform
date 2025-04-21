@@ -18,7 +18,7 @@ using OpenAI.Chat;
 var services = new ServiceCollection();
 var configuration = new ConfigurationManager();
 
-configuration.AddJsonFile(Path.Combine(Environment.CurrentDirectory, "resx-translator.json"), optional: false);
+configuration.AddJsonFile(Path.Combine(Environment.CurrentDirectory, "Bit.ResxTranslator.json"), optional: false);
 configuration.AddEnvironmentVariables();
 #if DEBUG
 configuration.AddUserSecrets("a7e11fa7-16df-4c99-b309-1616a8db9c37");

@@ -19,8 +19,6 @@ public partial class Translator(ResxTranslatorSettings settings,
         {
             var defaultLanguageKeyValues = await DeserializeXmlToDictionary(resxGroup.Path, cancellationToken);
 
-            var defaultFileContent = await File.ReadAllTextAsync(resxGroup.Path, cancellationToken);
-
             foreach (var relatedResx in resxGroup.RelatedResxFiles)
             {
                 var relatedLanguageKeyValues = await DeserializeXmlToDictionary(relatedResx.Path, cancellationToken);
@@ -58,14 +56,17 @@ After translating, call the `SaveTranslatedValues` tool and pass an array of the
                     ]
                 }, cancellationToken: cancellationToken);
 
-                var relatedResxFileContent = defaultFileContent;
-
-                foreach (var item in defaultLanguageKeyValues)
+                var defaultFileContent = await File.ReadAllTextAsync(resxGroup.Path, cancellationToken);
+                var doc = XDocument.Parse(defaultFileContent);
+                foreach (var data in doc.Root!.Elements("data"))
                 {
-                    relatedResxFileContent = relatedResxFileContent.Replace($"<value>{item.Value}</value>", $"<value>{relatedLanguageKeyValues[item.Key]}</value>");
+                    var key = data.Attribute("name")?.Value;
+                    if (key is not null && relatedLanguageKeyValues.TryGetValue(key, out var tr))
+                        data.Element("value")!.Value = tr ?? string.Empty; // XDocument escapes for you
                 }
-
-                await File.WriteAllTextAsync(relatedResx.Path, relatedResxFileContent, cancellationToken);
+                File.Delete(relatedResx.Path);
+                await using var relatedResxFile = File.OpenWrite(relatedResx.Path);
+                await doc.SaveAsync(relatedResxFile, SaveOptions.None, cancellationToken);
             }
         });
     }

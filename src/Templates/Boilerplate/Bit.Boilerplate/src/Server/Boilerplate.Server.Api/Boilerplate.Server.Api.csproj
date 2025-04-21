@@ -73,7 +73,7 @@
 
         <Using Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Microsoft.Extensions.AI" />
         <Using Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Boilerplate.Server.Api.Models.Chatbot" />
-        <Content Include="..\..\..\resx-translator.json" Link="Resources\resx-translator.json" />
+        <Content Include="..\..\..\Bit.ResxTranslator.json" Link="Resources\Bit.ResxTranslator.json" />
 
         <Content Include=".config\dotnet-tools.json" />
     </ItemGroup>
