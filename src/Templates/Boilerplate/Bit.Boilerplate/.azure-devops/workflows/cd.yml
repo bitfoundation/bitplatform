@@ -39,6 +39,13 @@ jobs:
       script: |
           'cd src && dotnet workload install wasm-tools'
 
+  - script: |
+      cd src
+      dotnet tool install --global Bit.ResxTranslator --prerelease
+      bit-resx-translate
+    failOnStderr: true
+    displayName: Use Bit.ResxTranslator
+
   - task: FileTransform@2
     displayName: Update appsettings.json
     inputs:

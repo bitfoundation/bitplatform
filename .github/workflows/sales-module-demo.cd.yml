@@ -147,6 +147,12 @@ jobs:
         WindowsUpdate.FilesUrl: https://windows-sales.bitplatform.dev
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
+    - name: Use Bit.ResxTranslator
+      run: |
+            cd SalesModule/src
+            dotnet tool install --global Bit.ResxTranslator --prerelease
+            bit-resx-translate
+
     - name: Generate CSS/JS files
       run: dotnet build SalesModule\src\Client\SalesModule.Client.Core\SalesModule.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
 
