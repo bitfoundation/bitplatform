@@ -25,6 +25,28 @@
     </NotesTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <BitFlag Country="BitCountries.Iran" />
+        </DemoExample>
+
+        <DemoExample Title="ISO & Code" RazorCode="@example2RazorCode" Id="example2">
+            <div>Explore the additional parameters of the BitFlag for specifing the country:</div>
+            <br /><br />
+            
+            <div>Iso2: "nl"</div><br />
+            <BitFlag Iso2="nl" />
+            
+            <br /><br /><br /><br />
+
+            <div>Iso3: "NLD"</div><br />
+            <BitFlag Iso3="NLD" />
+
+            <br /><br /><br /><br />
+
+            <div>Code (dialing code): "31"</div><br />
+            <BitFlag Code="31" />
+        </DemoExample>
+
+        <DemoExample Title="All countries" RazorCode="@example3RazorCode" Id="example3">
             <div style="display:flex;gap:2px;flex-wrap:wrap">
                 @foreach (var country in BitCountries.All)
                 {
