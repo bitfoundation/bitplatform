@@ -58,6 +58,15 @@ public partial class CultureInfoManager
         CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentUICulture = Thread.CurrentThread.CurrentUICulture = cultureInfo;
     }
 
+    public static string? FindRegionIso2(string? cultureName)
+    {
+        var cultureInfo = GetCultureInfo(cultureName);
+
+        if (cultureInfo is null) return null;
+
+        return new RegionInfo(cultureInfo.LCID).TwoLetterISORegionName;
+    }
+
     /// <summary>
     /// This is an example to demonstrate the way you can customize application culture
     /// </summary>

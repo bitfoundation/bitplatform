@@ -104,16 +104,6 @@ public partial class AppMenu
         NavigationManager.NavigateTo(Urls.SettingsPage);
     }
 
-    private static BitCountry? FindBitCountry(string? cultureName)
-    {
-        var cultureInfo = CultureInfoManager.GetCultureInfo(cultureName);
-        
-        if (cultureInfo is null) return null;
-
-        return BitCountries.All.FirstOrDefault(c => c.Iso2 == new RegionInfo(cultureInfo.LCID).TwoLetterISORegionName);
-    }
-
-
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
