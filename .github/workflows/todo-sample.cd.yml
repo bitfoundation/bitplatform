@@ -42,7 +42,7 @@ jobs:
 
     - name: Use Bit.ResxTranslator
       run: |
-            cd TodoSample/src
+            cd TodoSample
             dotnet tool install --global Bit.ResxTranslator --prerelease
             bit-resx-translate
 
@@ -282,7 +282,7 @@ jobs:
   
     - name: Use Bit.ResxTranslator
       run: |
-            cd TodoSample\src
+            cd TodoSample
             dotnet tool install --global Bit.ResxTranslator --prerelease
             bit-resx-translate
 
@@ -355,7 +355,7 @@ jobs:
   
     - name: Use Bit.ResxTranslator
       run: |
-            cd TodoSample/src
+            cd TodoSample
             dotnet tool install --global Bit.ResxTranslator --prerelease
             bit-resx-translate
 
@@ -441,7 +441,7 @@ jobs:
       
     - name: Use Bit.ResxTranslator
       run: |
-            cd TodoSample/src
+            cd TodoSample
             dotnet tool install --global Bit.ResxTranslator --prerelease
             bit-resx-translate
 

@@ -39,7 +39,7 @@ jobs:
        
     - name: Use Bit.ResxTranslator
       run: |
-            cd AdminPanel/src
+            cd AdminPanel
             dotnet tool install --global Bit.ResxTranslator --prerelease
             bit-resx-translate
 
@@ -104,7 +104,7 @@ jobs:
        
     - name: Use Bit.ResxTranslator
       run: |
-            cd AdminPanel/src
+            cd AdminPanel
             dotnet tool install --global Bit.ResxTranslator --prerelease
             bit-resx-translate
 
@@ -197,7 +197,7 @@ jobs:
   
     - name: Use Bit.ResxTranslator
       run: |
-            cd AdminPanel\src
+            cd AdminPanel
             dotnet tool install --global Bit.ResxTranslator --prerelease
             bit-resx-translate
 
@@ -270,7 +270,7 @@ jobs:
   
     - name: Use Bit.ResxTranslator
       run: |
-            cd AdminPanel/src
+            cd AdminPanel
             dotnet tool install --global Bit.ResxTranslator --prerelease
             bit-resx-translate
 
@@ -336,7 +336,7 @@ jobs:
   
     - name: Use Bit.ResxTranslator
       run: |
-            cd AdminPanel/src
+            cd AdminPanel
             dotnet tool install --global Bit.ResxTranslator --prerelease
             bit-resx-translate
 

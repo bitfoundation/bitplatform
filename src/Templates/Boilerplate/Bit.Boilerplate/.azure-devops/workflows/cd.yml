@@ -40,7 +40,6 @@ jobs:
           'cd src && dotnet workload install wasm-tools'
 
   - script: |
-      cd src
       dotnet tool install --global Bit.ResxTranslator
       bit-resx-translate
     failOnStderr: true
@@ -151,7 +150,6 @@ jobs:
     displayName: 'Install Node.js'
 
   - script: |
-      cd src
       dotnet tool install --global Bit.ResxTranslator
       bit-resx-translate
     failOnStderr: true
@@ -229,7 +227,6 @@ jobs:
     displayName: Copy keystore to app project folder
 
   - script: |
-      cd src
       dotnet tool install --global Bit.ResxTranslator
       bit-resx-translate
     failOnStderr: true

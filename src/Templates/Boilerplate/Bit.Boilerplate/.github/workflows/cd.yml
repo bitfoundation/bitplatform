@@ -37,7 +37,6 @@ jobs:
 
     - name: Use Bit.ResxTranslator
       run: |
-            cd src
             dotnet tool install --global Bit.ResxTranslator
             bit-resx-translate
 
@@ -143,7 +142,6 @@ jobs:
 
     - name: Use Bit.ResxTranslator
       run: |
-            cd src
             dotnet tool install --global Bit.ResxTranslator
             bit-resx-translate
   
@@ -198,7 +196,6 @@ jobs:
 
     - name: Use Bit.ResxTranslator
       run: |
-            cd src
             dotnet tool install --global Bit.ResxTranslator
             bit-resx-translate
   
@@ -253,7 +250,6 @@ jobs:
 
     - name: Use Bit.ResxTranslator
       run: |
-            cd src
             dotnet tool install --global Bit.ResxTranslator
             bit-resx-translate
   

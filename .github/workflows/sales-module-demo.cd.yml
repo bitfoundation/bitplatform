@@ -149,7 +149,7 @@ jobs:
 
     - name: Use Bit.ResxTranslator
       run: |
-            cd SalesModule/src
+            cd SalesModule
             dotnet tool install --global Bit.ResxTranslator --prerelease
             bit-resx-translate
 
