@@ -43,7 +43,9 @@ public partial class BitFlag : BitComponentBase
         StyleBuilder.Register(() =>
         {
             var iso2 = FindIso2();
-            return iso2.HasValue() ? $"background-image:url('_content/Bit.BlazorUI.Extras/flags/{iso2!.ToLower()}-flat-16.webp')" : string.Empty;
+            return iso2.HasValue()
+                    ? $"background-image:url('_content/Bit.BlazorUI.Extras/flags/{iso2!.ToUpperInvariant()}-flat-16.webp')" 
+                    : string.Empty;
         });
     }
 
