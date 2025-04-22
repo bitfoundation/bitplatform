@@ -365,7 +365,7 @@ public static partial class Program
             EnableMultipleHttp3Connections = true
         });
 
-        if (string.IsNullOrEmpty(appSettings.AI!.OpenAI?.ChatApiKey) is false)
+        if (string.IsNullOrEmpty(appSettings.AI?.OpenAI?.ChatApiKey) is false)
         {
             // https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.AI.OpenAI#microsoftextensionsaiopenai
             services.AddChatClient(sp => new OpenAI.Chat.ChatClient(model: appSettings.AI.OpenAI.ChatModel, credential: new(appSettings.AI.OpenAI.ChatApiKey), options: new()
@@ -378,7 +378,7 @@ public static partial class Program
             // .UseDistributedCache()
             // .UseOpenTelemetry()
         }
-        else if (string.IsNullOrEmpty(appSettings.AI!.AzureOpenAI?.ChatApiKey) is false)
+        else if (string.IsNullOrEmpty(appSettings.AI?.AzureOpenAI?.ChatApiKey) is false)
         {
             // https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.AI.AzureAIInference#microsoftextensionsaiazureaiinference
             services.AddChatClient(sp => new Azure.AI.Inference.ChatCompletionsClient(endpoint: appSettings.AI.AzureOpenAI.ChatEndpoint,
@@ -393,7 +393,7 @@ public static partial class Program
             // .UseOpenTelemetry()
         }
 
-        if (string.IsNullOrEmpty(appSettings.AI!.OpenAI?.EmbeddingApiKey) is false)
+        if (string.IsNullOrEmpty(appSettings.AI?.OpenAI?.EmbeddingApiKey) is false)
         {
             services.AddEmbeddingGenerator(sp => new OpenAI.Embeddings.EmbeddingClient(model: appSettings.AI.OpenAI.EmbeddingModel, credential: new(appSettings.AI.OpenAI.EmbeddingApiKey), options: new()
             {
@@ -404,7 +404,7 @@ public static partial class Program
             // .UseDistributedCache()
             // .UseOpenTelemetry()
         }
-        else if (string.IsNullOrEmpty(appSettings.AI!.AzureOpenAI?.EmbeddingApiKey) is false)
+        else if (string.IsNullOrEmpty(appSettings.AI?.AzureOpenAI?.EmbeddingApiKey) is false)
         {
             services.AddEmbeddingGenerator(sp => new Azure.AI.Inference.EmbeddingsClient(endpoint: appSettings.AI.AzureOpenAI.EmbeddingEndpoint,
                 credential: new Azure.AzureKeyCredential(appSettings.AI.AzureOpenAI.EmbeddingApiKey),

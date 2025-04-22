@@ -51,7 +51,7 @@ public partial class ProductDto
 
     private string FormatPrice()
     {
-        if (CultureInfoManager.MultilingualEnabled)
+        if (CultureInfoManager.InvariantGlobalization is false)
         {
             return CultureInfo.CurrentCulture.TextInfo.IsRightToLeft
                     ? $"{Price:N0} {CultureInfo.CurrentCulture.NumberFormat.CurrencySymbol}"

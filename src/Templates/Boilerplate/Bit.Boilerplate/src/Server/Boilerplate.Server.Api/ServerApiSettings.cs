@@ -44,7 +44,7 @@ public partial class ServerApiSettings : SharedSettings
     public CloudflareOptions? Cloudflare { get; set; }
     //#endif
 
-    public ResponseCachingOptions ResponseCaching { get; set; } = default!;
+    public ResponseCachingOptions? ResponseCaching { get; set; }
 
     /// <summary>
     /// Lists the permitted origins for CORS requests, return URLs following social sign-in and email confirmation, etc., along with allowed origins for Web Auth.
@@ -84,7 +84,10 @@ public partial class ServerApiSettings : SharedSettings
         {
             Validator.TryValidateObject(ForwardedHeaders, new ValidationContext(ForwardedHeaders), validationResults, true);
         }
-        Validator.TryValidateObject(ResponseCaching, new ValidationContext(ResponseCaching), validationResults, true);
+        if (ResponseCaching is not null)
+        {
+            Validator.TryValidateObject(ResponseCaching, new ValidationContext(ResponseCaching), validationResults, true);
+        }
 
         const int MinimumJwtIssuerSigningKeySecretByteLength = 64; // 512 bits = 64 bytes, minimum for HS512
         var jwtIssuerSigningKeySecretByteLength = Encoding.UTF8.GetBytes(Identity.JwtIssuerSigningKeySecret).Length;

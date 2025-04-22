@@ -117,6 +117,11 @@ jobs:
     - name: dotnet pack CodeAnalyzer
       run: dotnet pack src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj --output . --configuration Release
     
+    - name: dotnet build ResxTranslator
+      run: dotnet build src/ResxTranslator/Bit.ResxTranslator/Bit.ResxTranslator.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack ResxTranslator
+      run: dotnet pack src/ResxTranslator/Bit.ResxTranslator/Bit.ResxTranslator.csproj --output . --configuration Release
+    
     - name: build SourceGenerators nupkg file
       run: dotnet build src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj --configuration Release
 

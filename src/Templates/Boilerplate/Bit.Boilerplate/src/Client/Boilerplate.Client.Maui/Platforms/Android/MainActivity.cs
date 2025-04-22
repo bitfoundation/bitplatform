@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Android.OS;
 using Android.App;
 using Android.Content;
@@ -18,7 +18,7 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
                         // the following app links will be opened in app instead of browser if the app is installed on Android device.
                         DataPaths = [Urls.HomePage],
                         DataPathPrefixes = [
-                            "/en-US", "/en-GB", "/fa-IR", "/nl-NL",
+                            "/en-US", "/en-GB", "/nl-NL", "/fa-IR", "sv-SE", "hi-IN", "zh-CN", "es-ES", "fr-FR", "ar-SA", "de-DE",
                             Urls.ConfirmPage, Urls.ForgotPasswordPage, Urls.SettingsPage, Urls.ResetPasswordPage, Urls.SignInPage,
                             Urls.SignUpPage, Urls.NotAuthorizedPage, Urls.NotFoundPage, Urls.TermsPage, Urls.AboutPage, Urls.Authorize, Urls.AboutPage,
                             //#if (module == "Admin")

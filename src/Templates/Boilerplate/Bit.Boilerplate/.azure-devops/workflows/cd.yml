@@ -39,6 +39,12 @@ jobs:
       script: |
           'cd src && dotnet workload install wasm-tools'
 
+  - script: |
+      dotnet tool install --global Bit.ResxTranslator
+      bit-resx-translate
+    failOnStderr: true
+    displayName: Use Bit.ResxTranslator
+
   - task: FileTransform@2
     displayName: Update appsettings.json
     inputs:
@@ -143,6 +149,12 @@ jobs:
       versionSpec: '23.x'
     displayName: 'Install Node.js'
 
+  - script: |
+      dotnet tool install --global Bit.ResxTranslator
+      bit-resx-translate
+    failOnStderr: true
+    displayName: Use Bit.ResxTranslator
+
   - task: FileTransform@2
     displayName: Update appsettings.json
     inputs:
@@ -213,6 +225,12 @@ jobs:
       cp $(AndroidKeyStore.secureFilePath) src/Client/Boilerplate.Client.Maui/Boilerplate.keystore
     failOnStderr: true
     displayName: Copy keystore to app project folder
+
+  - script: |
+      dotnet tool install --global Bit.ResxTranslator
+      bit-resx-translate
+    failOnStderr: true
+    displayName: Use Bit.ResxTranslator
 
   - task: FileTransform@2
     displayName: Update appsettings.json

@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Boilerplate.Client.Web;
@@ -8,9 +8,9 @@ namespace Boilerplate.Server.Web;
 
 public partial class ServerWebSettings : ClientWebSettings
 {
-    public ForwardedHeadersOptions ForwardedHeaders { get; set; } = default!;
+    public ForwardedHeadersOptions? ForwardedHeaders { get; set; } = default!;
 
-    public ResponseCachingOptions ResponseCaching { get; set; } = default!;
+    public ResponseCachingOptions? ResponseCaching { get; set; } = default!;
 
     [Required]
     public WebAppRenderOptions WebAppRender { get; set; } = default!;
@@ -33,9 +33,15 @@ public partial class ServerWebSettings : ClientWebSettings
 
         Validator.TryValidateObject(WebAppRender, new ValidationContext(WebAppRender), validationResults, true);
 
-        Validator.TryValidateObject(ForwardedHeaders, new ValidationContext(ForwardedHeaders), validationResults, true);
+        if (ForwardedHeaders is not null)
+        {
+            Validator.TryValidateObject(ForwardedHeaders, new ValidationContext(ForwardedHeaders), validationResults, true);
+        }
 
-        Validator.TryValidateObject(ResponseCaching, new ValidationContext(ResponseCaching), validationResults, true);
+        if (ResponseCaching is not null)
+        {
+            Validator.TryValidateObject(ResponseCaching, new ValidationContext(ResponseCaching), validationResults, true);
+        }
 
         return validationResults;
     }

@@ -254,7 +254,7 @@ public partial class ClientAppCoordinator : AppComponentBase
 
     private async Task ConfigureUISetup()
     {
-        if (CultureInfoManager.MultilingualEnabled)
+        if (CultureInfoManager.InvariantGlobalization is false)
         {
             CultureInfoManager.SetCurrentCulture(new Uri(NavigationManager.Uri).GetCulture() ??  // 1- Culture query string OR Route data request culture
                                                  await storageService.GetItem("Culture") ?? // 2- User settings

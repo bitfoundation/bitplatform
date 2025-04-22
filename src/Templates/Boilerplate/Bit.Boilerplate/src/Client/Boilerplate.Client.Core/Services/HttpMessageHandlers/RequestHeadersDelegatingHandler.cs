@@ -20,7 +20,7 @@ public partial class RequestHeadersDelegatingHandler(ITelemetryContext telemetry
             request.Headers.UserAgent.TryParseAdd(telemetryContext.Platform);
         }
 
-        if (CultureInfoManager.MultilingualEnabled && string.IsNullOrEmpty(CultureInfo.CurrentUICulture.Name) is false)
+        if (CultureInfoManager.InvariantGlobalization is false && string.IsNullOrEmpty(CultureInfo.CurrentUICulture.Name) is false)
         {
             request.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(CultureInfo.CurrentUICulture.Name));
         }
