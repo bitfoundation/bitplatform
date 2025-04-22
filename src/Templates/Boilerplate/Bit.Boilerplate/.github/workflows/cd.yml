@@ -35,6 +35,11 @@ jobs:
       with:
         node-version: 23
 
+    - name: Use Bit.ResxTranslator
+      run: |
+            dotnet tool install --global Bit.ResxTranslator
+            bit-resx-translate
+
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
@@ -134,6 +139,11 @@ jobs:
     - uses: actions/setup-node@v4
       with:
         node-version: 23
+
+    - name: Use Bit.ResxTranslator
+      run: |
+            dotnet tool install --global Bit.ResxTranslator
+            bit-resx-translate
   
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
@@ -183,6 +193,11 @@ jobs:
           fileDir: './src/Client/Boilerplate.Client.Maui/'
           fileName: 'Boilerplate.keystore'
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
+
+    - name: Use Bit.ResxTranslator
+      run: |
+            dotnet tool install --global Bit.ResxTranslator
+            bit-resx-translate
   
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
@@ -232,6 +247,11 @@ jobs:
     - uses: actions/setup-node@v4
       with:
         node-version: 23
+
+    - name: Use Bit.ResxTranslator
+      run: |
+            dotnet tool install --global Bit.ResxTranslator
+            bit-resx-translate
   
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 

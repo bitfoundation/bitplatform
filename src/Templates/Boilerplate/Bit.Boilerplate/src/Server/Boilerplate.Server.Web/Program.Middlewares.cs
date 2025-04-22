@@ -44,7 +44,7 @@ public static partial class Program
             app.UseForwardedHeaders(forwardedHeadersOptions);
         }
 
-        if (CultureInfoManager.MultilingualEnabled)
+        if (CultureInfoManager.InvariantGlobalization is false)
         {
             var supportedCultures = CultureInfoManager.SupportedCultures.Select(sc => sc.Culture).ToArray();
             var options = new RequestLocalizationOptions
@@ -227,7 +227,7 @@ public static partial class Program
                  .Except([Urls.NotFoundPage, Urls.NotAuthorizedPage])
                  .ToArray();
 
-            urls = CultureInfoManager.MultilingualEnabled
+            urls = CultureInfoManager.InvariantGlobalization is false
                     ? urls.Union(CultureInfoManager.SupportedCultures.SelectMany(sc => urls.Select(url => $"{sc.Culture.Name}{url}"))).ToArray()
                     : urls;
 
@@ -249,7 +249,7 @@ public static partial class Program
             var products = await controller.WithQuery(new ODataQuery() { Select = $"{nameof(ProductDto.ShortId)},{nameof(ProductDto.Name)}" }).Get(context.RequestAborted);
             var productsUrls = products.Select(p => p.PageUrl).ToArray();
 
-            productsUrls = CultureInfoManager.MultilingualEnabled
+            productsUrls = CultureInfoManager.InvariantGlobalization is false
                 ? productsUrls.Union(CultureInfoManager.SupportedCultures.SelectMany(sc => productsUrls.Select(url => $"{sc.Culture.Name}{url}"))).ToArray()
                 : productsUrls;
 

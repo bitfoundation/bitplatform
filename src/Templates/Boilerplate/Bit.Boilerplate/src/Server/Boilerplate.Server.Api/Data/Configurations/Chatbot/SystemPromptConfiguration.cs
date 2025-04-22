@@ -17,7 +17,6 @@ public class SystemPromptConfiguration : IEntityTypeConfiguration<SystemPrompt>
 **[[[GENERAL_INFORMATION_BEGIN]]]**
 
 *   **Platforms:** The application is available on Android, iOS, Windows, macOS, and as a Web (PWA) application.
-*   **Languages:** The app supports multiple languages: English, Dutch, and Persian.
 
 * Website address: [Website address](https://sales.bitplatform.dev/)
 * Google Play: [Google Play Link](https://play.google.com/store/apps/details?id=com.bitplatform.AdminPanel.Template)

@@ -5,6 +5,8 @@
 env:
   SERVER_ADDRESS: 'https://adminpanel.bitplatform.dev'
   APP_SERVICE_NAME: 'bit-adminpanel'
+  AzureOpenAI__ApiKey: ${{ secrets.AzureOpenAI__ApiKey }}
+  AzureOpenAI__Endpoint: ${{ secrets.AzureOpenAI__Endpoint }}
 
 on:
   workflow_dispatch:
@@ -37,6 +39,12 @@ jobs:
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
        cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --appInsights --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR
        
+    - name: Use Bit.ResxTranslator
+      run: |
+            cd AdminPanel
+            dotnet tool install --global Bit.ResxTranslator --prerelease
+            bit-resx-translate
+
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
@@ -96,6 +104,12 @@ jobs:
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
        cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --appInsights --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR
        
+    - name: Use Bit.ResxTranslator
+      run: |
+            cd AdminPanel
+            dotnet tool install --global Bit.ResxTranslator --prerelease
+            bit-resx-translate
+
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
@@ -183,6 +197,12 @@ jobs:
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
         cd ..\..\..\ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --appInsights --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --captcha reCaptcha --signalR
   
+    - name: Use Bit.ResxTranslator
+      run: |
+            cd AdminPanel
+            dotnet tool install --global Bit.ResxTranslator --prerelease
+            bit-resx-translate
+
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
@@ -250,6 +270,12 @@ jobs:
           fileName: 'google-services.json'
           encodedString: ${{ secrets.ADMINPANEL_GOOGLE_SERVICES_JSON_BASE64 }}
   
+    - name: Use Bit.ResxTranslator
+      run: |
+            cd AdminPanel
+            dotnet tool install --global Bit.ResxTranslator --prerelease
+            bit-resx-translate
+
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
@@ -310,6 +336,12 @@ jobs:
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
         cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --appInsights --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR
   
+    - name: Use Bit.ResxTranslator
+      run: |
+            cd AdminPanel
+            dotnet tool install --global Bit.ResxTranslator --prerelease
+            bit-resx-translate
+
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:

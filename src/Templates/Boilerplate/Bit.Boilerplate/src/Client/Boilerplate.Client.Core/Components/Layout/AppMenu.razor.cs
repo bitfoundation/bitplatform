@@ -35,7 +35,7 @@ public partial class AppMenu
         AuthManager.AuthenticationStateChanged += AuthManager_AuthenticationStateChanged;
         NavigationManager.LocationChanged += NavigationManager_LocationChanged;
 
-        if (CultureInfoManager.MultilingualEnabled)
+        if (CultureInfoManager.InvariantGlobalization is false)
         {
             cultures = CultureInfoManager.SupportedCultures
                               .Select(sc => new BitChoiceGroupItem<string> { Value = sc.Culture.Name, Text = sc.DisplayName })
