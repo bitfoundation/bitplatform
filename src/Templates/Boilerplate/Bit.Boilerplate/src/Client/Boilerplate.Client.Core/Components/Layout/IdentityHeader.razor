@@ -25,11 +25,11 @@
                          DefaultValue="@CultureInfo.CurrentUICulture.Name"
                          OnChange="WrapHandled((string c) => OnCultureChanged(c))">
                 <TextTemplate Context="item">
-                    <BitFlag Country="@FindBitCountry(item.Value)" />
+                    <BitFlag Iso2="@CultureInfoManager.FindRegionIso2(item.Value)" />
                 </TextTemplate>
                 <ItemTemplate Context="item">
                     <BitStack Horizontal VerticalAlign="BitAlignment.Center">
-                        <BitFlag Country="@FindBitCountry(item.Value)" />
+                        <BitFlag Iso2="@CultureInfoManager.FindRegionIso2(item.Value)" />
                         <BitText Typography="BitTypography.Body1" Style="@(item.IsSelected ? "font-weight:bold" : "")">
                             @item.Text
                         </BitText>
