@@ -1,4 +1,4 @@
-﻿using Boilerplate.Tests.PageTests.PageModels.Identity;
+using Boilerplate.Tests.PageTests.PageModels.Identity;
 
 namespace Boilerplate.Tests.PageTests.PageModels.Layout;
 

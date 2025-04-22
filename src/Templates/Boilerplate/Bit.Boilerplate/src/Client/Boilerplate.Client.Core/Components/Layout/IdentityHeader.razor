@@ -1,25 +1,13 @@
-﻿@inherits AppComponentBase
+@inherits AppComponentBase
 
 <header>
     <BitStack Horizontal Gap="0.5rem" VerticalAlign="BitAlignment.Center">
-        @if (backLinkPayload is null)
-        {
-            <BitLink NoUnderline Href="@Urls.HomePage">
-                <BitStack Horizontal Gap="0.5rem" VerticalAlign="BitAlignment.Center">
-                    <BitIcon IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)" Size="BitSize.Small" />
-                    <BitText Typography="BitTypography.Body2">@Localizer[nameof(AppStrings.BackToHome)]</BitText>
-                </BitStack>
-            </BitLink>
-        }
-        else
-        {
-            <BitLink NoUnderline OnClick="HandleBackLinkClick">
-                <BitStack Horizontal Gap="0.5rem" VerticalAlign="BitAlignment.Center">
-                    <BitIcon IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)" Size="BitSize.Small" />
-                    <BitText Typography="BitTypography.Body2">@Localizer[nameof(AppStrings.Back)]</BitText>
-                </BitStack>
-            </BitLink>
-        }
+        <BitLink NoUnderline OnClick="HandleBackLinkClick">
+            <BitStack Horizontal Gap="0.5rem" VerticalAlign="BitAlignment.Center">
+                <BitIcon IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)" Size="BitSize.Small" />
+                <BitText Typography="BitTypography.Body2">@Localizer[nameof(AppStrings.Back)]</BitText>
+            </BitStack>
+        </BitLink>
 
         <DiagnosticSpacer />
 
@@ -30,18 +18,18 @@
                    Color="BitColor.SecondaryBackground"
                    IconName="@(currentTheme == AppThemeType.Light ? BitIconName.ClearNight : BitIconName.Sunny)" />
 
-        @if (CultureInfoManager.MultilingualEnabled)
+        @if (CultureInfoManager.InvariantGlobalization is false)
         {
             <BitDropdown Items="cultures"
                          FitWidth NoBorder Transparent
                          DefaultValue="@CultureInfo.CurrentUICulture.Name"
                          OnChange="WrapHandled((string c) => OnCultureChanged(c))">
                 <TextTemplate Context="item">
-                    <BitImage Src="@($"_content/Boilerplate.Client.Core/images/flags/{item.Value}.webp")" />
+                    <BitFlag Iso2="@CultureInfoManager.FindRegionIso2(item.Value)" />
                 </TextTemplate>
                 <ItemTemplate Context="item">
                     <BitStack Horizontal VerticalAlign="BitAlignment.Center">
-                        <BitImage Src="@($"_content/Boilerplate.Client.Core/images/flags/{item.Value}.webp")" />
+                        <BitFlag Iso2="@CultureInfoManager.FindRegionIso2(item.Value)" />
                         <BitText Typography="BitTypography.Body1" Style="@(item.IsSelected ? "font-weight:bold" : "")">
                             @item.Text
                         </BitText>

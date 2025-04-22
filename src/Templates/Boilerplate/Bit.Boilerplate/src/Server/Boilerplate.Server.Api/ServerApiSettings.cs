@@ -16,6 +16,10 @@ public partial class ServerApiSettings : SharedSettings
     [Required]
     public EmailOptions Email { get; set; } = default!;
 
+    //#if (signalR == true || database == "PostgreSQL")
+    public AIOptions? AI { get; set; }
+    //#endif
+
     public SmsOptions? Sms { get; set; }
 
     [Required]
@@ -40,7 +44,7 @@ public partial class ServerApiSettings : SharedSettings
     public CloudflareOptions? Cloudflare { get; set; }
     //#endif
 
-    public ResponseCachingOptions ResponseCaching { get; set; } = default!;
+    public ResponseCachingOptions? ResponseCaching { get; set; }
 
     /// <summary>
     /// Lists the permitted origins for CORS requests, return URLs following social sign-in and email confirmation, etc., along with allowed origins for Web Auth.
@@ -51,6 +55,8 @@ public partial class ServerApiSettings : SharedSettings
     [Required]
     public string ProductImagesDir { get; set; } = default!;
     //#endif
+
+    public HangfireOptions? Hangfire { get; set; }
 
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
@@ -78,7 +84,10 @@ public partial class ServerApiSettings : SharedSettings
         {
             Validator.TryValidateObject(ForwardedHeaders, new ValidationContext(ForwardedHeaders), validationResults, true);
         }
-        Validator.TryValidateObject(ResponseCaching, new ValidationContext(ResponseCaching), validationResults, true);
+        if (ResponseCaching is not null)
+        {
+            Validator.TryValidateObject(ResponseCaching, new ValidationContext(ResponseCaching), validationResults, true);
+        }
 
         const int MinimumJwtIssuerSigningKeySecretByteLength = 64; // 512 bits = 64 bytes, minimum for HS512
         var jwtIssuerSigningKeySecretByteLength = Encoding.UTF8.GetBytes(Identity.JwtIssuerSigningKeySecret).Length;
@@ -172,6 +181,37 @@ public partial class AppIdentityOptions : IdentityOptions
     public int MaxConcurrentPrivilegedSessions { get; set; }
 }
 
+//#if (signalR == true || database == "PostgreSQL")
+public partial class AIOptions
+{
+    public OpenAIOptions? OpenAI { get; set; }
+    public AzureOpenAIOptions? AzureOpenAI { get; set; }
+}
+
+public class OpenAIOptions
+{
+    public string? ChatModel { get; set; }
+    public Uri? ChatEndpoint { get; set; }
+    public string? ChatApiKey { get; set; }
+
+    public string? EmbeddingModel { get; set; }
+    public Uri? EmbeddingEndpoint { get; set; }
+    public string? EmbeddingApiKey { get; set; }
+}
+
+public class AzureOpenAIOptions
+{
+    public string? ChatModel { get; set; }
+    public Uri? ChatEndpoint { get; set; }
+    public string? ChatApiKey { get; set; }
+
+    public string? EmbeddingModel { get; set; }
+    public Uri? EmbeddingEndpoint { get; set; }
+    public string? EmbeddingApiKey { get; set; }
+}
+
+//#endif
+
 public partial class EmailOptions
 {
     [Required]
@@ -232,4 +272,14 @@ public class ResponseCachingOptions
     /// Enables CDN's edge servers caching
     /// </summary>
     public bool EnableCdnEdgeCaching { get; set; }
+}
+
+public class HangfireOptions
+{
+    /// <summary>
+    /// Useful for testing or in production when managing multiple codebases with a single database.
+    /// </summary>
+    public bool UseIsolatedStorage { get; set; }
+
+    public string? IsolatedStorageDirectory { get; set; }
 }

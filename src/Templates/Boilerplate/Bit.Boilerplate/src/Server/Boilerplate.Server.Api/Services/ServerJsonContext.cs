@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Fido2NetLib;
 using Boilerplate.Shared.Dtos.Statistics;
 

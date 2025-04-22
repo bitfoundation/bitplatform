@@ -1,4 +1,4 @@
-﻿**Bit.SourceGenerator interface based HttpClient proxy generator**
+**Bit.SourceGenerator interface based HttpClient proxy generator**
 
 Getting started:
 

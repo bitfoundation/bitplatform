@@ -109,8 +109,6 @@ public partial class BitColorPicker : BitComponentBase
 
     protected override void OnInitialized()
     {
-        _dotnetObj = DotNetObjectReference.Create(this);
-
         SetSaturationPickerStyle();
 
         base.OnInitialized();
@@ -121,6 +119,8 @@ public partial class BitColorPicker : BitComponentBase
         await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender is false) return;
+
+        _dotnetObj = DotNetObjectReference.Create(this);
 
         _abortControllerId = await _js.BitColorPickerSetup(_dotnetObj, nameof(HandlePointerUp), nameof(HandlePointerMove));
 

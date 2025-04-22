@@ -265,14 +265,17 @@ public partial class BitModalDemo
 
 <BitModal @bind-IsOpen=""isOpenBasic"">
     <div style=""padding:1rem; max-width:40rem"">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-        efficitur.
+        In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+        to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+        possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+        vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+        shaped into meaning, and the emotions ready to resonate with every reader.
+        <br />
+        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+        each word has the power to transform into something extraordinary. Here lies the start of something new—an
+        opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+        idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+        begins here, in this quiet moment where everything is possible.
     </div>
 </BitModal>";
     private readonly string example1CsharpCode = @"
@@ -307,34 +310,34 @@ private bool isOpenBasic;";
 
 <BitModal @bind-IsOpen=""isOpenCustomContent"">
     <div class=""modal-header"">
-        <span class=""modal-header-text"">Lorem Ipsum</span>
+        <span class=""modal-header-text"">Story title</span>
         <BitButton Variant=""BitVariant.Text"" OnClick=""() => isOpenCustomContent = false"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
-        <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-            efficitur.
-        </p>
-        <p>
-            Mauris at nunc eget lectus lobortis facilisis et eget magna. Vestibulum venenatis augue sapien, rhoncus
-            faucibus magna semper eget. Proin rutrum libero sagittis sapien aliquet auctor. Suspendisse tristique a
-            magna at facilisis. Duis rhoncus feugiat magna in rutrum. Suspendisse semper, dolor et vestibulum lacinia,
-            nunc felis malesuada ex, nec hendrerit justo ex et massa. Quisque quis mollis nulla. Nam commodo est ornare,
-            rhoncus odio eu, pharetra tellus. Nunc sed velit mi.
-        </p>
-        <p>
-            Sed condimentum ultricies turpis convallis pharetra. Sed sagittis quam pharetra luctus porttitor. Cras vel
-            consequat lectus. Sed nec fringilla urna, a aliquet libero. Aenean sed nisl purus. Vivamus vulputate felis
-            et odio efficitur suscipit. Ut volutpat dictum lectus, ac rutrum massa accumsan at. Sed pharetra auctor
-            finibus. In augue libero, commodo vitae nisi non, sagittis convallis ante. Phasellus malesuada eleifend
-            mollis. Curabitur ultricies leo ac metus venenatis elementum.
-        </p>
+        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+        for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+        <br />
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+        inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+        spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+        in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
+        are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+        <br />
+        In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+        to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+        possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+        vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+        shaped into meaning, and the emotions ready to resonate with every reader.
+        <br />
+        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+        each word has the power to transform into something extraordinary. Here lies the start of something new—an
+        opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+        idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+        begins here, in this quiet moment where everything is possible.
     </div>
 </BitModal>";
     private readonly string example2CsharpCode = @"
@@ -380,14 +383,13 @@ private bool isOpenCustomContent;";
         </p>
         <br />
         <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-            efficitur.
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+            in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
+            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
         </p>
     </div>
 </BitModal>
@@ -405,14 +407,13 @@ private bool isOpenCustomContent;";
         </p>
         <br />
         <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-            efficitur.
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+            in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
+            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
         </p>
     </div>
 </BitModal>
@@ -428,14 +429,13 @@ private bool isOpenCustomContent;";
         </p>
         <br />
         <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-            efficitur.
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+            in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
+            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
         </p>
     </div>
 </BitModal>";
@@ -489,16 +489,13 @@ private bool isOpenModeless;";
             <BitButton Variant=""BitVariant.Text"" OnClick=""() => isOpenAbsolutePosition = false"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
         </div>
         <div class=""modal-body"">
-            <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-                amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-                sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-                turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-                ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-                Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-                Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-                efficitur.
-            </p>
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+            in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
+            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
         </div>
     </BitModal>
 
@@ -508,55 +505,47 @@ private bool isOpenModeless;";
             <BitButton Variant=""BitVariant.Text"" OnClick=""() => isOpenScrollerSelector = false"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
         </div>
         <div class=""modal-body"">
-            <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-                amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-                sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-                turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-                ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-                Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-                Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-                efficitur.
-            </p>
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+            in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
+            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
         </div>
     </BitModal>
 
     <div>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-        efficitur.
-
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-        efficitur.
-
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-        efficitur.
-
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-        efficitur.
+        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+        for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+        <br />
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+        inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+        spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+        in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
+        are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+        <br />
+        In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+        to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+        possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+        vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+        shaped into meaning, and the emotions ready to resonate with every reader.
+        <br />
+        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+        each word has the power to transform into something extraordinary. Here lies the start of something new—an
+        opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+        idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+        begins here, in this quiet moment where everything is possible.
+        <br />
+        Imagine this space as a window into the future—empty yet alive with the energy of endless possibilities.
+        These words stand as temporary guides, placeholders that whisper of what is to come.
+        They hold the promise of stories waiting to unfold, ideas eager to take shape, and connections that
+        will soon emerge to inspire and resonate. This is not an empty page; it is a canvas, rich with potential
+        and ready to transform into something meaningful.
     </div>
 </div>";
     private readonly string example4CsharpCode = @"
@@ -599,7 +588,7 @@ private bool isOpenScrollerSelector;";
         <BitButton Variant=""BitVariant.Text"" OnClick=""() => isOpenPosition = false"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
-        BitModal with custom positioning. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+        BitModal with custom positioning. Once upon a time, stories wove connections between people.
     </div>
 </BitModal>";
     private readonly string example5CsharpCode = @"
@@ -644,16 +633,13 @@ private void OpenModalInPosition(BitPosition positionValue)
         <BitButton Variant=""BitVariant.Text"" OnClick=""() => isOpenDraggable = false"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
-        <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-            efficitur.
-        </p>
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+        inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+        spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+        in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
+        are boundless. This space is yours to craft, yours to shape, yours to bring to life.
     </div>
 </BitModal>
 
@@ -665,16 +651,13 @@ private void OpenModalInPosition(BitPosition positionValue)
         <BitButton Variant=""BitVariant.Text"" OnClick=""() => isOpenDraggableSelector = false"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
-        <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-            efficitur.
-        </p>
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+        inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+        spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+        in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
+        are boundless. This space is yours to craft, yours to shape, yours to bring to life.
     </div>
 </BitModal>";
     private readonly string example6CsharpCode = @"
@@ -720,16 +703,13 @@ private bool isOpenDraggableSelector;";
                    Title=""Close"" />
     </div>
     <div class=""modal-body"">
-        <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-            efficitur.
-        </p>
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+        inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+        spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+        in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
+        are boundless. This space is yours to craft, yours to shape, yours to bring to life.
     </div>
 </BitModal>";
     private readonly string example7CsharpCode = @"
@@ -779,16 +759,13 @@ private bool isFullSize;";
                    IconName=""@BitIconName.ChromeClose"" />
     </div>
     <div class=""modal-body"">
-        <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-            efficitur.
-        </p>
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+        inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+        spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+        in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
+        are boundless. This space is yours to craft, yours to shape, yours to bring to life.
     </div>
 </BitModal>";
     private readonly string example8CsharpCode = @"
@@ -866,16 +843,13 @@ private void HandleOnOverlayClick()
         <BitButton Variant=""BitVariant.Text"" OnClick=""() => isOpenStyle = false"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
-        <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-            efficitur.
-        </p>
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+        inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+        spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+        in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
+        are boundless. This space is yours to craft, yours to shape, yours to bring to life.
     </div>
 </BitModal>
 <BitModal @bind-IsOpen=""isOpenClass"" Class=""custom-class"">
@@ -884,16 +858,13 @@ private void HandleOnOverlayClick()
         <BitButton Variant=""BitVariant.Text"" OnClick=""() => isOpenClass = false"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
-        <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-            efficitur.
-        </p>
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+        inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+        spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+        in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
+        are boundless. This space is yours to craft, yours to shape, yours to bring to life.
     </div>
 </BitModal>
 
@@ -906,16 +877,13 @@ private void HandleOnOverlayClick()
         <BitButton Variant=""BitVariant.Text"" OnClick=""() => isOpenStyles = false"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
-        <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-            efficitur.
-        </p>
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+        inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+        spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+        in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
+        are boundless. This space is yours to craft, yours to shape, yours to bring to life.
     </div>
 </BitModal>
 <BitModal @bind-IsOpen=""isOpenClasses"" Classes=""@(new() { Root = ""custom-root"", Overlay = ""custom-overlay"", Content = ""custom-content"" })"">
@@ -924,16 +892,13 @@ private void HandleOnOverlayClick()
         <BitButton Variant=""BitVariant.Text"" OnClick=""() => isOpenClasses = false"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
-        <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-            efficitur.
-        </p>
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+        inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+        spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+        in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
+        are boundless. This space is yours to craft, yours to shape, yours to bring to life.
     </div>
 </BitModal>";
     private readonly string example9CsharpCode = @"

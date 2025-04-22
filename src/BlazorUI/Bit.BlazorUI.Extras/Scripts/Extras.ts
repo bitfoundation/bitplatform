@@ -56,5 +56,41 @@ namespace BitBlazorUI {
                 })
             }
         }
+
+        private static _initStylesheetsPromises: { [key: string]: Promise<unknown> } = {};
+        public static async initStylesheets(stylesheets: string[], isModule: boolean) {
+            const key = stylesheets.join('|');
+            if (Extras._initStylesheetsPromises[key] !== undefined) {
+                return Extras._initStylesheetsPromises[key];
+            }
+
+            const allStylesheets = Array.from(document.links).filter(l => l.rel === 'stylesheet').map(s => s.href);
+            const notAddedStylesheets = stylesheets.filter(s => !allStylesheets.find(as => as.includes(s)));
+
+            if (notAddedStylesheets.length == 0) return Promise.resolve();
+
+            const promise = new Promise(async (res: any, rej: any) => {
+                try {
+                    await Promise.all(notAddedStylesheets.map(addStylesheet));
+                    res();
+                } catch (e: any) {
+                    rej(e);
+                }
+            });
+
+            Extras._initStylesheetsPromises[key] = promise;
+            return promise;
+
+            async function addStylesheet(url: string) {
+                return new Promise((res, rej) => {
+                    const link = document.createElement('link');
+                    link.href = url;
+                    link.rel = 'stylesheet';
+                    link.onload = res;
+                    link.onerror = rej;
+                    document.head.appendChild(link);
+                })
+            }
+        }
     }
 }

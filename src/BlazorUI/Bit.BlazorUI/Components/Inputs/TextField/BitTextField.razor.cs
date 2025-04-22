@@ -8,6 +8,7 @@ namespace Bit.BlazorUI;
 public partial class BitTextField : BitTextInputBase<string?>
 {
     private bool _hasFocus;
+    private string? _oldValue;
     private string? _inputMode;
     private bool _isPasswordRevealed;
     private BitInputType? _elementType;
@@ -17,6 +18,16 @@ public partial class BitTextField : BitTextInputBase<string?>
     private string _descriptionId = string.Empty;
 
 
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Automatically adjust the height of the input in Multiline mode.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool AutoHeight { get; set; }
 
     /// <summary>
     /// Whether to show the reveal password button for input type 'password'.
@@ -58,7 +69,8 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// <summary>
     /// Label displayed above the text field and read by screen readers.
     /// </summary>
-    [Parameter] public string? Label { get; set; }
+    [Parameter, ResetClassBuilder]
+    public string? Label { get; set; }
 
     /// <summary>
     /// Shows the custom label for text field.
@@ -86,6 +98,11 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// Callback for when the input clicked.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>
+    /// Callback for when the Enter key is pressed while input has focus.
+    /// </summary>
+    [Parameter] public EventCallback<KeyboardEventArgs> OnEnter { get; set; }
 
     /// <summary>
     /// Callback for when focus moves into the input
@@ -127,6 +144,11 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// Shows the custom prefix for text field.
     /// </summary>
     [Parameter] public RenderFragment? PrefixTemplate { get; set; }
+
+    /// <summary>
+    /// Prevents the enter to add new line character into the input in the Multiline mode.
+    /// </summary>
+    [Parameter] public bool PreventEnter { get; set; }
 
     /// <summary>
     /// For multiline text fields, whether or not the field is resizable.
@@ -203,6 +225,8 @@ public partial class BitTextField : BitTextInputBase<string?>
                                     ? $"bit-tfl-{(Resizable ? "mln" : "mlf")}"
                                     : string.Empty);
 
+        ClassBuilder.Register(() => Multiline && AutoHeight ? "bit-tfl-mla" : string.Empty);
+
         ClassBuilder.Register(() => IsEnabled && Required ? "bit-tfl-req" : string.Empty);
 
         ClassBuilder.Register(() => Underlined ? "bit-tfl-und" : string.Empty);
@@ -233,6 +257,27 @@ public partial class BitTextField : BitTextInputBase<string?>
         }
 
         await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+            if (Multiline)
+            {
+                await _js.BitTextFieldSetupMultilineInput(_Id, InputElement, AutoHeight, PreventEnter);
+            }
+        }
+        else
+        {
+            if (Multiline && AutoHeight && _oldValue != Value)
+            {
+                _oldValue = Value;
+                await _js.BitTextFieldAdjustHeight(InputElement);
+            }
+        }
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
@@ -300,7 +345,12 @@ public partial class BitTextField : BitTextInputBase<string?>
     {
         if (IsEnabled is false) return;
 
-        await OnKeyDown.InvokeAsync(e);
+        _ = OnKeyDown.InvokeAsync(e);
+
+        if (e.Key == "Enter")
+        {
+            _ = OnEnter.InvokeAsync(e);
+        }
     }
 
     private async Task HandleOnKeyUp(KeyboardEventArgs e)
@@ -315,5 +365,19 @@ public partial class BitTextField : BitTextInputBase<string?>
         if (IsEnabled is false) return;
 
         await OnClick.InvokeAsync(e);
+    }
+
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return;
+
+        await base.DisposeAsync(disposing);
+
+        try
+        {
+            await _js.BitTextFieldDispose(_Id);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 }

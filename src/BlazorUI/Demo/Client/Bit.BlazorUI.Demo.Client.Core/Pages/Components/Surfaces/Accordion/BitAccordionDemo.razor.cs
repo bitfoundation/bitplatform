@@ -178,28 +178,65 @@ public partial class BitAccordionDemo
 
     private readonly string example1RazorCode = @"
 <BitAccordion Title=""Accordion"">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl. Duis lobortis tristique nunc, id egestas ligula condimentum quis. Integer elementum tempor cursus. Phasellus vestibulum neque non laoreet faucibus. Nunc eu congue urna, in dapibus justo.
+    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. 
+    These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape. 
+    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and 
+    inspirations will be built. Soon, these lines will transform into narratives that provoke thought, 
+    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty 
+    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities 
+    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
 </BitAccordion>";
 
     private readonly string example2RazorCode = @"
 <BitAccordion Title=""Accordion"" NoBorder>
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl. Duis lobortis tristique nunc, id egestas ligula condimentum quis. Integer elementum tempor cursus. Phasellus vestibulum neque non laoreet faucibus. Nunc eu congue urna, in dapibus justo.
+    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. 
+    These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape. 
+    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and 
+    inspirations will be built. Soon, these lines will transform into narratives that provoke thought, 
+    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty 
+    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities 
+    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
 </BitAccordion>";
 
     private readonly string example3RazorCode = @"
 <BitAccordion Title=""Accordion 1"">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl.
+    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
 </BitAccordion>
 <BitAccordion Title=""Accordion 2"">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor.
+    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. 
+    These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape. 
+    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and 
+    inspirations will be built. Soon, these lines will transform into narratives that provoke thought, 
+    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty 
+    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities 
+    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
 </BitAccordion>
 <BitAccordion Title=""Accordion 3"">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl. Duis lobortis tristique nunc, id egestas ligula condimentum quis. Integer elementum tempor cursus. Phasellus vestibulum neque non laoreet faucibus. Nunc eu congue urna, in dapibus justo.
+    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits 
+    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
+    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
+    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
+    shaped into meaning, and the emotions ready to resonate with every reader.
+    <br />
+    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
+    each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
+    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
+    begins here, in this quiet moment where everything is possible.
 </BitAccordion>";
 
     private readonly string example4RazorCode = @"
 <BitAccordion Title=""General settings"" Description=""The general settings of the application"">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu.
+    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. 
+    These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape. 
+    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and 
+    inspirations will be built. Soon, these lines will transform into narratives that provoke thought, 
+    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty 
+    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities 
+    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
 </BitAccordion>";
 
     private readonly string example5RazorCode = @"
@@ -207,19 +244,38 @@ public partial class BitAccordionDemo
               Description=""I am an accordion""
               OnClick=""() => controlledAccordionExpandedItem = 1""
               IsExpanded=""controlledAccordionExpandedItem == 1"">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl.
+    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
 </BitAccordion>
 <BitAccordion Title=""Users""
               Description=""You are currently not an owner""
               OnClick=""() => controlledAccordionExpandedItem = 2""
               IsExpanded=""controlledAccordionExpandedItem == 2"">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor.
+    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. 
+    These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape. 
+    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and 
+    inspirations will be built. Soon, these lines will transform into narratives that provoke thought, 
+    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty 
+    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities 
+    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
 </BitAccordion>
 <BitAccordion Title=""Advanced settings""
               Description=""Filtering has been entirely disabled for whole web server""
               OnClick=""() => controlledAccordionExpandedItem = 3""
               IsExpanded=""controlledAccordionExpandedItem == 3"">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu.
+    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits 
+    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
+    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
+    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
+    shaped into meaning, and the emotions ready to resonate with every reader.
+    <br />
+    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
+    each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
+    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
+    begins here, in this quiet moment where everything is possible.
 </BitAccordion>";
     private readonly string example5CsharpCode = @"
 private byte controlledAccordionExpandedItem = 1;";
@@ -232,7 +288,13 @@ private byte controlledAccordionExpandedItem = 1;";
               Description=""I am an accordion""
               IsEnabled=""AccordionToggleIsEnabled""
               @bind-IsExpanded=""AccordionToggleIsExpanded"">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit.
+    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. 
+    These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape. 
+    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and 
+    inspirations will be built. Soon, these lines will transform into narratives that provoke thought, 
+    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty 
+    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities 
+    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
 </BitAccordion>";
     private readonly string example6CsharpCode = @"
 private bool AccordionToggleIsEnabled;
@@ -265,9 +327,15 @@ private bool AccordionToggleIsExpanded;";
             <span class=""custom-desc"">I am an accordion</span>
         </div>
     </HeaderTemplate>
-    <ChildContent>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.
-    </ChildContent>
+    <Body>
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. 
+        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape. 
+        Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and 
+        inspirations will be built. Soon, these lines will transform into narratives that provoke thought, 
+        spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty 
+        in potential the quiet magic of beginnings, where everything is still to come, and the possibilities 
+        are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+    </Body>
 </BitAccordion>
 
 <BitAccordion Title=""Nature"" Description=""I am an accordion"">
@@ -291,6 +359,8 @@ private bool AccordionToggleIsExpanded;";
 <BitAccordion Dir=""BitDir.Rtl"" 
               Title=""تنظیمات"" 
               Description=""من یک آکاردئون هستم!"">
-    لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است. چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
+    لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
+    چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است
+    و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
 </BitAccordion>";
 }

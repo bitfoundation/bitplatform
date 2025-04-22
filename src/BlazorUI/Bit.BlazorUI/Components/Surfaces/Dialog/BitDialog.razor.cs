@@ -5,8 +5,8 @@
 /// </summary>
 public partial class BitDialog : BitComponentBase
 {
-    private int _offsetTop;
     private bool _isLoading;
+    private float _offsetTop;
     private bool _internalIsOpen;
     private string _containerId = default!;
     private TaskCompletionSource<BitDialogResult?>? _tcs = new();
@@ -25,7 +25,8 @@ public partial class BitDialog : BitComponentBase
     /// <summary>
     /// When true, the Dialog will be positioned absolute instead of fixed.
     /// </summary>
-    [Parameter] public bool AbsolutePosition { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool AbsolutePosition { get; set; }
 
     /// <summary>
     /// Alias for child content.

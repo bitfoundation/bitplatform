@@ -1,4 +1,4 @@
-﻿using Boilerplate.Server.Api.Models.Todo;
+using Boilerplate.Server.Api.Models.Todo;
 
 namespace Boilerplate.Server.Api.Data.Configurations.Todo;
 

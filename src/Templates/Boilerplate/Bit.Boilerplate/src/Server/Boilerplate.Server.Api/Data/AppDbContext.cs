@@ -15,11 +15,13 @@ using Boilerplate.Server.Api.Models.PushNotification;
 //#if (database == "Sqlite")
 using System.Security.Cryptography;
 //#endif
+using Hangfire.EntityFrameworkCore;
+using Boilerplate.Server.Api.Models.Attachments;
 
 namespace Boilerplate.Server.Api.Data;
 
 public partial class AppDbContext(DbContextOptions<AppDbContext> options)
-    : IdentityDbContext<User, Role, Guid>(options)
+    : IdentityDbContext<User, Role, Guid, UserClaim, UserRole, IdentityUserLogin<Guid>, RoleClaim, IdentityUserToken<Guid>>(options)
 {
     public DbSet<UserSession> UserSessions { get; set; } = default!;
 
@@ -36,20 +38,53 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<WebAuthnCredential> WebAuthnCredential { get; set; } = default!;
 
+    //#if (signalR == true)
+    public DbSet<SystemPrompt> SystemPrompts { get; set; } = default!;
+    //#endif
+
+    public DbSet<Attachment> Attachments { get; set; } = default!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        //#if (IsInsideProjectTemplate == true)
+        if (Database.ProviderName!.EndsWith("PostgreSQL", StringComparison.InvariantCulture))
+        {
+            //#endif
+            //#if (database == "PostgreSQL")
+            if (EmbeddingIsEnabled)
+            {
+                modelBuilder.HasPostgresExtension("vector");
+            }
+            //#endif
+            //#if (IsInsideProjectTemplate == true)
+        }
+        //#endif
+
+        modelBuilder.OnHangfireModelCreating("jobs");
 
         //#if (IsInsideProjectTemplate == true)
         /*
         //#endif
         //#if (database == "PostgreSQL" || database == "SqlServer")
         modelBuilder.HasSequence<int>("ProductShortId")
-            .StartsAt(10_000)
+            .StartsAt(10_051) // There are 50 products added by ProductConfiguration.cs
             .IncrementsBy(1);
         //#endif
         //#if (IsInsideProjectTemplate == true)
         */
+        //#endif
+
+        //#if (IsInsideProjectTemplate == true)
+        if (Database.ProviderName!.EndsWith("SqlServer", StringComparison.InvariantCulture))
+        {
+            //#endif
+            //#if (database == "SqlServer")
+            modelBuilder.HasDefaultSchema("dbo");
+            //#endif
+            //#if (IsInsideProjectTemplate == true)
+        }
         //#endif
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
@@ -65,7 +100,9 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         {
             SetConcurrencyStamp();
 
+#pragma warning disable NonAsyncEFCoreMethodsUsageAnalyzer
             return base.SaveChanges(acceptAllChangesOnSuccess);
+#pragma warning restore NonAsyncEFCoreMethodsUsageAnalyzer
         }
         catch (DbUpdateConcurrencyException exception)
         {
@@ -170,20 +207,20 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         builder.Entity<Role>()
             .ToTable("Roles");
 
-        builder.Entity<IdentityUserRole<Guid>>()
+        builder.Entity<UserRole>()
             .ToTable("UserRoles");
+
+        builder.Entity<RoleClaim>()
+            .ToTable("RoleClaims");
+
+        builder.Entity<UserClaim>()
+            .ToTable("UserClaims");
 
         builder.Entity<IdentityUserLogin<Guid>>()
             .ToTable("UserLogins");
 
         builder.Entity<IdentityUserToken<Guid>>()
             .ToTable("UserTokens");
-
-        builder.Entity<IdentityRoleClaim<Guid>>()
-            .ToTable("RoleClaims");
-
-        builder.Entity<IdentityUserClaim<Guid>>()
-            .ToTable("UserClaims");
     }
 
     private void ConfigureConcurrencyStamp(ModelBuilder modelBuilder)
@@ -225,4 +262,9 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
             }
         }
     }
+
+    //#if (database == "PostgreSQL")
+    // In order to enable embedding, the `pgvector` extension for must be installed in your PostgreSQL.
+    public static readonly bool EmbeddingIsEnabled = false;
+    //#endif
 }

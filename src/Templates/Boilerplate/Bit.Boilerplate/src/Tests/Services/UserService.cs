@@ -1,4 +1,4 @@
-﻿using Boilerplate.Server.Api.Data;
+using Boilerplate.Server.Api.Data;
 using Boilerplate.Server.Api.Models.Identity;
 
 namespace Boilerplate.Tests.Services;

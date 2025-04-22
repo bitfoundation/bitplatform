@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Services;
+namespace Boilerplate.Client.Core.Services;
 
 /// <summary>
 /// https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview

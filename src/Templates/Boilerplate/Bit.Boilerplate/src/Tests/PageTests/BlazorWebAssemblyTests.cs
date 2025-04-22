@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Client.Web;
 using Boilerplate.Tests.Extensions;
 using Boilerplate.Tests.PageTests.PageModels;
@@ -21,10 +21,10 @@ public partial class LocalizationTests : BlazorServer.LocalizationTests
     [TestCategory("MultilingualDisabled")]
     public async Task MultilingualDisabled()
     {
-        if (CultureInfoManager.MultilingualEnabled)
+        if (CultureInfoManager.InvariantGlobalization is false)
         {
             Assert.Inconclusive("Multilingual is enabled. " +
-                "You can disable it via <MultilingualEnabled>false</MultilingualEnabled> setting in Directiory.Build.props.");
+                "You can disable it via <InvariantGlobalization>true</InvariantGlobalization> setting in Directiory.Build.props.");
             return;
         }
 

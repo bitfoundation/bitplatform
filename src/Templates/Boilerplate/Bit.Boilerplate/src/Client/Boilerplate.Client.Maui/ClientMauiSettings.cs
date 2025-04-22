@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Client.Core;
 
 namespace Boilerplate.Client.Maui;

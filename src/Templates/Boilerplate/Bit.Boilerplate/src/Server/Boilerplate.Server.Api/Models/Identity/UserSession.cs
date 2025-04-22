@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Shared.Dtos.Identity;
 //#if (notification == true)
 using Boilerplate.Server.Api.Models.PushNotification;

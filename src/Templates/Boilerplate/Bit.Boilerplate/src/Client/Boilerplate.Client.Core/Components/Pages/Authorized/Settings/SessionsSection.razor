@@ -1,4 +1,4 @@
-﻿@inherits AppComponentBase
+@inherits AppComponentBase
 
 <section>
     <BitStack Style="padding:1px">
@@ -24,7 +24,7 @@
                             Size="BitPersonaSize.Size72"
                             Styles="@(new() { Image = "width:50%;height:50%" })"
                             ImageInitials="@(currentSession.Privileged ? "✓" : "✘")"
-                            CoinColor="@(currentSession.Privileged ? null : BitColor.TertiaryBackground)"
+                            CoinVariant="@(currentSession.Privileged ? BitVariant.Fill : BitVariant.Outline)"
                             ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(currentSession.DeviceInfo)}")"
                             Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
             </BitCard>
@@ -47,7 +47,7 @@
                                             Presence="@GetPresence(session.RenewedOn)"
                                             Styles="@(new() { Image = "width:50%;height:50%" })"
                                             ImageInitials="@(session.Privileged ? "✓" : "✘")"
-                                            CoinColor="@(session.Privileged ? null : BitColor.TertiaryBackground)"
+                                            CoinVariant="@(session.Privileged ? BitVariant.Fill : BitVariant.Outline)"
                                             ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(session.DeviceInfo)}")" />
                                 <BitSpacer />
                                 <BitButton Color="BitColor.Error"

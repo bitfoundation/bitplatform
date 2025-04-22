@@ -1,7 +1,7 @@
 @inherits AppComponentBase
 
 <header>
-    <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+    <BitStack Horizontal>
         <BitButton IconOnly FixedColor
                    Class="menu-btn"
                    Size="BitSize.Large"
@@ -10,13 +10,22 @@
                    Color="BitColor.SecondaryBackground"
                    IconName="@BitIconName.CollapseMenu" />
 
-        <BitStack AutoSize VerticalAlign="BitAlignment.Center" Gap="0">
-            <BitText Typography="BitTypography.H5">
-                @pageTitle
-            </BitText>
+        <BitStack VerticalAlign="BitAlignment.Center" Gap="0.5rem" AutoSize>
+            <BitStack VerticalAlign="BitAlignment.Center" Gap="0.5rem" Horizontal>
+                @if (showGoBackButton)
+                {
+                    <BitButton Variant="BitVariant.Text"
+                               IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)"
+                               OnClick="GoBack"
+                               Title="@Localizer[nameof(AppStrings.Back)]" />
+                }
+                <BitText Typography="BitTypography.H5">
+                    @pageTitle
+                </BitText>
+            </BitStack>
             @if (string.IsNullOrWhiteSpace(pageSubtitle) is false)
             {
-                <BitText Typography="BitTypography.Body1" Foreground="BitColorKind.Secondary" NoWrap>
+                <BitText Typography="BitTypography.Body1" Foreground="BitColorKind.Secondary">
                     @pageSubtitle
                 </BitText>
             }

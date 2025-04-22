@@ -10,9 +10,26 @@ public partial class DemoExample
     [Parameter] public string CsharpCode { get; set; } = default!;
     [Parameter] public RenderFragment ChildContent { get; set; } = default!;
 
+
+
+    protected override async Task OnInitAsync()
+    {
+        showCode = ShowAllCodes;
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await JSRuntime.InvokeVoid("highlightSnippet");
+    }
+
+
+
+    private string AppendCodePhraseToCsharpCode()
+    {
+        string code = $@"{"\n\n"}@code {{
+{CsharpCode.Trim().Replace("\n", "\n\t")}
+}}";
+        return code;
     }
 
     private bool isCodeCopied = false;
@@ -21,8 +38,8 @@ public partial class DemoExample
     private async Task CopyCodeToClipboard()
     {
         var code = string.IsNullOrEmpty(CsharpCode) is false
-            ? AppendCodePhraseToCsharpCode(CsharpCode)
-            : "";
+                    ? AppendCodePhraseToCsharpCode()
+                    : "";
 
         await JSRuntime.CopyToClipboard(RazorCode.Trim() + code);
 
@@ -38,14 +55,6 @@ public partial class DemoExample
         copyCodeMessage = "Copy code";
 
         StateHasChanged();
-    }
-
-    private string AppendCodePhraseToCsharpCode(string cSharpSourceCode)
-    {
-        string code = $@"{"\n\n"}@code {{
-{CsharpCode.Trim().Replace("\n", "\n\t")}
-}}";
-        return code;
     }
 
     private bool isLinkCopied = false;

@@ -1,4 +1,4 @@
-﻿using Boilerplate.Server.Api.Models.Identity;
+using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 
 namespace Microsoft.AspNetCore.Identity;

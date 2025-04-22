@@ -1,4 +1,4 @@
-﻿using Riok.Mapperly.Abstractions;
+using Riok.Mapperly.Abstractions;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 

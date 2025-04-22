@@ -319,7 +319,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"Otp_Sms,{user.OtpRequestedOn?.ToUniversalTime()}"));
             var message = Localizer[nameof(AppStrings.OtpShortText), token].ToString();
             var smsMessage = $"{message}{Environment.NewLine}@{HttpContext.Request.GetWebAppUrl().Host} #{token}" /* Web OTP */;
-            sendMessagesTasks.Add(phoneService.SendSms(smsMessage, user.PhoneNumber!, cancellationToken));
+            sendMessagesTasks.Add(phoneService.SendSms(smsMessage, user.PhoneNumber!));
         }
 
         //#if (signalR == true || notification == true)
@@ -386,7 +386,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (firstStepAuthenticationMethod != "Sms" && await userManager.IsPhoneNumberConfirmedAsync(user))
         {
             var smsMessage = $"{message}{Environment.NewLine}@{HttpContext.Request.GetWebAppUrl().Host} #{token}" /* Web OTP */;
-            sendMessagesTasks.Add(phoneService.SendSms(smsMessage, user.PhoneNumber!, cancellationToken));
+            sendMessagesTasks.Add(phoneService.SendSms(smsMessage, user.PhoneNumber!));
         }
 
         if (firstStepAuthenticationMethod != "Push")

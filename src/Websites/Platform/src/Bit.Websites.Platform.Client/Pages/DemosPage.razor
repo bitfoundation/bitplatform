@@ -56,11 +56,14 @@
         </BitText>
         <br />
         <div class="video-container">
-            <iframe src="https://www.youtube.com/embed/MCrF1iwN1h4"
-                    width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
-            </iframe>
+            <div class="video-wrapper">
+                <video controls
+                       title="bitplatform intro"
+                       src="https://videos.bitplatform.dev/bitplatform-intro.mp4" />
+                <button onclick="jumpToDemos(event)" class="skip-button">Jump to demos ⏩</button>
+            </div>
         </div>
+        <br />
         <br />
         <BitText Typography="BitTypography.H6" Gutter>
             You can start playing with its source code here: <a href="https://codespaces.new/bitfoundation/bit-templates-playground/tree/develop" target="_blank">Boilerplate playground</a>

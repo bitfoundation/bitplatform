@@ -13,7 +13,12 @@ public partial class ProductsSection
         try
         {
             return await productViewController
-                            .WithQuery(new ODataQuery { Top = 10, Skip = request.Skip, OrderBy = nameof(ProductDto.Name) })
+                            .WithQuery(new ODataQuery
+                            {
+                                Top = 10,
+                                Skip = request.Skip,
+                                OrderBy = nameof(ProductDto.Name)
+                            })
                             .Get(request.CancellationToken);
         }
         catch (Exception exp)
@@ -23,5 +28,5 @@ public partial class ProductsSection
         }
     }
 
-    private string? GetProductImageUrl(ProductDto product) => product.GetProductImageUrl(AbsoluteServerAddress);
+    private string? GetProductImageUrl(ProductDto product) => product.GetPrimaryMediumImageUrl(AbsoluteServerAddress);
 }

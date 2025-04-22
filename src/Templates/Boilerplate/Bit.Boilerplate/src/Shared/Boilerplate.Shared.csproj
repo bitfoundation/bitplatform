@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
@@ -57,6 +57,7 @@
     <ItemGroup>
         <Content Remove="appsettings*.json" />
         <EmbeddedResource Include="appsettings*.json" />
+        <Content Include="..\..\Bit.ResxTranslator.json" Link="Resources\Bit.ResxTranslator.json" />
         <EmbeddedResource Update="appsettings.*.json">
             <DependentUpon>appsettings.json</DependentUpon>
         </EmbeddedResource>

@@ -6,19 +6,16 @@ namespace Boilerplate.Client.Core.Components.Pages.Home;
 
 public partial class HomePage
 {
-    protected override string? Title => Localizer[nameof(AppStrings.Home)];
-    protected override string? Subtitle => string.Empty;
-
-
     [CascadingParameter] private BitDir? currentDir { get; set; }
 
 
     //#if(module != "Sales")
-    [AutoInject] private IStatisticsController statisticsController = default!;
-    private bool isLoadingGitHub = true;
-    private bool isLoadingNuget = true;
     private GitHubStats? gitHubStats;
     private NugetStatsDto? nugetStats;
+    private bool isLoadingNuget = true;
+    private bool isLoadingGitHub = true;
+
+    [AutoInject] private IStatisticsController statisticsController = default!;
     //#endif
 
 
@@ -75,6 +72,13 @@ public partial class HomePage
             isLoadingGitHub = false;
             StateHasChanged();
         }
+    }
+    //#endif
+
+    //#if(module == "Sales")
+    private async Task HandleOnSearchBoxClick()
+    {
+        PubSubService.Publish(ClientPubSubMessages.SEARCH_PRODUCTS);
     }
     //#endif
 }

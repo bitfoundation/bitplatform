@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;

@@ -135,7 +135,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// Determines if the TimePicker has a border.
     /// </summary>
-    [Parameter] public bool HasBorder { get; set; } = true;
+    [Parameter, ResetClassBuilder]
+    public bool HasBorder { get; set; } = true;
 
     /// <summary>
     /// Determines increment/decrement steps for time-picker's hour.
@@ -248,7 +249,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// Whether or not the Text field of the TimePicker is underlined.
     /// </summary>
-    [Parameter] public bool Underlined { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool Underlined { get; set; }
 
     /// <summary>
     /// The format of the time in the time-picker
@@ -327,8 +329,6 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     protected override void OnInitialized()
     {
-        _dotnetObj = DotNetObjectReference.Create(this);
-
         _timePickerId = $"BitTimePicker-{UniqueId}";
         _labelId = $"BitTimePicker-{UniqueId}-label";
         _inputId = $"BitTimePicker-{UniqueId}-input";
@@ -347,6 +347,9 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender is false) return;
+
+        _dotnetObj = DotNetObjectReference.Create(this);
+        
         if (Responsive is false) return;
 
         await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, BitSwipeOrientation.Vertical, _dotnetObj);
@@ -427,7 +430,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     private async Task ToggleCallout()
     {
         if (Standalone) return;
-        if (IsEnabled is false) return;
+        if (IsEnabled is false || IsDisposed) return;
 
         await _js.BitCalloutToggleCallout(_dotnetObj,
                                 _timePickerId,
@@ -669,6 +672,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     {
         if (IsDisposed || disposing is false) return;
 
+        await base.DisposeAsync(disposing);
+
         _cancellationTokenSource?.Dispose();
         OnValueChanged -= HandleOnValueChanged;
 
@@ -678,7 +683,5 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             await _js.BitSwipesDispose(_calloutId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
-
-        await base.DisposeAsync(disposing);
     }
 }

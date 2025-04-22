@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings;
+namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings;
 
 public partial class Accordion
 {

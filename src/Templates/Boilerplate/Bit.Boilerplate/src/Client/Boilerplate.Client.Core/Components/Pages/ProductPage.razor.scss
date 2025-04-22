@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 @import '../../Styles/abstracts/_media-queries.scss';
 
 section {
@@ -10,5 +10,13 @@ section {
 ::deep {
     .root-stack {
         max-width: 60rem;
+    }
+
+    .product-stack {
+        display: flex !important;
+
+        @include lt-sm {
+            flex-direction: column !important;
+        }
     }
 }

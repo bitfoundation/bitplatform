@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Shared.Attributes;
 using Microsoft.AspNetCore.Components.Endpoints;
 

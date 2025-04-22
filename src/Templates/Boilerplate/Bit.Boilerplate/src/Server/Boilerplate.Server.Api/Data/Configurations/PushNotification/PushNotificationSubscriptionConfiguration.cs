@@ -1,4 +1,4 @@
-﻿using Boilerplate.Server.Api.Models.PushNotification;
+using Boilerplate.Server.Api.Models.PushNotification;
 
 namespace Boilerplate.Server.Api.Data.Configurations.PushNotification;
 

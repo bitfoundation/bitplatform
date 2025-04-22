@@ -1,8 +1,8 @@
-﻿@attribute [Route(Urls.NotAuthorizedPage)]
+@attribute [Route(Urls.NotAuthorizedPage)]
 @attribute [Route("{culture?}" + Urls.NotAuthorizedPage)]
 @inherits AppPageBase
 
-<PageTitle>@Localizer[nameof(AppStrings.NotAuthorizedPageTitle)]</PageTitle>
+<AppPageData Title="@Localizer[nameof(AppStrings.NotAuthorizedPageTitle)]" />
 
 @if (isUpdatingAuthState)
 {

@@ -1,4 +1,4 @@
-﻿@inherits AppComponentBase
+@inherits AppComponentBase
 
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center">
@@ -46,7 +46,7 @@
                 </LabelTemplate>
             </BitFileUpload>
 
-            @if (User?.ProfileImageName is not null)
+            @if (User?.HasProfilePicture is true)
             {
                 <BitButton IsLoading=@isSaving OnClick="WrapHandled(RemoveProfileImage)" Color="BitColor.Error">
                     @Localizer[nameof(AppStrings.Remove)]

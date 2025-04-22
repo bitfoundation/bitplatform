@@ -67,4 +67,23 @@ public partial class AppProblemDetails
     public string? Key { get; set; } // Gets filled by Extensions property.
 
     public ErrorResourcePayload? Payload { get; set; } = new(); // Gets filled by Extensions property.
+
+
+    public static implicit operator Exception(AppProblemDetails problemDetails)
+    {
+        Type exceptionType = typeof(KnownException).Assembly.GetType(problemDetails.Type!) ?? typeof(UnknownException);
+
+        var args = new List<object?> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(problemDetails.Key!.ToString()!, problemDetails.Title!) : (object?)problemDetails.Title! };
+
+        Exception exp = exceptionType == typeof(ResourceValidationException)
+                            ? new ResourceValidationException(problemDetails.Title!, problemDetails.Payload)
+                            : (Exception)Activator.CreateInstance(exceptionType, args.ToArray())!;
+
+        foreach (var data in problemDetails.Extensions)
+        {
+            exp.Data[data.Key] = data.Value;
+        }
+
+        return exp;
+    }
 }

@@ -8,7 +8,6 @@ on:
     paths:
       - 'src/BlazorUI/**'
       - 'src/Bswup/**'
-      - 'src/Bup/**'
       - 'src/Butil/**'
       - 'src/CodeAnalyzers/**'
       - 'src/SourceGenerators/**'
@@ -101,13 +100,6 @@ jobs:
     - name: dotnet pack Bswup
       run: dotnet pack src/Bswup/Bit.Bswup/Bit.Bswup.csproj --output . --configuration Release
 
-    - name: Generate CSS/JS files Bup
-      run: dotnet build src/Bup/Bit.Bup/Bit.Bup.csproj -t:BeforeBuildTasks --no-restore -f:net9.0 -c Release
-    - name: dotnet build Bup
-      run: dotnet build src/Bup/Bit.Bup/Bit.Bup.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack Bup
-      run: dotnet pack src/Bup/Bit.Bup/Bit.Bup.csproj --output . --configuration Release
-      
     - name: Generate CSS/JS files Butil
       run: dotnet build src/Butil/Bit.Butil/Bit.Butil.csproj -t:BeforeBuildTasks --no-restore -f:net9.0 -c Release
     - name: dotnet build Butil
@@ -124,6 +116,11 @@ jobs:
       run: dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack CodeAnalyzer
       run: dotnet pack src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj --output . --configuration Release
+    
+    - name: dotnet build ResxTranslator
+      run: dotnet build src/ResxTranslator/Bit.ResxTranslator/Bit.ResxTranslator.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack ResxTranslator
+      run: dotnet pack src/ResxTranslator/Bit.ResxTranslator/Bit.ResxTranslator.csproj --output . --configuration Release
     
     - name: build SourceGenerators nupkg file
       run: dotnet build src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj --configuration Release

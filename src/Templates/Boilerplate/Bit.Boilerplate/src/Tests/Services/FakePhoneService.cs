@@ -5,15 +5,16 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 using Boilerplate.Server.Api.Services;
+using Hangfire;
 
 namespace Boilerplate.Tests.Services;
 
-public partial class FakePhoneService(ServerApiSettings appSettings, IHostEnvironment hostEnvironment, IHttpContextAccessor httpContextAccessor, ILogger<PhoneService> logger, PhoneNumberUtil phoneNumberUtil, RootServiceScopeProvider rootServiceScopeProvider)
-    : PhoneService(appSettings, hostEnvironment, httpContextAccessor, logger, phoneNumberUtil, rootServiceScopeProvider)
+public partial class FakePhoneService(IBackgroundJobClient backgroundJobClient, ServerApiSettings appSettings, IHostEnvironment hostEnvironment, IHttpContextAccessor httpContextAccessor, ILogger<PhoneService> logger, PhoneNumberUtil phoneNumberUtil)
+    : PhoneService(appSettings, backgroundJobClient, hostEnvironment, httpContextAccessor, logger, phoneNumberUtil)
 {
     private static readonly ConcurrentDictionary<string, string> LastSmsPerPhone = new();
 
-    public override Task SendSms(string messageText, string phoneNumber, CancellationToken cancellationToken)
+    public override Task SendSms(string messageText, string phoneNumber)
     {
         ArgumentException.ThrowIfNullOrEmpty(messageText);
         ArgumentException.ThrowIfNullOrEmpty(phoneNumber);

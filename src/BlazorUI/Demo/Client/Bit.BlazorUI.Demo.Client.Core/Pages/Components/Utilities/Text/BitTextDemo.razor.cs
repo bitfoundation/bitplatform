@@ -245,11 +245,11 @@ public partial class BitTextDemo
 <BitText Typography=""BitTypography.H5"">H5. Heading</BitText>
 <BitText Typography=""BitTypography.H6"">H6. Heading</BitText>
 
-<BitText Typography=""BitTypography.Subtitle1"">Subtitle1. Lorem ipsum dolor sit amet</BitText>
-<BitText Typography=""BitTypography.Subtitle2"">Subtitle2. Lorem ipsum dolor sit amet</BitText>
+<BitText Typography=""BitTypography.Subtitle1"">Subtitle1. Once upon a time</BitText>
+<BitText Typography=""BitTypography.Subtitle2"">Subtitle2. Once upon a time</BitText>
 
-<BitText Typography=""BitTypography.Body1"">Body1. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos blanditiis tenetur unde suscipit, quam beatae rerum inventore consectetur, neque doloribus, cupiditate numquam dignissimos laborum fugiat deleniti? Eum quasi quidem quibusdam.</BitText>
-<BitText Typography=""BitTypography.Body2"">Body2. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos blanditiis tenetur unde suscipit, quam beatae rerum inventore consectetur, neque doloribus, cupiditate numquam dignissimos laborum fugiat deleniti? Eum quasi quidem quibusdam.</BitText>
+<BitText Typography=""BitTypography.Body1"">Body1. Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
+<BitText Typography=""BitTypography.Body2"">Body2. Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
 
 <BitText Typography=""BitTypography.Button"">Button. Click Me</BitText>
 <BitText Typography=""BitTypography.Caption1"">Caption1. Hello World!</BitText>

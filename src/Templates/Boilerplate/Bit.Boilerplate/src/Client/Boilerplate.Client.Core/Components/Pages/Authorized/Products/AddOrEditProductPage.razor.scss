@@ -1,6 +1,12 @@
-﻿section {
+section {
     width: 90vw;
     max-width: 35rem;
     border-radius: 4px;
     padding-block: 1rem;
+}
+
+::deep {
+    .loading-stack {
+        height: calc(100vh / 2);
+    }
 }

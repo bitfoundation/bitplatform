@@ -20,24 +20,24 @@ public partial class ProfileSection
     private BitFileUpload fileUploadRef = default!;
     private readonly EditUserDto editUserDto = new();
 
-    
+
     private string? ProfileImageUrl => User?.GetProfileImageUrl(AbsoluteServerAddress);
 
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         var accessToken = await AuthTokenProvider.GetAccessToken();
 
-        profileImageUploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadProfileImage?access_token={accessToken}").ToString();
-
-        await base.OnInitAsync();
+        profileImageUploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadUserProfilePicture?access_token={accessToken}").ToString();
     }
 
     protected override void OnParametersSet()
     {
-        User?.Patch(editUserDto);
-
         base.OnParametersSet();
+
+        User?.Patch(editUserDto);
     }
 
 
@@ -74,9 +74,9 @@ public partial class ProfileSection
 
         try
         {
-            await attachmentController.RemoveProfileImage(CurrentCancellationToken);
+            await attachmentController.DeleteUserProfilePicture(CurrentCancellationToken);
 
-            User.ProfileImageName = null;
+            User.HasProfilePicture = false;
 
             PublishUserDataUpdated();
         }

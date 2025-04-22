@@ -4,6 +4,8 @@
 
 env:
   SERVER_ADDRESS: 'https://todo.bitplatform.dev'
+  AzureOpenAI__ApiKey: ${{ secrets.AzureOpenAI__ApiKey }}
+  AzureOpenAI__Endpoint: ${{ secrets.AzureOpenAI__Endpoint }}
 
 on:
   workflow_dispatch:
@@ -39,6 +41,12 @@ jobs:
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
         cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR
+
+    - name: Use Bit.ResxTranslator
+      run: |
+            cd TodoSample
+            dotnet tool install --global Bit.ResxTranslator --prerelease
+            bit-resx-translate
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
@@ -128,7 +136,7 @@ jobs:
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha
-       
+
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
@@ -148,7 +156,7 @@ jobs:
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
       
     - name: Publish
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/client -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:RunAOTCompilation=true -p:MultilingualEnabled=false
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/client -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:RunAOTCompilation=true -p:InvariantGlobalization=true
 
     - name: Upload to asw
       run: |
@@ -175,7 +183,7 @@ jobs:
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --offlineDb
-       
+
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
@@ -192,10 +200,10 @@ jobs:
       run:  cd src && dotnet workload install wasm-tools
       
     - name: Generate CSS/JS files
-      run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:MultilingualEnabled=false --no-restore -c Release
+      run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:InvariantGlobalization=true --no-restore -c Release
       
     - name: Publish
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/client -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:MultilingualEnabled=false
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/client -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:InvariantGlobalization=true
 
     - name: Upload to asw
       run: |
@@ -222,7 +230,7 @@ jobs:
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha
-       
+
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
@@ -242,7 +250,7 @@ jobs:
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
       
     - name: Publish
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/client -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:MultilingualEnabled=false
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/client -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:InvariantGlobalization=true
 
     - name: Upload to asw
       run: |
@@ -274,6 +282,12 @@ jobs:
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
         cd ..\..\..\ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --captcha reCaptcha --signalR
   
+    - name: Use Bit.ResxTranslator
+      run: |
+            cd TodoSample
+            dotnet tool install --global Bit.ResxTranslator --prerelease
+            bit-resx-translate
+
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
@@ -341,6 +355,12 @@ jobs:
           fileName: 'google-services.json'
           encodedString: ${{ secrets.TODO_GOOGLE_SERVICES_JSON_BASE64 }}
   
+    - name: Use Bit.ResxTranslator
+      run: |
+            cd TodoSample
+            dotnet tool install --global Bit.ResxTranslator --prerelease
+            bit-resx-translate
+
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
@@ -412,7 +432,7 @@ jobs:
 
     - uses: maxim-lobanov/setup-xcode@v1.6.0
       with:
-        xcode-version: '16.2'
+        xcode-version: '16.3'
 
     - name: Create project from Boilerplate
       run: |
@@ -421,6 +441,12 @@ jobs:
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
         cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR
       
+    - name: Use Bit.ResxTranslator
+      run: |
+            cd TodoSample
+            dotnet tool install --global Bit.ResxTranslator --prerelease
+            bit-resx-translate
+
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:

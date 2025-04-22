@@ -261,23 +261,29 @@ public class BitStackTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(true),
-        DataRow(false)
+        DataRow(true, true),
+        DataRow(false, true),
+        DataRow(true, false),
+        DataRow(false, false)
     ]
-    public void BitStackShouldRespectFillContent(bool fillContent)
+    public void BitStackShouldRespectFillContent(bool fillContent, bool horizontal)
     {
         var component = RenderComponent<BitStack>(parameters =>
         {
             parameters.Add(p => p.FillContent, fillContent);
+            parameters.Add(p => p.Horizontal, horizontal);
         });
 
-        var cssClass = fillContent ? " bit-stc-fcn" : null;
+        var fd = horizontal ? "row" : "column";
+        var cssClass = fillContent ? (horizontal ? " bit-stc-fch": " bit-stc-fcv") : null;
 
-        component.MarkupMatches(@$"<div class=""bit-stc{cssClass}"" style=""{STYLE}"" id:ignore></div>");
+        component.MarkupMatches(@$"<div class=""bit-stc{cssClass}"" style=""display:flex;flex-direction:{fd};gap:1rem"" id:ignore></div>");
     }
 
-    [DataTestMethod]
-    public void BitStackShouldRespectFillContentChangingAfterRender()
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false)]
+    public void BitStackShouldRespectFillContentChangingAfterRender(bool horizontal)
     {
         var component = RenderComponent<BitStack>();
 
@@ -286,9 +292,13 @@ public class BitStackTests : BunitTestContext
         component.SetParametersAndRender(parameters =>
         {
             parameters.Add(p => p.FillContent, true);
+            parameters.Add(p => p.Horizontal, horizontal);
         });
 
-        component.MarkupMatches(@$"<div class=""bit-stc bit-stc-fcn"" style=""{STYLE}"" id:ignore></div>");
+        var fd = horizontal ? "row" : "column";
+        var cssClass = horizontal ? "bit-stc-fch" : "bit-stc-fcv";
+
+        component.MarkupMatches(@$"<div class=""bit-stc {cssClass}"" style=""display:flex;flex-direction:{fd};gap:1rem"" id:ignore></div>");
     }
 
     [DataTestMethod,

@@ -75,9 +75,9 @@ public partial class PushNotificationService
 
         var subscriptions = await query.ToListAsync(cancellationToken);
 
-        _ = Task.Run(async () => // Let's not wait for the push notification to be sent. Consider using a proper message queue or background job system like Hangfire.
+        _ = Task.Run(async () =>
         {
-            await using var scope = rootServiceScopeProvider.Invoke();
+            await using var scope = rootServiceScopeProvider();
             var adsPushSender = scope.ServiceProvider.GetRequiredService<IAdsPushSender>();
             var serverExceptionHandler = scope.ServiceProvider.GetRequiredService<ServerExceptionHandler>();
 

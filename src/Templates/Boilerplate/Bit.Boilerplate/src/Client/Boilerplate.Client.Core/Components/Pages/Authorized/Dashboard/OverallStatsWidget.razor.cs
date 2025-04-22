@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Controllers.Dashboard;
+using Boilerplate.Shared.Controllers.Dashboard;
 using Boilerplate.Shared.Dtos.Dashboard;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Dashboard;
@@ -12,6 +12,8 @@ public partial class OverallStatsWidget
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         await GetData();
     }
 

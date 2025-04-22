@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Bit.ResxTranslator": {
+      "commandName": "Project",
+      "workingDirectory": "..\\..\\Templates\\Boilerplate\\Bit.Boilerplate"
+    }
+  }
+}

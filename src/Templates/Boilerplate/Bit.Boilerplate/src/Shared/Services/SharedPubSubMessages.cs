@@ -28,4 +28,9 @@ public static partial class SignalREvents
     /// Shows message at client side.
     /// </summary>
     public const string SHOW_MESSAGE = nameof(SHOW_MESSAGE);
+
+    /// <summary>
+    /// When exception is thrown in server side.
+    /// </summary>
+    public const string EXCEPTION_THROWN = nameof(EXCEPTION_THROWN);
 }

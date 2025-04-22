@@ -18,6 +18,14 @@ button {
     -webkit-touch-callout: none;
 }
 
+.bit-nta {
+    touch-action: none;
+
+    * {
+        touch-action: none;
+    }
+}
+
 .bit-input-hidden {
     left: 0;
     bottom: 0;

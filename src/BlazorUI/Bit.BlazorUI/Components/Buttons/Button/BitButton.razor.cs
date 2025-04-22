@@ -9,7 +9,13 @@ public partial class BitButton : BitComponentBase
 {
     private string? _rel;
     private int? _tabIndex;
+    private bool _dragging;
     private BitButtonType _buttonType;
+    private DotNetObjectReference<BitButton>? _dotnetObj;
+
+
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
 
@@ -63,6 +69,11 @@ public partial class BitButton : BitComponentBase
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// Makes the Float/FloatAbsolute button draggable on the page.
+    /// </summary>
+    [Parameter] public bool Draggable { get; set; }
+
+    /// <summary>
     /// Preserves the foreground color of the button through hover and focus.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -113,7 +124,8 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// Determines that only the icon should be rendered.
     /// </summary>
-    [Parameter] public bool IconOnly { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool IconOnly { get; set; }
 
     /// <summary>
     /// The url of the custom icon to render inside the button.
@@ -208,6 +220,27 @@ public partial class BitButton : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitVariant? Variant { get; set; }
+
+
+
+    [JSInvokable("OnDragStart")]
+    public async ValueTask _OnDragStart()
+    {
+        //_dragging = true;
+    }
+
+    [JSInvokable("OnDragging")]
+    public async ValueTask _OnDragging()
+    {
+        _dragging = true;
+    }
+
+    [JSInvokable("OnDragEnd")]
+    public async ValueTask _OnDragEnd()
+    {
+        await Task.Delay(100);
+        _dragging = false;
+    }
 
 
 
@@ -306,6 +339,27 @@ public partial class BitButton : BitComponentBase
         base.OnParametersSet();
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (Float || FloatAbsolute)
+        {
+            if (IsDisposed) return;
+
+            if (Draggable)
+            {
+                _dotnetObj ??= DotNetObjectReference.Create(this);
+
+                await _js.BitDraggablesEnable(_Id, _dotnetObj);
+            }
+            else
+            {
+                await _js.BitDraggablesDisable(_Id);
+            }
+        }
+    }
+
 
 
     private string GetLabelPositionClass()
@@ -330,7 +384,14 @@ public partial class BitButton : BitComponentBase
             if (await AssignIsLoading(true) is false) return;
         }
 
-        await OnClick.InvokeAsync(isLoading);
+        if (_dragging)
+        {
+            _dragging = false;
+        }
+        else
+        {
+            await OnClick.InvokeAsync(isLoading);
+        }
 
         if (AutoLoading)
         {
@@ -347,5 +408,25 @@ public partial class BitButton : BitComponentBase
         }
 
         _rel = BitLinkRelUtils.GetRels(Rel.Value);
+    }
+
+
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return;
+
+        await base.DisposeAsync(disposing);
+
+        if (_dotnetObj is not null)
+        {
+            _dotnetObj.Dispose();
+
+            try
+            {
+                await _js.BitDraggablesDisable(_Id);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+        }
     }
 }

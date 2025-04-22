@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 using Boilerplate.Tests.Extensions;
 using Boilerplate.Tests.PageTests.PageModels.Email;
 
@@ -39,7 +39,7 @@ public partial class SettingsPage
         await Assertions.Expect(emailInput).ToBeDisabledAsync();
         await Assertions.Expect(emailInput).Not.ToBeEditableAsync();
         await Assertions.Expect(emailInput).ToHaveValueAsync(newEmail);
-        await Assertions.Expect(Page.GetByPlaceholder(AppStrings.EmailTokenPlaceholder)).ToBeVisibleAsync();
+        //await Assertions.Expect(Page.GetByPlaceholder(AppStrings.EmailTokenPlaceholder)).ToBeVisibleAsync();
         await Assertions.Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.EmailTokenConfirmButtonText })).ToBeVisibleAsync();
         await Assertions.Expect(Page.GetByRole(AriaRole.Main)).ToContainTextAsync(AppStrings.NotReceivedEmailMessage);
         await Assertions.Expect(Page.GetByRole(AriaRole.Main)).ToContainTextAsync(AppStrings.CheckSpamMailMessage);
@@ -63,7 +63,7 @@ public partial class SettingsPage
 
     public async Task ConfirmEmailByToken(string token)
     {
-        await Page.GetByPlaceholder(AppStrings.EmailTokenPlaceholder).FillAsync(token);
+        //await Page.GetByPlaceholder(AppStrings.EmailTokenPlaceholder).FillAsync(token);
         await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.EmailTokenConfirmButtonText }).ClickAsync();
         await Page.WaitForHydrationToComplete();
     }

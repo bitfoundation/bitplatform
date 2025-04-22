@@ -60,14 +60,6 @@ public partial class BitPdfReader : BitComponentBase
     [Parameter] public bool RenderAllPages { get; set; }
 
 
-    protected override string RootElementClass => "bit-pdr";
-
-    protected override void RegisterCssClasses()
-    {
-        ClassBuilder.Register(() => Horizontal ? "bit-pdr-hor" : string.Empty);
-    }
-
-
 
     /// <summary>
     /// Re-renders the provided page number or the current page.
@@ -153,6 +145,13 @@ public partial class BitPdfReader : BitComponentBase
 
 
 
+    protected override string RootElementClass => "bit-pdr";
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Horizontal ? "bit-pdr-hor" : string.Empty);
+    }
+
     protected override Task OnParametersSetAsync()
     {
         if (_parametersInitialized is false)
@@ -197,6 +196,8 @@ public partial class BitPdfReader : BitComponentBase
             }
         }
     }
+
+
 
     private async ValueTask Render(int pageNumber)
     {

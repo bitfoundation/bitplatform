@@ -1,0 +1,22 @@
+{
+    "Docs_Comment": "Checkout https://github.com/bitfoundation/bitplatform/blob/develop/src/ResxTranslator/README.md",
+
+    "DefaultLanguage": "en",
+
+    "SupportedLanguages": [ "nl", "fa", "sv", "hi", "zh", "es", "fr", "ar", "de" ],
+    "SupportedLanguages__Comment": "Update MainActivity's DataPathPrefixes and CultureInfoManager's SupportedCultures as required.",
+
+    "ResxPaths": [ "/src/**/*.resx" ],
+
+    "OpenAI": {
+        "Model": "gpt-4.1-mini",
+        "Endpoint": "https://models.inference.ai.azure.com",
+        "ApiKey": null
+    },
+
+    "AzureOpenAI": {
+        "Model": "gpt-4.1-mini",
+        "Endpoint": "https://yourResourceName.openai.azure.com/openai/deployments/yourDeployment",
+        "ApiKey": null
+    }
+}

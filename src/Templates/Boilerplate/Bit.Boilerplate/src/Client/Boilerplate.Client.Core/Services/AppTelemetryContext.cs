@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Runtime.InteropServices;
 
 namespace Boilerplate.Client.Core.Services;

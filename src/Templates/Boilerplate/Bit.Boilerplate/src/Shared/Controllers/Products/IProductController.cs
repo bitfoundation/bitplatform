@@ -1,4 +1,5 @@
-﻿using Boilerplate.Shared.Dtos.Products;
+﻿//+:cnd:noEmit
+using Boilerplate.Shared.Dtos.Products;
 
 namespace Boilerplate.Shared.Controllers.Products;
 
@@ -11,6 +12,9 @@ public interface IProductController : IAppController
 
     [HttpGet]
     Task<PagedResult<ProductDto>> GetProducts(CancellationToken cancellationToken) => default!;
+
+    [HttpGet("{searchQuery}")]
+    Task<PagedResult<ProductDto>> GetProductsBySearchQuery(string searchQuery, CancellationToken cancellationToken) => default!;
 
     [HttpGet("{id}")]
     Task<ProductDto> Get(Guid id, CancellationToken cancellationToken);

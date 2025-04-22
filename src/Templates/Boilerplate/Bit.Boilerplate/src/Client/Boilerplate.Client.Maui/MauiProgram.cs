@@ -6,9 +6,6 @@ using Plugin.LocalNotification;
 //#endif
 using Boilerplate.Client.Core.Styles;
 using Boilerplate.Client.Maui.Services;
-using Maui.AppStores;
-using Maui.InAppReviews;
-using Maui.Android.InAppUpdates;
 //-:cnd:noEmit
 #if iOS || Mac
 using UIKit;
@@ -40,9 +37,6 @@ public static partial class MauiProgram
         //+:cnd:noEmit
         builder
             .UseMauiApp<App>()
-            .UseInAppReviews()
-            .UseAppStoreInfo()
-            .UseAndroidInAppUpdates()
             //#if (sentry == true)
             .UseSentry(options =>
             {
@@ -103,6 +97,16 @@ public static partial class MauiProgram
         SetupBlazorWebView();
 
         var mauiApp = builder.Build();
+
+        mauiApp.Services.GetRequiredService<PubSubService>()
+            .Subscribe(ClientPubSubMessages.PAGE_DATA_CHANGED, async (args) =>
+            {
+                var (title, _, __) = ((string?, string?, bool))args!;
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    Application.Current!.Windows.First().Title = title ?? "Boilerplate";
+                });
+            });
 
         return mauiApp;
     }

@@ -1,9 +1,15 @@
-﻿@*+:cnd:noEmit*@
+@*+:cnd:noEmit*@
 @attribute [Route(Urls.SignInPage)]
 @attribute [Route("{culture?}" + Urls.SignInPage)]
 @inherits AppPageBase
 
-<PageTitle>@Localizer[nameof(AppStrings.SignInPageTitle)]</PageTitle>
+<AppPageData Title="@Localizer[nameof(AppStrings.SignInPageTitle)]" />
+
+@if (isOtpSent || requiresTwoFactor)
+{
+	<!-- Checkout ShowSignInPanel's comments -->
+	<NavigationLock OnBeforeInternalNavigation="ShowSignInPanel" />
+}
 
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center" FillContent>
@@ -34,6 +40,7 @@
                 {
                     <TfaPanel Model="model"
                               IsWaiting="isWaiting"
+                              OnTokenProvided="DoSignIn"
                               OnSendTfaToken="HandleOnSendTfaToken" />
                 }
             </BitStack>

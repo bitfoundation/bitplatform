@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
 
@@ -31,10 +31,10 @@ public partial class SignInPanel
 
     protected override async Task OnAfterFirstRenderAsync()
     {
+        await base.OnAfterFirstRenderAsync();
+
         isWebAuthnAvailable = await webAuthnService.IsWebAuthnAvailable();
         StateHasChanged();
-
-        await base.OnAfterFirstRenderAsync();
     }
 
 

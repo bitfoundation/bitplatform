@@ -29,19 +29,39 @@ public partial class Program
         services.AddClientWindowsProjectServices(configuration);
         Services = services.BuildServiceProvider();
 
-        if (CultureInfoManager.MultilingualEnabled)
+        if (CultureInfoManager.InvariantGlobalization is false)
         {
             var culture = Services.GetRequiredService<IStorageService>()
                 .GetItem("Culture")
                 .GetAwaiter()
                 .GetResult();
-            Services.GetRequiredService<CultureInfoManager>().SetCurrentCulture(
+            CultureInfoManager.SetCurrentCulture(
                 culture ?? // 1- User settings
                 CultureInfo.CurrentUICulture.Name); // 2- OS Settings
         }
-        Services.GetRequiredService<PubSubService>().Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async culture =>
+
+        var form = new Form()
+        {
+            Text = "Boilerplate",
+            Height = 768,
+            Width = 1024,
+            MinimumSize = new Size(375, 667),
+            WindowState = FormWindowState.Maximized,
+            BackColor = ColorTranslator.FromHtml("#0D2960"),
+            Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath)
+        };
+        var pubSubService = Services.GetRequiredService<PubSubService>();
+        pubSubService.Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async culture =>
         {
             Application.Restart();
+        });
+        pubSubService.Subscribe(ClientPubSubMessages.PAGE_DATA_CHANGED, async args =>
+        {
+            var (title, _, __) = ((string? title, string?, bool))args!;
+            await form.InvokeAsync(() =>
+            {
+                form.Text = title ?? "Boilerplate";
+            });
         });
 
         // https://github.com/velopack/velopack
@@ -71,17 +91,6 @@ public partial class Program
                 Services.GetRequiredService<IExceptionHandler>().Handle(exp);
             }
         });
-
-        var form = new Form()
-        {
-            Text = "Boilerplate",
-            Height = 768,
-            Width = 1024,
-            MinimumSize = new Size(375, 667),
-            WindowState = FormWindowState.Maximized,
-            BackColor = ColorTranslator.FromHtml("#0D2960"),
-            Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath)
-        };
 
         Environment.SetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--unsafely-treat-insecure-origin-as-secure=https://0.0.0.1 --enable-notifications");
 

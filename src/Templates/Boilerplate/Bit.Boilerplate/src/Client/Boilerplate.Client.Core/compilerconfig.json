@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 [
     {
         "outputFile": "wwwroot/styles/app.css",
@@ -196,6 +196,20 @@
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
+    //#if (signalR == true)
+    {
+        "outputFile": "Components/Layout/AppAiChatPanel.razor.css",
+        "inputFile": "Components/Layout/AppAiChatPanel.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/Pages/Authorized/Chatbot/SystemPromptsPage.razor.css",
+        "inputFile": "Components/Pages/Authorized/Chatbot/SystemPromptsPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    //#endif
     //#if (offlineDb == true)
     {
         "outputFile": "Components/Pages/OfflineEditProfilePage.razor.css",

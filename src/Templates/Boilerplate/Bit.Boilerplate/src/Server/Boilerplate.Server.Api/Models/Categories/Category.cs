@@ -1,4 +1,4 @@
-﻿using Boilerplate.Server.Api.Models.Products;
+using Boilerplate.Server.Api.Models.Products;
 
 namespace Boilerplate.Server.Api.Models.Categories;
 

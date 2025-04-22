@@ -6,10 +6,10 @@ public partial class BitTextFieldDemo
     [
         new()
         {
-            Name = "AutoComplete",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "AutoComplete is a string that maps to the autocomplete attribute of the HTML input element.",
+            Name = "AutoHeight",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Automatically adjust the height of the input in Multiline mode.",
         },
         new()
         {
@@ -107,6 +107,12 @@ public partial class BitTextFieldDemo
         },
         new()
         {
+            Name = "OnEnter",
+            Type = "EventCallback<KeyboardEventArgs>",
+            Description = "Callback for when the Enter key is pressed while input has focus.",
+        },
+        new()
+        {
             Name = "OnFocus",
             Type = "EventCallback<FocusEventArgs>",
             Description = "Callback for when focus moves into the input.",
@@ -158,6 +164,13 @@ public partial class BitTextFieldDemo
         },
         new()
         {
+            Name = "PreventEnter",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Prevents the enter to add new line character into the input in the Multiline mode.",
+        },
+        new()
+        {
             Name = "Resizable",
             Type = "bool",
             DefaultValue = "false",
@@ -199,6 +212,13 @@ public partial class BitTextFieldDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Shows the custom suffix for text field.",
+        },
+        new()
+        {
+            Name = "TabIndex",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The value of the tabindex html attribute of the input element.",
         },
         new()
         {
@@ -533,7 +553,9 @@ public partial class BitTextFieldDemo
     private readonly string example4RazorCode = @"
 <BitTextField Label=""Multiline"" Multiline />
 <BitTextField Label=""Resizable"" Multiline Resizable />
-<BitTextField Label=""Rows = 10"" Multiline Rows=""10"" />";
+<BitTextField Label=""Rows = 10"" Multiline Rows=""10"" />
+<BitTextField Label=""AutoHeight"" Multiline AutoHeight />
+<BitTextField Label=""PreventEnter (use Shift+Enter for new-line)"" Multiline AutoHeight PreventEnter />";
 
     private readonly string example5RazorCode = @"
 <BitTextField Label=""Email"" IconName=""@BitIconName.EditMail"" />

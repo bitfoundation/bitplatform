@@ -84,7 +84,8 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// <summary>
     /// Defines whether to render inputs in the opposite direction.
     /// </summary>
-    [Parameter] public bool Reversed { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool Reversed { get; set; }
 
     /// <summary>
     /// The size of the inputs.
@@ -105,7 +106,8 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// <summary>
     /// Defines whether to render inputs vertically.
     /// </summary>
-    [Parameter] public bool Vertical { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool Vertical { get; set; }
 
 
 
@@ -172,8 +174,6 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         _inputFocusStates = new bool[Length];
 
-        _dotnetObj = DotNetObjectReference.Create(this);
-
         base.OnInitialized();
     }
 
@@ -191,7 +191,11 @@ public partial class BitOtpInput : BitInputBase<string?>
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (firstRender is false || IsEnabled is false) return;
+        if (firstRender is false) return;
+
+        _dotnetObj = DotNetObjectReference.Create(this);
+
+        if (IsEnabled is false) return;
 
         if (AutoFocus)
         {
@@ -200,6 +204,7 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         foreach (var inputRef in _inputRefs)
         {
+            if (IsDisposed) return;
             await _js.BitOtpInputSetup(UniqueId, _dotnetObj, inputRef);
         }
     }
@@ -433,6 +438,8 @@ public partial class BitOtpInput : BitInputBase<string?>
     {
         if (IsDisposed || disposing is false) return;
 
+        await base.DisposeAsync(disposing);
+
         if (_dotnetObj is not null)
         {
             _dotnetObj.Dispose();
@@ -443,7 +450,5 @@ public partial class BitOtpInput : BitInputBase<string?>
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
-
-        await base.DisposeAsync(disposing);
     }
 }

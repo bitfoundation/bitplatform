@@ -1,5 +1,5 @@
-﻿@inherits LayoutComponentBase
-
+@*+:cnd:noEmit*@
+@inherits LayoutComponentBase
 
 <CascadingValue Value=currentDir>
     <CascadingValue Name=@Parameters.IsOnline Value=isOnline>
@@ -7,7 +7,7 @@
             <CascadingValue Name=@Parameters.CurrentRouteData Value=currentRouteData>
                 <BitAppShell PersistScroll>
                     <main class="@GetMainCssClass()">
-                        <div class="root">
+                        <div class="main-container">
                             @if (isIdentityPage is false or null)
                             {
                                 if (isAuthenticated is true)
@@ -45,7 +45,7 @@
                                 }
                             }
 
-                            <div class="stack">
+                            <div class="main-body">
                                 @if (isIdentityPage is true)
                                 {
                                     <IdentityHeader />
@@ -76,6 +76,9 @@
                     </main>
                 </BitAppShell>
 
+                @*#if (signalR == true)*@
+                <AppAiChatPanel />
+                @*#endif*@
                 <AppSnackBar />
                 <AppDiagnosticModal />
                 <BitModalContainer ModalParameters="modalParameters" />

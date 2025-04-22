@@ -68,6 +68,13 @@ namespace Boilerplate.Client.Core.Data
                 fieldInfo: typeof(UserDto).GetField("<Gender>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 nullable: true);
 
+            var hasProfilePicture = runtimeEntityType.AddProperty(
+                "HasProfilePicture",
+                typeof(bool),
+                propertyInfo: typeof(UserDto).GetProperty("HasProfilePicture", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
+                fieldInfo: typeof(UserDto).GetField("<HasProfilePicture>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
+                sentinel: false);
+
             var password = runtimeEntityType.AddProperty(
                 "Password",
                 typeof(string),
@@ -79,13 +86,6 @@ namespace Boilerplate.Client.Core.Data
                 typeof(string),
                 propertyInfo: typeof(UserDto).GetProperty("PhoneNumber", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 fieldInfo: typeof(UserDto).GetField("<PhoneNumber>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
-                nullable: true);
-
-            var profileImageName = runtimeEntityType.AddProperty(
-                "ProfileImageName",
-                typeof(string),
-                propertyInfo: typeof(UserDto).GetProperty("ProfileImageName", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
-                fieldInfo: typeof(UserDto).GetField("<ProfileImageName>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 nullable: true);
 
             var userName = runtimeEntityType.AddProperty(

@@ -5,7 +5,7 @@
 /// </summary>
 public partial class BitPanel : BitComponentBase
 {
-    private int _offsetTop;
+    private float _offsetTop;
     private bool _internalIsOpen;
     private string _containerId = default!;
 

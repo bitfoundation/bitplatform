@@ -5,7 +5,7 @@
     <BitCard FullWidth>
         <BitStack HorizontalAlign="BitAlignment.Center">
             <BitStack Horizontal Class="carousel-stack">
-                <ProductImage Width="50%" />
+                <BitShimmer Height="230px" Width="50%" Background="BitColor.PrimaryBackground" />
                 <BitStack AutoHeight>
                     <br />
                     <BitShimmer Height="5rem" Width="100%" Background="BitColor.PrimaryBackground" />
@@ -27,11 +27,15 @@ else
                 <BitCarouselItem Style="width:100%">
                     <BitLink Href="@product.PageUrl" NoUnderline Style="color:unset">
                         <BitStack Horizontal Class="carousel-stack">
-                            <ProductImage Src="@GetProductImageUrl(product)" Width="50%" />
+                            <ProductImage Src="@GetProductImageUrl(product)" Width="50%" Class="carousel-image" />
                             <BitStack AutoHeight>
                                 <br />
-                                <BitText Typography="BitTypography.H1" Color="BitColor.Secondary">@product.Name</BitText>
-                                <BitText Typography="BitTypography.H6" Class="carousel-desc" Color="BitColor.SecondaryForeground">@product.Description</BitText>
+                                <BitText Typography="BitTypography.H3" Color="BitColor.Secondary">
+                                    @product.Name
+                                </BitText>
+                                <div class="carousel-description">
+                                    @((MarkupString)product.DescriptionHTML!)
+                                </div>
                                 <BitButton Color="BitColor.Tertiary">Buy</BitButton>
                             </BitStack>
                         </BitStack>

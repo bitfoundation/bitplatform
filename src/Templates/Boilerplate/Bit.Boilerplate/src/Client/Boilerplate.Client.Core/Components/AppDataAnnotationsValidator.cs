@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using Boilerplate.Shared.Attributes;
@@ -27,8 +27,10 @@ public partial class AppDataAnnotationsValidator : AppComponentBase
 
     [CascadingParameter] public EditContext EditContext { get; set; } = default!;
 
-    protected override Task OnInitAsync()
+    protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         if (EditContext is null)
             throw new InvalidOperationException("EditContext is required");
 
@@ -36,8 +38,6 @@ public partial class AppDataAnnotationsValidator : AppComponentBase
         EditContext.OnValidationRequested += OnValidationRequested;
 
         validationMessageStore = new ValidationMessageStore(EditContext);
-
-        return base.OnInitAsync();
     }
 
     private void OnFieldChanged(object? sender, FieldChangedEventArgs eventArgs)

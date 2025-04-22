@@ -580,8 +580,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     protected override void OnInitialized()
     {
-        _dotnetObj = DotNetObjectReference.Create(this);
-
         _dateRangePickerId = $"DateRangePicker-{UniqueId}";
         _labelId = $"{_dateRangePickerId}-label";
         _calloutId = $"{_dateRangePickerId}-callout";
@@ -599,6 +597,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender is false) return;
+
+        _dotnetObj = DotNetObjectReference.Create(this);
+
         if (Responsive is false) return;
 
         await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, BitSwipeOrientation.Vertical, _dotnetObj);
@@ -1227,12 +1228,12 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     {
         if (MaxDate.HasValue)
         {
-            if (date > MaxDate.Value.LocalDateTime.Date) return true;
+            if (date > GetDateTime(MaxDate.Value)) return true;
         }
 
         if (MinDate.HasValue)
         {
-            if (date < MinDate.Value.LocalDateTime.Date) return true;
+            if (date < GetDateTime(MinDate.Value)) return true;
         }
 
         if (MaxRange.HasValue && MaxRange.Value.TotalDays > 0 && CurrentValue?.StartDate is not null && CurrentValue.EndDate.HasValue is false)
@@ -1396,7 +1397,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         }
 
         //Is today
-        if (month == _currentMonth && date == DateTimeOffset.Now.LocalDateTime.Date)
+        if (month == _currentMonth && date == GetDateTime(DateTimeOffset.Now).Date)
         {
             klass.Append(" bit-dtrp-dtd");
 
@@ -1446,7 +1447,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         if (CurrentValue is null) return false;
         if (CurrentValue.StartDate.HasValue is false || CurrentValue.EndDate.HasValue is false) return false;
 
-        return date >= CurrentValue.StartDate.Value.LocalDateTime.Date && date <= CurrentValue.EndDate.Value.LocalDateTime.Date;
+        return date >= GetDateTime(CurrentValue.StartDate.Value).Date && date <= GetDateTime(CurrentValue.EndDate.Value).Date;
     }
 
     private bool IsStartDaySelectedDate(DateTime date)
@@ -1454,7 +1455,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         if (CurrentValue is null) return false;
         if (CurrentValue.StartDate.HasValue is false) return false;
 
-        return date == CurrentValue.StartDate.Value.LocalDateTime.Date;
+        return date == GetDateTime(CurrentValue.StartDate.Value).Date;
     }
 
     private bool IsEndDaySelectedDate(DateTime date)
@@ -1462,7 +1463,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         if (CurrentValue is null) return false;
         if (CurrentValue.EndDate.HasValue is false) return false;
 
-        return date == CurrentValue.EndDate.Value.LocalDateTime.Date;
+        return date == GetDateTime(CurrentValue.EndDate.Value).Date;
     }
 
     private bool IsEqualStartAndEndDaySelectedDate(DateTime date)
@@ -1470,8 +1471,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         if (CurrentValue is null) return false;
         if (CurrentValue.StartDate.HasValue is false || CurrentValue.EndDate.HasValue is false) return false;
 
-        return CurrentValue.StartDate.Value.LocalDateTime.Date == CurrentValue.EndDate.Value.LocalDateTime.Date && 
-               date == CurrentValue.EndDate.Value.LocalDateTime.Date;
+        var endDate = GetDateTime(CurrentValue.EndDate.Value).Date;
+
+        return GetDateTime(CurrentValue.StartDate.Value).Date == endDate && date == endDate;
     }
 
     private void UpdateTime()
@@ -1501,12 +1503,18 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     {
         if (date.HasValue is false) return null;
 
-        var year = _culture.Calendar.GetYear(date.Value.LocalDateTime);
-        var month = _culture.Calendar.GetMonth(date.Value.LocalDateTime);
-        var day = _culture.Calendar.GetDayOfMonth(date.Value.LocalDateTime);
+        var dateTime = GetDateTime(date.Value);
+        var year = _culture.Calendar.GetYear(dateTime);
+        var month = _culture.Calendar.GetMonth(dateTime);
+        var day = _culture.Calendar.GetDayOfMonth(dateTime);
 
         var resultDate = _culture.Calendar.ToDateTime(year, month, day, hour, minute, 0, 0);
         return new(resultDate, _timeZone.GetUtcOffset(resultDate));
+    }
+
+    private DateTime GetDateTime(DateTimeOffset dateTimeOffset)
+    {
+        return TimeZoneInfo.ConvertTimeFromUtc(dateTimeOffset.UtcDateTime, _timeZone);
     }
 
     private async Task HandleOnHourInputFocus(bool isStartTime)
@@ -1914,7 +1922,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private async Task<bool> ToggleCallout()
     {
         if (Standalone) return false;
-        if (IsEnabled is false) return false;
+        if (IsEnabled is false || IsDisposed) return false;
 
         return await _js.BitCalloutToggleCallout(_dotnetObj,
                                        _dateRangePickerId,
@@ -1956,6 +1964,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     {
         if (IsDisposed || disposing is false) return;
 
+        await base.DisposeAsync(disposing);
+
         _cancellationTokenSource?.Dispose();
         OnValueChanged -= HandleOnValueChanged;
 
@@ -1965,7 +1975,5 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             await _js.BitSwipesDispose(_calloutId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
-
-        await base.DisposeAsync(disposing);
     }
 }

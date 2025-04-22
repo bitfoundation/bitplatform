@@ -14,10 +14,11 @@ public partial class AddOrEditProductPage
     private bool isSaving;
     private bool isManagingFile;
     private bool isLoading = true;
-    private ProductDto product = new();
+    private ProductDto product = new() { Id = Guid.NewGuid() };
     private string? productImageUploadUrl;
     private BitFileUpload fileUploadRef = default!;
     private string selectedCategoryId = string.Empty;
+    private BitRichTextEditor richTextEditorRef = default!;
     private List<BitDropdownItem<string>> allCategoryList = [];
     private AppDataAnnotationsValidator validatorRef = default!;
 
@@ -25,22 +26,26 @@ public partial class AddOrEditProductPage
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         try
         {
             var categoryList = await categoryController.Get(CurrentCancellationToken);
 
-            allCategoryList = categoryList.Select(c => new BitDropdownItem<string>()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = c.Name ?? string.Empty,
-                Value = c.Id.ToString()
-            }).ToList();
+            allCategoryList = [.. categoryList.Select(c => new BitDropdownItem<string>()
+                                                           {
+                                                               ItemType = BitDropdownItemType.Normal,
+                                                               Text = c.Name ?? string.Empty,
+                                                               Value = c.Id.ToString()
+                                                           })];
+
+            var accessToken = await AuthTokenProvider.GetAccessToken();
+            productImageUploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadProductPrimaryImage/{Id ?? product.Id}?access_token={accessToken}").ToString();
 
             if (Id is null) return;
+
             product = await productController.Get(Id.Value, CurrentCancellationToken);
             selectedCategoryId = (product.CategoryId ?? default).ToString();
-            var accessToken = await AuthTokenProvider.GetAccessToken();
-            productImageUploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadProductImage/{product.Id}?access_token={accessToken}").ToString();
         }
         finally
         {
@@ -54,9 +59,12 @@ public partial class AddOrEditProductPage
 
         isSaving = true;
 
+        product.DescriptionHTML = await richTextEditorRef.GetHtml();
+        product.DescriptionText = await richTextEditorRef.GetText();
+
         try
         {
-            if (product.Id == default)
+            if (Id == default)
             {
                 await productController.Create(product, CurrentCancellationToken);
             }
@@ -84,19 +92,9 @@ public partial class AddOrEditProductPage
 
     private async Task HandleOnUploadComplete()
     {
-        try
-        {
-            var updatedProduct = await productController.Get(product.Id, CurrentCancellationToken);
-            updatedProduct.Patch(product);
-        }
-        catch (KnownException e)
-        {
-            SnackBarService.Error(e.Message);
-        }
-        finally
-        {
-            isManagingFile = false;
-        }
+        product.HasPrimaryImage = true;
+        product.ConcurrencyStamp = Guid.NewGuid().ToByteArray(); // To update the product image's url when user changes product image multiple time within the same page.
+        isManagingFile = false;
     }
 
     private async Task HandleOnUploadFailed()
@@ -112,9 +110,8 @@ public partial class AddOrEditProductPage
 
         try
         {
-            var updatedProduct = await attachmentController.RemoveProductImage(product.Id, CurrentCancellationToken);
-
-            updatedProduct.Patch(product);
+            await attachmentController.DeleteProductPrimaryImage(product.Id, CurrentCancellationToken);
+            product.HasPrimaryImage = false;
         }
         catch (KnownException e)
         {

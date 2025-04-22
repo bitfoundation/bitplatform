@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared;
+namespace Boilerplate.Shared;
 
 public static partial class Urls
 {

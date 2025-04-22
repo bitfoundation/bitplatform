@@ -1,0 +1,37 @@
+@attribute [Route(Urls.SystemPrompts)]
+@attribute [Route("{culture?}" + Urls.SystemPrompts)]
+@inherits AppPageBase
+
+
+<AppPageData Title="@Localizer[nameof(AppStrings.SystemPromptsTitle)]"
+             SubTitle="@Localizer[nameof(AppStrings.SystemPromptsSubTitle)]" />
+<section>
+    <CascadingValue Value=BitDir.Ltr>
+        @if (isLoading)
+        {
+            <BitEllipsisLoading CustomSize="32" />
+        }
+        else
+        {
+            <AuthorizeView Roles="@AppRoles.SUPER_ADMIN">
+                <Authorized>
+                    <BitSticky Top="5rem" Style="margin-bottom:8px">
+                        <BitButton IconName="@BitIconName.Save" OnClick="WrapHandled(SaveChanges)" AutoLoading>
+                            Save prompt
+                        </BitButton>
+                    </BitSticky>
+                </Authorized>
+                <NotAuthorized>
+                    <BitText Typography="BitTypography.H4" Color="BitColor.Warning">You don't have access to change the system prompts.</BitText>
+                </NotAuthorized>
+            </AuthorizeView>
+
+            <BitStack VerticalAlign="BitAlignment.Stretch" Horizontal>
+                <AuthorizeView Roles="@AppRoles.SUPER_ADMIN">
+                    <BitMarkdownEditor @bind-Value="systemPromptMarkdown" Class="md-editor" />
+                </AuthorizeView>
+                <BitMarkdownViewer Markdown="@systemPromptMarkdown" Style="word-break:break-all" />
+            </BitStack>
+        }
+    </CascadingValue>
+</section>

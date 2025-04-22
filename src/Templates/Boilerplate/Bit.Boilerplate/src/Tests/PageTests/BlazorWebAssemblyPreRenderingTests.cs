@@ -1,4 +1,4 @@
-﻿using Boilerplate.Client.Web;
+using Boilerplate.Client.Web;
 
 namespace Boilerplate.Tests.PageTests.BlazorWebAssembly.PreRendering;
 

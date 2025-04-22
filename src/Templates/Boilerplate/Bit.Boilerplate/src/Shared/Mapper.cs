@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Shared.Dtos.Identity;
 
 //#if (sample == true)

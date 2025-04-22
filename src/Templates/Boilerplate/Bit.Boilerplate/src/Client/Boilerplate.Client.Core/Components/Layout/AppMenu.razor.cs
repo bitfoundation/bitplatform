@@ -1,7 +1,5 @@
-﻿using System.Threading.Tasks;
-using Boilerplate.Client.Core.Services;
+﻿using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
-using Boilerplate.Shared.Dtos.Identity;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace Boilerplate.Client.Core.Components.Layout;
@@ -32,10 +30,12 @@ public partial class AppMenu
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         AuthManager.AuthenticationStateChanged += AuthManager_AuthenticationStateChanged;
         NavigationManager.LocationChanged += NavigationManager_LocationChanged;
 
-        if (CultureInfoManager.MultilingualEnabled)
+        if (CultureInfoManager.InvariantGlobalization is false)
         {
             cultures = CultureInfoManager.SupportedCultures
                               .Select(sc => new BitChoiceGroupItem<string> { Value = sc.Culture.Name, Text = sc.DisplayName })
@@ -54,8 +54,6 @@ public partial class AppMenu
         });
 
         await GetCurrentUser(AuthenticationStateTask);
-
-        await base.OnInitAsync();
     }
 
 
@@ -109,10 +107,10 @@ public partial class AppMenu
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
+        await base.DisposeAsync(disposing);
+
         unsubscribeUerDataUpdated?.Invoke();
         NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
         AuthManager.AuthenticationStateChanged -= AuthManager_AuthenticationStateChanged;
-
-        await base.DisposeAsync(disposing);
     }
 }

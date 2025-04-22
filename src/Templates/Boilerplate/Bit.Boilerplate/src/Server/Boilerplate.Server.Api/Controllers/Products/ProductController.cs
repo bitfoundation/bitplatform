@@ -7,6 +7,7 @@ using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Server.Api.Models.Products;
 using Boilerplate.Shared.Controllers.Products;
+using Ganss.Xss;
 
 namespace Boilerplate.Server.Api.Controllers.Products;
 
@@ -14,8 +15,13 @@ namespace Boilerplate.Server.Api.Controllers.Products;
 [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
 public partial class ProductController : AppControllerBase, IProductController
 {
+    [AutoInject] private HtmlSanitizer htmlSanitizer = default!;
+
     //#if (signalR == true)
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
+    //#endif
+    //#if (signalR == true || database == "PostgreSQL")
+    [AutoInject] private ProductEmbeddingService productEmbeddingService = default!;
     //#endif
     [AutoInject] private ResponseCacheService responseCacheService = default!;
 
@@ -39,6 +45,24 @@ public partial class ProductController : AppControllerBase, IProductController
         return new PagedResult<ProductDto>(await query.ToArrayAsync(cancellationToken), totalCount);
     }
 
+    [HttpGet("{searchQuery}")]
+    public async Task<PagedResult<ProductDto>> GetProductsBySearchQuery(string searchQuery, ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
+    {
+        //#if (database == "PostgreSQL")
+        var query = (IQueryable<ProductDto>)odataQuery.ApplyTo((await (productEmbeddingService.GetProductsBySearchQuery(searchQuery, cancellationToken))).Project(), ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
+        var totalCount = await query.LongCountAsync(cancellationToken);
+
+        query = query.SkipIf(odataQuery.Skip is not null, odataQuery.Skip?.Value)
+                     .TakeIf(odataQuery.Top is not null, odataQuery.Top?.Value);
+
+        return new PagedResult<ProductDto>(await query.ToArrayAsync(cancellationToken), totalCount);
+        //#else
+        // Embedding based search is only implemented for PostgreSQL.
+        // Simply return whole products list.
+        return await GetProducts(odataQuery, cancellationToken);
+        //#endif
+    }
+
     [HttpGet("{id}")]
     public async Task<ProductDto> Get(Guid id, CancellationToken cancellationToken)
     {
@@ -51,11 +75,24 @@ public partial class ProductController : AppControllerBase, IProductController
     [HttpPost]
     public async Task<ProductDto> Create(ProductDto dto, CancellationToken cancellationToken)
     {
+        dto.DescriptionHTML = htmlSanitizer.Sanitize(dto.DescriptionHTML ?? string.Empty);
+
         var entityToAdd = dto.Map();
 
         await DbContext.Products.AddAsync(entityToAdd, cancellationToken);
 
         await Validate(entityToAdd, cancellationToken);
+
+        //#if (database == "PostgreSQL" || signalR == true)
+        //#if (IsInsideProjectTemplate == true)
+        if (DbContext.Database.ProviderName!.EndsWith("PostgreSQL", StringComparison.InvariantCulture) is false)
+        {
+            //#endif
+            await productEmbeddingService.Embed(entityToAdd, cancellationToken);
+            //#if (IsInsideProjectTemplate == true)
+        }
+        //#endif
+        //#endif
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
@@ -69,12 +106,25 @@ public partial class ProductController : AppControllerBase, IProductController
     [HttpPut]
     public async Task<ProductDto> Update(ProductDto dto, CancellationToken cancellationToken)
     {
+        dto.DescriptionHTML = htmlSanitizer.Sanitize(dto.DescriptionHTML ?? string.Empty);
+
         var entityToUpdate = await DbContext.Products.FindAsync([dto.Id], cancellationToken)
             ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
 
         dto.Patch(entityToUpdate);
 
         await Validate(entityToUpdate, cancellationToken);
+
+        //#if (database == "PostgreSQL" || signalR == true)
+        //#if (IsInsideProjectTemplate == true)
+        if (DbContext.Database.ProviderName!.EndsWith("PostgreSQL", StringComparison.InvariantCulture) is false)
+        {
+            //#endif
+            await productEmbeddingService.Embed(entityToUpdate, cancellationToken);
+            //#if (IsInsideProjectTemplate == true)
+        }
+        //#endif
+        //#endif
 
         await DbContext.SaveChangesAsync(cancellationToken);
 

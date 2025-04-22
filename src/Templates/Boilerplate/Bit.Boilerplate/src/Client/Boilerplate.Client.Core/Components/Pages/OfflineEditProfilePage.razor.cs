@@ -1,4 +1,4 @@
-﻿using Boilerplate.Client.Core.Data;
+using Boilerplate.Client.Core.Data;
 using Boilerplate.Shared.Dtos.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,9 +6,6 @@ namespace Boilerplate.Client.Core.Components.Pages;
 
 public partial class OfflineEditProfilePage
 {
-    protected override string? Title => Localizer[nameof(AppStrings.ProfileTitle)];
-    protected override string? Subtitle => string.Empty;
-
     [AutoInject] IDbContextFactory<OfflineDbContext> dbContextFactory = default!;
 
     private bool isSaving;
@@ -19,6 +16,7 @@ public partial class OfflineEditProfilePage
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();
+
         try
         {
             await LoadEditProfileData();

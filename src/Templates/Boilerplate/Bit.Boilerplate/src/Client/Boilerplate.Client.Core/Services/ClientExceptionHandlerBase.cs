@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 

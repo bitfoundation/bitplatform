@@ -1,0 +1,60 @@
+@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
+
+::deep {
+
+    .scr-container {
+        padding: 0.5rem;
+
+        img {
+            padding: 0.5rem;
+            max-width: 256px;
+        }
+    }
+
+    .open-panel-button {
+        left: unset;
+        right: unset;
+        inset-inline-end: 2rem;
+
+        @include lt-md {
+            bottom: 4rem;
+            inset-inline-end: 1rem;
+        }
+
+        img {
+            pointer-events: none;
+        }
+    }
+
+    .body {
+        width: 600px;
+        max-width: 100%;
+    }
+
+    .user-message {
+        align-self: end;
+        padding: 0.5rem 1rem;
+
+        pre {
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+    }
+
+    .default-prompt-container {
+        @include gt-xs {
+            flex-flow: row !important;
+        }
+    }
+
+    .default-prompt-button {
+        height: 100%;
+    }
+
+    .send-message-button {
+        left: unset;
+        right: unset;
+        inset-inline-end: 0.5rem;
+    }
+}

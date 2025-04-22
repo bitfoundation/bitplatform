@@ -2,26 +2,33 @@
 using System.Net;
 using System.Net.Mail;
 using System.IO.Compression;
+//#if (signalR == true || database == "PostgreSQL")
+using System.ClientModel.Primitives;
+//#endif
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Net.Http.Headers;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.ResponseCompression;
 using Twilio;
+using Ganss.Xss;
 using System.Text;
 using Fido2NetLib;
 using PhoneNumbers;
 using FluentStorage;
-using FluentStorage.Blobs;
 using FluentEmail.Core;
+using FluentStorage.Blobs;
+using Hangfire.EntityFrameworkCore;
 //#if (notification == true)
 using AdsPush;
 using AdsPush.Abstraction;
 //#endif
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Server.Api.Controllers;
+using Boilerplate.Server.Api.Services.Jobs;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Services.Identity;
+
 namespace Boilerplate.Server.Api;
 
 public static partial class Program
@@ -37,7 +44,14 @@ public static partial class Program
         configuration.Bind(appSettings);
 
         services.AddScoped<EmailService>();
+        services.AddScoped<EmailServiceJobsRunner>();
         services.AddScoped<PhoneService>();
+        services.AddScoped<PhoneServiceJobsRunner>();
+        //#if (module == "Sales" || module == "Admin")
+        //#if (signalR == true || database == "PostgreSQL")
+        services.AddScoped<ProductEmbeddingService>();
+        //#endif
+        //#endif
         if (appSettings.Sms?.Configured is true)
         {
             TwilioClient.Init(appSettings.Sms.TwilioAccountSid, appSettings.Sms.TwilioAutoToken);
@@ -48,9 +62,9 @@ public static partial class Program
         {
             //#if (filesStorage == "Local")
             var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
-            var attachmentsDirPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
-            Directory.CreateDirectory(attachmentsDirPath);
-            return StorageFactory.Blobs.DirectoryFiles(attachmentsDirPath);
+            var appDataDirPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
+            Directory.CreateDirectory(appDataDirPath);
+            return StorageFactory.Blobs.DirectoryFiles(appDataDirPath);
             //#elif (filesStorage == "AzureBlobStorage")
             var azureBlobStorageSasUrl = configuration.GetConnectionString("AzureBlobStorageSasUrl");
             return (IBlobStorage)(azureBlobStorageSasUrl is "emulator"
@@ -151,6 +165,8 @@ public static partial class Program
 
         services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.AddRange([AppJsonContext.Default, IdentityJsonContext.Default, ServerJsonContext.Default]));
 
+        services.AddSingleton<HtmlSanitizer>();
+
         services
             .AddControllers()
             .AddJsonOptions(options =>
@@ -211,7 +227,7 @@ public static partial class Program
             //#elif (database == "PostgreSQL")
             options.UseNpgsql(configuration.GetConnectionString("PostgreSQLConnectionString"), dbOptions =>
             {
-
+                dbOptions.UseVector();
             });
             //#elif (database == "MySql")
             options.UseMySql(configuration.GetConnectionString("MySqlSQLConnectionString"), ServerVersion.AutoDetect(configuration.GetConnectionString("MySqlSQLConnectionString")), dbOptions =>
@@ -221,7 +237,7 @@ public static partial class Program
             //#elif (database == "Other")
             throw new NotImplementedException("Install and configure any database supported by ef core (https://learn.microsoft.com/en-us/ef/core/providers)");
             //#endif
-        };
+        }
 
         services.AddOptions<IdentityOptions>()
             .Bind(configuration.GetRequiredSection(nameof(ServerApiSettings.Identity)))
@@ -283,6 +299,12 @@ public static partial class Program
         {
             c.Timeout = TimeSpan.FromSeconds(10);
             c.BaseAddress = new Uri("https://www.google.com/recaptcha/");
+            c.DefaultRequestVersion = HttpVersion.Version20;
+            c.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+        }).ConfigurePrimaryHttpMessageHandler(sp => new SocketsHttpHandler()
+        {
+            EnableMultipleHttp2Connections = true,
+            EnableMultipleHttp3Connections = true
         });
         //#endif
 
@@ -290,12 +312,24 @@ public static partial class Program
         {
             c.Timeout = TimeSpan.FromSeconds(3);
             c.BaseAddress = new Uri("https://azuresearch-usnc.nuget.org");
+            c.DefaultRequestVersion = HttpVersion.Version11;
+            c.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+        }).ConfigurePrimaryHttpMessageHandler(sp => new SocketsHttpHandler()
+        {
+            EnableMultipleHttp2Connections = true,
+            EnableMultipleHttp3Connections = true
         });
 
         services.AddHttpClient<ResponseCacheService>(c =>
         {
             c.Timeout = TimeSpan.FromSeconds(10);
             c.BaseAddress = new Uri("https://api.cloudflare.com/client/v4/zones/");
+            c.DefaultRequestVersion = HttpVersion.Version20;
+            c.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+        }).ConfigurePrimaryHttpMessageHandler(sp => new SocketsHttpHandler()
+        {
+            EnableMultipleHttp2Connections = true,
+            EnableMultipleHttp3Connections = true
         });
 
         services.AddFido2(options =>
@@ -318,6 +352,115 @@ public static partial class Program
             };
 
             return options;
+        });
+
+        //#if (signalR == true || database == "PostgreSQL")
+        services.AddHttpClient("AI", c =>
+        {
+            c.DefaultRequestVersion = HttpVersion.Version20;
+            c.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+        }).ConfigurePrimaryHttpMessageHandler(sp => new SocketsHttpHandler()
+        {
+            EnableMultipleHttp2Connections = true,
+            EnableMultipleHttp3Connections = true
+        });
+
+        if (string.IsNullOrEmpty(appSettings.AI?.OpenAI?.ChatApiKey) is false)
+        {
+            // https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.AI.OpenAI#microsoftextensionsaiopenai
+            services.AddChatClient(sp => new OpenAI.Chat.ChatClient(model: appSettings.AI.OpenAI.ChatModel, credential: new(appSettings.AI.OpenAI.ChatApiKey), options: new()
+            {
+                Endpoint = appSettings.AI.OpenAI.ChatEndpoint,
+                Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
+            }).AsIChatClient())
+            .UseLogging()
+            .UseFunctionInvocation();
+            // .UseDistributedCache()
+            // .UseOpenTelemetry()
+        }
+        else if (string.IsNullOrEmpty(appSettings.AI?.AzureOpenAI?.ChatApiKey) is false)
+        {
+            // https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.AI.AzureAIInference#microsoftextensionsaiazureaiinference
+            services.AddChatClient(sp => new Azure.AI.Inference.ChatCompletionsClient(endpoint: appSettings.AI.AzureOpenAI.ChatEndpoint,
+                credential: new Azure.AzureKeyCredential(appSettings.AI.AzureOpenAI.ChatApiKey),
+                options: new()
+                {
+                    Transport = new Azure.Core.Pipeline.HttpClientTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
+                }).AsIChatClient(appSettings.AI.AzureOpenAI.ChatModel))
+            .UseLogging()
+            .UseFunctionInvocation();
+            // .UseDistributedCache()
+            // .UseOpenTelemetry()
+        }
+
+        if (string.IsNullOrEmpty(appSettings.AI?.OpenAI?.EmbeddingApiKey) is false)
+        {
+            services.AddEmbeddingGenerator(sp => new OpenAI.Embeddings.EmbeddingClient(model: appSettings.AI.OpenAI.EmbeddingModel, credential: new(appSettings.AI.OpenAI.EmbeddingApiKey), options: new()
+            {
+                Endpoint = appSettings.AI.OpenAI.EmbeddingEndpoint,
+                Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
+            }).AsIEmbeddingGenerator())
+            .UseLogging();
+            // .UseDistributedCache()
+            // .UseOpenTelemetry()
+        }
+        else if (string.IsNullOrEmpty(appSettings.AI?.AzureOpenAI?.EmbeddingApiKey) is false)
+        {
+            services.AddEmbeddingGenerator(sp => new Azure.AI.Inference.EmbeddingsClient(endpoint: appSettings.AI.AzureOpenAI.EmbeddingEndpoint,
+                credential: new Azure.AzureKeyCredential(appSettings.AI.AzureOpenAI.EmbeddingApiKey),
+                options: new()
+                {
+                    Transport = new Azure.Core.Pipeline.HttpClientTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
+                }).AsIEmbeddingGenerator(appSettings.AI.AzureOpenAI.EmbeddingModel))
+            .UseLogging();
+            // .UseDistributedCache()
+            // .UseOpenTelemetry()
+        }
+        //#endif
+
+        builder.Services.AddHangfire(configuration =>
+        {
+            var efCoreStorage = configuration.UseEFCoreStorage(optionsBuilder =>
+            {
+                if (appSettings.Hangfire?.UseIsolatedStorage is true)
+                {
+                    var dir = appSettings.Hangfire.IsolatedStorageDirectory;
+                    if (string.IsNullOrEmpty(dir) is false)
+                    {
+                        dir = Environment.ExpandEnvironmentVariables(dir);
+                    }
+                    else
+                    {
+                        var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
+                        dir = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
+                    }
+                    Directory.CreateDirectory(dir);
+                    optionsBuilder.UseSqlite($"Data Source={Path.Combine(dir, "BoilerplateJobsDb")};");
+                }
+                else
+                {
+                    AddDbContext(optionsBuilder);
+                }
+            }, new()
+            {
+                Schema = "jobs",
+                QueuePollInterval = new TimeSpan(0, 0, 1)
+            });
+
+            if (appSettings.Hangfire?.UseIsolatedStorage is true)
+            {
+                efCoreStorage.UseDatabaseCreator();
+            }
+
+            configuration.UseRecommendedSerializerSettings();
+            configuration.UseSimpleAssemblyNameTypeSerializer();
+            configuration.UseIgnoredAssemblyVersionTypeResolver();
+            configuration.SetDataCompatibilityLevel(CompatibilityLevel.Version_180);
+        });
+
+        builder.Services.AddHangfireServer(options =>
+        {
+            options.SchedulePollingInterval = TimeSpan.FromSeconds(5);
         });
     }
 

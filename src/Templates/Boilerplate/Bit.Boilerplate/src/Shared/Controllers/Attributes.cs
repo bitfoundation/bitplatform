@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Controllers;
+namespace Boilerplate.Shared.Controllers;
 
 [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Method)]
 internal partial class RouteAttribute(string template) : Attribute

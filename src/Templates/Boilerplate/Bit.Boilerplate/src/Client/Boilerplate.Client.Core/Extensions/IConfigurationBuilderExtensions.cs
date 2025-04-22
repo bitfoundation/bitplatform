@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 namespace Microsoft.Extensions.Configuration;

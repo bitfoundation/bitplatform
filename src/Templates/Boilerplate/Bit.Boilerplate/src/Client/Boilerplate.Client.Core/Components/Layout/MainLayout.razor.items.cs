@@ -64,13 +64,6 @@ public partial class MainLayout
             termsNavItem
         ];
 
-        BitNavItem aboutNavItem = new()
-        {
-            Text = localizer[nameof(AppStrings.About)],
-            IconName = BitIconName.Info,
-            Url = Urls.AboutPage,
-        };
-
         //#if (offlineDb == true)
         navPanelAuthenticatedItems.Add(new()
         {
@@ -85,6 +78,28 @@ public partial class MainLayout
             Url = Urls.OfflineEditProfilePage,
         });
         //#endif
+
+        //#if (signalR == true)
+        navPanelAuthenticatedItems.Add(new()
+        {
+            Text = localizer[nameof(AppStrings.SystemPromptsTitle)],
+            IconName = BitIconName.TextDocumentSettings,
+            Url = Urls.SystemPrompts,
+        });
+        navPanelUnAuthenticatedItems.Add(new()
+        {
+            Text = localizer[nameof(AppStrings.SystemPromptsTitle)],
+            IconName = BitIconName.TextDocumentSettings,
+            Url = Urls.SystemPrompts,
+        });
+        //#endif
+
+        BitNavItem aboutNavItem = new()
+        {
+            Text = localizer[nameof(AppStrings.About)],
+            IconName = BitIconName.Info,
+            Url = Urls.AboutPage,
+        };
 
         navPanelAuthenticatedItems.Add(aboutNavItem);
         navPanelUnAuthenticatedItems.Add(aboutNavItem);

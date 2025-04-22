@@ -1,43 +1,78 @@
-﻿namespace Bit.BlazorUI;
+﻿
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// A ScrollablePane is a component for scrolling through content that doesn't fit entirely on the screen.
 /// </summary>
 public partial class BitScrollablePane : BitComponentBase
 {
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
     /// <summary>
-    /// The content of the ScrollablePane, it can be any custom tag or text.
+    /// Automatically scrolls to the end of the pane after each render.
+    /// </summary>
+    [Parameter] public bool AutoScroll { get; set; }
+
+    /// <summary>
+    /// Makes the height of the pane auto.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool AutoHeight { get; set; }
+
+    /// <summary>
+    /// Makes both height and width of the pane auto.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool AutoSize { get; set; }
+
+    /// <summary>
+    /// Makes the width of the pane auto.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool AutoWidth { get; set; }
+
+    /// <summary>
+    /// The content of the pane, it can be any custom tag or text.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// The height of the ScrollablePane.
+    /// Makes the height of the pane fit-content.
     /// </summary>
     [Parameter, ResetStyleBuilder]
-    public string? Height { get; set; }
+    public bool FitHeight { get; set; }
 
     /// <summary>
-    /// Callback for when the ScrollablePane scrolled.
-    /// </summary>
-    [Parameter] public EventCallback OnScroll { get; set; }
-
-    /// <summary>
-    /// Controls the visibility of scrollbars in the ScrollablePane.
+    /// Makes both height and width of the pane fit-content.
     /// </summary>
     [Parameter, ResetStyleBuilder]
-    public BitOverflow? Overflow { get; set; }
+    public bool FitSize { get; set; }
 
     /// <summary>
-    /// Controls the visibility of X-axis scrollbar in the ScrollablePane.
+    /// Makes the width of the pane fit-content.
     /// </summary>
     [Parameter, ResetStyleBuilder]
-    public BitOverflow? OverflowX { get; set; }
+    public bool FitWidth { get; set; }
 
     /// <summary>
-    /// Controls the visibility of Y-axis scrollbar in the ScrollablePane.
+    /// Makes the height of the pane 100%.
     /// </summary>
     [Parameter, ResetStyleBuilder]
-    public BitOverflow? OverflowY { get; set; }
+    public bool FullHeight { get; set; }
+
+    /// <summary>
+    /// Makes both height and width of the pane 100%.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool FullSize { get; set; }
+
+    /// <summary>
+    /// Makes the width of the pane 100%.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool FullWidth { get; set; }
 
     /// <summary>
     /// Allows to reserve space for the scrollbar, preventing unwanted layout changes as the content grows while also avoiding unnecessary visuals when scrolling isn't needed.
@@ -46,10 +81,67 @@ public partial class BitScrollablePane : BitComponentBase
     public BitScrollbarGutter? Gutter { get; set; }
 
     /// <summary>
-    /// The width of the ScrollablePane.
+    /// The height of the pane.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public string? Height { get; set; }
+
+    /// <summary>
+    /// Enables a modern style for the scrollbar of the pane.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Modern { get; set; }
+
+    /// <summary>
+    /// Callback for when the pane scrolled.
+    /// </summary>
+    [Parameter] public EventCallback OnScroll { get; set; }
+
+    /// <summary>
+    /// Controls the visibility of scrollbars in the pane.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public BitOverflow? Overflow { get; set; }
+
+    /// <summary>
+    /// Controls the visibility of X-axis scrollbar in the pane.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public BitOverflow? OverflowX { get; set; }
+
+    /// <summary>
+    /// Controls the visibility of Y-axis scrollbar in the pane.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public BitOverflow? OverflowY { get; set; }
+
+    /// <summary>
+    ///  Sets the color of the scrollbar track and thumb. For specific colors, it has to contain both colors separated by a space or otherwise it won't work.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public string? ScrollbarColor { get; set; }
+
+    /// <summary>
+    ///  Sets the desired thickness of scrollbars when they are shown.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public BitScrollbarWidth? ScrollbarWidth { get; set; }
+
+    /// <summary>
+    /// The width of the pane.
     /// </summary>
     [Parameter, ResetStyleBuilder]
     public string? Width { get; set; }
+
+
+
+    /// <summary>
+    /// Scrolls the pane to the end of its content, both horizontally and vertically.
+    /// </summary>
+    public ValueTask ScrollToEnd()
+    {
+        return _js.BitScrollablePaneScrollToEnd(RootElement);
+    }
 
 
 
@@ -57,8 +149,20 @@ public partial class BitScrollablePane : BitComponentBase
 
     protected override void RegisterCssStyles()
     {
-        StyleBuilder.Register(() => Height.HasValue() ? $"height:{Height}" : string.Empty);
         StyleBuilder.Register(() => Width.HasValue() ? $"width:{Width}" : string.Empty);
+        StyleBuilder.Register(() => Height.HasValue() ? $"height:{Height}" : string.Empty);
+
+        StyleBuilder.Register(() => AutoWidth ? $"width:auto" : string.Empty);
+        StyleBuilder.Register(() => AutoHeight ? $"height:auto" : string.Empty);
+        StyleBuilder.Register(() => AutoSize ? $"height:auto;width:auto" : string.Empty);
+
+        StyleBuilder.Register(() => FitWidth ? $"width:fit-content" : string.Empty);
+        StyleBuilder.Register(() => FitHeight ? $"height:fit-content" : string.Empty);
+        StyleBuilder.Register(() => FitSize ? $"height:fit-content;width:fit-content" : string.Empty);
+
+        StyleBuilder.Register(() => FullWidth ? $"width:100%" : string.Empty);
+        StyleBuilder.Register(() => FullHeight ? $"height:100%" : string.Empty);
+        StyleBuilder.Register(() => FullSize ? $"height:100%;width:100%" : string.Empty);
 
         // Auto is the default value which is already set on the root element
         StyleBuilder.Register(register =>
@@ -86,10 +190,40 @@ public partial class BitScrollablePane : BitComponentBase
             return string.Empty;
         });
 
-        // Auto is the default value which is already set on the root element 
-        StyleBuilder.Register(() => Gutter is not null && Gutter is not BitScrollbarGutter.Auto
-                ? $"scrollbar-gutter:stable{(Gutter is BitScrollbarGutter.BothEdges ? " both-edges" : "")}"
-                : string.Empty);
+        // Auto is the default value which is already set on the root element
+        StyleBuilder.Register(() => Gutter switch
+        {
+            BitScrollbarGutter.Auto => string.Empty,
+            BitScrollbarGutter.Stable => "scrollbar-gutter:stable",
+            BitScrollbarGutter.BothEdges => "scrollbar-gutter:stable both-edges",
+            _ => string.Empty
+        });
+
+        // Auto is the default value which is already set on the root element
+        StyleBuilder.Register(() => ScrollbarWidth switch
+        {
+            BitScrollbarWidth.Auto => string.Empty,
+            BitScrollbarWidth.Thin => "scrollbar-width:thin",
+            BitScrollbarWidth.None => "scrollbar-width:none",
+            _ => string.Empty
+        });
+
+        StyleBuilder.Register(() => ScrollbarColor.HasValue() ? $"scrollbar-color:{ScrollbarColor}" : string.Empty);
+    }
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Modern ? "bit-scp-mod" : string.Empty);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (AutoScroll)
+        {
+            await _js.BitScrollablePaneScrollToEnd(RootElement);
+        }
     }
 
 

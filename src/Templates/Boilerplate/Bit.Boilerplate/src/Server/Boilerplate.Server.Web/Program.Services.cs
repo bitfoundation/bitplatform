@@ -141,7 +141,7 @@ public static partial class Program
                 httpClient.DefaultRequestHeaders.Add(xHeader.Key, string.Join(',', xHeader.Value.AsEnumerable()));
             }
 
-            if (httpClient.DefaultRequestHeaders.Contains(forwardedHeadersOptions.ForwardedForHeaderName) is false &&
+            if (forwardedHeadersOptions is not null && httpClient.DefaultRequestHeaders.Contains(forwardedHeadersOptions.ForwardedForHeaderName) is false &&
                 currentRequest.HttpContext.Connection.RemoteIpAddress is not null)
             {
                 httpClient.DefaultRequestHeaders.Add(forwardedHeadersOptions.ForwardedForHeaderName,

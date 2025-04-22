@@ -5,10 +5,10 @@ namespace Boilerplate.Shared.Services;
 public partial class CultureInfoManager
 {
     /// <summary>
-    /// To enable/disable multilingual support, navigate to Directory.Build.props and modify the MultilingualEnabled flag.
+    /// To enable/disable multilingual support, navigate to Directory.Build.props and modify the InvariantGlobalization flag.
     /// </summary>
-    public static bool MultilingualEnabled { get; } =
-#if MultilingualEnabled
+    public static bool InvariantGlobalization { get; } =
+#if InvariantGlobalization
     true;
 #else
     false;
@@ -20,8 +20,15 @@ public partial class CultureInfoManager
     [
         ("English US", CreateCultureInfo("en-US")),
         ("English UK", CreateCultureInfo("en-GB")),
-        ("Dutch", CreateCultureInfo("nl-NL")),
-        ("فارسی", CreateCultureInfo("fa-IR"))
+        ("Nederlands", CreateCultureInfo("nl-NL")),
+        ("فارسی", CreateCultureInfo("fa-IR")),
+        ("svenska", CreateCultureInfo("sv-SE")),
+        ("हिन्दी", CreateCultureInfo("hi-IN")),
+        ("中文", CreateCultureInfo("zh-CN")),
+        ("español", CreateCultureInfo("es-ES")),
+        ("français", CreateCultureInfo("fr-FR")),
+        ("العربية", CreateCultureInfo("ar-SA")),
+        ("Deutsch", CreateCultureInfo("de-DE"))
         // Adding new cultures requires changing MainActivity's DataPathPrefixes.
     ];
 
@@ -37,12 +44,27 @@ public partial class CultureInfoManager
         return cultureInfo;
     }
 
-    public void SetCurrentCulture(string cultureName)
+    public static CultureInfo? GetCultureInfo(string? cultureName)
     {
-        var cultureInfo = SupportedCultures.FirstOrDefault(sc => string.Equals(sc.Culture.Name, cultureName, StringComparison.InvariantCultureIgnoreCase)).Culture ?? DefaultCulture;
+        return SupportedCultures.Select(sc => sc.Culture)
+                                .FirstOrDefault(c => string.Equals(c.Name, cultureName, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    public static void SetCurrentCulture(string? cultureName)
+    {
+        var cultureInfo = GetCultureInfo(cultureName) ?? DefaultCulture;
 
         CultureInfo.CurrentCulture = CultureInfo.DefaultThreadCurrentCulture = Thread.CurrentThread.CurrentCulture = cultureInfo;
         CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentUICulture = Thread.CurrentThread.CurrentUICulture = cultureInfo;
+    }
+
+    public static string? FindRegionIso2(string? cultureName)
+    {
+        var cultureInfo = GetCultureInfo(cultureName);
+
+        if (cultureInfo is null) return null;
+
+        return new RegionInfo(cultureInfo.LCID).TwoLetterISORegionName;
     }
 
     /// <summary>

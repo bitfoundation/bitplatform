@@ -5,7 +5,17 @@ public partial class BitCollapseDemo
     private readonly string example1RazorCode = @"
 <BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""expanded"" />
 <BitCollapse Expanded=""expanded"">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl. Duis lobortis tristique nunc, id egestas ligula condimentum quis. Integer elementum tempor cursus. Phasellus vestibulum neque non laoreet faucibus. Nunc eu congue urna, in dapibus justo.
+    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+    shaped into meaning, and the emotions ready to resonate with every reader.
+    <br />
+    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+    each word has the power to transform into something extraordinary. Here lies the start of something new—an
+    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+    begins here, in this quiet moment where everything is possible.
 </BitCollapse>";
     private readonly string example1CsharpCode = @"
 private bool expanded = true;";
@@ -21,12 +31,32 @@ private bool expanded = true;";
 
 <BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""expandedStyle"" />
 <BitCollapse Expanded Styles=""@(new() { Expanded = ""padding:10px;background-color:#333;border: 1px solid #ff0000;"" })"">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl. Duis lobortis tristique nunc, id egestas ligula condimentum quis. Integer elementum tempor cursus. Phasellus vestibulum neque non laoreet faucibus. Nunc eu congue urna, in dapibus justo.
+    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+    shaped into meaning, and the emotions ready to resonate with every reader.
+    <br />
+    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+    each word has the power to transform into something extraordinary. Here lies the start of something new—an
+    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+    begins here, in this quiet moment where everything is possible.
 </BitCollapse>
 
 <BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""expandedClass"" />
 <BitCollapse Expanded Classes=""@(new() { Expanded = ""custom-expanded"" })"">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl. Duis lobortis tristique nunc, id egestas ligula condimentum quis. Integer elementum tempor cursus. Phasellus vestibulum neque non laoreet faucibus. Nunc eu congue urna, in dapibus justo.
+    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+    shaped into meaning, and the emotions ready to resonate with every reader.
+    <br />
+    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+    each word has the power to transform into something extraordinary. Here lies the start of something new—an
+    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+    begins here, in this quiet moment where everything is possible.
 </BitCollapse>";
     private readonly string example2CsharpCode = @"
 private bool expandedClass = true;
@@ -35,7 +65,9 @@ private bool expandedStyle = true;";
     private readonly string example3RazorCode = @"
 <BitToggleButton OnText=""بستن"" OffText=""باز کردن"" @bind-IsChecked=""expandedRtl"" />
 <BitCollapse Expanded=""expandedRtl"" Dir=""BitDir.Rtl"">
-    لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است. چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
+    لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
+    چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است
+    و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد
 </BitCollapse>";
     private readonly string example3CsharpCode = @"
 private bool expandedRtl = true;";

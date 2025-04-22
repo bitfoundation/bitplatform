@@ -1,4 +1,4 @@
-﻿
+
 namespace Boilerplate.Client.Core.Components;
 
 public partial class LoadingComponent
@@ -27,12 +27,12 @@ public partial class LoadingComponent
     private string zIndex = "-1";
     protected override void OnAfterRender(bool firstRender)
     {
+        base.OnAfterRender(firstRender);
+
         if (firstRender)
         {
             zIndex = "999";
             StateHasChanged();
         }
-
-        base.OnAfterRender(firstRender);
     }
 }

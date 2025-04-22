@@ -22,8 +22,11 @@ public partial class Product
     [Range(0, double.MaxValue)]
     public decimal Price { get; set; }
 
-    [MaxLength(512)]
-    public string? Description { get; set; }
+    [MaxLength(4096)]
+    public string? DescriptionHTML { get; set; }
+
+    [MaxLength(4096)]
+    public string? DescriptionText { get; set; }
 
     public DateTimeOffset CreatedOn { get; set; } = DateTimeOffset.UtcNow;
 
@@ -34,5 +37,9 @@ public partial class Product
 
     public byte[] ConcurrencyStamp { get; set; } = [];
 
-    public string? ImageFileName { get; set; }
+    public bool HasPrimaryImage { get; set; } = false;
+
+    //#if (database == "PostgreSQL")
+    public Pgvector.Vector? Embedding { get; set; }
+    //#endif
 }

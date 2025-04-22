@@ -1,0 +1,156 @@
+﻿@page "/components/richtexteditor"
+@inherits AppComponentBase
+
+<PageOutlet Url="components/RichTextEditor"
+            Title="RichTextEditor"
+            Description="richtexteditor component of the bit BlazorUI components" />
+
+<div>
+    <DemoPage Name="RichTextEditor"
+              Description="RichTextEditor is a WYSIWYG text editor, utilizing the famous Quill js library."
+              Parameters="componentParameters"
+              SubEnums="componentSubEnums"
+              PublicMembers="componentPublicMembers"
+              SubClasses="componentSubClasses"
+              GitHubExtrasUrl="RichTextEditor/BitRichTextEditor.razor"
+              GitHubDemoUrl="Extras/RichTextEditor/BitRichTextEditorDemo.razor">
+        <NotesTemplate>
+            <BitText>
+                To use this component, you need to install the
+                <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                    <BitTag Reversed
+                            Text="Bit.BlazorUI.Extras"
+                            Color="BitColor.SecondaryBackground"
+                            IconName="@BitIconName.NavigateExternalInline" />
+                </BitLink>
+                nuget package, as described in the Optional steps of the
+                <BitLink Href="/getting-started">Getting started</BitLink> page.
+            </BitText>
+        </NotesTemplate>
+        <Examples>
+            <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+                <BitRichTextEditor />
+            </DemoExample>
+
+            <DemoExample Title="Placeholder" RazorCode="@example2RazorCode" Id="example2">
+                <BitRichTextEditor Placeholder="This is a custom placeholder" />
+            </DemoExample>
+
+            <DemoExample Title="Readonly" RazorCode="@example3RazorCode" Id="example3">
+                <BitRichTextEditor Placeholder="This editor is readonly!" ReadOnly />
+            </DemoExample>
+
+            <DemoExample Title="Reversed" RazorCode="@example4RazorCode" Id="example4">
+                <BitRichTextEditor Placeholder="The toolbar location is reversed!" Reversed />
+            </DemoExample>
+
+            <DemoExample Title="FullToolbar" RazorCode="@example5RazorCode" Id="example5">
+                <BitRichTextEditor Style="min-height: 300px" FullToolbar />
+            </DemoExample>
+
+            <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
+                <BitRichTextEditor Styles="@(new() { Toolbar = "border-color: red", Editor = "border-color: blue" })" />
+            </DemoExample>
+
+            <DemoExample Title="Get APIs" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+                <BitRichTextEditor @ref="getEditorRef" />
+                <br />
+                <BitButton OnClick="GetText">GetText</BitButton>
+                <BitButton OnClick="GetHtml">GetHtml</BitButton>
+                <BitButton OnClick="GetContent">GetContent</BitButton>
+                <br /><br />
+                <div>result:</div>
+                <pre>@result</pre>
+            </DemoExample>
+
+            <DemoExample Title="Set APIs" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+                <textarea @bind-value="setValue" @bind-value:event="oninput" style="width:100%;height:100px" />
+                <br /><br />
+                <BitButton OnClick="SetText">SetText</BitButton>
+                <BitButton OnClick="SetHtml">SetHtml</BitButton>
+                <BitButton OnClick="SetContent">SetContent</BitButton>
+                <br /><br />
+                <BitRichTextEditor @ref="setEditorRef" />
+            </DemoExample>
+
+            <DemoExample Title="Templates" RazorCode="@example9RazorCode" Id="example9">
+                <BitRichTextEditor Style="min-height: 300px">
+                    <ToolbarTemplate>
+                        <span class="ql-formats">
+                            <select class="ql-font"></select>
+                            <select class="ql-size"></select>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-bold"></button>
+                            <button class="ql-italic"></button>
+                            <button class="ql-underline"></button>
+                            <button class="ql-strike"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <select class="ql-color"></select>
+                            <select class="ql-background"></select>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-blockquote"></button>
+                            <button class="ql-code-block"></button>
+                            <button class="ql-link"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-header" value="1"></button>
+                            <button class="ql-header" value="2"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-list" value="ordered"></button>
+                            <button class="ql-list" value="bullet"></button>
+                            <button class="ql-indent" value="-1"></button>
+                            <button class="ql-indent" value="+1"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-direction" value="rtl"></button>
+                            <select class="ql-align"></select>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-script" value="sub"></button>
+                            <button class="ql-script" value="super"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-clean"></button>
+                        </span>
+                    </ToolbarTemplate>
+                    <EditorTemplate>
+                        <div><b>this is bold</b></div>
+                        <div><em>this is italic</em></div>
+                        <div><b><em>this is italic & bold</em></b></div>
+                    </EditorTemplate>
+                </BitRichTextEditor>
+            </DemoExample>
+
+            <DemoExample Title="Custom fonts" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+                <BitRichTextEditor OnQuillReady="HandleOnQuillReady"
+                                   Classes="@(new() { Editor = "custom-font-editor", Toolbar = "custom-font-toolbar" })">
+                    <ToolbarTemplate>
+                        <select class="ql-font">
+                            <option selected>Segoe UI</option>
+                            <option value="aref-ruqaa">Aref Ruqaa</option>
+                            <option value="mirza">Mirza</option>
+                            <option value="roboto">Roboto</option>
+                        </select>
+                    </ToolbarTemplate>
+                    <EditorTemplate>
+                        <p>this is a sample of adding custom fonts to the BitRichTextEditor!</p>
+                    </EditorTemplate>
+                </BitRichTextEditor>
+            </DemoExample>
+        </Examples>
+    </DemoPage>
+</div>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Aref+Ruqaa|Mirza|Roboto" />
+
+<script>
+    function registerQuillCustomFonts() {
+        const Font = Quill.import('formats/font');
+        Font.whitelist = (Font.whitelist || []).concat(['aref-ruqaa', 'mirza', 'roboto']);
+        Quill.register(Font, true);
+    };
+</script>

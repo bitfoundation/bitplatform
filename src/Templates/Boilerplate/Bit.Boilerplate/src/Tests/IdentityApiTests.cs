@@ -1,4 +1,4 @@
-﻿using Boilerplate.Client.Core.Services;
+using Boilerplate.Client.Core.Services;
 using Boilerplate.Client.Core.Services.Contracts;
 using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Tests.Services;

@@ -1,8 +1,8 @@
-﻿@attribute [Route(Urls.OfflineEditProfilePage)]
+@attribute [Route(Urls.OfflineEditProfilePage)]
 @attribute [Route("{culture?}" + Urls.OfflineEditProfilePage)]
 @inherits AppPageBase
 
-<PageTitle>@Localizer[nameof(AppStrings.OfflineEditProfileTitle)]</PageTitle>
+<AppPageData Title="@Localizer[nameof(AppStrings.OfflineEditProfileTitle)]" />
 
 <section>
     <BitStack Alignment="BitAlignment.Center">

@@ -789,8 +789,6 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     protected override async Task OnInitializedAsync()
     {
-        _dotnetObj = DotNetObjectReference.Create(this);
-
         _dropdownId = $"Dropdown-{UniqueId}";
         _calloutId = $"{_dropdownId}-callout";
         _scrollContainerId = $"{_dropdownId}-scroll-container";
@@ -852,6 +850,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender is false) return;
+        
+        _dotnetObj = DotNetObjectReference.Create(this);
+
         if (Responsive is false) return;
 
         await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.End, Dir is BitDir.Rtl, BitSwipeOrientation.Horizontal, _dotnetObj);
@@ -1167,7 +1168,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private async Task ToggleCallout()
     {
-        if (IsEnabled is false) return;
+        if (IsEnabled is false || IsDisposed) return;
 
         _isResponsiveMode = await _js.BitCalloutToggleCallout(_dotnetObj,
                                                     _dropdownId,
@@ -1472,13 +1473,13 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         if (IsDisposed || disposing is false) return;
 
+        await base.DisposeAsync(disposing);
+
         try
         {
             await _js.BitCalloutClearCallout(_calloutId);
             await _js.BitSwipesDispose(_calloutId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
-
-        await base.DisposeAsync(disposing);
     }
 }

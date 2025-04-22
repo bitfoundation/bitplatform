@@ -1,4 +1,4 @@
-﻿using Boilerplate.Server.Api;
+using Boilerplate.Server.Api;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http;

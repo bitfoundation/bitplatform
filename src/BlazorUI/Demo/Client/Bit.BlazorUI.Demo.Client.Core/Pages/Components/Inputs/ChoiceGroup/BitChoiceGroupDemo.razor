@@ -1,5 +1,6 @@
 ﻿@page "/components/choicegroup"
 @page "/components/choice-group"
+@inherits AppComponentBase
 
 <PageOutlet Url="components/choicegroup"
             Title="ChoiceGroup"
@@ -10,6 +11,7 @@
               SecondaryNames="@(["Radio", "RadioButton", "RadioGroup", "RadioButtonGroup"])"
               Description="ChoiceGroup let people select a single option from two or more choices."
               Parameters="componentParameters"
+              SubEnums="componentSubEnums"
               SubClasses="componentSubClasses"
               GitHubUrl="Inputs/ChoiceGroup/BitChoiceGroup.razor"
               GitHubDemoUrl="Inputs/ChoiceGroup/BitChoiceGroupDemo.razor">
@@ -24,7 +26,7 @@
             </BitText>
         </NotesTemplate>
         <Examples>
-            <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })">
+            <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })" MountAll="ShowAllCodes">
                 <BitPivotItem HeaderText="Item">
                     <_BitChoiceGroupItemDemo />
                 </BitPivotItem>

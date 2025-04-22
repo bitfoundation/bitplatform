@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Services;
+namespace Boilerplate.Client.Core.Services;
 
 public partial class ThemeService
 {

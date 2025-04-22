@@ -1,25 +1,35 @@
-﻿@attribute [Route(Urls.ProductPage + "/{Id:int}")]
+@attribute [Route(Urls.ProductPage + "/{Id:int}")]
 @attribute [Route("{culture?}" + Urls.ProductPage + "/{Id:int}")]
 @attribute [AppResponseCache(SharedMaxAge = 3600 * 24, MaxAge = 60 * 5)]
 @inherits AppPageBase
 
-<PageTitle>@product?.Name</PageTitle>
+<AppPageData ShowGoBackButton="true" Title="@product?.Name" />
+
+<HeadContent>
+    <meta name="title" content="@product?.Name" />
+    <meta name="description" content="@product?.DescriptionText" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Boilerplate" />
+    <meta property="og:title" content="@product?.Name" />
+    <meta property="og:description" content="@product?.DescriptionText" />
+    <meta property="og:image" content="@GetProductImageUrl(product)" />
+    <meta property="og:url" content="@NavigationManager.Uri" />
+
+    <meta name="twitter:title" content="@product?.Name" />
+    <meta name="twitter:description" content="@product?.DescriptionText" />
+    <meta name="twitter:image" content="@GetProductImageUrl(product)" />
+    <meta name="twitter:card" content="summary_large_image" />
+</HeadContent>
 
 <section>
     <BitStack Gap="2rem" Class="root-stack">
 
-        <BitLink NoUnderline Href="@Urls.HomePage">
-            <BitStack Horizontal Gap="0.5rem" VerticalAlign="BitAlignment.Center">
-                <BitIcon IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)" Size="BitSize.Small" />
-                <BitText Typography="BitTypography.Body2">@Localizer[nameof(AppStrings.BackToHome)]</BitText>
-            </BitStack>
-        </BitLink>
-
         @if (isLoadingProduct)
         {
             <BitCard FullWidth Background="BitColorKind.Tertiary" Style="padding:3rem 1rem;">
-                <BitStack Horizontal HorizontalAlign="BitAlignment.Center" Gap="2rem">
-                    <ProductImage Width="30%" />
+                <BitStack Horizontal HorizontalAlign="BitAlignment.Center" Gap="2rem" Class="product-stack">
+                    <BitShimmer Height="256px" Width="50%" Background="BitColor.PrimaryBackground" />
                     <BitStack AutoHeight Grows>
                         <BitShimmer Height="6rem" Width="100%" />
                         <BitShimmer Height="1rem" Width="100%" />
@@ -53,12 +63,12 @@
             else
             {
                 <BitCard FullWidth Style="padding:3rem 1rem;">
-                    <BitStack Horizontal HorizontalAlign="BitAlignment.Center" Gap="2rem">
-                        <ProductImage Src="@GetProductImageUrl(product)" Width="30%" />
+                    <BitStack Horizontal HorizontalAlign="BitAlignment.Center" Gap="2rem" Class="product-stack">
+                        <ProductImage Src="@GetProductImageUrl(product)" Width="50%" />
                         <BitStack AutoWidth Grows>
                             <BitText Typography="BitTypography.H2">@product.Name</BitText>
                             <BitText Color="BitColor.Info">@product.CategoryName</BitText>
-                            <BitText Typography="BitTypography.H6">@product.Description</BitText>
+                            <BitText Typography="BitTypography.H6">@((MarkupString)product.DescriptionHTML!)</BitText>
                             <BitText Typography="BitTypography.H4">@product.FormattedPrice</BitText>
                         </BitStack>
                     </BitStack>
@@ -70,6 +80,8 @@
 
                 <BitCard FullWidth>
                     <BitText>
+                        (The following text is just a sample placeholder and is not related to the above car)
+                        <br />
                         A <b>standard car</b> is designed with a focus on <b>functionality</b>, and <b>performance</b>.
                         It generally features a four-cylinder <b>internal combustion engine</b>, although some models come with six or eight-cylinder engines for added power.
                         The car's engine is paired with either an automatic or manual transmission to control gear shifts.
@@ -110,11 +122,11 @@
                     {
                         <BitCard FullSize Style="width:250px">
                             <BitStack>
-                                <ProductImage Width="100%" />
-                                <BitShimmer Height="3rem" Width="100%" />
-                                <BitShimmer Height="1rem" Width="100%" />
-                                <BitShimmer Height="1rem" Width="100%" />
-                                <BitShimmer Height="2rem" Width="100%" />
+                                <BitShimmer Height="220px" Width="100%" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="2rem" Width="100%" Background="BitColor.PrimaryBackground" />
                             </BitStack>
                         </BitCard>
                     }
@@ -134,7 +146,7 @@
                                 <BitStack>
                                     <ProductImage Src="@GetProductImageUrl(prd)" Width="100%" />
                                     <BitText>@prd.Name</BitText>
-                                    <BitText Typography="BitTypography.Body2">@prd.Description</BitText>
+                                    <BitText Typography="BitTypography.Body2">@((MarkupString)prd.DescriptionHTML!)</BitText>
                                     <BitText Typography="BitTypography.H6">@prd.FormattedPrice</BitText>
                                 </BitStack>
                             </BitCard>
@@ -156,11 +168,11 @@
                     {
                         <BitCard FullSize Style="width:250px">
                             <BitStack>
-                                <ProductImage Width="100%" />
-                                <BitShimmer Height="3rem" Width="100%" />
-                                <BitShimmer Height="1rem" Width="100%" />
-                                <BitShimmer Height="1rem" Width="100%" />
-                                <BitShimmer Height="2rem" Width="100%" />
+                                <BitShimmer Height="220px" Width="100%" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="2rem" Width="100%" Background="BitColor.PrimaryBackground" />
                             </BitStack>
                         </BitCard>
                     }
@@ -180,7 +192,7 @@
                                 <BitStack>
                                     <ProductImage Src="@GetProductImageUrl(prd)" Width="100%" />
                                     <BitText>@prd.Name</BitText>
-                                    <BitText Typography="BitTypography.Body2">@prd.Description</BitText>
+                                    <BitText Typography="BitTypography.Body2">@((MarkupString)prd.DescriptionHTML!)</BitText>
                                     <BitText Typography="BitTypography.H6">@prd.FormattedPrice</BitText>
                                 </BitStack>
                             </BitCard>

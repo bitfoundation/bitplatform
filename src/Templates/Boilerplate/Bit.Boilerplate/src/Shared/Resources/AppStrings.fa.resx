@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
     <!-- 
@@ -277,6 +277,14 @@
     <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
     <value>لطفاً اطمینان حاصل کنید که این اپلیکیشن بیش از یک‌بار، به طور هم‌زمان روی یک دستگاه یا مرورگر باز نیست.</value>
   </data>
+    <!--#if (signalR == true) -->
+    <data name="SystemPromptsTitle" xml:space="preserve">
+    <value>پرامپت‌های سیستمی</value>
+  </data>
+    <data name="SystemPromptsSubTitle" xml:space="preserve">
+    <value>این‌جا میتونید پرامپت‌های سیستمی مورد استفاده چت بات رو مشاهده کنید</value>
+  </data>
+    <!--#endif-->
     <!--#if (offlineDb == true) -->
     <data name="OfflineEditProfileTitle" xml:space="preserve">
     <value>ویرایش پروفایل آفلاین</value>
@@ -348,8 +356,8 @@
     <data name="ResetPasswordTokenSentMessage" xml:space="preserve">
     <value>توکن ریست رمز عبور به آدرس ایمیل شما ارسال شده است.</value>
   </data>
-    <data name="UserImageCouldNotBeFound" xml:space="preserve">
-    <value>تصویر کاربر پیدا نشد</value>
+    <data name="ImageCouldNotBeFound" xml:space="preserve">
+    <value>تصویر پیدا نشد</value>
   </data>
     <data name="Error" xml:space="preserve">
     <value>خطا</value>
@@ -441,9 +449,6 @@
     <data name="ExpiredToken" xml:space="preserve">
     <value>توکن منقضی شده است.</value>
   </data>
-    <data name="TokenPlaceholder" xml:space="preserve">
-    <value>توکن را وارد کنید</value>
-  </data>
     <data name="SignInMessageInSignUp" xml:space="preserve">
     <value>از قبل حساب کاربری دارید؟</value>
   </data>
@@ -474,9 +479,6 @@
     <data name="EmailToken" xml:space="preserve">
     <value>توکن ایمیل</value>
   </data>
-    <data name="EmailTokenPlaceholder" xml:space="preserve">
-    <value>توکن ایمیل را وارد کنید</value>
-  </data>
     <data name="EmailTokenConfirmButtonText" xml:space="preserve">
     <value>تایید آدرس ایمیل</value>
   </data>
@@ -500,9 +502,6 @@
   </data>
     <data name="PhoneToken" xml:space="preserve">
     <value>توکن تلفن</value>
-  </data>
-    <data name="PhoneTokenPlaceholder" xml:space="preserve">
-    <value>توکن تلفن را وارد کنید</value>
   </data>
     <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
     <value>تایید شماره تلفن</value>
@@ -1047,9 +1046,6 @@
   </data>
     <!--#endif -->
     <!--#if (module == "Admin" || module == "Sales") -->
-    <data name="ProductImageCouldNotBeFound" xml:space="preserve">
-    <value>تصویر محصول پیدا نشد</value>
-  </data>
     <data name="CategoryCouldNotBeFound" xml:space="preserve">
     <value>دسته مورد نظر پیدا نشد</value>
   </data>
@@ -1093,6 +1089,9 @@
   </data>
     <data name="AddProduct" xml:space="preserve">
     <value>افزودن محصول</value>
+  </data>
+    <data name="SearchProductsPlaceholder" xml:space="preserve">
+    <value>نام محصول، دسته بندی و توضیحات را در اینجا جستجو کنید...</value>
   </data>
     <data name="SelectCategory" xml:space="preserve">
     <value>انتخاب دسته</value>
@@ -1173,7 +1172,7 @@
     <value>انتخاب کننده رنگ پیش فرض</value>
   </data>
     <data name="EditProduct" xml:space="preserve">
-    <value>ویرایش محصول</value>
+    <value>ویرایش محصول {0}</value>
   </data>
     <data name="DuplicateProductName" xml:space="preserve">
     <value>نام محصول تکراری است</value>
@@ -1225,4 +1224,46 @@
     <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
     <value>ورود بی رمز با موفقیت غیرفعال شد</value>
   </data>
+    <data name="Clear" xml:space="preserve">
+    <value>پاک کردن</value>
+  </data>
+    <data name="Send" xml:space="preserve">
+    <value>ارسال</value>
+  </data>
+    <data name="Canceled" xml:space="preserve">
+    <value>لغو شده</value>
+  </data>
+    <!--#if (signalR == true) -->
+    <data name="AiChatPanelTitle" xml:space="preserve">
+    <value>پنل هوش مصنوعی</value>
+  </data>
+    <data name="AiChatPanelInitialResponse" xml:space="preserve">
+    <value>این یک پیام اولیه است برای آغاز صحبت با هوش مصنوعی!</value>
+  </data>
+    <data name="AiChatPanelPrompt1" xml:space="preserve">
+    <value>چگونه میتوانم رمزعبور خود را ریست کنم؟</value>
+  </data>
+    <data name="AiChatPanelPrompt2" xml:space="preserve">
+    <value>چگونه میتوانم نسخه PWA برنامه رو نصب کنم؟</value>
+  </data>
+    <!--#if (module == "Admin") -->
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>کجا میتونم گزارشات محصولات رو ببینم؟</value>
+  </data>
+    <!--#elif (module == "Sales") -->
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>دنبال ماشین SUV مرسدس بنز با ۷۰هزار دلار بودجه میگردم!</value>
+  </data>
+    <!--#else -->
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>یه سری فیدبک دارم که بگم!</value>
+  </data>
+    <!--#endif -->
+    <data name="AiChatPanelPlaceholder" xml:space="preserve">
+    <value>پیامی را وارد کنید...</value>
+  </data>
+    <data name="AiChatPanelCommunicatingPlaceholder" xml:space="preserve">
+    <value>درحال فکر کردن...</value>
+  </data>
+    <!--#endif -->
 </root>

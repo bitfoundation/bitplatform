@@ -1,4 +1,4 @@
-﻿namespace System;
+namespace System;
 
 public static partial class UriExtensions
 {
@@ -21,7 +21,7 @@ public static partial class UriExtensions
     /// </summary>
     public static string? GetCulture(this Uri uri)
     {
-        if (CultureInfoManager.MultilingualEnabled is false)
+        if (CultureInfoManager.InvariantGlobalization)
             return null;
 
         if (AppQueryStringCollection.Parse(uri.Query).TryGetValue("culture", out var culture))

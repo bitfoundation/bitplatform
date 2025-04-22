@@ -1,4 +1,4 @@
-﻿using UserNotifications;
+using UserNotifications;
 
 namespace Boilerplate.Client.Maui.Platforms.iOS.Services;
 public partial class AppUNUserNotificationCenterDelegate : UNUserNotificationCenterDelegate

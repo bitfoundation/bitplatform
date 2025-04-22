@@ -1,4 +1,4 @@
-﻿using Fido2NetLib;
+using Fido2NetLib;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 
@@ -114,11 +114,11 @@ public partial class PasswordlessSection
 
     protected override async Task OnAfterFirstRenderAsync()
     {
+        await base.OnAfterFirstRenderAsync();
+
         if (AppPlatform.IsBlazorHybrid)
         {
             localHttpServer.EnsureStarted();
         }
-
-        await base.OnAfterFirstRenderAsync();
     }
 }

@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 @import '../../../Styles/abstracts/_media-queries.scss';
 
 section {
@@ -24,12 +24,16 @@ section {
     .carousel-stack {
         display: flex !important;
 
+        .carousel-description {
+            overflow: hidden;
+            max-height: 70px;
+        }
+
         @include lt-sm {
             flex-direction: column !important;
 
-            .carousel-desc {
-                overflow: hidden;
-                max-height: 60px;
+            .carousel-image {
+                min-height: 30%;
             }
         }
     }

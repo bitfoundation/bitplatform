@@ -1,4 +1,4 @@
-﻿using Boilerplate.Server.Api.Models.Categories;
+using Boilerplate.Server.Api.Models.Categories;
 
 namespace Boilerplate.Server.Api.Data.Configurations.Identity;
 

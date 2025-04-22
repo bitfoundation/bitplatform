@@ -1,5 +1,5 @@
-﻿//+:cnd:noEmit
-// bit version: 9.6.1
+//+:cnd:noEmit
+// bit version: 9.7.0
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 //#if (notification == true)
@@ -33,10 +33,15 @@ self.assetsExclude = [
     //#if (module != "Admin")
     /chartjs-2\.9\.4\.js$/,
     /chartjs-2\.9\.4-adapter\.js$/,
+
+    // If a RichTextEditor (https://blazorui.bitplatform.dev/components/richtexteditor) is needed in the PWA, remove the following lines:
+    /quill-2\.0\.3\.js$/,
+    /quill.snow-2\.0\.3\.css$/,
+    /quill.bubble-2\.0\.3\.css$/,
     //#endif
 
-    // If a MarkDown viewer (https://blazorui.bitplatform.dev/components/markdownviewer) is needed in the PWA, remove this line:
-    /marked-15\.0\.7\.js$/,
+    // country flags
+    /_content\/Bit\.BlazorUI\.Extras\/flags/,
 
     // https://github.com/orgs/bitfoundation/discussions/10238#discussioncomment-12493737
     /_content\/Bit\.BlazorES2019\/blazor\.server\.js$/,
@@ -64,8 +69,8 @@ self.externalAssets = [
 self.serverHandledUrls = [
     /\/api\//,
     /\/odata\//,
-    /\/jobs\//,
     /\/core\//,
+    /\/hangfire/,
     /\/healthchecks-ui/,
     /\/healthz/,
     /\/swagger/,
