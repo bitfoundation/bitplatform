@@ -31,7 +31,6 @@ public partial class ClientAppCoordinator : AppComponentBase
     [AutoInject] private ILogger<AuthManager> authLogger = default!;
     [AutoInject] private ILogger<Navigator> navigatorLogger = default!;
     [AutoInject] private ILogger<ClientAppCoordinator> logger = default!;
-    [AutoInject] private CultureInfoManager cultureInfoManager = default!;
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;

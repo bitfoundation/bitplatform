@@ -1,5 +1,5 @@
-﻿using Boilerplate.Shared.Controllers.Identity;
-using Boilerplate.Shared.Dtos.Identity;
+﻿using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Shared.Controllers.Identity;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace Boilerplate.Client.Core.Components.Layout;
@@ -107,7 +107,10 @@ public partial class AppMenu
     private static BitCountry? FindBitCountry(string? cultureName)
     {
         var cultureInfo = CultureInfoManager.GetCultureInfo(cultureName);
-        return BitCountries.All.SingleOrDefault(c => c.Iso2 == new RegionInfo(cultureInfo.LCID).TwoLetterISORegionName);
+        
+        if (cultureInfo is null) return null;
+
+        return BitCountries.All.FirstOrDefault(c => c.Iso2 == new RegionInfo(cultureInfo.LCID).TwoLetterISORegionName);
     }
 
 

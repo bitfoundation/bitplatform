@@ -37,14 +37,15 @@ public partial class CultureInfoManager
         return cultureInfo;
     }
 
-    public static CultureInfo GetCultureInfo(string? cultureName)
+    public static CultureInfo? GetCultureInfo(string? cultureName)
     {
-        return SupportedCultures.FirstOrDefault(sc => string.Equals(sc.Culture.Name, cultureName, StringComparison.InvariantCultureIgnoreCase)).Culture ?? DefaultCulture;
+        return SupportedCultures.Select(sc => sc.Culture)
+                                .FirstOrDefault(c => string.Equals(c.Name, cultureName, StringComparison.InvariantCultureIgnoreCase));
     }
 
     public static void SetCurrentCulture(string? cultureName)
     {
-        var cultureInfo = GetCultureInfo(cultureName);
+        var cultureInfo = GetCultureInfo(cultureName) ?? DefaultCulture;
 
         CultureInfo.CurrentCulture = CultureInfo.DefaultThreadCurrentCulture = Thread.CurrentThread.CurrentCulture = cultureInfo;
         CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentUICulture = Thread.CurrentThread.CurrentUICulture = cultureInfo;
