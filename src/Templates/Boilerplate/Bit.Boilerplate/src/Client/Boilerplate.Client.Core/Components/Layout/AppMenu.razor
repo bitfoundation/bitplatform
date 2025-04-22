@@ -119,7 +119,8 @@
                                         Styles="@(new() { ItemLabel = "flex-grow:1", ItemLabelWrapper = "width:100%" })">
                             <ItemTemplate Context="item">
                                 <BitStack Horizontal VerticalAlign="BitAlignment.Center" Style="cursor:pointer">
-                                    <BitImage Src="@($"_content/Boilerplate.Client.Core/images/flags/{item.Value}.webp")" />
+                                    @* <BitImage Src="@($"_content/Boilerplate.Client.Core/images/flags/{item.Value}.webp")" /> *@
+                                    <BitFlag Country="@FindBitCountry(item.Value)" />
                                     <BitText Typography="BitTypography.Body1" Style="@(item.IsSelected ? "font-weight:bold" : "")">
                                         @item.Text
                                     </BitText>

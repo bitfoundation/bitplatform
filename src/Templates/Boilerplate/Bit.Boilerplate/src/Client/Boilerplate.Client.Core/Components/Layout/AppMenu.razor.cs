@@ -1,4 +1,4 @@
-using Boilerplate.Shared.Controllers.Identity;
+﻿using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 using Microsoft.AspNetCore.Components.Routing;
 
@@ -103,6 +103,13 @@ public partial class AppMenu
     {
         NavigationManager.NavigateTo(Urls.SettingsPage);
     }
+
+    private static BitCountry? FindBitCountry(string? cultureName)
+    {
+        var cultureInfo = CultureInfoManager.GetCultureInfo(cultureName);
+        return BitCountries.All.SingleOrDefault(c => c.Iso2 == new RegionInfo(cultureInfo.LCID).TwoLetterISORegionName);
+    }
+
 
 
     protected override async ValueTask DisposeAsync(bool disposing)

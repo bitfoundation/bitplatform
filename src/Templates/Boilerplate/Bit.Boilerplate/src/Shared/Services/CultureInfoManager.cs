@@ -1,4 +1,4 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace Boilerplate.Shared.Services;
 
@@ -37,9 +37,14 @@ public partial class CultureInfoManager
         return cultureInfo;
     }
 
-    public void SetCurrentCulture(string cultureName)
+    public static CultureInfo GetCultureInfo(string? cultureName)
     {
-        var cultureInfo = SupportedCultures.FirstOrDefault(sc => string.Equals(sc.Culture.Name, cultureName, StringComparison.InvariantCultureIgnoreCase)).Culture ?? DefaultCulture;
+        return SupportedCultures.FirstOrDefault(sc => string.Equals(sc.Culture.Name, cultureName, StringComparison.InvariantCultureIgnoreCase)).Culture ?? DefaultCulture;
+    }
+
+    public static void SetCurrentCulture(string? cultureName)
+    {
+        var cultureInfo = GetCultureInfo(cultureName);
 
         CultureInfo.CurrentCulture = CultureInfo.DefaultThreadCurrentCulture = Thread.CurrentThread.CurrentCulture = cultureInfo;
         CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentUICulture = Thread.CurrentThread.CurrentUICulture = cultureInfo;

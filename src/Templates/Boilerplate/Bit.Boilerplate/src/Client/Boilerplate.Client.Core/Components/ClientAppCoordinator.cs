@@ -257,7 +257,7 @@ public partial class ClientAppCoordinator : AppComponentBase
     {
         if (CultureInfoManager.MultilingualEnabled)
         {
-            cultureInfoManager.SetCurrentCulture(new Uri(NavigationManager.Uri).GetCulture() ??  // 1- Culture query string OR Route data request culture
+            CultureInfoManager.SetCurrentCulture(new Uri(NavigationManager.Uri).GetCulture() ??  // 1- Culture query string OR Route data request culture
                                                  await storageService.GetItem("Culture") ?? // 2- User settings
                                                  CultureInfo.CurrentUICulture.Name); // 3- OS settings
         }
