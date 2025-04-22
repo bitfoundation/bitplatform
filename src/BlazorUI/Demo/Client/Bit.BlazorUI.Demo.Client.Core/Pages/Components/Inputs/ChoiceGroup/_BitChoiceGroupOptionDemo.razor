@@ -143,7 +143,20 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="LabelTemplate" RazorCode="@example5RazorCode" Id="example5">
+<DemoExample Title="Reversed" RazorCode="@example5RazorCode" Id="example5">
+    <div>Adjust the label position of BitChoiceGroup's item to be reversed.</div>
+    <br />
+    <div class="example-content column">
+         <BitChoiceGroup Label="Reversed" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" Reversed Horizontal>
+            <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+            <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+            <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+            <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+        </BitChoiceGroup>
+    </div>
+</DemoExample>
+
+<DemoExample Title="LabelTemplate" RazorCode="@example6RazorCode" Id="example6">
     <div>Demonstrates how to customize the label of the BitChoiceGroup using a template.</div>
     <br />
     <BitChoiceGroup TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")">
@@ -159,7 +172,9 @@
             <BitChoiceGroupOption Text="Option D" Value="@("D")" />
         </Options>
     </BitChoiceGroup>
-<DemoExample Title="Item templates" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+</DemoExample>
+
+<DemoExample Title="Item templates" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
     <div>Illustrates how to customize the appearance of BitChoiceGroup options using item templates.</div>
     <br />
     <div class="example-content">
@@ -201,88 +216,9 @@
                 </div>
             </ItemTemplate>
             <Options>
-                <BitChoiceGroupOption Text="Day" Value="@("Day")" IconName="@BitIconName.CalendarDay" />
-                <BitChoiceGroupOption Text="Week" Value="@("Week")" IconName="@BitIconName.CalendarWeek" />
-                <BitChoiceGroupOption Text="Month" Value="@("Month")" IconName="@BitIconName.Calendar" />
-            </Options>
-        </BitChoiceGroup>
-
-        <BitChoiceGroup Label="Item's Template" @bind-Value="itemTemplateValue2"
-                        TItem="BitChoiceGroupOption<string>" TValue="string">
-            <BitChoiceGroupOption Text="Day" Value="@("Day")">
-                <Template Context="option">
-                    <div class="custom-container @(itemTemplateValue2 == option.Value ? "selected" : "")">
-                        <div class="custom-circle"></div>
-                        <span style="color:red">@option.Text</span>
-                    </div>
-                </Template>
-            </BitChoiceGroupOption>
-            <BitChoiceGroupOption Text="Week" Value="@("Week")">
-                <Template Context="option">
-                    <div class="custom-container @(itemTemplateValue2 == option.Value ? "selected" : "")">
-                        <div class="custom-circle"></div>
-                        <span style="color:green">@option.Text</span>
-                    </div>
-                </Template>
-            </BitChoiceGroupOption>
-            <BitChoiceGroupOption Text="Month" Value="@("Month")">
-                <Template Context="option">
-                    <div class="custom-container @(itemTemplateValue2 == option.Value ? "selected" : "")">
-                        <div class="custom-circle"></div>
-                        <span style="color:blue">@option.Text</span>
-                    </div>
-                </Template>
-            </BitChoiceGroupOption>
-        </BitChoiceGroup>
-    </div>
-</DemoExample>
-</DemoExample>
-
-<DemoExample Title="Item templates" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-    <div>Illustrates how to customize the appearance of BitChoiceGroup options using item templates.</div>
-    <br />
-    <div class="example-content">
-        <BitChoiceGroup Label="ItemPrefixTemplate" TItem="BitChoiceGroupOption<string>" TValue="string">
-            <ItemPrefixTemplate Context="option">
-                @(option.Index + 1).&nbsp;
-            </ItemPrefixTemplate>
-            <Options>
-                <BitChoiceGroupOption Text="Option A" Value="@("A")" />
-                <BitChoiceGroupOption Text="Option B" Value="@("B")" />
-                <BitChoiceGroupOption Text="Option C" Value="@("C")" />
-                <BitChoiceGroupOption Text="Option D" Value="@("D")" />
-            </Options>
-        </BitChoiceGroup>
-
-        <BitChoiceGroup Label="ItemLabelTemplate" @bind-Value="itemLabelTemplateValue"
-                        TItem="BitChoiceGroupOption<string>" TValue="string">
-            <ItemLabelTemplate Context="option">
-                <div class="custom-container @(itemLabelTemplateValue == option.Value ? "selected" : string.Empty)">
-                    <BitIcon IconName="@option.IconName" />
-                    <span>@option.Text</span>
-                </div>
-            </ItemLabelTemplate>
-            <Options>
-                <BitChoiceGroupOption Text="Day" Value="@("Day")" IconName="@BitIconName.CalendarDay" />
-                <BitChoiceGroupOption Text="Week" Value="@("Week")" IconName="@BitIconName.CalendarWeek" />
-                <BitChoiceGroupOption Text="Month" Value="@("Month")" IconName="@BitIconName.Calendar" />
-            </Options>
-        </BitChoiceGroup>
-    </div>
-    <br /><br /><br />
-    <div class="example-content">
-        <BitChoiceGroup Label="ItemTemplate" @bind-Value="itemTemplateValue"
-                        TItem="BitChoiceGroupOption<string>" TValue="string">
-            <ItemTemplate Context="option">
-                <div class="custom-container @(itemTemplateValue == option.Value ? "selected" : string.Empty)">
-                    <div class="custom-circle"></div>
-                    <span>@option.Text</span>
-                </div>
-            </ItemTemplate>
-            <Options>
-                <BitChoiceGroupOption Text="Day" Value="@("Day")" IconName="@BitIconName.CalendarDay" />
-                <BitChoiceGroupOption Text="Week" Value="@("Week")" IconName="@BitIconName.CalendarWeek" />
-                <BitChoiceGroupOption Text="Month" Value="@("Month")" IconName="@BitIconName.Calendar" />
+                <BitChoiceGroupOption Text="Day" Value="@("Day")" />
+                <BitChoiceGroupOption Text="Week" Value="@("Week")" />
+                <BitChoiceGroupOption Text="Month" Value="@("Month")" />
             </Options>
         </BitChoiceGroup>
 
@@ -316,7 +252,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<DemoExample Title="Binding" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <div>Shows how to use one-way and two-way data binding with BitChoiceGroup.</div>
     <br />
     <div class="example-content">
@@ -345,7 +281,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Validation" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+<DemoExample Title="Validation" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
     <div>Shows how to use data annotations for validating the selected value in BitChoiceGroup.</div>
     <br />
     @if (string.IsNullOrEmpty(successMessage))
@@ -374,7 +310,7 @@
     <BitButton Variant="BitVariant.Outline" OnClick="() => { validationModel = new(); successMessage=string.Empty; }">Reset</BitButton>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example9RazorCode" Id="example9">
+<DemoExample Title="Size" RazorCode="@example10RazorCode" Id="example10">
     <div>Varying sizes for BitChoiceGroup tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.</div>
     <br /><br />
     <div>Basic ChoiceGroup</div>
@@ -468,7 +404,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example10RazorCode" Id="example10">
+<DemoExample Title="Color" RazorCode="@example11RazorCode" Id="example11">
         <div>Offering a range of specialized color variants with Primary being the default, providing visual cues for specific actions or states within your application.</div>
         <br />
         <div>
@@ -633,7 +569,7 @@
         </div>
     </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
+<DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
     <div>Explores styling and class customization for BitChoiceGroup, including component styles, custom classes, and detailed style items.</div>
     <br /><br />
     <div>Component's Style & Class:</div>
@@ -675,9 +611,9 @@
         <BitChoiceGroup Label="Styles" DefaultValue="@("B")"
                         TItem="BitChoiceGroupOption<string>" TValue="string"
                         Styles="@(new() { Root = "margin-inline: 16px; --item-background: #d3d3d347; --item-border: 1px solid gray;",
-                                              ItemLabel = "width: 100%; cursor: pointer;",
-                                              ItemChecked = "--item-background: #87cefa24; --item-border: 1px solid dodgerblue;",
-                                              ItemContainer = "padding: 8px; border-radius: 2px; background-color: var(--item-background); border: var(--item-border);" })">
+                                          ItemLabel = "width: 100%; cursor: pointer;",
+                                          ItemChecked = "--item-background: #87cefa24; --item-border: 1px solid dodgerblue;",
+                                          ItemContainer = "padding: 8px; border-radius: 2px; background-color: var(--item-background); border: var(--item-border);" })">
             <BitChoiceGroupOption Text="Option A" Value="@("A")" />
             <BitChoiceGroupOption Text="Option B" Value="@("B")" />
             <BitChoiceGroupOption Text="Option C" Value="@("C")" />
@@ -687,9 +623,9 @@
         <BitChoiceGroup Label="Classes" DefaultValue="@("B")"
                         TItem="BitChoiceGroupOption<string>" TValue="string"
                         Classes="@(new() { Root = "custom-root",
-                                               ItemText = "custom-text",
-                                               ItemChecked = "custom-checked",
-                                               ItemLabelWrapper = "custom-label-wrapper" })">
+                                           ItemText = "custom-text",
+                                           ItemChecked = "custom-checked",
+                                           ItemRadioButton = "custom-radio-btn" })">
             <BitChoiceGroupOption Text="Option A" Value="@("A")" />
             <BitChoiceGroupOption Text="Option B" Value="@("B")" />
             <BitChoiceGroupOption Text="Option C" Value="@("C")" />
@@ -698,7 +634,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example12RazorCode" Id="example12">
+<DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
     <div>Use BitChoiceGroup in right-to-left (RTL).</div>
     <br />
     <div dir="rtl" class="example-content">

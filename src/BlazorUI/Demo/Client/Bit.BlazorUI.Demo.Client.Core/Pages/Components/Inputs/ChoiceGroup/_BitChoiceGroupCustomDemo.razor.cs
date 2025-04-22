@@ -86,11 +86,18 @@ public partial class _BitChoiceGroupCustomDemo
         new() { Name = "Custom D", ItemValue = "D", Class = "custom-item" }
     ];
 
-    private readonly List<Order> itemTemplateCustoms =
+    private readonly List<Order> itemLabelTemplateCustoms =
     [
         new() { Name = "Day", ItemValue = "Day", IconName = BitIconName.CalendarDay },
         new() { Name = "Week", ItemValue = "Week", IconName = BitIconName.CalendarWeek },
         new() { Name = "Month", ItemValue = "Month", IconName = BitIconName.Calendar }
+    ];
+
+    private readonly List<Order> itemTemplateCustoms =
+    [
+        new() { Name = "Day", ItemValue = "Day" },
+        new() { Name = "Week", ItemValue = "Week" },
+        new() { Name = "Month", ItemValue = "Month" }
     ];
 
     private readonly List<Order> rtlCustoms =

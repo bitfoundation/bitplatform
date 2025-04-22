@@ -88,11 +88,18 @@ public partial class _BitChoiceGroupItemDemo
         new() { Text = "Item D", Value = "D", Class = "custom-item" }
     ];
 
-    private readonly List<BitChoiceGroupItem<string>> itemTemplateItems =
+    private readonly List<BitChoiceGroupItem<string>> itemLabelTemplates =
     [
         new() { Text = "Day", Value = "Day", IconName = BitIconName.CalendarDay },
         new() { Text = "Week", Value = "Week", IconName = BitIconName.CalendarWeek },
         new() { Text = "Month", Value = "Month", IconName = BitIconName.Calendar }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> itemTemplateItems =
+    [
+        new() { Text = "Day", Value = "Day" },
+        new() { Text = "Week", Value = "Week" },
+        new() { Text = "Month", Value = "Month" }
     ];
 
     private readonly List<BitChoiceGroupItem<string>> rtlItems =

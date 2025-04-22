@@ -52,7 +52,15 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="LabelTemplate" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<DemoExample Title="Reversed" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <div>Adjust the label position of BitChoiceGroup's item to be reversed.</div>
+    <br />
+    <div class="example-content column">
+        <BitChoiceGroup Label="Reversed" Items="basicItems" DefaultValue="@("A")" Reversed Horizontal />
+    </div>
+</DemoExample>
+
+<DemoExample Title="LabelTemplate" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
     <div>Demonstrates how to customize the label of the BitChoiceGroup using a template.</div>
     <br />
     <div class="example-content">
@@ -66,7 +74,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Item templates" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+<DemoExample Title="Item templates" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
     <div>Illustrates how to customize the appearance of BitChoiceGroup options using item templates.</div>
     <br />
     <div class="example-content">
@@ -76,7 +84,7 @@
             </ItemPrefixTemplate>
         </BitChoiceGroup>
 
-        <BitChoiceGroup Label="ItemLabelTemplate" Items="itemTemplateItems" @bind-Value="itemLabelTemplateValue">
+        <BitChoiceGroup Label="ItemLabelTemplate" Items="itemLabelTemplates" @bind-Value="itemLabelTemplateValue">
             <ItemLabelTemplate Context="item">
                 <div class="custom-container @(itemLabelTemplateValue == item.Value ? "selected" : string.Empty)">
                     <BitIcon IconName="@item.IconName" />
@@ -102,7 +110,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<DemoExample Title="Binding" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <div>Shows how to use one-way and two-way data binding with BitChoiceGroup.</div>
     <br />
     <div class="example-content">
@@ -120,7 +128,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Validation" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+<DemoExample Title="Validation" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
     <div>Shows how to use data annotations for validating the selected value in BitChoiceGroup.</div>
     <br />
     @if (string.IsNullOrEmpty(successMessage))
@@ -144,7 +152,7 @@
     <BitButton Variant="BitVariant.Outline" OnClick="() => { validationModel = new(); successMessage=string.Empty; }">Reset</BitButton>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+<DemoExample Title="Size" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
     <div>Varying sizes for BitChoiceGroup tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.</div>
     <br /><br />
     <div>Basic ChoiceGroup</div>
@@ -208,7 +216,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+<DemoExample Title="Color" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>Offering a range of specialized color variants with Primary being the default, providing visual cues for specific actions or states within your application.</div>
         <br />
         <div>
@@ -356,7 +364,7 @@
         </div>
     </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+<DemoExample Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
     <div>Explores styling and class customization for BitChoiceGroup, including component styles, custom classes, and detailed style items.</div>
     <br /><br />
     <div>Component's Style & Class:</div>
@@ -386,21 +394,21 @@
                         Items="basicItems"
                         DefaultValue="basicItems[1].Value"
                         Styles="@(new() { Root = "margin-inline: 16px; --item-background: #d3d3d347; --item-border: 1px solid gray;",
-                                              ItemLabel = "width: 100%; cursor: pointer;",
-                                              ItemChecked = "--item-background: #87cefa24; --item-border: 1px solid dodgerblue;",
-                                              ItemContainer = "padding: 8px; border-radius: 2px; background-color: var(--item-background); border: var(--item-border);" })" />
+                                          ItemLabel = "width: 100%; cursor: pointer;",
+                                          ItemChecked = "--item-background: #87cefa24; --item-border: 1px solid dodgerblue;",
+                                          ItemContainer = "padding: 8px; border-radius: 2px; background-color: var(--item-background); border: var(--item-border);" })" />
 
         <BitChoiceGroup Label="Classes"
                         Items="basicItems"
                         DefaultValue="basicItems[1].Value"
                         Classes="@(new() { Root = "custom-root",
-                                               ItemText = "custom-text",
-                                               ItemChecked = "custom-checked",
-                                               ItemLabelWrapper = "custom-label-wrapper" })" />
+                                           ItemText = "custom-text",
+                                           ItemChecked = "custom-checked",
+                                           ItemRadioButton = "custom-radio-btn" })" />
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+<DemoExample Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
     <div>Use BitChoiceGroup in right-to-left (RTL).</div>
     <br />
     <div dir="rtl" class="example-content">
