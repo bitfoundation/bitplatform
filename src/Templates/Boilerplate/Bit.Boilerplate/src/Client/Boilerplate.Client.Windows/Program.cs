@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Velopack;
 using Microsoft.Web.WebView2.Core;
 using Boilerplate.Client.Core.Components;
@@ -35,7 +35,7 @@ public partial class Program
                 .GetItem("Culture")
                 .GetAwaiter()
                 .GetResult();
-            Services.GetRequiredService<CultureInfoManager>().SetCurrentCulture(
+            CultureInfoManager.SetCurrentCulture(
                 culture ?? // 1- User settings
                 CultureInfo.CurrentUICulture.Name); // 2- OS Settings
         }
