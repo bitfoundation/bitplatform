@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -67,7 +67,7 @@ public static partial class Program
                           cultureCookie ?? // 2- User settings
                           CultureInfo.CurrentUICulture.Name; // 3- OS/Browser settings
 
-            host.Services.GetRequiredService<CultureInfoManager>().SetCurrentCulture(culture);
+            CultureInfoManager.SetCurrentCulture(culture);
         }
 
         await host.RunAsync();

@@ -25,11 +25,11 @@
                          DefaultValue="@CultureInfo.CurrentUICulture.Name"
                          OnChange="WrapHandled((string c) => OnCultureChanged(c))">
                 <TextTemplate Context="item">
-                    <BitImage Src="@($"_content/Boilerplate.Client.Core/images/flags/{item.Value}.webp")" />
+                    <BitFlag Country="@FindBitCountry(item.Value)" />
                 </TextTemplate>
                 <ItemTemplate Context="item">
                     <BitStack Horizontal VerticalAlign="BitAlignment.Center">
-                        <BitImage Src="@($"_content/Boilerplate.Client.Core/images/flags/{item.Value}.webp")" />
+                        <BitFlag Country="@FindBitCountry(item.Value)" />
                         <BitText Typography="BitTypography.Body1" Style="@(item.IsSelected ? "font-weight:bold" : "")">
                             @item.Text
                         </BitText>
