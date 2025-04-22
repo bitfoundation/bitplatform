@@ -4,6 +4,8 @@
 
 env:
   SERVER_ADDRESS: 'https://todo.bitplatform.dev'
+  AzureOpenAI__ApiKey: ${{ secrets.AzureOpenAI__ApiKey }}
+  AzureOpenAI__Endpoint: ${{ secrets.AzureOpenAI__Endpoint }}
 
 on:
   workflow_dispatch:

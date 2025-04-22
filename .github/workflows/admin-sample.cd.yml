@@ -5,6 +5,8 @@
 env:
   SERVER_ADDRESS: 'https://adminpanel.bitplatform.dev'
   APP_SERVICE_NAME: 'bit-adminpanel'
+  AzureOpenAI__ApiKey: ${{ secrets.AzureOpenAI__ApiKey }}
+  AzureOpenAI__Endpoint: ${{ secrets.AzureOpenAI__Endpoint }}
 
 on:
   workflow_dispatch:
