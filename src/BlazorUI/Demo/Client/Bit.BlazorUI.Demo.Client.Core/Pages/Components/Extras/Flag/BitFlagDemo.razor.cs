@@ -6,12 +6,33 @@ public partial class BitFlagDemo
     [
          new()
          {
+            Name = "Code",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The dialing code of the country.",
+         },
+         new()
+         {
             Name = "Country",
             Type = "BitCountry?",
             DefaultValue = "null",
             Description = "The country to render the flag.",
             LinkType = LinkType.Link,
             Href = "#country",
+         },
+         new()
+         {
+            Name = "Iso2",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The ISO 3166-1 alpha-2 code of the country.",
+         },
+         new()
+         {
+            Name = "Iso3",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The ISO 3166-1 alpha-3 code of the country.",
          },
          new()
          {
@@ -65,10 +86,20 @@ public partial class BitFlagDemo
 
 
     private readonly string example1RazorCode = @"
+<BitFlag Country=""BitCountries.Iran"" />";
+
+    private readonly string example2RazorCode = @"
+<BitFlag Iso2=""nl"" />
+
+<BitFlag Iso3=""NLD"" />
+
+<BitFlag Code=""31"" />";
+
+    private readonly string example3RazorCode = @"
 <div style=""display:flex;gap:2px;flex-wrap:wrap"">
     @foreach (var country in BitCountries.All)
     {
-        <BitFlag Country=""country"" Title=""@($""{country.Name}-{country.Iso2}"")"" />
+        <BitFlag Country=""country"" Title=""@($""{country.Name} - {country.Iso2}"")"" />
     }
 </div>";
 }
