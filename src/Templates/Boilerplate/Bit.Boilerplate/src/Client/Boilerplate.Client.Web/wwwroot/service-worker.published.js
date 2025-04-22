@@ -40,7 +40,7 @@ self.assetsExclude = [
     /quill.bubble-2\.0\.3\.css$/,
     //#endif
 
-    //flags
+    // country flags
     /_content\/Bit\.BlazorUI\.Extras\/flags/,
 
     // https://github.com/orgs/bitfoundation/discussions/10238#discussioncomment-12493737
