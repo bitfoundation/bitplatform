@@ -1,4 +1,4 @@
-namespace Boilerplate.Client.Core.Components.Layout;
+﻿namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class IdentityHeader : AppComponentBase
 {
@@ -39,5 +39,14 @@ public partial class IdentityHeader : AppComponentBase
     private async Task OnCultureChanged(string? cultureName)
     {
         await cultureService.ChangeCulture(cultureName);
+    }
+
+    private static BitCountry? FindBitCountry(string? cultureName)
+    {
+        var cultureInfo = CultureInfoManager.GetCultureInfo(cultureName);
+
+        if (cultureInfo is null) return null;
+
+        return BitCountries.All.FirstOrDefault(c => c.Iso2 == new RegionInfo(cultureInfo.LCID).TwoLetterISORegionName);
     }
 }

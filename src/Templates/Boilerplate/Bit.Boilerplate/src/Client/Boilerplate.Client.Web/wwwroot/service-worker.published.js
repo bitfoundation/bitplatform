@@ -40,6 +40,9 @@ self.assetsExclude = [
     /quill.bubble-2\.0\.3\.css$/,
     //#endif
 
+    //flags
+    /_content\/Bit\.BlazorUI\.Extras\/flags/,
+
     // https://github.com/orgs/bitfoundation/discussions/10238#discussioncomment-12493737
     /_content\/Bit\.BlazorES2019\/blazor\.server\.js$/,
     /_content\/Bit\.BlazorES2019\/blazor\.webview\.js$/,
