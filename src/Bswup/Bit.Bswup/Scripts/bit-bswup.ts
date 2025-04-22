@@ -1,5 +1,5 @@
 ﻿var BitBswup = BitBswup || {};
-BitBswup.version = window['bit-bswup version'] = '9.7.0-pre-10';
+BitBswup.version = window['bit-bswup version'] = '9.7.0-pre-11';
 
 declare const Blazor: any;
 
