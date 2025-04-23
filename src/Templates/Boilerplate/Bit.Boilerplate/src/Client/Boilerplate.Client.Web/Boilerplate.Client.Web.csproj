@@ -23,6 +23,8 @@
         <WasmFingerprintAssets>false</WasmFingerprintAssets>
         <StaticWebAssetsFingerprintContent>false</StaticWebAssetsFingerprintContent>
         <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
+
+        <WasmEnableWebcil Condition="'$(Environment)' == 'Development'">false</WasmEnableWebcil>
     </PropertyGroup>
 
     <ItemGroup>

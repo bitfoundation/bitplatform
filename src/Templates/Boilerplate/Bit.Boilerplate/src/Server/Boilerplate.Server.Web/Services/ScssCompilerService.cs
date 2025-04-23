@@ -2,6 +2,9 @@
 
 namespace Boilerplate.Server.Web.Services;
 
+/// <summary>
+/// This compiles SCSS files into CSS in real-time during development, no extensions required.
+/// </summary>
 public class ScssCompilerService
 {
     internal static async Task WatchScssFiles(WebApplication app)
