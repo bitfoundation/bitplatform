@@ -4,7 +4,8 @@
             "commandName": "Project",
             "launchBrowser": true,
             "environmentVariables": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "IN_APP_SCSS_COMPILER_ENABLED": "true"
             },
             "dotnetRunMessages": true,
             "applicationUrl": "http://localhost:5030"
@@ -26,7 +27,8 @@
             "launchBrowser": true,
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "WebAppRender:BlazorMode": "BlazorWebAssembly"
+                "WebAppRender:BlazorMode": "BlazorWebAssembly",
+                "IN_APP_SCSS_COMPILER_ENABLED": "true"
             },
             "dotnetRunMessages": true,
             "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",

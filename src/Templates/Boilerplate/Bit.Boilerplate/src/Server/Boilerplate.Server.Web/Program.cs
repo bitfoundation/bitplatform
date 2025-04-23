@@ -1,7 +1,8 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 //#if (api == "Integrated")
 using Boilerplate.Server.Api.Data;
 //#endif
+using Boilerplate.Server.Web.Services;
 using Boilerplate.Client.Core.Services.Contracts;
 
 namespace Boilerplate.Server.Web;
@@ -49,6 +50,12 @@ public static partial class Program
         //#endif
 
         app.ConfigureMiddlewares();
+
+        //-:cnd:noEmit
+#if DEBUG
+        _ = ScssCompilerService.WatchScssFiles(app);
+#endif
+        //+:cnd:noEmit
 
         await app.RunAsync();
     }
