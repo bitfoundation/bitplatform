@@ -19,25 +19,12 @@ public class ScssCompilerService
 
         var logger = app.Services.GetRequiredService<ILogger<ScssCompilerService>>();
 
-        var toolPath = Path.Combine(clientCorePath, "node_modules/.bin/", AppPlatform.IsWindows ? "sass.cmd" : "sass");
+        var toolPath = Path.Combine(clientCorePath, "node_modules/.bin/sass.cmd");
 
         if (File.Exists(toolPath) is false)
         {
             logger.LogWarning("{SassTool} not found", toolPath);
             return;
-        }
-
-        if (AppPlatform.IsWindows is false)
-        {
-            try
-            {
-                File.SetUnixFileMode(toolPath, UnixFileMode.UserExecute | UnixFileMode.UserRead);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to set executable permissions on {ToolPath}", toolPath);
-                return;
-            }
         }
 
         var clientMauiDirPath = Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Maui");
