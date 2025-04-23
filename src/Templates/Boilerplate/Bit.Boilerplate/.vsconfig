@@ -6,7 +6,6 @@
         "Component.Android.SDK.MAUI"
     ],
     "extensions": [
-        "https://marketplace.visualstudio.com/items?itemName=TomEnglert.ResXManager",
-        "https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64"
+        "https://marketplace.visualstudio.com/items?itemName=TomEnglert.ResXManager"
     ]
 }
