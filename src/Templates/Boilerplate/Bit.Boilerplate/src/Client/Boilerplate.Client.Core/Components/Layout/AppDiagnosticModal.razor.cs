@@ -130,9 +130,11 @@ public partial class AppDiagnosticModal
 
     private void FilterLogs()
     {
-        filteredLogs = allLogs.WhereIf(string.IsNullOrEmpty(searchText) is false, Search)
-                              .Where(l => filterLogLevelValues.Contains(l.Level))
-                              .Where(l => filterCategoryValues.Contains(l.Category));
+        filteredLogs = FilterSearchText(allLogs);
+
+        filteredLogs = filteredLogs.Where(l => filterLogLevelValues.Contains(l.Level))
+                                   .Where(l => filterCategoryValues.Contains(l.Category));
+
         if (isDescendingSort)
         {
             filteredLogs = filteredLogs.OrderByDescending(l => l.CreatedOn);
@@ -144,9 +146,9 @@ public partial class AppDiagnosticModal
 
         StateHasChanged();
 
-        bool Search(DiagnosticLog l)
+        IEnumerable<DiagnosticLog> FilterSearchText(IEnumerable<DiagnosticLog> logs)
         {
-            if (string.IsNullOrEmpty(searchText)) return true;
+            if (string.IsNullOrEmpty(searchText)) return logs;
 
             if (enableRegExp)
             {
@@ -154,20 +156,20 @@ public partial class AppDiagnosticModal
                 {
                     var regExp = new Regex(searchText, RegexOptions.IgnoreCase);
 
-                    return regExp.IsMatch(l.Message ?? string.Empty) ||
-                           regExp.IsMatch(l.Category ?? string.Empty) ||
-                           l.State?.Any(s => regExp.IsMatch(s.Key) || regExp.IsMatch(s.Value ?? string.Empty)) is true;
+                    return logs.Where(l => regExp.IsMatch(l.Message ?? string.Empty) ||
+                                           regExp.IsMatch(l.Category ?? string.Empty) ||
+                                           l.State?.Any(s => regExp.IsMatch(s.Key) || regExp.IsMatch(s.Value ?? string.Empty)) is true);
                 }
                 catch
                 {
-                    return false;
+                    return [];
                 }
             }
 
-            return l.Message?.Contains(searchText, StringComparison.InvariantCultureIgnoreCase) is true ||
-                   l.Category?.Contains(searchText, StringComparison.InvariantCultureIgnoreCase) is true ||
-                   l.State?.Any(s => s.Key.Contains(searchText) ||
-                                     s.Value?.Contains(searchText, StringComparison.InvariantCultureIgnoreCase) is true) is true;
+            return logs.Where(l => l.Message?.Contains(searchText, StringComparison.InvariantCultureIgnoreCase) is true ||
+                                   l.Category?.Contains(searchText, StringComparison.InvariantCultureIgnoreCase) is true ||
+                                   l.State?.Any(s => s.Key.Contains(searchText) ||
+                                                s.Value?.Contains(searchText, StringComparison.InvariantCultureIgnoreCase) is true) is true);
         }
     }
 
