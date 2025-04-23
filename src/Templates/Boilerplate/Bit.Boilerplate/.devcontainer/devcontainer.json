@@ -14,6 +14,7 @@
         },
         "vscode": {
             "extensions": [
+                "glenn2223.live-sass",
                 "kevin-chatham.aspnetcorerazor-html-css-class-completion",
                 "DominicVonk.vscode-resx-editor",
                 "ms-dotnetools.csharp",

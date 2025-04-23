@@ -12,6 +12,9 @@ public class ScssCompilerService
         if (app.Environment.IsDevelopment() is false)
             return;
 
+        if (Environment.GetEnvironmentVariable("IN_APP_SCSS_COMPILER_ENABLED") is not "true")
+            return;
+
         var clientCorePath = Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Core");
 
         var logger = app.Services.GetRequiredService<ILogger<ScssCompilerService>>();

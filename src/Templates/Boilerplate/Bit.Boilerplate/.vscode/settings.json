@@ -1,4 +1,5 @@
 {
+    "liveSassCompile.settings.watchOnLaunch": true,
     "dotnet.defaultSolution": "Boilerplate.Web.slnf",
     "dotnet.unitTests.runSettingsPath": "src/Tests/.runsettings",
     "csharp.preview.improvedLaunchExperience": true,
