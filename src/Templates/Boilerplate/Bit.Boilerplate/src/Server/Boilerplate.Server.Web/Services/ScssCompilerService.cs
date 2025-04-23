@@ -34,21 +34,21 @@ public class ScssCompilerService
             }
         }
 
-        var clientMauiPath = Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Maui");
-        var clientWindowsPath = Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Windows");
-        var clientWebPath = Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Web");
+        var clientMauiDirPath = Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Maui");
+        var clientWindowsDirPath = Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Windows");
+        var clientWebDirPath = Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Web");
 
         await Task.WhenAll(WatchProject(app, clientCorePath, logger, toolPath, ".:. Styles/app.scss:wwwroot/styles/app.css --style compressed --load-path=. --silence-deprecation=import --update --watch"),
-            WatchProject(app, clientMauiPath, logger, toolPath, ".:. --style compressed --load-path=. --silence-deprecation=import --update --watch"),
-            WatchProject(app, clientWindowsPath, logger, toolPath, ".:. --style compressed --load-path=. --silence-deprecation=import --update --watch"),
-            WatchProject(app, clientWebPath, logger, toolPath, ".:. --style compressed --load-path=. --silence-deprecation=import --update --watch"));
+            WatchProject(app, clientMauiDirPath, logger, toolPath, ".:. --style compressed --load-path=. --silence-deprecation=import --update --watch"),
+            WatchProject(app, clientWindowsDirPath, logger, toolPath, ".:. --style compressed --load-path=. --silence-deprecation=import --update --watch"),
+            WatchProject(app, clientWebDirPath, logger, toolPath, ".:. --style compressed --load-path=. --silence-deprecation=import --update --watch"));
     }
 
-    private static async Task WatchProject(WebApplication app, string projectPath, ILogger<ScssCompilerService> logger, string toolPath, string command)
+    private static async Task WatchProject(WebApplication app, string projectDir, ILogger<ScssCompilerService> logger, string toolPath, string command)
     {
-        if (Directory.Exists(projectPath) is false)
+        if (Directory.Exists(projectDir) is false)
         {
-            logger.LogWarning("{ClientCoreDirectory} not found", projectPath);
+            logger.LogWarning("{ProjectDirectory} not found", projectDir);
             return;
         }
 
@@ -56,7 +56,7 @@ public class ScssCompilerService
         {
             StartInfo = new ProcessStartInfo
             {
-                WorkingDirectory = projectPath,
+                WorkingDirectory = projectDir,
                 FileName = toolPath,
                 Arguments = command,
                 UseShellExecute = false,
@@ -68,10 +68,10 @@ public class ScssCompilerService
         watchScssFilesProcess.OutputDataReceived += (_, e) => { if (string.IsNullOrEmpty(e.Data) is false) logger.LogInformation(e.Data); };
         watchScssFilesProcess.ErrorDataReceived += (_, e) => { if (string.IsNullOrEmpty(e.Data) is false) logger.LogError(e.Data); };
 
-        logger.LogInformation("Running {toolPath}", toolPath);
+        logger.LogInformation("Running {toolPath} for {ProjectDirectory}", toolPath, projectDir);
         if (watchScssFilesProcess.Start() is false)
         {
-            logger.LogError("Failed to start {toolPath}", toolPath);
+            logger.LogError("Failed to start {toolPath} for {ProjectDirectory}", toolPath, projectDir);
             return;
         }
 
