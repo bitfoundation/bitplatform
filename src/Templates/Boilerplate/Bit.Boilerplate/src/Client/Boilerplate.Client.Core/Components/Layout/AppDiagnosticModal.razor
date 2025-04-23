@@ -35,7 +35,8 @@
 
             <BitStack Horizontal FitHeight Wrap>
                 <BitStack Horizontal Gap="4px" FitWidth AutoHeight>
-                    <BitSearchBox Immediate 
+                    <BitSearchBox FixedIcon
+                                  Immediate 
                                   DebounceTime="500" 
                                   @bind-Value="@searchText"
                                   OnChange="_ => FilterLogs()" />

@@ -150,11 +150,18 @@ public partial class AppDiagnosticModal
 
             if (enableRegExp)
             {
-                var regExp = new Regex(searchText, RegexOptions.IgnoreCase);
+                try
+                {
+                    var regExp = new Regex(searchText, RegexOptions.IgnoreCase);
 
-                return regExp.IsMatch(l.Message ?? string.Empty) ||
-                       regExp.IsMatch(l.Category ?? string.Empty) ||
-                       l.State?.Any(s => regExp.IsMatch(s.Key) || regExp.IsMatch(s.Value ?? string.Empty)) is true;
+                    return regExp.IsMatch(l.Message ?? string.Empty) ||
+                           regExp.IsMatch(l.Category ?? string.Empty) ||
+                           l.State?.Any(s => regExp.IsMatch(s.Key) || regExp.IsMatch(s.Value ?? string.Empty)) is true;
+                }
+                catch
+                {
+                    return false;
+                }
             }
 
             return l.Message?.Contains(searchText, StringComparison.InvariantCultureIgnoreCase) is true ||
