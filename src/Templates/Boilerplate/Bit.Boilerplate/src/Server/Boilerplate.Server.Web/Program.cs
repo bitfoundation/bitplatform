@@ -51,9 +51,11 @@ public static partial class Program
 
         app.ConfigureMiddlewares();
 
+        //-:cnd:noEmit
 #if DEBUG
         _ = ScssCompilerService.WatchScssFiles(app);
 #endif
+        //+:cnd:noEmit
 
         await app.RunAsync();
     }
