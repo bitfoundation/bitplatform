@@ -17,18 +17,23 @@ public partial class Translator(ResxTranslatorSettings settings,
     {
         await Parallel.ForEachAsync(GetResxGroups(), async (resxGroup, cancellationToken) =>
         {
-            var defaultLanguageKeyValues = await DeserializeXmlToDictionary(resxGroup.Path, cancellationToken);
+            var defaultLanguageKeyValues = await DeserializeResxToDictionary(resxGroup.Path, cancellationToken);
 
             foreach (var relatedResx in resxGroup.RelatedResxFiles)
             {
-                var relatedLanguageKeyValues = await DeserializeXmlToDictionary(relatedResx.Path, cancellationToken);
+                var relatedLanguageKeyValues = await DeserializeResxToDictionary(relatedResx.Path, cancellationToken);
 
                 var notTranslatedKeyValues = defaultLanguageKeyValues
                     .Where(kvp => relatedLanguageKeyValues.ContainsKey(kvp.Key) is false)
                     .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
                 if (notTranslatedKeyValues.Count == 0)
+                {
+                    logger.LogInformation("No new translations needed for {ResxGroup} to {RelatedResx}.", resxGroup.CultureInfo.Name, relatedResx.CultureInfo.Name);
                     continue;
+                }
+
+                logger.LogInformation("Translating from {ResxGroup} to {RelatedResx}...", resxGroup.CultureInfo.Name, relatedResx.CultureInfo.Name);
 
                 var _ = await chatClient.GetResponseAsync(new ChatMessage(ChatRole.System, @$"You act as a translator for software resource files.
 Your task is to retrieve the values that need translation by calling the `GetSourceValuesToBeTranslated` tool,
@@ -39,6 +44,7 @@ including their numbers, and are placed correctly in the translated sentence acc
 The translation should be accurate and suitable for a software application context.
 After translating, call the `SaveTranslatedValues` tool and pass an array of the translated strings in the same order as the source strings."), options: new()
                 {
+                    Temperature = 0,
                     Tools =
                     [
                         AIFunctionFactory.Create(() =>
@@ -46,9 +52,9 @@ After translating, call the `SaveTranslatedValues` tool and pass an array of the
                             return notTranslatedKeyValues.Values;
                         }, name: "GetSourceValuesToBeTranslated", description: $"Returns [{resxGroup.CultureInfo.NativeName} - {resxGroup.CultureInfo.EnglishName}] values."),
 
-                        AIFunctionFactory.Create((string[] updatedRelatedLanguageKeyValues) =>
+                        AIFunctionFactory.Create((string[] updatedRelatedLanguageValues) =>
                         {
-                            foreach ((string translate, int index) in updatedRelatedLanguageKeyValues.Select((translate, index) => (translate, index)))
+                            foreach ((string translate, int index) in updatedRelatedLanguageValues.Select((translate, index) => (translate, index)))
                             {
                                 relatedLanguageKeyValues.Add(notTranslatedKeyValues.ElementAt(index).Key, translate);
                             }
@@ -142,7 +148,7 @@ After translating, call the `SaveTranslatedValues` tool and pass an array of the
     [GeneratedRegex(@"\.[a-zA-Z]{2,4}(-[a-zA-Z]{2,8})?(?=\.resx$)", RegexOptions.IgnoreCase)]
     private static partial Regex LanguageNameRegexBuilder();
 
-    static async Task<Dictionary<string, string?>> DeserializeXmlToDictionary(string filePath, CancellationToken cancellationToken)
+    static async Task<Dictionary<string, string?>> DeserializeResxToDictionary(string filePath, CancellationToken cancellationToken)
     {
         if (File.Exists(filePath) is false)
             return [];
