@@ -22,8 +22,8 @@ public partial class AppDiagnosticModal
     private DiagnosticLog? selectedLog;
     private bool isDescendingSort = true;
     private Action unsubscribe = default!;
+    private IEnumerable<string>? filterCategoryValues;
     private IEnumerable<DiagnosticLog> allLogs = default!;
-    private IEnumerable<string> filterCategoryValues = [];
     private BitDropdownItem<string>[] allCategoryItems = [];
     private IEnumerable<DiagnosticLog> filteredLogs = default!;
     private BitBasicList<(DiagnosticLog, int)> logStackRef = default!;
@@ -112,6 +112,7 @@ public partial class AppDiagnosticModal
     private async Task ClearLogs()
     {
         DiagnosticLogger.Store.Clear();
+        filterCategoryValues = null;
         ReloadLogs();
     }
 
@@ -119,11 +120,13 @@ public partial class AppDiagnosticModal
     {
         allLogs = [.. DiagnosticLogger.Store];
 
-        filterCategoryValues = [.. allLogs.Select(l => l.Category ?? string.Empty)
-                                          .Where(c => string.IsNullOrWhiteSpace(c) is false)
-                                          .Distinct().Order()];
+        var allCategories = allLogs.Select(l => l.Category ?? string.Empty)
+                                   .Where(c => string.IsNullOrWhiteSpace(c) is false)
+                                   .Distinct().Order();
 
-        allCategoryItems = [.. filterCategoryValues.Select(c => new BitDropdownItem<string>() { Text = c, Value = c })];
+        filterCategoryValues ??= [.. allCategories];
+
+        allCategoryItems = [.. allCategories.Select(c => new BitDropdownItem<string>() { Text = c, Value = c })];
 
         FilterLogs();
     }
@@ -133,7 +136,7 @@ public partial class AppDiagnosticModal
         filteredLogs = FilterSearchText(allLogs);
 
         filteredLogs = filteredLogs.Where(l => filterLogLevelValues.Contains(l.Level))
-                                   .Where(l => filterCategoryValues.Contains(l.Category));
+                                   .Where(l => filterCategoryValues?.Contains(l.Category) is true);
 
         if (isDescendingSort)
         {
