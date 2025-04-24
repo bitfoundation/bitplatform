@@ -7,8 +7,8 @@
             dotnetReference: DotNetObject,
             inputElement: HTMLInputElement,
             append: boolean,
-            uploadEndpointUrl: string,
-            headers: Record<string, string>) {
+            uploadEndpointUrl: string | undefined,
+            headers: Record<string, string> | undefined) {
 
             if (!append) {
                 FileUpload.clear(id);
@@ -25,7 +25,7 @@
             }));
 
             files.forEach((f) => {
-                const h = { ...headers, ...{ 'BIT_FILE_ID': f.fileId } };
+                const h = { ...(headers || {}), ...{ 'BIT_FILE_ID': f.fileId } };
                 const uploader = new BitFileUploader(id, dotnetReference, f.file, uploadEndpointUrl, h, f.index);
                 FileUpload._fileUploaders.push(uploader);
             });
@@ -116,7 +116,7 @@
         id: string;
         dotnetReference: DotNetObject;
         file: File;
-        uploadUrl: string;
+        uploadUrl: string | undefined;
         headers: Record<string, string>;
         index: number;
 
@@ -154,7 +154,11 @@
             const chunk = file.slice(from, to);
             data.append('file', chunk, file.name);
 
-            this.xhr.open('POST', uploadUrl ? uploadUrl : this.uploadUrl, true);
+            var url = uploadUrl || this.uploadUrl;
+
+            if (!url) return;
+
+            this.xhr.open('POST', url, true);
 
             Object.keys(this.headers).forEach(h => {
                 this.xhr.setRequestHeader(h, this.headers[h]);
