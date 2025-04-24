@@ -1,6 +1,7 @@
-﻿using System.Globalization;
-using System.Text.RegularExpressions;
+﻿using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace Bit.BlazorUI;
 
@@ -127,6 +128,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// The title to show when the mouse is placed on the increment button.
     /// </summary>
     [Parameter] public string? IncrementTitle { get; set; }
+
+    /// <summary>
+    /// Reverses the mouse wheel direction.
+    /// </summary>
+    [Parameter] public bool InvertMouseWheel { get; set; }
 
     /// <summary>
     /// If true, the input is readonly.
@@ -446,6 +452,21 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private async Task HandleOnPointerUpOrOut()
     {
         ResetCts();
+    }
+
+    private async Task HandleOnMouseWheel(WheelEventArgs e)
+    {
+        if (IsEnabled is false || ReadOnly) return;
+        if (e.ShiftKey is false) return;
+
+        if (e.DeltaY < 0)
+        {
+            ChangeValue(InvertMouseWheel ? -1 : +1);
+        }
+        else if (e.DeltaY > 0)
+        {
+            ChangeValue(InvertMouseWheel ? +1 : -1);
+        }
     }
 
 

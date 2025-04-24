@@ -105,6 +105,12 @@ private int minMaxValue;";
 private int hideInputValue;";
 
     private readonly string example10RazorCode = @"
+<BitToggle @bind-Value=""invertMouseWheel"" Text=""Invert Mouse Wheel"" />
+<BitNumberField InvertMouseWheel=""invertMouseWheel"" Label=""Use Shift + Mouse Wheel"" TValue=""int"" />";
+    private readonly string example10CsharpCode = @"
+private bool invertMouseWheel;";
+
+    private readonly string example11RazorCode = @"
 <BitNumberField Label=""OnIncrement & OnDecrement"" ShowButtons=""true""
                 OnIncrement=""(double v) => onIncrementCounter++""
                 OnDecrement=""(double v) => onDecrementCounter++"" />
@@ -113,12 +119,12 @@ private int hideInputValue;";
 
 <BitNumberField Label=""OnChange"" OnChange=""(double v) => onChangeCounter++"" />
 <div>OnChange Counter: @onChangeCounter</div>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private int onIncrementCounter;
 private int onDecrementCounter;
 private int onChangeCounter;";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <EditForm Model=""@validationModel"">
     <DataAnnotationsValidator />
 
@@ -127,7 +133,7 @@ private int onChangeCounter;";
     <br />
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 public class BitNumberFieldValidationModel
 {
     [Required(ErrorMessage = ""Enter an age"")]
@@ -137,7 +143,7 @@ public class BitNumberFieldValidationModel
 
 private BitNumberFieldValidationModel validationModel = new();";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -233,7 +239,7 @@ private BitNumberFieldValidationModel validationModel = new();";
                                  Input = ""custom-input"",
                                  Label = $""custom-label{(classesValue is null ? string.Empty : "" custom-label-top"")}"" })"" />";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <CascadingValue Value=""BitDir.Rtl"">
 
     <BitNumberField Label=""برچسب در بالا"" TValue=""int"" ShowButtons />

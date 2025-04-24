@@ -165,7 +165,17 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Events" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <DemoExample Title="InvertMouseWheel" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>Reverse the default scrolling behavior when adjusting numerical value in a number field using the mouse wheel.</div>
+        <br />
+        <div class="example-box">
+            <BitToggle @bind-Value="invertMouseWheel" Text="Invert Mouse Wheel" />
+            <br />
+            <BitNumberField InvertMouseWheel="invertMouseWheel" Label="Use Shift + Mouse Wheel" TValue="int" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Events" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>Handle events in BitNumberField, including increment, decrement, and change events.</div>
         <br />
         <div class="example-box">
@@ -180,7 +190,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Validation" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="Validation" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>Demonstrates validation for BitNumberField within a form, including required fields and custom validation messages.</div>
         <br />
         <div class="example-box">
@@ -202,7 +212,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" Id="example13">
         <div>Explores styling and class customization for BitNumberField, including component styles, custom classes, and detailed style options.</div>
         <br /><br />
         <div class="example-box">
@@ -233,7 +243,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
         <div>Use BitNumberField in right-to-left (RTL).</div>
         <br />
         <div dir="rtl">
