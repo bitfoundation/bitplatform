@@ -190,15 +190,15 @@ public partial class BitFileUploadDemo
         new()
         {
             Name = "RemoveRequestHttpHeaders",
-            Type = "IReadOnlyDictionary<string, string>",
-            DefaultValue = "new Dictionary<string, string>()",
+            Type = "IReadOnlyDictionary<string, string>?",
+            DefaultValue = "null",
             Description = "Custom http headers for remove request."
         },
         new()
         {
             Name = "RemoveRequestQueryStrings",
-            Type = "IReadOnlyDictionary<string, string>",
-            DefaultValue = "new Dictionary<string, string>()",
+            Type = "IReadOnlyDictionary<string, string>?",
+            DefaultValue = "null",
             Description = "Custom query strings for remove request."
         },
         new()
@@ -225,16 +225,23 @@ public partial class BitFileUploadDemo
         new()
         {
             Name = "UploadRequestHttpHeaders",
-            Type = "IReadOnlyDictionary<string, string>",
-            DefaultValue = "new Dictionary<string, string>()",
+            Type = "IReadOnlyDictionary<string, string>?",
+            DefaultValue = "null",
             Description = "Custom http headers for upload request."
         },
         new()
         {
             Name = "UploadRequestQueryStrings",
-            Type = "IReadOnlyDictionary<string, string>",
-            DefaultValue = "new Dictionary<string, string>()",
+            Type = "IReadOnlyDictionary<string, string>?",
+            DefaultValue = "null",
             Description = "Custom query strings for upload request."
+        },
+        new()
+        {
+            Name = "UploadRequestQueryStringsProvider",
+            Type = "Func<Task<IReadOnlyDictionary<string, string>>>?",
+            DefaultValue = "null",
+            Description = "The provider function to create the query strings for upload request."
         },
         new()
         {
@@ -242,6 +249,13 @@ public partial class BitFileUploadDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "URL of the server endpoint receiving the files."
+        },
+        new()
+        {
+            Name = "UploadUrlProvider",
+            Type = "Func<Task<string?>>?",
+            DefaultValue = "null",
+            Description = "The provider function to create the URL of the server endpoint receiving the files."
         },
         new()
         {

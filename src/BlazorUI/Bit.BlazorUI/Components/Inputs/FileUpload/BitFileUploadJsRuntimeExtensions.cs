@@ -10,8 +10,8 @@ internal static class BitFileUploadJsRuntimeExtensions
                                                                      DotNetObjectReference<BitFileUpload>? dotnetObjectReference,
                                                                      ElementReference element,
                                                                      bool append,
-                                                                     string uploadAddress,
-                                                                     IReadOnlyDictionary<string, string> uploadRequestHttpHeaders)
+                                                                     string? uploadAddress,
+                                                                     IReadOnlyDictionary<string, string>? uploadRequestHttpHeaders)
     {
         return jsRuntime.Invoke<BitFileInfo[]>("BitBlazorUI.FileUpload.setup", id, dotnetObjectReference, element, append, uploadAddress, uploadRequestHttpHeaders);
     }
