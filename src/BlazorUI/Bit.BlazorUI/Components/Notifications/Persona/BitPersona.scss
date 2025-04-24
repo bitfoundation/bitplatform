@@ -12,6 +12,8 @@
     justify-content: center;
     font-size: spacing(1.75);
     font-family: $tg-font-family;
+    --bit-prs-flex-direction: row;
+    flex-direction: var(--bit-prs-flex-direction);
 
     &.bit-dis {
         color: $clr-fg-dis;
@@ -39,6 +41,10 @@
     justify-content: center;
     border-width: $shp-border-width;
     border-style: $shp-border-style;
+}
+
+.bit-prs-rvs {
+    --bit-prs-flex-direction: row-reverse;
 }
 
 .bit-prs-him {
@@ -102,6 +108,13 @@
     forced-color-adjust: none;
     background-clip: border-box;
     border: spacing(0.125) $shp-border-style $clr-brd-sec;
+}
+
+.bit-prs-rvs {
+    .bit-prs-pre {
+        right: unset;
+        left: spacing(-0.25);
+    }
 }
 
 .bit-prs-det {
@@ -320,6 +333,14 @@
             right: spacing(-0.4);
             bottom: spacing(-0.4);
         }
+
+
+        &.bit-prs-rvs {
+            .bit-prs-pre {
+                right: unset;
+                left: spacing(-0.4);
+            }
+        }
     }
 }
 
@@ -371,6 +392,13 @@
             right: spacing(-0.4);
             bottom: spacing(-0.4);
         }
+
+        &.bit-prs-rvs {
+            .bit-prs-pre {
+                right: unset;
+                left: spacing(-0.4);
+            }
+        }
     }
 }
 
@@ -421,6 +449,13 @@
         .bit-prs-pre {
             right: spacing(-0.5);
             bottom: spacing(-0.5);
+        }
+
+        &.bit-prs-rvs {
+            .bit-prs-pre {
+                right: unset;
+                left: spacing(-0.5);
+            }
         }
     }
 }
@@ -474,6 +509,13 @@
         .bit-prs-pre {
             right: spacing(-1);
             bottom: spacing(-1);
+
+            &.bit-prs-rvs {
+                .bit-prs-pre {
+                    right: unset;
+                    left: spacing(-1);
+                }
+            }
         }
     }
 }
@@ -530,6 +572,13 @@
             right: spacing(-1);
             bottom: spacing(-1);
         }
+
+        &.bit-prs-rvs {
+            .bit-prs-pre {
+                right: unset;
+                left: spacing(-1);
+            }
+        }
     }
 }
 
@@ -584,6 +633,13 @@
         .bit-prs-pre {
             right: spacing(-1.5);
             bottom: spacing(-1.5);
+        }
+
+        &.bit-prs-rvs {
+            .bit-prs-pre {
+                right: unset;
+                left: spacing(-1.5);
+            }
         }
     }
 }
