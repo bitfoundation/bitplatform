@@ -226,33 +226,63 @@ public partial class BitBadgeDemo
                 },
                 new()
                 {
-                    Name = "CenterLeft",
+                    Name = "TopStart",
                     Value = "3"
                 },
                 new()
                 {
-                    Name = "Center",
+                    Name = "TopEnd",
                     Value = "4"
                 },
                 new()
                 {
-                    Name = "CenterRight",
+                    Name = "CenterLeft",
                     Value = "5"
                 },
                 new()
                 {
-                    Name = "BottomLeft",
+                    Name = "Center",
                     Value = "6"
                 },
                 new()
                 {
-                    Name = "BottomCenter",
+                    Name = "CenterRight",
                     Value = "7"
                 },
                 new()
                 {
-                    Name = "BottomRight",
+                    Name = "CenterStart",
                     Value = "8"
+                },
+                new()
+                {
+                    Name = "CenterEnd",
+                    Value = "9"
+                },
+                new()
+                {
+                    Name = "BottomLeft",
+                    Value = "10"
+                },
+                new()
+                {
+                    Name = "BottomCenter",
+                    Value = "11"
+                },
+                new()
+                {
+                    Name = "BottomRight",
+                    Value = "12"
+                },
+                new()
+                {
+                    Name = "BottomStart",
+                    Value = "13"
+                },
+                new()
+                {
+                    Name = "BottomEnd",
+                    Value = "14"
                 }
             ]
         },
