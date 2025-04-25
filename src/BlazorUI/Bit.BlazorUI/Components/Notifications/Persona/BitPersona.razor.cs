@@ -165,6 +165,12 @@ public partial class BitPersona : BitComponentBase
     public bool Unknown { get; set; }
 
     /// <summary>
+    /// Reverses the texts and image location.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Reversed { get; set; }
+
+    /// <summary>
     /// Decides the size of the control.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -195,6 +201,8 @@ public partial class BitPersona : BitComponentBase
         ClassBuilder.Register(() => Classes?.Root);
 
         ClassBuilder.Register(() => FullWidth ? "bit-prs-fwi" : string.Empty);
+
+        ClassBuilder.Register(() => Reversed ? "bit-prs-rvs" : string.Empty);
 
         ClassBuilder.Register(() => Size switch
         {

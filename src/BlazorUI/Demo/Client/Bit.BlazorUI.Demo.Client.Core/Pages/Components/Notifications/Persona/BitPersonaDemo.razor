@@ -108,48 +108,7 @@
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example3RazorCode" Id="example3">
-        <BitPersona PrimaryText="Primary" CoinColor="BitColor.Primary" />
-        <br /><br />
-        <BitPersona PrimaryText="Secondary" CoinColor="BitColor.Secondary" />
-        <br /><br />
-        <BitPersona PrimaryText="Tertiary" CoinColor="BitColor.Tertiary" />
-        <br /><br />
-        <BitPersona PrimaryText="Info" SecondaryText="(default)" CoinColor="BitColor.Info" />
-        <br /><br />
-        <BitPersona PrimaryText="Success" CoinColor="BitColor.Success" />
-        <br /><br />
-        <BitPersona PrimaryText="Warning" CoinColor="BitColor.Warning" />
-        <br /><br />
-        <BitPersona PrimaryText="SevereWarning" CoinColor="BitColor.SevereWarning" />
-        <br /><br />
-        <BitPersona PrimaryText="Error" CoinColor="BitColor.Error" />
-        <br /><br />
-        <div style="background:var(--bit-clr-fg-ter);padding:1rem;margin: 1rem 0;">
-            <div class="box">
-                <BitPersona PrimaryText="PrimaryBackground" CoinColor="BitColor.PrimaryBackground" />
-                <br /><br />
-                <BitPersona PrimaryText="SecondaryBackground" CoinColor="BitColor.SecondaryBackground" />
-                <br /><br />
-                <BitPersona PrimaryText="TertiaryBackground" CoinColor="BitColor.TertiaryBackground" />
-            </div>
-        </div>
-
-        <br /><br />
-        <BitPersona PrimaryText="PrimaryForeground" CoinColor="BitColor.PrimaryForeground" />
-        <br /><br />
-        <BitPersona PrimaryText="SecondaryForeground" CoinColor="BitColor.SecondaryForeground" />
-        <br /><br />
-        <BitPersona PrimaryText="TertiaryForeground" CoinColor="BitColor.TertiaryForeground" />
-        <br /><br />
-        <BitPersona PrimaryText="PrimaryBorder" CoinColor="BitColor.PrimaryBorder" />
-        <br /><br />
-        <BitPersona PrimaryText="SecondaryBorder" CoinColor="BitColor.SecondaryBorder" />
-        <br /><br />
-        <BitPersona PrimaryText="TertiaryBorder" CoinColor="BitColor.TertiaryBorder" />
-    </DemoExample>
-
-    <DemoExample Title="Variant" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Variant" RazorCode="@example3RazorCode" Id="example3">
         <BitPersona PrimaryText="Saleh Xafan"
                     SecondaryText="Developer"
                     Size="BitPersonaSize.Size72"
@@ -166,7 +125,7 @@
                     CoinVariant="BitVariant.Text" />
     </DemoExample>
 
-    <DemoExample Title="Shape" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="Shape" RazorCode="@example4RazorCode" Id="example4">
         <BitPersona PrimaryText="Saleh Xafan"
                     SecondaryText="Developer"
                     Size="BitPersonaSize.Size72"
@@ -180,7 +139,7 @@
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
     </DemoExample>
 
-    <DemoExample Title="Action" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <DemoExample Title="Action" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <div>Custom action can be revealed by hovering on the bottom of the image:</div><br />
         <BitPersona PrimaryText="Annie Lindqvist"
                     SecondaryText="Software Engineer"
@@ -205,7 +164,7 @@
         <p>Image Click Count: @imageClickCount</p>
     </DemoExample>
 
-    <DemoExample Title="Initials" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="Initials" RazorCode="@example6RazorCode" Id="example6">
         <div>Invalid ImageUrl:</div><br />
         <BitPersona PrimaryText="Saleh Khafan"
                     Size="BitPersonaSize.Size72"
@@ -219,7 +178,7 @@
         <BitPersona Size="BitPersonaSize.Size72" PrimaryText="Saleh Khafan" ImageInitials="S" />
     </DemoExample>
 
-    <DemoExample Title="PersonaPresence" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoExample Title="PersonaPresence" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>None:</div><br />
         <BitPersona PrimaryText="Annie Lindqvist"
                     SecondaryText="Software Engineer"
@@ -276,6 +235,21 @@
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
     </DemoExample>
 
+    <DemoExample Title="Reversed" RazorCode="@example8RazorCode" Id="example8">
+        <div>Adjust the texts position of BitPersona's image to be reversed.</div>
+        <br />
+        <div>
+            <BitPersona Reversed
+                        PrimaryText="Annie Lindqvist"
+                        SecondaryText="Software Engineer"
+                        Presence="BitPersonaPresence.Online"
+                        PresenceIcons="_icons"
+                        Size="BitPersonaSize.Size120"
+                        ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        </div>
+    </DemoExample>
+
+
     <DemoExample Title="Templates" RazorCode="@example9RazorCode" Id="example9">
         <div>Text templates:</div><br />
         <div>
@@ -313,7 +287,48 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example10RazorCode" Id="example10">
+    <DemoExample Title="Color" RazorCode="@example10RazorCode" Id="example10">
+        <BitPersona PrimaryText="Primary" CoinColor="BitColor.Primary" />
+        <br /><br />
+        <BitPersona PrimaryText="Secondary" CoinColor="BitColor.Secondary" />
+        <br /><br />
+        <BitPersona PrimaryText="Tertiary" CoinColor="BitColor.Tertiary" />
+        <br /><br />
+        <BitPersona PrimaryText="Info" SecondaryText="(default)" CoinColor="BitColor.Info" />
+        <br /><br />
+        <BitPersona PrimaryText="Success" CoinColor="BitColor.Success" />
+        <br /><br />
+        <BitPersona PrimaryText="Warning" CoinColor="BitColor.Warning" />
+        <br /><br />
+        <BitPersona PrimaryText="SevereWarning" CoinColor="BitColor.SevereWarning" />
+        <br /><br />
+        <BitPersona PrimaryText="Error" CoinColor="BitColor.Error" />
+        <br /><br />
+        <div style="background:var(--bit-clr-fg-ter);padding:1rem;margin: 1rem 0;">
+            <div class="box">
+                <BitPersona PrimaryText="PrimaryBackground" CoinColor="BitColor.PrimaryBackground" />
+                <br /><br />
+                <BitPersona PrimaryText="SecondaryBackground" CoinColor="BitColor.SecondaryBackground" />
+                <br /><br />
+                <BitPersona PrimaryText="TertiaryBackground" CoinColor="BitColor.TertiaryBackground" />
+            </div>
+        </div>
+
+        <br /><br />
+        <BitPersona PrimaryText="PrimaryForeground" CoinColor="BitColor.PrimaryForeground" />
+        <br /><br />
+        <BitPersona PrimaryText="SecondaryForeground" CoinColor="BitColor.SecondaryForeground" />
+        <br /><br />
+        <BitPersona PrimaryText="TertiaryForeground" CoinColor="BitColor.TertiaryForeground" />
+        <br /><br />
+        <BitPersona PrimaryText="PrimaryBorder" CoinColor="BitColor.PrimaryBorder" />
+        <br /><br />
+        <BitPersona PrimaryText="SecondaryBorder" CoinColor="BitColor.SecondaryBorder" />
+        <br /><br />
+        <BitPersona PrimaryText="TertiaryBorder" CoinColor="BitColor.TertiaryBorder" />
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
         <div>Component's Style & Class:</div><br />
         <BitPersona PrimaryText="Saleh Khafan"
                     Size="BitPersonaSize.Size72"
@@ -335,7 +350,7 @@
                                                PrimaryTextContainer = "custom-primary-text" })" />
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example11RazorCode" Id="example11">
+    <DemoExample Title="RTL" RazorCode="@example12RazorCode" Id="example12">
         <div dir="rtl">
             <BitPersona Dir="BitDir.Rtl"
                         PrimaryText="صالح یوسف نژاد"
