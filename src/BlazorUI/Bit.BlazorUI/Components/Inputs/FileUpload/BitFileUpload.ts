@@ -122,7 +122,7 @@
 
         private xhr: XMLHttpRequest = new XMLHttpRequest();
 
-        constructor(id: string, dotnetReference: DotNetObject, file: File, uploadEndpointUrl: string | undefined, headers: Record<string, string>, index: number) {
+        constructor(id: string, dotnetReference: DotNetObject, file: File, uploadEndpointUrl: string, headers: Record<string, string>, index: number) {
             this.id = id;
             this.dotnetReference = dotnetReference;
             this.file = file;
