@@ -307,15 +307,21 @@ public partial class BitButton : BitComponentBase
 
         ClassBuilder.Register(() => (Float || FloatAbsolute) ? FloatPosition switch
         {
-            BitPosition.TopRight => "bit-btn-trg",
-            BitPosition.TopCenter => "bit-btn-tcr",
             BitPosition.TopLeft => "bit-btn-tlf",
+            BitPosition.TopCenter => "bit-btn-tcr",
+            BitPosition.TopRight => "bit-btn-trg",
+            BitPosition.TopStart => "bit-btn-tst",
+            BitPosition.TopEnd => "bit-btn-ten",
             BitPosition.CenterLeft => "bit-btn-clf",
+            BitPosition.Center => "bit-btn-ctr",
+            BitPosition.CenterRight => "bit-btn-crg",
+            BitPosition.CenterStart => "bit-btn-cst",
+            BitPosition.CenterEnd => "bit-btn-cen",
             BitPosition.BottomLeft => "bit-btn-blf",
             BitPosition.BottomCenter => "bit-btn-bcr",
             BitPosition.BottomRight => "bit-btn-brg",
-            BitPosition.CenterRight => "bit-btn-crg",
-            BitPosition.Center => "bit-btn-ctr",
+            BitPosition.BottomStart => "bit-btn-bst",
+            BitPosition.BottomEnd => "bit-btn-ben",
             _ => "bit-btn-brg"
         } : string.Empty);
     }

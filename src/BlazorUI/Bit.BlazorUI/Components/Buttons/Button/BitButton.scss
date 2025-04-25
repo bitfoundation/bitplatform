@@ -364,11 +364,6 @@
 }
 
 
-.bit-btn-trg {
-    top: var(--bit-btn-float-offset);
-    right: var(--bit-btn-float-offset);
-}
-
 .bit-btn-tlf {
     top: var(--bit-btn-float-offset);
     left: var(--bit-btn-float-offset);
@@ -380,16 +375,25 @@
     top: var(--bit-btn-float-offset);
 }
 
+.bit-btn-trg {
+    top: var(--bit-btn-float-offset);
+    right: var(--bit-btn-float-offset);
+}
+
+.bit-btn-tst {
+    top: var(--bit-btn-float-offset);
+    inset-inline-start: var(--bit-btn-float-offset);
+}
+
+.bit-btn-ten {
+    top: var(--bit-btn-float-offset);
+    inset-inline-end: var(--bit-btn-float-offset);
+}
+
 .bit-btn-clf {
     top: 50%;
     transform: translateY(-50%);
     left: var(--bit-btn-float-offset);
-}
-
-.bit-btn-crg {
-    top: 50%;
-    transform: translateY(-50%);
-    right: var(--bit-btn-float-offset);
 }
 
 .bit-btn-ctr {
@@ -398,8 +402,32 @@
     transform: translate(-50%, -50%);
 }
 
+.bit-btn-crg {
+    top: 50%;
+    transform: translateY(-50%);
+    right: var(--bit-btn-float-offset);
+}
+
+.bit-btn-cst {
+    top: 50%;
+    transform: translateY(-50%);
+    inset-inline-start: var(--bit-btn-float-offset);
+}
+
+.bit-btn-cen {
+    top: 50%;
+    transform: translateY(-50%);
+    inset-inline-end: var(--bit-btn-float-offset);
+}
+
 .bit-btn-blf {
     left: var(--bit-btn-float-offset);
+    bottom: var(--bit-btn-float-offset);
+}
+
+.bit-btn-bcr {
+    left: 50%;
+    transform: translateX(-50%);
     bottom: var(--bit-btn-float-offset);
 }
 
@@ -408,10 +436,14 @@
     bottom: var(--bit-btn-float-offset);
 }
 
-.bit-btn-bcr {
-    left: 50%;
-    transform: translateX(-50%);
+.bit-btn-bst {
     bottom: var(--bit-btn-float-offset);
+    inset-inline-start: var(--bit-btn-float-offset);
+}
+
+.bit-btn-ben {
+    bottom: var(--bit-btn-float-offset);
+    inset-inline-end: var(--bit-btn-float-offset);
 }
 
 
