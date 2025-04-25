@@ -111,16 +111,6 @@ public partial class ProfileSection
         PubSubService.Publish(ClientPubSubMessages.PROFILE_UPDATED, User);
     }
 
-    private async Task<IReadOnlyDictionary<string, string>> GetUploadRequestHeaders()
-    {
-        var accessToken = await AuthManager.ObtainFreshAccessToken(requestedBy: nameof(BitFileUpload));
-        return new Dictionary<string, string>()
-        {
-            // { "Authorization", $"Bearer {accessToken}" } 
-            { "access_token", accessToken! }
-        };
-    }
-
     private async Task<string> GetUploadUrl()
     {
         var accessToken = await AuthManager.ObtainFreshAccessToken(requestedBy: nameof(BitFileUpload));
