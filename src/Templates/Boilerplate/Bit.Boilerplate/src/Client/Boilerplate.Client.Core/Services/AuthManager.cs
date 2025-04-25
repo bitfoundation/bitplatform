@@ -1,4 +1,4 @@
-using Boilerplate.Shared.Dtos.Identity;
+﻿using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
@@ -197,6 +197,17 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         }
         var accessToken = await RefreshToken(requestedBy: "RequestElevatedAccess", token);
         return string.IsNullOrEmpty(accessToken) is false;
+    }
+
+    public async Task<string?> GetFreshAccessToken(string requestedBy)
+    {
+        var accessToken = await tokenProvider.GetAccessToken();
+
+        var isValid = IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated();
+
+        if (isValid) return accessToken;
+
+        return await RefreshToken(requestedBy);
     }
 
     private async Task ClearTokens()

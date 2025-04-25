@@ -1,4 +1,4 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace Boilerplate.Client.Core.Components;
 
@@ -202,6 +202,28 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
             catch (Exception exp)
             {
                 HandleException(exp, null, lineNumber, memberName, filePath);
+            }
+        };
+    }
+
+    /// <summary>
+    /// Executes passed action that catches and handles all exceptions internally, preventing them from triggering the application's error boundary.
+    /// </summary>
+    public virtual Func<Task<T>> WrapHandled<T>(Func<Task<T>> func,
+        [CallerLineNumber] int lineNumber = 0,
+        [CallerMemberName] string memberName = "",
+        [CallerFilePath] string filePath = "")
+    {
+        return async () =>
+        {
+            try
+            {
+                return await func();
+            }
+            catch (Exception exp)
+            {
+                HandleException(exp, null, lineNumber, memberName, filePath);
+                return default;
             }
         };
     }
