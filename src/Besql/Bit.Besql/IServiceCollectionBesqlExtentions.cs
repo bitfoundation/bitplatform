@@ -24,7 +24,7 @@ public static class IServiceCollectionBesqlExtentions
 
         services.TryAddSingleton(async (IServiceProvider sp, TDbContext dbContext) =>
         {
-            await dbContext.Database.ConfigureSqliteSynchronous();
+            await dbContext.Database.ConfigureSqliteJournalMode();
             await dbContextInitializer(sp, dbContext);
         });
 
