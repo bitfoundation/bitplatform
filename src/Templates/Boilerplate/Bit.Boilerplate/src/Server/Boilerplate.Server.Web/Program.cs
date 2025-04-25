@@ -52,7 +52,7 @@ public static partial class Program
         app.ConfigureMiddlewares();
 
         //-:cnd:noEmit
-#if DEBUG
+#if Development
         _ = ScssCompilerService.WatchScssFiles(app);
 #endif
         //+:cnd:noEmit
