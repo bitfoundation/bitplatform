@@ -160,20 +160,15 @@ public static partial class IClientCoreServiceCollectionExtensions
                     options.HttpMessageHandlerFactory = httpClientHandler => sp.GetRequiredService<HttpMessageHandlersChainFactory>().Invoke(httpClientHandler);
                     options.AccessTokenProvider = async () =>
                     {
-                        var accessToken = await authTokenProvider.GetAccessToken();
-
-                        if (string.IsNullOrEmpty(accessToken) is false &&
-                            IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated() is false)
+                        try
                         {
-                            try
-                            {
-                                return await authManager.RefreshToken(requestedBy: nameof(HubConnectionBuilder));
-                            }
-                            catch (ServerConnectionException)
-                            { } // If the client disconnects and the access token expires, this code will execute repeatedly every few seconds, causing an annoying error message to be displayed to the user.
+                            return await authManager.ObtainFreshAccessToken(requestedBy: nameof(HubConnection));
                         }
-
-                        return accessToken;
+                        catch (ServerConnectionException)
+                        {
+                            // If the client is disconnected and the access token is expired, this code will execute repeatedly every few seconds, causing an annoying error message to be displayed to the user.
+                            return await authTokenProvider.GetAccessToken();
+                        }
                     };
                 })
                 .Build();

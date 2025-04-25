@@ -16,22 +16,10 @@ public partial class ProfileSection
 
     private bool isSaving;
     private bool isUploading;
-    private string? profileImageUploadUrl;
     private BitFileUpload fileUploadRef = default!;
     private readonly EditUserDto editUserDto = new();
 
-
     private string? ProfileImageUrl => User?.GetProfileImageUrl(AbsoluteServerAddress);
-
-
-    protected override async Task OnInitAsync()
-    {
-        await base.OnInitAsync();
-
-        var accessToken = await AuthTokenProvider.GetAccessToken();
-
-        profileImageUploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadUserProfilePicture?access_token={accessToken}").ToString();
-    }
 
     protected override void OnParametersSet()
     {
@@ -121,5 +109,22 @@ public partial class ProfileSection
     private void PublishUserDataUpdated()
     {
         PubSubService.Publish(ClientPubSubMessages.PROFILE_UPDATED, User);
+    }
+
+    private async Task<IReadOnlyDictionary<string, string>> GetUploadRequestHeaders()
+    {
+        var accessToken = await AuthManager.ObtainFreshAccessToken(requestedBy: nameof(BitFileUpload));
+        return new Dictionary<string, string>()
+        {
+            // { "Authorization", $"Bearer {accessToken}" } 
+            { "access_token", accessToken! }
+        };
+    }
+
+    private async Task<string> GetUploadUrl()
+    {
+        var accessToken = await AuthManager.ObtainFreshAccessToken(requestedBy: nameof(BitFileUpload));
+
+        return new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadUserProfilePicture?access_token={accessToken}").ToString();
     }
 }
