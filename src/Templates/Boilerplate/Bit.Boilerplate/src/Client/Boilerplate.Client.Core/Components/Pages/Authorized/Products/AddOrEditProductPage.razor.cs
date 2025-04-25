@@ -121,7 +121,7 @@ public partial class AddOrEditProductPage
 
     private async Task<string> GetUploadUrl()
     {
-        var accessToken = await AuthManager.ObtainFreshAccessToken(requestedBy: nameof(BitFileUpload));
+        var accessToken = await AuthManager.GetFreshAccessToken(requestedBy: nameof(BitFileUpload));
 
         return new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadProductPrimaryImage/{Id ?? product.Id}?access_token={accessToken}").ToString();
     }

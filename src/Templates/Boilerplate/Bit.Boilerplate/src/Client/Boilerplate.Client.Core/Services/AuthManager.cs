@@ -199,17 +199,15 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         return string.IsNullOrEmpty(accessToken) is false;
     }
 
-    public async Task<string?> ObtainFreshAccessToken(string requestedBy)
+    public async Task<string?> GetFreshAccessToken(string requestedBy)
     {
         var accessToken = await tokenProvider.GetAccessToken();
 
-        if (string.IsNullOrEmpty(accessToken) is false &&
-            IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated() is false)
-        {
-            return await RefreshToken(requestedBy);
-        }
+        var isValid = IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated();
 
-        return accessToken;
+        if (isValid) return accessToken;
+
+        return await RefreshToken(requestedBy);
     }
 
     private async Task ClearTokens()

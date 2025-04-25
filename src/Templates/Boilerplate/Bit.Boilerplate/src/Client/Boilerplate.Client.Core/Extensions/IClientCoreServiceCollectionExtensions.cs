@@ -162,7 +162,7 @@ public static partial class IClientCoreServiceCollectionExtensions
                     {
                         try
                         {
-                            return await authManager.ObtainFreshAccessToken(requestedBy: nameof(HubConnection));
+                            return await authManager.GetFreshAccessToken(requestedBy: nameof(HubConnection));
                         }
                         catch (ServerConnectionException)
                         {
