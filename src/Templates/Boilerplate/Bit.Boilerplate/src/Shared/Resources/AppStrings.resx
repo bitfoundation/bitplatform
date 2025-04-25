@@ -1238,7 +1238,7 @@
     <value>AI chat panel</value>
   </data>
     <data name="AiChatPanelInitialResponse" xml:space="preserve">
-    <value>This is the AI initial response to kick start the chat!</value>
+    <value>Greetings! I'm here to make your app experience awesome! Got a question or need a hand?</value>
   </data>
     <data name="AiChatPanelPrompt1" xml:space="preserve">
     <value>How can I reset my password?</value>

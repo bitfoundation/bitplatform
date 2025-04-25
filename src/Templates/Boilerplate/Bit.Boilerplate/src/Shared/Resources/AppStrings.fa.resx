@@ -1238,7 +1238,7 @@
     <value>پنل هوش مصنوعی</value>
   </data>
     <data name="AiChatPanelInitialResponse" xml:space="preserve">
-    <value>این یک پیام اولیه است برای آغاز صحبت با هوش مصنوعی!</value>
+    <value>سلام! من اینجا هستم تا تجربه اپلیکیشن شما رو فوق‌العاده کنم! سؤالی دارید یا به کمک نیاز دارید؟</value>
   </data>
     <data name="AiChatPanelPrompt1" xml:space="preserve">
     <value>چگونه میتوانم رمزعبور خود را ریست کنم؟</value>
