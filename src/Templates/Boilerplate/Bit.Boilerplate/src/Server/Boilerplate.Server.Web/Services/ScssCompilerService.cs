@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Meziantou.Framework.Win32;
 
 namespace Boilerplate.Server.Web.Services;
 
@@ -13,7 +14,7 @@ public class ScssCompilerService
             return;
 
         if (Environment.GetEnvironmentVariable("IN_APP_SCSS_COMPILER_ENABLED") is not "true")
-            return;
+            return; // Checkout Visual Studio's launchSettings.json
 
         var clientCorePath = Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Core");
 
@@ -27,32 +28,36 @@ public class ScssCompilerService
             return;
         }
 
-        var clientMauiDirPath = Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Maui");
-        var clientWindowsDirPath = Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Windows");
-        var clientWebDirPath = Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Web");
-
-        await Task.WhenAll(WatchProject(app, clientCorePath, logger, toolPath, ".:. Styles/app.scss:wwwroot/styles/app.css --style compressed --load-path=. --silence-deprecation=import --update --watch"),
-            WatchProject(app, clientMauiDirPath, logger, toolPath, ".:. --style compressed --load-path=. --silence-deprecation=import --update --watch"),
-            WatchProject(app, clientWindowsDirPath, logger, toolPath, ".:. --style compressed --load-path=. --silence-deprecation=import --update --watch"),
-            WatchProject(app, clientWebDirPath, logger, toolPath, ".:. --style compressed --load-path=. --silence-deprecation=import --update --watch"));
-    }
-
-    private static async Task WatchProject(WebApplication app, string projectDir, ILogger<ScssCompilerService> logger, string toolPath, string command)
-    {
-        if (Directory.Exists(projectDir) is false)
+        var sassPathsToWatch = new List<string>
         {
-            logger.LogWarning("{ProjectDirectory} not found", projectDir);
-            return;
-        }
+            ".:.", "Styles/app.scss:wwwroot/styles/app.css"
+        };
+
+        if (Path.Exists(Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Maui")))
+            sassPathsToWatch.Add("../../Client/Boilerplate.Client.Maui:../../Client/Boilerplate.Client.Maui");
+
+        if (Path.Exists(Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Windows")))
+            sassPathsToWatch.Add("../../Client/Boilerplate.Client.Windows:../../Client/Boilerplate.Client.Windows");
+
+        if (Path.Exists(Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Web")))
+            sassPathsToWatch.Add("../../Client/Boilerplate.Client.Web:../../Client/Boilerplate.Client.Web");
+
+        var command = $"{string.Join(" ", sassPathsToWatch)} --style compressed --load-path=. --silence-deprecation=import --update --watch";
+
+        // Create a job object to ensure the child process terminates with the parent
+        using var job = new JobObject();
+        job.SetLimits(new JobObjectLimits
+        {
+            Flags = JobObjectLimitFlags.KillOnJobClose // Terminate process when job is closed
+        });
 
         using var watchScssFilesProcess = new Process
         {
             StartInfo = new ProcessStartInfo
             {
-                WorkingDirectory = projectDir,
+                WorkingDirectory = clientCorePath,
                 FileName = toolPath,
                 Arguments = command,
-                UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 CreateNoWindow = true
@@ -62,24 +67,25 @@ public class ScssCompilerService
         watchScssFilesProcess.OutputDataReceived += (_, e) => { if (string.IsNullOrEmpty(e.Data) is false) logger.LogInformation(e.Data); };
         watchScssFilesProcess.ErrorDataReceived += (_, e) => { if (string.IsNullOrEmpty(e.Data) is false) logger.LogError(e.Data); };
 
-        logger.LogInformation("Running {toolPath} for {ProjectDirectory}", toolPath, projectDir);
+        logger.LogInformation("Running {toolPath} for {ProjectDirectory}", toolPath, clientCorePath);
         if (watchScssFilesProcess.Start() is false)
         {
-            logger.LogError("Failed to start {toolPath} for {ProjectDirectory}", toolPath, projectDir);
+            logger.LogError("Failed to start {toolPath} for {ProjectDirectory}", toolPath, clientCorePath);
             return;
+        }
+
+        // Assign the process to the job
+        try
+        {
+            job.AssignProcess(watchScssFilesProcess);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to assign process to job for {toolPath}", toolPath);
         }
 
         watchScssFilesProcess.BeginOutputReadLine();
         watchScssFilesProcess.BeginErrorReadLine();
-
-        app.Lifetime.ApplicationStopping.Register(() =>
-        {
-            if (watchScssFilesProcess.HasExited is false)
-            {
-                watchScssFilesProcess.Kill();
-                watchScssFilesProcess.WaitForExit(5000);
-            }
-        });
 
         await app.WaitForShutdownAsync();
     }

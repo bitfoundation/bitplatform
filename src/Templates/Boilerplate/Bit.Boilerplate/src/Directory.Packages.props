@@ -14,6 +14,7 @@
         <PackageVersion Include="Fido2.Models" Version="4.0.0-beta.16" />
         <PackageVersion Include="HtmlSanitizer" Version="9.0.876" />
         <PackageVersion Include="libphonenumber-csharp" Version="9.0.3" />
+        <PackageVersion Include="Meziantou.Framework.Win32.Jobs" Version="3.4.3" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.4" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.4" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="9.0.4" />

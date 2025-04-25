@@ -11,7 +11,7 @@
         <PublishReadyToRun>true</PublishReadyToRun>
         <PublishReadyToRunComposite>true</PublishReadyToRunComposite>
     </PropertyGroup>
-    
+
     <ItemGroup>
         <PackageReference Include="NWebsec.AspNetCore.Middleware" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
@@ -29,6 +29,14 @@
 
     <ItemGroup>
         <Using Include="Boilerplate.Shared.Enums" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(Environment)' == 'Development'">
+        <!-- Checkout ScssCompilerService.cs source code. -->
+        <PackageReference Include="Meziantou.Framework.Win32.Jobs" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(Environment)' != 'Development'">
+        <Compile Remove="Services\ScssCompilerService.cs" />
     </ItemGroup>
 
     <!--
