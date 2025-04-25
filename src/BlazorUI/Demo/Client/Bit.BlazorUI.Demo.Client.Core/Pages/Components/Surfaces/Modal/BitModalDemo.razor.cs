@@ -192,15 +192,81 @@ public partial class BitModalDemo
             Description = "",
             Items =
             [
-                new() { Name = "Center", Value = "0" },
-                new() { Name = "TopLeft", Value = "1" },
-                new() { Name = "TopCenter", Value = "2" },
-                new() { Name = "TopRight", Value = "3" },
-                new() { Name = "CenterLeft", Value = "4" },
-                new() { Name = "CenterRight", Value = "5" },
-                new() { Name = "BottomLeft", Value = "6" },
-                new() { Name = "BottomCenter", Value = "7" },
-                new() { Name = "BottomRight", Value = "8" }
+                new()
+                {
+                    Name = "TopLeft",
+                    Value = "0"
+                },
+                new()
+                {
+                    Name = "TopCenter",
+                    Value = "1"
+                },
+                new()
+                {
+                    Name = "TopRight",
+                    Value = "2"
+                },
+                new()
+                {
+                    Name = "TopStart",
+                    Value = "3"
+                },
+                new()
+                {
+                    Name = "TopEnd",
+                    Value = "4"
+                },
+                new()
+                {
+                    Name = "CenterLeft",
+                    Value = "5"
+                },
+                new()
+                {
+                    Name = "Center",
+                    Value = "6"
+                },
+                new()
+                {
+                    Name = "CenterRight",
+                    Value = "7"
+                },
+                new()
+                {
+                    Name = "CenterStart",
+                    Value = "8"
+                },
+                new()
+                {
+                    Name = "CenterEnd",
+                    Value = "9"
+                },
+                new()
+                {
+                    Name = "BottomLeft",
+                    Value = "10"
+                },
+                new()
+                {
+                    Name = "BottomCenter",
+                    Value = "11"
+                },
+                new()
+                {
+                    Name = "BottomRight",
+                    Value = "12"
+                },
+                new()
+                {
+                    Name = "BottomStart",
+                    Value = "13"
+                },
+                new()
+                {
+                    Name = "BottomEnd",
+                    Value = "14"
+                }
             ]
         }
     ];
@@ -577,10 +643,23 @@ private bool isOpenScrollerSelector;";
 </style>
 
 
-<BitButton OnClick=""() => OpenModalInPosition(BitPosition.TopLeft)"">Top Left</BitButton>
-<BitButton OnClick=""() => OpenModalInPosition(BitPosition.TopRight)"">Top Right</BitButton>
-<BitButton OnClick=""() => OpenModalInPosition(BitPosition.BottomLeft)"">Bottom Left</BitButton>
-<BitButton OnClick=""() => OpenModalInPosition(BitPosition.BottomRight)"">Bottom Right</BitButton>
+<BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.TopLeft)"">Top Left</BitButton>
+<BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.TopCenter)"">Top Center</BitButton>
+<BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.TopRight)"">Top Right</BitButton>
+<BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.TopStart)"">Top Start</BitButton>
+<BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.TopEnd)"">Top End</BitButton>
+
+<BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.CenterLeft)"">Center Left</BitButton>
+<BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.Center)"">Center</BitButton>
+<BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.CenterRight)"">Center Right</BitButton>
+<BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.CenterStart)"">Center Start</BitButton>
+<BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.CenterEnd)"">Center End</BitButton>
+
+<BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.BottomLeft)"">Bottom Left</BitButton>
+<BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.BottomCenter)"">Bottom Center</BitButton>
+<BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.BottomRight)"">Bottom Right</BitButton>
+<BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.BottomStart)"">Bottom Start</BitButton>
+<BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.BottomEnd)"">Bottom End</BitButton>
 
 <BitModal @bind-IsOpen=""isOpenPosition"" Position=""position"">
     <div class=""modal-header"">

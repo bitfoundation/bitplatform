@@ -226,14 +226,26 @@
                 <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitPosition.TopRight)">Top Right</BitButton>
             </div>
             <div>
+                <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitPosition.TopStart)">Top Start</BitButton>
+                <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitPosition.TopEnd)">Top End</BitButton>
+            </div>
+            <div>
                 <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitPosition.CenterLeft)">Center Left</BitButton>
                 <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitPosition.Center)">Center</BitButton>
                 <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitPosition.CenterRight)">Center Right</BitButton>
             </div>
             <div>
+                <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitPosition.CenterStart)">Center Start</BitButton>
+                <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitPosition.CenterEnd)">Center End</BitButton>
+            </div>
+            <div>
                 <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitPosition.BottomLeft)">Bottom Left</BitButton>
                 <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitPosition.BottomCenter)">Bottom Center</BitButton>
                 <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitPosition.BottomRight)">Bottom Right</BitButton>
+            </div>
+            <div>
+                <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitPosition.BottomStart)">Bottom Start</BitButton>
+                <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitPosition.BottomEnd)">Bottom End</BitButton>
             </div>
         </div>
         <BitModal @bind-IsOpen="isOpenPosition" Position="position">

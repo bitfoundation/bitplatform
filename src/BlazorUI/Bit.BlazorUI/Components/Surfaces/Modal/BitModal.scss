@@ -60,47 +60,78 @@
     }
 }
 
+
+.bit-mdl-tlf {
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.bit-mdl-tcr {
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.bit-mdl-trg {
+    align-items: flex-start;
+    justify-content: flex-end;
+}
+
+.bit-mdl-tst {
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.bit-mdl-ten {
+    align-items: flex-start;
+    justify-content: flex-end;
+}
+
+.bit-mdl-clf {
+    align-items: center;
+    justify-content: flex-start;
+}
+
 .bit-mdl-ctr {
     align-items: center;
     justify-content: center;
 }
 
-.bit-mdl-tl {
-    align-items: flex-start;
-    justify-content: flex-start;
-}
-
-.bit-mdl-tc {
-    align-items: flex-start;
-    justify-content: center;
-}
-
-.bit-mdl-tr {
-    align-items: flex-start;
-    justify-content: flex-end;
-}
-
-.bit-mdl-cl {
-    align-items: center;
-    justify-content: flex-start;
-}
-
-.bit-mdl-cr {
+.bit-mdl-crg {
     align-items: center;
     justify-content: flex-end;
 }
 
-.bit-mdl-bl {
+.bit-mdl-cst {
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.bit-mdl-cen {
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.bit-mdl-blf {
     align-items: flex-end;
     justify-content: flex-start;
 }
 
-.bit-mdl-bc {
+.bit-mdl-bcr {
     align-items: flex-end;
     justify-content: center;
 }
 
-.bit-mdl-br {
+.bit-mdl-brg {
+    align-items: flex-end;
+    justify-content: flex-end;
+}
+
+.bit-mdl-bst {
+    align-items: flex-end;
+    justify-content: flex-start;
+}
+
+.bit-mdl-ben {
     align-items: flex-end;
     justify-content: flex-end;
 }
