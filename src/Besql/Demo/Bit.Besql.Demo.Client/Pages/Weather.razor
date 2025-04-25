@@ -86,7 +86,7 @@
     {
         // This feature can alternatively be implemented as an API that dynamically fills a SQLite database.
         // Note: If the `dbContext` used to populate the SQLite database file is not instantiated by `bit Besql`,
-        // you must manually call `dbContext.Database.ConfigureSqliteSynchronous()`.
+        // you must manually call `dbContext.Database.ConfigureSqliteJournalMode()`.
         await using var prePopulatedDatabase = await HttpClient.GetStreamAsync("https://localhost:5050/Pre-Populated-Offline-Client.db");
 
         var fileName = "Offline-Client.db";
@@ -107,7 +107,7 @@
 
         // This method is automatically invoked by Besql the first time the app runs.
         // If you need to drop and recreate the database multiple times within the same app session, you must call this method manually.
-        await dbContext.Database.ConfigureSqliteSynchronous();
+        await dbContext.Database.ConfigureSqliteJournalMode();
 
         await dbContext.Database.MigrateAsync();
     }

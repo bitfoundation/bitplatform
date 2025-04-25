@@ -157,12 +157,12 @@ public partial class BitFileUpload : BitComponentBase
     /// <summary>
     /// Custom http headers for remove request.
     /// </summary>
-    [Parameter] public IReadOnlyDictionary<string, string> RemoveRequestHttpHeaders { get; set; } = new Dictionary<string, string>();
+    [Parameter] public IReadOnlyDictionary<string, string>? RemoveRequestHttpHeaders { get; set; }
 
     /// <summary>
     /// Custom query strings for remove request.
     /// </summary>
-    [Parameter] public IReadOnlyDictionary<string, string> RemoveRequestQueryStrings { get; set; } = new Dictionary<string, string>();
+    [Parameter] public IReadOnlyDictionary<string, string>? RemoveRequestQueryStrings { get; set; }
 
     /// <summary>
     /// URL of the server endpoint removing the files.
@@ -182,17 +182,27 @@ public partial class BitFileUpload : BitComponentBase
     /// <summary>
     /// Custom http headers for upload request.
     /// </summary>
-    [Parameter] public IReadOnlyDictionary<string, string> UploadRequestHttpHeaders { get; set; } = new Dictionary<string, string>();
+    [Parameter] public IReadOnlyDictionary<string, string>? UploadRequestHttpHeaders { get; set; }
 
     /// <summary>
     /// Custom query strings for upload request.
     /// </summary>
-    [Parameter] public IReadOnlyDictionary<string, string> UploadRequestQueryStrings { get; set; } = new Dictionary<string, string>();
+    [Parameter] public IReadOnlyDictionary<string, string>? UploadRequestQueryStrings { get; set; }
+
+    /// <summary>
+    /// The provider function to create the query strings for upload request.
+    /// </summary>
+    [Parameter] public Func<Task<IReadOnlyDictionary<string, string>>>? UploadRequestQueryStringsProvider { get; set; }
 
     /// <summary>
     /// URL of the server endpoint receiving the files.
     /// </summary>
     [Parameter] public string? UploadUrl { get; set; }
+
+    /// <summary>
+    /// The provider function to create the URL of the server endpoint receiving the files.
+    /// </summary>
+    [Parameter] public Func<Task<string?>>? UploadUrlProvider { get; set; }
 
     /// <summary>
     /// The custom file view template.
@@ -440,7 +450,19 @@ public partial class BitFileUpload : BitComponentBase
 
     private async Task HandleOnChange()
     {
-        var url = AddQueryString(UploadUrl, UploadRequestQueryStrings);
+        var uploadUrl = UploadUrl;
+        if (UploadUrlProvider is not null)
+        {
+            uploadUrl = await UploadUrlProvider.Invoke();
+        }
+
+        var qs = UploadRequestQueryStrings;
+        if (UploadRequestQueryStringsProvider is not null)
+        {
+            qs = await UploadRequestQueryStringsProvider.Invoke();
+        }
+
+        var url = qs is null ? uploadUrl : AddQueryString(uploadUrl, qs);
 
         if (Append is false)
         {
@@ -634,15 +656,21 @@ public partial class BitFileUpload : BitComponentBase
         try
         {
             var url = AddQueryString(RemoveUrl!, "fileName", fileInfo.Name);
-            url = AddQueryString(url, RemoveRequestQueryStrings);
+            if (RemoveRequestQueryStrings is not null)
+            {
+                url = AddQueryString(url, RemoveRequestQueryStrings);
+            }
 
             using var request = new HttpRequestMessage(HttpMethod.Delete, url);
 
             request.Headers.Add("BIT_FILE_ID", fileInfo.FileId);
 
-            foreach (var header in RemoveRequestHttpHeaders)
+            if (RemoveRequestHttpHeaders is not null)
             {
-                request.Headers.Add(header.Key, header.Value);
+                foreach (var header in RemoveRequestHttpHeaders)
+                {
+                    request.Headers.Add(header.Key, header.Value);
+                }
             }
 
             await _httpClient.SendAsync(request);

@@ -424,18 +424,11 @@ public static partial class Program
             {
                 if (appSettings.Hangfire?.UseIsolatedStorage is true)
                 {
-                    var dir = appSettings.Hangfire.IsolatedStorageDirectory;
-                    if (string.IsNullOrEmpty(dir) is false)
-                    {
-                        dir = Environment.ExpandEnvironmentVariables(dir);
-                    }
-                    else
-                    {
-                        var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
-                        dir = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
-                    }
-                    Directory.CreateDirectory(dir);
-                    optionsBuilder.UseSqlite($"Data Source={Path.Combine(dir, "BoilerplateJobsDb")};");
+                    var connectionString = "Data Source=BoilerplateJobs.db;Mode=Memory;Cache=Shared;";
+                    var connection = new Microsoft.Data.Sqlite.SqliteConnection(connectionString);
+                    connection.Open();
+                    AppContext.SetData("ReferenceTheKeepTheInMemorySQLiteDatabaseAlive", connection);
+                    optionsBuilder.UseSqlite(connectionString);
                 }
                 else
                 {

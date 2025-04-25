@@ -54,7 +54,8 @@ public class ScssCompilerService
                 Arguments = command,
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
-                RedirectStandardError = true
+                RedirectStandardError = true,
+                CreateNoWindow = true
             }
         };
 

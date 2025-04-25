@@ -52,6 +52,7 @@
                 <BitDropdown FitWidth
                              MultiSelect
                              Items="logLevelItems"
+                             Placeholder="Select a log level"
                              OnValuesChange="_ => FilterLogs()"
                              @bind-Values="filterLogLevelValues"
                              TItem="BitDropdownItem<LogLevel>" TValue="LogLevel" />
@@ -59,11 +60,13 @@
                 <BitDropdown FitWidth
                              MultiSelect
                              ShowSearchBox
+                             ShowClearButton
                              Items="allCategoryItems"
+                             Placeholder="Select a category"
                              OnValuesChange="_ => FilterLogs()"
                              @bind-Values="filterCategoryValues"
                              TItem="BitDropdownItem<string>" TValue="string">
-                    <TextTemplate>Categories</TextTemplate>
+                    <TextTemplate>Categories&nbsp;</TextTemplate>
                 </BitDropdown>
 
                 <BitButton IconOnly
