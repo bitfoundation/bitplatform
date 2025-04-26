@@ -9,9 +9,9 @@
         <NoWarn>$(NoWarn);CS1998;CS1591</NoWarn>
         <WarningsAsErrors>$(WarningsAsErrors);CS0114;CS8785</WarningsAsErrors>
         <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
-		
-		<!-- You have the flexibility to modify all of these properties using the -p parameters during the build process. -->
-		<!-- Examples: dotnet publish -c Release -p:InvariantGlobalization=true -->
+
+        <!-- You have the flexibility to modify all of these properties using the -p parameters during the build process. -->
+        <!-- Examples: dotnet publish -c Release -p:InvariantGlobalization=true -->
 
         <NeutralLanguage>en-US</NeutralLanguage>
         <InvariantGlobalization>false</InvariantGlobalization>
@@ -50,7 +50,7 @@
         <PackageReference Include="Bit.SourceGenerators" PrivateAssets="all" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     </ItemGroup>
-    
+
     <ItemGroup>
         <Using Include="System.Net.Http" />
         <Using Include="System.Text.Json" />
