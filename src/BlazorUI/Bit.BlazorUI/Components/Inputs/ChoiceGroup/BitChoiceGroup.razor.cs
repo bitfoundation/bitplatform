@@ -6,9 +6,10 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// ChoiceGroup let people select a single option from two or more choices.
 /// </summary>
-public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where TItem : class
+public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where TItem : class, new()
 {
     private List<TItem> _items = [];
+    private string _name = default!;
     private string _labelId = default!;
     private IEnumerable<TItem>? _oldItems;
 
@@ -104,6 +105,12 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     [Parameter] public RenderFragment? Options { get; set; }
 
     /// <summary>
+    /// Reverses the label and radio button location.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Reversed { get; set; }
+
+    /// <summary>
     /// The size of the BitChoiceGroup.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -119,6 +126,8 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     internal void RegisterOption(BitChoiceGroupOption<TValue> option)
     {
         _items.Add((option as TItem)!);
+
+        SetIndexItems();
 
         InitDefaultValue();
 
@@ -136,6 +145,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
     protected override async Task OnInitializedAsync()
     {
+        _name = $"BitChoiceGroup-{UniqueId}-input-name";
         _labelId = $"BitChoiceGroup-{UniqueId}-label";
 
         InitDefaultValue();
@@ -152,7 +162,9 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         if (_oldItems is not null && Items.SequenceEqual(_oldItems)) return;
 
         _oldItems = Items;
-        _items = Items.ToList();
+        _items = [.. Items];
+
+        SetIndexItems();
 
         InitDefaultValue();
     }
@@ -170,6 +182,8 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         ClassBuilder.Register(() => IsEnabled && Required ? "bit-chg-req" : string.Empty);
 
         ClassBuilder.Register(() => Horizontal ? "bit-chg-hor" : string.Empty);
+
+        ClassBuilder.Register(() => Reversed ? "bit-chg-rvs" : string.Empty);
 
         ClassBuilder.Register(() => Color switch
         {
@@ -233,34 +247,48 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         }
     }
 
-    private string? GetInputId(TItem item) => GetId(item) ?? $"ChoiceGroup-{UniqueId}-Input-{GetValue(item)}";
-
-    private bool GetIsCheckedItem(TItem item)
+    private void SetIndexItems()
     {
-        if (CurrentValue is null) return false;
+        if (_items.Any() is false) return;
 
-        return EqualityComparer<TValue>.Default.Equals(GetValue(item), CurrentValue);
+        for (var i = 0; i < _items.Count; i++)
+        {
+            var index = i;
+            var item = _items[i];
+            SetIndex(item, index);
+        }
     }
 
-    private async Task HandleClick(TItem item)
+    private string GetAriaLabelledBy() => AriaLabelledBy ?? _labelId;
+
+    internal string? GetInputId(TItem item) => GetId(item) ?? $"ChoiceGroup-{UniqueId}-Input-{GetValue(item)}";
+
+    internal async Task HandleClick(TItem item)
     {
         if (IsEnabled is false || ReadOnly || GetIsEnabled(item) is false) return;
 
         await OnClick.InvokeAsync(item);
     }
 
-    private async Task HandleChange(TItem item)
+    internal async Task HandleChange(TItem item)
     {
         if (IsEnabled is false || ReadOnly || GetIsEnabled(item) is false) return;
 
         SetIsSelectedForSelectedItem(item);
 
         CurrentValue = GetValue(item);
+
+        StateHasChanged();
     }
 
-    private string GetAriaLabelledBy() => AriaLabelledBy ?? _labelId;
+    internal bool GetIsCheckedItem(TItem item)
+    {
+        if (CurrentValue is null) return false;
 
-    private string GetItemContainerCssStyles(TItem item)
+        return EqualityComparer<TValue>.Default.Equals(GetValue(item), CurrentValue);
+    }
+
+    internal string GetItemContainerCssStyles(TItem item)
     {
         StringBuilder cssStyle = new();
 
@@ -282,7 +310,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         return cssStyle.ToString();
     }
 
-    private string GetItemContainerCssClasses(TItem item)
+    internal string GetItemContainerCssClasses(TItem item)
     {
         StringBuilder cssClass = new("bit-chg-icn");
 
@@ -319,15 +347,20 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         return cssClass.ToString();
     }
 
-    private string GetItemLabelWrapperCssClasses(TItem item)
+    internal string GetItemLabelCssClasses(TItem item)
     {
         var hasImageOrIcon = GetImageSrc(item).HasValue() || GetIconName(item).HasValue();
         return hasImageOrIcon && ItemLabelTemplate is null && Inline is false
-                ? "bit-chg-ilwi"
-                : "bit-chg-ilw";
+                ? "bit-chg-ili"
+                : string.Empty;
     }
 
-    private string? GetAriaLabel(TItem item)
+    internal string GetName()
+    {
+        return Name.HasValue() ? Name! : _name;
+    }
+
+    internal string? GetAriaLabel(TItem item)
     {
         if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
         {
@@ -347,6 +380,248 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         }
 
         return item.GetValueFromProperty<string?>(NameSelectors.AriaLabel.Name);
+    }
+
+    internal bool GetIsEnabled(TItem item)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            return choiceGroupItem.IsEnabled;
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            return choiceGroupOption.IsEnabled;
+        }
+
+        if (NameSelectors is null) return true;
+
+        if (NameSelectors.IsEnabled.Selector is not null)
+        {
+            return NameSelectors.IsEnabled.Selector!(item);
+        }
+
+        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
+    }
+
+    internal string? GetIconName(TItem item)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            return choiceGroupItem.IconName;
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            return choiceGroupOption.IconName;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.IconName.Selector is not null)
+        {
+            return NameSelectors.IconName.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
+    }
+
+    internal string? GetImageSrc(TItem item)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            return choiceGroupItem.ImageSrc;
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            return choiceGroupOption.ImageSrc;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.ImageSrc.Selector is not null)
+        {
+            return NameSelectors.ImageSrc.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.ImageSrc.Name);
+    }
+
+    internal string? GetImageAlt(TItem item)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            return choiceGroupItem.ImageAlt;
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            return choiceGroupOption.ImageAlt;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.ImageAlt.Selector is not null)
+        {
+            return NameSelectors.ImageAlt.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.ImageAlt.Name);
+    }
+
+    internal BitImageSize GetImageSize(TItem item)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            return choiceGroupItem.ImageSize ?? new BitImageSize(0, 0);
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            return choiceGroupOption.ImageSize ?? new BitImageSize(0, 0);
+        }
+
+        if (NameSelectors is null) return new BitImageSize(0, 0);
+
+        if (NameSelectors.ImageSize.Selector is not null)
+        {
+            return NameSelectors.ImageSize.Selector!(item) ?? new BitImageSize(0, 0);
+        }
+
+        return item.GetValueFromProperty<BitImageSize?>(NameSelectors.ImageSize.Name) ?? new BitImageSize(0, 0);
+    }
+
+    internal string? GetPrefix(TItem item)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            return choiceGroupItem.Prefix;
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            return choiceGroupOption.Prefix;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Prefix.Selector is not null)
+        {
+            return NameSelectors.Prefix.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Prefix.Name);
+    }
+
+    internal string? GetSelectedImageSrc(TItem item)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            return choiceGroupItem.SelectedImageSrc;
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            return choiceGroupOption.SelectedImageSrc;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.SelectedImageSrc.Selector is not null)
+        {
+            return NameSelectors.SelectedImageSrc.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.SelectedImageSrc.Name);
+    }
+
+    internal RenderFragment<TItem>? GetTemplate(TItem item)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            return choiceGroupItem.Template as RenderFragment<TItem>;
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            return choiceGroupOption.Template as RenderFragment<TItem>;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Template.Selector is not null)
+        {
+            return NameSelectors.Template.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<RenderFragment<TItem>?>(NameSelectors.Template.Name);
+    }
+
+    internal string? GetText(TItem item)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            return choiceGroupItem.Text;
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            return choiceGroupOption.Text;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Text.Selector is not null)
+        {
+            return NameSelectors.Text.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
+    }
+
+    internal TValue? GetValue(TItem item)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            return choiceGroupItem.Value;
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            return choiceGroupOption.Value;
+        }
+
+        if (NameSelectors is null) return default;
+
+        if (NameSelectors.Value.Selector is not null)
+        {
+            return NameSelectors.Value.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<TValue?>(NameSelectors.Value.Name);
+    }
+
+    private string? GetStyle(TItem item)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            return choiceGroupItem.Style;
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            return choiceGroupOption.Style;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Style.Selector is not null)
+        {
+            return NameSelectors.Style.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Style.Name);
     }
 
     private string? GetClass(TItem item)
@@ -391,248 +666,6 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         }
 
         return item.GetValueFromProperty<string?>(NameSelectors.Id.Name);
-    }
-
-    private bool GetIsEnabled(TItem item)
-    {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
-        {
-            return choiceGroupItem.IsEnabled;
-        }
-
-        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
-        {
-            return choiceGroupOption.IsEnabled;
-        }
-
-        if (NameSelectors is null) return true;
-
-        if (NameSelectors.IsEnabled.Selector is not null)
-        {
-            return NameSelectors.IsEnabled.Selector!(item);
-        }
-
-        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
-    }
-
-    private string? GetIconName(TItem item)
-    {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
-        {
-            return choiceGroupItem.IconName;
-        }
-
-        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
-        {
-            return choiceGroupOption.IconName;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.IconName.Selector is not null)
-        {
-            return NameSelectors.IconName.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
-    }
-
-    private string? GetImageSrc(TItem item)
-    {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
-        {
-            return choiceGroupItem.ImageSrc;
-        }
-
-        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
-        {
-            return choiceGroupOption.ImageSrc;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.ImageSrc.Selector is not null)
-        {
-            return NameSelectors.ImageSrc.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<string?>(NameSelectors.ImageSrc.Name);
-    }
-
-    private string? GetImageAlt(TItem item)
-    {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
-        {
-            return choiceGroupItem.ImageAlt;
-        }
-
-        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
-        {
-            return choiceGroupOption.ImageAlt;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.ImageAlt.Selector is not null)
-        {
-            return NameSelectors.ImageAlt.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<string?>(NameSelectors.ImageAlt.Name);
-    }
-
-    private BitImageSize GetImageSize(TItem item)
-    {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
-        {
-            return choiceGroupItem.ImageSize ?? new BitImageSize(0, 0);
-        }
-
-        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
-        {
-            return choiceGroupOption.ImageSize ?? new BitImageSize(0, 0);
-        }
-
-        if (NameSelectors is null) return new BitImageSize(0, 0);
-
-        if (NameSelectors.ImageSize.Selector is not null)
-        {
-            return NameSelectors.ImageSize.Selector!(item) ?? new BitImageSize(0, 0);
-        }
-
-        return item.GetValueFromProperty<BitImageSize?>(NameSelectors.ImageSize.Name) ?? new BitImageSize(0, 0);
-    }
-
-    private string? GetPrefix(TItem item)
-    {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
-        {
-            return choiceGroupItem.Prefix;
-        }
-
-        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
-        {
-            return choiceGroupOption.Prefix;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.Prefix.Selector is not null)
-        {
-            return NameSelectors.Prefix.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<string?>(NameSelectors.Prefix.Name);
-    }
-
-    private string? GetSelectedImageSrc(TItem item)
-    {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
-        {
-            return choiceGroupItem.SelectedImageSrc;
-        }
-
-        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
-        {
-            return choiceGroupOption.SelectedImageSrc;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.SelectedImageSrc.Selector is not null)
-        {
-            return NameSelectors.SelectedImageSrc.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<string?>(NameSelectors.SelectedImageSrc.Name);
-    }
-
-    private string? GetStyle(TItem item)
-    {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
-        {
-            return choiceGroupItem.Style;
-        }
-
-        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
-        {
-            return choiceGroupOption.Style;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.Style.Selector is not null)
-        {
-            return NameSelectors.Style.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<string?>(NameSelectors.Style.Name);
-    }
-
-    private RenderFragment<TItem>? GetTemplate(TItem item)
-    {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
-        {
-            return choiceGroupItem.Template as RenderFragment<TItem>;
-        }
-
-        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
-        {
-            return choiceGroupOption.Template as RenderFragment<TItem>;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.Template.Selector is not null)
-        {
-            return NameSelectors.Template.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<RenderFragment<TItem>?>(NameSelectors.Template.Name);
-    }
-
-    private string? GetText(TItem item)
-    {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
-        {
-            return choiceGroupItem.Text;
-        }
-
-        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
-        {
-            return choiceGroupOption.Text;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.Text.Selector is not null)
-        {
-            return NameSelectors.Text.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
-    }
-
-    private TValue? GetValue(TItem item)
-    {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
-        {
-            return choiceGroupItem.Value;
-        }
-
-        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
-        {
-            return choiceGroupOption.Value;
-        }
-
-        if (NameSelectors is null) return default;
-
-        if (NameSelectors.Value.Selector is not null)
-        {
-            return NameSelectors.Value.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<TValue?>(NameSelectors.Value.Name);
     }
 
     private void SetIndex(TItem item, int value)

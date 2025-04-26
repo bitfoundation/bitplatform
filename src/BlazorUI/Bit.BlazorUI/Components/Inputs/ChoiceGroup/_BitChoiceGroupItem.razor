@@ -1,0 +1,96 @@
+﻿@namespace Bit.BlazorUI
+@typeparam TItem
+@typeparam TValue
+
+@{
+    var prefix = ChoiceGroup.GetPrefix(Item);
+    var inputId = ChoiceGroup.GetInputId(Item);
+    var template = ChoiceGroup.GetTemplate(Item);
+    var isChecked = ChoiceGroup.GetIsCheckedItem(Item);
+}
+
+<div style="@ChoiceGroup.GetItemContainerCssStyles(Item)" class="@ChoiceGroup.GetItemContainerCssClasses(Item)">
+    <label for="@inputId" style="@ChoiceGroup.Styles?.ItemLabel" class="bit-chg-itl @ChoiceGroup.GetItemLabelCssClasses(Item) @ChoiceGroup.Classes?.ItemLabel">
+        @if (template is not null)
+        {
+            @template(Item)
+        }
+        else if (ChoiceGroup.ItemTemplate is not null)
+        {
+            @ChoiceGroup.ItemTemplate(Item)
+        }
+        else
+        {
+            @if (prefix is not null)
+            {
+                <span style="@ChoiceGroup.Styles?.ItemPrefix" class="@ChoiceGroup.Classes?.ItemPrefix">@prefix</span>
+            }
+            else if (ChoiceGroup.ItemPrefixTemplate is not null)
+            {
+                @ChoiceGroup.ItemPrefixTemplate(Item)
+            }
+
+            @if (ChoiceGroup.NoCircle is false)
+            {
+                <div style="@ChoiceGroup.Styles?.ItemRadioButton" class="bit-chg-rad @ChoiceGroup.Classes?.ItemRadioButton"></div>
+            }
+
+            @if (ChoiceGroup.ItemLabelTemplate is not null)
+            {
+                @ChoiceGroup.ItemLabelTemplate(Item)
+            }
+            else
+            {
+                var imageSrc = ChoiceGroup.GetImageSrc(Item);
+                @if (imageSrc.HasValue())
+                {
+                    var imageSize = ChoiceGroup.GetImageSize(Item);
+
+                    <div style="@ChoiceGroup.Styles?.ItemImageContainer" class="bit-chg-iic @ChoiceGroup.Classes?.ItemImageContainer">
+                        <div style="@(FormattableString.Invariant($"width:{imageSize.Width}px; height:{imageSize.Height}px;")) @ChoiceGroup.Styles?.ItemImageWrapper"
+                             class="bit-chg-iiw @ChoiceGroup.Classes?.ItemImageWrapper">
+                            <img src="@(isChecked? ChoiceGroup.GetSelectedImageSrc(Item) : imageSrc)"
+                                 alt="@ChoiceGroup.GetImageAlt(Item)"
+                                 style="@ChoiceGroup.Styles?.ItemImage"
+                                 class="@ChoiceGroup.Classes?.ItemImage">
+                        </div>
+                    </div>
+                }
+
+                var iconName = ChoiceGroup.GetIconName(Item);
+                @if (iconName.HasValue())
+                {
+                    <div style="@ChoiceGroup.Styles?.ItemIconWrapper" class="bit-chg-icw @ChoiceGroup.Classes?.ItemIconWrapper">
+                        <i aria-hidden="true"
+                           style="@ChoiceGroup.Styles?.ItemIcon"
+                           class="bit-icon bit-icon--@iconName @ChoiceGroup.Classes?.ItemIcon" />
+                    </div>
+                }
+
+                @if (imageSrc.HasValue() || iconName.HasValue())
+                {
+                    <div style="@ChoiceGroup.Styles?.ItemTextWrapper" class="bit-chg-itw @ChoiceGroup.Classes?.ItemTextWrapper">
+                        <span style="@ChoiceGroup.Styles?.ItemText" class="bit-chg-itx @ChoiceGroup.Classes?.ItemText">@ChoiceGroup.GetText(Item)</span>
+                    </div>
+                }
+                else
+                {
+                    <span style="@ChoiceGroup.Styles?.ItemText" class="bit-chg-itx @ChoiceGroup.Classes?.ItemText">@ChoiceGroup.GetText(Item)</span>
+                }
+            }
+        }
+    </label>
+
+    <input @attributes="ChoiceGroup.InputHtmlAttributes"
+           @onclick="e => ChoiceGroup.HandleClick(Item)"
+           @onchange="e => ChoiceGroup.HandleChange(Item)"
+           hidden
+           type="radio"
+           name="@ChoiceGroup.GetName()"
+           id="@inputId"
+           checked=@isChecked
+           required="@ChoiceGroup.Required"
+           aria-label="@ChoiceGroup.GetAriaLabel(Item)"
+           value="@ChoiceGroup.GetValue(Item)?.ToString()"
+           disabled="@(ChoiceGroup.GetIsEnabled(Item) is false)" />
+</div>
