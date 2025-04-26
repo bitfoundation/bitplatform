@@ -31,6 +31,7 @@
         <DefineConstants Condition=" '$(InvariantGlobalization)' == 'true' ">$(DefineConstants);InvariantGlobalization</DefineConstants>
         <DefineConstants>$(DefineConstants);$(Environment);$(Configuration)</DefineConstants>
         <DefineConstants Condition="$(Configuration.Contains('Debug'))">$(DefineConstants);DEBUG</DefineConstants>
+        <CompressionEnabled Condition="'$(Environment)' == 'Development'">false</CompressionEnabled>
     </PropertyGroup>
     <!--/+:msbuild-conditional:noEmit -->
 
