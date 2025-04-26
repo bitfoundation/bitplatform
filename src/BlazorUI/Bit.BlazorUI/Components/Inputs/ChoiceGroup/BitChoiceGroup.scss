@@ -140,7 +140,7 @@
     flex-direction: var(--bit-chg-flex-direction);
 }
 
-.bit-chg-ilwi {
+.bit-chg-ili {
     margin: 0;
     display: flex;
     cursor: pointer;
@@ -251,7 +251,7 @@
 }
 
 .bit-chg-ich {
-    .bit-chg-ilwi {
+    .bit-chg-ili {
         .bit-chg-rad {
             &::before {
                 opacity: 1;
@@ -285,7 +285,7 @@
         }
     }
 
-    .bit-chg-ilwi {
+    .bit-chg-ili {
         border-color: var(--bit-chg-clr);
 
         @media (hover: hover) {
@@ -315,7 +315,7 @@
         }
     }
 
-    .bit-chg-ilwi {
+    .bit-chg-ili {
         cursor: default;
         border-color: transparent;
         color: $clr-fg-dis;

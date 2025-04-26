@@ -145,7 +145,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
     protected override async Task OnInitializedAsync()
     {
-        _name = $"BitChoiceGroup-{UniqueId}-name";
+        _name = $"BitChoiceGroup-{UniqueId}-input-name";
         _labelId = $"BitChoiceGroup-{UniqueId}-label";
 
         InitDefaultValue();
@@ -351,7 +351,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     {
         var hasImageOrIcon = GetImageSrc(item).HasValue() || GetIconName(item).HasValue();
         return hasImageOrIcon && ItemLabelTemplate is null && Inline is false
-                ? "bit-chg-ilwi"
+                ? "bit-chg-ili"
                 : string.Empty;
     }
 
