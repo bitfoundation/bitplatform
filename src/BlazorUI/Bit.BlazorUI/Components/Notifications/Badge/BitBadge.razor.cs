@@ -116,15 +116,21 @@ public partial class BitBadge : BitComponentBase
 
         ClassBuilder.Register(() => Position switch
         {
-            BitPosition.TopRight => "bit-bdg-trg",
-            BitPosition.TopCenter => "bit-bdg-tcr",
             BitPosition.TopLeft => "bit-bdg-tlf",
+            BitPosition.TopCenter => "bit-bdg-tcr",
+            BitPosition.TopRight => "bit-bdg-trg",
+            BitPosition.TopStart => "bit-bdg-tst",
+            BitPosition.TopEnd => "bit-bdg-ten",
             BitPosition.CenterLeft => "bit-bdg-clf",
+            BitPosition.Center => "bit-bdg-ctr",
+            BitPosition.CenterRight => "bit-bdg-crg",
+            BitPosition.CenterStart => "bit-bdg-cst",
+            BitPosition.CenterEnd => "bit-bdg-cen",
             BitPosition.BottomLeft => "bit-bdg-blf",
             BitPosition.BottomCenter => "bit-bdg-bcr",
             BitPosition.BottomRight => "bit-bdg-brg",
-            BitPosition.CenterRight => "bit-bdg-crg",
-            BitPosition.Center => "bit-bdg-ctr",
+            BitPosition.BottomStart => "bit-bdg-bst",
+            BitPosition.BottomEnd => "bit-bdg-ben",
             _ => "bit-bdg-trg"
         });
 

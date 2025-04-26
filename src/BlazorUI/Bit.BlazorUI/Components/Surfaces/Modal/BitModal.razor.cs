@@ -141,15 +141,21 @@ public partial class BitModal : BitComponentBase
 
         ClassBuilder.Register(() => ModalParameters.Position switch
         {
+            BitPosition.TopLeft => "bit-mdl-tlf",
+            BitPosition.TopCenter => "bit-mdl-tcr",
+            BitPosition.TopRight => "bit-mdl-trg",
+            BitPosition.TopStart => "bit-mdl-tst",
+            BitPosition.TopEnd => "bit-mdl-ten",
+            BitPosition.CenterLeft => "bit-mdl-clf",
             BitPosition.Center => "bit-mdl-ctr",
-            BitPosition.TopLeft => "bit-mdl-tl",
-            BitPosition.TopCenter => "bit-mdl-tc",
-            BitPosition.TopRight => "bit-mdl-tr",
-            BitPosition.CenterLeft => "bit-mdl-cl",
-            BitPosition.CenterRight => "bit-mdl-cr",
-            BitPosition.BottomLeft => "bit-mdl-bl",
-            BitPosition.BottomCenter => "bit-mdl-bc",
-            BitPosition.BottomRight => "bit-mdl-br",
+            BitPosition.CenterRight => "bit-mdl-crg",
+            BitPosition.CenterStart => "bit-mdl-cst",
+            BitPosition.CenterEnd => "bit-mdl-cen",
+            BitPosition.BottomLeft => "bit-mdl-blf",
+            BitPosition.BottomCenter => "bit-mdl-bcr",
+            BitPosition.BottomRight => "bit-mdl-brg",
+            BitPosition.BottomStart => "bit-mdl-bst",
+            BitPosition.BottomEnd => "bit-mdl-ben",
             _ => "bit-mdl-ctr"
         });
     }
