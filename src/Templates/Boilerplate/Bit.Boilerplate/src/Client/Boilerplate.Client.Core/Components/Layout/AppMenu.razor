@@ -116,7 +116,7 @@
                         <BitChoiceGroup Items="cultures" NoCircle Style="width:100%"
                                         DefaultValue="@CultureInfo.CurrentUICulture.Name"
                                         OnChange="async (string? c) => await OnCultureChanged(c)"
-                                        Styles="@(new() { ItemLabel = "flex-grow:1", ItemLabelWrapper = "width:100%" })">
+                                        Styles="@(new() { ItemLabel = "flex-grow:1" })">
                             <ItemTemplate Context="item">
                                 <BitStack Horizontal VerticalAlign="BitAlignment.Center" Style="cursor:pointer">
                                     <BitFlag Iso2="@CultureInfoManager.FindRegionIso2(item.Value)" />
