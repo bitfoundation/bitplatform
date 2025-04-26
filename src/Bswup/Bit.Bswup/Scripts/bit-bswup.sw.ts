@@ -1,4 +1,4 @@
-﻿self['bit-bswup.sw version'] = '9.7.1';
+﻿self['bit-bswup.sw version'] = '9.7.2';
 
 interface Window {
     clients: any
