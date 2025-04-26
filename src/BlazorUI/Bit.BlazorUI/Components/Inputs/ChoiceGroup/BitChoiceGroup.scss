@@ -9,7 +9,9 @@
     flex-direction: column;
     font-family: $tg-font-family;
     font-size: var(--bit-chg-fontsize);
+    --bit-chg-flex-direction: row;
     --bit-chg-flex-flow: column nowrap;
+    --bit-chg-justify-content: flex-start;
 
     &.bit-chg-req {
         .bit-chg-lbl {
@@ -22,7 +24,7 @@
     }
 
     &.bit-inv {
-        .bit-chg-ilw {
+        .bit-chg-rad {
             color: $clr-err;
             border-color: $clr-err;
 
@@ -33,53 +35,6 @@
             &:after {
                 border-color: $clr-err;
                 background-color: $clr-err;
-            }
-
-            @media (hover: hover) {
-                &:hover {
-                    .bit-chg-itx {
-                        color: $clr-err;
-                    }
-
-                    &:before {
-                        border-color: $clr-err;
-                    }
-
-                    &:after {
-                        border-color: $clr-err;
-                        background-color: $clr-err;
-                    }
-                }
-            }
-        }
-
-        .bit-chg-ilwi {
-            color: $clr-err;
-            border-color: $clr-err;
-
-            &:before {
-                border-color: $clr-err;
-            }
-
-            &:after {
-                border-color: $clr-err;
-                background-color: $clr-err;
-            }
-
-            @media (hover: hover) {
-                &:hover {
-                    border-color: $clr-err;
-
-                    &:before {
-                        opacity: 1;
-                        border-color: $clr-err;
-                    }
-
-                    &:after {
-                        border-color: $clr-err;
-                        background-color: $clr-err;
-                    }
-                }
             }
         }
     }
@@ -103,6 +58,11 @@
     --bit-chg-flex-flow: row wrap;
 }
 
+.bit-chg-rvs {
+    --bit-chg-justify-content: flex-end;
+    --bit-chg-flex-direction: row-reverse;
+}
+
 .bit-chg-icn {
     border: none;
     display: flex;
@@ -110,6 +70,7 @@
     position: relative;
     align-items: center;
     box-sizing: border-box;
+    justify-content: var(--bit-chg-justify-content);
     min-height: calc(var(--bit-chg-circle-size) + spacing(0.75));
 }
 
@@ -122,17 +83,64 @@
     background-color: var(--bit-chg-clr-bg);
 }
 
-.bit-chg-ilw {
-    cursor: pointer;
-    user-select: none;
+.bit-chg-rad {
+    aspect-ratio: 1;
     position: relative;
-    vertical-align: top;
-    margin-block-start: 0;
-    display: inline-block;
-    min-height: spacing(2.5);
+    width: var(--bit-chg-circle-size);
+
+    &::before {
+        top: 50%;
+        content: "";
+        aspect-ratio: 1;
+        position: absolute;
+        border-radius: 50%;
+        display: inline-block;
+        inset-inline-start: 0;
+        box-sizing: border-box;
+        transform: translateY(-50%);
+        width: var(--bit-chg-circle-size);
+        transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
+        border: $shp-border-width $shp-border-style $clr-brd-pri;
+    }
+
+    &::after {
+        top: 50%;
+        opacity: 0;
+        content: "";
+        aspect-ratio: 1;
+        position: absolute;
+        border-radius: 50%;
+        box-sizing: border-box;
+        transform: translateY(-50%);
+        background-color: $clr-fg-sec-hover;
+        transition-property: background-color;
+        width: calc(var(--bit-chg-circle-size) / 2);
+        transition: border-width 0.2s cubic-bezier(0.4, 0, 0.23, 1);
+        inset-inline-start: calc(var(--bit-chg-circle-size) / 4);
+    }
+
+    @media (hover: hover) {
+        &:hover {
+            &::before {
+                border-color: $clr-brd-pri-hover;
+            }
+
+            &::after {
+                opacity: 1;
+            }
+        }
+    }
 }
 
-.bit-chg-ilwi {
+.bit-chg-itl {
+    display: flex;
+    cursor: pointer;
+    gap: spacing(0.75);
+    align-items: center;
+    flex-direction: var(--bit-chg-flex-direction);
+}
+
+.bit-chg-ili {
     margin: 0;
     display: flex;
     cursor: pointer;
@@ -149,130 +157,30 @@
     padding-block-start: spacing(2.75);
     border: $shp-border-width $shp-border-style transparent;
 
+    .bit-chg-rad {
+        position: absolute;
+        top: calc(var(--bit-chg-circle-size) / 4);
+        right: calc(var(--bit-chg-circle-size) / 4);
+
+        &::before {
+            opacity: 0;
+        }
+    }
+
     @media (hover: hover) {
         &:hover {
             border-color: $clr-brd-pri-hover;
+
+            .bit-chg-rad {
+                &::before {
+                    opacity: 1;
+                }
+            }
         }
     }
 }
 
 .bit-chg-ncr {
-}
-
-.bit-chg-wcr {
-    .bit-chg-ilw {
-        padding-inline-start: calc(var(--bit-chg-circle-size) + spacing(0.75));
-
-        &:before {
-            top: 50%;
-            content: "";
-            aspect-ratio: 1;
-            position: absolute;
-            border-radius: 50%;
-            display: inline-block;
-            inset-inline-start: 0;
-            box-sizing: border-box;
-            transform: translateY(-50%);
-            width: var(--bit-chg-circle-size);
-            transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
-            border: $shp-border-width $shp-border-style $clr-brd-pri;
-        }
-
-        &:after {
-            top: 50%;
-            opacity: 0;
-            content: "";
-            aspect-ratio: 1;
-            position: absolute;
-            border-radius: 50%;
-            box-sizing: border-box;
-            transform: translateY(-50%);
-            background-color: $clr-fg-sec-hover;
-            transition-property: background-color;
-            width: calc(var(--bit-chg-circle-size) / 2);
-            transition: border-width 0.2s cubic-bezier(0.4, 0, 0.23, 1);
-            inset-inline-start: calc(var(--bit-chg-circle-size) / 4);
-        }
-
-        @media (hover: hover) {
-            &:hover {
-                &:before {
-                    border-color: $clr-brd-pri-hover;
-                }
-
-                &:after {
-                    opacity: 1;
-                }
-            }
-        }
-    }
-
-    .bit-chg-ilwi {
-        &:before {
-            opacity: 0;
-            content: "";
-            aspect-ratio: 1;
-            position: absolute;
-            border-radius: 50%;
-            display: inline-block;
-            box-sizing: border-box;
-            inset-inline-start: auto;
-            inset-inline-end: spacing(0.375);
-            inset-block-start: spacing(0.375);
-            height: var(--bit-chg-circle-size);
-            transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
-            border: $shp-border-width $shp-border-style $clr-brd-pri;
-        }
-
-        &:after {
-            width: 0;
-            height: 0;
-            content: "";
-            position: absolute;
-            border-radius: 50%;
-            inset-inline-end: 0;
-            box-sizing: border-box;
-            inset-inline-start: spacing(1.25);
-            transition: border-width 0.2s cubic-bezier(0.4, 0, 0.23, 1);
-        }
-
-        @media (hover: hover) {
-            &:hover {
-                &:before {
-                    opacity: 1;
-                    border-color: $clr-brd-pri-hover;
-                }
-            }
-        }
-    }
-}
-
-.bit-chg-inl {
-    .bit-chg-ihi {
-        background-color: unset;
-
-        .bit-chg-ilw {
-            display: flex;
-            gap: spacing(1);
-            align-items: center;
-            justify-content: center;
-
-            .bit-chg-iic,
-            .bit-chg-icc {
-                height: unset;
-                padding: unset;
-
-                .bit-chg-icw {
-                    font-size: calc(var(--bit-chg-fontsize) + spacing(0.25));
-                }
-            }
-
-            .bit-chg-itw {
-                margin: unset;
-                height: unset;
-            }
-        }
-    }
 }
 
 .bit-chg-itx {
@@ -290,7 +198,6 @@
     line-height: spacing(1.875);
     font-family: $tg-font-family;
     font-size: var(--bit-chg-fontsize);
-    margin: spacing(0.5) spacing(1) spacing(0.25);
 
     .bit-chg-itx {
         padding-inline-start: 0;
@@ -298,17 +205,10 @@
 }
 
 .bit-chg-iic {
-    height: spacing(4);
-    position: relative;
-    display: inline-block;
     padding: 0 spacing(3.75);
-}
-
-.bit-chg-iiw {
     transition: opacity 0.2s ease;
-    padding-block-end: spacing(0.25);
 
-    .bit-chg-iim {
+    .bit-chg-iiw {
         border-style: none;
         display: inline-block;
 
@@ -321,13 +221,8 @@
     }
 }
 
-.bit-chg-icc {
-    position: relative;
-    display: inline-block;
-    padding: 0 spacing(3.75);
-}
-
 .bit-chg-icw {
+    padding: 0 spacing(3.75);
     height: var(--bit-chg-ico-size);
     font-size: var(--bit-chg-ico-size);
     line-height: var(--bit-chg-ico-size);
@@ -338,26 +233,51 @@
     }
 }
 
+.bit-chg-inl {
+    .bit-chg-ihi {
+        background-color: unset;
+    }
+
+    .bit-chg-itw {
+        display: flex;
+        align-items: center;
+    }
+
+    .bit-chg-iic,
+    .bit-chg-icw {
+        padding: 0;
+        font-size: calc(var(--bit-chg-fontsize) + spacing(0.25));
+    }
+}
+
 .bit-chg-ich {
-    .bit-chg-ilw {
+    .bit-chg-ili {
+        .bit-chg-rad {
+            &::before {
+                opacity: 1;
+            }
+        }
+    }
+
+    .bit-chg-rad {
         border-color: var(--bit-chg-clr);
 
-        &:before {
+        &::before {
             border-color: var(--bit-chg-clr);
         }
 
-        &:after {
+        &::after {
             opacity: 1;
             background-color: var(--bit-chg-clr);
         }
 
         @media (hover: hover) {
             &:hover {
-                &:before {
+                &::before {
                     border-color: var(--bit-chg-clr-hover);
                 }
 
-                &:after {
+                &::after {
                     border-color: var(--bit-chg-clr-hover);
                     background-color: var(--bit-chg-clr-hover);
                 }
@@ -365,36 +285,12 @@
         }
     }
 
-    .bit-chg-ilwi {
+    .bit-chg-ili {
         border-color: var(--bit-chg-clr);
-
-        &:before {
-            opacity: 1;
-            border-color: var(--bit-chg-clr);
-        }
-
-        &:after {
-            inset-inline-start: auto;
-            background-color: var(--bit-chg-clr);
-            width: calc(var(--bit-chg-circle-size) / 2);
-            height: calc(var(--bit-chg-circle-size) / 2);
-            inset-inline-end: var(--bit-chg-dot-position);
-            inset-block-start: var(--bit-chg-dot-position);
-        }
 
         @media (hover: hover) {
             &:hover {
                 border-color: var(--bit-chg-clr-hover);
-
-                &:before {
-                    opacity: 1;
-                    border-color: var(--bit-chg-clr-hover);
-                }
-
-                &:after {
-                    border-color: var(--bit-chg-clr-hover);
-                    background-color: var(--bit-chg-clr-hover);
-                }
             }
         }
     }
@@ -405,53 +301,28 @@
 }
 
 .bit-chg-ids {
-    .bit-chg-ilw {
+    .bit-chg-rad {
         cursor: default;
         pointer-events: none;
         color: $clr-fg-dis;
 
-        &:before {
+        &::before {
             border-color: $clr-brd-dis;
         }
 
-        &:after {
+        &::after {
             background-color: $clr-bg-dis;
-        }
-
-        .bit-chg-itx {
-            color: $clr-fg-dis;
-        }
-
-        @media (hover: hover) {
-            &:hover {
-                .bit-chg-itx {
-                    color: $clr-brd-dis;
-                }
-
-                &:before, &:after {
-                    border-color: $clr-brd-dis;
-                }
-            }
         }
     }
 
-    .bit-chg-ilwi {
+    .bit-chg-ili {
         cursor: default;
         border-color: transparent;
         color: $clr-fg-dis;
 
-        &:before {
-            border-color: $clr-brd-dis;
-        }
-
         @media (hover: hover) {
             &:hover {
                 border-color: transparent;
-
-                &:before, &:after {
-                    opacity: 0;
-                    border-color: $clr-brd-dis;
-                }
             }
         }
     }
@@ -461,23 +332,6 @@
 
         i {
             color: $clr-fg-dis;
-        }
-    }
-
-    &.bit-chg-ich {
-        .bit-chg-ilwi {
-            &:after {
-                background-color: $clr-bg-dis;
-                border: spacing(0.625) $shp-border-style $clr-brd-dis;
-            }
-
-            @media (hover: hover) {
-                &:hover {
-                    &:before {
-                        opacity: 1;
-                    }
-                }
-            }
         }
     }
 }
@@ -602,6 +456,7 @@
 }
 
 .bit-chg-sm {
+    --bit-chg-item-gap: #{spacing(1)};
     --bit-chg-ico-size: #{spacing(3)};
     --bit-chg-fontsize: #{spacing(1.5)};
     --bit-chg-circle-size: #{spacing(1.75)};
@@ -609,6 +464,7 @@
 }
 
 .bit-chg-md {
+    --bit-chg-item-gap: #{spacing(1)};
     --bit-chg-ico-size: #{spacing(4)};
     --bit-chg-fontsize: #{spacing(1.75)};
     --bit-chg-circle-size: #{spacing(2.5)};
@@ -616,6 +472,7 @@
 }
 
 .bit-chg-lg {
+    --bit-chg-item-gap: #{spacing(2)};
     --bit-chg-ico-size: #{spacing(5)};
     --bit-chg-fontsize: #{spacing(2)};
     --bit-chg-circle-size: #{spacing(3.25)};

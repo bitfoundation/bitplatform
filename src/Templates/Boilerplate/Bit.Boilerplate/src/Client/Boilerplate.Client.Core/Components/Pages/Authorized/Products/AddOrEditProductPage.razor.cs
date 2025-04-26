@@ -15,7 +15,6 @@ public partial class AddOrEditProductPage
     private bool isManagingFile;
     private bool isLoading = true;
     private ProductDto product = new() { Id = Guid.NewGuid() };
-    private string? productImageUploadUrl;
     private BitFileUpload fileUploadRef = default!;
     private string selectedCategoryId = string.Empty;
     private BitRichTextEditor richTextEditorRef = default!;
@@ -38,9 +37,6 @@ public partial class AddOrEditProductPage
                                                                Text = c.Name ?? string.Empty,
                                                                Value = c.Id.ToString()
                                                            })];
-
-            var accessToken = await AuthTokenProvider.GetAccessToken();
-            productImageUploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadProductPrimaryImage/{Id ?? product.Id}?access_token={accessToken}").ToString();
 
             if (Id is null) return;
 
@@ -121,5 +117,12 @@ public partial class AddOrEditProductPage
         {
             isManagingFile = false;
         }
+    }
+
+    private async Task<string> GetUploadUrl()
+    {
+        var accessToken = await AuthManager.GetFreshAccessToken(requestedBy: nameof(BitFileUpload));
+
+        return new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadProductPrimaryImage/{Id ?? product.Id}?access_token={accessToken}").ToString();
     }
 }

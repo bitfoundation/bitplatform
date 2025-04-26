@@ -4,8 +4,8 @@
     <BitModal @bind-IsOpen="isOpen"
               FullSize
               Class="modal"
-              Styles="@(new() { Content = "overflow:auto" })"
-              OnDismiss="() => HandleOnSearchChange(null)">
+              OnDismiss="() => searchText = null"
+              Styles="@(new() { Content = "overflow:auto" })">
         <BitStack FillContent Class="container">
             <BitStack Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
                 <BitText Typography="BitTypography.H3">Diagnostic</BitText>
@@ -34,64 +34,92 @@
             </BitAccordion>
 
             <BitStack Horizontal FitHeight Wrap>
-                <BitSearchBox Immediate DebounceTime="500" OnChange="HandleOnSearchChange" />
+                <BitStack Horizontal Gap="4px" FitWidth AutoHeight>
+                    <BitSearchBox FixedIcon
+                                  Immediate 
+                                  DebounceTime="500" 
+                                  @bind-Value="@searchText"
+                                  OnChange="_ => FilterLogs()" />
+                    <BitToggleButton Variant="BitVariant.Text" 
+                                     Color="BitColor.Secondary"
+                                     OnChange="_ => FilterLogs()"
+                                     Style="width:2rem;height:2rem"
+                                     @bind-IsChecked="enableRegExp"
+                                     Title="Enable Regular Expression"
+                                     IconName="@BitIconName.FilterSettings" />
+                </BitStack>
+
                 <BitDropdown FitWidth
                              MultiSelect
                              Items="logLevelItems"
-                             DefaultValues="defaultFilterLogLevels"
-                             OnValuesChange="HandleOnLogLevelFilter"
+                             Placeholder="Select a log level"
+                             OnValuesChange="_ => FilterLogs()"
+                             @bind-Values="filterLogLevelValues"
                              TItem="BitDropdownItem<LogLevel>" TValue="LogLevel" />
+
                 <BitDropdown FitWidth
                              MultiSelect
                              ShowSearchBox
+                             ShowClearButton
                              Items="allCategoryItems"
-                             DefaultValues="defaultCategoryItems"
-                             OnValuesChange="HandleOnCategoryFilter"
+                             Placeholder="Select a category"
+                             OnValuesChange="_ => FilterLogs()"
+                             @bind-Values="filterCategoryValues"
                              TItem="BitDropdownItem<string>" TValue="string">
-                    <TextTemplate>Categories</TextTemplate>
+                    <TextTemplate>Categories&nbsp;</TextTemplate>
                 </BitDropdown>
+
                 <BitButton IconOnly
-                           OnClick="HandleOnSortClick"
                            Title="Sort"
+                           OnClick="HandleOnSortClick"
                            Color="BitColor.SecondaryBackground"
                            IconName="@(isDescendingSort? BitIconName.SortDown: BitIconName.SortUp)" />
-                <BitButton OnClick="ClearLogs"
-                           title="Clear lgos"
-                           Color="BitColor.Info"
-                           Variant="BitVariant.Outline">Clear logs</BitButton>
+                &nbsp;
                 <BitButton IconOnly
-                           OnClick="ReloadLogs"
                            Title="Reload logs"
+                           OnClick="ReloadLogs"
                            IconName="@BitIconName.Refresh"
                            Color="BitColor.SecondaryBackground" />
+
                 <BitButton IconOnly
-                           OnClick="ThrowTestException"
+                           Title="Clear logs"
+                           OnClick="ClearLogs"
+                           IconName="@BitIconName.Delete" 
+                           Color="BitColor.SecondaryBackground" />
+
+                <BitButton IconOnly
                            Title="Throw test error"
+                           OnClick="ThrowTestException"
                            IconName="@BitIconName.Error"
                            Color="BitColor.SecondaryBackground" />
+
                 <BitButton IconOnly AutoLoading
-                           OnClick="CallDiagnosticsApi"
                            Title="Call Diag API"
+                           OnClick="CallDiagnosticsApi"
                            Color="BitColor.SecondaryBackground"
                            IconName="@BitIconName.DiagnosticDataViewerApp" />
+
                 <BitButton IconOnly AutoLoading
                            OnClick="OpenDevTools"
                            Title="Open dev tools"
                            Color="BitColor.SecondaryBackground"
                            IconName="@BitIconName.DeveloperTools" />
+
                 @if (AppPlatform.IsBrowser is false)
                 {
                     <BitButton IconOnly
-                               OnClick="CallGC"
                                Title="Call GC"
-                               Color="BitColor.SecondaryBackground"
-                               IconName="@BitIconName.RecycleBin" />
+                               OnClick="CallGC"
+                               IconName="@BitIconName.RecycleBin" 
+                               Color="BitColor.SecondaryBackground" />
                 }
-                <BitButton IconOnly AutoLoading
-                           OnClick="ClearCache"
+
+                <BitButton IconOnly
+                           AutoLoading
                            Title="Clear cache"
-                           Color="BitColor.SecondaryBackground"
-                           IconName="@BitIconName.Clear" />
+                           OnClick="ClearCache"
+                           IconName="@BitIconName.RemoveFrom" 
+                           Color="BitColor.SecondaryBackground" />
             </BitStack>
 
             <BitBasicList @ref="logStackRef"

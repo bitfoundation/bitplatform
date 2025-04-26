@@ -137,6 +137,13 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
+            Name = "Reversed",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Reverses the label and radio button location."
+        },
+        new()
+        {
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
@@ -709,13 +716,6 @@ public partial class BitChoiceGroupDemo
                },
                new()
                {
-                   Name = "ItemLabelWrapper",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the label wrapper of each item of the BitChoiceGroup.",
-               },
-               new()
-               {
                    Name = "ItemImageContainer",
                    Type = "string?",
                    DefaultValue = "null",
@@ -730,10 +730,10 @@ public partial class BitChoiceGroupDemo
                },
                new()
                {
-                   Name = "ItemImageDiv",
+                   Name = "ItemRadioButton",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the image div of each item of the BitChoiceGroup.",
+                   Description = "Custom CSS classes/styles for the radio button of each item of the BitChoiceGroup.",
                },
                new()
                {
@@ -741,13 +741,6 @@ public partial class BitChoiceGroupDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the image of each item of the BitChoiceGroup.",
-               },
-               new()
-               {
-                   Name = "ItemIconContainer",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the icon container of each item of the BitChoiceGroup.",
                },
                new()
                {

@@ -120,6 +120,13 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "InvertMouseWheel",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Reverses the mouse wheel direction.",
+        },
+        new()
+        {
             Name = "IsInputReadOnly",
             Type = "bool",
             DefaultValue = "false",
@@ -490,6 +497,8 @@ public partial class BitNumberFieldDemo
     private int? classesValue;
 
     private int hideInputValue;
+
+    private bool invertMouseWheel;
 
     private double precisionInputValue = 3.1415;
 

@@ -20,7 +20,7 @@
                            HideFileView
                            Accept="image/*"
                            MaxSize="1024 * 1024 * 10"
-                           UploadUrl="@profileImageUploadUrl"
+                           UploadUrlProvider="WrapHandled(GetUploadUrl)"
                            OnUploading="() => isUploading = true"
                            OnUploadFailed="WrapHandled(HandleOnUploadFailed)"
                            OnUploadComplete="WrapHandled(HandleOnUploadComplete)">

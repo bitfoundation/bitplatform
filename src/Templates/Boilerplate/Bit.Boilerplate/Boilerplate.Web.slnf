@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "Boilerplate.sln",
+    "path": "Boilerplate.slnx",
     "projects": [
       "src\\Client\\Boilerplate.Client.Core\\Boilerplate.Client.Core.csproj",
       "src\\Client\\Boilerplate.Client.Web\\Boilerplate.Client.Web.csproj",

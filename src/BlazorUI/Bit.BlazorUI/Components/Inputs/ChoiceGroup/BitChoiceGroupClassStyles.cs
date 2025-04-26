@@ -38,11 +38,6 @@ public class BitChoiceGroupClassStyles
     public string? ItemLabel { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the label wrapper of each item of the BitChoiceGroup.
-    /// </summary>
-    public string? ItemLabelWrapper { get; set; }
-
-    /// <summary>
     /// Custom CSS classes/styles for the image container of each item of the BitChoiceGroup.
     /// </summary>
     public string? ItemImageContainer { get; set; }
@@ -53,19 +48,14 @@ public class BitChoiceGroupClassStyles
     public string? ItemImageWrapper { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the image div of each item of the BitChoiceGroup.
+    /// Custom CSS classes/styles for the radio button of each item of the BitChoiceGroup.
     /// </summary>
-    public string? ItemImageDiv { get; set; }
+    public string? ItemRadioButton { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the image of each item of the BitChoiceGroup.
     /// </summary>
     public string? ItemImage { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the icon container of each item of the BitChoiceGroup.
-    /// </summary>
-    public string? ItemIconContainer { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the icon wrapper of each item of the BitChoiceGroup.

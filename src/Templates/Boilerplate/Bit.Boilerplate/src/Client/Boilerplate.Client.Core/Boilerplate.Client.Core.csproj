@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
@@ -10,9 +10,6 @@
 
     <ItemGroup>
         <SupportedPlatform Include="browser" />
-
-        <Content Remove="compilerconfig.json" />
-        <None Include="compilerconfig.json" />
         <Content Remove="appsettings*.json" />
         <EmbeddedResource Include="appsettings*.json" />
 
@@ -57,7 +54,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <TypeScriptFiles Include="**\*.ts" />
+        <TypeScriptFiles Include="**\*.ts" Exclude="node_modules\**\*.ts" />
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
@@ -76,7 +73,7 @@
     </Target>
 
     <Target Name="BuildCssFiles">
-        <Exec Command="node_modules/.bin/sass .:. Styles/app.scss:wwwroot/styles/app.css --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+        <Exec Command="node_modules/.bin/sass .:. Styles/app.scss:wwwroot/styles/app.css --style compressed --load-path=. --silence-deprecation=import --update" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
     <ItemGroup>

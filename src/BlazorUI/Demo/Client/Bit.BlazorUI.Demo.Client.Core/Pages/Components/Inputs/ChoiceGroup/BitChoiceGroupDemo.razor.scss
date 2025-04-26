@@ -31,7 +31,7 @@
         font-weight: bold;
     }
 
-    .custom-label-wrapper::after {
+    .custom-radio-btn::after {
         width: 8px;
         height: 8px;
         border: none;
@@ -39,15 +39,15 @@
         background-color: whitesmoke;
     }
 
-    .custom-checked .custom-label-wrapper::after {
+    .custom-checked .custom-radio-btn::after {
         background-color: whitesmoke;
     }
 
-    .custom-label-wrapper::before {
+    .custom-radio-btn::before {
         background-color: whitesmoke;
     }
 
-    .custom-checked .custom-label-wrapper::before {
+    .custom-checked .custom-radio-btn::before {
         background-color: dodgerblue;
     }
 

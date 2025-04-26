@@ -43,16 +43,16 @@
                     <BitRichTextEditor @ref=richTextEditorRef FullToolbar OnEditorReady="@(() => richTextEditorRef.SetHtml(product.DescriptionHTML))" />
 
                     <BitFileUpload @ref="fileUploadRef"
-                                    AutoReset
-                                    AutoUpload
-                                    HideFileView
-                                    Accept="image/*"
-                                    Style="max-width:unset;"
-                                    MaxSize="1024 * 1024 * 10"
-                                    UploadUrl="@productImageUploadUrl"
-                                    OnUploading="() => isManagingFile = true"
-                                    OnUploadFailed="WrapHandled(HandleOnUploadFailed)"
-                                    OnUploadComplete="WrapHandled(HandleOnUploadComplete)">
+                                   AutoReset
+                                   AutoUpload
+                                   HideFileView
+                                   Accept="image/*"
+                                   Style="max-width:unset;"
+                                   MaxSize="1024 * 1024 * 10"
+                                   UploadUrlProvider="WrapHandled(GetUploadUrl)"
+                                   OnUploading="() => isManagingFile = true"
+                                   OnUploadFailed="WrapHandled(HandleOnUploadFailed)"
+                                   OnUploadComplete="WrapHandled(HandleOnUploadComplete)">
                         <LabelTemplate>
                             <BitStack HorizontalAlign="BitAlignment.Center">
                                 @if (isManagingFile is false)
@@ -62,9 +62,9 @@
                                     @if (product.HasPrimaryImage)
                                     {
                                         <BitButton AutoLoading
-                                                    Color="BitColor.Error"
-                                                    ButtonType="BitButtonType.Button"
-                                                    OnClick="WrapHandled(RemoveProductImage)">
+                                                   Color="BitColor.Error"
+                                                   ButtonType="BitButtonType.Button"
+                                                   OnClick="WrapHandled(RemoveProductImage)">
                                             @Localizer[nameof(AppStrings.Remove)]
                                         </BitButton>
                                     }

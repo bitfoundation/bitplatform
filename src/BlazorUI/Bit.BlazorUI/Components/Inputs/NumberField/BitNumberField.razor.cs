@@ -129,6 +129,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public string? IncrementTitle { get; set; }
 
     /// <summary>
+    /// Reverses the mouse wheel direction.
+    /// </summary>
+    [Parameter] public bool InvertMouseWheel { get; set; }
+
+    /// <summary>
     /// If true, the input is readonly.
     /// </summary>
     [Parameter] public bool IsInputReadOnly { get; set; }
@@ -446,6 +451,21 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private async Task HandleOnPointerUpOrOut()
     {
         ResetCts();
+    }
+
+    private async Task HandleOnMouseWheel(WheelEventArgs e)
+    {
+        if (IsEnabled is false || ReadOnly) return;
+        if (e.ShiftKey is false) return;
+
+        if (e.DeltaY < 0)
+        {
+            ChangeValue(InvertMouseWheel ? -1 : +1);
+        }
+        else if (e.DeltaY > 0)
+        {
+            ChangeValue(InvertMouseWheel ? +1 : -1);
+        }
     }
 
 

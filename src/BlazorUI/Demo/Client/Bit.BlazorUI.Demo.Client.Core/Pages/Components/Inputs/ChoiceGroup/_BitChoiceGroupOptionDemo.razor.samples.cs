@@ -128,6 +128,14 @@ public partial class _BitChoiceGroupOptionDemo
 </BitChoiceGroup>";
 
     private readonly string example5RazorCode = @"
+<BitChoiceGroup Label=""Reversed"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" Reversed Horizontal>
+    <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
+    <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
+    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
+</BitChoiceGroup>";
+
+    private readonly string example6RazorCode = @"
 <style>
     .custom-label {
         color: red;
@@ -150,7 +158,7 @@ public partial class _BitChoiceGroupOptionDemo
     </Options>
 </BitChoiceGroup>";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <style>
     .custom-container {
         display: flex;
@@ -222,9 +230,9 @@ public partial class _BitChoiceGroupOptionDemo
         </div>
     </ItemTemplate>
     <Options>
-        <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""@BitIconName.CalendarDay"" />
-        <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""@BitIconName.CalendarWeek"" />
-        <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" />
+        <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" />
+        <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" />
+        <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" />
     </Options>
 </BitChoiceGroup>
 
@@ -255,12 +263,12 @@ public partial class _BitChoiceGroupOptionDemo
         </Template>
     </BitChoiceGroupOption>
 </BitChoiceGroup>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private string itemTemplateValue = ""Day"";
 private string itemTemplateValue2 = ""Day"";
 private string itemLabelTemplateValue = ""Day"";";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitChoiceGroup Label=""One-way"" Value=""@oneWayValue""
                 TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
@@ -279,11 +287,11 @@ private string itemLabelTemplateValue = ""Day"";";
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 <BitTextField @bind-Value=""twoWayValue"" />";
-    private readonly string example7CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private string oneWayValue = ""A"";
 private string twoWayValue = ""A"";";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <style>
     .validation-message {
         color: red;
@@ -303,7 +311,7 @@ private string twoWayValue = ""A"";";
     
     <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 public class ChoiceGroupValidationModel
 {
     [Required(ErrorMessage = ""Pick one"")]
@@ -315,7 +323,7 @@ public ChoiceGroupValidationModel validationModel = new();
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitChoiceGroup Size=""BitSize.Small"" Label=""Small"" DefaultValue=""@(""B"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
@@ -397,7 +405,7 @@ private void HandleInvalidSubmit() { }";
     <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsEnabled=""false"" />
 </BitChoiceGroup>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitChoiceGroup Color=""BitColor.Primary"" Label=""Primary"" DefaultValue=""@(""B"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
@@ -517,7 +525,7 @@ private void HandleInvalidSubmit() { }";
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <style>
     .custom-class {
         color: dodgerblue;
@@ -541,7 +549,7 @@ private void HandleInvalidSubmit() { }";
         font-weight: bold;
     }
 
-    .custom-label-wrapper::after {
+    .custom-radio-btn::after {
         width: 8px;
         height: 8px;
         border: none;
@@ -549,15 +557,15 @@ private void HandleInvalidSubmit() { }";
         background-color: whitesmoke;
     }
 
-    .custom-checked .custom-label-wrapper::after {
+    .custom-checked .custom-radio-btn::after {
         background-color: whitesmoke;
     }
 
-    .custom-label-wrapper::before {
+    .custom-radio-btn::before {
         background-color: whitesmoke;
     }
 
-    .custom-checked .custom-label-wrapper::before {
+    .custom-checked .custom-radio-btn::before {
         background-color: dodgerblue;
     }
 </style>
@@ -607,14 +615,14 @@ private void HandleInvalidSubmit() { }";
                 Classes=""@(new() { Root = ""custom-root"",
                                    ItemText = ""custom-text"",
                                    ItemChecked = ""custom-checked"",
-                                   ItemLabelWrapper = ""custom-label-wrapper"" })"">
+                                   ItemRadioButton = ""custom-radio-btn"" })"">
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitChoiceGroup Label=""ساده"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" Dir=""BitDir.Rtl"">
     <BitChoiceGroupOption Text=""گزینه آ"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""گزینه ب"" Value=""@(""B"")"" />
