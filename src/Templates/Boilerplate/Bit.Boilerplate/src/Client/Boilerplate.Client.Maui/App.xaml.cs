@@ -13,6 +13,7 @@ public partial class App
     private readonly IExceptionHandler exceptionHandler;
     private readonly IBitDeviceCoordinator deviceCoordinator;
     private readonly IStringLocalizer<AppStrings> localizer;
+    private readonly Action pubSubHandlerReferenceToKeepAlive;
 
     public App(MainPage mainPage,
         PubSubService pubSubService,
@@ -28,15 +29,27 @@ public partial class App
         this.deviceCoordinator = deviceCoordinator;
         this.mainPage = new NavigationPage(mainPage);
 
-        pubSubService.Subscribe(ClientPubSubMessages.PROFILE_UPDATED, async _ =>
+        pubSubHandlerReferenceToKeepAlive = pubSubService.Subscribe(ClientPubSubMessages.PROFILE_UPDATED, async _ =>
         {
             // It's an opportune moment to request a store review. (:
             await Dispatcher.DispatchAsync(async () =>
             {
-                if ((await storageService.GetItem("StoreReviewRequested")) is not "true")
+                try
                 {
-                    await storageService.SetItem("StoreReviewRequested", "true");
+                    if ((await storageService.GetItem("StoreReviewRequested")) is "true")
+                    {
+                        logger.LogInformation("Store review request already sent");
+                        return;
+                    }
+
                     await AppRating.Default!.PerformInAppRateAsync(isTestOrDebugMode: AppEnvironment.IsDev());
+                    await storageService.SetItem("StoreReviewRequested", "true");
+
+                    logger.LogInformation("Store review request sent");
+                }
+                catch (Exception exp)
+                {
+                    logger.LogError(message: "Store review request failed", exception: exp);
                 }
             });
         });
