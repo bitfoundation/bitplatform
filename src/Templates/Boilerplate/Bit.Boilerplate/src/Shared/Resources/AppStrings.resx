@@ -930,7 +930,7 @@
     <value>Please enter the elevated access token we just sent you or your authenticator app code to continue.</value>
   </data>
     <data name="ElevatedAccessTokenShortText" xml:space="preserve">
-    <value>#{0} is your code in Boilerplate.</value>
+    <value>{0} is your code in Boilerplate.</value>
   </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>You have already requested the confirmation email. Try again in {0}</value>
@@ -984,19 +984,19 @@
     <value>You have already requested the 2FA token email. Try again in {0}.</value>
   </data>
     <data name="ChangePhoneNumberTokenShortText" xml:space="preserve">
-    <value>#{0} is your code in Boilerplate.</value>
+    <value>{0} is your code in Boilerplate.</value>
   </data>
     <data name="ConfirmPhoneTokenShortText" xml:space="preserve">
-    <value>#{0} is your code in Boilerplate.</value>
+    <value>{0} is your code in Boilerplate.</value>
   </data>
     <data name="TwoFactorTokenShortText" xml:space="preserve">
-    <value>#{0} is your code in Boilerplate.</value>
+    <value>{0} is your code in Boilerplate.</value>
   </data>
     <data name="OtpShortText" xml:space="preserve">
-    <value>#{0} is your code in Boilerplate.</value>
+    <value>{0} is your code in Boilerplate.</value>
   </data>
     <data name="ResetPasswordTokenShortText" xml:space="preserve">
-    <value>#{0} is your code in Boilerplate.</value>
+    <value>{0} is your code in Boilerplate.</value>
   </data>
     <data name="Online" xml:space="preserve">
     <value>Online</value>
