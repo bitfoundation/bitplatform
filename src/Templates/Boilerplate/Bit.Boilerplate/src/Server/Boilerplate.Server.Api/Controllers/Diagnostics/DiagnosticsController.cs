@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using System.Text;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
@@ -51,14 +51,14 @@ public partial class DiagnosticsController : AppControllerBase, IDiagnosticsCont
 
             result.AppendLine($"Subscription exists: {(subscription is not null).ToString().ToLowerInvariant()}");
 
-            await pushNotificationService.RequestPush("Test Push", DateTimeOffset.Now.ToString("HH:mm:ss"), "Test action", userRelatedPush: false, u => u.DeviceId == pushNotificationSubscriptionDeviceId, cancellationToken);
+            await pushNotificationService.RequestPush("Test Push", $"#123456 is your code. {DateTimeOffset.Now:HH:mm:ss}", "Test action", userRelatedPush: false, u => u.DeviceId == pushNotificationSubscriptionDeviceId, cancellationToken);
         }
         //#endif
 
         //#if (signalR == true)
         if (string.IsNullOrEmpty(signalRConnectionId) is false)
         {
-            await appHubContext.Clients.Client(signalRConnectionId).SendAsync(SignalREvents.SHOW_MESSAGE, DateTimeOffset.Now.ToString("HH:mm:ss"), cancellationToken);
+            await appHubContext.Clients.Client(signalRConnectionId).SendAsync(SignalREvents.SHOW_MESSAGE, $"#123456 is your code. {DateTimeOffset.Now:HH:mm:ss}", cancellationToken);
         }
         //#endif
 

@@ -930,7 +930,7 @@
     <value>لطفا کد ۶ رقمی که ارسال کردیم یا کد Authenticator app خود را وارد کنید</value>
   </data>
     <data name="ElevatedAccessTokenShortText" xml:space="preserve">
-    <value>{0} کد شماست در Boilerplate</value>
+    <value>#{0} کد شماست در Boilerplate</value>
   </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا ایمیل تایید را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
@@ -984,19 +984,19 @@
     <value>شما قبلا درخواست ایمیل توکن 2FA را دارید. دوباره امتحان کنید در {0}</value>
   </data>
     <data name="ChangePhoneNumberTokenShortText" xml:space="preserve">
-    <value>{0} کد شماست در Boilerplate</value>
+    <value>#{0} کد شماست در Boilerplate</value>
   </data>
     <data name="ConfirmPhoneTokenShortText" xml:space="preserve">
-    <value>{0} کد شماست در Boilerplate</value>
+    <value>#{0} کد شماست در Boilerplate</value>
   </data>
     <data name="TwoFactorTokenShortText" xml:space="preserve">
-    <value>{0} کد شماست در Boilerplate</value>
+    <value>#{0} کد شماست در Boilerplate</value>
   </data>
     <data name="OtpShortText" xml:space="preserve">
-    <value>{0} کد شماست در Boilerplate</value>
+    <value>#{0} کد شماست در Boilerplate</value>
   </data>
     <data name="ResetPasswordTokenShortText" xml:space="preserve">
-    <value>{0} کد شماست در Boilerplate</value>
+    <value>#{0} کد شماست در Boilerplate</value>
   </data>
     <data name="Online" xml:space="preserve">
     <value>آنلاین</value>
