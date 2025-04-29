@@ -142,6 +142,9 @@ public partial class AppDiagnosticModal
     }
 
     //#if (signalR == true)
+    /// <summary>
+    /// <inheritdoc cref="SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE"/>
+    /// </summary>
     private async Task ReadAnotherUserLogs()
     {
         var userId = Guid.Parse((await promptService.Show("Enter the user id", "Read Another User Logs"))!);

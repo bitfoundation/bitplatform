@@ -220,6 +220,11 @@ public partial class AppHub : Hub
         catch { }
     }
 
+    /// <summary>
+    /// <inheritdoc cref="SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE"/>
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns></returns>
     [Authorize(Roles = AppRoles.SUPER_ADMIN)]
     public async Task<DiagnosticLogDto[]> GetUserDiagnosticLogs(Guid userId)
     {
