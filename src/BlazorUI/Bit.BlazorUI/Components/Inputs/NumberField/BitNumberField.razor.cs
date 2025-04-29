@@ -355,7 +355,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false || InvalidValueBinding()) return;
+        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
 
         switch (e.Key)
         {
@@ -385,6 +385,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private async Task HandleOnBlur(FocusEventArgs e)
     {
         if (IsEnabled is false) return;
+
         await OnBlur.InvokeAsync(e);
     }
 
@@ -422,7 +423,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private async Task HandleOnPointerDown(bool isIncrement)
     {
-        if (IsEnabled is false || InvalidValueBinding()) return;
+        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
 
         //Change focus from input to number field
         if (isIncrement)
