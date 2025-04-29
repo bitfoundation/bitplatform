@@ -38,9 +38,10 @@ public static partial class SignalREvents
 public static partial class SignalRMethods
 {
     /// <summary>
-    /// Allows super admins to retrieve all diagnostic logs for the active session.
+    /// Allows super admins to retrieve all diagnostic logs for the active user session(s).
     /// Unlike production loggers (e.g., Sentry, AppInsights) set to Warning by default to minimize costs,
     /// the diagnostic logger defaults to Information for detailed logging.
+    /// This helps in debugging issues in production environments.
     /// </summary>
     public const string UPLOAD_DIAGNOSTIC_LOGGER_STORE = nameof(UPLOAD_DIAGNOSTIC_LOGGER_STORE);
 }
