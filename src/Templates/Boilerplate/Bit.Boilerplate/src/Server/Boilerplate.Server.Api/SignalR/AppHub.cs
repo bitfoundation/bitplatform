@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Shared.Dtos.Chatbot;
 using Boilerplate.Server.Api.Services;
+using Boilerplate.Shared.Dtos.Diagnostic;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Controllers.Identity;
 using System.ComponentModel;
@@ -217,5 +218,19 @@ public partial class AppHub : Hub
             await Clients.Caller.SendAsync(SignalREvents.EXCEPTION_THROWN, problemDetails, cancellationToken);
         }
         catch { }
+    }
+
+    [Authorize(Roles = AppRoles.SUPER_ADMIN)]
+    public async Task<DiagnosticLogDto[]> GetUserDiagnosticLogs(Guid userId)
+    {
+        await using var scope = serviceProvider.CreateAsyncScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var userSessionSignalRConnectionIds = await dbContext.UserSessions
+            .Where(us => us.UserId == userId && us.SignalRConnectionId != null)
+            .Select(us => us.SignalRConnectionId)
+            .ToArrayAsync(Context.ConnectionAborted);
+
+        return [.. (await Task.WhenAll(userSessionSignalRConnectionIds.Select(id => Clients.Client(id!).InvokeAsync<DiagnosticLogDto[]>(SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE, Context.ConnectionAborted))))
+            .SelectMany(_ => _).Take(1_000)];
     }
 }

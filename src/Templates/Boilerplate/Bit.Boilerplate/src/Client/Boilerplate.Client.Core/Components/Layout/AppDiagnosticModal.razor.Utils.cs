@@ -1,10 +1,12 @@
-using System.Text;
+﻿using System.Text;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Boilerplate.Shared.Controllers.Identity;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR.Client;
 //#endif
+using Boilerplate.Shared.Dtos.Diagnostic;
+using Boilerplate.Client.Core.Services.DiagnosticLog;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -12,6 +14,9 @@ public partial class AppDiagnosticModal
 {
     [AutoInject] private Cookie cookie = default!;
     [AutoInject] private AuthManager authManager = default!;
+    //#if (signalR == true)
+    [AutoInject] private PromptService promptService = default!;
+    //#endif
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IUserController userController = default!;
 
@@ -135,4 +140,17 @@ public partial class AppDiagnosticModal
             NavigationManager.Refresh(forceReload: true);
         }
     }
+
+    //#if (signalR == true)
+    private async Task ReadAnotherUserLogs()
+    {
+        var userId = Guid.Parse((await promptService.Show("Enter the user id", "Read Another User Logs"))!);
+        var logs = await hubConnection.InvokeAsync<DiagnosticLogDto[]>("GetUserDiagnosticLogs", userId, CurrentCancellationToken);
+        foreach (var log in logs)
+        {
+            DiagnosticLogger.Store.Enqueue(log);
+        }
+        ReloadLogs();
+    }
+    //#endif
 }

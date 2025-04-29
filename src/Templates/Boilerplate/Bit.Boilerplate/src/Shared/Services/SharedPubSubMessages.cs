@@ -34,3 +34,13 @@ public static partial class SignalREvents
     /// </summary>
     public const string EXCEPTION_THROWN = nameof(EXCEPTION_THROWN);
 }
+
+public static partial class SignalRMethods
+{
+    /// <summary>
+    /// Super admins can call this method to get all diagnostic logs of the currently opended session.
+    /// It's useful, because unlike Sentry, AppInsights and the rest of loggers in production that their
+    /// log level has been set to Warning by default to reduce the costs, this client side logger 
+    /// </summary>
+    public const string UPLOAD_DIAGNOSTIC_LOGGER_STORE = nameof(UPLOAD_DIAGNOSTIC_LOGGER_STORE);
+}
