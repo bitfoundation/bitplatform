@@ -113,7 +113,6 @@ public partial class AppDiagnosticModal
     private async Task ClearLogs()
     {
         DiagnosticLogger.Store.Clear();
-        filterCategoryValues = null;
         ReloadLogs();
     }
 
