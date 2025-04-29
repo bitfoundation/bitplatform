@@ -19,6 +19,7 @@ using Boilerplate.Shared.Dtos.Chatbot;
 //#endif
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Dtos.Statistics;
+using Boilerplate.Shared.Dtos.Diagnostic;
 
 namespace Boilerplate.Shared.Dtos;
 
@@ -64,6 +65,8 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(WebAuthnAssertionOptionsRequestDto))]
 
 //#if (signalR == true)
+[JsonSerializable(typeof(DiagnosticLogDto[]))]
+[JsonSerializable(typeof(StartChatbotRequest))]
 [JsonSerializable(typeof(UpdateSystemPromptDto))]
 //#endif
 public partial class AppJsonContext : JsonSerializerContext
