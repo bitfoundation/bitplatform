@@ -117,19 +117,26 @@ public partial class AppDiagnosticModal
         ReloadLogs();
     }
 
-    private void ReloadLogs()
+    private void LoadLogs(IEnumerable<DiagnosticLogDto> logs)
     {
-        allLogs = [.. DiagnosticLogger.Store];
+        allLogs = logs;
 
-        var allCategories = allLogs.Select(l => l.Category ?? string.Empty)
-                                   .Where(c => string.IsNullOrWhiteSpace(c) is false)
-                                   .Distinct().Order();
+        var allCategories = allLogs.Where(c => string.IsNullOrEmpty(c.Category) is false)
+                                   .Select(l => l.Category!)
+                                   .Distinct()
+                                   .Order()
+                                   .ToArray();
 
         filterCategoryValues ??= [.. allCategories];
 
         allCategoryItems = [.. allCategories.Select(c => new BitDropdownItem<string>() { Text = c, Value = c })];
 
         FilterLogs();
+    }
+
+    private void ReloadLogs()
+    {
+        LoadLogs([.. DiagnosticLogger.Store]);
     }
 
     private void FilterLogs()

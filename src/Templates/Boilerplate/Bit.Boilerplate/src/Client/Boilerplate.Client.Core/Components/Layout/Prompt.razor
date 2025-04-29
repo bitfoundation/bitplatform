@@ -32,7 +32,7 @@
                 }
                 else
                 {
-                    <BitTextField @bind-Value="value" AutoFocus />
+                    <BitTextField @bind-Value="value" AutoFocus OnEnter="WrapHandled(async (KeyboardEventArgs args) => OnOk?.Invoke(value))" />
                 }
             </BitStack>
         </div>

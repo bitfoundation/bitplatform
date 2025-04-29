@@ -223,19 +223,29 @@ public partial class AppHub : Hub
     /// <summary>
     /// <inheritdoc cref="SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE"/>
     /// </summary>
-    /// <param name="userId"></param>
+    /// <param name="userQuery">`UserId`, `UserSessionId`, `Email` or `PhoneNumber`</param>
     /// <returns></returns>
     [Authorize(Roles = AppRoles.SUPER_ADMIN)]
-    public async Task<DiagnosticLogDto[]> GetUserDiagnosticLogs(Guid userId)
+    public async Task<DiagnosticLogDto[]> GetUserDiagnosticLogs(string? userQuery)
     {
+        if (string.IsNullOrEmpty(userQuery))
+            return [];
+
+        userQuery = userQuery.ToUpperInvariant();
+
         await using var scope = serviceProvider.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var isGuidId = Guid.TryParse(userQuery, out var id);
+
         var userSessionSignalRConnectionIds = await dbContext.UserSessions
-            .Where(us => us.UserId == userId && us.SignalRConnectionId != null)
+            .WhereIf(isGuidId, us => us.UserId == id || us.UserId == id)
+            .WhereIf(isGuidId is false, us => us.User!.NormalizedEmail == userQuery || us.User.PhoneNumber == userQuery)
+            .Where(us => us.SignalRConnectionId != null)
             .Select(us => us.SignalRConnectionId)
             .ToArrayAsync(Context.ConnectionAborted);
 
         return [.. (await Task.WhenAll(userSessionSignalRConnectionIds.Select(id => Clients.Client(id!).InvokeAsync<DiagnosticLogDto[]>(SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE, Context.ConnectionAborted))))
-            .SelectMany(_ => _).Take(1_000)];
+            .SelectMany(_ => _)];
     }
 }

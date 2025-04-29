@@ -147,13 +147,9 @@ public partial class AppDiagnosticModal
     /// </summary>
     private async Task ReadAnotherUserLogs()
     {
-        var userId = Guid.Parse((await promptService.Show("Enter other user id:", "Get other user logs"))!);
-        var logs = await hubConnection.InvokeAsync<DiagnosticLogDto[]>("GetUserDiagnosticLogs", userId, CurrentCancellationToken);
-        foreach (var log in logs)
-        {
-            DiagnosticLogger.Store.Enqueue(log);
-        }
-        ReloadLogs();
+        var userQuery = await promptService.Show("Enter `UserId`, `UserSessionId`, `Email` or `PhoneNumber`:", "Get other user logs");
+        var logs = await hubConnection.InvokeAsync<DiagnosticLogDto[]>("GetUserDiagnosticLogs", userQuery, CurrentCancellationToken);
+        LoadLogs(logs);
     }
     //#endif
 }
