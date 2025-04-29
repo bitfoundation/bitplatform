@@ -149,6 +149,10 @@ public partial class AppDiagnosticModal
     {
         var userQuery = await promptService.Show("Enter `UserId`, `UserSessionId`, `Email` or `PhoneNumber`:", "Get other user logs");
         var logs = await hubConnection.InvokeAsync<DiagnosticLogDto[]>("GetUserDiagnosticLogs", userQuery, CurrentCancellationToken);
+
+        filterCategoryValues = null;
+        filterLogLevelValues = [LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical];
+
         LoadLogs(logs);
     }
     //#endif
