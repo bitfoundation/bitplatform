@@ -7,6 +7,7 @@ public partial class UpgradeAccountSection
 
 
     private bool adIsReady;
+    private bool adIsShown;
 
 
     protected override async Task OnAfterFirstRenderAsync()
@@ -16,6 +17,8 @@ public partial class UpgradeAccountSection
         await adsService.Init(clientCoreSettings.AdUnitPath);
 
         adIsReady = true;
+
+        StateHasChanged();
     }
 
 
@@ -23,6 +26,19 @@ public partial class UpgradeAccountSection
     {
         if (adIsReady is false) return;
 
-        await adsService.Watch();
+        var result = await adsService.Watch();
+
+        adIsShown = true;
+
+        StateHasChanged();
+
+        if (result is AdWatchResult.Rewarded)
+        {
+            SnackBarService.Success(Localizer[nameof(AppStrings.UpgradeSuccessMessage)]);
+        }
+        else
+        {
+            SnackBarService.Error(Localizer[nameof(AppStrings.UpgradeFailMessage)]);
+        }
     }
 }

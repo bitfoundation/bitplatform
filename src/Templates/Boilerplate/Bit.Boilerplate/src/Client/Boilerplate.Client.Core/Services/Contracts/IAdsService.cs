@@ -2,7 +2,13 @@
 
 public interface IAdsService
 {
-    ValueTask Init(string adUnitPath);
+    Task Init(string adUnitPath);
 
-    ValueTask Watch();
+    Task<AdWatchResult> Watch();
+}
+
+public enum AdWatchResult
+{
+    Rewarded,
+    Canceled
 }

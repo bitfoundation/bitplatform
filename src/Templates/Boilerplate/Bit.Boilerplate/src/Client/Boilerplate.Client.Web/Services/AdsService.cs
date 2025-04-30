@@ -7,23 +7,29 @@ public partial class AdsService : IAdsService
 
     private TaskCompletionSource initTsc = new();
     private DotNetObjectReference<AdsService>? dotnetObj;
+    private TaskCompletionSource<AdWatchResult> watchTsc = new();
 
 
-    public ValueTask Init(string adUnitPath)
+    public async Task Init(string adUnitPath)
     {
         dotnetObj = DotNetObjectReference.Create(this);
 
-        return jsRuntime.InvokeVoidAsync("Ads.init", adUnitPath, dotnetObj);
+        await jsRuntime.InvokeVoidAsync("Ads.init", adUnitPath, dotnetObj);
+        await initTsc.Task;
     }
 
-    public ValueTask Watch()
+    public async Task<AdWatchResult> Watch()
     {
-        return jsRuntime.InvokeVoidAsync("Ads.watch");
+        await jsRuntime.InvokeVoidAsync("Ads.watch");
+        return await watchTsc.Task;
     }
 
 
     [JSInvokable(nameof(AdNotSupported))]
-    public async Task AdNotSupported() { }
+    public async Task AdNotSupported()
+    {
+        initTsc.SetCanceled();
+    }
 
     [JSInvokable(nameof(AdReady))]
     public async Task AdReady()
@@ -32,17 +38,36 @@ public partial class AdsService : IAdsService
     }
 
     [JSInvokable(nameof(AdClosed))]
-    public async Task AdClosed(int? rewardAmount, string? rewardType) { }
+    public async Task AdClosed(int? rewardAmount, string? rewardType)
+    {
+        if (rewardAmount.HasValue is false)
+        {
+            watchTsc.SetResult(AdWatchResult.Canceled);
+        }
+    }
 
     [JSInvokable(nameof(AdRewardGranted))]
-    public async Task AdRewardGranted(int? rewardAmount, string? rewardType) { }
+    public async Task AdRewardGranted(int? rewardAmount, string? rewardType)
+    {
+        if (rewardAmount.HasValue)
+        {
+            watchTsc.SetResult(AdWatchResult.Rewarded);
+        }
+    }
 
     [JSInvokable(nameof(AdSlotRendered))]
-    public async Task AdSlotRendered(bool isEmpty) { }
+    public async Task AdSlotRendered(bool isEmpty)
+    {
+
+    }
 
     [JSInvokable(nameof(AdNotAvailable))]
-    public async Task AdNotAvailable() { }
+    public async Task AdNotAvailable()
+    {
+    }
 
     [JSInvokable(nameof(AdVisible))]
-    public async Task AdVisible() { }
+    public async Task AdVisible()
+    {
+    }
 }

@@ -1276,5 +1276,11 @@
     <data name="UpgradeSubtitle" xml:space="preserve">
     <value>There is no account upgrade here. this is just a demo for rewarding ads.</value>
   </data>
+    <data name="UpgradeSuccessMessage" xml:space="preserve">
+    <value>Upgrade account done successfuly.</value>
+  </data>
+    <data name="UpgradeFailMessage" xml:space="preserve">
+    <value>Upgrade account failed.</value>
+  </data>
     <!--#endif -->
 </root>

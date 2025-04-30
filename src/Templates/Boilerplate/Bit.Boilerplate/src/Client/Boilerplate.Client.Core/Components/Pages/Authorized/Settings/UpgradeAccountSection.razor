@@ -2,8 +2,11 @@
 
 <section>
     <BitStack>
-        <BitButton OnClick="WrapHandled(WatchAdd)">
-            @Localizer[nameof(AppStrings.Upgrade)]
-        </BitButton>
+        @if (adIsReady && adIsShown is false)
+        {
+            <BitButton OnClick="WrapHandled(WatchAdd)">
+                @Localizer[nameof(AppStrings.Upgrade)]
+            </BitButton>
+        }
     </BitStack>
 </section>

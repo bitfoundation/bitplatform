@@ -1276,5 +1276,11 @@
     <data name="UpgradeSubtitle" xml:space="preserve">
     <value>در اینجا هیچ ارتقاء حسابی وجود ندارد. این فقط یک نسخه نمایشی برای تبلیغات باپاداش است.</value>
   </data>
+    <data name="UpgradeSuccessMessage" xml:space="preserve">
+    <value>ارتقاء حساب با موفقیت انجام شد.</value>
+  </data>
+    <data name="UpgradeFailMessage" xml:space="preserve">
+    <value>ارتقاء حساب با شکست مواجه شد.</value>
+  </data>
     <!--#endif -->
 </root>
