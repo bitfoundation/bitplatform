@@ -10,5 +10,5 @@ public interface IAdsService
 public enum AdWatchResult
 {
     Rewarded,
-    Canceled
+    Failed
 }

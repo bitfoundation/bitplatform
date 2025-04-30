@@ -116,6 +116,13 @@ These are the primary functional areas of the application beyond account managem
     - Navigate to the [Todo page](/todo).
 " +
 //#endif
+//#if (ads == true)
+@"### 3.7. Advertisement
+*   **Description:** A rewarding advertisement based on the GoogleAds services.
+*   **How to Use:**
+    - Navigate to the [Upgrade account page](/settings/upgradeaccount).
+" +
+//#endif
 @"## 4. Informational Pages
 
 ### 4.1. About Page

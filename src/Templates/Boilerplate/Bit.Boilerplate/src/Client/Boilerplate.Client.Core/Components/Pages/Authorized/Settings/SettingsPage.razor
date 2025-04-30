@@ -37,7 +37,7 @@
                    Subtitle="@Localizer[nameof(AppStrings.SessionsSubtitle)]">
             <SessionsSection />
         </Accordion>
-        @*#if (module != "Sales")*@
+        @*#if (ads == true)*@
         <Accordion @bind-Value="@openedAccordion"
                    Name="@Urls.SettingsSections.UpgradeAccount"
                    Title="@Localizer[nameof(AppStrings.UpgradeTitle)]"

@@ -1282,5 +1282,8 @@
     <data name="UpgradeFailMessage" xml:space="preserve">
     <value>ارتقاء حساب با شکست مواجه شد.</value>
   </data>
+    <data name="UpgradeAdShownMessage" xml:space="preserve">
+    <value>تبلیعات نمایش داده شده است.</value>
+  </data>
     <!--#endif -->
 </root>

@@ -5,13 +5,16 @@ public partial class AdsService : IAdsService
     [AutoInject] private IJSRuntime jsRuntime = default!;
 
 
-    private TaskCompletionSource initTsc = new();
+    private TaskCompletionSource? initTsc;
     private DotNetObjectReference<AdsService>? dotnetObj;
-    private TaskCompletionSource<AdWatchResult> watchTsc = new();
+    private TaskCompletionSource<AdWatchResult>? watchTsc;
 
 
     public async Task Init(string adUnitPath)
     {
+        if (initTsc is not null) return;
+
+        initTsc = new();
         dotnetObj = DotNetObjectReference.Create(this);
 
         await jsRuntime.InvokeVoidAsync("Ads.init", adUnitPath, dotnetObj);
@@ -20,21 +23,30 @@ public partial class AdsService : IAdsService
 
     public async Task<AdWatchResult> Watch()
     {
+        watchTsc?.TrySetCanceled();
+        watchTsc = null;
+        watchTsc = new();
+
         await jsRuntime.InvokeVoidAsync("Ads.watch");
         return await watchTsc.Task;
     }
 
+    [JSInvokable(nameof(ScriptFailed))]
+    public async Task ScriptFailed()
+    {
+        initTsc?.SetCanceled();
+    }
 
     [JSInvokable(nameof(AdNotSupported))]
     public async Task AdNotSupported()
     {
-        initTsc.SetCanceled();
+        initTsc?.SetCanceled();
     }
 
     [JSInvokable(nameof(AdReady))]
     public async Task AdReady()
     {
-        initTsc.SetResult();
+        initTsc?.SetResult();
     }
 
     [JSInvokable(nameof(AdClosed))]
@@ -42,7 +54,7 @@ public partial class AdsService : IAdsService
     {
         if (rewardAmount.HasValue is false)
         {
-            watchTsc.SetResult(AdWatchResult.Canceled);
+            watchTsc?.SetResult(AdWatchResult.Failed);
         }
     }
 
@@ -51,7 +63,7 @@ public partial class AdsService : IAdsService
     {
         if (rewardAmount.HasValue)
         {
-            watchTsc.SetResult(AdWatchResult.Rewarded);
+            watchTsc?.SetResult(AdWatchResult.Rewarded);
         }
     }
 

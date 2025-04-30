@@ -2,11 +2,19 @@
 
 <section>
     <BitStack>
-        @if (adIsReady && adIsShown is false)
+        @if (adIsReady is false)
+        {
+            <BitRollingSquareLoading />
+        }
+        else if (adIsShown is false)
         {
             <BitButton OnClick="WrapHandled(WatchAdd)">
                 @Localizer[nameof(AppStrings.Upgrade)]
             </BitButton>
+        }
+        else
+        {
+            <BitMessage>@Localizer[nameof(AppStrings.UpgradeAdShownMessage)]</BitMessage>
         }
     </BitStack>
 </section>

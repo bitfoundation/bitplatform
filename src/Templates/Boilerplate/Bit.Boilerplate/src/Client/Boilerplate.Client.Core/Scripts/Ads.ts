@@ -12,7 +12,7 @@ class Ads {
         try {
             await Ads.addScripts(['https://securepubads.g.doubleclick.net/tag/js/gpt.js'], true);
         } catch (err) {
-            console.log('err:', err);
+            await Ads.dotnetObj?.invokeMethodAsync('ScriptFailed');
             return;
         }
         
