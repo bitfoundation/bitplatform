@@ -56,6 +56,6 @@ public class BitFileInfo
     /// <summary>
     /// The HTTP header at upload file.
     /// </summary>
-    [JsonIgnore] public IReadOnlyDictionary<string, string>? HttpHeaders { get; set; }
+    [JsonIgnore] public Dictionary<string, string>? HttpHeaders { get; set; }
     [JsonIgnore] internal DateTime? StartTimeUpload { get; set; }
 }
