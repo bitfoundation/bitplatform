@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Web.Services;
+﻿namespace Boilerplate.Client.Core.Services;
 
 public partial class AdsService : IAdsService
 {
@@ -6,8 +6,8 @@ public partial class AdsService : IAdsService
 
 
     private TaskCompletionSource? initTsc;
-    private DotNetObjectReference<AdsService>? dotnetObj;
     private TaskCompletionSource<AdWatchResult>? watchTsc;
+    private DotNetObjectReference<AdsService>? dotnetObj;
 
 
     public async Task Init(string adUnitPath)

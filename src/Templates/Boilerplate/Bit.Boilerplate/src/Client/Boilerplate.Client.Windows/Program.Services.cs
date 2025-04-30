@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Microsoft.Extensions.Logging;
 using System.Security.Authentication;
 using Boilerplate.Client.Windows.Services;
@@ -13,6 +13,9 @@ public static partial class Program
         services.AddClientCoreProjectServices(configuration);
 
         services.AddScoped<IWebAuthnService, WindowsWebAuthnService>();
+        //#if (ads == true)
+        services.AddScoped<IAdsService, AdsService>();
+        //#endif
         services.AddScoped<IExceptionHandler, WindowsExceptionHandler>();
         services.AddScoped<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
 

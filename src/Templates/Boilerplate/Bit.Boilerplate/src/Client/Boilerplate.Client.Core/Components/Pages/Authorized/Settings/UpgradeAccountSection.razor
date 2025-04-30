@@ -15,6 +15,16 @@
         else
         {
             <BitMessage>@Localizer[nameof(AppStrings.UpgradeAdShownMessage)]</BitMessage>
+
+            @if (watchResult is AdWatchResult.Rewarded)
+            {
+                <BitMessage Color="BitColor.Success">@Localizer[nameof(AppStrings.UpgradeSuccessMessage)]</BitMessage>
+            }
+
+            @if (watchResult is AdWatchResult.Failed)
+            {
+                <BitMessage Color="BitColor.Error">@Localizer[nameof(AppStrings.UpgradeFailMessage)]</BitMessage>
+            }
         }
 
         @if (showTroubleButton)
