@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 
 namespace Boilerplate.Client.Core;
 
@@ -13,6 +13,14 @@ public partial class ClientCoreSettings : SharedSettings
     //#if (captcha == "reCaptcha")
     [Required]
     public string GoogleRecaptchaSiteKey { get; set; } = default!;
+    //#endif
+
+    //#if (ads == true)
+    /// <summary>
+    /// The advertisement's unit path of the google ads from the Google Ad Manager panel.
+    /// </summary>
+    [Required]
+    public string AdUnitPath { get; set; } = default!;
     //#endif
 
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
