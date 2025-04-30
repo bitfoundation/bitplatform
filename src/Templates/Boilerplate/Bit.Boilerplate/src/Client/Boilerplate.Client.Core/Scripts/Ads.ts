@@ -10,7 +10,7 @@ class Ads {
         Ads.dotnetObj = dotnetObj;
 
         try {
-            await Ads.addScripts(['https://securepubads.g.doubleclick.net/tag/js/gpt.js'], true);
+            await Ads.addScripts(['https://securepubads.g.doubleclick.net/tag/js/gpt.js']);
         } catch (err) {
             PubSub.publish('ScriptFailed');
             await Ads.dotnetObj?.invokeMethodAsync('ScriptFailed');
@@ -21,7 +21,7 @@ class Ads {
             Ads.rewardedSlot = gtag.defineOutOfPageSlot(adUnitPath, gtag.enums.OutOfPageFormat.REWARDED);
 
             if (!Ads.rewardedSlot) {
-                PubSub.publish('ScriptFailed');
+                PubSub.publish('AdNotSupported');
                 await Ads.dotnetObj?.invokeMethodAsync('AdNotSupported');
                 return;
             }
@@ -73,7 +73,7 @@ class Ads {
     }
 
     private static initScriptPromises: { [key: string]: Promise<unknown> } = {};
-    public static async addScripts(scripts: string[], isAsync: boolean) {
+    private static async addScripts(scripts: string[]) {
         const key = scripts.join('|');
         if (Ads.initScriptPromises[key] !== undefined) {
             return Ads.initScriptPromises[key];
@@ -100,9 +100,9 @@ class Ads {
             return new Promise((res, rej) => {
                 const script = document.createElement('script');
                 script.src = url;
-                if (isAsync) {
-                    script.async = true;
-                }
+                script.async = true;
+                script.crossOrigin = "anonymous";
+
                 script.onload = res;
                 script.onerror = rej;
                 document.body.appendChild(script);
