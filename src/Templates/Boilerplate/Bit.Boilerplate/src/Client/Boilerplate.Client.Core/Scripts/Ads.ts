@@ -12,7 +12,6 @@ class Ads {
         try {
             await Ads.addScripts(['https://securepubads.g.doubleclick.net/tag/js/gpt.js']);
         } catch (err) {
-            PubSub.publish('ScriptFailed');
             await Ads.dotnetObj?.invokeMethodAsync('ScriptFailed');
             return;
         }
@@ -21,7 +20,6 @@ class Ads {
             Ads.rewardedSlot = gtag.defineOutOfPageSlot(adUnitPath, gtag.enums.OutOfPageFormat.REWARDED);
 
             if (!Ads.rewardedSlot) {
-                PubSub.publish('AdNotSupported');
                 await Ads.dotnetObj?.invokeMethodAsync('AdNotSupported');
                 return;
             }
@@ -29,12 +27,10 @@ class Ads {
 
             gtag.pubads().addEventListener('rewardedSlotReady', async (event: any) => {
                 Ads.slotReadyEvent = event;
-                PubSub.publish('AdReady');
                 await Ads.dotnetObj?.invokeMethodAsync('AdReady');
             });
 
             gtag.pubads().addEventListener('rewardedSlotClosed', async () => {
-                PubSub.publish('AdClosed', { amount: Ads.rewardPayload?.amount, type: Ads.rewardPayload?.type });
                 await Ads.dotnetObj?.invokeMethodAsync('AdClosed', Ads.rewardPayload?.amount, Ads.rewardPayload?.type);
                 Ads.rewardPayload = null;
 
@@ -45,16 +41,13 @@ class Ads {
 
             gtag.pubads().addEventListener('rewardedSlotGranted', async (event: any) => {
                 Ads.rewardPayload = event.payload;
-                PubSub.publish('AdRewardGranted', { amount: Ads.rewardPayload?.amount, type: Ads.rewardPayload?.type });
                 await Ads.dotnetObj?.invokeMethodAsync('AdRewardGranted', Ads.rewardPayload?.amount, Ads.rewardPayload?.type);
             });
 
             gtag.pubads().addEventListener('slotRenderEnded', async (event: any) => {
-                PubSub.publish('AdSlotRendered', event.isEmpty);
                 await Ads.dotnetObj?.invokeMethodAsync('AdSlotRendered', event.isEmpty);
 
                 if (event.slot === Ads.rewardedSlot && event.isEmpty) {
-                    PubSub.publish('AdNotAvailable');
                     await Ads.dotnetObj?.invokeMethodAsync('AdNotAvailable');
                 }
             });
@@ -68,7 +61,6 @@ class Ads {
         if (!Ads.slotReadyEvent) return;
 
         Ads.slotReadyEvent.makeRewardedVisible();
-        PubSub.publish('AdVisible');
         await Ads.dotnetObj?.invokeMethodAsync('AdVisible');
     }
 
