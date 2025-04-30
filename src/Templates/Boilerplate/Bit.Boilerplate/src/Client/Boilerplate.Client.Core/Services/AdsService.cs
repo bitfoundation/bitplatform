@@ -21,7 +21,7 @@ public partial class AdsService : IAdsService, IDisposable
         await jsRuntime.InvokeVoidAsync("Ads.init", adUnitPath, dotnetObj);
         await initTsc.Task;
 
-        logger.LogInformation("Add is ready");
+        logger.LogInformation("Ad is ready");
     }
 
     public async Task<AdWatchResult> Watch()
