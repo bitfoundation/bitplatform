@@ -1,8 +1,10 @@
+﻿using Boilerplate.Shared.Dtos.Diagnostic;
+
 namespace Boilerplate.Client.Core.Services.DiagnosticLog;
 
 public partial class DiagnosticLogger : ILogger, IDisposable
 {
-    public static ConcurrentQueue<DiagnosticLog> Store { get; } = [];
+    public static ConcurrentQueue<DiagnosticLogDto> Store { get; } = [];
 
     private IDictionary<string, object?>? currentState;
 
@@ -40,8 +42,8 @@ public partial class DiagnosticLogger : ILogger, IDisposable
             CreatedOn = DateTimeOffset.Now,
             Level = logLevel,
             Message = message,
-            Exception = exception,
             Category = Category,
+            ExceptionString = exception?.ToString(),
             State = currentState?.ToDictionary(i => i.Key, i => i.Value?.ToString())
         });
     }

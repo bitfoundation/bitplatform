@@ -14,7 +14,7 @@
                           @bind-Value="newTodoTitle"
                           Immediate DebounceTime="300"
                           Placeholder="@Localizer[nameof(AppStrings.TodoAddPlaceholder)]"
-                          OnKeyDown="WrapHandled(async (KeyboardEventArgs args) => await OnInputKeyDown(args))" />
+                          OnEnter="WrapHandled(async (KeyboardEventArgs args) => await AddTodoItem())" />
 
             <BitButton AutoLoading
                        OnClick="WrapHandled(AddTodoItem)"

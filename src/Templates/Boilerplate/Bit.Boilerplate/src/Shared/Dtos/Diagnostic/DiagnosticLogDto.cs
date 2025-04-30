@@ -1,6 +1,8 @@
-namespace Boilerplate.Client.Core.Services.DiagnosticLog;
+﻿using Microsoft.Extensions.Logging;
 
-public class DiagnosticLog
+namespace Boilerplate.Shared.Dtos.Diagnostic;
+
+public class DiagnosticLogDto
 {
     public DateTimeOffset CreatedOn { get; set; }
 
@@ -10,7 +12,7 @@ public class DiagnosticLog
 
     public string? Category { get; set; }
 
-    public Exception? Exception { get; set; }
+    public string? ExceptionString { get; set; }
 
     public IDictionary<string, string?>? State { get; set; }
 }

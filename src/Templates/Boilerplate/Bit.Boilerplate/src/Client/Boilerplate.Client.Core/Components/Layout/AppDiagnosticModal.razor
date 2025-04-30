@@ -36,11 +36,11 @@
             <BitStack Horizontal FitHeight Wrap>
                 <BitStack Horizontal Gap="4px" FitWidth AutoHeight>
                     <BitSearchBox FixedIcon
-                                  Immediate 
-                                  DebounceTime="500" 
+                                  Immediate
+                                  DebounceTime="500"
                                   @bind-Value="@searchText"
                                   OnChange="_ => FilterLogs()" />
-                    <BitToggleButton Variant="BitVariant.Text" 
+                    <BitToggleButton Variant="BitVariant.Text"
                                      Color="BitColor.Secondary"
                                      OnChange="_ => FilterLogs()"
                                      Style="width:2rem;height:2rem"
@@ -84,7 +84,7 @@
                 <BitButton IconOnly
                            Title="Clear logs"
                            OnClick="ClearLogs"
-                           IconName="@BitIconName.Delete" 
+                           IconName="@BitIconName.Delete"
                            Color="BitColor.SecondaryBackground" />
 
                 <BitButton IconOnly
@@ -105,12 +105,24 @@
                            Color="BitColor.SecondaryBackground"
                            IconName="@BitIconName.DeveloperTools" />
 
+                @*#if (signalR == true)*@
+                <AuthorizeView Roles="@AppRoles.SUPER_ADMIN">
+                    <Authorized>
+                        <BitButton IconOnly AutoLoading
+                                   OnClick="ReadAnotherUserLogs"
+                                   Title="Read another user logs"
+                                   Color="BitColor.SecondaryBackground"
+                                   IconName="@BitIconName.Download" />
+                    </Authorized>
+                </AuthorizeView>
+                @*#endif*@
+
                 @if (AppPlatform.IsBrowser is false)
                 {
                     <BitButton IconOnly
                                Title="Call GC"
                                OnClick="CallGC"
-                               IconName="@BitIconName.RecycleBin" 
+                               IconName="@BitIconName.RecycleBin"
                                Color="BitColor.SecondaryBackground" />
                 }
 
@@ -118,7 +130,7 @@
                            AutoLoading
                            Title="Clear cache"
                            OnClick="ClearCache"
-                           IconName="@BitIconName.RemoveFrom" 
+                           IconName="@BitIconName.RemoveFrom"
                            Color="BitColor.SecondaryBackground" />
             </BitStack>
 

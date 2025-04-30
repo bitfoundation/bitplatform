@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using BlazorApplicationInsights.Interfaces;
 //#endif
 using Microsoft.AspNetCore.Components.Routing;
+using Boilerplate.Client.Core.Services.DiagnosticLog;
 
 namespace Boilerplate.Client.Core.Components;
 
@@ -204,6 +205,11 @@ public partial class ClientAppCoordinator : AppComponentBase
         signalROnDisposables.Add(hubConnection.On<AppProblemDetails>(SignalREvents.EXCEPTION_THROWN, async (appProblemDetails) =>
         {
             ExceptionHandler.Handle(appProblemDetails, displayKind: ExceptionDisplayKind.NonInterrupting);
+        }));
+
+        signalROnDisposables.Add(hubConnection.On(SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE, async () =>
+        {
+            return DiagnosticLogger.Store.ToArray();
         }));
 
         hubConnection.Closed += HubConnectionStateChange;
