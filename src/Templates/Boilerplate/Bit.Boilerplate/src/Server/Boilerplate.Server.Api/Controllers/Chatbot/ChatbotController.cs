@@ -14,7 +14,7 @@ public partial class ChatbotController : AppControllerBase, IChatbotController
             ?? throw new ResourceNotFoundException();
     }
 
-    [HttpPost, Authorize(Roles = AppRoles.SUPER_ADMIN, Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+    [HttpPost, Authorize(Roles = AppRoles.SUPER_ADMIN, Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task UpdateSystemPrompt(UpdateSystemPromptDto request, CancellationToken cancellationToken)
     {
         var systemPrompt = (await DbContext.SystemPrompts.FirstOrDefaultAsync(p => p.PromptKind == request.Kind, cancellationToken))
