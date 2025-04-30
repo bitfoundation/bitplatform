@@ -14,8 +14,6 @@
         }
         else
         {
-            <BitMessage>@Localizer[nameof(AppStrings.UpgradeAdShownMessage)]</BitMessage>
-
             @if (watchResult is AdWatchResult.Rewarded)
             {
                 <BitMessage Color="BitColor.Success">@Localizer[nameof(AppStrings.UpgradeSuccessMessage)]</BitMessage>

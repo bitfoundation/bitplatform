@@ -1,9 +1,12 @@
-﻿namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings;
+﻿using Microsoft.Extensions.Logging;
+
+namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings;
 
 public partial class UpgradeAccountSection
 {
     [AutoInject] private IAdsService adsService { get; set; } = default!;
     [AutoInject] private ClientCoreSettings clientCoreSettings { get; set; } = default!;
+    [AutoInject] private ILogger<AdsService> logger { get; set; } = default!;
 
 
     private bool adIsReady;
@@ -64,6 +67,7 @@ public partial class UpgradeAccountSection
 
     private async Task HandleAdTrouble()
     {
+        logger.LogWarning("User having trouble with ads");
         PubSubService.Publish(ClientPubSubMessages.AD_HAVE_TROUBLE);
     }
 }
