@@ -18,12 +18,12 @@ public partial class HybridAppWebInteropController : ControllerBase
     {
         // For more details, checkout HybridAppWebInteropPage's comments.
 
-        var appJSUrl = new Uri(Request.GetWebAppUrl(), "_content/Boilerplate.Client.Core/scripts/app.js").ToString();
+        var appJsUrl = new Uri(Request.GetWebAppUrl(), "_content/Boilerplate.Client.Core/scripts/app.js").ToString();
 
         var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
             (await htmlRenderer.RenderComponentAsync<HybridAppWebInteropPage>(ParameterView.FromDictionary(new Dictionary<string, object?>
             {
-                { nameof(HybridAppWebInteropPage.AppJSUrl), appJSUrl }
+                { nameof(HybridAppWebInteropPage.AppJsUrl), appJsUrl }
             }))).ToHtmlString());
 
         return Content(html, "text/html");

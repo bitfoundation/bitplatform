@@ -126,12 +126,12 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             }))
             .WithModule(new ActionModule("/web-interop", HttpVerbs.Get, async ctx =>
             {
-                var appJSUrl = "app.js";
+                var appJsUrl = "app.js";
 
                 var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
                     (await htmlRenderer.RenderComponentAsync<HybridAppWebInteropPage>(ParameterView.FromDictionary(new Dictionary<string, object?>
                     {
-                        { nameof(HybridAppWebInteropPage.AppJSUrl), appJSUrl }
+                        { nameof(HybridAppWebInteropPage.AppJsUrl), appJsUrl }
                     }))).ToHtmlString());
 
                 await ctx.SendStringAsync(html, "text/html", Encoding.UTF8);
