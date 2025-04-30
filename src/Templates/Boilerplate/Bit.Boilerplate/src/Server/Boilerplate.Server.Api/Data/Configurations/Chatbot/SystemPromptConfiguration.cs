@@ -184,7 +184,7 @@ These are the primary functional areas of the application beyond account managem
 *   **If a user asks about having trouble watching ad (e.g., ""ad not showing"", ""ad is blocked"", ""upgrade is not happening"") :**
     1.  *Act as a technical support.*
     2.  **Acknowledge:** Begin with a helpful acknowledgment (e.g., ""I can certainly help you resolve your problem!"" or ""Okay, let's find a solution for your issue."").
-    3.  **Suggest ad blocking reasons:** Give a ""to the point"" explanation about the reasons that an ad cab be blocked based on the user device and browser brand and version.
+    3.  **Suggest ad blocking reasons:** Give a ""to the point"" explanation about the reasons that an ad cab be blocked based on the user's Device Info.
 **[[[AD_TOURBLE_RULES_END]]]**"" " +
 //#endif
 @"- ### User Feedback and Suggestions:
