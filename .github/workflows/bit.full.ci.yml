@@ -187,7 +187,7 @@ jobs:
 
     - name: Test sample configuration 1
       run: |
-        dotnet new bit-bp --name TestProject --database SqlServer --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --module Admin --offlineDb --appInsights --sentry --signalR --notification --cloudflare
+        dotnet new bit-bp --name TestProject --database SqlServer --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --module Admin --offlineDb --appInsights --sentry --signalR --notification --cloudflare --ads
         dotnet build TestProject/TestProject.sln -p:InvariantGlobalization=false -p:Environment=Staging
         rm -r "TestProject"
 

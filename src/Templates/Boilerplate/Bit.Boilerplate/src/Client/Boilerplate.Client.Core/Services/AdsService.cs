@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Client.Core.Services;
 
-public partial class AdsService : IAdsService
+public partial class AdsService : IAdsService, IDisposable
 {
     [AutoInject] private IJSRuntime jsRuntime = default!;
 
@@ -81,5 +81,10 @@ public partial class AdsService : IAdsService
     [JSInvokable(nameof(AdVisible))]
     public async Task AdVisible()
     {
+    }
+
+    public void Dispose()
+    {
+        dotnetObj?.Dispose();
     }
 }
