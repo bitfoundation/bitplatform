@@ -1266,4 +1266,15 @@
     <value>Thinking...</value>
   </data>
     <!--#endif -->
+    <!--#if (ads == true) -->
+    <data name="Upgrade" xml:space="preserve">
+    <value>Upgrade</value>
+  </data>
+    <data name="UpgradeTitle" xml:space="preserve">
+    <value>Upgrade account</value>
+  </data>
+    <data name="UpgradeSubtitle" xml:space="preserve">
+    <value>There is no account upgrade here. this is just a demo for rewarding ads.</value>
+  </data>
+    <!--#endif -->
 </root>

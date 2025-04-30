@@ -1266,4 +1266,15 @@
     <value>درحال فکر کردن...</value>
   </data>
     <!--#endif -->
+    <!--#if (ads == true) -->
+    <data name="Upgrade" xml:space="preserve">
+    <value>ارتقاء</value>
+  </data>
+    <data name="UpgradeTitle" xml:space="preserve">
+    <value>ارتقاء حساب کاربری</value>
+  </data>
+    <data name="UpgradeSubtitle" xml:space="preserve">
+    <value>در اینجا هیچ ارتقاء حسابی وجود ندارد. این فقط یک نسخه نمایشی برای تبلیغات باپاداش است.</value>
+  </data>
+    <!--#endif -->
 </root>
