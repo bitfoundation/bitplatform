@@ -1285,5 +1285,11 @@
     <data name="UpgradeAdShownMessage" xml:space="preserve">
     <value>Ad has been shown.</value>
   </data>
+    <data name="UpgradeAdHaveTrouble" xml:space="preserve">
+    <value>Having trouble watching ad?</value>
+  </data>
+    <data name="UpgradeAdHaveTroublePrompt" xml:space="preserve">
+    <value>I'm having trouble watching the upgrade account advertisement</value>
+  </data>
     <!--#endif -->
 </root>

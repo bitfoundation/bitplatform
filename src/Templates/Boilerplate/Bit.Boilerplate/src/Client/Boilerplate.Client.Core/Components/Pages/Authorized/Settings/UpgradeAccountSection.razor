@@ -8,13 +8,20 @@
         }
         else if (adIsShown is false)
         {
-            <BitButton OnClick="WrapHandled(WatchAdd)">
+            <BitButton OnClick="WrapHandled(WatchAd)">
                 @Localizer[nameof(AppStrings.Upgrade)]
             </BitButton>
         }
         else
         {
             <BitMessage>@Localizer[nameof(AppStrings.UpgradeAdShownMessage)]</BitMessage>
+        }
+
+        @if (showTroubleButton)
+        {
+            <BitButton OnClick="WrapHandled(HandleAdTrouble)">
+                @Localizer[nameof(AppStrings.UpgradeAdHaveTrouble)]
+            </BitButton>
         }
     </BitStack>
 </section>
