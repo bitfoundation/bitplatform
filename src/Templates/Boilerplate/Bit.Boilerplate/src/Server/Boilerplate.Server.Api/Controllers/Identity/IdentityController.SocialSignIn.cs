@@ -1,13 +1,12 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Boilerplate.Server.Api.Services;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Components.Web;
+using Boilerplate.Server.Api.Controllers.HybridAppWebInterop;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
 public partial class IdentityController
 {
-    [AutoInject] private HtmlRenderer htmlRenderer = default!;
     [AutoInject] private ServerExceptionHandler serverExceptionHandler = default!;
 
     [HttpGet]
@@ -105,7 +104,9 @@ public partial class IdentityController
             await Request.HttpContext.SignOutAsync(IdentityConstants.ExternalScheme); // We'll handle sign-in with the following redirects, so no external identity cookie is needed.
         }
 
-        if (localHttpPort is not null) return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}"), url).ToString());
+        if (localHttpPort is not null)
+            return Redirect(Url.Action(nameof(HybridAppWebInteropController.WebAppInterop), "HybridAppWebInterop", new { localHttpPort, url, actionName = "SocialSignInCallback" })!);
+
         return Redirect(new Uri(Request.HttpContext.Request.GetWebAppUrl(), url).ToString());
     }
 }

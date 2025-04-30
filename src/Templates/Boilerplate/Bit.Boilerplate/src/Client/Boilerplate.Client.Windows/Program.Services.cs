@@ -13,9 +13,6 @@ public static partial class Program
         services.AddClientCoreProjectServices(configuration);
 
         services.AddScoped<IWebAuthnService, WindowsWebAuthnService>();
-        //#if (ads == true)
-        services.AddScoped<IAdsService, AdsService>();
-        //#endif
         services.AddScoped<IExceptionHandler, WindowsExceptionHandler>();
         services.AddScoped<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
 

@@ -585,7 +585,7 @@
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Settings/UpgradeAccountSection*.*",
                         "src/Client/Boilerplate.Client.Core/Scripts/Ads.ts",
                         "src/Client/Boilerplate.Client.Core/Services/Contracts/IAdsService.cs",
-                        "src/Client/Boilerplate.Client.Web/Services/AdsService.cs"
+                        "src/Client/Boilerplate.Client.Core/Services/AdsService.cs"
                     ]
                 }
             ]

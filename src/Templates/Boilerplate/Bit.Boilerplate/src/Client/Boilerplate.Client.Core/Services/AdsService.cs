@@ -1,8 +1,9 @@
 ﻿namespace Boilerplate.Client.Core.Services;
 
-public partial class AdsService : IAdsService
+public partial class AdsService : IAdsService, IDisposable
 {
     [AutoInject] private IJSRuntime jsRuntime = default!;
+    [AutoInject] private ILogger<AdsService> logger = default!;
 
 
     private TaskCompletionSource? initTsc;
@@ -19,6 +20,8 @@ public partial class AdsService : IAdsService
 
         await jsRuntime.InvokeVoidAsync("Ads.init", adUnitPath, dotnetObj);
         await initTsc.Task;
+
+        logger.LogInformation("Ad is ready");
     }
 
     public async Task<AdWatchResult> Watch()
@@ -28,7 +31,18 @@ public partial class AdsService : IAdsService
         watchTsc = new();
 
         await jsRuntime.InvokeVoidAsync("Ads.watch");
-        return await watchTsc.Task;
+        var result = await watchTsc.Task;
+
+        if (result is AdWatchResult.Rewarded)
+        {
+            logger.LogInformation("Ad rewarded");
+        }
+        else
+        {
+            logger.LogWarning("Ad failed");
+        }
+
+        return result;
     }
 
     [JSInvokable(nameof(ScriptFailed))]
@@ -81,5 +95,10 @@ public partial class AdsService : IAdsService
     [JSInvokable(nameof(AdVisible))]
     public async Task AdVisible()
     {
+    }
+
+    public void Dispose()
+    {
+        dotnetObj?.Dispose();
     }
 }

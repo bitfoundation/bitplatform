@@ -87,7 +87,7 @@ public partial class AppDiagnosticModal
         if (log is null) return string.Empty;
 
         var stateToCopy = string.Join(Environment.NewLine, log.State?.Select(i => $"{i.Key}: {i.Value}") ?? []);
-        return $"{log.Category}{Environment.NewLine}{log.Message}{Environment.NewLine}{log.ExceptionString?.ToString()}{Environment.NewLine}{stateToCopy}";
+        return $"{log.Category}{Environment.NewLine}{log.Message}{Environment.NewLine}{log.ExceptionString}{Environment.NewLine}{stateToCopy}";
     }
 
     private async Task GoTop()

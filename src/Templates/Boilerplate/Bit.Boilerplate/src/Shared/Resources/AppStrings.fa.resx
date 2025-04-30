@@ -1282,14 +1282,11 @@
     <data name="UpgradeFailMessage" xml:space="preserve">
     <value>ارتقاء حساب با شکست مواجه شد.</value>
   </data>
-    <data name="UpgradeAdShownMessage" xml:space="preserve">
-    <value>تبلیعات نمایش داده شده است.</value>
-  </data>
     <data name="UpgradeAdHaveTrouble" xml:space="preserve">
     <value>مشکلی برای مشاهده تبلیغ دارید؟</value>
   </data>
     <data name="UpgradeAdHaveTroublePrompt" xml:space="preserve">
-    <value>من در تماشای آگهی ارتقاء حساب مشکل دارم</value>
+    <value>من تو تماشای تبلیغات درون برنامه‌ای مشکل دارم</value>
   </data>
     <!--#endif -->
 </root>

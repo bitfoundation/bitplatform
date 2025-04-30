@@ -1,10 +1,31 @@
+﻿@namespace Boilerplate.Server.Api.Components
+
+@code {
+    [Parameter] public string? AppJsUrl { get; set; }
+}
+
+@*
+# Blazor Hybrid App Integration Overview
+
+## Purpose
+This document outlines the operational dependencies of Blazor Hybrid applications, specifically focusing on web browser reliance for key functionalities to ensure seamless UX across both web and hybrid app versions.
+
+## Browser-Dependent Features
+Blazor Hybrid apps leverage web browser capabilities to deliver the following features:
+
+1. **Social Sign-In**
+   - Utilizes web-based authentication flows to enable secure and streamlined social sign-in processes, ensuring compatibility with major identity providers.
+
+2. **WebAuthn (Passkeys)**
+   - Supports biometric authentication (e.g., Face ID, fingerprint) through WebAuthn passkeys, providing a secure and user-friendly login experience.
+*@
+
 <html>
 <head>
     <base href="/" />
     <title>Boilerplate</title>
     <link rel="icon" href="data:image/png;base64,iVBORw0KGgo=">
     <style>
-
         html, body, main {
             margin: 0;
             padding: 0;
@@ -28,7 +49,7 @@
             justify-content: center;
         }
 
-        @media (prefers-color-scheme: dark) {
+        @@media (prefers-color-scheme: dark) {
             body {
                 background: #010409;
             }
@@ -48,10 +69,10 @@
         <button class="fluent-button" onclick="window.close();">&#x1F519;</button>
     </div>
 
-    <script src="app.js"></script>
+    <script src="@AppJsUrl"></script>
 
     <script type="text/javascript">
-        ExternalJsRunner.run();
+        HybridAppWebInterop.run();
     </script>
 </body>
 </html>

@@ -402,16 +402,6 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         await Task.WhenAll(sendMessagesTasks);
     }
 
-    [HttpGet]
-    [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5)]
-    public async Task<ActionResult> CloseBrowserPage()
-    {
-        var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
-                    (await htmlRenderer.RenderComponentAsync<CloseBrowserPage>()).ToHtmlString());
-
-        return Content(html, "text/html");
-    }
-
     private async Task<(string token, string url)> GenerateAutomaticSignInLink(User user, string? returnUrl, string originalAuthenticationMethod)
     {
         user.OtpRequestedOn = DateTimeOffset.Now;
