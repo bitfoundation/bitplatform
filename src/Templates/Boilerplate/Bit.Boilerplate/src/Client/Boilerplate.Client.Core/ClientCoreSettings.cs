@@ -17,7 +17,7 @@ public partial class ClientCoreSettings : SharedSettings
 
     //#if (ads == true)
     /// <summary>
-    /// The advertisement's unit path of the google ads from the GoogleAdSense account.
+    /// The advertisement's unit path of the google ads from the Google Ad Manager panel.
     /// </summary>
     [Required]
     public string AdUnitPath { get; set; } = default!;
