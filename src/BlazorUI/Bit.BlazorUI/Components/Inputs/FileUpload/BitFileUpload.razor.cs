@@ -157,12 +157,22 @@ public partial class BitFileUpload : BitComponentBase
     /// <summary>
     /// Custom http headers for remove request.
     /// </summary>
-    [Parameter] public IReadOnlyDictionary<string, string>? RemoveRequestHttpHeaders { get; set; }
+    [Parameter] public Dictionary<string, string>? RemoveRequestHttpHeaders { get; set; }
+
+    /// <summary>
+    /// The provider function to create the http headers for remove request.
+    /// </summary>
+    [Parameter] public Func<Task<Dictionary<string, string>>>? RemoveRequestHttpHeadersProvider { get; set; }
 
     /// <summary>
     /// Custom query strings for remove request.
     /// </summary>
-    [Parameter] public IReadOnlyDictionary<string, string>? RemoveRequestQueryStrings { get; set; }
+    [Parameter] public Dictionary<string, string>? RemoveRequestQueryStrings { get; set; }
+
+    /// <summary>
+    /// The provider function to create the query strings for remove request.
+    /// </summary>
+    [Parameter] public Func<Task<Dictionary<string, string>>>? RemoveRequestQueryStringsProvider { get; set; }
 
     /// <summary>
     /// URL of the server endpoint removing the files.
@@ -182,17 +192,22 @@ public partial class BitFileUpload : BitComponentBase
     /// <summary>
     /// Custom http headers for upload request.
     /// </summary>
-    [Parameter] public IReadOnlyDictionary<string, string>? UploadRequestHttpHeaders { get; set; }
+    [Parameter] public Dictionary<string, string>? UploadRequestHttpHeaders { get; set; }
+
+    /// <summary>
+    /// The provider function to create the http headers for upload request.
+    /// </summary>
+    [Parameter] public Func<Task<Dictionary<string, string>>>? UploadRequestHttpHeadersProvider { get; set; }
 
     /// <summary>
     /// Custom query strings for upload request.
     /// </summary>
-    [Parameter] public IReadOnlyDictionary<string, string>? UploadRequestQueryStrings { get; set; }
+    [Parameter] public Dictionary<string, string>? UploadRequestQueryStrings { get; set; }
 
     /// <summary>
     /// The provider function to create the query strings for upload request.
     /// </summary>
-    [Parameter] public Func<Task<IReadOnlyDictionary<string, string>>>? UploadRequestQueryStringsProvider { get; set; }
+    [Parameter] public Func<Task<Dictionary<string, string>>>? UploadRequestQueryStringsProvider { get; set; }
 
     /// <summary>
     /// URL of the server endpoint receiving the files.
@@ -471,7 +486,9 @@ public partial class BitFileUpload : BitComponentBase
 
         if (IsDisposed) return;
 
-        _files.AddRange(await _js.BitFileUploadSetup(UniqueId, _dotnetObj, _inputRef, Append, url, UploadRequestHttpHeaders));
+        var httpHeaders = UploadRequestHttpHeadersProvider is null ? UploadRequestHttpHeaders : (await UploadRequestHttpHeadersProvider.Invoke());
+
+        _files.AddRange(await _js.BitFileUploadSetup(UniqueId, _dotnetObj, _inputRef, Append, url, httpHeaders));
 
         if (_files.Any() is false) return;
 
@@ -656,21 +673,27 @@ public partial class BitFileUpload : BitComponentBase
         try
         {
             var url = AddQueryString(RemoveUrl!, "fileName", fileInfo.Name);
-            if (RemoveRequestQueryStrings is not null)
+
+            var qs = RemoveRequestQueryStringsProvider is null
+                        ? RemoveRequestQueryStrings
+                        : (await RemoveRequestQueryStringsProvider.Invoke());
+
+            if (qs is not null)
             {
-                url = AddQueryString(url, RemoveRequestQueryStrings);
+                url = AddQueryString(url, qs);
             }
 
             using var request = new HttpRequestMessage(HttpMethod.Delete, url);
 
             request.Headers.Add("BIT_FILE_ID", fileInfo.FileId);
 
-            if (RemoveRequestHttpHeaders is not null)
+            var httpHeaders = (RemoveRequestHttpHeadersProvider is null
+                                ? RemoveRequestHttpHeaders
+                                : (await RemoveRequestHttpHeadersProvider.Invoke())) ?? [];
+
+            foreach (var header in httpHeaders)
             {
-                foreach (var header in RemoveRequestHttpHeaders)
-                {
-                    request.Headers.Add(header.Key, header.Value);
-                }
+                request.Headers.Add(header.Key, header.Value);
             }
 
             await _httpClient.SendAsync(request);
@@ -689,7 +712,7 @@ public partial class BitFileUpload : BitComponentBase
         return AddQueryString(uri, new Dictionary<string, string> { { name, value } });
     }
 
-    private static string AddQueryString(string? url, IReadOnlyDictionary<string, string> queryStrings)
+    private static string AddQueryString(string? url, Dictionary<string, string> queryStrings)
     {
         if (url.HasNoValue()) return string.Empty;
 
