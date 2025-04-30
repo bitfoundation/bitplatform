@@ -2,7 +2,7 @@
 
 public interface IAdsService
 {
-    ValueTask Init<T>(string adUnitPath, DotNetObjectReference<T> dotnetObj) where T : class;
+    ValueTask Init(string adUnitPath);
 
     ValueTask Watch();
 }

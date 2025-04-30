@@ -1,19 +1,24 @@
 const gtag = (window as any).googletag = (window as any).googletag || { cmd: [] };
 
 class Ads {
-    private static dotnetObj: DotNetObject | undefined;
-    private static slotReadyEvent: any;
     private static rewardedSlot: any;
     private static rewardPayload: any;
+    private static slotReadyEvent: any;
+    private static dotnetObj: DotNetObject | undefined;
 
     public static async init(adUnitPath: string, dotnetObj?: DotNetObject) {
         Ads.dotnetObj = dotnetObj;
 
-        await Ads.addScripts(['https://securepubads.g.doubleclick.net/tag/js/gpt.js'], true);
-
+        try {
+            await Ads.addScripts(['https://securepubads.g.doubleclick.net/tag/js/gpt.js'], true);
+        } catch (err) {
+            console.log('err:', err);
+            return;
+        }
+        
         gtag.cmd.push(async () => {
             Ads.rewardedSlot = gtag.defineOutOfPageSlot(adUnitPath, gtag.enums.OutOfPageFormat.REWARDED);
-
+            
             if (!Ads.rewardedSlot) {
                 await Ads.dotnetObj?.invokeMethodAsync('AdNotSupported');
                 return;
