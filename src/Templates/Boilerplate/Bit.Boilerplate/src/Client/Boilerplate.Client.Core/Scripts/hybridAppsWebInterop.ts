@@ -2,7 +2,7 @@
 
 class HybridAppWebInterop {
 
-    static async run() {
+    public static async run() {
         try {
             const urlParams = new URLSearchParams(location.search);
             const action = urlParams.get('actionName');
@@ -23,7 +23,7 @@ class HybridAppWebInterop {
         }
     }
 
-    static async socialSignInCallback() {
+    private static async socialSignInCallback() {
         const urlParams = new URLSearchParams(location.search);
         const urlToOpen = urlParams.get('url')!.toString();
         const localHttpPort = Number.parseInt(urlParams.get('localHttpPort')!.toString());
@@ -33,7 +33,7 @@ class HybridAppWebInterop {
         });
     }
 
-    static async getWebAuthnCredential() {
+    private static async getWebAuthnCredential() {
         try {
             const webAuthnCredentialOptions = await (await fetch(`api/GetWebAuthnCredentialOptions`, { credentials: 'omit' })).json();
             const webAuthnCredential = await WebAuthn.getCredential(webAuthnCredentialOptions);
@@ -52,7 +52,7 @@ class HybridAppWebInterop {
         }
     }
 
-    static async createWebAuthnCredential() {
+    private static async createWebAuthnCredential() {
         try {
             const webAuthnCredentialOptions = await (await fetch(`api/GetCreateWebAuthnCredentialOptions`, { credentials: 'omit' })).json();
             const webAuthnCredential = await WebAuthn.createCredential(webAuthnCredentialOptions);
