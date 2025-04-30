@@ -1,8 +1,8 @@
-using Boilerplate.Shared.Controllers.Identity;
+﻿using Boilerplate.Shared.Controllers.Identity;
 
-namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings;
+namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings.Account;
 
-public partial class DeleteAccountSection
+public partial class DeleteAccountTab
 {
     private bool isDialogOpen;
 

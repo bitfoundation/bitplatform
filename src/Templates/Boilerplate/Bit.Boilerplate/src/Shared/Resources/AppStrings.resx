@@ -1266,4 +1266,30 @@
     <value>Thinking...</value>
   </data>
     <!--#endif -->
+    <!--#if (ads == true) -->
+    <data name="Upgrade" xml:space="preserve">
+    <value>Upgrade</value>
+  </data>
+    <data name="UpgradeTitle" xml:space="preserve">
+    <value>Upgrade account</value>
+  </data>
+    <data name="UpgradeSubtitle" xml:space="preserve">
+    <value>There is no account upgrade here. this is just a demo for rewarding ads.</value>
+  </data>
+    <data name="UpgradeSuccessMessage" xml:space="preserve">
+    <value>Upgrade account done successfuly.</value>
+  </data>
+    <data name="UpgradeFailMessage" xml:space="preserve">
+    <value>Upgrade account failed.</value>
+  </data>
+    <data name="UpgradeAdShownMessage" xml:space="preserve">
+    <value>Ad has been shown.</value>
+  </data>
+    <data name="UpgradeAdHaveTrouble" xml:space="preserve">
+    <value>Having trouble watching ad?</value>
+  </data>
+    <data name="UpgradeAdHaveTroublePrompt" xml:space="preserve">
+    <value>I'm having trouble watching the upgrade account advertisement</value>
+  </data>
+    <!--#endif -->
 </root>

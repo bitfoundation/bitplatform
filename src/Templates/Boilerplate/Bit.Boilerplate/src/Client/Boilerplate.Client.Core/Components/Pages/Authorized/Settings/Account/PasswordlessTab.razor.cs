@@ -1,10 +1,10 @@
-using Fido2NetLib;
+﻿using Fido2NetLib;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 
-namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings;
+namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings.Account;
 
-public partial class PasswordlessSection
+public partial class PasswordlessTab
 {
     private bool isConfigured;
 

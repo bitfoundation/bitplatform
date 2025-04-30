@@ -1266,4 +1266,30 @@
     <value>درحال فکر کردن...</value>
   </data>
     <!--#endif -->
+    <!--#if (ads == true) -->
+    <data name="Upgrade" xml:space="preserve">
+    <value>ارتقاء</value>
+  </data>
+    <data name="UpgradeTitle" xml:space="preserve">
+    <value>ارتقاء حساب کاربری</value>
+  </data>
+    <data name="UpgradeSubtitle" xml:space="preserve">
+    <value>در اینجا هیچ ارتقاء حسابی وجود ندارد. این فقط یک نسخه نمایشی برای تبلیغات باپاداش است.</value>
+  </data>
+    <data name="UpgradeSuccessMessage" xml:space="preserve">
+    <value>ارتقاء حساب با موفقیت انجام شد.</value>
+  </data>
+    <data name="UpgradeFailMessage" xml:space="preserve">
+    <value>ارتقاء حساب با شکست مواجه شد.</value>
+  </data>
+    <data name="UpgradeAdShownMessage" xml:space="preserve">
+    <value>تبلیعات نمایش داده شده است.</value>
+  </data>
+    <data name="UpgradeAdHaveTrouble" xml:space="preserve">
+    <value>مشکلی برای مشاهده تبلیغ دارید؟</value>
+  </data>
+    <data name="UpgradeAdHaveTroublePrompt" xml:space="preserve">
+    <value>من در تماشای آگهی ارتقاء حساب مشکل دارم</value>
+  </data>
+    <!--#endif -->
 </root>

@@ -1,9 +1,9 @@
-using Boilerplate.Shared.Controllers.Identity;
+﻿using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 
-namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings;
+namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings.Account;
 
-public partial class ChangePhoneNumberSection
+public partial class ChangePhoneNumberTab
 {
     [Parameter] public string? PhoneNumber { get; set; }
 
