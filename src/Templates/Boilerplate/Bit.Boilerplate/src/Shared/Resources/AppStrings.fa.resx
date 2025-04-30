@@ -1286,7 +1286,7 @@
     <value>مشکلی برای مشاهده تبلیغ دارید؟</value>
   </data>
     <data name="UpgradeAdHaveTroublePrompt" xml:space="preserve">
-    <value>من در تماشای آگهی ارتقاء حساب مشکل دارم</value>
+    <value>من تو تماشای تبلیغات درون برنامه‌ای مشکل دارم</value>
   </data>
     <!--#endif -->
 </root>

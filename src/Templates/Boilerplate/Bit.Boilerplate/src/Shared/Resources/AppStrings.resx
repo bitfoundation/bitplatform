@@ -1286,7 +1286,7 @@
     <value>Having trouble watching ad?</value>
   </data>
     <data name="UpgradeAdHaveTroublePrompt" xml:space="preserve">
-    <value>I'm having trouble watching the upgrade account advertisement</value>
+    <value>I'm having trouble watching in app ads.</value>
   </data>
     <!--#endif -->
 </root>
