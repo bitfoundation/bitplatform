@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
@@ -50,11 +50,7 @@
         <Content Include="..\Boilerplate.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-        <Content Include="..\Boilerplate.Client.Maui\wwwroot\external-js-runner.html" Link="wwwroot\external-js-runner.html">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Remove="compilerconfig.json" />
-        <None Include="compilerconfig.json" />
+        <Content Include="..\..\Server\Boilerplate.Server.Api\Components\HybridAppWebInteropPage.razor" Link="Components\HybridAppWebInteropPage.razor" />
         <Content Include=".config\dotnet-tools.json" />
     </ItemGroup>
 

@@ -1,4 +1,4 @@
-using Fido2NetLib;
+﻿using Fido2NetLib;
 
 namespace Boilerplate.Client.Windows.Services;
 
@@ -7,41 +7,34 @@ public partial class WindowsWebAuthnService : WebAuthnServiceBase
     [AutoInject] private ILocalHttpServer localHttpServer = default!;
     [AutoInject] private IExternalNavigationService externalNavigationService = default!;
 
+    public AssertionOptions? GetWebAuthnCredentialOptions;
+    public TaskCompletionSource<AuthenticatorAssertionRawResponse>? GetWebAuthnCredentialTcs;
     public override async ValueTask<AuthenticatorAssertionRawResponse> GetWebAuthnCredential(AssertionOptions options, CancellationToken cancellationToken)
     {
-        try
-        {
-            await externalNavigationService.NavigateToAsync($"{localHttpServer.Origin}/external-js-runner.html");
+        GetWebAuthnCredentialOptions = options;
 
-            var result = (await WindowsExternalJsRunner.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "getCredential", Options = options }, JsonSerializerOptions.Web)))
-                .Deserialize<AuthenticatorAssertionRawResponse>(JsonSerializerOptions.Web)!;
+        GetWebAuthnCredentialTcs = new();
 
-            return result ?? throw new TaskCanceledException();
-        }
-        finally
-        {
-            await CloseExternalBrowser();
-        }
+        ((WindowsLocalHttpServer)localHttpServer).WebAuthnService = this;
+
+        await externalNavigationService.NavigateToAsync($"http://localhost:{localHttpServer.Port}/web-interop?actionName=GetWebAuthnCredential");
+
+        return await GetWebAuthnCredentialTcs.Task;
     }
 
-    private static async Task CloseExternalBrowser()
-    {
-        _ = WindowsExternalJsRunner.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "close" }, JsonSerializerOptions.Web));
-    }
-
+    public CredentialCreateOptions? CreateWebAuthnCredentialOptions;
+    public TaskCompletionSource<AuthenticatorAttestationRawResponse>? CreateWebAuthnCredentialTcs;
     public override async ValueTask<AuthenticatorAttestationRawResponse> CreateWebAuthnCredential(CredentialCreateOptions options)
     {
-        try
-        {
-            await externalNavigationService.NavigateToAsync($"{localHttpServer.Origin}/external-js-runner.html");
+        CreateWebAuthnCredentialOptions = options;
 
-            return (await WindowsExternalJsRunner.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "createCredential", Options = options }, JsonSerializerOptions.Web)))
-                .Deserialize<AuthenticatorAttestationRawResponse>(JsonSerializerOptions.Web)!;
-        }
-        finally
-        {
-            await CloseExternalBrowser();
-        }
+        CreateWebAuthnCredentialTcs = new();
+
+        ((WindowsLocalHttpServer)localHttpServer).WebAuthnService = this;
+
+        await externalNavigationService.NavigateToAsync($"http://localhost:{localHttpServer.Port}/web-interop?actionName=CreateWebAuthnCredential");
+
+        return await CreateWebAuthnCredentialTcs.Task;
     }
 
     public override async ValueTask<bool> IsWebAuthnAvailable()
