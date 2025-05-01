@@ -7,7 +7,7 @@ public partial class AccountSection
     [Parameter] public UserDto? User { get; set; }
 
 
-    [AutoInject] private IWebAuthnService webAuthnService = default!;
+    [AutoInject] private WebAuthn webAuthn = default!;
 
 
     private bool showPasswordless;
@@ -19,7 +19,7 @@ public partial class AccountSection
 
         if (InPrerenderSession is false)
         {
-            showPasswordless = await webAuthnService.IsWebAuthnAvailable();
+            showPasswordless = await webAuthn.IsAvailable();
         }
     }
 }

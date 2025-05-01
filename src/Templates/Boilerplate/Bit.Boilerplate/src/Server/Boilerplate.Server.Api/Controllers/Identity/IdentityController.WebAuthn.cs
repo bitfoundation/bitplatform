@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using System.Text;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Dtos.Identity;
@@ -57,7 +57,7 @@ public partial class IdentityController
     }
 
     [HttpPost, Produces<SignInResponseDto>()]
-    public async Task VerifyWebAuthAndSignIn(VerifyWebAuthnAndSignInDto request, CancellationToken cancellationToken)
+    public async Task VerifyWebAuthAndSignIn(VerifyWebAuthnAndSignInDto<AuthenticatorAssertionRawResponse> request, CancellationToken cancellationToken)
     {
         var (verifyResult, credential) = await Verify(request.ClientResponse, cancellationToken);
 

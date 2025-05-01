@@ -1,5 +1,4 @@
 ﻿//+:cnd:noEmit
-using Fido2NetLib;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 using Microsoft.AspNetCore.Components.Routing;
@@ -28,7 +27,9 @@ public partial class SignInPage
     public string? ErrorQueryString { get; set; }
 
 
+    [AutoInject] private WebAuthn webAuthn = default!;
     [AutoInject] private IWebAuthnService webAuthnService = default!;
+
     [AutoInject] private ILocalHttpServer localHttpServer = default!;
     [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private IIdentityController identityController = default!;
@@ -39,10 +40,10 @@ public partial class SignInPage
     private bool isOtpSent;
     private bool sucssefulSignIn;
     private bool requiresTwoFactor;
+    private object? webAuthnAssertion;
     private SignInPanelTab currentSignInPanelTab;
     private readonly SignInRequestDto model = new();
     private AppDataAnnotationsValidator? validatorRef;
-    private AuthenticatorAssertionRawResponse? webAuthnAssertion;
 
     protected override async Task OnInitAsync()
     {
@@ -107,7 +108,13 @@ public partial class SignInPage
             {
                 var response = await identityController
                     .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
-                    .VerifyWebAuthAndSignIn(new() { ClientResponse = webAuthnAssertion, TfaCode = model.TwoFactorCode }, CurrentCancellationToken);
+                    .VerifyWebAuthAndSignIn(
+                        new VerifyWebAuthnAndSignInDto<object>
+                        {
+                            ClientResponse = webAuthnAssertion,
+                            TfaCode = model.TwoFactorCode
+                        },
+                        CurrentCancellationToken);
 
                 requiresTwoFactor = response.RequiresTwoFactor;
 
@@ -141,7 +148,7 @@ public partial class SignInPage
         catch (KnownException e)
         {
             // To disable the sign-in button until a specific time after a user lockout, use the value of `e.TryGetExtensionDataValue<TimeSpan>("TryAgainIn", out var tryAgainIn)`.
-
+            webAuthnAssertion = null;
             SnackBarService.Error(e.Message);
         }
         finally
@@ -186,12 +193,13 @@ public partial class SignInPage
 
             try
             {
-                webAuthnAssertion = await webAuthnService.GetWebAuthnCredential(options, CurrentCancellationToken);
+                webAuthnAssertion = await webAuthn.GetCredential(options);
             }
             catch (Exception ex)
             {
                 // we can safely handle the exception thrown here since it mostly because of a timeout or user cancelling the native ui.
                 ExceptionHandler.Handle(ex, AppEnvironment.IsDev() ? ExceptionDisplayKind.NonInterrupting : ExceptionDisplayKind.None);
+                webAuthnAssertion = null;
                 return;
             }
 

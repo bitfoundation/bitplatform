@@ -1,6 +1,4 @@
 ﻿//+:cnd:noEmit
-using Fido2NetLib;
-using Fido2NetLib.Objects;
 //#if (sample == true)
 using Boilerplate.Shared.Dtos.Todo;
 //#endif
@@ -56,12 +54,7 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(OverallAnalyticsStatsDataResponseDto))]
 [JsonSerializable(typeof(List<ProductPercentagePerCategoryResponseDto>))]
 //#endif
-[JsonSerializable(typeof(AssertionOptions))]
-[JsonSerializable(typeof(AuthenticatorAssertionRawResponse))]
-[JsonSerializable(typeof(AuthenticatorAttestationRawResponse))]
-[JsonSerializable(typeof(CredentialCreateOptions))]
-[JsonSerializable(typeof(VerifyAssertionResult))]
-[JsonSerializable(typeof(VerifyWebAuthnAndSignInDto))]
+[JsonSerializable(typeof(VerifyWebAuthnAndSignInDto<object>))]
 [JsonSerializable(typeof(WebAuthnAssertionOptionsRequestDto))]
 
 //#if (signalR == true)

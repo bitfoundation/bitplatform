@@ -1,6 +1,5 @@
-﻿using Fido2NetLib;
+﻿using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings.Account;
 
@@ -9,6 +8,7 @@ public partial class PasswordlessTab
     private bool isConfigured;
 
 
+    [AutoInject] private WebAuthn webAuthn = default!;
     [AutoInject] IUserController userController = default!;
     [AutoInject] IWebAuthnService webAuthnService = default!;
     [AutoInject] ILocalHttpServer localHttpServer = default!;
@@ -44,10 +44,10 @@ public partial class PasswordlessTab
             .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
             .GetWebAuthnCredentialOptions(CurrentCancellationToken);
 
-        AuthenticatorAttestationRawResponse attestationResponse;
+        object attestationResponse;
         try
         {
-            attestationResponse = await webAuthnService.CreateWebAuthnCredential(options);
+            attestationResponse = (await webAuthn.CreateCredential(options));
         }
         catch (JSException ex)
         {
@@ -75,10 +75,10 @@ public partial class PasswordlessTab
             .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
             .GetWebAuthnAssertionOptions(new() { UserIds = [User.Id] }, CurrentCancellationToken);
 
-        AuthenticatorAssertionRawResponse assertion;
+        object assertion;
         try
         {
-            assertion = await webAuthnService.GetWebAuthnCredential(options, CurrentCancellationToken);
+            assertion = (await webAuthn.GetCredential(options));
         }
         catch (Exception ex)
         {
@@ -93,7 +93,7 @@ public partial class PasswordlessTab
 
         await userController
             .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
-            .DeleteWebAuthnCredential(assertion.Id, CurrentCancellationToken);
+            .DeleteWebAuthnCredential(assertion, CurrentCancellationToken);
 
         await webAuthnService.RemoveWebAuthnConfiguredUserId(User.Id);
 
