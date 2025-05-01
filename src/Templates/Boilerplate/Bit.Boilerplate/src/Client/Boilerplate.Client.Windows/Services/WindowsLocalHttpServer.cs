@@ -1,12 +1,11 @@
 ﻿using EmbedIO;
 using System.Net;
+using System.Text;
 using EmbedIO.Actions;
 using System.Net.Sockets;
+using Microsoft.AspNetCore.Components;
 using Boilerplate.Server.Api.Components;
 using Boilerplate.Client.Core.Components;
-using Fido2NetLib;
-using System.Text;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Boilerplate.Client.Windows.Services;
@@ -74,7 +73,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
                     }
                     else
                     {
-                        WebAuthnService!.GetWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<AuthenticatorAssertionRawResponse>(await ctx.GetRequestBodyAsStringAsync())!);
+                        WebAuthnService!.GetWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<object>(await ctx.GetRequestBodyAsStringAsync())!);
                     }
                 }
                 finally
@@ -97,7 +96,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
                     }
                     else
                     {
-                        WebAuthnService!.CreateWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<AuthenticatorAttestationRawResponse>(await ctx.GetRequestBodyAsStringAsync())!);
+                        WebAuthnService!.CreateWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<object>(await ctx.GetRequestBodyAsStringAsync())!);
                     }
                 }
                 finally

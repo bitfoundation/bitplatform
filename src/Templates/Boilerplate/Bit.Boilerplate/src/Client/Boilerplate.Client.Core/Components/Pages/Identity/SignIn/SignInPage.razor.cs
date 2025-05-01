@@ -27,7 +27,6 @@ public partial class SignInPage
     public string? ErrorQueryString { get; set; }
 
 
-    [AutoInject] private WebAuthn webAuthn = default!;
     [AutoInject] private IWebAuthnService webAuthnService = default!;
 
     [AutoInject] private ILocalHttpServer localHttpServer = default!;
@@ -193,7 +192,7 @@ public partial class SignInPage
 
             try
             {
-                webAuthnAssertion = await webAuthn.GetCredential(options);
+                webAuthnAssertion = await webAuthnService.GetWebAuthnCredential(options);
             }
             catch (Exception ex)
             {

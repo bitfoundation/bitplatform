@@ -1,15 +1,14 @@
-﻿using Fido2NetLib;
-
-namespace Boilerplate.Client.Windows.Services;
+﻿namespace Boilerplate.Client.Windows.Services;
 
 public partial class WindowsWebAuthnService : WebAuthnServiceBase
 {
     [AutoInject] private ILocalHttpServer localHttpServer = default!;
     [AutoInject] private IExternalNavigationService externalNavigationService = default!;
 
-    public AssertionOptions? GetWebAuthnCredentialOptions;
-    public TaskCompletionSource<AuthenticatorAssertionRawResponse>? GetWebAuthnCredentialTcs;
-    public override async ValueTask<AuthenticatorAssertionRawResponse> GetWebAuthnCredential(AssertionOptions options, CancellationToken cancellationToken)
+    public object? GetWebAuthnCredentialOptions;
+    public TaskCompletionSource<object>? GetWebAuthnCredentialTcs;
+
+    public override async ValueTask<object> GetWebAuthnCredential(object options)
     {
         GetWebAuthnCredentialOptions = options;
 
@@ -22,9 +21,10 @@ public partial class WindowsWebAuthnService : WebAuthnServiceBase
         return await GetWebAuthnCredentialTcs.Task;
     }
 
-    public CredentialCreateOptions? CreateWebAuthnCredentialOptions;
-    public TaskCompletionSource<AuthenticatorAttestationRawResponse>? CreateWebAuthnCredentialTcs;
-    public override async ValueTask<AuthenticatorAttestationRawResponse> CreateWebAuthnCredential(CredentialCreateOptions options)
+    public object? CreateWebAuthnCredentialOptions;
+    public TaskCompletionSource<object>? CreateWebAuthnCredentialTcs;
+
+    public override async ValueTask<object> CreateWebAuthnCredential(object options)
     {
         CreateWebAuthnCredentialOptions = options;
 

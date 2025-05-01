@@ -12,7 +12,7 @@ public partial class SignInPanel
     private bool isWebAuthnAvailable;
     private string? selectedKey = EmailKey;
 
-    [AutoInject] private WebAuthn webAuthn = default!;
+    [AutoInject] private IWebAuthnService webAuthnService = default!;
 
 
     [Parameter] public bool IsWaiting { get; set; }
@@ -35,7 +35,7 @@ public partial class SignInPanel
     {
         await base.OnAfterFirstRenderAsync();
 
-        isWebAuthnAvailable = await webAuthn.IsAvailable();
+        isWebAuthnAvailable = await webAuthnService.IsWebAuthnAvailable();
 
         StateHasChanged();
     }

@@ -8,7 +8,6 @@ public partial class PasswordlessTab
     private bool isConfigured;
 
 
-    [AutoInject] private WebAuthn webAuthn = default!;
     [AutoInject] IUserController userController = default!;
     [AutoInject] IWebAuthnService webAuthnService = default!;
     [AutoInject] ILocalHttpServer localHttpServer = default!;
@@ -47,7 +46,7 @@ public partial class PasswordlessTab
         object attestationResponse;
         try
         {
-            attestationResponse = (await webAuthn.CreateCredential(options));
+            attestationResponse = (await webAuthnService.CreateWebAuthnCredential(options));
         }
         catch (JSException ex)
         {
@@ -78,7 +77,7 @@ public partial class PasswordlessTab
         object assertion;
         try
         {
-            assertion = (await webAuthn.GetCredential(options));
+            assertion = (await webAuthnService.GetWebAuthnCredential(options));
         }
         catch (Exception ex)
         {

@@ -7,6 +7,13 @@ public abstract partial class WebAuthnServiceBase : IWebAuthnService
     [AutoInject] protected IStorageService storageService = default!;
     [AutoInject] protected JsonSerializerOptions jsonSerializerOptions = default!;
 
+    public abstract ValueTask<bool> IsWebAuthnAvailable();
+
+    public abstract ValueTask<object> CreateWebAuthnCredential(object options);
+
+    public abstract ValueTask<object> GetWebAuthnCredential(object options);
+
+
     public virtual async ValueTask<Guid[]> GetWebAuthnConfiguredUserIds()
     {
         var userIdsAsString = await storageService.GetItem(STORE_KEY);
