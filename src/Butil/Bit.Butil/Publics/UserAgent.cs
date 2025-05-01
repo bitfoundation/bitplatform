@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using Bit.Butil.Publics.UserAgent;
 using Microsoft.JSInterop;
 
 namespace Bit.Butil;
