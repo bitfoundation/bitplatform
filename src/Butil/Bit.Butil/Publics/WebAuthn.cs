@@ -57,6 +57,7 @@ public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
     /// <summary>
     /// Tries to get a valid credential using the minimum required options to expose a native verification feature.
     /// </summary>
+    /// <param name="forceCreate">Forces the verification to be performed using the create credential approach.</param>
     public async Task<bool> Verify(bool forceCreate = false)
     {
         try
