@@ -129,7 +129,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                     {
                         { "AdditionalData", "Refreshing access token failed." },
                         { "RefreshTokenRequestedBy", requestedBy }
-                    });
+                    }, displayKind: ExceptionDisplayKind.NonInterrupting);
 
                     if (exp is UnauthorizedException) // refresh token is also invalid
                     {
