@@ -1,7 +1,13 @@
 // Read Boilerplate.Server.Api/Components/HybridAppWebInteropPage.razor
 
-class HybridAppWebInterop {
+declare class BitButil {
+    static webAuthn: {
+        getCredential: (options: unknown) => Promise<unknown>,
+        createCredential: (options: unknown) => Promise<unknown>
+    }
+};
 
+class HybridAppWebInterop {
     public static async run() {
         try {
             const urlParams = new URLSearchParams(location.search);
@@ -36,7 +42,7 @@ class HybridAppWebInterop {
     private static async getWebAuthnCredential() {
         try {
             const webAuthnCredentialOptions = await (await fetch(`api/GetWebAuthnCredentialOptions`, { credentials: 'omit' })).json();
-            const webAuthnCredential = await WebAuthn.getCredential(webAuthnCredentialOptions);
+            const webAuthnCredential = await BitButil.webAuthn.getCredential(webAuthnCredentialOptions);
             await fetch(`api/WebAuthnCredential`, {
                 method: 'POST',
                 headers: {
@@ -55,7 +61,7 @@ class HybridAppWebInterop {
     private static async createWebAuthnCredential() {
         try {
             const webAuthnCredentialOptions = await (await fetch(`api/GetCreateWebAuthnCredentialOptions`, { credentials: 'omit' })).json();
-            const webAuthnCredential = await WebAuthn.createCredential(webAuthnCredentialOptions);
+            const webAuthnCredential = await BitButil.webAuthn.createCredential(webAuthnCredentialOptions);
             await fetch(`api/CreateWebAuthnCredential`, {
                 method: 'POST',
                 headers: {
