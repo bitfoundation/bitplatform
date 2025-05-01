@@ -54,16 +54,12 @@ public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
     /// <summary>
     /// Tries to get a valid credential using the minimum required options to expose a native verification feature.
     /// </summary>
-    public async Task<bool> Verify()
+    public async Task<bool> Verify(bool forceCreate = false)
     {
         try
         {
             var isRegistered = await localStorage.GetItem(STORAGE_KEY);
-            if (isRegistered is not null)
-            {
-                await GetCredential( new { challenge = "Butil Verify Challenge" });
-            }
-            else
+            if (isRegistered is null || forceCreate)
             {
                 await CreateCredential(new
                 {
@@ -73,6 +69,10 @@ public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
                     pubKeyCredParams = new object[] { new { alg = -7, type = "public-key" } }
                 });
                 await localStorage.SetItem(STORAGE_KEY, "ButilVerifyIsRegistered!");
+            }
+            else
+            {
+                await GetCredential(new { challenge = "Butil Verify Challenge" });
             }
 
             return true;
