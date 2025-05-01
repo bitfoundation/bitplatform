@@ -8,6 +8,13 @@ namespace Bit.Butil;
 public class WebAuthn(IJSRuntime js)
 {
     /// <summary>
+    /// Checks that the WebAuthentication api is available on the client or not.
+    /// </summary>
+    public async Task<bool> IsAvailable()
+        => await js.Invoke<bool>("BitButil.webAuthn.isAvailable");
+
+
+    /// <summary>
     /// Creates a new credential, which can then be stored and later retrieved using the GetCredential method. 
     /// The retrieved credential can then be used by a website to authenticate a user.
     /// <br />
