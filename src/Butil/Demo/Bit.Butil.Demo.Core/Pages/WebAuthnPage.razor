@@ -26,9 +26,20 @@
 <hr />
 <br />
 
-<button @onclick="@(async () => await console.Log(await webAuthn.CreateCredential(new { challenge = "testChallenge", rp = new { name = "testRp"}, user = new { id = "userId", name = "testUser", displayName = "testUser"},pubKeyCredParams = new object[] { new { alg = -7, type = "public-key" } }})))">Create</button>
+<button @onclick="@(async () => await console.Log(await webAuthn.CreateCredential(
+new { 
+    challenge = "testChallenge",
+    rp = new { name = "testRp"},
+    user = new { id = "userId", name = "testUser", displayName = "testUser"},
+    pubKeyCredParams = new object[] { new { alg = -7, type = "public-key" } }
+})))">Create</button>
 
 <hr />
 <br />
 
 <button @onclick="@(async () => await console.Log(await webAuthn.GetCredential(new { challenge = "test" })))">Get</button>
+
+<hr />
+<br />
+
+<button @onclick="@(async () => await console.Log("verfied?", await webAuthn.Verify()))">Verify</button>
