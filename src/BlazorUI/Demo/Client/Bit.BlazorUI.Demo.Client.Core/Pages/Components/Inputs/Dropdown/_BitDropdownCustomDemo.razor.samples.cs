@@ -391,6 +391,7 @@ private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
 
     private readonly string example8RazorCode = @"
 <BitDropdown Label=""Single select & auto focus""
+             Responsive
              ShowSearchBox
              AutoFocusSearchBox
              Items=""GetBasicCustoms()""
@@ -399,6 +400,7 @@ private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
              SearchBoxPlaceholder=""Search item"" />
 
 <BitDropdown Label=""Multi select""
+             Responsive
              MultiSelect
              ShowSearchBox
              Items=""GetBasicCustoms()""
@@ -408,6 +410,7 @@ private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
 
 
 <BitDropdown Label=""Single select & auto focus""
+             Responsive
              ShowSearchBox
              AutoFocusSearchBox
              Items=""GetBasicCustoms()""
@@ -417,6 +420,7 @@ private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
              SearchFunction=""(items, text) => items.Where(i => i.Text?.StartsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()"" />
 
 <BitDropdown Label=""Multi select""
+             Responsive
              MultiSelect
              ShowSearchBox
              Items=""GetBasicCustoms()""
@@ -974,6 +978,7 @@ private async ValueTask<BitDropdownItemsProviderResult<Product>> LoadItems(
     private readonly string example13RazorCode = @"
 <BitDropdown @bind-Value=""comboBoxValueSample1""
              Combo
+             Responsive
              Items=""comboBoxCustoms""
              Placeholder=""Select an option""
              Label=""Single select combo box""
@@ -981,7 +986,8 @@ private async ValueTask<BitDropdownItemsProviderResult<Product>> LoadItems(
 <div>Value: @comboBoxValueSample1</div>
 
 <BitDropdown @bind-Values=""comboBoxValues1""
-             Combo 
+             Combo
+             Responsive
              MultiSelect
              Items=""comboBoxCustoms""
              Label=""Multi select combo box""
@@ -1038,6 +1044,7 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
 
     private readonly string example14RazorCode = @"
 <BitDropdown @bind-Value=""comboBoxValueSample2""
+             Responsive
              Combo Chips
              Items=""comboBoxCustoms""
              Placeholder=""Select an option""
@@ -1046,6 +1053,7 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
 <div>Value: @comboBoxValueSample2</div>
 
 <BitDropdown @bind-Values=""comboBoxValues2""
+             Responsive
              Combo Chips 
              MultiSelect
              Items=""comboBoxCustoms""
@@ -1103,7 +1111,7 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
 
     private readonly string example15RazorCode = @"
 <BitDropdown @bind-Value=""comboBoxValueSample3""
-             Combo Dynamic
+             Combo Dynamic Responsive
              Items=""comboBoxCustoms""
              Placeholder=""Select an option""
              NameSelectors=""comboBoxNameSelectors""
