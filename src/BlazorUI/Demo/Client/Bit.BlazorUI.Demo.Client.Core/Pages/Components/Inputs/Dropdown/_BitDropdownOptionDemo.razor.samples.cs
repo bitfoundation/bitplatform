@@ -296,6 +296,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
 
     private readonly string example8RazorCode = @"
 <BitDropdown Label=""Single select & auto focus""
+             Responsive
              ShowSearchBox
              AutoFocusSearchBox
              Placeholder=""Select an item""
@@ -308,6 +309,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
 </BitDropdown>
 
 <BitDropdown Label=""Multi select""
+             Responsive
              MultiSelect
              ShowSearchBox
              Placeholder=""Select items""
@@ -322,6 +324,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
 
 
 <BitDropdown Label=""Single select & auto focus""
+             Responsive
              ShowSearchBox
              AutoFocusSearchBox
              Placeholder=""Select an item""
@@ -335,6 +338,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
 </BitDropdown>
 
 <BitDropdown Label=""Multi select""
+             Responsive
              MultiSelect
              ShowSearchBox
              Placeholder=""Select items""
@@ -687,6 +691,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
     private readonly string example12RazorCode = @"
 <BitDropdown @bind-Value=""comboBoxValueSample1""
              Combo
+             Responsive
              Label=""Single select combo box""
              Placeholder=""Select an option""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
@@ -700,7 +705,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
 <br /><br />
 <BitDropdown @bind-Values=""comboBoxValues1""
              Combo 
-             MultiSelect
+             MultiSelect Responsive
              Label=""Multi select combo box""
              Placeholder=""Select an option""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
@@ -731,7 +736,7 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
 
     private readonly string example13RazorCode = @"
 <BitDropdown @bind-Value=""comboBoxValueSample2""
-             Combo Chips
+             Combo Chips Responsive
              Label=""Single select combo box & chips""
              Placeholder=""Select an option""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
@@ -745,7 +750,7 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
 <br /><br />
 <BitDropdown @bind-Values=""comboBoxValues2""
              Combo Chips 
-             MultiSelect
+             Responsive MultiSelect
              Placeholder=""Select an option""
              Label=""Multi select combo box & chips""
              TItem=""BitDropdownOption<string>"" TValue=""string"">

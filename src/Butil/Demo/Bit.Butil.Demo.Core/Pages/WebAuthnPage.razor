@@ -1,0 +1,45 @@
+﻿@page "/webauthn"
+@inject Bit.Butil.Console console
+@inject Bit.Butil.WebAuthn webAuthn
+
+<PageTitle>WebAuthn Samples</PageTitle>
+
+<h1>WebAuthn</h1>
+
+<pre style="font-family:Consolas; overflow: auto;">
+@@inject Bit.Butil.WebAuthn webAuthn
+
+@@code {
+    ...
+    webAuthn.CreateCredential({ ... });
+    ...
+    webAuthn.GetCredential({ ... });
+    ...
+}
+</pre>
+
+<br />
+<hr />
+
+<h3>Open the DevTools webAuthn and start clicking on buttons</h3>
+
+<hr />
+<br />
+
+<button @onclick="@(async () => await console.Log(await webAuthn.CreateCredential(
+new { 
+    challenge = "testChallenge",
+    rp = new { name = "testRp"},
+    user = new { id = "userId", name = "testUser", displayName = "testUser"},
+    pubKeyCredParams = new object[] { new { alg = -7, type = "public-key" } }
+})))">Create</button>
+
+<hr />
+<br />
+
+<button @onclick="@(async () => await console.Log(await webAuthn.GetCredential(new { challenge = "test" })))">Get</button>
+
+<hr />
+<br />
+
+<button @onclick="@(async () => await console.Log("verfied?", await webAuthn.Verify()))">Verify</button>

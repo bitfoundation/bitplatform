@@ -1,4 +1,4 @@
-﻿namespace Bit.Butil.Publics.UserAgent;
+﻿namespace Bit.Butil;
 
 public class UserAgentProperties
 {

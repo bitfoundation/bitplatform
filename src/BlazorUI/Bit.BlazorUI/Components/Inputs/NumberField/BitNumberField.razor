@@ -130,7 +130,7 @@
                    disabled="@(IsEnabled is false)"
                    class="bit-nfl-inp@(Mode == BitSpinButtonMode.Spread ? " bit-nfl-cin" : "") @Classes?.Input"
                    autocomplete="@(AutoComplete ?? "off")"
-                   type="@(NumberFormat.HasValue() ? "text" : "number")"
+                   type="text"
                    aria-valuemin="@_min"
                    aria-valuemax="@_max"
                    aria-describedby="@AriaDescription"

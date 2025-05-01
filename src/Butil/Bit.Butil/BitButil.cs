@@ -23,6 +23,7 @@ public static class BitButil
         services.AddTransient<UserAgent>();
         services.AddTransient<VisualViewport>();
         services.AddTransient<Window>();
+        services.AddTransient<WebAuthn>();
 
         return services;
     }
