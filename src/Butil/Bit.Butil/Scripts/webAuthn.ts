@@ -8,12 +8,12 @@ var BitButil = BitButil || {};
     };
 
     async function createCredential(options: PublicKeyCredentialCreationOptions) {
-        options.challenge = ToArrayBuffer(options.challenge, 'challenge');
+        options.challenge = toArrayBuffer(options.challenge, 'challenge');
 
-        options.user.id = ToArrayBuffer(options.user.id, 'user.id');
+        options.user.id = toArrayBuffer(options.user.id, 'user.id');
 
         options.excludeCredentials?.forEach(function (cred) {
-            cred.id = ToArrayBuffer(cred.id, 'cred.id');
+            cred.id = toArrayBuffer(cred.id, 'cred.id');
         });
 
         if (options.authenticatorSelection?.authenticatorAttachment === null) {
@@ -35,12 +35,12 @@ var BitButil = BitButil || {};
 
         const result = {
             id: credential.id,
-            rawId: ToBase64Url(rawId),
+            rawId: toBase64Url(rawId),
             type: credential.type,
             clientExtensionResults: credential.getClientExtensionResults(),
             response: {
-                attestationObject: ToBase64Url(attestationObject),
-                clientDataJSON: ToBase64Url(clientDataJSON),
+                attestationObject: toBase64Url(attestationObject),
+                clientDataJSON: toBase64Url(clientDataJSON),
                 transports: response.getTransports ? response.getTransports() : []
             }
         };
@@ -49,10 +49,10 @@ var BitButil = BitButil || {};
     }
 
     async function getCredential(options: PublicKeyCredentialRequestOptions) {
-        options.challenge = ToArrayBuffer(options.challenge, 'challenge');
+        options.challenge = toArrayBuffer(options.challenge, 'challenge');
 
         options.allowCredentials?.forEach(function (cred) {
-            cred.id = ToArrayBuffer(cred.id, 'cred.id');
+            cred.id = toArrayBuffer(cred.id, 'cred.id');
         });
 
         const credential = await navigator.credentials.get({ publicKey: options }) as PublicKeyCredential;
@@ -68,22 +68,21 @@ var BitButil = BitButil || {};
 
         var result = {
             id: credential.id,
-            rawId: ToBase64Url(rawId),
+            rawId: toBase64Url(rawId),
             type: credential.type,
             clientExtensionResults: credential.getClientExtensionResults(),
             response: {
-                authenticatorData: ToBase64Url(authenticatorData),
-                clientDataJSON: ToBase64Url(clientDataJSON),
-                userHandle: userHandle ? (ToBase64Url(userHandle) || null) : null,
-                signature: ToBase64Url(signature)
+                authenticatorData: toBase64Url(authenticatorData),
+                clientDataJSON: toBase64Url(clientDataJSON),
+                userHandle: userHandle ? (toBase64Url(userHandle) || null) : null,
+                signature: toBase64Url(signature)
             }
         }
         return result;
     }
 
-    // ==================================================
 
-    function ToBase64Url(value: any): string {
+    function toBase64Url(value: any): string {
         // Array or ArrayBuffer to Uint8Array
         if (Array.isArray(value)) {
             value = Uint8Array.from(value);
@@ -115,7 +114,7 @@ var BitButil = BitButil || {};
         return value;
     };
 
-    function ToArrayBuffer(value: any, name: string) {
+    function toArrayBuffer(value: any, name: string) {
         if (typeof value === "string") {
             // base64url to base64
             value = value.replace(/-/g, "+").replace(/_/g, "/");

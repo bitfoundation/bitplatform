@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 using static Bit.Butil.LinkerFlags;
@@ -9,6 +8,8 @@ namespace Bit.Butil;
 public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
 {
     private const string STORAGE_KEY = "Butil.WebAuthn.Verify.isRegistered";
+
+
 
     /// <summary>
     /// Checks that the WebAuthentication api is available on the client or not.
@@ -35,6 +36,7 @@ public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
     public async Task<TResult> CreateCredential<TValue, [DynamicallyAccessedMembers(JsonSerialized)] TResult>(TValue options)
         => await js.Invoke<TResult>("BitButil.webAuthn.createCredential", options);
 
+
     /// <summary>
     /// Retrieves a credential which can then be used to authenticate a user to a website.
     /// <br />
@@ -50,6 +52,7 @@ public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
     /// </summary>
     public async Task<TResult> GetCredential<TValue, [DynamicallyAccessedMembers(JsonSerialized)] TResult>(TValue options)
         => await js.Invoke<TResult>("BitButil.webAuthn.getCredential", options);
+
 
     /// <summary>
     /// Tries to get a valid credential using the minimum required options to expose a native verification feature.
