@@ -20,10 +20,11 @@
                            HideFileView
                            Accept="image/*"
                            MaxSize="1024 * 1024 * 10"
-                           UploadUrlProvider="WrapHandled(GetUploadUrl)"
+                           UploadUrlProvider="GetUploadUrl"
                            OnUploading="() => isUploading = true"
                            OnUploadFailed="WrapHandled(HandleOnUploadFailed)"
-                           OnUploadComplete="WrapHandled(HandleOnUploadComplete)">
+                           OnUploadComplete="WrapHandled(HandleOnUploadComplete)"
+                           UploadRequestHttpHeadersProvider="WrapHandled(GetUploadRequestHeaders)">
                 <LabelTemplate>
                     <BitStack HorizontalAlign="BitAlignment.Center">
                         @if (isUploading is false)
