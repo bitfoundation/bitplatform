@@ -1,12 +1,15 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 using static Bit.Butil.LinkerFlags;
 
 namespace Bit.Butil;
 
-public class WebAuthn(IJSRuntime js)
+public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
 {
+    private const string STORAGE_KEY = "Butil.WebAuthn.Verify.isRegistered";
+
     /// <summary>
     /// Checks that the WebAuthentication api is available on the client or not.
     /// </summary>
@@ -55,7 +58,22 @@ public class WebAuthn(IJSRuntime js)
     {
         try
         {
-            await js.InvokeVoid("BitButil.webAuthn.getCredential", new { challenge = "Verify using Butil" });
+            var isRegistered = await localStorage.GetItem(STORAGE_KEY);
+            if (isRegistered is not null)
+            {
+                await GetCredential( new { challenge = "Butil Verify Challenge" });
+            }
+            else
+            {
+                await CreateCredential(new
+                {
+                    challenge = "Butil Verify Challenge",
+                    rp = new { name = "Butil Verify" },
+                    user = new { id = "ButilVerifyUserId", name = "ButilVerifyUser", displayName = "ButilVerifyUser" },
+                    pubKeyCredParams = new object[] { new { alg = -7, type = "public-key" } }
+                });
+                await localStorage.SetItem(STORAGE_KEY, "ButilVerifyIsRegistered!");
+            }
 
             return true;
         }
