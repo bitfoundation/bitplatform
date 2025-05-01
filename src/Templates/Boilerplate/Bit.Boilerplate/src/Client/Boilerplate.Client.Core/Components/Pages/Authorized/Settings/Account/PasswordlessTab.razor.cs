@@ -74,7 +74,7 @@ public partial class PasswordlessTab
             .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
             .GetWebAuthnAssertionOptions(new() { UserIds = [User.Id] }, CurrentCancellationToken);
 
-        object assertion;
+        JsonElement assertion;
         try
         {
             assertion = (await webAuthnService.GetWebAuthnCredential(options));

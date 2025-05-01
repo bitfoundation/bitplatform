@@ -91,7 +91,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
                     }
                     else
                     {
-                        WebAuthnService!.GetWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<object>(await ctx.GetRequestBodyAsStringAsync())!);
+                        WebAuthnService!.GetWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<JsonElement>(await ctx.GetRequestBodyAsStringAsync())!);
                     }
                 }
                 finally
@@ -115,7 +115,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
                     else
                     {
 
-                        WebAuthnService!.CreateWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<object>(await ctx.GetRequestBodyAsStringAsync())!);
+                        WebAuthnService!.CreateWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<JsonElement>(await ctx.GetRequestBodyAsStringAsync())!);
                     }
                 }
                 finally

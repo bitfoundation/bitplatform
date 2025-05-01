@@ -47,14 +47,14 @@ public interface IIdentityController : IAppController
     Task<string> GetSocialSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task<object> GetWebAuthnAssertionOptions(WebAuthnAssertionOptionsRequestDto request, CancellationToken cancellationToken) => default!;
+    Task<JsonElement> GetWebAuthnAssertionOptions(WebAuthnAssertionOptionsRequestDto request, CancellationToken cancellationToken) => default!;
 
     [HttpPost]
-    Task<object> VerifyWebAuthAssertion(object clientResponse, CancellationToken cancellationToken) => default!;
+    Task<JsonElement> VerifyWebAuthAssertion(JsonElement clientResponse, CancellationToken cancellationToken) => default!;
 
     [HttpPost]
-    Task<SignInResponseDto> VerifyWebAuthAndSignIn(VerifyWebAuthnAndSignInDto<object> request, CancellationToken cancellationToken) => default!;
+    Task<SignInResponseDto> VerifyWebAuthAndSignIn(VerifyWebAuthnAndSignInDto request, CancellationToken cancellationToken) => default!;
 
     [HttpPost]
-    Task VerifyWebAuthAndSendTwoFactorToken(object clientResponse, CancellationToken cancellationToken) => default!;
+    Task VerifyWebAuthAndSendTwoFactorToken(JsonElement clientResponse, CancellationToken cancellationToken) => default!;
 }

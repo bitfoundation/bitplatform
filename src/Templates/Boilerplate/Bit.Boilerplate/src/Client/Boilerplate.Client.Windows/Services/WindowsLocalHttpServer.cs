@@ -73,7 +73,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
                     }
                     else
                     {
-                        WebAuthnService!.GetWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<object>(await ctx.GetRequestBodyAsStringAsync())!);
+                        WebAuthnService!.GetWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<JsonElement>(await ctx.GetRequestBodyAsStringAsync())!);
                     }
                 }
                 finally
@@ -96,7 +96,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
                     }
                     else
                     {
-                        WebAuthnService!.CreateWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<object>(await ctx.GetRequestBodyAsStringAsync())!);
+                        WebAuthnService!.CreateWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<JsonElement>(await ctx.GetRequestBodyAsStringAsync())!);
                     }
                 }
                 finally

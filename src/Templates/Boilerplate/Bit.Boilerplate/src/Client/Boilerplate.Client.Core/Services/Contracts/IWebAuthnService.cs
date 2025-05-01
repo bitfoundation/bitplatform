@@ -4,9 +4,9 @@ public interface IWebAuthnService
 {
     ValueTask<bool> IsWebAuthnAvailable();
 
-    ValueTask<object> CreateWebAuthnCredential(object options);
+    ValueTask<JsonElement> CreateWebAuthnCredential(JsonElement options);
 
-    ValueTask<object> GetWebAuthnCredential(object options);
+    ValueTask<JsonElement> GetWebAuthnCredential(JsonElement options);
 
     ValueTask<bool> IsWebAuthnConfigured(Guid? userId = null);
 

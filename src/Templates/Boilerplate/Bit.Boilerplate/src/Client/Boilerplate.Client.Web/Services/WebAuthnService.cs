@@ -9,13 +9,13 @@ public partial class WebAuthnService : WebAuthnServiceBase
         return await webAuthn.IsAvailable();
     }
 
-    public override async ValueTask<object> CreateWebAuthnCredential(object options)
+    public override async ValueTask<JsonElement> CreateWebAuthnCredential(JsonElement options)
     {
-        return await webAuthn.CreateCredential(options);
+        return await webAuthn.CreateCredential<JsonElement, JsonElement>(options);
     }
 
-    public override async ValueTask<object> GetWebAuthnCredential(object options)
+    public override async ValueTask<JsonElement> GetWebAuthnCredential(JsonElement options)
     {
-        return await webAuthn.GetCredential(options);
+        return await webAuthn.GetCredential<JsonElement, JsonElement>(options);
     }
 }

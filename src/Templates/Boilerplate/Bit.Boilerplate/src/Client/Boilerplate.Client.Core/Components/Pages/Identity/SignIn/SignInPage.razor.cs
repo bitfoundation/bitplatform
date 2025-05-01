@@ -39,7 +39,7 @@ public partial class SignInPage
     private bool isOtpSent;
     private bool sucssefulSignIn;
     private bool requiresTwoFactor;
-    private object? webAuthnAssertion;
+    private JsonElement? webAuthnAssertion;
     private SignInPanelTab currentSignInPanelTab;
     private readonly SignInRequestDto model = new();
     private AppDataAnnotationsValidator? validatorRef;
@@ -103,14 +103,14 @@ public partial class SignInPage
         {
             if (requiresTwoFactor && string.IsNullOrWhiteSpace(model.TwoFactorCode)) return;
 
-            if (webAuthnAssertion is not null)
+            if (webAuthnAssertion.HasValue)
             {
                 var response = await identityController
                     .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
                     .VerifyWebAuthAndSignIn(
-                        new VerifyWebAuthnAndSignInDto<object>
+                        new VerifyWebAuthnAndSignInDto
                         {
-                            ClientResponse = webAuthnAssertion,
+                            ClientResponse = webAuthnAssertion.Value,
                             TfaCode = model.TwoFactorCode
                         },
                         CurrentCancellationToken);
@@ -261,7 +261,7 @@ public partial class SignInPage
     {
         try
         {
-            if (webAuthnAssertion is null)
+            if (webAuthnAssertion.HasValue is false)
             {
                 CleanModel();
 
@@ -271,7 +271,7 @@ public partial class SignInPage
             {
                 await identityController
                     .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
-                    .VerifyWebAuthAndSendTwoFactorToken(webAuthnAssertion, CurrentCancellationToken);
+                    .VerifyWebAuthAndSendTwoFactorToken(webAuthnAssertion.Value, CurrentCancellationToken);
             }
 
             SnackBarService.Success(Localizer[nameof(AppStrings.TfaTokenSentMessage)]);

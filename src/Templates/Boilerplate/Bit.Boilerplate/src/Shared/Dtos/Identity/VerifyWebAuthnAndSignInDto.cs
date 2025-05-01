@@ -6,3 +6,8 @@ public partial class VerifyWebAuthnAndSignInDto<T>
 
     public string? TfaCode { get; set; }
 }
+
+public class VerifyWebAuthnAndSignInDto : VerifyWebAuthnAndSignInDto<JsonElement>
+{
+
+}

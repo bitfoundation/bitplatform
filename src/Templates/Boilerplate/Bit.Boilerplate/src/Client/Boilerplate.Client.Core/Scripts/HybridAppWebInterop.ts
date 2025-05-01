@@ -25,7 +25,10 @@ class HybridAppWebInterop {
             }
         }
         finally {
-            window.close();
+            location.href = 'about:blank';
+            setTimeout(() => {
+                window.close();
+            }, 100);
         }
     }
 

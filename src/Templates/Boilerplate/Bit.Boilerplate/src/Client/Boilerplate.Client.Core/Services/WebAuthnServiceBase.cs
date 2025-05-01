@@ -9,9 +9,9 @@ public abstract partial class WebAuthnServiceBase : IWebAuthnService
 
     public abstract ValueTask<bool> IsWebAuthnAvailable();
 
-    public abstract ValueTask<object> CreateWebAuthnCredential(object options);
+    public abstract ValueTask<JsonElement> CreateWebAuthnCredential(JsonElement options);
 
-    public abstract ValueTask<object> GetWebAuthnCredential(object options);
+    public abstract ValueTask<JsonElement> GetWebAuthnCredential(JsonElement options);
 
 
     public virtual async ValueTask<Guid[]> GetWebAuthnConfiguredUserIds()

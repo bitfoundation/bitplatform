@@ -49,7 +49,7 @@ public interface IUserController : IAppController
     Task SendElevatedAccessToken(CancellationToken cancellationToken);
 
     [HttpGet]
-    Task<object> GetWebAuthnCredentialOptions(CancellationToken cancellationToken) => default!;
+    Task<JsonElement> GetWebAuthnCredentialOptions(CancellationToken cancellationToken) => default!;
 
     [HttpPut]
     Task CreateWebAuthnCredential(object attestationResponse, CancellationToken cancellationToken) => default!;
