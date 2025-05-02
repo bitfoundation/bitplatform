@@ -1,10 +1,14 @@
 ﻿using EmbedIO;
 using System.Net;
 using System.Text;
+using System.Reflection;
 using EmbedIO.Actions;
 using System.Net.Sockets;
 using Boilerplate.Client.Core.Components;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebView;
+using Microsoft.AspNetCore.Components.WebView.WindowsForms;
 
 namespace Boilerplate.Client.Windows.Services;
 
@@ -18,6 +22,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
 
     private int port = -1;
     private WebServer? localHttpServer;
+    private IFileProvider? fileProvider;
 
     public int Port => port;
 
@@ -29,6 +34,8 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
             return port;
 
         port = GetAvailableTcpPort();
+
+        fileProvider = GetFileProvider();
 
         async Task GoBackToApp()
         {
@@ -102,7 +109,27 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
                     (await htmlRenderer.RenderComponentAsync<HybridAppWebInterop>()).ToHtmlString());
 
                 await ctx.SendStringAsync(html, "text/html", Encoding.UTF8);
-            }));
+            }))
+            .OnAny(async ctx =>
+            {
+                try
+                {
+                    var cntx = (IHttpContextImpl)ctx;
+                    var fileInfo = fileProvider.GetFileInfo(ctx.Request.Url.LocalPath);
+                    if (File.Exists(fileInfo?.PhysicalPath) is false)
+                    {
+                        ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                        return;
+                    }
+                    ctx.Response.ContentType = ctx.GetMimeType(Path.GetExtension(fileInfo.PhysicalPath));
+                    await using var fileStream = File.OpenRead(fileInfo.PhysicalPath);
+                    await fileStream.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
+                }
+                catch (Exception exp)
+                {
+                    exceptionHandler.Handle(exp);
+                }
+            });
 
         localHttpServer.HandleHttpException(async (context, exception) =>
         {
@@ -137,5 +164,21 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
         var port = ((IPEndPoint)l.LocalEndpoint).Port;
         l.Stop();
         return port;
+    }
+
+    private IFileProvider GetFileProvider()
+    {
+        var blazorWebView = Application.OpenForms[0]!.Controls.OfType<BlazorWebView>().Single();
+
+        var webViewManager = (WebViewManager)blazorWebView.GetType()
+            .GetField("_webviewManager", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .GetValue(blazorWebView)!;
+
+        var staticContentProvider = typeof(WebViewManager).GetField("_staticContentProvider", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .GetValue(webViewManager)!;
+
+        return (IFileProvider)staticContentProvider
+            .GetType().GetField("_fileProvider", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .GetValue(staticContentProvider)!;
     }
 }
