@@ -106,10 +106,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
                 var appJsUrl = "app.js";
 
                 var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
-                    (await htmlRenderer.RenderComponentAsync<HybridAppWebInterop>(ParameterView.FromDictionary(new Dictionary<string, object?>
-                    {
-                        { nameof(HybridAppWebInterop.AppJsUrl), appJsUrl }
-                    }))).ToHtmlString());
+                    (await htmlRenderer.RenderComponentAsync<HybridAppWebInterop>()).ToHtmlString());
 
                 await ctx.SendStringAsync(html, "text/html", Encoding.UTF8);
             }));

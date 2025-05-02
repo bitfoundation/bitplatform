@@ -1,8 +1,4 @@
-﻿@code {
-    [Parameter] public string? AppJsUrl { get; set; }
-}
-
-@*
+﻿@*
 Leveraging Web Features in Blazor Hybrid:
 
 1. WebView Integration: Directly utilize standard web technologies like CSS animations and external frames (e.g., Google reCaptcha) within the Blazor WebView.
@@ -66,7 +62,7 @@ Leveraging Web Features in Blazor Hybrid:
     </div>
 
     <script src="http://localhost:5030/_content/Bit.Butil/bit-butil.js"></script>
-    <script src="@AppJsUrl"></script>
+    <script src="http://localhost:5030/_content/Boilerplate.Client.Core/scripts/app.js"></script>
 
     <script type="text/javascript">
         HybridAppWebInterop.run();
