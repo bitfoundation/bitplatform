@@ -1,0 +1,105 @@
+﻿@page "/butil/webAuthn"
+@inherits AppComponentBase
+@inject Bit.Butil.WebAuthn webAuthn
+
+<PageOutlet Url="butil/webAuthn"
+            Title="WebAuthn - Butil"
+            Description="WebAuthn class of the bit Butil" />
+
+<div class="page-container">
+    <BitText Typography="BitTypography.H3" Gutter>WebAuthn</BitText>
+    <br />
+    <BitText Typography="BitTypography.Subtitle1" Gutter>
+        How to use the WebAuthn class of the bit Butil?
+    </BitText>
+    <br />
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>Usage</BitText>
+        <div class="section-card-txt">
+            To use the WebAuthn api of Butil you need to inject the Bit.Butil.WebAuthn class and use it like this:
+            <CodeBox HideCopyButton>
+@@inject Bit.Butil.WebAuthn webAuthn
+
+@@code {
+    var result = await webAuthn.CreateCredential(new { ... });
+}
+            </CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>Methods</BitText>
+        <div class="section-card-txt">
+            <br />
+            <b>CreateCredential</b>: <br />
+            Creates a new credential using the provided options.
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/create" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @createExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@Create">Create</BitButton>
+                        <br />
+                        <br />
+                        <div>Result:</div>
+                        <div>@createResult?.ToString()?.Replace(",", ",\n")</div>
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetCredential</b>: <br />
+            Gets a credential using the provided options.
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/get" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@Get">Get</BitButton>
+                        <br />
+                        <br />
+                        <div>Result:</div>
+                        <div>@getResult?.ToString()?.Replace(",", ",\n")</div>
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Verify</b>: <br />
+            Verifies a user using the credential api of the browser.
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @verifyExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@Verify">Verify</BitButton>
+                        <br />
+                        <br />
+                        <div>Result: @verifyResult</div>
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="UserAgent" PrevUrl="/butil/userAgent" />
