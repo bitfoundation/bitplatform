@@ -123,6 +123,18 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
                     await GoBackToApp();
                 }
             }))
+            .WithModule(new ActionModule("/api/LogError", HttpVerbs.Post, async ctx =>
+            {
+                var exception = new UnknownException(await ctx.GetRequestBodyAsStringAsync());
+
+                var handled = WebAuthnService?.GetWebAuthnCredentialTcs?.TrySetException(exception) ??
+                    WebAuthnService?.CreateWebAuthnCredentialTcs?.TrySetException(exception);
+
+                if (handled is not true)
+                {
+                    exceptionHandler.Handle(exception, displayKind: ExceptionDisplayKind.NonInterrupting);
+                }
+            }))
             .WithModule(new ActionModule("/web-interop", HttpVerbs.Get, async ctx =>
             {
                 var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>

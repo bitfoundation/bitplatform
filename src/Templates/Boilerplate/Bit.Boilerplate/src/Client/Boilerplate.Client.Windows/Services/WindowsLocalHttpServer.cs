@@ -62,15 +62,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
-                    var error = ctx.Request.QueryString["error"];
-                    if (string.IsNullOrEmpty(error) is false)
-                    {
-                        WebAuthnService!.GetWebAuthnCredentialTcs!.SetException(new UnknownException(error));
-                    }
-                    else
-                    {
-                        WebAuthnService!.GetWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<JsonElement>(await ctx.GetRequestBodyAsStringAsync())!);
-                    }
+                    WebAuthnService!.GetWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<JsonElement>(await ctx.GetRequestBodyAsStringAsync())!);
                 }
                 finally
                 {
@@ -85,19 +77,23 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
-                    var error = ctx.Request.QueryString["error"];
-                    if (string.IsNullOrEmpty(error) is false)
-                    {
-                        WebAuthnService!.CreateWebAuthnCredentialTcs!.SetException(new UnknownException(error));
-                    }
-                    else
-                    {
-                        WebAuthnService!.CreateWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<JsonElement>(await ctx.GetRequestBodyAsStringAsync())!);
-                    }
+                    WebAuthnService!.CreateWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<JsonElement>(await ctx.GetRequestBodyAsStringAsync())!);
                 }
                 finally
                 {
                     await GoBackToApp();
+                }
+            }))
+            .WithModule(new ActionModule("/api/LogError", HttpVerbs.Post, async ctx =>
+            {
+                var exception = new UnknownException(await ctx.GetRequestBodyAsStringAsync());
+
+                var handled = WebAuthnService?.GetWebAuthnCredentialTcs?.TrySetException(exception) ??
+                    WebAuthnService?.CreateWebAuthnCredentialTcs?.TrySetException(exception);
+
+                if (handled is not true)
+                {
+                    exceptionHandler.Handle(exception, displayKind: ExceptionDisplayKind.NonInterrupting);
                 }
             }))
             .WithModule(new ActionModule("/web-interop", HttpVerbs.Get, async ctx =>
