@@ -114,15 +114,16 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
-                    var cntx = (IHttpContextImpl)ctx;
+                    var ctxImpl = (IHttpContextImpl)ctx;
                     var fileInfo = fileProvider.GetFileInfo(ctx.Request.Url.LocalPath);
-                    if (File.Exists(fileInfo?.PhysicalPath) is false)
+                    if (fileInfo?.Exists is not true)
                     {
                         ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
                         return;
                     }
-                    ctx.Response.ContentType = ctx.GetMimeType(Path.GetExtension(fileInfo.PhysicalPath));
-                    await using var fileStream = File.OpenRead(fileInfo.PhysicalPath);
+                    ctx.Response.ContentType = ctx.GetMimeType(Path.GetExtension(fileInfo.Name!));
+                    ctx.Response.Headers["Cache-Control"] = "no-cache, max-age=0, must-revalidate, no-store";
+                    await using var fileStream = fileInfo.CreateReadStream();
                     await fileStream.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
                 }
                 catch (Exception exp)
@@ -170,15 +171,21 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
     {
         var blazorWebView = Application.OpenForms[0]!.Controls.OfType<BlazorWebView>().Single();
 
-        var webViewManager = (WebViewManager)blazorWebView.GetType()
+        var webViewManager = (WebViewManager)blazorWebView!.GetType()
             .GetField("_webviewManager", BindingFlags.NonPublic | BindingFlags.Instance)!
             .GetValue(blazorWebView)!;
 
         var staticContentProvider = typeof(WebViewManager).GetField("_staticContentProvider", BindingFlags.NonPublic | BindingFlags.Instance)!
             .GetValue(webViewManager)!;
 
-        return (IFileProvider)staticContentProvider
+        var firstFileProvider = (IFileProvider)staticContentProvider
             .GetType().GetField("_fileProvider", BindingFlags.NonPublic | BindingFlags.Instance)!
             .GetValue(staticContentProvider)!;
+
+        var secondFileProvider = (IFileProvider)staticContentProvider
+            .GetType().GetField("_manifestProvider", BindingFlags.NonPublic | BindingFlags.Static)!
+            .GetValue(null)!;
+
+        return new CompositeFileProvider(firstFileProvider, secondFileProvider);
     }
 }
