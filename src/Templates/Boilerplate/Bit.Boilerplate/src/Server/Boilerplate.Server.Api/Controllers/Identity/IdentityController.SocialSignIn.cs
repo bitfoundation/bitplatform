@@ -104,7 +104,7 @@ public partial class IdentityController
         }
 
         if (localHttpPort is not null)
-            if (localHttpPort is not null) return Redirect($"http://localhost:{localHttpPort}/web-interop?actionName=SocialSignInCallback&url={Uri.EscapeDataString(url!)}&localHttpPort={localHttpPort}"); // Checkout HybridAppWebInterop.razor's comments.
+            if (localHttpPort is not null) return Redirect($"http://localhost:{localHttpPort}/hybrid-app-web-interop?actionName=SocialSignInCallback&url={Uri.EscapeDataString(url!)}&localHttpPort={localHttpPort}"); // Checkout HybridAppWebInterop.razor's comments.
 
         return Redirect(new Uri(Request.HttpContext.Request.GetWebAppUrl(), url).ToString());
     }

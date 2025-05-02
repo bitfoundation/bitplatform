@@ -1,11 +1,9 @@
-﻿using EmbedIO;
-using System.Net;
-using System.Text;
-using EmbedIO.Actions;
-using System.Reflection;
+﻿using System.Net;
 using System.Net.Sockets;
-using Microsoft.AspNetCore.Components;
+using System.Text;
 using Boilerplate.Client.Core.Components;
+using EmbedIO;
+using EmbedIO.Actions;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Boilerplate.Client.Maui.Services;
@@ -15,6 +13,8 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
 {
     [AutoInject] private HtmlRenderer htmlRenderer;
     [AutoInject] private IExceptionHandler exceptionHandler;
+    [AutoInject] private ClientMauiSettings clientMauiSettings;
+    [AutoInject] private AbsoluteServerAddressProvider absoluteServerAddressProvider;
 
     public MauiWebAuthnService? WebAuthnService { get; set; }
 
@@ -135,13 +135,37 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
                     exceptionHandler.Handle(exception, displayKind: ExceptionDisplayKind.NonInterrupting);
                 }
             }))
-            .WithModule(new ActionModule("/web-interop", HttpVerbs.Get, async ctx =>
+            .WithModule(new ActionModule("/hybrid-app-web-interop", HttpVerbs.Get, async ctx =>
             {
                 var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
                     (await htmlRenderer.RenderComponentAsync<HybridAppWebInterop>()).ToHtmlString());
 
                 await ctx.SendStringAsync(html, "text/html", Encoding.UTF8);
-            }));
+            }))
+            .OnAny(async ctx =>
+            {
+                try
+                {
+                    var ctxImpl = (IHttpContextImpl)ctx;
+                    var file = new FileInfo(Path.Combine("wwwroot", ctx.Request.Url.LocalPath!));
+                    if (file.Exists is false)
+                    {
+                        // In development, Blazor employs complex methods to locate files across all installed NuGet packages.
+                        // To streamline this, we utilize a web server to serve static files in the development environment.
+                        // In production, as all files are deployed to a single folder, we rely on the default file provider.
+                        ctx.Redirect(new Uri(clientMauiSettings.WebAppUrl ?? absoluteServerAddressProvider.GetAddress(), ctx.Request.Url.LocalPath).ToString());
+                        return;
+                    }
+                    ctx.Response.ContentType = ctx.GetMimeType(Path.GetExtension(ctx.Request.Url.LocalPath!));
+                    ctx.Response.Headers["Cache-Control"] = "no-cache, max-age=0, must-revalidate, no-store";
+                    await using var stream = file.OpenRead();
+                    await stream.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
+                }
+                catch (Exception exp)
+                {
+                    exceptionHandler.Handle(exp);
+                }
+            });
 
         localHttpServer.HandleHttpException(async (context, exception) =>
         {
@@ -164,6 +188,11 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
         return port;
     }
 
+    public async ValueTask DisposeAsync()
+    {
+        localHttpServer?.Dispose();
+    }
+
     private int GetAvailableTcpPort()
     {
         using TcpListener l = new TcpListener(IPAddress.Loopback, 0);
@@ -172,10 +201,4 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
         l.Stop();
         return port;
     }
-
-    public async ValueTask DisposeAsync()
-    {
-        localHttpServer?.Dispose();
-    }
-
 }

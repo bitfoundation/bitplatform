@@ -1,14 +1,10 @@
-﻿using EmbedIO;
-using System.Net;
-using System.Text;
-using System.Reflection;
-using EmbedIO.Actions;
+﻿using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using Boilerplate.Client.Core.Components;
-using Microsoft.Extensions.FileProviders;
+using EmbedIO;
+using EmbedIO.Actions;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebView;
-using Microsoft.AspNetCore.Components.WebView.WindowsForms;
 
 namespace Boilerplate.Client.Windows.Services;
 
@@ -17,12 +13,13 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
 {
     [AutoInject] private HtmlRenderer htmlRenderer;
     [AutoInject] private IExceptionHandler exceptionHandler;
+    [AutoInject] private ClientWindowsSettings clientWindowsSettings;
+    [AutoInject] private AbsoluteServerAddressProvider absoluteServerAddressProvider;
 
     public WindowsWebAuthnService? WebAuthnService { get; set; }
 
     private int port = -1;
     private WebServer? localHttpServer;
-    private IFileProvider? fileProvider;
 
     public int Port => port;
 
@@ -34,8 +31,6 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
             return port;
 
         port = GetAvailableTcpPort();
-
-        fileProvider = GetFileProvider();
 
         async Task GoBackToApp()
         {
@@ -103,7 +98,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
                     exceptionHandler.Handle(exception, displayKind: ExceptionDisplayKind.NonInterrupting);
                 }
             }))
-            .WithModule(new ActionModule("/web-interop", HttpVerbs.Get, async ctx =>
+            .WithModule(new ActionModule("/hybrid-app-web-interop", HttpVerbs.Get, async ctx =>
             {
                 var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
                     (await htmlRenderer.RenderComponentAsync<HybridAppWebInterop>()).ToHtmlString());
@@ -115,16 +110,19 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
                 try
                 {
                     var ctxImpl = (IHttpContextImpl)ctx;
-                    var fileInfo = fileProvider.GetFileInfo(ctx.Request.Url.LocalPath);
-                    if (fileInfo?.Exists is not true)
+                    var file = new FileInfo(Path.Combine("wwwroot", ctx.Request.Url.LocalPath!));
+                    if (file.Exists is false)
                     {
-                        ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                        // In development, Blazor employs complex methods to locate files across all installed NuGet packages.
+                        // To streamline this, we utilize a web server to serve static files in the development environment.
+                        // In production, as all files are deployed to a single folder, we rely on the default file provider.
+                        ctx.Redirect(new Uri(clientWindowsSettings.WebAppUrl ?? absoluteServerAddressProvider.GetAddress(), ctx.Request.Url.LocalPath).ToString());
                         return;
                     }
-                    ctx.Response.ContentType = ctx.GetMimeType(Path.GetExtension(fileInfo.Name!));
+                    ctx.Response.ContentType = ctx.GetMimeType(Path.GetExtension(ctx.Request.Url.LocalPath!));
                     ctx.Response.Headers["Cache-Control"] = "no-cache, max-age=0, must-revalidate, no-store";
-                    await using var fileStream = fileInfo.CreateReadStream();
-                    await fileStream.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
+                    await using var stream = file.OpenRead();
+                    await stream.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
                 }
                 catch (Exception exp)
                 {
@@ -165,27 +163,5 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
         var port = ((IPEndPoint)l.LocalEndpoint).Port;
         l.Stop();
         return port;
-    }
-
-    private IFileProvider GetFileProvider()
-    {
-        var blazorWebView = Application.OpenForms[0]!.Controls.OfType<BlazorWebView>().Single();
-
-        var webViewManager = (WebViewManager)blazorWebView!.GetType()
-            .GetField("_webviewManager", BindingFlags.NonPublic | BindingFlags.Instance)!
-            .GetValue(blazorWebView)!;
-
-        var staticContentProvider = typeof(WebViewManager).GetField("_staticContentProvider", BindingFlags.NonPublic | BindingFlags.Instance)!
-            .GetValue(webViewManager)!;
-
-        var firstFileProvider = (IFileProvider)staticContentProvider
-            .GetType().GetField("_fileProvider", BindingFlags.NonPublic | BindingFlags.Instance)!
-            .GetValue(staticContentProvider)!;
-
-        var secondFileProvider = (IFileProvider)staticContentProvider
-            .GetType().GetField("_manifestProvider", BindingFlags.NonPublic | BindingFlags.Static)!
-            .GetValue(null)!;
-
-        return new CompositeFileProvider(firstFileProvider, secondFileProvider);
     }
 }

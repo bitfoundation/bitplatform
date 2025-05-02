@@ -9,7 +9,7 @@ public static partial class HybridWebAppInteropEndpoint
 {
     public static WebApplication UseHybridWebAppInterop(this WebApplication app)
     {
-        app.MapGet("/HybridAppWebInterop", [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5)] async ([FromServices] HtmlRenderer renderer, HttpContext context) =>
+        app.MapGet("/hybrid-app-web-interop", [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5)] async ([FromServices] HtmlRenderer renderer, HttpContext context) =>
         {
             // For more details, checkout HybridAppWebInterop's comments.
             var html = await renderer.Dispatcher.InvokeAsync(async () =>
