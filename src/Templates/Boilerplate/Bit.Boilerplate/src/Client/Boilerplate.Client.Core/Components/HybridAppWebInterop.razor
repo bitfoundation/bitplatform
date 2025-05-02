@@ -1,23 +1,19 @@
-﻿@namespace Boilerplate.Server.Api.Components
-
-@code {
+﻿@code {
     [Parameter] public string? AppJsUrl { get; set; }
 }
 
 @*
-# Blazor Hybrid App Integration Overview
+Leveraging Web Features in Blazor Hybrid:
 
-## Purpose
-This document outlines the operational dependencies of Blazor Hybrid applications, specifically focusing on web browser reliance for key functionalities to ensure seamless UX across both web and hybrid app versions.
+1. WebView Integration: Directly utilize standard web technologies like CSS animations and external frames (e.g., Google reCaptcha) within the Blazor WebView.
 
-## Browser-Dependent Features
-Blazor Hybrid apps leverage web browser capabilities to deliver the following features:
+2. Addressing Origin Restrictions for Sensitive Web APIs:
+   - Due to the our WebView's fixed origin (http://0.0.0.1), certain security-sensitive web features like WebAuthn and social sign-in will not function directly within the WebView.
+   - Solution for WebAuthn: Employ a local HTTP server (see WindowsLocalHttpServer and MauiHttpLocalServer) to serve the HybridAppWebInterop component via a GET endpoint. Use IExternalNavigationService to open an in-app browser, facilitating authentication (e.g., Face ID).
+   - Limitation for Social Sign-in: Social sign-in providers generally restrict WebView usage due to security considerations, regardless of the origin.
 
-1. **Social Sign-In**
-   - Utilizes web-based authentication flows to enable secure and streamlined social sign-in processes, ensuring compatibility with major identity providers.
-
-2. **WebAuthn (Passkeys)**
-   - Supports biometric authentication (e.g., Face ID, fingerprint) through WebAuthn passkeys, providing a secure and user-friendly login experience.
+3. Utilizing Website Origin (Such as https://adminpanel.bitplatform.dev):
+   - For scenarios requiring your website's actual origin or other features incompatible even with a localhost origin, use IExternalNavigationService to navigate to the /HybridAppWebInterop minimal API endpoint (defined in HybridWebAppInteropEndpoint.cs).
 *@
 
 <html>

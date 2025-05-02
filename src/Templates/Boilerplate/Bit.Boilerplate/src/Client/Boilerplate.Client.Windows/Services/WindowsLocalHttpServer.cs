@@ -4,15 +4,12 @@ using System.Text;
 using EmbedIO.Actions;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Components;
-using Boilerplate.Server.Api.Components;
 using Boilerplate.Client.Core.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Boilerplate.Client.Windows.Services;
 
-/// <summary>
-/// <inheritdoc cref="ILocalHttpServer"/>
-/// </summary>
+// Checkout HybridAppWebInterop.razor's comments.
 public partial class WindowsLocalHttpServer : ILocalHttpServer
 {
     [AutoInject] private HtmlRenderer htmlRenderer;
@@ -109,30 +106,12 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
                 var appJsUrl = "app.js";
 
                 var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
-                    (await htmlRenderer.RenderComponentAsync<HybridAppWebInteropPage>(ParameterView.FromDictionary(new Dictionary<string, object?>
+                    (await htmlRenderer.RenderComponentAsync<HybridAppWebInterop>(ParameterView.FromDictionary(new Dictionary<string, object?>
                     {
-                        { nameof(HybridAppWebInteropPage.AppJsUrl), appJsUrl }
+                        { nameof(HybridAppWebInterop.AppJsUrl), appJsUrl }
                     }))).ToHtmlString());
 
                 await ctx.SendStringAsync(html, "text/html", Encoding.UTF8);
-            }))
-            .WithModule(new ActionModule("/app.js", HttpVerbs.Get, async ctx =>
-            {
-                try
-                {
-                    ctx.Response.ContentType = "application/javascript";
-                    var filePath = Path.Combine(AppContext.BaseDirectory, @"wwwroot\_content\Boilerplate.Client.Core\scripts\app.js");
-                    if (File.Exists(filePath) is false)
-                    {
-                        filePath = Path.Combine(AppContext.BaseDirectory, @"..\..\..\..", @"Boilerplate.Client.Core\wwwroot\scripts\app.js");
-                    }
-                    await using var fileStream = File.OpenRead(filePath);
-                    await fileStream.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
-                }
-                catch (Exception exp)
-                {
-                    exceptionHandler.Handle(exp);
-                }
             }));
 
         localHttpServer.HandleHttpException(async (context, exception) =>

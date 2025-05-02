@@ -5,12 +5,12 @@ using EmbedIO.Actions;
 using System.Reflection;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Components;
-using Boilerplate.Server.Api.Components;
 using Boilerplate.Client.Core.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Boilerplate.Client.Maui.Services;
 
+// Checkout HybridAppWebInterop.razor's comments.
 public partial class MauiLocalHttpServer : ILocalHttpServer
 {
     [AutoInject] private HtmlRenderer htmlRenderer;
@@ -125,28 +125,10 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             }))
             .WithModule(new ActionModule("/web-interop", HttpVerbs.Get, async ctx =>
             {
-                var appJsUrl = "app.js";
-
                 var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
-                    (await htmlRenderer.RenderComponentAsync<HybridAppWebInteropPage>(ParameterView.FromDictionary(new Dictionary<string, object?>
-                    {
-                        { nameof(HybridAppWebInteropPage.AppJsUrl), appJsUrl }
-                    }))).ToHtmlString());
+                    (await htmlRenderer.RenderComponentAsync<HybridAppWebInterop>()).ToHtmlString());
 
                 await ctx.SendStringAsync(html, "text/html", Encoding.UTF8);
-            }))
-            .WithModule(new ActionModule("/app.js", HttpVerbs.Get, async ctx =>
-            {
-                try
-                {
-                    ctx.Response.ContentType = "application/javascript";
-                    await using var file = Assembly.Load("Boilerplate.Client.Maui").GetManifestResourceStream("Boilerplate.Client.Maui.wwwroot.scripts.app.js")!;
-                    await file.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
-                }
-                catch (Exception exp)
-                {
-                    exceptionHandler.Handle(exp);
-                }
             }));
 
         localHttpServer.HandleHttpException(async (context, exception) =>

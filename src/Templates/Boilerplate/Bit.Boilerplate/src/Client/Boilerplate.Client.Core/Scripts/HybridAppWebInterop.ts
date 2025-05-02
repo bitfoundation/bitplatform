@@ -1,4 +1,4 @@
-// Read Boilerplate.Server.Api/Components/HybridAppWebInteropPage.razor
+// Read Components/HybridAppWebInterop.razor comments.
 
 declare class BitButil {
     static webAuthn: {
@@ -25,10 +25,8 @@ class HybridAppWebInterop {
             }
         }
         finally {
+            window.close();
             location.href = 'about:blank';
-            setTimeout(() => {
-                window.close();
-            }, 100);
         }
     }
 
