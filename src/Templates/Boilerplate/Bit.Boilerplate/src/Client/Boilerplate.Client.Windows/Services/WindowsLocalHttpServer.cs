@@ -3,7 +3,6 @@ using System.Net;
 using System.Text;
 using EmbedIO.Actions;
 using System.Net.Sockets;
-using Microsoft.AspNetCore.Components;
 using Boilerplate.Client.Core.Components;
 using Microsoft.AspNetCore.Components.Web;
 
@@ -103,8 +102,6 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
             }))
             .WithModule(new ActionModule("/web-interop", HttpVerbs.Get, async ctx =>
             {
-                var appJsUrl = "app.js";
-
                 var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
                     (await htmlRenderer.RenderComponentAsync<HybridAppWebInterop>()).ToHtmlString());
 
