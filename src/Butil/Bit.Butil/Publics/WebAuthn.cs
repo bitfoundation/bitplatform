@@ -1,5 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Text.Json;
 using System.Threading.Tasks;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop;
 using static Bit.Butil.LinkerFlags;
 
@@ -24,8 +25,17 @@ public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/create">https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/create</see>
     /// </summary>
-    public async Task<object> CreateCredential(object options)
-        => await js.Invoke<object>("BitButil.webAuthn.createCredential", options);
+    public async Task<JsonElement> CreateCredential(object options)
+        => await js.Invoke<JsonElement>("BitButil.webAuthn.createCredential", options);
+
+    /// <summary>
+    /// Creates a new credential, which can then be stored and later retrieved using the GetCredential method. 
+    /// The retrieved credential can then be used by a website to authenticate a user.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/create">https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/create</see>
+    /// </summary>
+    public async Task<JsonElement> CreateCredential(JsonElement options)
+        => await js.Invoke<JsonElement>("BitButil.webAuthn.createCredential", options);
 
     /// <summary>
     /// Creates a new credential, which can then be stored and later retrieved using the GetCredential method. 
@@ -42,8 +52,16 @@ public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/get">https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/get</see>
     /// </summary>
-    public async Task<object> GetCredential(object options)
-        => await js.Invoke<object>("BitButil.webAuthn.getCredential", options);
+    public async Task<JsonElement> GetCredential(object options)
+        => await js.Invoke<JsonElement>("BitButil.webAuthn.getCredential", options);
+
+    /// <summary>
+    /// Retrieves a credential which can then be used to authenticate a user to a website.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/get">https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/get</see>
+    /// </summary>
+    public async Task<JsonElement> GetCredential(JsonElement options)
+        => await js.Invoke<JsonElement>("BitButil.webAuthn.getCredential", options);
 
     /// <summary>
     /// Retrieves a credential which can then be used to authenticate a user to a website.
