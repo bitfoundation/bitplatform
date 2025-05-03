@@ -1,6 +1,6 @@
 ﻿namespace Bit.Websites.Platform.Client.Pages.Butil;
 
-public partial class Butil18VisualViewportPage
+public partial class Butil19VisualViewportPage
 {
     private double offsetLeft;
 

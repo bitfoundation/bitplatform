@@ -2,7 +2,7 @@
 
 namespace Bit.Websites.Platform.Client.Pages.Butil;
 
-public partial class Butil20UserAgentPage
+public partial class Butil21UserAgentPage
 {
     private UserAgentProperties? props;
 

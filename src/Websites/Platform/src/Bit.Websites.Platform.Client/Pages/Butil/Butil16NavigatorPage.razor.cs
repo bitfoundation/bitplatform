@@ -2,7 +2,7 @@
 
 namespace Bit.Websites.Platform.Client.Pages.Butil;
 
-public partial class Butil15NavigatorPage
+public partial class Butil16NavigatorPage
 {
     private string? deviceMemory;
 

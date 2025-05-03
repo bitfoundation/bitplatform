@@ -2,7 +2,7 @@
 
 namespace Bit.Websites.Platform.Client.Pages.Butil;
 
-public partial class Butil08NotificationPage
+public partial class Butil09NotificationPage
 {
     private bool? isNotificationSupported;
     private async Task CheckIsSupported() 

@@ -9,6 +9,14 @@
     flex-flow: column;
 }
 
+.section-card {
+    @include SectionCard;
+}
+
+.section-card-txt {
+    @include SectionCardText;
+}
+
 .video-container {
     width: 100%;
     display: flex;

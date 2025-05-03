@@ -1,6 +1,6 @@
 ﻿namespace Bit.Websites.Platform.Client.Pages.Butil;
 
-public partial class Butil09StoragePage
+public partial class Butil10StoragePage
 {
     private string? localLength;
     private string? sessionLength;

@@ -2,7 +2,7 @@
 
 namespace Bit.Websites.Platform.Client.Pages.Butil;
 
-public partial class Butil21WebAuthnPage
+public partial class Butil05WebAuthnPage
 {
     private object? createResult;
     private object? getResult;
