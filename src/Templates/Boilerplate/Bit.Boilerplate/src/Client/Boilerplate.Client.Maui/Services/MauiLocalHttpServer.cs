@@ -32,6 +32,12 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
 
         port = GetAvailableTcpPort();
 
+        var staticFiles = Directory.GetFiles(FileSystem.AppDataDirectory, "*.*", SearchOption.AllDirectories)
+            .Union(Directory.GetFiles(FileSystem.CacheDirectory, "*.*", SearchOption.AllDirectories))
+            .Union(Directory.GetFiles(AppContext.BaseDirectory, "*.*", SearchOption.AllDirectories))
+            .Distinct()
+            .ToArray();
+
         async Task GoBackToApp()
         {
             if (AppPlatform.IsIOS)
@@ -144,27 +150,29 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             }))
             .OnAny(async ctx =>
             {
+                var ctxImpl = (IHttpContextImpl)ctx;
+                var requestFilePath = ctxImpl.Request.Url.LocalPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+                Stream? staticFileStream = null;
+                if (staticFiles.FirstOrDefault(f => f.EndsWith(requestFilePath, StringComparison.OrdinalIgnoreCase)) is string staticFilePath)
+                {
+                    staticFileStream = File.OpenRead(staticFilePath);
+                }
+#if Android
                 try
                 {
-                    var ctxImpl = (IHttpContextImpl)ctx;
-                    var file = new FileInfo(Path.Combine("wwwroot", ctx.Request.Url.LocalPath!));
-                    if (file.Exists is false)
-                    {
-                        // In development, Blazor employs complex methods to locate files across all installed NuGet packages.
-                        // To streamline this, we utilize a web server to serve static files in the development environment.
-                        // In production, as all files are deployed to a single folder, we rely on the default file provider.
-                        ctx.Redirect(new Uri(clientMauiSettings.WebAppUrl ?? absoluteServerAddressProvider.GetAddress(), ctx.Request.Url.LocalPath).ToString());
-                        return;
-                    }
-                    ctx.Response.ContentType = ctx.GetMimeType(Path.GetExtension(ctx.Request.Url.LocalPath!));
-                    ctx.Response.Headers["Cache-Control"] = "no-cache, max-age=0, must-revalidate, no-store";
-                    await using var stream = file.OpenRead();
-                    await stream.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
+                    staticFileStream ??= Platform.AppContext.Assets!.Open(Path.Combine("wwwroot", requestFilePath), Android.Content.Res.Access.Streaming);
                 }
-                catch (Exception exp)
+                catch { }
+#endif
+                if (staticFileStream is null)
                 {
-                    exceptionHandler.Handle(exp);
+                    ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    return;
                 }
+                ctx.Response.ContentType = ctx.GetMimeType(Path.GetExtension(requestFilePath!));
+                ctx.Response.Headers["Cache-Control"] = "no-cache, max-age=0, must-revalidate, no-store";
+                await using (staticFileStream)
+                    await staticFileStream.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
             });
 
         localHttpServer.HandleHttpException(async (context, exception) =>
