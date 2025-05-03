@@ -12,6 +12,7 @@ using Boilerplate.Shared.Attributes;
 using Hangfire;
 using Boilerplate.Server.Api.Services;
 //#endif
+using Boilerplate.Server.Web.Endpoints;
 
 namespace Boilerplate.Server.Web;
 
@@ -168,6 +169,7 @@ public static partial class Program
         //#endif
 
         app.UseSiteMap();
+        app.UseHybridWebAppInterop();
 
         // Handle the rest of requests with blazor
         var blazorApp = app.MapRazorComponents<Components.App>()

@@ -52,10 +52,10 @@ public interface IUserController : IAppController
     Task<JsonElement> GetWebAuthnCredentialOptions(CancellationToken cancellationToken) => default!;
 
     [HttpPut]
-    Task CreateWebAuthnCredential(object attestationResponse, CancellationToken cancellationToken) => default!;
+    Task CreateWebAuthnCredential(JsonElement attestationResponse, CancellationToken cancellationToken) => default!;
 
     [HttpDelete]
-    Task DeleteWebAuthnCredential(object clientResponse, CancellationToken cancellationToken) => default!;
+    Task DeleteWebAuthnCredential(JsonElement clientResponse, CancellationToken cancellationToken) => default!;
 
     [HttpDelete]
     Task DeleteAllWebAuthnCredentials(CancellationToken cancellationToken);

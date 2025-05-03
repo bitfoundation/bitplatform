@@ -43,7 +43,7 @@ public partial class PasswordlessTab
             .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
             .GetWebAuthnCredentialOptions(CurrentCancellationToken);
 
-        object attestationResponse;
+        JsonElement attestationResponse;
         try
         {
             attestationResponse = (await webAuthnService.CreateWebAuthnCredential(options));

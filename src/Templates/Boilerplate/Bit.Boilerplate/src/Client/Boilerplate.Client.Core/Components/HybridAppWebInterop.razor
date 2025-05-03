@@ -12,6 +12,10 @@ Leveraging Web Features in Blazor Hybrid:
    - For scenarios requiring your website's actual origin or other features incompatible even with a localhost origin, use IExternalNavigationService to navigate to the /HybridAppWebInterop minimal API endpoint (defined in HybridWebAppInteropEndpoint.cs).
 *@
 
+@code {
+    [Inject] public IStringLocalizer<AppStrings> Localizer { get; set; } = default!;
+}
+
 <html>
 <head>
     <base href="/" />
@@ -109,7 +113,7 @@ Leveraging Web Features in Blazor Hybrid:
     </style>
 </head>
 <body>
-    <div class="title">please wait</div>
+    <div class="title">@Localizer[nameof(AppStrings.PleaseWait)]</div>
     <div class="loader">
         <div class="inner one"></div>
         <div class="inner two"></div>

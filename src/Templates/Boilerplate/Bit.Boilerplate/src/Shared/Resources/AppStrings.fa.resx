@@ -1289,4 +1289,7 @@
     <value>من تو تماشای تبلیغات درون برنامه‌ای مشکل دارم</value>
   </data>
     <!--#endif -->
+    <data name="PleaseWait" xml:space="preserve">
+    <value>لطفا صبر کنید</value>
+  </data>
 </root>
