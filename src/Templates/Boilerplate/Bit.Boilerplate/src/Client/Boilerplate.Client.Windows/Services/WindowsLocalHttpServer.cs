@@ -102,6 +102,8 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
                 {
                     exceptionHandler.Handle(exception, displayKind: ExceptionDisplayKind.NonInterrupting);
                 }
+
+                await GoBackToApp();
             }))
             .WithModule(new ActionModule("/hybrid-app-web-interop", HttpVerbs.Get, async ctx =>
             {

@@ -32,11 +32,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
 
         port = GetAvailableTcpPort();
 
-        var staticFiles = Directory.GetFiles(FileSystem.AppDataDirectory, "*.*", SearchOption.AllDirectories)
-            .Union(Directory.GetFiles(FileSystem.CacheDirectory, "*.*", SearchOption.AllDirectories))
-            .Union(Directory.GetFiles(AppContext.BaseDirectory, "*.*", SearchOption.AllDirectories))
-            .Distinct()
-            .ToArray();
+        var staticFiles = Directory.GetFiles(AppContext.BaseDirectory, "*.*", SearchOption.AllDirectories);
 
         async Task GoBackToApp()
         {
@@ -140,6 +136,8 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
                 {
                     exceptionHandler.Handle(exception, displayKind: ExceptionDisplayKind.NonInterrupting);
                 }
+
+                await GoBackToApp();
             }))
             .WithModule(new ActionModule("/hybrid-app-web-interop", HttpVerbs.Get, async ctx =>
             {
