@@ -1,10 +1,12 @@
-using Fido2NetLib;
-
-namespace Boilerplate.Client.Core.Services.Contracts;
+﻿namespace Boilerplate.Client.Core.Services.Contracts;
 
 public interface IWebAuthnService
 {
     ValueTask<bool> IsWebAuthnAvailable();
+
+    ValueTask<JsonElement> CreateWebAuthnCredential(JsonElement options);
+
+    ValueTask<JsonElement> GetWebAuthnCredential(JsonElement options);
 
     ValueTask<bool> IsWebAuthnConfigured(Guid? userId = null);
 
@@ -13,8 +15,4 @@ public interface IWebAuthnService
     ValueTask SetWebAuthnConfiguredUserId(Guid userId);
 
     ValueTask RemoveWebAuthnConfiguredUserId(Guid? userId = null);
-
-    ValueTask<AuthenticatorAttestationRawResponse> CreateWebAuthnCredential(CredentialCreateOptions options);
-
-    ValueTask<AuthenticatorAssertionRawResponse> GetWebAuthnCredential(AssertionOptions options, CancellationToken cancellationToken);
 }

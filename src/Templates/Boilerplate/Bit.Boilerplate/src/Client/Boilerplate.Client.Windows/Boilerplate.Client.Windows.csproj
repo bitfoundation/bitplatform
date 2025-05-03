@@ -50,7 +50,6 @@
         <Content Include="..\Boilerplate.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-        <Content Include="..\..\Server\Boilerplate.Server.Api\Components\HybridAppWebInteropPage.razor" Link="Components\HybridAppWebInteropPage.razor" />
         <Content Include=".config\dotnet-tools.json" />
     </ItemGroup>
 

@@ -80,7 +80,8 @@ self.serverHandledUrls = [
     //#if (module == "Sales")
     /\/products.xml/,
     //#endif
-    /\/sitemap_index.xml/
+    /\/sitemap_index.xml/,
+    /\/hybrid-app-web-interop/
 ];
 
 self.prerenderMode = 'none'; // Demo: https://adminpanel.bitplatform.dev/ (No-Prerendering + Offline support)

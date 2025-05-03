@@ -1,21 +1,20 @@
-﻿using EmbedIO;
-using System.Net;
-using EmbedIO.Actions;
+﻿using System.Net;
 using System.Net.Sockets;
-using Boilerplate.Server.Api.Components;
-using Boilerplate.Client.Core.Components;
-using Fido2NetLib;
 using System.Text;
-using System.Reflection;
-using Microsoft.AspNetCore.Components;
+using Boilerplate.Client.Core.Components;
+using EmbedIO;
+using EmbedIO.Actions;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Boilerplate.Client.Maui.Services;
 
+// Checkout HybridAppWebInterop.razor's comments.
 public partial class MauiLocalHttpServer : ILocalHttpServer
 {
     [AutoInject] private HtmlRenderer htmlRenderer;
     [AutoInject] private IExceptionHandler exceptionHandler;
+    [AutoInject] private ClientMauiSettings clientMauiSettings;
+    [AutoInject] private AbsoluteServerAddressProvider absoluteServerAddressProvider;
 
     public MauiWebAuthnService? WebAuthnService { get; set; }
 
@@ -32,6 +31,8 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             return port;
 
         port = GetAvailableTcpPort();
+
+        var staticFiles = Directory.GetFiles(AppContext.BaseDirectory, "*.*", SearchOption.AllDirectories);
 
         async Task GoBackToApp()
         {
@@ -92,7 +93,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
                     }
                     else
                     {
-                        WebAuthnService!.GetWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<AuthenticatorAssertionRawResponse>(await ctx.GetRequestBodyAsStringAsync())!);
+                        WebAuthnService!.GetWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<JsonElement>(await ctx.GetRequestBodyAsStringAsync())!);
                     }
                 }
                 finally
@@ -116,7 +117,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
                     else
                     {
 
-                        WebAuthnService!.CreateWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<AuthenticatorAttestationRawResponse>(await ctx.GetRequestBodyAsStringAsync())!);
+                        WebAuthnService!.CreateWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<JsonElement>(await ctx.GetRequestBodyAsStringAsync())!);
                     }
                 }
                 finally
@@ -124,35 +125,57 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
                     await GoBackToApp();
                 }
             }))
-            .WithModule(new ActionModule("/web-interop", HttpVerbs.Get, async ctx =>
+            .WithModule(new ActionModule("/api/LogError", HttpVerbs.Post, async ctx =>
             {
-                var appJsUrl = "app.js";
+                var exception = new UnknownException(await ctx.GetRequestBodyAsStringAsync());
 
+                var handled = WebAuthnService?.GetWebAuthnCredentialTcs?.TrySetException(exception) ??
+                    WebAuthnService?.CreateWebAuthnCredentialTcs?.TrySetException(exception);
+
+                if (handled is not true)
+                {
+                    exceptionHandler.Handle(exception, displayKind: ExceptionDisplayKind.NonInterrupting);
+                }
+
+                await GoBackToApp();
+            }))
+            .WithModule(new ActionModule("/hybrid-app-web-interop", HttpVerbs.Get, async ctx =>
+            {
                 var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
-                    (await htmlRenderer.RenderComponentAsync<HybridAppWebInteropPage>(ParameterView.FromDictionary(new Dictionary<string, object?>
-                    {
-                        { nameof(HybridAppWebInteropPage.AppJsUrl), appJsUrl }
-                    }))).ToHtmlString());
+                    (await htmlRenderer.RenderComponentAsync<HybridAppWebInterop>()).ToHtmlString());
 
                 await ctx.SendStringAsync(html, "text/html", Encoding.UTF8);
             }))
-            .WithModule(new ActionModule("/app.js", HttpVerbs.Get, async ctx =>
+            .OnAny(async ctx =>
             {
+                var ctxImpl = (IHttpContextImpl)ctx;
+                var requestFilePath = ctxImpl.Request.Url.LocalPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+                Stream? staticFileStream = null;
+                if (staticFiles.FirstOrDefault(f => f.EndsWith(requestFilePath, StringComparison.OrdinalIgnoreCase)) is string staticFilePath)
+                {
+                    staticFileStream = File.OpenRead(staticFilePath);
+                }
+#if Android
                 try
                 {
-                    ctx.Response.ContentType = "application/javascript";
-                    await using var file = Assembly.Load("Boilerplate.Client.Maui").GetManifestResourceStream("Boilerplate.Client.Maui.wwwroot.scripts.app.js")!;
-                    await file.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
+                    staticFileStream ??= Platform.AppContext.Assets!.Open(Path.Combine("wwwroot", requestFilePath), Android.Content.Res.Access.Streaming);
                 }
-                catch (Exception exp)
+                catch { }
+#endif
+                if (staticFileStream is null)
                 {
-                    exceptionHandler.Handle(exp);
+                    ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    return;
                 }
-            }));
+                ctx.Response.ContentType = ctx.GetMimeType(Path.GetExtension(requestFilePath!));
+                ctx.Response.Headers["Cache-Control"] = "no-cache, max-age=0, must-revalidate, no-store";
+                await using (staticFileStream)
+                    await staticFileStream.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
+            });
 
         localHttpServer.HandleHttpException(async (context, exception) =>
         {
-            exceptionHandler.Handle(new HttpRequestException(exception.Message), parameters: new Dictionary<string, object?>()
+            exceptionHandler.Handle(new HttpRequestException(exception.Message), parameters: new()
             {
                 { "StatusCode" , exception.StatusCode },
                 { "RequestUri" , context.Request.Url },
@@ -171,6 +194,11 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
         return port;
     }
 
+    public async ValueTask DisposeAsync()
+    {
+        localHttpServer?.Dispose();
+    }
+
     private int GetAvailableTcpPort()
     {
         using TcpListener l = new TcpListener(IPAddress.Loopback, 0);
@@ -179,10 +207,4 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
         l.Stop();
         return port;
     }
-
-    public async ValueTask DisposeAsync()
-    {
-        localHttpServer?.Dispose();
-    }
-
 }

@@ -1,15 +1,14 @@
-﻿using Fido2NetLib;
-
-namespace Boilerplate.Client.Windows.Services;
+﻿namespace Boilerplate.Client.Windows.Services;
 
 public partial class WindowsWebAuthnService : WebAuthnServiceBase
 {
     [AutoInject] private ILocalHttpServer localHttpServer = default!;
     [AutoInject] private IExternalNavigationService externalNavigationService = default!;
 
-    public AssertionOptions? GetWebAuthnCredentialOptions;
-    public TaskCompletionSource<AuthenticatorAssertionRawResponse>? GetWebAuthnCredentialTcs;
-    public override async ValueTask<AuthenticatorAssertionRawResponse> GetWebAuthnCredential(AssertionOptions options, CancellationToken cancellationToken)
+    public JsonElement? GetWebAuthnCredentialOptions;
+    public TaskCompletionSource<JsonElement>? GetWebAuthnCredentialTcs;
+
+    public override async ValueTask<JsonElement> GetWebAuthnCredential(JsonElement options)
     {
         GetWebAuthnCredentialOptions = options;
 
@@ -17,14 +16,15 @@ public partial class WindowsWebAuthnService : WebAuthnServiceBase
 
         ((WindowsLocalHttpServer)localHttpServer).WebAuthnService = this;
 
-        await externalNavigationService.NavigateToAsync($"http://localhost:{localHttpServer.Port}/web-interop?actionName=GetWebAuthnCredential");
+        await externalNavigationService.NavigateToAsync($"http://localhost:{localHttpServer.Port}/hybrid-app-web-interop?actionName=GetWebAuthnCredential");
 
         return await GetWebAuthnCredentialTcs.Task;
     }
 
-    public CredentialCreateOptions? CreateWebAuthnCredentialOptions;
-    public TaskCompletionSource<AuthenticatorAttestationRawResponse>? CreateWebAuthnCredentialTcs;
-    public override async ValueTask<AuthenticatorAttestationRawResponse> CreateWebAuthnCredential(CredentialCreateOptions options)
+    public JsonElement? CreateWebAuthnCredentialOptions;
+    public TaskCompletionSource<JsonElement>? CreateWebAuthnCredentialTcs;
+
+    public override async ValueTask<JsonElement> CreateWebAuthnCredential(JsonElement options)
     {
         CreateWebAuthnCredentialOptions = options;
 
@@ -32,7 +32,7 @@ public partial class WindowsWebAuthnService : WebAuthnServiceBase
 
         ((WindowsLocalHttpServer)localHttpServer).WebAuthnService = this;
 
-        await externalNavigationService.NavigateToAsync($"http://localhost:{localHttpServer.Port}/web-interop?actionName=CreateWebAuthnCredential");
+        await externalNavigationService.NavigateToAsync($"http://localhost:{localHttpServer.Port}/hybrid-app-web-interop?actionName=CreateWebAuthnCredential");
 
         return await CreateWebAuthnCredentialTcs.Task;
     }

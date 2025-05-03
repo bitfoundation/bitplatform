@@ -1,23 +1,20 @@
-﻿using EmbedIO;
-using System.Net;
-using EmbedIO.Actions;
+﻿using System.Net;
 using System.Net.Sockets;
-using Boilerplate.Server.Api.Components;
-using Boilerplate.Client.Core.Components;
-using Fido2NetLib;
 using System.Text;
-using Microsoft.AspNetCore.Components;
+using Boilerplate.Client.Core.Components;
+using EmbedIO;
+using EmbedIO.Actions;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Boilerplate.Client.Windows.Services;
 
-/// <summary>
-/// <inheritdoc cref="ILocalHttpServer"/>
-/// </summary>
+// Checkout HybridAppWebInterop.razor's comments.
 public partial class WindowsLocalHttpServer : ILocalHttpServer
 {
     [AutoInject] private HtmlRenderer htmlRenderer;
     [AutoInject] private IExceptionHandler exceptionHandler;
+    [AutoInject] private ClientWindowsSettings clientWindowsSettings;
+    [AutoInject] private AbsoluteServerAddressProvider absoluteServerAddressProvider;
 
     public WindowsWebAuthnService? WebAuthnService { get; set; }
 
@@ -34,6 +31,11 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
             return port;
 
         port = GetAvailableTcpPort();
+
+        var staticFiles = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.*", SearchOption.AllDirectories)
+            .Union(Directory.GetFiles(AppContext.BaseDirectory, "*.*", SearchOption.AllDirectories))
+            .Distinct()
+            .ToArray();
 
         async Task GoBackToApp()
         {
@@ -67,15 +69,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
-                    var error = ctx.Request.QueryString["error"];
-                    if (string.IsNullOrEmpty(error) is false)
-                    {
-                        WebAuthnService!.GetWebAuthnCredentialTcs!.SetException(new UnknownException(error));
-                    }
-                    else
-                    {
-                        WebAuthnService!.GetWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<AuthenticatorAssertionRawResponse>(await ctx.GetRequestBodyAsStringAsync())!);
-                    }
+                    WebAuthnService!.GetWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<JsonElement>(await ctx.GetRequestBodyAsStringAsync())!);
                 }
                 finally
                 {
@@ -90,55 +84,63 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
-                    var error = ctx.Request.QueryString["error"];
-                    if (string.IsNullOrEmpty(error) is false)
-                    {
-                        WebAuthnService!.CreateWebAuthnCredentialTcs!.SetException(new UnknownException(error));
-                    }
-                    else
-                    {
-                        WebAuthnService!.CreateWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<AuthenticatorAttestationRawResponse>(await ctx.GetRequestBodyAsStringAsync())!);
-                    }
+                    WebAuthnService!.CreateWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<JsonElement>(await ctx.GetRequestBodyAsStringAsync())!);
                 }
                 finally
                 {
                     await GoBackToApp();
                 }
             }))
-            .WithModule(new ActionModule("/web-interop", HttpVerbs.Get, async ctx =>
+            .WithModule(new ActionModule("/api/LogError", HttpVerbs.Post, async ctx =>
             {
-                var appJsUrl = "app.js";
+                var exception = new UnknownException(await ctx.GetRequestBodyAsStringAsync());
 
+                var handled = WebAuthnService?.GetWebAuthnCredentialTcs?.TrySetException(exception) ??
+                    WebAuthnService?.CreateWebAuthnCredentialTcs?.TrySetException(exception);
+
+                if (handled is not true)
+                {
+                    exceptionHandler.Handle(exception, displayKind: ExceptionDisplayKind.NonInterrupting);
+                }
+
+                await GoBackToApp();
+            }))
+            .WithModule(new ActionModule("/hybrid-app-web-interop", HttpVerbs.Get, async ctx =>
+            {
                 var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
-                    (await htmlRenderer.RenderComponentAsync<HybridAppWebInteropPage>(ParameterView.FromDictionary(new Dictionary<string, object?>
-                    {
-                        { nameof(HybridAppWebInteropPage.AppJsUrl), appJsUrl }
-                    }))).ToHtmlString());
+                    (await htmlRenderer.RenderComponentAsync<HybridAppWebInterop>()).ToHtmlString());
 
                 await ctx.SendStringAsync(html, "text/html", Encoding.UTF8);
             }))
-            .WithModule(new ActionModule("/app.js", HttpVerbs.Get, async ctx =>
+            .OnAny(async ctx =>
             {
-                try
+                var ctxImpl = (IHttpContextImpl)ctx;
+                var requestFilePath = ctxImpl.Request.Url.LocalPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+                var staticFile = staticFiles.FirstOrDefault(f => f.EndsWith(requestFilePath, StringComparison.OrdinalIgnoreCase));
+                if (File.Exists(staticFile) is false)
                 {
-                    ctx.Response.ContentType = "application/javascript";
-                    var filePath = Path.Combine(AppContext.BaseDirectory, @"wwwroot\_content\Boilerplate.Client.Core\scripts\app.js");
-                    if (File.Exists(filePath) is false)
+                    // In development, Blazor employs complex methods to locate files across all installed NuGet packages.
+                    // To streamline this, we utilize a web server to serve static files in the development environment.
+                    // In production, as all files are deployed to a single folder, we rely on the default file provider.
+                    if (AppEnvironment.IsDev())
                     {
-                        filePath = Path.Combine(AppContext.BaseDirectory, @"..\..\..\..", @"Boilerplate.Client.Core\wwwroot\scripts\app.js");
+                        ctx.Redirect(new Uri(clientWindowsSettings.WebAppUrl ?? absoluteServerAddressProvider.GetAddress(), requestFilePath).ToString());
                     }
-                    await using var fileStream = File.OpenRead(filePath);
-                    await fileStream.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
+                    else
+                    {
+                        ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    }
+                    return;
                 }
-                catch (Exception exp)
-                {
-                    exceptionHandler.Handle(exp);
-                }
-            }));
+                ctx.Response.ContentType = ctx.GetMimeType(Path.GetExtension(staticFile!));
+                ctx.Response.Headers["Cache-Control"] = "no-cache, max-age=0, must-revalidate, no-store";
+                await using var stream = File.OpenRead(staticFile!);
+                await stream.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
+            });
 
         localHttpServer.HandleHttpException(async (context, exception) =>
         {
-            exceptionHandler.Handle(new HttpRequestException(exception.Message), parameters: new Dictionary<string, object?>()
+            exceptionHandler.Handle(new HttpRequestException(exception.Message), parameters: new()
             {
                 { "StatusCode" , exception.StatusCode },
                 { "RequestUri" , context.Request.Url },

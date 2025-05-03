@@ -1289,4 +1289,7 @@
     <value>I'm having trouble watching in app ads.</value>
   </data>
     <!--#endif -->
+    <data name="PleaseWait" xml:space="preserve">
+    <value>Please wait</value>
+  </data>
 </root>

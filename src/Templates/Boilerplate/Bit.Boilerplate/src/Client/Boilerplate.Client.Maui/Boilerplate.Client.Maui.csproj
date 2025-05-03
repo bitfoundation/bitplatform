@@ -148,11 +148,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="..\Boilerplate.Client.Core\wwwroot\scripts\app.js" Link="wwwroot\scripts\app.js" />
-        <Content Include="..\..\Server\Boilerplate.Server.Api\Components\HybridAppWebInteropPage.razor" Link="Components\HybridAppWebInteropPage.razor" />
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj" />
     </ItemGroup>
 

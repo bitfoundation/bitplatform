@@ -6,7 +6,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Fido2.Models" />
         <PackageReference Include="Microsoft.AspNetCore.Authorization" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
         <PackageReference Include="Microsoft.Extensions.Caching.Memory" />

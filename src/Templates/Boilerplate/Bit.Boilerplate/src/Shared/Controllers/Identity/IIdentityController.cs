@@ -1,6 +1,4 @@
-//+:cnd:noEmit
-using Fido2NetLib;
-using Fido2NetLib.Objects;
+﻿//+:cnd:noEmit
 using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Shared.Controllers.Identity;
@@ -49,14 +47,14 @@ public interface IIdentityController : IAppController
     Task<string> GetSocialSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task<AssertionOptions> GetWebAuthnAssertionOptions(WebAuthnAssertionOptionsRequestDto request, CancellationToken cancellationToken);
+    Task<JsonElement> GetWebAuthnAssertionOptions(WebAuthnAssertionOptionsRequestDto request, CancellationToken cancellationToken) => default!;
 
     [HttpPost]
-    Task<VerifyAssertionResult> VerifyWebAuthAssertion(AuthenticatorAssertionRawResponse clientResponse, CancellationToken cancellationToken);
+    Task<JsonElement> VerifyWebAuthAssertion(JsonElement clientResponse, CancellationToken cancellationToken) => default!;
 
     [HttpPost]
     Task<SignInResponseDto> VerifyWebAuthAndSignIn(VerifyWebAuthnAndSignInDto request, CancellationToken cancellationToken) => default!;
 
     [HttpPost]
-    Task VerifyWebAuthAndSendTwoFactorToken(AuthenticatorAssertionRawResponse clientResponse, CancellationToken cancellationToken);
+    Task VerifyWebAuthAndSendTwoFactorToken(JsonElement clientResponse, CancellationToken cancellationToken) => default!;
 }

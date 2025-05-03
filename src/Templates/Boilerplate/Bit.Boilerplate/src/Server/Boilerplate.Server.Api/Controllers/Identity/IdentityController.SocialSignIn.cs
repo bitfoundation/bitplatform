@@ -1,7 +1,6 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Server.Api.Services;
 using Microsoft.AspNetCore.Authentication;
-using Boilerplate.Server.Api.Controllers.HybridAppWebInterop;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
@@ -105,7 +104,7 @@ public partial class IdentityController
         }
 
         if (localHttpPort is not null)
-            return Redirect(Url.Action(nameof(HybridAppWebInteropController.WebAppInterop), "HybridAppWebInterop", new { localHttpPort, url, actionName = "SocialSignInCallback" })!);
+            if (localHttpPort is not null) return Redirect($"http://localhost:{localHttpPort}/hybrid-app-web-interop?actionName=SocialSignInCallback&url={Uri.EscapeDataString(url!)}&localHttpPort={localHttpPort}"); // Checkout HybridAppWebInterop.razor's comments.
 
         return Redirect(new Uri(Request.HttpContext.Request.GetWebAppUrl(), url).ToString());
     }
