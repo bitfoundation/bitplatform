@@ -231,7 +231,7 @@ public partial class Templates05CreateProjectPage
 
     private string GetSignalRCommand()
     {
-        return $"--signalR{(signalR.Value ? string.Empty : " false")} ";
+        return $"--ads{(googleAds.Value ? string.Empty : " false")} ";
     }
 
     private string GetGoogleAdsCommand()
