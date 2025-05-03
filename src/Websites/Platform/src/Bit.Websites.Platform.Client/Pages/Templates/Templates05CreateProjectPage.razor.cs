@@ -231,12 +231,12 @@ public partial class Templates05CreateProjectPage
 
     private string GetSignalRCommand()
     {
-        return $"--ads{(googleAds.Value ? string.Empty : " false")} ";
+        return $"--ads{(signalR.Value ? string.Empty : " false")} ";
     }
 
     private string GetGoogleAdsCommand()
     {
-        return $"--ads{(signalR.Value ? string.Empty : " false")} ";
+        return $"--ads{(googleAds.Value ? string.Empty : " false")} ";
     }
 
     private class Parameter<T>
