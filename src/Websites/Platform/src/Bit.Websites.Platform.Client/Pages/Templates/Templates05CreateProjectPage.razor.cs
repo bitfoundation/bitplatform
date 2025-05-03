@@ -13,6 +13,7 @@ public partial class Templates05CreateProjectPage
     private Parameter<bool> notification = new() { Value = false, Default = false };
     private Parameter<bool> appInsight = new() { Value = false, Default = false };
     private Parameter<bool> signalR = new() { Value = false, Default = false };
+    private Parameter<bool> googleAds = new() { Value = false, Default = false };
 
     private Parameter<string> captcha = new()
     {
@@ -130,6 +131,11 @@ public partial class Templates05CreateProjectPage
             finalCommand.Append(GetSignalRCommand());
         }
 
+        if (googleAds.IsModified)
+        {
+            finalCommand.Append(GetGoogleAdsCommand());
+        }
+
         if (fileStorage.IsModified)
         {
             finalCommand.Append(GetFileStorageCommand());
@@ -226,6 +232,11 @@ public partial class Templates05CreateProjectPage
     private string GetSignalRCommand()
     {
         return $"--signalR{(signalR.Value ? string.Empty : " false")} ";
+    }
+
+    private string GetGoogleAdsCommand()
+    {
+        return $"--ads{(signalR.Value ? string.Empty : " false")} ";
     }
 
     private class Parameter<T>

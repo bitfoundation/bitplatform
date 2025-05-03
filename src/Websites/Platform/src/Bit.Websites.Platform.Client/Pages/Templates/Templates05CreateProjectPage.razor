@@ -125,6 +125,37 @@
             }
         </BitGridItem>
 
+        <BitGridItem Class="grid-item md">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>Pipeline</BitText>
+                <BitDropdown Placeholder="Choose pipeline" Items="@pipeline.Items" @bind-Value="@pipeline.Value" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetPipelineCommand()
+            </CodeBox>
+            <br />
+            @switch (pipeline.Value)
+            {
+                case "None":
+                    <div>
+                        By selecting None, no CI/CD pipeline will be added.
+                    </div>
+                    break;
+                case "GitHub":
+                    <div>
+                        Ensure a rapid and reliable deployment by utilizing a pipeline.
+                        By selecting GitHub, CI/ CD pipelines will be set up using <a href="https://github.com/features/actions" target="_blank">Github Actions</a>.
+                    </div>
+                    break;
+                case "Azure":
+                    <div>
+                        By selecting Azure, CI/ CD pipelines will be set up using <a href="https://azure.microsoft.com/en-us/products/devops/pipelines" target="_blank">Azure Devops</a>.
+                    </div>
+                    break;
+            }
+        </BitGridItem>
+
         <BitGridItem Class="grid-item md" ColumnSpan="2">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>API</BitText>
@@ -158,37 +189,6 @@
                 </div>
             }
 
-        </BitGridItem>
-
-        <BitGridItem Class="grid-item md">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>Pipeline</BitText>
-                <BitDropdown Placeholder="Choose pipeline" Items="@pipeline.Items" @bind-Value="@pipeline.Value" />
-            </div>
-            <br />
-            <CodeBox>
-                @GetPipelineCommand()
-            </CodeBox>
-            <br />
-            @switch (pipeline.Value)
-            {
-                case "None":
-                    <div>
-                        By selecting None, no CI/CD pipeline will be added.
-                    </div>
-                    break;
-                case "GitHub":
-                    <div>
-                        Ensure a rapid and reliable deployment by utilizing a pipeline.
-                        By selecting GitHub, CI/ CD pipelines will be set up using <a href="https://github.com/features/actions" target="_blank">Github Actions</a>.
-                    </div>
-                    break;
-                case "Azure":
-                    <div>
-                        By selecting Azure, CI/ CD pipelines will be set up using <a href="https://azure.microsoft.com/en-us/products/devops/pipelines" target="_blank">Azure Devops</a>.
-                    </div>
-                    break;
-            }
         </BitGridItem>
 
         <BitGridItem Class="grid-item md">
@@ -326,6 +326,18 @@
                 @GetCloudflareCommand()
             </CodeBox>
             Integrating Cloudflare and placing your backend behind the Cloudflare CDN will significantly enhance the app's performance while reducing server load.
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item md">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>Google Ads</BitText>
+                <BitToggle @bind-Value="googleAds.Value" OnText="true" OffText="false" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetGoogleAdsCommand()
+            </CodeBox>
+            Helps you earn money by displaying rewarded video ads. <a href="https://adminpanel.bitplatform.dev/settings/UpgradeAccount" target="_blank">Demo</a>
         </BitGridItem>
 
     </BitGrid>
