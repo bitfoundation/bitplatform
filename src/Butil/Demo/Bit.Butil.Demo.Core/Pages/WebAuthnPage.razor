@@ -26,20 +26,44 @@
 <hr />
 <br />
 
-<button @onclick="@(async () => await console.Log(await webAuthn.CreateCredential(
-new { 
-    challenge = "testChallenge",
-    rp = new { name = "testRp"},
-    user = new { id = "userId", name = "testUser", displayName = "testUser"},
-    pubKeyCredParams = new object[] { new { alg = -7, type = "public-key" } }
-})))">Create</button>
+<button @onclick="Create">Create</button>
 
 <hr />
 <br />
 
-<button @onclick="@(async () => await console.Log(await webAuthn.GetCredential(new { challenge = "test" })))">Get</button>
+<button @onclick="Get">Get</button>
 
 <hr />
 <br />
 
-<button @onclick="@(async () => await console.Log("verfied?", await webAuthn.Verify()))">Verify</button>
+<button @onclick="Verify">Verify</button>
+
+@code {
+    private async Task Create()
+    {
+        var result = await webAuthn.CreateCredential(new
+        {
+            challenge = "testChallenge",
+            rp = new { name = "testRp" },
+            user = new { id = "userId", name = "testUser", displayName = "testUser" },
+            pubKeyCredParams = new object[] { new { alg = -7, type = "public-key" } }
+        });
+
+        await console.Log("id:", result.GetProperty("id"));
+        await console.Log("Create result:", result);
+    }
+
+    private async Task Get()
+    {
+        var result = await webAuthn.GetCredential(new { challenge = "test" });
+
+        await console.Log("id:", result.GetProperty("id"));
+        await console.Log("Get result:", result);
+    }
+
+    private async Task Verify()
+    {
+        var result = await webAuthn.Verify();
+        await console.Log("Verify result:", result);
+    }
+}
