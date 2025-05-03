@@ -59,7 +59,8 @@ public partial class MainLayout : IDisposable
         new BitNavItem { Text = "Overview", Url = "/butil/overview" },
         new BitNavItem { Text = "Install", Url = "/butil/install" },
         new BitNavItem { Text = "Setup", Url = "/butil/setup" },
-        new BitNavItem { Text = "Crypto", Url = "/butil/crypto" },
+        new BitNavItem { Text = "Cryptography", Url = "/butil/crypto" },
+        new BitNavItem { Text = "Web Authentication", Url = "/butil/webAuthn" },
         new BitNavItem { Text = "Clipboard", Url = "/butil/clipboard" },
         new BitNavItem { Text = "Keyboard", Url = "/butil/keyboard" },
         new BitNavItem { Text = "Console", Url = "/butil/console" },
@@ -75,6 +76,7 @@ public partial class MainLayout : IDisposable
         new BitNavItem { Text = "Screen", Url = "/butil/screen" },
         new BitNavItem { Text = "VisualViewport", Url = "/butil/visualViewport" },
         new BitNavItem { Text = "ScreenOrientation", Url = "/butil/screenOrientation" },
+        new BitNavItem { Text = "UserAgent", Url = "/butil/userAgent" },
     ];
 
 

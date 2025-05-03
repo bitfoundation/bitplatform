@@ -2,7 +2,7 @@
 
 namespace Bit.Websites.Platform.Client.Pages.Butil;
 
-public partial class Butil05ClipboardPage
+public partial class Butil06ClipboardPage
 {
     private string clipboardText = string.Empty;
     private string newClipboardText = string.Empty;

@@ -2,7 +2,7 @@
 
 namespace Bit.Websites.Platform.Client.Pages.Butil;
 
-public partial class Butil06KeyboardPage
+public partial class Butil07KeyboardPage
 {
     private BitSearchBox searchBox = default!;
 
