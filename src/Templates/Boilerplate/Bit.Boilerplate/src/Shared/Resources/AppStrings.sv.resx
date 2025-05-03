@@ -184,13 +184,13 @@
     <value>Byt e-postadress för kontot, telefonnummer eller inställningar för lösenordslös inloggning.</value>
   </data>
   <data name="ForgotPasswordMessage" xml:space="preserve">
-    <value>Ange din e-postadress eller telefonnummer så att vi kan skicka en koden för återställning av lösenord till dig.</value>
+    <value>Ange din e-postadress eller telefonnummer så att vi kan skicka en kod för återställning av lösenord till dig.</value>
   </data>
   <data name="InvalidConfirmationTokenMessage" xml:space="preserve">
     <value>Det verkar som att bekräftelsekoden antingen är ogiltig eller har gått ut.</value>
   </data>
   <data name="ResetPasswordSubtitle" xml:space="preserve">
-    <value>Vi har skickat en koden till din telefon eller e-post.</value>
+    <value>Vi har skickat en kod till din telefon eller e-post.</value>
   </data>
   <data name="ResetPasswordMessage" xml:space="preserve">
     <value>Vänligen skicka koden tillsammans med ditt nya lösenord här.</value>
