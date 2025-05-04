@@ -1,6 +1,6 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Microsoft.JSInterop;
 using static Bit.Butil.LinkerFlags;
 
@@ -8,7 +8,7 @@ namespace Bit.Butil;
 
 public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
 {
-    private const string STORAGE_KEY = "Butil.WebAuthn.Verify.isRegistered";
+    private const string STORAGE_KEY = "Butil.WebAuthn.Verify";
 
 
 
@@ -76,6 +76,10 @@ public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
     /// Tries to get a valid credential using the minimum required options to expose a native verification feature.
     /// </summary>
     /// <param name="forceCreate">Forces the verification to be performed using the create credential approach.</param>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(WebAuthVerifyOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(WebAuthVerifyRp))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(WebAuthVerifyUser))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(WebAuthVerifyPubKeyCredParam))]
     public async Task<bool> Verify(bool forceCreate = false)
     {
         try
@@ -83,23 +87,24 @@ public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
             var isRegistered = await localStorage.GetItem(STORAGE_KEY);
             if (isRegistered is null || forceCreate)
             {
-                await CreateCredential(new
+                await CreateCredential(new WebAuthVerifyOptions
                 {
-                    challenge = "Butil Verify Challenge",
-                    rp = new { name = "Butil Verify" },
-                    user = new { id = "ButilVerifyUserId", name = "ButilVerifyUser", displayName = "ButilVerifyUser" },
-                    pubKeyCredParams = new object[] { new { alg = -7, type = "public-key" } }
+                    Challenge = "Butil Verify Challenge",
+                    Rp = new() { Name = "Butil Verify" },
+                    User = new() { Id = "ButilVerifyUserId", Name = "ButilVerifyUser", DisplayName = "ButilVerifyUser" },
+                    AuthenticatorSelection = new() { AuthenticatorAttachment = "platform" },
+                    PubKeyCredParams = [new WebAuthVerifyPubKeyCredParam() { Alg = -7, Type = "public-key" }]
                 });
                 await localStorage.SetItem(STORAGE_KEY, "ButilVerifyIsRegistered!");
             }
             else
             {
-                await GetCredential(new { challenge = "Butil Verify Challenge" });
+                await GetCredential(new WebAuthVerifyOptions { Challenge = "Butil Verify Challenge" });
             }
 
             return true;
         }
-        catch (System.Exception)
+        catch
         {
             return false;
         }
