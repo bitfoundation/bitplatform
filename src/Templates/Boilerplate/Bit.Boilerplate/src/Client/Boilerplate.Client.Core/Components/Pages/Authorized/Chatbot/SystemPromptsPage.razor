@@ -13,7 +13,7 @@
         }
         else
         {
-            <AuthorizeView Roles="@AppRoles.SUPER_ADMIN">
+            <AuthorizeView Policy="@AppClaimTypes.Management.ManageAI">
                 <Authorized>
                     <BitSticky Top="5rem" Style="margin-bottom:8px">
                         <BitButton IconName="@BitIconName.Save" OnClick="WrapHandled(SaveChanges)" AutoLoading>
@@ -27,7 +27,7 @@
             </AuthorizeView>
 
             <BitStack VerticalAlign="BitAlignment.Stretch" Horizontal>
-                <AuthorizeView Roles="@AppRoles.SUPER_ADMIN">
+                <AuthorizeView Policy="@AppClaimTypes.Management.ManageAI">
                     <BitMarkdownEditor @bind-Value="systemPromptMarkdown" Class="md-editor" />
                 </AuthorizeView>
                 <BitMarkdownViewer Markdown="@systemPromptMarkdown" Style="word-break:break-all" />

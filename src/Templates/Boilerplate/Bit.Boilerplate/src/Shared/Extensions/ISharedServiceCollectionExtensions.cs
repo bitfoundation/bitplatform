@@ -1,4 +1,4 @@
-using Boilerplate.Shared;
+﻿using Boilerplate.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 
@@ -52,11 +52,13 @@ public static partial class ISharedServiceCollectionExtensions
     /// </summary>
     public static void ConfigureAuthorizationCore(this IServiceCollection services)
     {
+        services.AddSingleton<IAuthorizationPolicyProvider, AppAuthorizationPolicyProvider>();
+
         services.AddAuthorizationCore(options =>
         {
             options.AddPolicy(AuthPolicies.TFA_ENABLED, x => x.RequireClaim("amr", "mfa"));
-            options.AddPolicy(AuthPolicies.PRIVILEGED_ACCESS, x => x.RequireClaim(AppClaimTypes.PRIVILEGED_SESSION, "true"));
-            options.AddPolicy(AuthPolicies.ELEVATED_ACCESS, x => x.RequireClaim(AppClaimTypes.ELEVATED_SESSION, "true"));
+            options.AddPolicy(AuthPolicies.PRIVILEGED_ACCESS, x => x.RequireClaim(AppClaimTypes.System.PRIVILEGED_SESSION, ""));
+            options.AddPolicy(AuthPolicies.ELEVATED_ACCESS, x => x.RequireClaim(AppClaimTypes.System.ELEVATED_SESSION, ""));
         });
     }
 }

@@ -87,9 +87,12 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var result = await userManager.CreateAsync(userToAdd, request.Password!);
 
         if (result.Succeeded is false)
-        {
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
-        }
+
+        result = await userManager.AddToRoleAsync(userToAdd, AppBuiltinRoles.BasicUser);
+
+        if (result.Succeeded is false)
+            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
         await SendConfirmationToken(userToAdd, request.ReturnUrl, cancellationToken);
     }
@@ -114,13 +117,13 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (user.TwoFactorEnabled)
         {
             // This applies only to the current short-lived access token. You can remove this line entirely.
-            userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.ELEVATED_SESSION, "true"));
+            userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.System.ELEVATED_SESSION, ""));
         }
 
-        userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_ID, userSession.Id.ToString()));
+        userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.System.SESSION_ID, userSession.Id.ToString()));
         if (userSession.Privileged)
         {
-            userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, "true"));
+            userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.System.PRIVILEGED_SESSION, ""));
         }
 
         bool isOtpSignIn = string.IsNullOrEmpty(request.Otp) is false;
@@ -266,7 +269,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 {
                     user.ElevatedAccessTokenRequestedOn = null; // invalidates token
                     await ((IUserLockoutStore<User>)userStore).ResetAccessFailedCountAsync(user, cancellationToken);
-                    userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.ELEVATED_SESSION, "true"));
+                    userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.System.ELEVATED_SESSION, ""));
                 }
             }
 
@@ -276,12 +279,12 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             (userSession.IP, userSession.Address) = (HttpContext.Connection.RemoteIpAddress?.ToString(), $"{Request.Headers["cf-ipcountry"]}, {Request.Headers["cf-ipcity"]}");
             userSession.DeviceInfo = request.DeviceInfo;
 
-            userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_ID, currentSessionId.ToString()));
+            userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.System.SESSION_ID, currentSessionId.ToString()));
 
             userSession.Privileged = await IsUserSessionPrivileged(userSession, cancellationToken);
             if (userSession.Privileged)
             {
-                userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, "true"));
+                userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.System.PRIVILEGED_SESSION, ""));
             }
 
             var newPrincipal = await signInManager.CreateUserPrincipalAsync(user!);
