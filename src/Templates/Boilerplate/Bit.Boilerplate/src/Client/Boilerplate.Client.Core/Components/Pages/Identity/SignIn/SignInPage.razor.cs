@@ -129,6 +129,7 @@ public partial class SignInPage
 
                 if (validatorRef?.EditContext.Validate() is false) return;
 
+                model.ReturnUrl = ReturnUrlQueryString;
                 model.DeviceInfo = telemetryContext.Platform;
 
                 requiresTwoFactor = await AuthManager.SignIn(model, CurrentCancellationToken);
@@ -143,6 +144,11 @@ public partial class SignInPage
             {
                 NavigationManager.NavigateTo(ReturnUrlQueryString ?? Urls.HomePage, replace: true);
             }
+        }
+        catch (BadRequestException e) when (e.Key == nameof(AppStrings.UserIsNotConfirmed))
+        {
+            NavigateToConfirmPage();
+            SnackBarService.Error(e.Message);
         }
         catch (KnownException e)
         {
@@ -251,6 +257,11 @@ public partial class SignInPage
                 isOtpSent = true;
             }
         }
+        catch (BadRequestException e) when (e.Key == nameof(AppStrings.UserIsNotConfirmed))
+        {
+            NavigateToConfirmPage();
+            SnackBarService.Error(e.Message);
+        }
         catch (KnownException e)
         {
             SnackBarService.Error(e.Message);
@@ -298,5 +309,23 @@ public partial class SignInPage
 
             validatorRef.EditContext.NotifyFieldChanged(validatorRef.EditContext.Field(nameof(SignInRequestDto.Email)));
         }
+    }
+
+    private void NavigateToConfirmPage()
+    {
+        var queryParams = new Dictionary<string, object?>
+        {
+            { "return-url", ReturnUrlQueryString }
+        };
+        if (string.IsNullOrEmpty(model.Email) is false)
+        {
+            queryParams.Add("email", model.Email);
+        }
+        if (string.IsNullOrEmpty(model.PhoneNumber) is false)
+        {
+            queryParams.Add("phoneNumber", model.PhoneNumber);
+        }
+        var confirmUrl = NavigationManager.GetUriWithQueryParameters(Urls.ConfirmPage, queryParams);
+        NavigationManager.NavigateTo(confirmUrl, replace: true);
     }
 }

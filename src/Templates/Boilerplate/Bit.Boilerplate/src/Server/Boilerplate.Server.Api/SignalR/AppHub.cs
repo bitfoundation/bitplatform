@@ -231,7 +231,7 @@ public partial class AppHub : Hub
         if (string.IsNullOrEmpty(userQuery))
             return [];
 
-        userQuery = userQuery.ToUpperInvariant();
+        userQuery = userQuery.Trim().ToUpperInvariant();
 
         await using var scope = serviceProvider.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();

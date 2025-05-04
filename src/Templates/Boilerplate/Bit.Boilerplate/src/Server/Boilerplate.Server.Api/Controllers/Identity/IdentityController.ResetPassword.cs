@@ -18,7 +18,14 @@ public partial class IdentityController
                     ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]).WithData("Identifier", request);
 
         if (await userConfirmation.IsConfirmedAsync(userManager, user) is false)
+        {
+            try
+            {
+                await SendConfirmationToken(user, request.ReturnUrl, cancellationToken);
+            }
+            catch { }
             throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]).WithData("UserId", user.Id);
+        }
 
         var resendDelay = (DateTimeOffset.Now - user.ResetPasswordTokenRequestedOn) - AppSettings.Identity.ResetPasswordTokenLifetime;
 
@@ -35,7 +42,7 @@ public partial class IdentityController
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ResetPassword,{user.ResetPasswordTokenRequestedOn?.ToUniversalTime()}"));
         var isEmail = string.IsNullOrEmpty(request.Email) is false;
         var qs = $"{(isEmail ? "email" : "phoneNumber")}={Uri.EscapeDataString(isEmail ? request.Email! : request.PhoneNumber!)}";
-        var url = $"{Urls.ResetPasswordPage}?token={Uri.EscapeDataString(token)}&{qs}&culture={CultureInfo.CurrentUICulture.Name}";
+        var url = $"{Urls.ResetPasswordPage}?token={Uri.EscapeDataString(token)}&{qs}&culture={CultureInfo.CurrentUICulture.Name}&return-url={Uri.EscapeDataString(request.ReturnUrl ?? Urls.HomePage)}";
         var link = new Uri(HttpContext.Request.GetWebAppUrl(), url);
 
         List<Task> sendMessagesTasks = [];
