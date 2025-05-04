@@ -6,6 +6,14 @@
 /// </summary>
 public class AppBuiltInRoles
 {
+    /// <summary>
+    /// Has all permissions <see cref="AppPermissions"/>
+    /// </summary>
     public const string SuperAdmin = "s-admin";
+
+    /// <summary>
+    /// All permissions except <see cref="AppPermissions.Management"/>
+    /// </summary>
+
     public const string BasicUser = "b-user";
 }

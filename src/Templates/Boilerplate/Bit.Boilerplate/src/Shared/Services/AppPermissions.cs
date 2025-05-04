@@ -45,4 +45,18 @@ public class AppPermissions
         /// </summary>
         public const string ManageTodo = "6";
     }
+
+    public static (string permissionKey, string value, Type group)[] GetSuperAdminPermissions()
+    {
+        return [.. typeof(AppPermissions)
+            .GetNestedTypes()
+            .SelectMany(t => t.GetFields())
+            .Select(t => (t.Name, t.GetRawConstantValue()!.ToString()!, t.DeclaringType!))];
+    }
+
+    public static (string permissionKey, string value, Type group)[] GetBasicUserPermissions()
+    {
+        return [.. GetSuperAdminPermissions()
+            .Where(p => p.group != typeof(Management))];
+    }
 }
