@@ -76,7 +76,7 @@
                                     @Localizer[nameof(AppStrings.EmailConfirmationSuccessMessage)]
                                 </BitText>
 
-                                <BitLink Href="@Urls.SignInPage">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
+                                <BitLink Href="@($"{Urls.SignInPage}?return-url={Uri.EscapeDataString(ReturnUrlQueryString ?? Urls.HomePage)}")">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
                             }
                         </BitStack>
                     </BitPivotItem>
@@ -141,7 +141,7 @@
                                     @Localizer[nameof(AppStrings.PhoneConfirmationSuccessMessage)]
                                 </BitText>
 
-                                <BitLink Href="@Urls.SignInPage">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
+                                <BitLink Href="@($"{Urls.SignInPage}?return-url={Uri.EscapeDataString(ReturnUrlQueryString ?? Urls.HomePage)}")">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
                             }
                         </BitStack>
                     </BitPivotItem>
@@ -149,9 +149,9 @@
             </BitPivot>
             <br />
             <BitStack Horizontal HorizontalAlign="BitAlignment.Center">
-                <BitLink Href="@Urls.SignInPage">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
+                <BitLink Href="@($"{Urls.SignInPage}?return-url={Uri.EscapeDataString(ReturnUrlQueryString ?? Urls.HomePage)}")">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
                 <BitText>@Localizer[nameof(AppStrings.Or)]</BitText>
-                <BitLink Href="@Urls.SignUpPage">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
+                <BitLink Href="@($"{Urls.SignUpPage}?return-url={Uri.EscapeDataString(ReturnUrlQueryString ?? Urls.HomePage)}")">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
             </BitStack>
         </BitStack>
     </BitStack>

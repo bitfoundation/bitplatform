@@ -1,4 +1,4 @@
-using Boilerplate.Shared.Dtos.Identity;
+﻿using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
@@ -13,6 +13,9 @@ public partial class ResetPasswordPage
 
     [Parameter, SupplyParameterFromQuery(Name = "token")]
     public string? TokenQueryString { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "return-url")]
+    public string? ReturnUrlQueryString { get; set; }
 
 
     [AutoInject] IIdentityController identityController = default!;

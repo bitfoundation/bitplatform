@@ -53,7 +53,22 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         // Attempt to locate an existing user using either their email address or phone number. The enforcement of a unique username policy is integral to the aspnetcore identity framework.
         var existingUser = await userManager.FindUserAsync(new() { Email = request.Email, PhoneNumber = request.PhoneNumber });
         if (existingUser is not null)
-            throw new BadRequestException(Localizer[nameof(AppStrings.DuplicateEmailOrPhoneNumber)]).WithData("UserId", existingUser.Id);
+        {
+
+            if (await userConfirmation.IsConfirmedAsync(userManager, existingUser) is false)
+            {
+                try
+                {
+                    await SendConfirmationToken(existingUser, request.ReturnUrl, cancellationToken);
+                }
+                catch { }
+                throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]).WithData("UserId", existingUser.Id);
+            }
+            else
+            {
+                throw new BadRequestException(Localizer[nameof(AppStrings.DuplicateEmailOrPhoneNumber)]).WithData("UserId", existingUser.Id);
+            }
+        }
 
         var userToAdd = new User { LockoutEnabled = true };
 
@@ -76,15 +91,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
         }
 
-        if (string.IsNullOrEmpty(userToAdd.Email) is false)
-        {
-            await SendConfirmEmailToken(userToAdd, request.ReturnUrl, cancellationToken);
-        }
-
-        if (string.IsNullOrEmpty(userToAdd.PhoneNumber) is false)
-        {
-            await SendConfirmPhoneToken(userToAdd, cancellationToken);
-        }
+        await SendConfirmationToken(userToAdd, request.ReturnUrl, cancellationToken);
     }
 
     [HttpPost, Produces<SignInResponseDto>()]
@@ -123,7 +130,14 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             : (await signInManager.PasswordSignInAsync(user!.UserName!, request.Password!, isPersistent: false, lockoutOnFailure: true), authenticationMethod: "Password");
 
         if (signInResult.IsNotAllowed && await userConfirmation.IsConfirmedAsync(userManager, user) is false)
+        {
+            try
+            {
+                await SendConfirmationToken(user, request.ReturnUrl, cancellationToken);
+            }
+            catch { }
             throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]).WithData("UserId", user.Id);
+        }
 
         if (signInResult.IsLockedOut)
         {
@@ -296,7 +310,14 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                     ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]).WithData("Identifiar", request);
 
         if (await userConfirmation.IsConfirmedAsync(userManager, user) is false)
+        {
+            try
+            {
+                await SendConfirmationToken(user, request.ReturnUrl, cancellationToken);
+            }
+            catch { }
             throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]).WithData("UserId", user.Id);
+        }
 
         var resendDelay = (DateTimeOffset.Now - user.OtpRequestedOn) - AppSettings.Identity.OtpTokenLifetime;
 
@@ -423,5 +444,18 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var url = $"{Urls.SignInPage}?otp={Uri.EscapeDataString(token)}&{qs}&culture={CultureInfo.CurrentUICulture.Name}";
 
         return (token, url);
+    }
+
+    private async Task SendConfirmationToken(User user, string? returnUrl, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(user.Email) is false)
+        {
+            await SendConfirmEmailToken(user, returnUrl, cancellationToken);
+        }
+
+        if (string.IsNullOrEmpty(user.PhoneNumber) is false)
+        {
+            await SendConfirmPhoneToken(user, cancellationToken);
+        }
     }
 }

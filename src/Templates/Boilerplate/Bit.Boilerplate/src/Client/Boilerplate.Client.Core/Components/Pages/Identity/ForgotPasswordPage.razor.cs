@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 
@@ -7,6 +7,9 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity;
 public partial class ForgotPasswordPage
 {
     [AutoInject] IIdentityController identityController = default!;
+
+    [Parameter, SupplyParameterFromQuery(Name = "return-url")]
+    public string? ReturnUrlQueryString { get; set; }
 
     private bool isWaiting;
     private readonly SendResetPasswordTokenRequestDto model = new();
@@ -36,9 +39,13 @@ public partial class ForgotPasswordPage
 
         try
         {
+            model.ReturnUrl = ReturnUrlQueryString;
             await identityController.SendResetPasswordToken(model, CurrentCancellationToken);
 
-            var queryParams = new Dictionary<string, object?>();
+            var queryParams = new Dictionary<string, object?>
+            {
+                { "return-url", ReturnUrlQueryString }
+            };
             if (string.IsNullOrEmpty(model.Email) is false)
             {
                 queryParams.Add("email", model.Email);
@@ -47,8 +54,14 @@ public partial class ForgotPasswordPage
             {
                 queryParams.Add("phoneNumber", model.PhoneNumber);
             }
+
             var resetPasswordUrl = NavigationManager.GetUriWithQueryParameters(Urls.ResetPasswordPage, queryParams);
             NavigationManager.NavigateTo(resetPasswordUrl);
+        }
+        catch (BadRequestException e) when (e.Key == nameof(AppStrings.UserIsNotConfirmed))
+        {
+            NavigateToConfirmPage();
+            SnackBarService.Error(e.Message);
         }
         catch (KnownException e)
         {
@@ -58,5 +71,23 @@ public partial class ForgotPasswordPage
         {
             isWaiting = false;
         }
+    }
+
+    private void NavigateToConfirmPage()
+    {
+        var queryParams = new Dictionary<string, object?>
+        {
+            { "return-url", ReturnUrlQueryString }
+        };
+        if (string.IsNullOrEmpty(model.Email) is false)
+        {
+            queryParams.Add("email", model.Email);
+        }
+        if (string.IsNullOrEmpty(model.PhoneNumber) is false)
+        {
+            queryParams.Add("phoneNumber", model.PhoneNumber);
+        }
+        var confirmUrl = NavigationManager.GetUriWithQueryParameters(Urls.ConfirmPage, queryParams);
+        NavigationManager.NavigateTo(confirmUrl, replace: true);
     }
 }
