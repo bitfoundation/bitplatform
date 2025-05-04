@@ -20,11 +20,11 @@
         <div class="section-card-txt">
             To use the WebAuthn api of Butil you need to inject the Bit.Butil.WebAuthn class and use it like this:
             <CodeBox HideCopyButton>
-@@inject Bit.Butil.WebAuthn webAuthn
+                @@inject Bit.Butil.WebAuthn webAuthn
 
-@@code {
-    var result = await webAuthn.CreateCredential(new { ... });
-}
+                @@code {
+                var result = await webAuthn.CreateCredential(new { ... });
+                }
             </CodeBox>
         </div>
     </section>
@@ -50,7 +50,11 @@
                         <br />
                         <br />
                         <div>Result:</div>
-                        <div>@createResult?.ToString()?.Replace(",", ",\n")</div>
+                        <div class="result">@createResult?.ToString()?.Replace(",", ",\n")</div>
+                        @if (string.IsNullOrWhiteSpace(createError) is false)
+                        {
+                            <div>error: @createError</div>
+                        }
                     </BitPivotItem>
                 </BitPivot>
             </BitAccordion>
@@ -73,7 +77,11 @@
                         <br />
                         <br />
                         <div>Result:</div>
-                        <div>@getResult?.ToString()?.Replace(",", ",\n")</div>
+                        <div class="result">@getResult?.ToString()?.Replace(",", ",\n")</div>
+                        @if (string.IsNullOrWhiteSpace(getError) is false)
+                        {
+                            <div>error: @getError</div>
+                        }
                     </BitPivotItem>
                 </BitPivot>
             </BitAccordion>
