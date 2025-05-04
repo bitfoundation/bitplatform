@@ -14,3 +14,8 @@
 .section-card-txt {
     @include SectionCardText;
 }
+
+.result {
+    word-break: break-all;
+    white-space: break-spaces;
+}

@@ -1,27 +1,45 @@
-﻿using System.Text.Json;
-
-namespace Bit.Websites.Platform.Client.Pages.Butil;
+﻿namespace Bit.Websites.Platform.Client.Pages.Butil;
 
 public partial class Butil05WebAuthnPage
 {
     private object? createResult;
+    private string? createError;
+
     private object? getResult;
+    private string? getError;
+
     private bool? verifyResult;
 
     private async Task Create()
     {
-        createResult = await webAuthn.CreateCredential(new
+        try
         {
-            challenge = "testChallenge",
-            rp = new { name = "testRp" },
-            user = new { id = "userId", name = "testUser", displayName = "testUser" },
-            pubKeyCredParams = new object[] { new { alg = -7, type = "public-key" } }
-        });
+            createError = null;
+            createResult = await webAuthn.CreateCredential(new
+            {
+                challenge = "testChallenge",
+                rp = new { name = "testRp" },
+                user = new { id = "userId", name = "testUser", displayName = "testUser" },
+                pubKeyCredParams = new object[] { new { alg = -7, type = "public-key" } }
+            });
+        }
+        catch (Exception ex)
+        {
+            createError = ex.ToString();
+        }
     }
 
     private async Task Get()
     {
-        getResult = await webAuthn.GetCredential(new { challenge = "test" });
+        try
+        {
+            getError = null;
+            getResult = await webAuthn.GetCredential(new { challenge = "test" });
+        }
+        catch (Exception ex)
+        {
+            getError = ex.ToString();
+        }
     }
 
     private async Task Verify()
