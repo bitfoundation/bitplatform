@@ -1,6 +1,7 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Threading.Tasks;
-using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using static Bit.Butil.LinkerFlags;
 
@@ -77,31 +78,5 @@ public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
     /// </summary>
     /// <param name="forceCreate">Forces the verification to be performed using the create credential approach.</param>
     public async Task<bool> Verify(bool forceCreate = false)
-    {
-        try
-        {
-            var isRegistered = await localStorage.GetItem(STORAGE_KEY);
-            if (isRegistered is null || forceCreate)
-            {
-                await CreateCredential(new
-                {
-                    challenge = "Butil Verify Challenge",
-                    rp = new { name = "Butil Verify" },
-                    user = new { id = "ButilVerifyUserId", name = "ButilVerifyUser", displayName = "ButilVerifyUser" },
-                    pubKeyCredParams = new object[] { new { alg = -7, type = "public-key" } }
-                });
-                await localStorage.SetItem(STORAGE_KEY, "ButilVerifyIsRegistered!");
-            }
-            else
-            {
-                await GetCredential(new { challenge = "Butil Verify Challenge" });
-            }
-
-            return true;
-        }
-        catch (System.Exception)
-        {
-            return false;
-        }
-    }
+        => await js.Invoke<bool>("BitButil.webAuthn.verify", forceCreate);
 }
