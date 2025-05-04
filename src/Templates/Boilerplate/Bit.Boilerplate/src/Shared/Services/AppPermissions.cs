@@ -1,5 +1,8 @@
 ﻿namespace Boilerplate.Shared.Services;
 
+/// <summary>
+/// Values for the <see cref="AppClaimTypes.PERMISSIONS"/>
+/// </summary>
 public class AppPermissions
 {
     public class Management
