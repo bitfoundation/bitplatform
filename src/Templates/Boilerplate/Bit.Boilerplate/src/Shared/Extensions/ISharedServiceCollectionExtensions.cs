@@ -1,4 +1,5 @@
-﻿using Boilerplate.Shared;
+﻿using System.Text;
+using Boilerplate.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 
@@ -52,6 +53,13 @@ public static partial class ISharedServiceCollectionExtensions
     /// </summary>
     public static void ConfigureAuthorizationCore(this IServiceCollection services)
     {
+        StringBuilder duplicatePermissionsReportString = new();
+        foreach (var g in AppPermissions.GetAll().GroupBy(x => x.value).Where(g => g.Count() > 1))
+            duplicatePermissionsReportString.Append(string.Join(Environment.NewLine, g.Select(x => $"{x.group.Name}-{x.permissionKey}-{x.value}")));
+        if (duplicatePermissionsReportString.Length > 0)
+            throw new Exception($"Duplicate permission values found. Please ensure all permission values are unique{duplicatePermissionsReportString}");
+
+
         services.AddAuthorizationCore(options =>
         {
             options.AddPolicy(AuthPolicies.TFA_ENABLED, x => x.RequireClaim("amr", "mfa"));
