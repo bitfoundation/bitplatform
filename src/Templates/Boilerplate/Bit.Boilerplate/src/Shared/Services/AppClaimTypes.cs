@@ -24,18 +24,3 @@ public class AppClaimTypes
     /// </summary>
     public const string PERMISSIONS = "per";
 }
-
-public class AppBuiltinRoles
-{
-    /// <summary>
-    /// This role has all the permissions (claims).
-    /// </summary>
-    public const string SuperAdmin = "s-admin";
-
-    /// <summary>
-    /// The role of the users who sign-up using the app.
-    /// </summary>
-    public const string BasicUser = "b-user";
-
-    // Note: The rest of the roles can be dynamically created by the super admin users in the app.
-}

@@ -52,8 +52,6 @@ public static partial class ISharedServiceCollectionExtensions
     /// </summary>
     public static void ConfigureAuthorizationCore(this IServiceCollection services)
     {
-        services.AddSingleton<IAuthorizationPolicyProvider, AppAuthorizationPolicyProvider>();
-
         services.AddAuthorizationCore(options =>
         {
             options.AddPolicy(AuthPolicies.TFA_ENABLED, x => x.RequireClaim("amr", "mfa"));
