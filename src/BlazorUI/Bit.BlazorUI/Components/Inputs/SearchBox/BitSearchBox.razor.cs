@@ -36,6 +36,11 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     [Parameter] public BitSearchBoxClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The custom template for clear button icon.
+    /// </summary>
+    [Parameter] public RenderFragment? CleanButtonTemplate { get; set; }
+
+    /// <summary>
     /// The general color of the search box, used for colored parts like icons.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -123,6 +128,11 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     [Parameter] public string SearchButtonIconName { get; set; } = "ChromeBackMirrored";
 
     /// <summary>
+    /// The custom template for search button icon.
+    /// </summary>
+    [Parameter] public RenderFragment? SearchButtonTemplate { get; set; }
+
+    /// <summary>
     /// Whether to show the search button.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -159,8 +169,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     [Parameter, ResetClassBuilder]
     public bool Underlined { get; set; }
 
-
-
+    
+    
     /// <summary>
     /// Clears the input element. 
     /// </summary>
