@@ -1,18 +1,13 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
+using System.Text.Json;
 using Microsoft.JSInterop;
 using static Bit.Butil.LinkerFlags;
 
 namespace Bit.Butil;
 
-public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
+public class WebAuthn(IJSRuntime js)
 {
-    private const string STORAGE_KEY = "Butil.WebAuthn.Verify.isRegistered";
-
-
-
     /// <summary>
     /// Checks that the WebAuthentication api is available on the client or not.
     /// </summary>
