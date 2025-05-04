@@ -5,7 +5,7 @@ namespace Boilerplate.Server.Api.Controllers.Todo;
 
 [ApiController, Route("api/[controller]/[action]"),
     Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS),
-    Authorize(Policy = AppClaimTypes.Todo.ManageTodo)]
+    Authorize(Policy = AppPermissions.Todo.ManageTodo)]
 public partial class TodoItemController : AppControllerBase, ITodoItemController
 {
     [HttpGet, EnableQuery]

@@ -107,7 +107,7 @@
                            IconName="@BitIconName.DeveloperTools" />
 
                 @*#if (signalR == true)*@
-                <AuthorizeView Policy="@AppClaimTypes.Management.ViewLogs">
+                <AuthorizeView Policy="@AppPermissions.Management.ViewLogs">
                     <Authorized>
                         <BitButton IconOnly AutoLoading
                                    OnClick="ReadAnotherUserLogs"

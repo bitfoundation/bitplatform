@@ -1,0 +1,48 @@
+﻿namespace Boilerplate.Shared.Services;
+
+public class AppPermissions
+{
+    public class Management
+    {
+        /// <summary>
+        /// Change AI Chatbot's system prompt.
+        /// </summary>
+        public const string ManageAI = "0";
+
+        /// <summary>
+        /// Add/Modify/Delete users and roles.
+        /// </summary>
+        public const string ManageIdentity = "1";
+
+        /// <summary>
+        /// <inheritdoc cref="SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE" />
+        /// </summary>
+        public const string ViewLogs = "2";
+
+        /// <summary>
+        /// Manage background jobs using hangfire's dashboard.
+        /// </summary>
+        public const string ManageJobs = "3";
+    }
+
+    public class AdminPanel
+    {
+        /// <summary>
+        /// View the admin panel's dashboard.
+        /// </summary>
+        [Display(Name = nameof(AppStrings.PhoneNumber))]
+        public const string Dashboard = "4";
+        /// <summary>
+        /// Add/Modify/Delete products and categories.
+        /// </summary>
+        public const string ManageProductCatalog = "5";
+    }
+
+    public class Todo
+    {
+        /// <summary>
+        /// Add/Modify/Delete todo items in /todo page.
+        /// </summary>
+        public const string ManageTodo = "6";
+    }
+}
