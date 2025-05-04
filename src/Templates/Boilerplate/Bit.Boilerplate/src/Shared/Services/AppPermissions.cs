@@ -46,6 +46,8 @@ public class AppPermissions
         public const string ManageTodo = "6";
     }
 
+    public static (string permissionKey, string value, Type group)[] GetAll() => GetSuperAdminPermissions();
+
     public static (string permissionKey, string value, Type group)[] GetSuperAdminPermissions()
     {
         return [.. typeof(AppPermissions)

@@ -1,15 +1,16 @@
 ﻿//+:cnd:noEmit
+using Boilerplate.Server.Api.Models.Identity;
+//#endif
+using Boilerplate.Server.Api.Services;
+using Boilerplate.Server.Api.Services.Identity;
+using Boilerplate.Server.Api.SignalR;
+using Boilerplate.Shared.Controllers.Identity;
+using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Shared.Services;
 using Humanizer;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
-using Boilerplate.Server.Api.SignalR;
-//#endif
-using Boilerplate.Server.Api.Services;
-using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Server.Api.Models.Identity;
-using Boilerplate.Shared.Controllers.Identity;
-using Boilerplate.Server.Api.Services.Identity;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
@@ -85,6 +86,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         }
 
         var result = await userManager.CreateAsync(userToAdd, request.Password!);
+
+        if (result.Succeeded is false)
+            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+
+        result = await userManager.AddToRoleAsync(userToAdd, AppBuiltInRoles.BasicUser);
 
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());

@@ -13,6 +13,7 @@ public class AppBuiltInRoles
 
     /// <summary>
     /// All permissions except <see cref="AppPermissions.Management"/>
+    /// This is for demonstration purposes only and can be removed.
     /// </summary>
 
     public const string BasicUser = "b-user";

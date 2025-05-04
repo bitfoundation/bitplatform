@@ -8,6 +8,9 @@ public interface IAuthTokenProvider
 
     public static ClaimsPrincipal Anonymous() => new(new ClaimsIdentity());
 
+    private const string RoleType = "role";
+    private const string NameType = "name";
+
     public static ClaimsPrincipal ParseAccessToken(string? accessToken, bool validateExpiry)
     {
         if (string.IsNullOrEmpty(accessToken) is true)
@@ -18,7 +21,7 @@ public interface IAuthTokenProvider
         if (claims is null)
             return Anonymous();
 
-        var identity = new ClaimsIdentity(claims: claims, authenticationType: "Bearer", nameType: "name", roleType: "role");
+        var identity = new ClaimsIdentity(claims: claims, authenticationType: "Bearer", nameType: NameType, roleType: RoleType);
 
         var claimPrinciple = new ClaimsPrincipal(identity);
 
@@ -50,6 +53,18 @@ public interface IAuthTokenProvider
             {
                 claims.Add(new Claim(keyValue.Key, keyValue.Value.ToString() ?? string.Empty));
             }
+        }
+
+        if (claims.Any(c => c.Type == RoleType && c.Value == AppBuiltInRoles.SuperAdmin))
+        {
+            foreach (var per in AppPermissions.GetSuperAdminPermissions())
+                claims.Add(new Claim(AppClaimTypes.PERMISSIONS, per.value));
+        }
+
+        if (claims.Any(c => c.Type == RoleType && c.Value == AppBuiltInRoles.BasicUser))
+        {
+            foreach (var per in AppPermissions.GetBasicUserPermissions())
+                claims.Add(new Claim(AppClaimTypes.PERMISSIONS, per.value));
         }
 
         return claims;

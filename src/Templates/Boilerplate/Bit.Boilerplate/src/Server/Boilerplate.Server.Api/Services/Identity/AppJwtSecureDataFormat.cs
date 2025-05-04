@@ -1,5 +1,5 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication;
 
 namespace Boilerplate.Server.Api.Services.Identity;
@@ -26,7 +26,24 @@ public partial class AppJwtSecureDataFormat(ServerApiSettings appSettings, Token
 
             var validJwt = (JwtSecurityToken)validToken;
             var properties = new AuthenticationProperties() { ExpiresUtc = validJwt.ValidTo };
-            var data = new AuthenticationTicket(principal, properties: properties, IdentityConstants.BearerScheme);
+
+            var identity = new ClaimsIdentity(principal.Identity, principal.Claims, IdentityConstants.BearerScheme, ClaimTypes.NameIdentifier, ClaimTypes.Role);
+
+            if (principal.IsInRole(AppBuiltInRoles.SuperAdmin))
+            {
+                foreach (var per in AppPermissions.GetSuperAdminPermissions())
+                    identity.AddClaim(new Claim(AppClaimTypes.PERMISSIONS, per.value));
+            }
+
+            if (principal.IsInRole(AppBuiltInRoles.BasicUser))
+            {
+                foreach (var per in AppPermissions.GetBasicUserPermissions())
+                    identity.AddClaim(new Claim(AppClaimTypes.PERMISSIONS, per.value));
+            }
+
+            var result = new ClaimsPrincipal(identity);
+
+            var data = new AuthenticationTicket(result, properties: properties, IdentityConstants.BearerScheme);
 
             return data;
         }
