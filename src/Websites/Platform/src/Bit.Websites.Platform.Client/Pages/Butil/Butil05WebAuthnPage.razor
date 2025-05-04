@@ -20,13 +20,20 @@
         <div class="section-card-txt">
             To use the WebAuthn api of Butil you need to inject the Bit.Butil.WebAuthn class and use it like this:
             <CodeBox HideCopyButton>
-                @@inject Bit.Butil.WebAuthn webAuthn
+@@inject Bit.Butil.WebAuthn webAuthn
 
-                @@code {
-                var result = await webAuthn.CreateCredential(new { ... });
-                }
+@@code {
+    var result = await webAuthn.CreateCredential(new { ... });
+}
             </CodeBox>
         </div>
+        
+        <BitText>
+            <b>Note</b>: For optimal security, it is advisable to implement Web Authentication alongside a server-side counterpart
+            that securely stores essential data for future verification. This approach, similar to our existing integration with
+            the <BitLink Href="https://github.com/passwordless-lib/fido2-net-lib" Target="_blank">FIDO2</BitLink> infrastructure,
+            ensures robust authentication and safeguards against potential threats.
+        </BitText>
     </section>
 
     <section class="section-card">
