@@ -104,7 +104,7 @@ public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
 
             return true;
         }
-        catch (System.Exception)
+        catch
         {
             return false;
         }
