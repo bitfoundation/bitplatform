@@ -2,15 +2,15 @@
 using Boilerplate.Server.Api.Models.Identity;
 //#endif
 using Boilerplate.Server.Api.Services;
-using Boilerplate.Server.Api.Services.Identity;
-using Boilerplate.Server.Api.SignalR;
-using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Shared.Services;
+using Boilerplate.Shared.Controllers.Identity;
+using Boilerplate.Server.Api.Services.Identity;
 using Humanizer;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
+using Boilerplate.Server.Api.SignalR;
+//#endif
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
