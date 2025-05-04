@@ -7,5 +7,6 @@ public partial class UserClaimConfiguration : IEntityTypeConfiguration<UserClaim
 {
     public void Configure(EntityTypeBuilder<UserClaim> builder)
     {
+        builder.HasIndex(userClaim => new { userClaim.RoleId, userClaim.ClaimType, userClaim.ClaimValue });
     }
 }
