@@ -111,7 +111,8 @@ public partial class SignInPage
                         new VerifyWebAuthnAndSignInDto
                         {
                             ClientResponse = webAuthnAssertion.Value,
-                            TfaCode = model.TwoFactorCode
+                            TfaCode = model.TwoFactorCode,
+                            DeviceInfo = telemetryContext.Platform
                         },
                         CurrentCancellationToken);
 

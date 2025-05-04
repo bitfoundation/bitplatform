@@ -73,7 +73,7 @@ public partial class IdentityController
             await DbContext.SaveChangesAsync(cancellationToken);
         }
 
-        await SignIn(new() { Otp = otp, TwoFactorCode = request.TfaCode }, user, cancellationToken);
+        await SignIn(new() { Otp = otp, TwoFactorCode = request.TfaCode, DeviceInfo = request.DeviceInfo }, user, cancellationToken);
     }
 
     [HttpPost]
