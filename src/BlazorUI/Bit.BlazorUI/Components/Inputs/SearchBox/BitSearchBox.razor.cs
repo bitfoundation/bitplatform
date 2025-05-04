@@ -169,8 +169,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     [Parameter, ResetClassBuilder]
     public bool Underlined { get; set; }
 
-    
-    
+
+
     /// <summary>
     /// Clears the input element. 
     /// </summary>
