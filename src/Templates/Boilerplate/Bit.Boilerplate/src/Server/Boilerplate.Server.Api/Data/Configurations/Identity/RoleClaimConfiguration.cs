@@ -12,7 +12,7 @@ public partial class RoleClaimConfiguration : IEntityTypeConfiguration<RoleClaim
         var superAdminRoleId = Guid.Parse("8ff71671-a1d6-5f97-abb9-d87d7b47d6e7");
         builder.HasData(new { RoleId = superAdminRoleId, ClaimType = AppClaimTypes.Management.ManageAI, ClaimValue = "", Id = 1 });
         builder.HasData(new { RoleId = superAdminRoleId, ClaimType = AppClaimTypes.Management.ManageIdentity, ClaimValue = "", Id = 2 });
-        builder.HasData(new { RoleId = superAdminRoleId, ClaimType = AppClaimTypes.Management.ReadLogs, ClaimValue = "", Id = 3 });
+        builder.HasData(new { RoleId = superAdminRoleId, ClaimType = AppClaimTypes.Management.ViewLogs, ClaimValue = "", Id = 3 });
         builder.HasData(new { RoleId = superAdminRoleId, ClaimType = AppClaimTypes.Management.ManageJobs, ClaimValue = "", Id = 4 });
 
         builder.HasData(new { RoleId = superAdminRoleId, ClaimType = AppClaimTypes.AdminPanel.Dashboard, ClaimValue = "", Id = 5 });

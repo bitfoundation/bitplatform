@@ -22,7 +22,7 @@ public class AppClaimTypes
         /// <summary>
         /// <inheritdoc cref="SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE" />
         /// </summary>
-        public const string ReadLogs = "r-logs";
+        public const string ViewLogs = "r-logs";
 
         /// <summary>
         /// Manage background jobs using hangfire's dashboard.
