@@ -1,4 +1,4 @@
-namespace System.Security.Claims;
+﻿namespace System.Security.Claims;
 
 public static partial class ClaimsPrincipalExtensions
 {
@@ -33,5 +33,10 @@ public static partial class ClaimsPrincipalExtensions
     public static Guid GetSessionId(this ClaimsPrincipal claimsPrincipal)
     {
         return Guid.Parse(claimsPrincipal.FindFirst(AppClaimTypes.SESSION_ID)!.Value);
+    }
+
+    public static bool HasPermission(this ClaimsPrincipal claimsPrincipal, string permission)
+    {
+        return claimsPrincipal.HasClaim(AppClaimTypes.PERMISSIONS, permission);
     }
 }
