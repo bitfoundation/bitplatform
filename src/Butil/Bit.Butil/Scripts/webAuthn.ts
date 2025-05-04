@@ -4,8 +4,7 @@ var BitButil = BitButil || {};
     butil.webAuthn = {
         isAvailable() { return !!window.PublicKeyCredential; },
         createCredential,
-        getCredential,
-        verify
+        getCredential
     };
 
     async function createCredential(options: PublicKeyCredentialCreationOptions) {
@@ -80,32 +79,6 @@ var BitButil = BitButil || {};
             }
         }
         return result;
-    }
-
-
-    const STORAGE_KEY = "Butil.WebAuthn.Verify";
-    async function verify(forceCreate: boolean) {
-        try {
-            const isRegistered = localStorage.getItem(STORAGE_KEY);
-            if (!isRegistered || forceCreate) {
-                const options = {
-                    challenge: "Butil Verify Challenge",
-                    rp: { name: "Butil Verify" },
-                    user: { id: "ButilVerifyUserId", name: "ButilVerifyUser", displayName: "ButilVerifyUser" },
-                    pubKeyCredParams: [{ alg: -7, type: "public-key" }]
-                };
-                await createCredential(options as any);
-                localStorage.setItem(STORAGE_KEY, "ButilVerified");
-            }
-            else {
-                await getCredential({ challenge: "Butil Verify Challenge" } as any);
-            }
-
-            return true;
-        }
-        catch (err) {
-            return false;
-        }
     }
 
 
