@@ -3,6 +3,7 @@
 public class WebAuthnVerifyOptions
 {
     public required string Challenge { get; set; }
+    public string? Attestation { get; set; }
     public WebAuthnVerifyRp? Rp { get; set; }
     public WebAuthnVerifyUser? User { get; set; }
     public WebAuthnVerifyAuthenticatorSelection? AuthenticatorSelection { get; set; }
