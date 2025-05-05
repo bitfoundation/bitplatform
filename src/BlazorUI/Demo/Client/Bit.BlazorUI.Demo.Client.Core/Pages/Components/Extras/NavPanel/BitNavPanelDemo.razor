@@ -78,7 +78,16 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="EmptyListMessage" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <DemoExample Title="HideSearchBox" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div class="open-btn">
+                <BitToggleButton @bind-IsChecked="hideSearchBoxIsOpen" OnText="Close" OffText="Open" />
+            </div>
+            <div style="width:240px">
+                <BitNavPanel @bind-IsOpen="hideSearchBoxIsOpen" Items="basicNavItems" HideSearchBox />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="EmptyListMessage" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div class="open-btn">
                 <BitToggleButton @bind-IsChecked="emptyListMessageIsOpen" OnText="Close" OffText="Open" />
             </div>
@@ -87,7 +96,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Templates" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <DemoExample Title="Templates" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div class="open-btn">
                 <BitToggleButton @bind-IsChecked="templateIsOpen" OnText="Close" OffText="Open" />
             </div>
@@ -109,7 +118,7 @@
             </BitNavPanel>
         </DemoExample>
 
-        <DemoExample Title="Event" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <DemoExample Title="Event" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div class="open-btn">
                 <BitToggleButton @bind-IsChecked="eventIsOpen" OnText="Close" OffText="Open" />
             </div>
@@ -126,7 +135,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Color" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <DemoExample Title="Color" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
             <div class="open-btn">
                 <BitToggleButton @bind-IsChecked="colorIsOpen" OnText="Close" OffText="Open" />
             </div>
@@ -135,7 +144,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div class="open-btn">
                 <BitToggleButton @bind-IsChecked="classStyleIsOpen" OnText="Close" OffText="Open" />
             </div>
@@ -154,7 +163,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <DemoExample Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div class="open-btn">
                 <BitToggleButton @bind-IsChecked="rtlIsOpen" OnText="Close" OffText="Open" />
             </div>

@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 @typeparam TItem
 
@@ -66,27 +66,30 @@
                 </div>
             }
 
-            <BitSearchBox @ref="_searchBoxRef"
-                          Underlined
-                          Color="Color"
-                          OnChange="SearchNavItems"
-                          Styles="SearchBoxStyles"
-                          Classes="SearchBoxClasses"
-                          Class="@Classes?.SearchBox"
-                          Immediate DebounceTime="500"
-                          Placeholder="@SearchBoxPlaceholder"
-                          Style="@($"{(isToggled ? "display:none;" : "")}{Styles?.SearchBox}".Trim())" />
-
-            @if (isToggled)
+            @if (HideSearchBox is false)
             {
-                <BitButton IconOnly
-                           Color="Color"
-                           IconName="Search"
-                           Size="BitSize.Large"
-                           OnClick="ToggleForSearch"
-                           Variant="BitVariant.Text"
-                           Style="@Styles?.ToggleSearchButton"
-                           Class="@Classes?.ToggleSearchButton" />
+                <BitSearchBox @ref="_searchBoxRef"
+                              Underlined
+                              Color="Color"
+                              OnChange="SearchNavItems"
+                              Styles="SearchBoxStyles"
+                              Classes="SearchBoxClasses"
+                              Class="@Classes?.SearchBox"
+                              Immediate DebounceTime="500"
+                              Placeholder="@SearchBoxPlaceholder"
+                              Style="@($"{(isToggled ? "display:none;" : "")}{Styles?.SearchBox}".Trim())" />
+
+                @if (isToggled)
+                {
+                    <BitButton IconOnly
+                               Color="Color"
+                               IconName="Search"
+                               Size="BitSize.Large"
+                               OnClick="ToggleForSearch"
+                               Variant="BitVariant.Text"
+                               Style="@Styles?.ToggleSearchButton"
+                               Class="@Classes?.ToggleSearchButton" />
+                }
             }
 
             @if (_filteredNavItems.Any() is false)

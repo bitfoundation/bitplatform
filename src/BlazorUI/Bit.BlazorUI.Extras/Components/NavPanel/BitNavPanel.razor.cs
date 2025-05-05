@@ -78,6 +78,11 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public BitNavItemTemplateRenderMode HeaderTemplateRenderMode { get; set; }
 
     /// <summary>
+    /// If true, the search box is hidden.
+    /// </summary>
+    [Parameter] public bool HideSearchBox { get; set; }
+
+    /// <summary>
     /// Renders an anchor wrapping the icon to navigate to the specified url.
     /// </summary>
     [Parameter] public string? IconNavUrl { get; set; }
