@@ -127,7 +127,8 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// A collection of items to display in the nav panel.
     /// </summary>
-    [Parameter] public IList<TItem> Items { get; set; } = [];
+    [Parameter, CallOnSet(nameof(OnItemsSet))]
+    public IList<TItem> Items { get; set; } = [];
 
     /// <summary>
     /// Custom CSS classes for different parts of the nav component of the nav panel.
@@ -298,7 +299,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     private void SearchNavItems(string? searchText)
     {
         _filteredNavItems = Items;
-        if (searchText.HasNoValue()) return;
+        if (searchText.HasNoValue() || _bitNavRef is null) return;
 
         _flatNavItemList = Items.Flatten(_bitNavRef.GetChildItems).Where(item => _bitNavRef.GetUrl(item).HasValue());
 
@@ -351,5 +352,10 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
                             ? $"transform: translateX({diffXPanel}px)"
                             : string.Empty;
         return $"{translate};{StyleBuilder.Value}".Trim(';');
+    }
+
+    private async Task OnItemsSet()
+    {
+        SearchNavItems(_searchBoxRef?.Value);
     }
 }
