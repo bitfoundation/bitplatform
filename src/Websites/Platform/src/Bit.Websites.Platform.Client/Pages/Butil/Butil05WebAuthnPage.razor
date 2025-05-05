@@ -1,0 +1,124 @@
+﻿@page "/butil/webAuthn"
+@inherits AppComponentBase
+@inject Bit.Butil.WebAuthn webAuthn
+
+<PageOutlet Url="butil/webAuthn"
+            Title="WebAuthn - Butil"
+            Description="WebAuthn class of the bit Butil" />
+
+<div class="page-container">
+    <BitText Typography="BitTypography.H3">WebAuthn</BitText>
+    <BitText Color="BitColor.SecondaryForeground" Gutter>Web Authentication API (Password-less/Passkey)</BitText>
+    <br />
+    <BitText Gutter>
+        How to use the WebAuthn class of the bit Butil?
+    </BitText>
+    <br />
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>Usage</BitText>
+        <div class="section-card-txt">
+            To use the WebAuthn api of Butil you need to inject the Bit.Butil.WebAuthn class and use it like this:
+            <CodeBox HideCopyButton>
+@@inject Bit.Butil.WebAuthn webAuthn
+
+@@code {
+    var result = await webAuthn.CreateCredential(new { ... });
+}
+            </CodeBox>
+        </div>
+        
+        <BitText>
+            <b>Note</b>: For optimal security, it is advisable to implement Web Authentication alongside a server-side counterpart
+            that securely stores essential data for future verification. This approach, similar to our existing integration with
+            the <BitLink Href="https://github.com/passwordless-lib/fido2-net-lib" Target="_blank">FIDO2</BitLink> infrastructure,
+            ensures robust authentication and safeguards against potential threats.
+            <br/>
+            You can check it out in action in the Passwordless tab on the settings page of 
+            <BitLink Href="https://adminpanel.bitplatform.dev/settings/account" Target="_blank">bit Boilerplate project template</BitLink>
+        </BitText>
+    </section>
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>Methods</BitText>
+        <div class="section-card-txt">
+            <br />
+            <b>CreateCredential</b>: <br />
+            Creates a new credential using the provided options.
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/create" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @createExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@Create">Create</BitButton>
+                        <br />
+                        <br />
+                        <div>Result:</div>
+                        <div class="result">@createResult?.ToString()?.Replace(",", ",\n")</div>
+                        @if (string.IsNullOrWhiteSpace(createError) is false)
+                        {
+                            <div>error: @createError</div>
+                        }
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetCredential</b>: <br />
+            Gets a credential using the provided options.
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/get" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@Get">Get</BitButton>
+                        <br />
+                        <br />
+                        <div>Result:</div>
+                        <div class="result">@getResult?.ToString()?.Replace(",", ",\n")</div>
+                        @if (string.IsNullOrWhiteSpace(getError) is false)
+                        {
+                            <div>error: @getError</div>
+                        }
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b id="verify">Verify</b>: <br />
+            Verifies a user using the credential api of the browser.
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @verifyExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@Verify">Verify</BitButton>
+                        <br />
+                        <br />
+                        <div>Result: @verifyResult</div>
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Crypto" PrevUrl="/butil/crypto" Next="Clipboard" NextUrl="/butil/clipboard" />

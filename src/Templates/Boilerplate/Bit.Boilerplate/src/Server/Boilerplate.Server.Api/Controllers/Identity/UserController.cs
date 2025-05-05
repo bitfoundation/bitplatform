@@ -10,6 +10,8 @@ using Boilerplate.Shared.Controllers.Identity;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.SignalR;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication;
 //#endif
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
@@ -22,6 +24,7 @@ public partial class UserController : AppControllerBase, IUserController
     [AutoInject] private EmailService emailService = default!;
     [AutoInject] private IUserStore<User> userStore = default!;
     [AutoInject] private UserManager<User> userManager = default!;
+    [AutoInject] private SignInManager<User> signInManager = default;
     [AutoInject] private IUserEmailStore<User> userEmailStore = default!;
 
     //#if (notification == true)
@@ -65,7 +68,7 @@ public partial class UserController : AppControllerBase, IUserController
         DbContext.UserSessions.Remove(userSession);
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        SignOut();
+        await signInManager.SignOutAsync();
     }
 
     [HttpPost("{id}"), Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]

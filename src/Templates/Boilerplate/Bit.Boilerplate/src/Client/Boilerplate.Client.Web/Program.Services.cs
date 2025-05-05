@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Boilerplate.Client.Web.Services;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 

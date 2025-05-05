@@ -528,6 +528,7 @@ public static partial class Program
             authenticationBuilder.AddGoogle(options =>
             {
                 options.SignInScheme = IdentityConstants.ExternalScheme;
+                // options.AdditionalAuthorizationParameters["prompt"] = "select_account";
                 configuration.GetRequiredSection("Authentication:Google").Bind(options);
             });
         }

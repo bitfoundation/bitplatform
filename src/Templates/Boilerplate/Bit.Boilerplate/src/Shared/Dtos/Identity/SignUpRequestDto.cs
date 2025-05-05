@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 namespace Boilerplate.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
@@ -19,9 +19,6 @@ public partial class SignUpRequestDto : IdentityRequestDto
     /// <example>null</example>
     public string? GoogleRecaptchaResponse { get; set; }
     //#endif
-
-    /// <example>/</example>
-    public string? ReturnUrl { get; set; } = Urls.HomePage;
 
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

@@ -1,5 +1,4 @@
 ﻿//+:cnd:noEmit
-using Fido2NetLib;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 using Microsoft.AspNetCore.Components.Routing;
@@ -29,6 +28,7 @@ public partial class SignInPage
 
 
     [AutoInject] private IWebAuthnService webAuthnService = default!;
+
     [AutoInject] private ILocalHttpServer localHttpServer = default!;
     [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private IIdentityController identityController = default!;
@@ -39,10 +39,10 @@ public partial class SignInPage
     private bool isOtpSent;
     private bool sucssefulSignIn;
     private bool requiresTwoFactor;
+    private JsonElement? webAuthnAssertion;
     private SignInPanelTab currentSignInPanelTab;
     private readonly SignInRequestDto model = new();
     private AppDataAnnotationsValidator? validatorRef;
-    private AuthenticatorAssertionRawResponse? webAuthnAssertion;
 
     protected override async Task OnInitAsync()
     {
@@ -103,11 +103,18 @@ public partial class SignInPage
         {
             if (requiresTwoFactor && string.IsNullOrWhiteSpace(model.TwoFactorCode)) return;
 
-            if (webAuthnAssertion is not null)
+            if (webAuthnAssertion.HasValue)
             {
                 var response = await identityController
                     .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
-                    .VerifyWebAuthAndSignIn(new() { ClientResponse = webAuthnAssertion, TfaCode = model.TwoFactorCode }, CurrentCancellationToken);
+                    .VerifyWebAuthAndSignIn(
+                        new VerifyWebAuthnAndSignInDto
+                        {
+                            ClientResponse = webAuthnAssertion.Value,
+                            TfaCode = model.TwoFactorCode,
+                            DeviceInfo = telemetryContext.Platform
+                        },
+                        CurrentCancellationToken);
 
                 requiresTwoFactor = response.RequiresTwoFactor;
 
@@ -123,6 +130,7 @@ public partial class SignInPage
 
                 if (validatorRef?.EditContext.Validate() is false) return;
 
+                model.ReturnUrl = ReturnUrlQueryString;
                 model.DeviceInfo = telemetryContext.Platform;
 
                 requiresTwoFactor = await AuthManager.SignIn(model, CurrentCancellationToken);
@@ -138,10 +146,15 @@ public partial class SignInPage
                 NavigationManager.NavigateTo(ReturnUrlQueryString ?? Urls.HomePage, replace: true);
             }
         }
+        catch (BadRequestException e) when (e.Key == nameof(AppStrings.UserIsNotConfirmed))
+        {
+            NavigateToConfirmPage();
+            SnackBarService.Error(e.Message);
+        }
         catch (KnownException e)
         {
             // To disable the sign-in button until a specific time after a user lockout, use the value of `e.TryGetExtensionDataValue<TimeSpan>("TryAgainIn", out var tryAgainIn)`.
-
+            webAuthnAssertion = null;
             SnackBarService.Error(e.Message);
         }
         finally
@@ -186,12 +199,13 @@ public partial class SignInPage
 
             try
             {
-                webAuthnAssertion = await webAuthnService.GetWebAuthnCredential(options, CurrentCancellationToken);
+                webAuthnAssertion = await webAuthnService.GetWebAuthnCredential(options);
             }
             catch (Exception ex)
             {
                 // we can safely handle the exception thrown here since it mostly because of a timeout or user cancelling the native ui.
                 ExceptionHandler.Handle(ex, AppEnvironment.IsDev() ? ExceptionDisplayKind.NonInterrupting : ExceptionDisplayKind.None);
+                webAuthnAssertion = null;
                 return;
             }
 
@@ -244,6 +258,11 @@ public partial class SignInPage
                 isOtpSent = true;
             }
         }
+        catch (BadRequestException e) when (e.Key == nameof(AppStrings.UserIsNotConfirmed))
+        {
+            NavigateToConfirmPage();
+            SnackBarService.Error(e.Message);
+        }
         catch (KnownException e)
         {
             SnackBarService.Error(e.Message);
@@ -254,7 +273,7 @@ public partial class SignInPage
     {
         try
         {
-            if (webAuthnAssertion is null)
+            if (webAuthnAssertion.HasValue is false)
             {
                 CleanModel();
 
@@ -264,7 +283,7 @@ public partial class SignInPage
             {
                 await identityController
                     .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
-                    .VerifyWebAuthAndSendTwoFactorToken(webAuthnAssertion, CurrentCancellationToken);
+                    .VerifyWebAuthAndSendTwoFactorToken(webAuthnAssertion.Value, CurrentCancellationToken);
             }
 
             SnackBarService.Success(Localizer[nameof(AppStrings.TfaTokenSentMessage)]);
@@ -291,5 +310,23 @@ public partial class SignInPage
 
             validatorRef.EditContext.NotifyFieldChanged(validatorRef.EditContext.Field(nameof(SignInRequestDto.Email)));
         }
+    }
+
+    private void NavigateToConfirmPage()
+    {
+        var queryParams = new Dictionary<string, object?>
+        {
+            { "return-url", ReturnUrlQueryString }
+        };
+        if (string.IsNullOrEmpty(model.Email) is false)
+        {
+            queryParams.Add("email", model.Email);
+        }
+        if (string.IsNullOrEmpty(model.PhoneNumber) is false)
+        {
+            queryParams.Add("phoneNumber", model.PhoneNumber);
+        }
+        var confirmUrl = NavigationManager.GetUriWithQueryParameters(Urls.ConfirmPage, queryParams);
+        NavigationManager.NavigateTo(confirmUrl, replace: true);
     }
 }

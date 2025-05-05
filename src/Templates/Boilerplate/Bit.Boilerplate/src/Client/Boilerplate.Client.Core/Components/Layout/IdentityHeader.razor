@@ -2,10 +2,10 @@
 
 <header>
     <BitStack Horizontal Gap="0.5rem" VerticalAlign="BitAlignment.Center">
-        <BitLink NoUnderline OnClick="HandleBackLinkClick">
+        <BitLink NoUnderline OnClick="HandleGoHomeLink">
             <BitStack Horizontal Gap="0.5rem" VerticalAlign="BitAlignment.Center">
-                <BitIcon IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)" Size="BitSize.Small" />
-                <BitText Typography="BitTypography.Body2">@Localizer[nameof(AppStrings.Back)]</BitText>
+                <BitIcon IconName="@(BitIconName.Home)" Size="BitSize.Small" />
+                <BitText Typography="BitTypography.Body2">@Localizer[nameof(AppStrings.BackToHome)]</BitText>
             </BitStack>
         </BitLink>
 

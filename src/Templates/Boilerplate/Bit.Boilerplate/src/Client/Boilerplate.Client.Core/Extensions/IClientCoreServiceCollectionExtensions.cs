@@ -32,6 +32,9 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddScoped<LazyAssemblyLoader>();
         services.AddScoped<IAuthTokenProvider, ClientSideAuthTokenProvider>();
         services.AddScoped<IExternalNavigationService, DefaultExternalNavigationService>();
+        //#if (ads == true)
+        services.AddScoped<IAdsService, AdsService>();
+        //#endif
 
         if (Uri.TryCreate(configuration.GetServerAddress(), UriKind.Absolute, out var serverAddress))
         {
@@ -150,6 +153,13 @@ public static partial class IClientCoreServiceCollectionExtensions
 
             var hubConnection = new HubConnectionBuilder()
                 .WithStatefulReconnect()
+                .AddJsonProtocol(options =>
+                {
+                    foreach (var chain in sp.GetRequiredService<JsonSerializerOptions>().TypeInfoResolverChain)
+                    {
+                        options.PayloadSerializerOptions.TypeInfoResolverChain.Add(chain);
+                    }
+                })
                 .WithAutomaticReconnect(sp.GetRequiredService<IRetryPolicy>())
                 .WithUrl(new Uri(absoluteServerAddressProvider.GetAddress(), "app-hub"), options =>
                 {

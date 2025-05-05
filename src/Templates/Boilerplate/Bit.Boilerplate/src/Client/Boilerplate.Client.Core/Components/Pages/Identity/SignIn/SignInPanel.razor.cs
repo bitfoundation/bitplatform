@@ -1,3 +1,4 @@
+﻿using Boilerplate.Client.Core.Services.Contracts;
 using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
@@ -12,6 +13,7 @@ public partial class SignInPanel
     private string? selectedKey = EmailKey;
 
     [AutoInject] private IWebAuthnService webAuthnService = default!;
+
 
     [Parameter] public bool IsWaiting { get; set; }
 
@@ -34,6 +36,7 @@ public partial class SignInPanel
         await base.OnAfterFirstRenderAsync();
 
         isWebAuthnAvailable = await webAuthnService.IsWebAuthnAvailable();
+
         StateHasChanged();
     }
 

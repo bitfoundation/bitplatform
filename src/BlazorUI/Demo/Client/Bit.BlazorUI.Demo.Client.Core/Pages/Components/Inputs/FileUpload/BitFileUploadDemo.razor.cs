@@ -190,16 +190,30 @@ public partial class BitFileUploadDemo
         new()
         {
             Name = "RemoveRequestHttpHeaders",
-            Type = "IReadOnlyDictionary<string, string>?",
+            Type = "Dictionary<string, string>?",
             DefaultValue = "null",
             Description = "Custom http headers for remove request."
         },
         new()
         {
+            Name = "RemoveRequestHttpHeadersProvider",
+            Type = "Func<Task<Dictionary<string, string>>>?",
+            DefaultValue = "null",
+            Description = "The provider function to create the http headers for remove request."
+        },
+        new()
+        {
             Name = "RemoveRequestQueryStrings",
-            Type = "IReadOnlyDictionary<string, string>?",
+            Type = "Dictionary<string, string>?",
             DefaultValue = "null",
             Description = "Custom query strings for remove request."
+        },
+        new()
+        {
+            Name = "RemoveRequestQueryStringsProvider",
+            Type = "Func<Task<Dictionary<string, string>>>?",
+            DefaultValue = "null",
+            Description = "The provider function to create the query strings for remove request."
         },
         new()
         {
@@ -225,21 +239,28 @@ public partial class BitFileUploadDemo
         new()
         {
             Name = "UploadRequestHttpHeaders",
-            Type = "IReadOnlyDictionary<string, string>?",
+            Type = "Dictionary<string, string>?",
             DefaultValue = "null",
             Description = "Custom http headers for upload request."
         },
         new()
         {
+            Name = "UploadRequestHttpHeadersProvider",
+            Type = "Func<Task<Dictionary<string, string>>>?",
+            DefaultValue = "null",
+            Description = "The provider function to create the http headers for upload request."
+        },
+        new()
+        {
             Name = "UploadRequestQueryStrings",
-            Type = "IReadOnlyDictionary<string, string>?",
+            Type = "Dictionary<string, string>?",
             DefaultValue = "null",
             Description = "Custom query strings for upload request."
         },
         new()
         {
             Name = "UploadRequestQueryStringsProvider",
-            Type = "Func<Task<IReadOnlyDictionary<string, string>>>?",
+            Type = "Func<Task<Dictionary<string, string>>>?",
             DefaultValue = "null",
             Description = "The provider function to create the query strings for upload request."
         },
@@ -338,7 +359,7 @@ public partial class BitFileUploadDemo
                new()
                {
                    Name = "HttpHeaders",
-                   Type = "IReadOnlyDictionary<string, string>?",
+                   Type = "Dictionary<string, string>?",
                    DefaultValue = "null",
                    Description = "The HTTP header at upload file."
                }

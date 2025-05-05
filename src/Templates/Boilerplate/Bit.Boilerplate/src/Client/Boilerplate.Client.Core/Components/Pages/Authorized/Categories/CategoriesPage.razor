@@ -1,6 +1,7 @@
 @attribute [Route(Urls.CategoriesPage)]
 @attribute [Route("{culture?}" + Urls.CategoriesPage)]
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+@attribute [Authorize(Policy = AppPermissions.AdminPanel.ManageProductCatalog)]
 @inherits AppPageBase
 
 <AppPageData Title="@Localizer[nameof(AppStrings.Categories)]"

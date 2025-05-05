@@ -1,6 +1,4 @@
-using Fido2NetLib;
-
-namespace Boilerplate.Client.Core.Services;
+﻿namespace Boilerplate.Client.Core.Services;
 
 public abstract partial class WebAuthnServiceBase : IWebAuthnService
 {
@@ -9,11 +7,12 @@ public abstract partial class WebAuthnServiceBase : IWebAuthnService
     [AutoInject] protected IStorageService storageService = default!;
     [AutoInject] protected JsonSerializerOptions jsonSerializerOptions = default!;
 
-    public abstract ValueTask<AuthenticatorAttestationRawResponse> CreateWebAuthnCredential(CredentialCreateOptions options);
-
-    public abstract ValueTask<AuthenticatorAssertionRawResponse> GetWebAuthnCredential(AssertionOptions options, CancellationToken cancellationToken);
-
     public abstract ValueTask<bool> IsWebAuthnAvailable();
+
+    public abstract ValueTask<JsonElement> CreateWebAuthnCredential(JsonElement options);
+
+    public abstract ValueTask<JsonElement> GetWebAuthnCredential(JsonElement options);
+
 
     public virtual async ValueTask<Guid[]> GetWebAuthnConfiguredUserIds()
     {

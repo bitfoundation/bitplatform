@@ -8,28 +8,18 @@
                 <BitAppShell PersistScroll>
                     <main class="@GetMainCssClass()">
                         <div class="main-container">
-                            @if (isIdentityPage is false or null)
+                            @if (isIdentityPage is not true)
                             {
-                                if (isAuthenticated is true)
-                                {
                                     <BitNavPanel @bind-IsOpen="isNavPanelOpen"
                                                  @bind-IsToggled="isNavPanelToggled"
                                                  IconNavUrl="/"
                                                  Class="nav-panel"
-                                                 Items="@navPanelAuthenticatedItems"
-                                                 Accent="BitColor.SecondaryBackground"
-                                                 IconUrl="_content/Boilerplate.Client.Core/images/bit-logo.svg" />
-                                }
-                                else if (isAuthenticated is false)
-                                {
-                                    <BitNavPanel @bind-IsOpen="isNavPanelOpen"
-                                                 @bind-IsToggled="isNavPanelToggled"
-                                                 IconNavUrl="/"
-                                                 Class="nav-panel"
-                                                 Items="@navPanelUnAuthenticatedItems"
+                                                 Items="@navPanelItems"
                                                  Accent="BitColor.SecondaryBackground"
                                                  IconUrl="_content/Boilerplate.Client.Core/images/bit-logo.svg">
                                         <Footer>
+                                        @if (user?.IsAuthenticated() is false)
+                                        {
                                             <BitActionButton IconOnly="isNavPanelToggled"
                                                              IconName="@BitIconName.Signin"
                                                              Href="@($"{Urls.SignInPage}?return-url={Uri.EscapeDataString(navigationManager.GetRelativePath())}")">
@@ -40,9 +30,9 @@
                                                              Href="@($"{Urls.SignUpPage}?return-url={Uri.EscapeDataString(navigationManager.GetRelativePath())}")">
                                                 @(isNavPanelToggled ? "" : localizer[nameof(AppStrings.SignUp)])
                                             </BitActionButton>
+                                        }
                                         </Footer>
                                     </BitNavPanel>
-                                }
                             }
 
                             <div class="main-body">

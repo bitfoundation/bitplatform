@@ -35,4 +35,8 @@ public partial class ClientPubSubMessages
     //#if(module == "Sales")
     public const string SEARCH_PRODUCTS = nameof(SEARCH_PRODUCTS);
     //#endif
+
+    //#if(ads == true)
+    public const string AD_HAVE_TROUBLE = nameof(AD_HAVE_TROUBLE);
+    //#endif
 }

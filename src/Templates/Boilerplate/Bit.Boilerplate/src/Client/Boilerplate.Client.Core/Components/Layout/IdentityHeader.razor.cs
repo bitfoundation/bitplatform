@@ -26,10 +26,9 @@ public partial class IdentityHeader : AppComponentBase
         }
     }
 
-
-    private async Task HandleBackLinkClick()
+    private async Task HandleGoHomeLink()
     {
-        await history.GoBack();
+        NavigationManager.NavigateTo(Urls.HomePage, replace: true);
     }
 
     private async Task ToggleTheme()

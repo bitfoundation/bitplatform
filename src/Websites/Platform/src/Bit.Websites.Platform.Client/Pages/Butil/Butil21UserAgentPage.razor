@@ -1,0 +1,68 @@
+﻿@page "/butil/userAgent"
+@inherits AppComponentBase
+@inject Bit.Butil.UserAgent userAgent
+
+<PageOutlet Url="butil/userAgent"
+            Title="UserAgent - Butil"
+            Description="UserAgent class of the bit Butil" />
+
+<div class="page-container">
+    <BitText Typography="BitTypography.H3" Gutter>UserAgent</BitText>
+    <br />
+    <BitText Typography="BitTypography.Subtitle1" Gutter>
+        How to use the UserAgent class of the bit Butil?
+    </BitText>
+    <br />
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>Usage</BitText>
+        <div class="section-card-txt">
+            To use the UserAgent api of Butil you need to inject the Bit.Butil.UserAgent class and use it like this:
+            <CodeBox HideCopyButton>
+@@inject Bit.Butil.UserAgent userAgent
+
+@@code {
+    var props = await userAgent.Extract();
+}
+            </CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>Methods</BitText>
+        <div class="section-card-txt">
+            <br />
+            <b>Extract</b>: <br />
+            Returns an instance of the Bit.Butil.UserAgentProperties class containing all possible data that extracted from the client's browser.
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @extractExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@Extract">Extract</BitButton>
+                        <br />
+                        <br />
+                        <div>Name: @props?.Name</div>
+                        <div>Version: @props?.Version</div>
+                        <div>Prerelease: @props?.Prerelease</div>
+                        <div>Layout: @props?.Layout</div>
+                        <div>Manufacturer: @props?.Manufacturer</div>
+                        <div>Product: @props?.Product</div>
+                        <div>OsName: @props?.OsName</div>
+                        <div>OsVersion: @props?.OsVersion</div>
+                        <div>OsArchitecture: @props?.OsArchitecture</div>
+                        <div>Description: @props?.Description</div>
+                        <div>UserAgentValue: @props?.UserAgentValue</div>
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="ScreenOrientation" PrevUrl="/butil/screenOrientation" />

@@ -42,7 +42,14 @@
                     aria-hidden="true"
                     aria-label="Clear text"
                     disabled="@(CurrentValue.HasNoValue())">
-                <i style="@Styles?.ClearButtonIcon" class="bit-icon bit-icon--Cancel @Classes?.ClearButtonIcon" aria-hidden="true" />
+                @if (CleanButtonTemplate is not null)
+                {
+                    @CleanButtonTemplate
+                }
+                else
+                {
+                    <i style="@Styles?.ClearButtonIcon" class="bit-icon bit-icon--Cancel @Classes?.ClearButtonIcon" aria-hidden="true" />
+                }
             </button>
         }
     </div>
@@ -54,7 +61,14 @@
                 type="button"
                 aria-hidden="true"
                 aria-label="Search text">
-            <i style="@Styles?.SearchButtonIcon" class="bit-icon bit-icon--@SearchButtonIconName @Classes?.SearchButtonIcon" aria-hidden="true" />
+            @if (SearchButtonTemplate is not null)
+            {
+                @SearchButtonTemplate
+            }
+            else
+            {
+                <i style="@Styles?.SearchButtonIcon" class="bit-icon bit-icon--@SearchButtonIconName @Classes?.SearchButtonIcon" aria-hidden="true" />
+            }
         </button>
     }
 

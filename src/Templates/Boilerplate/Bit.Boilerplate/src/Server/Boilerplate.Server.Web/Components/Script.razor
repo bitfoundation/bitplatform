@@ -3,12 +3,16 @@
 @inject IHttpContextAccessor _httpContextAccessor;
 
 @code {
-    [Parameter] public bool AppendVersion { get; set; } = true;
     [Parameter] public string? Src { get; set; }
+    [Parameter] public bool AppendVersion { get; set; } = true;
     [Parameter] public RenderFragment? ChildContent { get; set; }
-    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> AdditionalAttributes { get; set; } = default!;
+    
+    [Parameter(CaptureUnmatchedValues = true)] 
+    public Dictionary<string, object> AdditionalAttributes { get; set; } = default!;
+
 
     private string? src;
+
 
     protected override void OnInitialized()
     {

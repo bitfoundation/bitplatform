@@ -1,4 +1,4 @@
-using Boilerplate.Shared.Controllers.Todo;
+﻿using Boilerplate.Shared.Controllers.Todo;
 using Boilerplate.Shared.Dtos.Todo;
 using Microsoft.AspNetCore.Components.Web;
 
@@ -139,14 +139,6 @@ public partial class TodoPage
 
         newTodoTitle = "";
         await newTodoInput.FocusAsync();
-    }
-
-    private async Task OnInputKeyDown(KeyboardEventArgs args)
-    {
-        if (args.Key == "Enter")
-        {
-            await AddTodoItem();
-        }
     }
 
     private async Task DeleteTodoItem()

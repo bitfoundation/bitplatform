@@ -1,4 +1,4 @@
-
+﻿
 namespace Boilerplate.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
@@ -17,6 +17,11 @@ public partial class IdentityRequestDto : IValidatableObject
     [Phone(ErrorMessage = nameof(AppStrings.PhoneAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.PhoneNumber))]
     public virtual string? PhoneNumber { get; set; }
+
+    /// <summary>
+    /// URL for redirection after user confirmation, used when sending a confirmation email to an unconfirmed user.
+    /// </summary>
+    public virtual string? ReturnUrl { get; set; }
 
     public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

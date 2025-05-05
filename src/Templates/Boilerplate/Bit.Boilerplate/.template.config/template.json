@@ -209,6 +209,13 @@
             "defaultValue": "true",
             "description": "Adds cloudflare CDN integration."
         },
+        "ads": {
+            "displayName": "Add Ads?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false",
+            "description": "Adds GoogleAds integration."
+        },
         "nameToLower": {
             "type": "generated",
             "generator": "casing",
@@ -433,7 +440,6 @@
                         "src/Server/Boilerplate.Server.Api/Mappers/ProductsMapper.cs",
                         "src/Server/Boilerplate.Server.Api/Models/Categories/**",
                         "src/Server/Boilerplate.Server.Api/Models/Products/**",
-                        "src/Server/Boilerplate.Server.Api/Models/Products/**",
                         "src/Server/Boilerplate.Server.Api/Services/ProductEmbeddingService.cs",
                         "src/Client/Boilerplate.Client.Core/wwwroot/images/car_placeholder*"
                     ]
@@ -571,6 +577,15 @@
                     "exclude": [
                         "src/Tests/IdentityApiTests.cs",
                         "src/Tests/IdentityPagesTests.cs"
+                    ]
+                },
+                {
+                    "condition": "(ads != true)",
+                    "exclude": [
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Settings/UpgradeAccountSection*.*",
+                        "src/Client/Boilerplate.Client.Core/Scripts/Ads.ts",
+                        "src/Client/Boilerplate.Client.Core/Services/Contracts/IAdsService.cs",
+                        "src/Client/Boilerplate.Client.Core/Services/AdsService.cs"
                     ]
                 }
             ]

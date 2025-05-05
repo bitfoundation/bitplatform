@@ -1,47 +1,38 @@
-using Fido2NetLib;
-
-namespace Boilerplate.Client.Maui.Services;
+﻿namespace Boilerplate.Client.Maui.Services;
 
 public partial class MauiWebAuthnService : WebAuthnServiceBase
 {
     [AutoInject] private ILocalHttpServer localHttpServer = default!;
     [AutoInject] private IExternalNavigationService externalNavigationService = default!;
 
-    public override async ValueTask<AuthenticatorAssertionRawResponse> GetWebAuthnCredential(AssertionOptions options, CancellationToken cancellationToken)
+    public JsonElement? GetWebAuthnCredentialOptions;
+    public TaskCompletionSource<JsonElement>? GetWebAuthnCredentialTcs;
+    public override async ValueTask<JsonElement> GetWebAuthnCredential(JsonElement options)
     {
-        try
-        {
-            await externalNavigationService.NavigateToAsync($"{localHttpServer.Origin}/external-js-runner.html");
+        GetWebAuthnCredentialOptions = options;
 
-            var result = (await MauiExternalJsRunner.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "getCredential", Options = options }, JsonSerializerOptions.Web)))
-                .Deserialize<AuthenticatorAssertionRawResponse>(JsonSerializerOptions.Web)!;
+        GetWebAuthnCredentialTcs = new();
 
-            return result ?? throw new TaskCanceledException();
-        }
-        finally
-        {
-            await CloseExternalBrowser();
-        }
+        ((MauiLocalHttpServer)localHttpServer).WebAuthnService = this;
+
+        await externalNavigationService.NavigateToAsync($"http://localhost:{localHttpServer.Port}/hybrid-app-web-interop?actionName=GetWebAuthnCredential");
+
+        return await GetWebAuthnCredentialTcs.Task;
     }
 
-    private static async Task CloseExternalBrowser()
+    public JsonElement? CreateWebAuthnCredentialOptions;
+    public TaskCompletionSource<JsonElement>? CreateWebAuthnCredentialTcs;
+    public override async ValueTask<JsonElement> CreateWebAuthnCredential(JsonElement options)
     {
-        _ = MauiExternalJsRunner.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "close" }, JsonSerializerOptions.Web));
-    }
+        CreateWebAuthnCredentialOptions = options;
 
-    public override async ValueTask<AuthenticatorAttestationRawResponse> CreateWebAuthnCredential(CredentialCreateOptions options)
-    {
-        try
-        {
-            await externalNavigationService.NavigateToAsync($"{localHttpServer.Origin}/external-js-runner.html");
+        CreateWebAuthnCredentialTcs = new();
 
-            return (await MauiExternalJsRunner.RequestToBeSent!.Invoke(JsonSerializer.SerializeToDocument(new { Type = "createCredential", Options = options }, JsonSerializerOptions.Web)))
-                .Deserialize<AuthenticatorAttestationRawResponse>(JsonSerializerOptions.Web)!;
-        }
-        finally
-        {
-            await CloseExternalBrowser();
-        }
+        ((MauiLocalHttpServer)localHttpServer).WebAuthnService = this;
+
+        await externalNavigationService.NavigateToAsync($"http://localhost:{localHttpServer.Port}/hybrid-app-web-interop?actionName=CreateWebAuthnCredential");
+
+        return await CreateWebAuthnCredentialTcs.Task;
     }
 
     public override async ValueTask<bool> IsWebAuthnAvailable()

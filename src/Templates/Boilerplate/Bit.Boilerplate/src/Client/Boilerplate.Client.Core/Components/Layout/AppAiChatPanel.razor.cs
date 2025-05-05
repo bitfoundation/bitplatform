@@ -19,6 +19,9 @@ public partial class AppAiChatPanel
     //#if(module == "Sales")
     private Action unsubSearchProducts = default!;
     //#endif
+    //#if(ads == true)
+    private Action unsubAdHaveTrouble = default!;
+    //#endif
 
 
     [AutoInject] private HubConnection hubConnection = default!;
@@ -50,6 +53,21 @@ public partial class AppAiChatPanel
             {
                 message = Localizer[nameof(AppStrings.AiChatPanelPrompt3)];
             }
+
+            await SendPromptMessage(message);
+        });
+        //#endif
+
+        //#if(ads == true)
+        unsubAdHaveTrouble = PubSubService.Subscribe(ClientPubSubMessages.AD_HAVE_TROUBLE, async _ =>
+        {
+            if (isOpen) return;
+
+            isOpen = true;
+
+            StateHasChanged();
+
+            var message = Localizer[nameof(AppStrings.UpgradeAdHaveTroublePrompt)];
 
             await SendPromptMessage(message);
         });
@@ -159,7 +177,7 @@ public partial class AppAiChatPanel
                 responseCounter++;
                 if (responseCounter == expectedResponsesCount)
                 {
-                    isLoading = false; // Hide loading only if this is a error for the last user's message.
+                    isLoading = false; // Hide loading only if this is an error for the last user's message.
                 }
                 chatMessages[responseCounter * 2].Successful = false;
             }
@@ -194,6 +212,10 @@ public partial class AppAiChatPanel
     {
         //#if(module == "Sales")
         unsubSearchProducts();
+        //#endif
+
+        //#if(ads == true)
+        unsubAdHaveTrouble();
         //#endif
 
         hubConnection.Reconnected -= HubConnection_Reconnected;

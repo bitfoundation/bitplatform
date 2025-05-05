@@ -355,7 +355,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false || InvalidValueBinding()) return;
+        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
 
         switch (e.Key)
         {
@@ -385,6 +385,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private async Task HandleOnBlur(FocusEventArgs e)
     {
         if (IsEnabled is false) return;
+
         await OnBlur.InvokeAsync(e);
     }
 
@@ -422,7 +423,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private async Task HandleOnPointerDown(bool isIncrement)
     {
-        if (IsEnabled is false || InvalidValueBinding()) return;
+        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
 
         //Change focus from input to number field
         if (isIncrement)
@@ -609,7 +610,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private void OnSetMin()
     {
-        if (BindConverter.TryConvertTo(Min, CultureInfo.InvariantCulture, out TValue? result))
+        var min = CleanValue(Min);
+        if (BindConverter.TryConvertTo(min, CultureInfo.InvariantCulture, out TValue? result))
         {
             _min = result ?? GetTypeMinValue();
         }
@@ -621,7 +623,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private void OnSetMax()
     {
-        if (BindConverter.TryConvertTo(Max, CultureInfo.InvariantCulture, out TValue? result))
+        var max = CleanValue(Max);
+        if (BindConverter.TryConvertTo(max, CultureInfo.InvariantCulture, out TValue? result))
         {
             _max = result ?? GetTypeMaxValue();
         }
@@ -633,7 +636,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private void OnSetStep()
     {
-        if (BindConverter.TryConvertTo(Step, CultureInfo.InvariantCulture, out TValue? result))
+        var step = CleanValue(Step);
+        if (BindConverter.TryConvertTo(step, CultureInfo.InvariantCulture, out TValue? result))
         {
             _step = result ?? ((TValue)(object)1);
         }

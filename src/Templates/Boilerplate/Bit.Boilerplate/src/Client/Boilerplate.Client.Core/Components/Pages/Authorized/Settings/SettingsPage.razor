@@ -3,6 +3,7 @@
 @attribute [Route("{culture?}" + Urls.SettingsPage + "/{Section?}")]
 @attribute [Authorize]
 @inherits AppPageBase
+@using Boilerplate.Client.Core.Components.Pages.Authorized.Settings.Account
 
 <AppPageData Title="@Localizer[nameof(AppStrings.Settings)]"
              PageTitle="@Localizer[nameof(AppStrings.SettingsPageTitle)]" />
@@ -20,28 +21,7 @@
                    Name="@Urls.SettingsSections.Account"
                    Title="@Localizer[nameof(AppStrings.AccountTitle)]"
                    Subtitle="@Localizer[nameof(AppStrings.AccountSubtitle)]">
-            <BitPivot Alignment="BitAlignment.Center">
-                <BitPivotItem Key="@nameof(AppStrings.Email)" HeaderText="@Localizer[nameof(AppStrings.Email)]">
-                    <ChangeEmailSection Email="@user?.Email" />
-                </BitPivotItem>
-                <BitPivotItem Key="@nameof(AppStrings.Phone)" HeaderText="@Localizer[nameof(AppStrings.Phone)]">
-                    <ChangePhoneNumberSection PhoneNumber="@user?.PhoneNumber" />
-                </BitPivotItem>
-                @if (showPasswordless)
-                {
-                    <BitPivotItem Key="@nameof(AppStrings.Passwordless)" HeaderText="@Localizer[nameof(AppStrings.Passwordless)]">
-                        <PasswordlessSection User="user" />
-                    </BitPivotItem>
-                }
-                <BitPivotItem Key="@nameof(AppStrings.Delete)">
-                    <Header>
-                        <BitText Color="BitColor.Error">@Localizer[nameof(AppStrings.Delete)]</BitText>
-                    </Header>
-                    <Body>
-                        <DeleteAccountSection />
-                    </Body>
-                </BitPivotItem>
-            </BitPivot>
+            <AccountSection User="user" />
         </Accordion>
 
         <Accordion @bind-Value="@openedAccordion"
@@ -57,5 +37,13 @@
                    Subtitle="@Localizer[nameof(AppStrings.SessionsSubtitle)]">
             <SessionsSection />
         </Accordion>
+        @*#if (ads == true)*@
+        <Accordion @bind-Value="@openedAccordion"
+                   Name="@Urls.SettingsSections.UpgradeAccount"
+                   Title="@Localizer[nameof(AppStrings.UpgradeTitle)]"
+                   Subtitle="@Localizer[nameof(AppStrings.UpgradeSubtitle)]">
+            <UpgradeAccountSection />
+        </Accordion>
+        @*#endif*@
     </BitStack>
 </section>

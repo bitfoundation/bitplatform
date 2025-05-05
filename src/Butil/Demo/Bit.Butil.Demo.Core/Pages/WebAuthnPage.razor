@@ -1,0 +1,69 @@
+﻿@page "/webauthn"
+@inject Bit.Butil.Console console
+@inject Bit.Butil.WebAuthn webAuthn
+
+<PageTitle>WebAuthn Samples</PageTitle>
+
+<h1>WebAuthn</h1>
+
+<pre style="font-family:Consolas; overflow: auto;">
+@@inject Bit.Butil.WebAuthn webAuthn
+
+@@code {
+    ...
+    webAuthn.CreateCredential({ ... });
+    ...
+    webAuthn.GetCredential({ ... });
+    ...
+}
+</pre>
+
+<br />
+<hr />
+
+<h3>Open the DevTools' console and start clicking on buttons</h3>
+
+<hr />
+<br />
+
+<button @onclick="Create">Create</button>
+
+<hr />
+<br />
+
+<button @onclick="Get">Get</button>
+
+<hr />
+<br />
+
+<button @onclick="Verify">Verify</button>
+
+@code {
+    private async Task Create()
+    {
+        var result = await webAuthn.CreateCredential(new
+        {
+            challenge = "testChallenge",
+            rp = new { name = "testRp" },
+            user = new { id = "userId", name = "testUser", displayName = "testUser" },
+            pubKeyCredParams = new object[] { new { alg = -7, type = "public-key" } }
+        });
+
+        await console.Log("id:", result.GetProperty("id"));
+        await console.Log("Create result:", result);
+    }
+
+    private async Task Get()
+    {
+        var result = await webAuthn.GetCredential(new { challenge = "test" });
+
+        await console.Log("id:", result.GetProperty("id"));
+        await console.Log("Get result:", result);
+    }
+
+    private async Task Verify()
+    {
+        var result = await webAuthn.Verify(platform: true);
+        await console.Log("Verify result:", result);
+    }
+}

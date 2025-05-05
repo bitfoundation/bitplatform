@@ -161,6 +161,7 @@
     <br /><br />
     <div class="example-content">
         <BitDropdown Label="Single select & auto focus"
+                     Responsive
                      ShowSearchBox
                      AutoFocusSearchBox
                      Items="GetBasicItems()"
@@ -169,6 +170,7 @@
                      SearchBoxPlaceholder="Search item" />
         <br /><br />
         <BitDropdown Label="Multi select"
+                     Responsive
                      MultiSelect
                      ShowSearchBox
                      Items="GetBasicItems()"
@@ -178,6 +180,7 @@
         <br /><br /><br /><br />
         <div><b>Custom search function</b>:</div><br />
         <BitDropdown Label="Single select & auto focus"
+                     Responsive
                      ShowSearchBox
                      AutoFocusSearchBox
                      Items="GetBasicItems()"
@@ -187,6 +190,7 @@
                      SearchFunction="(items, text) => items.Where(i => i.Text?.StartsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()" />
         <br /><br />
         <BitDropdown Label="Multi select"
+                     Responsive
                      MultiSelect
                      ShowSearchBox
                      Items="GetBasicItems()"
@@ -427,6 +431,7 @@
     <div class="example-content">
         <BitDropdown @bind-Value="comboBoxValueSample1"
                      Combo
+                     Responsive
                      Items="comboBoxItems"
                      Placeholder="Select an option"
                      Label="Single select combo box" />
@@ -435,6 +440,7 @@
         <br /><br />
         <BitDropdown @bind-Values="comboBoxValues1"
                      Combo
+                     Responsive
                      MultiSelect
                      Items="comboBoxItems"
                      Label="Multi select combo box"
@@ -450,6 +456,7 @@
     <div class="example-content">
         <BitDropdown @bind-Value="comboBoxValueSample2"
                      Combo Chips
+                     Responsive
                      Items="comboBoxItems"
                      Placeholder="Select an option"
                      Label="Single select combo box & chips" />
@@ -458,6 +465,7 @@
         <br /><br />
         <BitDropdown @bind-Values="comboBoxValues2"
                      Combo Chips
+                     Responsive
                      MultiSelect
                      Items="comboBoxItems"
                      Placeholder="Select an option"
@@ -473,6 +481,7 @@
     <div class="example-content">
         <BitDropdown @bind-Value="comboBoxValueSample3"
                      Combo Dynamic
+                     Responsive
                      Items="comboBoxItems"
                      Placeholder="Select an option"
                      Label="Single select combo box & dynamic"

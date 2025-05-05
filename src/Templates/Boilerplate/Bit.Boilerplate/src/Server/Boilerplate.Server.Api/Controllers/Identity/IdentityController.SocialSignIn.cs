@@ -1,13 +1,12 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Boilerplate.Server.Api.Services;
+using Boilerplate.Shared.Services;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Components.Web;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
 public partial class IdentityController
 {
-    [AutoInject] private HtmlRenderer htmlRenderer = default!;
     [AutoInject] private ServerExceptionHandler serverExceptionHandler = default!;
 
     [HttpGet]
@@ -74,9 +73,12 @@ public partial class IdentityController
                 var result = await userManager.CreateAsync(user, password: Guid.NewGuid().ToString("N") /* Users can reset their password later. */);
 
                 if (result.Succeeded is false)
-                {
                     throw new BadRequestException(string.Join(", ", result.Errors.Select(e => new LocalizedString(e.Code, e.Description))));
-                }
+
+                result = await userManager.AddToRoleAsync(user, AppBuiltInRoles.BasicUser);
+
+                if (result.Succeeded is false)
+                    throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
                 await userManager.AddLoginAsync(user, info);
             }
@@ -105,7 +107,9 @@ public partial class IdentityController
             await Request.HttpContext.SignOutAsync(IdentityConstants.ExternalScheme); // We'll handle sign-in with the following redirects, so no external identity cookie is needed.
         }
 
-        if (localHttpPort is not null) return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}"), url).ToString());
+        if (localHttpPort is not null)
+            if (localHttpPort is not null) return Redirect($"http://localhost:{localHttpPort}/hybrid-app-web-interop?actionName=SocialSignInCallback&url={Uri.EscapeDataString(url!)}&localHttpPort={localHttpPort}"); // Checkout HybridAppWebInterop.razor's comments.
+
         return Redirect(new Uri(Request.HttpContext.Request.GetWebAppUrl(), url).ToString());
     }
 }

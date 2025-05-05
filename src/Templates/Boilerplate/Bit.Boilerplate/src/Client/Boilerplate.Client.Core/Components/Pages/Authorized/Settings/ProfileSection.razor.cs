@@ -113,8 +113,13 @@ public partial class ProfileSection
 
     private async Task<string> GetUploadUrl()
     {
+        return new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadUserProfilePicture").ToString();
+    }
+
+    private async Task<Dictionary<string, string>> GetUploadRequestHeaders()
+    {
         var accessToken = await AuthManager.GetFreshAccessToken(requestedBy: nameof(BitFileUpload));
 
-        return new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadUserProfilePicture?access_token={accessToken}").ToString();
+        return new() { { "Authorization", $"Bearer {accessToken}" } };
     }
 }

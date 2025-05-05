@@ -223,6 +223,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 
     private readonly string example8RazorCode = @"
 <BitDropdown Label=""Single select & auto focus""
+             Responsive
              ShowSearchBox
              AutoFocusSearchBox
              Items=""GetBasicItems()""
@@ -231,6 +232,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              SearchBoxPlaceholder=""Search item"" />
 
 <BitDropdown Label=""Multi select""
+             Responsive
              MultiSelect
              ShowSearchBox
              Items=""GetBasicItems()""
@@ -240,6 +242,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 
 
 <BitDropdown Label=""Single select & auto focus""
+             Responsive
              ShowSearchBox
              AutoFocusSearchBox
              Items=""GetBasicItems()""
@@ -249,6 +252,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              SearchFunction=""(items, text) => items.Where(i => i.Text?.StartsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()"" />
 
 <BitDropdown Label=""Multi select""
+             Responsive
              MultiSelect
              ShowSearchBox
              Items=""GetBasicItems()""
@@ -671,6 +675,7 @@ private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem<string>>>
     private readonly string example13RazorCode = @"
 <BitDropdown @bind-Value=""comboBoxValueSample1""
              Combo
+             Responsive
              Items=""comboBoxItems"" 
              Placeholder=""Select an option""
              Label=""Single select combo box"" />
@@ -678,6 +683,7 @@ private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem<string>>>
 
 <BitDropdown @bind-Values=""comboBoxValues1""
              Combo 
+             Responsive
              MultiSelect
              Items=""comboBoxItems"" 
              Label=""Multi select combo box""
@@ -704,6 +710,7 @@ private List<BitDropdownItem<string>> comboBoxItems = new()
     private readonly string example14RazorCode = @"
 <BitDropdown @bind-Value=""comboBoxValueSample2""
              Combo Chips
+             Responsive
              Items=""comboBoxItems"" 
              Placeholder=""Select an option""
              Label=""Single select combo box & chips"" />
@@ -712,6 +719,7 @@ private List<BitDropdownItem<string>> comboBoxItems = new()
 <BitDropdown @bind-Values=""comboBoxValues2""
              Combo Chips 
              MultiSelect
+             Responsive
              Items=""comboBoxItems"" 
              Placeholder=""Select an option""
              Label=""Multi select combo box & chips"" />
@@ -737,6 +745,7 @@ private List<BitDropdownItem<string>> comboBoxItems = new()
     private readonly string example15RazorCode = @"
 <BitDropdown @bind-Value=""comboBoxValueSample3""
              Combo Dynamic
+             Responsive
              Items=""comboBoxItems""
              Placeholder=""Select an option""
              Label=""Single select combo box & dynamic""

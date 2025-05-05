@@ -1,6 +1,7 @@
 @attribute [Route(Urls.TodoPage)]
 @attribute [Route("{culture?}" + Urls.TodoPage)]
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+@attribute [Authorize(Policy = AppPermissions.Todo.ManageTodo)]
 @inherits AppPageBase
 
 <AppPageData Title="@Localizer[nameof(AppStrings.Todo)]"
@@ -14,7 +15,7 @@
                           @bind-Value="newTodoTitle"
                           Immediate DebounceTime="300"
                           Placeholder="@Localizer[nameof(AppStrings.TodoAddPlaceholder)]"
-                          OnKeyDown="WrapHandled(async (KeyboardEventArgs args) => await OnInputKeyDown(args))" />
+                          OnEnter="WrapHandled(async (KeyboardEventArgs args) => await AddTodoItem())" />
 
             <BitButton AutoLoading
                        OnClick="WrapHandled(AddTodoItem)"

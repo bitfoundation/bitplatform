@@ -1,23 +1,21 @@
-using Fido2NetLib;
-
-namespace Boilerplate.Client.Web.Services;
+﻿namespace Boilerplate.Client.Web.Services;
 
 public partial class WebAuthnService : WebAuthnServiceBase
 {
-    [AutoInject] private IJSRuntime jsRuntime = default!;
+    [AutoInject] private Bit.Butil.WebAuthn webAuthn = default!;
 
     public override async ValueTask<bool> IsWebAuthnAvailable()
     {
-        return await jsRuntime.InvokeAsync<bool>("WebAuthn.isAvailable");
+        return await webAuthn.IsAvailable();
     }
 
-    public override async ValueTask<AuthenticatorAttestationRawResponse> CreateWebAuthnCredential(CredentialCreateOptions options)
+    public override async ValueTask<JsonElement> CreateWebAuthnCredential(JsonElement options)
     {
-        return await jsRuntime.InvokeAsync<AuthenticatorAttestationRawResponse>("WebAuthn.createCredential", options);
+        return await webAuthn.CreateCredential<JsonElement, JsonElement>(options);
     }
 
-    public override async ValueTask<AuthenticatorAssertionRawResponse> GetWebAuthnCredential(AssertionOptions options, CancellationToken cancellationToken)
+    public override async ValueTask<JsonElement> GetWebAuthnCredential(JsonElement options)
     {
-        return await jsRuntime.InvokeAsync<AuthenticatorAssertionRawResponse>("WebAuthn.getCredential", options);
+        return await webAuthn.GetCredential<JsonElement, JsonElement>(options);
     }
 }

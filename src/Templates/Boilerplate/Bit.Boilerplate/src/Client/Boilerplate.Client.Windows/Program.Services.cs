@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Microsoft.Extensions.Logging;
 using System.Security.Authentication;
 using Boilerplate.Client.Windows.Services;

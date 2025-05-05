@@ -1,5 +1,4 @@
-using Fido2NetLib;
-using Boilerplate.Shared.Dtos.Identity;
+﻿using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Shared.Controllers.Identity;
 
@@ -50,13 +49,13 @@ public interface IUserController : IAppController
     Task SendElevatedAccessToken(CancellationToken cancellationToken);
 
     [HttpGet]
-    Task<CredentialCreateOptions> GetWebAuthnCredentialOptions(CancellationToken cancellationToken);
+    Task<JsonElement> GetWebAuthnCredentialOptions(CancellationToken cancellationToken) => default!;
 
     [HttpPut]
-    Task CreateWebAuthnCredential(AuthenticatorAttestationRawResponse attestationResponse, CancellationToken cancellationToken);
+    Task CreateWebAuthnCredential(JsonElement attestationResponse, CancellationToken cancellationToken) => default!;
 
     [HttpDelete]
-    Task DeleteWebAuthnCredential(byte[] credentialId, CancellationToken cancellationToken);
+    Task DeleteWebAuthnCredential(JsonElement clientResponse, CancellationToken cancellationToken) => default!;
 
     [HttpDelete]
     Task DeleteAllWebAuthnCredentials(CancellationToken cancellationToken);

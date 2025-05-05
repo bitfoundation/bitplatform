@@ -1,0 +1,35 @@
+@inherits AppComponentBase
+
+<section>
+    <BitStack>
+        @if (adIsReady is false)
+        {
+            <BitRollingSquareLoading />
+        }
+        else if (adIsShown is false)
+        {
+            <BitButton OnClick="WrapHandled(WatchAd)">
+                @Localizer[nameof(AppStrings.Upgrade)]
+            </BitButton>
+        }
+        else
+        {
+            @if (watchResult is AdWatchResult.Rewarded)
+            {
+                <BitMessage Color="BitColor.Success">@Localizer[nameof(AppStrings.UpgradeSuccessMessage)]</BitMessage>
+            }
+
+            @if (watchResult is AdWatchResult.Failed)
+            {
+                <BitMessage Color="BitColor.Error">@Localizer[nameof(AppStrings.UpgradeFailMessage)]</BitMessage>
+            }
+        }
+
+        @if (showTroubleButton)
+        {
+            <BitButton OnClick="WrapHandled(HandleAdTrouble)">
+                @Localizer[nameof(AppStrings.UpgradeAdHaveTrouble)]
+            </BitButton>
+        }
+    </BitStack>
+</section>

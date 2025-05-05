@@ -1,0 +1,129 @@
+@*
+Leveraging Web Features in Blazor Hybrid:
+
+1. WebView Integration: Directly utilize standard web technologies like CSS animations and external frames (e.g., Google reCaptcha) within the Blazor WebView.
+
+2. Addressing Origin Restrictions for Sensitive Web APIs:
+   - Due to the our WebView's fixed origin (http://0.0.0.1), certain security-sensitive web features like WebAuthn and social sign-in will not function directly within the WebView.
+   - Solution for WebAuthn: Employ a local HTTP server (see WindowsLocalHttpServer and MauiHttpLocalServer) to serve the HybridAppWebInterop component via a GET endpoint. Use IExternalNavigationService to open an in-app browser, facilitating authentication (e.g., Face ID).
+   - Limitation for Social Sign-in: Social sign-in providers generally restrict WebView usage due to security considerations, regardless of the origin.
+
+3. Utilizing Website Origin (Such as https://adminpanel.bitplatform.dev):
+   - For scenarios requiring your website's actual origin or other features incompatible even with a localhost origin, use IExternalNavigationService to navigate to the /HybridAppWebInterop minimal API endpoint (defined in HybridWebAppInteropEndpoint.cs).
+*@
+
+@code {
+    [Inject] public IStringLocalizer<AppStrings> Localizer { get; set; } = default!;
+}
+
+<html>
+<head>
+    <base href="/" />
+    <title>Boilerplate</title>
+    <link rel="icon" href="data:image/png;base64,iVBORw0KGgo=">
+    <style>
+        html {
+            height: 100%;
+        }
+
+        body {
+            background-image: radial-gradient(circle farthest-corner at center, #3C4B57 0%, #1C262B 100%);
+        }
+
+        .title {
+            left: 50%;
+            font-size: 24px;
+            color: #EFEFFA;
+            position: absolute;
+            text-align: center;
+            top: calc(50% + 100px);
+            transform: translate(-50%, -50%);
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .loader {
+            top: 50%;
+            left: 50%;
+            width: 96px;
+            height: 96px;
+            position: absolute;
+            perspective: 800px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .inner {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            border-radius: 50%;
+            box-sizing: border-box;
+        }
+
+            .inner.one {
+                top: 0%;
+                left: 0%;
+                border-bottom: 3px solid #EFEFFA;
+                animation: rotate-one 1s linear infinite;
+            }
+
+            .inner.two {
+                top: 0%;
+                right: 0%;
+                border-right: 3px solid #EFEFFA;
+                animation: rotate-two 1s linear infinite;
+            }
+
+            .inner.three {
+                right: 0%;
+                bottom: 0%;
+                border-top: 3px solid #EFEFFA;
+                animation: rotate-three 1s linear infinite;
+            }
+
+        @@keyframes rotate-one {
+            0% {
+                transform: rotateX(35deg) rotateY(-45deg) rotateZ(0deg);
+            }
+
+            100% {
+                transform: rotateX(35deg) rotateY(-45deg) rotateZ(360deg);
+            }
+        }
+
+        @@keyframes rotate-two {
+            0% {
+                transform: rotateX(50deg) rotateY(10deg) rotateZ(0deg);
+            }
+
+            100% {
+                transform: rotateX(50deg) rotateY(10deg) rotateZ(360deg);
+            }
+        }
+
+        @@keyframes rotate-three {
+            0% {
+                transform: rotateX(35deg) rotateY(55deg) rotateZ(0deg);
+            }
+
+            100% {
+                transform: rotateX(35deg) rotateY(55deg) rotateZ(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="title">@Localizer[nameof(AppStrings.PleaseWait)]</div>
+    <div class="loader">
+        <div class="inner one"></div>
+        <div class="inner two"></div>
+        <div class="inner three"></div>
+    </div>
+
+    <script src="_content/Bit.Butil/bit-butil.js"></script>
+    <script src="_content/Boilerplate.Client.Core/scripts/app.js"></script>
+    <script type="text/javascript">
+        HybridAppWebInterop.run();
+    </script>
+</body>
+</html>

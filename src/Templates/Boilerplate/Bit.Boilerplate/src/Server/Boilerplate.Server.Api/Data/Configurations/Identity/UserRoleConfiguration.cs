@@ -9,6 +9,9 @@ public partial class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
     {
         builder.HasIndex(userRole => new { userRole.RoleId, userRole.UserId }).IsUnique();
 
-        builder.HasData(new { RoleId = Guid.Parse("8ff71671-a1d6-5f97-abb9-d87d7b47d6e7"), UserId = Guid.Parse("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7") });
+        var superAdminRoleId = Guid.Parse("8ff71671-a1d6-5f97-abb9-d87d7b47d6e7");
+        var defaultTestUserId = Guid.Parse("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7");
+
+        builder.HasData(new { RoleId = superAdminRoleId, UserId = defaultTestUserId });
     }
 }

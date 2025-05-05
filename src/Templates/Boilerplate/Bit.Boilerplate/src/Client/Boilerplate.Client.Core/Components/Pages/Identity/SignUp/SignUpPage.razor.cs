@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 
@@ -38,20 +38,12 @@ public partial class SignUpPage
         {
             await identityController.SignUp(signUpModel, CurrentCancellationToken);
 
-            var queryParams = new Dictionary<string, object?>
-            {
-                { "return-url", ReturnUrlQueryString }
-            };
-            if (string.IsNullOrEmpty(signUpModel.Email) is false)
-            {
-                queryParams.Add("email", signUpModel.Email);
-            }
-            if (string.IsNullOrEmpty(signUpModel.PhoneNumber) is false)
-            {
-                queryParams.Add("phoneNumber", signUpModel.PhoneNumber);
-            }
-            var confirmUrl = NavigationManager.GetUriWithQueryParameters(Urls.ConfirmPage, queryParams);
-            NavigationManager.NavigateTo(confirmUrl, replace: true);
+            NavigateToConfirmPage();
+        }
+        catch (BadRequestException e) when (e.Key == nameof(AppStrings.UserIsNotConfirmed))
+        {
+            NavigateToConfirmPage();
+            SnackBarService.Error(e.Message);
         }
         catch (KnownException e)
         {
@@ -69,6 +61,24 @@ public partial class SignUpPage
         {
             isWaiting = false;
         }
+    }
+
+    private void NavigateToConfirmPage()
+    {
+        var queryParams = new Dictionary<string, object?>
+        {
+            { "return-url", ReturnUrlQueryString }
+        };
+        if (string.IsNullOrEmpty(signUpModel.Email) is false)
+        {
+            queryParams.Add("email", signUpModel.Email);
+        }
+        if (string.IsNullOrEmpty(signUpModel.PhoneNumber) is false)
+        {
+            queryParams.Add("phoneNumber", signUpModel.PhoneNumber);
+        }
+        var confirmUrl = NavigationManager.GetUriWithQueryParameters(Urls.ConfirmPage, queryParams);
+        NavigationManager.NavigateTo(confirmUrl, replace: true);
     }
 
     private async Task SocialSignUp(string provider)

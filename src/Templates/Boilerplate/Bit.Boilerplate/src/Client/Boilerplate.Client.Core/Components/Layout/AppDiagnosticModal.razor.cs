@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Boilerplate.Shared.Controllers.Diagnostics;
 using Boilerplate.Client.Core.Services.DiagnosticLog;
 using System.Text.RegularExpressions;
+using Boilerplate.Shared.Dtos.Diagnostic;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -19,14 +20,14 @@ public partial class AppDiagnosticModal
     private bool enableRegExp;
     private string? searchText;
     private bool isLogModalOpen;
-    private DiagnosticLog? selectedLog;
+    private DiagnosticLogDto? selectedLog;
     private bool isDescendingSort = true;
     private Action unsubscribe = default!;
     private IEnumerable<string>? filterCategoryValues;
-    private IEnumerable<DiagnosticLog> allLogs = default!;
+    private IEnumerable<DiagnosticLogDto> allLogs = default!;
     private BitDropdownItem<string>[] allCategoryItems = [];
-    private IEnumerable<DiagnosticLog> filteredLogs = default!;
-    private BitBasicList<(DiagnosticLog, int)> logStackRef = default!;
+    private IEnumerable<DiagnosticLogDto> filteredLogs = default!;
+    private BitBasicList<(DiagnosticLogDto, int)> logStackRef = default!;
     private readonly BitDropdownItem<LogLevel>[] logLevelItems = Enum.GetValues<LogLevel>().Select(v => new BitDropdownItem<LogLevel>() { Value = v, Text = v.ToString() }).ToArray();
     private IEnumerable<LogLevel> filterLogLevelValues = AppEnvironment.IsDev()
                                                             ? [LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical]
@@ -68,25 +69,25 @@ public partial class AppDiagnosticModal
         await clipboard.WriteText(string.Join(Environment.NewLine, telemetryContext.ToDictionary().Select(c => $"{c.Key}: {c.Value}")));
     }
 
-    private async Task CopyException(DiagnosticLog? log)
+    private async Task CopyException(DiagnosticLogDto? log)
     {
         if (log is null) return;
 
         await clipboard.WriteText(GetContent(log));
     }
 
-    private async Task OpenLog(DiagnosticLog log)
+    private async Task OpenLog(DiagnosticLogDto log)
     {
         selectedLog = log;
         isLogModalOpen = true;
     }
 
-    private static string GetContent(DiagnosticLog? log)
+    private static string GetContent(DiagnosticLogDto? log)
     {
         if (log is null) return string.Empty;
 
         var stateToCopy = string.Join(Environment.NewLine, log.State?.Select(i => $"{i.Key}: {i.Value}") ?? []);
-        return $"{log.Category}{Environment.NewLine}{log.Message}{Environment.NewLine}{log.Exception?.ToString()}{Environment.NewLine}{stateToCopy}";
+        return $"{log.Category}{Environment.NewLine}{log.Message}{Environment.NewLine}{log.ExceptionString}{Environment.NewLine}{stateToCopy}";
     }
 
     private async Task GoTop()
@@ -112,23 +113,29 @@ public partial class AppDiagnosticModal
     private async Task ClearLogs()
     {
         DiagnosticLogger.Store.Clear();
-        filterCategoryValues = null;
         ReloadLogs();
     }
 
-    private void ReloadLogs()
+    private void LoadLogs(IEnumerable<DiagnosticLogDto> logs)
     {
-        allLogs = [.. DiagnosticLogger.Store];
+        allLogs = logs;
 
-        var allCategories = allLogs.Select(l => l.Category ?? string.Empty)
-                                   .Where(c => string.IsNullOrWhiteSpace(c) is false)
-                                   .Distinct().Order();
+        var allCategories = allLogs.Where(c => string.IsNullOrEmpty(c.Category) is false)
+                                   .Select(l => l.Category!)
+                                   .Distinct()
+                                   .Order()
+                                   .ToArray();
 
         filterCategoryValues ??= [.. allCategories];
 
         allCategoryItems = [.. allCategories.Select(c => new BitDropdownItem<string>() { Text = c, Value = c })];
 
         FilterLogs();
+    }
+
+    private void ReloadLogs()
+    {
+        LoadLogs([.. DiagnosticLogger.Store]);
     }
 
     private void FilterLogs()
@@ -149,7 +156,7 @@ public partial class AppDiagnosticModal
 
         StateHasChanged();
 
-        IEnumerable<DiagnosticLog> FilterSearchText(IEnumerable<DiagnosticLog> logs)
+        IEnumerable<DiagnosticLogDto> FilterSearchText(IEnumerable<DiagnosticLogDto> logs)
         {
             if (string.IsNullOrEmpty(searchText)) return logs;
 
