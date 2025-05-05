@@ -1,6 +1,6 @@
 ﻿namespace Bit.Butil;
 
-public class WebAuthVerifyAuthenticatorSelection
+public class WebAuthnVerifyAuthenticatorSelection
 {
     public required string AuthenticatorAttachment { get; set; }
 }
