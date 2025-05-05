@@ -1,6 +1,6 @@
 ﻿namespace Bit.Butil;
 
-public class WebAuthVerifyPubKeyCredParam
+public class WebAuthnVerifyPubKeyCredParam
 {
     public required int Alg { get; set; }
     public required string Type { get; set; }

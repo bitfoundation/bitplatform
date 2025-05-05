@@ -1,6 +1,6 @@
 ﻿namespace Bit.Butil;
 
-public class WebAuthVerifyRp
+public class WebAuthnVerifyRp
 {
     public string? Name { get; set; }
 }
