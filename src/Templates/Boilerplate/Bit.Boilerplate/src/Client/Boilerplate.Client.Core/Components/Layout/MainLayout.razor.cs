@@ -92,8 +92,6 @@ public partial class MainLayout : IAsyncDisposable
 
             await SetNavPanelItems();
 
-            StateHasChanged();
-
             SetCurrentDir();
             currentTheme = await themeService.GetCurrentTheme();
 
@@ -139,8 +137,6 @@ public partial class MainLayout : IAsyncDisposable
             user = (await task).User;
             
             await SetNavPanelItems();
-
-            StateHasChanged();
         }
         catch (Exception ex)
         {

@@ -83,12 +83,15 @@ public partial class MainLayout
             //#endif
 
             //#if (signalR == true)
-            navPanelItems.Add(new()
+            if ((await authorizationService.AuthorizeAsync(user, AppPermissions.Management.ManageAI)).Succeeded)
             {
-                Text = localizer[nameof(AppStrings.SystemPromptsTitle)],
-                IconName = BitIconName.TextDocumentSettings,
-                Url = Urls.SystemPrompts,
-            });
+                navPanelItems.Add(new()
+                {
+                    Text = localizer[nameof(AppStrings.SystemPromptsTitle)],
+                    IconName = BitIconName.TextDocumentSettings,
+                    Url = Urls.SystemPrompts,
+                });
+            }
             //#endif
         }
 
