@@ -1,15 +1,15 @@
 ﻿//+:cnd:noEmit
 using Humanizer;
-using Microsoft.AspNetCore.Authentication.BearerToken;
-//#if (signalR == true)
-using Microsoft.AspNetCore.SignalR;
-using Boilerplate.Server.Api.SignalR;
-//#endif
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Server.Api.Services.Identity;
+using Microsoft.AspNetCore.Authentication.BearerToken;
+//#if (signalR == true)
+using Microsoft.AspNetCore.SignalR;
+using Boilerplate.Server.Api.SignalR;
+//#endif
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
@@ -87,9 +87,12 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var result = await userManager.CreateAsync(userToAdd, request.Password!);
 
         if (result.Succeeded is false)
-        {
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
-        }
+
+        result = await userManager.AddToRoleAsync(userToAdd, AppBuiltInRoles.BasicUser);
+
+        if (result.Succeeded is false)
+            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
         await SendConfirmationToken(userToAdd, request.ReturnUrl, cancellationToken);
     }
@@ -114,13 +117,13 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (user.TwoFactorEnabled)
         {
             // This applies only to the current short-lived access token. You can remove this line entirely.
-            userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.ELEVATED_SESSION, "true"));
+            userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.ELEVATED_SESSION, ""));
         }
 
         userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_ID, userSession.Id.ToString()));
         if (userSession.Privileged)
         {
-            userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, "true"));
+            userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, ""));
         }
 
         bool isOtpSignIn = string.IsNullOrEmpty(request.Otp) is false;
@@ -266,7 +269,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 {
                     user.ElevatedAccessTokenRequestedOn = null; // invalidates token
                     await ((IUserLockoutStore<User>)userStore).ResetAccessFailedCountAsync(user, cancellationToken);
-                    userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.ELEVATED_SESSION, "true"));
+                    userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.ELEVATED_SESSION, ""));
                 }
             }
 
@@ -281,7 +284,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             userSession.Privileged = await IsUserSessionPrivileged(userSession, cancellationToken);
             if (userSession.Privileged)
             {
-                userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, "true"));
+                userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, ""));
             }
 
             var newPrincipal = await signInManager.CreateUserPrincipalAsync(user!);

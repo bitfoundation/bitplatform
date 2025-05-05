@@ -1,9 +1,11 @@
-using Boilerplate.Shared.Dtos.Dashboard;
+﻿using Boilerplate.Shared.Dtos.Dashboard;
 using Boilerplate.Shared.Controllers.Dashboard;
 
 namespace Boilerplate.Server.Api.Controllers.Dashboard;
 
-[ApiController, Route("api/[controller]/[action]"), Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+[ApiController, Route("api/[controller]/[action]"), 
+    Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS),
+    Authorize(Policy = AppPermissions.AdminPanel.Dashboard)]
 public partial class DashboardController : AppControllerBase, IDashboardController
 {
     [HttpGet]

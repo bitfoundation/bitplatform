@@ -68,6 +68,7 @@
         <Using Include="Boilerplate.Shared.Attributes" />
         <Using Include="Boilerplate.Server.Api.Data" />
         <Using Include="Boilerplate.Server.Api.Mappers" />
+        <Using Include="Boilerplate.Server.Api.Filters" />
         <Using Include="Microsoft.AspNetCore.Identity" />
         <Using Include="Microsoft.EntityFrameworkCore" />
         <Using Include="Microsoft.AspNetCore.OData.Query" />

@@ -25,23 +25,3 @@ public class AuthPolicies
     /// </summary>
     public const string ELEVATED_ACCESS = nameof(ELEVATED_ACCESS);
 }
-
-public class AppClaimTypes
-{
-    public const string SESSION_ID = "SessionId";
-
-    /// <summary>
-    /// <inheritdoc cref="AuthPolicies.PRIVILEGED_ACCESS"/>
-    /// </summary>
-    public const string PRIVILEGED_SESSION = "PrivilegedSession";
-
-    /// <summary>
-    /// <inheritdoc cref="AuthPolicies.ELEVATED_ACCESS"/>
-    /// </summary>
-    public const string ELEVATED_SESSION = "ElevatedSession";
-}
-
-public class AppRoles
-{
-    public const string SUPER_ADMIN = "SuperAdmin";
-}

@@ -1,9 +1,11 @@
-using Boilerplate.Shared.Dtos.Todo;
+﻿using Boilerplate.Shared.Dtos.Todo;
 using Boilerplate.Shared.Controllers.Todo;
 
 namespace Boilerplate.Server.Api.Controllers.Todo;
 
-[ApiController, Route("api/[controller]/[action]"), Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+[ApiController, Route("api/[controller]/[action]"),
+    Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS),
+    Authorize(Policy = AppPermissions.Todo.ManageTodo)]
 public partial class TodoItemController : AppControllerBase, ITodoItemController
 {
     [HttpGet, EnableQuery]

@@ -1,5 +1,6 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Server.Api.Services;
+using Boilerplate.Shared.Services;
 using Microsoft.AspNetCore.Authentication;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
@@ -72,9 +73,12 @@ public partial class IdentityController
                 var result = await userManager.CreateAsync(user, password: Guid.NewGuid().ToString("N") /* Users can reset their password later. */);
 
                 if (result.Succeeded is false)
-                {
                     throw new BadRequestException(string.Join(", ", result.Errors.Select(e => new LocalizedString(e.Code, e.Description))));
-                }
+
+                result = await userManager.AddToRoleAsync(user, AppBuiltInRoles.BasicUser);
+
+                if (result.Succeeded is false)
+                    throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
                 await userManager.AddLoginAsync(user, info);
             }

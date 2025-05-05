@@ -10,6 +10,7 @@ using Boilerplate.Shared;
 using Boilerplate.Shared.Attributes;
 //#if (api == "Integrated")
 using Hangfire;
+using Boilerplate.Server.Api.Filters;
 using Boilerplate.Server.Api.Services;
 //#endif
 using Boilerplate.Server.Web.Endpoints;
