@@ -1,6 +1,6 @@
 ﻿namespace Bit.Butil;
 
-public class WebAuthVerifyUser
+public class WebAuthnVerifyUser
 {
     public string? Id { get; set; }
     public string? Name { get; set; }
