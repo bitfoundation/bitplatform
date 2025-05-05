@@ -8,28 +8,132 @@
                 <BitAppShell PersistScroll>
                     <main class="@GetMainCssClass()">
                         <div class="main-container">
-                            @if (isIdentityPage is false or null)
+                            @if (isIdentityPage is not true)
                             {
+                                List<BitNavItem> items = 
+                                [
+                                    new()
+                                    {
+                                        Text = localizer[nameof(AppStrings.Home)],
+                                        IconName = BitIconName.Home,
+                                        Url = Urls.HomePage,
+                                    }
+                                ];
+
                                 if (isAuthenticated is true)
                                 {
-                                    <BitNavPanel @bind-IsOpen="isNavPanelOpen"
-                                                 @bind-IsToggled="isNavPanelToggled"
-                                                 IconNavUrl="/"
-                                                 Class="nav-panel"
-                                                 Items="@navPanelAuthenticatedItems"
-                                                 Accent="BitColor.SecondaryBackground"
-                                                 IconUrl="_content/Boilerplate.Client.Core/images/bit-logo.svg" />
+                                    @*#if (module == "Admin")*@
+                                    var adminPanelItem = new BitNavItem()
+                                    {
+                                        Text = localizer[nameof(AppStrings.AdminPanel)],
+                                        IconName = BitIconName.Admin,
+                                        ChildItems = []
+                                    };
+                                    items.Add(adminPanelItem);
+                                    <AuthorizeView Policy="@AppPermissions.AdminPanel.Dashboard">
+                                        <Authorized>
+                                            @{
+                                                adminPanelItem.ChildItems.Add(new()
+                                                {
+                                                    Text = localizer[nameof(AppStrings.Dashboard)],
+                                                    IconName = BitIconName.BarChartVerticalFill,
+                                                    Url = Urls.DashboardPage,
+                                                });
+                                            }
+                                        </Authorized>
+                                    </AuthorizeView>
+                                    <AuthorizeView Policy="@AppPermissions.AdminPanel.ManageProductCatalog">
+                                        <Authorized>
+                                            @{
+                                                adminPanelItem.ChildItems.Add(new()
+                                                {
+                                                    Text = localizer[nameof(AppStrings.Categories)],
+                                                    IconName = BitIconName.BuildQueue,
+                                                    Url = Urls.CategoriesPage,
+                                                });
+                                                adminPanelItem.ChildItems.Add(new()
+                                                {
+                                                    Text = localizer[nameof(AppStrings.Products)],
+                                                    IconName = BitIconName.Product,
+                                                    Url = Urls.ProductsPage,
+                                                });
+                                            }
+                                        </Authorized>
+                                    </AuthorizeView>
+                                    @*#endif*@
+                                    @*#if (sample == true)*@
+                                    <AuthorizeView Policy="@AppPermissions.Todo.ManageTodo">
+                                        <Authorized>
+                                            @{
+                                                items.Add(new()
+                                                {
+                                                    Text = localizer[nameof(AppStrings.Todo)],
+                                                    IconName = BitIconName.ToDoLogoOutline,
+                                                    Url = Urls.TodoPage,
+                                                });
+                                            }
+                                        </Authorized>
+                                    </AuthorizeView>
+                                    @*#endif*@
+                                    @*#if (offlineDb == true)*@
+                                    items.Add(new()
+                                    {
+                                        Text = localizer[nameof(AppStrings.OfflineEditProfileTitle)],
+                                        IconName = BitIconName.EditContact,
+                                        Url = Urls.OfflineEditProfilePage,
+                                    });
+                                    @*#endif*@
+                                    @*#if (signalR == true)*@
+                                    items.Add(new()
+                                    {
+                                        Text = localizer[nameof(AppStrings.SystemPromptsTitle)],
+                                        IconName = BitIconName.TextDocumentSettings,
+                                        Url = Urls.SystemPrompts,
+                                    });
+                                    @*#endif*@
                                 }
-                                else if (isAuthenticated is false)
+
+                                items.Add(new()
                                 {
-                                    <BitNavPanel @bind-IsOpen="isNavPanelOpen"
-                                                 @bind-IsToggled="isNavPanelToggled"
-                                                 IconNavUrl="/"
-                                                 Class="nav-panel"
-                                                 Items="@navPanelUnAuthenticatedItems"
-                                                 Accent="BitColor.SecondaryBackground"
-                                                 IconUrl="_content/Boilerplate.Client.Core/images/bit-logo.svg">
-                                        <Footer>
+                                    Text = localizer[nameof(AppStrings.Terms)],
+                                    IconName = BitIconName.EntityExtraction,
+                                    Url = Urls.TermsPage,
+                                });
+
+                                items.Add(new()
+                                {
+                                    Text = localizer[nameof(AppStrings.About)],
+                                    IconName = BitIconName.Info,
+                                    Url = Urls.AboutPage,
+                                });
+
+                                if (isAuthenticated is true)
+                                {
+                                    items.Add(new()
+                                    {
+                                        Text = localizer[nameof(AppStrings.Settings)],
+                                        IconName = BitIconName.Equalizer,
+                                        Url = Urls.SettingsPage,
+                                        AdditionalUrls =
+                                        [
+                                            $"{Urls.SettingsPage}/{Urls.SettingsSections.Profile}",
+                                            $"{Urls.SettingsPage}/{Urls.SettingsSections.Account}",
+                                            $"{Urls.SettingsPage}/{Urls.SettingsSections.Tfa}",
+                                            $"{Urls.SettingsPage}/{Urls.SettingsSections.Sessions}",
+                                        ]
+                                    });
+                                }
+
+                                <BitNavPanel @bind-IsOpen="isNavPanelOpen"
+                                             @bind-IsToggled="isNavPanelToggled"
+                                             IconNavUrl="/"
+                                             Class="nav-panel"
+                                             Items="items"
+                                             Accent="BitColor.SecondaryBackground"
+                                             IconUrl="_content/Boilerplate.Client.Core/images/bit-logo.svg">
+                                    <Footer>
+                                        @if (isAuthenticated is false)
+                                        {
                                             <BitActionButton IconOnly="isNavPanelToggled"
                                                              IconName="@BitIconName.Signin"
                                                              Href="@($"{Urls.SignInPage}?return-url={Uri.EscapeDataString(navigationManager.GetRelativePath())}")">
@@ -40,9 +144,9 @@
                                                              Href="@($"{Urls.SignUpPage}?return-url={Uri.EscapeDataString(navigationManager.GetRelativePath())}")">
                                                 @(isNavPanelToggled ? "" : localizer[nameof(AppStrings.SignUp)])
                                             </BitActionButton>
-                                        </Footer>
-                                    </BitNavPanel>
-                                }
+                                        }
+                                    </Footer>
+                                </BitNavPanel>
                             }
 
                             <div class="main-body">

@@ -52,8 +52,6 @@ public partial class MainLayout : IAsyncDisposable
             // Even though Server.Web and Server.Api may be deployed on different servers, 
             // we can still assume that if the client is displaying a pre-rendered result, it is online.
 
-            InitializeNavPanelItems();
-
             navigationManager.LocationChanged += NavigationManager_LocationChanged;
             authManager.AuthenticationStateChanged += AuthManager_AuthenticationStateChanged;
 
