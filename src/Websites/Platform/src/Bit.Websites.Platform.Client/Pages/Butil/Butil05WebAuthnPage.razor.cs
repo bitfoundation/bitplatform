@@ -1,4 +1,6 @@
-﻿namespace Bit.Websites.Platform.Client.Pages.Butil;
+﻿using System.Text.Json;
+
+namespace Bit.Websites.Platform.Client.Pages.Butil;
 
 public partial class Butil05WebAuthnPage
 {
@@ -19,8 +21,14 @@ public partial class Butil05WebAuthnPage
             {
                 challenge = "testChallenge",
                 rp = new { name = "testRp" },
+                attestation = "direct",
                 user = new { id = "userId", name = "testUser", displayName = "testUser" },
-                pubKeyCredParams = new object[] { new { alg = -7, type = "public-key" } }
+                pubKeyCredParams = new object[]
+                {
+                    new { alg = -7, type = "public-key" },
+                    new { alg = -8, type = "public-key" },
+                    new { alg = -257, type = "public-key" }
+                }
             });
         }
         catch (Exception ex)
@@ -34,7 +42,12 @@ public partial class Butil05WebAuthnPage
         try
         {
             getError = null;
-            getResult = await webAuthn.GetCredential(new { challenge = "test" });
+            var id = ((JsonElement?)createResult)?.GetProperty("rawId").ToString();
+            var options = id is null
+                ? new { challenge = "test", allowCredentials = new object[] { } }
+                : new { challenge = "test", allowCredentials = new object[] { new { id, type = "public-key" } } };
+
+            getResult = await webAuthn.GetCredential(options);
         }
         catch (Exception ex)
         {
