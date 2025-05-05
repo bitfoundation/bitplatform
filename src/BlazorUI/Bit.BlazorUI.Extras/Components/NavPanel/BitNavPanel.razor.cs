@@ -356,6 +356,6 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
     private async Task OnItemsSet()
     {
-        SearchNavItems(_searchBoxRef.Value);
+        SearchNavItems(_searchBoxRef?.Value);
     }
 }
