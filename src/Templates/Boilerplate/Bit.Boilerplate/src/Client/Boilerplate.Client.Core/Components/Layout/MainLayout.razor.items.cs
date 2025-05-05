@@ -122,6 +122,7 @@ public partial class MainLayout
                     $"{Urls.SettingsPage}/{Urls.SettingsSections.Account}",
                     $"{Urls.SettingsPage}/{Urls.SettingsSections.Tfa}",
                     $"{Urls.SettingsPage}/{Urls.SettingsSections.Sessions}",
+                    $"{Urls.SettingsPage}/{Urls.SettingsSections.UpgradeAccount}",
                 ]
             });
         }
