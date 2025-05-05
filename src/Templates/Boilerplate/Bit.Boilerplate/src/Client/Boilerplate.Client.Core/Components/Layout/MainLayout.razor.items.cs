@@ -9,7 +9,7 @@ public partial class MainLayout
 
     private async Task SetNavPanelItems()
     {
-        navPanelItems = 
+        navPanelItems =
         [
             new()
             {
@@ -83,15 +83,12 @@ public partial class MainLayout
             //#endif
 
             //#if (signalR == true)
-            if ((await authorizationService.AuthorizeAsync(user, AppPermissions.Management.ManageAI)).Succeeded)
+            navPanelItems.Add(new()
             {
-                navPanelItems.Add(new()
-                {
-                    Text = localizer[nameof(AppStrings.SystemPromptsTitle)],
-                    IconName = BitIconName.TextDocumentSettings,
-                    Url = Urls.SystemPrompts,
-                });
-            }
+                Text = localizer[nameof(AppStrings.SystemPromptsTitle)],
+                IconName = BitIconName.TextDocumentSettings,
+                Url = Urls.SystemPrompts,
+            });
             //#endif
         }
 
