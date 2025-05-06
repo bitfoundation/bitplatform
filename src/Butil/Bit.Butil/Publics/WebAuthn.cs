@@ -76,14 +76,13 @@ public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
     /// Tries to get a valid credential using the minimum required options to expose a native verification feature.
     /// </summary>
     /// <param name="forceCreate">Forces the verification to be performed using the create credential approach.</param>
-    /// <param name="platform">Forces authenticator selection to be platform, otherwise it will be cross-platform (like hardware authenticators)</param>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(WebAuthnVerifyAllowCredential))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(WebAuthnVerifyAuthenticatorSelection))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(WebAuthnVerifyOptions))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(WebAuthnVerifyPubKeyCredParam))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(WebAuthnVerifyRp))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(WebAuthnVerifyUser))]
-    public async Task<bool> Verify(bool forceCreate = false, bool platform = false)
+    public async Task<bool> Verify(bool forceCreate = false)
     {
         try
         {
@@ -96,7 +95,7 @@ public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
                     Attestation = "direct",
                     Rp = new() { Name = "Butil Verify" },
                     User = new() { Id = "ButilVerifyUserId", Name = "ButilVerifyUser", DisplayName = "ButilVerifyUser" },
-                    AuthenticatorSelection = new() { AuthenticatorAttachment = platform ? "platform" : "cross-platform" },
+                    AuthenticatorSelection = new() { AuthenticatorAttachment = "platform" },
                     PubKeyCredParams = [new() { Alg = -7, Type = "public-key" }, new() { Alg = -8, Type = "public-key" }, new() { Alg = -257, Type = "public-key" }]
                 });
                 var rawId = result.GetProperty("rawId").ToString();
