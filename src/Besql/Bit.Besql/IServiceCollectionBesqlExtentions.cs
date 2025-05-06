@@ -28,10 +28,7 @@ public static class IServiceCollectionBesqlExtentions
             await dbContextInitializer(sp, dbContext);
         });
 
-        if (OperatingSystem.IsAndroid() || OperatingSystem.IsBrowser())
-        {
-            AppContext.SetSwitch("Microsoft.EntityFrameworkCore.Issue31751", true);
-        }
+        AppContext.SetSwitch("Microsoft.EntityFrameworkCore.Issue31751", true);
 
         if (OperatingSystem.IsBrowser())
         {
