@@ -1,15 +1,15 @@
 <Project>
     <ItemGroup>
         <!-- https://learn.microsoft.com/en-us/nuget/consume-packages/central-package-management -->
-        <PackageVersion Include="Bit.Butil" Version="9.7.3" />
-        <PackageVersion Include="Bit.BlazorUI" Version="9.7.3" />
-        <PackageVersion Include="Bit.BlazorES2019" Version="9.7.3" />
-        <PackageVersion Include="Bit.BlazorUI.Icons" Version="9.7.3" />
-        <PackageVersion Include="Bit.BlazorUI.Assets" Version="9.7.3" />
-        <PackageVersion Include="Bit.BlazorUI.Extras" Version="9.7.3" />
-        <PackageVersion Include="Bit.Bswup" Version="9.7.3" />
-        <PackageVersion Include="Bit.CodeAnalyzers" Version="9.7.3" />
-        <PackageVersion Include="Bit.SourceGenerators" Version="9.7.3" />
+        <PackageVersion Include="Bit.Butil" Version="9.7.4-pre-01" />
+        <PackageVersion Include="Bit.BlazorUI" Version="9.7.4-pre-01" />
+        <PackageVersion Include="Bit.BlazorES2019" Version="9.7.4-pre-01" />
+        <PackageVersion Include="Bit.BlazorUI.Icons" Version="9.7.4-pre-01" />
+        <PackageVersion Include="Bit.BlazorUI.Assets" Version="9.7.4-pre-01" />
+        <PackageVersion Include="Bit.BlazorUI.Extras" Version="9.7.4-pre-01" />
+        <PackageVersion Include="Bit.Bswup" Version="9.7.4-pre-01" />
+        <PackageVersion Include="Bit.CodeAnalyzers" Version="9.7.4-pre-01" />
+        <PackageVersion Include="Bit.SourceGenerators" Version="9.7.4-pre-01" />
         <PackageVersion Include="Fido2.AspNet" Version="4.0.0-beta.16" />
         <PackageVersion Include="Fido2.Models" Version="4.0.0-beta.16" />
         <PackageVersion Include="HtmlSanitizer" Version="9.0.884" />
@@ -57,7 +57,7 @@
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" Version="124.1.1.1" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Plugin.LocalNotification" Version="12.0.0" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="AdsPush" Version="2.0.0" />
-        <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="9.7.3" />
+        <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="9.7.4-pre-01" />
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.4" />
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Azure.SignalR" Version="1.30.3" />
         <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Microsoft.Extensions.AI" Version="9.4.0-preview.1.25207.5" />
