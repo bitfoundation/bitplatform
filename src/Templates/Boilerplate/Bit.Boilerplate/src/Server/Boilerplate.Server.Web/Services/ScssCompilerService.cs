@@ -31,6 +31,14 @@ public class ScssCompilerService
             return;
         }
 
+        // The ScssCompilerService operates from the Client.Core directory.
+        // Using .:., it locates all .scss files in the `Styles` and `Components` folders of Client.Core (see --load-path),
+        // compiles them to CSS, and saves them alongside the .scss files.
+        // It also compiles app.scss to app.css and places it in the wwwroot/styles folder.
+        // For Client.Web, Client.Maui, or Client.Windows, if present, the process is similar,
+        // but uses ../../Client/Boilerplate.Client.Web:../../Client/Boilerplate.Client.Web instead of .:.,
+        // as the working directory remains Client.Core.
+
         var sassPathsToWatch = new List<string>
         {
             ".:.", "Styles/app.scss:wwwroot/styles/app.css"
@@ -45,7 +53,7 @@ public class ScssCompilerService
         if (Path.Exists(Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Web")))
             sassPathsToWatch.Add("../../Client/Boilerplate.Client.Web:../../Client/Boilerplate.Client.Web");
 
-        var command = $"{string.Join(" ", sassPathsToWatch)} --style compressed --load-path=. --silence-deprecation=import --update --watch";
+        var command = $"{string.Join(" ", sassPathsToWatch)} --style compressed --load-path=Components --load-path=Styles --silence-deprecation=import --update --watch";
 
         // Create a job object to ensure the child process terminates with the parent
         using var job = new JobObject();
