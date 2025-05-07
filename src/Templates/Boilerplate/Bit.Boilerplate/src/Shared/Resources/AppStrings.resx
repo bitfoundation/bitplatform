@@ -247,6 +247,9 @@
     <data name="CurrentSession" xml:space="preserve">
     <value>Current session</value>
   </data>
+    <data name="PrivilegedDeviceLimitMessage" xml:space="preserve">
+    <value>From {0} devices allowed for full features, you've used {1}. After reaching {0}, extra sign-ins will have reduced functions.</value>
+  </data>
     <data name="OtherSessions" xml:space="preserve">
     <value>Other sessions</value>
   </data>

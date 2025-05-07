@@ -38,6 +38,13 @@ public partial class BitButtonGroupDemo
         },
         new()
         {
+            Name = "DefaultToggleKey",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The default key that will be initially used to set toggled item in toggle mode if the ToggleKey parameter is not set.",
+        },
+        new()
+        {
             Name = "FullWidth",
             Type = "bool",
             DefaultValue = "false",
@@ -76,6 +83,12 @@ public partial class BitButtonGroupDemo
         },
         new()
         {
+            Name = "OnToggleChange",
+            Type = "EventCallback<TItem>",
+            Description = "The callback that called when toggled item change."
+        },
+        new()
+        {
             Name = "Options",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -87,6 +100,13 @@ public partial class BitButtonGroupDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Display ButtonGroup with toggle mode enabled for each button.",
+        },
+        new()
+        {
+            Name = "ToggleKey",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The key of the toggled item in toggle mode. (two-way bound)",
         },
         new()
         {

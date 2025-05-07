@@ -473,6 +473,7 @@ public static partial class Program
             .AddClaimsPrincipalFactory<AppUserClaimsPrincipalFactory>()
             .AddApiEndpoints();
 
+        services.AddScoped<UserClaimsService>();
         services.AddScoped<IUserConfirmation<User>, AppUserConfirmation>();
         services.AddScoped(sp => (IUserEmailStore<User>)sp.GetRequiredService<IUserStore<User>>());
         services.AddScoped(sp => (IUserPhoneNumberStore<User>)sp.GetRequiredService<IUserStore<User>>());

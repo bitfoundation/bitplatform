@@ -247,6 +247,9 @@
     <data name="CurrentSession" xml:space="preserve">
     <value>جلسه - سشن جاری</value>
   </data>
+    <data name="PrivilegedDeviceLimitMessage" xml:space="preserve">
+    <value>از مجموع {0} دستگاه با دسترسی کامل، شما {1} دستگاه را استفاده کرده‌اید. پس از رسیدن به {0} دستگاه، دستگاه‌های اضافی با امکانات محدود خواهد بود.</value>
+  </data>
     <data name="OtherSessions" xml:space="preserve">
     <value>سایر جلسات (سشن‌ها)</value>
   </data>
