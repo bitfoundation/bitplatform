@@ -81,4 +81,9 @@ public class BitButtonGroupNameSelectors<TItem>
     /// Title field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Title { get; set; } = new(nameof(BitButtonGroupItem.Title));
+
+    /// <summary>
+    /// The IsSelected field name of the custom input class. This property's value is assigned by the component.
+    /// </summary>
+    public BitNameSelectorPair<TItem, bool> IsToggled { get; set; } = new(nameof(BitButtonGroupItem.IsToggled));
 }
