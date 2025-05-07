@@ -40,7 +40,7 @@ public partial class SessionsSection
             otherSessions = userSessions.Where(s => s.Id != currentSessionId).ToArray();
             currentSession = userSessions.Single(s => s.Id == currentSessionId);
 
-            maxPrivilegedSessionsCount = int.Parse(user.FindFirst(AppClaimTypes.MAX_PRIVILEGED_SESSIONS)!.Value!);
+            maxPrivilegedSessionsCount = user.GetClaimValue<int>(AppClaimTypes.MAX_PRIVILEGED_SESSIONS);
             currentPrivilegedCount = userSessions.Count(us => us.Privileged);
         }
         catch (KnownException e)

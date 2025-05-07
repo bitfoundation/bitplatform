@@ -10,19 +10,23 @@ public partial class UserClaimsService
         var userClaimsQuery = dbContext.UserClaims.Where(uc => uc.UserId == userId).Select(uc => new { uc.ClaimType, uc.ClaimValue });
         var userRoleClaimsQuery = dbContext.UserRoles.Where(ur => ur.UserId == userId).SelectMany(ur => ur.Role!.Claims).Select(uc => new { uc.ClaimType, uc.ClaimValue });
         var allUserClaimsQuery = userClaimsQuery.Union(userRoleClaimsQuery).TagWith($"Finding {claimType} claim for {userId}");
-        var result = await allUserClaimsQuery.FirstOrDefaultAsync(uc => uc.ClaimType == claimType, cancellationToken);
 
-        if (result?.ClaimValue is null)
+        var results = await allUserClaimsQuery
+            .Where(uc => uc.ClaimType == claimType)
+            .Select(uc => uc.ClaimValue)
+            .ToArrayAsync(cancellationToken);
+
+        if (results.Any() is false)
             return default;
 
         try
         {
             Type targetType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
-            return (T)Convert.ChangeType(result.ClaimValue, targetType, CultureInfo.InvariantCulture);
+            return results.Select(r => (T)Convert.ChangeType(r, targetType, CultureInfo.InvariantCulture)!).Max(); // User might have multiple roles with this claim.
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Failed to convert claim value '{result.ClaimValue}' to type {typeof(T).Name}.", ex);
+            throw new InvalidOperationException($"Failed to convert claim values for {claimType} to type {typeof(T).Name}.", ex);
         }
     }
 }
