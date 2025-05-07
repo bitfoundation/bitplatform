@@ -116,6 +116,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     public bool Vertical { get; set; }
 
 
+
     internal void RegisterOption(BitButtonGroupOption option)
     {
         if (option.Key.HasNoValue())
