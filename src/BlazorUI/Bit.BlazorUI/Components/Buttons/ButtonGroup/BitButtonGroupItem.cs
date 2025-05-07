@@ -82,4 +82,11 @@ public class BitButtonGroupItem
     /// Title to render in the item.
     /// </summary>
     public string? Title { get; set; }
+
+
+
+    /// <summary>
+    /// Determines if the item is toggled. This property's value is assigned by the component.
+    /// </summary>
+    public bool IsToggled { get; internal set; }
 }

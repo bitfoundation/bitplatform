@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
 
@@ -7,7 +8,6 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : class
 {
-    private TItem? _toggleItem;
     private List<TItem> _items = [];
     private IEnumerable<TItem> _oldItems = default!;
 
@@ -34,6 +34,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
+
+    /// <summary>
+    /// The default key that will be initially used to set toggled item in toggle mode if the ToggleKey parameter is not set.
+    /// </summary>
+    [Parameter] public string? DefaultToggleKey { get; set; }
 
     /// <summary>
     /// Expand the ButtonGroup width to 100% of the available width.
@@ -67,6 +72,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
 
     /// <summary>
+    /// The callback that called when toggled item change.
+    /// </summary>
+    [Parameter] public EventCallback<TItem> OnToggleChanged { get; set; }
+
+    /// <summary>
     /// Alias of ChildContent.
     /// </summary>
     [Parameter] public RenderFragment? Options { get; set; }
@@ -88,6 +98,12 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     [Parameter] public bool Toggle { get; set; }
 
     /// <summary>
+    /// The key of the toggled item in toggle mode. (two-way bound)
+    /// </summary>
+    [Parameter, TwoWayBound]
+    public string? ToggleKey { get; set; }
+
+    /// <summary>
     /// The visual variant of the button group.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -100,9 +116,13 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     public bool Vertical { get; set; }
 
 
-
     internal void RegisterOption(BitButtonGroupOption option)
     {
+        if (option.Key.HasNoValue())
+        {
+            option.Key = (_items.Count - 1).ToString();
+        }
+
         var item = (option as TItem)!;
 
         _items.Add(item);
@@ -172,6 +192,20 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         StyleBuilder.Register(() => Styles?.Root);
     }
 
+    protected override async Task OnInitializedAsync()
+    {
+        if (Toggle && DefaultToggleKey.HasValue())
+        {
+            var item = _items.FirstOrDefault(i => GetItemKey(i) == DefaultToggleKey);
+            if (item is not null)
+            {
+                await SetIsToggled(item);
+            }
+        }
+
+        await base.OnInitializedAsync();
+    }
+
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
@@ -182,6 +216,13 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
         _oldItems = Items;
         _items = [.. Items];
+
+        for (int i = 0; i < _items.Count; i++)
+        {
+            if (GetItemKey(_items.ElementAt(i)).HasValue()) continue;
+
+            SetItemKey(_items.ElementAt(i), i.ToString());
+        }
     }
 
 
@@ -214,20 +255,10 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             }
         }
 
-        if (Toggle)
-        {
-            if (_toggleItem == item)
-            {
-                _toggleItem = null;
-            }
-            else
-            {
-                _toggleItem = item;
-            }
-        }
+        await SetIsToggled(item);
     }
 
-    private string? GetItemClass(TItem? item)
+    private string? GetItemClass(TItem item)
     {
         List<string> classes = ["bit-btg-itm"];
 
@@ -236,7 +267,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             classes.Add("bit-btg-rvi");
         }
 
-        if (_toggleItem == item)
+        if (GetIsToggled(item))
         {
             classes.Add("bit-btg-chk");
 
@@ -260,9 +291,9 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return string.Join(' ', classes);
     }
 
-    private string? GetItemStyle(TItem? item)
+    private string? GetItemStyle(TItem item)
     {
-        List<string> styles = new();
+        List<string> styles = [];
 
         var style = GetStyle(item);
         if (style.HasValue())
@@ -275,7 +306,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             styles.Add(Styles.Button!.Trim(';'));
         }
 
-        if (_toggleItem == item && (Styles?.ToggledButton.HasValue() ?? false))
+        if (GetIsToggled(item) && (Styles?.ToggledButton.HasValue() ?? false))
         {
             styles.Add(Styles.ToggledButton!);
         }
@@ -283,13 +314,13 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return string.Join(';', styles);
     }
 
-    private string? GetItemText(TItem? item)
+    private string? GetItemText(TItem item)
     {
         if (IconOnly) return null;
 
         if (Toggle)
         {
-            if (_toggleItem == item)
+            if (GetIsToggled(item))
             {
                 var onText = GetOnText(item);
                 if (onText.HasValue())
@@ -310,11 +341,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return GetText(item);
     }
 
-    private string? GetItemTitle(TItem? item)
+    private string? GetItemTitle(TItem item)
     {
         if (Toggle)
         {
-            if (_toggleItem == item)
+            if (GetIsToggled(item))
             {
                 var onTitle = GetOnTitle(item);
                 if (onTitle.HasValue())
@@ -335,11 +366,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return GetTitle(item);
     }
 
-    private string? GetItemIconName(TItem? item)
+    private string? GetItemIconName(TItem item)
     {
         if (Toggle)
         {
-            if (_toggleItem == item)
+            if (GetIsToggled(item))
             {
                 var onIconName = GetOnIconName(item);
                 if (onIconName.HasValue())
@@ -358,6 +389,111 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         }
 
         return GetIconName(item);
+    }
+
+    private async Task SetIsToggled(TItem item)
+    {
+        if (Toggle is false) return;
+        if (_items is null) return;
+
+        string? toggleKey = null;
+        var toggleItem = _items.FirstOrDefault(i => GetIsToggled(i));
+
+        if (toggleItem != item)
+        {
+            SetIsToggled(item, true);
+            toggleKey = GetItemKey(item);
+        }
+
+        if (toggleItem is not null)
+        {
+            SetIsToggled(toggleItem, false);
+        }
+
+        if (ToggleKeyHasBeenSet && ToggleKeyChanged.HasDelegate is false) return;
+
+        await AssignToggleKey(toggleKey);
+        await OnToggleChanged.InvokeAsync(toggleItem);
+    }
+
+    private bool GetIsToggled(TItem item)
+    {
+        if (item is BitButtonGroupItem buttonGroupItem)
+        {
+            return buttonGroupItem.IsToggled;
+        }
+
+        if (item is BitButtonGroupOption buttonGroupOption)
+        {
+            return buttonGroupOption.IsToggled;
+        }
+
+        if (NameSelectors is null) return true;
+
+        if (NameSelectors.IsToggled.Selector is not null)
+        {
+            return NameSelectors.IsToggled.Selector!(item);
+        }
+
+        return item.GetValueFromProperty(NameSelectors.IsToggled.Name, true);
+    }
+
+    private void SetIsToggled(TItem item, bool value)
+    {
+        if (item is BitButtonGroupItem buttonGroupItem)
+        {
+            buttonGroupItem.IsToggled = value;
+        }
+
+        if (item is BitButtonGroupOption buttonGroupOption)
+        {
+            buttonGroupOption.IsToggled = value;
+        }
+
+        if (NameSelectors is null) return;
+
+        item.SetValueToProperty(NameSelectors.IsToggled.Name, value);
+    }
+
+    private string? GetItemKey(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitButtonGroupItem buttonGroupItem)
+        {
+            return buttonGroupItem.Key;
+        }
+
+        if (item is BitButtonGroupOption buttonGroupOption)
+        {
+            return buttonGroupOption.Key;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Key.Selector is not null)
+        {
+            return NameSelectors.Key.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Key.Name);
+    }
+
+    private void SetItemKey(TItem item, string value)
+    {
+        if (item is BitButtonGroupItem buttonGroupItem)
+        {
+            buttonGroupItem.Key = value;
+        }
+
+        if (item is BitButtonGroupOption buttonGroupOption)
+        {
+            buttonGroupOption.Key = value;
+        }
+
+        if (NameSelectors is null) return;
+
+        item.SetValueToProperty(NameSelectors.Key.Name, value);
     }
 
     private string? GetClass(TItem? item)
