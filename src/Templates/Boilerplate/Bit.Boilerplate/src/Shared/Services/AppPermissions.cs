@@ -2,6 +2,8 @@
 
 /// <summary>
 /// Values for the <see cref="AppClaimTypes.PERMISSIONS"/>
+/// These permissions will be implemented as a policy. If the user has the specified value in the <see cref="AppClaimTypes.PERMISSIONS"/> claim,
+/// the policy will be fulfilled, granting the user access to the resource <see cref="ISharedServiceCollectionExtensions.ConfigureAuthorizationCore"/>
 /// </summary>
 public class AppPermissions
 {

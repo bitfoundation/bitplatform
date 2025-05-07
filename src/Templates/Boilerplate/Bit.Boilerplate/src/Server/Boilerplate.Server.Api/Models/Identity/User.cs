@@ -46,5 +46,8 @@ public partial class User : IdentityUser<Guid>
 
     public List<WebAuthnCredential> WebAuthnCredentials { get; set; } = [];
 
+    public List<UserRole> Roles { get; set; } = [];
+    public List<UserClaim> Claims { get; set; } = [];
+
     public bool HasProfilePicture { get; set; }
 }

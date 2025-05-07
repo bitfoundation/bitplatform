@@ -14,6 +14,12 @@ public class AppClaimTypes
     public const string PRIVILEGED_SESSION = "p-s";
 
     /// <summary>
+    /// <inheritdoc cref="AuthPolicies.PRIVILEGED_ACCESS"/>
+    /// Maximum privileged sessions for the user.
+    /// </summary>
+    public const string MAX_PRIVILEGED_SESSIONS = "mx-p-s";
+
+    /// <summary>
     /// <inheritdoc cref="AuthPolicies.ELEVATED_ACCESS"/>
     /// </summary>
     public const string ELEVATED_SESSION = "e-s";
