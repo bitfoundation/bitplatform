@@ -130,7 +130,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
         if (Toggle && DefaultToggleKey.HasValue() && option.Key == DefaultToggleKey)
         {
-            _ = SetIsToggled(item);
+            _ = SetToggled(item);
         }
 
         StateHasChanged();
@@ -205,7 +205,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             var item = _items.FirstOrDefault(i => GetItemKey(i) == DefaultToggleKey);
             if (item is not null)
             {
-                await SetIsToggled(item);
+                await SetToggled(item);
             }
         }
 
@@ -261,7 +261,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             }
         }
 
-        await SetIsToggled(item);
+        await SetToggled(item);
     }
 
     private string? GetItemClass(TItem item)
@@ -397,7 +397,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return GetIconName(item);
     }
 
-    private async Task SetIsToggled(TItem item)
+    private async Task SetToggled(TItem item)
     {
         if (Toggle is false) return;
         if (_items is null) return;
