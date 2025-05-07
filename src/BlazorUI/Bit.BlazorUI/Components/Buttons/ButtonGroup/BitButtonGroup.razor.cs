@@ -429,7 +429,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     private bool GetIsToggled(TItem item)
     {
-        return item == _toggleItem;
+        return _toggleItem == item;
     }
 
     private void SetIsToggled(TItem item, bool value)
