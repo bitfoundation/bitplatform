@@ -2,7 +2,7 @@
 using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 
-namespace Boilerplate.Client.Core.Components.Pages.Authorized.Security;
+namespace Boilerplate.Client.Core.Components.Pages.Authorized.Management;
 
 public partial class RolesPage
 {
@@ -13,12 +13,13 @@ public partial class RolesPage
     private string? loadingRoleKey;
     private BitNavItem? selectedRole;
     private int? maxPrivilegedSessions;
+    private string? notificationMessage;
     private List<BitNavItem> allRoles = [];
     private List<BitNavItem> allUsers = [];
     private List<UserDto> selectedRoleUsers = [];
     private List<BitNavItem> allPermissions = [];
-    private List<string?> selectedRolePermissions = [];
     private CancellationTokenSource? loadRoleDataCts;
+    private List<string?> selectedRolePermissions = [];
 
 
     [AutoInject] IRoleController roleController = default!;
@@ -98,9 +99,10 @@ public partial class RolesPage
             selectedRole = item;
             loadingRoleKey = item.Key;
             editRoleName = selectedRole.Text;
+            var id = Guid.Parse(item.Key!);
 
-            await Task.WhenAll(LoadRoleUsers((RoleDto)item.Data!, loadRoleDataCts.Token),
-                               LoadRoleClaims(Guid.Parse(item.Key!), loadRoleDataCts.Token));
+            await Task.WhenAll(LoadRoleUsers(id, loadRoleDataCts.Token),
+                               LoadRoleClaims(id, loadRoleDataCts.Token));
         }
         finally
         {
@@ -111,9 +113,9 @@ public partial class RolesPage
         }
     }
 
-    private async Task LoadRoleUsers(RoleDto roleDto, CancellationToken cancellationToken)
+    private async Task LoadRoleUsers(Guid roleId, CancellationToken cancellationToken)
     {
-        selectedRoleUsers = await roleController.GetUsers(roleDto, cancellationToken);
+        selectedRoleUsers = [.. (await roleController.GetUsers(roleId, cancellationToken))];
     }
 
     private async Task LoadRoleClaims(Guid roleId, CancellationToken cancellationToken)
@@ -151,7 +153,16 @@ public partial class RolesPage
 
     private async Task SaveMaxPrivilegedSessions()
     {
+        if (maxPrivilegedSessions.HasValue is false) return;
 
+        await roleController.SaveMaxPrivilegedSessions(maxPrivilegedSessions.Value, CurrentCancellationToken);
+    }
+
+    private async Task SendNotification()
+    {
+        if (selectedRole is null) return;
+
+        await roleController.SendNotification(new() { RoleId = Guid.Parse(selectedRole.Key!), Message = notificationMessage }, CurrentCancellationToken);
     }
 }
 

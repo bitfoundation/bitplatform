@@ -7,27 +7,35 @@
 /// </summary>
 public class AppPermissions
 {
+    public class System
+    {
+        /// <summary>
+        /// <inheritdoc cref="SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE" />
+        /// </summary>
+        public const string ManageLogs = "0";
+
+        /// <summary>
+        /// Manage background jobs using hangfire's dashboard.
+        /// </summary>
+        public const string ManageJobs = "1";
+    }
+
     public class Management
     {
         /// <summary>
         /// Change AI Chatbot's system prompt.
         /// </summary>
-        public const string ManageAI = "0";
+        public const string ManageAiPrompt = "2";
 
         /// <summary>
-        /// Add/Modify/Delete users and roles.
+        /// Manage Roles.
         /// </summary>
-        public const string ManageIdentity = "1";
+        public const string ManageRoles = "3";
 
         /// <summary>
-        /// <inheritdoc cref="SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE" />
+        /// Manage Users.
         /// </summary>
-        public const string ViewLogs = "2";
-
-        /// <summary>
-        /// Manage background jobs using hangfire's dashboard.
-        /// </summary>
-        public const string ManageJobs = "3";
+        public const string ManageUsers = "4";
     }
 
     public class AdminPanel
@@ -36,11 +44,11 @@ public class AppPermissions
         /// View the admin panel's dashboard.
         /// </summary>
         [Display(Name = nameof(AppStrings.PhoneNumber))]
-        public const string Dashboard = "4";
+        public const string Dashboard = "5";
         /// <summary>
         /// Add/Modify/Delete products and categories.
         /// </summary>
-        public const string ManageProductCatalog = "5";
+        public const string ManageProductCatalog = "6";
     }
 
     public class Todo
@@ -48,21 +56,9 @@ public class AppPermissions
         /// <summary>
         /// Add/Modify/Delete todo items in /todo page.
         /// </summary>
-        public const string ManageTodo = "6";
+        public const string ManageTodo = "7";
     }
 
-    public class Security
-    {
-        /// <summary>
-        /// Manage Roles.
-        /// </summary>
-        public const string ManageRoles = "7";
-
-        /// <summary>
-        /// Manage Users.
-        /// </summary>
-        public const string ManageUsers = "8";
-    }
 
     public static (string Key, string Value, Type Group)[] GetAll() => GetSuperAdminPermissions();
 

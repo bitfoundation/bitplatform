@@ -1,16 +1,17 @@
 @attribute [Route(Urls.RolesPage)]
 @attribute [Route("{culture?}" + Urls.RolesPage)]
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
-@attribute [Authorize(Policy = AppPermissions.Security.ManageRoles)]
+@attribute [Authorize(Policy = AppPermissions.Management.ManageRoles)]
 @inherits AppPageBase
 
-<AppPageData Title="@Localizer[nameof(AppStrings.Roles)]"
+<AppPageData Title="@Localizer[nameof(AppStrings.UserGroups)]"
              PageTitle="@Localizer[nameof(AppStrings.RolesPageTitle)]" />
 
 <section>
     <BitStack>
         <BitStack Horizontal FitHeight>
             <BitTextField @bind-Value="newRoleName"
+                          Style="width:15rem"
                           Immediate DebounceTime="300"
                           Placeholder="@Localizer[nameof(AppStrings.NewRoleName)]" />
             <BitButton AutoLoading
@@ -52,15 +53,29 @@
             <BitCard Style="min-width:30rem" FullSize>
                 <BitPivot>
                     <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Info)]">
-                        <BitStack Horizontal VerticalAlign="BitAlignment.End">
-                            <BitTextField @bind-Value="editRoleName"
-                                          Immediate DebounceTime="300"
-                                          Label="@Localizer[nameof(AppStrings.RoleName)]" />
+                        <BitStack>
+                            <BitStack Horizontal VerticalAlign="BitAlignment.End">
+                                <BitTextField @bind-Value="editRoleName"
+                                              Immediate DebounceTime="300"
+                                              Label="@Localizer[nameof(AppStrings.RoleName)]"
+                                              IsEnabled="string.IsNullOrWhiteSpace(editRoleName) is false" />
+                                <BitButton AutoLoading
+                                           IconName="@BitIconName.Edit"
+                                           OnClick="WrapHandled(EditRole)"
+                                           IsEnabled="string.IsNullOrWhiteSpace(editRoleName) is false">
+                                    @Localizer[nameof(AppStrings.EditRole)]
+                                </BitButton>
+                            </BitStack>
+                            <BitSeparator />
+                            <BitTextField @bind-Value="@notificationMessage"
+                                          Multiline Rows="3"
+                                          Style="width:100%"
+                                          Label="@Localizer[nameof(AppStrings.RoleNotificationLabel)]"
+                                          IsEnabled="string.IsNullOrWhiteSpace(editRoleName) is false" />
                             <BitButton AutoLoading
-                                       IconName="@BitIconName.Edit"
-                                       OnClick="WrapHandled(EditRole)"
+                                       OnClick="WrapHandled(SendNotification)"
                                        IsEnabled="string.IsNullOrWhiteSpace(editRoleName) is false">
-                                @Localizer[nameof(AppStrings.EditRole)]
+                                @Localizer[nameof(AppStrings.SendRoleNotification)]
                             </BitButton>
                         </BitStack>
                     </BitPivotItem>
@@ -107,8 +122,9 @@
                     </BitPivotItem>
                     <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.PrivilegedSessions)]">
                         <BitStack Horizontal VerticalAlign="BitAlignment.End">
-                            <BitNumberField IsEnabled="selectedRole is not null"
-                                            Label="@Localizer[nameof(AppStrings.MaxPrevilegedSessions)]" @bind-Value="maxPrivilegedSessions" />
+                            <BitNumberField @bind-Value="maxPrivilegedSessions"
+                                            IsEnabled="selectedRole is not null"
+                                            Label="@Localizer[nameof(AppStrings.MaxPrevilegedSessions)]" />
                             <BitButton IsEnabled="selectedRole is not null"
                                        OnClick="WrapHandled(SaveMaxPrivilegedSessions)">
                                 @Localizer[nameof(AppStrings.Save)]

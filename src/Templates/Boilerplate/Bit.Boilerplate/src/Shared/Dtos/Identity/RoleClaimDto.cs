@@ -3,7 +3,7 @@
 [DtoResourceType(typeof(AppStrings))]
 public partial class RoleClaimDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     public Guid RoleId { get; set; }
 

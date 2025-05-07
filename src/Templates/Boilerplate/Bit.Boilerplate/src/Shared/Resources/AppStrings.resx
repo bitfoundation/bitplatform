@@ -1295,29 +1295,29 @@
     <data name="PleaseWait" xml:space="preserve">
     <value>Please wait</value>
   </data>
-    <data name="Security" xml:space="preserve">
-    <value>Security</value>
+    <data name="Management" xml:space="preserve">
+    <value>Management</value>
   </data>
-    <data name="Roles" xml:space="preserve">
-    <value>Roles</value>
+    <data name="UserGroups" xml:space="preserve">
+    <value>User groups</value>
   </data>
     <data name="RolesPageTitle" xml:space="preserve">
-    <value>Manage roles</value>
+    <value>Manage user groups</value>
   </data>
     <data name="NoRoleMessage" xml:space="preserve">
-    <value>No role defined</value>
+    <value>No user groups</value>
   </data>
     <data name="AddRole" xml:space="preserve">
-    <value>Add role</value>
+    <value>Add user group</value>
   </data>
     <data name="EditRole" xml:space="preserve">
-    <value>Edit role</value>
+    <value>Edit user group</value>
   </data>
     <data name="NewRoleName" xml:space="preserve">
-    <value>New role's name</value>
+    <value>New user group's name</value>
   </data>
     <data name="Permissions" xml:space="preserve">
-    <value>Permissions</value>
+    <value>Featuers</value>
   </data>
     <data name="Users" xml:space="preserve">
     <value>Users</value>
@@ -1332,6 +1332,12 @@
     <value>Info</value>
   </data>
     <data name="RoleName" xml:space="preserve">
-    <value>Role name</value>
+    <value>User group name</value>
+  </data>
+    <data name="RoleNotificationLabel" xml:space="preserve">
+    <value>Notification message</value>
+  </data>
+    <data name="SendRoleNotification" xml:space="preserve">
+    <value>Send notification</value>
   </data>
 </root>

@@ -1,56 +1,41 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Server.Api.Models.Identity;
-using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
-using Ganss.Xss;
-using Humanizer;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
 [ApiController, Route("api/[controller]/[action]")]
+[Authorize(Policy = AppPermissions.Management.ManageRoles)]
 public partial class RoleController : AppControllerBase, IRoleController
 {
-    [AutoInject] private UserManager<User> userManager = default!;
-    [AutoInject] private HtmlSanitizer htmlSanitizer = default!;
-
-
-    [HttpGet]
-    public async Task<List<RoleDto>> GetAllRoles(CancellationToken cancellationToken)
+    [HttpGet, EnableQuery]
+    public async Task<IQueryable<RoleDto>> GetAllRoles(CancellationToken cancellationToken)
     {
-        return await DbContext.Roles.Where(r => r.Name != AppBuiltInRoles.BasicUser && r.Name != AppBuiltInRoles.SuperAdmin).Project().ToListAsync(cancellationToken);
+        return DbContext.Roles.Where(r => r.Name != AppBuiltInRoles.BasicUser && r.Name != AppBuiltInRoles.SuperAdmin).Project();
     }
 
-    [HttpGet]
-    public async Task<List<UserDto>> GetAllUsers(CancellationToken cancellationToken)
+    [HttpGet, EnableQuery]
+    public async Task<IQueryable<UserDto>> GetAllUsers(CancellationToken cancellationToken)
     {
-        return await DbContext.Users.Project().ToListAsync(cancellationToken);
+        return DbContext.Users.Project();
     }
 
-    [HttpGet]
-    public async Task<List<RoleClaimDto>> GetClaims(Guid roleId, CancellationToken cancellationToken)
+    [HttpGet, EnableQuery]
+    public async Task<IQueryable<UserDto>> GetUsers(Guid roleId, CancellationToken cancellationToken)
     {
-        return await DbContext.RoleClaims.Project().Where(rc => rc.RoleId == roleId).ToListAsync(cancellationToken);
+        return DbContext.Users.Where(u => u.Roles.Any(r => r.RoleId == roleId)).Project();
     }
 
-    [HttpGet]
-    public async Task<List<UserDto>> GetUsers(RoleDto roleDto, CancellationToken cancellationToken)
+    [HttpGet, EnableQuery]
+    public async Task<IQueryable<RoleClaimDto>> GetClaims(Guid roleId, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(roleDto.Name))
-            throw new BadRequestException();
-
-        var userId = User.GetUserId();
-        HttpContext.RequestAborted = cancellationToken;
-        var users = await userManager.GetUsersInRoleAsync(roleDto.Name);
-
-        return [.. users.Select(u => u.Map())];
+        return DbContext.RoleClaims.Where(rc => rc.RoleId == roleId).Project();
     }
 
     [HttpPost]
+    [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task<RoleDto> Create(RoleDto roleDto, CancellationToken cancellationToken)
     {
-        roleDto.Name = htmlSanitizer.Sanitize(roleDto.Name ?? string.Empty);
-
         var entityToAdd = roleDto.Map();
 
         await DbContext.Roles.AddAsync(entityToAdd, cancellationToken);
@@ -61,10 +46,9 @@ public partial class RoleController : AppControllerBase, IRoleController
     }
 
     [HttpPost]
+    [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task<RoleDto> Update(RoleDto roleDto, CancellationToken cancellationToken)
     {
-        roleDto.Name = htmlSanitizer.Sanitize(roleDto.Name ?? string.Empty);
-
         var entityToUpdate = await DbContext.Roles.FindAsync([roleDto.Id], cancellationToken)
             ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
 
@@ -76,8 +60,16 @@ public partial class RoleController : AppControllerBase, IRoleController
     }
 
     [HttpPost]
-    public async Task SaveMaxPrivilegedSessions(CancellationToken cancellationToken)
+    [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
+    public async Task SaveMaxPrivilegedSessions(int value, CancellationToken cancellationToken)
     {
+        await Task.Delay(1000);
+    }
 
+    [HttpPost]
+    [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
+    public async Task SendNotification(RoleNotificationDto dto, CancellationToken cancellationToken)
+    {
+        await Task.Delay(1000);
     }
 }

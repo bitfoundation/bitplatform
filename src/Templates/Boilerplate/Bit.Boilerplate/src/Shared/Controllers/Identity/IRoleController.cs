@@ -7,16 +7,16 @@ namespace Boilerplate.Shared.Controllers.Identity;
 public interface IRoleController : IAppController
 {
     [HttpGet]
-    Task<List<RoleDto>> GetAllRoles(CancellationToken cancellationToken);
+    Task<List<RoleDto>> GetAllRoles(CancellationToken cancellationToken) => default!;
 
     [HttpGet]
-    Task<List<UserDto>> GetAllUsers(CancellationToken cancellationToken);
+    Task<List<UserDto>> GetAllUsers(CancellationToken cancellationToken) => default!;
 
     [HttpGet]
-    Task<List<RoleClaimDto>> GetClaims(Guid roleId, CancellationToken cancellationToken);
+    Task<List<UserDto>> GetUsers(Guid roleId, CancellationToken cancellationToken) => default!;
 
     [HttpGet]
-    Task<List<UserDto>> GetUsers(RoleDto roleDto, CancellationToken cancellationToken);
+    Task<List<RoleClaimDto>> GetClaims(Guid roleId, CancellationToken cancellationToken) => default!;
 
     [HttpPost]
     Task<RoleDto> Create(RoleDto roleDto, CancellationToken cancellationToken);
@@ -25,5 +25,8 @@ public interface IRoleController : IAppController
     Task<RoleDto> Update(RoleDto roleDto, CancellationToken cancellationToken);
 
     [HttpPost]
-    Task SaveMaxPrivilegedSessions(CancellationToken cancellationToken);
+    Task SaveMaxPrivilegedSessions(int value, CancellationToken cancellationToken);
+
+    [HttpPost]
+    Task SendNotification(RoleNotificationDto dto, CancellationToken cancellationToken);
 }

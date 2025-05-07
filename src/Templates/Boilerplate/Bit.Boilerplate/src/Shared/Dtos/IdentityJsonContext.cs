@@ -26,6 +26,7 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(TwoFactorAuthRequestDto))]
 [JsonSerializable(typeof(TwoFactorAuthResponseDto))]
 [JsonSerializable(typeof(List<UserSessionDto>))]
+[JsonSerializable(typeof(RoleDto))]
 [JsonSerializable(typeof(List<RoleDto>))]
 [JsonSerializable(typeof(List<UserDto>))]
 [JsonSerializable(typeof(List<RoleClaimDto>))]

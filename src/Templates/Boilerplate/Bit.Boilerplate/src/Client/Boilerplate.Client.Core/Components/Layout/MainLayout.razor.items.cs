@@ -108,23 +108,23 @@ public partial class MainLayout
 
         if (user?.IsAuthenticated() is true)
         {
-            if ((await authorizationService.AuthorizeAsync(user, AppPermissions.Security.ManageRoles)).Succeeded ||
-                (await authorizationService.AuthorizeAsync(user, AppPermissions.Security.ManageUsers)).Succeeded)
+            if ((await authorizationService.AuthorizeAsync(user, AppPermissions.Management.ManageRoles)).Succeeded ||
+                (await authorizationService.AuthorizeAsync(user, AppPermissions.Management.ManageUsers)).Succeeded)
             {
                 BitNavItem securityItem = new()
                 {
-                    Text = localizer[nameof(AppStrings.Security)],
+                    Text = localizer[nameof(AppStrings.Management)],
                     IconName = BitIconName.SettingsSecure,
                     ChildItems = []
                 };
 
                 navPanelItems.Add(securityItem);
 
-                if ((await authorizationService.AuthorizeAsync(user, AppPermissions.Security.ManageRoles)).Succeeded)
+                if ((await authorizationService.AuthorizeAsync(user, AppPermissions.Management.ManageRoles)).Succeeded)
                 {
                     securityItem.ChildItems.Add(new()
                     {
-                        Text = localizer[nameof(AppStrings.Roles)],
+                        Text = localizer[nameof(AppStrings.UserGroups)],
                         IconName = BitIconName.SecurityGroup,
                         Url = Urls.RolesPage,
                     });
