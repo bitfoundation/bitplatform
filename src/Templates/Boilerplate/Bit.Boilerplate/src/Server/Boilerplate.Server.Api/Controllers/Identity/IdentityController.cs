@@ -212,7 +212,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             Address = $"{Request.Headers["cf-ipcountry"]}, {Request.Headers["cf-ipcity"]}"
         };
 
-        userSession.Privileged = await IsUserSessionPrivileged(userSession, cancellationToken);
+        await UpdateUserSessionPrivilegeStatus(userSession, cancellationToken);
 
         return userSession;
     }
@@ -220,7 +220,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     /// <summary>
     /// <inheritdoc cref="AuthPolicies.PRIVILEGED_ACCESS"/>
     /// </summary>
-    private async Task<bool> IsUserSessionPrivileged(UserSession userSession, CancellationToken cancellationToken)
+    private async Task UpdateUserSessionPrivilegeStatus(UserSession userSession, CancellationToken cancellationToken)
     {
         var userId = userSession.UserId;
 
@@ -234,7 +234,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, isPrivileged ? "true" : "false"));
         userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.MAX_PRIVILEGED_SESSIONS, maxPrivilegedSessionsCount.ToString(CultureInfo.InvariantCulture)));
 
-        return isPrivileged;
+        userSession.Privileged = isPrivileged;
     }
 
     [HttpPost]
@@ -283,7 +283,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
             userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_ID, currentSessionId.ToString()));
 
-            userSession.Privileged = await IsUserSessionPrivileged(userSession, cancellationToken);
+            await UpdateUserSessionPrivilegeStatus(userSession, cancellationToken);
 
             var newPrincipal = await signInManager.CreateUserPrincipalAsync(user!);
 
