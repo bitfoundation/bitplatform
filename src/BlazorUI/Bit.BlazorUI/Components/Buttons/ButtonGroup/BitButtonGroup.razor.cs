@@ -273,7 +273,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             classes.Add("bit-btg-rvi");
         }
 
-        if (GetIsToggled(item))
+        if (IsToggled(item))
         {
             classes.Add("bit-btg-chk");
 
@@ -312,7 +312,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             styles.Add(Styles.Button!.Trim(';'));
         }
 
-        if (GetIsToggled(item) && (Styles?.ToggledButton.HasValue() ?? false))
+        if (IsToggled(item) && (Styles?.ToggledButton.HasValue() ?? false))
         {
             styles.Add(Styles.ToggledButton!);
         }
@@ -326,7 +326,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
         if (Toggle)
         {
-            if (GetIsToggled(item))
+            if (IsToggled(item))
             {
                 var onText = GetOnText(item);
                 if (onText.HasValue())
@@ -351,7 +351,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     {
         if (Toggle)
         {
-            if (GetIsToggled(item))
+            if (IsToggled(item))
             {
                 var onTitle = GetOnTitle(item);
                 if (onTitle.HasValue())
@@ -376,7 +376,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     {
         if (Toggle)
         {
-            if (GetIsToggled(item))
+            if (IsToggled(item))
             {
                 var onIconName = GetOnIconName(item);
                 if (onIconName.HasValue())
@@ -403,7 +403,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         if (_items is null) return;
 
         string? toggleKey = null;
-        var toggleItem = _items.FirstOrDefault(i => GetIsToggled(i));
+        var toggleItem = _items.FirstOrDefault(i => IsToggled(i));
 
         if (toggleItem != item)
         {
@@ -427,7 +427,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         await OnToggleChange.InvokeAsync(item);
     }
 
-    private bool GetIsToggled(TItem item)
+    private bool IsToggled(TItem item)
     {
         return _toggleItem == item;
     }
