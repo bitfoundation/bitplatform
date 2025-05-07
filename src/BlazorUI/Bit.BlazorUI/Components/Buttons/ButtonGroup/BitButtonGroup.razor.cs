@@ -7,6 +7,7 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : class
 {
+    private TItem? _toggleItem;
     private List<TItem> _items = [];
     private IEnumerable<TItem> _oldItems = default!;
 
@@ -73,7 +74,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// <summary>
     /// The callback that called when toggled item change.
     /// </summary>
-    [Parameter] public EventCallback<TItem> OnToggleChanged { get; set; }
+    [Parameter] public EventCallback<TItem> OnToggleChange { get; set; }
 
     /// <summary>
     /// Alias of ChildContent.
@@ -119,12 +120,17 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     {
         if (option.Key.HasNoValue())
         {
-            option.Key = (_items.Count - 1).ToString();
+            option.Key = _items.Count.ToString();
         }
 
         var item = (option as TItem)!;
 
         _items.Add(item);
+
+        if (Toggle && DefaultToggleKey.HasValue() && option.Key == DefaultToggleKey)
+        {
+            _ = SetIsToggled(item);
+        }
 
         StateHasChanged();
     }
@@ -400,8 +406,13 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
         if (toggleItem != item)
         {
+            _toggleItem = item;
             SetIsToggled(item, true);
             toggleKey = GetItemKey(item);
+        }
+        else
+        {
+            _toggleItem = null;
         }
 
         if (toggleItem is not null)
@@ -412,29 +423,12 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         if (ToggleKeyHasBeenSet && ToggleKeyChanged.HasDelegate is false) return;
 
         await AssignToggleKey(toggleKey);
-        await OnToggleChanged.InvokeAsync(toggleItem);
+        await OnToggleChange.InvokeAsync(item);
     }
 
     private bool GetIsToggled(TItem item)
     {
-        if (item is BitButtonGroupItem buttonGroupItem)
-        {
-            return buttonGroupItem.IsToggled;
-        }
-
-        if (item is BitButtonGroupOption buttonGroupOption)
-        {
-            return buttonGroupOption.IsToggled;
-        }
-
-        if (NameSelectors is null) return true;
-
-        if (NameSelectors.IsToggled.Selector is not null)
-        {
-            return NameSelectors.IsToggled.Selector!(item);
-        }
-
-        return item.GetValueFromProperty(NameSelectors.IsToggled.Name, true);
+        return item == _toggleItem;
     }
 
     private void SetIsToggled(TItem item, bool value)

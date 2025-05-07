@@ -83,7 +83,7 @@ public partial class BitButtonGroupDemo
         },
         new()
         {
-            Name = "OnToggleChanged",
+            Name = "OnToggleChange",
             Type = "EventCallback<TItem>",
             Description = "The callback that called when toggled item change."
         },
