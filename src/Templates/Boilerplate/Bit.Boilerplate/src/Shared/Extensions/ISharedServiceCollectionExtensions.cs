@@ -63,8 +63,8 @@ public static partial class ISharedServiceCollectionExtensions
         services.AddAuthorizationCore(options =>
         {
             options.AddPolicy(AuthPolicies.TFA_ENABLED, x => x.RequireClaim("amr", "mfa"));
-            options.AddPolicy(AuthPolicies.PRIVILEGED_ACCESS, x => x.RequireClaim(AppClaimTypes.PRIVILEGED_SESSION, ""));
-            options.AddPolicy(AuthPolicies.ELEVATED_ACCESS, x => x.RequireClaim(AppClaimTypes.ELEVATED_SESSION, ""));
+            options.AddPolicy(AuthPolicies.PRIVILEGED_ACCESS, x => x.RequireClaim(AppClaimTypes.PRIVILEGED_SESSION, "true"));
+            options.AddPolicy(AuthPolicies.ELEVATED_ACCESS, x => x.RequireClaim(AppClaimTypes.ELEVATED_SESSION, "true"));
 
             foreach (var per in AppPermissions.GetAll())
                 options.AddPolicy(per.value, x => x.RequireClaim(AppClaimTypes.PERMISSIONS, per.value));

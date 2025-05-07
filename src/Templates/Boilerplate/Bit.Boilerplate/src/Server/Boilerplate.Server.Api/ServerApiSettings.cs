@@ -178,7 +178,7 @@ public partial class AppIdentityOptions : IdentityOptions
     /// <summary>
     /// <inheritdoc cref="AuthPolicies.PRIVILEGED_ACCESS"/>
     /// </summary>
-    public int MaxConcurrentPrivilegedSessions { get; set; }
+    public int MaxPrivilegedSessionsCount { get; set; }
 }
 
 //#if (signalR == true || database == "PostgreSQL")

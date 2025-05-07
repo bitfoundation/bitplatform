@@ -1,4 +1,4 @@
-using Boilerplate.Shared.Dtos.Identity;
+﻿using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings;
@@ -8,6 +8,8 @@ public partial class SessionsSection
     private bool isLoading;
     private Guid? currentSessionId;
     private UserSessionDto? currentSession;
+    private int currentPrivilegedCount;
+    private int maxPrivilegedSessionsCount;
     private List<Guid> revokingSessionIds = [];
     private UserSessionDto[] otherSessions = [];
 
@@ -31,11 +33,15 @@ public partial class SessionsSection
 
         try
         {
-            currentSessionId = (await AuthenticationStateTask).User.GetSessionId();
+            var user = (await AuthenticationStateTask).User;
+            currentSessionId = user.GetSessionId();
 
             var userSessions = await userController.GetUserSessions(CurrentCancellationToken);
             otherSessions = userSessions.Where(s => s.Id != currentSessionId).ToArray();
             currentSession = userSessions.Single(s => s.Id == currentSessionId);
+
+            maxPrivilegedSessionsCount = int.Parse(user.FindFirst(AppClaimTypes.MAX_PRIVILEGED_SESSIONS)!.Value!);
+            currentPrivilegedCount = userSessions.Count(us => us.Privileged);
         }
         catch (KnownException e)
         {

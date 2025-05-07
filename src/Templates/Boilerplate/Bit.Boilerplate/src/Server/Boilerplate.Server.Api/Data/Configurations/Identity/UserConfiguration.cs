@@ -7,6 +7,14 @@ public partial class UserConfiguration : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {
+        builder.HasMany(user => user.Roles)
+            .WithOne(ur => ur.User)
+            .HasForeignKey(ur => ur.UserId);
+
+        builder.HasMany(user => user.Claims)
+            .WithOne(ur => ur.User)
+            .HasForeignKey(ur => ur.UserId);
+
         const string userName = "test";
         const string email = "test@bitplatform.dev";
 

@@ -22,6 +22,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [AutoInject] private UserManager<User> userManager = default!;
     [AutoInject] private SignInManager<User> signInManager = default!;
     [AutoInject] private ILogger<IdentityController> logger = default!;
+    [AutoInject] private UserClaimsService userClaimsService = default!;
     [AutoInject] private IUserConfirmation<User> userConfirmation = default!;
     [AutoInject] private IUserPhoneNumberStore<User> userPhoneNumberStore = default!;
     [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
@@ -117,14 +118,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (user.TwoFactorEnabled)
         {
             // This applies only to the current short-lived access token. You can remove this line entirely.
-            userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.ELEVATED_SESSION, ""));
+            userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.ELEVATED_SESSION, "true"));
         }
 
         userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_ID, userSession.Id.ToString()));
-        if (userSession.Privileged)
-        {
-            userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, ""));
-        }
 
         bool isOtpSignIn = string.IsNullOrEmpty(request.Otp) is false;
 
@@ -225,14 +222,19 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     /// </summary>
     private async Task<bool> IsUserSessionPrivileged(UserSession userSession, CancellationToken cancellationToken)
     {
-        if (userSession.UserId == Guid.Parse("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"))
-            return true; // Unlimited privileged sessions for this user: Customize policies based on user roles, subscriptions, and other criteria.
+        var userId = userSession.UserId;
 
-        var maxConcurrentPrivilegedSessions = AppSettings.Identity.MaxConcurrentPrivilegedSessions;
+        var maxPrivilegedSessionsCount = (await userClaimsService.GetUserClaimValue<int?>(userSession.UserId, AppClaimTypes.MAX_PRIVILEGED_SESSIONS, cancellationToken))
+            ?? AppSettings.Identity.MaxPrivilegedSessionsCount;
 
-        return maxConcurrentPrivilegedSessions == -1 || // -1 means no limit
+        var isPrivileged = maxPrivilegedSessionsCount == -1 || // -1 means no limit
             userSession.Privileged is true || // Once session gets privileged, it stays privileged until gets deleted.
-            await DbContext.UserSessions.CountAsync(us => us.UserId == userSession.UserId && us.Privileged == true, cancellationToken) < maxConcurrentPrivilegedSessions;
+            await DbContext.UserSessions.CountAsync(us => us.UserId == userSession.UserId && us.Privileged == true, cancellationToken) < maxPrivilegedSessionsCount;
+
+        userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, isPrivileged ? "true" : "false"));
+        userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.MAX_PRIVILEGED_SESSIONS, maxPrivilegedSessionsCount.ToString(CultureInfo.InvariantCulture)));
+
+        return isPrivileged;
     }
 
     [HttpPost]
@@ -269,7 +271,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 {
                     user.ElevatedAccessTokenRequestedOn = null; // invalidates token
                     await ((IUserLockoutStore<User>)userStore).ResetAccessFailedCountAsync(user, cancellationToken);
-                    userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.ELEVATED_SESSION, ""));
+                    userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.ELEVATED_SESSION, "true"));
                 }
             }
 
@@ -282,10 +284,6 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_ID, currentSessionId.ToString()));
 
             userSession.Privileged = await IsUserSessionPrivileged(userSession, cancellationToken);
-            if (userSession.Privileged)
-            {
-                userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, ""));
-            }
 
             var newPrincipal = await signInManager.CreateUserPrincipalAsync(user!);
 
