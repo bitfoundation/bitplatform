@@ -49,9 +49,22 @@ public class AppPermissions
         public const string ManageTodo = "6";
     }
 
-    public static (string permissionKey, string value, Type group)[] GetAll() => GetSuperAdminPermissions();
+    public class Security
+    {
+        /// <summary>
+        /// Manage Roles.
+        /// </summary>
+        public const string ManageRoles = "7";
 
-    public static (string permissionKey, string value, Type group)[] GetSuperAdminPermissions()
+        /// <summary>
+        /// Manage Users.
+        /// </summary>
+        public const string ManageUsers = "8";
+    }
+
+    public static (string Key, string Value, Type Group)[] GetAll() => GetSuperAdminPermissions();
+
+    public static (string Key, string Value, Type Group)[] GetSuperAdminPermissions()
     {
         return [.. typeof(AppPermissions)
             .GetNestedTypes()
@@ -59,9 +72,9 @@ public class AppPermissions
             .Select(t => (t.Name, t.GetRawConstantValue()!.ToString()!, t.DeclaringType!))];
     }
 
-    public static (string permissionKey, string value, Type group)[] GetBasicUserPermissions()
+    public static (string Key, string Value, Type Group)[] GetBasicUserPermissions()
     {
         return [.. GetSuperAdminPermissions()
-            .Where(p => p.group != typeof(Management))];
+            .Where(p => p.Group != typeof(Management))];
     }
 }

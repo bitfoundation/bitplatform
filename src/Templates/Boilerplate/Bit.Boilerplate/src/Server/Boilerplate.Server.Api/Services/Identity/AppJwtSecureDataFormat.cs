@@ -32,13 +32,17 @@ public partial class AppJwtSecureDataFormat(ServerApiSettings appSettings, Token
             if (principal.IsInRole(AppBuiltInRoles.SuperAdmin))
             {
                 foreach (var per in AppPermissions.GetSuperAdminPermissions())
-                    identity.AddClaim(new Claim(AppClaimTypes.PERMISSIONS, per.value));
+                {
+                    identity.AddClaim(new Claim(AppClaimTypes.PERMISSIONS, per.Value));
+                }
             }
 
             if (principal.IsInRole(AppBuiltInRoles.BasicUser))
             {
                 foreach (var per in AppPermissions.GetBasicUserPermissions())
-                    identity.AddClaim(new Claim(AppClaimTypes.PERMISSIONS, per.value));
+                {
+                    identity.AddClaim(new Claim(AppClaimTypes.PERMISSIONS, per.Value));
+                }
             }
 
             var result = new ClaimsPrincipal(identity);

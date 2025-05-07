@@ -54,8 +54,12 @@ public static partial class ISharedServiceCollectionExtensions
     public static void ConfigureAuthorizationCore(this IServiceCollection services)
     {
         StringBuilder duplicatePermissionsReportString = new();
-        foreach (var g in AppPermissions.GetAll().GroupBy(x => x.value).Where(g => g.Count() > 1))
-            duplicatePermissionsReportString.Append(string.Join(Environment.NewLine, g.Select(x => $"{x.group.Name}-{x.permissionKey}-{x.value}")));
+
+        foreach (var g in AppPermissions.GetAll().GroupBy(p => p.Value).Where(g => g.Count() > 1))
+        {
+            duplicatePermissionsReportString.Append(string.Join(Environment.NewLine, g.Select(p => $"{p.Group.Name}-{p.Key}-{p.Value}")));
+        }
+
         if (duplicatePermissionsReportString.Length > 0)
             throw new Exception($"Duplicate permission values found. Please ensure all permission values are unique{duplicatePermissionsReportString}");
 
@@ -67,7 +71,9 @@ public static partial class ISharedServiceCollectionExtensions
             options.AddPolicy(AuthPolicies.ELEVATED_ACCESS, x => x.RequireClaim(AppClaimTypes.ELEVATED_SESSION, ""));
 
             foreach (var per in AppPermissions.GetAll())
-                options.AddPolicy(per.value, x => x.RequireClaim(AppClaimTypes.PERMISSIONS, per.value));
+            {
+                options.AddPolicy(per.Value, x => x.RequireClaim(AppClaimTypes.PERMISSIONS, per.Value));
+            }
         });
     }
 }

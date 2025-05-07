@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Shared.Dtos;
@@ -26,6 +26,9 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(TwoFactorAuthRequestDto))]
 [JsonSerializable(typeof(TwoFactorAuthResponseDto))]
 [JsonSerializable(typeof(List<UserSessionDto>))]
+[JsonSerializable(typeof(List<RoleDto>))]
+[JsonSerializable(typeof(List<UserDto>))]
+[JsonSerializable(typeof(List<RoleClaimDto>))]
 public partial class IdentityJsonContext : JsonSerializerContext
 {
 }

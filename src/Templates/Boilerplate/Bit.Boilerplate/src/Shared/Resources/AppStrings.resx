@@ -1292,4 +1292,43 @@
     <data name="PleaseWait" xml:space="preserve">
     <value>Please wait</value>
   </data>
+    <data name="Security" xml:space="preserve">
+    <value>Security</value>
+  </data>
+    <data name="Roles" xml:space="preserve">
+    <value>Roles</value>
+  </data>
+    <data name="RolesPageTitle" xml:space="preserve">
+    <value>Manage roles</value>
+  </data>
+    <data name="NoRoleMessage" xml:space="preserve">
+    <value>No role defined</value>
+  </data>
+    <data name="AddRole" xml:space="preserve">
+    <value>Add role</value>
+  </data>
+    <data name="EditRole" xml:space="preserve">
+    <value>Edit role</value>
+  </data>
+    <data name="NewRoleName" xml:space="preserve">
+    <value>New role's name</value>
+  </data>
+    <data name="Permissions" xml:space="preserve">
+    <value>Permissions</value>
+  </data>
+    <data name="Users" xml:space="preserve">
+    <value>Users</value>
+  </data>
+    <data name="PrivilegedSessions" xml:space="preserve">
+    <value>Privileged sessions</value>
+  </data>
+    <data name="MaxPrevilegedSessions" xml:space="preserve">
+    <value>Max previleged sessions</value>
+  </data>
+    <data name="Info" xml:space="preserve">
+    <value>Info</value>
+  </data>
+    <data name="RoleName" xml:space="preserve">
+    <value>Role name</value>
+  </data>
 </root>

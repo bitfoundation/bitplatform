@@ -58,13 +58,13 @@ public interface IAuthTokenProvider
         if (claims.Any(c => c.Type == RoleType && c.Value == AppBuiltInRoles.SuperAdmin))
         {
             foreach (var per in AppPermissions.GetSuperAdminPermissions())
-                claims.Add(new Claim(AppClaimTypes.PERMISSIONS, per.value));
+                claims.Add(new Claim(AppClaimTypes.PERMISSIONS, per.Value));
         }
 
         if (claims.Any(c => c.Type == RoleType && c.Value == AppBuiltInRoles.BasicUser))
         {
             foreach (var per in AppPermissions.GetBasicUserPermissions())
-                claims.Add(new Claim(AppClaimTypes.PERMISSIONS, per.value));
+                claims.Add(new Claim(AppClaimTypes.PERMISSIONS, per.Value));
         }
 
         return claims;

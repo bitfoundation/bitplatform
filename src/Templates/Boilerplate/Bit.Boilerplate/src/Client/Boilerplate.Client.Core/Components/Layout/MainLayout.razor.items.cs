@@ -108,6 +108,29 @@ public partial class MainLayout
 
         if (user?.IsAuthenticated() is true)
         {
+            if ((await authorizationService.AuthorizeAsync(user, AppPermissions.Security.ManageRoles)).Succeeded ||
+                (await authorizationService.AuthorizeAsync(user, AppPermissions.Security.ManageUsers)).Succeeded)
+            {
+                BitNavItem securityItem = new()
+                {
+                    Text = localizer[nameof(AppStrings.Security)],
+                    IconName = BitIconName.SettingsSecure,
+                    ChildItems = []
+                };
+
+                navPanelItems.Add(securityItem);
+
+                if ((await authorizationService.AuthorizeAsync(user, AppPermissions.Security.ManageRoles)).Succeeded)
+                {
+                    securityItem.ChildItems.Add(new()
+                    {
+                        Text = localizer[nameof(AppStrings.Roles)],
+                        IconName = BitIconName.SecurityGroup,
+                        Url = Urls.RolesPage,
+                    });
+                }
+            }
+
             navPanelItems.Add(new()
             {
                 Text = localizer[nameof(AppStrings.Settings)],

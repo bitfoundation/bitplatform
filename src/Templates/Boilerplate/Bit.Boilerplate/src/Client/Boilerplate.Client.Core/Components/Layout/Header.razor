@@ -1,7 +1,7 @@
 @inherits AppComponentBase
 
 <header>
-    <BitStack Horizontal>
+    <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0.25rem">
         <BitButton IconOnly FixedColor
                    Class="menu-btn"
                    Size="BitSize.Large"
@@ -10,8 +10,8 @@
                    Color="BitColor.SecondaryBackground"
                    IconName="@BitIconName.CollapseMenu" />
 
-        <BitStack VerticalAlign="BitAlignment.Center" Gap="0.5rem" AutoSize>
-            <BitStack VerticalAlign="BitAlignment.Center" Gap="0.5rem" Horizontal>
+        <BitStack VerticalAlign="BitAlignment.Center" Gap="0" AutoSize>
+            <BitStack VerticalAlign="BitAlignment.Center" Gap="0.25rem" Horizontal>
                 @if (showGoBackButton)
                 {
                     <BitButton Variant="BitVariant.Text"

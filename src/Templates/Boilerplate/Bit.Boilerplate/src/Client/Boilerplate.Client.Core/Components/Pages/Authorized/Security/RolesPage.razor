@@ -1,0 +1,122 @@
+@attribute [Route(Urls.RolesPage)]
+@attribute [Route("{culture?}" + Urls.RolesPage)]
+@attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+@attribute [Authorize(Policy = AppPermissions.Security.ManageRoles)]
+@inherits AppPageBase
+
+<AppPageData Title="@Localizer[nameof(AppStrings.Roles)]"
+             PageTitle="@Localizer[nameof(AppStrings.RolesPageTitle)]" />
+
+<section>
+    <BitStack>
+        <BitStack Horizontal FitHeight>
+            <BitTextField @bind-Value="newRoleName"
+                          Immediate DebounceTime="300"
+                          Placeholder="@Localizer[nameof(AppStrings.NewRoleName)]" />
+            <BitButton AutoLoading
+                       IconName="@BitIconName.AddTo"
+                       OnClick="WrapHandled(AddRole)"
+                       IsEnabled="string.IsNullOrWhiteSpace(newRoleName) is false">
+                @Localizer[nameof(AppStrings.AddRole)]
+            </BitButton>
+        </BitStack>
+        <BitStack Horizontal>
+            <BitCard Style="min-width:15rem" FullHeight>
+                @if (isLoadingRoles)
+                {
+                    <BitRollingSquareLoading Size="BitSize.Small" />
+                }
+                else if (allRoles.Count == 0)
+                {
+                    <BitText>@Localizer[nameof(AppStrings.NoRoleMessage)]</BitText>
+                }
+                else
+                {
+                    <BitNav Items="allRoles"
+                            Mode="BitNavMode.Manual"
+                            Accent="BitColor.SecondaryBackground"
+                            OnSelectItem="WrapHandled(async (BitNavItem item) => await HandleOnSelectRole(item))">
+                        <ItemTemplate Context="item">
+                            <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+                                <BitText>@item.Text</BitText>
+                                @if (loadingRoleKey == item.Key)
+                                {
+                                    <BitSpacer />
+                                    <BitBouncingDotsLoading Size="BitSize.Small" />
+                                }
+                            </BitStack>
+                        </ItemTemplate>
+                    </BitNav>
+                }
+            </BitCard>
+            <BitCard Style="min-width:30rem" FullSize>
+                <BitPivot>
+                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Info)]">
+                        <BitStack Horizontal VerticalAlign="BitAlignment.End">
+                            <BitTextField @bind-Value="editRoleName"
+                                          Immediate DebounceTime="300"
+                                          Label="@Localizer[nameof(AppStrings.RoleName)]" />
+                            <BitButton AutoLoading
+                                       IconName="@BitIconName.Edit"
+                                       OnClick="WrapHandled(EditRole)"
+                                       IsEnabled="string.IsNullOrWhiteSpace(editRoleName) is false">
+                                @Localizer[nameof(AppStrings.EditRole)]
+                            </BitButton>
+                        </BitStack>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Permissions)]">
+                        <BitNav Items="allPermissions" Accent="BitColor.SecondaryBackground">
+                            <ItemTemplate Context="item">
+                                <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+                                    <BitText Color="@(IsPermissionAssigned(item) ? BitColor.PrimaryForeground : BitColor.TertiaryForeground)">
+                                        @item.Text
+                                    </BitText>
+                                    @if (item.ChildItems.Any() is false)
+                                    {
+                                        <BitSpacer />
+                                        <BitButton IsEnabled="selectedRole is not null"
+                                                   IconName="@(IsPermissionAssigned(item) ? BitIconName.RemoveFrom : BitIconName.AddTo)" />
+                                    }
+                                </BitStack>
+                            </ItemTemplate>
+                        </BitNav>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Users)]">
+                        @if (isLoadingUsers)
+                        {
+                            <BitRollingSquareLoading Size="BitSize.Small" />
+                        }
+                        else
+                        {
+                            <BitNav Items="allUsers">
+                                <ItemTemplate Context="item">
+                                    <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+                                        <BitText Color="@(IsPermissionAssigned(item) ? BitColor.PrimaryForeground : BitColor.TertiaryForeground)">
+                                            @item.Text
+                                        </BitText>
+                                        @if (item.ChildItems.Any() is false)
+                                        {
+                                            <BitSpacer />
+                                            <BitButton IsEnabled="selectedRole is not null"
+                                                       IconName="@(IsPermissionAssigned(item) ? BitIconName.RemoveFrom : BitIconName.AddTo)" />
+                                        }
+                                    </BitStack>
+                                </ItemTemplate>
+                            </BitNav>
+                        }
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.PrivilegedSessions)]">
+                        <BitStack Horizontal VerticalAlign="BitAlignment.End">
+                            <BitNumberField IsEnabled="selectedRole is not null"
+                                            Label="@Localizer[nameof(AppStrings.MaxPrevilegedSessions)]" @bind-Value="maxPrivilegedSessions" />
+                            <BitButton IsEnabled="selectedRole is not null"
+                                       OnClick="WrapHandled(SaveMaxPrivilegedSessions)">
+                                @Localizer[nameof(AppStrings.Save)]
+                            </BitButton>
+                        </BitStack>
+                    </BitPivotItem>
+                </BitPivot>
+            </BitCard>
+        </BitStack>
+    </BitStack>
+</section>
