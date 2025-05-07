@@ -15,7 +15,7 @@
         }
         @if (currentSession is not null)
         {
-            @if (maxPrivilegedSessionsCount != -1)
+            @if (maxPrivilegedSessionsCount != -1) // -1 means unlimited
             {
                 <BitText Typography="BitTypography.Body1">@Localizer[nameof(AppStrings.PrivilegedDeviceLimitMessage), maxPrivilegedSessionsCount, currentPrivilegedCount]</BitText>
             }
