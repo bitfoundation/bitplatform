@@ -8,5 +8,12 @@ section {
 }
 
 ::deep {
-    
+    .user-row {
+        padding: 0.25rem;
+        margin-bottom: 0.25rem;
+
+        &:hover {
+            background-color: $bit-color-background-secondary-hover;
+        }
+    }
 }

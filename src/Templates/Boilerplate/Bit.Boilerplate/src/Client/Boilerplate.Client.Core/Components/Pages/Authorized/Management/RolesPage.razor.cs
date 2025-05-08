@@ -229,6 +229,8 @@ public partial class RolesPage
         }
 
         SetClaimsToPermissionNavItems();
+
+        StateHasChanged();
     }
 
     private async Task ToggleUser(UserDto user)
@@ -245,6 +247,17 @@ public partial class RolesPage
         };
 
         await roleController.ToggleUser(dto, CurrentCancellationToken);
+
+        if (dto.IsAdd)
+        {
+            selectedRoleUsers.Add(user);
+        }
+        else
+        {
+            selectedRoleUsers.Remove(user);
+        }
+
+        StateHasChanged();
     }
 
     private async Task SaveMaxPrivilegedSessions()

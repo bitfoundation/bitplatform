@@ -127,7 +127,20 @@ public partial class RoleController : AppControllerBase, IRoleController
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task ToggleUser(ToggleRoleUserDto dto, CancellationToken cancellationToken)
     {
+        if (dto.IsAdd)
+        {
+            var entityToAdd = new UserRole { UserId = dto.UserId, RoleId = dto.RoleId };
+            await DbContext.UserRoles.AddAsync(entityToAdd, cancellationToken);
+        }
+        else
+        {
+            var entityToDelete = await DbContext.UserRoles.FirstOrDefaultAsync(ur => ur.UserId == dto.UserId && ur.RoleId == dto.RoleId, cancellationToken)
+                                    ?? throw new ResourceNotFoundException();
 
+            DbContext.Remove(entityToDelete);
+        }
+
+        await DbContext.SaveChangesAsync(cancellationToken);
     }
 
     [HttpPost]
