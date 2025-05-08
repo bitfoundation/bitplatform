@@ -25,6 +25,12 @@ public interface IRoleController : IAppController
     Task<RoleDto> Update(RoleDto roleDto, CancellationToken cancellationToken);
 
     [HttpPost]
+    Task TogglePermission(ToggleRolePermissionDto dto, CancellationToken cancellationToken);
+
+    [HttpPost]
+    Task ToggleUser(ToggleRoleUserDto dto, CancellationToken cancellationToken);
+
+    [HttpPost]
     Task SaveMaxPrivilegedSessions(int value, CancellationToken cancellationToken);
 
     [HttpPost]

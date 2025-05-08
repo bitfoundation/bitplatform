@@ -27,13 +27,13 @@
                 {
                     <BitRollingSquareLoading Size="BitSize.Small" />
                 }
-                else if (allRoles.Count == 0)
+                else if (allRoleNavItems.Count == 0)
                 {
                     <BitText>@Localizer[nameof(AppStrings.NoRoleMessage)]</BitText>
                 }
                 else
                 {
-                    <BitNav Items="allRoles"
+                    <BitNav Items="allRoleNavItems"
                             Mode="BitNavMode.Manual"
                             Accent="BitColor.SecondaryBackground"
                             OnSelectItem="WrapHandled(async (BitNavItem item) => await HandleOnSelectRole(item))">
@@ -90,6 +90,7 @@
                                     {
                                         <BitSpacer />
                                         <BitButton IsEnabled="selectedRole is not null"
+                                                   OnClick="WrapHandled(() => TogglePermission(item))"
                                                    IconName="@(IsPermissionAssigned(item) ? BitIconName.RemoveFrom : BitIconName.AddTo)" />
                                     }
                                 </BitStack>
@@ -103,21 +104,19 @@
                         }
                         else
                         {
-                            <BitNav Items="allUsers">
-                                <ItemTemplate Context="item">
+                            <BitBasicList Items="allUsers" Style="width:100%;height:100%">
+                                <RowTemplate Context="user">
                                     <BitStack Horizontal VerticalAlign="BitAlignment.Center">
-                                        <BitText Color="@(IsPermissionAssigned(item) ? BitColor.PrimaryForeground : BitColor.TertiaryForeground)">
-                                            @item.Text
+                                        <BitText Color="@(IsUserAssigned(user) ? BitColor.PrimaryForeground : BitColor.TertiaryForeground)">
+                                            @user.DisplayName
                                         </BitText>
-                                        @if (item.ChildItems.Any() is false)
-                                        {
-                                            <BitSpacer />
-                                            <BitButton IsEnabled="selectedRole is not null"
-                                                       IconName="@(IsPermissionAssigned(item) ? BitIconName.RemoveFrom : BitIconName.AddTo)" />
-                                        }
+                                        <BitSpacer />
+                                        <BitButton IsEnabled="selectedRole is not null"
+                                                   OnClick="WrapHandled(() => ToggleUser(user))"
+                                                   IconName="@(IsUserAssigned(user) ? BitIconName.RemoveFrom : BitIconName.AddTo)" />
                                     </BitStack>
-                                </ItemTemplate>
-                            </BitNav>
+                                </RowTemplate>
+                            </BitBasicList>
                         }
                     </BitPivotItem>
                     <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.PrivilegedSessions)]">

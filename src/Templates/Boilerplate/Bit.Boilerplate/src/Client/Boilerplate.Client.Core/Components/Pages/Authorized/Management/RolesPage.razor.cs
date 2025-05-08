@@ -14,10 +14,10 @@ public partial class RolesPage
     private BitNavItem? selectedRole;
     private int? maxPrivilegedSessions;
     private string? notificationMessage;
-    private List<BitNavItem> allRoles = [];
-    private List<BitNavItem> allUsers = [];
+    private List<UserDto> allUsers = [];
     private List<UserDto> selectedRoleUsers = [];
     private List<BitNavItem> allPermissions = [];
+    private List<BitNavItem> allRoleNavItems = [];
     private CancellationTokenSource? loadRoleDataCts;
     private List<string?> selectedRolePermissions = [];
 
@@ -28,7 +28,6 @@ public partial class RolesPage
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();
-
 
         allPermissions = [.. AppPermissions.GetAll().GroupBy(p => p.Group).Select(g => new BitNavItem
         {
@@ -50,7 +49,7 @@ public partial class RolesPage
         {
             isLoadingRoles = true;
 
-            allRoles = [.. (await roleController.GetAllRoles(CurrentCancellationToken)).Select(r => new BitNavItem
+            allRoleNavItems = [.. (await roleController.GetAllRoles(CurrentCancellationToken)).Select(r => new BitNavItem
             {
                 Key = r.Id.ToString(),
                 Text = r.NormalizedName ?? r.Name ?? string.Empty,
@@ -69,12 +68,7 @@ public partial class RolesPage
         {
             isLoadingUsers = true;
 
-            allUsers = [.. (await roleController.GetAllUsers(CurrentCancellationToken)).Select(u => new BitNavItem
-            {
-                Key = u.Id.ToString(),
-                Text = u.DisplayName ?? string.Empty,
-                Data = u
-            })];
+            allUsers = [.. (await roleController.GetAllUsers(CurrentCancellationToken))];
         }
         finally
         {
@@ -102,7 +96,7 @@ public partial class RolesPage
             var id = Guid.Parse(item.Key!);
 
             await Task.WhenAll(LoadRoleUsers(id, loadRoleDataCts.Token),
-                               LoadRoleClaims(id, loadRoleDataCts.Token));
+                               LoadRolePermissions(id, loadRoleDataCts.Token));
         }
         finally
         {
@@ -118,7 +112,7 @@ public partial class RolesPage
         selectedRoleUsers = [.. (await roleController.GetUsers(roleId, cancellationToken))];
     }
 
-    private async Task LoadRoleClaims(Guid roleId, CancellationToken cancellationToken)
+    private async Task LoadRolePermissions(Guid roleId, CancellationToken cancellationToken)
     {
         var claims = await roleController.GetClaims(roleId, cancellationToken);
         selectedRolePermissions = [.. claims.Select(c => c.ClaimValue)];
@@ -129,9 +123,16 @@ public partial class RolesPage
         return selectedRolePermissions.Any(p => item.Key == p);
     }
 
+    private bool IsUserAssigned(UserDto user)
+    {
+        return selectedRoleUsers.Any(u => user.Id == u.Id);
+    }
+
     private async Task AddRole()
     {
         if (string.IsNullOrWhiteSpace(newRoleName)) return;
+
+        if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
 
         await roleController.Create(new RoleDto { Name = newRoleName }, CurrentCancellationToken);
 
@@ -144,11 +145,41 @@ public partial class RolesPage
     {
         if (string.IsNullOrWhiteSpace(editRoleName) || selectedRole is null) return;
 
+        if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
+
         await roleController.Update(new RoleDto { Id = Guid.Parse(selectedRole.Key!), Name = editRoleName }, CurrentCancellationToken);
 
         editRoleName = null;
 
         await LoadAllRoles();
+    }
+
+    private async Task TogglePermission(BitNavItem item)
+    {
+        if (selectedRole is null) return;
+
+        ToggleRolePermissionDto dto = new()
+        {
+            Value = item.Key,
+            RoleId = Guid.Parse(selectedRole.Key!),
+            IsAdd = IsPermissionAssigned(item) is false
+        };
+
+        await roleController.TogglePermission(dto, CurrentCancellationToken);
+    }
+
+    private async Task ToggleUser(UserDto user)
+    {
+        if (selectedRole is null) return;
+
+        ToggleRoleUserDto dto = new()
+        {
+            UserId = user.Id,
+            RoleId = Guid.Parse(selectedRole.Key!),
+            IsAdd = IsUserAssigned(user) is false
+        };
+
+        await roleController.ToggleUser(dto, CurrentCancellationToken);
     }
 
     private async Task SaveMaxPrivilegedSessions()

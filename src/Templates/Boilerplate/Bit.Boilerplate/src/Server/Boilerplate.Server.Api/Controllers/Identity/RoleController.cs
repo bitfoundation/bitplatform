@@ -60,6 +60,18 @@ public partial class RoleController : AppControllerBase, IRoleController
     }
 
     [HttpPost]
+    public async Task TogglePermission(ToggleRolePermissionDto dto, CancellationToken cancellationToken)
+    {
+        
+    }
+
+    [HttpPost]
+    public async Task ToggleUser(ToggleRoleUserDto dto, CancellationToken cancellationToken)
+    {
+
+    }
+
+    [HttpPost]
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task SaveMaxPrivilegedSessions(int value, CancellationToken cancellationToken)
     {
