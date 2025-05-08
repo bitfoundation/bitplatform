@@ -75,7 +75,7 @@ public partial class IdentityController
                 if (result.Succeeded is false)
                     throw new BadRequestException(string.Join(", ", result.Errors.Select(e => new LocalizedString(e.Code, e.Description))));
 
-                result = await userManager.AddToRoleAsync(user, AppBuiltInRoles.BasicUser);
+                result = await userManager.AddToRoleAsync(user, AppRoles.Demo);
 
                 if (result.Succeeded is false)
                     throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());

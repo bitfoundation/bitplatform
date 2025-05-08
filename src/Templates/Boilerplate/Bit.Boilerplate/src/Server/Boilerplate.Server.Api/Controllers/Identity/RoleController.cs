@@ -11,7 +11,7 @@ public partial class RoleController : AppControllerBase, IRoleController
     [HttpGet, EnableQuery]
     public async Task<IQueryable<RoleDto>> GetAllRoles(CancellationToken cancellationToken)
     {
-        return DbContext.Roles.Where(r => r.Name != AppBuiltInRoles.BasicUser && r.Name != AppBuiltInRoles.SuperAdmin).Project();
+        return DbContext.Roles.Where(r => r.Name != AppRoles.SuperAdmin).Project();
     }
 
     [HttpGet, EnableQuery]

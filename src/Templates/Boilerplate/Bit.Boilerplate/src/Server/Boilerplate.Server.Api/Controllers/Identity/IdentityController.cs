@@ -90,7 +90,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        result = await userManager.AddToRoleAsync(userToAdd, AppBuiltInRoles.BasicUser);
+        result = await userManager.AddToRoleAsync(userToAdd, AppRoles.Demo);
 
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());

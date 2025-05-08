@@ -43,7 +43,6 @@ public class AppPermissions
         /// <summary>
         /// View the admin panel's dashboard.
         /// </summary>
-        [Display(Name = nameof(AppStrings.PhoneNumber))]
         public const string Dashboard = "5";
         /// <summary>
         /// Add/Modify/Delete products and categories.
@@ -68,11 +67,5 @@ public class AppPermissions
             .GetNestedTypes()
             .SelectMany(t => t.GetFields())
             .Select(t => (t.Name, t.GetRawConstantValue()!.ToString()!, t.DeclaringType!))];
-    }
-
-    public static (string Key, string Value, Type Group)[] GetBasicUserPermissions()
-    {
-        return [.. GetSuperAdminPermissions()
-            .Where(p => p.Group != typeof(Management))];
     }
 }
