@@ -2,7 +2,7 @@
 
 public partial class Products
 {
-    private bool _boilerplateExpanded;
+    private bool _boilerplateExpanded = true;
     private bool _butilExpanded;
     private bool _bswupExpanded;
     private bool _besqlExpanded;

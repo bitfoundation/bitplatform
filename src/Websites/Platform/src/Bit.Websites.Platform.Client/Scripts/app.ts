@@ -12,16 +12,6 @@ function goToTop() {
     window.scrollTo({ top: 0 });
 }
 
-async function jumpToDemos(e: Event) {
-    const video = document.querySelector('video');
-    if (!video) return;
-
-    video.currentTime = 107; // 01:47
-    await video.play();
-
-    (e.target as HTMLElement).style.display = 'none';
-}
-
 declare class BitTheme { static init(options: any): void; };
 
 BitTheme.init({
