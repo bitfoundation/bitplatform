@@ -12,10 +12,10 @@ public interface IRoleController : IAppController
     [HttpGet]
     Task<List<UserDto>> GetAllUsers(CancellationToken cancellationToken) => default!;
 
-    [HttpGet]
+    [HttpGet("{roleId}")]
     Task<List<UserDto>> GetUsers(Guid roleId, CancellationToken cancellationToken) => default!;
 
-    [HttpGet]
+    [HttpGet("{roleId}")]
     Task<List<RoleClaimDto>> GetClaims(Guid roleId, CancellationToken cancellationToken) => default!;
 
     [HttpPost]
@@ -25,13 +25,16 @@ public interface IRoleController : IAppController
     Task<RoleDto> Update(RoleDto roleDto, CancellationToken cancellationToken);
 
     [HttpPost]
-    Task TogglePermission(ToggleRolePermissionDto dto, CancellationToken cancellationToken);
+    Task<List<RoleClaimDto>> AddClaims(List<RoleClaimRequestDto> dtos, CancellationToken cancellationToken);
+
+    [HttpPost]
+    Task<List<RoleClaimDto>> DeleteClaims(List<RoleClaimRequestDto> dtos, CancellationToken cancellationToken);
+
+    [HttpPost]
+    Task<List<RoleClaimDto>> UpdateClaims(List<RoleClaimRequestDto> dtos, CancellationToken cancellationToken);
 
     [HttpPost]
     Task ToggleUser(ToggleRoleUserDto dto, CancellationToken cancellationToken);
-
-    [HttpPost]
-    Task SaveMaxPrivilegedSessions(int value, CancellationToken cancellationToken);
 
     [HttpPost]
     Task SendNotification(RoleNotificationDto dto, CancellationToken cancellationToken);

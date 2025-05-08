@@ -30,8 +30,8 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(List<RoleDto>))]
 [JsonSerializable(typeof(List<UserDto>))]
 [JsonSerializable(typeof(List<RoleClaimDto>))]
-[JsonSerializable(typeof(ToggleRolePermissionDto))]
 [JsonSerializable(typeof(ToggleRoleUserDto))]
+[JsonSerializable(typeof(List<RoleClaimRequestDto>))]
 public partial class IdentityJsonContext : JsonSerializerContext
 {
 }

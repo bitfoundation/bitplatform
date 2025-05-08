@@ -25,6 +25,7 @@ public static partial class IdentityMapper
     public static partial IQueryable<RoleDto> Project(this IQueryable<Role> query);
     public static partial IQueryable<UserDto> Project(this IQueryable<User> query);
 
+    public static partial RoleClaimDto Map(this RoleClaim source);
     public static partial IQueryable<RoleClaimDto> Project(this IQueryable<RoleClaim> query);
 
     [UserMapping]

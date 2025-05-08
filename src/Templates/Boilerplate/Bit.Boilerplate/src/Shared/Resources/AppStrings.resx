@@ -1316,20 +1316,23 @@
     <data name="NewRoleName" xml:space="preserve">
     <value>New user group's name</value>
   </data>
-    <data name="Permissions" xml:space="preserve">
-    <value>Featuers</value>
-  </data>
     <data name="Users" xml:space="preserve">
     <value>Users</value>
   </data>
-    <data name="PrivilegedSessions" xml:space="preserve">
-    <value>Privileged sessions</value>
+    <data name="Permissions" xml:space="preserve">
+    <value>Featuers</value>
+  </data>
+    <data name="Quota" xml:space="preserve">
+    <value>Quota</value>
+  </data>
+    <data name="QuotaDescription" xml:space="preserve">
+    <value>To restrict the usage of features, you can define quotas on this tab, which can vary for each role. For example, the number of devices a user can sign in to or the number of times they can use a specific app feature.</value>
   </data>
     <data name="MaxPrevilegedSessions" xml:space="preserve">
     <value>Max previleged sessions</value>
   </data>
-    <data name="Info" xml:space="preserve">
-    <value>Info</value>
+    <data name="General" xml:space="preserve">
+    <value>General</value>
   </data>
     <data name="RoleName" xml:space="preserve">
     <value>User group name</value>

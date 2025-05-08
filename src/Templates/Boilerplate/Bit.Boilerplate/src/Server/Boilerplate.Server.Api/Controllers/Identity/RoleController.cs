@@ -1,4 +1,5 @@
 ﻿//+:cnd:noEmit
+using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 
@@ -20,13 +21,13 @@ public partial class RoleController : AppControllerBase, IRoleController
         return DbContext.Users.Project();
     }
 
-    [HttpGet, EnableQuery]
+    [HttpGet("{roleId}")]
     public async Task<IQueryable<UserDto>> GetUsers(Guid roleId, CancellationToken cancellationToken)
     {
         return DbContext.Users.Where(u => u.Roles.Any(r => r.RoleId == roleId)).Project();
     }
 
-    [HttpGet, EnableQuery]
+    [HttpGet("{roleId}")]
     public async Task<IQueryable<RoleClaimDto>> GetClaims(Guid roleId, CancellationToken cancellationToken)
     {
         return DbContext.RoleClaims.Where(rc => rc.RoleId == roleId).Project();
@@ -50,7 +51,7 @@ public partial class RoleController : AppControllerBase, IRoleController
     public async Task<RoleDto> Update(RoleDto roleDto, CancellationToken cancellationToken)
     {
         var entityToUpdate = await DbContext.Roles.FindAsync([roleDto.Id], cancellationToken)
-            ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
+                                ?? throw new ResourceNotFoundException();
 
         roleDto.Patch(entityToUpdate);
 
@@ -60,22 +61,73 @@ public partial class RoleController : AppControllerBase, IRoleController
     }
 
     [HttpPost]
-    public async Task TogglePermission(ToggleRolePermissionDto dto, CancellationToken cancellationToken)
+    [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
+    public async Task<List<RoleClaimDto>> AddClaims(List<RoleClaimRequestDto> dtos, CancellationToken cancellationToken)
     {
-        
-    }
+        List<RoleClaim> entities = [];
 
-    [HttpPost]
-    public async Task ToggleUser(ToggleRoleUserDto dto, CancellationToken cancellationToken)
-    {
+        foreach (var dto in dtos)
+        {
+            //TODO: first check if this claim has already been added to the role or not!
 
+            var entityToAdd = new RoleClaim { RoleId = dto.RoleId, ClaimType = dto.ClaimType, ClaimValue = dto.ClaimValue };
+
+            await DbContext.RoleClaims.AddAsync(entityToAdd, cancellationToken);
+
+            entities.Add(entityToAdd);
+        }
+
+        await DbContext.SaveChangesAsync(cancellationToken);
+
+        return entities.Select(e => e.Map()).ToList();
     }
 
     [HttpPost]
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
-    public async Task SaveMaxPrivilegedSessions(int value, CancellationToken cancellationToken)
+    public async Task<List<RoleClaimDto>> DeleteClaims(List<RoleClaimRequestDto> dtos, CancellationToken cancellationToken)
     {
-        await Task.Delay(1000);
+        List<RoleClaim> entities = [];
+
+        foreach (var dto in dtos)
+        {
+            var entityToDelete = await DbContext.RoleClaims.FirstOrDefaultAsync(rc => rc.Id == dto.Id)
+                                    ?? throw new ResourceNotFoundException();
+
+            DbContext.Remove(entityToDelete);
+
+            entities.Add(entityToDelete);
+        }
+
+        await DbContext.SaveChangesAsync(cancellationToken);
+
+        return entities.Select(e => e.Map()).ToList();
+    }
+
+    [HttpPost]
+    public async Task<List<RoleClaimDto>> UpdateClaims(List<RoleClaimRequestDto> dtos, CancellationToken cancellationToken)
+    {
+        List<RoleClaim> entities = [];
+
+        foreach (var dto in dtos)
+        {
+            var entityToUpdate = await DbContext.RoleClaims.FirstOrDefaultAsync(rc => rc.Id == dto.Id)
+                                    ?? throw new ResourceNotFoundException();
+
+            entityToUpdate.ClaimValue = dto.ClaimValue;
+
+            entities.Add(entityToUpdate);
+        }
+
+        await DbContext.SaveChangesAsync(cancellationToken);
+
+        return entities.Select(e => e.Map()).ToList();
+    }
+
+    [HttpPost]
+    [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
+    public async Task ToggleUser(ToggleRoleUserDto dto, CancellationToken cancellationToken)
+    {
+
     }
 
     [HttpPost]
