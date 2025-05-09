@@ -10,7 +10,7 @@ public partial class RoleClaimConfiguration : IEntityTypeConfiguration<RoleClaim
         builder.HasIndex(roleClaim => new { roleClaim.RoleId, roleClaim.ClaimType, roleClaim.ClaimValue });
 
         // Unlimited privileged sessions for super admins
-        var superAdminRoleId = Guid.Parse("9ff71672-a1d5-4f97-abb7-d87d6b47d5e8");
+        var superAdminRoleId = Guid.Parse("8ff71671-a1d6-5f97-abb9-d87d7b47d6e7");
         builder.HasData(new
         {
             Id = 1,

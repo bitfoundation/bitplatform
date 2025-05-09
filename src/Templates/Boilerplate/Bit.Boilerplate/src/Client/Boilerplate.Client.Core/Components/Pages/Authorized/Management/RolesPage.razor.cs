@@ -1,5 +1,4 @@
 ﻿//-:cnd:noEmit
-using System.Security.Claims;
 using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 
@@ -7,8 +6,8 @@ namespace Boilerplate.Client.Core.Components.Pages.Authorized.Management;
 
 public partial class RolesPage
 {
-    private bool isLoadingRoles;
-    private bool isLoadingUsers;
+    private bool isLoadingRoles = true;
+    private bool isLoadingUsers = true;
     private string? newRoleName;
     private string? editRoleName;
     private string? loadingRoleKey;
@@ -18,7 +17,6 @@ public partial class RolesPage
     private List<UserDto> allUsers = [];
     private List<BitNavItem> roleNavItems = [];
     private List<UserDto> selectedRoleUsers = [];
-    private BitSearchBox _searchBoxRef = default!;
     private List<BitNavItem> permissionNavItems = [];
     private CancellationTokenSource? loadRoleDataCts;
     private List<RoleClaimDto> selectedRoleClaims = [];
@@ -49,8 +47,6 @@ public partial class RolesPage
     {
         try
         {
-            isLoadingRoles = true;
-
             roleNavItems = [.. (await roleController.GetAllRoles(CurrentCancellationToken)).Select(r => new BitNavItem
             {
                 Key = r.Id.ToString(),
@@ -187,8 +183,6 @@ public partial class RolesPage
         selectedRoleClaims.AddRange(claims);
 
         SetClaimsToPermissionNavItems();
-
-        StateHasChanged();
     }
 
     private async Task DeletePermissions(BitNavItem parent)
@@ -211,8 +205,6 @@ public partial class RolesPage
         _ = itemsToDelete.Select(selectedRoleClaims.Remove).ToList();
 
         SetClaimsToPermissionNavItems();
-
-        StateHasChanged();
     }
 
     private async Task TogglePermission(BitNavItem item)
@@ -244,8 +236,6 @@ public partial class RolesPage
         }
 
         SetClaimsToPermissionNavItems();
-
-        StateHasChanged();
     }
 
     private async Task ToggleUser(UserDto user)
@@ -269,10 +259,8 @@ public partial class RolesPage
         }
         else
         {
-            selectedRoleUsers.Remove(user);
+            selectedRoleUsers.RemoveAll(u => u.Id == user.Id);
         }
-
-        StateHasChanged();
     }
 
     private async Task SaveMaxPrivilegedSessions()
@@ -323,5 +311,15 @@ public partial class RolesPage
         {
             item.Data = selectedRoleClaims.FirstOrDefault(p => p.ClaimValue == item.Key);
         }
+    }
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (loadRoleDataCts is not null && loadRoleDataCts.IsCancellationRequested is false)
+        {
+            await loadRoleDataCts.CancelAsync();
+        }
+
+        await base.DisposeAsync(disposing);
     }
 }

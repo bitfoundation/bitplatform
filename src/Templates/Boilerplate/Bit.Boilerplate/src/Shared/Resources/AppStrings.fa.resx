@@ -248,7 +248,8 @@
     <value>جلسه - سشن جاری</value>
   </data>
     <data name="PrivilegedDeviceLimitMessage" xml:space="preserve">
-    <value>از مجموع {0} دستگاه با دسترسی کامل، شما {1} دستگاه را استفاده کرده‌اید. پس از رسیدن به {0} دستگاه، دستگاه‌های اضافی با امکانات محدود خواهد بود.</value>
+    <value>از مجموع {0} دستگاه با دسترسی کامل، شما {1} دستگاه را استفاده کرده‌اید.
+پس از رسیدن به {0} دستگاه، دستگاه‌های اضافی با امکانات محدود خواهد بود.</value>
   </data>
     <data name="OtherSessions" xml:space="preserve">
     <value>سایر جلسات (سشن‌ها)</value>
@@ -1343,9 +1344,9 @@
     <data name="SendRoleNotification" xml:space="preserve">
     <value>ارسال اعلان</value>
   </data>
-    <data name="RoleNotificationPlaceHolder" xml:space="preserve">
+    <data name="RoleNotificationPlaceholder" xml:space="preserve">
     <value>{{UserDisplayName}} عزیز،
-دیدن شما فوق‌العاده است! به اپلیکیشن فرو بروید و از آن لذت ببرید!</value>
+دیدن شما فوق‌العاده است!</value>
   </data>
     <data name="RoleExistErrorMessage" xml:space="preserve">
     <value>این گروه کاربری وجود دارد</value>

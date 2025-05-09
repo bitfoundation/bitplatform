@@ -248,7 +248,8 @@
     <value>Current session</value>
   </data>
     <data name="PrivilegedDeviceLimitMessage" xml:space="preserve">
-    <value>From {0} devices allowed for full features, you've used {1}. After reaching {0}, extra sign-ins will have reduced functions.</value>
+    <value>From {0} devices allowed for full features, you've used {1}.
+After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <data name="OtherSessions" xml:space="preserve">
     <value>Other sessions</value>
@@ -1343,9 +1344,9 @@
     <data name="SendRoleNotification" xml:space="preserve">
     <value>Send notification</value>
   </data>
-    <data name="RoleNotificationPlaceHolder" xml:space="preserve">
+    <data name="RoleNotificationPlaceholder" xml:space="preserve">
     <value>Hey {{UserDisplayName}},
-Awesome to see you! Dive into the app and enjoy!</value>
+Awesome to see you!</value>
   </data>
     <data name="RoleExistErrorMessage" xml:space="preserve">
     <value>This user group is already exist</value>

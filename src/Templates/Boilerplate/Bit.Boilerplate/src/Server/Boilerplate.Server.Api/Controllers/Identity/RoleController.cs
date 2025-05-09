@@ -10,25 +10,25 @@ namespace Boilerplate.Server.Api.Controllers.Identity;
 public partial class RoleController : AppControllerBase, IRoleController
 {
     [HttpGet, EnableQuery]
-    public async Task<IQueryable<RoleDto>> GetAllRoles(CancellationToken cancellationToken)
+    public IQueryable<RoleDto> GetAllRoles()
     {
         return DbContext.Roles.Where(r => r.Name != AppRoles.SuperAdmin).Project();
     }
 
     [HttpGet, EnableQuery]
-    public async Task<IQueryable<UserDto>> GetAllUsers(CancellationToken cancellationToken)
+    public IQueryable<UserDto> GetAllUsers()
     {
         return DbContext.Users.Project();
     }
 
-    [HttpGet("{roleId}")]
-    public async Task<IQueryable<UserDto>> GetUsers(Guid roleId, CancellationToken cancellationToken)
+    [HttpGet("{roleId}"), EnableQuery]
+    public IQueryable<UserDto> GetUsers(Guid roleId)
     {
         return DbContext.Users.Where(u => u.Roles.Any(r => r.RoleId == roleId)).Project();
     }
 
-    [HttpGet("{roleId}")]
-    public async Task<IQueryable<RoleClaimDto>> GetClaims(Guid roleId, CancellationToken cancellationToken)
+    [HttpGet("{roleId}"), EnableQuery]
+    public IQueryable<RoleClaimDto> GetClaims(Guid roleId)
     {
         return DbContext.RoleClaims.Where(rc => rc.RoleId == roleId).Project();
     }
@@ -96,23 +96,10 @@ public partial class RoleController : AppControllerBase, IRoleController
 
     [HttpPost]
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
-    public async Task<List<RoleClaimDto>> DeleteClaims(List<RoleClaimRequestDto> dtos, CancellationToken cancellationToken)
+    public async Task DeleteClaims(List<RoleClaimRequestDto> dtos, CancellationToken cancellationToken)
     {
-        List<RoleClaim> entities = [];
-
-        foreach (var dto in dtos)
-        {
-            var entityToDelete = await DbContext.RoleClaims.FirstOrDefaultAsync(rc => rc.Id == dto.Id)
-                                    ?? throw new ResourceNotFoundException();
-
-            DbContext.Remove(entityToDelete);
-
-            entities.Add(entityToDelete);
-        }
-
-        await DbContext.SaveChangesAsync(cancellationToken);
-
-        return [.. entities.Select(e => e.Map())];
+        await DbContext.RoleClaims.Where(rc => dtos.Select(d => d.Id).Contains(rc.Id))
+            .ExecuteDeleteAsync(cancellationToken);
     }
 
     [HttpPost]
@@ -122,7 +109,7 @@ public partial class RoleController : AppControllerBase, IRoleController
 
         foreach (var dto in dtos)
         {
-            var entityToUpdate = await DbContext.RoleClaims.FirstOrDefaultAsync(rc => rc.Id == dto.Id)
+            var entityToUpdate = await DbContext.RoleClaims.FirstOrDefaultAsync(rc => rc.Id == dto.Id, cancellationToken)
                                     ?? throw new ResourceNotFoundException();
 
             entityToUpdate.ClaimValue = dto.ClaimValue;
@@ -132,7 +119,7 @@ public partial class RoleController : AppControllerBase, IRoleController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        return entities.Select(e => e.Map()).ToList();
+        return [.. entities.Select(e => e.Map())];
     }
 
     [HttpPost]
@@ -159,6 +146,6 @@ public partial class RoleController : AppControllerBase, IRoleController
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task SendNotification(RoleNotificationDto dto, CancellationToken cancellationToken)
     {
-        await Task.Delay(1000);
+        await Task.Delay(1000, cancellationToken);
     }
 }

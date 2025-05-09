@@ -28,7 +28,7 @@ public interface IRoleController : IAppController
     Task<List<RoleClaimDto>> AddClaims(List<RoleClaimRequestDto> dtos, CancellationToken cancellationToken);
 
     [HttpPost]
-    Task<List<RoleClaimDto>> DeleteClaims(List<RoleClaimRequestDto> dtos, CancellationToken cancellationToken);
+    Task DeleteClaims(List<RoleClaimRequestDto> dtos, CancellationToken cancellationToken);
 
     [HttpPost]
     Task<List<RoleClaimDto>> UpdateClaims(List<RoleClaimRequestDto> dtos, CancellationToken cancellationToken);
