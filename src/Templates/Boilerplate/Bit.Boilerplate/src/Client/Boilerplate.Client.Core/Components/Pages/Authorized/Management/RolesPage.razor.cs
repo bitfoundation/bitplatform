@@ -82,8 +82,13 @@ public partial class RolesPage
         {
             if (loadRoleDataCts is not null)
             {
-                await loadRoleDataCts.CancelAsync();
-                loadRoleDataCts.Dispose();
+                using var currentCts = loadRoleDataCts;
+                loadRoleDataCts = new();
+
+                if (currentCts.IsCancellationRequested is false)
+                {
+                    await currentCts.CancelAsync();
+                }
             }
 
             loadRoleDataCts = new();
@@ -318,6 +323,7 @@ public partial class RolesPage
         if (loadRoleDataCts is not null && loadRoleDataCts.IsCancellationRequested is false)
         {
             await loadRoleDataCts.CancelAsync();
+            loadRoleDataCts.Dispose();
         }
 
         await base.DisposeAsync(disposing);

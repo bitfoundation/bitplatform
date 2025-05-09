@@ -1321,7 +1321,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>Users</value>
   </data>
     <data name="Permissions" xml:space="preserve">
-    <value>Featuers</value>
+    <value>Features</value>
   </data>
     <data name="Quota" xml:space="preserve">
     <value>Quota</value>
@@ -1330,7 +1330,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>To restrict the usage of features, you can define quotas on this tab, which can vary for each role. For example, the number of devices a user can sign in to or the number of times they can use a specific app feature.</value>
   </data>
     <data name="MaxPrevilegedSessions" xml:space="preserve">
-    <value>Max previleged sessions</value>
+    <value>Max privileged sessions</value>
   </data>
     <data name="General" xml:space="preserve">
     <value>General</value>
@@ -1349,7 +1349,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
 Awesome to see you!</value>
   </data>
     <data name="RoleExistErrorMessage" xml:space="preserve">
-    <value>This user group is already exist</value>
+    <value>This user group already exists</value>
   </data>
     <data name="Users" xml:space="preserve">
     <value>Users</value>

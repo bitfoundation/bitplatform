@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
+using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Controllers.Identity;
-using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
@@ -57,7 +57,7 @@ public partial class RoleController : AppControllerBase, IRoleController
     public async Task<RoleDto> Update(RoleDto roleDto, CancellationToken cancellationToken)
     {
         roleDto.NormalizedName = roleDto.Name!.ToUpperInvariant();
-        var existingRole = await DbContext.Roles.FirstOrDefaultAsync(r => r.Name == roleDto.Name || r.NormalizedName == roleDto.NormalizedName, cancellationToken);
+        var existingRole = await DbContext.Roles.FirstOrDefaultAsync(r => r.Id != roleDto.Id && (r.Name == roleDto.Name || r.NormalizedName == roleDto.NormalizedName), cancellationToken);
 
         if (existingRole is not null)
             throw new BadRequestException(Localizer[nameof(AppStrings.RoleExistErrorMessage)]);
@@ -103,6 +103,7 @@ public partial class RoleController : AppControllerBase, IRoleController
     }
 
     [HttpPost]
+    [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task<List<RoleClaimDto>> UpdateClaims(List<RoleClaimRequestDto> dtos, CancellationToken cancellationToken)
     {
         List<RoleClaim> entities = [];
