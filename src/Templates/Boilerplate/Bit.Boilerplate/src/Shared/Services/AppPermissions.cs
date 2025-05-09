@@ -59,10 +59,10 @@ public class AppPermissions
     }
 
 
-    public static (string Key, string Value, Type Group)[] GetAll() => GetSuperAdminPermissions();
+    public static (string Name, string Value, Type Group)[] GetAll() => GetSuperAdminPermissions();
 
-    private static (string Key, string Value, Type Group)[]? permissions;
-    public static (string Key, string Value, Type Group)[] GetSuperAdminPermissions()
+    private static (string Name, string Value, Type Group)[]? permissions;
+    public static (string Name, string Value, Type Group)[] GetSuperAdminPermissions()
     {
         return permissions ??= [.. typeof(AppPermissions)
             .GetNestedTypes()

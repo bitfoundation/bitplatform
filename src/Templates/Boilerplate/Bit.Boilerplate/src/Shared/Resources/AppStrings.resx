@@ -1355,4 +1355,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="UsersPageTitle" xml:space="preserve">
     <value>Manage users</value>
   </data>
+    <data name="DeleteRole" xml:space="preserve">
+    <value>Delete user group</value>
+  </data>
 </root>

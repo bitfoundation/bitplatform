@@ -4,7 +4,7 @@ using Boilerplate.Shared.Dtos.Identity;
 namespace Boilerplate.Shared.Controllers.Identity;
 
 [Route("api/[controller]/[action]/"), AuthorizedApi]
-public interface IRoleController : IAppController
+public interface IRoleManagementController : IAppController
 {
     [HttpGet]
     Task<List<RoleDto>> GetAllRoles(CancellationToken cancellationToken) => default!;
@@ -25,13 +25,16 @@ public interface IRoleController : IAppController
     Task<RoleDto> Update(RoleDto roleDto, CancellationToken cancellationToken);
 
     [HttpPost("{roleId}")]
+    Task Delete(Guid roleId, CancellationToken cancellationToken);
+
+    [HttpPost("{roleId}")]
     Task AddClaims(Guid roleId, List<ClaimDto> roleClaims, CancellationToken cancellationToken);
 
     [HttpPost("{roleId}")]
-    Task DeleteClaims(Guid roleId, List<ClaimDto> roleClaims, CancellationToken cancellationToken);
+    Task UpdateClaims(Guid roleId, List<ClaimDto> roleClaims, CancellationToken cancellationToken);
 
     [HttpPost("{roleId}")]
-    Task UpdateClaims(Guid roleId, List<ClaimDto> roleClaims, CancellationToken cancellationToken);
+    Task DeleteClaims(Guid roleId, List<ClaimDto> roleClaims, CancellationToken cancellationToken);
 
     [HttpPost]
     Task ToggleUser(UserRoleDto dto, CancellationToken cancellationToken);

@@ -1355,4 +1355,7 @@
     <data name="UsersPageTitle" xml:space="preserve">
     <value>مدیریت کاربران</value>
   </data>
+    <data name="DeleteRole" xml:space="preserve">
+    <value>حذف گروه کاربران</value>
+  </data>
 </root>

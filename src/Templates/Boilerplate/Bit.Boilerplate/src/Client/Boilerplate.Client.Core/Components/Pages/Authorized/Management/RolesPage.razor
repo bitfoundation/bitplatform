@@ -56,15 +56,25 @@
                     <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.General)]">
                         <BitStack>
                             <BitStack Horizontal VerticalAlign="BitAlignment.End">
+                                @{
+                                    var isEnabled = selectedRoleItem is not null && selectedRoleItem.Text != AppRoles.SuperAdmin;
+                                }
                                 <BitTextField @bind-Value="editRoleName"
                                               Immediate DebounceTime="300"
-                                              IsEnabled="selectedRole is not null"
+                                              IsEnabled="isEnabled"
                                               Label="@Localizer[nameof(AppStrings.RoleName)]" />
                                 <BitButton AutoLoading
                                            IconName="@BitIconName.Edit"
                                            OnClick="WrapHandled(EditRole)"
-                                           IsEnabled="selectedRole is not null && string.IsNullOrWhiteSpace(editRoleName) is false">
+                                           IsEnabled="isEnabled && string.IsNullOrWhiteSpace(editRoleName) is false">
                                     @Localizer[nameof(AppStrings.EditRole)]
+                                </BitButton>
+                                <BitSpacer />
+                                <BitButton AutoLoading
+                                           IconName="@BitIconName.Delete"
+                                           OnClick="WrapHandled(() => { isDeleteDialogOpen = true; })"
+                                           IsEnabled="isEnabled">
+                                    @Localizer[nameof(AppStrings.DeleteRole)]
                                 </BitButton>
                             </BitStack>
                             @*#if (notification == true || signalR == true)*@
@@ -72,11 +82,11 @@
                             <BitTextField @bind-Value="@notificationMessage"
                                           Style="width:100%"
                                           Immediate Multiline Rows="3"
-                                          IsEnabled="selectedRole is not null"
+                                          IsEnabled="selectedRoleItem is not null"
                                           Label="@Localizer[nameof(AppStrings.RoleNotificationLabel)]" />
                             <BitButton AutoLoading
                                        OnClick="WrapHandled(SendNotification)"
-                                       IsEnabled="selectedRole is not null && string.IsNullOrWhiteSpace(notificationMessage) is false">
+                                       IsEnabled="selectedRoleItem is not null && string.IsNullOrWhiteSpace(notificationMessage) is false">
                                 @Localizer[nameof(AppStrings.SendRoleNotification)]
                             </BitButton>
                             @*#endif*@
@@ -100,7 +110,7 @@
                                         </BitText>
                                         <BitSpacer />
                                         <BitButton AutoLoading IconOnly
-                                                   IsEnabled="selectedRole is not null"
+                                                   IsEnabled="selectedRoleItem is not null"
                                                    OnClick="WrapHandled(() => ToggleUser(user))"
                                                    IconName="@(IsUserAssigned(user) ? BitIconName.RemoveFrom : BitIconName.AddTo)" />
                                     </BitStack>
@@ -119,7 +129,7 @@
                                     @if (item.ChildItems.Any() is false)
                                     {
                                         <BitButton AutoLoading IconOnly
-                                                   IsEnabled="selectedRole is not null"
+                                                   IsEnabled="selectedRoleItem is not null"
                                                    OnClick="WrapHandled(() => TogglePermission(item))"
                                                    IconName="@(IsPermissionAssigned(item) ? BitIconName.RemoveFrom : BitIconName.AddTo)" />
                                     }
@@ -128,13 +138,13 @@
                                         <BitStack Horizontal FitSize VerticalAlign="BitAlignment.Center" @onclick:stopPropagation>
                                             <BitButton AutoLoading IconOnly
                                                        Variant="BitVariant.Outline"
-                                                       IsEnabled="selectedRole is not null"
+                                                       IsEnabled="selectedRoleItem is not null"
                                                        IconName="@(BitIconName.Blocked2Solid)"
                                                        OnClick="WrapHandled(() => DeletePermissions(item))" />
 
                                             <BitButton AutoLoading IconOnly
                                                        Variant="BitVariant.Outline"
-                                                       IsEnabled="selectedRole is not null"
+                                                       IsEnabled="selectedRoleItem is not null"
                                                        IconName="@(BitIconName.CircleAdditionSolid)"
                                                        OnClick="WrapHandled(() => AddPermissions(item))" />
                                         </BitStack>
@@ -149,10 +159,10 @@
                             <BitSeparator />
                             <BitStack Horizontal VerticalAlign="BitAlignment.End">
                                 <BitNumberField @bind-Value="maxPrivilegedSessions"
-                                                IsEnabled="selectedRole is not null"
+                                                IsEnabled="selectedRoleItem is not null"
                                                 Label="@Localizer[nameof(AppStrings.MaxPrevilegedSessions)]" />
                                 <BitButton AutoLoading
-                                           IsEnabled="selectedRole is not null"
+                                           IsEnabled="selectedRoleItem is not null"
                                            OnClick="WrapHandled(SaveMaxPrivilegedSessions)">
                                     @Localizer[nameof(AppStrings.Save)]
                                 </BitButton>
@@ -164,3 +174,10 @@
         </BitStack>
     </BitStack>
 </section>
+
+<BitDialog OnOk="WrapHandled(DeleteRole)"
+           @bind-IsOpen="isDeleteDialogOpen"
+           OkText="@Localizer[nameof(AppStrings.Yes)]"
+           CancelText="@Localizer[nameof(AppStrings.No)]"
+           Title="@Localizer[nameof(AppStrings.DeleteTodoItem)]"
+           Message="@Localizer.GetString(nameof(AppStrings.AreYouSureWannaDelete), selectedRoleItem?.Text ?? "")" />

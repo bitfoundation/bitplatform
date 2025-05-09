@@ -57,7 +57,7 @@ public static partial class ISharedServiceCollectionExtensions
 
         foreach (var g in AppPermissions.GetAll().GroupBy(p => p.Value).Where(g => g.Count() > 1))
         {
-            duplicatePermissionsReportString.Append(string.Join(Environment.NewLine, g.Select(p => $"{p.Group.Name}-{p.Key}-{p.Value}")));
+            duplicatePermissionsReportString.Append(string.Join(Environment.NewLine, g.Select(p => $"{p.Group.Name}-{p.Name}-{p.Value}")));
         }
 
         if (duplicatePermissionsReportString.Length > 0)

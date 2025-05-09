@@ -12,7 +12,7 @@ namespace Boilerplate.Server.Api.Controllers.Identity;
 
 [ApiController, Route("api/[controller]/[action]")]
 [Authorize(Policy = AppPermissions.Management.ManageRoles)]
-public partial class RoleController : AppControllerBase, IRoleController
+public partial class RoleManagementController : AppControllerBase, IRoleManagementController
 {
     //#if (signalR == true)
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
@@ -27,7 +27,11 @@ public partial class RoleController : AppControllerBase, IRoleController
     [HttpGet, EnableQuery]
     public IQueryable<RoleDto> GetAllRoles()
     {
-        return roleManager.Roles.Project();
+        var isUserSuperAdmin = User.IsInRole(AppRoles.SuperAdmin);
+
+        return roleManager.Roles
+                          .WhereIf(isUserSuperAdmin is false, r => r.Name != AppRoles.SuperAdmin)
+                          .Project();
     }
 
     [HttpGet, EnableQuery]
@@ -66,7 +70,7 @@ public partial class RoleController : AppControllerBase, IRoleController
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task<RoleDto> Update(RoleDto roleDto, CancellationToken cancellationToken)
     {
-        var role = await GetRoleById(roleDto.Id, cancellationToken);
+        var role = await GetRoleByIdAsync(roleDto.Id, cancellationToken);
 
         roleDto.Patch(role);
 
@@ -80,11 +84,20 @@ public partial class RoleController : AppControllerBase, IRoleController
 
     [HttpPost("{roleId}")]
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
+    public async Task Delete(Guid roleId, CancellationToken cancellationToken)
+    {
+        var role = await GetRoleByIdAsync(roleId, cancellationToken);
+
+        await roleManager.DeleteAsync(role);
+    }
+
+    [HttpPost("{roleId}")]
+    [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task AddClaims(Guid roleId, List<ClaimDto> claims, CancellationToken cancellationToken)
     {
         List<RoleClaim> entities = [];
 
-        var role = await GetRoleById(roleId, cancellationToken);
+        var role = await GetRoleByIdAsync(roleId, cancellationToken);
 
         foreach (var claim in claims)
         {
@@ -97,24 +110,9 @@ public partial class RoleController : AppControllerBase, IRoleController
 
     [HttpPost("{roleId}")]
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
-    public async Task DeleteClaims(Guid roleId, List<ClaimDto> claims, CancellationToken cancellationToken)
-    {
-        var role = await GetRoleById(roleId, cancellationToken);
-
-        foreach (var claim in claims)
-        {
-            var result = await roleManager.RemoveClaimAsync(role, new(claim.ClaimType!, claim.ClaimValue!));
-
-            if (result.Succeeded is false)
-                throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
-        }
-    }
-
-    [HttpPost("{roleId}")]
-    [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task UpdateClaims(Guid roleId, List<ClaimDto> claims, CancellationToken cancellationToken)
     {
-        var role = await GetRoleById(roleId, cancellationToken);
+        var role = await GetRoleByIdAsync(roleId, cancellationToken);
 
         foreach (var claim in claims)
         {
@@ -130,6 +128,21 @@ public partial class RoleController : AppControllerBase, IRoleController
         }
     }
 
+    [HttpPost("{roleId}")]
+    [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
+    public async Task DeleteClaims(Guid roleId, List<ClaimDto> claims, CancellationToken cancellationToken)
+    {
+        var role = await GetRoleByIdAsync(roleId, cancellationToken);
+
+        foreach (var claim in claims)
+        {
+            var result = await roleManager.RemoveClaimAsync(role, new(claim.ClaimType!, claim.ClaimValue!));
+
+            if (result.Succeeded is false)
+                throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+        }
+    }
+
     [HttpPost]
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task ToggleUser(UserRoleDto dto, CancellationToken cancellationToken)
@@ -139,6 +152,12 @@ public partial class RoleController : AppControllerBase, IRoleController
 
         var role = await roleManager.FindByIdAsync(dto.RoleId.ToString())
             ?? throw new ResourceNotFoundException();
+
+        var isSuperAdminRole = role.Name == AppRoles.SuperAdmin;
+        var isSuperAdminUser = User.IsInRole(AppRoles.SuperAdmin);
+
+        if (isSuperAdminRole && isSuperAdminUser is false)
+            throw new UnauthorizedException();
 
         if (await userManager.IsInRoleAsync(user, role.Name!))
         {
@@ -170,7 +189,7 @@ public partial class RoleController : AppControllerBase, IRoleController
     }
     //#endif
 
-    private async Task<Role> GetRoleById(Guid id, CancellationToken cancellationToken)
+    private async Task<Role> GetRoleByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var role = await roleManager.Roles
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken) ?? throw new ResourceNotFoundException();
