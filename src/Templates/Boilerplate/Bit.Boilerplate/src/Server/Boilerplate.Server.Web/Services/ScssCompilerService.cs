@@ -41,19 +41,19 @@ public class ScssCompilerService
 
         var sassPathsToWatch = new List<string>
         {
-            ".:.", "Styles/app.scss:wwwroot/styles/app.css"
+            "Components:Components", "Styles/app.scss:wwwroot/styles/app.css"
         };
 
-        if (Path.Exists(Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Maui")))
-            sassPathsToWatch.Add("../../Client/Boilerplate.Client.Maui:../../Client/Boilerplate.Client.Maui");
+        if (Path.Exists(Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Maui/Components")))
+            sassPathsToWatch.Add("../../Client/Boilerplate.Client.Maui/Components:../../Client/Boilerplate.Client.Maui/Components");
 
-        if (Path.Exists(Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Windows")))
-            sassPathsToWatch.Add("../../Client/Boilerplate.Client.Windows:../../Client/Boilerplate.Client.Windows");
+        if (Path.Exists(Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Windows/Components")))
+            sassPathsToWatch.Add("../../Client/Boilerplate.Client.Windows/Components:../../Client/Boilerplate.Client.Windows/Components");
 
-        if (Path.Exists(Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Web")))
-            sassPathsToWatch.Add("../../Client/Boilerplate.Client.Web:../../Client/Boilerplate.Client.Web");
+        if (Path.Exists(Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Web/Components")))
+            sassPathsToWatch.Add("../../Client/Boilerplate.Client.Web/Components:../../Client/Boilerplate.Client.Web/Components");
 
-        var command = $"{string.Join(" ", sassPathsToWatch)} --style compressed --load-path=Components --load-path=Styles --silence-deprecation=import --update --watch";
+        var command = $"{string.Join(" ", sassPathsToWatch)} --style compressed --silence-deprecation=import --update --watch --color";
 
         // Create a job object to ensure the child process terminates with the parent
         using var job = new JobObject();
