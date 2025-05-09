@@ -1345,10 +1345,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="SendRoleNotification" xml:space="preserve">
     <value>Send notification</value>
   </data>
-    <data name="RoleNotificationPlaceholder" xml:space="preserve">
-    <value>Hey {{UserDisplayName}},
-Awesome to see you!</value>
-  </data>
     <!--#endif -->
     <data name="RoleExistErrorMessage" xml:space="preserve">
     <value>This user group already exists</value>

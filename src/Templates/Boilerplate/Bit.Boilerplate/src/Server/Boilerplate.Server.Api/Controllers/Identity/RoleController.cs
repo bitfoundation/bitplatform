@@ -1,7 +1,12 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
+using Boilerplate.Server.Api.Services;
+using Boilerplate.Server.Api.SignalR;
 using Boilerplate.Shared.Controllers.Identity;
+using Boilerplate.Shared.Dtos.Identity;
+//#if (signalR == true)
+using Microsoft.AspNetCore.SignalR;
+//#endif
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
@@ -9,6 +14,13 @@ namespace Boilerplate.Server.Api.Controllers.Identity;
 [Authorize(Policy = AppPermissions.Management.ManageRoles)]
 public partial class RoleController : AppControllerBase, IRoleController
 {
+    //#if (signalR == true)
+    [AutoInject] private IHubContext<AppHub> appHubContext = default!;
+    //#endif
+    //#if (notification == true)
+    [AutoInject] private PushNotificationService pushNotificationService = default!;
+    //#endif
+
     [HttpGet, EnableQuery]
     public IQueryable<RoleDto> GetAllRoles()
     {
@@ -148,7 +160,14 @@ public partial class RoleController : AppControllerBase, IRoleController
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task SendNotification(SendNotificationToRoleDto dto, CancellationToken cancellationToken)
     {
-        await Task.Delay(1000, cancellationToken);
+        //#if (signalR == true)
+        var signalRConnectionIds = await DbContext.UserSessions.Where(us => us.SignalRConnectionId != null && us.User!.Roles.Any(r => r.RoleId == dto.RoleId)).Select(us => us.SignalRConnectionId!).ToArrayAsync(cancellationToken);
+        await appHubContext.Clients.Clients(signalRConnectionIds).SendAsync(SignalREvents.SHOW_MESSAGE, dto.Message, cancellationToken);
+        //#endif
+
+        //#if (notification == true)
+        await pushNotificationService.RequestPush(message: dto.Message, userRelatedPush: true, customSubscriptionFilter: s => s.UserSession!.User!.Roles.Any(r => r.RoleId == dto.RoleId), cancellationToken: cancellationToken);
+        //#endif
     }
     //#endif
 }

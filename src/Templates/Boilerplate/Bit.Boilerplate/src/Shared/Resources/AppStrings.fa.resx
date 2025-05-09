@@ -1345,10 +1345,6 @@
     <data name="SendRoleNotification" xml:space="preserve">
     <value>ارسال اعلان</value>
   </data>
-    <data name="RoleNotificationPlaceholder" xml:space="preserve">
-    <value>{{UserDisplayName}} عزیز،
-دیدن شما فوق‌العاده است!</value>
-  </data>
     <!--#endif -->
     <data name="RoleExistErrorMessage" xml:space="preserve">
     <value>این گروه کاربری وجود دارد</value>

@@ -70,11 +70,10 @@
                             @*#if (notification == true || signalR == true)*@
                             <BitSeparator />
                             <BitTextField @bind-Value="@notificationMessage"
-                                          Multiline Rows="3"
                                           Style="width:100%"
+                                          Immediate Multiline Rows="3"
                                           IsEnabled="selectedRole is not null"
-                                          Label="@Localizer[nameof(AppStrings.RoleNotificationLabel)]"
-                                          Placeholder="@Localizer[nameof(AppStrings.RoleNotificationPlaceholder)]" />
+                                          Label="@Localizer[nameof(AppStrings.RoleNotificationLabel)]" />
                             <BitButton AutoLoading
                                        OnClick="WrapHandled(SendNotification)"
                                        IsEnabled="selectedRole is not null && string.IsNullOrWhiteSpace(notificationMessage) is false">
