@@ -23,8 +23,8 @@ public partial class MainLayout
         {
             //#if (module == "Admin")
 
-            var (dashboard, manageProductCatalog) = await (authorizationService.IsAuthorizeAsync(user, AppPermissions.AdminPanel.Dashboard),
-                authorizationService.IsAuthorizeAsync(user, AppPermissions.AdminPanel.ManageProductCatalog));
+            var (dashboard, manageProductCatalog) = await (authorizationService.IsAuthorizedAsync(user, AppPermissions.AdminPanel.Dashboard),
+                authorizationService.IsAuthorizedAsync(user, AppPermissions.AdminPanel.ManageProductCatalog));
 
             if (dashboard || manageProductCatalog)
             {
@@ -69,7 +69,7 @@ public partial class MainLayout
             //#endif
 
             //#if (sample == true)
-            if (await authorizationService.IsAuthorizeAsync(user, AppPermissions.Todo.ManageTodo))
+            if (await authorizationService.IsAuthorizedAsync(user, AppPermissions.Todo.ManageTodo))
             {
                 navPanelItems.Add(new()
                 {
@@ -106,9 +106,9 @@ public partial class MainLayout
 
         if (user?.IsAuthenticated() is true)
         {
-            var (manageRoles, manageUsers, manageAiPrompt) = await (authorizationService.IsAuthorizeAsync(user, AppPermissions.Management.ManageRoles),
-                authorizationService.IsAuthorizeAsync(user, AppPermissions.Management.ManageUsers),
-                authorizationService.IsAuthorizeAsync(user, AppPermissions.Management.ManageAiPrompt));
+            var (manageRoles, manageUsers, manageAiPrompt) = await (authorizationService.IsAuthorizedAsync(user, AppPermissions.Management.ManageRoles),
+                authorizationService.IsAuthorizedAsync(user, AppPermissions.Management.ManageUsers),
+                authorizationService.IsAuthorizedAsync(user, AppPermissions.Management.ManageAiPrompt));
 
             if (manageRoles || manageUsers || manageAiPrompt)
             {
