@@ -83,10 +83,7 @@ public partial class RolesPage
                 using var currentCts = loadRoleDataCts;
                 loadRoleDataCts = new();
 
-                if (currentCts.IsCancellationRequested is false)
-                {
-                    await currentCts.CancelAsync();
-                }
+                await currentCts.CancelAsync();
             }
 
             loadRoleDataCts = new();
@@ -321,7 +318,7 @@ public partial class RolesPage
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        if (loadRoleDataCts is not null && loadRoleDataCts.IsCancellationRequested is false)
+        if (loadRoleDataCts is not null)
         {
             await loadRoleDataCts.CancelAsync();
             loadRoleDataCts.Dispose();
