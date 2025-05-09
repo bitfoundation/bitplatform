@@ -85,15 +85,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             await userPhoneNumberStore.SetPhoneNumberAsync(userToAdd, request.PhoneNumber!, cancellationToken);
         }
 
-        var result = await userManager.CreateAsync(userToAdd, request.Password!);
-
-        if (result.Succeeded is false)
-            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
-
-        result = await userManager.AddToRoleAsync(userToAdd, AppBuiltInRoles.BasicUser);
-
-        if (result.Succeeded is false)
-            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+        await userManager.CreateUserWithDemoRole(userToAdd, request.Password!);
 
         await SendConfirmationToken(userToAdd, request.ReturnUrl, cancellationToken);
     }

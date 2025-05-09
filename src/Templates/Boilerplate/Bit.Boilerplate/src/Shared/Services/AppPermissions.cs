@@ -12,22 +12,30 @@ public class AppPermissions
         /// <summary>
         /// Change AI Chatbot's system prompt.
         /// </summary>
-        public const string ManageAI = "0";
+        public const string ManageAiPrompt = "0";
 
         /// <summary>
-        /// Add/Modify/Delete users and roles.
+        /// Manage Roles.
         /// </summary>
-        public const string ManageIdentity = "1";
+        public const string ManageRoles = "1";
 
+        /// <summary>
+        /// Manage Users.
+        /// </summary>
+        public const string ManageUsers = "2";
+    }
+
+    public class System
+    {
         /// <summary>
         /// <inheritdoc cref="SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE" />
         /// </summary>
-        public const string ViewLogs = "2";
+        public const string ManageLogs = "3";
 
         /// <summary>
         /// Manage background jobs using hangfire's dashboard.
         /// </summary>
-        public const string ManageJobs = "3";
+        public const string ManageJobs = "4";
     }
 
     public class AdminPanel
@@ -35,12 +43,11 @@ public class AppPermissions
         /// <summary>
         /// View the admin panel's dashboard.
         /// </summary>
-        [Display(Name = nameof(AppStrings.PhoneNumber))]
-        public const string Dashboard = "4";
+        public const string Dashboard = "5";
         /// <summary>
         /// Add/Modify/Delete products and categories.
         /// </summary>
-        public const string ManageProductCatalog = "5";
+        public const string ManageProductCatalog = "6";
     }
 
     public class Todo
@@ -48,22 +55,18 @@ public class AppPermissions
         /// <summary>
         /// Add/Modify/Delete todo items in /todo page.
         /// </summary>
-        public const string ManageTodo = "6";
+        public const string ManageTodo = "7";
     }
 
-    public static (string permissionKey, string value, Type group)[] GetAll() => GetSuperAdminPermissions();
 
-    public static (string permissionKey, string value, Type group)[] GetSuperAdminPermissions()
+    public static (string Name, string Value, Type Group)[] GetAll() => GetSuperAdminPermissions();
+
+    private static (string Name, string Value, Type Group)[]? permissions;
+    public static (string Name, string Value, Type Group)[] GetSuperAdminPermissions()
     {
-        return [.. typeof(AppPermissions)
+        return permissions ??= [.. typeof(AppPermissions)
             .GetNestedTypes()
             .SelectMany(t => t.GetFields())
             .Select(t => (t.Name, t.GetRawConstantValue()!.ToString()!, t.DeclaringType!))];
-    }
-
-    public static (string permissionKey, string value, Type group)[] GetBasicUserPermissions()
-    {
-        return [.. GetSuperAdminPermissions()
-            .Where(p => p.group != typeof(Management))];
     }
 }

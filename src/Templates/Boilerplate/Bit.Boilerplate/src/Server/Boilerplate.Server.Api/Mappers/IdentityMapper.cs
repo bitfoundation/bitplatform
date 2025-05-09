@@ -1,6 +1,6 @@
-using Riok.Mapperly.Abstractions;
-using Boilerplate.Server.Api.Models.Identity;
+﻿using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Dtos.Identity;
+using Riok.Mapperly.Abstractions;
 
 namespace Boilerplate.Server.Api.Mappers;
 
@@ -18,6 +18,15 @@ public static partial class IdentityMapper
 
     [MapPropertyFromSource(nameof(UserSessionDto.RenewedOn), Use = nameof(MapRenewedOn))]
     public static partial UserSessionDto Map(this UserSession source);
+
+    public static partial RoleDto Map(this Role source);
+    public static partial Role Map(this RoleDto source);
+    public static partial void Patch(this RoleDto source, Role dest);
+    public static partial IQueryable<RoleDto> Project(this IQueryable<Role> query);
+    public static partial IQueryable<UserDto> Project(this IQueryable<User> query);
+
+    public static partial ClaimDto Map(this RoleClaim source);
+    public static partial IQueryable<ClaimDto> Project(this IQueryable<RoleClaim> query);
 
     [UserMapping]
     private static DateTimeOffset MapRenewedOn(UserSession us) => us.RenewedOn ?? us.StartedOn;

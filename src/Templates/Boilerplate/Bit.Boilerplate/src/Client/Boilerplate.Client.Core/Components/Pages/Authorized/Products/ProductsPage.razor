@@ -83,7 +83,7 @@
                         <BitButton Variant="BitVariant.Text"
                                    IconName="@BitIconName.Edit"
                                    Title="@Localizer[(nameof(AppStrings.Edit))]"
-                                   OnClick="WrapHandled(() => EditProduct(product!))" />
+                                   Href="@($"{Urls.AddOrEditProductPage}/{product.Id}")"/>
                         <BitButton Color="BitColor.Error"
                                    Variant="BitVariant.Text"
                                    IconName="@BitIconName.Delete"

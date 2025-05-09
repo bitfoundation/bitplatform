@@ -518,6 +518,12 @@
                     ]
                 },
                 {
+                    "condition": "(signalR != true && notification != PostgreSQL)",
+                    "exclude": [
+                        "src/Shared/Boilerplate.Shared/Dtos/Identity/SendNotificationToRoleDto.cs"
+                    ]
+                },
+                {
                     "condition": "(captcha != reCaptcha)",
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Services/GoogleRecaptchaService.cs",

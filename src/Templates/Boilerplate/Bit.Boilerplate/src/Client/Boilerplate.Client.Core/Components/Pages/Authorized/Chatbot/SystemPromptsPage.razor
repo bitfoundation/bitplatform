@@ -1,5 +1,6 @@
 @attribute [Route(Urls.SystemPrompts)]
 @attribute [Route("{culture?}" + Urls.SystemPrompts)]
+@attribute [Authorize(Policy = AppPermissions.Management.ManageAiPrompt)]
 @inherits AppPageBase
 
 
@@ -12,21 +13,14 @@
     }
     else
     {
-        <AuthorizeView Policy="@AppPermissions.Management.ManageAI">
-            <Authorized>
-                <BitSticky Top="5rem" Style="margin-bottom:8px">
-                    <BitButton IconName="@BitIconName.Save" OnClick="WrapHandled(SaveChanges)" AutoLoading>
-                        Save prompt
-                    </BitButton>
-                </BitSticky>
-            </Authorized>
-            <NotAuthorized>
-                <BitText Typography="BitTypography.H4" Color="BitColor.Warning">You don't have access to change the system prompts.</BitText>
-            </NotAuthorized>
-        </AuthorizeView>
+        <BitSticky Top="5rem" Style="margin-bottom:8px">
+            <BitButton IconName="@BitIconName.Save" OnClick="WrapHandled(SaveChanges)" AutoLoading>
+                @Localizer[nameof(AppStrings.Save)]
+            </BitButton>
+        </BitSticky>
 
         <BitStack VerticalAlign="BitAlignment.Stretch" Horizontal>
-            <AuthorizeView Policy="@AppPermissions.Management.ManageAI">
+            <AuthorizeView Policy="@AppPermissions.Management.ManageAiPrompt">
                 <BitMarkdownEditor @bind-Value="systemPromptMarkdown" Class="md-editor" />
             </AuthorizeView>
             <BitMarkdownViewer Markdown="@systemPromptMarkdown" Style="word-break:break-all" />

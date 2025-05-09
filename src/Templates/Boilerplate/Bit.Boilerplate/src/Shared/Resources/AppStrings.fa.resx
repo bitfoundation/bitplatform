@@ -248,7 +248,8 @@
     <value>جلسه - سشن جاری</value>
   </data>
     <data name="PrivilegedDeviceLimitMessage" xml:space="preserve">
-    <value>از مجموع {0} دستگاه با دسترسی کامل، شما {1} دستگاه را استفاده کرده‌اید. پس از رسیدن به {0} دستگاه، دستگاه‌های اضافی با امکانات محدود خواهد بود.</value>
+    <value>از مجموع {0} دستگاه با دسترسی کامل، شما {1} دستگاه را استفاده کرده‌اید.
+پس از رسیدن به {0} دستگاه، دستگاه‌های اضافی با امکانات محدود خواهد بود.</value>
   </data>
     <data name="OtherSessions" xml:space="preserve">
     <value>سایر جلسات (سشن‌ها)</value>
@@ -717,7 +718,7 @@
     <value>من موافقم با</value>
   </data>
     <data name="UploadNewImage" xml:space="preserve">
-    <value>بارگذاری یک عکس جدید</value>
+    <value>یک تصویر را انتخاب یا به اینجا بکشید</value>
   </data>
     <data name="Yes" xml:space="preserve">
     <value>بله</value>
@@ -1294,5 +1295,67 @@
     <!--#endif -->
     <data name="PleaseWait" xml:space="preserve">
     <value>لطفا صبر کنید</value>
+  </data>
+    <data name="Management" xml:space="preserve">
+    <value>مدیریت</value>
+  </data>
+    <data name="UserGroups" xml:space="preserve">
+    <value>گروههای کاربری</value>
+  </data>
+    <data name="RolesPageTitle" xml:space="preserve">
+    <value>مدیریت گروههای کاربری</value>
+  </data>
+    <data name="NoRoleMessage" xml:space="preserve">
+    <value>گروه کاربری وجود ندارد</value>
+  </data>
+    <data name="AddRole" xml:space="preserve">
+    <value>افزودن گروه کاربری</value>
+  </data>
+    <data name="EditRole" xml:space="preserve">
+    <value>ویرایش گروه کاربری</value>
+  </data>
+    <data name="NewRoleName" xml:space="preserve">
+    <value>نام گروه کاربری جدید</value>
+  </data>
+    <data name="Users" xml:space="preserve">
+    <value>کاربران</value>
+  </data>
+    <data name="Permissions" xml:space="preserve">
+    <value>امکانات</value>
+  </data>
+    <data name="Quota" xml:space="preserve">
+    <value>ظرفیت</value>
+  </data>
+    <data name="QuotaDescription" xml:space="preserve">
+    <value>برای محدود کردن استفاده از ویژگی‌ها، می‌توانید سهمیه‌هایی را در این تب تعیین کنید که می‌تواند برای هر نقش متفاوت باشد. به عنوان مثال، تعداد دستگاه‌هایی که یک کاربر می‌تواند وارد آن‌ها شود یا تعداد دفعاتی که می‌تواند از یک ویژگی خاص اپلیکیشن استفاده کند.</value>
+  </data>
+    <data name="MaxPrevilegedSessions" xml:space="preserve">
+    <value>حداکثر جلسات امتیازدار</value>
+  </data>
+    <data name="General" xml:space="preserve">
+    <value>عمومی</value>
+  </data>
+    <data name="RoleName" xml:space="preserve">
+    <value>نام گروه کاربری</value>
+  </data>
+    <!--#if (notification == true || signalR == true) -->
+    <data name="RoleNotificationLabel" xml:space="preserve">
+    <value>پیام اعلان</value>
+  </data>
+    <data name="SendRoleNotification" xml:space="preserve">
+    <value>ارسال اعلان</value>
+  </data>
+    <!--#endif -->
+    <data name="RoleExistErrorMessage" xml:space="preserve">
+    <value>این گروه کاربری وجود دارد</value>
+  </data>
+    <data name="Users" xml:space="preserve">
+    <value>کاربران</value>
+  </data>
+    <data name="UsersPageTitle" xml:space="preserve">
+    <value>مدیریت کاربران</value>
+  </data>
+    <data name="DeleteRole" xml:space="preserve">
+    <value>حذف گروه کاربران</value>
   </data>
 </root>

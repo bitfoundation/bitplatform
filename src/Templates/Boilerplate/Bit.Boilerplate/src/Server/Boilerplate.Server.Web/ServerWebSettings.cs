@@ -59,15 +59,13 @@ public partial class WebAppRenderOptions
         {
             var mode = BlazorMode;
 
-            // When opening an .slnx solution in Visual Studio instead of .sln or .slnf,  
-            // you can switch between configurations like `DebugBlazorServer` and `DebugBlazorWasm`.  
+            // When opening an .slnx/.slnf solutions in Visual Studio instead of .sln,  
+            // you can switch between to `DebugBlazorServer` configuration to have optimized build times during development.  
             // If `DebugBlazorServer` is selected, `BlazorMode` will be set to `BlazorServer`  
             // regardless of its value in appsettings.json
             //-:cnd:noEmit
 #if DebugBlazorServer
             mode = BlazorWebAppMode.BlazorServer;
-#elif DebugBlazorWasm
-            mode = BlazorWebAppMode.BlazorWebAssembly;
 #endif
             //+:cnd:noEmit
 

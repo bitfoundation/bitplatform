@@ -19,16 +19,14 @@ public partial class ProductEmbeddingService
     {
         //#if (database != "PostgreSQL")
         // The RAG has been implemented for PostgreSQL only. Checkout https://github.com/bitfoundation/bitplatform/blob/develop/src/Templates/Boilerplate/Bit.Boilerplate/src/Server/Boilerplate.Server.Api/Services/ProductEmbeddingService.cs
-        return dbContext.Products.OrderBy(_ => EF.Functions.Random()).Take(15);
+        return dbContext.Products.Where(p => p.Name!.Contains(searchQuery) || p.Category!.Name!.Contains(searchQuery));
         //#else
         var embeddedUserQuery = await EmbedText(searchQuery, cancellationToken);
         if (embeddedUserQuery is null)
-            return dbContext.Products.OrderBy(_ => EF.Functions.Random()).Take(15);
+            return dbContext.Products.Where(p => p.Name!.Contains(searchQuery) || p.Category!.Name!.Contains(searchQuery));
         var value = new Pgvector.Vector(embeddedUserQuery.Value);
         return dbContext.Products
-            .Where(p => p.Embedding!.CosineDistance(value!) < 0.85f)
-            .OrderBy(p => p.Embedding!.CosineDistance(value!))
-            .Take(10);
+            .Where(p => p.Embedding!.CosineDistance(value!) < 0.85f);
         //#endif
     }
 
@@ -39,6 +37,7 @@ public partial class ProductEmbeddingService
         //#else
         await dbContext.Entry(product).Reference(p => p.Category).LoadAsync(cancellationToken);
 
+        // TODO: Needs to be improved.
         var embedding = await EmbedText($"Name: {product.Name}, Manufactor: {product.Category!.Name}, Description: {product.DescriptionText}, Price: {product.Price}", cancellationToken);
 
         if (embedding.HasValue)

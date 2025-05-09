@@ -260,10 +260,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
         using var currentCts = cts;
         cts = new();
 
-        if (currentCts.IsCancellationRequested is false)
-        {
-            await currentCts.CancelAsync();
-        }
+        await currentCts.CancelAsync();
     }
 
     public async ValueTask DisposeAsync()
@@ -272,10 +269,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
         {
             using var currentCts = cts;
             cts = null;
-            if (currentCts.IsCancellationRequested is false)
-            {
-                await currentCts.CancelAsync();
-            }
+            await currentCts.CancelAsync();
         }
 
         await PrerenderStateService.DisposeAsync();

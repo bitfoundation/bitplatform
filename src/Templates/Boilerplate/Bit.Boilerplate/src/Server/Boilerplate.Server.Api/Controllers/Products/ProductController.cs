@@ -11,9 +11,9 @@ using Ganss.Xss;
 
 namespace Boilerplate.Server.Api.Controllers.Products;
 
-[ApiController, Route("api/[controller]/[action]"),
-    Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS),
-    Authorize(Policy = AppPermissions.AdminPanel.ManageProductCatalog)]
+[ApiController, Route("api/[controller]/[action]")]
+[Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+[Authorize(Policy = AppPermissions.AdminPanel.ManageProductCatalog)]
 public partial class ProductController : AppControllerBase, IProductController
 {
     [AutoInject] private HtmlSanitizer htmlSanitizer = default!;
@@ -50,7 +50,8 @@ public partial class ProductController : AppControllerBase, IProductController
     public async Task<PagedResult<ProductDto>> GetProductsBySearchQuery(string searchQuery, ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
     {
         //#if (database == "PostgreSQL")
-        var query = (IQueryable<ProductDto>)odataQuery.ApplyTo((await (productEmbeddingService.GetProductsBySearchQuery(searchQuery, cancellationToken))).Project(), ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
+        var query = (IQueryable<ProductDto>)odataQuery.ApplyTo((await (productEmbeddingService.GetProductsBySearchQuery(searchQuery, cancellationToken))).Project(),
+            ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip | AllowedQueryOptions.OrderBy /* Ordering can disrupt the results of the embedding service. */);
         var totalCount = await query.LongCountAsync(cancellationToken);
 
         query = query.SkipIf(odataQuery.Skip is not null, odataQuery.Skip?.Value)
