@@ -1,4 +1,4 @@
-namespace Boilerplate.Client.Core.Components.Pages.Identity.Components;
+﻿namespace Boilerplate.Client.Core.Components.Pages.Identity.Components;
 
 public partial class SocialRow
 {
@@ -24,5 +24,10 @@ public partial class SocialRow
     private async Task HandleApple()
     {
         await OnClick.InvokeAsync("Apple");
+    }
+
+    private async Task HandleAzureAD()
+    {
+        await OnClick.InvokeAsync("AzureAD");
     }
 }
