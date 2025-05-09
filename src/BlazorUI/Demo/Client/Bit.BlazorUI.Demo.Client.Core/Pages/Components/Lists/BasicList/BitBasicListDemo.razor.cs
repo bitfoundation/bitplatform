@@ -13,6 +13,48 @@ public partial class BitBasicListDemo
         },
         new()
         {
+            Name = "FitHeight",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Sets the height of the list to fit its content.",
+        },
+        new()
+        {
+            Name = "FitSize",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Sets the width and height of the list to fit its content.",
+        },
+        new()
+        {
+            Name = "FitWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Sets the width of the list to fit its content.",
+        },
+        new()
+        {
+            Name = "FullHeight",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Sets the height of the list to 100%.",
+        },
+        new()
+        {
+            Name = "FullSize",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Sets the width and height of the list to 100%.",
+        },
+        new()
+        {
+            Name = "FullWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Sets the width of the list to 100%.",
+        },
+        new()
+        {
             Name = "EnableVirtualization",
             Type = "bool",
             DefaultValue = "false",
