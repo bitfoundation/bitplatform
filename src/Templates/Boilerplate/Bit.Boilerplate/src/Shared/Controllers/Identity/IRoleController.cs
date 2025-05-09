@@ -16,7 +16,7 @@ public interface IRoleController : IAppController
     Task<List<UserDto>> GetUsers(Guid roleId, CancellationToken cancellationToken) => default!;
 
     [HttpGet("{roleId}")]
-    Task<List<RoleClaimDto>> GetClaims(Guid roleId, CancellationToken cancellationToken) => default!;
+    Task<List<ClaimDto>> GetClaims(Guid roleId, CancellationToken cancellationToken) => default!;
 
     [HttpPost]
     Task<RoleDto> Create(RoleDto roleDto, CancellationToken cancellationToken);
@@ -24,17 +24,17 @@ public interface IRoleController : IAppController
     [HttpPost]
     Task<RoleDto> Update(RoleDto roleDto, CancellationToken cancellationToken);
 
-    [HttpPost]
-    Task<List<RoleClaimDto>> AddClaims(List<RoleClaimRequestDto> dtos, CancellationToken cancellationToken);
+    [HttpPost("{roleId}")]
+    Task AddClaims(Guid roleId, List<ClaimDto> roleClaims, CancellationToken cancellationToken);
+
+    [HttpPost("{roleId}")]
+    Task DeleteClaims(Guid roleId, List<ClaimDto> roleClaims, CancellationToken cancellationToken);
+
+    [HttpPost("{roleId}")]
+    Task UpdateClaims(Guid roleId, List<ClaimDto> roleClaims, CancellationToken cancellationToken);
 
     [HttpPost]
-    Task DeleteClaims(List<RoleClaimRequestDto> dtos, CancellationToken cancellationToken);
-
-    [HttpPost]
-    Task<List<RoleClaimDto>> UpdateClaims(List<RoleClaimRequestDto> dtos, CancellationToken cancellationToken);
-
-    [HttpPost]
-    Task ToggleUser(ToggleRoleUserDto dto, CancellationToken cancellationToken);
+    Task ToggleUser(UserRoleDto dto, CancellationToken cancellationToken);
 
     //#if (notification == true || signalR == true)
     [HttpPost]

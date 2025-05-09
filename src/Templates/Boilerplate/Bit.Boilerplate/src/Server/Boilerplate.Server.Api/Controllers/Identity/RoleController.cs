@@ -1,8 +1,8 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Services;
-using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Server.Api.Models.Identity;
+using Boilerplate.Shared.Controllers.Identity;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.SignalR;
@@ -21,26 +21,29 @@ public partial class RoleController : AppControllerBase, IRoleController
     [AutoInject] private PushNotificationService pushNotificationService = default!;
     //#endif
 
+    [AutoInject] private UserManager<User> userManager = default!;
+    [AutoInject] private RoleManager<Role> roleManager = default!;
+
     [HttpGet, EnableQuery]
     public IQueryable<RoleDto> GetAllRoles()
     {
-        return DbContext.Roles.Where(r => r.Name != AppRoles.SuperAdmin).Project();
+        return roleManager.Roles.Project();
     }
 
     [HttpGet, EnableQuery]
     public IQueryable<UserDto> GetAllUsers()
     {
-        return DbContext.Users.Project();
+        return userManager.Users.Project();
     }
 
     [HttpGet("{roleId}"), EnableQuery]
     public IQueryable<UserDto> GetUsers(Guid roleId)
     {
-        return DbContext.Users.Where(u => u.Roles.Any(r => r.RoleId == roleId)).Project();
+        return userManager.Users.Where(u => u.Roles.Any(r => r.RoleId == roleId)).Project();
     }
 
     [HttpGet("{roleId}"), EnableQuery]
-    public IQueryable<RoleClaimDto> GetClaims(Guid roleId)
+    public IQueryable<ClaimDto> GetClaims(Guid roleId)
     {
         return DbContext.RoleClaims.Where(rc => rc.RoleId == roleId).Project();
     }
@@ -49,110 +52,106 @@ public partial class RoleController : AppControllerBase, IRoleController
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task<RoleDto> Create(RoleDto roleDto, CancellationToken cancellationToken)
     {
-        roleDto.NormalizedName = roleDto.Name!.ToUpperInvariant();
-        var existingRole = await DbContext.Roles.FirstOrDefaultAsync(r => r.Name == roleDto.Name || r.NormalizedName == roleDto.NormalizedName, cancellationToken);
+        var role = roleDto.Map();
 
-        if (existingRole is not null)
-            throw new BadRequestException(Localizer[nameof(AppStrings.RoleExistErrorMessage)]);
+        var result = await roleManager.CreateAsync(role);
 
-        var entityToAdd = roleDto.Map();
+        if (result.Succeeded is false)
+            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        await DbContext.Roles.AddAsync(entityToAdd, cancellationToken);
-
-        await DbContext.SaveChangesAsync(cancellationToken);
-
-        return entityToAdd.Map();
+        return role.Map();
     }
 
     [HttpPost]
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task<RoleDto> Update(RoleDto roleDto, CancellationToken cancellationToken)
     {
-        roleDto.NormalizedName = roleDto.Name!.ToUpperInvariant();
-        var existingRole = await DbContext.Roles.FirstOrDefaultAsync(r => r.Id != roleDto.Id && (r.Name == roleDto.Name || r.NormalizedName == roleDto.NormalizedName), cancellationToken);
+        var role = await GetRoleById(roleDto.Id, cancellationToken);
 
-        if (existingRole is not null)
-            throw new BadRequestException(Localizer[nameof(AppStrings.RoleExistErrorMessage)]);
+        roleDto.Patch(role);
 
-        var entityToUpdate = await DbContext.Roles.FindAsync([roleDto.Id], cancellationToken)
-                                ?? throw new ResourceNotFoundException();
+        var result = await roleManager.UpdateAsync(role);
 
-        roleDto.Patch(entityToUpdate);
+        if (result.Succeeded is false)
+            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        await DbContext.SaveChangesAsync(cancellationToken);
-
-        return entityToUpdate.Map();
+        return role.Map();
     }
 
-    [HttpPost]
+    [HttpPost("{roleId}")]
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
-    public async Task<List<RoleClaimDto>> AddClaims(List<RoleClaimRequestDto> dtos, CancellationToken cancellationToken)
+    public async Task AddClaims(Guid roleId, List<ClaimDto> claims, CancellationToken cancellationToken)
     {
         List<RoleClaim> entities = [];
 
-        foreach (var dto in dtos)
+        var role = await GetRoleById(roleId, cancellationToken);
+
+        foreach (var claim in claims)
         {
-            //TODO: first check if this claim has already been added to the role or not!
+            var result = await roleManager.AddClaimAsync(role, new(claim.ClaimType!, claim.ClaimValue!));
 
-            var entityToAdd = new RoleClaim { RoleId = dto.RoleId, ClaimType = dto.ClaimType, ClaimValue = dto.ClaimValue };
-
-            await DbContext.RoleClaims.AddAsync(entityToAdd, cancellationToken);
-
-            entities.Add(entityToAdd);
+            if (result.Succeeded is false)
+                throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
         }
-
-        await DbContext.SaveChangesAsync(cancellationToken);
-
-        return [.. entities.Select(e => e.Map())];
     }
 
-    [HttpPost]
+    [HttpPost("{roleId}")]
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
-    public async Task DeleteClaims(List<RoleClaimRequestDto> dtos, CancellationToken cancellationToken)
+    public async Task DeleteClaims(Guid roleId, List<ClaimDto> claims, CancellationToken cancellationToken)
     {
-        await DbContext.RoleClaims.Where(rc => dtos.Select(d => d.Id).Contains(rc.Id))
-            .ExecuteDeleteAsync(cancellationToken);
-    }
+        var role = await GetRoleById(roleId, cancellationToken);
 
-    [HttpPost]
-    [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
-    public async Task<List<RoleClaimDto>> UpdateClaims(List<RoleClaimRequestDto> dtos, CancellationToken cancellationToken)
-    {
-        List<RoleClaim> entities = [];
-
-        foreach (var dto in dtos)
+        foreach (var claim in claims)
         {
-            var entityToUpdate = await DbContext.RoleClaims.FirstOrDefaultAsync(rc => rc.Id == dto.Id, cancellationToken)
-                                    ?? throw new ResourceNotFoundException();
+            var result = await roleManager.RemoveClaimAsync(role, new(claim.ClaimType!, claim.ClaimValue!));
 
-            entityToUpdate.ClaimValue = dto.ClaimValue;
-
-            entities.Add(entityToUpdate);
+            if (result.Succeeded is false)
+                throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
         }
+    }
 
-        await DbContext.SaveChangesAsync(cancellationToken);
+    [HttpPost("{roleId}")]
+    [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
+    public async Task UpdateClaims(Guid roleId, List<ClaimDto> claims, CancellationToken cancellationToken)
+    {
+        var role = await GetRoleById(roleId, cancellationToken);
 
-        return [.. entities.Select(e => e.Map())];
+        foreach (var claim in claims)
+        {
+            var result = await roleManager.RemoveClaimAsync(role, new(claim.ClaimType!, claim.ClaimValue!));
+
+            if (result.Succeeded is false)
+                throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+
+            result = await roleManager.AddClaimAsync(role, new(claim.ClaimType!, claim.ClaimValue!));
+
+            if (result.Succeeded is false)
+                throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+        }
     }
 
     [HttpPost]
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
-    public async Task ToggleUser(ToggleRoleUserDto dto, CancellationToken cancellationToken)
+    public async Task ToggleUser(UserRoleDto dto, CancellationToken cancellationToken)
     {
-        if (dto.IsAdd)
+        var user = await userManager.FindByIdAsync(dto.UserId.ToString())
+            ?? throw new ResourceNotFoundException();
+
+        var role = await roleManager.FindByIdAsync(dto.RoleId.ToString())
+            ?? throw new ResourceNotFoundException();
+
+        if (await userManager.IsInRoleAsync(user, role.Name!))
         {
-            var entityToAdd = new UserRole { UserId = dto.UserId, RoleId = dto.RoleId };
-            await DbContext.UserRoles.AddAsync(entityToAdd, cancellationToken);
+            var result = await userManager.RemoveFromRoleAsync(user, role.Name!);
+            if (result.Succeeded is false)
+                throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
         }
         else
         {
-            var entityToDelete = await DbContext.UserRoles.FirstOrDefaultAsync(ur => ur.UserId == dto.UserId && ur.RoleId == dto.RoleId, cancellationToken)
-                                    ?? throw new ResourceNotFoundException();
-
-            DbContext.Remove(entityToDelete);
+            var result = await userManager.AddToRoleAsync(user, role.Name!);
+            if (result.Succeeded is false)
+                throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
         }
-
-        await DbContext.SaveChangesAsync(cancellationToken);
     }
 
     //#if (notification == true || signalR == true)
@@ -170,4 +169,15 @@ public partial class RoleController : AppControllerBase, IRoleController
         //#endif
     }
     //#endif
+
+    private async Task<Role> GetRoleById(Guid id, CancellationToken cancellationToken)
+    {
+        var role = await roleManager.Roles
+            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken) ?? throw new ResourceNotFoundException();
+
+        if (role.Name == AppRoles.SuperAdmin)
+            throw new BadRequestException();
+
+        return role;
+    }
 }
