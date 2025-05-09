@@ -106,7 +106,7 @@
                                               title="@user.DisplayName"
                                               VerticalAlign="BitAlignment.Center">
                                         <BitText Color="@(IsUserAssigned(user) ? BitColor.PrimaryForeground : BitColor.TertiaryForeground)">
-                                            @user.DisplayName
+                                            @user.DisplayName [@(user.DisplayUserName)]
                                         </BitText>
                                         <BitSpacer />
                                         <BitButton AutoLoading IconOnly
