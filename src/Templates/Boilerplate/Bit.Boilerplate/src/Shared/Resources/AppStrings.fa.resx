@@ -718,7 +718,7 @@
     <value>من موافقم با</value>
   </data>
     <data name="UploadNewImage" xml:space="preserve">
-    <value>بارگذاری یک عکس جدید</value>
+    <value>یک تصویر را انتخاب یا به اینجا بکشید</value>
   </data>
     <data name="Yes" xml:space="preserve">
     <value>بله</value>
