@@ -8,6 +8,7 @@
 [![Nuget downloads](https://img.shields.io/badge/packages_download-6.2M-blue.svg?logo=nuget)](https://www.nuget.org/profiles/bit-foundation)
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/bitfoundation/bitplatform.svg)](http://isitmaintained.com/project/bitfoundation/bitplatform "Average time to resolve an issue")
 [![Percentage of issues still open](http://isitmaintained.com/badge/open/bitfoundation/bitplatform.svg)](http://isitmaintained.com/project/bitfoundation/bitplatform "Percentage of issues still open")
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/bitfoundation/bitplatform)
 
 <br/>
 
