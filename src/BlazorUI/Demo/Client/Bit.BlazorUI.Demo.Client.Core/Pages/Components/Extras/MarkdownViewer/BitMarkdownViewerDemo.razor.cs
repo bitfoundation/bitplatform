@@ -30,7 +30,7 @@ public partial class BitMarkdownViewerDemo
 
 # 🧾 Introduction
 
-At **bitplatform**, we've curated a comprehensive toolkit to empower you in crafting the finest projects using Blazor. Diverging from others merely offering UI Toolkits, ***bit BlazorUI components*** distinguishes itself with over 56 components, with a compact size of under 400 KB. These components boast both Dark and Light Themes, delivering unparalleled High Performance 🚀
+At **bitplatform**, we've curated a comprehensive toolkit to empower you in crafting the finest projects using Blazor. Diverging from others merely offering UI Toolkits, ***bit BlazorUI components*** distinguishes itself with over 80 components, with a compact size of under 400 KB. These components boast both Dark and Light Themes, delivering unparalleled High Performance 🚀
 
 Yet, bitplatform doesn't stop there. Our platform introduces exclusive tools that elevate your development experience:
 
@@ -120,7 +120,7 @@ private string advancedMarkdown = @""![Header](https://user-images.githubusercon
 
 # 🧾 Introduction
 
-At **bitplatform**, we've curated a comprehensive toolkit to empower you in crafting the finest projects using Blazor. Diverging from others merely offering UI Toolkits, ***bit BlazorUI components*** distinguishes itself with over 56 components, with a compact size of under 400 KB. These components boast both Dark and Light Themes, delivering unparalleled High Performance 🚀
+At **bitplatform**, we've curated a comprehensive toolkit to empower you in crafting the finest projects using Blazor. Diverging from others merely offering UI Toolkits, ***bit BlazorUI components*** distinguishes itself with over 80 components, with a compact size of under 400 KB. These components boast both Dark and Light Themes, delivering unparalleled High Performance 🚀
 
 Yet, bitplatform doesn't stop there. Our platform introduces exclusive tools that elevate your development experience:
 
