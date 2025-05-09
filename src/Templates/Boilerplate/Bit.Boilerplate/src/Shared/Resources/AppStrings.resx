@@ -718,7 +718,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>I agree to the</value>
   </data>
     <data name="UploadNewImage" xml:space="preserve">
-    <value>Upload a new image</value>
+    <value>Drag or select an image</value>
   </data>
     <data name="Yes" xml:space="preserve">
     <value>Yes</value>
