@@ -49,21 +49,21 @@ public partial class MainLayout
                     adminPanelItem.ChildItems.AddRange(
                     [
                         new()
-                    {
-                        Text = localizer[nameof(AppStrings.Categories)],
-                        IconName = BitIconName.BuildQueue,
-                        Url = Urls.CategoriesPage,
-                    },
-                    new()
-                    {
-                        Text = localizer[nameof(AppStrings.Products)],
-                        IconName = BitIconName.Product,
-                        Url = Urls.ProductsPage,
-                    }
+                        {
+                            Text = localizer[nameof(AppStrings.Categories)],
+                            IconName = BitIconName.BuildQueue,
+                            Url = Urls.CategoriesPage,
+                        },
+                        new()
+                        {
+                            Text = localizer[nameof(AppStrings.Products)],
+                            IconName = BitIconName.Product,
+                            Url = Urls.ProductsPage,
+                        }
                     ]);
                 }
-                //#endif
             }
+            //#endif
 
             //#if (sample == true)
             if ((await authorizationService.AuthorizeAsync(user, AppPermissions.Todo.ManageTodo)).Succeeded)
