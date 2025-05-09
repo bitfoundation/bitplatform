@@ -57,7 +57,7 @@
                         <BitStack>
                             <BitStack Horizontal VerticalAlign="BitAlignment.End">
                                 @{
-                                    var isEnabled = selectedRoleItem is not null && selectedRoleItem.Text != AppRoles.SuperAdmin;
+                                    var isEnabled = selectedRoleItem?.Text is not AppRoles.SuperAdmin;
                                 }
                                 <BitTextField @bind-Value="editRoleName"
                                               Immediate DebounceTime="300"

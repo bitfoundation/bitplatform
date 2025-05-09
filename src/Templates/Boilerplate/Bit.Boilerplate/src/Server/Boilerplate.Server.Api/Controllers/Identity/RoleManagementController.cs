@@ -161,6 +161,13 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
 
         if (await userManager.IsInRoleAsync(user, role.Name!))
         {
+            if (isSuperAdminRole)
+            {
+                var existingSuperAdminRoleUsersExceptCurrentUserCount = await userManager.Users.CountAsync(u => u.Roles.Any(r => r.RoleId == role.Id) && u.Id != user.Id, cancellationToken);
+
+                if (existingSuperAdminRoleUsersExceptCurrentUserCount == 0)
+                    throw new BadRequestException();
+            }
             var result = await userManager.RemoveFromRoleAsync(user, role.Name!);
             if (result.Succeeded is false)
                 throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());

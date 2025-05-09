@@ -21,7 +21,7 @@ public partial class RolesPage
     private CancellationTokenSource? loadRoleDataCts;
     private List<ClaimDto> selectedRoleClaims = [];
 
-    [AutoInject] IRoleManagementController roleController = default!;
+    [AutoInject] IRoleManagementController roleManagementController = default!;
 
 
     protected override async Task OnInitAsync()
@@ -46,7 +46,7 @@ public partial class RolesPage
     {
         try
         {
-            var allRoles = await roleController.GetAllRoles(CurrentCancellationToken);
+            var allRoles = await roleManagementController.GetAllRoles(CurrentCancellationToken);
 
             roleNavItems = [.. allRoles.Select(r => new BitNavItem
             {
@@ -67,7 +67,7 @@ public partial class RolesPage
         {
             isLoadingUsers = true;
 
-            allUsers = await roleController.GetAllUsers(CurrentCancellationToken);
+            allUsers = await roleManagementController.GetAllUsers(CurrentCancellationToken);
         }
         finally
         {
@@ -110,12 +110,12 @@ public partial class RolesPage
 
     private async Task LoadRoleUsers(Guid roleId, CancellationToken cancellationToken)
     {
-        selectedRoleUsers = await roleController.GetUsers(roleId, cancellationToken);
+        selectedRoleUsers = await roleManagementController.GetUsers(roleId, cancellationToken);
     }
 
     private async Task LoadRoleClaims(Guid roleId, CancellationToken cancellationToken)
     {
-        selectedRoleClaims = await roleController.GetClaims(roleId, cancellationToken);
+        selectedRoleClaims = await roleManagementController.GetClaims(roleId, cancellationToken);
 
         var maxPrivilegedSessionsValue = selectedRoleClaims.FirstOrDefault(c => c.ClaimType == AppClaimTypes.MAX_PRIVILEGED_SESSIONS)?.ClaimValue;
         maxPrivilegedSessions = maxPrivilegedSessionsValue is null
@@ -131,7 +131,7 @@ public partial class RolesPage
 
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
 
-        await roleController.Create(new RoleDto { Name = newRoleName }, CurrentCancellationToken);
+        await roleManagementController.Create(new RoleDto { Name = newRoleName }, CurrentCancellationToken);
 
         newRoleName = null;
         selectedRoleItem = null;
@@ -145,7 +145,7 @@ public partial class RolesPage
 
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
 
-        await roleController.Update(new RoleDto { Id = Guid.Parse(selectedRoleItem.Key!), Name = editRoleName }, CurrentCancellationToken);
+        await roleManagementController.Update(new RoleDto { Id = Guid.Parse(selectedRoleItem.Key!), Name = editRoleName }, CurrentCancellationToken);
 
         editRoleName = null;
         selectedRoleItem = null;
@@ -160,7 +160,7 @@ public partial class RolesPage
 
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
 
-        await roleController.Delete(Guid.Parse(selectedRoleItem.Key!), CurrentCancellationToken);
+        await roleManagementController.Delete(Guid.Parse(selectedRoleItem.Key!), CurrentCancellationToken);
 
         selectedRoleItem = null;
 
@@ -183,7 +183,7 @@ public partial class RolesPage
 
         if (dtos.Count == 0) return;
 
-        await roleController.AddClaims(Guid.Parse(selectedRoleItem.Key!), dtos, CurrentCancellationToken);
+        await roleManagementController.AddClaims(Guid.Parse(selectedRoleItem.Key!), dtos, CurrentCancellationToken);
 
         selectedRoleClaims.AddRange(dtos);
 
@@ -204,7 +204,7 @@ public partial class RolesPage
 
         if (itemsToDelete.Count == 0) return;
 
-        await roleController.DeleteClaims(Guid.Parse(selectedRoleItem.Key!), itemsToDelete, CurrentCancellationToken);
+        await roleManagementController.DeleteClaims(Guid.Parse(selectedRoleItem.Key!), itemsToDelete, CurrentCancellationToken);
 
         _ = itemsToDelete.Select(selectedRoleClaims.Remove).ToList();
 
@@ -223,7 +223,7 @@ public partial class RolesPage
         {
             if (item.Data is not ClaimDto claim) return;
 
-            await roleController.DeleteClaims(roleId, [new ClaimDto { ClaimType = claim.ClaimType, ClaimValue = claim.ClaimValue }], CurrentCancellationToken);
+            await roleManagementController.DeleteClaims(roleId, [new ClaimDto { ClaimType = claim.ClaimType, ClaimValue = claim.ClaimValue }], CurrentCancellationToken);
 
             selectedRoleClaims.Remove(claim);
         }
@@ -235,7 +235,7 @@ public partial class RolesPage
                 ClaimType = AppClaimTypes.PERMISSIONS,
             };
 
-            await roleController.AddClaims(roleId, [dto], CurrentCancellationToken);
+            await roleManagementController.AddClaims(roleId, [dto], CurrentCancellationToken);
 
             selectedRoleClaims.Add(dto);
         }
@@ -255,7 +255,7 @@ public partial class RolesPage
             RoleId = Guid.Parse(selectedRoleItem.Key!)
         };
 
-        await roleController.ToggleUser(dto, CurrentCancellationToken);
+        await roleManagementController.ToggleUser(dto, CurrentCancellationToken);
 
         if (IsUserAssigned(user) is false)
         {
@@ -285,7 +285,7 @@ public partial class RolesPage
                 ClaimValue = maxPrivilegedSessions.Value.ToString(),
             };
 
-            await roleController.UpdateClaims(roleId, [dto], CurrentCancellationToken);
+            await roleManagementController.UpdateClaims(roleId, [dto], CurrentCancellationToken);
         }
         else
         {
@@ -295,7 +295,7 @@ public partial class RolesPage
                 ClaimValue = maxPrivilegedSessions.Value.ToString(),
             };
 
-            await roleController.AddClaims(roleId, [dto], CurrentCancellationToken);
+            await roleManagementController.AddClaims(roleId, [dto], CurrentCancellationToken);
 
             selectedRoleClaims.Add(dto);
         }
@@ -309,7 +309,7 @@ public partial class RolesPage
 
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
 
-        await roleController.SendNotification(new() { RoleId = Guid.Parse(selectedRoleItem.Key!), Message = notificationMessage }, CurrentCancellationToken);
+        await roleManagementController.SendNotification(new() { RoleId = Guid.Parse(selectedRoleItem.Key!), Message = notificationMessage }, CurrentCancellationToken);
     }
     //#endif
 
