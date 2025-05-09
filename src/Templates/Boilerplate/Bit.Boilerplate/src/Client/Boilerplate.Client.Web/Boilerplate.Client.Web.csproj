@@ -68,7 +68,7 @@
     </Target>
 
     <Target Name="BuildCssFiles">
-        <Exec Command="../Boilerplate.Client.Core/node_modules/.bin/sass .:. --style compressed --load-path=Components --silence-deprecation=import --update" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+        <Exec Command="../Boilerplate.Client.Core/node_modules/.bin/sass Components:Components --style compressed --silence-deprecation=import --update --color" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
     <PropertyGroup Condition="'$(Environment)' != 'Development'">
