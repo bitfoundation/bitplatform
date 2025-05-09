@@ -22,8 +22,11 @@ public partial class MainLayout
         if (user?.IsAuthenticated() is true)
         {
             //#if (module == "Admin")
-            if ((await authorizationService.AuthorizeAsync(user, AppPermissions.AdminPanel.Dashboard)).Succeeded ||
-                (await authorizationService.AuthorizeAsync(user, AppPermissions.AdminPanel.ManageProductCatalog)).Succeeded)
+
+            var (dashboard, manageProductCatalog) = await (authorizationService.IsAuthorizeAsync(user, AppPermissions.AdminPanel.Dashboard),
+                authorizationService.IsAuthorizeAsync(user, AppPermissions.AdminPanel.ManageProductCatalog));
+
+            if (dashboard || manageProductCatalog)
             {
                 BitNavItem adminPanelItem = new()
                 {
@@ -34,7 +37,7 @@ public partial class MainLayout
 
                 navPanelItems.Add(adminPanelItem);
 
-                if ((await authorizationService.AuthorizeAsync(user, AppPermissions.AdminPanel.Dashboard)).Succeeded)
+                if (dashboard)
                 {
                     adminPanelItem.ChildItems.Add(new()
                     {
@@ -44,7 +47,7 @@ public partial class MainLayout
                     });
                 }
 
-                if ((await authorizationService.AuthorizeAsync(user, AppPermissions.AdminPanel.ManageProductCatalog)).Succeeded)
+                if (manageProductCatalog)
                 {
                     adminPanelItem.ChildItems.AddRange(
                     [
@@ -66,7 +69,7 @@ public partial class MainLayout
             //#endif
 
             //#if (sample == true)
-            if ((await authorizationService.AuthorizeAsync(user, AppPermissions.Todo.ManageTodo)).Succeeded)
+            if (await authorizationService.IsAuthorizeAsync(user, AppPermissions.Todo.ManageTodo))
             {
                 navPanelItems.Add(new()
                 {
@@ -103,9 +106,11 @@ public partial class MainLayout
 
         if (user?.IsAuthenticated() is true)
         {
-            if ((await authorizationService.AuthorizeAsync(user, AppPermissions.Management.ManageRoles)).Succeeded ||
-                (await authorizationService.AuthorizeAsync(user, AppPermissions.Management.ManageUsers)).Succeeded ||
-                (await authorizationService.AuthorizeAsync(user, AppPermissions.Management.ManageAiPrompt)).Succeeded)
+            var (manageRoles, manageUsers, manageAiPrompt) = await (authorizationService.IsAuthorizeAsync(user, AppPermissions.Management.ManageRoles),
+                authorizationService.IsAuthorizeAsync(user, AppPermissions.Management.ManageUsers),
+                authorizationService.IsAuthorizeAsync(user, AppPermissions.Management.ManageAiPrompt));
+
+            if (manageRoles || manageUsers || manageAiPrompt)
             {
                 BitNavItem managementItem = new()
                 {
@@ -116,7 +121,7 @@ public partial class MainLayout
 
                 navPanelItems.Add(managementItem);
 
-                if ((await authorizationService.AuthorizeAsync(user, AppPermissions.Management.ManageRoles)).Succeeded)
+                if (manageRoles)
                 {
                     managementItem.ChildItems.Add(new()
                     {
@@ -126,7 +131,7 @@ public partial class MainLayout
                     });
                 }
 
-                if ((await authorizationService.AuthorizeAsync(user, AppPermissions.Management.ManageUsers)).Succeeded)
+                if (manageUsers)
                 {
                     managementItem.ChildItems.Add(new()
                     {
@@ -137,7 +142,7 @@ public partial class MainLayout
                 }
 
                 //#if (signalR == true)
-                if ((await authorizationService.AuthorizeAsync(user, AppPermissions.Management.ManageAiPrompt)).Succeeded)
+                if (manageAiPrompt)
                 {
                     managementItem.ChildItems.Add(new()
                     {
