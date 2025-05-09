@@ -37,7 +37,9 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     [HttpGet, EnableQuery]
     public IQueryable<UserDto> GetAllUsers()
     {
-        return userManager.Users.Project();
+        return userManager.Users
+            .Where(u => u.EmailConfirmed || u.PhoneNumberConfirmed || u.Logins.Any() /*Social sign-in*/)
+            .Project();
     }
 
     [HttpGet("{roleId}"), EnableQuery]
