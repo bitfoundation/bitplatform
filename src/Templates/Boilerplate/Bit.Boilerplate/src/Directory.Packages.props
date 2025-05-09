@@ -89,6 +89,7 @@
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.4" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.4" />
         <PackageVersion Include="Swashbuckle.AspNetCore" Version="8.1.1" />
+        <PackageVersion Include="Microsoft.Identity.Web" Version="3.8.4" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.4" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="9.0.4" />
         <PackageVersion Include="AspNet.Security.OAuth.Apple" Version="9.3.0" />
