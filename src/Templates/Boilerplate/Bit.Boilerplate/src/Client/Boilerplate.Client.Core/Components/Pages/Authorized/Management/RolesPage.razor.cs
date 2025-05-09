@@ -1,5 +1,4 @@
 ﻿//-:cnd:noEmit
-using System.Linq;
 using System.Security.Claims;
 using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
@@ -17,11 +16,12 @@ public partial class RolesPage
     private int? maxPrivilegedSessions;
     private string? notificationMessage;
     private List<UserDto> allUsers = [];
-    private List<RoleClaimDto> selectedRoleClaims = [];
     private List<BitNavItem> roleNavItems = [];
     private List<UserDto> selectedRoleUsers = [];
+    private BitSearchBox _searchBoxRef = default!;
     private List<BitNavItem> permissionNavItems = [];
     private CancellationTokenSource? loadRoleDataCts;
+    private List<RoleClaimDto> selectedRoleClaims = [];
 
 
     [AutoInject] IRoleController roleController = default!;
@@ -119,10 +119,9 @@ public partial class RolesPage
         selectedRoleClaims = await roleController.GetClaims(roleId, cancellationToken);
 
         var maxPrivilegedSessionsValue = selectedRoleClaims.FirstOrDefault(c => c.ClaimType == AppClaimTypes.MAX_PRIVILEGED_SESSIONS)?.ClaimValue;
-        if (maxPrivilegedSessionsValue is not null)
-        {
-            maxPrivilegedSessions = int.Parse(maxPrivilegedSessionsValue);
-        }
+        maxPrivilegedSessions = maxPrivilegedSessionsValue is null
+                                ? null
+                                : int.Parse(maxPrivilegedSessionsValue, CultureInfo.InvariantCulture);
 
         SetClaimsToPermissionNavItems();
     }
@@ -181,7 +180,15 @@ public partial class RolesPage
             RoleId = Guid.Parse(selectedRole.Key!)
         }).ToList();
 
-        await roleController.AddClaims(dtos, CurrentCancellationToken);
+        if (dtos.Count == 0) return;
+
+        var claims = await roleController.AddClaims(dtos, CurrentCancellationToken);
+
+        selectedRoleClaims.AddRange(claims);
+
+        SetClaimsToPermissionNavItems();
+
+        StateHasChanged();
     }
 
     private async Task DeletePermissions(BitNavItem parent)
@@ -197,7 +204,15 @@ public partial class RolesPage
 
         var dtos = itemsToDelete.Select(i => new RoleClaimRequestDto { Id = i.Id }).ToList();
 
+        if (dtos.Count == 0) return;
+
         await roleController.DeleteClaims(dtos, CurrentCancellationToken);
+
+        _ = itemsToDelete.Select(selectedRoleClaims.Remove).ToList();
+
+        SetClaimsToPermissionNavItems();
+
+        StateHasChanged();
     }
 
     private async Task TogglePermission(BitNavItem item)
@@ -267,15 +282,30 @@ public partial class RolesPage
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
 
         var claim = selectedRoleClaims.SingleOrDefault(c => c.ClaimType == AppClaimTypes.MAX_PRIVILEGED_SESSIONS);
-        if (claim is null) return;
 
-        RoleClaimRequestDto dto = new()
+        if (claim is not null)
         {
-            Id = claim.Id,
-            ClaimValue = maxPrivilegedSessions.Value.ToString(),
-        };
+            RoleClaimRequestDto dto = new()
+            {
+                Id = claim.Id,
+                ClaimValue = maxPrivilegedSessions.Value.ToString(),
+            };
 
-        await roleController.UpdateClaims([dto], CurrentCancellationToken);
+            await roleController.UpdateClaims([dto], CurrentCancellationToken);
+        }
+        else
+        {
+            RoleClaimRequestDto dto = new()
+            {
+                RoleId = Guid.Parse(selectedRole.Key!),
+                ClaimType = AppClaimTypes.MAX_PRIVILEGED_SESSIONS,
+                ClaimValue = maxPrivilegedSessions.Value.ToString(),
+            };
+
+            var claims = await roleController.AddClaims([dto], CurrentCancellationToken);
+
+            selectedRoleClaims.AddRange(claims);
+        }
     }
 
     private async Task SendNotification()

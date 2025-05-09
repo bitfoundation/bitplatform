@@ -7,35 +7,35 @@
 /// </summary>
 public class AppPermissions
 {
-    public class System
-    {
-        /// <summary>
-        /// <inheritdoc cref="SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE" />
-        /// </summary>
-        public const string ManageLogs = "0";
-
-        /// <summary>
-        /// Manage background jobs using hangfire's dashboard.
-        /// </summary>
-        public const string ManageJobs = "1";
-    }
-
     public class Management
     {
         /// <summary>
         /// Change AI Chatbot's system prompt.
         /// </summary>
-        public const string ManageAiPrompt = "2";
+        public const string ManageAiPrompt = "0";
 
         /// <summary>
         /// Manage Roles.
         /// </summary>
-        public const string ManageRoles = "3";
+        public const string ManageRoles = "1";
 
         /// <summary>
         /// Manage Users.
         /// </summary>
-        public const string ManageUsers = "4";
+        public const string ManageUsers = "2";
+    }
+
+    public class System
+    {
+        /// <summary>
+        /// <inheritdoc cref="SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE" />
+        /// </summary>
+        public const string ManageLogs = "3";
+
+        /// <summary>
+        /// Manage background jobs using hangfire's dashboard.
+        /// </summary>
+        public const string ManageJobs = "4";
     }
 
     public class AdminPanel

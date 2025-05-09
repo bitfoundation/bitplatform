@@ -37,6 +37,12 @@ public partial class RoleController : AppControllerBase, IRoleController
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task<RoleDto> Create(RoleDto roleDto, CancellationToken cancellationToken)
     {
+        roleDto.NormalizedName = roleDto.Name!.ToUpperInvariant();
+        var existingRole = await DbContext.Roles.FirstOrDefaultAsync(r => r.Name == roleDto.Name || r.NormalizedName == roleDto.NormalizedName, cancellationToken);
+
+        if (existingRole is not null)
+            throw new BadRequestException(Localizer[nameof(AppStrings.RoleExistErrorMessage)]);
+
         var entityToAdd = roleDto.Map();
 
         await DbContext.Roles.AddAsync(entityToAdd, cancellationToken);
@@ -50,6 +56,12 @@ public partial class RoleController : AppControllerBase, IRoleController
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task<RoleDto> Update(RoleDto roleDto, CancellationToken cancellationToken)
     {
+        roleDto.NormalizedName = roleDto.Name!.ToUpperInvariant();
+        var existingRole = await DbContext.Roles.FirstOrDefaultAsync(r => r.Name == roleDto.Name || r.NormalizedName == roleDto.NormalizedName, cancellationToken);
+
+        if (existingRole is not null)
+            throw new BadRequestException(Localizer[nameof(AppStrings.RoleExistErrorMessage)]);
+
         var entityToUpdate = await DbContext.Roles.FindAsync([roleDto.Id], cancellationToken)
                                 ?? throw new ResourceNotFoundException();
 
@@ -79,7 +91,7 @@ public partial class RoleController : AppControllerBase, IRoleController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        return entities.Select(e => e.Map()).ToList();
+        return [.. entities.Select(e => e.Map())];
     }
 
     [HttpPost]
@@ -100,7 +112,7 @@ public partial class RoleController : AppControllerBase, IRoleController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        return entities.Select(e => e.Map()).ToList();
+        return [.. entities.Select(e => e.Map())];
     }
 
     [HttpPost]

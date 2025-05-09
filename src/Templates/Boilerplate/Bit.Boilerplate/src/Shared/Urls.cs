@@ -38,4 +38,6 @@ public static partial class Urls
     public const string Authorize = "/authorize";
 
     public const string RolesPage = "/roles";
+
+    public const string UsersPage = "/users";
 }

@@ -57,12 +57,12 @@
                             <BitStack Horizontal VerticalAlign="BitAlignment.End">
                                 <BitTextField @bind-Value="editRoleName"
                                               Immediate DebounceTime="300"
-                                              Label="@Localizer[nameof(AppStrings.RoleName)]"
-                                              IsEnabled="string.IsNullOrWhiteSpace(editRoleName) is false" />
+                                              IsEnabled="selectedRole is not null"
+                                              Label="@Localizer[nameof(AppStrings.RoleName)]" />
                                 <BitButton AutoLoading
                                            IconName="@BitIconName.Edit"
                                            OnClick="WrapHandled(EditRole)"
-                                           IsEnabled="string.IsNullOrWhiteSpace(editRoleName) is false">
+                                           IsEnabled="selectedRole is not null && string.IsNullOrWhiteSpace(editRoleName) is false">
                                     @Localizer[nameof(AppStrings.EditRole)]
                                 </BitButton>
                             </BitStack>
@@ -70,11 +70,12 @@
                             <BitTextField @bind-Value="@notificationMessage"
                                           Multiline Rows="3"
                                           Style="width:100%"
+                                          IsEnabled="selectedRole is not null"
                                           Label="@Localizer[nameof(AppStrings.RoleNotificationLabel)]"
-                                          IsEnabled="string.IsNullOrWhiteSpace(editRoleName) is false" />
+                                          Placeholder="@Localizer[nameof(AppStrings.RoleNotificationPlaceHolder)]" />
                             <BitButton AutoLoading
                                        OnClick="WrapHandled(SendNotification)"
-                                       IsEnabled="string.IsNullOrWhiteSpace(editRoleName) is false">
+                                       IsEnabled="selectedRole is not null && string.IsNullOrWhiteSpace(notificationMessage) is false">
                                 @Localizer[nameof(AppStrings.SendRoleNotification)]
                             </BitButton>
                         </BitStack>
@@ -122,18 +123,18 @@
                                     }
                                     else
                                     {
-                                        <BitStack Horizontal FitSize VerticalAlign="BitAlignment.Center">
+                                        <BitStack Horizontal FitSize VerticalAlign="BitAlignment.Center" @onclick:stopPropagation>
                                             <BitButton AutoLoading IconOnly
                                                        Variant="BitVariant.Outline"
                                                        IsEnabled="selectedRole is not null"
                                                        IconName="@(BitIconName.Blocked2Solid)"
-                                                       OnClick="WrapHandled(() => AddPermissions(item))" />
+                                                       OnClick="WrapHandled(() => DeletePermissions(item))" />
 
                                             <BitButton AutoLoading IconOnly
                                                        Variant="BitVariant.Outline"
                                                        IsEnabled="selectedRole is not null"
                                                        IconName="@(BitIconName.CircleAdditionSolid)"
-                                                       OnClick="WrapHandled(() => DeletePermissions(item))" />
+                                                       OnClick="WrapHandled(() => AddPermissions(item))" />
                                         </BitStack>
                                     }
                                 </BitStack>
