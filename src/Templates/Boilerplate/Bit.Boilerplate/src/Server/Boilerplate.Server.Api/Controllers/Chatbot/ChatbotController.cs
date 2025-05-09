@@ -4,17 +4,18 @@ using Boilerplate.Shared.Controllers.Chatbot;
 
 namespace Boilerplate.Server.Api.Controllers.Chatbot;
 
-[ApiController, Route("api/[controller]/[action]")]
+[ApiController, Route("api/[controller]/[action]"), 
+    Authorize(Policy = AppPermissions.Management.ManageAiPrompt)]
 public partial class ChatbotController : AppControllerBase, IChatbotController
 {
-    [HttpGet("{kind}"), AllowAnonymous]
+    [HttpGet("{kind}")]
     public async Task<string> GetSystemPromptMarkdown(PromptKind kind, CancellationToken cancellationToken)
     {
         return (await DbContext.SystemPrompts.FirstOrDefaultAsync(p => p.PromptKind == kind, cancellationToken))?.Markdown
             ?? throw new ResourceNotFoundException();
     }
 
-    [HttpPost, Authorize(Policy = AuthPolicies.ELEVATED_ACCESS), Authorize(Policy =AppPermissions.Management.ManageAiPrompt)]
+    [HttpPost, Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task UpdateSystemPrompt(UpdateSystemPromptDto request, CancellationToken cancellationToken)
     {
         var systemPrompt = (await DbContext.SystemPrompts.FirstOrDefaultAsync(p => p.PromptKind == request.Kind, cancellationToken))

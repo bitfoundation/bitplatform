@@ -1338,6 +1338,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="RoleName" xml:space="preserve">
     <value>User group name</value>
   </data>
+    <!--#if (notification == true || signalR == true) -->
     <data name="RoleNotificationLabel" xml:space="preserve">
     <value>Notification message</value>
   </data>
@@ -1348,6 +1349,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>Hey {{UserDisplayName}},
 Awesome to see you!</value>
   </data>
+    <!--#endif -->
     <data name="RoleExistErrorMessage" xml:space="preserve">
     <value>This user group already exists</value>
   </data>

@@ -13,14 +13,12 @@ public partial class RolesPage
     private string? loadingRoleKey;
     private BitNavItem? selectedRole;
     private int? maxPrivilegedSessions;
-    private string? notificationMessage;
     private List<UserDto> allUsers = [];
     private List<BitNavItem> roleNavItems = [];
     private List<UserDto> selectedRoleUsers = [];
     private List<BitNavItem> permissionNavItems = [];
     private CancellationTokenSource? loadRoleDataCts;
     private List<RoleClaimDto> selectedRoleClaims = [];
-
 
     [AutoInject] IRoleController roleController = default!;
 
@@ -301,6 +299,8 @@ public partial class RolesPage
         }
     }
 
+    //#if (notification == true || signalR == true)
+    private string? notificationMessage;
     private async Task SendNotification()
     {
         if (selectedRole is null) return;
@@ -309,6 +309,7 @@ public partial class RolesPage
 
         await roleController.SendNotification(new() { RoleId = Guid.Parse(selectedRole.Key!), Message = notificationMessage }, CurrentCancellationToken);
     }
+    //#endif
 
     private void SetClaimsToPermissionNavItems()
     {

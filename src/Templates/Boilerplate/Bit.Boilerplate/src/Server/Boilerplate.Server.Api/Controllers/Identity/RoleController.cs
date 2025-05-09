@@ -143,10 +143,12 @@ public partial class RoleController : AppControllerBase, IRoleController
         await DbContext.SaveChangesAsync(cancellationToken);
     }
 
+    //#if (notification == true || signalR == true)
     [HttpPost]
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
-    public async Task SendNotification(RoleNotificationDto dto, CancellationToken cancellationToken)
+    public async Task SendNotification(SendNotificationToRoleDto dto, CancellationToken cancellationToken)
     {
         await Task.Delay(1000, cancellationToken);
     }
+    //#endif
 }

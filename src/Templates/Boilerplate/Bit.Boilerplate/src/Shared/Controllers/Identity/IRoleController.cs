@@ -3,7 +3,7 @@ using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Shared.Controllers.Identity;
 
-[Route("api/[controller]/[action]/")]
+[Route("api/[controller]/[action]/"), AuthorizedApi]
 public interface IRoleController : IAppController
 {
     [HttpGet]
@@ -36,6 +36,8 @@ public interface IRoleController : IAppController
     [HttpPost]
     Task ToggleUser(ToggleRoleUserDto dto, CancellationToken cancellationToken);
 
+    //#if (notification == true || signalR == true)
     [HttpPost]
-    Task SendNotification(RoleNotificationDto dto, CancellationToken cancellationToken);
+    Task SendNotification(SendNotificationToRoleDto dto, CancellationToken cancellationToken);
+    //#endif
 }

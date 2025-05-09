@@ -1338,6 +1338,7 @@
     <data name="RoleName" xml:space="preserve">
     <value>نام گروه کاربری</value>
   </data>
+    <!--#if (notification == true || signalR == true) -->
     <data name="RoleNotificationLabel" xml:space="preserve">
     <value>پیام اعلان</value>
   </data>
@@ -1348,6 +1349,7 @@
     <value>{{UserDisplayName}} عزیز،
 دیدن شما فوق‌العاده است!</value>
   </data>
+    <!--#endif -->
     <data name="RoleExistErrorMessage" xml:space="preserve">
     <value>این گروه کاربری وجود دارد</value>
   </data>

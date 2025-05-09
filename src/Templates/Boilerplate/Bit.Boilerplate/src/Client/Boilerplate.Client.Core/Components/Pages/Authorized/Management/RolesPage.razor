@@ -1,3 +1,4 @@
+@*+:cnd:noEmit*@
 @attribute [Route(Urls.RolesPage)]
 @attribute [Route("{culture?}" + Urls.RolesPage)]
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
@@ -66,6 +67,7 @@
                                     @Localizer[nameof(AppStrings.EditRole)]
                                 </BitButton>
                             </BitStack>
+                            @*#if (notification == true || signalR == true)*@
                             <BitSeparator />
                             <BitTextField @bind-Value="@notificationMessage"
                                           Multiline Rows="3"
@@ -78,6 +80,7 @@
                                        IsEnabled="selectedRole is not null && string.IsNullOrWhiteSpace(notificationMessage) is false">
                                 @Localizer[nameof(AppStrings.SendRoleNotification)]
                             </BitButton>
+                            @*#endif*@
                         </BitStack>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Users)]">

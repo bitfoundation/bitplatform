@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Shared.Dtos.Identity;
 
-public partial class RoleNotificationDto
+public partial class SendNotificationToRoleDto
 {
     public Guid RoleId { get; set; }
 
