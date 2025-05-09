@@ -20,6 +20,42 @@ public partial class BitBasicList<TItem> : BitComponentBase
     [Parameter] public bool EnableVirtualization { get; set; }
 
     /// <summary>
+    /// Sets the height of the list to fit its content.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool FitHeight { get; set; }
+
+    /// <summary>
+    /// Sets the width and height of the list to fit its content.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool FitSize { get; set; }
+
+    /// <summary>
+    /// Sets the width of the list to fit its content.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool FitWidth { get; set; }
+
+    /// <summary>
+    /// Sets the height of the list to 100%.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool FullHeight { get; set; }
+
+    /// <summary>
+    /// Sets the width and height of the list to 100%.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool FullSize { get; set; }
+
+    /// <summary>
+    /// Sets the width of the list to 100%.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool FullWidth { get; set; }
+
+    /// <summary>
     /// Gets or sets the list of items to render.
     /// </summary>
     [Parameter] public ICollection<TItem> Items { get; set; } = Array.Empty<TItem>();
@@ -68,6 +104,16 @@ public partial class BitBasicList<TItem> : BitComponentBase
 
 
     protected override string RootElementClass => "bit-bsl";
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => (FullSize || FullWidth) ? "width:100%" : string.Empty);
+        StyleBuilder.Register(() => (FullSize || FullHeight) ? "height:100%" : string.Empty);
+
+        StyleBuilder.Register(() => (FitSize || FitWidth) ? "width:fit-content" : string.Empty);
+        StyleBuilder.Register(() => (FitSize || FitHeight) ? "height:fit-content" : string.Empty);
+    }
+
 
     // Gets called both by RefreshDataCoreAsync and directly by the Virtualize child component during scrolling
     private async ValueTask<ItemsProviderResult<TItem>> ProvideVirtualizedItems(ItemsProviderRequest request)
