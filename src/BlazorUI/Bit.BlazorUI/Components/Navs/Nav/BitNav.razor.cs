@@ -25,6 +25,11 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     public BitColor? Accent { get; set; }
 
     /// <summary>
+    /// Expands all items on first render.
+    /// </summary>
+    [Parameter] public bool AllExpanded { get; set; }
+
+    /// <summary>
     /// The custom icon name of the chevron-down element of each nav item.
     /// </summary>
     [Parameter] public string? ChevronDownIcon { get; set; }
@@ -181,12 +186,19 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// Collapses all items and children.
     /// </summary>
-    public void CollapseAll()
+    public void CollapseAll(TItem? item = null)
     {
-        foreach (var item in _items)
-        {
-            CollapseItemAndChildren(item);
-        }
+        (item is null ? _items : [item]).ToList().ForEach(it => ToggleItemAndChildren(it, false));
+    }
+
+    /// <summary>
+    /// Expands all items and children in non-SingleExpand mode.
+    /// </summary>
+    public void ExpandAll(TItem? item = null)
+    {
+        if (SingleExpand) return;
+
+        (item is null ? _items : [item]).ToList().ForEach(it => ToggleItemAndChildren(it, true));
     }
 
     /// <summary>
@@ -204,10 +216,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
                 {
                     ToggleItemAndParents(_items, _currentItem, false);
                 }
-            }
 
-            if (isExpanded)
-            {
                 ToggleItemAndParents(_items, Item, isExpanded);
             }
             else
@@ -766,15 +775,31 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
     internal void RegisterOption(BitNavOption option)
     {
-        _items.Add((option as TItem)!);
-        SetSelectedItemByCurrentUrl();
+        var item = (option as TItem)!;
+
+        _items.Add(item);
+
+        if (AllExpanded)
+        {
+            SetIsExpanded(item, true);
+        }
+
+        SetItemExpanded(item, GetIsExpanded(item) ?? false);
+
+        if (Mode == BitNavMode.Automatic)
+        {
+            SetSelectedItemByCurrentUrl();
+        }
+
         StateHasChanged();
     }
 
     internal void UnregisterOption(BitNavOption option)
     {
         _items.Remove((option as TItem)!);
+
         SetSelectedItemByCurrentUrl();
+
         StateHasChanged();
     }
 
@@ -845,12 +870,17 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     {
         if (ChildContent is null && Items.Any())
         {
-            _items = Items.ToList();
+            _items = [.. Items];
             _oldItems = Items;
         }
 
         foreach (var item in Flatten(_items))
         {
+            if (AllExpanded)
+            {
+                SetIsExpanded(item, true);
+            }
+
             SetItemExpanded(item, GetIsExpanded(item) ?? false);
         }
 
@@ -907,13 +937,13 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         item.SetValueToProperty(NameSelectors.IsExpanded.Name, value);
     }
 
-    private void CollapseItemAndChildren(TItem item)
+    private void ToggleItemAndChildren(TItem item, bool isExpanded = false)
     {
-        SetIsExpanded(item, false);
+        SetIsExpanded(item, isExpanded);
 
         foreach (var child in GetChildItems(item))
         {
-            CollapseItemAndChildren(child);
+            ToggleItemAndChildren(child, isExpanded);
         }
     }
 
