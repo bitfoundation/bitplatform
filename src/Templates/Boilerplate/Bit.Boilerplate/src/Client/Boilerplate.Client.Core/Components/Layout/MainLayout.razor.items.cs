@@ -79,16 +79,16 @@ public partial class MainLayout
                 });
             }
             //#endif
-
-            //#if (offlineDb == true)
-            navPanelItems.Add(new()
-            {
-                Text = localizer[nameof(AppStrings.OfflineEditProfileTitle)],
-                IconName = BitIconName.EditContact,
-                Url = Urls.OfflineEditProfilePage,
-            });
-            //#endif
         }
+
+        //#if (offlineDb == true)
+        navPanelItems.Add(new()
+        {
+            Text = localizer[nameof(AppStrings.OfflineEditProfileTitle)],
+            IconName = BitIconName.EditContact,
+            Url = Urls.OfflineEditProfilePage,
+        });
+        //#endif
 
         navPanelItems.Add(new()
         {
