@@ -15,6 +15,13 @@ public partial class BitNavDemo
         },
         new()
         {
+            Name = "AllExpanded",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Expands all items on first render."
+        },
+        new()
+        {
             Name = "ChevronDownIcon",
             Type = "string?",
             DefaultValue = "null",
@@ -224,8 +231,14 @@ public partial class BitNavDemo
         new()
         {
             Name = "CollapseAll",
-            Type = "Action",
+            Type = "Action<TItem? item>",
             Description = "Collapses all items and children.",
+        },
+        new()
+        {
+            Name = "ExpandAll",
+            Type = "Action<TItem? item>",
+            Description = "Expands all items and children in non-SingleExpand mode.",
         },
         new()
         {
