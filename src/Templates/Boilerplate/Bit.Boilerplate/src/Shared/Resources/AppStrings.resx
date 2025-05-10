@@ -667,10 +667,10 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>Sign in</value>
   </data>
     <data name="SignInPanelTitle" xml:space="preserve">
-    <value>Welcome back</value>
+    <value>Welcome</value>
   </data>
     <data name="SignInPanelSubtitle" xml:space="preserve">
-    <value>Sign in to your account with</value>
+    <value>Continue with your</value>
   </data>
     <data name="Continue" xml:space="preserve">
     <value>Continue</value>
@@ -976,7 +976,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>An OTP has been generated and sent to you.</value>
   </data>
     <data name="SendOtpButtonText" xml:space="preserve">
-    <value>Send OTP and Magic link</value>
+    <value>Send OTP / Magic link</value>
   </data>
     <data name="OtpEmailOrPhoneNumberSubtitle" xml:space="preserve">
     <value>Enter your email or phone number:</value>
