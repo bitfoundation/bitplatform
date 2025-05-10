@@ -70,7 +70,7 @@ public partial class IdentityController
                     await userPhoneNumberStore.SetPhoneNumberAsync(user, phoneNumber!, cancellationToken);
                 }
 
-                await userManager.CreateUserWithDemoRole(user, password: Guid.NewGuid().ToString("N") /* Users can reset their password later. */);
+                await userManager.CreateUserWithDemoRole(user);
 
                 await userManager.AddLoginAsync(user, info);
             }
