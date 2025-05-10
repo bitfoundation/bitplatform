@@ -35,14 +35,14 @@ BitBswup.forceRefresh = async () => {
     window.addEventListener('DOMContentLoaded', runBswup); // important event!
 
     function runBswup() {
+        const options = extract();
+
+        info('starting BSWUP...');
+
         if (!('serviceWorker' in navigator)) {
             startBlazor(true);
             return warn('no serviceWorker in navigator');
         }
-
-        const options = extract();
-
-        info('starting...');
 
         startBlazor();
 
