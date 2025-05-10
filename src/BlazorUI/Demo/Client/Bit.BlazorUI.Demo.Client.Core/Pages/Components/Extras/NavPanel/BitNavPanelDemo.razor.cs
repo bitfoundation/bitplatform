@@ -16,6 +16,13 @@ public partial class BitNavPanelDemo
         },
         new()
         {
+            Name = "AllExpanded",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Expands all items on first render."
+        },
+        new()
+        {
             Name = "ChevronDownIcon",
             Type = "string?",
             DefaultValue = "null",
@@ -182,6 +189,15 @@ public partial class BitNavPanelDemo
             Type = "BitNavClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS classes for different parts of the nav component of the nav panel.",
+        },
+        new()
+        {
+            Name = "NavMode",
+            Type = "BitNavMode",
+            DefaultValue = "BitNavMode.Automatic",
+            Description = "Determines how the navigation will be handled.",
+            LinkType = LinkType.Link,
+            Href = "#nav-mode-enum",
         },
         new()
         {
@@ -484,6 +500,26 @@ public partial class BitNavPanelDemo
                     Name= "TertiaryBorder",
                     Description="Tertiary border color.",
                     Value="16",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "nav-mode-enum",
+            Name = "BitNavMode",
+            Items =
+            [
+                new()
+                {
+                    Name = "Automatic",
+                    Description = "The value of selected key will change using NavigationManager and the current url inside the component.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Manual",
+                    Description = "Selected key changes will be sent back to the parent component and the component won't change its value.",
+                    Value = "1",
                 }
             ]
         },
