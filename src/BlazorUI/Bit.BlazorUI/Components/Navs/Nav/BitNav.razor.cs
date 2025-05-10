@@ -199,8 +199,6 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         if (SingleExpand) return;
 
         (item is null ? _items : [item]).ToList().ForEach(it => ToggleItemAndChildren(it, true));
-
-        //StateHasChanged();
     }
 
     /// <summary>
