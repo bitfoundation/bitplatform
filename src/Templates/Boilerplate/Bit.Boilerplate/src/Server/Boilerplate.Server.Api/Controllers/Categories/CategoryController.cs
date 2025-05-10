@@ -11,7 +11,7 @@ namespace Boilerplate.Server.Api.Controllers.Categories;
 
 [ApiController, Route("api/[controller]/[action]"),
     Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS),
-    Authorize(Policy = AppPermissions.AdminPanel.ManageProductCatalog)]
+    Authorize(Policy = AppFeatures.AdminPanel.ManageProductCatalog)]
 public partial class CategoryController : AppControllerBase, ICategoryController
 {
     //#if (signalR == true)

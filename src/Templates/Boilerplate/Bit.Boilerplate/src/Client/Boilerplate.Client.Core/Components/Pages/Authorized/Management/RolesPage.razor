@@ -2,7 +2,7 @@
 @attribute [Route(Urls.RolesPage)]
 @attribute [Route("{culture?}" + Urls.RolesPage)]
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
-@attribute [Authorize(Policy = AppPermissions.Management.ManageRoles)]
+@attribute [Authorize(Policy = AppFeatures.Management.ManageRoles)]
 @inherits AppPageBase
 
 <AppPageData Title="@Localizer[nameof(AppStrings.UserGroups)]"
@@ -51,17 +51,17 @@
                     </BitNav>
                 }
             </BitCard>
-            <BitCard Style="min-width:30rem" FullSize>
+            <BitCard Style="min-width:36rem" FullSize>
                 <BitPivot>
                     <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.General)]">
                         <BitStack>
                             <BitStack Horizontal VerticalAlign="BitAlignment.End">
                                 @{
-                                    var isEnabled = selectedRoleItem?.Text is not AppRoles.SuperAdmin;
+                                    var isEnabled = selectedRoleItem is not null && selectedRoleItem.Text is not AppRoles.SuperAdmin;
                                 }
                                 <BitTextField @bind-Value="editRoleName"
-                                              Immediate DebounceTime="300"
                                               IsEnabled="isEnabled"
+                                              Immediate DebounceTime="300"
                                               Label="@Localizer[nameof(AppStrings.RoleName)]" />
                                 <BitButton AutoLoading
                                            IconName="@BitIconName.Edit"
@@ -71,9 +71,10 @@
                                 </BitButton>
                                 <BitSpacer />
                                 <BitButton AutoLoading
+                                           IsEnabled="isEnabled"
+                                           Color="BitColor.Error"
                                            IconName="@BitIconName.Delete"
-                                           OnClick="WrapHandled(() => { isDeleteDialogOpen = true; })"
-                                           IsEnabled="isEnabled">
+                                           OnClick="WrapHandled(() => { isDeleteDialogOpen = true; })">
                                     @Localizer[nameof(AppStrings.DeleteRole)]
                                 </BitButton>
                             </BitStack>
@@ -118,11 +119,11 @@
                             </BitBasicList>
                         }
                     </BitPivotItem>
-                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Permissions)]">
-                        <BitNav Items="permissionNavItems" Accent="BitColor.SecondaryBackground">
+                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Features)]">
+                        <BitNav Items="featureNavItems" Accent="BitColor.SecondaryBackground">
                             <ItemTemplate Context="item">
                                 <BitStack Horizontal VerticalAlign="BitAlignment.Center">
-                                    <BitText Color="@((IsPermissionAssigned(item)) ? BitColor.PrimaryForeground : BitColor.TertiaryForeground)">
+                                    <BitText Color="@((IsFeatureAssigned(item)) ? BitColor.PrimaryForeground : BitColor.TertiaryForeground)">
                                         @item.Text
                                     </BitText>
                                     <BitSpacer />
@@ -130,8 +131,8 @@
                                     {
                                         <BitButton AutoLoading IconOnly
                                                    IsEnabled="selectedRoleItem is not null"
-                                                   OnClick="WrapHandled(() => TogglePermission(item))"
-                                                   IconName="@(IsPermissionAssigned(item) ? BitIconName.RemoveFrom : BitIconName.AddTo)" />
+                                                   OnClick="WrapHandled(() => ToggleFeature(item))"
+                                                   IconName="@(IsFeatureAssigned(item) ? BitIconName.RemoveFrom : BitIconName.AddTo)" />
                                     }
                                     else
                                     {
@@ -140,13 +141,13 @@
                                                        Variant="BitVariant.Outline"
                                                        IsEnabled="selectedRoleItem is not null"
                                                        IconName="@(BitIconName.Blocked2Solid)"
-                                                       OnClick="WrapHandled(() => DeletePermissions(item))" />
+                                                       OnClick="WrapHandled(() => DeleteFeatures(item))" />
 
                                             <BitButton AutoLoading IconOnly
                                                        Variant="BitVariant.Outline"
                                                        IsEnabled="selectedRoleItem is not null"
                                                        IconName="@(BitIconName.CircleAdditionSolid)"
-                                                       OnClick="WrapHandled(() => AddPermissions(item))" />
+                                                       OnClick="WrapHandled(() => AddFeatures(item))" />
                                         </BitStack>
                                     }
                                 </BitStack>

@@ -57,8 +57,8 @@ public interface IAuthTokenProvider
 
         if (claims.Any(c => c.Type == RoleType && c.Value == AppRoles.SuperAdmin))
         {
-            foreach (var per in AppPermissions.GetSuperAdminPermissions())
-                claims.Add(new Claim(AppClaimTypes.PERMISSIONS, per.Value));
+            foreach (var per in AppFeatures.GetSuperAdminFeatures())
+                claims.Add(new Claim(AppClaimTypes.FEATURES, per.Value));
         }
 
         return claims;

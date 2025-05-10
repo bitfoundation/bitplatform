@@ -226,7 +226,7 @@ public partial class AppHub : Hub
     /// </summary>
     /// <param name="userQuery">`UserId`, `UserSessionId`, `Email` or `PhoneNumber`</param>
     /// <returns></returns>
-    [Authorize(Policy = AppPermissions.System.ManageLogs)]
+    [Authorize(Policy = AppFeatures.System.ManageLogs)]
     public async Task<DiagnosticLogDto[]> GetUserDiagnosticLogs(string? userQuery)
     {
         if (string.IsNullOrEmpty(userQuery))

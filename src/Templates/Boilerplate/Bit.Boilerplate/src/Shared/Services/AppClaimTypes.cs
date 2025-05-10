@@ -25,8 +25,8 @@ public class AppClaimTypes
     public const string ELEVATED_SESSION = "e-s";
 
     /// <summary>
-    /// The list of permissions (claims) assigned to the user.
-    /// <see cref="AppPermissions"/>
+    /// The list of features (claims) assigned to the user.
+    /// <see cref="AppFeatures"/>
     /// </summary>
-    public const string PERMISSIONS = "per";
+    public const string FEATURES = "feat";
 }

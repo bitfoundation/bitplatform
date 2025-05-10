@@ -1320,7 +1320,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="Users" xml:space="preserve">
     <value>Users</value>
   </data>
-    <data name="Permissions" xml:space="preserve">
+    <data name="Features" xml:space="preserve">
     <value>Features</value>
   </data>
     <data name="Quota" xml:space="preserve">
