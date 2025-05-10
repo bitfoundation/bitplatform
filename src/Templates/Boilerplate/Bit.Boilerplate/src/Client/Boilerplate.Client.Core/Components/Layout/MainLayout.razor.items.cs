@@ -84,9 +84,9 @@ public partial class MainLayout
         //#if (offlineDb == true)
         navPanelItems.Add(new()
         {
-            Text = localizer[nameof(AppStrings.OfflineEditProfileTitle)],
+            Text = localizer[nameof(AppStrings.OfflineDatabaseDemoTitle)],
             IconName = BitIconName.EditContact,
-            Url = Urls.OfflineEditProfilePage,
+            Url = Urls.OfflineDatabaseDemo,
         });
         //#endif
 

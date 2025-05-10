@@ -290,10 +290,10 @@
   </data>
     <!--#endif-->
     <!--#if (offlineDb == true) -->
-    <data name="OfflineEditProfileTitle" xml:space="preserve">
+    <data name="OfflineDatabaseDemoTitle" xml:space="preserve">
     <value>ویرایش پروفایل آفلاین</value>
   </data>
-    <data name="OfflineEditProfileMessage" xml:space="preserve">
+    <data name="OfflineDatabaseDemoMessage" xml:space="preserve">
     <value>فرم ویرایش آفلاین مبتنی‌بر EF Core / Sqlite قابل‌ استفاده در برنامه های وب / موبایل / دسکتاپ شما!</value>
   </data>
     <!--#endif-->

@@ -1,10 +1,10 @@
-using Boilerplate.Client.Core.Data;
+﻿using Boilerplate.Client.Core.Data;
 using Boilerplate.Shared.Dtos.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Boilerplate.Client.Core.Components.Pages;
 
-public partial class OfflineEditProfilePage
+public partial class OfflineDatabaseDemoPage
 {
     [AutoInject] IDbContextFactory<OfflineDbContext> dbContextFactory = default!;
 

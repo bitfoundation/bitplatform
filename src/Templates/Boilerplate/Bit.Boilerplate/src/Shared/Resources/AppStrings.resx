@@ -290,11 +290,17 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <!--#endif-->
     <!--#if (offlineDb == true) -->
-    <data name="OfflineEditProfileTitle" xml:space="preserve">
-    <value>Offline Edit profile</value>
+    <data name="OfflineDatabaseDemoTitle" xml:space="preserve">
+    <value>Offline database demo</value>
   </data>
-    <data name="OfflineEditProfileMessage" xml:space="preserve">
-    <value>EF Core / Sqlite powered offline edit form right into your web/mobile/desktop apps!</value>
+    <data name="OfflineDatabaseDemoMessage" xml:space="preserve">
+    <value>Entity Framework Core / SQLite powered offline form inside your web/mobile/desktop apps:
+ • Migrations
+ • Transaction
+ • LINQ queries
+ • Batch operations
+ • Schema based database
+</value>
   </data>
     <!--#endif-->
     <data name="FullName" xml:space="preserve">
