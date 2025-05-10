@@ -67,7 +67,11 @@
                 </BitAppShell>
 
                 @*#if (signalR == true)*@
-                <AppAiChatPanel />
+                <AuthorizeView Policy="@AppFeatures.Communication.Chatbot">
+                    <Authorized>
+                        <AppAiChatPanel />
+                    </Authorized>
+                </AuthorizeView>
                 @*#endif*@
                 <AppSnackBar />
                 <AppDiagnosticModal />

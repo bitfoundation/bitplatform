@@ -43,5 +43,41 @@ public partial class RoleClaimConfiguration : IEntityTypeConfiguration<RoleClaim
             ClaimValue = AppFeatures.Todo.ManageTodo,
             RoleId = demoRoleId
         });
+
+        builder.HasData(new
+        {
+            Id = 5,
+            ClaimType = AppClaimTypes.FEATURES,
+            ClaimValue = AppFeatures.Extra.ViewAboutApp,
+            RoleId = demoRoleId
+        });
+        builder.HasData(new
+        {
+            Id = 6,
+            ClaimType = AppClaimTypes.FEATURES,
+            ClaimValue = AppFeatures.Communication.Chatbot,
+            RoleId = demoRoleId
+        });
+        builder.HasData(new
+        {
+            Id = 7,
+            ClaimType = AppClaimTypes.FEATURES,
+            ClaimValue = AppFeatures.Communication.SignalR,
+            RoleId = demoRoleId
+        });
+        builder.HasData(new
+        {
+            Id = 8,
+            ClaimType = AppClaimTypes.FEATURES,
+            ClaimValue = AppFeatures.Communication.PushNotification,
+            RoleId = demoRoleId
+        });
+        builder.HasData(new
+        {
+            Id = 9,
+            ClaimType = AppClaimTypes.FEATURES,
+            ClaimValue = AppFeatures.Sales.ProductView,
+            RoleId = demoRoleId
+        });
     }
 }

@@ -6,7 +6,13 @@ public interface IAuthTokenProvider
 {
     Task<string?> GetAccessToken();
 
-    public static ClaimsPrincipal Anonymous() => new(new ClaimsIdentity());
+    public static ClaimsPrincipal Anonymous() => new(new ClaimsIdentity(claims: [ // TODO: Get these from server.
+            new Claim(AppClaimTypes.FEATURES, AppFeatures.Communication.Chatbot),
+            new Claim(AppClaimTypes.FEATURES, AppFeatures.Communication.SignalR),
+            new Claim(AppClaimTypes.FEATURES, AppFeatures.Communication.PushNotification),
+            new Claim(AppClaimTypes.FEATURES, AppFeatures.Sales.ProductView),
+            new Claim(AppClaimTypes.FEATURES, AppFeatures.Extra.ViewAboutApp),
+        ]));
 
     private const string RoleType = "role";
     private const string NameType = "name";

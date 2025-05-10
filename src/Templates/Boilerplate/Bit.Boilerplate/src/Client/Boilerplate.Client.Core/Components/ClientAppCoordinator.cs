@@ -148,11 +148,14 @@ public partial class ClientAppCoordinator : AppComponentBase
             }
 
             //#if (signalR == true)
-            await StartSignalR();
+            await StartSignalR(user);
             //#endif
 
             //#if (notification == true)
-            await pushNotificationService.Subscribe(CurrentCancellationToken);
+            if (await AuthorizationService.IsAuthorizedAsync(user, AppFeatures.Communication.PushNotification))
+            {
+                await pushNotificationService.Subscribe(CurrentCancellationToken);
+            }
             //#endif
         }
         catch (Exception exp)
@@ -213,8 +216,11 @@ public partial class ClientAppCoordinator : AppComponentBase
         hubConnection.Reconnecting += HubConnectionStateChange;
     }
 
-    private async Task StartSignalR()
+    private async Task StartSignalR(ClaimsPrincipal user)
     {
+        if (await AuthorizationService.IsAuthorizedAsync(user, AppFeatures.Communication.SignalR) is false)
+            return;
+
         try
         {
             await hubConnection.StopAsync(CurrentCancellationToken);
