@@ -13,7 +13,7 @@ namespace Boilerplate.Server.Api.Controllers.Products;
 
 [ApiController, Route("api/[controller]/[action]")]
 [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
-[Authorize(Policy = AppPermissions.AdminPanel.ManageProductCatalog)]
+[Authorize(Policy = AppFeatures.AdminPanel.ManageProductCatalog)]
 public partial class ProductController : AppControllerBase, IProductController
 {
     [AutoInject] private HtmlSanitizer htmlSanitizer = default!;

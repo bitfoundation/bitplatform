@@ -7,6 +7,6 @@ public class HangfireDashboardAuthorizationFilter : IDashboardAuthorizationFilte
 {
     public bool Authorize([NotNull] DashboardContext context)
     {
-        return context.GetHttpContext().User.HasClaim(AppClaimTypes.PERMISSIONS, AppPermissions.System.ManageJobs);
+        return context.GetHttpContext().User.HasClaim(AppClaimTypes.FEATURES, AppFeatures.System.ManageJobs);
     }
 }

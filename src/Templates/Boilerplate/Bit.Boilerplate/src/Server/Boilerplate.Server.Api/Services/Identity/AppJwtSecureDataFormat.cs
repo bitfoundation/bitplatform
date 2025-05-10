@@ -31,9 +31,9 @@ public partial class AppJwtSecureDataFormat(ServerApiSettings appSettings, Token
 
             if (principal.IsInRole(AppRoles.SuperAdmin))
             {
-                foreach (var per in AppPermissions.GetSuperAdminPermissions())
+                foreach (var per in AppFeatures.GetSuperAdminFeatures())
                 {
-                    identity.AddClaim(new Claim(AppClaimTypes.PERMISSIONS, per.Value));
+                    identity.AddClaim(new Claim(AppClaimTypes.FEATURES, per.Value));
                 }
             }
 

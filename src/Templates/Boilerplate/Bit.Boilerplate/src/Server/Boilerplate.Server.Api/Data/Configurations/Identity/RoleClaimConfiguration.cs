@@ -20,27 +20,27 @@ public partial class RoleClaimConfiguration : IEntityTypeConfiguration<RoleClaim
         });
 
 
-        // Assign non admin permissions to demo role
+        // Assign non admin features to demo role
         var demoRoleId = Guid.Parse("9ff71672-a1d5-4f97-abb7-d87d6b47d5e8");
         builder.HasData(new
         {
             Id = 2,
-            ClaimType = AppClaimTypes.PERMISSIONS,
-            ClaimValue = AppPermissions.AdminPanel.Dashboard,
+            ClaimType = AppClaimTypes.FEATURES,
+            ClaimValue = AppFeatures.AdminPanel.Dashboard,
             RoleId = demoRoleId
         });
         builder.HasData(new
         {
             Id = 3,
-            ClaimType = AppClaimTypes.PERMISSIONS,
-            ClaimValue = AppPermissions.AdminPanel.ManageProductCatalog,
+            ClaimType = AppClaimTypes.FEATURES,
+            ClaimValue = AppFeatures.AdminPanel.ManageProductCatalog,
             RoleId = demoRoleId
         });
         builder.HasData(new
         {
             Id = 4,
-            ClaimType = AppClaimTypes.PERMISSIONS,
-            ClaimValue = AppPermissions.Todo.ManageTodo,
+            ClaimType = AppClaimTypes.FEATURES,
+            ClaimValue = AppFeatures.Todo.ManageTodo,
             RoleId = demoRoleId
         });
     }

@@ -35,9 +35,9 @@ public static partial class ClaimsPrincipalExtensions
         return Guid.Parse(claimsPrincipal.FindFirst(AppClaimTypes.SESSION_ID)!.Value);
     }
 
-    public static bool HasPermission(this ClaimsPrincipal claimsPrincipal, string permission)
+    public static bool HasFeature(this ClaimsPrincipal claimsPrincipal, string feature)
     {
-        return claimsPrincipal.HasClaim(AppClaimTypes.PERMISSIONS, permission);
+        return claimsPrincipal.HasClaim(AppClaimTypes.FEATURES, feature);
     }
 
     public static T? GetClaimValue<T>(this ClaimsPrincipal claimsPrincipal, string claimType)

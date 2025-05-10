@@ -17,9 +17,9 @@ public partial class RolesPage
     private BitNavItem? selectedRoleItem;
     private List<BitNavItem> roleNavItems = [];
     private List<UserDto> selectedRoleUsers = [];
-    private List<BitNavItem> permissionNavItems = [];
-    private CancellationTokenSource? loadRoleDataCts;
+    private List<BitNavItem> featureNavItems = [];
     private List<ClaimDto> selectedRoleClaims = [];
+    private CancellationTokenSource? loadRoleDataCts;
 
     [AutoInject] IRoleManagementController roleManagementController = default!;
 
@@ -28,7 +28,7 @@ public partial class RolesPage
     {
         await base.OnInitAsync();
 
-        permissionNavItems = [.. AppPermissions.GetAll().GroupBy(p => p.Group).Select(g => new BitNavItem
+        featureNavItems = [.. AppFeatures.GetAll().GroupBy(p => p.Group).Select(g => new BitNavItem
         {
             Text = g.Key.Name,
             ChildItems = [.. g.Select(p => new BitNavItem
@@ -122,7 +122,7 @@ public partial class RolesPage
                                 ? null
                                 : int.Parse(maxPrivilegedSessionsValue, CultureInfo.InvariantCulture);
 
-        SetClaimsToPermissionNavItems();
+        SetClaimsToFeatureNavItems();
     }
 
     private async Task AddRole()
@@ -167,18 +167,18 @@ public partial class RolesPage
         await LoadAllRoles();
     }
 
-    private async Task AddPermissions(BitNavItem parent)
+    private async Task AddFeatures(BitNavItem parent)
     {
         if (selectedRoleItem is null) return;
 
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
 
-        var itemsToAdd = parent.ChildItems.Where(ci => IsPermissionAssigned(ci) is false);
+        var itemsToAdd = parent.ChildItems.Where(ci => IsFeatureAssigned(ci) is false);
 
         var dtos = itemsToAdd.Select(i => new ClaimDto
         {
             ClaimValue = i.Key,
-            ClaimType = AppClaimTypes.PERMISSIONS
+            ClaimType = AppClaimTypes.FEATURES
         }).ToList();
 
         if (dtos.Count == 0) return;
@@ -187,16 +187,16 @@ public partial class RolesPage
 
         selectedRoleClaims.AddRange(dtos);
 
-        SetClaimsToPermissionNavItems();
+        SetClaimsToFeatureNavItems();
     }
 
-    private async Task DeletePermissions(BitNavItem parent)
+    private async Task DeleteFeatures(BitNavItem parent)
     {
         if (selectedRoleItem is null) return;
 
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
 
-        var itemsToDelete = parent.ChildItems.Where(IsPermissionAssigned)
+        var itemsToDelete = parent.ChildItems.Where(IsFeatureAssigned)
                                   .Select(i => i.Data)
                                   .Where(d => d is ClaimDto)
                                   .Select(d => (d as ClaimDto)!)
@@ -208,10 +208,10 @@ public partial class RolesPage
 
         _ = itemsToDelete.Select(selectedRoleClaims.Remove).ToList();
 
-        SetClaimsToPermissionNavItems();
+        SetClaimsToFeatureNavItems();
     }
 
-    private async Task TogglePermission(BitNavItem item)
+    private async Task ToggleFeature(BitNavItem item)
     {
         if (selectedRoleItem is null) return;
 
@@ -219,7 +219,7 @@ public partial class RolesPage
 
         var roleId = Guid.Parse(selectedRoleItem.Key!);
 
-        if (IsPermissionAssigned(item))
+        if (IsFeatureAssigned(item))
         {
             if (item.Data is not ClaimDto claim) return;
 
@@ -232,7 +232,7 @@ public partial class RolesPage
             ClaimDto dto = new()
             {
                 ClaimValue = item.Key,
-                ClaimType = AppClaimTypes.PERMISSIONS,
+                ClaimType = AppClaimTypes.FEATURES,
             };
 
             await roleManagementController.AddClaims(roleId, [dto], CurrentCancellationToken);
@@ -240,7 +240,7 @@ public partial class RolesPage
             selectedRoleClaims.Add(dto);
         }
 
-        SetClaimsToPermissionNavItems();
+        SetClaimsToFeatureNavItems();
     }
 
     private async Task ToggleUser(UserDto user)
@@ -313,12 +313,12 @@ public partial class RolesPage
     }
     //#endif
 
-    private bool IsPermissionAssigned(BitNavItem item)
+    private bool IsFeatureAssigned(BitNavItem item)
     {
         if (item.ChildItems.Count == 0)
             return selectedRoleClaims.Any(p => p.ClaimValue == item.Key);
 
-        return item.ChildItems.Any(IsPermissionAssigned);
+        return item.ChildItems.Any(IsFeatureAssigned);
     }
 
     private bool IsUserAssigned(UserDto user)
@@ -326,9 +326,9 @@ public partial class RolesPage
         return selectedRoleUsers.Any(u => user.Id == u.Id);
     }
 
-    private void SetClaimsToPermissionNavItems()
+    private void SetClaimsToFeatureNavItems()
     {
-        foreach (var item in permissionNavItems.SelectMany(i => i.ChildItems))
+        foreach (var item in featureNavItems.SelectMany(i => i.ChildItems))
         {
             item.Data = selectedRoleClaims.FirstOrDefault(p => p.ClaimValue == item.Key);
         }

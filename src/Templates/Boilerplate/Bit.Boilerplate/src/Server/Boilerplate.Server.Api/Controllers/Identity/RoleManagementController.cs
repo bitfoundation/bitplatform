@@ -11,7 +11,7 @@ using Boilerplate.Server.Api.SignalR;
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
 [ApiController, Route("api/[controller]/[action]")]
-[Authorize(Policy = AppPermissions.Management.ManageRoles)]
+[Authorize(Policy = AppFeatures.Management.ManageRoles)]
 public partial class RoleManagementController : AppControllerBase, IRoleManagementController
 {
     //#if (signalR == true)

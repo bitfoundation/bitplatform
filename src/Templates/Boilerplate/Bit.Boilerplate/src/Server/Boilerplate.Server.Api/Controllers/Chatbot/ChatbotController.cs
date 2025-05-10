@@ -5,7 +5,7 @@ using Boilerplate.Shared.Controllers.Chatbot;
 namespace Boilerplate.Server.Api.Controllers.Chatbot;
 
 [ApiController, Route("api/[controller]/[action]"), 
-    Authorize(Policy = AppPermissions.Management.ManageAiPrompt)]
+    Authorize(Policy = AppFeatures.Management.ManageAiPrompt)]
 public partial class ChatbotController : AppControllerBase, IChatbotController
 {
     [HttpGet("{kind}")]

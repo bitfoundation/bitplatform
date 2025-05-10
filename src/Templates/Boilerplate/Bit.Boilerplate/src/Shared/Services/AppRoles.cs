@@ -3,7 +3,7 @@
 public class AppRoles
 {
     /// <summary>
-    /// Has all permissions <see cref="AppPermissions"/> automatically assigned (See IAuthTokenProvider.ReadClaims and AppJwtSecureDataFormat.Unprotect).
+    /// Has all features <see cref="AppFeatures"/> automatically assigned (See IAuthTokenProvider.ReadClaims and AppJwtSecureDataFormat.Unprotect).
     /// </summary>
     public const string SuperAdmin = "s-admin";
 

@@ -1,11 +1,11 @@
 ﻿namespace Boilerplate.Shared.Services;
 
 /// <summary>
-/// Values for the <see cref="AppClaimTypes.PERMISSIONS"/>
-/// These permissions will be implemented as a policy. If the user has the specified value in the <see cref="AppClaimTypes.PERMISSIONS"/> claim,
+/// Values for the <see cref="AppClaimTypes.FEATURES"/>
+/// These features will be implemented as a policy. If the user has the specified value in the <see cref="AppClaimTypes.FEATURES"/> claim,
 /// the policy will be fulfilled, granting the user access to the resource <see cref="ISharedServiceCollectionExtensions.ConfigureAuthorizationCore"/>
 /// </summary>
-public class AppPermissions
+public class AppFeatures
 {
     public class Management
     {
@@ -59,12 +59,12 @@ public class AppPermissions
     }
 
 
-    public static (string Name, string Value, Type Group)[] GetAll() => GetSuperAdminPermissions();
+    public static (string Name, string Value, Type Group)[] GetAll() => GetSuperAdminFeatures();
 
-    private static (string Name, string Value, Type Group)[]? permissions;
-    public static (string Name, string Value, Type Group)[] GetSuperAdminPermissions()
+    private static (string Name, string Value, Type Group)[]? allFeatures;
+    public static (string Name, string Value, Type Group)[] GetSuperAdminFeatures()
     {
-        return permissions ??= [.. typeof(AppPermissions)
+        return allFeatures ??= [.. typeof(AppFeatures)
             .GetNestedTypes()
             .SelectMany(t => t.GetFields())
             .Select(t => (t.Name, t.GetRawConstantValue()!.ToString()!, t.DeclaringType!))];

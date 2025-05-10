@@ -1,6 +1,6 @@
 @attribute [Route(Urls.SystemPrompts)]
 @attribute [Route("{culture?}" + Urls.SystemPrompts)]
-@attribute [Authorize(Policy = AppPermissions.Management.ManageAiPrompt)]
+@attribute [Authorize(Policy = AppFeatures.Management.ManageAiPrompt)]
 @inherits AppPageBase
 
 
@@ -20,7 +20,7 @@
         </BitSticky>
 
         <BitStack VerticalAlign="BitAlignment.Stretch" Horizontal>
-            <AuthorizeView Policy="@AppPermissions.Management.ManageAiPrompt">
+            <AuthorizeView Policy="@AppFeatures.Management.ManageAiPrompt">
                 <BitMarkdownEditor @bind-Value="systemPromptMarkdown" Class="md-editor" />
             </AuthorizeView>
             <BitMarkdownViewer Markdown="@systemPromptMarkdown" Style="word-break:break-all" />

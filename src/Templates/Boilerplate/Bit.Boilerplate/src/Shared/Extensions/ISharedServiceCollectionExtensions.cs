@@ -53,15 +53,15 @@ public static partial class ISharedServiceCollectionExtensions
     /// </summary>
     public static void ConfigureAuthorizationCore(this IServiceCollection services)
     {
-        StringBuilder duplicatePermissionsReportString = new();
+        StringBuilder duplicateFeaturesReportString = new();
 
-        foreach (var g in AppPermissions.GetAll().GroupBy(p => p.Value).Where(g => g.Count() > 1))
+        foreach (var g in AppFeatures.GetAll().GroupBy(p => p.Value).Where(g => g.Count() > 1))
         {
-            duplicatePermissionsReportString.Append(string.Join(Environment.NewLine, g.Select(p => $"{p.Group.Name}-{p.Name}-{p.Value}")));
+            duplicateFeaturesReportString.Append(string.Join(Environment.NewLine, g.Select(p => $"{p.Group.Name}-{p.Name}-{p.Value}")));
         }
 
-        if (duplicatePermissionsReportString.Length > 0)
-            throw new Exception($"Duplicate permission values found. Please ensure all permission values are unique{duplicatePermissionsReportString}");
+        if (duplicateFeaturesReportString.Length > 0)
+            throw new Exception($"Duplicate feature values found. Please ensure all feature values are unique{duplicateFeaturesReportString}");
 
 
         services.AddAuthorizationCore(options =>
@@ -70,9 +70,9 @@ public static partial class ISharedServiceCollectionExtensions
             options.AddPolicy(AuthPolicies.PRIVILEGED_ACCESS, x => x.RequireClaim(AppClaimTypes.PRIVILEGED_SESSION, "true"));
             options.AddPolicy(AuthPolicies.ELEVATED_ACCESS, x => x.RequireClaim(AppClaimTypes.ELEVATED_SESSION, "true"));
 
-            foreach (var per in AppPermissions.GetAll())
+            foreach (var per in AppFeatures.GetAll())
             {
-                options.AddPolicy(per.Value, x => x.RequireClaim(AppClaimTypes.PERMISSIONS, per.Value));
+                options.AddPolicy(per.Value, x => x.RequireClaim(AppClaimTypes.FEATURES, per.Value));
             }
         });
     }
