@@ -6,6 +6,7 @@ using Boilerplate.Shared.Controllers.Identity;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.SignalR;
+using System.Threading.Tasks;
 //#endif
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
@@ -43,7 +44,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     }
 
     [HttpGet("{roleId}"), EnableQuery]
-    public IQueryable<UserDto> GetUsers(Guid roleId)
+    public async Task<IQueryable<UserDto>> GetUsers(Guid roleId)
     {
         return userManager.Users.Where(u => u.Roles.Any(r => r.RoleId == roleId)).Project();
     }

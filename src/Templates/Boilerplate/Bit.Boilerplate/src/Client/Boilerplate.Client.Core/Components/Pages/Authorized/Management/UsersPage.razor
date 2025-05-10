@@ -13,39 +13,39 @@
             <BitTextField @bind-Value="newUserFullName"
                           Style="width:15rem"
                           Immediate DebounceTime="300"
-                          Placeholder="@Localizer[nameof(AppStrings.NewRoleName)]" />
+                          Placeholder="@Localizer[nameof(AppStrings.NewUserFullName)]" />
             <BitTextField @bind-Value="newUserEmail"
                           Immediate DebounceTime="300"
-                          Placeholder="@Localizer[nameof(AppStrings.NewRoleName)]" />
+                          Placeholder="@Localizer[nameof(AppStrings.NewUserEmail)]" />
             <BitTextField @bind-Value="newUserPhoneNumber"
                           Immediate DebounceTime="300"
-                          Placeholder="@Localizer[nameof(AppStrings.NewRoleName)]" />
+                          Placeholder="@Localizer[nameof(AppStrings.NewUserPhoneNumber)]" />
             <BitButton AutoLoading
                        IconName="@BitIconName.AddTo"
                        OnClick="WrapHandled(AddUser)">
-                @Localizer[nameof(AppStrings.AddRole)]
+                @Localizer[nameof(AppStrings.AddUser)]
             </BitButton>
         </BitStack>
         <BitStack Horizontal>
             <BitCard Style="min-width:15rem" FullHeight>
-                @if (isLoadingRoles)
+                @if (isLoadingUsers)
                 {
                     <BitRollingSquareLoading Size="BitSize.Small" />
                 }
-                else if (roleNavItems.Count == 0)
+                else if (userNavItems.Count == 0)
                 {
                     <BitText>@Localizer[nameof(AppStrings.NoRoleMessage)]</BitText>
                 }
                 else
                 {
-                    <BitNav Items="roleNavItems"
+                    <BitNav Items="userNavItems"
                             Mode="BitNavMode.Manual"
                             Accent="BitColor.SecondaryBackground"
-                            OnSelectItem="WrapHandled(async (BitNavItem item) => await HandleOnSelectRole(item))">
+                            OnSelectItem="WrapHandled(async (BitNavItem item) => await HandleOnSelectUser(item))">
                         <ItemTemplate Context="item">
                             <BitStack Horizontal VerticalAlign="BitAlignment.Center">
                                 <BitText>@item.Text</BitText>
-                                @if (loadingRoleKey == item.Key)
+                                @if (loadingUserKey == item.Key)
                                 {
                                     <BitSpacer />
                                     <BitBouncingDotsLoading Size="BitSize.Small" />
@@ -61,63 +61,58 @@
                         <BitStack>
                             <BitStack Horizontal VerticalAlign="BitAlignment.End">
                                 @{
-                                    var isEnabled = selectedRoleItem is not null && selectedRoleItem.Text is not AppRoles.SuperAdmin;
+                                    var isEnabled = selectedUserItem is not null;
                                 }
-                                <BitTextField @bind-Value="editRoleName"
+                                <BitTextField @bind-Value="editUserFullName"
                                               IsEnabled="isEnabled"
                                               Immediate DebounceTime="300"
-                                              Label="@Localizer[nameof(AppStrings.RoleName)]" />
+                                              Label="@Localizer[nameof(AppStrings.UserName)]" />
+                                <BitTextField @bind-Value="editUserEmail"
+                                              IsEnabled="isEnabled"
+                                              Immediate DebounceTime="300"
+                                              Label="@Localizer[nameof(AppStrings.Email)]" />
+                                <BitTextField @bind-Value="editUserPhoneNumber"
+                                              IsEnabled="isEnabled"
+                                              Immediate DebounceTime="300"
+                                              Label="@Localizer[nameof(AppStrings.PhoneNumber)]" />
                                 <BitButton AutoLoading
                                            IconName="@BitIconName.Edit"
-                                           OnClick="WrapHandled(EditRole)"
-                                           IsEnabled="isEnabled && string.IsNullOrWhiteSpace(editRoleName) is false">
-                                    @Localizer[nameof(AppStrings.EditRole)]
+                                           OnClick="WrapHandled(EditUser)"
+                                           IsEnabled="isEnabled && string.IsNullOrWhiteSpace(editUserFullName) is false">
+                                    @Localizer[nameof(AppStrings.EditUser)]
                                 </BitButton>
                                 <BitSpacer />
                                 <BitButton AutoLoading
                                            IsEnabled="isEnabled"
                                            Color="BitColor.Error"
                                            IconName="@BitIconName.Delete"
-                                           OnClick="WrapHandled(() => { isDeleteDialogOpen = true; })">
-                                    @Localizer[nameof(AppStrings.DeleteRole)]
+                                           OnClick="WrapHandled(() => { isDeleteUserDialogOpen = true; })">
+                                    @Localizer[nameof(AppStrings.DeleteUser)]
                                 </BitButton>
                             </BitStack>
-                            @*#if (notification == true || signalR == true)*@
-                            <BitSeparator />
-                            <BitTextField @bind-Value="@notificationMessage"
-                                          Style="width:100%"
-                                          Immediate Multiline Rows="3"
-                                          IsEnabled="selectedRoleItem is not null"
-                                          Label="@Localizer[nameof(AppStrings.RoleNotificationLabel)]" />
-                            <BitButton AutoLoading
-                                       OnClick="WrapHandled(SendNotification)"
-                                       IsEnabled="selectedRoleItem is not null && string.IsNullOrWhiteSpace(notificationMessage) is false">
-                                @Localizer[nameof(AppStrings.SendRoleNotification)]
-                            </BitButton>
-                            @*#endif*@
                         </BitStack>
                     </BitPivotItem>
-                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Users)]">
+                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Sessions)]">
                         @if (isLoadingSessions)
                         {
                             <BitRollingSquareLoading Size="BitSize.Small" />
                         }
                         else
                         {
-                            <BitBasicList Items="allSessions" Style="width:100%;height:100%">
-                                <RowTemplate Context="user">
+                            <BitBasicList Items="allUserSessions" Style="width:100%;height:100%">
+                                <RowTemplate Context="session">
                                     <BitStack Horizontal
                                               Class="user-row"
-                                              title="@user.DisplayName"
+                                              title="@session.IP"
                                               VerticalAlign="BitAlignment.Center">
-                                        <BitText Color="@(IsUserAssigned(user) ? BitColor.PrimaryForeground : BitColor.TertiaryForeground)">
-                                            @user.DisplayName [@(user.DisplayUserName)]
+                                        <BitText>
+                                            @session.IP [@(session.Address)]
                                         </BitText>
                                         <BitSpacer />
                                         <BitButton AutoLoading IconOnly
-                                                   IsEnabled="selectedRoleItem is not null"
-                                                   OnClick="WrapHandled(() => ToggleUser(user))"
-                                                   IconName="@(IsUserAssigned(user) ? BitIconName.RemoveFrom : BitIconName.AddTo)" />
+                                                   IconName="@BitIconName.Delete"
+                                                   IsEnabled="selectedUserItem is not null"
+                                                   OnClick="WrapHandled(() => {isDeleteUserSessionDialogOpen = true; userSessionToDelete = session; })" />
                                     </BitStack>
                                 </RowTemplate>
                             </BitBasicList>

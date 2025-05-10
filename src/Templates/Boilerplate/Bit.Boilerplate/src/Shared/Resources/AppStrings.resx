@@ -1358,4 +1358,25 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="DeleteRole" xml:space="preserve">
     <value>Delete user group</value>
   </data>
+    <data name="NewUserFullName" xml:space="preserve">
+    <value>New User's name</value>
+  </data>
+    <data name="NewUserEmail" xml:space="preserve">
+    <value>New User's email</value>
+  </data>
+    <data name="NewUserPhoneNumber" xml:space="preserve">
+    <value>New User's phone number</value>
+  </data>
+    <data name="AddUser" xml:space="preserve">
+    <value>Add user</value>
+  </data>
+    <data name="EditUser" xml:space="preserve">
+    <value>Edit user</value>
+  </data>
+    <data name="Sessions" xml:space="preserve">
+    <value>Sessions</value>
+  </data>
+    <data name="DeleteUser" xml:space="preserve">
+    <value>Delete user</value>
+  </data>
 </root>
