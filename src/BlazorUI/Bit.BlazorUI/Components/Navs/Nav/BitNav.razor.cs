@@ -86,11 +86,6 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     public bool IconOnly { get; set; }
 
     /// <summary>
-    /// The indentation value in px for each level of depth of child item.
-    /// </summary>
-    [Parameter] public int IndentValue { get; set; } = 16;
-
-    /// <summary>
     /// The indentation padding in px for items without children (compensation space for chevron icon).
     /// </summary>
     [Parameter] public int IndentPadding { get; set; } = 27;
@@ -99,6 +94,11 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     /// The indentation padding in px for items in reversed mode.
     /// </summary>
     [Parameter] public int IndentReversedPadding { get; set; } = 4;
+
+    /// <summary>
+    /// The indentation value in px for each level of depth of child item.
+    /// </summary>
+    [Parameter] public int IndentValue { get; set; } = 16;
 
     /// <summary>
     /// A collection of items to display in the BitNav component.
