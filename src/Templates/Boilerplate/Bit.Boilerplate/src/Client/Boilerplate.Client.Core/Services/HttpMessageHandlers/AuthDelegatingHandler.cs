@@ -1,4 +1,4 @@
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
@@ -30,7 +30,7 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
                         throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
                     }
                 }
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                request.Headers.Authorization = string.IsNullOrEmpty(accessToken) ? null : new AuthenticationHeaderValue("Bearer", accessToken);
             }
 
             return await base.SendAsync(request, cancellationToken);
