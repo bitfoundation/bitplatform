@@ -1,4 +1,4 @@
-namespace Boilerplate.Shared.Controllers;
+﻿namespace Boilerplate.Shared.Controllers;
 
 [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Method)]
 internal partial class RouteAttribute(string template) : Attribute
@@ -39,7 +39,7 @@ internal partial class HttpPatchAttribute(string? template = null) : Attribute
 /// <summary>
 /// Avoid retrying the request upon failure.
 /// </summary>
-[AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface)]
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface, AllowMultiple = false)]
 public partial class NoRetryPolicyAttribute : Attribute
 {
 
@@ -53,7 +53,7 @@ public partial class NoRetryPolicyAttribute : Attribute
 /// Performing this validation on the client improves overall application performance by reducing redundant network calls. 
 /// Note: This attribute requires the client's date and time settings to be accurate, as incorrect settings may cause degraded performance.
 /// </summary>
-[AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface)]
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface, AllowMultiple = false)]
 public partial class AuthorizedApiAttribute : Attribute
 {
 
@@ -63,7 +63,7 @@ public partial class AuthorizedApiAttribute : Attribute
 /// This attribute designates an API as an external API, 
 /// allowing HTTP message handlers to modify their behavior accordingly.
 /// </summary>
-[AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface)]
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface, AllowMultiple = false)]
 public partial class ExternalApiAttribute : Attribute
 {
 
