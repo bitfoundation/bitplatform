@@ -36,6 +36,7 @@ BitBswup.forceRefresh = async () => {
 
     function runBswup() {
         if (!('serviceWorker' in navigator)) {
+            startBlazor(true);
             return warn('no serviceWorker in navigator');
         }
 
