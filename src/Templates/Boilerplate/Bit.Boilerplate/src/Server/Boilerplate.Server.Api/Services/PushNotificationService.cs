@@ -23,7 +23,7 @@ public partial class PushNotificationService
 
         await dbContext.PushNotificationSubscriptions
             .WhereIf(userSessionId is null, s => s.DeviceId == dto.DeviceId)
-            .WhereIf(userSessionId is not null, s => s.UserSessionId == userSessionId && s.DeviceId == dto.DeviceId) // pushManager's subscription has been renewed.
+            .WhereIf(userSessionId is not null, s => s.UserSessionId == userSessionId || s.DeviceId == dto.DeviceId) // pushManager's subscription has been renewed.
             .ExecuteDeleteAsync(cancellationToken);
 
         var subscription = (await dbContext.PushNotificationSubscriptions.AddAsync(new()
