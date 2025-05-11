@@ -1,6 +1,6 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Management;
 
@@ -8,16 +8,14 @@ public partial class UsersPage
 {
     private UserDto selectedUserDto = new();
 
-    //#if (signalR == true)
-    private int? onlineUsersCount;
-    private bool isLoadingOnlineUsersCount;
-    //#endif
-
+    
     private bool isLoadingUsers;
+    private int? onlineUsersCount;
     private bool isLoadingSessions;
     private string? loadingUserKey;
     private bool isDeleteUserDialogOpen;
     private BitNavItem? selectedUserItem;
+    private bool isLoadingOnlineUsersCount;
     private List<BitNavItem> userNavItems = [];
     private CancellationTokenSource? loadRoleDataCts;
     private List<UserSessionDto> allUserSessions = [];
