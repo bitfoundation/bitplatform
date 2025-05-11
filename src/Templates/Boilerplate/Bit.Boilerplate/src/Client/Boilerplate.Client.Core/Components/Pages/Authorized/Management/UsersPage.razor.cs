@@ -1,4 +1,4 @@
-﻿//-:cnd:noEmit
+﻿//+:cnd:noEmit
 using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 
@@ -92,9 +92,6 @@ public partial class UsersPage
     private async Task DeleteUser()
     {
         if (selectedUserItem is null) return;
-        //TODO: check proper access like:
-        //can't delete current user (user can't remove its own user)
-        //only super admin should be able to remove other super admins
 
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
 
