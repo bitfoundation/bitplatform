@@ -41,14 +41,17 @@ public partial class _BitNavChild<TItem> where TItem : class
             await Nav.OnItemClick.InvokeAsync(Item);
         }
     }
+
     private async Task ToggleItem()
     {
         if (Nav is null) return;
+        if (Nav.NoCollapse) return;
 
         if (Nav.GetIsEnabled(Item) is false || Nav.GetChildItems(Item).Count is 0) return;
 
         await Nav.ToggleItem(Item);
     }
+
     private string GetItemContainerClasses()
     {
         var classes = new List<string>();
@@ -74,6 +77,7 @@ public partial class _BitNavChild<TItem> where TItem : class
 
         return string.Join(" ", classes);
     }
+
     private string GetItemContainerStyles()
     {
         var styles = new List<string>();
@@ -95,6 +99,7 @@ public partial class _BitNavChild<TItem> where TItem : class
 
         return string.Join(" ", styles);
     }
+
     private string GetItemClasses()
     {
         var classes = new List<string>();
@@ -110,6 +115,7 @@ public partial class _BitNavChild<TItem> where TItem : class
 
         return string.Join(" ", classes);
     }
+
     private string GetItemStyles()
     {
         var classes = new List<string>();
@@ -125,6 +131,7 @@ public partial class _BitNavChild<TItem> where TItem : class
 
         return string.Join(" ", classes);
     }
+
     private static bool IsRelativeUrl(string? url) => url.HasValue() && new Regex("!/^[a-z0-9+-.]+:\\/\\//i").IsMatch(url!);
 
 

@@ -122,7 +122,15 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Custom Styles" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+<DemoExample Title="AllExpanded & NoCollapse" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <BitNav AllExpanded NoCollapse
+            Items="CustomBitPlatformNavMenu"
+            NameSelectors="@(new() { IconName =  { Name = nameof(Section.Icon) },
+                                     ChildItems =  { Name = nameof(Section.Links) },
+                                     Description =  { Name = nameof(Section.Comment) } })" />
+</DemoExample>
+
+<DemoExample Title="Custom Styles" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
     <BitNav Items="CustomCustomStyleNavMenu"
             NameSelectors="@(new() { IconName =  { Name = nameof(Section.Icon) },
                                      ChildItems =  { Name = nameof(Section.Links) },
@@ -133,7 +141,7 @@
                               ItemIcon = "color: gold; margin-right: 15px;" })" />
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+<DemoExample Title="RTL" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
     <div dir="rtl">
         <BitNav Dir="BitDir.Rtl"
                 Items="CustomRtlBitPlatformNavMenu"

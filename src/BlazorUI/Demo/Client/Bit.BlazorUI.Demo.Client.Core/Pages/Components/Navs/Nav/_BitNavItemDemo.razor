@@ -7,7 +7,7 @@
 </DemoExample>
 
 <DemoExample Title="Grouped" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-    <BitNav Items="CarNavMenu" RenderType="BitNavRenderType.Grouped" />
+    <BitNav Items="CarNavMenu" RenderType="BitNavRenderType.Grouped"  />
 </DemoExample>
 
 <DemoExample Title="Manual Mode" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
@@ -76,7 +76,11 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Custom Styles" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+<DemoExample Title="AllExpanded & NoCollapse" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <BitNav Items="BitPlatformNavMenu" AllExpanded NoCollapse />
+</DemoExample>
+
+<DemoExample Title="Custom Styles" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
     <BitNav Items="CustomStyleNavMenu"
             Styles="@(new() { ItemContainer = "border: 1px solid green; margin: 2px;",
                                   ToggleButton = "color: cyan;",
@@ -84,7 +88,7 @@
                                   ItemIcon = "color: gold; margin-right: 15px;" })" />
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+<DemoExample Title="RTL" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
     <div dir="rtl">
         <BitNav Dir="BitDir.Rtl" Items="RtlBitPlatformNavMenu" />
     </div>

@@ -913,6 +913,69 @@ private FoodMenu CustomSelectedItem;
 private FoodMenu CustomToggledItem;";
 
     private readonly string example8RazorCode = @"
+<BitNav AllExpanded NoCollapse
+        Items=""CustomBitPlatformNavMenu""
+        NameSelectors=""@(new() { IconName =  { Name = nameof(Section.Icon) },
+                                 ChildItems =  { Name = nameof(Section.Links) },
+                                 Description =  { Name = nameof(Section.Comment) } })"" />";
+    private readonly string example8CsharpCode = @"
+public class Section
+{
+    public string Text { get; set; } = string.Empty;
+    public string? Icon { get; set; }
+    public string? Url { get; set; }
+    public bool IsEnabled { get; set; } = true;
+    public bool IsExpanded { get; set; }
+    public List<Section> Links { get; set; } = [];
+}
+
+private static readonly List<Section> CustomBitPlatformNavMenu =
+[
+    new()
+    {
+        Text = ""bit platform"",
+        Comment = ""the bit platform description"",
+        Links =
+        [
+            new() { Text = ""Home"", Icon = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
+            new()
+            {
+                Text = ""Products & Services"",
+                Links =
+                [
+                    new()
+                    {
+                        Text = ""Project Templates"",
+                        Links =
+                        [
+                            new() { Text = ""Todo sample"", Icon = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""AdminPanel sample"", Icon = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
+                        ]
+                    },
+                    new() { Text = ""BlazorUI"", Icon = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
+                    new() { Text = ""Cloud hosting solutions"", Icon = BitIconName.Cloud, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                    new() { Text = ""Bit academy"", Icon = BitIconName.LearningTools, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                ]
+            },
+            new() { Text = ""Pricing"", Icon = BitIconName.Money, Url = ""https://bitplatform.dev/pricing"" },
+            new() { Text = ""About"", Icon = BitIconName.Info, Url = ""https://bitplatform.dev/about-us"" },
+            new() { Text = ""Contact us"", Icon = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
+        ],
+    },
+    new()
+    {
+        Text = ""Community"",
+        Links =
+        [
+            new() { Text = ""Linkedin"", Icon = BitIconName.LinkedInLogo, Url = ""https://www.linkedin.com/company/bitplatformhq"" },
+            new() { Text = ""Twitter"", Icon = BitIconName.Globe, Url = ""https://twitter.com/bitplatformhq"" },
+            new() { Text = ""Github repo"", Icon = BitIconName.GitGraph, Url = ""https://github.com/bitfoundation/bitplatform"" },
+        ]
+    },
+    new() { Text = ""Iconography"", Icon = BitIconName.AppIconDefault, Url = ""/iconography"" },
+];";
+
+    private readonly string example9RazorCode = @"
 <BitNav Items=""CustomCustomStyleNavMenu""
         NameSelectors=""@(new() { IconName =  { Name = nameof(Section.Icon) },
                                  ChildItems =  { Name = nameof(Section.Links) },
@@ -921,7 +984,7 @@ private FoodMenu CustomToggledItem;";
                           ToggleButton = ""color: cyan;"",
                           Item = ""color: red;"",
                           ItemIcon = ""color: gold; margin-right: 15px;"" })"" />";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 public class Section
 {
     public string Text { get; set; } = string.Empty;
@@ -978,13 +1041,13 @@ private static readonly List<Section> CustomCustomStyleNavMenu =
     new() { Text = ""Iconography"", Icon = BitIconName.AppIconDefault, Url = ""/iconography"" },
 ];";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitNav Dir=""BitDir.Rtl""
         Items=""CustomRtlBitPlatformNavMenu""
         NameSelectors=""@(new() { IconName =  { Name = nameof(Section.Icon) },
                                  ChildItems =  { Name = nameof(Section.Links) },
                                  Description =  { Name = nameof(Section.Comment) } })"" />";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 public class Section
 {
     public string Text { get; set; } = string.Empty;

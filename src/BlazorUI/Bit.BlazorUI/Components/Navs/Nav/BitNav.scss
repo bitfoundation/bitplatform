@@ -113,6 +113,7 @@
 .bit-nav-mct {
     flex-grow: 1;
     display: flex;
+    gap: spacing(0.25);
 }
 
 .bit-nav-itm {
@@ -136,6 +137,7 @@
     display: block;
     cursor: pointer;
     overflow: hidden;
+    text-align: start;
     color: $clr-fg-ter;
     white-space: nowrap;
     font-weight: normal;
