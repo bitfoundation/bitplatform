@@ -1,10 +1,11 @@
 ﻿//+:cnd:noEmit
-using System.Threading;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.SignalR;
 using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
+//#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
+//#endif
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
@@ -54,16 +55,18 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         }
 
         //#if (signalR == true)
-        // Checkout AppHub's comments for more info.
         var userSessions = await DbContext.UserSessions.Where(us => us.UserId == userId).ToListAsync(cancellationToken);
-        var result = await DbContext.UserSessions.Where(us => us.UserId == userId).ExecuteDeleteAsync(cancellationToken);
+        //await DbContext.UserSessions.Where(us => us.UserId == userId).ExecuteDeleteAsync(cancellationToken);
+        //#endif
+
+        await userManager.DeleteAsync(user);
+
+        //#if (signalR == true)
         foreach (var session in userSessions.Where(us => us.SignalRConnectionId is not null))
         {
             await RevokeSession(session.SignalRConnectionId!, cancellationToken);
         }
         //#endif
-
-        await userManager.DeleteAsync(user);
     }
 
     [HttpPost("{id}")]
@@ -74,7 +77,6 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
             ?? throw new ResourceNotFoundException();
 
         //#if (signalR == true)
-        // Checkout AppHub's comments for more info.
         if (entityToDelete.SignalRConnectionId is not null)
         {
             await RevokeSession(entityToDelete.SignalRConnectionId, cancellationToken);
@@ -97,6 +99,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
 
     private async Task RevokeSession(string connectionId, CancellationToken cancellationToken)
     {
+        // Checkout AppHub's comments for more info.
         await appHubContext.Clients.Client(connectionId)
                                    .SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.SESSION_REVOKED, null, cancellationToken);
     }
