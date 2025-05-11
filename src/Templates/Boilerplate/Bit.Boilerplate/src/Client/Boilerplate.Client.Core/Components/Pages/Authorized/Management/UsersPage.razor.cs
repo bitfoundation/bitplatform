@@ -55,8 +55,6 @@ public partial class UsersPage
 
             var allUsers = await userManagementController.GetAllUsers(CurrentCancellationToken);
 
-            onlineUsersCount = await userManagementController.GetOnlineUsersCount(CurrentCancellationToken);
-
             userNavItems = [.. allUsers.Select(r => new BitNavItem
             {
                 Key = r.Id.ToString(),
