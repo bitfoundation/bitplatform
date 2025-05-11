@@ -103,6 +103,7 @@ public static partial class Program
                 .BuildSender();
         });
         services.AddScoped<PushNotificationService>();
+        services.AddScoped<PushNotificationJobRunner>();
         //#endif
 
         services.AddSingleton<ServerExceptionHandler>();
