@@ -460,7 +460,7 @@
                     "condition": "(offlineDb != true)",
                     "exclude": [
                         "src/Client/Boilerplate.Client.Core/Data/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/OfflineEditProfile*"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/OfflineDatabaseDemoPage*"
                     ]
                 },
                 {
