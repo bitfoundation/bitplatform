@@ -14,8 +14,4 @@ public static partial class Urls
     public const string SignInPage = "/sign-in";
 
     public const string SignUpPage = "/sign-up";
-
-    //#if (offlineDb == true)
-    public const string OfflineDatabaseDemo = "/offline-database-demo";
-    //#endif
 }
