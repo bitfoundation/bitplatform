@@ -1,9 +1,9 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Server.Api.Models.Identity;
-using Boilerplate.Server.Api.SignalR;
 using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 //#if (signalR == true)
+using Boilerplate.Server.Api.SignalR;
 using Microsoft.AspNetCore.SignalR;
 //#endif
 
