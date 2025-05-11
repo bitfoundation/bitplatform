@@ -1,19 +1,19 @@
 ﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-    <BitNav Items="CustomBitPlatformNavMenu"
+    <BitNav Items="customBasicNavItems"
             NameSelectors="@(new() { IconName =  { Name = nameof(Section.Icon) },
                                      ChildItems =  { Name = nameof(Section.Links) },
                                      Description =  { Name = nameof(Section.Comment) } })" />
 </DemoExample>
 
 <DemoExample Title="FitWidth" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-    <BitNav Items="CustomBitPlatformNavMenu" FitWidth
+    <BitNav Items="customBasicNavItems" FitWidth
             NameSelectors="@(new() { IconName =  { Name = nameof(Section.Icon) },
                                      ChildItems =  { Name = nameof(Section.Links) },
                                      Description =  { Name = nameof(Section.Comment) } })" />
 </DemoExample>
 
 <DemoExample Title="Grouped" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-    <BitNav Items="CustomCarNavMenu"
+    <BitNav Items="customCarNavItems"
             RenderType="BitNavRenderType.Grouped"
             NameSelectors="@(new() { Text =  { Name = nameof(CarMenu.Name) },
                                      Url =  { Name = nameof(CarMenu.PageUrl) },
@@ -28,9 +28,9 @@
 
 <DemoExample Title="Manual Mode" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <div>Basic</div><br />
-    <BitNav Items="CustomFoodNavMenu"
+    <BitNav Items="customFoodNavItems"
             Mode="BitNavMode.Manual"
-            DefaultSelectedItem="CustomFoodNavMenu[0].Childs[2]"
+            DefaultSelectedItem="customFoodNavItems[0].Childs[2]"
             NameSelectors="@(new() { Text =  { Selector = item => item.Name },
                                      IconName =  { Selector = item => item.Icon },
                                      ChildItems =  { Selector = item => item.Childs },
@@ -39,9 +39,9 @@
     <div>Two-Way Bind</div><br />
     <div class="example-box">
         <BitNav @bind-SelectedItem="CustomSelectedFood"
-                Items="CustomFoodNavMenu"
+                Items="customFoodNavItems"
                 Mode="BitNavMode.Manual"
-                DefaultSelectedItem="CustomFoodNavMenu[0].Childs[2]"
+                DefaultSelectedItem="customFoodNavItems[0].Childs[2]"
                 NameSelectors="@(new() { Text =  { Selector = item => item.Name },
                                          IconName =  { Selector = item => item.Icon },
                                          ChildItems =  { Selector = item => item.Childs },
@@ -52,14 +52,14 @@
                      FitWidth
                      Label="Select Item"
                      Items="FoodMenuDropdownItems"
-                     OnSelectItem="(BitDropdownItem<string> item) => CustomSelectedFood = Flatten(CustomFoodNavMenu).Single(i => i.Name == item.Value)" />
+                     OnSelectItem="(BitDropdownItem<string> item) => CustomSelectedFood = Flatten(customFoodNavItems).Single(i => i.Name == item.Value)" />
     </div>
 </DemoExample>
 
 <DemoExample Title="IconOnly" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
     <BitToggle @bind-Value="iconOnly" Label="Hide texts?" Inline />
     <br />
-    <BitNav Items="CustomIconOnlyNavMenu" Mode="BitNavMode.Manual" IconOnly="iconOnly"
+    <BitNav Items="customIconOnlyNavItems" Mode="BitNavMode.Manual" IconOnly="iconOnly"
             NameSelectors="@(new() { IconName =  { Name = nameof(Section.Icon) },
                                      ChildItems =  { Name = nameof(Section.Links) },
                                      Description =  { Name = nameof(Section.Comment) } })" />
@@ -67,7 +67,7 @@
 
 <DemoExample Title="Custom Templates" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
     <div>Header Template (Grouped)</div><br />
-    <BitNav Items="CustomCarNavMenu"
+    <BitNav Items="customCarNavItems"
             RenderType="BitNavRenderType.Grouped"
             NameSelectors="@(new() { Text =  { Name = nameof(CarMenu.Name) },
                                      Url =  { Name = nameof(CarMenu.PageUrl) },
@@ -87,7 +87,7 @@
     </BitNav>
     <br /><br /><br />
     <div>Item Template</div><br />
-    <BitNav Items="CustomFoodNavMenu"
+    <BitNav Items="customFoodNavItems"
             Mode="BitNavMode.Manual"
             NameSelectors="@(new() { Text =  { Selector = item => item.Name },
                                      IconName =  { Selector = item => item.Icon },
@@ -105,7 +105,7 @@
 
 <DemoExample Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
     <div class="example-box">
-        <BitNav Items="CustomFoodNavMenu"
+        <BitNav Items="customFoodNavItems"
                 Mode="BitNavMode.Manual"
                 OnItemClick="(FoodMenu item) => CustomClickedItem = item"
                 OnSelectItem="(FoodMenu item) => CustomSelectedItem = item"
@@ -124,14 +124,14 @@
 
 <DemoExample Title="AllExpanded & NoCollapse" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <BitNav AllExpanded NoCollapse
-            Items="CustomBitPlatformNavMenu"
+            Items="customNoCollapseNavItems"
             NameSelectors="@(new() { IconName =  { Name = nameof(Section.Icon) },
                                      ChildItems =  { Name = nameof(Section.Links) },
                                      Description =  { Name = nameof(Section.Comment) } })" />
 </DemoExample>
 
 <DemoExample Title="Custom Styles" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-    <BitNav Items="CustomCustomStyleNavMenu"
+    <BitNav Items="customCustomStyleNavItems"
             NameSelectors="@(new() { IconName =  { Name = nameof(Section.Icon) },
                                      ChildItems =  { Name = nameof(Section.Links) },
                                      Description =  { Name = nameof(Section.Comment) } })"
@@ -144,7 +144,7 @@
 <DemoExample Title="RTL" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
     <div dir="rtl">
         <BitNav Dir="BitDir.Rtl"
-                Items="CustomRtlBitPlatformNavMenu"
+                Items="customRtlNavItems"
                 NameSelectors="@(new() { IconName =  { Name = nameof(Section.Icon) },
                                          ChildItems =  { Name = nameof(Section.Links) },
                                          Description =  { Name = nameof(Section.Comment) } })" />

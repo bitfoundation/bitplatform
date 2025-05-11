@@ -1,25 +1,25 @@
 ﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-    <BitNav Items="BitPlatformNavMenu" />
+    <BitNav Items="basicNavItems" />
 </DemoExample>
 
 <DemoExample Title="FitWidth" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-    <BitNav Items="BitPlatformNavMenu" FitWidth />
+    <BitNav Items="basicNavItems" FitWidth />
 </DemoExample>
 
 <DemoExample Title="Grouped" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-    <BitNav Items="CarNavMenu" RenderType="BitNavRenderType.Grouped"  />
+    <BitNav Items="carNavItems" RenderType="BitNavRenderType.Grouped" />
 </DemoExample>
 
 <DemoExample Title="Manual Mode" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <div>Basic</div><br />
-    <BitNav Items="FoodNavMenu"
-            DefaultSelectedItem="FoodNavMenu[0].ChildItems[2]"
+    <BitNav Items="foodNavItems"
+            DefaultSelectedItem="foodNavItems[0].ChildItems[2]"
             Mode="BitNavMode.Manual" />
     <br /><br /><br />
     <div>Two-Way Bind</div><br />
     <div class="example-box">
         <BitNav @bind-SelectedItem="SelectedItemNav"
-                Items="FoodNavMenu"
+                Items="foodNavItems"
                 Mode="BitNavMode.Manual"
                 OnSelectItem="(BitNavItem item) => SelectedItemText = FoodMenuDropdownItems.FirstOrDefault(i => i.Text == item.Text)?.Text" />
         <br />
@@ -27,19 +27,19 @@
                      FitWidth
                      Label="Select Item"
                      Items="FoodMenuDropdownItems"
-                     OnSelectItem="(BitDropdownItem<string> item) => SelectedItemNav = Flatten(FoodNavMenu).First(i => i.Text == item.Value)" />
+                     OnSelectItem="(BitDropdownItem<string> item) => SelectedItemNav = Flatten(foodNavItems).First(i => i.Text == item.Value)" />
     </div>
 </DemoExample>
 
 <DemoExample Title="IconOnly" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
     <BitToggle @bind-Value="iconOnly" Label="Hide texts?" Inline />
     <br />
-    <BitNav Items="IconOnlyNavMenu" Mode="BitNavMode.Manual" IconOnly="iconOnly" />
+    <BitNav Items="iconOnlyNavItems" Mode="BitNavMode.Manual" IconOnly="iconOnly" />
 </DemoExample>
 
 <DemoExample Title="Custom Templates" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
     <div>Header Template (Grouped)</div><br />
-    <BitNav Items="CarNavMenu" RenderType="BitNavRenderType.Grouped">
+    <BitNav Items="carNavItems" RenderType="BitNavRenderType.Grouped">
         <HeaderTemplate Context="item">
             <div class="nav-custom-header">
                 <BitIcon IconName="@BitIconName.FavoriteStarFill" />
@@ -49,7 +49,7 @@
     </BitNav>
     <br /><br /><br />
     <div>Item Template</div><br />
-    <BitNav Items="FoodNavMenu" Mode="BitNavMode.Manual">
+    <BitNav Items="foodNavItems" Mode="BitNavMode.Manual">
         <ItemTemplate Context="item">
             <div class="nav-custom-item">
                 <BitCheckbox />
@@ -62,7 +62,7 @@
 
 <DemoExample Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
     <div class="example-box">
-        <BitNav Items="FoodNavMenu"
+        <BitNav Items="foodNavItems"
                 Mode="BitNavMode.Manual"
                 OnItemClick="(BitNavItem item) => ClickedItem = item"
                 OnSelectItem="(BitNavItem item) => SelectedItem = item"
@@ -77,19 +77,19 @@
 </DemoExample>
 
 <DemoExample Title="AllExpanded & NoCollapse" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-    <BitNav Items="BitPlatformNavMenu" AllExpanded NoCollapse />
+    <BitNav Items="noCollapseNavItems" AllExpanded NoCollapse />
 </DemoExample>
 
 <DemoExample Title="Custom Styles" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-    <BitNav Items="CustomStyleNavMenu"
+    <BitNav Items="customStyleNavItems"
             Styles="@(new() { ItemContainer = "border: 1px solid green; margin: 2px;",
-                                  ToggleButton = "color: cyan;",
-                                  Item = "color: red;",
-                                  ItemIcon = "color: gold; margin-right: 15px;" })" />
+                              ToggleButton = "color: cyan;",
+                              Item = "color: red;",
+                              ItemIcon = "color: gold; margin-right: 15px;" })" />
 </DemoExample>
 
 <DemoExample Title="RTL" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
     <div dir="rtl">
-        <BitNav Dir="BitDir.Rtl" Items="RtlBitPlatformNavMenu" />
+        <BitNav Dir="BitDir.Rtl" Items="rtlNavItems" />
     </div>
 </DemoExample>
