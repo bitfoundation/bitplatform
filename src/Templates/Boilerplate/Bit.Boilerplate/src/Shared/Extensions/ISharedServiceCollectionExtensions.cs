@@ -63,6 +63,7 @@ public static partial class ISharedServiceCollectionExtensions
         if (duplicateFeaturesReportString.Length > 0)
             throw new Exception($"Duplicate feature values found. Please ensure all feature values are unique{duplicateFeaturesReportString}");
 
+        services.AddSingleton<IAuthorizationHandler, FeatureRequirementHandler>();
 
         services.AddAuthorizationCore(options =>
         {
@@ -70,9 +71,9 @@ public static partial class ISharedServiceCollectionExtensions
             options.AddPolicy(AuthPolicies.PRIVILEGED_ACCESS, x => x.RequireClaim(AppClaimTypes.PRIVILEGED_SESSION, "true"));
             options.AddPolicy(AuthPolicies.ELEVATED_ACCESS, x => x.RequireClaim(AppClaimTypes.ELEVATED_SESSION, "true"));
 
-            foreach (var per in AppFeatures.GetAll())
+            foreach (var feat in AppFeatures.GetAll())
             {
-                options.AddPolicy(per.Value, x => x.RequireClaim(AppClaimTypes.FEATURES, per.Value));
+                options.AddPolicy(feat.Value, policy => policy.AddRequirements(new AppFeatureRequirement(FeatureName: $"{feat.Group.Name}.{feat.Name}", FeatureValue: feat.Value)));
             }
         });
     }

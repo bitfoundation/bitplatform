@@ -310,6 +310,8 @@ public partial class RolesPage
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
 
         await roleManagementController.SendNotification(new() { RoleId = Guid.Parse(selectedRoleItem.Key!), Message = notificationMessage }, CurrentCancellationToken);
+
+        notificationMessage = "";
     }
     //#endif
 

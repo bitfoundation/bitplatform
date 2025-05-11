@@ -14,14 +14,8 @@ public class AppFeatures
         /// </summary>
         public const string ManageAiPrompt = "0";
 
-        /// <summary>
-        /// Manage Roles.
-        /// </summary>
         public const string ManageRoles = "1";
 
-        /// <summary>
-        /// Manage Users.
-        /// </summary>
         public const string ManageUsers = "2";
     }
 
@@ -40,10 +34,8 @@ public class AppFeatures
 
     public class AdminPanel
     {
-        /// <summary>
-        /// View the admin panel's dashboard.
-        /// </summary>
         public const string Dashboard = "5";
+
         /// <summary>
         /// Add/Modify/Delete products and categories.
         /// </summary>
@@ -52,9 +44,6 @@ public class AppFeatures
 
     public class Todo
     {
-        /// <summary>
-        /// Add/Modify/Delete todo items in /todo page.
-        /// </summary>
         public const string ManageTodo = "7";
     }
 
