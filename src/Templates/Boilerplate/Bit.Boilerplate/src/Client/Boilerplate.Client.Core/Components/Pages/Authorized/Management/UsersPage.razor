@@ -64,7 +64,7 @@
                                     var isUserSelected = selectedUserItem is not null;
                                 }
                                 <BitStack Horizontal VerticalAlign="BitAlignment.End">
-                                    <BitText>UserId:</BitText>
+                                    <BitText>@Localizer[nameof(AppStrings.Id)]</BitText>
                                     @if (isUserSelected)
                                     {
                                         <BitTag Color="BitColor.TertiaryBackground" Size="BitSize.Large" Class="selectable">
@@ -146,10 +146,10 @@
                         }
                     </BitPivotItem>
                     <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Features)]">
-                        Under construction
+                        Similar to the user group's feature, but tailored for individual users.
                     </BitPivotItem>
                     <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Quota)]">
-                        Under construction
+                        Similar to the user group's quota, but tailored for individual users.
                     </BitPivotItem>
 
                 </BitPivot>

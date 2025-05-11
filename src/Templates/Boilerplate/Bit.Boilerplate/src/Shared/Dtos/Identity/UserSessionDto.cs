@@ -1,4 +1,5 @@
-﻿namespace Boilerplate.Shared.Dtos.Identity;
+﻿//+:cnd:noEmit
+namespace Boilerplate.Shared.Dtos.Identity;
 
 public partial class UserSessionDto
 {

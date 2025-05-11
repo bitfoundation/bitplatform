@@ -9,9 +9,6 @@ public interface IRoleManagementController : IAppController
     [HttpGet]
     Task<List<RoleDto>> GetAllRoles(CancellationToken cancellationToken) => default!;
 
-    [HttpGet]
-    Task<List<UserDto>> GetAllUsers(CancellationToken cancellationToken) => default!;
-
     [HttpGet("{roleId}")]
     Task<List<UserDto>> GetUsers(Guid roleId, CancellationToken cancellationToken) => default!;
 

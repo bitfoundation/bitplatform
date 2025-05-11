@@ -23,6 +23,7 @@ public partial class RolesPage
 
 
     [AutoInject] IRoleManagementController roleManagementController = default!;
+    [AutoInject] IUserManagementController userManagementController = default!;
 
 
     protected override async Task OnInitAsync()
@@ -76,7 +77,7 @@ public partial class RolesPage
         {
             isLoadingUsers = true;
 
-            allUsers = await roleManagementController.GetAllUsers(CurrentCancellationToken);
+            allUsers = await userManagementController.GetAllUsers(CurrentCancellationToken);
         }
         finally
         {

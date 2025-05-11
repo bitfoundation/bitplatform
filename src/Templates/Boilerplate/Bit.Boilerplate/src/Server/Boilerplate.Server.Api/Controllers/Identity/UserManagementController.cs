@@ -1,10 +1,10 @@
 ﻿//+:cnd:noEmit
+using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Controllers.Identity;
-using Boilerplate.Shared.Dtos.Identity;
 //#if (signalR == true)
-using Boilerplate.Server.Api.SignalR;
 using Microsoft.AspNetCore.SignalR;
+using Boilerplate.Server.Api.SignalR;
 //#endif
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
@@ -29,7 +29,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
     [HttpGet]
     public async Task<int> GetOnlineUsersCount(CancellationToken cancellationToken)
     {
-        return await DbContext.UserSessions.CountAsync(us => us.SignalRConnectionId != null, cancellationToken);
+        return await DbContext.Users.CountAsync(u => u.Sessions.Any(us => us.SignalRConnectionId != null), cancellationToken);
     }
     //#endif
 
@@ -56,7 +56,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
 
         //#if (signalR == true)
         var userSessionConnectionIds = await DbContext.UserSessions.Where(us => us.UserId == userId && us.SignalRConnectionId != null)
-                                                                   .Select(us => us.SignalRConnectionId)
+                                                                   .Select(us => us.SignalRConnectionId!)
                                                                    .ToListAsync(cancellationToken);
         await DbContext.UserSessions.Where(us => us.UserId == userId).ExecuteDeleteAsync(cancellationToken);
         //#endif
@@ -66,7 +66,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         //#if (signalR == true)
         foreach (var id in userSessionConnectionIds)
         {
-            await RevokeSession(id!, cancellationToken);
+            await RevokeSession(id, cancellationToken);
         }
         //#endif
     }
