@@ -1358,8 +1358,8 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="DeleteRole" xml:space="preserve">
     <value>Delete user group</value>
   </data>
-    <data name="NewUserFullName" xml:space="preserve">
-    <value>New User's name</value>
+    <data name="NewUserUsername" xml:space="preserve">
+    <value>New User's username</value>
   </data>
     <data name="NewUserEmail" xml:space="preserve">
     <value>New User's email</value>
@@ -1378,5 +1378,26 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <data name="DeleteUser" xml:space="preserve">
     <value>Delete user</value>
+  </data>
+    <data name="IP" xml:space="preserve">
+    <value>IP</value>
+  </data>
+    <data name="Address" xml:space="preserve">
+    <value>Address</value>
+  </data>
+    <data name="DeviceInfo" xml:space="preserve">
+    <value>DeviceInfo</value>
+  </data>
+    <data name="Privileged" xml:space="preserve">
+    <value>Privileged</value>
+  </data>
+    <data name="RenewedOn" xml:space="preserve">
+    <value>RenewedOn</value>
+  </data>
+    <data name="OnlineUsers" xml:space="preserve">
+    <value>Online users: {0}</value>
+  </data>
+    <data name="DeleteSession" xml:space="preserve">
+    <value>Delete session</value>
   </data>
 </root>
