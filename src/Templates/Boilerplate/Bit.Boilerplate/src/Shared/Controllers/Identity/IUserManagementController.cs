@@ -9,10 +9,8 @@ public interface IUserManagementController : IAppController
     [HttpGet]
     Task<List<UserDto>> GetAllUsers(CancellationToken cancellationToken) => default!;
 
-    //#if (signalR == true)
     [HttpGet]
     Task<int> GetOnlineUsersCount(CancellationToken cancellationToken);
-    //#endif
 
     [HttpGet("{userId}")]
     Task<List<UserSessionDto>> GetUserSessions(Guid userId, CancellationToken cancellationToken) => default!;

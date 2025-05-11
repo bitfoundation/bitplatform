@@ -197,7 +197,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             Id = Guid.NewGuid(),
             DeviceInfo = deviceInfo,
             UserId = userId,
-            StartedOn = DateTimeOffset.UtcNow,
+            StartedOn = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
             IP = HttpContext.Connection.RemoteIpAddress?.ToString(),
             // Relying on Cloudflare cdn to retrieve address.
             // https://developers.cloudflare.com/rules/transform/managed-transforms/reference/#add-visitor-location-headers
@@ -267,7 +267,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 }
             }
 
-            userSession.RenewedOn = DateTimeOffset.UtcNow;
+            userSession.RenewedOn = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             // Relying on Cloudflare cdn to retrieve address.
             // https://developers.cloudflare.com/rules/transform/managed-transforms/reference/#add-visitor-location-headers
             (userSession.IP, userSession.Address) = (HttpContext.Connection.RemoteIpAddress?.ToString(), $"{Request.Headers["cf-ipcountry"]}, {Request.Headers["cf-ipcity"]}");

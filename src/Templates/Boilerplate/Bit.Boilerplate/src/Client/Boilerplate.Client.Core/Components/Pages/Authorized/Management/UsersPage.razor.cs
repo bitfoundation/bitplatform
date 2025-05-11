@@ -37,11 +37,8 @@ public partial class UsersPage
     private async Task RefreshData()
     {
         await Task.WhenAll(
-            LoadAllUsers()
-        //#if (signalR == true)
-            ,
+            LoadAllUsers(),
             LoadOnlineUsersCount()
-        //#endif
         );
     }
 
@@ -72,7 +69,6 @@ public partial class UsersPage
         }
     }
 
-    //#if (signalR == true)
     private async Task LoadOnlineUsersCount()
     {
         if (isLoadingOnlineUsersCount) return;
@@ -87,7 +83,6 @@ public partial class UsersPage
             isLoadingOnlineUsersCount = false;
         }
     }
-    //#endif
 
     private async Task DeleteUser()
     {

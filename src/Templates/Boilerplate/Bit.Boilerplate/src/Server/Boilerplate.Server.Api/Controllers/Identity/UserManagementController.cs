@@ -25,13 +25,11 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         return userManager.Users.Project();
     }
 
-    //#if (signalR == true)
     [HttpGet]
     public async Task<int> GetOnlineUsersCount(CancellationToken cancellationToken)
     {
         return await DbContext.Users.CountAsync(u => u.Sessions.Any(us => us.SignalRConnectionId != null), cancellationToken);
     }
-    //#endif
 
     [HttpGet("{userId}"), EnableQuery]
     public IQueryable<UserSessionDto> GetUserSessions(Guid userId)

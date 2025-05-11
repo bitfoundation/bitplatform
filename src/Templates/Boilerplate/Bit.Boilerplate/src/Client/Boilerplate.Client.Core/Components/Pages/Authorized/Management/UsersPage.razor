@@ -11,7 +11,6 @@
 <section>
     <BitStack Style="min-width:fit-content">
         <BitStack Horizontal FitHeight VerticalAlign="BitAlignment.Center">
-            @*#if (signalR == true)*@
             @if (isLoadingOnlineUsersCount)
             {
                 <BitRollingSquareLoading CustomSize="30" />
@@ -20,7 +19,6 @@
             {
                 <BitText>@(onlineUsersCount is null ? "" : Localizer[nameof(AppStrings.OnlineUsers), onlineUsersCount])</BitText>
             }
-            @*#endif*@
             <BitButton AutoLoading IconOnly
                        IconName="@BitIconName.Refresh"
                        OnClick="WrapHandled(RefreshData)"
@@ -118,7 +116,7 @@
                                             <BitText>@Localizer[nameof(AppStrings.Address)]: @session.Address</BitText>
                                             <BitText>@Localizer[nameof(AppStrings.DeviceInfo)]: @session.DeviceInfo</BitText>
                                             <BitText>@Localizer[nameof(AppStrings.Privileged)]: @session.Privileged</BitText>
-                                            <BitText>@Localizer[nameof(AppStrings.RenewedOn)]: @session.RenewedOn</BitText>
+                                            <BitText>@Localizer[nameof(AppStrings.RenewedOn)]: @session.RenewedOnDateTimeOffset.ToLocalTime()</BitText>
 
                                             <BitText>
                                                 Id:

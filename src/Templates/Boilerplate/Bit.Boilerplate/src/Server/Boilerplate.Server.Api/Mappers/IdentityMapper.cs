@@ -31,5 +31,5 @@ public static partial class IdentityMapper
     public static partial IQueryable<ClaimDto> Project(this IQueryable<RoleClaim> query);
 
     [UserMapping]
-    private static DateTimeOffset MapRenewedOn(UserSession us) => us.RenewedOn ?? us.StartedOn;
+    private static long MapRenewedOn(UserSession us) => us.RenewedOn ?? us.StartedOn;
 }
