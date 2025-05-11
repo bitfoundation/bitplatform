@@ -55,16 +55,18 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         }
 
         //#if (signalR == true)
-        var userSessions = await DbContext.UserSessions.Where(us => us.UserId == userId).ToListAsync(cancellationToken);
-        //await DbContext.UserSessions.Where(us => us.UserId == userId).ExecuteDeleteAsync(cancellationToken);
+        var userSessionConnectionIds = await DbContext.UserSessions.Where(us => us.UserId == userId && us.SignalRConnectionId != null)
+                                                                   .Select(us => us.SignalRConnectionId)
+                                                                   .ToListAsync(cancellationToken);
+        await DbContext.UserSessions.Where(us => us.UserId == userId).ExecuteDeleteAsync(cancellationToken);
         //#endif
 
         await userManager.DeleteAsync(user);
 
         //#if (signalR == true)
-        foreach (var session in userSessions.Where(us => us.SignalRConnectionId is not null))
+        foreach (var id in userSessionConnectionIds)
         {
-            await RevokeSession(session.SignalRConnectionId!, cancellationToken);
+            await RevokeSession(id!, cancellationToken);
         }
         //#endif
     }
