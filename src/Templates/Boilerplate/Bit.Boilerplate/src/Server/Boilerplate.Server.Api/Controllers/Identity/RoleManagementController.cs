@@ -43,7 +43,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     }
 
     [HttpGet("{roleId}"), EnableQuery]
-    public async Task<IQueryable<UserDto>> GetUsers(Guid roleId)
+    public IQueryable<UserDto> GetUsers(Guid roleId)
     {
         return userManager.Users.Where(u => u.Roles.Any(r => r.RoleId == roleId)).Project();
     }

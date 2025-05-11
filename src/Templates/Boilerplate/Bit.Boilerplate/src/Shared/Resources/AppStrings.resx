@@ -1400,4 +1400,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="DeleteSession" xml:space="preserve">
     <value>Delete session</value>
   </data>
+    <data name="NoUserMessage" xml:space="preserve">
+    <value>No users</value>
+  </data>
 </root>

@@ -1400,4 +1400,7 @@
     <data name="DeleteSession" xml:space="preserve">
     <value>حذف سشن</value>
   </data>
+    <data name="NoUserMessage" xml:space="preserve">
+    <value>کاربری وجود ندارد</value>
+  </data>
 </root>
