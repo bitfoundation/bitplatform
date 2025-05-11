@@ -1,10 +1,12 @@
-using Boilerplate.Server.Api.Models.Identity;
+﻿using Boilerplate.Server.Api.Models.Identity;
 
 namespace Boilerplate.Server.Api.Models.PushNotification;
 
 public class PushNotificationSubscription
 {
-    [Required, Key]
+    public int Id { get; set; }
+
+    [Required]
     public string? DeviceId { get; set; }
 
     [Required, AllowedValues("apns", "fcmV1", "browser")]
