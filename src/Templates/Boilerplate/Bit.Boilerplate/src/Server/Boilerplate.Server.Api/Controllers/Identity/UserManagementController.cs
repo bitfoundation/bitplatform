@@ -24,7 +24,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
     }
 
     [HttpGet("{userId}")]
-    public async Task<IQueryable<UserSessionDto>> GetUserSessions(Guid userId, CancellationToken cancellationToken)
+    public IQueryable<UserSessionDto> GetUserSessions(Guid userId, CancellationToken cancellationToken)
     {
         return DbContext.UserSessions.Where(us => us.UserId == userId).Project();
     }
