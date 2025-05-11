@@ -99,10 +99,12 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         return user;
     }
 
+    //#if (signalR == true)
     private async Task RevokeSession(string connectionId, CancellationToken cancellationToken)
     {
         // Checkout AppHub's comments for more info.
         await appHubContext.Clients.Client(connectionId)
                                    .SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.SESSION_REVOKED, null, cancellationToken);
     }
+    //#endif
 }
