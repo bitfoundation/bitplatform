@@ -1,3 +1,4 @@
+@using Boilerplate.Shared.Dtos.Identity
 @*+:cnd:noEmit*@
 @attribute [Route(Urls.UsersPage)]
 @attribute [Route("{culture?}" + Urls.UsersPage)]
@@ -41,12 +42,23 @@
                             Accent="BitColor.SecondaryBackground"
                             OnSelectItem="WrapHandled(async (BitNavItem item) => await HandleOnSelectUser(item))">
                         <ItemTemplate Context="item">
-                            <BitStack Horizontal VerticalAlign="BitAlignment.Center">
-                                <BitText Style="overflow:hidden;text-overflow:ellipsis">@item.Text</BitText>
-                                @if (loadingUserKey == item.Key)
+                            <BitStack Gap="0">
+                                <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+                                    <BitText Style="overflow:hidden;text-overflow:ellipsis">@item.Text</BitText>
+                                    @if (loadingUserKey == item.Key)
+                                    {
+                                        <BitSpacer />
+                                        <BitBouncingDotsLoading Size="BitSize.Small" />
+                                    }
+                                </BitStack>
+                                @{
+                                    var user = (item.Data as UserDto)!;
+                                }
+                                @if (user.DisplayUserName != user.DisplayName)
                                 {
-                                    <BitSpacer />
-                                    <BitBouncingDotsLoading Size="BitSize.Small" />
+                                    <BitText Color="BitColor.SecondaryForeground" Typography="BitTypography.Body2">
+                                        @user.DisplayUserName
+                                    </BitText>
                                 }
                             </BitStack>
                         </ItemTemplate>
