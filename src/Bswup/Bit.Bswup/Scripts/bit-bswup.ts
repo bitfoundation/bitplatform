@@ -37,7 +37,7 @@ BitBswup.forceRefresh = async () => {
     function runBswup() {
         const options = extract();
 
-        info('starting BSWUP...');
+        info('starting...');
 
         if (!('serviceWorker' in navigator)) {
             startBlazor(true);
