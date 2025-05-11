@@ -7,6 +7,9 @@ namespace Boilerplate.Shared.Controllers.Identity;
 public interface IUserManagementController : IAppController
 {
     [HttpGet]
+    Task<int> GetOnlineUsersCount(CancellationToken cancellationToken);
+
+    [HttpGet]
     Task<List<UserDto>> GetAllUsers(CancellationToken cancellationToken) => default!;
 
     [HttpGet("{userId}")]
@@ -14,4 +17,13 @@ public interface IUserManagementController : IAppController
 
     [HttpPost("{id}")]
     Task DeleteUserSession(Guid id, CancellationToken cancellationToken);
+
+    [HttpPost]
+    Task<UserDto> Create(UserDto userDto, CancellationToken cancellationToken);
+
+    [HttpPost]
+    Task<UserDto> Update(UserDto userDto, CancellationToken cancellationToken);
+
+    [HttpPost("{userId}")]
+    Task Delete(Guid userId, CancellationToken cancellationToken);
 }

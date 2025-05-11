@@ -1,4 +1,4 @@
-namespace Boilerplate.Shared.Dtos.Identity;
+﻿namespace Boilerplate.Shared.Dtos.Identity;
 
 public partial class UserSessionDto
 {
@@ -19,4 +19,8 @@ public partial class UserSessionDto
     public bool Privileged { get; set; }
 
     public DateTimeOffset RenewedOn { get; set; }
+
+    //#if (signalR == true)
+    public string? SignalRConnectionId { get; set; }
+    //#endif
 }

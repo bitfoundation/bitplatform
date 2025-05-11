@@ -7,4 +7,15 @@ section {
 }
 
 ::deep {
+    .session-card {
+        box-shadow: none;
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+    .del-session-btn {
+        top: 1rem;
+        position: absolute;
+        inset-inline-end: 1rem;
+    }
 }

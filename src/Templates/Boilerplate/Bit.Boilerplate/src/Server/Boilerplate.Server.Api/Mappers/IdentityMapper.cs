@@ -11,6 +11,8 @@ namespace Boilerplate.Server.Api.Mappers;
 public static partial class IdentityMapper
 {
     public static partial UserDto Map(this User source);
+    public static partial User Map(this UserDto source);
+    public static partial void Patch(this UserDto source, User dest);
     public static partial void Patch(this EditUserDto source, User destination);
 
     [MapPropertyFromSource(nameof(UserSessionDto.RenewedOn), Use = nameof(MapRenewedOn))]

@@ -39,9 +39,14 @@ public partial class RolesPage
             })]
         })];
 
-        await Task.WhenAll(LoadAllRoles(), LoadAllUsers());
+        await RefreshData();
     }
 
+
+    private async Task RefreshData()
+    {
+        await Task.WhenAll(LoadAllRoles(), LoadAllUsers());
+    }
 
     private async Task LoadAllRoles()
     {
@@ -55,6 +60,9 @@ public partial class RolesPage
                 Text = r.Name ?? string.Empty,
                 Data = r
             })];
+
+            editRoleName = null;
+            selectedRoleItem = null;
         }
         finally
         {
@@ -135,7 +143,6 @@ public partial class RolesPage
         await roleManagementController.Create(new RoleDto { Name = newRoleName }, CurrentCancellationToken);
 
         newRoleName = null;
-        selectedRoleItem = null;
 
         await LoadAllRoles();
     }
@@ -148,9 +155,6 @@ public partial class RolesPage
 
         await roleManagementController.Update(new RoleDto { Id = Guid.Parse(selectedRoleItem.Key!), Name = editRoleName }, CurrentCancellationToken);
 
-        editRoleName = null;
-        selectedRoleItem = null;
-
         await LoadAllRoles();
     }
 
@@ -162,8 +166,6 @@ public partial class RolesPage
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
 
         await roleManagementController.Delete(Guid.Parse(selectedRoleItem.Key!), CurrentCancellationToken);
-
-        selectedRoleItem = null;
 
         await LoadAllRoles();
     }

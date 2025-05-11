@@ -1358,4 +1358,49 @@
     <data name="DeleteRole" xml:space="preserve">
     <value>حذف گروه کاربران</value>
   </data>
+    <data name="NewUserUsername" xml:space="preserve">
+    <value>نام کاربری کاربر جدید</value>
+  </data>
+    <data name="NewUserEmail" xml:space="preserve">
+    <value>ایمیل کاربر جدید</value>
+  </data>
+    <data name="NewUserPhoneNumber" xml:space="preserve">
+    <value>تلفن کاربر جدید</value>
+  </data>
+    <data name="AddUser" xml:space="preserve">
+    <value>افزودن کاربر</value>
+  </data>
+    <data name="EditUser" xml:space="preserve">
+    <value>ویرایش کاربر</value>
+  </data>
+    <data name="Sessions" xml:space="preserve">
+    <value>سشن‌ها</value>
+  </data>
+    <data name="DeleteUser" xml:space="preserve">
+    <value>حذف کاربر</value>
+  </data>
+    <data name="IP" xml:space="preserve">
+    <value>آی پی</value>
+  </data>
+    <data name="Address" xml:space="preserve">
+    <value>نشانی</value>
+  </data>
+    <data name="DeviceInfo" xml:space="preserve">
+    <value>اطلاعات دستگاه</value>
+  </data>
+    <data name="Privileged" xml:space="preserve">
+    <value>دسترسی ممتاز</value>
+  </data>
+    <data name="RenewedOn" xml:space="preserve">
+    <value>بازسازی در</value>
+  </data>
+    <data name="OnlineUsers" xml:space="preserve">
+    <value>کاربران آنلاین: {0}</value>
+  </data>
+    <data name="DeleteSession" xml:space="preserve">
+    <value>حذف سشن</value>
+  </data>
+    <data name="NoUserMessage" xml:space="preserve">
+    <value>کاربری وجود ندارد</value>
+  </data>
 </root>

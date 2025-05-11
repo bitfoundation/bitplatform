@@ -6,7 +6,6 @@ using Boilerplate.Shared.Controllers.Identity;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.SignalR;
-using System.Threading.Tasks;
 //#endif
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
@@ -44,7 +43,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     }
 
     [HttpGet("{roleId}"), EnableQuery]
-    public async Task<IQueryable<UserDto>> GetUsers(Guid roleId)
+    public IQueryable<UserDto> GetUsers(Guid roleId)
     {
         return userManager.Users.Where(u => u.Roles.Any(r => r.RoleId == roleId)).Project();
     }
@@ -189,20 +188,27 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     public async Task SendNotification(SendNotificationToRoleDto dto, CancellationToken cancellationToken)
     {
         //#if (signalR == true)
-        var signalRConnectionIds = await DbContext.UserSessions.Where(us => us.SignalRConnectionId != null && us.User!.Roles.Any(r => r.RoleId == dto.RoleId)).Select(us => us.SignalRConnectionId!).ToArrayAsync(cancellationToken);
-        await appHubContext.Clients.Clients(signalRConnectionIds).SendAsync(SignalREvents.SHOW_MESSAGE, dto.Message, cancellationToken);
+        var signalRConnectionIds = await DbContext.UserSessions.Where(us => us.SignalRConnectionId != null && 
+                                                                            us.User!.Roles.Any(r => r.RoleId == dto.RoleId))
+                                                               .Select(us => us.SignalRConnectionId!).ToArrayAsync(cancellationToken);
+
+        await appHubContext.Clients.Clients(signalRConnectionIds)
+                                   .SendAsync(SignalREvents.SHOW_MESSAGE, dto.Message, cancellationToken);
         //#endif
 
         //#if (notification == true)
-        await pushNotificationService.RequestPush(message: dto.Message, userRelatedPush: true, customSubscriptionFilter: s => s.UserSession!.User!.Roles.Any(r => r.RoleId == dto.RoleId), cancellationToken: cancellationToken);
+        await pushNotificationService.RequestPush(message: dto.Message, 
+                                                  userRelatedPush: true, 
+                                                  customSubscriptionFilter: s => s.UserSession!.User!.Roles.Any(r => r.RoleId == dto.RoleId), 
+                                                  cancellationToken: cancellationToken);
         //#endif
     }
     //#endif
 
     private async Task<Role> GetRoleByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        var role = await roleManager.Roles
-            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken) ?? throw new ResourceNotFoundException();
+        var role = await roleManager.Roles.FirstOrDefaultAsync(r => r.Id == id, cancellationToken)
+                    ?? throw new ResourceNotFoundException();
 
         if (role.Name == AppRoles.SuperAdmin)
             throw new BadRequestException();
