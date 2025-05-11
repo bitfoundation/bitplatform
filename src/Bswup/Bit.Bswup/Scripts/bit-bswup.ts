@@ -1,8 +1,6 @@
 ﻿var BitBswup = BitBswup || {};
 BitBswup.version = window['bit-bswup version'] = '9.7.4-pre-02';
 
-declare const Blazor: any;
-
 BitBswup.checkForUpdate = async () => {
     if (!('serviceWorker' in navigator)) {
         return console.warn('no serviceWorker in navigator');
@@ -29,7 +27,29 @@ BitBswup.forceRefresh = async () => {
     window.location.reload();
 }
 
-;(function () {
+declare const Blazor: { start: () => Promise<unknown> };
+
+interface BswupOptions {
+    log: 'none' | 'info' | 'verbose' | 'debug' | 'error'
+    sw: string
+    scope: string
+    handlerName: string
+    blazorScript: string
+    handler?(...args: any[]): void
+}
+
+const BswupMessage = {
+    downloadStarted: 'DOWNLOAD_STARTED',
+    downloadProgress: 'DOWNLOAD_PROGRESS',
+    downloadFinished: 'DOWNLOAD_FINISHED',
+    activate: 'ACTIVATE',
+    updateInstalled: 'UPDATE_INSTALLED',
+    updateReady: 'UPDATE_READY',
+    updateFound: 'UPDATE_FOUND',
+    stateChanged: 'STATE_CHANGED'
+};
+
+(function () {
     const bitBswupScript = document.currentScript;
 
     window.addEventListener('DOMContentLoaded', runBswup); // important event!
@@ -237,23 +257,3 @@ BitBswup.forceRefresh = async () => {
         }
     }
 }());
-
-interface BswupOptions {
-    log: 'none' | 'info' | 'verbose' | 'debug' | 'error'
-    sw: string
-    scope: string
-    handlerName: string
-    blazorScript: string
-    handler?(...args: any[]): void
-}
-
-const BswupMessage = {
-    downloadStarted: 'DOWNLOAD_STARTED',
-    downloadProgress: 'DOWNLOAD_PROGRESS',
-    downloadFinished: 'DOWNLOAD_FINISHED',
-    activate: 'ACTIVATE',
-    updateInstalled: 'UPDATE_INSTALLED',
-    updateReady: 'UPDATE_READY',
-    updateFound: 'UPDATE_FOUND',
-    stateChanged: 'STATE_CHANGED'
-};
