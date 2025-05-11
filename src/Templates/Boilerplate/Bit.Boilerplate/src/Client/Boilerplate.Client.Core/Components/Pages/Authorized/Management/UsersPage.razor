@@ -10,7 +10,8 @@
 <section>
     <BitStack Style="min-width:fit-content">
         <BitStack Horizontal FitHeight VerticalAlign="BitAlignment.Center">
-            @if (isLoadingUsersCount)
+            @*#if (signalR == true)*@
+            @if (isLoadingOnlineUsersCount)
             {
                 <BitRollingSquareLoading CustomSize="30" />
             }
@@ -18,11 +19,11 @@
             {
                 <BitText>@(onlineUsersCount is null ? "" : Localizer[nameof(AppStrings.OnlineUsers), onlineUsersCount])</BitText>
             }
-            <BitSpacer />
+            @*#endif*@
             <BitButton AutoLoading IconOnly
                        IconName="@BitIconName.Refresh"
                        OnClick="WrapHandled(RefreshData)"
-                       IsEnabled="isLoadingUsersCount is false" />
+                       IsEnabled="isLoadingUsers is false" />
         </BitStack>
         <BitStack Horizontal>
             <BitCard Style="min-width:15rem" FullHeight>
@@ -122,6 +123,7 @@
                                                 Id:
                                                 <BitTag Color="BitColor.SecondaryBackground" Size="BitSize.Large" Class="selectable">@session.Id</BitTag>
                                             </BitText>
+                                            @*#if (signalR == true)*@
                                             <BitText>
                                                 SignalRConnectionId:
                                                 @if (string.IsNullOrWhiteSpace(session.SignalRConnectionId) is false)
@@ -129,6 +131,7 @@
                                                     <BitTag Color="BitColor.SecondaryBackground" Size="BitSize.Large" Class="selectable">@session.SignalRConnectionId</BitTag>
                                                 }
                                             </BitText>
+                                            @*#endif*@
                                             <BitButton AutoLoading IconOnly
                                                        Class="del-session-btn"
                                                        IconName="@BitIconName.Delete"

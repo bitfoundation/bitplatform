@@ -8,11 +8,14 @@ public partial class UsersPage
 {
     private UserDto selectedUserDto = new();
 
-    private bool isLoadingUsers;
+    //#if (signalR == true)
     private int? onlineUsersCount;
+    private bool isLoadingOnlineUsersCount;
+    //#endif
+
+    private bool isLoadingUsers;
     private bool isLoadingSessions;
     private string? loadingUserKey;
-    private bool isLoadingUsersCount;
     private bool isDeleteUserDialogOpen;
     private BitNavItem? selectedUserItem;
     private List<BitNavItem> userNavItems = [];
@@ -33,7 +36,13 @@ public partial class UsersPage
 
     private async Task RefreshData()
     {
-        await Task.WhenAll(LoadAllUsers(), LoadOnlineUsersCount());
+        await Task.WhenAll(
+            LoadAllUsers()
+        //#if (signalR == true)
+            ,
+            LoadOnlineUsersCount()
+        //#endif
+        );
     }
 
     private async Task LoadAllUsers()
@@ -55,6 +64,7 @@ public partial class UsersPage
                 Data = r
             })];
 
+            allUserSessions = [];
             selectedUserDto = new();
             selectedUserItem = null;
         }
@@ -64,20 +74,22 @@ public partial class UsersPage
         }
     }
 
+    //#if (signalR == true)
     private async Task LoadOnlineUsersCount()
     {
-        if (isLoadingUsersCount) return;
+        if (isLoadingOnlineUsersCount) return;
 
         try
         {
-            isLoadingUsersCount = true;
+            isLoadingOnlineUsersCount = true;
             onlineUsersCount = await userManagementController.GetOnlineUsersCount(CurrentCancellationToken);
         }
         finally
         {
-            isLoadingUsersCount = false;
+            isLoadingOnlineUsersCount = false;
         }
     }
+    //#endif
 
     private async Task DeleteUser()
     {

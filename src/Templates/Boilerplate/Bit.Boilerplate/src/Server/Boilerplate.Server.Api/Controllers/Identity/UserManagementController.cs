@@ -1,4 +1,5 @@
 ﻿//+:cnd:noEmit
+using System.Threading;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.SignalR;
 using Boilerplate.Shared.Controllers.Identity;
@@ -45,18 +46,22 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
             throw new BadRequestException();
 
         var user = await GetUserByIdAsync(userId, cancellationToken);
-        var rolesOfUser = await userManager.GetRolesAsync(new() { Id = userId });
 
-        if (rolesOfUser.Contains(AppRoles.SuperAdmin))
+        if (await userManager.IsInRoleAsync(user, AppRoles.SuperAdmin))
         {
-            var rolesOfCurrentUser = await userManager.GetRolesAsync(new() { Id = User.GetUserId() });
-            if (rolesOfCurrentUser.Contains(AppRoles.SuperAdmin) is false)
-                throw new BadRequestException();
-
-            var superAdminUsers = await userManager.GetUsersInRoleAsync(AppRoles.SuperAdmin);
-            if (superAdminUsers.Count < 2)
+            if (User.IsInRole(AppRoles.SuperAdmin) is false)
                 throw new BadRequestException();
         }
+
+        //#if (signalR == true)
+        // Checkout AppHub's comments for more info.
+        var userSessions = await DbContext.UserSessions.Where(us => us.UserId == userId).ToListAsync(cancellationToken);
+        var result = await DbContext.UserSessions.Where(us => us.UserId == userId).ExecuteDeleteAsync(cancellationToken);
+        foreach (var session in userSessions.Where(us => us.SignalRConnectionId is not null))
+        {
+            await RevokeSession(session.SignalRConnectionId!, cancellationToken);
+        }
+        //#endif
 
         await userManager.DeleteAsync(user);
     }
@@ -68,17 +73,17 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         var entityToDelete = await DbContext.UserSessions.FindAsync([id], cancellationToken)
             ?? throw new ResourceNotFoundException();
 
-        DbContext.Remove(entityToDelete);
-
-        await DbContext.SaveChangesAsync(cancellationToken);
-
         //#if (signalR == true)
         // Checkout AppHub's comments for more info.
         if (entityToDelete.SignalRConnectionId is not null)
         {
-            await appHubContext.Clients.Client(entityToDelete.SignalRConnectionId).SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.SESSION_REVOKED, null, cancellationToken);
+            await RevokeSession(entityToDelete.SignalRConnectionId, cancellationToken);
         }
         //#endif
+
+        DbContext.Remove(entityToDelete);
+
+        await DbContext.SaveChangesAsync(cancellationToken);
     }
 
 
@@ -88,5 +93,11 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
                     ?? throw new ResourceNotFoundException();
 
         return user;
+    }
+
+    private async Task RevokeSession(string connectionId, CancellationToken cancellationToken)
+    {
+        await appHubContext.Clients.Client(connectionId)
+                                   .SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.SESSION_REVOKED, null, cancellationToken);
     }
 }
