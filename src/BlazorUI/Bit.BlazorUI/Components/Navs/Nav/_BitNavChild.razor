@@ -100,7 +100,7 @@
         }
         else
         {
-            var padding = Nav.IconOnly ? 0
+            var padding = (Nav.IconOnly || Nav.NoCollapse) ? 0
             : Depth * Nav.IndentValue + (Nav.ReversedChevron ? Nav.IndentReversedPadding : (childItems.Any() ? 0 : Nav.IndentPadding));
 
             var desPadding = Nav.ReversedChevron is false && childItems.Any() ? Nav.IndentPadding : 0;
@@ -128,7 +128,7 @@
                                       AriaCurrent="@(Item == Nav.SelectedItem ? _AriaCurrentMap[Nav.GetAriaCurrent(Item)] : null)"
                                       Rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url!) is false ? "noopener noreferrer" : null)">
                     <div class="bit-nav-mct" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
-                        @if (childItems.Any() && Nav.IconOnly is false)
+                        @if (childItems.Any() && Nav.IconOnly is false && Nav.NoCollapse is false)
                         {
                             <div @onclick="ToggleItem"
                                  @onclick:preventDefault="true"

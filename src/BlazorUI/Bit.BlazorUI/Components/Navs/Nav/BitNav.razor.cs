@@ -130,6 +130,11 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     [Parameter] public BitNavNameSelectors<TItem>? NameSelectors { get; set; }
 
     /// <summary>
+    /// Hides all collapse/expand buttons and remove their spaces at the start of each node.
+    /// </summary>
+    [Parameter] public bool NoCollapse { get; set; }
+
+    /// <summary>
     /// Callback invoked when an item is clicked.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
