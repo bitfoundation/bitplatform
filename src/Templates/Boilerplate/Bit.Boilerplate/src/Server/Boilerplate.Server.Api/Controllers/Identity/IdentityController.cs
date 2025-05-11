@@ -96,7 +96,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
 
         var user = await userManager.FindUserAsync(request)
-                    ?? throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]).WithData("Identifier", request);
+                    ?? await userManager.CreateUserWithDemoRole(request); // Optional fast sign-up. Remove this line if you don't want to allow this.
 
         await SignIn(request, user, cancellationToken);
     }
@@ -300,7 +300,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
         var user = await userManager.FindUserAsync(request)
-                    ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]).WithData("Identifiar", request);
+                    ?? await userManager.CreateUserWithDemoRole(request); // Optional fast sign-up. Remove this line if you don't want to allow this.
 
         if (await userConfirmation.IsConfirmedAsync(userManager, user) is false)
         {

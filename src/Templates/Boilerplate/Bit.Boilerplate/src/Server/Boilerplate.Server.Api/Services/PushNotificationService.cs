@@ -22,14 +22,15 @@ public partial class PushNotificationService
         var userSessionId = httpContextAccessor.HttpContext!.User.IsAuthenticated() ? httpContextAccessor.HttpContext.User.GetSessionId() : (Guid?)null;
 
         await dbContext.PushNotificationSubscriptions
-            .Where(s => s.DeviceId == dto.DeviceId || s.UserSessionId == userSessionId /* pushManager's subscription has been renewed. */)
+            .WhereIf(userSessionId is null, s => s.DeviceId == dto.DeviceId)
+            .WhereIf(userSessionId is not null, s => s.UserSessionId == userSessionId || s.DeviceId == dto.DeviceId) // pushManager's subscription has been renewed.
             .ExecuteDeleteAsync(cancellationToken);
 
         var subscription = (await dbContext.PushNotificationSubscriptions.AddAsync(new()
         {
             DeviceId = dto.DeviceId,
             Platform = dto.Platform
-        })).Entity;
+        }, cancellationToken)).Entity;
 
         dto.Patch(subscription);
 
