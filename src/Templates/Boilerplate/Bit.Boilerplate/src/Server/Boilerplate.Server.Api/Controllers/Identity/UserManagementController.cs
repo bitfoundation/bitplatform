@@ -1,8 +1,9 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Server.Api.Services;
-using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
+using Boilerplate.Server.Api.SignalR;
 using Boilerplate.Shared.Controllers.Identity;
+using Boilerplate.Shared.Dtos.Identity;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
@@ -10,8 +11,17 @@ namespace Boilerplate.Server.Api.Controllers.Identity;
 [Authorize(Policy = AppFeatures.Management.ManageUsers)]
 public partial class UserManagementController : AppControllerBase, IUserManagementController
 {
-    [AutoInject] private PhoneService phoneService = default!;
     [AutoInject] private UserManager<User> userManager = default!;
+    //#if (signalR == true)
+    [AutoInject] private IHubContext<AppHub> appHubContext = default!;
+    //#endif
+
+
+    [HttpGet, EnableQuery]
+    public IQueryable<UserDto> GetAllUsers()
+    {
+        return userManager.Users.Project();
+    }
 
     //#if (signalR == true)
     [HttpGet]
@@ -21,16 +31,34 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
     }
     //#endif
 
-    [HttpGet, EnableQuery]
-    public IQueryable<UserDto> GetAllUsers()
-    {
-        return userManager.Users.Project();
-    }
-
-    [HttpGet("{userId}")]
+    [HttpGet("{userId}"), EnableQuery]
     public IQueryable<UserSessionDto> GetUserSessions(Guid userId)
     {
         return DbContext.UserSessions.Where(us => us.UserId == userId).Project();
+    }
+
+    [HttpPost("{userId}")]
+    [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
+    public async Task Delete(Guid userId, CancellationToken cancellationToken)
+    {
+        if (User.GetUserId() == userId)
+            throw new BadRequestException();
+
+        var user = await GetUserByIdAsync(userId, cancellationToken);
+        var rolesOfUser = await userManager.GetRolesAsync(new() { Id = userId });
+
+        if (rolesOfUser.Contains(AppRoles.SuperAdmin))
+        {
+            var rolesOfCurrentUser = await userManager.GetRolesAsync(new() { Id = User.GetUserId() });
+            if (rolesOfCurrentUser.Contains(AppRoles.SuperAdmin) is false)
+                throw new BadRequestException();
+
+            var superAdminUsers = await userManager.GetUsersInRoleAsync(AppRoles.SuperAdmin);
+            if (superAdminUsers.Count < 2)
+                throw new BadRequestException();
+        }
+
+        await userManager.DeleteAsync(user);
     }
 
     [HttpPost("{id}")]
@@ -43,51 +71,14 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         DbContext.Remove(entityToDelete);
 
         await DbContext.SaveChangesAsync(cancellationToken);
-    }
 
-
-    [HttpPost]
-    [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
-    public async Task<UserDto> Create(UserDto userDto, CancellationToken cancellationToken)
-    {
-        var user = userDto.Map();
-
-        if (string.IsNullOrEmpty(userDto.PhoneNumber) is false)
+        //#if (signalR == true)
+        // Checkout AppHub's comments for more info.
+        if (entityToDelete.SignalRConnectionId is not null)
         {
-            userDto.PhoneNumber = phoneService.NormalizePhoneNumber(userDto.PhoneNumber!);
+            await appHubContext.Clients.Client(entityToDelete.SignalRConnectionId).SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.SESSION_REVOKED, null, cancellationToken);
         }
-
-        var result = await userManager.CreateAsync(user);
-
-        if (result.Succeeded is false)
-            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
-
-        return user.Map();
-    }
-
-    [HttpPost]
-    [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
-    public async Task<UserDto> Update(UserDto userDto, CancellationToken cancellationToken)
-    {
-        var user = await GetUserByIdAsync(userDto.Id, cancellationToken);
-
-        userDto.Patch(user);
-
-        var result = await userManager.UpdateAsync(user);
-
-        if (result.Succeeded is false)
-            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
-
-        return user.Map();
-    }
-
-    [HttpPost("{userId}")]
-    [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
-    public async Task Delete(Guid userId, CancellationToken cancellationToken)
-    {
-        var user = await GetUserByIdAsync(userId, cancellationToken);
-
-        await userManager.DeleteAsync(user);
+        //#endif
     }
 
 

@@ -6,9 +6,7 @@ namespace Boilerplate.Client.Core.Components.Pages.Authorized.Management;
 
 public partial class UsersPage
 {
-    private UserDto newUserDto = new() { UserName = Guid.NewGuid().ToString() };
-
-    private UserDto editUserDto = new();
+    private UserDto selectedUserDto = new();
 
     private bool isLoadingUsers;
     private int? onlineUsersCount;
@@ -57,7 +55,7 @@ public partial class UsersPage
                 Data = r
             })];
 
-            editUserDto = new();
+            selectedUserDto = new();
             selectedUserItem = null;
         }
         finally
@@ -79,39 +77,6 @@ public partial class UsersPage
         {
             isLoadingUsersCount = false;
         }
-    }
-
-    private async Task AddUser()
-    {
-        if (string.IsNullOrWhiteSpace(newUserDto.UserName)) return;
-        if (string.IsNullOrWhiteSpace(newUserDto.Email) && string.IsNullOrWhiteSpace(newUserDto.PhoneNumber)) return;
-
-        if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
-
-        //TODO: validate inputs further here?
-
-        await userManagementController.Create(newUserDto, CurrentCancellationToken);
-
-        newUserDto = new() { UserName = Guid.NewGuid().ToString() };
-
-        await LoadAllUsers();
-    }
-
-    private async Task EditUser()
-    {
-        if (selectedUserItem is null) return;
-        if (string.IsNullOrWhiteSpace(editUserDto.UserName)) return;
-        if (string.IsNullOrWhiteSpace(editUserDto.Email) && string.IsNullOrWhiteSpace(editUserDto.PhoneNumber)) return;
-
-        if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
-
-        //TODO: validate inputs here?
-
-        editUserDto.Password = Guid.NewGuid().ToString();
-
-        await userManagementController.Update(editUserDto, CurrentCancellationToken);
-
-        await LoadAllUsers();
     }
 
     private async Task DeleteUser()
@@ -148,7 +113,7 @@ public partial class UsersPage
             selectedUserItem = item;
             var user = (item.Data as UserDto)!;
 
-            user.Patch(editUserDto);
+            user.Patch(selectedUserDto);
 
             allUserSessions = await userManagementController.GetUserSessions(user.Id, CurrentCancellationToken);
         }

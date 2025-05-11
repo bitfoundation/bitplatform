@@ -17,12 +17,14 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     //#if (signalR == true)
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
+
     //#if (notification == true)
     [AutoInject] private PushNotificationService pushNotificationService = default!;
     //#endif
 
     [AutoInject] private UserManager<User> userManager = default!;
     [AutoInject] private RoleManager<Role> roleManager = default!;
+
 
     [HttpGet, EnableQuery]
     public IQueryable<RoleDto> GetAllRoles()
@@ -204,6 +206,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         //#endif
     }
     //#endif
+
 
     private async Task<Role> GetRoleByIdAsync(Guid id, CancellationToken cancellationToken)
     {

@@ -9,24 +9,6 @@
 
 <section>
     <BitStack Style="min-width:fit-content">
-        @* <BitStack Horizontal FitHeight>
-            <BitTextField @bind-Value="newUserDto.UserName"
-                          Style="width:15rem"
-                          Immediate DebounceTime="300"
-                          Placeholder="@Localizer[nameof(AppStrings.NewUserUsername)]" />
-            <BitTextField @bind-Value="newUserDto.Email"
-                          Immediate DebounceTime="300"
-                          Placeholder="@Localizer[nameof(AppStrings.NewUserEmail)]" />
-            <BitTextField @bind-Value="newUserDto.PhoneNumber"
-                          Immediate DebounceTime="300"
-                          Placeholder="@Localizer[nameof(AppStrings.NewUserPhoneNumber)]" />
-            <BitButton AutoLoading
-                       IconName="@BitIconName.AddTo"
-                       OnClick="WrapHandled(AddUser)"
-                       IsEnabled="string.IsNullOrWhiteSpace(newUserDto.Email) is false || string.IsNullOrWhiteSpace(newUserDto.PhoneNumber) is false">
-                @Localizer[nameof(AppStrings.AddUser)]
-            </BitButton>
-        </BitStack> *@
         <BitStack Horizontal FitHeight VerticalAlign="BitAlignment.Center">
             @if (isLoadingUsersCount)
             {
@@ -89,30 +71,24 @@
                                     }
                                 </BitStack>
                                 <BitStack Horizontal VerticalAlign="BitAlignment.End">
-                                    <BitTextField @bind-Value="editUserDto.UserName"
+                                    <BitTextField @bind-Value="selectedUserDto.UserName"
                                                   IsEnabled="false"
                                                   Immediate DebounceTime="300"
                                                   Label="@Localizer[nameof(AppStrings.UserName)]" />
-                                    <BitTextField @bind-Value="editUserDto.Email"
+                                    <BitTextField @bind-Value="selectedUserDto.Email"
                                                   IsEnabled="false"
                                                   Immediate DebounceTime="300"
                                                   Label="@Localizer[nameof(AppStrings.Email)]" />
-                                    <BitTextField @bind-Value="editUserDto.PhoneNumber"
+                                    <BitTextField @bind-Value="selectedUserDto.PhoneNumber"
                                                   IsEnabled="false"
                                                   Immediate DebounceTime="300"
                                                   Label="@Localizer[nameof(AppStrings.PhoneNumber)]" />
                                 </BitStack>
                                 <BitStack Horizontal VerticalAlign="BitAlignment.End">
-                                    <BitTextField @bind-Value="editUserDto.FullName"
+                                    <BitTextField @bind-Value="selectedUserDto.FullName"
                                                   IsEnabled="false"
                                                   Immediate DebounceTime="300"
                                                   Label="@Localizer[nameof(AppStrings.FullName)]" />
-                                    @* <BitButton AutoLoading
-                                               IconName="@BitIconName.Edit"
-                                               OnClick="WrapHandled(EditUser)"
-                                               IsEnabled="isUserSelected && string.IsNullOrWhiteSpace(editUserDto.UserName) is false && (string.IsNullOrWhiteSpace(editUserDto.Email) is false || string.IsNullOrWhiteSpace(editUserDto.PhoneNumber) is false)">
-                                        @Localizer[nameof(AppStrings.EditUser)]
-                                    </BitButton> *@
                                     <BitSpacer />
                                     <BitButton AutoLoading
                                                IsEnabled="isUserSelected"
@@ -148,7 +124,10 @@
                                             </BitText>
                                             <BitText>
                                                 SignalRConnectionId:
-                                                <BitTag Color="BitColor.SecondaryBackground" Size="BitSize.Large" Class="selectable">@session.SignalRConnectionId</BitTag>
+                                                @if (string.IsNullOrWhiteSpace(session.SignalRConnectionId) is false)
+                                                {
+                                                    <BitTag Color="BitColor.SecondaryBackground" Size="BitSize.Large" Class="selectable">@session.SignalRConnectionId</BitTag>
+                                                }
                                             </BitText>
                                             <BitButton AutoLoading IconOnly
                                                        Class="del-session-btn"
@@ -162,6 +141,13 @@
                             </BitBasicList>
                         }
                     </BitPivotItem>
+                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Features)]">
+                        Under construction
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Quota)]">
+                        Under construction
+                    </BitPivotItem>
+
                 </BitPivot>
             </BitCard>
         </BitStack>
