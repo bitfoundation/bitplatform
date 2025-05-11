@@ -96,7 +96,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
 
         var user = await userManager.FindUserAsync(request)
-                    ?? await userManager.CreateUserWithDemoRole(request); // Optional fast sign-up. Remove this line if you don't want to allow this.
+                    ?? await userManager.CreateUserWithDemoRole(request, request.Password); // Optional fast sign-up. Remove this line if you don't want to allow this.
 
         await SignIn(request, user, cancellationToken);
     }

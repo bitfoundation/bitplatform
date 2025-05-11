@@ -149,7 +149,6 @@ public partial class SignInPage
         catch (BadRequestException e) when (e.Key == nameof(AppStrings.UserIsNotConfirmed))
         {
             NavigateToConfirmPage();
-            SnackBarService.Error(e.Message);
         }
         catch (KnownException e)
         {
@@ -261,7 +260,6 @@ public partial class SignInPage
         catch (BadRequestException e) when (e.Key == nameof(AppStrings.UserIsNotConfirmed))
         {
             NavigateToConfirmPage();
-            SnackBarService.Error(e.Message);
         }
         catch (KnownException e)
         {
