@@ -31,7 +31,7 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
                             Urls.TodoPage,
                             //#endif
                             //#if (offlineDb == true)
-                            Urls.OfflineEditProfilePage
+                            Urls.OfflineDatabaseDemo
                             //#endif
                             ],
                         AutoVerify = true,

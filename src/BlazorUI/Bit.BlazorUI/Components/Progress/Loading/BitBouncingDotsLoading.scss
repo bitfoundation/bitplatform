@@ -33,12 +33,12 @@
 
 @keyframes bit-ldn-bnd-anm {
     0%, 100% {
-        transform: translateY(-75%);
+        transform: none;
         animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
     }
 
     50% {
-        transform: none;
+        transform: translateY(-75%);
         animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
     }
 }

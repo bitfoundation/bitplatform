@@ -98,13 +98,6 @@ public partial class BitNavDemo
         },
         new()
         {
-            Name = "IndentValue",
-            Type = "int",
-            DefaultValue = "16",
-            Description = "The indentation value in px for each level of depth of child item."
-        },
-        new()
-        {
             Name = "IndentPadding",
             Type = "int",
             DefaultValue = "27",
@@ -116,6 +109,13 @@ public partial class BitNavDemo
             Type = "int",
             DefaultValue = "4",
             Description = "The indentation padding in px for items in reversed mode."
+        },
+        new()
+        {
+            Name = "IndentValue",
+            Type = "int",
+            DefaultValue = "16",
+            Description = "The indentation value in px for each level of depth of child item."
         },
         new()
         {

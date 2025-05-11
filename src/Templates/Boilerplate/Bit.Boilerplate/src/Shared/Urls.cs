@@ -40,4 +40,8 @@ public static partial class Urls
     public const string RolesPage = "/roles";
 
     public const string UsersPage = "/users";
+
+    //#if (offlineDb == true)
+    public const string OfflineDatabaseDemo = "/offline-database-demo";
+    //#endif
 }

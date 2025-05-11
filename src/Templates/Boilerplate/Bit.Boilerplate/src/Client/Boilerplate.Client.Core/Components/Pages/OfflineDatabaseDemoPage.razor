@@ -1,17 +1,17 @@
-@attribute [Route(Urls.OfflineEditProfilePage)]
-@attribute [Route("{culture?}" + Urls.OfflineEditProfilePage)]
+@attribute [Route(Urls.OfflineDatabaseDemo)]
+@attribute [Route("{culture?}" + Urls.OfflineDatabaseDemo)]
 @inherits AppPageBase
 
-<AppPageData Title="@Localizer[nameof(AppStrings.OfflineEditProfileTitle)]" />
+<AppPageData Title="@Localizer[nameof(AppStrings.OfflineDatabaseDemoTitle)]" />
 
 <section>
     <BitStack Alignment="BitAlignment.Center">
         <BitText Typography="BitTypography.H3">
-            @Localizer[nameof(AppStrings.OfflineEditProfileTitle)]
+            @Localizer[nameof(AppStrings.OfflineDatabaseDemoTitle)]
         </BitText>
 
-        <BitText Class="max-width">
-            @Localizer[nameof(AppStrings.OfflineEditProfileMessage)]
+        <BitText Class="max-width" Element="pre" Style="word-break:break-word;white-space:break-spaces">
+            @Localizer[nameof(AppStrings.OfflineDatabaseDemoMessage)]
         </BitText>
 
         @if (isLoading)
