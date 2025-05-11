@@ -9,9 +9,6 @@ public partial class MainLayout
 
     private async Task SetNavPanelItems()
     {
-        if (user is null)
-            return;
-
         navPanelItems =
         [
             new()
@@ -24,8 +21,8 @@ public partial class MainLayout
 
         //#if (module == "Admin")
 
-        var (dashboard, manageProductCatalog) = await (authorizationService.IsAuthorizedAsync(user, AppFeatures.AdminPanel.Dashboard),
-            authorizationService.IsAuthorizedAsync(user, AppFeatures.AdminPanel.ManageProductCatalog));
+        var (dashboard, manageProductCatalog) = await (authorizationService.IsAuthorizedAsync(user!, AppFeatures.AdminPanel.Dashboard),
+            authorizationService.IsAuthorizedAsync(user!, AppFeatures.AdminPanel.ManageProductCatalog));
 
         if (dashboard || manageProductCatalog)
         {
@@ -70,7 +67,7 @@ public partial class MainLayout
         //#endif
 
         //#if (sample == true)
-        if (await authorizationService.IsAuthorizedAsync(user, AppFeatures.Todo.ManageTodo))
+        if (await authorizationService.IsAuthorizedAsync(user!, AppFeatures.Todo.ManageTodo))
         {
             navPanelItems.Add(new()
             {
@@ -84,9 +81,9 @@ public partial class MainLayout
         //#if (offlineDb == true)
         navPanelItems.Add(new()
         {
-            Text = localizer[nameof(AppStrings.OfflineEditProfileTitle)],
+            Text = localizer[nameof(AppStrings.OfflineDatabaseDemoTitle)],
             IconName = BitIconName.EditContact,
-            Url = Urls.OfflineEditProfilePage,
+            Url = Urls.OfflineDatabaseDemo,
         });
         //#endif
 
@@ -97,7 +94,7 @@ public partial class MainLayout
             Url = Urls.TermsPage,
         });
 
-        var about = await authorizationService.IsAuthorizedAsync(user, AppFeatures.Extra.ViewAboutApp);
+        var about = await authorizationService.IsAuthorizedAsync(user!, AppFeatures.Extra.ViewAboutApp);
         if (about)
         {
             navPanelItems.Add(new()
@@ -108,9 +105,9 @@ public partial class MainLayout
             });
         }
 
-        var (manageRoles, manageUsers, manageAiPrompt) = await (authorizationService.IsAuthorizedAsync(user, AppFeatures.Management.ManageRoles),
-            authorizationService.IsAuthorizedAsync(user, AppFeatures.Management.ManageUsers),
-            authorizationService.IsAuthorizedAsync(user, AppFeatures.Management.ManageAiPrompt));
+        var (manageRoles, manageUsers, manageAiPrompt) = await (authorizationService.IsAuthorizedAsync(user!, AppFeatures.Management.ManageRoles),
+            authorizationService.IsAuthorizedAsync(user!, AppFeatures.Management.ManageUsers),
+            authorizationService.IsAuthorizedAsync(user!, AppFeatures.Management.ManageAiPrompt));
 
         if (manageRoles || manageUsers || manageAiPrompt)
         {
@@ -155,20 +152,23 @@ public partial class MainLayout
             }
             //#endif
 
-            navPanelItems.Add(new()
+            if (user!.IsAuthenticated())
             {
-                Text = localizer[nameof(AppStrings.Settings)],
-                IconName = BitIconName.Equalizer,
-                Url = Urls.SettingsPage,
-                AdditionalUrls =
-                [
-                    $"{Urls.SettingsPage}/{Urls.SettingsSections.Profile}",
-                    $"{Urls.SettingsPage}/{Urls.SettingsSections.Account}",
-                    $"{Urls.SettingsPage}/{Urls.SettingsSections.Tfa}",
-                    $"{Urls.SettingsPage}/{Urls.SettingsSections.Sessions}",
-                    $"{Urls.SettingsPage}/{Urls.SettingsSections.UpgradeAccount}",
-                ]
-            });
+                navPanelItems.Add(new()
+                {
+                    Text = localizer[nameof(AppStrings.Settings)],
+                    IconName = BitIconName.Equalizer,
+                    Url = Urls.SettingsPage,
+                    AdditionalUrls =
+                    [
+                        $"{Urls.SettingsPage}/{Urls.SettingsSections.Profile}",
+                        $"{Urls.SettingsPage}/{Urls.SettingsSections.Account}",
+                        $"{Urls.SettingsPage}/{Urls.SettingsSections.Tfa}",
+                        $"{Urls.SettingsPage}/{Urls.SettingsSections.Sessions}",
+                        $"{Urls.SettingsPage}/{Urls.SettingsSections.UpgradeAccount}",
+                    ]
+                });
+            }
         }
     }
 }
