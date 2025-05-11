@@ -6,8 +6,10 @@ namespace Boilerplate.Shared.Controllers.Identity;
 [Route("api/[controller]/[action]/"), AuthorizedApi]
 public interface IUserManagementController : IAppController
 {
+    //#if (signalR == true)
     [HttpGet]
     Task<int> GetOnlineUsersCount(CancellationToken cancellationToken);
+    //#endif
 
     [HttpGet]
     Task<List<UserDto>> GetAllUsers(CancellationToken cancellationToken) => default!;

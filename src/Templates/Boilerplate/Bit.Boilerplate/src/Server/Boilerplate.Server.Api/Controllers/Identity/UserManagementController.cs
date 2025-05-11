@@ -1,7 +1,8 @@
 ﻿//+:cnd:noEmit
+using Boilerplate.Server.Api.Services;
+using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Controllers.Identity;
-using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
@@ -9,13 +10,16 @@ namespace Boilerplate.Server.Api.Controllers.Identity;
 [Authorize(Policy = AppFeatures.Management.ManageUsers)]
 public partial class UserManagementController : AppControllerBase, IUserManagementController
 {
+    [AutoInject] private PhoneService phoneService = default!;
     [AutoInject] private UserManager<User> userManager = default!;
 
+    //#if (signalR == true)
     [HttpGet]
     public async Task<int> GetOnlineUsersCount(CancellationToken cancellationToken)
     {
         return await DbContext.UserSessions.CountAsync(us => us.SignalRConnectionId != null, cancellationToken);
     }
+    //#endif
 
     [HttpGet, EnableQuery]
     public IQueryable<UserDto> GetAllUsers()
@@ -24,7 +28,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
     }
 
     [HttpGet("{userId}")]
-    public IQueryable<UserSessionDto> GetUserSessions(Guid userId, CancellationToken cancellationToken)
+    public IQueryable<UserSessionDto> GetUserSessions(Guid userId)
     {
         return DbContext.UserSessions.Where(us => us.UserId == userId).Project();
     }
@@ -48,7 +52,10 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
     {
         var user = userDto.Map();
 
-        //TODO: validate phone number?
+        if (string.IsNullOrEmpty(userDto.PhoneNumber) is false)
+        {
+            userDto.PhoneNumber = phoneService.NormalizePhoneNumber(userDto.PhoneNumber!);
+        }
 
         var result = await userManager.CreateAsync(user);
 
