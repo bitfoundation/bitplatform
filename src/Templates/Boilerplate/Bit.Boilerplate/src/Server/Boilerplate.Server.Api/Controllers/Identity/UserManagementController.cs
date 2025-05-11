@@ -17,6 +17,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
     //#if (signalR == true)
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
+    [AutoInject] private ServerApiSettings serverApiSettings = default!;
 
 
     [HttpGet, EnableQuery]
@@ -28,7 +29,9 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
     [HttpGet]
     public async Task<int> GetOnlineUsersCount(CancellationToken cancellationToken)
     {
-        return await DbContext.Users.CountAsync(u => u.Sessions.Any(us => us.SignalRConnectionId != null), cancellationToken);
+        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+        return await DbContext.Users.CountAsync(u => u.Sessions.Any(us => (now - (us.RenewedOn ?? us.StartedOn)) < serverApiSettings.Identity.BearerTokenExpiration.TotalSeconds), cancellationToken);
     }
 
     [HttpGet("{userId}"), EnableQuery]
