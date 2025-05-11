@@ -75,6 +75,9 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task DeleteUserSession(Guid id, CancellationToken cancellationToken)
     {
+        if (id == User.GetSessionId())
+            throw new BadRequestException();
+
         var entityToDelete = await DbContext.UserSessions.FindAsync([id], cancellationToken)
             ?? throw new ResourceNotFoundException();
 
