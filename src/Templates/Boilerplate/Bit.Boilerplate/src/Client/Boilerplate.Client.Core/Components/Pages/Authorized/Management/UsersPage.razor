@@ -25,8 +25,8 @@
                        OnClick="WrapHandled(RefreshData)"
                        IsEnabled="isLoadingUsers is false" />
         </BitStack>
-        <BitStack Horizontal>
-            <BitCard Style="min-width:15rem" FullHeight>
+        <BitStack Horizontal Style="height:calc(100% - 3rem)">
+            <BitCard Style="min-width:15rem;overflow:auto;box-shadow:none" FullHeight>
                 @if (isLoadingUsers)
                 {
                     <BitRollingSquareLoading Size="BitSize.Small" />
@@ -65,7 +65,7 @@
                     </BitNav>
                 }
             </BitCard>
-            <BitCard Style="min-width:32rem" FullSize>
+            <BitCard Style="min-width:32rem;overflow:auto;box-shadow:none" FullSize>
                 <BitPivot>
                     <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.General)]">
                         <BitStack>

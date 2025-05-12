@@ -9,6 +9,10 @@ section {
     @include lt-md {
         height: calc(#{$bit-env-height-available} - 10.5rem);
     }
+
+    @include lt-sm {
+        height: calc(#{$bit-env-height-available} - 9.5rem);
+    }
 }
 
 ::deep {
