@@ -40,6 +40,12 @@ public partial class BitCard : BitComponentBase
     [Parameter, ResetClassBuilder]
     public bool FullWidth { get; set; }
 
+    /// <summary>
+    /// Removes the default shadow around the card.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool NoShadow { get; set; }
+
 
 
     protected override string RootElementClass => "bit-crd";
@@ -66,5 +72,7 @@ public partial class BitCard : BitComponentBase
 
         ClassBuilder.Register(() => FullSize || FullHeight ? "bit-crd-fhe" : string.Empty);
         ClassBuilder.Register(() => FullSize || FullWidth ? "bit-crd-fwi" : string.Empty);
+
+        ClassBuilder.Register(() => NoShadow ? "bit-crd-nsd" : string.Empty);
     }
 }
