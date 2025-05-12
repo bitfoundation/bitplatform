@@ -54,7 +54,7 @@ public partial class BitCardDemo
         {
             Name = "NoShadow",
             Type = "bool",
-            DefaultValue = "null",
+            DefaultValue = "false",
             Description = "Removes the default shadow around the card.",
         },
     ];
