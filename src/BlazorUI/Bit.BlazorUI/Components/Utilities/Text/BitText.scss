@@ -213,3 +213,8 @@
 .bit-txt-gutter {
     margin-bottom: $tg-gutter-size;
 }
+
+.bit-txt-fbr {
+    word-break: break-all;
+    white-space: break-spaces;
+}

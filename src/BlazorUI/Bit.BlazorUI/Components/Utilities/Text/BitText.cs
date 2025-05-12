@@ -15,7 +15,7 @@ public partial class BitText : BitComponentBase
     public BitTextAlign? Align { get; set; }
 
     /// <summary>
-    /// The content of the Text.
+    /// The content of the text.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -29,6 +29,12 @@ public partial class BitText : BitComponentBase
     /// The custom html element used for the root node.
     /// </summary>
     [Parameter] public string? Element { get; set; }
+
+    /// <summary>
+    /// Forces the text to always break at the end.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool ForceBreak { get; set; }
 
     /// <summary>
     /// The kind of the foreground color of the text.
@@ -50,7 +56,7 @@ public partial class BitText : BitComponentBase
     public bool NoWrap { get; set; }
 
     /// <summary>
-    /// The typography of the Text.
+    /// The typography of the text.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitTypography? Typography { get; set; }
@@ -95,6 +101,8 @@ public partial class BitText : BitComponentBase
             BitColorKind.Transparent => "bit-txt-rfg",
             _ => string.Empty
         });
+
+        ClassBuilder.Register(() => ForceBreak ? "bit-txt-fbr" : string.Empty);
     }
 
     protected override void RegisterCssStyles()

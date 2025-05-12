@@ -12,6 +12,8 @@
           GitHubUrl="Utilities/Text/BitText.cs"
           GitHubDemoUrl="Utilities/Text/BitTextDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <BitText>11111111111111111111111111111111111111111111111111111111</BitText>
+        <br /><br />
         <BitText>This is default (Subtitle1)</BitText>
         <br /><br />
         <BitText Typography="BitTypography.H1">H1. Heading</BitText>
@@ -43,7 +45,18 @@
         <BitText Typography="BitTypography.Overline">Overline. this is overline text.</BitText>
     </DemoExample>
 
-    <DemoExample Title="Align" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Wrapping" RazorCode="@example2RazorCode" Id="example2">
+        <b>Normal wrap (default):</b><br />
+        <BitText Style="width:250px">Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
+        <br /><br /><br />
+        <b>NoWrap:</b><br />
+        <BitText Style="width:250px" NoWrap>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
+        <br /><br /><br />
+        <b>ForceBreak:</b><br />
+        <BitText Style="width:250px" ForceBreak>1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890</BitText>
+    </DemoExample>
+
+    <DemoExample Title="Align" RazorCode="@example3RazorCode" Id="example3">
         <BitText Align="BitTextAlign.Start">Start</BitText>
         <br />
         <BitText Align="BitTextAlign.Center">Center</BitText>
@@ -51,7 +64,7 @@
         <BitText Align="BitTextAlign.End">End</BitText>
     </DemoExample>
 
-    <DemoExample Title="Foreground" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="Foreground" RazorCode="@example4RazorCode" Id="example4">
         <BitText Foreground="BitColorKind.Primary">Primary foreground</BitText>
         <br />
         <BitText Foreground="BitColorKind.Secondary">Secondary foreground</BitText>
@@ -63,7 +76,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Color" RazorCode="@example5RazorCode" Id="example5">
         <BitText Color="BitColor.Primary">Primary color</BitText>
         <br />
         <BitText Color="BitColor.Secondary">Secondary color</BitText>
