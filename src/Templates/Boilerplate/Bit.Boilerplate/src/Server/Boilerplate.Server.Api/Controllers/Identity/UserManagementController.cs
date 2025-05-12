@@ -82,16 +82,16 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         var entityToDelete = await DbContext.UserSessions.FindAsync([id], cancellationToken)
             ?? throw new ResourceNotFoundException();
 
+        DbContext.Remove(entityToDelete);
+
+        await DbContext.SaveChangesAsync(cancellationToken);
+
         //#if (signalR == true)
         if (entityToDelete.SignalRConnectionId is not null)
         {
             await RevokeSession(entityToDelete.SignalRConnectionId, cancellationToken);
         }
         //#endif
-
-        DbContext.Remove(entityToDelete);
-
-        await DbContext.SaveChangesAsync(cancellationToken);
     }
 
 
