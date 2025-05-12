@@ -45,14 +45,14 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
     public async Task Delete(Guid userId, CancellationToken cancellationToken)
     {
         if (User.GetUserId() == userId)
-            throw new BadRequestException();
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserCantRemoveItselfErrorMessage)]);
 
         var user = await GetUserByIdAsync(userId, cancellationToken);
 
         if (await userManager.IsInRoleAsync(user, AppRoles.SuperAdmin))
         {
             if (User.IsInRole(AppRoles.SuperAdmin) is false)
-                throw new BadRequestException();
+                throw new BadRequestException(Localizer[nameof(AppStrings.UserCantRemoveSuperAdminErrorMessage)]);
         }
         
         //#if (signalR == true)
@@ -78,7 +78,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
     public async Task RevokeUserSession(Guid id, CancellationToken cancellationToken)
     {
         if (id == User.GetSessionId())
-            throw new BadRequestException();
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserCantRemoveItsCurrentSessionsErrorMessage)]);
 
         var entityToDelete = await DbContext.UserSessions.FindAsync([id], cancellationToken)
             ?? throw new ResourceNotFoundException();
@@ -100,7 +100,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
     public async Task RevokeAllUserSessions(Guid userId, CancellationToken cancellationToken)
     {
         if (userId == User.GetUserId())
-            throw new BadRequestException();
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserCantRemoveAllItsSessionsErrorMessage)]);
         
         //#if (signalR == true)
         var userSessionConnectionIds = await DbContext.UserSessions.Where(us => us.UserId == userId && us.SignalRConnectionId != null)

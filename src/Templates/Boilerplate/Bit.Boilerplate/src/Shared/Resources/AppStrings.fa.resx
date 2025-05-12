@@ -1415,4 +1415,26 @@
     <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
     <value>آیا برای حذف تمام سشنهای کاربر {0} مطمئن هستید?</value>
   </data>
+    <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
+    <value>شما نمیتوانید کاربر خود را حذف کنید</value>
+  </data>
+    <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
+    <value>شما نمیتوانید گروه کاربری SuperAdmin از این کاربر بگیرید</value>
+  </data>
+    <data name="UserCantChangeSuperAdminRoleErrorMessage" xml:space="preserve">
+    <value>شما نمیتوانید تغییری در گروه کاربری SuperAdmin ایجاد کنید</value>
+  </data>
+    <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
+    <value>شما نمیتوانید کاربر خود را حذف کنید</value>
+  </data>
+    <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
+    <value>شما نمیتوانید این کاربر SuperAdmin را حذف کنید</value>
+  </data>
+    <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
+    <value>شما نمیتوانید سشن جاری خود را حذف کنید</value>
+  </data>
+    <data name="UserCantRemoveAllItsSessionsErrorMessage" xml:space="preserve">
+    <value>شما نمیتوانید تمامی سشن‌های خود را حذف کنید</value>
+    <value>You can't remove all of your own sessions</value>
+  </data>
 </root>

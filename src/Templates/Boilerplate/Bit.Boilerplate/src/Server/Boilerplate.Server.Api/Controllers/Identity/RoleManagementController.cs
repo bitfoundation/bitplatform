@@ -167,10 +167,10 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         {
             if (isSuperAdminRole)
             {
-                var existingSuperAdminRoleUsersExceptCurrentUserCount = await userManager.Users.CountAsync(u => u.Roles.Any(r => r.RoleId == role.Id) && u.Id != user.Id, cancellationToken);
+                var otherSuperAdminsCount = await userManager.Users.CountAsync(u => u.Roles.Any(r => r.RoleId == role.Id) && u.Id != user.Id, cancellationToken);
 
-                if (existingSuperAdminRoleUsersExceptCurrentUserCount == 0)
-                    throw new BadRequestException();
+                if (otherSuperAdminsCount == 0)
+                    throw new BadRequestException(Localizer[nameof(AppStrings.UserCantUnassignAllSuperAdminsErrorMessage)]);
             }
             var result = await userManager.RemoveFromRoleAsync(user, role.Name!);
             if (result.Succeeded is false)
@@ -214,7 +214,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
                     ?? throw new ResourceNotFoundException();
 
         if (role.Name == AppRoles.SuperAdmin)
-            throw new BadRequestException();
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserCantChangeSuperAdminRoleErrorMessage)]);
 
         return role;
     }

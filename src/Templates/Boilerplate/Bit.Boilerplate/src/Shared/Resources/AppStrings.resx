@@ -1421,4 +1421,22 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
     <value>Are you sure you want to revoke all sessions of {0}?</value>
   </data>
+    <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
+    <value>You can't remove the SuperAdmin role from this user</value>
+  </data>
+    <data name="UserCantChangeSuperAdminRoleErrorMessage" xml:space="preserve">
+    <value>You can't change the SuperAdmin role</value>
+  </data>
+    <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
+    <value>You can't remove your own user</value>
+  </data>
+    <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
+    <value>You can't remove this SuperAdmin user</value>
+  </data>
+    <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
+    <value>You can't remove your current session</value>
+  </data>
+    <data name="UserCantRemoveAllItsSessionsErrorMessage" xml:space="preserve">
+    <value>You can't remove all of your own sessions</value>
+  </data>
 </root>
