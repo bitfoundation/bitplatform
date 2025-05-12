@@ -30,6 +30,13 @@ public partial class BitTextDemo
         },
         new()
         {
+            Name = "ForceBreak",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Forces the text to always break at the end.",
+        },
+        new()
+        {
             Name = "Foreground",
             Type = "BitColorKind?",
             DefaultValue = "null",
@@ -257,11 +264,18 @@ public partial class BitTextDemo
 <BitText Typography=""BitTypography.Overline"">Overline. this is overline text.</BitText>";
 
     private string example2RazorCode = @"
+<BitText Style=""width:250px"">Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
+
+<BitText Style=""width:250px"" NoWrap>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
+
+<BitText Style=""width:250px"" ForceBreak>1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890</BitText>";
+
+    private string example3RazorCode = @"
 <BitText Align=""BitTextAlign.Start"">Start</BitText>
 <BitText Align=""BitTextAlign.Center"">Center</BitText>
 <BitText Align=""BitTextAlign.End"">End</BitText>";
 
-    private string example3RazorCode = @"
+    private string example4RazorCode = @"
 <BitText Foreground=""BitColorKind.Primary"">Primary foreground</BitText>
 <BitText Foreground=""BitColorKind.Secondary"">Secondary foreground</BitText>
 <BitText Foreground=""BitColorKind.Tertiary"">Tertiary foreground</BitText>
@@ -270,7 +284,7 @@ public partial class BitTextDemo
     <BitText Foreground=""BitColorKind.Transparent"">Transparent foreground</BitText>
 </div>";
 
-    private string example4RazorCode = @"
+    private string example5RazorCode = @"
 <BitText Color=""BitColor.Primary"">Primary color</BitText>
 <BitText Color=""BitColor.Secondary"">Secondary color</BitText>
 <BitText Color=""BitColor.Tertiary"">Tertiary color</BitText>
