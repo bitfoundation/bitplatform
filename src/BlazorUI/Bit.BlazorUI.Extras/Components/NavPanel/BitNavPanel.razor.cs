@@ -83,11 +83,6 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public BitNavItemTemplateRenderMode HeaderTemplateRenderMode { get; set; }
 
     /// <summary>
-    /// If true, the search box is hidden.
-    /// </summary>
-    [Parameter] public bool HideSearchBox { get; set; }
-
-    /// <summary>
     /// Renders an anchor wrapping the icon to navigate to the specified url.
     /// </summary>
     [Parameter] public string? IconNavUrl { get; set; }
@@ -165,6 +160,11 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool NoPad { get; set; }
+
+    /// <summary>
+    /// Removes the search box from the nav panel.
+    /// </summary>
+    [Parameter] public bool NoSearchBox { get; set; }
 
     /// <summary>
     /// Disables the toggle feature of the nav panel.

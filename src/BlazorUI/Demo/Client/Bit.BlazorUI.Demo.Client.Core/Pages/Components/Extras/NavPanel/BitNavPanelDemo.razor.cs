@@ -106,13 +106,6 @@ public partial class BitNavPanelDemo
         },
         new()
         {
-            Name = "HideSearchBox",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "If true, the search box is hidden.",
-        },
-        new()
-        {
             Name = "IconNavUrl",
             Type = "string?",
             DefaultValue = "null",
@@ -219,6 +212,13 @@ public partial class BitNavPanelDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Disables the padded mode of the nav panel.",
+        },
+        new()
+        {
+            Name = "NoSearchBox",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Removes the search box from the nav panel.",
         },
         new()
         {
@@ -581,7 +581,7 @@ public partial class BitNavPanelDemo
     private bool noToggleIsOpen;
     private bool iconUrlIsOpen;
     private bool searchBoxPlaceholderIsOpen;
-    private bool hideSearchBoxIsOpen;
+    private bool noSearchBoxIsOpen;
     private bool emptyListMessageIsOpen;
     private bool singleExpandIsOpen;
     private bool templateIsOpen;

@@ -66,7 +66,7 @@
                 </div>
             }
 
-            @if (HideSearchBox is false)
+            @if (NoSearchBox is false)
             {
                 <BitSearchBox @ref="_searchBoxRef"
                               Underlined
@@ -92,7 +92,7 @@
                 }
             }
 
-            @if (_filteredNavItems.Any() is false)
+            @if (Items.Any() && _filteredNavItems.Any() is false)
             {
                 if (isToggled is false)
                 {
@@ -116,7 +116,7 @@
                         ChevronDownIcon="@ChevronDownIcon"
                         Classes="NavClasses"
                         Color="Color"
-                        DefaultSelectedItem="_filteredNavItems[0]"
+                        DefaultSelectedItem="_filteredNavItems.Any() ? _filteredNavItems[0] : null"
                         FullWidth
                         HeaderTemplate="HeaderTemplate"
                         HeaderTemplateRenderMode="HeaderTemplateRenderMode"

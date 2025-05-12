@@ -78,12 +78,12 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="HideSearchBox" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <DemoExample Title="NoSearchBox" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div class="open-btn">
-                <BitToggleButton @bind-IsChecked="hideSearchBoxIsOpen" OnText="Close" OffText="Open" />
+                <BitToggleButton @bind-IsChecked="noSearchBoxIsOpen" OnText="Close" OffText="Open" />
             </div>
             <div style="width:240px">
-                <BitNavPanel @bind-IsOpen="hideSearchBoxIsOpen" Items="basicNavItems" HideSearchBox />
+                <BitNavPanel @bind-IsOpen="noSearchBoxIsOpen" Items="basicNavItems" NoSearchBox />
             </div>
         </DemoExample>
 
