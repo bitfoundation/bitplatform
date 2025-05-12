@@ -456,4 +456,16 @@
 .bit-btn-ntx {
     padding: var(--bit-btn-pad-ntx);
     --bit-btn-icn-margintop: 0;
+
+    &.bit-btn-sm {
+        --bit-btn-icn-fontsize: #{spacing(1.95)};
+    }
+
+    &.bit-btn-md {
+        --bit-btn-icn-fontsize: #{spacing(2.35)};
+    }
+
+    &.bit-btn-lg {
+        --bit-btn-icn-fontsize: #{spacing(2.75)};
+    }
 }

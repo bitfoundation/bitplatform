@@ -16,6 +16,11 @@
     max-width: 20rem;
 }
 
+.btn-container {
+    gap: 4px;
+    display: flex;
+}
+
 ::deep {
     .custom-class {
         border-radius: 1rem;
