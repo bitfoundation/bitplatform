@@ -331,7 +331,7 @@ private BitNavOption SelectedOption;
 private BitNavOption ToggledOption;";
 
     private readonly string example8RazorCode = @"
-<BitNav TItem=""BitNavOption"">
+<BitNav TItem=""BitNavOption"" AllExpanded NoCollapse>
     <BitNavOption Text=""bit platform""
                   ExpandAriaLabel=""bit platform Expanded""
                   CollapseAriaLabel=""bit platform Collapsed"">
