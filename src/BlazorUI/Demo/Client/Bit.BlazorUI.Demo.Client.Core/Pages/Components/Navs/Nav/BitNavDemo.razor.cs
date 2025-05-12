@@ -162,6 +162,12 @@ public partial class BitNavDemo
         },
         new()
         {
+            Name = "NoCollapse",
+            Type = "bool",
+            Description = "Hides all collapse/expand buttons and remove their spaces at the start of each node."
+        },
+        new()
+        {
             Name = "OnItemClick",
             Type = "EventCallback<TItem>",
             Description = "Callback invoked when an item is clicked."

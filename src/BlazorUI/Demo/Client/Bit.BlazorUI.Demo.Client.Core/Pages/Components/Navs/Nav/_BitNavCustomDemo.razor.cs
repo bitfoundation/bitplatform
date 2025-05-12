@@ -2,7 +2,7 @@
 
 public partial class _BitNavCustomDemo
 {
-    private static readonly List<Section> CustomBitPlatformNavMenu =
+    private static readonly List<Section> customBasicNavItems =
     [
         new()
         {
@@ -48,7 +48,7 @@ public partial class _BitNavCustomDemo
         new() { Text = "Iconography", Icon = BitIconName.AppIconDefault, Url = "/iconography" },
     ];
 
-    private static readonly List<Section> CustomIconOnlyNavMenu =
+    private static readonly List<Section> customIconOnlyNavItems =
     [
         new() { Text = "Home", Icon = BitIconName.Home },
         new() {
@@ -67,7 +67,7 @@ public partial class _BitNavCustomDemo
         new() { Text = "Contact us", Icon = BitIconName.Contact },
     ];
 
-    private static readonly List<CarMenu> CustomCarNavMenu =
+    private static readonly List<CarMenu> customCarNavItems =
     [
         new()
         {
@@ -126,7 +126,7 @@ public partial class _BitNavCustomDemo
         },
     ];
 
-    private static readonly List<FoodMenu> CustomFoodNavMenu =
+    private static readonly List<FoodMenu> customFoodNavItems =
     [
         new()
         {
@@ -177,7 +177,7 @@ public partial class _BitNavCustomDemo
         new() { Name = "Cookie" },
     ];
 
-    private static readonly List<Section> CustomCustomStyleNavMenu =
+    private static readonly List<Section> customNoCollapseNavItems =
     [
         new()
         {
@@ -223,7 +223,53 @@ public partial class _BitNavCustomDemo
         new() { Text = "Iconography", Icon = BitIconName.AppIconDefault, Url = "/iconography" },
     ];
 
-    private static readonly List<Section> CustomRtlBitPlatformNavMenu =
+    private static readonly List<Section> customCustomStyleNavItems =
+    [
+        new()
+        {
+            Text = "bit platform",
+            Comment = "the bit platform description",
+            Links =
+            [
+                new() { Text = "Home", Icon = BitIconName.Home, Url = "https://bitplatform.dev/" },
+                new()
+                {
+                    Text = "Products & Services",
+                    Links =
+                    [
+                        new()
+                        {
+                            Text = "Project Templates",
+                            Links =
+                            [
+                                new() { Text = "Todo sample", Icon = BitIconName.ToDoLogoOutline, Url = "https://bitplatform.dev/templates/overview" },
+                                new() { Text = "AdminPanel sample", Icon = BitIconName.LocalAdmin, Url = "https://bitplatform.dev/templates/overview" },
+                            ]
+                        },
+                        new() { Text = "BlazorUI", Icon = BitIconName.F12DevTools, Url = "https://bitplatform.dev/components" },
+                        new() { Text = "Cloud hosting solutions", Icon = BitIconName.Cloud, Url = "https://bitplatform.dev/#", IsEnabled = false },
+                        new() { Text = "Bit academy", Icon = BitIconName.LearningTools, Url = "https://bitplatform.dev/#", IsEnabled = false },
+                    ]
+                },
+                new() { Text = "Pricing", Icon = BitIconName.Money, Url = "https://bitplatform.dev/pricing" },
+                new() { Text = "About", Icon = BitIconName.Info, Url = "https://bitplatform.dev/about-us" },
+                new() { Text = "Contact us", Icon = BitIconName.Contact, Url = "https://bitplatform.dev/contact-us" },
+            ],
+        },
+        new()
+        {
+            Text = "Community",
+            Links =
+            [
+                new() { Text = "Linkedin", Icon = BitIconName.LinkedInLogo, Url = "https://www.linkedin.com/company/bitplatformhq" },
+                new() { Text = "Twitter", Icon = BitIconName.Globe, Url = "https://twitter.com/bitplatformhq" },
+                new() { Text = "Github repo", Icon = BitIconName.GitGraph, Url = "https://github.com/bitfoundation/bitplatform" },
+            ]
+        },
+        new() { Text = "Iconography", Icon = BitIconName.AppIconDefault, Url = "/iconography" },
+    ];
+
+    private static readonly List<Section> customRtlNavItems =
     [
         new()
         {
@@ -272,8 +318,8 @@ public partial class _BitNavCustomDemo
     private bool iconOnly;
 
     private static List<FoodMenu> Flatten(IList<FoodMenu> e) => e.SelectMany(c => Flatten(c.Childs)).Concat(e).ToList();
-    private FoodMenu CustomSelectedFood = CustomFoodNavMenu[0].Childs[2];
-    private string? CustomSelectedFoodName = CustomFoodNavMenu[0].Childs[2].Name;
+    private FoodMenu CustomSelectedFood = customFoodNavItems[0].Childs[2];
+    private string? CustomSelectedFoodName = customFoodNavItems[0].Childs[2].Name;
 
     private FoodMenu CustomClickedItem = default!;
     private FoodMenu CustomSelectedItem = default!;
@@ -300,7 +346,7 @@ public partial class _BitNavCustomDemo
 
 
     private readonly string example1RazorCode = @"
-<BitNav Items=""CustomBitPlatformNavMenu""
+<BitNav Items=""customBasicNavItems""
         NameSelectors=""@(new() { IconName =  { Name = nameof(Section.Icon) },
                                  ChildItems =  { Name = nameof(Section.Links) },
                                  Description =  { Name = nameof(Section.Comment) } })"" />";
@@ -315,7 +361,7 @@ public class Section
     public List<Section> Links { get; set; } = [];
 }
 
-private static readonly List<Section> CustomBitPlatformNavMenu =
+private static readonly List<Section> customBasicNavItems =
 [
     new()
     {
@@ -362,7 +408,7 @@ private static readonly List<Section> CustomBitPlatformNavMenu =
 ];";
 
     private readonly string example2RazorCode = @"
-<BitNav Items=""CustomBitPlatformNavMenu"" FitWidth
+<BitNav Items=""customBasicNavItems"" FitWidth
         NameSelectors=""@(new() { IconName =  { Name = nameof(Section.Icon) },
                                  ChildItems =  { Name = nameof(Section.Links) },
                                  Description =  { Name = nameof(Section.Comment) } })"" />";
@@ -377,7 +423,7 @@ public class Section
     public List<Section> Links { get; set; } = [];
 }
 
-private static readonly List<Section> CustomBitPlatformNavMenu =
+private static readonly List<Section> customBasicNavItems =
 [
     new()
     {
@@ -424,7 +470,7 @@ private static readonly List<Section> CustomBitPlatformNavMenu =
 ];";
 
     private readonly string example3RazorCode = @"
-<BitNav Items=""CustomCarNavMenu""
+<BitNav Items=""customCarNavItems""
         RenderType=""BitNavRenderType.Grouped""
         NameSelectors=""@(new() { Text =  { Name = nameof(CarMenu.Name) },
                                  Url =  { Name = nameof(CarMenu.PageUrl) },
@@ -448,7 +494,7 @@ public class CarMenu
     public List<CarMenu> Links { get; set; } = [];
 }
 
-private static readonly List<CarMenu> CustomCarNavMenu =
+private static readonly List<CarMenu> customCarNavItems =
 [
     new()
     {
@@ -508,9 +554,9 @@ private static readonly List<CarMenu> CustomCarNavMenu =
 ];";
 
     private readonly string example4RazorCode = @"
-<BitNav Items=""CustomFoodNavMenu""
+<BitNav Items=""customCarNavItems""
         Mode=""BitNavMode.Manual""
-        DefaultSelectedItem=""CustomFoodNavMenu[0].Childs[2]""
+        DefaultSelectedItem=""customCarNavItems[0].Childs[2]""
         NameSelectors=""@(new() { Text =  { Selector = item => item.Name },
                                  IconName =  { Selector = item => item.Icon },
                                  ChildItems =  { Selector = item => item.Childs },
@@ -518,9 +564,9 @@ private static readonly List<CarMenu> CustomCarNavMenu =
 
 
 <BitNav @bind-SelectedItem=""CustomSelectedFood""
-        Items=""CustomFoodNavMenu""
+        Items=""customCarNavItems""
         Mode=""BitNavMode.Manual""
-        DefaultSelectedItem=""CustomFoodNavMenu[0].Childs[2]""
+        DefaultSelectedItem=""customCarNavItems[0].Childs[2]""
         NameSelectors=""@(new() { Text =  { Selector = item => item.Name },
                                  IconName =  { Selector = item => item.Icon },
                                  ChildItems =  { Selector = item => item.Childs },
@@ -530,7 +576,7 @@ private static readonly List<CarMenu> CustomCarNavMenu =
 <BitDropdown @bind-Value=""CustomSelectedFoodName""
              Label=""Select Item""
              Items=""FoodMenuDropdownItems""
-             OnSelectItem=""(BitDropdownItem<string> item) => CustomSelectedFood = Flatten(CustomFoodNavMenu).Single(i => i.Name == item.Value)"" />";
+             OnSelectItem=""(BitDropdownItem<string> item) => CustomSelectedFood = Flatten(customCarNavItems).Single(i => i.Name == item.Value)"" />";
     private readonly string example4CsharpCode = @"
 public class FoodMenu
 {
@@ -540,7 +586,7 @@ public class FoodMenu
     public List<FoodMenu> Childs { get; set; } = [];
 }
 
-private static readonly List<FoodMenu> CustomFoodNavMenu =
+private static readonly List<FoodMenu> customCarNavItems =
 [
     new()
     {
@@ -610,12 +656,12 @@ private static readonly List<BitDropdownItem<string>> FoodMenuDropdownItems =
 ];
 
 private static List<FoodMenu> Flatten(IList<FoodMenu> e) => e.SelectMany(c => Flatten(c.Childs)).Concat(e).ToList();
-private FoodMenu CustomSelectedFood = CustomFoodNavMenu[0].Childs[2];
-private string CustomSelectedFoodName = CustomFoodNavMenu[0].Childs[2].Name;";
+private FoodMenu CustomSelectedFood = customCarNavItems[0].Childs[2];
+private string CustomSelectedFoodName = customCarNavItems[0].Childs[2].Name;";
 
     private readonly string example5RazorCode = @"
 <BitToggle @bind-Value=""iconOnly"" Label=""Hide texts?"" Inline />
-<BitNav Items=""CustomIconOnlyNavMenu"" Mode=""BitNavMode.Manual"" IconOnly=""iconOnly""
+<BitNav Items=""customIconOnlyNavItems"" Mode=""BitNavMode.Manual"" IconOnly=""iconOnly""
         NameSelectors=""@(new() { IconName =  { Name = nameof(Section.Icon) },
                                  ChildItems =  { Name = nameof(Section.Links) },
                                  Description =  { Name = nameof(Section.Comment) } })"" />";
@@ -632,7 +678,7 @@ public class Section
     public List<Section> Links { get; set; } = [];
 }
 
-private static readonly List<Section> CustomIconOnlyNavMenu =
+private static readonly List<Section> customIconOnlyNavItems =
 [
     new() { Text = ""Home"", Icon = BitIconName.Home },
     new() {
@@ -669,7 +715,7 @@ private static readonly List<Section> CustomIconOnlyNavMenu =
     }
 </style>
 
-<BitNav Items=""CustomCarNavMenu""
+<BitNav Items=""customCarNavItems""
         RenderType=""BitNavRenderType.Grouped""
         NameSelectors=""@(new() { Text =  { Name = nameof(CarMenu.Name) },
                                  Url =  { Name = nameof(CarMenu.PageUrl) },
@@ -690,7 +736,7 @@ private static readonly List<Section> CustomIconOnlyNavMenu =
 
 
 
-<BitNav Items=""CustomFoodNavMenu""
+<BitNav Items=""customCarNavItems""
         Mode=""BitNavMode.Manual""
         NameSelectors=""@(new() { Text =  { Selector = item => item.Name },
                                  IconName =  { Selector = item => item.Icon },
@@ -725,7 +771,7 @@ public class FoodMenu
     public List<FoodMenu> Childs { get; set; } = [];
 }
 
-private static readonly List<CarMenu> CustomCarNavMenu =
+private static readonly List<CarMenu> customCarNavItems =
 [
     new()
     {
@@ -784,7 +830,7 @@ private static readonly List<CarMenu> CustomCarNavMenu =
     },
 ];
 
-private static readonly List<FoodMenu> CustomFoodNavMenu =
+private static readonly List<FoodMenu> customCarNavItems =
 [
     new()
     {
@@ -836,7 +882,7 @@ private static readonly List<FoodMenu> CustomFoodNavMenu =
 ];";
 
     private readonly string example7RazorCode = @"
-<BitNav Items=""CustomFoodNavMenu""
+<BitNav Items=""customCarNavItems""
         Mode=""BitNavMode.Manual""
         OnItemClick=""(FoodMenu item) => CustomClickedItem = item""
         OnSelectItem=""(FoodMenu item) => CustomSelectedItem = item""
@@ -857,7 +903,7 @@ public class FoodMenu
     public List<FoodMenu> Childs { get; set; } = [];
 }
 
-private static readonly List<FoodMenu> CustomFoodNavMenu =
+private static readonly List<FoodMenu> customCarNavItems =
 [
     new()
     {
@@ -913,14 +959,11 @@ private FoodMenu CustomSelectedItem;
 private FoodMenu CustomToggledItem;";
 
     private readonly string example8RazorCode = @"
-<BitNav Items=""CustomCustomStyleNavMenu""
+<BitNav AllExpanded NoCollapse
+        Items=""customBasicNavItems""
         NameSelectors=""@(new() { IconName =  { Name = nameof(Section.Icon) },
                                  ChildItems =  { Name = nameof(Section.Links) },
-                                 Description =  { Name = nameof(Section.Comment) } })""
-        Styles=""@(new() { ItemContainer = ""border: 1px solid green; margin: 2px;"",
-                          ToggleButton = ""color: cyan;"",
-                          Item = ""color: red;"",
-                          ItemIcon = ""color: gold; margin-right: 15px;"" })"" />";
+                                 Description =  { Name = nameof(Section.Comment) } })"" />";
     private readonly string example8CsharpCode = @"
 public class Section
 {
@@ -932,7 +975,7 @@ public class Section
     public List<Section> Links { get; set; } = [];
 }
 
-private static readonly List<Section> CustomCustomStyleNavMenu =
+private static readonly List<Section> customBasicNavItems =
 [
     new()
     {
@@ -979,11 +1022,14 @@ private static readonly List<Section> CustomCustomStyleNavMenu =
 ];";
 
     private readonly string example9RazorCode = @"
-<BitNav Dir=""BitDir.Rtl""
-        Items=""CustomRtlBitPlatformNavMenu""
+<BitNav Items=""customCustomStyleNavItems""
         NameSelectors=""@(new() { IconName =  { Name = nameof(Section.Icon) },
                                  ChildItems =  { Name = nameof(Section.Links) },
-                                 Description =  { Name = nameof(Section.Comment) } })"" />";
+                                 Description =  { Name = nameof(Section.Comment) } })""
+        Styles=""@(new() { ItemContainer = ""border: 1px solid green; margin: 2px;"",
+                          ToggleButton = ""color: cyan;"",
+                          Item = ""color: red;"",
+                          ItemIcon = ""color: gold; margin-right: 15px;"" })"" />";
     private readonly string example9CsharpCode = @"
 public class Section
 {
@@ -995,7 +1041,70 @@ public class Section
     public List<Section> Links { get; set; } = [];
 }
 
-private static readonly List<Section> CustomRtlBitPlatformNavMenu =
+private static readonly List<Section> customCustomStyleNavItems =
+[
+    new()
+    {
+        Text = ""bit platform"",
+        Comment = ""the bit platform description"",
+        Links =
+        [
+            new() { Text = ""Home"", Icon = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
+            new()
+            {
+                Text = ""Products & Services"",
+                Links =
+                [
+                    new()
+                    {
+                        Text = ""Project Templates"",
+                        Links =
+                        [
+                            new() { Text = ""Todo sample"", Icon = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""AdminPanel sample"", Icon = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
+                        ]
+                    },
+                    new() { Text = ""BlazorUI"", Icon = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
+                    new() { Text = ""Cloud hosting solutions"", Icon = BitIconName.Cloud, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                    new() { Text = ""Bit academy"", Icon = BitIconName.LearningTools, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                ]
+            },
+            new() { Text = ""Pricing"", Icon = BitIconName.Money, Url = ""https://bitplatform.dev/pricing"" },
+            new() { Text = ""About"", Icon = BitIconName.Info, Url = ""https://bitplatform.dev/about-us"" },
+            new() { Text = ""Contact us"", Icon = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
+        ],
+    },
+    new()
+    {
+        Text = ""Community"",
+        Links =
+        [
+            new() { Text = ""Linkedin"", Icon = BitIconName.LinkedInLogo, Url = ""https://www.linkedin.com/company/bitplatformhq"" },
+            new() { Text = ""Twitter"", Icon = BitIconName.Globe, Url = ""https://twitter.com/bitplatformhq"" },
+            new() { Text = ""Github repo"", Icon = BitIconName.GitGraph, Url = ""https://github.com/bitfoundation/bitplatform"" },
+        ]
+    },
+    new() { Text = ""Iconography"", Icon = BitIconName.AppIconDefault, Url = ""/iconography"" },
+];";
+
+    private readonly string example10RazorCode = @"
+<BitNav Dir=""BitDir.Rtl""
+        Items=""customRtlNavItems""
+        NameSelectors=""@(new() { IconName =  { Name = nameof(Section.Icon) },
+                                 ChildItems =  { Name = nameof(Section.Links) },
+                                 Description =  { Name = nameof(Section.Comment) } })"" />";
+    private readonly string example10CsharpCode = @"
+public class Section
+{
+    public string Text { get; set; } = string.Empty;
+    public string? Icon { get; set; }
+    public string? Url { get; set; }
+    public bool IsEnabled { get; set; } = true;
+    public bool IsExpanded { get; set; }
+    public List<Section> Links { get; set; } = [];
+}
+
+private static readonly List<Section> customRtlNavItems =
 [
     new()
     {

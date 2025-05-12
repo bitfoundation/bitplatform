@@ -139,6 +139,20 @@ public partial class BitNavOption : ComponentBase, IDisposable
             Parent.ChildItems.Add(this);
         }
 
+        if (Nav.AllExpanded)
+        {
+            Nav.SetIsExpanded(this, true);
+        }
+
+        Nav.SetItemExpanded(this, Nav.GetIsExpanded(this) ?? false);
+
+        if (Nav.Mode == BitNavMode.Automatic)
+        {
+            Nav.SetSelectedItemByCurrentUrl();
+        }
+
+        Parent?.StateHasChanged();
+
         await base.OnInitializedAsync();
     }
 
@@ -162,6 +176,10 @@ public partial class BitNavOption : ComponentBase, IDisposable
         {
             Parent.ChildItems.Remove(this);
         }
+
+        Nav.SetSelectedItemByCurrentUrl();
+
+        Parent?.StateHasChanged();
 
         _disposed = true;
     }

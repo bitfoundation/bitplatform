@@ -208,6 +208,13 @@ public partial class BitNavPanelDemo
         },
         new()
         {
+            Name = "NoCollapse",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables and hides all collapse/expand buttons of the nav component.",
+        },
+        new()
+        {
             Name = "NoPad",
             Type = "bool",
             DefaultValue = "false",

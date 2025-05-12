@@ -156,6 +156,11 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public BitNavClassStyles? NavStyles { get; set; }
 
     /// <summary>
+    /// Disables and hides all collapse/expand buttons of the nav component.
+    /// </summary>
+    [Parameter] public bool NoCollapse { get; set; }
+
+    /// <summary>
     /// Disables the padded mode of the nav panel.
     /// </summary>
     [Parameter, ResetClassBuilder]
