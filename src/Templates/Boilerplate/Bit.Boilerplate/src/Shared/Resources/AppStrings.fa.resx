@@ -1358,4 +1358,83 @@
     <data name="DeleteRole" xml:space="preserve">
     <value>حذف گروه کاربران</value>
   </data>
+    <data name="NewUserUsername" xml:space="preserve">
+    <value>نام کاربری کاربر جدید</value>
+  </data>
+    <data name="NewUserEmail" xml:space="preserve">
+    <value>ایمیل کاربر جدید</value>
+  </data>
+    <data name="NewUserPhoneNumber" xml:space="preserve">
+    <value>تلفن کاربر جدید</value>
+  </data>
+    <data name="AddUser" xml:space="preserve">
+    <value>افزودن کاربر</value>
+  </data>
+    <data name="EditUser" xml:space="preserve">
+    <value>ویرایش کاربر</value>
+  </data>
+    <data name="Sessions" xml:space="preserve">
+    <value>سشن‌ها</value>
+  </data>
+    <data name="DeleteUser" xml:space="preserve">
+    <value>حذف کاربر</value>
+  </data>
+    <data name="IP" xml:space="preserve">
+    <value>آی پی</value>
+  </data>
+    <data name="Address" xml:space="preserve">
+    <value>نشانی</value>
+  </data>
+    <data name="DeviceInfo" xml:space="preserve">
+    <value>اطلاعات دستگاه</value>
+  </data>
+    <data name="Privileged" xml:space="preserve">
+    <value>دسترسی ممتاز</value>
+  </data>
+    <data name="RenewedOn" xml:space="preserve">
+    <value>بازسازی در</value>
+  </data>
+    <data name="OnlineUsers" xml:space="preserve">
+    <value>کاربران آنلاین: {0}</value>
+  </data>
+    <data name="DeleteSession" xml:space="preserve">
+    <value>حذف سشن</value>
+  </data>
+    <data name="NoUserMessage" xml:space="preserve">
+    <value>کاربری وجود ندارد</value>
+  </data>
+    <data name="NoUserSessionMessage" xml:space="preserve">
+    <value>سشنی وجود ندارد</value>
+  </data>
+    <data name="NoUserSelectedMessage" xml:space="preserve">
+    <value>لطفا ابتدا کاربری را انتخاب کنید</value>
+  </data>
+    <data name="RevokeAllSessions" xml:space="preserve">
+    <value>حذف تمام سشن‌ها</value>
+  </data>
+    <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
+    <value>آیا برای حذف تمام سشنهای کاربر {0} مطمئن هستید?</value>
+  </data>
+    <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
+    <value>شما نمیتوانید کاربر خود را حذف کنید</value>
+  </data>
+    <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
+    <value>شما نمیتوانید گروه کاربری SuperAdmin از این کاربر بگیرید</value>
+  </data>
+    <data name="UserCantChangeSuperAdminRoleErrorMessage" xml:space="preserve">
+    <value>شما نمیتوانید تغییری در گروه کاربری SuperAdmin ایجاد کنید</value>
+  </data>
+    <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
+    <value>شما نمیتوانید کاربر خود را حذف کنید</value>
+  </data>
+    <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
+    <value>شما نمیتوانید این کاربر SuperAdmin را حذف کنید</value>
+  </data>
+    <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
+    <value>شما نمیتوانید سشن جاری خود را حذف کنید</value>
+  </data>
+    <data name="UserCantRemoveAllItsSessionsErrorMessage" xml:space="preserve">
+    <value>شما نمیتوانید تمامی سشن‌های خود را حذف کنید</value>
+    <value>You can't remove all of your own sessions</value>
+  </data>
 </root>

@@ -1,4 +1,4 @@
-namespace Boilerplate.Client.Core.Components;
+﻿namespace Boilerplate.Client.Core.Components;
 
 public partial class AppPageData
 {
@@ -15,10 +15,9 @@ public partial class AppPageData
     {
         base.OnParametersSet();
 
-        var publishMessage = $"{Title}-{PageTitle}-{ShowGoBackButton}";
+        var publishMessage = $"{PageTitle}-{Title}-{SubTitle}-{ShowGoBackButton}";
 
-        if (_lastPublishedMessage == publishMessage)
-            return;
+        if (_lastPublishedMessage == publishMessage) return;
 
         _lastPublishedMessage = publishMessage;
 

@@ -1,3 +1,4 @@
+﻿//+:cnd:noEmit
 namespace Boilerplate.Shared.Dtos.Identity;
 
 public partial class UserSessionDto
@@ -18,5 +19,23 @@ public partial class UserSessionDto
     /// </summary>
     public bool Privileged { get; set; }
 
-    public DateTimeOffset RenewedOn { get; set; }
+    /// <summary>
+    /// Unix Time Seconds
+    /// </summary>
+    public long RenewedOn { get; set; }
+
+    public DateTimeOffset RenewedOnDateTimeOffset
+    {
+        get
+        {
+            // Unix epoch starts at 1970-01-01 00:00:00 UTC
+            DateTimeOffset epoch = new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
+            // Add the Unix timestamp (in seconds) to the epoch
+            return epoch.AddSeconds(RenewedOn);
+        }
+    }
+
+    //#if (signalR == true)
+    public string? SignalRConnectionId { get; set; }
+    //#endif
 }

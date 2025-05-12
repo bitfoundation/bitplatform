@@ -43,7 +43,6 @@ public partial class SignUpPage
         catch (BadRequestException e) when (e.Key == nameof(AppStrings.UserIsNotConfirmed))
         {
             NavigateToConfirmPage();
-            SnackBarService.Error(e.Message);
         }
         catch (KnownException e)
         {

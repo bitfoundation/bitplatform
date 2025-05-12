@@ -61,7 +61,6 @@ public partial class ForgotPasswordPage
         catch (BadRequestException e) when (e.Key == nameof(AppStrings.UserIsNotConfirmed))
         {
             NavigateToConfirmPage();
-            SnackBarService.Error(e.Message);
         }
         catch (KnownException e)
         {

@@ -1364,4 +1364,79 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="DeleteRole" xml:space="preserve">
     <value>Delete user group</value>
   </data>
+    <data name="NewUserUsername" xml:space="preserve">
+    <value>New User's username</value>
+  </data>
+    <data name="NewUserEmail" xml:space="preserve">
+    <value>New User's email</value>
+  </data>
+    <data name="NewUserPhoneNumber" xml:space="preserve">
+    <value>New User's phone number</value>
+  </data>
+    <data name="AddUser" xml:space="preserve">
+    <value>Add user</value>
+  </data>
+    <data name="EditUser" xml:space="preserve">
+    <value>Edit user</value>
+  </data>
+    <data name="Sessions" xml:space="preserve">
+    <value>Sessions</value>
+  </data>
+    <data name="DeleteUser" xml:space="preserve">
+    <value>Delete user</value>
+  </data>
+    <data name="IP" xml:space="preserve">
+    <value>IP</value>
+  </data>
+    <data name="Address" xml:space="preserve">
+    <value>Address</value>
+  </data>
+    <data name="DeviceInfo" xml:space="preserve">
+    <value>DeviceInfo</value>
+  </data>
+    <data name="Privileged" xml:space="preserve">
+    <value>Privileged</value>
+  </data>
+    <data name="RenewedOn" xml:space="preserve">
+    <value>RenewedOn</value>
+  </data>
+    <data name="OnlineUsers" xml:space="preserve">
+    <value>Online users: {0}</value>
+  </data>
+    <data name="DeleteSession" xml:space="preserve">
+    <value>Delete session</value>
+  </data>
+    <data name="NoUserMessage" xml:space="preserve">
+    <value>No users</value>
+  </data>
+    <data name="NoUserSessionMessage" xml:space="preserve">
+    <value>No user session</value>
+  </data>
+    <data name="NoUserSelectedMessage" xml:space="preserve">
+    <value>Please select a user first</value>
+  </data>
+    <data name="RevokeAllSessions" xml:space="preserve">
+    <value>Revoke all sessions</value>
+  </data>
+    <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
+    <value>Are you sure you want to revoke all sessions of {0}?</value>
+  </data>
+    <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
+    <value>You can't remove the SuperAdmin role from this user</value>
+  </data>
+    <data name="UserCantChangeSuperAdminRoleErrorMessage" xml:space="preserve">
+    <value>You can't change the SuperAdmin role</value>
+  </data>
+    <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
+    <value>You can't remove your own user</value>
+  </data>
+    <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
+    <value>You can't remove this SuperAdmin user</value>
+  </data>
+    <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
+    <value>You can't remove your current session</value>
+  </data>
+    <data name="UserCantRemoveAllItsSessionsErrorMessage" xml:space="preserve">
+    <value>You can't remove all of your own sessions</value>
+  </data>
 </root>

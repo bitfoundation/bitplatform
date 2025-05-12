@@ -17,12 +17,14 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     //#if (signalR == true)
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
+
     //#if (notification == true)
     [AutoInject] private PushNotificationService pushNotificationService = default!;
     //#endif
 
     [AutoInject] private UserManager<User> userManager = default!;
     [AutoInject] private RoleManager<Role> roleManager = default!;
+
 
     [HttpGet, EnableQuery]
     public IQueryable<RoleDto> GetAllRoles()
@@ -38,8 +40,8 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     public IQueryable<UserDto> GetAllUsers()
     {
         return userManager.Users
-            .Where(u => u.EmailConfirmed || u.PhoneNumberConfirmed || u.Logins.Any() /*Social sign-in*/)
-            .Project();
+                          .Where(u => u.EmailConfirmed || u.PhoneNumberConfirmed || u.Logins.Any() /*Social sign-in*/)
+                          .Project();
     }
 
     [HttpGet("{roleId}"), EnableQuery]
@@ -165,10 +167,10 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         {
             if (isSuperAdminRole)
             {
-                var existingSuperAdminRoleUsersExceptCurrentUserCount = await userManager.Users.CountAsync(u => u.Roles.Any(r => r.RoleId == role.Id) && u.Id != user.Id, cancellationToken);
+                var otherSuperAdminsCount = await userManager.Users.CountAsync(u => u.Roles.Any(r => r.RoleId == role.Id) && u.Id != user.Id, cancellationToken);
 
-                if (existingSuperAdminRoleUsersExceptCurrentUserCount == 0)
-                    throw new BadRequestException();
+                if (otherSuperAdminsCount == 0)
+                    throw new BadRequestException(Localizer[nameof(AppStrings.UserCantUnassignAllSuperAdminsErrorMessage)]);
             }
             var result = await userManager.RemoveFromRoleAsync(user, role.Name!);
             if (result.Succeeded is false)
@@ -188,23 +190,31 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     public async Task SendNotification(SendNotificationToRoleDto dto, CancellationToken cancellationToken)
     {
         //#if (signalR == true)
-        var signalRConnectionIds = await DbContext.UserSessions.Where(us => us.SignalRConnectionId != null && us.User!.Roles.Any(r => r.RoleId == dto.RoleId)).Select(us => us.SignalRConnectionId!).ToArrayAsync(cancellationToken);
-        await appHubContext.Clients.Clients(signalRConnectionIds).SendAsync(SignalREvents.SHOW_MESSAGE, dto.Message, cancellationToken);
+        var signalRConnectionIds = await DbContext.UserSessions.Where(us => us.SignalRConnectionId != null && 
+                                                                            us.User!.Roles.Any(r => r.RoleId == dto.RoleId))
+                                                               .Select(us => us.SignalRConnectionId!).ToArrayAsync(cancellationToken);
+
+        await appHubContext.Clients.Clients(signalRConnectionIds)
+                                   .SendAsync(SignalREvents.SHOW_MESSAGE, dto.Message, cancellationToken);
         //#endif
 
         //#if (notification == true)
-        await pushNotificationService.RequestPush(message: dto.Message, userRelatedPush: true, customSubscriptionFilter: s => s.UserSession!.User!.Roles.Any(r => r.RoleId == dto.RoleId), cancellationToken: cancellationToken);
+        await pushNotificationService.RequestPush(message: dto.Message, 
+                                                  userRelatedPush: true, 
+                                                  customSubscriptionFilter: s => s.UserSession!.User!.Roles.Any(r => r.RoleId == dto.RoleId), 
+                                                  cancellationToken: cancellationToken);
         //#endif
     }
     //#endif
 
+
     private async Task<Role> GetRoleByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        var role = await roleManager.Roles
-            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken) ?? throw new ResourceNotFoundException();
+        var role = await roleManager.Roles.FirstOrDefaultAsync(r => r.Id == id, cancellationToken)
+                    ?? throw new ResourceNotFoundException();
 
         if (role.Name == AppRoles.SuperAdmin)
-            throw new BadRequestException();
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserCantChangeSuperAdminRoleErrorMessage)]);
 
         return role;
     }

@@ -1,3 +1,5 @@
+@using Boilerplate.Shared.Dtos.Identity
+@*+:cnd:noEmit*@
 @attribute [Route(Urls.UsersPage)]
 @attribute [Route("{culture?}" + Urls.UsersPage)]
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
@@ -8,7 +10,184 @@
              PageTitle="@Localizer[nameof(AppStrings.UsersPageTitle)]" />
 
 <section>
-    <BitStack>
-        <BitText>Under construction</BitText>
+    <BitStack Style="min-width:fit-content">
+        <BitStack Horizontal FitHeight VerticalAlign="BitAlignment.Center">
+            @if (isLoadingOnlineUsersCount)
+            {
+                <BitRollingSquareLoading CustomSize="30" />
+            }
+            else
+            {
+                <BitText>@(onlineUsersCount is null ? "" : Localizer[nameof(AppStrings.OnlineUsers), onlineUsersCount])</BitText>
+            }
+            <BitButton AutoLoading IconOnly
+                       IconName="@BitIconName.Refresh"
+                       OnClick="WrapHandled(RefreshData)"
+                       IsEnabled="isLoadingUsers is false" />
+        </BitStack>
+        <BitStack Horizontal Style="height:calc(100% - 3rem)">
+            <BitCard Style="min-width:15rem;overflow:auto;box-shadow:none" FullHeight>
+                @if (isLoadingUsers)
+                {
+                    <BitRollingSquareLoading Size="BitSize.Small" />
+                }
+                else if (userNavItems.Count == 0)
+                {
+                    <BitText>@Localizer[nameof(AppStrings.NoUserMessage)]</BitText>
+                }
+                else
+                {
+                    <BitNav Items="userNavItems"
+                            Mode="BitNavMode.Manual"
+                            Accent="BitColor.SecondaryBackground"
+                            OnSelectItem="WrapHandled(async (BitNavItem item) => await HandleOnSelectUser(item))">
+                        <ItemTemplate Context="item">
+                            <BitStack Gap="0">
+                                <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+                                    <BitText Style="overflow:hidden;text-overflow:ellipsis">@item.Text</BitText>
+                                    @if (loadingUserKey == item.Key)
+                                    {
+                                        <BitSpacer />
+                                        <BitBouncingDotsLoading Size="BitSize.Small" />
+                                    }
+                                </BitStack>
+                                @{
+                                    var user = (item.Data as UserDto)!;
+                                }
+                                @if (user.DisplayUserName != user.DisplayName)
+                                {
+                                    <BitText Color="BitColor.SecondaryForeground" Typography="BitTypography.Body2">
+                                        @user.DisplayUserName
+                                    </BitText>
+                                }
+                            </BitStack>
+                        </ItemTemplate>
+                    </BitNav>
+                }
+            </BitCard>
+            <BitCard Style="min-width:32rem;overflow:auto;box-shadow:none" FullSize>
+                <BitPivot>
+                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.General)]">
+                        <BitStack>
+                            <BitStack>
+                                @{
+                                    var isUserSelected = selectedUserItem is not null;
+                                }
+                                <BitStack Horizontal VerticalAlign="BitAlignment.End">
+                                    <BitText Typography="BitTypography.H6">@Localizer[nameof(AppStrings.Id)]:</BitText>
+                                    @if (isUserSelected)
+                                    {
+                                        <BitTag Color="BitColor.TertiaryBackground" Size="BitSize.Large" Class="selectable">
+                                            @selectedUserItem?.Key
+                                        </BitTag>
+                                    }
+                                </BitStack>
+                                <BitStack Horizontal VerticalAlign="BitAlignment.End">
+                                    <BitTextField @bind-Value="selectedUserDto.UserName"
+                                                  IsEnabled="false"
+                                                  Immediate DebounceTime="300"
+                                                  Label="@Localizer[nameof(AppStrings.UserName)]" />
+                                    <BitTextField @bind-Value="selectedUserDto.Email"
+                                                  IsEnabled="false"
+                                                  Immediate DebounceTime="300"
+                                                  Label="@Localizer[nameof(AppStrings.Email)]" />
+                                    <BitTextField @bind-Value="selectedUserDto.PhoneNumber"
+                                                  IsEnabled="false"
+                                                  Immediate DebounceTime="300"
+                                                  Label="@Localizer[nameof(AppStrings.PhoneNumber)]" />
+                                </BitStack>
+                                <BitStack Horizontal VerticalAlign="BitAlignment.End">
+                                    <BitTextField @bind-Value="selectedUserDto.FullName"
+                                                  IsEnabled="false"
+                                                  Immediate DebounceTime="300"
+                                                  Label="@Localizer[nameof(AppStrings.FullName)]" />
+                                    <BitSpacer />
+                                    <BitButton AutoLoading
+                                               IsEnabled="isUserSelected"
+                                               Color="BitColor.Error"
+                                               IconName="@BitIconName.Delete"
+                                               OnClick="WrapHandled(() => { isDeleteUserDialogOpen = true; })">
+                                        @Localizer[nameof(AppStrings.DeleteUser)]
+                                    </BitButton>
+                                </BitStack>
+                            </BitStack>
+                        </BitStack>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Sessions)]">
+                        @if (selectedUserItem is null)
+                        {
+                            @Localizer[nameof(AppStrings.NoUserSelectedMessage)]
+                        }
+                        else if (isLoadingSessions)
+                        {
+                            <BitRollingSquareLoading Size="BitSize.Small" />
+                        }
+                        else if (allUserSessions.Count == 0)
+                        {
+                            @Localizer[nameof(AppStrings.NoUserSessionMessage)]
+                        }
+                        else
+                        {
+                            <BitButton OnClick="() => { isRevokeAllUserSessionsDialogOpen = true; }">
+                                @Localizer[nameof(AppStrings.RevokeAllSessions)]
+                            </BitButton>
+                            <BitBasicList Items="allUserSessions" Style="width:100%;height:100%">
+                                <RowTemplate Context="session">
+                                    <BitCard Class="session-card" FullWidth Background="BitColorKind.Tertiary">
+                                        <BitStack FitHeight>
+                                            <BitText>@Localizer[nameof(AppStrings.IP)]: @session.IP</BitText>
+                                            <BitText>@Localizer[nameof(AppStrings.Address)]: @session.Address</BitText>
+                                            <BitText>@Localizer[nameof(AppStrings.DeviceInfo)]: @session.DeviceInfo</BitText>
+                                            <BitText>@Localizer[nameof(AppStrings.Privileged)]: @session.Privileged</BitText>
+                                            <BitText>@Localizer[nameof(AppStrings.RenewedOn)]: @session.RenewedOnDateTimeOffset.ToLocalTime()</BitText>
+                                            <BitText>
+                                                @Localizer[nameof(AppStrings.Id)]:
+                                                <BitTag Color="BitColor.SecondaryBackground" Size="BitSize.Large" Class="selectable">@session.Id</BitTag>
+                                            </BitText>
+                                            @*#if (signalR == true)*@
+                                            <BitText>
+                                                SignalRConnectionId:
+                                                @if (string.IsNullOrWhiteSpace(session.SignalRConnectionId) is false)
+                                                {
+                                                    <BitTag Color="BitColor.SecondaryBackground" Size="BitSize.Large" Class="selectable">@session.SignalRConnectionId</BitTag>
+                                                }
+                                            </BitText>
+                                            @*#endif*@
+                                            <BitButton AutoLoading IconOnly
+                                                       Class="del-session-btn"
+                                                       IconName="@BitIconName.Delete"
+                                                       IsEnabled="selectedUserItem is not null"
+                                                       OnClick="WrapHandled(() => RevokeUserSession(session))"
+                                                       Title="@Localizer[nameof(AppStrings.DeleteSession)]" />
+                                        </BitStack>
+                                    </BitCard>
+                                </RowTemplate>
+                            </BitBasicList>
+                        }
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Features)]">
+                        Similar to the user group's feature, but tailored for individual users
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Quota)]">
+                        Similar to the user group's quota, but tailored for individual users
+                    </BitPivotItem>
+
+                </BitPivot>
+            </BitCard>
+        </BitStack>
     </BitStack>
 </section>
+
+<BitDialog OnOk="WrapHandled(DeleteUser)"
+           @bind-IsOpen="isDeleteUserDialogOpen"
+           OkText="@Localizer[nameof(AppStrings.Yes)]"
+           CancelText="@Localizer[nameof(AppStrings.No)]"
+           Title="@Localizer[nameof(AppStrings.DeleteUser)]"
+           Message="@Localizer.GetString(nameof(AppStrings.AreYouSureWannaDelete), selectedUserItem?.Text ?? "")" />
+
+<BitDialog OnOk="WrapHandled(RevokeAllSessions)"
+           @bind-IsOpen="isRevokeAllUserSessionsDialogOpen"
+           OkText="@Localizer[nameof(AppStrings.Yes)]"
+           CancelText="@Localizer[nameof(AppStrings.No)]"
+           Title="@Localizer[nameof(AppStrings.RevokeAllSessions)]"
+           Message="@Localizer.GetString(nameof(AppStrings.RevokeAllSessionsConfrimMessage), selectedUserItem?.Text ?? "")" />
