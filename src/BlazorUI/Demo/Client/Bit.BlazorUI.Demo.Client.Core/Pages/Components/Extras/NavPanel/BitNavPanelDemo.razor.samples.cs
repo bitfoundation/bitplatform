@@ -360,13 +360,13 @@ private List<BitNavItem> basicNavItems =
 ];";
 
     private readonly string example7RazorCode = @"
-<BitToggleButton @bind-IsChecked=""hideSearchBoxIsOpen"" OnText=""Close"" OffText=""Open"" />
+<BitToggleButton @bind-IsChecked=""noSearchBoxIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <div style=""width:222px"">
-    <BitNavPanel @bind-IsOpen=""hideSearchBoxIsOpen"" Items=""basicNavItems"" HideSearchBox />
+    <BitNavPanel @bind-IsOpen=""noSearchBoxIsOpen"" Items=""basicNavItems"" NoSearchBox />
 </div>";
     private readonly string example7CsharpCode = @"
-private bool hideSearchBoxIsOpen;
+private bool noSearchBoxIsOpen;
 
 private List<BitNavItem> basicNavItems =
 [
