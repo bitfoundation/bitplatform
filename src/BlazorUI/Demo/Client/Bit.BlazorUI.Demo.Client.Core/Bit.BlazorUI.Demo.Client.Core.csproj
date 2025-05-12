@@ -15,13 +15,13 @@
         <None Include="compilerconfig.json" />
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
-        <PackageReference Include="Bit.BlazorES2019" Version="9.7.4-pre-02" />
+        <PackageReference Include="Bit.BlazorES2019" Version="9.7.4-pre-03" />
 
-        <PackageReference Include="Bit.CodeAnalyzers" Version="9.7.4-pre-02">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="9.7.4-pre-03">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="9.7.4-pre-02">
+        <PackageReference Include="Bit.SourceGenerators" Version="9.7.4-pre-03">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
