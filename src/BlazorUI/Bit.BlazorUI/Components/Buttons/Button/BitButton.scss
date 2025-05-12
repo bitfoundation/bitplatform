@@ -315,7 +315,7 @@
 
 
 .bit-btn-sm {
-    --bit-btn-spn-size: #{spacing(1.75)};
+    --bit-btn-spn-size: #{spacing(2.00)};
     --bit-btn-lbl-fontsize: #{spacing(1.25)};
     --bit-btn-prt-fontsize: #{spacing(1.50)};
     --bit-btn-sct-fontsize: #{spacing(1.25)};
@@ -327,7 +327,7 @@
 }
 
 .bit-btn-md {
-    --bit-btn-spn-size: #{spacing(2.5)};
+    --bit-btn-spn-size: #{spacing(2.35)};
     --bit-btn-lbl-fontsize: #{spacing(1.50)};
     --bit-btn-prt-fontsize: #{spacing(1.75)};
     --bit-btn-sct-fontsize: #{spacing(1.50)};
@@ -339,7 +339,7 @@
 }
 
 .bit-btn-lg {
-    --bit-btn-spn-size: #{spacing(3.25)};
+    --bit-btn-spn-size: #{spacing(3.35)};
     --bit-btn-lbl-fontsize: #{spacing(1.75)};
     --bit-btn-prt-fontsize: #{spacing(2.50)};
     --bit-btn-sct-fontsize: #{spacing(2.00)};
@@ -456,4 +456,5 @@
 .bit-btn-ntx {
     padding: var(--bit-btn-pad-ntx);
     --bit-btn-icn-margintop: 0;
+    --bit-btn-icn-fontsize: var(--bit-btn-spn-size);
 }
