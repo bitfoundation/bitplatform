@@ -1403,4 +1403,16 @@
     <data name="NoUserMessage" xml:space="preserve">
     <value>کاربری وجود ندارد</value>
   </data>
+    <data name="NoUserSessionMessage" xml:space="preserve">
+    <value>سشنی وجود ندارد</value>
+  </data>
+    <data name="NoUserSelectedMessage" xml:space="preserve">
+    <value>لطفا ابتدا کاربری را انتخاب کنید</value>
+  </data>
+    <data name="RevokeAllSessions" xml:space="preserve">
+    <value>حذف تمام سشن‌ها</value>
+  </data>
+    <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
+    <value>آیا برای حذف تمام سشنهای کاربر {0} مطمئن هستید?</value>
+  </data>
 </root>

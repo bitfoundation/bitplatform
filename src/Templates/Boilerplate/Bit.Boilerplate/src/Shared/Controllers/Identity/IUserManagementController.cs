@@ -15,9 +15,12 @@ public interface IUserManagementController : IAppController
     [HttpGet("{userId}")]
     Task<List<UserSessionDto>> GetUserSessions(Guid userId, CancellationToken cancellationToken) => default!;
 
-    [HttpPost("{id}")]
-    Task DeleteUserSession(Guid id, CancellationToken cancellationToken);
-
     [HttpPost("{userId}")]
     Task Delete(Guid userId, CancellationToken cancellationToken);
+
+    [HttpPost("{id}")]
+    Task RevokeUserSession(Guid id, CancellationToken cancellationToken);
+
+    [HttpPost("{userId}")]
+    Task RevokeAllUserSessions(Guid userId, CancellationToken cancellationToken);
 }

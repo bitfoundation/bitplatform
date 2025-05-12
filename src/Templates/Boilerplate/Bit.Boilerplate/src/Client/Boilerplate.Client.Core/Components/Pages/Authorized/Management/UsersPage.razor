@@ -74,7 +74,7 @@
                                     var isUserSelected = selectedUserItem is not null;
                                 }
                                 <BitStack Horizontal VerticalAlign="BitAlignment.End">
-                                    <BitText>@Localizer[nameof(AppStrings.Id)]</BitText>
+                                    <BitText Typography="BitTypography.H6">@Localizer[nameof(AppStrings.Id)]:</BitText>
                                     @if (isUserSelected)
                                     {
                                         <BitTag Color="BitColor.TertiaryBackground" Size="BitSize.Large" Class="selectable">
@@ -114,12 +114,23 @@
                         </BitStack>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Sessions)]">
-                        @if (isLoadingSessions)
+                        @if (selectedUserItem is null)
+                        {
+                            @Localizer[nameof(AppStrings.NoUserSelectedMessage)]
+                        }
+                        else if (isLoadingSessions)
                         {
                             <BitRollingSquareLoading Size="BitSize.Small" />
                         }
+                        else if (allUserSessions.Count == 0)
+                        {
+                            @Localizer[nameof(AppStrings.NoUserSessionMessage)]
+                        }
                         else
                         {
+                            <BitButton OnClick="() => { isRevokeAllUserSessionsDialogOpen = true; }">
+                                @Localizer[nameof(AppStrings.RevokeAllSessions)]
+                            </BitButton>
                             <BitBasicList Items="allUserSessions" Style="width:100%;height:100%">
                                 <RowTemplate Context="session">
                                     <BitCard Class="session-card" FullWidth Background="BitColorKind.Tertiary">
@@ -129,9 +140,8 @@
                                             <BitText>@Localizer[nameof(AppStrings.DeviceInfo)]: @session.DeviceInfo</BitText>
                                             <BitText>@Localizer[nameof(AppStrings.Privileged)]: @session.Privileged</BitText>
                                             <BitText>@Localizer[nameof(AppStrings.RenewedOn)]: @session.RenewedOnDateTimeOffset.ToLocalTime()</BitText>
-
                                             <BitText>
-                                                Id:
+                                                @Localizer[nameof(AppStrings.Id)]:
                                                 <BitTag Color="BitColor.SecondaryBackground" Size="BitSize.Large" Class="selectable">@session.Id</BitTag>
                                             </BitText>
                                             @*#if (signalR == true)*@
@@ -147,7 +157,7 @@
                                                        Class="del-session-btn"
                                                        IconName="@BitIconName.Delete"
                                                        IsEnabled="selectedUserItem is not null"
-                                                       OnClick="WrapHandled(() => DeleteSession(session))"
+                                                       OnClick="WrapHandled(() => RevokeUserSession(session))"
                                                        Title="@Localizer[nameof(AppStrings.DeleteSession)]" />
                                         </BitStack>
                                     </BitCard>
@@ -174,3 +184,10 @@
            CancelText="@Localizer[nameof(AppStrings.No)]"
            Title="@Localizer[nameof(AppStrings.DeleteUser)]"
            Message="@Localizer.GetString(nameof(AppStrings.AreYouSureWannaDelete), selectedUserItem?.Text ?? "")" />
+
+<BitDialog OnOk="WrapHandled(RevokeAllSessions)"
+           @bind-IsOpen="isRevokeAllUserSessionsDialogOpen"
+           OkText="@Localizer[nameof(AppStrings.Yes)]"
+           CancelText="@Localizer[nameof(AppStrings.No)]"
+           Title="@Localizer[nameof(AppStrings.RevokeAllSessions)]"
+           Message="@Localizer.GetString(nameof(AppStrings.RevokeAllSessionsConfrimMessage), selectedUserItem?.Text ?? "")" />

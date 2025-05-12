@@ -1,6 +1,7 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Shared.Dtos.Identity;
+using BlazorApplicationInsights.Models.Context;
 using Boilerplate.Shared.Controllers.Identity;
+using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Management;
 
@@ -17,6 +18,7 @@ public partial class UsersPage
     private BitNavItem? selectedUserItem;
     private bool isLoadingOnlineUsersCount;
     private List<BitNavItem> userNavItems = [];
+    private bool isRevokeAllUserSessionsDialogOpen;
     private CancellationTokenSource? loadRoleDataCts;
     private List<UserSessionDto> allUserSessions = [];
 
@@ -126,13 +128,24 @@ public partial class UsersPage
         }
     }
 
-    private async Task DeleteSession(UserSessionDto session)
+    private async Task RevokeUserSession(UserSessionDto session)
     {
         if (selectedUserItem is null) return;
 
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
 
-        await userManagementController.DeleteUserSession(session.Id, CurrentCancellationToken);
+        await userManagementController.RevokeUserSession(session.Id, CurrentCancellationToken);
+
+        await HandleOnSelectUser(selectedUserItem);
+    }
+
+    private async Task RevokeAllSessions()
+    {
+        if (selectedUserItem is null) return;
+
+        if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
+
+        await userManagementController.RevokeAllUserSessions(Guid.Parse(selectedUserItem.Key!), CurrentCancellationToken);
 
         await HandleOnSelectUser(selectedUserItem);
     }

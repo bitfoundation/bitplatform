@@ -1409,4 +1409,16 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="NoUserMessage" xml:space="preserve">
     <value>No users</value>
   </data>
+    <data name="NoUserSessionMessage" xml:space="preserve">
+    <value>No user session</value>
+  </data>
+    <data name="NoUserSelectedMessage" xml:space="preserve">
+    <value>Please select a user first</value>
+  </data>
+    <data name="RevokeAllSessions" xml:space="preserve">
+    <value>Revoke all sessions</value>
+  </data>
+    <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
+    <value>Are you sure you want to revoke all sessions of {0}?</value>
+  </data>
 </root>

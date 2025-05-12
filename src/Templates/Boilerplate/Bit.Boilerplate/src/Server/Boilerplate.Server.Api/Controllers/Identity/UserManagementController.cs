@@ -54,13 +54,14 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
             if (User.IsInRole(AppRoles.SuperAdmin) is false)
                 throw new BadRequestException();
         }
-
+        
         //#if (signalR == true)
         var userSessionConnectionIds = await DbContext.UserSessions.Where(us => us.UserId == userId && us.SignalRConnectionId != null)
                                                                    .Select(us => us.SignalRConnectionId!)
                                                                    .ToListAsync(cancellationToken);
-        await DbContext.UserSessions.Where(us => us.UserId == userId).ExecuteDeleteAsync(cancellationToken);
         //#endif
+
+        await DbContext.UserSessions.Where(us => us.UserId == userId).ExecuteDeleteAsync(cancellationToken);
 
         await userManager.DeleteAsync(user);
 
@@ -74,7 +75,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
 
     [HttpPost("{id}")]
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
-    public async Task DeleteUserSession(Guid id, CancellationToken cancellationToken)
+    public async Task RevokeUserSession(Guid id, CancellationToken cancellationToken)
     {
         if (id == User.GetSessionId())
             throw new BadRequestException();
@@ -90,6 +91,29 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         if (entityToDelete.SignalRConnectionId is not null)
         {
             await RevokeSession(entityToDelete.SignalRConnectionId, cancellationToken);
+        }
+        //#endif
+    }
+
+    [HttpPost("{userId}")]
+    [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
+    public async Task RevokeAllUserSessions(Guid userId, CancellationToken cancellationToken)
+    {
+        if (userId == User.GetUserId())
+            throw new BadRequestException();
+        
+        //#if (signalR == true)
+        var userSessionConnectionIds = await DbContext.UserSessions.Where(us => us.UserId == userId && us.SignalRConnectionId != null)
+                                                                   .Select(us => us.SignalRConnectionId!)
+                                                                   .ToListAsync(cancellationToken);
+        //#endif
+        
+        await DbContext.UserSessions.Where(us => us.UserId == userId).ExecuteDeleteAsync(cancellationToken);
+
+        //#if (signalR == true)
+        foreach (var id in userSessionConnectionIds)
+        {
+            await RevokeSession(id, cancellationToken);
         }
         //#endif
     }
