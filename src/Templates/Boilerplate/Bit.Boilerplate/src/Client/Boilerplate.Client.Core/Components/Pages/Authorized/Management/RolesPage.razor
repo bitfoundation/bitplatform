@@ -27,14 +27,10 @@
                        IsEnabled="isLoadingRoles is false" />
         </BitStack>
         <BitStack Horizontal Style="height:calc(100% - 49px)">
-            <BitCard Style="min-width:15rem;overflow:auto;box-shadow:none" FullHeight>
+            <BitCard Style="min-width:15rem;overflow:auto" NoShadow FullHeight>
                 @if (isLoadingRoles)
                 {
                     <BitRollingSquareLoading Size="BitSize.Small" />
-                }
-                else if (roleNavItems.Count == 0)
-                {
-                    <BitText>@Localizer[nameof(AppStrings.NoRoleMessage)]</BitText>
                 }
                 else
                 {
@@ -44,24 +40,31 @@
                                   Immediate DebounceTime="300"
                                   Placeholder="@Localizer[nameof(AppStrings.SearchRolePlaceholder)]" />
                     <br />
-                    <BitNav Items="roleNavItems"
-                            Mode="BitNavMode.Manual"
-                            Accent="BitColor.SecondaryBackground"
-                            OnSelectItem="WrapHandled(async (BitNavItem item) => await HandleOnSelectRole(item))">
-                        <ItemTemplate Context="item">
-                            <BitStack Horizontal VerticalAlign="BitAlignment.Center">
-                                <BitText>@item.Text</BitText>
-                                @if (loadingRoleKey == item.Key)
-                                {
-                                    <BitSpacer />
-                                    <BitBouncingDotsLoading Size="BitSize.Small" />
-                                }
-                            </BitStack>
-                        </ItemTemplate>
-                    </BitNav>
+                    if (roleNavItems.Count == 0)
+                    {
+                        <BitText>@Localizer[nameof(AppStrings.NoRoleMessage)]</BitText>
+                    }
+                    else
+                    {
+                        <BitNav Items="roleNavItems"
+                                Mode="BitNavMode.Manual"
+                                Accent="BitColor.SecondaryBackground"
+                                OnSelectItem="WrapHandled(async (BitNavItem item) => await HandleOnSelectRole(item))">
+                            <ItemTemplate Context="item">
+                                <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+                                    <BitText>@item.Text</BitText>
+                                    @if (loadingRoleKey == item.Key)
+                                    {
+                                        <BitSpacer />
+                                        <BitBouncingDotsLoading Size="BitSize.Small" />
+                                    }
+                                </BitStack>
+                            </ItemTemplate>
+                        </BitNav>
+                    }
                 }
             </BitCard>
-            <BitCard Style="min-width:36rem;overflow:auto;box-shadow:none" FullSize>
+            <BitCard Style="min-width:36rem;overflow:auto" NoShadow FullSize>
                 <BitPivot>
                     <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.General)]">
                         <BitStack>

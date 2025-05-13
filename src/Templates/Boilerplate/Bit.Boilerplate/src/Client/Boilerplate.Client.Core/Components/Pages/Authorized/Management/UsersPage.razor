@@ -26,14 +26,10 @@
                        IsEnabled="isLoadingUsers is false" />
         </BitStack>
         <BitStack Horizontal Style="height:calc(100% - 49px)">
-            <BitCard Style="min-width:15rem;overflow:auto;box-shadow:none" FullHeight>
+            <BitCard Style="min-width:15rem;overflow:auto" NoShadow FullHeight>
                 @if (isLoadingUsers)
                 {
                     <BitRollingSquareLoading Size="BitSize.Small" />
-                }
-                else if (userNavItems.Count == 0)
-                {
-                    <BitText>@Localizer[nameof(AppStrings.NoUserMessage)]</BitText>
                 }
                 else
                 {
@@ -43,37 +39,44 @@
                                   Immediate DebounceTime="300"
                                   Placeholder="@Localizer[nameof(AppStrings.SearchUserPlaceholder)]" />
                     <br />
-                    <BitNav NoCollapse
-                            Items="userNavItems"
-                            Mode="BitNavMode.Manual"
-                            Accent="BitColor.SecondaryBackground"
-                            OnSelectItem="WrapHandled(async (BitNavItem item) => await HandleOnSelectUser(item))">
-                        <ItemTemplate Context="item">
-                            @{
-                                var user = (item.Data as UserDto)!;
-                                var hasDescription = user.DisplayUserName != user.DisplayName;
-                            }
-                            <BitStack Gap="0" Style="@(hasDescription ? "height:65px" : "")">
-                                <BitStack Horizontal VerticalAlign="BitAlignment.Center">
-                                    <BitText Style="overflow:hidden;text-overflow:ellipsis">@item.Text</BitText>
-                                    @if (loadingUserKey == item.Key)
+                    @if (userNavItems.Count == 0)
+                    {
+                        <BitText>@Localizer[nameof(AppStrings.NoUserMessage)]</BitText>
+                    }
+                    else
+                    {
+                        <BitNav NoCollapse
+                                Items="userNavItems"
+                                Mode="BitNavMode.Manual"
+                                Accent="BitColor.SecondaryBackground"
+                                OnSelectItem="WrapHandled(async (BitNavItem item) => await HandleOnSelectUser(item))">
+                            <ItemTemplate Context="item">
+                                @{
+                                    var user = (item.Data as UserDto)!;
+                                    var hasDescription = user.DisplayUserName != user.DisplayName;
+                                }
+                                <BitStack Gap="0" Style="@(hasDescription ? "height:65px" : "")">
+                                    <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+                                        <BitText Style="overflow:hidden;text-overflow:ellipsis">@item.Text</BitText>
+                                        @if (loadingUserKey == item.Key)
+                                        {
+                                            <BitSpacer />
+                                            <BitBouncingDotsLoading Size="BitSize.Small" />
+                                        }
+                                    </BitStack>
+                                    @if (hasDescription)
                                     {
-                                        <BitSpacer />
-                                        <BitBouncingDotsLoading Size="BitSize.Small" />
+                                        <BitText Color="BitColor.SecondaryForeground" Typography="BitTypography.Body2">
+                                            @user.DisplayUserName
+                                        </BitText>
                                     }
                                 </BitStack>
-                                @if (hasDescription)
-                                {
-                                    <BitText Color="BitColor.SecondaryForeground" Typography="BitTypography.Body2">
-                                        @user.DisplayUserName
-                                    </BitText>
-                                }
-                            </BitStack>
-                        </ItemTemplate>
-                    </BitNav>
+                            </ItemTemplate>
+                        </BitNav>
+                    }
                 }
             </BitCard>
-            <BitCard Style="min-width:32rem;overflow:auto;box-shadow:none" FullSize>
+            <BitCard Style="min-width:32rem;overflow:auto" NoShadow FullSize>
                 <BitPivot>
                     <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.General)]">
                         <BitStack>
