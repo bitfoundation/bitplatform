@@ -74,7 +74,7 @@ public partial class MainActivity : MauiAppCompatActivity
                     var data = JsonSerializer.Deserialize<Dictionary<string, string>>(e.Request.ReturningData)!;
                     if (data.TryGetValue("pageUrl", out var pageUrl))
                     {
-                        _ = Routes.OpenUniversalLink(new URL(url).File ?? Urls.HomePage);
+                        _ = Routes.OpenUniversalLink(pageUrl ?? Urls.HomePage);
                     }
                 };
             }
