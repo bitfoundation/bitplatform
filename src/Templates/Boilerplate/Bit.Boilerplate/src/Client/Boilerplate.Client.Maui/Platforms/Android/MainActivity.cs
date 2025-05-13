@@ -1,12 +1,13 @@
 ﻿//+:cnd:noEmit
+using Java.Net;
 using Android.OS;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Java.Net;
 //#if (notification == true)
 using Android.Gms.Tasks;
 using Firebase.Messaging;
+using Plugin.LocalNotification;
 //#endif
 using Boilerplate.Client.Core.Components;
 
@@ -42,7 +43,7 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
 public partial class MainActivity : MauiAppCompatActivity
     //#if (notification == true)
     , IOnSuccessListener
-    //#endif
+//#endif
 {
     //#if (notification == true)
     private IPushNotificationService PushNotificationService => IPlatformApplication.Current!.Services.GetRequiredService<IPushNotificationService>();
@@ -66,6 +67,16 @@ public partial class MainActivity : MauiAppCompatActivity
             if (task.Result)
             {
                 FirebaseMessaging.Instance.GetToken().AddOnSuccessListener(this);
+                LocalNotificationCenter.Current.NotificationActionTapped += (e) =>
+                {
+                    if (string.IsNullOrEmpty(e.Request.ReturningData))
+                        return;
+                    var data = JsonSerializer.Deserialize<Dictionary<string, string>>(e.Request.ReturningData)!;
+                    if (data.TryGetValue("pageUrl", out var pageUrl))
+                    {
+                        _ = Routes.OpenUniversalLink(new URL(url).File ?? Urls.HomePage);
+                    }
+                };
             }
         });
         //#endif

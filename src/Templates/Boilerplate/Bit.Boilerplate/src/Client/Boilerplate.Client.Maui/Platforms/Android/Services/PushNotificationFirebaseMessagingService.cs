@@ -1,4 +1,4 @@
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Firebase.Messaging;
 using Plugin.LocalNotification;
@@ -46,7 +46,8 @@ public partial class PushNotificationFirebaseMessagingService : FirebaseMessagin
                 await LocalNotificationCenter.Current.Show(new()
                 {
                     Title = title!,
-                    Description = body!
+                    Description = body!,
+                    ReturningData = JsonSerializer.Serialize(message.Data ?? new Dictionary<string, string> { })
                 });
             }
         }
