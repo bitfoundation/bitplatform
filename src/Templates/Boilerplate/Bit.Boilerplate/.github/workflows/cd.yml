@@ -270,7 +270,7 @@ jobs:
         p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
 
     - name: Download Apple Provisioning Profiles
-      uses: Apple-Actions/download-provisioning-profiles@v3
+      uses: Apple-Actions/download-provisioning-profiles@v4
       with:
         bundle-id: 'com.bitplatform.template'
         issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
