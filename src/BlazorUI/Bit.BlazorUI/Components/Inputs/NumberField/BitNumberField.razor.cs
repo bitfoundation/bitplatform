@@ -185,6 +185,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public EventCallback<FocusEventArgs> OnBlur { get; set; }
 
     /// <summary>
+    /// Callback executed when the user clears the number field by either clicking 'X' or hitting escape.
+    /// </summary>
+    [Parameter] public EventCallback OnClear { get; set; }
+
+    /// <summary>
     /// Callback for when the decrement button or down arrow key is pressed.
     /// </summary>
     [Parameter] public EventCallback<TValue> OnDecrement { get; set; }
@@ -236,6 +241,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Shows the custom prefix for numeric field.
     /// </summary>
     [Parameter] public RenderFragment? PrefixTemplate { get; set; }
+
+    /// <summary>
+    /// Whether to shows the clear button when the BitNumberField has value.
+    /// </summary>
+    [Parameter] public bool ShowClearButton { get; set; }
 
     /// <summary>
     /// Difference between two adjacent values of the number field.
@@ -467,6 +477,17 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         {
             ChangeValue(InvertMouseWheel ? +1 : -1);
         }
+    }
+
+    private async Task HandleOnClearButtonClick()
+    {
+        if (IsEnabled is false || ReadOnly) return;
+
+        await HandleOnStringValueChangeAsync(new() { Value = string.Empty });
+
+        await InputElement.FocusAsync();
+
+        await OnClear.InvokeAsync();
     }
 
 

@@ -145,6 +145,47 @@
     border-radius: $shp-border-radius 0 0 $shp-border-radius;
 }
 
+.bit-nfl-cbt {
+    height: auto;
+    border: none;
+    cursor: pointer;
+    font-weight: 400;
+    width: spacing(4);
+    user-select: none;
+    position: relative;
+    text-align: center;
+    outline: transparent;
+    text-decoration: none;
+    display: inline-block;
+    box-sizing: border-box;
+    padding: 0 spacing(0.5);
+    font-size: spacing(1.75);
+    font-family: $tg-font-family;
+    background-color: transparent;
+    border-radius: 0 spacing(0.125) spacing(0.125) 0;
+
+    i {
+        width: unset;
+        flex-shrink: 0;
+        color: $clr-fg-sec;
+        height: spacing(2);
+        text-align: center;
+        margin: 0 spacing(0.5);
+        font-size: spacing(1.5);
+        line-height: spacing(2);
+    }
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: $clr-bg-pri-hover;
+
+            i {
+                color: $clr-fg-pri-hover;
+            }
+        }
+    }
+}
+
 .bit-nfl-cin {
     text-align: center;
 }

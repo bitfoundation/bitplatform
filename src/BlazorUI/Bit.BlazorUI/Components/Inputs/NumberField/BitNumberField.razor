@@ -137,6 +137,18 @@
                    aria-valuenow="@(AriaValueNow ?? CurrentValue)"
                    aria-valuetext="@(AriaValueText ?? CurrentValueAsString)"
                    aria-disabled="@(IsEnabled is false)" />
+
+                   @if (ShowClearButton && IsEnabled && CurrentValue is not null)
+                    {
+                        <button @onclick="HandleOnClearButtonClick"
+                                style="@Styles?.ClearButton"
+                                class="bit-nfl-cbt @Classes?.ClearButton"
+                                type="button"
+                                aria-hidden="true"
+                                aria-label="Clear text">
+                            <i style="@Styles?.ClearButtonIcon" class="bit-icon bit-icon--Cancel @Classes?.ClearButtonIcon" aria-hidden="true" />
+                        </button>
+                    }
         }
 
         @if (Mode == BitSpinButtonMode.Compact)
