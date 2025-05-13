@@ -121,7 +121,7 @@ public partial class MainLayout
                 managementItem.ChildItems.Add(new()
                 {
                     Text = localizer[nameof(AppStrings.UserGroups)],
-                    IconName = BitIconName.SecurityGroup,
+                    IconName = BitIconName.WorkforceManagement,
                     Url = Urls.RolesPage,
                 });
             }
