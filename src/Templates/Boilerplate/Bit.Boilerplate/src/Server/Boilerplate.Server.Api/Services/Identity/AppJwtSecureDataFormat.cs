@@ -18,7 +18,7 @@ public partial class AppJwtSecureDataFormat(ServerApiSettings appSettings, Token
         {
             if (string.IsNullOrEmpty(protectedText))
             {
-                return NotSignedIn();
+                return Anonymous();
             }
 
             var handler = new JwtSecurityTokenHandler();
@@ -29,16 +29,12 @@ public partial class AppJwtSecureDataFormat(ServerApiSettings appSettings, Token
 
             var identity = new ClaimsIdentity(principal.Identity, principal.Claims, IdentityConstants.BearerScheme, ClaimTypes.NameIdentifier, ClaimTypes.Role);
 
-            if (principal.IsInRole(AppBuiltInRoles.SuperAdmin))
+            if (principal.IsInRole(AppRoles.SuperAdmin))
             {
-                foreach (var per in AppPermissions.GetSuperAdminPermissions())
-                    identity.AddClaim(new Claim(AppClaimTypes.PERMISSIONS, per.value));
-            }
-
-            if (principal.IsInRole(AppBuiltInRoles.BasicUser))
-            {
-                foreach (var per in AppPermissions.GetBasicUserPermissions())
-                    identity.AddClaim(new Claim(AppClaimTypes.PERMISSIONS, per.value));
+                foreach (var feat in AppFeatures.GetSuperAdminFeatures())
+                {
+                    identity.AddClaim(new Claim(AppClaimTypes.FEATURES, feat.Value));
+                }
             }
 
             var result = new ClaimsPrincipal(identity);
@@ -54,11 +50,11 @@ public partial class AppJwtSecureDataFormat(ServerApiSettings appSettings, Token
                 Console.WriteLine(ex); // since we do not have access to any logger at this point!
             }
 
-            return NotSignedIn();
+            return Anonymous();
         }
     }
 
-    private static AuthenticationTicket NotSignedIn()
+    private static AuthenticationTicket Anonymous()
     {
         return new AuthenticationTicket(new ClaimsPrincipal(new ClaimsIdentity()), string.Empty);
     }

@@ -88,6 +88,11 @@ public partial class BitButtonGroupOption : ComponentBase, IDisposable
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
+    /// <summary>
+    /// Determines if the item is toggled. This property's value is assigned by the component.
+    /// </summary>
+    public bool IsToggled { get; internal set; }
+
 
 
     protected override async Task OnInitializedAsync()

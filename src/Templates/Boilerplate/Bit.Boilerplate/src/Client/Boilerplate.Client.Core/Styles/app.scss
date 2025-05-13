@@ -59,6 +59,10 @@ p {
     height: $bit-env-height-available;
 }
 
+.selectable {
+    user-select: all !important;
+}
+
 div[dir=rtl] {
     .bitdatagrid-paginator {
         .go-next, .go-last {

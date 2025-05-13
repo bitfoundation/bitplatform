@@ -63,7 +63,7 @@
 
     private async Task Verify()
     {
-        var result = await webAuthn.Verify(platform: true);
+        var result = await webAuthn.Verify();
         await console.Log("Verify result:", result);
     }
 }

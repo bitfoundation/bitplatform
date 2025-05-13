@@ -19,9 +19,13 @@ public partial class MainLayout
             }
         ];
 
-        if (user?.IsAuthenticated() is true)
+        //#if (module == "Admin")
+
+        var (dashboard, manageProductCatalog) = await (authorizationService.IsAuthorizedAsync(user!, AppFeatures.AdminPanel.Dashboard),
+            authorizationService.IsAuthorizedAsync(user!, AppFeatures.AdminPanel.ManageProductCatalog));
+
+        if (dashboard || manageProductCatalog)
         {
-            //#if (module == "Admin")
             BitNavItem adminPanelItem = new()
             {
                 Text = localizer[nameof(AppStrings.AdminPanel)],
@@ -31,7 +35,7 @@ public partial class MainLayout
 
             navPanelItems.Add(adminPanelItem);
 
-            if ((await authorizationService.AuthorizeAsync(user, AppPermissions.AdminPanel.Dashboard)).Succeeded)
+            if (dashboard)
             {
                 adminPanelItem.ChildItems.Add(new()
                 {
@@ -41,56 +45,47 @@ public partial class MainLayout
                 });
             }
 
-            if ((await authorizationService.AuthorizeAsync(user, AppPermissions.AdminPanel.ManageProductCatalog)).Succeeded)
+            if (manageProductCatalog)
             {
                 adminPanelItem.ChildItems.AddRange(
                 [
                     new()
-                    {
-                        Text = localizer[nameof(AppStrings.Categories)],
-                        IconName = BitIconName.BuildQueue,
-                        Url = Urls.CategoriesPage,
-                    },
-                    new()
-                    {
-                        Text = localizer[nameof(AppStrings.Products)],
-                        IconName = BitIconName.Product,
-                        Url = Urls.ProductsPage,
-                    }
+                        {
+                            Text = localizer[nameof(AppStrings.Categories)],
+                            IconName = BitIconName.BuildQueue,
+                            Url = Urls.CategoriesPage,
+                        },
+                        new()
+                        {
+                            Text = localizer[nameof(AppStrings.Products)],
+                            IconName = BitIconName.Product,
+                            Url = Urls.ProductsPage,
+                        }
                 ]);
             }
-            //#endif
-
-            //#if (sample == true)
-            if ((await authorizationService.AuthorizeAsync(user, AppPermissions.Todo.ManageTodo)).Succeeded)
-            {
-                navPanelItems.Add(new()
-                {
-                    Text = localizer[nameof(AppStrings.Todo)],
-                    IconName = BitIconName.ToDoLogoOutline,
-                    Url = Urls.TodoPage,
-                });
-            }
-            //#endif
-
-            //#if (offlineDb == true)
-            navPanelItems.Add(new()
-            {
-                Text = localizer[nameof(AppStrings.OfflineEditProfileTitle)],
-                IconName = BitIconName.EditContact,
-                Url = Urls.OfflineEditProfilePage,
-            });
-            //#endif
-
-            //#if (signalR == true)
-            navPanelItems.Add(new()
-            {
-                Text = localizer[nameof(AppStrings.SystemPromptsTitle)],
-                IconName = BitIconName.TextDocumentSettings,
-                Url = Urls.SystemPrompts,
-            });
-            //#endif
         }
+        //#endif
+
+        //#if (sample == true)
+        if (await authorizationService.IsAuthorizedAsync(user!, AppFeatures.Todo.ManageTodo))
+        {
+            navPanelItems.Add(new()
+            {
+                Text = localizer[nameof(AppStrings.Todo)],
+                IconName = BitIconName.ToDoLogoOutline,
+                Url = Urls.TodoPage,
+            });
+        }
+        //#endif
+
+        //#if (offlineDb == true)
+        navPanelItems.Add(new()
+        {
+            Text = localizer[nameof(AppStrings.OfflineDatabaseDemoTitle)],
+            IconName = BitIconName.EditContact,
+            Url = Urls.OfflineDatabaseDemo,
+        });
+        //#endif
 
         navPanelItems.Add(new()
         {
@@ -106,7 +101,55 @@ public partial class MainLayout
             Url = Urls.AboutPage,
         });
 
-        if (user?.IsAuthenticated() is true)
+        var (manageRoles, manageUsers, manageAiPrompt) = await (authorizationService.IsAuthorizedAsync(user!, AppFeatures.Management.ManageRoles),
+            authorizationService.IsAuthorizedAsync(user!, AppFeatures.Management.ManageUsers),
+            authorizationService.IsAuthorizedAsync(user!, AppFeatures.Management.ManageAiPrompt));
+
+        if (manageRoles || manageUsers || manageAiPrompt)
+        {
+            BitNavItem managementItem = new()
+            {
+                Text = localizer[nameof(AppStrings.Management)],
+                IconName = BitIconName.SettingsSecure,
+                ChildItems = []
+            };
+
+            navPanelItems.Add(managementItem);
+
+            if (manageRoles)
+            {
+                managementItem.ChildItems.Add(new()
+                {
+                    Text = localizer[nameof(AppStrings.UserGroups)],
+                    IconName = BitIconName.WorkforceManagement,
+                    Url = Urls.RolesPage,
+                });
+            }
+
+            if (manageUsers)
+            {
+                managementItem.ChildItems.Add(new()
+                {
+                    Text = localizer[nameof(AppStrings.Users)],
+                    IconName = BitIconName.SecurityGroup,
+                    Url = Urls.UsersPage,
+                });
+            }
+
+            //#if (signalR == true)
+            if (manageAiPrompt)
+            {
+                managementItem.ChildItems.Add(new()
+                {
+                    Text = localizer[nameof(AppStrings.SystemPromptsTitle)],
+                    IconName = BitIconName.TextDocumentSettings,
+                    Url = Urls.SystemPrompts,
+                });
+            }
+            //#endif
+        }
+
+        if (user.IsAuthenticated())
         {
             navPanelItems.Add(new()
             {

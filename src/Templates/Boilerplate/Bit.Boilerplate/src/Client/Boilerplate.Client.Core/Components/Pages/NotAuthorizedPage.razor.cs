@@ -1,4 +1,4 @@
-namespace Boilerplate.Client.Core.Components.Pages;
+﻿namespace Boilerplate.Client.Core.Components.Pages;
 
 public partial class NotAuthorizedPage
 {
@@ -31,7 +31,7 @@ public partial class NotAuthorizedPage
 
             user = (await AuthenticationStateTask).User;
 
-            lacksValidPrivilege = await AuthorizationService.AuthorizeAsync(user, AuthPolicies.PRIVILEGED_ACCESS) is { Succeeded: false };
+            lacksValidPrivilege = await AuthorizationService.IsAuthorizedAsync(user, AuthPolicies.PRIVILEGED_ACCESS);
         }
         finally
         {

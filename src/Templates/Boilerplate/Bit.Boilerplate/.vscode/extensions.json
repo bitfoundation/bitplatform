@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "glenn2223.live-sass",
+        "ms-dotnetools.csharp",
+        "ms-dotnettools.csdevkit",
+        "DominicVonk.vscode-resx-editor",
+        "ms-dotnettools.vscode-dotnet-runtime",
+        "kevin-chatham.aspnetcorerazor-html-css-class-completion"
+    ]
+}

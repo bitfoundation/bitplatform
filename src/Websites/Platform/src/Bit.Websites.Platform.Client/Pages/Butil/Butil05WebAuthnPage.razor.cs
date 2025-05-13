@@ -23,6 +23,7 @@ public partial class Butil05WebAuthnPage
                 rp = new { name = "testRp" },
                 attestation = "direct",
                 user = new { id = "userId", name = "testUser", displayName = "testUser" },
+                authenticatorSelection = new { authenticatorAttachment = "platform" },
                 pubKeyCredParams = new object[]
                 {
                     new { alg = -7, type = "public-key" },
@@ -68,19 +69,39 @@ public partial class Butil05WebAuthnPage
 
 <div>Result:</div>
 <div>@createResult?.ToString()?.Replace("","", "",\n"")</div>
+@if (string.IsNullOrWhiteSpace(createError) is false)
+{
+    <div>error: @createError</div>
+}
 
 @code {
     private object? createResult;
+    private string? createError;
 
     private async Task Create()
     {
-        createResult = await webAuthn.CreateCredential(new
+        try
         {
-            challenge = ""testChallenge"",
-            rp = new { name = ""testRp"" },
-            user = new { id = ""userId"", name = ""testUser"", displayName = ""testUser"" },
-            pubKeyCredParams = new object[] { new { alg = -7, type = ""public-key"" } }
-        });
+            createError = null;
+            createResult = await webAuthn.CreateCredential(new
+            {
+                challenge = ""testChallenge"",
+                rp = new { name = ""testRp"" },
+                attestation = ""direct"",
+                user = new { id = ""userId"", name = ""testUser"", displayName = ""testUser"" },
+                authenticatorSelection = new { authenticatorAttachment = ""platform"" },
+                pubKeyCredParams = new object[]
+                {
+                    new { alg = -7, type = ""public-key"" },
+                    new { alg = -8, type = ""public-key"" },
+                    new { alg = -257, type = ""public-key"" }
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            createError = ex.ToString();
+        }
     }
 }";
 
@@ -91,13 +112,31 @@ public partial class Butil05WebAuthnPage
 
 <div>Result:</div>
 <div>@getResult?.ToString()?.Replace("","", "",\n"")</div>
+@if (string.IsNullOrWhiteSpace(getError) is false)
+{
+    <div>error: @getError</div>
+}
 
 @code {
     private object? getResult;
+    private string? getError;
 
     private async Task Get()
     {
-        getResult = await webAuthn.GetCredential(new { challenge = ""test"" });
+        try
+        {
+            getError = null;
+            var id = ((JsonElement?)createResult)?.GetProperty(""rawId"").ToString();
+            var options = id is null
+                ? new { challenge = ""test"", allowCredentials = new object[] { } }
+                : new { challenge = ""test"", allowCredentials = new object[] { new { id, type = ""public-key"" } } };
+
+            getResult = await webAuthn.GetCredential(options);
+        }
+        catch (Exception ex)
+        {
+            getError = ex.ToString();
+        }
     }
 }";
 

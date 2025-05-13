@@ -27,13 +27,11 @@
 }
 
 .bit-crd-rbg {
-    box-shadow: none;
     background-color: transparent;
 }
 
 
 .bit-crd-brd {
-    box-shadow: none;
     border-width: $shp-border-width;
     border-style: $shp-border-style;
 }
@@ -61,4 +59,9 @@
 
 .bit-crd-fwi {
     width: 100%;
+}
+
+
+.bit-crd-nsd {
+    box-shadow: none;
 }

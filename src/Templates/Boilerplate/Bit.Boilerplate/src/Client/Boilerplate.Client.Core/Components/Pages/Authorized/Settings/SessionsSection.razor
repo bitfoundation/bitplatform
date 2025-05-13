@@ -15,10 +15,15 @@
         }
         @if (currentSession is not null)
         {
+            @if (maxPrivilegedSessionsCount != -1) // -1 means unlimited
+            {
+                <BitText Element="pre" Style="word-break:break-all;white-space:break-spaces" Typography="BitTypography.Body1">@Localizer[nameof(AppStrings.PrivilegedDeviceLimitMessage), maxPrivilegedSessionsCount, currentPrivilegedCount]</BitText>
+            }
+
             <BitText>@Localizer[nameof(AppStrings.CurrentSession)]</BitText>
             <BitCard FullWidth>
                 <BitPersona PrimaryText="@($"{currentSession.Address} ({currentSession.IP})")"
-                            SecondaryText="@GetLastSeenOn(currentSession.RenewedOn)"
+                            SecondaryText="@GetLastSeenOn(currentSession.RenewedOnDateTimeOffset)"
                             TertiaryText="@currentSession.DeviceInfo"
                             Class="session-persona"
                             Size="BitPersonaSize.Size72"
@@ -40,11 +45,11 @@
                         <BitCard FullWidth Style="margin-bottom:1rem">
                             <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
                                 <BitPersona PrimaryText="@($"{session.Address} ({session.IP})")"
-                                            SecondaryText="@GetLastSeenOn(session.RenewedOn)"
+                                            SecondaryText="@GetLastSeenOn(session.RenewedOnDateTimeOffset)"
                                             TertiaryText="@session.DeviceInfo"
                                             Size="BitPersonaSize.Size72"
                                             Class="other-session-persona"
-                                            Presence="@GetPresence(session.RenewedOn)"
+                                            Presence="@GetPresence(session.RenewedOnDateTimeOffset)"
                                             Styles="@(new() { Image = "width:50%;height:50%" })"
                                             ImageInitials="@(session.Privileged ? "✓" : "✘")"
                                             CoinVariant="@(session.Privileged ? BitVariant.Fill : BitVariant.Outline)"

@@ -35,8 +35,26 @@ public static partial class ClaimsPrincipalExtensions
         return Guid.Parse(claimsPrincipal.FindFirst(AppClaimTypes.SESSION_ID)!.Value);
     }
 
-    public static bool HasPermission(this ClaimsPrincipal claimsPrincipal, string permission)
+    public static bool HasFeature(this ClaimsPrincipal claimsPrincipal, string feature)
     {
-        return claimsPrincipal.HasClaim(AppClaimTypes.PERMISSIONS, permission);
+        return claimsPrincipal.HasClaim(AppClaimTypes.FEATURES, feature);
+    }
+
+    public static T? GetClaimValue<T>(this ClaimsPrincipal claimsPrincipal, string claimType)
+    {
+        var results = claimsPrincipal.FindAll(claimType).Select(c => c.Value).ToArray();
+
+        if (results.Any() is false)
+            return default!;
+
+        try
+        {
+            Type targetType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+            return results.Select(r => (T)Convert.ChangeType(r, targetType, CultureInfo.InvariantCulture)!).Max(); // User might have multiple roles with this claim.
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Failed to convert claim values for {claimType} to type {typeof(T).Name}.", ex);
+        }
     }
 }

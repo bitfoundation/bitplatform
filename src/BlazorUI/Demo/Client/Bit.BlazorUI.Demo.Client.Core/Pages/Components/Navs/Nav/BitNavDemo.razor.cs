@@ -15,6 +15,13 @@ public partial class BitNavDemo
         },
         new()
         {
+            Name = "AllExpanded",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Expands all items on first render."
+        },
+        new()
+        {
             Name = "ChevronDownIcon",
             Type = "string?",
             DefaultValue = "null",
@@ -91,13 +98,6 @@ public partial class BitNavDemo
         },
         new()
         {
-            Name = "IndentValue",
-            Type = "int",
-            DefaultValue = "16",
-            Description = "The indentation value in px for each level of depth of child item."
-        },
-        new()
-        {
             Name = "IndentPadding",
             Type = "int",
             DefaultValue = "27",
@@ -109,6 +109,13 @@ public partial class BitNavDemo
             Type = "int",
             DefaultValue = "4",
             Description = "The indentation padding in px for items in reversed mode."
+        },
+        new()
+        {
+            Name = "IndentValue",
+            Type = "int",
+            DefaultValue = "16",
+            Description = "The indentation value in px for each level of depth of child item."
         },
         new()
         {
@@ -152,6 +159,12 @@ public partial class BitNavDemo
             Description = "Names and selectors of the custom input type properties.",
             LinkType = LinkType.Link,
             Href = "#name-selectors",
+        },
+        new()
+        {
+            Name = "NoCollapse",
+            Type = "bool",
+            Description = "Hides all collapse/expand buttons and remove their spaces at the start of each node."
         },
         new()
         {
@@ -224,8 +237,14 @@ public partial class BitNavDemo
         new()
         {
             Name = "CollapseAll",
-            Type = "Action",
+            Type = "Action<TItem? item>",
             Description = "Collapses all items and children.",
+        },
+        new()
+        {
+            Name = "ExpandAll",
+            Type = "Action<TItem? item>",
+            Description = "Expands all items and children in non-SingleExpand mode.",
         },
         new()
         {

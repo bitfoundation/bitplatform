@@ -247,6 +247,10 @@
     <data name="CurrentSession" xml:space="preserve">
     <value>Current session</value>
   </data>
+    <data name="PrivilegedDeviceLimitMessage" xml:space="preserve">
+    <value>From {0} devices allowed for full features, you've used {1}.
+After reaching {0}, extra sign-ins will have reduced functions.</value>
+  </data>
     <data name="OtherSessions" xml:space="preserve">
     <value>Other sessions</value>
   </data>
@@ -286,11 +290,17 @@
   </data>
     <!--#endif-->
     <!--#if (offlineDb == true) -->
-    <data name="OfflineEditProfileTitle" xml:space="preserve">
-    <value>Offline Edit profile</value>
+    <data name="OfflineDatabaseDemoTitle" xml:space="preserve">
+    <value>Offline database demo</value>
   </data>
-    <data name="OfflineEditProfileMessage" xml:space="preserve">
-    <value>EF Core / Sqlite powered offline edit form right into your web/mobile/desktop apps!</value>
+    <data name="OfflineDatabaseDemoMessage" xml:space="preserve">
+    <value>Entity Framework Core / SQLite powered offline form inside your web/mobile/desktop apps:
+ • Migrations
+ • Transaction
+ • LINQ queries
+ • Batch operations
+ • Schema based database
+</value>
   </data>
     <!--#endif-->
     <data name="FullName" xml:space="preserve">
@@ -663,10 +673,10 @@
     <value>Sign in</value>
   </data>
     <data name="SignInPanelTitle" xml:space="preserve">
-    <value>Welcome back</value>
+    <value>Welcome</value>
   </data>
     <data name="SignInPanelSubtitle" xml:space="preserve">
-    <value>Sign in to your account with</value>
+    <value>Continue with your</value>
   </data>
     <data name="Continue" xml:space="preserve">
     <value>Continue</value>
@@ -714,7 +724,7 @@
     <value>I agree to the</value>
   </data>
     <data name="UploadNewImage" xml:space="preserve">
-    <value>Upload a new image</value>
+    <value>Drag or select an image</value>
   </data>
     <data name="Yes" xml:space="preserve">
     <value>Yes</value>
@@ -972,7 +982,7 @@
     <value>An OTP has been generated and sent to you.</value>
   </data>
     <data name="SendOtpButtonText" xml:space="preserve">
-    <value>Send OTP and Magic link</value>
+    <value>Send OTP / Magic link</value>
   </data>
     <data name="OtpEmailOrPhoneNumberSubtitle" xml:space="preserve">
     <value>Enter your email or phone number:</value>
@@ -1291,5 +1301,148 @@
     <!--#endif -->
     <data name="PleaseWait" xml:space="preserve">
     <value>Please wait</value>
+  </data>
+    <data name="Management" xml:space="preserve">
+    <value>Management</value>
+  </data>
+    <data name="UserGroups" xml:space="preserve">
+    <value>User groups</value>
+  </data>
+    <data name="RolesPageTitle" xml:space="preserve">
+    <value>Manage user groups</value>
+  </data>
+    <data name="NoRoleMessage" xml:space="preserve">
+    <value>No user groups</value>
+  </data>
+    <data name="AddRole" xml:space="preserve">
+    <value>Add user group</value>
+  </data>
+    <data name="EditRole" xml:space="preserve">
+    <value>Edit user group</value>
+  </data>
+    <data name="NewRoleName" xml:space="preserve">
+    <value>New user group's name</value>
+  </data>
+    <data name="Users" xml:space="preserve">
+    <value>Users</value>
+  </data>
+    <data name="Features" xml:space="preserve">
+    <value>Features</value>
+  </data>
+    <data name="Quota" xml:space="preserve">
+    <value>Quota</value>
+  </data>
+    <data name="QuotaDescription" xml:space="preserve">
+    <value>To restrict the usage of features, you can define quotas on this tab, which can vary for each role. For example, the number of devices a user can sign in to or the number of times they can use a specific app feature.</value>
+  </data>
+    <data name="MaxPrevilegedSessions" xml:space="preserve">
+    <value>Max privileged sessions</value>
+  </data>
+    <data name="General" xml:space="preserve">
+    <value>General</value>
+  </data>
+    <data name="RoleName" xml:space="preserve">
+    <value>User group name</value>
+  </data>
+    <!--#if (notification == true || signalR == true) -->
+    <data name="RoleNotificationLabel" xml:space="preserve">
+    <value>Notification message</value>
+  </data>
+    <data name="SendRoleNotification" xml:space="preserve">
+    <value>Send notification</value>
+  </data>
+    <!--#endif -->
+    <data name="RoleExistErrorMessage" xml:space="preserve">
+    <value>This user group already exists</value>
+  </data>
+    <data name="Users" xml:space="preserve">
+    <value>Users</value>
+  </data>
+    <data name="UsersPageTitle" xml:space="preserve">
+    <value>Manage users</value>
+  </data>
+    <data name="DeleteRole" xml:space="preserve">
+    <value>Delete user group</value>
+  </data>
+    <data name="NewUserUsername" xml:space="preserve">
+    <value>New User's username</value>
+  </data>
+    <data name="NewUserEmail" xml:space="preserve">
+    <value>New User's email</value>
+  </data>
+    <data name="NewUserPhoneNumber" xml:space="preserve">
+    <value>New User's phone number</value>
+  </data>
+    <data name="AddUser" xml:space="preserve">
+    <value>Add user</value>
+  </data>
+    <data name="EditUser" xml:space="preserve">
+    <value>Edit user</value>
+  </data>
+    <data name="Sessions" xml:space="preserve">
+    <value>Sessions</value>
+  </data>
+    <data name="DeleteUser" xml:space="preserve">
+    <value>Delete user</value>
+  </data>
+    <data name="IP" xml:space="preserve">
+    <value>IP</value>
+  </data>
+    <data name="Address" xml:space="preserve">
+    <value>Address</value>
+  </data>
+    <data name="DeviceInfo" xml:space="preserve">
+    <value>DeviceInfo</value>
+  </data>
+    <data name="Privileged" xml:space="preserve">
+    <value>Privileged</value>
+  </data>
+    <data name="RenewedOn" xml:space="preserve">
+    <value>RenewedOn</value>
+  </data>
+    <data name="OnlineUsers" xml:space="preserve">
+    <value>Online users: {0}</value>
+  </data>
+    <data name="DeleteSession" xml:space="preserve">
+    <value>Delete session</value>
+  </data>
+    <data name="NoUserMessage" xml:space="preserve">
+    <value>No users</value>
+  </data>
+    <data name="NoUserSessionMessage" xml:space="preserve">
+    <value>No user session</value>
+  </data>
+    <data name="NoUserSelectedMessage" xml:space="preserve">
+    <value>Please select a user first</value>
+  </data>
+    <data name="RevokeAllSessions" xml:space="preserve">
+    <value>Revoke all sessions</value>
+  </data>
+    <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
+    <value>Are you sure you want to revoke all sessions of {0}?</value>
+  </data>
+    <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
+    <value>You can't remove the SuperAdmin role from this user</value>
+  </data>
+    <data name="UserCantChangeSuperAdminRoleErrorMessage" xml:space="preserve">
+    <value>You can't change the SuperAdmin role</value>
+  </data>
+    <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
+    <value>You can't remove your own user</value>
+  </data>
+    <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
+    <value>You can't remove this SuperAdmin user</value>
+  </data>
+    <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
+    <value>You can't remove your current session</value>
+  </data>
+    <data name="UserCantRemoveAllItsSessionsErrorMessage" xml:space="preserve">
+    <value>You can't remove all of your own sessions</value>
+  </data>
+    <data name="SearchRolePlaceholder" xml:space="preserve">
+    <value>Search user groups</value>
+  </data>
+    <data name="SearchUserPlaceholder" xml:space="preserve">
+    <value>Search users</value>
   </data>
 </root>

@@ -1425,7 +1425,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             dropdownItem.IsSelected = value;
         }
 
-        if (item is BitDropdownItem<TValue> dropdownOption)
+        if (item is BitDropdownOption<TValue> dropdownOption)
         {
             dropdownOption.IsSelected = value;
         }

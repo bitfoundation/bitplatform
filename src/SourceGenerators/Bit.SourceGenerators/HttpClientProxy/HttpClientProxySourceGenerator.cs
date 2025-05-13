@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
 namespace Bit.SourceGenerators;
@@ -63,7 +63,7 @@ public class HttpClientProxySourceGenerator : ISourceGenerator
                 var stringType = context.Compilation.GetSpecialType(SpecialType.System_String);
 
                 var encodeStringRouteParameters = string.Join(Environment.NewLine, action.Parameters
-                    .Where(p => SymbolEqualityComparer.Default.Equals(p.Type , stringType))
+                    .Where(p => SymbolEqualityComparer.Default.Equals(p.Type, stringType))
                     .Select(p => $"{p.Name} = Uri.EscapeDataString(Uri.UnescapeDataString({p.Name} ?? string.Empty));"));
 
                 generatedMethods.AppendLine($@"
@@ -96,9 +96,10 @@ public class HttpClientProxySourceGenerator : ISourceGenerator
         }
 
         StringBuilder finalSource = new(@$"
+using System.Web;
 using System.Text.Json;
 using System.Net.Http.Json;
-using System.Web;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

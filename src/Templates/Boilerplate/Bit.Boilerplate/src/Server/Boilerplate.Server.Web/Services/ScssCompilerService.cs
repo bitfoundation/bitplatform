@@ -31,21 +31,29 @@ public class ScssCompilerService
             return;
         }
 
+        // The ScssCompilerService operates from the Client.Core directory.
+        // Using .:., it locates all .scss files in the `Styles` and `Components` folders of Client.Core (see --load-path),
+        // compiles them to CSS, and saves them alongside the .scss files.
+        // It also compiles app.scss to app.css and places it in the wwwroot/styles folder.
+        // For Client.Web, Client.Maui, or Client.Windows, if present, the process is similar,
+        // but uses ../../Client/Boilerplate.Client.Web:../../Client/Boilerplate.Client.Web instead of .:.,
+        // as the working directory remains Client.Core.
+
         var sassPathsToWatch = new List<string>
         {
-            ".:.", "Styles/app.scss:wwwroot/styles/app.css"
+            "Components:Components", "Styles/app.scss:wwwroot/styles/app.css"
         };
 
-        if (Path.Exists(Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Maui")))
-            sassPathsToWatch.Add("../../Client/Boilerplate.Client.Maui:../../Client/Boilerplate.Client.Maui");
+        if (Path.Exists(Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Maui/Components")))
+            sassPathsToWatch.Add("../../Client/Boilerplate.Client.Maui/Components:../../Client/Boilerplate.Client.Maui/Components");
 
-        if (Path.Exists(Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Windows")))
-            sassPathsToWatch.Add("../../Client/Boilerplate.Client.Windows:../../Client/Boilerplate.Client.Windows");
+        if (Path.Exists(Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Windows/Components")))
+            sassPathsToWatch.Add("../../Client/Boilerplate.Client.Windows/Components:../../Client/Boilerplate.Client.Windows/Components");
 
-        if (Path.Exists(Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Web")))
-            sassPathsToWatch.Add("../../Client/Boilerplate.Client.Web:../../Client/Boilerplate.Client.Web");
+        if (Path.Exists(Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Web/Components")))
+            sassPathsToWatch.Add("../../Client/Boilerplate.Client.Web/Components:../../Client/Boilerplate.Client.Web/Components");
 
-        var command = $"{string.Join(" ", sassPathsToWatch)} --style compressed --load-path=. --silence-deprecation=import --update --watch";
+        var command = $"{string.Join(" ", sassPathsToWatch)} --style compressed --silence-deprecation=import --update --watch --color";
 
         // Create a job object to ensure the child process terminates with the parent
         using var job = new JobObject();

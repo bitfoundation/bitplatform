@@ -64,12 +64,15 @@
                     {
                         <div class="bit-nav-itg">
                             <div class="bit-nav-iit" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
-                                <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon ?? "ChevronRight") @(Nav.ChevronDownIcon.HasValue() ? "" : (isExpanded ? "bit-nav-exp" : "bit-ico-r90"))" aria-hidden="true" />
+                                @if (Nav.NoCollapse is false)
+                                {
+                                    <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon ?? "ChevronRight") @(Nav.ChevronDownIcon.HasValue() ? "" : (isExpanded ? "bit-nav-exp" : "bit-ico-r90"))" aria-hidden="true" />
+                                }
                                 <span class="bit-nav-ghd">@text</span>
                             </div>
                             <div title="@description"
                                  class="bit-nav-des @Nav.Classes?.Description"
-                                 style="@(Nav.ReversedChevron ? "padding-inline-start:0" : ""); @Nav.Styles?.Description">
+                                 style="@((Nav.ReversedChevron || Nav.NoCollapse) ? "padding-inline-start:0" : ""); @Nav.Styles?.Description">
                                 @description
                             </div>
                         </div>
@@ -77,7 +80,10 @@
                     else
                     {
                         <div class="bit-nav-iit" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
-                            <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon ?? "ChevronRight") @(Nav.ChevronDownIcon.HasValue() ? "" : (isExpanded ? "bit-nav-exp" : "bit-ico-r90"))" aria-hidden="true" />
+                            @if (Nav.NoCollapse is false)
+                            {
+                                <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon ?? "ChevronRight") @(Nav.ChevronDownIcon.HasValue() ? "" : (isExpanded ? "bit-nav-exp" : "bit-ico-r90"))" aria-hidden="true" />
+                            }
                             <span class="bit-nav-ghd">@text</span>
                         </div>
                     }
@@ -100,10 +106,9 @@
         }
         else
         {
-            var padding = Nav.IconOnly ? 0
-            : Depth * Nav.IndentValue + (Nav.ReversedChevron ? Nav.IndentReversedPadding : (childItems.Any() ? 0 : Nav.IndentPadding));
+            var padding = Nav.IconOnly ? 0 : Depth * Nav.IndentValue + (Nav.ReversedChevron ? Nav.IndentReversedPadding : (Nav.NoCollapse ? Nav.IndentValue/2 : (childItems.Any() ? 0 : Nav.IndentPadding)));
 
-            var desPadding = Nav.ReversedChevron is false && childItems.Any() ? Nav.IndentPadding : 0;
+            var desPadding = Nav.ReversedChevron is false && (childItems.Any() && Nav.NoCollapse is false) ? Nav.IndentPadding : 0;
 
 
             @if (template is not null && templateRenderMode is BitNavItemTemplateRenderMode.Replace)
@@ -128,7 +133,7 @@
                                       AriaCurrent="@(Item == Nav.SelectedItem ? _AriaCurrentMap[Nav.GetAriaCurrent(Item)] : null)"
                                       Rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url!) is false ? "noopener noreferrer" : null)">
                     <div class="bit-nav-mct" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
-                        @if (childItems.Any() && Nav.IconOnly is false)
+                        @if (childItems.Any() && Nav.IconOnly is false && Nav.NoCollapse is false)
                         {
                             <div @onclick="ToggleItem"
                                  @onclick:preventDefault="true"

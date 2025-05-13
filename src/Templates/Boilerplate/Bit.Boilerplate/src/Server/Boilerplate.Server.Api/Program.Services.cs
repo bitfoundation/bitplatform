@@ -5,10 +5,12 @@ using System.IO.Compression;
 //#if (signalR == true || database == "PostgreSQL")
 using System.ClientModel.Primitives;
 //#endif
+using Microsoft.Identity.Web;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Net.Http.Headers;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.ResponseCompression;
 using Twilio;
 using Ganss.Xss;
@@ -101,6 +103,7 @@ public static partial class Program
                 .BuildSender();
         });
         services.AddScoped<PushNotificationService>();
+        services.AddScoped<PushNotificationJobRunner>();
         //#endif
 
         services.AddSingleton<ServerExceptionHandler>();
@@ -144,7 +147,7 @@ public static partial class Program
                 ServerApiSettings settings = new();
                 configuration.Bind(settings);
 
-                policy.SetIsOriginAllowed(origin => settings.IsAllowedOrigin(new Uri(origin)))
+                policy.SetIsOriginAllowed(origin => Uri.TryCreate(origin, UriKind.Absolute, out var uri) && settings.IsAllowedOrigin(uri))
                       .AllowAnyHeader()
                       .AllowAnyMethod()
                       .WithExposedHeaders(HeaderNames.RequestId, "Age", "App-Cache-Response");
@@ -473,6 +476,7 @@ public static partial class Program
             .AddClaimsPrincipalFactory<AppUserClaimsPrincipalFactory>()
             .AddApiEndpoints();
 
+        services.AddScoped<UserClaimsService>();
         services.AddScoped<IUserConfirmation<User>, AppUserConfirmation>();
         services.AddScoped(sp => (IUserEmailStore<User>)sp.GetRequiredService<IUserStore<User>>());
         services.AddScoped(sp => (IUserPhoneNumberStore<User>)sp.GetRequiredService<IUserStore<User>>());
@@ -562,6 +566,24 @@ public static partial class Program
                 });
                 configuration.GetRequiredSection("Authentication:Apple").Bind(options);
             });
+        }
+
+        if (string.IsNullOrEmpty(configuration["Authentication:AzureAD:ClientId"]) is false)
+        {
+            authenticationBuilder.AddMicrosoftIdentityWebApp(options =>
+            {
+                options.SignInScheme = IdentityConstants.ExternalScheme;
+                options.Events = new()
+                {
+                    OnTokenValidated = async context =>
+                    {
+                        var props = new AuthenticationProperties();
+                        props.Items["LoginProvider"] = "AzureAD";
+                        await context.HttpContext.SignInAsync(IdentityConstants.ExternalScheme, context.Principal!, props);
+                    }
+                };
+                configuration.GetRequiredSection("Authentication:AzureAD").Bind(options);
+            }, openIdConnectScheme: "AzureAD");
         }
     }
 

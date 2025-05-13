@@ -16,6 +16,13 @@ public partial class BitNavPanelDemo
         },
         new()
         {
+            Name = "AllExpanded",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Expands all items on first render."
+        },
+        new()
+        {
             Name = "ChevronDownIcon",
             Type = "string?",
             DefaultValue = "null",
@@ -178,6 +185,15 @@ public partial class BitNavPanelDemo
         },
         new()
         {
+            Name = "NavMode",
+            Type = "BitNavMode",
+            DefaultValue = "BitNavMode.Automatic",
+            Description = "Determines how the navigation will be handled.",
+            LinkType = LinkType.Link,
+            Href = "#nav-mode-enum",
+        },
+        new()
+        {
            Name = "NavStyles",
            Type = "BitNavClassStyles?",
            DefaultValue = "null",
@@ -185,10 +201,24 @@ public partial class BitNavPanelDemo
         },
         new()
         {
+            Name = "NoCollapse",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables and hides all collapse/expand buttons of the nav component.",
+        },
+        new()
+        {
             Name = "NoPad",
             Type = "bool",
             DefaultValue = "false",
             Description = "Disables the padded mode of the nav panel.",
+        },
+        new()
+        {
+            Name = "NoSearchBox",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Removes the search box from the nav panel.",
         },
         new()
         {
@@ -482,6 +512,26 @@ public partial class BitNavPanelDemo
         },
         new()
         {
+            Id = "nav-mode-enum",
+            Name = "BitNavMode",
+            Items =
+            [
+                new()
+                {
+                    Name = "Automatic",
+                    Description = "The value of selected key will change using NavigationManager and the current url inside the component.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Manual",
+                    Description = "Selected key changes will be sent back to the parent component and the component won't change its value.",
+                    Value = "1",
+                }
+            ]
+        },
+        new()
+        {
             Id = "nav-render-type-enum",
             Name = "BitNavRenderType",
             Description="Determines how the nav items are rendered visually.",
@@ -531,6 +581,7 @@ public partial class BitNavPanelDemo
     private bool noToggleIsOpen;
     private bool iconUrlIsOpen;
     private bool searchBoxPlaceholderIsOpen;
+    private bool noSearchBoxIsOpen;
     private bool emptyListMessageIsOpen;
     private bool singleExpandIsOpen;
     private bool templateIsOpen;

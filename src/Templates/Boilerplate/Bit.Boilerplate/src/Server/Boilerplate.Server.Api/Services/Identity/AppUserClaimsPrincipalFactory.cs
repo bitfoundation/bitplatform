@@ -14,7 +14,11 @@ public partial class AppUserClaimsPrincipalFactory(UserManager<User> userManager
     {
         var result = await base.GenerateClaimsAsync(user);
 
-        result.AddClaims(SessionClaims);
+        foreach (var sessionClaim in SessionClaims)
+        {
+            if (result.HasClaim(sessionClaim.Type, sessionClaim.Value) is false)
+                result.AddClaim(sessionClaim);
+        }
 
         return result;
     }

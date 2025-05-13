@@ -41,7 +41,7 @@ public partial class SimpleJwtSecureDataFormat : ISecureDataFormat<Authenticatio
 
     private static AuthenticationTicket NotSignedIn()
     {
-        return new AuthenticationTicket(new ClaimsPrincipal(new ClaimsIdentity()), string.Empty);
+        return new AuthenticationTicket(IAuthTokenProvider.Anonymous(), string.Empty);
     }
 
     public string Protect(AuthenticationTicket data) => Protect(data, null);

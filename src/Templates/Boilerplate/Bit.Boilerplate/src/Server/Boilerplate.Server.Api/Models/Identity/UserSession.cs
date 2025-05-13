@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Boilerplate.Shared.Dtos.Identity;
 //#if (notification == true)
 using Boilerplate.Server.Api.Models.PushNotification;
@@ -24,9 +24,15 @@ public partial class UserSession
     /// </summary>
     public bool Privileged { get; set; }
 
-    public DateTimeOffset StartedOn { get; set; }
+    /// <summary>
+    /// Unix Time Seconds
+    /// </summary>
+    public long StartedOn { get; set; }
 
-    public DateTimeOffset? RenewedOn { get; set; }
+    /// <summary>
+    /// Unix Time Seconds
+    /// </summary>
+    public long? RenewedOn { get; set; }
 
     public Guid UserId { get; set; }
 

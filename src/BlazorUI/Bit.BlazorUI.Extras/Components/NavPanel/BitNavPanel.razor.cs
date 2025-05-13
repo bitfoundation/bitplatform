@@ -20,6 +20,11 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     public BitColor? Accent { get; set; }
 
     /// <summary>
+    /// Expands all items on first render.
+    /// </summary>
+    [Parameter] public bool AllExpanded { get; set; }
+
+    /// <summary>
     /// The custom icon name of the chevron-down element of each nav item.
     /// </summary>
     [Parameter] public string? ChevronDownIcon { get; set; }
@@ -88,11 +93,6 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public string? IconUrl { get; set; }
 
     /// <summary>
-    /// The indentation value in px for each level of depth of child item.
-    /// </summary>
-    [Parameter] public int IndentValue { get; set; } = 16;
-
-    /// <summary>
     /// The indentation padding in px for items without children (compensation space for chevron icon).
     /// </summary>
     [Parameter] public int IndentPadding { get; set; } = 27;
@@ -101,6 +101,11 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     /// The indentation padding in px for items in reversed mode.
     /// </summary>
     [Parameter] public int IndentReversedPadding { get; set; } = 4;
+
+    /// <summary>
+    /// The indentation value in px for each level of depth of child item.
+    /// </summary>
+    [Parameter] public int IndentValue { get; set; } = 16;
 
     /// <summary>
     /// Determines if the nav panel is open in small screens.
@@ -136,15 +141,30 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public BitNavClassStyles? NavClasses { get; set; }
 
     /// <summary>
+    /// Determines how the navigation will be handled.
+    /// </summary>
+    [Parameter] public BitNavMode NavMode { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the nav component of the nav panel.
     /// </summary>
     [Parameter] public BitNavClassStyles? NavStyles { get; set; }
+
+    /// <summary>
+    /// Disables and hides all collapse/expand buttons of the nav component.
+    /// </summary>
+    [Parameter] public bool NoCollapse { get; set; }
 
     /// <summary>
     /// Disables the padded mode of the nav panel.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool NoPad { get; set; }
+
+    /// <summary>
+    /// Removes the search box from the nav panel.
+    /// </summary>
+    [Parameter] public bool NoSearchBox { get; set; }
 
     /// <summary>
     /// Disables the toggle feature of the nav panel.

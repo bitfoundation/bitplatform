@@ -8,12 +8,13 @@
 [![Nuget downloads](https://img.shields.io/badge/packages_download-6.2M-blue.svg?logo=nuget)](https://www.nuget.org/profiles/bit-foundation)
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/bitfoundation/bitplatform.svg)](http://isitmaintained.com/project/bitfoundation/bitplatform "Average time to resolve an issue")
 [![Percentage of issues still open](http://isitmaintained.com/badge/open/bitfoundation/bitplatform.svg)](http://isitmaintained.com/project/bitfoundation/bitplatform "Percentage of issues still open")
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/bitfoundation/bitplatform)
 
 <br/>
 
 # 🧾 Introduction
 
-At **bitplatform**, we've curated a comprehensive toolkit to empower you in crafting the finest projects using Blazor. Diverging from others merely offering UI Toolkits, ***bit BlazorUI components*** distinguishes itself with over 56 components, with a compact size of under 400 KB. These components boast both Dark and Light Themes, delivering unparalleled High Performance 🚀
+At **bitplatform**, we've curated a comprehensive toolkit to empower you in crafting the finest projects using Blazor. Diverging from others merely offering UI Toolkits, ***bit BlazorUI components*** distinguishes itself with over 80 components, with a compact size of under 400 KB. These components boast both Dark and Light Themes, delivering unparalleled High Performance 🚀
 
 Yet, bitplatform doesn't stop there. Our platform introduces exclusive tools that elevate your development experience:
 

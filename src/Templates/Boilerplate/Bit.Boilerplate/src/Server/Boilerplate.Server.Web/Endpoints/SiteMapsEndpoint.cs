@@ -43,7 +43,7 @@ public static partial class SiteMapEndpoint
         {
             var urls = AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate.Client") is true)
                  .SelectMany(asm => asm.ExportedTypes)
-                 .Where(att => att.GetCustomAttribute<AuthorizeAttribute>(inherit: true) is null)
+                 .Where(att => att.GetCustomAttributes<AuthorizeAttribute>(inherit: true).Any() is false)
                  .SelectMany(t => t.GetCustomAttributes<Microsoft.AspNetCore.Components.RouteAttribute>())
                  .Where(att => RouteRegex().IsMatch(att.Template) is false)
                  .Select(att => att.Template)

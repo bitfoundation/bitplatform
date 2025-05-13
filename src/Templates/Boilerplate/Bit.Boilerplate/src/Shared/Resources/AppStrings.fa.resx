@@ -247,6 +247,10 @@
     <data name="CurrentSession" xml:space="preserve">
     <value>جلسه - سشن جاری</value>
   </data>
+    <data name="PrivilegedDeviceLimitMessage" xml:space="preserve">
+    <value>از مجموع {0} دستگاه با دسترسی کامل، شما {1} دستگاه را استفاده کرده‌اید.
+پس از رسیدن به {0} دستگاه، دستگاه‌های اضافی با امکانات محدود خواهد بود.</value>
+  </data>
     <data name="OtherSessions" xml:space="preserve">
     <value>سایر جلسات (سشن‌ها)</value>
   </data>
@@ -286,10 +290,10 @@
   </data>
     <!--#endif-->
     <!--#if (offlineDb == true) -->
-    <data name="OfflineEditProfileTitle" xml:space="preserve">
+    <data name="OfflineDatabaseDemoTitle" xml:space="preserve">
     <value>ویرایش پروفایل آفلاین</value>
   </data>
-    <data name="OfflineEditProfileMessage" xml:space="preserve">
+    <data name="OfflineDatabaseDemoMessage" xml:space="preserve">
     <value>فرم ویرایش آفلاین مبتنی‌بر EF Core / Sqlite قابل‌ استفاده در برنامه های وب / موبایل / دسکتاپ شما!</value>
   </data>
     <!--#endif-->
@@ -714,7 +718,7 @@
     <value>من موافقم با</value>
   </data>
     <data name="UploadNewImage" xml:space="preserve">
-    <value>بارگذاری یک عکس جدید</value>
+    <value>یک تصویر را انتخاب یا به اینجا بکشید</value>
   </data>
     <data name="Yes" xml:space="preserve">
     <value>بله</value>
@@ -1291,5 +1295,151 @@
     <!--#endif -->
     <data name="PleaseWait" xml:space="preserve">
     <value>لطفا صبر کنید</value>
+  </data>
+    <data name="Management" xml:space="preserve">
+    <value>مدیریت</value>
+  </data>
+    <data name="UserGroups" xml:space="preserve">
+    <value>گروههای کاربری</value>
+  </data>
+    <data name="RolesPageTitle" xml:space="preserve">
+    <value>مدیریت گروههای کاربری</value>
+  </data>
+    <data name="NoRoleMessage" xml:space="preserve">
+    <value>گروه کاربری وجود ندارد</value>
+  </data>
+    <data name="AddRole" xml:space="preserve">
+    <value>افزودن گروه کاربری</value>
+  </data>
+    <data name="EditRole" xml:space="preserve">
+    <value>ویرایش گروه کاربری</value>
+  </data>
+    <data name="NewRoleName" xml:space="preserve">
+    <value>نام گروه کاربری جدید</value>
+  </data>
+    <data name="Users" xml:space="preserve">
+    <value>کاربران</value>
+  </data>
+    <data name="Features" xml:space="preserve">
+    <value>امکانات</value>
+  </data>
+    <data name="Quota" xml:space="preserve">
+    <value>ظرفیت</value>
+  </data>
+    <data name="QuotaDescription" xml:space="preserve">
+    <value>برای محدود کردن استفاده از ویژگی‌ها، می‌توانید سهمیه‌هایی را در این تب تعیین کنید که می‌تواند برای هر نقش متفاوت باشد. به عنوان مثال، تعداد دستگاه‌هایی که یک کاربر می‌تواند وارد آن‌ها شود یا تعداد دفعاتی که می‌تواند از یک ویژگی خاص اپلیکیشن استفاده کند.</value>
+  </data>
+    <data name="MaxPrevilegedSessions" xml:space="preserve">
+    <value>حداکثر جلسات امتیازدار</value>
+  </data>
+    <data name="General" xml:space="preserve">
+    <value>عمومی</value>
+  </data>
+    <data name="RoleName" xml:space="preserve">
+    <value>نام گروه کاربری</value>
+  </data>
+    <!--#if (notification == true || signalR == true) -->
+    <data name="RoleNotificationLabel" xml:space="preserve">
+    <value>پیام اعلان</value>
+  </data>
+    <data name="SendRoleNotification" xml:space="preserve">
+    <value>ارسال اعلان</value>
+  </data>
+    <!--#endif -->
+    <data name="RoleExistErrorMessage" xml:space="preserve">
+    <value>این گروه کاربری وجود دارد</value>
+  </data>
+    <data name="Users" xml:space="preserve">
+    <value>کاربران</value>
+  </data>
+    <data name="UsersPageTitle" xml:space="preserve">
+    <value>مدیریت کاربران</value>
+  </data>
+    <data name="DeleteRole" xml:space="preserve">
+    <value>حذف گروه کاربران</value>
+  </data>
+    <data name="NewUserUsername" xml:space="preserve">
+    <value>نام کاربری کاربر جدید</value>
+  </data>
+    <data name="NewUserEmail" xml:space="preserve">
+    <value>ایمیل کاربر جدید</value>
+  </data>
+    <data name="NewUserPhoneNumber" xml:space="preserve">
+    <value>تلفن کاربر جدید</value>
+  </data>
+    <data name="AddUser" xml:space="preserve">
+    <value>افزودن کاربر</value>
+  </data>
+    <data name="EditUser" xml:space="preserve">
+    <value>ویرایش کاربر</value>
+  </data>
+    <data name="Sessions" xml:space="preserve">
+    <value>سشن‌ها</value>
+  </data>
+    <data name="DeleteUser" xml:space="preserve">
+    <value>حذف کاربر</value>
+  </data>
+    <data name="IP" xml:space="preserve">
+    <value>آی پی</value>
+  </data>
+    <data name="Address" xml:space="preserve">
+    <value>نشانی</value>
+  </data>
+    <data name="DeviceInfo" xml:space="preserve">
+    <value>اطلاعات دستگاه</value>
+  </data>
+    <data name="Privileged" xml:space="preserve">
+    <value>دسترسی ممتاز</value>
+  </data>
+    <data name="RenewedOn" xml:space="preserve">
+    <value>بازسازی در</value>
+  </data>
+    <data name="OnlineUsers" xml:space="preserve">
+    <value>کاربران آنلاین: {0}</value>
+  </data>
+    <data name="DeleteSession" xml:space="preserve">
+    <value>حذف سشن</value>
+  </data>
+    <data name="NoUserMessage" xml:space="preserve">
+    <value>کاربری وجود ندارد</value>
+  </data>
+    <data name="NoUserSessionMessage" xml:space="preserve">
+    <value>سشنی وجود ندارد</value>
+  </data>
+    <data name="NoUserSelectedMessage" xml:space="preserve">
+    <value>لطفا ابتدا کاربری را انتخاب کنید</value>
+  </data>
+    <data name="RevokeAllSessions" xml:space="preserve">
+    <value>حذف تمام سشن‌ها</value>
+  </data>
+    <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
+    <value>آیا برای حذف تمام سشنهای کاربر {0} مطمئن هستید?</value>
+  </data>
+    <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
+    <value>شما نمیتوانید کاربر خود را حذف کنید</value>
+  </data>
+    <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
+    <value>شما نمیتوانید گروه کاربری SuperAdmin از این کاربر بگیرید</value>
+  </data>
+    <data name="UserCantChangeSuperAdminRoleErrorMessage" xml:space="preserve">
+    <value>شما نمیتوانید تغییری در گروه کاربری SuperAdmin ایجاد کنید</value>
+  </data>
+    <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
+    <value>شما نمیتوانید کاربر خود را حذف کنید</value>
+  </data>
+    <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
+    <value>شما نمیتوانید این کاربر SuperAdmin را حذف کنید</value>
+  </data>
+    <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
+    <value>شما نمیتوانید سشن جاری خود را حذف کنید</value>
+  </data>
+    <data name="UserCantRemoveAllItsSessionsErrorMessage" xml:space="preserve">
+    <value>شما نمیتوانید تمامی سشن‌های خود را حذف کنید</value>
+  </data>
+    <data name="SearchRolePlaceholder" xml:space="preserve">
+    <value>جستجوی گروه‌های کاربری</value>
+  </data>
+    <data name="SearchUserPlaceholder" xml:space="preserve">
+    <value>جستجوی کاربران</value>
   </data>
 </root>

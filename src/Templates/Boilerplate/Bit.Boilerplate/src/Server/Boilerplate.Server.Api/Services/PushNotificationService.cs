@@ -1,8 +1,6 @@
-﻿using AdsPush;
-using AdsPush.Vapid;
-using AdsPush.Abstraction;
+﻿using AdsPush.Vapid;
 using System.Linq.Expressions;
-using System.Collections.Concurrent;
+using Boilerplate.Server.Api.Services.Jobs;
 using Boilerplate.Shared.Dtos.PushNotification;
 using Boilerplate.Server.Api.Models.PushNotification;
 
@@ -13,7 +11,7 @@ public partial class PushNotificationService
     [AutoInject] private AppDbContext dbContext = default!;
     [AutoInject] private ServerApiSettings serverApiSettings = default!;
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
-    [AutoInject] private RootServiceScopeProvider rootServiceScopeProvider = default!;
+    [AutoInject] private IBackgroundJobClient backgroundJobClient = default!;
 
     public async Task Subscribe([Required] PushNotificationSubscriptionDto dto, CancellationToken cancellationToken)
     {
@@ -21,15 +19,16 @@ public partial class PushNotificationService
 
         var userSessionId = httpContextAccessor.HttpContext!.User.IsAuthenticated() ? httpContextAccessor.HttpContext.User.GetSessionId() : (Guid?)null;
 
-        await dbContext.PushNotificationSubscriptions
-            .Where(s => s.DeviceId == dto.DeviceId || s.UserSessionId == userSessionId /* pushManager's subscription has been renewed. */)
-            .ExecuteDeleteAsync(cancellationToken);
+        var subscription = await dbContext.PushNotificationSubscriptions
+            .WhereIf(userSessionId is null, s => s.DeviceId == dto.DeviceId)
+            .WhereIf(userSessionId is not null, s => s.UserSessionId == userSessionId || s.DeviceId == dto.DeviceId) // pushManager's subscription has been renewed.
+            .FirstOrDefaultAsync(cancellationToken) ??
 
-        var subscription = (await dbContext.PushNotificationSubscriptions.AddAsync(new()
-        {
-            DeviceId = dto.DeviceId,
-            Platform = dto.Platform
-        })).Entity;
+            (await dbContext.PushNotificationSubscriptions.AddAsync(new()
+            {
+                DeviceId = dto.DeviceId,
+                Platform = dto.Platform
+            }, cancellationToken)).Entity;
 
         dto.Patch(subscription);
 
@@ -66,62 +65,15 @@ public partial class PushNotificationService
         var query = dbContext.PushNotificationSubscriptions
             .Where(sub => sub.ExpirationTime > now)
             .WhereIf(customSubscriptionFilter is not null, customSubscriptionFilter!)
-            .WhereIf(userRelatedPush is true, sub => (now - sub.RenewedOn) < serverApiSettings.Identity.BearerTokenExpiration.TotalSeconds);
+            .WhereIf(userRelatedPush is true, sub => (now - sub.RenewedOn) < serverApiSettings.Identity.RefreshTokenExpiration.TotalSeconds);
 
         if (customSubscriptionFilter is null)
         {
             query = query.OrderBy(_ => EF.Functions.Random()).Take(100);
         }
 
-        var subscriptions = await query.ToListAsync(cancellationToken);
+        var pushNotificationSubscriptionIds = await query.Select(pns => pns.Id).ToArrayAsync(cancellationToken);
 
-        _ = Task.Run(async () =>
-        {
-            await using var scope = rootServiceScopeProvider();
-            var adsPushSender = scope.ServiceProvider.GetRequiredService<IAdsPushSender>();
-            var serverExceptionHandler = scope.ServiceProvider.GetRequiredService<ServerExceptionHandler>();
-
-            var payload = new AdsPushBasicSendPayload()
-            {
-                Title = AdsPushText.CreateUsingString(title ?? "Boilerplate push"),
-                Detail = AdsPushText.CreateUsingString(message ?? string.Empty),
-                Parameters = new Dictionary<string, object>()
-                {
-                    {
-                        "action", action ?? string.Empty
-                    }
-                }
-            };
-
-            ConcurrentBag<Exception> exceptions = [];
-
-            await Parallel.ForEachAsync(subscriptions, parallelOptions: new()
-            {
-                MaxDegreeOfParallelism = 10,
-                CancellationToken = default
-            }, async (subscription, _) =>
-            {
-                try
-                {
-                    var target = subscription.Platform is "browser" ? AdsPushTarget.BrowserAndPwa
-                                        : subscription.Platform is "fcmV1" ? AdsPushTarget.Android
-                                        : subscription.Platform is "apns" ? AdsPushTarget.Ios
-                                        : throw new NotImplementedException();
-
-                    await adsPushSender.BasicSendAsync(target, subscription.PushChannel, payload, default);
-                }
-                catch (Exception exp)
-                {
-                    exceptions.Add(exp);
-                }
-            });
-
-            if (exceptions.IsEmpty is false)
-            {
-                serverExceptionHandler.Handle(new AggregateException("Failed to send push notifications", exceptions)
-                    .WithData(new() { { "UserRelatedPush", userRelatedPush } }));
-            }
-
-        }, default);
+        backgroundJobClient.Enqueue<PushNotificationJobRunner>(runner => runner.RequestPush(pushNotificationSubscriptionIds, title, message, action, userRelatedPush, default));
     }
 }

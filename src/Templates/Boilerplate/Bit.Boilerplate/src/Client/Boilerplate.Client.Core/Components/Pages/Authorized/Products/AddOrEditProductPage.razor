@@ -1,7 +1,7 @@
 @attribute [Route(Urls.AddOrEditProductPage + "/{Id:guid?}")]
 @attribute [Route("{culture?}" + Urls.AddOrEditProductPage + "/{Id:guid?}")]
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
-@attribute [Authorize(Policy = AppPermissions.AdminPanel.ManageProductCatalog)]
+@attribute [Authorize(Policy = AppFeatures.AdminPanel.ManageProductCatalog)]
 @inherits AppPageBase
 
 <AppPageData ShowGoBackButton=true
@@ -56,31 +56,33 @@
                                    OnUploadComplete="WrapHandled(HandleOnUploadComplete)"
                                    UploadRequestHttpHeadersProvider="WrapHandled(GetUploadRequestHeaders)">
                         <LabelTemplate>
-                            <BitStack HorizontalAlign="BitAlignment.Center">
-                                @if (isManagingFile is false)
-                                {
-                                    <ProductImage Src="@product.GetPrimaryMediumImageUrl(AbsoluteServerAddress)" Width="50%" />
-
-                                    @if (product.HasPrimaryImage)
+                            <BitCard FullSize>
+                                <BitStack HorizontalAlign="BitAlignment.Center">
+                                    @if (isManagingFile is false)
                                     {
-                                        <BitButton AutoLoading
-                                                   Color="BitColor.Error"
-                                                   ButtonType="BitButtonType.Button"
-                                                   OnClick="WrapHandled(RemoveProductImage)">
-                                            @Localizer[nameof(AppStrings.Remove)]
-                                        </BitButton>
-                                    }
+                                        <ProductImage Src="@product.GetPrimaryMediumImageUrl(AbsoluteServerAddress)" Width="50%" />
 
-                                    <BitLink OnClick="() => fileUploadRef.Browse()" NoUnderline>
-                                        <BitText>@Localizer[nameof(AppStrings.UploadNewImage)]</BitText>
-                                    </BitLink>
-                                }
-                                else
-                                {
-                                    <BitShimmer Shape="BitShimmerShape.Circle" Height="4.5rem" />
-                                    <BitShimmer Shape="BitShimmerShape.Rectangle" Height="1.5rem" Width="12.5rem" />
-                                }
-                            </BitStack>
+                                        @if (product.HasPrimaryImage)
+                                        {
+                                            <BitButton AutoLoading
+                                                       Color="BitColor.Error"
+                                                       ButtonType="BitButtonType.Button"
+                                                       OnClick="WrapHandled(RemoveProductImage)">
+                                                @Localizer[nameof(AppStrings.Remove)]
+                                            </BitButton>
+                                        }
+
+                                        <BitLink OnClick="() => fileUploadRef.Browse()" NoUnderline>
+                                            <BitText>@Localizer[nameof(AppStrings.UploadNewImage)]</BitText>
+                                        </BitLink>
+                                    }
+                                    else
+                                    {
+                                        <BitShimmer Shape="BitShimmerShape.Circle" Height="4.5rem" />
+                                        <BitShimmer Shape="BitShimmerShape.Rectangle" Height="1.5rem" Width="12.5rem" />
+                                    }
+                                </BitStack>
+                            </BitCard>
                         </LabelTemplate>
                     </BitFileUpload>
 

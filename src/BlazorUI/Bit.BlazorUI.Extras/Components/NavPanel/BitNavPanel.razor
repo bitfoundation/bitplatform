@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 @typeparam TItem
 
@@ -66,30 +66,33 @@
                 </div>
             }
 
-            <BitSearchBox @ref="_searchBoxRef"
-                          Underlined
-                          Color="Color"
-                          OnChange="SearchNavItems"
-                          Styles="SearchBoxStyles"
-                          Classes="SearchBoxClasses"
-                          Class="@Classes?.SearchBox"
-                          Immediate DebounceTime="500"
-                          Placeholder="@SearchBoxPlaceholder"
-                          Style="@($"{(isToggled ? "display:none;" : "")}{Styles?.SearchBox}".Trim())" />
-
-            @if (isToggled)
+            @if (NoSearchBox is false)
             {
-                <BitButton IconOnly
-                           Color="Color"
-                           IconName="Search"
-                           Size="BitSize.Large"
-                           OnClick="ToggleForSearch"
-                           Variant="BitVariant.Text"
-                           Style="@Styles?.ToggleSearchButton"
-                           Class="@Classes?.ToggleSearchButton" />
+                <BitSearchBox @ref="_searchBoxRef"
+                              Underlined
+                              Color="Color"
+                              OnChange="SearchNavItems"
+                              Styles="SearchBoxStyles"
+                              Classes="SearchBoxClasses"
+                              Class="@Classes?.SearchBox"
+                              Immediate DebounceTime="500"
+                              Placeholder="@SearchBoxPlaceholder"
+                              Style="@($"{(isToggled ? "display:none;" : "")}{Styles?.SearchBox}".Trim())" />
+
+                @if (isToggled)
+                {
+                    <BitButton IconOnly
+                               Color="Color"
+                               IconName="Search"
+                               Size="BitSize.Large"
+                               OnClick="ToggleForSearch"
+                               Variant="BitVariant.Text"
+                               Style="@Styles?.ToggleSearchButton"
+                               Class="@Classes?.ToggleSearchButton" />
+                }
             }
 
-            @if (_filteredNavItems.Any() is false)
+            @if (Items.Any() && _filteredNavItems.Any() is false)
             {
                 if (isToggled is false)
                 {
@@ -108,31 +111,34 @@
             else
             {
                 <BitNav @ref=_bitNavRef
-                        FullWidth
-                        Color="Color"
                         Accent="Accent"
-                        Styles="NavStyles"
+                        AllExpanded="AllExpanded"
+                        ChevronDownIcon="@ChevronDownIcon"
                         Classes="NavClasses"
+                        Color="Color"
+                        DefaultSelectedItem="_filteredNavItems.Any() ? _filteredNavItems[0] : null"
+                        FullWidth
+                        HeaderTemplate="HeaderTemplate"
+                        HeaderTemplateRenderMode="HeaderTemplateRenderMode"
                         IconOnly="isToggled"
-                        Style="@Styles?.Nav"
-                        Class="@Classes?.Nav"
-                        RenderType="RenderType"
-                        Items="_filteredNavItems"
+                        IndentPadding="IndentPadding"
+                        IndentReversedPadding="IndentReversedPadding"
                         IndentValue="IndentValue"
-                        SingleExpand="SingleExpand"
-                        Reselectable="Reselectable"
+                        Items="_filteredNavItems"
                         ItemTemplate="ItemTemplate"
+                        ItemTemplateRenderMode="ItemTemplateRenderMode"
+                        Mode="NavMode"
+                        NoCollapse="NoCollapse"
+                        OnItemClick="(TItem item) => HandleNavItemClick(item)"
                         OnItemToggle="OnItemToggle"
                         OnSelectItem="OnSelectItem"
-                        IndentPadding="IndentPadding"
-                        HeaderTemplate="HeaderTemplate"
+                        RenderType="RenderType"
+                        Reselectable="Reselectable"
                         ReversedChevron="ReversedChevron"
-                        ChevronDownIcon="@ChevronDownIcon"
-                        DefaultSelectedItem="_filteredNavItems[0]"
-                        IndentReversedPadding="IndentReversedPadding"
-                        ItemTemplateRenderMode="ItemTemplateRenderMode"
-                        HeaderTemplateRenderMode="HeaderTemplateRenderMode"
-                        OnItemClick="(TItem item) => HandleNavItemClick(item)" />
+                        SingleExpand="SingleExpand"
+                        Styles="NavStyles"
+                        Class="@Classes?.Nav"
+                        Style="@Styles?.Nav" />
             }
 
             <BitSpacer />
