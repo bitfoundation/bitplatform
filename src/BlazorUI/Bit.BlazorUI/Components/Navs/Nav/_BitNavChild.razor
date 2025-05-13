@@ -106,7 +106,7 @@
         }
         else
         {
-            var padding = Nav.IconOnly ? 0 : Depth * Nav.IndentValue + (Nav.ReversedChevron ? Nav.IndentReversedPadding : ((childItems.Any() || Nav.NoCollapse) ? 0 : Nav.IndentPadding));
+            var padding = Nav.IconOnly ? 0 : Depth * Nav.IndentValue + (Nav.ReversedChevron ? Nav.IndentReversedPadding : (Nav.NoCollapse ? Nav.IndentValue/2 : (childItems.Any() ? 0 : Nav.IndentPadding)));
 
             var desPadding = Nav.ReversedChevron is false && (childItems.Any() && Nav.NoCollapse is false) ? Nav.IndentPadding : 0;
 
