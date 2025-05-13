@@ -1,5 +1,5 @@
-@using Boilerplate.Shared.Dtos.Identity
 @*+:cnd:noEmit*@
+@using Boilerplate.Shared.Dtos.Identity
 @attribute [Route(Urls.UsersPage)]
 @attribute [Route("{culture?}" + Urls.UsersPage)]
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
@@ -25,47 +25,59 @@
                        OnClick="WrapHandled(RefreshData)"
                        IsEnabled="isLoadingUsers is false" />
         </BitStack>
-        <BitStack Horizontal Style="height:calc(100% - 3rem)">
-            <BitCard Style="min-width:15rem;overflow:auto;box-shadow:none" FullHeight>
+        <BitStack Horizontal Style="height:calc(100% - 49px)">
+            <BitCard Style="min-width:15rem;overflow:auto" NoShadow FullHeight>
                 @if (isLoadingUsers)
                 {
                     <BitRollingSquareLoading Size="BitSize.Small" />
                 }
-                else if (userNavItems.Count == 0)
-                {
-                    <BitText>@Localizer[nameof(AppStrings.NoUserMessage)]</BitText>
-                }
                 else
                 {
-                    <BitNav Items="userNavItems"
-                            Mode="BitNavMode.Manual"
-                            Accent="BitColor.SecondaryBackground"
-                            OnSelectItem="WrapHandled(async (BitNavItem item) => await HandleOnSelectUser(item))">
-                        <ItemTemplate Context="item">
-                            <BitStack Gap="0">
-                                <BitStack Horizontal VerticalAlign="BitAlignment.Center">
-                                    <BitText Style="overflow:hidden;text-overflow:ellipsis">@item.Text</BitText>
-                                    @if (loadingUserKey == item.Key)
-                                    {
-                                        <BitSpacer />
-                                        <BitBouncingDotsLoading Size="BitSize.Small" />
-                                    }
-                                </BitStack>
+                    <BitSearchBox @bind-Value="@userSearchText"
+                                  Underlined
+                                  OnChange="SearchNavItems"
+                                  Immediate DebounceTime="300"
+                                  Styles="@(new() { InputContainer = "width:100%" })" 
+                                  Placeholder="@Localizer[nameof(AppStrings.SearchUserPlaceholder)]" />
+                    <br />
+                    @if (userNavItems.Count == 0)
+                    {
+                        <BitText>@Localizer[nameof(AppStrings.NoUserMessage)]</BitText>
+                    }
+                    else
+                    {
+                        <BitNav NoCollapse
+                                Items="userNavItems"
+                                Mode="BitNavMode.Manual"
+                                Accent="BitColor.SecondaryBackground"
+                                OnSelectItem="WrapHandled(async (BitNavItem item) => await HandleOnSelectUser(item))">
+                            <ItemTemplate Context="item">
                                 @{
                                     var user = (item.Data as UserDto)!;
+                                    var hasDescription = user.DisplayUserName != user.DisplayName;
                                 }
-                                @if (user.DisplayUserName != user.DisplayName)
-                                {
-                                    <BitText Color="BitColor.SecondaryForeground" Typography="BitTypography.Body2">
-                                        @user.DisplayUserName
-                                    </BitText>
-                                }
-                            </BitStack>
-                        </ItemTemplate>
-                    </BitNav>
+                                <BitStack Gap="0" Style="@(hasDescription ? "height:65px" : "")">
+                                    <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+                                        <BitText Style="overflow:hidden;text-overflow:ellipsis">@item.Text</BitText>
+                                        @if (loadingUserKey == item.Key)
+                                        {
+                                            <BitSpacer />
+                                            <BitBouncingDotsLoading Size="BitSize.Small" />
+                                        }
+                                    </BitStack>
+                                    @if (hasDescription)
+                                    {
+                                        <BitText Color="BitColor.SecondaryForeground" Typography="BitTypography.Body2">
+                                            @user.DisplayUserName
+                                        </BitText>
+                                    }
+                                </BitStack>
+                            </ItemTemplate>
+                        </BitNav>
+                    }
                 }
             </BitCard>
-            <BitCard Style="min-width:32rem;overflow:auto;box-shadow:none" FullSize>
+            <BitCard Style="min-width:32rem;overflow:auto" NoShadow FullSize>
                 <BitPivot>
                     <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.General)]">
                         <BitStack>
@@ -118,7 +130,7 @@
                         {
                             @Localizer[nameof(AppStrings.NoUserSelectedMessage)]
                         }
-                        else if (isLoadingSessions)
+                        else if (loadingUserKey is not null)
                         {
                             <BitRollingSquareLoading Size="BitSize.Small" />
                         }

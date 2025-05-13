@@ -26,36 +26,46 @@
                        OnClick="WrapHandled(RefreshData)"
                        IsEnabled="isLoadingRoles is false" />
         </BitStack>
-        <BitStack Horizontal Style="height:calc(100% - 3.1rem)">
-            <BitCard Style="min-width:15rem;overflow:auto;box-shadow:none" FullHeight>
+        <BitStack Horizontal Style="height:calc(100% - 49px)">
+            <BitCard Style="min-width:15rem;overflow:auto" NoShadow FullHeight>
                 @if (isLoadingRoles)
                 {
                     <BitRollingSquareLoading Size="BitSize.Small" />
                 }
-                else if (roleNavItems.Count == 0)
-                {
-                    <BitText>@Localizer[nameof(AppStrings.NoRoleMessage)]</BitText>
-                }
                 else
                 {
-                    <BitNav Items="roleNavItems"
-                            Mode="BitNavMode.Manual"
-                            Accent="BitColor.SecondaryBackground"
-                            OnSelectItem="WrapHandled(async (BitNavItem item) => await HandleOnSelectRole(item))">
-                        <ItemTemplate Context="item">
-                            <BitStack Horizontal VerticalAlign="BitAlignment.Center">
-                                <BitText>@item.Text</BitText>
-                                @if (loadingRoleKey == item.Key)
-                                {
-                                    <BitSpacer />
-                                    <BitBouncingDotsLoading Size="BitSize.Small" />
-                                }
-                            </BitStack>
-                        </ItemTemplate>
-                    </BitNav>
+                    <BitSearchBox @bind-Value="@roleSearchText"
+                                  Underlined
+                                  OnChange="SearchNavItems"
+                                  Immediate DebounceTime="300"
+                                  Styles="@(new() { InputContainer = "width:100%" })"
+                                  Placeholder="@Localizer[nameof(AppStrings.SearchRolePlaceholder)]" />
+                    <br />
+                    if (roleNavItems.Count == 0)
+                    {
+                        <BitText>@Localizer[nameof(AppStrings.NoRoleMessage)]</BitText>
+                    }
+                    else
+                    {
+                        <BitNav Items="roleNavItems"
+                                Mode="BitNavMode.Manual"
+                                Accent="BitColor.SecondaryBackground"
+                                OnSelectItem="WrapHandled(async (BitNavItem item) => await HandleOnSelectRole(item))">
+                            <ItemTemplate Context="item">
+                                <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+                                    <BitText>@item.Text</BitText>
+                                    @if (loadingRoleKey == item.Key)
+                                    {
+                                        <BitSpacer />
+                                        <BitBouncingDotsLoading Size="BitSize.Small" />
+                                    }
+                                </BitStack>
+                            </ItemTemplate>
+                        </BitNav>
+                    }
                 }
             </BitCard>
-            <BitCard Style="min-width:36rem;overflow:auto;box-shadow:none" FullSize>
+            <BitCard Style="min-width:36rem;overflow:auto" NoShadow FullSize>
                 <BitPivot>
                     <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.General)]">
                         <BitStack>
@@ -115,8 +125,8 @@
                                         </BitText>
                                         <BitSpacer />
                                         <BitButton AutoLoading IconOnly
-                                                   IsEnabled="selectedRoleItem is not null"
                                                    OnClick="WrapHandled(() => ToggleUser(user))"
+                                                   IsEnabled="loadingRoleKey is null && selectedRoleItem is not null"
                                                    IconName="@(IsUserAssigned(user) ? BitIconName.RemoveFrom : BitIconName.AddTo)" />
                                     </BitStack>
                                 </RowTemplate>
@@ -126,6 +136,9 @@
                     <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Features)]">
                         <BitNav Items="featureNavItems" Accent="BitColor.SecondaryBackground">
                             <ItemTemplate Context="item">
+                                @{
+                                    var isEnabled = loadingRoleKey is null && selectedRoleItem is not null;
+                                }
                                 <BitStack Horizontal VerticalAlign="BitAlignment.Center">
                                     <BitText Color="@((IsFeatureAssigned(item)) ? BitColor.PrimaryForeground : BitColor.TertiaryForeground)">
                                         @item.Text
@@ -134,7 +147,7 @@
                                     @if (item.ChildItems.Any() is false)
                                     {
                                         <BitButton AutoLoading IconOnly
-                                                   IsEnabled="selectedRoleItem is not null"
+                                                   IsEnabled="isEnabled"
                                                    OnClick="WrapHandled(() => ToggleFeature(item))"
                                                    IconName="@(IsFeatureAssigned(item) ? BitIconName.RemoveFrom : BitIconName.AddTo)" />
                                     }
@@ -142,14 +155,14 @@
                                     {
                                         <BitStack Horizontal FitSize VerticalAlign="BitAlignment.Center" @onclick:stopPropagation>
                                             <BitButton AutoLoading IconOnly
+                                                       IsEnabled="isEnabled"
                                                        Variant="BitVariant.Outline"
-                                                       IsEnabled="selectedRoleItem is not null"
                                                        IconName="@(BitIconName.Blocked2Solid)"
                                                        OnClick="WrapHandled(() => DeleteFeatures(item))" />
 
                                             <BitButton AutoLoading IconOnly
+                                                       IsEnabled="isEnabled"
                                                        Variant="BitVariant.Outline"
-                                                       IsEnabled="selectedRoleItem is not null"
                                                        IconName="@(BitIconName.CircleAdditionSolid)"
                                                        OnClick="WrapHandled(() => AddFeatures(item))" />
                                         </BitStack>
@@ -164,11 +177,11 @@
                             <BitSeparator />
                             <BitStack Horizontal VerticalAlign="BitAlignment.End">
                                 <BitNumberField @bind-Value="maxPrivilegedSessions"
-                                                IsEnabled="selectedRoleItem is not null"
-                                                Label="@Localizer[nameof(AppStrings.MaxPrevilegedSessions)]" />
+                                                Label="@Localizer[nameof(AppStrings.MaxPrevilegedSessions)]"
+                                                IsEnabled="loadingRoleKey is null && selectedRoleItem is not null" />
                                 <BitButton AutoLoading
-                                           IsEnabled="selectedRoleItem is not null"
-                                           OnClick="WrapHandled(SaveMaxPrivilegedSessions)">
+                                           OnClick="WrapHandled(SaveMaxPrivilegedSessions)"
+                                           IsEnabled="loadingRoleKey is null && selectedRoleItem is not null">
                                     @Localizer[nameof(AppStrings.Save)]
                                 </BitButton>
                             </BitStack>

@@ -8,11 +8,12 @@ public partial class UsersPage
 {
     private UserDto selectedUserDto = new();
 
-    
+
     private bool isLoadingUsers;
     private int? onlineUsersCount;
-    private bool isLoadingSessions;
     private string? loadingUserKey;
+    private string? userSearchText;
+    private List<UserDto> allUsers = [];
     private bool isDeleteUserDialogOpen;
     private BitNavItem? selectedUserItem;
     private bool isLoadingOnlineUsersCount;
@@ -49,14 +50,9 @@ public partial class UsersPage
         {
             isLoadingUsers = true;
 
-            var allUsers = await userManagementController.GetAllUsers(CurrentCancellationToken);
+            allUsers = await userManagementController.GetAllUsers(CurrentCancellationToken);
 
-            userNavItems = [.. allUsers.Select(r => new BitNavItem
-            {
-                Key = r.Id.ToString(),
-                Text = r.DisplayName ?? string.Empty,
-                Data = r
-            })];
+            SearchNavItems();
 
             allUserSessions = [];
             selectedUserDto = new();
@@ -147,5 +143,23 @@ public partial class UsersPage
         await userManagementController.RevokeAllUserSessions(Guid.Parse(selectedUserItem.Key!), CurrentCancellationToken);
 
         await HandleOnSelectUser(selectedUserItem);
+    }
+
+    private void SearchNavItems()
+    {
+        var filteredUsers = allUsers;
+
+        if (string.IsNullOrWhiteSpace(userSearchText) is false)
+        {
+            var t = userSearchText.Trim();
+            filteredUsers = [.. allUsers.Where(u => ((u.FullName + u.Email + u.PhoneNumber + u.UserName) ?? string.Empty).Contains(t, StringComparison.InvariantCultureIgnoreCase))];
+        }
+
+        userNavItems = [.. filteredUsers.Select(u => new BitNavItem
+        {
+            Key = u.Id.ToString(),
+            Text = u.DisplayName ?? string.Empty,
+            Data = u
+        })];
     }
 }
