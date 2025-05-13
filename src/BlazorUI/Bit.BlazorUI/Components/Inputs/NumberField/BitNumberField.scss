@@ -36,8 +36,8 @@
             color: $clr-fg-dis;
         }
 
-        .bit-nfl-aup, 
-        .bit-nfl-adn, 
+        .bit-nfl-aup,
+        .bit-nfl-adn,
         .bit-nfl-cbt {
             cursor: default;
             pointer-events: none;
@@ -179,11 +179,8 @@
 
     @media (hover: hover) {
         &:hover {
+            color: $clr-fg-pri-hover;
             background-color: $clr-bg-pri-hover;
-
-            i {
-                color: $clr-fg-pri-hover;
-            }
         }
     }
 }
