@@ -38,6 +38,7 @@
                                   Underlined
                                   OnChange="SearchNavItems"
                                   Immediate DebounceTime="300"
+                                  Styles="@(new() { InputContainer = "width:100%" })"
                                   Placeholder="@Localizer[nameof(AppStrings.SearchRolePlaceholder)]" />
                     <br />
                     if (roleNavItems.Count == 0)
