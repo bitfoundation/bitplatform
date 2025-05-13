@@ -5,6 +5,7 @@ using Boilerplate.Client.Core.Components;
 using Boilerplate.Client.Windows.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Components.WebView.WindowsForms;
+using Velopack.Logging;
 
 namespace Boilerplate.Client.Windows;
 
@@ -65,7 +66,7 @@ public partial class Program
         });
 
         // https://github.com/velopack/velopack
-        VelopackApp.Build().Run(Services.GetRequiredService<ILogger<VelopackApp>>());
+        VelopackApp.Build().Run();
         _ = Task.Run(async () =>
         {
             try

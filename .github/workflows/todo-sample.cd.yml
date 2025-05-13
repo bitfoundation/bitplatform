@@ -1,4 +1,4 @@
-﻿name: Todo Sample CD
+name: Todo Sample CD
 
 # Project templates come equipped with CI/CD for both Azure DevOps and GitHub, providing you with a hassle-free way to get started with your new project. It is important to note that you should not depend on the contents of this file. More info at https://bitplatform.dev/templates/dev-ops
 
@@ -462,13 +462,13 @@ jobs:
       run: cd src && dotnet workload install maui
 
     - name: Import Code-Signing Certificates
-      uses: apple-actions/import-codesign-certs@v3
+      uses: apple-actions/import-codesign-certs@v5
       with:
         p12-file-base64: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
         p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
 
     - name: Download Apple Provisioning Profiles
-      uses: Apple-Actions/download-provisioning-profiles@v3
+      uses: Apple-Actions/download-provisioning-profiles@v4
       with:
         bundle-id: 'com.bitplatform.Todo.Template'
         issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
