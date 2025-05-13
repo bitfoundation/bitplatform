@@ -36,7 +36,9 @@
             color: $clr-fg-dis;
         }
 
-        .bit-nfl-aup, .bit-nfl-adn {
+        .bit-nfl-aup, 
+        .bit-nfl-adn, 
+        .bit-nfl-cbt {
             cursor: default;
             pointer-events: none;
             color: $clr-fg-dis;
@@ -152,6 +154,7 @@
     font-weight: 400;
     width: spacing(4);
     user-select: none;
+    color: $clr-fg-sec;
     position: relative;
     text-align: center;
     outline: transparent;
@@ -167,7 +170,6 @@
     i {
         width: unset;
         flex-shrink: 0;
-        color: $clr-fg-sec;
         height: spacing(2);
         text-align: center;
         margin: 0 spacing(0.5);
