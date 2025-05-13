@@ -1,9 +1,9 @@
-//+:cnd:noEmit
-using Foundation;
+﻿//+:cnd:noEmit
 using UIKit;
+using Foundation;
+using Boilerplate.Client.Maui.Platforms.iOS.Services;
 //#if (notification == true)
 using UserNotifications;
-using Boilerplate.Client.Maui.Platforms.iOS.Services;
 //#endif
 
 namespace Boilerplate.Client.Maui.Platforms.iOS;
@@ -34,8 +34,13 @@ public partial class AppDelegate : MauiUIApplicationDelegate
         });
 
         // Use the following code the get the action value from the push notification when the app is launched by tapping on the push notification.
-        // using var userInfo = launchOptions?.ObjectForKey(UIApplication.LaunchOptionsRemoteNotificationKey) as NSDictionary;
+        using var userInfo = launchOptions?.ObjectForKey(UIApplication.LaunchOptionsRemoteNotificationKey) as NSDictionary;
         // var actionValue = userInfo?.ObjectForKey(new NSString("action")) as NSString;
+        var pageUrl = userInfo?.ObjectForKey(new NSString("pageUrl")) as NSString;
+        if (pageUrl != null)
+        {
+            _ = Core.Components.Routes.OpenUniversalLink(pageUrl);
+        }
         //#endif
 
         return base.FinishedLaunching(application, launchOptions!);

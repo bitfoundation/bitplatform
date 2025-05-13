@@ -51,7 +51,10 @@ public partial class PushNotificationService
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task RequestPush(string? title = null, string? message = null, string? action = null,
+    public async Task RequestPush(string? title = null, 
+        string? message = null,
+        string? action = null,
+        string? pageUrl = null,
         bool userRelatedPush = false,
         Expression<Func<PushNotificationSubscription, bool>>? customSubscriptionFilter = null,
         CancellationToken cancellationToken = default)
@@ -74,6 +77,6 @@ public partial class PushNotificationService
 
         var pushNotificationSubscriptionIds = await query.Select(pns => pns.Id).ToArrayAsync(cancellationToken);
 
-        backgroundJobClient.Enqueue<PushNotificationJobRunner>(runner => runner.RequestPush(pushNotificationSubscriptionIds, title, message, action, userRelatedPush, default));
+        backgroundJobClient.Enqueue<PushNotificationJobRunner>(runner => runner.RequestPush(pushNotificationSubscriptionIds, title, message, action, pageUrl, userRelatedPush, default));
     }
 }

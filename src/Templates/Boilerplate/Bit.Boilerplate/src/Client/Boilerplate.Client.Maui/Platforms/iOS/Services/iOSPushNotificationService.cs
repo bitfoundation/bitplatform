@@ -1,4 +1,4 @@
-using UIKit;
+﻿using UIKit;
 using Plugin.LocalNotification;
 using Boilerplate.Shared.Dtos.PushNotification;
 
@@ -19,7 +19,7 @@ public partial class iOSPushNotificationService : PushNotificationServiceBase
         });
     }
 
-    public string GetDeviceId() => UIDevice.CurrentDevice.IdentifierForVendor.ToString();
+    public string GetDeviceId() => UIDevice.CurrentDevice.IdentifierForVendor!.ToString();
 
     public override async Task<PushNotificationSubscriptionDto> GetSubscription(CancellationToken cancellationToken)
     {

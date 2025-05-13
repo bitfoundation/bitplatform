@@ -10,7 +10,11 @@ public partial class PushNotificationJobRunner
     [AutoInject] private IAdsPushSender adsPushSender = default!;
     [AutoInject] private ServerExceptionHandler serverExceptionHandler = default!;
 
-    public async Task RequestPush(int[] pushNotificationSubscriptionIds, string? title = null, string? message = null, string? action = null,
+    public async Task RequestPush(int[] pushNotificationSubscriptionIds,
+        string? title = null,
+        string? message = null,
+        string? action = null,
+        string? pageUrl = null,
         bool userRelatedPush = false,
         CancellationToken cancellationToken = default)
     {
@@ -24,9 +28,8 @@ public partial class PushNotificationJobRunner
             Detail = AdsPushText.CreateUsingString(message ?? string.Empty),
             Parameters = new Dictionary<string, object>()
             {
-                {
-                    "action", action ?? string.Empty
-                }
+                { "pageUrl", pageUrl ?? string.Empty },
+                { "action", action ?? string.Empty },
             }
         };
 
