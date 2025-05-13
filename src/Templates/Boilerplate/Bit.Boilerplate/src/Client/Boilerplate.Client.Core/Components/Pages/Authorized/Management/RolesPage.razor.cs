@@ -8,11 +8,13 @@ public partial class RolesPage
 {
     private string? newRoleName;
     private string? editRoleName;
+    private string? roleSearchText;
     private string? loadingRoleKey;
     private bool isDeleteDialogOpen;
     private bool isLoadingRoles = true;
     private bool isLoadingUsers = true;
     private int? maxPrivilegedSessions;
+    private List<RoleDto> allRoles = [];
     private List<UserDto> allUsers = [];
     private BitNavItem? selectedRoleItem;
     private List<BitNavItem> roleNavItems = [];
@@ -52,14 +54,9 @@ public partial class RolesPage
     {
         try
         {
-            var allRoles = await roleManagementController.GetAllRoles(CurrentCancellationToken);
+            allRoles = await roleManagementController.GetAllRoles(CurrentCancellationToken);
 
-            roleNavItems = [.. allRoles.Select(r => new BitNavItem
-            {
-                Key = r.Id.ToString(),
-                Text = r.Name ?? string.Empty,
-                Data = r
-            })];
+            SearchNavItems();
 
             editRoleName = null;
             selectedRoleItem = null;
@@ -103,8 +100,8 @@ public partial class RolesPage
             selectedRoleItem = item;
             loadingRoleKey = item.Key;
             editRoleName = selectedRoleItem.Text;
-            var id = Guid.Parse(item.Key!);
 
+            var id = Guid.Parse(item.Key!);
             await Task.WhenAll(LoadRoleUsers(id, loadRoleDataCts.Token),
                                LoadRoleClaims(id, loadRoleDataCts.Token));
         }
@@ -320,6 +317,8 @@ public partial class RolesPage
 
     private bool IsFeatureAssigned(BitNavItem item)
     {
+        if (loadingRoleKey is not null || selectedRoleItem is null) return false;
+
         if (item.ChildItems.Count == 0)
             return selectedRoleClaims.Any(p => p.ClaimValue == item.Key);
 
@@ -328,7 +327,7 @@ public partial class RolesPage
 
     private bool IsUserAssigned(UserDto user)
     {
-        return selectedRoleUsers.Any(u => user.Id == u.Id);
+        return loadingRoleKey is null && selectedRoleItem is not null && selectedRoleUsers.Any(u => user.Id == u.Id);
     }
 
     private void SetClaimsToFeatureNavItems()
@@ -337,6 +336,24 @@ public partial class RolesPage
         {
             item.Data = selectedRoleClaims.FirstOrDefault(p => p.ClaimValue == item.Key);
         }
+    }
+
+    private void SearchNavItems()
+    {
+        var filteredRoles = allRoles;
+
+        if (string.IsNullOrWhiteSpace(roleSearchText) is false)
+        {
+            var t = roleSearchText.Trim();
+            filteredRoles = [.. allRoles.Where(u => ((u.Name + u.NormalizedName) ?? string.Empty).Contains(t, StringComparison.InvariantCultureIgnoreCase))];
+        }
+
+        roleNavItems = [.. filteredRoles.Select(r => new BitNavItem
+        {
+            Key = r.Id.ToString(),
+            Text = r.Name ?? string.Empty,
+            Data = r
+        })];
     }
 
 

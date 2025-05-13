@@ -1435,6 +1435,11 @@
   </data>
     <data name="UserCantRemoveAllItsSessionsErrorMessage" xml:space="preserve">
     <value>شما نمیتوانید تمامی سشن‌های خود را حذف کنید</value>
-    <value>You can't remove all of your own sessions</value>
+  </data>
+    <data name="SearchRolePlaceholder" xml:space="preserve">
+    <value>جستجوی گروه‌های کاربری</value>
+  </data>
+    <data name="SearchUserPlaceholder" xml:space="preserve">
+    <value>جستجوی کاربران</value>
   </data>
 </root>
