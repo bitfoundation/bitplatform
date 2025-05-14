@@ -193,7 +193,7 @@ const BswupMessage = {
                 return warn('no "autostart=false" found on the blazor script tag!');
             }
 
-            if (navigator.serviceWorker.controller || forceStart) {
+            if (navigator?.serviceWorker?.controller || forceStart) {
                 Blazor.start();
             }
         }
