@@ -308,15 +308,22 @@ public partial class RolesPage
 
     //#if (notification == true || signalR == true)
     private string? notificationMessage;
+    private string? notificationPageUrl;
     private async Task SendNotification()
     {
         if (selectedRoleItem is null) return;
 
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
 
-        await roleManagementController.SendNotification(new() { RoleId = Guid.Parse(selectedRoleItem.Key!), Message = notificationMessage }, CurrentCancellationToken);
+        await roleManagementController.SendNotification(new()
+        {
+            RoleId = Guid.Parse(selectedRoleItem.Key!),
+            Message = notificationMessage,
+            PageUrl = notificationPageUrl
+        }, CurrentCancellationToken);
 
         notificationMessage = "";
+        notificationPageUrl = "";
     }
     //#endif
 

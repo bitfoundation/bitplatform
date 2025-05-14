@@ -1454,4 +1454,7 @@
     <data name="RemoveRoleFromAllUsersConfrimMessage" xml:space="preserve">
     <value>آیا برای حذف گروه کاربری {0} از تمام کاربران مطمئن هستید?</value>
   </data>
+    <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
+    <value>نشانی صفحه</value>
+  </data>
 </root>

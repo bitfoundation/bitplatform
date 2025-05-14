@@ -1457,4 +1457,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="RemoveRoleFromAllUsersConfrimMessage" xml:space="preserve">
     <value>Are you sure you want to remove all users from {0}?</value>
   </data>
+    <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
+    <value>Page URL</value>
+  </data>
 </root>

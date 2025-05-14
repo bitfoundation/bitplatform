@@ -98,9 +98,15 @@
                             <BitSeparator />
                             <BitTextField @bind-Value="@notificationMessage"
                                           Style="width:100%"
-                                          Immediate Multiline Rows="3"
+                                          Multiline Rows="3"
+                                          Immediate DebounceTime="300"
                                           IsEnabled="selectedRoleItem is not null"
                                           Label="@Localizer[nameof(AppStrings.RoleNotificationLabel)]" />
+                            <BitTextField @bind-Value="@notificationPageUrl"
+                                          Style="width:100%"
+                                          Immediate DebounceTime="300"
+                                          IsEnabled="selectedRoleItem is not null"
+                                          Label="@Localizer[nameof(AppStrings.RoleNotificationPageUrlLabel)]" />
                             <BitButton AutoLoading
                                        OnClick="WrapHandled(SendNotification)"
                                        IsEnabled="selectedRoleItem is not null && string.IsNullOrWhiteSpace(notificationMessage) is false">
