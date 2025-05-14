@@ -76,6 +76,9 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     {
         var role = await GetRoleByIdAsync(roleDto.Id, cancellationToken);
 
+        if (role.ConcurrencyStamp != roleDto.ConcurrencyStamp)
+            throw new ConflictException();
+
         roleDto.Patch(role);
 
         var result = await roleManager.UpdateAsync(role);
