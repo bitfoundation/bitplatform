@@ -119,7 +119,7 @@
                             <BitStack>
                                 <BitStack Horizontal FitHeight>
                                     <BitButton IsEnabled="selectedRoleItem is not null"
-                                               OnClick="() => { isRemoveAllUserRolesDialogOpen = true; }">
+                                               OnClick="() => { isRemoveRoleFromAllUsersDialogOpen = true; }">
                                         @Localizer[nameof(AppStrings.RemoveRoleFromAllUsers)]
                                     </BitButton>
                                     <BitSearchBox @bind-Value="@userSearchText"
@@ -224,7 +224,7 @@
            Message="@Localizer.GetString(nameof(AppStrings.AreYouSureWannaDelete), selectedRoleItem?.Text ?? "")" />
 
 <BitDialog OnOk="WrapHandled(RemoveRoleFromAllUsers)"
-           @bind-IsOpen="isRemoveAllUserRolesDialogOpen"
+           @bind-IsOpen="isRemoveRoleFromAllUsersDialogOpen"
            OkText="@Localizer[nameof(AppStrings.Yes)]"
            CancelText="@Localizer[nameof(AppStrings.No)]"
            Title="@Localizer[nameof(AppStrings.RemoveRoleFromAllUsers)]"

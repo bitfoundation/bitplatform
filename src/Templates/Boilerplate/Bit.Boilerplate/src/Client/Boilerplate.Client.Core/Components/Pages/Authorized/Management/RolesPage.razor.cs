@@ -1,6 +1,6 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Management;
 
@@ -20,10 +20,10 @@ public partial class RolesPage
     private BitNavItem? selectedRoleItem;
     private List<UserDto> filteredUsers = [];
     private List<BitNavItem> roleNavItems = [];
-    private bool isRemoveAllUserRolesDialogOpen;
     private List<UserDto> selectedRoleUsers = [];
     private List<BitNavItem> featureNavItems = [];
     private List<ClaimDto> selectedRoleClaims = [];
+    private bool isRemoveRoleFromAllUsersDialogOpen;
     private CancellationTokenSource? loadRoleDataCts;
 
 
