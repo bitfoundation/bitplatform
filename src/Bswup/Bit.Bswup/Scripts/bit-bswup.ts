@@ -1,5 +1,5 @@
 ﻿var BitBswup = BitBswup || {};
-BitBswup.version = window['bit-bswup version'] = '9.8.0-pre-01';
+BitBswup.version = window['bit-bswup version'] = '9.8.0';
 
 BitBswup.checkForUpdate = async () => {
     if (!('serviceWorker' in navigator)) {
