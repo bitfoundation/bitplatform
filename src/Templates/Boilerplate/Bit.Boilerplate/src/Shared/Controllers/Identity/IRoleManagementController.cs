@@ -39,6 +39,9 @@ public interface IRoleManagementController : IAppController
     [HttpPost]
     Task ToggleUser(UserRoleDto dto, CancellationToken cancellationToken);
 
+    [HttpPost("{roleId}")]
+    Task RemoveRoleFromAllUsers(Guid roleId, CancellationToken cancellationToken);
+
     //#if (notification == true || signalR == true)
     [HttpPost]
     Task SendNotification(SendNotificationToRoleDto dto, CancellationToken cancellationToken);
