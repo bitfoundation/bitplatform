@@ -81,9 +81,12 @@ class App {
 window.addEventListener('message', handleMessage);
 window.addEventListener('load', handleLoad);
 window.addEventListener('resize', setCssWindowSizes);
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', handleMessage);
+}
 
 function handleMessage(e: MessageEvent) {
-    // Enable publishing messages from JavaScript's `window.postMessage` to the C# `PubSubService`.
+    // Enable publishing messages from JavaScript's `window.postMessage` or `client.postMessage` to the C# `PubSubService`.
     if (e.data.key === 'PUBLISH_MESSAGE') {
         App.publishMessage(e.data.message, e.data.payload);
     }

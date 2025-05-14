@@ -23,7 +23,19 @@ self.addEventListener('notificationclick', function (event) {
     const pageUrl = event.notification.data.pageUrl;
     if (pageUrl != null) {
         event.waitUntil(
-            clients.openWindow(pageUrl)
+            clients
+                .matchAll({
+                    type: 'window',
+                    includeUncontrolled: true,
+                })
+                .then((clientList) => {
+                    for (const client of clientList) {
+                        if (!client.focus || !client.postMessage) continue;
+                        client.postMessage({ key: 'PUBLISH_MESSAGE', message: 'NAVIGATE_TO', payload: pageUrl });
+                        return client.focus();
+                    }
+                    return clients.openWindow(pageUrl);
+                })
         );
     }
 });

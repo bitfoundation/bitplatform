@@ -62,6 +62,22 @@ public partial class MainActivity : MauiAppCompatActivity
             _ = Routes.OpenUniversalLink(new URL(url).File ?? Urls.HomePage);
         }
         //#if (notification == true)
+        var dataString = Intent?.GetStringExtra(LocalNotificationCenter.ReturnRequest);
+        if (string.IsNullOrEmpty(dataString) is false)
+        {
+            var request = JsonSerializer.Deserialize<NotificationRequest>(dataString, options: new()
+            {
+                NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals
+            });
+            if (request?.ReturningData is not null)
+            {
+                var returningData = JsonSerializer.Deserialize<Dictionary<string, object>>(request.ReturningData);
+                if (returningData?.TryGetValue("pageUrl", out var pageUrl) is true)
+                {
+                    _ = Routes.OpenUniversalLink(pageUrl?.ToString() ?? Urls.AboutPage);
+                }
+            }
+        }
         PushNotificationService.IsPushNotificationSupported(default).ContinueWith(task =>
         {
             if (task.Result)
