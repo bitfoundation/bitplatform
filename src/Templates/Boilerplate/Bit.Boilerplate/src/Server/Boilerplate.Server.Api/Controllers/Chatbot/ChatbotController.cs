@@ -4,25 +4,29 @@ using Boilerplate.Shared.Controllers.Chatbot;
 
 namespace Boilerplate.Server.Api.Controllers.Chatbot;
 
-[ApiController, Route("api/[controller]/[action]"), 
+[ApiController, Route("api/[controller]/[action]"),
     Authorize(Policy = AppFeatures.Management.ManageAiPrompt)]
 public partial class ChatbotController : AppControllerBase, IChatbotController
 {
     [HttpGet("{kind}")]
-    public async Task<string> GetSystemPromptMarkdown(PromptKind kind, CancellationToken cancellationToken)
+    public async Task<SystemPromptDto> GetSystemPromptMarkdown(PromptKind kind, CancellationToken cancellationToken)
     {
-        return (await DbContext.SystemPrompts.FirstOrDefaultAsync(p => p.PromptKind == kind, cancellationToken))?.Markdown
-            ?? throw new ResourceNotFoundException();
+        return await DbContext.SystemPrompts
+            .Where(p => p.PromptKind == kind)
+            .Project()
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new ResourceNotFoundException();
     }
 
     [HttpPost, Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
-    public async Task UpdateSystemPrompt(UpdateSystemPromptDto request, CancellationToken cancellationToken)
+    public async Task<SystemPromptDto> Update(SystemPromptDto dto, CancellationToken cancellationToken)
     {
-        var systemPrompt = (await DbContext.SystemPrompts.FirstOrDefaultAsync(p => p.PromptKind == request.Kind, cancellationToken))
-            ?? throw new ResourceNotFoundException();
+        var entityToUpdate = await DbContext.SystemPrompts.FirstOrDefaultAsync(sp => sp.PromptKind == dto.PromptKind, cancellationToken)
+            ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.CategoryCouldNotBeFound)]);
 
-        systemPrompt.Markdown = request.Markdown;
+        dto.Patch(entityToUpdate);
 
         await DbContext.SaveChangesAsync(cancellationToken);
+
+        return entityToUpdate.Map();
     }
 }

@@ -133,6 +133,13 @@ public partial class SignInPage
                 model.ReturnUrl = ReturnUrlQueryString;
                 model.DeviceInfo = telemetryContext.Platform;
 
+                await Task.WhenAll(AuthManager.SignIn(model, CurrentCancellationToken),
+                    AuthManager.SignIn(model, CurrentCancellationToken),
+                    AuthManager.SignIn(model, CurrentCancellationToken),
+                    AuthManager.SignIn(model, CurrentCancellationToken),
+                    AuthManager.SignIn(model, CurrentCancellationToken),
+                    AuthManager.SignIn(model, CurrentCancellationToken));
+
                 requiresTwoFactor = await AuthManager.SignIn(model, CurrentCancellationToken);
 
                 if (requiresTwoFactor is false)

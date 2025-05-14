@@ -1,9 +1,7 @@
-﻿namespace Boilerplate.Server.Api.Models.Chatbot;
+﻿namespace Boilerplate.Shared.Dtos.Chatbot;
 
-public class SystemPrompt
+public class SystemPromptDto
 {
-    public Guid Id { get; set; }
-
     public PromptKind PromptKind { get; set; }
 
     [Required]

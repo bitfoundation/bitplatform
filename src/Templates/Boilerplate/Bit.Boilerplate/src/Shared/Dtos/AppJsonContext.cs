@@ -63,7 +63,7 @@ namespace Boilerplate.Shared.Dtos;
 //#if (signalR == true)
 [JsonSerializable(typeof(DiagnosticLogDto[]))]
 [JsonSerializable(typeof(StartChatbotRequest))]
-[JsonSerializable(typeof(UpdateSystemPromptDto))]
+[JsonSerializable(typeof(SystemPromptDto))]
 //#endif
 public partial class AppJsonContext : JsonSerializerContext
 {

@@ -161,8 +161,9 @@ public partial class RolesPage
         if (selectedRoleItem.Text == AppRoles.SuperAdmin) return;
 
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
-
-        await roleManagementController.Delete(Guid.Parse(selectedRoleItem.Key!), CurrentCancellationToken);
+        var roleId = Guid.Parse(selectedRoleItem.Key!);
+        var role = allRoles.Single(r => r.Id == roleId);
+        await roleManagementController.Delete(roleId, role.ConcurrencyStamp!, CurrentCancellationToken);
 
         await LoadAllRoles();
     }

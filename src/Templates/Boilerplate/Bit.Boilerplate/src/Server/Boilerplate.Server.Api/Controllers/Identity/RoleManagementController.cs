@@ -86,11 +86,14 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         return role.Map();
     }
 
-    [HttpPost("{roleId}")]
+    [HttpPost("{roleId}/{concurrencyStamp}")]
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
-    public async Task Delete(Guid roleId, CancellationToken cancellationToken)
+    public async Task Delete(Guid roleId, string concurrencyStamp, CancellationToken cancellationToken)
     {
         var role = await GetRoleByIdAsync(roleId, cancellationToken);
+
+        if (role.ConcurrencyStamp != concurrencyStamp)
+            throw new ConflictException();
 
         await roleManager.DeleteAsync(role);
     }
@@ -190,7 +193,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     public async Task SendNotification(SendNotificationToRoleDto dto, CancellationToken cancellationToken)
     {
         //#if (signalR == true)
-        var signalRConnectionIds = await DbContext.UserSessions.Where(us => us.SignalRConnectionId != null && 
+        var signalRConnectionIds = await DbContext.UserSessions.Where(us => us.SignalRConnectionId != null &&
                                                                             us.User!.Roles.Any(r => r.RoleId == dto.RoleId))
                                                                .Select(us => us.SignalRConnectionId!).ToArrayAsync(cancellationToken);
 
@@ -199,9 +202,9 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         //#endif
 
         //#if (notification == true)
-        await pushNotificationService.RequestPush(message: dto.Message, 
-                                                  userRelatedPush: true, 
-                                                  customSubscriptionFilter: s => s.UserSession!.User!.Roles.Any(r => r.RoleId == dto.RoleId), 
+        await pushNotificationService.RequestPush(message: dto.Message,
+                                                  userRelatedPush: true,
+                                                  customSubscriptionFilter: s => s.UserSession!.User!.Roles.Any(r => r.RoleId == dto.RoleId),
                                                   cancellationToken: cancellationToken);
         //#endif
     }

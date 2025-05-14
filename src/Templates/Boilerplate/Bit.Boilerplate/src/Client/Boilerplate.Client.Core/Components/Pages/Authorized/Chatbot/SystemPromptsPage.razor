@@ -11,19 +11,19 @@
     {
         <BitEllipsisLoading CustomSize="32" />
     }
-    else
+    else if (systemPrompt is not null)
     {
         <BitSticky Top="5rem" Style="margin-bottom:8px">
             <BitButton IconName="@BitIconName.Save" OnClick="WrapHandled(SaveChanges)" AutoLoading>
-                @Localizer[nameof(AppStrings.Save)]
-            </BitButton>
+            @Localizer[nameof(AppStrings.Save)]
+        </BitButton>
         </BitSticky>
 
         <BitStack VerticalAlign="BitAlignment.Stretch" Horizontal>
             <AuthorizeView Policy="@AppFeatures.Management.ManageAiPrompt">
-                <BitMarkdownEditor @bind-Value="systemPromptMarkdown" Class="md-editor" />
+                <BitMarkdownEditor @bind-Value="systemPrompt.Markdown" Class="md-editor" />
             </AuthorizeView>
-            <BitMarkdownViewer Markdown="@systemPromptMarkdown" Style="word-break:break-all" />
+            <BitMarkdownViewer Markdown="@systemPrompt.Markdown" Style="word-break:break-all" />
         </BitStack>
     }
 </section>

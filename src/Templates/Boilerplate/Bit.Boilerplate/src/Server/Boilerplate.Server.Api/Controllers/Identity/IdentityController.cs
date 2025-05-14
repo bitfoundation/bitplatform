@@ -153,16 +153,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (signInResult.Succeeded is false)
             throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]).WithData(new() { { "UserId", user.Id }, { "Identifier", request } });
 
-        if (string.IsNullOrEmpty(request.Otp) is false)
-        {
-            await ((IUserLockoutStore<User>)userStore).ResetAccessFailedCountAsync(user, cancellationToken);
-            user.OtpRequestedOn = null; // invalidates the OTP
-            var updateResult = await userManager.UpdateAsync(user);
-            if (updateResult.Succeeded is false)
-                throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData("UserId", user.Id);
-        }
-
-        await DbContext.UserSessions.AddAsync(userSession);
+        await DbContext.UserSessions.AddAsync(userSession, cancellationToken);
         user.TwoFactorTokenRequestedOn = null;
         var addUserSessionResult = await userManager.UpdateAsync(user);
         if (addUserSessionResult.Succeeded is false)

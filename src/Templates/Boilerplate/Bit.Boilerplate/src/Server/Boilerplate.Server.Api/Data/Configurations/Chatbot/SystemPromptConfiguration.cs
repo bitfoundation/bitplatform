@@ -6,6 +6,9 @@ public class SystemPromptConfiguration : IEntityTypeConfiguration<SystemPrompt>
 {
     public void Configure(EntityTypeBuilder<SystemPrompt> builder)
     {
+        builder.HasIndex(sp => sp.PromptKind)
+            .IsUnique();
+
         builder.HasData(new SystemPrompt
         {
             Id = Guid.Parse("a8c94d94-0004-4dd0-921c-255e0a581424"),
