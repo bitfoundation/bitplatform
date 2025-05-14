@@ -1436,10 +1436,22 @@
     <data name="UserCantRemoveAllItsSessionsErrorMessage" xml:space="preserve">
     <value>شما نمیتوانید تمامی سشن‌های خود را حذف کنید</value>
   </data>
-    <data name="SearchRolePlaceholder" xml:space="preserve">
+    <data name="SearchRolesPlaceholder" xml:space="preserve">
     <value>جستجوی گروه‌های کاربری</value>
   </data>
-    <data name="SearchUserPlaceholder" xml:space="preserve">
+    <data name="SearchUsersPlaceholder" xml:space="preserve">
     <value>جستجوی کاربران</value>
+  </data>
+    <data name="SearchRoleUsersPlaceholder" xml:space="preserve">
+    <value>جستجوی کاربران</value>
+  </data>
+    <data name="SearchUserSessionsPlaceholder" xml:space="preserve">
+    <value>جستجوی سشن کاربران</value>
+  </data>
+    <data name="RemoveRoleFromAllUsers" xml:space="preserve">
+    <value>حذف گروه کاربران از تمام کاربران</value>
+  </data>
+    <data name="RemoveRoleFromAllUsersConfrimMessage" xml:space="preserve">
+    <value>آیا برای حذف گروه کاربری {0} از تمام کاربران مطمئن هستید?</value>
   </data>
 </root>

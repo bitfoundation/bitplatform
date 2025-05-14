@@ -10,6 +10,7 @@ public partial class RolesPage
     private string? editRoleName;
     private string? roleSearchText;
     private string? loadingRoleKey;
+    private string? userSearchText;
     private bool isDeleteDialogOpen;
     private bool isLoadingRoles = true;
     private bool isLoadingUsers = true;
@@ -17,7 +18,9 @@ public partial class RolesPage
     private List<RoleDto> allRoles = [];
     private List<UserDto> allUsers = [];
     private BitNavItem? selectedRoleItem;
+    private List<UserDto> filteredUsers = [];
     private List<BitNavItem> roleNavItems = [];
+    private bool isRemoveAllUserRolesDialogOpen;
     private List<UserDto> selectedRoleUsers = [];
     private List<BitNavItem> featureNavItems = [];
     private List<ClaimDto> selectedRoleClaims = [];
@@ -56,7 +59,7 @@ public partial class RolesPage
         {
             allRoles = await roleManagementController.GetAllRoles(CurrentCancellationToken);
 
-            SearchNavItems();
+            SearchRoles();
 
             editRoleName = null;
             selectedRoleItem = null;
@@ -74,6 +77,8 @@ public partial class RolesPage
             isLoadingUsers = true;
 
             allUsers = await roleManagementController.GetAllUsers(CurrentCancellationToken);
+
+            SearchUsers();
         }
         finally
         {
@@ -81,7 +86,7 @@ public partial class RolesPage
         }
     }
 
-    private async Task HandleOnSelectRole(BitNavItem item)
+    private async Task HandleOnSelectRole(BitNavItem? item)
     {
         if (item is null) return;
 
@@ -338,7 +343,7 @@ public partial class RolesPage
         }
     }
 
-    private void SearchNavItems()
+    private void SearchRoles()
     {
         var filteredRoles = allRoles;
 
@@ -354,6 +359,28 @@ public partial class RolesPage
             Text = r.Name ?? string.Empty,
             Data = r
         })];
+    }
+
+    private void SearchUsers()
+    {
+        filteredUsers = allUsers;
+
+        if (string.IsNullOrWhiteSpace(userSearchText) is false)
+        {
+            var t = userSearchText.Trim();
+            filteredUsers = [.. allUsers.Where(u => ((u.FullName + u.Email + u.PhoneNumber + u.UserName) ?? string.Empty).Contains(t, StringComparison.InvariantCultureIgnoreCase))];
+        }
+    }
+
+    private async Task RemoveRoleFromAllUsers()
+    {
+        if (selectedRoleItem is null) return;
+
+        if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
+
+        await roleManagementController.RemoveRoleFromAllUsers(Guid.Parse(selectedRoleItem.Key!), CurrentCancellationToken);
+
+        selectedRoleUsers.Clear();
     }
 
 

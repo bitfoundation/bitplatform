@@ -1,11 +1,12 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Server.Api.Services;
-using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
+using Boilerplate.Server.Api.Services;
+using Boilerplate.Server.Api.SignalR;
 using Boilerplate.Shared.Controllers.Identity;
+using Boilerplate.Shared.Dtos.Identity;
+using Humanizer;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
-using Boilerplate.Server.Api.SignalR;
 //#endif
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
@@ -182,6 +183,15 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
             if (result.Succeeded is false)
                 throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
         }
+    }
+
+    [HttpPost("{roleId}")]
+    [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
+    public async Task RemoveRoleFromAllUsers(Guid roleId, CancellationToken cancellationToken)
+    {
+        var role = await GetRoleByIdAsync(roleId, cancellationToken);
+
+        await DbContext.UserRoles.Where(ur => ur.RoleId == roleId).ExecuteDeleteAsync(cancellationToken);
     }
 
     //#if (notification == true || signalR == true)
