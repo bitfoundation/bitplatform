@@ -13,6 +13,7 @@ public partial class UsersPage
     private int? onlineUsersCount;
     private string? loadingUserKey;
     private string? userSearchText;
+    private string? sessionSearchText;
     private List<UserDto> allUsers = [];
     private bool isDeleteUserDialogOpen;
     private BitNavItem? selectedUserItem;
@@ -21,6 +22,7 @@ public partial class UsersPage
     private bool isRevokeAllUserSessionsDialogOpen;
     private CancellationTokenSource? loadRoleDataCts;
     private List<UserSessionDto> allUserSessions = [];
+    private List<UserSessionDto> filteredUserSessions = [];
 
 
     [AutoInject] IUserManagementController userManagementController = default!;
@@ -52,7 +54,7 @@ public partial class UsersPage
 
             allUsers = await userManagementController.GetAllUsers(CurrentCancellationToken);
 
-            SearchNavItems();
+            SearchUsers();
 
             allUserSessions = [];
             selectedUserDto = new();
@@ -90,7 +92,7 @@ public partial class UsersPage
         await LoadAllUsers();
     }
 
-    private async Task HandleOnSelectUser(BitNavItem item)
+    private async Task HandleOnSelectUser(BitNavItem? item)
     {
         if (item is null) return;
 
@@ -113,6 +115,8 @@ public partial class UsersPage
             user.Patch(selectedUserDto);
 
             allUserSessions = await userManagementController.GetUserSessions(user.Id, CurrentCancellationToken);
+
+            SearchSessions();
         }
         finally
         {
@@ -145,7 +149,7 @@ public partial class UsersPage
         await HandleOnSelectUser(selectedUserItem);
     }
 
-    private void SearchNavItems()
+    private void SearchUsers()
     {
         var filteredUsers = allUsers;
 
@@ -161,5 +165,16 @@ public partial class UsersPage
             Text = u.DisplayName ?? string.Empty,
             Data = u
         })];
+    }
+
+    private void SearchSessions()
+    {
+        filteredUserSessions = allUserSessions;
+
+        if (string.IsNullOrWhiteSpace(sessionSearchText) is false)
+        {
+            var t = sessionSearchText.Trim();
+            filteredUserSessions = [.. allUserSessions.Where(us => ((us.IP + us.Address + us.DeviceInfo + us.RenewedOnDateTimeOffset + us.Id) ?? string.Empty).Contains(t, StringComparison.InvariantCultureIgnoreCase))];
+        }
     }
 }

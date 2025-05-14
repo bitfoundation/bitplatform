@@ -184,6 +184,15 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         }
     }
 
+    [HttpPost("{roleId}")]
+    [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
+    public async Task RemoveRoleFromAllUsers(Guid roleId, CancellationToken cancellationToken)
+    {
+        var role = await GetRoleByIdAsync(roleId, cancellationToken);
+
+        await DbContext.UserRoles.Where(ur => ur.RoleId == roleId).ExecuteDeleteAsync(cancellationToken);
+    }
+
     //#if (notification == true || signalR == true)
     [HttpPost]
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
@@ -200,6 +209,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
 
         //#if (notification == true)
         await pushNotificationService.RequestPush(message: dto.Message, 
+                                                  pageUrl: dto.PageUrl,
                                                   userRelatedPush: true, 
                                                   customSubscriptionFilter: s => s.UserSession!.User!.Roles.Any(r => r.RoleId == dto.RoleId), 
                                                   cancellationToken: cancellationToken);
