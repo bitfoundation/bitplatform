@@ -37,7 +37,7 @@ public static partial class Urls
 
     public const string Authorize = "/authorize";
 
-    public const string RolesPage = "/roles";
+    public const string RolesPage = "/user-groups";
 
     public const string UsersPage = "/users";
 

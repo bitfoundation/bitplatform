@@ -24,8 +24,8 @@ public interface IRoleManagementController : IAppController
     [HttpPost]
     Task<RoleDto> Update(RoleDto roleDto, CancellationToken cancellationToken);
 
-    [HttpPost("{roleId}")]
-    Task Delete(Guid roleId, CancellationToken cancellationToken);
+    [HttpPost("{roleId}/{concurrencyStamp}")]
+    Task Delete(Guid roleId, string concurrencyStamp, CancellationToken cancellationToken);
 
     [HttpPost("{roleId}")]
     Task AddClaims(Guid roleId, List<ClaimDto> roleClaims, CancellationToken cancellationToken);

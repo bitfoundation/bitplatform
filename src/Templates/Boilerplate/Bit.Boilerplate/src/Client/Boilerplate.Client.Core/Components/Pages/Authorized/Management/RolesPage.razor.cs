@@ -155,7 +155,9 @@ public partial class RolesPage
 
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
 
-        await roleManagementController.Update(new RoleDto { Id = Guid.Parse(selectedRoleItem.Key!), Name = editRoleName }, CurrentCancellationToken);
+        var role = ((RoleDto)selectedRoleItem.Data!);
+        role.Name = editRoleName;
+        await roleManagementController.Update(role, CurrentCancellationToken);
 
         await LoadAllRoles();
     }
@@ -166,8 +168,9 @@ public partial class RolesPage
         if (selectedRoleItem.Text == AppRoles.SuperAdmin) return;
 
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
-
-        await roleManagementController.Delete(Guid.Parse(selectedRoleItem.Key!), CurrentCancellationToken);
+        var roleId = Guid.Parse(selectedRoleItem.Key!);
+        var role = ((RoleDto)selectedRoleItem.Data!);
+        await roleManagementController.Delete(roleId, role.ConcurrencyStamp!, CurrentCancellationToken);
 
         await LoadAllRoles();
     }
