@@ -150,7 +150,9 @@ public partial class RolesPage
 
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
 
-        await roleManagementController.Update(new RoleDto { Id = Guid.Parse(selectedRoleItem.Key!), Name = editRoleName }, CurrentCancellationToken);
+        var role = ((RoleDto)selectedRoleItem.Data!);
+        role.Name = editRoleName;
+        await roleManagementController.Update(role, CurrentCancellationToken);
 
         await LoadAllRoles();
     }
@@ -162,7 +164,7 @@ public partial class RolesPage
 
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
         var roleId = Guid.Parse(selectedRoleItem.Key!);
-        var role = allRoles.Single(r => r.Id == roleId);
+        var role = ((RoleDto)selectedRoleItem.Data!);
         await roleManagementController.Delete(roleId, role.ConcurrencyStamp!, CurrentCancellationToken);
 
         await LoadAllRoles();

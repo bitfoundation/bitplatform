@@ -18,7 +18,7 @@ public partial class SystemPromptsPage
 
         try
         {
-            systemPrompt = await chatbotController.GetSystemPromptMarkdown(PromptKind.Support, CurrentCancellationToken);
+            systemPrompt = await chatbotController.GetSystemPrompt(PromptKind.Support, CurrentCancellationToken);
         }
         finally
         {
@@ -31,7 +31,7 @@ public partial class SystemPromptsPage
     {
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken))
         {
-            (await chatbotController.Update(systemPrompt!, CurrentCancellationToken)).Patch(systemPrompt);
+            (await chatbotController.UpdateSystemPrompt(systemPrompt!, CurrentCancellationToken)).Patch(systemPrompt);
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Boilerplate.Server.Api.Controllers.Chatbot;
 public partial class ChatbotController : AppControllerBase, IChatbotController
 {
     [HttpGet("{kind}")]
-    public async Task<SystemPromptDto> GetSystemPromptMarkdown(PromptKind kind, CancellationToken cancellationToken)
+    public async Task<SystemPromptDto> GetSystemPrompt(PromptKind kind, CancellationToken cancellationToken)
     {
         return await DbContext.SystemPrompts
             .Where(p => p.PromptKind == kind)
@@ -18,7 +18,7 @@ public partial class ChatbotController : AppControllerBase, IChatbotController
     }
 
     [HttpPost, Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
-    public async Task<SystemPromptDto> Update(SystemPromptDto dto, CancellationToken cancellationToken)
+    public async Task<SystemPromptDto> UpdateSystemPrompt(SystemPromptDto dto, CancellationToken cancellationToken)
     {
         var entityToUpdate = await DbContext.SystemPrompts.FirstOrDefaultAsync(sp => sp.PromptKind == dto.PromptKind, cancellationToken)
             ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.CategoryCouldNotBeFound)]);
