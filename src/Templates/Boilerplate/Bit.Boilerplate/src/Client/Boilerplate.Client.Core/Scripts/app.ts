@@ -81,7 +81,7 @@ class App {
 window.addEventListener('message', handleMessage);
 window.addEventListener('load', handleLoad);
 window.addEventListener('resize', setCssWindowSizes);
-if (navigator.serviceWorker != null) {
+if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('message', handleMessage);
 }
 
