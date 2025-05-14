@@ -174,7 +174,7 @@ public partial class UsersPage
         if (string.IsNullOrWhiteSpace(sessionSearchText) is false)
         {
             var t = sessionSearchText.Trim();
-            filteredUserSessions = [.. allUserSessions.Where(us => ((us.IP + us.Address + us.DeviceInfo + us.RenewedOnDateTimeOffset + us.Id + us.SignalRConnectionId) ?? string.Empty).Contains(t, StringComparison.InvariantCultureIgnoreCase))];
+            filteredUserSessions = [.. allUserSessions.Where(us => ((us.IP + us.Address + us.DeviceInfo + us.RenewedOnDateTimeOffset + us.Id) ?? string.Empty).Contains(t, StringComparison.InvariantCultureIgnoreCase))];
         }
     }
 }
