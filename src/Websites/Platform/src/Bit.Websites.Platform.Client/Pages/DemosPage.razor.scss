@@ -1,35 +1,26 @@
 ﻿@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_mixins.scss';
 @import '../Styles/abstracts/_functions.scss';
-@import '../Styles/abstracts/_media-queries.scss';
 
 .page-container {
     width: 100%;
     display: flex;
     overflow: hidden;
+    align-items: center;
     box-sizing: border-box;
-    align-items: flex-start;
-    justify-content: center;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
     padding-top: rem2($HeaderHeight);
-
 
     @include lt-lg {
         padding-top: rem2(calc($HeaderHeight + $HeaderSecondRowHeight));
     }
 }
 
-.page-content {
-    width: 100%;
-    display: flex;
-    max-width: 1200px;
-    margin-bottom: 3rem;
-    padding-inline: 1rem;
-    flex-flow: column nowrap;
-}
-
 .page-section {
     width: 100%;
     display: flex;
+    text-align: center;
     justify-content: center;
 }
 
@@ -43,6 +34,18 @@
     padding-inline: rem2(20px);
 }
 
+.mid-section {
+    padding-block: 4rem;
+    background: $bit-color-background-secondary;
+
+    .mid-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-flow: column nowrap;
+    }
+}
+
 .page-flex-container {
     gap: 1rem;
     width: 100%;
@@ -54,6 +57,14 @@
     @include lt-lg {
         flex-direction: column;
     }
+}
+
+.page-content {
+    width: 100%;
+    display: flex;
+    max-width: 1200px;
+    padding-inline: 1rem;
+    flex-flow: column nowrap;
 }
 
 .page-content-container {
@@ -206,6 +217,37 @@
         &:hover {
             opacity: .75;
             background-color: #212121;
+        }
+    }
+}
+
+.section-title-line {
+    height: 2px;
+    flex-grow: 1;
+    margin-top: 6px;
+    background-image: linear-gradient(351deg, transparent 20%, #8c85ff 100%);
+
+    &.boilerplate {
+        width: 350px;
+
+        @include lt-md {
+            width: 250px;
+        }
+    }
+
+    &.platform {
+        width: 500px;
+
+        @include lt-md {
+            width: 400px;
+        }
+    }
+
+    &.blazorui {
+        width: 250px;
+
+        @include lt-md {
+            width: 200px;
         }
     }
 }
