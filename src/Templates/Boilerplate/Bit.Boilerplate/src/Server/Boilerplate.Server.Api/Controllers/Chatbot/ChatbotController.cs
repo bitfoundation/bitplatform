@@ -21,7 +21,7 @@ public partial class ChatbotController : AppControllerBase, IChatbotController
     public async Task<SystemPromptDto> UpdateSystemPrompt(SystemPromptDto dto, CancellationToken cancellationToken)
     {
         var entityToUpdate = await DbContext.SystemPrompts.FirstOrDefaultAsync(sp => sp.PromptKind == dto.PromptKind, cancellationToken)
-            ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.CategoryCouldNotBeFound)]);
+            ?? throw new ResourceNotFoundException();
 
         dto.Patch(entityToUpdate);
 
