@@ -11,6 +11,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 {
     private int _precision;
     private bool _hasFocus;
+    private string? _tempValue;
     private TValue _min = default!;
     private TValue _max = default!;
     private TValue _step = default!;
@@ -359,6 +360,13 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
              : _typeOfValue == typeof(decimal) ? Convert.ToDecimal(value).ToString(NumberFormat)
              : _typeOfValue == typeof(double) ? Convert.ToDouble(value).ToString(NumberFormat)
              : "0";
+    }
+
+    protected override Task HandleOnStringValueChangeAsync(ChangeEventArgs e)
+    {
+        _tempValue = e.Value?.ToString();
+
+        return base.HandleOnStringValueChangeAsync(e);
     }
 
 

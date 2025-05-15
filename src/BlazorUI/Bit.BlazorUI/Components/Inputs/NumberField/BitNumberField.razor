@@ -112,7 +112,7 @@
                    @onfocusout="HandleOnFocusOut"
                    @onchange="HandleOnStringValueChangeAsync"
                    @oninput="HandleOnStringValueInputAsync"
-                   @onwheel="@HandleOnMouseWheel"
+                   @onwheel="HandleOnMouseWheel"
                    form=""
                    min="@_min"
                    max="@_max"
@@ -138,7 +138,7 @@
                    aria-valuetext="@(AriaValueText ?? CurrentValueAsString)"
                    aria-disabled="@(IsEnabled is false)" />
 
-                   @if (ShowClearButton && CurrentValue is not null)
+                   @if (ShowClearButton && (CurrentValue is not null || _tempValue.HasValue()))
                     {
                         <button @onclick="HandleOnClearButtonClick"
                                 style="@Styles?.ClearButton"
