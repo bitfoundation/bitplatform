@@ -41,7 +41,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
         // https://www.mercedes-benz.ca/en/all-vehicles
 
         var benzId = Guid.Parse("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08");
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse($"9a59dda2-7b12-4cc1-9658-d2586eef91d7"),
             Name = "EQB SUV",
@@ -55,7 +55,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse($"5746ae3d-5116-4774-9d55-0ff496e5186f"),
             Name = "EQE Sedan",
@@ -69,7 +69,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse($"512eb70b-1d39-4845-88c0-fe19cd2d1979"),
             Name = "EQE SUV",
@@ -83,7 +83,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse($"f4a3b2c1-d0e9-f8a7-b6c5-d4e3f2a1b0c9"),
             Name = "EQS SUV",
@@ -97,7 +97,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse($"e3b2a1d0-c9f8-e7b6-a5d4-c3b2a1d0e9f8"),
             Name = "EQS Sedan",
@@ -111,7 +111,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse($"d2a1b0c9-f8e7-b6a5-d4c3-b2a1d0e9f8e7"),
             Name = "GLA SUV",
@@ -125,7 +125,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse($"c1b0a9f8-e7b6-a5d4-c3b2-a1d0e9f8e7b6"),
             Name = "GLB SUV",
@@ -139,7 +139,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse($"b0a9f8e7-b6a5-d4c3-b2a1-d0e9f8e7b6a5"),
             Name = "GLC SUV",
@@ -153,7 +153,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse($"a9f8e7b6-a5d4-c3b2-a1d0-e9f8e7b6a5d4"),
             Name = "GLC Coupe",
@@ -167,7 +167,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse($"98e7b6a5-d4c3-b2a1-d0e9-f8e7b6a5d4c3"),
             Name = "GLE SUV",
@@ -181,7 +181,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse($"87b6a5d4-c3b2-a1d0-e9f8-e7b6a5d4c3b2"),
             Name = "GLE Coupe",
@@ -195,7 +195,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse($"76a5d4c3-b2a1-d0e9-f8e7-b6a5d4c3b2a1"),
             Name = "GLS SUV",
@@ -209,7 +209,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse($"65d4c3b2-a1d0-e9f8-e7b6-a5d4c3b2a1d0"),
             Name = "G-CLASS SUV",
@@ -223,7 +223,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse($"54c3b2a1-d0e9-f8e7-b6a5-d4c3b2a1d0e9"),
             Name = "E-Class Sedan",
@@ -237,7 +237,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse($"43b2a1d0-e9f8-e7b6-a5d4-c3b2a1d0e9f8"),
             Name = "S-Class Sedan",
@@ -251,7 +251,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse($"32a1d0e9-f8e7-b6a5-d4c3-b2a1d0e9f8e7"),
             Name = "CLA COUPE",
@@ -265,7 +265,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse($"21d0e9f8-e7b6-a5d4-c3b2-a1d0e9f8e7b6"),
             Name = "CLE Coupe",
@@ -279,7 +279,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse($"10e9f8e7-b6a5-d4c3-b2a1-d0e9f8e7b6a5"),
             Name = "Mercedes-AMG GT Coupe",
@@ -293,7 +293,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse($"f9f8e7b6-a5d4-c3b2-a1d0-e9f8e7b6a5d4"),
             Name = "CLE Cabriolet",
@@ -310,7 +310,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
         // --- Ford Entries (8 cars) ---
 
         var fordId = Guid.Parse("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845");
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("a1b2c3d4-e5f6-7890-1234-567890abcdef"),
             Name = "Ford F-150",
@@ -324,7 +324,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("b2c3d4e5-f6a7-89b0-12c3-45d678e9f0a1"),
             Name = "Ford Mustang",
@@ -338,7 +338,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("c3d4e5f6-a7b8-9c01-23d4-56e789f0a1b2"),
             Name = "Ford Explorer",
@@ -352,7 +352,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("d4e5f6a7-b8c9-d0e1-f234-567890a1b2c3"),
             Name = "Ford Escape",
@@ -366,7 +366,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("e5f6a7b8-c9d0-e1f2-3456-7890a1b2c3d4"),
             Name = "Ford Bronco",
@@ -380,7 +380,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("f6a7b8c9-d0e1-f2a3-4567-8901b2c3d4e5"),
             Name = "Ford Mustang Mach-E",
@@ -394,7 +394,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("a7b8c9d0-e1f2-a3b4-5678-9012c3d4e5f6"),
             Name = "Ford Maverick",
@@ -408,7 +408,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("b8c9d0e1-f2a3-b4c5-6789-0123d4e5f6a7"),
             Name = "Ford Edge",
@@ -426,7 +426,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
         // --- Nissan Entries (8 cars) ---
 
         var nissanId = Guid.Parse("582b8c19-0709-4dae-b7a6-fa0e704dad3c");
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("c9d0e1f2-a3b4-c5d6-7890-1234e5f6a7b8"),
             Name = "Nissan Rogue",
@@ -440,7 +440,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("d0e1f2a3-b4c5-d6e7-8901-2345f6a7b8c9"),
             Name = "Nissan Altima",
@@ -454,7 +454,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("e1f2a3b4-c5d6-e7f8-9012-3456a7b8c9d0"),
             Name = "Nissan Sentra",
@@ -468,7 +468,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("f2a3b4c5-d6e7-f8a9-0123-4567b8c9d0e1"),
             Name = "Nissan Pathfinder",
@@ -482,7 +482,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("a3b4c5d6-e7f8-a9b0-1234-5678c9d0e1f2"),
             Name = "Nissan Frontier",
@@ -496,7 +496,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("b4c5d6e7-f8a9-b0c1-2345-6789d0e1f2a3"),
             Name = "Nissan Kicks",
@@ -510,7 +510,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("c5d6e7f8-a9b0-c1d2-3456-7890e1f2a3b4"),
             Name = "Nissan Ariya",
@@ -524,7 +524,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("d6e7f8a9-b0c1-d2e3-4567-8901f2a3b4c5"),
             Name = "Nissan Z",
@@ -541,7 +541,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
 
         // --- BMW Entries (8 cars) ---
         var bmwId = Guid.Parse("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4");
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("e7f8a9b0-c1d2-e3f4-5678-9012a3b4c5d6"),
             Name = "BMW 3 Series Sedan",
@@ -555,7 +555,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("f8a9b0c1-d2e3-f4a5-6789-0123b4c5d6e7"),
             Name = "BMW X3 SAV",
@@ -569,7 +569,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("a9b0c1d2-e3f4-a5b6-7890-1234c5d6e7f8"),
             Name = "BMW X5 SAV",
@@ -583,7 +583,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("b0c1d2e3-f4a5-b6c7-8901-2345d6e7f8a9"),
             Name = "BMW 5 Series Sedan",
@@ -597,7 +597,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("c1d2e3f4-a5b6-c7d8-9012-3456e7f8a9b0"),
             Name = "BMW i4 Gran Coupe",
@@ -611,7 +611,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("d2e3f4a5-b6c7-d8e9-0123-4567f8a9b0c1"),
             Name = "BMW iX SAV",
@@ -625,7 +625,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("e3f4a5b6-c7d8-e9f0-1234-5678a9b0c1d2"),
             Name = "BMW M3 Sedan",
@@ -639,7 +639,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("f4a5b6c7-d8e9-f0a1-2345-6789b0c1d2e3"),
             Name = "BMW Z4 Roadster",
@@ -656,7 +656,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
 
         // --- Tesla Entries (7 cars) ---
         var teslaId = Guid.Parse("747f6d66-7524-40ca-8494-f65e85b5ee5d");
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("a5b6c7d8-e9f0-a1b2-3456-7890c1d2e3f4"),
             Name = "Tesla Model 3",
@@ -670,7 +670,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("b6c7d8e9-f0a1-b2c3-4567-8901d2e3f4a5"),
             Name = "Tesla Model Y",
@@ -684,7 +684,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("c7d8e9f0-a1b2-c3d4-5678-9012e3f4a5b6"),
             Name = "Tesla Model S",
@@ -698,7 +698,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("d8e9f0a1-b2c3-d4e5-6789-0123f4a5b6c7"),
             Name = "Tesla Model X",
@@ -712,7 +712,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("e9f0a1b2-c3d4-e5f6-7890-1234a5b6c7d8"),
             Name = "Tesla Model 3 Performance",
@@ -726,7 +726,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("f0a1b2c3-d4e5-f6a7-8901-2345b6c7d8e9"),
             Name = "Tesla Model S Plaid",
@@ -740,7 +740,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             HasPrimaryImage = false
         });
 
-        builder.HasData(new
+        builder.HasData(new Product
         {
             Id = Guid.Parse("a1b2c3d4-e5f6-a7b8-9012-3456c7d8e9f0"),
             Name = "Tesla Cybertruck",

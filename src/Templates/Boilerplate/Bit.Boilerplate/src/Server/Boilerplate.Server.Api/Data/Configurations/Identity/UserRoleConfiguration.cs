@@ -12,6 +12,6 @@ public partial class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
         var superAdminRoleId = Guid.Parse("8ff71671-a1d6-5f97-abb9-d87d7b47d6e7");
         var defaultTestUserId = Guid.Parse("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7");
 
-        builder.HasData(new { RoleId = superAdminRoleId, UserId = defaultTestUserId });
+        builder.HasData(new UserRole { RoleId = superAdminRoleId, UserId = defaultTestUserId });
     }
 }

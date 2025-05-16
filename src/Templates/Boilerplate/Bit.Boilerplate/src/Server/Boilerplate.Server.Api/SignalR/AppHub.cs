@@ -240,8 +240,8 @@ public partial class AppHub : Hub
         var isGuidId = Guid.TryParse(userQuery, out var id);
 
         var userSessionSignalRConnectionIds = await dbContext.UserSessions
-            .WhereIf(isGuidId, us => us.UserId == id || us.UserId == id)
-            .WhereIf(isGuidId is false, us => us.User!.NormalizedEmail == userQuery || us.User.PhoneNumber == userQuery)
+            .WhereIf(isGuidId, us => us.Id == id || us.UserId == id)
+            .WhereIf(isGuidId is false, us => us.User!.NormalizedEmail == userQuery || us.User.PhoneNumber == userQuery || us.User.UserName == userQuery)
             .Where(us => us.SignalRConnectionId != null)
             .Select(us => us.SignalRConnectionId)
             .ToArrayAsync(Context.ConnectionAborted);
