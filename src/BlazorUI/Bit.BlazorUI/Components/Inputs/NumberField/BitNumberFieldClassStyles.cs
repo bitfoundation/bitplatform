@@ -53,6 +53,16 @@ public class BitNumberFieldClassStyles
     public string? Focused { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the numeric field's clear button.
+    /// </summary>
+    public string? ClearButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the numeric field's clear button icon.
+    /// </summary>
+    public string? ClearButtonIcon { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the numeric field's icon.
     /// </summary>
     public string? Icon { get; set; }

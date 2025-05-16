@@ -193,6 +193,12 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "OnClear",
+            Type = "EventCallback",
+            Description = "Callback executed when the user clears the number field by either clicking 'X' or hitting escape.",
+        },
+        new()
+        {
             Name = "OnDecrement",
             Type = "EventCallback<TValue>",
             Description = "Callback for when the decrement button or down arrow key is pressed.",
@@ -255,6 +261,13 @@ public partial class BitNumberFieldDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Shows the custom prefix for numeric field.",
+        },
+        new()
+        {
+            Name = "ShowClearButton",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether to shows the clear button when the BitNumberField has value.",
         },
         new()
         {
