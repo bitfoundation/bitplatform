@@ -26,7 +26,7 @@ public partial class UserConfiguration : IEntityTypeConfiguration<User>
         const string userName = "test";
         const string email = "test@bitplatform.dev";
 
-        builder.HasData([new()
+        builder.HasData([new User
         {
             Id = Guid.Parse("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"),
             EmailConfirmed = true,
