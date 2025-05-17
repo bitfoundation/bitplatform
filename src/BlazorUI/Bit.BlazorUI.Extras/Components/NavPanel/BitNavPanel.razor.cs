@@ -6,9 +6,9 @@
 public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 {
     private decimal diffXPanel;
-    private BitNav<TItem> _bitNavRef = default!;
+    private BitNav<TItem>? _bitNavRef;
+    private BitSearchBox? _searchBoxRef;
     private IList<TItem> _filteredNavItems = [];
-    private BitSearchBox _searchBoxRef = default!;
     private IEnumerable<TItem> _flatNavItemList = [];
 
 
@@ -284,11 +284,11 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     {
         await OnItemClick.InvokeAsync(item);
 
-        if (_bitNavRef.GetUrl(item).HasNoValue()) return;
+        if (_bitNavRef?.GetUrl(item).HasNoValue() is true) return;
 
         _filteredNavItems = Items;
 
-        await _searchBoxRef.Clear();
+        _ = _searchBoxRef?.Clear();
 
         await ClosePanel();
     }
@@ -311,6 +311,8 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     private async Task ToggleForSearch()
     {
         if (await AssignIsToggled(false) is false) return;
+
+        if (_searchBoxRef is null) return;
 
         await Task.Delay(1);
         await _searchBoxRef.FocusAsync();
