@@ -141,7 +141,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
                 toggleKey = DefaultToggleKey;
             }
 
-            if (string.IsNullOrEmpty(toggleKey) is false && option.Key == toggleKey)
+            if (toggleKey.HasValue() && option.Key == toggleKey)
             {
                 _ = SetToggled(item);
             }
@@ -227,7 +227,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
                 toggleKey = DefaultToggleKey;
             }
 
-            if (string.IsNullOrEmpty(toggleKey) is false)
+            if (toggleKey.HasValue())
             {
                 var item = Items.FirstOrDefault(i => GetItemKey(i) == toggleKey);
                 if (item is not null)
