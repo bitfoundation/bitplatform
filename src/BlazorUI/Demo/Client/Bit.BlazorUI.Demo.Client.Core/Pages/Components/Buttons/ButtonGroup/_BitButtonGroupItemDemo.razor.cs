@@ -39,10 +39,13 @@ public partial class _BitButtonGroupItemDemo
 
     private List<BitButtonGroupItem> toggledItems =
     [
-        new() { OnText = "Back (2X)", OffText = "Back (1X)", OnIconName = BitIconName.RewindTwoX, OffIconName = BitIconName.Rewind },
-        new() { OnTitle = "Resume", OffTitle = "Play", OnIconName = BitIconName.PlayResume, OffIconName = BitIconName.Play },
-        new() { OnText = "Forward (2X)", OffText = "Forward (1X)", OnIconName = BitIconName.FastForwardTwoX, OffIconName = BitIconName.FastForward, ReversedIcon = true }
+        new() { Key = "back", OnText = "Back (2X)", OffText = "Back (1X)", OnIconName = BitIconName.RewindTwoX, OffIconName = BitIconName.Rewind },
+        new() { Key = "play", OnTitle = "Resume", OffTitle = "Play", OnIconName = BitIconName.PlayResume, OffIconName = BitIconName.Play },
+        new() { Key = "forward", OnText = "Forward (2X)", OffText = "Forward (1X)", OnIconName = BitIconName.FastForwardTwoX, OffIconName = BitIconName.FastForward, ReversedIcon = true }
     ];
+
+    private string? toggleKey = "play";
+    private string? onChangeToggleKey;
 
     private List<BitButtonGroupItem> eventsItems =
     [

@@ -4,4 +4,7 @@ public partial class _BitButtonGroupOptionDemo
 {
     private int clickCounter;
     private string? clickedOption;
+
+    private string? toggleKey = "play";
+    private string? onChangeToggleKey;
 }

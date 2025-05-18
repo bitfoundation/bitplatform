@@ -38,12 +38,27 @@ public partial class _BitButtonGroupCustomDemo
         new() { Name = "Delete", Icon = BitIconName.Delete, ReversedIcon = true }
     ];
 
+    private BitButtonGroupNameSelectors<Operation> toggledNameSelectors = new()
+    {
+        Key = { Selector = i => i.Id },
+        OnText = { Selector = i => i.OnName },
+        OffText = { Selector = i => i.OffName },
+        OnTitle = { Selector = i => i.OnTitle },
+        OffTitle = { Selector = i => i.OffTitle },
+        OnIconName = { Selector = i => i.OnIcon },
+        OffIconName = { Selector = i => i.OffIcon },
+        ReversedIcon = { Selector = i => i.ReversedIcon }
+    };
+
     private List<Operation> toggledCustoms =
     [
-        new() { OnName = "Back (2X)", OffName = "Back (1X)", OnIcon = BitIconName.RewindTwoX, OffIcon = BitIconName.Rewind },
-        new() { OnTitle = "Resume", OffTitle = "Play", OnIcon = BitIconName.PlayResume, OffIcon = BitIconName.Play },
-        new() { OnName = "Forward (2X)", OffName = "Forward (1X)", OnIcon = BitIconName.FastForwardTwoX, OffIcon = BitIconName.FastForward, ReversedIcon = true }
+        new() { Id = "back", OnName = "Back (2X)", OffName = "Back (1X)", OnIcon = BitIconName.RewindTwoX, OffIcon = BitIconName.Rewind },
+        new() { Id = "play", OnTitle = "Resume", OffTitle = "Play", OnIcon = BitIconName.PlayResume, OffIcon = BitIconName.Play },
+        new() { Id = "forward", OnName = "Forward (2X)", OffName = "Forward (1X)", OnIcon = BitIconName.FastForwardTwoX, OffIcon = BitIconName.FastForward, ReversedIcon = true }
     ];
+
+    private string? toggleKey = "play";
+    private string? onChangeToggleKey;
 
     private List<Operation> eventsCustoms =
     [
