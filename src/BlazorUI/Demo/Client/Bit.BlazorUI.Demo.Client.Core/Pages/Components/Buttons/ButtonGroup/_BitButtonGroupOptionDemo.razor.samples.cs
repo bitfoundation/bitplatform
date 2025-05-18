@@ -134,7 +134,25 @@ public partial class _BitButtonGroupOptionDemo
     <BitButtonGroupOption OnText=""Back (2X)"" OffText=""Back (1X)"" OnIconName=""@BitIconName.RewindTwoX"" OffIconName=""@BitIconName.Rewind"" />
     <BitButtonGroupOption OnTitle=""Resume"" OffTitle=""Play"" OnIconName=""@BitIconName.PlayResume"" OffIconName=""@BitIconName.Play"" />
     <BitButtonGroupOption OnText=""Forward (2X)"" OffText=""Forward (1X)"" OnIconName=""@BitIconName.FastForwardTwoX"" OffIconName=""@BitIconName.FastForward"" ReversedIcon />
-</BitButtonGroup>";
+</BitButtonGroup>
+
+
+<BitButtonGroup Toggle Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"" @bind-ToggleKey=""toggleKey"">
+    <BitButtonGroupOption Key=""back"" OnText=""Back (2X)"" OffText=""Back (1X)"" OnIconName=""@BitIconName.RewindTwoX"" OffIconName=""@BitIconName.Rewind"" />
+    <BitButtonGroupOption Key=""play"" OnTitle=""Resume"" OffTitle=""Play"" OnIconName=""@BitIconName.PlayResume"" OffIconName=""@BitIconName.Play"" />
+    <BitButtonGroupOption Key=""forward"" OnText=""Forward (2X)"" OffText=""Forward (1X)"" OnIconName=""@BitIconName.FastForwardTwoX"" OffIconName=""@BitIconName.FastForward"" ReversedIcon />
+</BitButtonGroup>
+<div>Toggle key: @toggleKey</div>
+
+<BitButtonGroup Toggle Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"" DefaultToggleKey=""forward"" OnToggleChange=""(BitButtonGroupOption i) => onChangeToggleKey = i.Key"">
+    <BitButtonGroupOption Key=""back"" OnText=""Back (2X)"" OffText=""Back (1X)"" OnIconName=""@BitIconName.RewindTwoX"" OffIconName=""@BitIconName.Rewind"" />
+    <BitButtonGroupOption Key=""play"" OnTitle=""Resume"" OffTitle=""Play"" OnIconName=""@BitIconName.PlayResume"" OffIconName=""@BitIconName.Play"" />
+    <BitButtonGroupOption Key=""forward"" OnText=""Forward (2X)"" OffText=""Forward (1X)"" OnIconName=""@BitIconName.FastForwardTwoX"" OffIconName=""@BitIconName.FastForward"" ReversedIcon />
+</BitButtonGroup>
+<div>Toggle key: @onChangeToggleKey</div>";
+    private readonly string example6CsharpCode = @"
+private string? toggleKey = ""play"";
+private string? onChangeToggleKey;";
 
     private readonly string example7RazorCode = @"
 <BitButtonGroup Variant=""BitVariant.Fill"" Vertical TItem=""BitButtonGroupOption"">
