@@ -41,6 +41,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     [Parameter] public string? DefaultToggleKey { get; set; }
 
     /// <summary>
+    /// Enables the fixed-toggle mode that ensures one item to be always toggled.
+    /// </summary>
+    [Parameter] public bool FixedToggle { get; set; }
+
+    /// <summary>
     /// Expand the ButtonGroup width to 100% of the available width.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -214,7 +219,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     protected override async Task OnInitializedAsync()
     {
-        if (Toggle && Items is not null)
+        if (Toggle && Items is not null && Items.Any())
         {
             var toggleKey = string.Empty;
 
@@ -301,7 +306,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             classes.Add("bit-btg-rvi");
         }
 
-        if (IsToggled(item))
+        if (IsItemToggled(item))
         {
             classes.Add("bit-btg-chk");
 
@@ -340,7 +345,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             styles.Add(Styles.Button!.Trim(';'));
         }
 
-        if (IsToggled(item) && (Styles?.ToggledButton.HasValue() ?? false))
+        if (IsItemToggled(item) && (Styles?.ToggledButton.HasValue() ?? false))
         {
             styles.Add(Styles.ToggledButton!);
         }
@@ -354,7 +359,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
         if (Toggle)
         {
-            if (IsToggled(item))
+            if (IsItemToggled(item))
             {
                 var onText = GetOnText(item);
                 if (onText.HasValue())
@@ -379,7 +384,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     {
         if (Toggle)
         {
-            if (IsToggled(item))
+            if (IsItemToggled(item))
             {
                 var onTitle = GetOnTitle(item);
                 if (onTitle.HasValue())
@@ -404,7 +409,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     {
         if (Toggle)
         {
-            if (IsToggled(item))
+            if (IsItemToggled(item))
             {
                 var onIconName = GetOnIconName(item);
                 if (onIconName.HasValue())
@@ -432,7 +437,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         if (ToggleKeyHasBeenSet && ToggleKeyChanged.HasDelegate is false) return;
 
         string? toggleKey = null;
-        var toggleItem = _items.FirstOrDefault(i => IsToggled(i));
+        var toggleItem = _items.FirstOrDefault(IsItemToggled);
 
         if (toggleItem != item)
         {
@@ -440,7 +445,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             SetIsToggled(item, true);
             toggleKey = GetItemKey(item);
         }
-        else
+        else if (FixedToggle is false)
         {
             _toggleItem = null;
         }
@@ -454,7 +459,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         await OnToggleChange.InvokeAsync(item);
     }
 
-    private bool IsToggled(TItem item)
+    private bool IsItemToggled(TItem item)
     {
         return _toggleItem == item;
     }
