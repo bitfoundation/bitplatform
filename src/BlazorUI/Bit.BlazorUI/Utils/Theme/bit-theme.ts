@@ -1,6 +1,7 @@
 type onThemeChangeType = (newThemeName: string, oldThemeName: string) => void;
 
 class BitTheme {
+    private static SYSTEM_THEME = 'system';
     private static THEME_ATTRIBUTE = 'bit-theme';
     private static THEME_STORAGE_KEY = 'bit-current-theme';
 
@@ -25,14 +26,22 @@ class BitTheme {
         }
 
         if (options.system) {
-            BitTheme._currentTheme = BitTheme.isSystemDark() ? BitTheme._darkTheme : BitTheme._lightTheme;
+            BitTheme._currentTheme = BitTheme.isSystemDark()
+                ? BitTheme._darkTheme
+                : BitTheme._lightTheme;
         } else if (options.default) {
             BitTheme._currentTheme = options.default;
         }
 
         if (options.persist) {
             BitTheme._persist = true;
-            BitTheme._currentTheme = localStorage.getItem(BitTheme.THEME_STORAGE_KEY) || BitTheme._currentTheme;
+            let storedValue = localStorage.getItem(BitTheme.THEME_STORAGE_KEY);
+            if (storedValue === BitTheme.SYSTEM_THEME) {
+                storedValue = BitTheme.isSystemDark()
+                    ? BitTheme._darkTheme
+                    : BitTheme._lightTheme;
+            }
+            BitTheme._currentTheme = storedValue || BitTheme._currentTheme;
         }
 
         BitTheme.set(BitTheme._currentTheme);
@@ -45,23 +54,37 @@ class BitTheme {
     public static get() {
         BitTheme._currentTheme = document.documentElement.getAttribute(BitTheme.THEME_ATTRIBUTE) || '';
 
+        if (BitTheme._persist) {
+            BitTheme._currentTheme = localStorage.getItem(BitTheme.THEME_STORAGE_KEY) || BitTheme._currentTheme;
+        }
+
         return BitTheme._currentTheme;
     }
 
     public static set(themeName: string) {
-        BitTheme._currentTheme = themeName;
+        if (themeName == BitTheme.SYSTEM_THEME) {
+            BitTheme._currentTheme = BitTheme.isSystemDark()
+                ? BitTheme._darkTheme
+                : BitTheme._lightTheme;
+        } else {
+            BitTheme._currentTheme = themeName;
+        }
+
         if (BitTheme._persist) {
             localStorage.setItem(BitTheme.THEME_STORAGE_KEY, themeName);
         }
 
         const oldTheme = document.documentElement.getAttribute(BitTheme.THEME_ATTRIBUTE) || '';
-        document.documentElement.setAttribute(BitTheme.THEME_ATTRIBUTE, themeName);
 
-        BitTheme._onThemeChange?.(themeName, oldTheme);
+        document.documentElement.setAttribute(BitTheme.THEME_ATTRIBUTE, BitTheme._currentTheme);
+
+        BitTheme._onThemeChange?.(BitTheme._currentTheme, oldTheme);
     }
 
     public static toggleDarkLight() {
-        BitTheme._currentTheme = BitTheme._currentTheme === BitTheme._lightTheme ? BitTheme._darkTheme : BitTheme._lightTheme;
+        BitTheme._currentTheme = BitTheme._currentTheme === BitTheme._lightTheme
+            ? BitTheme._darkTheme
+            : BitTheme._lightTheme;
 
         BitTheme.set(BitTheme._currentTheme);
 
