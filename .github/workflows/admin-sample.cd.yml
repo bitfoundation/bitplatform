@@ -68,7 +68,7 @@ jobs:
       run: |
           sed -i 's/EmbeddingIsEnabled = false/EmbeddingIsEnabled = true/' AdminPanel/src/Server/AdminPanel.Server.Api/Data/AppDbContext.cs
 
-    - name: Configure bswup # The adminpanel.bitplatform.dev lacks pre-rendering functionality, but the configuration below enables lazy loading of files when feasible.
+    - name: Configure bswup # The adminpanel.bitplatform.cc lacks pre-rendering functionality, but the configuration below enables lazy loading of files when feasible. True offline support is not expected for this demo.
       run: |
           sed -i "s/\/\/ self.prerenderMode = 'initial'/self.prerenderMode = 'initial'/g" AdminPanel/src/Client/AdminPanel.Client.Web/wwwroot/service-worker.published.js
       
@@ -125,6 +125,10 @@ jobs:
         
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools
+
+    - name: Configure bswup # The adminpanel.bitplatform.dev lacks pre-rendering functionality, but the configuration below enables lazy loading of files when feasible. True offline support is not expected for this demo.
+      run: |
+          sed -i "s/\/\/ self.prerenderMode = 'initial'/self.prerenderMode = 'initial'/g" AdminPanel/src/Client/AdminPanel.Client.Web/wwwroot/service-worker.published.js
       
     - name: Generate CSS/JS files
       run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
