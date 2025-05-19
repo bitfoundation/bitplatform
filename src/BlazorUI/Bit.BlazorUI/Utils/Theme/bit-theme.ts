@@ -25,26 +25,22 @@ class BitTheme {
             BitTheme._lightTheme = options.lightTheme;
         }
 
+        let theme = BitTheme._lightTheme;
+
         if (options.system) {
-            BitTheme._currentTheme = BitTheme.isSystemDark()
+            theme = BitTheme.isSystemDark()
                 ? BitTheme._darkTheme
                 : BitTheme._lightTheme;
         } else if (options.default) {
-            BitTheme._currentTheme = options.default;
+            theme = options.default;
         }
 
         if (options.persist) {
             BitTheme._persist = true;
-            let storedValue = localStorage.getItem(BitTheme.THEME_STORAGE_KEY);
-            if (storedValue === BitTheme.SYSTEM_THEME) {
-                storedValue = BitTheme.isSystemDark()
-                    ? BitTheme._darkTheme
-                    : BitTheme._lightTheme;
-            }
-            BitTheme._currentTheme = storedValue || BitTheme._currentTheme;
+            theme = BitTheme.getPersisted() || theme;
         }
 
-        BitTheme.set(BitTheme._currentTheme);
+        BitTheme.set(theme);
     }
 
     public static onChange(fn: onThemeChangeType) {
@@ -55,26 +51,15 @@ class BitTheme {
         BitTheme._currentTheme = document.documentElement.getAttribute(BitTheme.THEME_ATTRIBUTE) || '';
 
         if (BitTheme._persist) {
-            let storedValue = localStorage.getItem(BitTheme.THEME_STORAGE_KEY);
-            if (storedValue === BitTheme.SYSTEM_THEME) {
-                storedValue = BitTheme.isSystemDark()
-                    ? BitTheme._darkTheme
-                    : BitTheme._lightTheme;
-            }
-            BitTheme._currentTheme = storedValue || BitTheme._currentTheme;
+            var theme = BitTheme.getActualTheme(BitTheme.getPersisted());
+            BitTheme._currentTheme = theme || BitTheme._currentTheme;
         }
 
         return BitTheme._currentTheme;
     }
 
     public static set(themeName: string) {
-        if (themeName == BitTheme.SYSTEM_THEME) {
-            BitTheme._currentTheme = BitTheme.isSystemDark()
-                ? BitTheme._darkTheme
-                : BitTheme._lightTheme;
-        } else {
-            BitTheme._currentTheme = themeName;
-        }
+        BitTheme._currentTheme = BitTheme.getActualTheme(themeName)!;
 
         if (BitTheme._persist) {
             localStorage.setItem(BitTheme.THEME_STORAGE_KEY, themeName);
@@ -112,6 +97,14 @@ class BitTheme {
         if (!BitTheme._persist) return null;
 
         return localStorage.getItem(BitTheme.THEME_STORAGE_KEY);
+    }
+
+    private static getActualTheme(theme: string | null) {
+        if (theme === BitTheme.SYSTEM_THEME) {
+            return BitTheme.isSystemDark() ? BitTheme._darkTheme : BitTheme._lightTheme;
+        }
+
+        return theme;
     }
 }
 

@@ -22,6 +22,11 @@ internal static class BitThemeJsExtensions
         return js.InvokeVoid("BitTheme.applyBitTheme", theme, element);
     }
 
+    internal static ValueTask<bool> BitThemeIsSystemDark(this IJSRuntime js)
+    {
+        return js.Invoke<bool>("BitTheme.isSystemDark");
+    }
+
     internal static ValueTask<string> BitThemeGetCurrentPersistedTheme(this IJSRuntime js)
     {
         return js.Invoke<string>("BitTheme.getPersisted");

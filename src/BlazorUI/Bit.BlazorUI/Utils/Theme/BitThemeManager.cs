@@ -31,6 +31,11 @@ public class BitThemeManager
         await _js.BitThemeApplyBitTheme(BitThemeMapper.MapToCssVariables(bitTheme), element);
     }
 
+    public async ValueTask<bool> IsSystemInDarkMode()
+    {
+        return await _js.BitThemeIsSystemDark();
+    }
+
     public async ValueTask<string> GetCurrentPersistedThemeAsync()
     {
         return await _js.BitThemeGetCurrentPersistedTheme();
