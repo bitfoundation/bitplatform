@@ -210,7 +210,7 @@
         <BitButtonGroupOption Key="forward" OnText="Forward (2X)" OffText="Forward (1X)" OnIconName="@BitIconName.FastForwardTwoX" OffIconName="@BitIconName.FastForward" ReversedIcon />
     </BitButtonGroup>
     <div>Toggle key: @toggleKey</div>
-    <BitButton Onclick="@(() => toggleKey = "forward")">Forward</BitButton>
+    <BitButton OnClick="@(() => toggleKey = "forward")">Forward</BitButton>
     <br /><br /><br /><br />
     <div>OnToggleChange:</div><br />
     <BitButtonGroup Toggle Variant="BitVariant.Outline" TItem="BitButtonGroupOption" DefaultToggleKey="forward" OnToggleChange="(BitButtonGroupOption o) => onChangeToggleOption = o">

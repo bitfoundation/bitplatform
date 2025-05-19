@@ -151,10 +151,10 @@
     <div>Binding:</div><br />
     <BitButtonGroup Toggle Variant="BitVariant.Outline" Items="toggledCustoms" NameSelectors="toggledNameSelectors" @bind-ToggleKey="toggleKey" />
     <div>Toggle key: @toggleKey</div>
-    <BitButton Onclick="@(() => toggleKey = "forward")">Forward</BitButton>
+    <BitButton OnClick="@(() => toggleKey = "forward")">Forward</BitButton>
     <br /><br /><br /><br />
     <div>OnToggleChange:</div><br />
-    <BitButtonGroup Toggle Variant="BitVariant.Outline" Items="toggledCustoms" NameSelectors="toggledNameSelectors" DefaultToggleKey="forward" OnToggleChange="(Operation o) => onChangeToggleCustom = o" />
+    <BitButtonGroup Toggle Variant="BitVariant.Outline" Items="changeToggledCustoms" NameSelectors="toggledNameSelectors" DefaultToggleKey="forward" OnToggleChange="(Operation o) => onChangeToggleCustom = o" />
     <div>Changed toggle: @onChangeToggleCustom?.Id , @onChangeToggleCustom?.IsSelected</div>
 </DemoExample>
 

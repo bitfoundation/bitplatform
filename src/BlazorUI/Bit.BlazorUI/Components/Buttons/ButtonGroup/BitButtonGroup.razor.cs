@@ -220,7 +220,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     protected override async Task OnInitializedAsync()
     {
-        _items = [.. Items];
+        _items = Items is not null ? [.. Items] : [];
 
         if (Toggle && Items is not null && Items.Any())
         {
@@ -277,6 +277,8 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
         await base.OnParametersSetAsync();
     }
+
+
 
     private async Task HandleOnItemClick(TItem item)
     {
@@ -450,11 +452,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         if (ToggleKeyHasBeenSet && ToggleKeyChanged.HasDelegate is false) return;
 
         string? toggleKey = GetItemKey(_toggleItem);
-        var toggleItem = _items.FirstOrDefault(IsItemToggled);
+        var oldToggledItem = _items.FirstOrDefault(IsItemToggled);
 
-        if (toggleItem == item && (isToggled is false || FixedToggle)) return;
+        if (oldToggledItem == item && (isToggled is false || FixedToggle)) return;
 
-        if (toggleItem != item)
+        if (oldToggledItem != item)
         {
             _toggleItem = item;
             SetIsToggled(item, true);
@@ -464,10 +466,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         {
             toggleKey = null;
             _toggleItem = null;
-            if (toggleItem is not null)
-            {
-                SetIsToggled(toggleItem, false);
-            }
+        }
+
+        if (oldToggledItem is not null)
+        {
+            SetIsToggled(oldToggledItem, false);
         }
 
         await AssignToggleKey(toggleKey);

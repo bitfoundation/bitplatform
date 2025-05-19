@@ -157,9 +157,9 @@ private List<Operation> reversedIconCustoms =
 
 <BitButtonGroup Toggle Variant=""BitVariant.Outline"" Items=""toggledCustoms"" NameSelectors=""toggledNameSelectors"" @bind-ToggleKey=""toggleKey"" />
 <div>Toggle key: @toggleKey</div>
-<BitButton Onclick=""@(() => toggleKey = ""forward"")"">Forward</BitButton>
+<BitButton OnClick=""@(() => toggleKey = ""forward"")"">Forward</BitButton>
 
-<BitButtonGroup Toggle Variant=""BitVariant.Outline"" Items=""toggledCustoms"" NameSelectors=""toggledNameSelectors"" DefaultToggleKey=""forward"" OnToggleChange=""(Operation o) => onChangeToggleCustom = o"" />
+<BitButtonGroup Toggle Variant=""BitVariant.Outline"" Items=""changeToggledCustoms"" NameSelectors=""toggledNameSelectors"" DefaultToggleKey=""forward"" OnToggleChange=""(Operation o) => onChangeToggleCustom = o"" />
 <div>Changed toggle: @onChangeToggleCustom?.Id , @onChangeToggleCustom?.IsSelected</div>";
     private readonly string example6CsharpCode = @"
 public class Operation
@@ -188,6 +188,7 @@ private BitButtonGroupNameSelectors<Operation> toggledNameSelectors = new()
     IsToggled = { Name = nameof(Operation.IsSelected) }
 };
 
+private string? toggleKey = ""play"";
 private List<Operation> toggledCustoms =
 [
     new() { Id = ""back"", OnName = ""Back (2X)"", OffName = ""Back (1X)"", OnIcon = BitIconName.RewindTwoX, OffIcon = BitIconName.Rewind },
@@ -195,8 +196,13 @@ private List<Operation> toggledCustoms =
     new() { Id = ""forward"", OnName = ""Forward (2X)"", OffName = ""Forward (1X)"", OnIcon = BitIconName.FastForwardTwoX, OffIcon = BitIconName.FastForward, ReversedIcon = true }
 ];
 
-private string? toggleKey = ""play"";
-private Operation? onChangeToggleCustom;";
+private Operation? onChangeToggleCustom;
+private List<Operation> changeToggledCustoms =
+[
+    new() { Id = ""back"", OnName = ""Back (2X)"", OffName = ""Back (1X)"", OnIcon = BitIconName.RewindTwoX, OffIcon = BitIconName.Rewind },
+    new() { Id = ""play"", OnTitle = ""Resume"", OffTitle = ""Play"", OnIcon = BitIconName.PlayResume, OffIcon = BitIconName.Play },
+    new() { Id = ""forward"", OnName = ""Forward (2X)"", OffName = ""Forward (1X)"", OnIcon = BitIconName.FastForwardTwoX, OffIcon = BitIconName.FastForward, ReversedIcon = true }
+];";
 
     private readonly string example7RazorCode = @"
 <BitButtonGroup Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" Vertical />
