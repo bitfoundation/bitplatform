@@ -87,10 +87,12 @@ private List<BitButtonGroupItem> reversedIconItems =
 
 <BitButtonGroup Toggle Variant=""BitVariant.Outline"" Items=""toggledItems"" @bind-ToggleKey=""toggleKey"" />
 <div>Toggle key: @toggleKey</div>
+<BitButton OnClick=""@(() => toggleKey = ""forward"")"">Forward</BitButton>
 
-<BitButtonGroup Toggle Variant=""BitVariant.Outline"" Items=""toggledItems"" DefaultToggleKey=""forward"" OnToggleChange=""(BitButtonGroupItem i) => onChangeToggleKey = i.Key"" />
-<div>Toggle key: @onChangeToggleKey</div>";
+<BitButtonGroup Toggle Variant=""BitVariant.Outline"" Items=""changeToggledItems"" DefaultToggleKey=""forward"" OnToggleChange=""(BitButtonGroupItem i) => onChangeToggleItem = i"" />
+<div>Changed toggle: @onChangeToggleItem?.Key , @onChangeToggleItem?.IsToggled</div>";
     private readonly string example6CsharpCode = @"
+private string? toggleKey = ""play"";
 private List<BitButtonGroupItem> toggledItems =
 [
     new() { Key = ""back"", OnText = ""Back (2X)"", OffText = ""Back (1X)"", OnIconName = BitIconName.RewindTwoX, OffIconName = BitIconName.Rewind },
@@ -98,8 +100,13 @@ private List<BitButtonGroupItem> toggledItems =
     new() { Key = ""forward"", OnText = ""Forward (2X)"", OffText = ""Forward (1X)"", OnIconName = BitIconName.FastForwardTwoX, OffIconName = BitIconName.FastForward, ReversedIcon = true }
 ];
 
-private string? toggleKey = ""play"";
-private string? onChangeToggleKey;";
+private BitButtonGroupItem? onChangeToggleItem;
+private List<BitButtonGroupItem> changeToggledItems =
+[
+    new() { Key = ""back"", OnText = ""Back (2X)"", OffText = ""Back (1X)"", OnIconName = BitIconName.RewindTwoX, OffIconName = BitIconName.Rewind },
+    new() { Key = ""play"", OnTitle = ""Resume"", OffTitle = ""Play"", OnIconName = BitIconName.PlayResume, OffIconName = BitIconName.Play },
+    new() { Key = ""forward"", OnText = ""Forward (2X)"", OffText = ""Forward (1X)"", OnIconName = BitIconName.FastForwardTwoX, OffIconName = BitIconName.FastForward, ReversedIcon = true }
+];";
 
     private readonly string example7RazorCode = @"
 <BitButtonGroup Variant=""BitVariant.Fill"" Items=""basicItems"" Vertical />

@@ -55,7 +55,13 @@ class BitTheme {
         BitTheme._currentTheme = document.documentElement.getAttribute(BitTheme.THEME_ATTRIBUTE) || '';
 
         if (BitTheme._persist) {
-            BitTheme._currentTheme = localStorage.getItem(BitTheme.THEME_STORAGE_KEY) || BitTheme._currentTheme;
+            let storedValue = localStorage.getItem(BitTheme.THEME_STORAGE_KEY);
+            if (storedValue === BitTheme.SYSTEM_THEME) {
+                storedValue = BitTheme.isSystemDark()
+                    ? BitTheme._darkTheme
+                    : BitTheme._lightTheme;
+            }
+            BitTheme._currentTheme = storedValue || BitTheme._currentTheme;
         }
 
         return BitTheme._currentTheme;
@@ -79,6 +85,8 @@ class BitTheme {
         document.documentElement.setAttribute(BitTheme.THEME_ATTRIBUTE, BitTheme._currentTheme);
 
         BitTheme._onThemeChange?.(BitTheme._currentTheme, oldTheme);
+
+        return BitTheme._currentTheme;
     }
 
     public static toggleDarkLight() {
@@ -98,6 +106,12 @@ class BitTheme {
 
     public static isSystemDark() {
         return matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    public static getPersisted() {
+        if (!BitTheme._persist) return null;
+
+        return localStorage.getItem(BitTheme.THEME_STORAGE_KEY);
     }
 }
 
