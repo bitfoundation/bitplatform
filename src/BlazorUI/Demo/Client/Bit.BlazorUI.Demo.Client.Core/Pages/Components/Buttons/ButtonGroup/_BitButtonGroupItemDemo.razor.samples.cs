@@ -87,9 +87,10 @@ private List<BitButtonGroupItem> reversedIconItems =
 
 <BitButtonGroup Toggle Variant=""BitVariant.Outline"" Items=""toggledItems"" @bind-ToggleKey=""toggleKey"" />
 <div>Toggle key: @toggleKey</div>
+<BitButton Onclick=""@(() => toggleKey = ""forward"")"">Forward</BitButton>
 
-<BitButtonGroup Toggle Variant=""BitVariant.Outline"" Items=""toggledItems"" DefaultToggleKey=""forward"" OnToggleChange=""(BitButtonGroupItem i) => onChangeToggleKey = i.Key"" />
-<div>Toggle key: @onChangeToggleKey</div>";
+<BitButtonGroup Toggle Variant=""BitVariant.Outline"" Items=""toggledItems"" DefaultToggleKey=""forward"" OnToggleChange=""(BitButtonGroupItem i) => onChangeToggleItem = i"" />
+<div>Changed toggle: @onChangeToggleItem?.Key , @onChangeToggleItem?.IsToggled</div>";
     private readonly string example6CsharpCode = @"
 private List<BitButtonGroupItem> toggledItems =
 [
@@ -99,7 +100,7 @@ private List<BitButtonGroupItem> toggledItems =
 ];
 
 private string? toggleKey = ""play"";
-private string? onChangeToggleKey;";
+private BitButtonGroupItem? onChangeToggleItem;";
 
     private readonly string example7RazorCode = @"
 <BitButtonGroup Variant=""BitVariant.Fill"" Items=""basicItems"" Vertical />

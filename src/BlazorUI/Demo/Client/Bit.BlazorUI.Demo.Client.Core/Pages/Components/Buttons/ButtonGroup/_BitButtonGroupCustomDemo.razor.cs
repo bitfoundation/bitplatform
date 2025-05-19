@@ -47,7 +47,8 @@ public partial class _BitButtonGroupCustomDemo
         OffTitle = { Selector = i => i.OffTitle },
         OnIconName = { Selector = i => i.OnIcon },
         OffIconName = { Selector = i => i.OffIcon },
-        ReversedIcon = { Selector = i => i.ReversedIcon }
+        ReversedIcon = { Selector = i => i.ReversedIcon },
+        IsToggled = { Name = nameof(Operation.IsSelected) }
     };
 
     private List<Operation> toggledCustoms =
@@ -58,7 +59,7 @@ public partial class _BitButtonGroupCustomDemo
     ];
 
     private string? toggleKey = "play";
-    private string? onChangeToggleKey;
+    private Operation? onChangeToggleCustom;
 
     private List<Operation> eventsCustoms =
     [

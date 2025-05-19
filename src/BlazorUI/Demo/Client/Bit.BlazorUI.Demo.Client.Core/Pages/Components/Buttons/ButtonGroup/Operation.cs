@@ -29,4 +29,6 @@ public class Operation
     public string? OnTitle { get; set; }
 
     public string? OffTitle { get; set; }
+
+    public bool IsSelected { get; set; }
 }

@@ -6,5 +6,5 @@ public partial class _BitButtonGroupOptionDemo
     private string? clickedOption;
 
     private string? toggleKey = "play";
-    private string? onChangeToggleKey;
+    private BitButtonGroupOption? onChangeToggleOption;
 }

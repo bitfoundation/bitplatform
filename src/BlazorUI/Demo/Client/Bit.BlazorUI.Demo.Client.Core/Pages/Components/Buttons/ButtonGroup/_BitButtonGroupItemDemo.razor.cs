@@ -45,7 +45,7 @@ public partial class _BitButtonGroupItemDemo
     ];
 
     private string? toggleKey = "play";
-    private string? onChangeToggleKey;
+    private BitButtonGroupItem? onChangeToggleItem;
 
     private List<BitButtonGroupItem> eventsItems =
     [

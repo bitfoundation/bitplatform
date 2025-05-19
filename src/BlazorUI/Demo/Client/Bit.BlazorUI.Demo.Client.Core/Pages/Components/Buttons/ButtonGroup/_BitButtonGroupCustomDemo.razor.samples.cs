@@ -157,12 +157,14 @@ private List<Operation> reversedIconCustoms =
 
 <BitButtonGroup Toggle Variant=""BitVariant.Outline"" Items=""toggledCustoms"" NameSelectors=""toggledNameSelectors"" @bind-ToggleKey=""toggleKey"" />
 <div>Toggle key: @toggleKey</div>
+<BitButton Onclick=""@(() => toggleKey = ""forward"")"">Forward</BitButton>
 
-<BitButtonGroup Toggle Variant=""BitVariant.Outline"" Items=""toggledCustoms"" NameSelectors=""toggledNameSelectors"" DefaultToggleKey=""forward"" OnToggleChange=""(Operation i) => onChangeToggleKey = i.Id"" />
-<div>Toggle key: @onChangeToggleKey</div>";
+<BitButtonGroup Toggle Variant=""BitVariant.Outline"" Items=""toggledCustoms"" NameSelectors=""toggledNameSelectors"" DefaultToggleKey=""forward"" OnToggleChange=""(Operation o) => onChangeToggleCustom = o"" />
+<div>Changed toggle: @onChangeToggleCustom?.Id , @onChangeToggleCustom?.IsSelected</div>";
     private readonly string example6CsharpCode = @"
 public class Operation
 {
+    public string? Id { get; set; }
     public string? OnIcon { get; set; }
     public string? OffIcon { get; set; }
     public string? OnName { get; set; }
@@ -170,6 +172,7 @@ public class Operation
     public string? OnTitle { get; set; }
     public string? OffTitle { get; set; }
     public bool ReversedIcon { get; set; }
+    public bool IsSelected { get; set; }
 }
 
 private BitButtonGroupNameSelectors<Operation> toggledNameSelectors = new()
@@ -181,7 +184,8 @@ private BitButtonGroupNameSelectors<Operation> toggledNameSelectors = new()
     OffTitle = { Selector = i => i.OffTitle },
     OnIconName = { Selector = i => i.OnIcon },
     OffIconName = { Selector = i => i.OffIcon },
-    ReversedIcon = { Selector = i => i.ReversedIcon }
+    ReversedIcon = { Selector = i => i.ReversedIcon },
+    IsToggled = { Name = nameof(Operation.IsSelected) }
 };
 
 private List<Operation> toggledCustoms =
@@ -192,7 +196,7 @@ private List<Operation> toggledCustoms =
 ];
 
 private string? toggleKey = ""play"";
-private string? onChangeToggleKey;";
+private Operation? onChangeToggleCustom;";
 
     private readonly string example7RazorCode = @"
 <BitButtonGroup Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" Vertical />
