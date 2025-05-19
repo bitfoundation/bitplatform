@@ -85,6 +85,8 @@ class BitTheme {
         document.documentElement.setAttribute(BitTheme.THEME_ATTRIBUTE, BitTheme._currentTheme);
 
         BitTheme._onThemeChange?.(BitTheme._currentTheme, oldTheme);
+
+        return BitTheme._currentTheme;
     }
 
     public static toggleDarkLight() {
@@ -106,7 +108,7 @@ class BitTheme {
         return matchMedia('(prefers-color-scheme: dark)').matches;
     }
 
-    public static getStored() {
+    public static getPersisted() {
         if (!BitTheme._persist) return null;
 
         return localStorage.getItem(BitTheme.THEME_STORAGE_KEY);
