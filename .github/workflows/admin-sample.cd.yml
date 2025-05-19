@@ -67,6 +67,10 @@ jobs:
     - name: Configure text embedding
       run: |
           sed -i 's/EmbeddingIsEnabled = false/EmbeddingIsEnabled = true/' AdminPanel/src/Server/AdminPanel.Server.Api/Data/AppDbContext.cs
+
+    - name: Configure bswup # The adminpanel.bitplatform.dev lacks pre-rendering functionality, but the configuration below enables lazy loading of files when feasible.
+      run: |
+          sed -i "s/\/\/ self.prerenderMode = 'initial'/self.prerenderMode = 'initial'/g" AdminPanel/src/Client/AdminPanel.Client.Web/wwwroot/service-worker.published.js
       
     - name: Generate CSS/JS files
       run: |
