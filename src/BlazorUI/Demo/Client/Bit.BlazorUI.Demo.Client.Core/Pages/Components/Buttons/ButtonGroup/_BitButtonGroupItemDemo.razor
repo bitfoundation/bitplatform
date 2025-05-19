@@ -124,10 +124,11 @@
     <div>Binding:</div><br />
     <BitButtonGroup Toggle Variant="BitVariant.Outline" Items="toggledItems" @bind-ToggleKey="toggleKey" />
     <div>Toggle key: @toggleKey</div>
+    <BitButton OnClick="@(() => toggleKey = "forward")">Forward</BitButton>
     <br /><br /><br /><br />
     <div>OnToggleChange:</div><br />
-    <BitButtonGroup Toggle Variant="BitVariant.Outline" Items="toggledItems" DefaultToggleKey="forward" OnToggleChange="(BitButtonGroupItem i) => onChangeToggleKey = i.Key" />
-    <div>Toggle key: @onChangeToggleKey</div>
+    <BitButtonGroup Toggle Variant="BitVariant.Outline" Items="changeToggledItems" DefaultToggleKey="forward" OnToggleChange="(BitButtonGroupItem i) => onChangeToggleItem = i" />
+    <div>Changed toggle: @onChangeToggleItem?.Key , @onChangeToggleItem?.IsToggled</div>
 </DemoExample>
 
 <DemoExample Title="Vertical" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
