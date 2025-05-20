@@ -268,34 +268,33 @@ public static partial class Program
         var emailSettings = appSettings.Email ?? throw new InvalidOperationException("Email settings are required.");
         var fluentEmailServiceBuilder = services.AddFluentEmail(emailSettings.DefaultFromEmail);
 
-        if (emailSettings.UseLocalFolderForEmails)
+        fluentEmailServiceBuilder.AddSmtpSender(() =>
         {
-            var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
-            var sentEmailsFolderPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data", "sent-emails");
-
-            Directory.CreateDirectory(sentEmailsFolderPath);
-
-            fluentEmailServiceBuilder.AddSmtpSender(() => new SmtpClient
+            if (emailSettings.UseLocalFolderForEmails)
             {
-                DeliveryMethod = SmtpDeliveryMethod.SpecifiedPickupDirectory,
-                PickupDirectoryLocation = sentEmailsFolderPath
-            });
-        }
-        else
-        {
+                var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
+                var sentEmailsFolderPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data", "sent-emails");
+
+                Directory.CreateDirectory(sentEmailsFolderPath);
+
+                return new SmtpClient
+                {
+                    DeliveryMethod = SmtpDeliveryMethod.SpecifiedPickupDirectory,
+                    PickupDirectoryLocation = sentEmailsFolderPath
+                };
+            }
+
             if (emailSettings.HasCredential)
             {
-                fluentEmailServiceBuilder.AddSmtpSender(() => new(emailSettings.Host, emailSettings.Port)
+                return new(emailSettings.Host, emailSettings.Port)
                 {
                     Credentials = new NetworkCredential(emailSettings.UserName, emailSettings.Password),
                     EnableSsl = true
-                });
+                };
             }
-            else
-            {
-                fluentEmailServiceBuilder.AddSmtpSender(emailSettings.Host, emailSettings.Port);
-            }
-        }
+
+            return new(emailSettings.Host, emailSettings.Port);
+        });
 
         //#if (captcha == "reCaptcha")
         services.AddHttpClient<GoogleRecaptchaService>(c =>
