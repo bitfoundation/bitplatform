@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using System.Web;
 using System.Diagnostics;
 
@@ -9,6 +9,11 @@ internal class LoggingDelegatingHandler(ILogger<HttpClient> logger, HttpMessageH
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        if (request.Method == HttpMethod.Get && request.Content is not null)
+        {
+            logger.Log(AppPlatform.IsBrowser ? LogLevel.Error : LogLevel.Warning, "Request with body will not work in Blazor WebAssembly. Request: {Request}", request.ToString());
+        }
+
         logger.LogInformation("Sending HTTP request {Method} {Uri}", request.Method, HttpUtility.UrlDecode(request.RequestUri?.ToString()));
         request.Options.Set(new(RequestOptionNames.LogLevel), LogLevel.Warning);
         request.Options.Set(new(RequestOptionNames.LogScopeData), new Dictionary<string, object?>());
