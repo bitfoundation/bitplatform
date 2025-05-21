@@ -13,6 +13,11 @@ public class BitNavPanelClassStyles
     public string? Root { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the root element of the BitNavPanel when toggled.
+    /// </summary>
+    public string? ToggledRoot { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the container of the BitNavPanel.
     /// </summary>
     public string? Container { get; set; }
