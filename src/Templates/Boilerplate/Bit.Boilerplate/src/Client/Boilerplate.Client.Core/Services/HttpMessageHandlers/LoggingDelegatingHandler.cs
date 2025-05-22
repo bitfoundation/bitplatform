@@ -9,12 +9,13 @@ internal class LoggingDelegatingHandler(ILogger<HttpClient> logger, HttpMessageH
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        var decodedUri = HttpUtility.UrlDecode(request.RequestUri?.ToString());
         if (request.Method == HttpMethod.Get && request.Content is not null)
         {
-            logger.Log(AppPlatform.IsBrowser ? LogLevel.Error : LogLevel.Warning, "Request with body will not work in Blazor WebAssembly. Request: {Request}", request.ToString());
+            logger.Log(AppPlatform.IsBrowser ? LogLevel.Error : LogLevel.Warning, "Get Request with body will not work in Blazor WebAssembly. Request: {Uri}", decodedUri);
         }
 
-        logger.LogInformation("Sending HTTP request {Method} {Uri}", request.Method, HttpUtility.UrlDecode(request.RequestUri?.ToString()));
+        logger.LogInformation("Sending HTTP request {Method} {Uri}", request.Method, decodedUri);
         request.Options.Set(new(RequestOptionNames.LogLevel), LogLevel.Warning);
         request.Options.Set(new(RequestOptionNames.LogScopeData), new Dictionary<string, object?>());
         var logScopeData = (Dictionary<string, object?>)request.Options.GetValueOrDefault(RequestOptionNames.LogScopeData)!;

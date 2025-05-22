@@ -23,9 +23,9 @@
         <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="9.0.5" />
         <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.5" />
         <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="9.0.5" />
-        <PackageVersion Include="Microsoft.Maui.Controls" Version="9.0.61" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.61" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="9.0.61" />
+        <PackageVersion Include="Microsoft.Maui.Controls" Version="9.0.70" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.70" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="9.0.70" />
         <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.3240.44" />
         <PackageVersion Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
         <PackageVersion Include="Plugin.Maui.AppRating" Version="1.2.1" />
@@ -36,11 +36,11 @@
         <PackageVersion Include="Microsoft.Extensions.Logging.EventLog" Version="9.0.5" />
         <PackageVersion Include="Microsoft.Extensions.Logging.EventSource" Version="9.0.5" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.18" />
+        <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.20" />
         <PackageVersion Include="Hangfire.EntityFrameworkCore" Version="0.7.0" />
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" Version="5.7.0" />
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" Version="5.7.0" />
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" Version="5.7.0" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" Version="5.8.0" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" Version="5.8.0" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" Version="5.8.0" />
         <PackageVersion Include="Xamarin.AndroidX.Activity" Version="1.10.1.1" />
         <PackageVersion Include="Xamarin.AndroidX.Activity.Ktx" Version="1.10.1.1" />
         <PackageVersion Include="Xamarin.AndroidX.Collection" Version="1.5.0.1" />
@@ -60,7 +60,7 @@
         <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="9.8.0-pre-04" />
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.5" />
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Azure.SignalR" Version="1.30.3" />
-        <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Microsoft.Extensions.AI" Version="9.4.0-preview.1.25207.5" />
+        <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Microsoft.Extensions.AI" Version="9.5.0" />
         <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Microsoft.Extensions.AI.OpenAI" Version="9.4.0-preview.1.25207.5" />
         <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Microsoft.Extensions.AI.AzureAIInference" Version="9.4.0-preview.1.25207.5" />
         <PackageVersion Condition=" ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Pgvector.EntityFrameworkCore" Version="0.2.2" />
@@ -83,17 +83,17 @@
         <PackageVersion Include="FluentStorage" Version="5.6.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.5" />
         <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.5" />
-        <PackageVersion Include="Microsoft.AspNetCore.OData" Version="9.3.0" />
+        <PackageVersion Include="Microsoft.AspNetCore.OData" Version="9.3.1" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="9.0.5" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.5" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.5" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.5" />
         <PackageVersion Include="Swashbuckle.AspNetCore" Version="8.1.1" />
-        <PackageVersion Include="Microsoft.Identity.Web" Version="3.8.4" />
+        <PackageVersion Include="Microsoft.Identity.Web" Version="3.9.1" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.5" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="9.0.5" />
-        <PackageVersion Include="AspNet.Security.OAuth.Apple" Version="9.3.0" />
-        <PackageVersion Include="AspNet.Security.OAuth.GitHub" Version="9.3.0" />
+        <PackageVersion Include="AspNet.Security.OAuth.Apple" Version="9.4.0" />
+        <PackageVersion Include="AspNet.Security.OAuth.GitHub" Version="9.4.0" />
         <PackageVersion Include="Riok.Mapperly" Version="4.2.1" />
         <PackageVersion Include="Twilio" Version="7.11.1" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.5" />
