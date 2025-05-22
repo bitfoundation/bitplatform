@@ -5,6 +5,9 @@ using System.IO.Compression;
 //#if (signalR == true || database == "PostgreSQL")
 using System.ClientModel.Primitives;
 //#endif
+//#if (database == "Sqlite")
+using Microsoft.Data.Sqlite;
+//#endif
 using Microsoft.Identity.Web;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.OData;
@@ -214,7 +217,10 @@ public static partial class Program
                 .EnableDetailedErrors(env.IsDevelopment());
 
             //#if (database == "Sqlite")
-            options.UseSqlite(configuration.GetConnectionString("SqliteConnectionString"), dbOptions =>
+            var connectionStringBuilder = new SqliteConnectionStringBuilder(configuration.GetConnectionString("SqliteConnectionString"));
+            connectionStringBuilder.DataSource = Environment.ExpandEnvironmentVariables(connectionStringBuilder.DataSource);
+            Directory.CreateDirectory(Path.GetDirectoryName(connectionStringBuilder.DataSource)!);
+            options.UseSqlite(connectionStringBuilder.ConnectionString, dbOptions =>
             {
 
             });
