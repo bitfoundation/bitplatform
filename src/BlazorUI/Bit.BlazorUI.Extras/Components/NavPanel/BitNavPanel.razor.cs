@@ -366,12 +366,12 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
     private string? GetPanelStyle(bool isToggled)
     {
-        if (IsOpen is false) return $"{StyleBuilder.Value};{(isToggled ? Styles?.ToggledRoot : string.Empty)}".Trim(';');
+        if (IsOpen is false) return $"{StyleBuilder.Value};{(isToggled ? Styles?.Toggled : string.Empty)}".Trim(';');
 
         var translate = ((Dir != BitDir.Rtl && diffXPanel < 0) || (Dir == BitDir.Rtl && diffXPanel > 0))
                             ? $"transform: translateX({diffXPanel}px)"
                             : string.Empty;
-        return $"{translate};{StyleBuilder.Value};{(isToggled ? Styles?.ToggledRoot : string.Empty)}".Trim(';');
+        return $"{translate};{StyleBuilder.Value};{(isToggled ? Styles?.Toggled : string.Empty)}".Trim(';');
     }
 
     private async Task OnItemsSet()
