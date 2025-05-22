@@ -81,7 +81,7 @@ public static partial class SignInManagerExtensions
         }
 
         await signInManager.UserManager.ResetAccessFailedCountAsync(user);
-        user.OtpRequestedOn = null; // invalidates the OTP
+        user.OtpRequestedOn = null; // invalidates the OTP. For those with 2fa, the OTP is invalidated when the user signs in successfully in TwoFactorSignIn method.
         var updateResult = await signInManager.UserManager.UpdateAsync(user);
         if (updateResult.Succeeded is false)
             throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData("UserId", user.Id);
