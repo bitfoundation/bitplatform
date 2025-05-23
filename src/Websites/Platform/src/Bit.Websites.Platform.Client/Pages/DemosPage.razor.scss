@@ -205,20 +205,6 @@
     video {
         width: 100%;
     }
-
-    .skip-button {
-        left: 0;
-        bottom: -20px;
-        cursor: pointer;
-        position: absolute;
-        border-radius: 2px;
-        background: transparent;
-
-        &:hover {
-            opacity: .75;
-            background-color: #212121;
-        }
-    }
 }
 
 .section-title-line {
@@ -250,4 +236,33 @@
             width: 200px;
         }
     }
+}
+
+.products-container {
+    line-height: 2.5em;
+    margin-bottom: 2em;
+
+    span {
+        display: block;
+        min-width: 5em;
+        font-weight: bold;
+    }
+
+    a {
+        margin: 0.5em;
+        border: 1px solid;
+        border-radius: 0.5em;
+        padding: 0.25em 0.5em;
+        text-decoration: none;
+        color: $bit-color-primary-dark;
+        border-color: $bit-color-primary-dark;
+        background-color: rgb(150 150 250 / 0.05);
+    }
+}
+
+.highlight-1 {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(351deg, #31b3ec 23%, #524add 87%);
 }
