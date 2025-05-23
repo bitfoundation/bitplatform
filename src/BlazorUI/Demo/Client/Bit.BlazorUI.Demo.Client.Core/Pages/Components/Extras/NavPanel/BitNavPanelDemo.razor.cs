@@ -106,6 +106,13 @@ public partial class BitNavPanelDemo
         },
         new()
         {
+            Name = "HideToggle",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Removes the toggle button.",
+        },
+        new()
+        {
             Name = "IconNavUrl",
             Type = "string?",
             DefaultValue = "null",
@@ -404,6 +411,16 @@ public partial class BitNavPanelDemo
         }
     ];
 
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "Toggle",
+            Type = "Task",
+            Description = "Toggles the nav panel if possible.",
+        }
+    ];
+
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         new()
@@ -581,7 +598,7 @@ public partial class BitNavPanelDemo
     ];
 
 
-
+    
     private bool basicIsOpen;
     private bool fitWidthIsOpen;
     private bool fullWidthIsOpen;
@@ -596,6 +613,9 @@ public partial class BitNavPanelDemo
     private bool colorIsOpen;
     private bool classStyleIsOpen;
     private bool rtlIsOpen;
+
+    private bool publicApiIsOpen;
+    private BitNavPanel<BitNavItem> navPanelRef = default!;
 
     private BitNavItem? onItemClick;
     private BitNavItem? onItemToggle;
