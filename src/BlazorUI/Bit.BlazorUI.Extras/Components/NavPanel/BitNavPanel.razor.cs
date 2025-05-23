@@ -83,6 +83,11 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public BitNavItemTemplateRenderMode HeaderTemplateRenderMode { get; set; }
 
     /// <summary>
+    /// Removes the toggle button.
+    /// </summary>
+    [Parameter] public bool HideToggle { get; set; }
+
+    /// <summary>
     /// Renders an anchor wrapping the icon to navigate to the specified url.
     /// </summary>
     [Parameter] public string? IconNavUrl { get; set; }
@@ -231,6 +236,16 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     /// </summary>
     [Parameter, ResetStyleBuilder]
     public int Top { get; set; }
+
+
+
+    /// <summary>
+    /// Toggles the nav panel if possible.
+    /// </summary>
+    public async Task Toggle()
+    {
+        await ToggleNavPanel();
+    }
 
 
 

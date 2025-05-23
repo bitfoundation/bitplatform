@@ -630,12 +630,74 @@ private List<BitNavItem> eventNavItems =
 ];";
 
     private readonly string example11RazorCode = @"
+<BitToggleButton @bind-IsChecked=""publicApiIsOpen"" OnText=""Close"" OffText=""Open"" />
+
+<BitButton OnClick=""async () => await navPanelRef.Toggle()"">Toggle</BitButton>
+<div style=""width:222px"">
+    <BitNavPanel @bind-IsOpen=""publicApiIsOpen"" @ref=""navPanelRef"" Items=""basicNavItems"" HideToggle />
+</div>";
+    private readonly string example11CsharpCode = @"
+private bool publicApiIsOpen;
+private BitNavPanel<BitNavItem> navPanelRef = default!;
+
+private List<BitNavItem> basicNavItems =
+[
+    new()
+    {
+        Text = ""Home"",
+        IconName = BitIconName.Home,
+        Url = ""HomePage"",
+    },
+    new()
+    {
+        Text = ""AdminPanel"",
+        IconName = BitIconName.Admin,
+        ChildItems =
+        [
+            new() {
+                Text = ""Dashboard"",
+                IconName = BitIconName.BarChartVerticalFill,
+                Url = ""DashboardPage"",
+            },
+            new() {
+                Text = ""Categories"",
+                IconName = BitIconName.BuildQueue,
+                Url = ""CategoriesPage"",
+            },
+            new() {
+                Text = ""Products"",
+                IconName = BitIconName.Product,
+                Url = ""ProductsPage"",
+            }
+        ]
+    },
+    new()
+    {
+        Text = ""Todo"",
+        IconName = BitIconName.ToDoLogoOutline,
+        Url = ""TodoPage"",
+    },
+    new()
+    {
+        Text = ""Settings"",
+        IconName = BitIconName.Equalizer,
+        Url = ""SettingsPage""
+    },
+    new()
+    {
+        Text = ""Terms"",
+        IconName = BitIconName.EntityExtraction,
+        Url = ""TermsPage"",
+    }
+];";
+
+    private readonly string example12RazorCode = @"
 <BitToggleButton @bind-IsChecked=""colorIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <div style=""width:222px"">
     <BitNavPanel @bind-IsOpen=""colorIsOpen"" Items=""colorNavItems"" Color=""BitColor.Secondary"" Accent=""BitColor.SecondaryBackground"" />
 </div>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private bool colorIsOpen;
 
 private List<BitNavItem> colorNavItems =
@@ -689,7 +751,7 @@ private List<BitNavItem> colorNavItems =
     }
 ];";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <style>
 
 @media(hover: hover) {
@@ -750,7 +812,7 @@ private List<BitNavItem> colorNavItems =
                                             IconWrapper = ""custom-icon-wrapper-searchbox"",
                                             InputContainer = ""custom-input-container-searchbox"" })"" />
 </div>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private bool classStyleIsOpen;
 
 private List<BitNavItem> basicNavItems =
@@ -804,11 +866,11 @@ private List<BitNavItem> basicNavItems =
     }
 ];";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitToggleButton @bind-IsChecked=""rtlIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <BitNavPanel @bind-IsOpen=""rtlIsOpen"" Items=""rtlNavItems"" FitWidth Dir=""BitDir.Rtl"" />";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private bool rtlIsOpen;
 
 private List<BitNavItem> rtlNavItems =
