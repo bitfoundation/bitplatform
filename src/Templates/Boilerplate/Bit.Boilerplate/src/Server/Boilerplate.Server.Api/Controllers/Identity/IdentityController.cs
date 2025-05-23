@@ -141,7 +141,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         {
             if (string.IsNullOrEmpty(request.TwoFactorCode) is false)
             {
-                signInResult = await CheckTwoFactorCode(request.TwoFactorCode);
+                signInResult = await TwoFactorSignIn(user, request.TwoFactorCode);
             }
             else
             {
@@ -161,7 +161,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         await DbContext.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task<Microsoft.AspNetCore.Identity.SignInResult> CheckTwoFactorCode(string code)
+    private async Task<Microsoft.AspNetCore.Identity.SignInResult> TwoFactorSignIn(User user, string code)
     {
         var result = await signInManager.TwoFactorRecoveryCodeSignInAsync(code);
 
@@ -173,6 +173,15 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (result.Succeeded is false)
         {
             result = await signInManager.TwoFactorAuthenticatorSignInAsync(code, false, false);
+        }
+
+        if (result.Succeeded is true && user.OtpRequestedOn != null)
+        {
+            await userManager.ResetAccessFailedCountAsync(user);
+            user.OtpRequestedOn = null; // invalidates the OTP
+            var updateResult = await userManager.UpdateAsync(user);
+            if (updateResult.Succeeded is false)
+                throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData("UserId", user.Id);
         }
 
         return result;
