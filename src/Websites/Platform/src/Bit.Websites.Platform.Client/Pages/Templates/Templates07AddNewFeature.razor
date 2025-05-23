@@ -1,0 +1,122 @@
+@page "/templates/add-new-feature"
+@page "/boilerplate/add-new-feature"
+@inherits AppComponentBase
+
+<PageOutlet Url="templates/add-new-feature"
+            Title="Adding a New Feature - Templates"
+            Description="Learn how to add a new feature to your bit platform project template, using an example from the AdminPanel Module." />
+
+<div class="page-container">
+    <BitText Typography="BitTypography.H3" Gutter>Adding a New Feature</BitText>
+    <br />
+    <section class="section-card">
+        <div class="section-card-txt">
+            Let's explore how to add a new feature to your project.
+            If you have any questions, you can ask them at <a href="https://github.com/orgs/bitfoundation/discussions" target="_blank">GitHub Discussions</a> or <a href="https://wiki.bitplatform.dev" target="_blank">wiki.bitplatform.dev</a>.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>1. Creating the Entity (Server.Api project)</BitText>
+            The process begins by creating an Entity in the <b>Server.Api</b> project.
+            The model we're considering here is <b>Category.cs</b> in the <b>Models</b> folder.
+            You can move Models out of the API project if you wish, their presence there is not mandatory.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>2. Adding to DbContext & Configuration (Server.Api project)</BitText>
+            Next, add it as a <b>DbSet</b> to <b>AppDbContext</b> in the <b>Data</b> folder of the <b>Server.Api</b> project:
+            <br />
+            <CodeBox>public DbSet&lt;Category&gt; Categories { get; set; } = default!;</CodeBox>
+            For Entity Framework Core configurations, you can create an <b>IEntityTypeConfiguration</b> for it like CategoryConfiguration in Data/Configurations folder.
+            Here, you can set up Unique Indexes and other settings, or seed initial data using <b>HasData</b>.
+            If desired, you can move the existing <b>DbContext</b> and <b>IEntityTypeConfiguration</b> classes out of the API project. You can also use code that automatically discovers models and registers them with the Entity Framework Core DbContext.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>3. Creating the DTO (Shared project)</BitText>
+            The next step is to create <b>CategoryDto.cs</b> in the <b>Dtos</b> folder of the <b>Shared</b> project. This is where multi-language support becomes important. You can simplify this using <b>DtoResourceType</b>, which has explanatory comments on the class itself.
+            For example, the <b>Name</b> property is defined as follows:
+            <br />
+            <CodeBox>[Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
+[Display(Name = nameof(AppStrings.Name))]
+[MaxLength(64, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_InvalidMaxLength))]
+public string? Name { get; set; }</CodeBox>
+            <br />
+            This <b>Required</b> validation, stating that <b>Name</b> cannot be empty, is checked both on the server and on the client, and the error on the form is displayed in the user's selected language.
+            By default, you only need to enter your primary language in <b>AppStrings.resx</b> in the <b>Resources</b> folder of the <b>Shared</b> project (default is English, but you can change its content entirely). Translation for other languages is not necessary. If you look at the <b>cd.yml</b> file in the <b>.github/workflows</b> or <b>.azure-devops/workflows</b> folder, it will handle the translation of other languages using an OpenAI API Key from Gemini, GTP, or DeepSeek, based on the <b>Bit.ResxTranslator.json</b> file located in the project root. Thus, the project can support multiple languages when published.
+            If you're not satisfied with the automatic translation, you only need to correct that specific item for that language. For instance, if you look at the Swedish language file, it has far fewer items.
+            <br />
+            More details can be found here: <a href="https://github.com/bitfoundation/bitplatform/blob/develop/src/ResxTranslator/README.md" target="_blank">Bit Resx Translator</a>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>4. Adding DTO to AppJsonContext (Shared project)</BitText>
+            The next step is to add <b>CategoryDto</b> to <b>AppJsonContext.cs</b>. This is done to improve application performance.
+            <br />
+            <CodeBox>[JsonSerializable(typeof(CategoryDto))]</CodeBox>
+            More details can be found here: <a href="https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-source-generator/" target="_blank">https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-source-generator/</a>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>5. Creating the Controller Interface (Shared project)</BitText>
+            The next step is to add <b>ICategoriesController.cs</b> in the <b>Controllers</b> folder of the <b>Shared</b> project. The philosophy behind having these controllers in the Shared project is explained in the <b>Shared/Controllers/ReadMe.md</b> file.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>6. Creating the Mapper (Server.Api project)</BitText>
+            The next task is to create a Mapper on the server side. This project uses Mapperly, but you can perform mappings between DTOs and Models manually or with other libraries.
+            To do this, add the corresponding mapper in the <b>Mappers</b> folder of the <b>Server.Api</b> project. The <b>ReadMe.md</b> file in that folder contains helpful explanations.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>7. Creating the Controller (Server.Api)</BitText>
+            The next step is to create the Controller in the <b>Controllers</b> folder of the <b>Server.Api</b> project, which uses Entity Framework Core DbContext and OData.
+            If you intend to move the application logic to a Service layer, use Onion Architecture, or employ MediatR, the choice is yours. The default code in the Boilerplate project focuses on providing features and on architectural aspects where C# .NET Developers might have less experience, such as writing code once for multiple platforms or the necessary structure for writing E2E / UI tests. The backend code architecture is left to you.
+            <br /><br />
+            Regarding OData, note that it does not use the old, highly complex OData model where you must inherit from <b>ODataController</b>. Instead, it uses a new, lightweight, and simple way of using OData. To get started, simply add <b>[EnableQuery]</b> above your Get actions, allowing you to <a href="https://learn.microsoft.com/en-us/odata/webapi/first-odata-api#query-resources-using-odata" target="_blank">query them</a> from the client side.
+            <br /><br />
+            By returning an <b>IQueryable</b> from Entity Framework Core, in the Data Grid and Pagination example, only the necessary amount of data is retrieved from the database. Using <b>ProjectTo</b> (or `Select` with manual projection) instead of mapping after fetching entities ensures that only <b>CategoryDto</b> objects are created and streamed to the client, providing the highest possible performance.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>8. Client-Side: Adding the Page URL</BitText>
+            For the client side, first, add the desired page address to <b>Urls.cs</b> (typically in the Client.Core project).
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>9. Client-Side: Creating Page Files</BitText>
+            Then, you add the <b>CategoriesPage.razor</b>, <b>CategoriesPage.razor.cs</b>, and <b>CategoriesPage.razor.scss</b> files (typically in the Client.Core/Pages folder).
+            <br /><br />
+            In <b>CategoriesPage.razor.cs</b>, you can fetch data from the server-side Controller using <b>ICategoriesController</b>, eliminating the need to use HttpClient directly.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>Final Notes & Further Help</BitText>
+            If you have any questions, you can ask them at <a href="https://github.com/orgs/bitfoundation/discussions" target="_blank">GitHub Discussions</a> or <a href="https://wiki.bitplatform.dev" target="_blank">wiki.bitplatform.dev</a>.
+            <br /><br />
+            A deeper understanding of Blazor, ASP.NET Core Web API, Entity Framework Core, HTML, and SCSS can greatly help in better understanding the bit Boilerplate code. Note that the feature you add will work on all platforms from day one. For Android, the only optional step is to add the page URL to the <b>MainActivity.cs</b> file in the <b>Client.Maui</b> project, under the <b>Platforms/Android</b> folder to enable universal deep web links for the new page.
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Run project" PrevUrl="/templates/run-project" />
