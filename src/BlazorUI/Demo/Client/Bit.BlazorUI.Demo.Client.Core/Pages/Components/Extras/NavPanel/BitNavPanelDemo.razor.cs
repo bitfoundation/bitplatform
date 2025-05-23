@@ -339,6 +339,13 @@ public partial class BitNavPanelDemo
                 },
                 new()
                 {
+                    Name = "Toggled",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the root element of the BitNavPanel when toggled.",
+                },
+                new()
+                {
                     Name = "Container",
                     Type = "string?",
                     DefaultValue = "null",

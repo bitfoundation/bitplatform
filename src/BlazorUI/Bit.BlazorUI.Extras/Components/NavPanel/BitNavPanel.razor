@@ -13,8 +13,8 @@
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
-     style="@GetPanelStyle()"
-     class="@ClassBuilder.Value @($"{(isToggled ? "bit-npn-tgl" : "")}")"
+     style="@GetPanelStyle(isToggled)"
+     class="@ClassBuilder.Value @($"{(isToggled ? $"bit-npn-tgl {Classes?.Toggled}" : "")}")"
      dir="@Dir?.ToString().ToLower()">
     <BitSwipeTrap Style="width:100%; height:100%"
                   Threshold="5"
