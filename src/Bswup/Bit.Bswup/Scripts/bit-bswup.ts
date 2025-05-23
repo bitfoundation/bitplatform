@@ -1,5 +1,5 @@
 ﻿var BitBswup = BitBswup || {};
-BitBswup.version = window['bit-bswup version'] = '9.8.0-pre-05';
+BitBswup.version = window['bit-bswup version'] = '9.8.0-pre-06';
 
 (function () {
     const bitBswupScript = document.currentScript;
