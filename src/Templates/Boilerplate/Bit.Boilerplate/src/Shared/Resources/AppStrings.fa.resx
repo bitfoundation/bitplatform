@@ -1209,6 +1209,12 @@
     <data name="SiblingProducts" xml:space="preserve">
     <value>محصولات در همین دسته</value>
   </data>
+    <data name="Buy" xml:space="preserve">
+    <value>خرید</value>
+  </data>
+    <data name="PurchaseSuccessful" xml:space="preserve">
+    <value>خرید موفقیت آمیز بود!</value>
+  </data>
     <!--#endif -->
     <data name="Passwordless" xml:space="preserve">
     <value>بی رمز</value>

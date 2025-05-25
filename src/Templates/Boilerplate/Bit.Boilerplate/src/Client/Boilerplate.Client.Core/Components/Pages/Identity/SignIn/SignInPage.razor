@@ -22,6 +22,7 @@
                     @if (isOtpSent is false)
                     {
                         <SignInPanel Model="model"
+                                     ReturnUrl="@ReturnUrl"
                                      IsWaiting="isWaiting"
                                      OnSendOtp="HandleOnSendOtp"
                                      OnSocialSignIn="HandleOnSocialSignIn"

@@ -39,4 +39,6 @@ public partial class ClientPubSubMessages
     //#if(ads == true)
     public const string AD_HAVE_TROUBLE = nameof(AD_HAVE_TROUBLE);
     //#endif
+
+    public const string SOCIAL_SIGN_IN = nameof(SOCIAL_SIGN_IN);
 }

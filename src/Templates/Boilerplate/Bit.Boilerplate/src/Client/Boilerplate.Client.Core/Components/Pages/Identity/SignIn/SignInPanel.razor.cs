@@ -27,8 +27,8 @@ public partial class SignInPanel
 
     [Parameter] public EventCallback<SignInPanelTab> OnTabChange { get; set; }
 
-    [Parameter, SupplyParameterFromQuery(Name = "return-url")]
-    public string? ReturnUrlQueryString { get; set; }
+    [Parameter]
+    public string? ReturnUrl { get; set; }
 
 
     protected override async Task OnAfterFirstRenderAsync()

@@ -26,6 +26,11 @@ public partial class SignInPage
     [Parameter, SupplyParameterFromQuery(Name = "error")]
     public string? ErrorQueryString { get; set; }
 
+    [Parameter]
+    public Action? OnSuccess { get; set; } // The SignInModalService will show this page as a modal dialog, and this action will be invoked when the sign-in is successful.
+    public bool IsInModalDialog => OnSuccess is not null;
+
+    public string ReturnUrl => IsInModalDialog ? NavigationManager.GetRelativePath() : ReturnUrlQueryString ?? Urls.HomePage;
 
     [AutoInject] private IWebAuthnService webAuthnService = default!;
 
@@ -39,6 +44,8 @@ public partial class SignInPage
     private bool isOtpSent;
     private bool sucssefulSignIn;
     private bool requiresTwoFactor;
+    private Action? pubSubUnsubscribe;
+    private bool isReturningUser = true; // Assume the user is returning unless they provide an email or phone number that doesn't exists in database.
     private JsonElement? webAuthnAssertion;
     private SignInPanelTab currentSignInPanelTab;
     private readonly SignInRequestDto model = new();
@@ -130,10 +137,40 @@ public partial class SignInPage
 
                 if (validatorRef?.EditContext.Validate() is false) return;
 
-                model.ReturnUrl = ReturnUrlQueryString;
-                model.DeviceInfo = telemetryContext.Platform;
+                if (isReturningUser)
+                {
+                    model.ReturnUrl = ReturnUrl;
+                    model.DeviceInfo = telemetryContext.Platform;
 
-                requiresTwoFactor = await AuthManager.SignIn(model, CurrentCancellationToken);
+                    requiresTwoFactor = await AuthManager.SignIn(model, CurrentCancellationToken);
+
+                }
+                else
+                {
+                    // Checkout SignInModalService for more details
+                    if (string.IsNullOrEmpty(model.Email) is false)
+                    {
+                        var signInResponse = await identityController.ConfirmEmail(new()
+                        {
+                            Token = model.Otp,
+                            Email = model.Email,
+                            DeviceInfo = telemetryContext.Platform
+                        }, CurrentCancellationToken);
+
+                        await AuthManager.StoreTokens(signInResponse, true);
+                    }
+                    else
+                    {
+                        var signInResponse = await identityController.ConfirmPhone(new()
+                        {
+                            Token = model.Otp,
+                            PhoneNumber = model.PhoneNumber,
+                            DeviceInfo = telemetryContext.Platform
+                        }, CurrentCancellationToken);
+
+                        await AuthManager.StoreTokens(signInResponse, true);
+                    }
+                }
 
                 if (requiresTwoFactor is false)
                 {
@@ -143,12 +180,19 @@ public partial class SignInPage
 
             if (sucssefulSignIn)
             {
-                NavigationManager.NavigateTo(ReturnUrlQueryString ?? Urls.HomePage, replace: true);
+                if (OnSuccess is not null)
+                {
+                    OnSuccess.Invoke();
+                }
+                else
+                {
+                    NavigationManager.NavigateTo(ReturnUrl ?? Urls.HomePage, replace: true);
+                }
             }
         }
         catch (BadRequestException e) when (e.Key == nameof(AppStrings.UserIsNotConfirmed))
         {
-            NavigateToConfirmPage();
+            ShowOtpForNewUsers();
         }
         catch (KnownException e)
         {
@@ -166,9 +210,31 @@ public partial class SignInPage
     {
         try
         {
+            pubSubUnsubscribe?.Invoke();
+            pubSubUnsubscribe = PubSubService.Subscribe(ClientPubSubMessages.SOCIAL_SIGN_IN, async (uriString) =>
+            {
+                // Checkout SignInModalService for more details
+                var queryParams = AppQueryStringCollection.Parse(new Uri(uriString!.ToString()!).Query);
+
+                queryParams.TryGetValue("return-url", out var returnUrl);
+                ReturnUrlQueryString = returnUrl?.ToString() ?? Urls.HomePage;
+                queryParams.TryGetValue("userName", out var userName);
+                UserNameQueryString = userName?.ToString();
+                queryParams.TryGetValue("email", out var email);
+                EmailQueryString = email?.ToString();
+                queryParams.TryGetValue("phoneNumber", out var phoneNumber);
+                PhoneNumberQueryString = phoneNumber?.ToString();
+                queryParams.TryGetValue("otp", out var otp);
+                OtpQueryString = otp?.ToString();
+                queryParams.TryGetValue("error", out var error);
+                ErrorQueryString = error?.ToString();
+
+                await OnInitAsync();
+            });
+
             var port = localHttpServer.EnsureStarted();
 
-            var redirectUrl = await identityController.GetSocialSignInUri(provider, ReturnUrlQueryString, port is -1 ? null : port, CurrentCancellationToken);
+            var redirectUrl = await identityController.GetSocialSignInUri(provider, ReturnUrl, port is -1 ? null : port, CurrentCancellationToken);
 
             await externalNavigationService.NavigateToAsync(redirectUrl);
         }
@@ -250,16 +316,18 @@ public partial class SignInPage
 
             var request = new IdentityRequestDto { UserName = model.UserName, Email = model.Email, PhoneNumber = model.PhoneNumber };
 
-            await identityController.SendOtp(request, ReturnUrlQueryString, CurrentCancellationToken);
+            await identityController.SendOtp(request, ReturnUrl, CurrentCancellationToken);
 
-            if (resend is false)
-            {
-                isOtpSent = true;
-            }
+            isOtpSent = true;
+        }
+        catch (TooManyRequestsExceptions e)
+        {
+            isOtpSent = true;
+            SnackBarService.Error(e.Message);
         }
         catch (BadRequestException e) when (e.Key == nameof(AppStrings.UserIsNotConfirmed))
         {
-            NavigateToConfirmPage();
+            ShowOtpForNewUsers();
         }
         catch (KnownException e)
         {
@@ -310,21 +378,19 @@ public partial class SignInPage
         }
     }
 
-    private void NavigateToConfirmPage()
+    /// <summary>
+    /// Checkout <see cref="SignInModalService"/> for more details
+    /// </summary>
+    private void ShowOtpForNewUsers()
     {
-        var queryParams = new Dictionary<string, object?>
-        {
-            { "return-url", ReturnUrlQueryString }
-        };
-        if (string.IsNullOrEmpty(model.Email) is false)
-        {
-            queryParams.Add("email", model.Email);
-        }
-        if (string.IsNullOrEmpty(model.PhoneNumber) is false)
-        {
-            queryParams.Add("phoneNumber", model.PhoneNumber);
-        }
-        var confirmUrl = NavigationManager.GetUriWithQueryParameters(Urls.ConfirmPage, queryParams);
-        NavigationManager.NavigateTo(confirmUrl, replace: true);
+        isReturningUser = false;
+        isOtpSent = true;
+    }
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        pubSubUnsubscribe?.Invoke();
+
+        await base.DisposeAsync(disposing);
     }
 }
