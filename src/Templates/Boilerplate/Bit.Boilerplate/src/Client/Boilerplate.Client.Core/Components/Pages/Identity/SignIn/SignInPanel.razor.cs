@@ -105,7 +105,7 @@ public partial class SignInPanel
         isWaiting = true;
         successfulSignIn = false;
 
-        StateHasChanged(); // Social sign-in callback will eventually call this method, so we need to update the UI immediately. See ClientPubSubMessages.SOCIAL_SIGN_IN references.
+        await InvokeAsync(StateHasChanged); // Social sign-in callback will eventually call this method, so we need to update the UI immediately. See ClientPubSubMessages.SOCIAL_SIGN_IN references.
 
         try
         {
@@ -204,6 +204,7 @@ public partial class SignInPanel
         finally
         {
             isWaiting = false;
+            await InvokeAsync(StateHasChanged); // Social sign-in callback will eventually call this method, so we need to update the UI immediately. See ClientPubSubMessages.SOCIAL_SIGN_IN references.
         }
     }
 
