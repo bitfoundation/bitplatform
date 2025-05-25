@@ -12,9 +12,10 @@ public partial class SignInPanel
     private bool showWebAuthn;
     private bool successfulSignIn;
     private bool requiresTwoFactor;
+    private SignInPanelTab currentTab;
     private Action? pubSubUnsubscribe;
     private JsonElement? webAuthnAssertion;
-    private SignInPanelTab currentTab;
+    private SignInPanelType internalSignInPanelType;
     private readonly SignInRequestDto model = new();
     private AppDataAnnotationsValidator? validatorRef;
     private string ReturnUrl => ReturnUrlQueryString ?? NavigationManager.GetRelativePath() ?? Urls.HomePage;
@@ -39,8 +40,7 @@ public partial class SignInPanel
     public string? ErrorQueryString { get; set; }
 
     [Parameter] public Action? OnSuccess { get; set; } // The SignInModalService will show this page as a modal dialog, and this action will be invoked when the sign-in is successful.
-    [Parameter] public SignInPanelType SignInPanelType { get; set; } = SignInPanelType.Full; // Check out SignInModalService for more details
-    [Parameter] public EventCallback<SignInPanelType> SignInPanelTypeChanged { get; set; }
+    [Parameter] public SignInPanelType SignInPanelType { get; set; } // Check out SignInModalService for more details
 
     [AutoInject] private IWebAuthnService webAuthnService = default!;
     [AutoInject] private ILocalHttpServer localHttpServer = default!;
@@ -51,6 +51,8 @@ public partial class SignInPanel
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();
+
+        internalSignInPanelType = SignInPanelType;
 
         model.UserName = UserNameQueryString;
         model.Email = EmailQueryString;
@@ -403,7 +405,6 @@ public partial class SignInPanel
 
     private async Task ChangeSignInPanelType(SignInPanelType type)
     {
-        SignInPanelType = type;
-        await SignInPanelTypeChanged.InvokeAsync(type);
+        internalSignInPanelType = type;
     }
 }
