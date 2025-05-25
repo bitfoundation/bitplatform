@@ -31,8 +31,8 @@ public partial class SignInModalService : IAsyncDisposable
 
         Dictionary<string, object> signInParameters = new()
         {
-            { nameof(SignInPage.SignInPanelType), SignInPanelType.OtpOnly },
-            { nameof(SignInPage.OnSuccess), () => { signInModalTcs.SetResult(true); modalReference?.Close(); } }
+            { nameof(SignInPanel.SignInPanelType), SignInPanelType.OtpOnly },
+            { nameof(SignInPanel.OnSuccess), () => { signInModalTcs.SetResult(true); modalReference?.Close(); } }
         };
         var modalParameters = new BitModalParameters()
         {
@@ -40,7 +40,7 @@ public partial class SignInModalService : IAsyncDisposable
             OnOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => signInModalTcs.SetResult(false))
         };
 
-        modalReference = await modalService.Show<SignInPage>(signInParameters, modalParameters);
+        modalReference = await modalService.Show<SignInPanel>(signInParameters, modalParameters);
 
         return await signInModalTcs.Task;
     }

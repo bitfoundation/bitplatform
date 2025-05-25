@@ -5,46 +5,6 @@
 
 <AppPageData Title="@Localizer[nameof(AppStrings.SignInPageTitle)]" />
 
-@if (isOtpSent || requiresTwoFactor)
-{
-	<!-- Check out ShowSignInPanel's comments -->
-	<NavigationLock OnBeforeInternalNavigation="ShowSignInPanel" />
-}
-
 <section>
-    <BitStack HorizontalAlign="BitAlignment.Center" FillContent>
-        <EditForm Model="model" OnSubmit="WrapHandled(DoSignIn)" novalidate>
-            <AppDataAnnotationsValidator @ref="validatorRef" />
-
-            <BitStack HorizontalAlign="BitAlignment.Center">
-                @if (requiresTwoFactor is false)
-                {
-                    @if (isOtpSent is false)
-                    {
-                        <SignInPanel Model="model"
-                                     IsWaiting="isWaiting"
-                                     OnSendOtp="HandleOnSendOtp"
-                                     OnSocialSignIn="HandleOnSocialSignIn"
-                                     @bind-SignInPanelType="SignInPanelType"
-                                     OnTabChange="HandleOnSignInPanelTabChange"
-                                     OnPasswordlessSignIn="HandleOnPasswordlessSignIn" />
-                    }
-                    else
-                    {
-                        <OtpPanel Model="model"
-                                  OnSignIn="DoSignIn"
-                                  IsWaiting="isWaiting"
-                                  OnResendOtp="HandleOnResendOtp" />
-                    }
-                }
-                else
-                {
-                    <TfaPanel Model="model"
-                              IsWaiting="isWaiting"
-                              OnTokenProvided="DoSignIn"
-                              OnSendTfaToken="HandleOnSendTfaToken" />
-                }
-            </BitStack>
-        </EditForm>
-    </BitStack>
+    <SignInPanel />
 </section>

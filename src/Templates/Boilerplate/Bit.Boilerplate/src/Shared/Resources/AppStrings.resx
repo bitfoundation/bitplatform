@@ -759,7 +759,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="SignIn" xml:space="preserve">
     <value>Sign in</value>
   </data>
-    <data name="SignInByPopup" xml:space="preserve">
+    <data name="SignInByModal" xml:space="preserve">
     <value>Sign in (Popup)</value>
   </data>
     <data name="Confirm" xml:space="preserve">

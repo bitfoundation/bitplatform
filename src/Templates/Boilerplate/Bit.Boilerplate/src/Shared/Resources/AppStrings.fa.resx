@@ -753,7 +753,7 @@
     <data name="SignIn" xml:space="preserve">
     <value>ورود به برنامه</value>
   </data>
-    <data name="SignInByPopup" xml:space="preserve">
+    <data name="SignInByModal" xml:space="preserve">
     <value>ورود به برنامه پاپ‌آپ</value>
   </data>
     <data name="Confirm" xml:space="preserve">
