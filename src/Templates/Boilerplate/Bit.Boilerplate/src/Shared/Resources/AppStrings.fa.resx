@@ -753,6 +753,9 @@
     <data name="SignIn" xml:space="preserve">
     <value>ورود به برنامه</value>
   </data>
+    <data name="SignInByModal" xml:space="preserve">
+    <value>ورود به برنامه پاپ‌آپ</value>
+  </data>
     <data name="Confirm" xml:space="preserve">
     <value>تایید</value>
   </data>
@@ -976,7 +979,16 @@
     <value>یک رمز یکبار مصرف ایجاد و برای شما ارسال شد.</value>
   </data>
     <data name="SendOtpButtonText" xml:space="preserve">
+    <value>ارسال رمز یکبار مصرف</value>
+  </data>
+    <data name="SendMagicLinkButtonText" xml:space="preserve">
     <value>ارسال رمز یکبار مصرف و لینک جادویی</value>
+  </data>
+    <data name="SignInByPassword" xml:space="preserve">
+    <value>استفاده از رمز</value>
+  </data>
+    <data name="SignInByOtp" xml:space="preserve">
+    <value>استفاده از رمز بک بار مصرف</value>
   </data>
     <data name="OtpEmailOrPhoneNumberSubtitle" xml:space="preserve">
     <value>ایمیل یا شماره تلفن خود را وارد کنید:</value>
@@ -1208,6 +1220,12 @@
   </data>
     <data name="SiblingProducts" xml:space="preserve">
     <value>محصولات در همین دسته</value>
+  </data>
+    <data name="Buy" xml:space="preserve">
+    <value>خرید</value>
+  </data>
+    <data name="PurchaseSuccessful" xml:space="preserve">
+    <value>خرید موفقیت آمیز بود!</value>
   </data>
     <!--#endif -->
     <data name="Passwordless" xml:space="preserve">

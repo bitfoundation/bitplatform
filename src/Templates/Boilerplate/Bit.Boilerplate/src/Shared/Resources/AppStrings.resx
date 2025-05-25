@@ -759,6 +759,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="SignIn" xml:space="preserve">
     <value>Sign in</value>
   </data>
+    <data name="SignInByModal" xml:space="preserve">
+    <value>Sign in (Popup)</value>
+  </data>
     <data name="Confirm" xml:space="preserve">
     <value>Confirm</value>
   </data>
@@ -982,7 +985,16 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>An OTP has been generated and sent to you.</value>
   </data>
     <data name="SendOtpButtonText" xml:space="preserve">
-    <value>Send OTP / Magic link</value>
+    <value>Send OTP</value>
+  </data>
+    <data name="SendMagicLinkButtonText" xml:space="preserve">
+    <value>Send Magic link and OTP</value>
+  </data>
+    <data name="SignInByPassword" xml:space="preserve">
+    <value>Use Password</value>
+  </data>
+    <data name="SignInByOtp" xml:space="preserve">
+    <value>Use OTP</value>
   </data>
     <data name="OtpEmailOrPhoneNumberSubtitle" xml:space="preserve">
     <value>Enter your email or phone number:</value>
@@ -1214,6 +1226,12 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <data name="SiblingProducts" xml:space="preserve">
     <value>Products in the same category</value>
+  </data>
+    <data name="Buy" xml:space="preserve">
+    <value>Buy</value>
+  </data>
+    <data name="PurchaseSuccessful" xml:space="preserve">
+    <value>Purchase successful!</value>
   </data>
     <!--#endif -->
     <data name="Passwordless" xml:space="preserve">

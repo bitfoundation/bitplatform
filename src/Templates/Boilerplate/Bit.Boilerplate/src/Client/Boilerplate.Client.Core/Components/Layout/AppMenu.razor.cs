@@ -19,6 +19,7 @@ public partial class AppMenu
     [AutoInject] private CultureService cultureService = default!;
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;
+    [AutoInject] private SignInModalService signInModalService = default!;
 
 
     [CascadingParameter] private BitDir? currentDir { get; set; }
@@ -112,5 +113,11 @@ public partial class AppMenu
         unsubscribeUerDataUpdated?.Invoke();
         NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
         AuthManager.AuthenticationStateChanged -= AuthManager_AuthenticationStateChanged;
+    }
+
+    private async Task ModalSignIn()
+    {
+        isOpen = false;
+        await signInModalService.SignIn();
     }
 }

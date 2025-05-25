@@ -1,98 +1,154 @@
 @inherits AppComponentBase
 
+@if (isOtpSent || requiresTwoFactor)
+{
+    <!-- Check out ShowSignInPanel's comments -->
+    <NavigationLock OnBeforeInternalNavigation="HideTfaAndOtpPanels" />
+}
+
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center" FillContent>
-        <BitStack>
-            <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.SignInPanelTitle)]</BitText>
+        <EditForm Model="model" OnSubmit="WrapHandled(DoSignIn)" novalidate>
+            <AppDataAnnotationsValidator @ref="validatorRef" />
 
-            <BitText Typography="BitTypography.Subtitle1" Color="BitColor.SecondaryForeground">
-                @Localizer[nameof(AppStrings.SignInPanelSubtitle)]
-            </BitText>
-        </BitStack>
-
-        <SocialRow IsWaiting="IsWaiting" OnClick="OnSocialSignIn" />
-
-        <BitSeparator Border="BitColorKind.Tertiary" Background="BitColorKind.Secondary" Class="lg-sep">@Localizer[AppStrings.Or]</BitSeparator>
-        <BitSeparator Border="BitColorKind.Secondary" Background="BitColorKind.Primary" Class="sm-sep">@Localizer[AppStrings.Or]</BitSeparator>
-
-        <BitStack FillContent Gap="2rem">
-            <BitStack FillContent>
-                <BitPivot Alignment="BitAlignment.Center" HeaderOnly OnChange="HandleOnPivotChange">
-                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Email)]" Key="@EmailKey" />
-                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Phone)]" Key="@PhoneKey" />
-                </BitPivot>
-
-                <BitStack Gap="0" FillContent>
-                    @if (selectedKey is EmailKey)
+            <BitStack HorizontalAlign="BitAlignment.Center">
+                @if (requiresTwoFactor is false)
+                {
+                    @if (isOtpSent is false)
                     {
-                        <BitTextField @bind-Value="Model.Email"
-                                      TabIndex="1"
-                                      Type="BitInputType.Email"
-                                      Immediate DebounceTime="500"
-                                      Label="@Localizer[nameof(AppStrings.Email)]"
-                                      Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
-                        <ValidationMessage For="@(() => Model.Email)" />
+                        <BitStack HorizontalAlign="BitAlignment.Center" FillContent>
+                            <BitStack>
+                                <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.SignInPanelTitle)]</BitText>
+
+                                <BitText Typography="BitTypography.Subtitle1" Color="BitColor.SecondaryForeground">
+                                    @Localizer[nameof(AppStrings.SignInPanelSubtitle)]
+                                </BitText>
+                            </BitStack>
+
+                            <SocialRow IsWaiting="isWaiting" OnClick="SocialSignIn" />
+
+                            <BitSeparator Border="BitColorKind.Tertiary" Background="BitColorKind.Secondary" Class="lg-sep">@Localizer[AppStrings.Or]</BitSeparator>
+                            <BitSeparator Border="BitColorKind.Secondary" Background="BitColorKind.Primary" Class="sm-sep">@Localizer[AppStrings.Or]</BitSeparator>
+
+                            <BitStack FillContent Gap="2rem">
+                                <BitStack FillContent>
+                                    <BitPivot Alignment="BitAlignment.Center" HeaderOnly OnChange="OnTabChange">
+                                        <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Email)]" Key="@SignInPanelTab.Email.ToString()" />
+                                        <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Phone)]" Key="@SignInPanelTab.Phone.ToString()" />
+                                    </BitPivot>
+
+                                    <BitStack Gap="0" FillContent>
+                                        @if (currentTab is SignInPanelTab.Email)
+                                        {
+                                            <BitTextField @bind-Value="model.Email"
+                                                          TabIndex="1"
+                                                          Type="BitInputType.Email"
+                                                          Immediate DebounceTime="500"
+                                                          Label="@Localizer[nameof(AppStrings.Email)]"
+                                                          Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
+                                            <ValidationMessage For="@(() => model.Email)" />
+                                        }
+                                        else
+                                        {
+                                            <BitTextField @bind-Value="model.PhoneNumber"
+                                                          AutoFocus TabIndex="1"
+                                                          Type="BitInputType.Tel"
+                                                          Immediate DebounceTime="500"
+                                                          Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
+                                                          Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
+                                            <ValidationMessage For="@(() => model.PhoneNumber)" />
+                                        }
+                                        @if (SignInPanelType is SignInPanelType.Full or SignInPanelType.PasswordOnly)
+                                        {
+                                            <br />
+                                            <BitTextField @bind-Value="model.Password"
+                                                          TabIndex="2"
+                                                          CanRevealPassword="true"
+                                                          Type="BitInputType.Password"
+                                                          AutoComplete="@BitAutoCompleteValue.CurrentPassword"
+                                                          Placeholder="@Localizer[nameof(AppStrings.PasswordPlaceholder)]">
+                                                <LabelTemplate>
+                                                    <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+                                                        <BitText>@Localizer[nameof(AppStrings.Password)]</BitText>
+                                                        <BitSpacer />
+                                                        <BitLink Href="@($"{Urls.ForgotPasswordPage}?return-url={Uri.EscapeDataString(ReturnUrl!)}")">@Localizer[nameof(AppStrings.ForgotPasswordLink)]</BitLink>
+                                                    </BitStack>
+                                                </LabelTemplate>
+                                            </BitTextField>
+                                            <ValidationMessage For="@(() => model.Password)" />
+                                        }
+                                    </BitStack>
+                                </BitStack>
+
+                                <BitStack Horizontal Alignment="BitAlignment.Center">
+                                    <BitCheckbox @bind-Value="model.RememberMe" Label="@Localizer[nameof(AppStrings.RememberMe)]" />
+                                    <BitSpacer />
+                                    @if (showWebAuthn)
+                                    {
+                                        <BitButton IconOnly
+                                                   Size="BitSize.Large"
+                                                   Variant="BitVariant.Text"
+                                                   Color="BitColor.Tertiary"
+                                                   OnClick="PasswordlessSignIn"
+                                                   ButtonType="BitButtonType.Button"
+                                                   IconName="@BitIconName.Fingerprint" />
+                                    }
+                                </BitStack>
+
+                                @if (SignInPanelType is SignInPanelType.Full or SignInPanelType.PasswordOnly)
+                                {
+                                    <BitButton IsLoading="isWaiting" IsEnabled="isWaiting is false" ButtonType="BitButtonType.Submit">
+                                        @Localizer[nameof(AppStrings.Continue)]
+                                    </BitButton>
+                                }
+
+                                @if (SignInPanelType is SignInPanelType.Full or SignInPanelType.OtpOnly)
+                                {
+                                    <BitButton AutoLoading
+                                               Variant="BitVariant.Outline"
+                                               ButtonType="BitButtonType.Button"
+                                               OnClick="WrapHandled(() => SendOtp(resend: true))"
+                                               IsEnabled="@(model.Email is not null || model.PhoneNumber is not null)">
+                                        @(currentTab == SignInPanelTab.Email ? Localizer[nameof(AppStrings.SendMagicLinkButtonText)] : Localizer[nameof(AppStrings.SendOtpButtonText)])
+                                    </BitButton>
+                                }
+
+                                @if (SignInPanelType is SignInPanelType.OtpOnly)
+                                {
+                                    <BitLink OnClick="() => SignInPanelType = SignInPanelType.PasswordOnly">@Localizer[nameof(AppStrings.SignInByPassword)]</BitLink>
+                                }
+
+                                @if (SignInPanelType is SignInPanelType.PasswordOnly)
+                                {
+                                    <BitLink OnClick="() => SignInPanelType = SignInPanelType.OtpOnly">@Localizer[nameof(AppStrings.SignInByOtp)]</BitLink>
+                                }
+
+                                @if (SignInPanelType is SignInPanelType.Full)
+                                {
+                                    <BitText Align="BitTextAlign.Center" Typography="BitTypography.Body2">
+                                        @Localizer[nameof(AppStrings.DontHaveAccountMessage)]
+                                        <BitLink Href="@($"{Urls.SignUpPage}?return-url={Uri.EscapeDataString(ReturnUrl!)}")">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
+                                    </BitText>
+                                }
+                            </BitStack>
+                        </BitStack>
                     }
                     else
                     {
-                        <BitTextField @bind-Value="Model.PhoneNumber"
-                                      AutoFocus TabIndex="1"
-                                      Type="BitInputType.Tel"
-                                      Immediate DebounceTime="500"
-                                      Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
-                                      Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
-                        <ValidationMessage For="@(() => Model.PhoneNumber)" />
+                        <OtpPanel Model="model"
+                                  OnSignIn="DoSignIn"
+                                  IsWaiting="isWaiting"
+                                  OnResendOtp="WrapHandled(() => SendOtp(resend:true))" />
                     }
-                    <br />
-                    <BitTextField @bind-Value="Model.Password"
-                                  TabIndex="2"
-                                  CanRevealPassword="true"
-                                  Type="BitInputType.Password"
-                                  AutoComplete="@BitAutoCompleteValue.CurrentPassword"
-                                  Placeholder="@Localizer[nameof(AppStrings.PasswordPlaceholder)]">
-                        <LabelTemplate>
-                            <BitStack Horizontal VerticalAlign="BitAlignment.Center">
-                                <BitText>@Localizer[nameof(AppStrings.Password)]</BitText>
-                                <BitSpacer />
-                                <BitLink Href="@($"{Urls.ForgotPasswordPage}?return-url={Uri.EscapeDataString(ReturnUrlQueryString ?? Urls.HomePage)}")">@Localizer[nameof(AppStrings.ForgotPasswordLink)]</BitLink>
-                            </BitStack>
-                        </LabelTemplate>
-                    </BitTextField>
-                    <ValidationMessage For="@(() => Model.Password)" />
-                </BitStack>
-            </BitStack>
-
-            <BitStack Horizontal Alignment="BitAlignment.Center">
-                <BitCheckbox @bind-Value="Model.RememberMe" Label="@Localizer[nameof(AppStrings.RememberMe)]" />
-                <BitSpacer />
-                @if (isWebAuthnAvailable)
+                }
+                else
                 {
-                    <BitButton IconOnly
-                               Size="BitSize.Large"
-                               Variant="BitVariant.Text"
-                               Color="BitColor.Tertiary"
-                               OnClick="OnPasswordlessSignIn"
-                               ButtonType="BitButtonType.Button"
-                               IconName="@BitIconName.Fingerprint" />
+                    <TfaPanel model="model"
+                              IsWaiting="isWaiting"
+                              OnTokenProvided="DoSignIn"
+                              OnSendTfaToken="WrapHandled(SendTfaToken)" />
                 }
             </BitStack>
-
-            <BitButton IsLoading="IsWaiting" IsEnabled="IsWaiting is false" ButtonType="BitButtonType.Submit">
-                @Localizer[nameof(AppStrings.SignIn)]
-            </BitButton>
-
-            <BitButton AutoLoading
-                       Variant="BitVariant.Outline"
-                       ButtonType="BitButtonType.Button"
-                       OnClick="WrapHandled(async () => await OnSendOtp.InvokeAsync())"
-                       IsEnabled="@(Model.Email is not null || Model.PhoneNumber is not null)">
-                @Localizer[nameof(AppStrings.SendOtpButtonText)]
-            </BitButton>
-
-            <BitText Align="BitTextAlign.Center" Typography="BitTypography.Body2">
-                @Localizer[nameof(AppStrings.DontHaveAccountMessage)]
-                <BitLink Href="@($"{Urls.SignUpPage}?return-url={Uri.EscapeDataString(ReturnUrlQueryString ?? Urls.HomePage)}")">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
-            </BitText>
-        </BitStack>
+        </EditForm>
     </BitStack>
 </section>

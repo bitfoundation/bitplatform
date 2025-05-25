@@ -60,7 +60,7 @@ public partial class ForgotPasswordPage
         }
         catch (BadRequestException e) when (e.Key == nameof(AppStrings.UserIsNotConfirmed))
         {
-            NavigateToConfirmPage();
+            NavigateToConfirmPage(); // Check out SignInModalService for more details
         }
         catch (KnownException e)
         {

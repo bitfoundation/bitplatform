@@ -26,6 +26,11 @@
                                                 @(isNavPanelToggled ? "" : localizer[nameof(AppStrings.SignIn)])
                                             </BitActionButton>
                                             <BitActionButton IconOnly="isNavPanelToggled"
+                                                             IconName="@BitIconName.UserWindow"
+                                                             OnClick="ModalSignIn">
+                                                @(isNavPanelToggled ? "" : localizer[nameof(AppStrings.SignInByModal)])
+                                            </BitActionButton>
+                                            <BitActionButton IconOnly="isNavPanelToggled"
                                                              IconName="@BitIconName.AddFriend"
                                                              Href="@($"{Urls.SignUpPage}?return-url={Uri.EscapeDataString(navigationManager.GetRelativePath())}")">
                                                 @(isNavPanelToggled ? "" : localizer[nameof(AppStrings.SignUp)])
@@ -70,8 +75,8 @@
                 <AppAiChatPanel />
                 @*#endif*@
                 <AppSnackBar />
-                <AppDiagnosticModal />
                 <BitModalContainer ModalParameters="modalParameters" />
+                <AppDiagnosticModal />
                 <AppJsBridge />
 
             </CascadingValue>

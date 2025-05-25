@@ -10,6 +10,7 @@ public partial class SignUpPage
     public string? ReturnUrlQueryString { get; set; }
 
     private bool isWaiting;
+    private Action? pubSubUnsubscribe;
     private readonly SignUpRequestDto signUpModel = new() { UserName = Guid.NewGuid().ToString() };
 
     [AutoInject] private ILocalHttpServer localHttpServer = default!;
@@ -84,6 +85,12 @@ public partial class SignUpPage
     {
         try
         {
+            pubSubUnsubscribe = PubSubService.Subscribe(ClientPubSubMessages.SOCIAL_SIGN_IN, async (uriString) =>
+            {
+                // Social sign-in creates a new user automatically, so we only need to navigate to the sign-in page to automatically sign-in the user by provided OTP.
+                NavigationManager.NavigateTo(uriString!.ToString()!, replace: true);
+            });
+
             var port = localHttpServer.EnsureStarted();
 
             var redirectUrl = await identityController.GetSocialSignInUri(provider, ReturnUrlQueryString, port is -1 ? null : port, CurrentCancellationToken);
@@ -94,5 +101,12 @@ public partial class SignUpPage
         {
             SnackBarService.Error(e.Message);
         }
+    }
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        pubSubUnsubscribe?.Invoke();
+
+        await base.DisposeAsync(disposing);
     }
 }
