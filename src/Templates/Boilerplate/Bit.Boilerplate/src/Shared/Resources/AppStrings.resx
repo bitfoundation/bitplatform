@@ -982,7 +982,10 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>An OTP has been generated and sent to you.</value>
   </data>
     <data name="SendOtpButtonText" xml:space="preserve">
-    <value>Send OTP / Magic link</value>
+    <value>Send OTP</value>
+  </data>
+    <data name="SendMagicLinkButtonText" xml:space="preserve">
+    <value>Send Magic link and OTP</value>
   </data>
     <data name="OtpEmailOrPhoneNumberSubtitle" xml:space="preserve">
     <value>Enter your email or phone number:</value>

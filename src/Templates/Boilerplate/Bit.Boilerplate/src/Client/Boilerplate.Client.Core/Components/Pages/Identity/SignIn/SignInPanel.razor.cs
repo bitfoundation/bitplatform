@@ -30,12 +30,14 @@ public partial class SignInPanel
     [Parameter]
     public string? ReturnUrl { get; set; }
 
+    [Parameter]
+    public bool QuickSignInMode { get; set; } // Checkout SignInModalService for more details
 
     protected override async Task OnAfterFirstRenderAsync()
     {
         await base.OnAfterFirstRenderAsync();
 
-        isWebAuthnAvailable = await webAuthnService.IsWebAuthnAvailable();
+        isWebAuthnAvailable = await webAuthnService.IsWebAuthnAvailable() && (await webAuthnService.GetWebAuthnConfiguredUserIds()).Any();
 
         StateHasChanged();
     }

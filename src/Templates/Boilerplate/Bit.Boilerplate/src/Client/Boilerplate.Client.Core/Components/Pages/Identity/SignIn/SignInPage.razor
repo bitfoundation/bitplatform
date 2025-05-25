@@ -22,9 +22,10 @@
                     @if (isOtpSent is false)
                     {
                         <SignInPanel Model="model"
-                                     ReturnUrl="@ReturnUrl"
                                      IsWaiting="isWaiting"
+                                     ReturnUrl="@ReturnUrl"
                                      OnSendOtp="HandleOnSendOtp"
+                                     QuickSignInMode="QuickSignInMode"
                                      OnSocialSignIn="HandleOnSocialSignIn"
                                      OnTabChange="HandleOnSignInPanelTabChange"
                                      OnPasswordlessSignIn="HandleOnPasswordlessSignIn" />

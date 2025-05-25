@@ -976,6 +976,9 @@
     <value>یک رمز یکبار مصرف ایجاد و برای شما ارسال شد.</value>
   </data>
     <data name="SendOtpButtonText" xml:space="preserve">
+    <value>ارسال رمز یکبار مصرف</value>
+  </data>
+    <data name="SendMagicLinkButtonText" xml:space="preserve">
     <value>ارسال رمز یکبار مصرف و لینک جادویی</value>
   </data>
     <data name="OtpEmailOrPhoneNumberSubtitle" xml:space="preserve">
