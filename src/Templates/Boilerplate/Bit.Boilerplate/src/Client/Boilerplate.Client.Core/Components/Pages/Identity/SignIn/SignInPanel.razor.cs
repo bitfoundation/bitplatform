@@ -219,20 +219,29 @@ public partial class SignInPanel
                 var queryIndex = uri!.IndexOf('?');
                 var queryParams = AppQueryStringCollection.Parse(uri[queryIndex..]);
 
-                queryParams.TryGetValue("return-url", out var returnUrl);
-                ReturnUrlQueryString = returnUrl?.ToString() ?? Urls.HomePage;
-                queryParams.TryGetValue("userName", out var userName);
-                UserNameQueryString = userName?.ToString();
-                queryParams.TryGetValue("email", out var email);
-                EmailQueryString = email?.ToString();
-                queryParams.TryGetValue("phoneNumber", out var phoneNumber);
-                PhoneNumberQueryString = phoneNumber?.ToString();
-                queryParams.TryGetValue("otp", out var otp);
-                OtpQueryString = otp?.ToString();
-                queryParams.TryGetValue("error", out var error);
-                ErrorQueryString = error?.ToString();
+                string? GetValue(object? value)
+                {
+                    var valueAsString = value?.ToString();
 
-                await OnInitAsync();
+                    if (string.IsNullOrEmpty(valueAsString)) return null;
+
+                    return Uri.UnescapeDataString(valueAsString);
+                }
+
+                queryParams.TryGetValue("return-url", out var returnUrl);
+                ReturnUrlQueryString = GetValue(returnUrl ?? Urls.HomePage);
+                queryParams.TryGetValue("userName", out var userName);
+                UserNameQueryString = GetValue(userName);
+                queryParams.TryGetValue("email", out var email);
+                EmailQueryString = GetValue(email);
+                queryParams.TryGetValue("phoneNumber", out var phoneNumber);
+                PhoneNumberQueryString = GetValue(phoneNumber);
+                queryParams.TryGetValue("otp", out var otp);
+                OtpQueryString = GetValue(otp);
+                queryParams.TryGetValue("error", out var error);
+                ErrorQueryString = GetValue(error);
+
+                await InvokeAsync(OnInitAsync);
             });
 
             var port = localHttpServer.EnsureStarted();
