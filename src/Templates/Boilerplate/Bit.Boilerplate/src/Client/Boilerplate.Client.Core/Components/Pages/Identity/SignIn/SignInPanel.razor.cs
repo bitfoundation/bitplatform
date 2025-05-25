@@ -1,5 +1,4 @@
-﻿using Boilerplate.Client.Core.Services.Contracts;
-using Boilerplate.Shared.Dtos.Identity;
+﻿using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
 
@@ -29,6 +28,9 @@ public partial class SignInPanel
 
     [Parameter]
     public string? ReturnUrl { get; set; }
+
+    [Parameter]
+    public SignInPanelType SignInPanelType { get; set; } // Checkout SignInModalService for more details
 
     protected override async Task OnAfterFirstRenderAsync()
     {

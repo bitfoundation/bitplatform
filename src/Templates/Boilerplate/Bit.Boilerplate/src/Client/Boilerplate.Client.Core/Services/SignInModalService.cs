@@ -30,6 +30,7 @@ public partial class SignInModalService : IAsyncDisposable
 
         modalReference = await modalService.Show<SignInPage>(parameters: new()
         {
+            { nameof(SignInPage.SignInPanelType), SignInPanelType.OTP },
             { nameof(SignInPage.OnSuccess), () => { signInModalTcs.SetResult(true); modalReference?.Close(); } }
         }, modalParameters: new()
         {
