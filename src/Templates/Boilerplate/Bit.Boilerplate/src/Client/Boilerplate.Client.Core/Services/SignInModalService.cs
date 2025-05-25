@@ -31,7 +31,6 @@ public partial class SignInModalService : IAsyncDisposable
 
         Dictionary<string, object> signInParameters = new()
         {
-            { nameof(SignInModal.SignInPanelType), SignInPanelType.OtpOnly },
             { nameof(SignInModal.OnClose), () => { signInModalTcs.SetResult(false); modalReference?.Close(); } },
             { nameof(SignInModal.OnSuccess), () => { signInModalTcs.SetResult(true); modalReference?.Close(); } },
         };

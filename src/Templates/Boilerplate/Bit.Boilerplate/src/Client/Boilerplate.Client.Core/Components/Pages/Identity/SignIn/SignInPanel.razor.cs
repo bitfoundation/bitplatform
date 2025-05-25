@@ -40,7 +40,7 @@ public partial class SignInPanel
 
     [Parameter] public Action? OnSuccess { get; set; } // The SignInModalService will show this page as a modal dialog, and this action will be invoked when the sign-in is successful.
     [Parameter] public SignInPanelType SignInPanelType { get; set; } = SignInPanelType.Full; // Check out SignInModalService for more details
-
+    [Parameter] public EventCallback<SignInPanelType> SignInPanelTypeChanged { get; set; }
 
     [AutoInject] private IWebAuthnService webAuthnService = default!;
     [AutoInject] private ILocalHttpServer localHttpServer = default!;
@@ -399,5 +399,11 @@ public partial class SignInPanel
     private async Task OnTabChange(BitPivotItem item)
     {
         currentTab = Enum.Parse<SignInPanelTab>(item.Key!);
+    }
+
+    private async Task ChangeSignInPanelType(SignInPanelType type)
+    {
+        SignInPanelType = type;
+        await SignInPanelTypeChanged.InvokeAsync(type);
     }
 }

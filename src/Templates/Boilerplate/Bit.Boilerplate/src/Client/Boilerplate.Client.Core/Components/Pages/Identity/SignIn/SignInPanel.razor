@@ -105,9 +105,9 @@
                                 @if (SignInPanelType is SignInPanelType.Full or SignInPanelType.OtpOnly)
                                 {
                                     <BitButton AutoLoading
-                                               Variant="BitVariant.Outline"
                                                ButtonType="BitButtonType.Button"
                                                OnClick="WrapHandled(() => SendOtp(resend: true))"
+                                               Variant="@(SignInPanelType is SignInPanelType.OtpOnly ? BitVariant.Fill : BitVariant.Outline)"
                                                IsEnabled="@(model.Email is not null || model.PhoneNumber is not null)">
                                         @(currentTab == SignInPanelTab.Email ? Localizer[nameof(AppStrings.SendMagicLinkButtonText)] : Localizer[nameof(AppStrings.SendOtpButtonText)])
                                     </BitButton>
@@ -115,12 +115,12 @@
 
                                 @if (SignInPanelType is SignInPanelType.OtpOnly)
                                 {
-                                    <BitLink OnClick="() => SignInPanelType = SignInPanelType.PasswordOnly">@Localizer[nameof(AppStrings.SignInByPassword)]</BitLink>
+                                    <BitLink OnClick="() => ChangeSignInPanelType(SignInPanelType.PasswordOnly)">@Localizer[nameof(AppStrings.SignInByPassword)]</BitLink>
                                 }
 
                                 @if (SignInPanelType is SignInPanelType.PasswordOnly)
                                 {
-                                    <BitLink OnClick="() => SignInPanelType = SignInPanelType.OtpOnly">@Localizer[nameof(AppStrings.SignInByOtp)]</BitLink>
+                                    <BitLink OnClick="() => ChangeSignInPanelType(SignInPanelType.OtpOnly)">@Localizer[nameof(AppStrings.SignInByOtp)]</BitLink>
                                 }
 
                                 @if (SignInPanelType is SignInPanelType.Full)
