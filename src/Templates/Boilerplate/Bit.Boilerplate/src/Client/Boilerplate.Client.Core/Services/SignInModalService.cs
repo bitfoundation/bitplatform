@@ -9,7 +9,7 @@ namespace Boilerplate.Client.Core.Services;
 /// To provide a similarly streamlined experience for email/password sign-in, this service displays a modal dialog, enabling users to log in quickly without leaving the current page.
 /// A demonstration is available at https://sales.bitplatform.dev/ when you wanna buy a product.
 /// For optimal use of this service, it is recommended to remove the sign-up page and its associated links from the project entirely.
-/// Optionally, you may also eliminate the password field from the sign-in form to allow users to authenticate solely via phone/OTP or email/magic link.
+/// Optionally, you may also eliminate the password field from the sign-in form to allow users to authenticate solely via phone/OTP or email/magic-link.
 /// </summary>
 public partial class SignInModalService : IAsyncDisposable
 {
