@@ -27,7 +27,9 @@
                 <ValidationMessage For="@(() => Model.Otp)" />
             </BitStack>
 
-            <BitButton IsLoading="IsWaiting" ButtonType="BitButtonType.Submit">
+            <BitButton IsLoading="IsWaiting"
+                       IsEnabled="IsWaiting is false"
+                       ButtonType="BitButtonType.Submit">
                 @Localizer[nameof(AppStrings.Continue)]
             </BitButton>
 

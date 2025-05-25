@@ -22,7 +22,7 @@
                       AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                       Placeholder="@Localizer[nameof(AppStrings.TwoFactorRecoveryCode)]" />
 
-        <BitButton IsLoading="IsWaiting" ButtonType="BitButtonType.Submit">
+        <BitButton IsLoading="IsWaiting" IsEnabled="IsWaiting is false" ButtonType="BitButtonType.Submit">
             @Localizer[nameof(AppStrings.Continue)]
         </BitButton>
 
@@ -32,9 +32,10 @@
                 <BitStack>
                     <BitText>@Localizer[nameof(AppStrings.TfaPanelAnotherWayTitle)]</BitText>
                     <BitText Color="BitColor.SecondaryForeground">@Localizer[nameof(AppStrings.TfaPanelAnotherWaySubtitle)]</BitText>
-                    <BitButton AutoLoading
+                    <BitButton IsLoading="IsWaiting"
                                Color="BitColor.Tertiary"
                                Variant="BitVariant.Outline"
+                               IsEnabled="IsWaiting is false"
                                ButtonType="BitButtonType.Button"
                                OnClick="WrapHandled(OnSendTfaToken.InvokeAsync)">
                         @Localizer[nameof(AppStrings.TfaPanelAnotherWayGetCode)]

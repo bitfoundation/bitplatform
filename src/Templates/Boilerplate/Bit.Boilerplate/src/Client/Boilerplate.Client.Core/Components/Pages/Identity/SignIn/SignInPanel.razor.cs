@@ -105,6 +105,8 @@ public partial class SignInPanel
         isWaiting = true;
         successfulSignIn = false;
 
+        StateHasChanged(); // Social sign-in callback will eventually call this method, so we need to update the UI immediately. See ClientPubSubMessages.SOCIAL_SIGN_IN references.
+
         try
         {
             if (requiresTwoFactor && string.IsNullOrWhiteSpace(model.TwoFactorCode)) return;
@@ -247,7 +249,6 @@ public partial class SignInPanel
 
     private async Task PasswordlessSignIn()
     {
-        if (isWaiting) return;
         isWaiting = true;
 
         try

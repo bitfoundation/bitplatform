@@ -87,11 +87,13 @@
                                     {
                                         <BitButton IconOnly
                                                    Size="BitSize.Large"
+                                                   IsLoading="isWaiting"
                                                    Variant="BitVariant.Text"
                                                    Color="BitColor.Tertiary"
-                                                   OnClick="PasswordlessSignIn"
+                                                   IsEnabled="isWaiting is false"
                                                    ButtonType="BitButtonType.Button"
-                                                   IconName="@BitIconName.Fingerprint" />
+                                                   IconName="@BitIconName.Fingerprint"
+                                                   OnClick="WrapHandled(PasswordlessSignIn)" />
                                     }
                                 </BitStack>
 
@@ -104,11 +106,11 @@
 
                                 @if (internalSignInPanelType is SignInPanelType.Full or SignInPanelType.OtpOnly)
                                 {
-                                    <BitButton AutoLoading
+                                    <BitButton IsLoading="isWaiting"
                                                ButtonType="BitButtonType.Button"
                                                OnClick="WrapHandled(() => SendOtp(resend: true))"
                                                Variant="@(internalSignInPanelType is SignInPanelType.OtpOnly ? BitVariant.Fill : BitVariant.Outline)"
-                                               IsEnabled="@(model.Email is not null || model.PhoneNumber is not null)">
+                                               IsEnabled="@(isWaiting is false && (model.Email is not null || model.PhoneNumber is not null))">
                                         @(currentTab == SignInPanelTab.Email ? Localizer[nameof(AppStrings.SendMagicLinkButtonText)] : Localizer[nameof(AppStrings.SendOtpButtonText)])
                                     </BitButton>
                                 }
