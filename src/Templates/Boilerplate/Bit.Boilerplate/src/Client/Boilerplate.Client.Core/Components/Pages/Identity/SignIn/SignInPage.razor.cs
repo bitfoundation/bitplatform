@@ -32,7 +32,7 @@ public partial class SignInPage
     [Parameter]
     public SignInPanelType SignInPanelType { get; set; } = SignInPanelType.Full; // Check out SignInModalService for more details
 
-    public string ReturnUrl => ReturnUrlQueryString ?? NavigationManager.GetRelativePath() ?? Urls.HomePage;
+    private string ReturnUrl => ReturnUrlQueryString ?? NavigationManager.GetRelativePath() ?? Urls.HomePage;
 
     [AutoInject] private IWebAuthnService webAuthnService = default!;
 

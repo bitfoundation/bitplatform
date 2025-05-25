@@ -26,8 +26,10 @@ public partial class SignInPanel
 
     [Parameter] public EventCallback<SignInPanelTab> OnTabChange { get; set; }
 
-    [Parameter]
-    public string? ReturnUrl { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "return-url")]
+    public string? ReturnUrlQueryString { get; set; }
+
+    private string ReturnUrl => ReturnUrlQueryString ?? NavigationManager.GetRelativePath() ?? Urls.HomePage;
 
     [Parameter]
     public SignInPanelType SignInPanelType { get; set; } // Check out SignInModalService for more details
