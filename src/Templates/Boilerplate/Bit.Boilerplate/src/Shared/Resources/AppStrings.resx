@@ -988,10 +988,10 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>Send Magic link and OTP</value>
   </data>
     <data name="SignInByPassword" xml:space="preserve">
-    <value>Sign in by password?</value>
+    <value>Sign in by password</value>
   </data>
     <data name="SignInByOTP" xml:space="preserve">
-    <value>Sign in by OTP?</value>
+    <value>Sign in by OTP</value>
   </data>
     <data name="OtpEmailOrPhoneNumberSubtitle" xml:space="preserve">
     <value>Enter your email or phone number:</value>

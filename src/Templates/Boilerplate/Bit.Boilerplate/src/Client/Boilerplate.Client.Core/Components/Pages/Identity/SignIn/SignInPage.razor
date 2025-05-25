@@ -24,8 +24,8 @@
                         <SignInPanel Model="model"
                                      IsWaiting="isWaiting"
                                      OnSendOtp="HandleOnSendOtp"
-                                     SignInPanelType="SignInPanelType"
                                      OnSocialSignIn="HandleOnSocialSignIn"
+                                     @bind-SignInPanelType="SignInPanelType"
                                      OnTabChange="HandleOnSignInPanelTabChange"
                                      OnPasswordlessSignIn="HandleOnPasswordlessSignIn" />
                     }

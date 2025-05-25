@@ -13,31 +13,35 @@ namespace Boilerplate.Client.Core.Services;
 /// </summary>
 public partial class SignInModalService : IAsyncDisposable
 {
-    [AutoInject] private BitModalService modalService = default;
+    public SignInModalService(BitModalService modalService, NavigationManager navigationManager)
+    {
+        this.modalService = modalService;
+        this.navigationManager = navigationManager;
+        this.navigationManager.LocationChanged += NavigationManager_LocationChanged;
+    }
 
-    [AutoInject] private NavigationManager navigationManager = default;
-
-    BitModalReference? modalReference = null;
+    private BitModalService modalService;
+    private NavigationManager navigationManager;
+    private BitModalReference? modalReference = null;
     private TaskCompletionSource<bool>? signInModalTcs;
 
-    public async Task<bool> Show()
+    public async Task<bool> SignIn()
     {
         signInModalTcs?.TrySetCanceled();
         signInModalTcs = new();
 
-        navigationManager.LocationChanged -= NavigationManager_LocationChanged;
-        navigationManager.LocationChanged += NavigationManager_LocationChanged;
-
-        modalReference = await modalService.Show<SignInPage>(parameters: new()
+        Dictionary<string, object> signInParameters = new()
         {
-            { nameof(SignInPage.SignInPanelType), SignInPanelType.OTP },
+            { nameof(SignInPage.SignInPanelType), SignInPanelType.OtpOnly },
             { nameof(SignInPage.OnSuccess), () => { signInModalTcs.SetResult(true); modalReference?.Close(); } }
-        }, modalParameters: new()
+        };
+        var modalParameters = new BitModalParameters()
         {
-            Blocking = true,
-            FullSize = true,
+            FullHeight = true,
             OnOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => signInModalTcs.SetResult(false))
-        });
+        };
+
+        modalReference = await modalService.Show<SignInPage>(signInParameters, modalParameters);
 
         return await signInModalTcs.Task;
     }

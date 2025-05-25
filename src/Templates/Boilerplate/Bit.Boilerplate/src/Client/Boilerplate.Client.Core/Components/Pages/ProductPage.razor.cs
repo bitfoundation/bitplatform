@@ -78,7 +78,7 @@ public partial class ProductPage
 
     private async Task Buy()
     {
-        if ((await AuthenticationStateTask).User.IsAuthenticated() is false && await signInModalService.Show() is false)
+        if ((await AuthenticationStateTask).User.IsAuthenticated() is false && await signInModalService.SignIn() is false)
         {
             SnackBarService.Error(Localizer[nameof(AppStrings.YouNeedToSignIn)]);
             return;

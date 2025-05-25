@@ -43,7 +43,7 @@
                                       Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
                         <ValidationMessage For="@(() => Model.PhoneNumber)" />
                     }
-                    @if (SignInPanelType is SignInPanelType.Full or SignInPanelType.Password)
+                    @if (SignInPanelType is SignInPanelType.Full or SignInPanelType.PasswordOnly)
                     {
                         <br />
                         <BitTextField @bind-Value="Model.Password"
@@ -68,7 +68,7 @@
             <BitStack Horizontal Alignment="BitAlignment.Center">
                 <BitCheckbox @bind-Value="Model.RememberMe" Label="@Localizer[nameof(AppStrings.RememberMe)]" />
                 <BitSpacer />
-                @if (isWebAuthnAvailable)
+                @if (showWebAuthn)
                 {
                     <BitButton IconOnly
                                Size="BitSize.Large"
@@ -80,14 +80,14 @@
                 }
             </BitStack>
 
-            @if (SignInPanelType is SignInPanelType.Full or SignInPanelType.Password)
+            @if (SignInPanelType is SignInPanelType.Full or SignInPanelType.PasswordOnly)
             {
                 <BitButton IsLoading="IsWaiting" IsEnabled="IsWaiting is false" ButtonType="BitButtonType.Submit">
                     @Localizer[nameof(AppStrings.SignIn)]
                 </BitButton>
             }
 
-            @if (SignInPanelType is SignInPanelType.Full or SignInPanelType.OTP)
+            @if (SignInPanelType is SignInPanelType.Full or SignInPanelType.OtpOnly)
             {
                 <BitButton AutoLoading
                            Variant="BitVariant.Outline"
@@ -98,14 +98,14 @@
                 </BitButton>
             }
 
-            @if (SignInPanelType is SignInPanelType.OTP)
+            @if (SignInPanelType is SignInPanelType.OtpOnly)
             {
-                <BitLink OnClick="() => SignInPanelType = SignInPanelType.Password">@Localizer[nameof(AppStrings.SignInByPassword)]</BitLink>
+                <BitLink OnClick="WrapHandled(() => ChangeSignInPanelType(SignInPanelType.PasswordOnly))">@Localizer[nameof(AppStrings.SignInByPassword)]</BitLink>
             }
 
-            @if (SignInPanelType is SignInPanelType.Password)
+            @if (SignInPanelType is SignInPanelType.PasswordOnly)
             {
-                <BitLink OnClick="() => SignInPanelType = SignInPanelType.OTP">@Localizer[nameof(AppStrings.SignInByOTP)]</BitLink>
+                <BitLink OnClick="WrapHandled(() => ChangeSignInPanelType(SignInPanelType.OtpOnly))">@Localizer[nameof(AppStrings.SignInByOTP)]</BitLink>
             }
 
             @if (SignInPanelType is SignInPanelType.Full)

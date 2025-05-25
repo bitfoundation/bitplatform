@@ -982,10 +982,10 @@
     <value>ارسال رمز یکبار مصرف و لینک جادویی</value>
   </data>
     <data name="SignInByPassword" xml:space="preserve">
-    <value>ورود با رمز عبور؟</value>
+    <value>ورود با رمز عبور</value>
   </data>
     <data name="SignInByOTP" xml:space="preserve">
-    <value>ورود با رمز یک‌بار مصرف؟</value>
+    <value>ورود با رمز یک‌بار مصرف</value>
   </data>
     <data name="OtpEmailOrPhoneNumberSubtitle" xml:space="preserve">
     <value>ایمیل یا شماره تلفن خود را وارد کنید:</value>

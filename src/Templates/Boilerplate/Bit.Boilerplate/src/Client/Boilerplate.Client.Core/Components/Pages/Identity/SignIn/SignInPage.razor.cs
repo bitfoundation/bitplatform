@@ -26,11 +26,9 @@ public partial class SignInPage
     [Parameter, SupplyParameterFromQuery(Name = "error")]
     public string? ErrorQueryString { get; set; }
 
-    [Parameter]
-    public Action? OnSuccess { get; set; } // The SignInModalService will show this page as a modal dialog, and this action will be invoked when the sign-in is successful.
+    [Parameter] public Action? OnSuccess { get; set; } // The SignInModalService will show this page as a modal dialog, and this action will be invoked when the sign-in is successful.
 
-    [Parameter]
-    public SignInPanelType SignInPanelType { get; set; } = SignInPanelType.Full; // Check out SignInModalService for more details
+    [Parameter] public SignInPanelType SignInPanelType { get; set; } = SignInPanelType.Full; // Check out SignInModalService for more details
 
     private string ReturnUrl => ReturnUrlQueryString ?? NavigationManager.GetRelativePath() ?? Urls.HomePage;
 
@@ -44,10 +42,10 @@ public partial class SignInPage
 
     private bool isWaiting;
     private bool isOtpSent;
+    private bool isNewUser; // Assume the user is existing unless they provide an email or phone number that doesn't exists in database.
     private bool sucssefulSignIn;
     private bool requiresTwoFactor;
     private Action? pubSubUnsubscribe;
-    private bool isReturningUser = true; // Assume the user is returning unless they provide an email or phone number that doesn't exists in database.
     private JsonElement? webAuthnAssertion;
     private SignInPanelTab currentSignInPanelTab;
     private readonly SignInRequestDto model = new();
@@ -139,7 +137,7 @@ public partial class SignInPage
 
                 if (validatorRef?.EditContext.Validate() is false) return;
 
-                if (isReturningUser)
+                if (isNewUser is false)
                 {
                     model.ReturnUrl = ReturnUrl;
                     model.DeviceInfo = telemetryContext.Platform;
@@ -387,7 +385,7 @@ public partial class SignInPage
     /// </summary>
     private void ShowOtpForNewUsers()
     {
-        isReturningUser = false;
+        isNewUser = true;
         isOtpSent = true;
     }
 

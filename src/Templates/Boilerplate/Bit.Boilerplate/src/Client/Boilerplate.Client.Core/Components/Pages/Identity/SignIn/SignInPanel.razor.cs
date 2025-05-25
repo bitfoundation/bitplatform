@@ -8,11 +8,11 @@ public partial class SignInPanel
     private const string PhoneKey = nameof(PhoneKey);
 
 
-    private bool isWebAuthnAvailable;
-    private string? selectedKey = EmailKey;
-
     [AutoInject] private IWebAuthnService webAuthnService = default!;
 
+
+    [Parameter, SupplyParameterFromQuery(Name = "return-url")]
+    public string? ReturnUrlQueryString { get; set; }
 
     [Parameter] public bool IsWaiting { get; set; }
 
@@ -26,19 +26,20 @@ public partial class SignInPanel
 
     [Parameter] public EventCallback<SignInPanelTab> OnTabChange { get; set; }
 
-    [Parameter, SupplyParameterFromQuery(Name = "return-url")]
-    public string? ReturnUrlQueryString { get; set; }
+    [Parameter] public SignInPanelType SignInPanelType { get; set; } // Check out SignInModalService for more details
+    [Parameter] public EventCallback<SignInPanelType> SignInPanelTypeChanged { get; set; }
 
+
+    private bool showWebAuthn;
+    private string? selectedKey = EmailKey;
     private string ReturnUrl => ReturnUrlQueryString ?? NavigationManager.GetRelativePath() ?? Urls.HomePage;
 
-    [Parameter]
-    public SignInPanelType SignInPanelType { get; set; } // Check out SignInModalService for more details
 
     protected override async Task OnAfterFirstRenderAsync()
     {
         await base.OnAfterFirstRenderAsync();
 
-        isWebAuthnAvailable = await webAuthnService.IsWebAuthnAvailable() && (await webAuthnService.GetWebAuthnConfiguredUserIds()).Any();
+        showWebAuthn = await webAuthnService.IsWebAuthnAvailable() && (await webAuthnService.GetWebAuthnConfiguredUserIds()).Any();
 
         StateHasChanged();
     }
@@ -57,5 +58,11 @@ public partial class SignInPanel
         {
             await OnTabChange.InvokeAsync(SignInPanelTab.Phone);
         }
+    }
+
+    private async Task ChangeSignInPanelType(SignInPanelType type)
+    {
+        SignInPanelType = type;
+        await SignInPanelTypeChanged.InvokeAsync(type);
     }
 }
