@@ -1,6 +1,6 @@
 ﻿using System.Net;
-using System.Net.Sockets;
 using System.Text;
+using System.Net.Sockets;
 using Boilerplate.Client.Core.Components;
 using EmbedIO;
 using EmbedIO.Actions;
@@ -12,6 +12,7 @@ namespace Boilerplate.Client.Windows.Services;
 public partial class WindowsLocalHttpServer : ILocalHttpServer
 {
     [AutoInject] private HtmlRenderer htmlRenderer;
+    [AutoInject] private PubSubService pubSubService;
     [AutoInject] private IExceptionHandler exceptionHandler;
     [AutoInject] private ClientWindowsSettings clientWindowsSettings;
     [AutoInject] private AbsoluteServerAddressProvider absoluteServerAddressProvider;
@@ -53,8 +54,11 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
-                    var urlToOpen = ctx.Request.QueryString["urlToOpen"];
-                    await Routes.OpenUniversalLink(urlToOpen!, replace: true);
+                    await Application.OpenForms[0]!.InvokeAsync(async (_) =>
+                    {
+                        var urlToOpen = ctx.Request.QueryString["urlToOpen"];
+                        pubSubService.Publish(ClientPubSubMessages.SOCIAL_SIGN_IN, urlToOpen);
+                    });
                 }
                 finally
                 {

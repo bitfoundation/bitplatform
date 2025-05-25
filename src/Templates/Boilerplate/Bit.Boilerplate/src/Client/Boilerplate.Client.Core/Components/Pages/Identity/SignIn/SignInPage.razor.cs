@@ -216,7 +216,9 @@ public partial class SignInPage
             pubSubUnsubscribe = PubSubService.Subscribe(ClientPubSubMessages.SOCIAL_SIGN_IN, async (uriString) =>
             {
                 // Check out SignInModalService for more details
-                var queryParams = AppQueryStringCollection.Parse(new Uri(uriString!.ToString()!).Query);
+                var uri = uriString!.ToString();
+                var queryIndex = uri!.IndexOf('?');
+                var queryParams = AppQueryStringCollection.Parse(uri[queryIndex..]);
 
                 queryParams.TryGetValue("return-url", out var returnUrl);
                 ReturnUrlQueryString = returnUrl?.ToString() ?? Urls.HomePage;

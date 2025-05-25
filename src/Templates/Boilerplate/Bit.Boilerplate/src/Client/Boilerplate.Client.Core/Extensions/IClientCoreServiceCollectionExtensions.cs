@@ -30,6 +30,7 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddScoped<ThemeService>();
         services.AddScoped<CultureService>();
         services.AddScoped<LazyAssemblyLoader>();
+        services.AddScoped<SignInModalService>();
         services.AddScoped<IAuthTokenProvider, ClientSideAuthTokenProvider>();
         services.AddScoped<IExternalNavigationService, DefaultExternalNavigationService>();
         //#if (ads == true)
@@ -52,7 +53,6 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddSessioned<PubSubService>();
         services.AddSessioned<PromptService>();
         services.AddSessioned<SnackBarService>();
-        services.AddSessioned<SignInModalService>();
         services.AddSessioned<ILocalHttpServer, NoOpLocalHttpServer>();
         services.AddSessioned<ITelemetryContext, AppTelemetryContext>();
         services.AddSessioned<AuthenticationStateProvider>(sp =>
