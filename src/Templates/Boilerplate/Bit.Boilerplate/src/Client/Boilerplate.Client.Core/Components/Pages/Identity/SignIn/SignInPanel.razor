@@ -43,25 +43,22 @@
                                       Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
                         <ValidationMessage For="@(() => Model.PhoneNumber)" />
                     }
-                    @if (QuickSignInMode is false)
-                    {
-                        <br />
-                        <BitTextField @bind-Value="Model.Password"
-                                      TabIndex="2"
-                                      CanRevealPassword="true"
-                                      Type="BitInputType.Password"
-                                      AutoComplete="@BitAutoCompleteValue.CurrentPassword"
-                                      Placeholder="@Localizer[nameof(AppStrings.PasswordPlaceholder)]">
-                            <LabelTemplate>
-                                <BitStack Horizontal VerticalAlign="BitAlignment.Center">
-                                    <BitText>@Localizer[nameof(AppStrings.Password)]</BitText>
-                                    <BitSpacer />
-                                    <BitLink Href="@($"{Urls.ForgotPasswordPage}?return-url={Uri.EscapeDataString(ReturnUrl!)}")">@Localizer[nameof(AppStrings.ForgotPasswordLink)]</BitLink>
-                                </BitStack>
-                            </LabelTemplate>
-                        </BitTextField>
-                        <ValidationMessage For="@(() => Model.Password)" />
-                    }
+                    <br />
+                    <BitTextField @bind-Value="Model.Password"
+                                  TabIndex="2"
+                                  CanRevealPassword="true"
+                                  Type="BitInputType.Password"
+                                  AutoComplete="@BitAutoCompleteValue.CurrentPassword"
+                                  Placeholder="@Localizer[nameof(AppStrings.PasswordPlaceholder)]">
+                        <LabelTemplate>
+                            <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+                                <BitText>@Localizer[nameof(AppStrings.Password)]</BitText>
+                                <BitSpacer />
+                                <BitLink Href="@($"{Urls.ForgotPasswordPage}?return-url={Uri.EscapeDataString(ReturnUrl!)}")">@Localizer[nameof(AppStrings.ForgotPasswordLink)]</BitLink>
+                            </BitStack>
+                        </LabelTemplate>
+                    </BitTextField>
+                    <ValidationMessage For="@(() => Model.Password)" />
                 </BitStack>
             </BitStack>
 
@@ -80,12 +77,9 @@
                 }
             </BitStack>
 
-            @if (QuickSignInMode is false)
-            {
-                <BitButton IsLoading="IsWaiting" IsEnabled="IsWaiting is false" ButtonType="BitButtonType.Submit">
-                    @Localizer[nameof(AppStrings.SignIn)]
-                </BitButton>
-            }
+            <BitButton IsLoading="IsWaiting" IsEnabled="IsWaiting is false" ButtonType="BitButtonType.Submit">
+                @Localizer[nameof(AppStrings.SignIn)]
+            </BitButton>
 
             <BitButton AutoLoading
                        Variant="BitVariant.Outline"
@@ -95,13 +89,10 @@
                 @(selectedKey == EmailKey ? Localizer[nameof(AppStrings.SendMagicLinkButtonText)] : Localizer[nameof(AppStrings.SendOtpButtonText)])
             </BitButton>
 
-            @if (QuickSignInMode is false)
-            {
-                <BitText Align="BitTextAlign.Center" Typography="BitTypography.Body2">
-                    @Localizer[nameof(AppStrings.DontHaveAccountMessage)]
-                    <BitLink Href="@($"{Urls.SignUpPage}?return-url={Uri.EscapeDataString(ReturnUrl!)}")">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
-                </BitText>
-            }
+            <BitText Align="BitTextAlign.Center" Typography="BitTypography.Body2">
+                @Localizer[nameof(AppStrings.DontHaveAccountMessage)]
+                <BitLink Href="@($"{Urls.SignUpPage}?return-url={Uri.EscapeDataString(ReturnUrl!)}")">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
+            </BitText>
         </BitStack>
     </BitStack>
 </section>
