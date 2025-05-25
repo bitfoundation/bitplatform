@@ -62,6 +62,11 @@
                                 @Localizer[nameof(AppStrings.SignIn)]
                             </BitActionButton>
                             <BitActionButton FullWidth
+                                             IconName="@BitIconName.UserWindow"
+                                             OnClick="WrapHandled(ModalSignIn)">
+                                @Localizer[nameof(AppStrings.SignInByPopup)]
+                            </BitActionButton>
+                            <BitActionButton FullWidth
                                              IconName="@BitIconName.AddFriend"
                                              Href="@($"{Urls.SignUpPage}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")">
                                 @Localizer[nameof(AppStrings.SignUp)]

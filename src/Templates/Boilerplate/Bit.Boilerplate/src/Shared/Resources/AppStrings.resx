@@ -759,6 +759,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="SignIn" xml:space="preserve">
     <value>Sign in</value>
   </data>
+    <data name="SignInByPopup" xml:space="preserve">
+    <value>Sign in (Popup)</value>
+  </data>
     <data name="Confirm" xml:space="preserve">
     <value>Confirm</value>
   </data>
@@ -988,10 +991,10 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>Send Magic link and OTP</value>
   </data>
     <data name="SignInByPassword" xml:space="preserve">
-    <value>Sign in by password</value>
+    <value>Use by password</value>
   </data>
     <data name="SignInByOTP" xml:space="preserve">
-    <value>Sign in by OTP</value>
+    <value>Use OTP</value>
   </data>
     <data name="OtpEmailOrPhoneNumberSubtitle" xml:space="preserve">
     <value>Enter your email or phone number:</value>
