@@ -96,7 +96,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
 
         var user = await userManager.FindUserAsync(request)
-                    ?? await userManager.CreateUserWithDemoRole(request, request.Password); // Checkout SignInModalService for more details
+                    ?? await userManager.CreateUserWithDemoRole(request, request.Password); // Check out SignInModalService for more details
 
         await SignIn(request, user, cancellationToken);
     }
@@ -300,7 +300,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
         var user = await userManager.FindUserAsync(request)
-                    ?? await userManager.CreateUserWithDemoRole(request); // Checkout SignInModalService for more details
+                    ?? await userManager.CreateUserWithDemoRole(request); // Check out SignInModalService for more details
 
         if (await userConfirmation.IsConfirmedAsync(userManager, user) is false)
         {

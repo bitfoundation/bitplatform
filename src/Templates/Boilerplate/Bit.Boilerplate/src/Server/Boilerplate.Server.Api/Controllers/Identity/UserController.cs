@@ -88,7 +88,7 @@ public partial class UserController : AppControllerBase, IUserController
         await DbContext.SaveChangesAsync(cancellationToken);
 
         //#if (signalR == true)
-        // Checkout AppHub's comments for more info.
+        // Check out AppHub's comments for more info.
         if (userSession.SignalRConnectionId is not null)
         {
             await appHubContext.Clients.Client(userSession.SignalRConnectionId).SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.SESSION_REVOKED, null, cancellationToken);
@@ -413,7 +413,7 @@ public partial class UserController : AppControllerBase, IUserController
         if (user.TwoFactorEnabled || (user.EmailConfirmed is false && user.PhoneNumberConfirmed is false /* Users signed-in through social sign-in */))
         {
             //#if (signalR == true)
-            // Checkout AppHub's comments for more info.
+            // Check out AppHub's comments for more info.
             var userSessionIdsExceptCurrentUserSessionId = await DbContext.UserSessions
                 .Where(us => us.UserId == user.Id && us.Id != currentUserSessionId && us.SignalRConnectionId != null)
                 .Select(us => us.SignalRConnectionId!)

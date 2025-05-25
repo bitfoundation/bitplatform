@@ -30,7 +30,7 @@ public partial class SignInPage
     public Action? OnSuccess { get; set; } // The SignInModalService will show this page as a modal dialog, and this action will be invoked when the sign-in is successful.
 
     [Parameter]
-    public SignInPanelType SignInPanelType { get; set; } = SignInPanelType.Full; // Checkout SignInModalService for more details
+    public SignInPanelType SignInPanelType { get; set; } = SignInPanelType.Full; // Check out SignInModalService for more details
 
     public string ReturnUrl => ReturnUrlQueryString ?? NavigationManager.GetRelativePath() ?? Urls.HomePage;
 
@@ -149,7 +149,7 @@ public partial class SignInPage
                 }
                 else
                 {
-                    // Checkout SignInModalService for more details
+                    // Check out SignInModalService for more details
                     if (string.IsNullOrEmpty(model.Email) is false)
                     {
                         var signInResponse = await identityController.ConfirmEmail(new()
@@ -215,7 +215,7 @@ public partial class SignInPage
             pubSubUnsubscribe?.Invoke();
             pubSubUnsubscribe = PubSubService.Subscribe(ClientPubSubMessages.SOCIAL_SIGN_IN, async (uriString) =>
             {
-                // Checkout SignInModalService for more details
+                // Check out SignInModalService for more details
                 var queryParams = AppQueryStringCollection.Parse(new Uri(uriString!.ToString()!).Query);
 
                 queryParams.TryGetValue("return-url", out var returnUrl);
@@ -381,7 +381,7 @@ public partial class SignInPage
     }
 
     /// <summary>
-    /// Checkout <see cref="SignInModalService"/> for more details
+    /// Check out <see cref="SignInModalService"/> for more details
     /// </summary>
     private void ShowOtpForNewUsers()
     {

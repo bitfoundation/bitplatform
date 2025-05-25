@@ -32,7 +32,7 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(Environment)' == 'Development'">
-        <!-- Checkout ScssCompilerService.cs source code. -->
+        <!-- Check out  ScssCompilerService.cs source code. -->
         <PackageReference Include="Meziantou.Framework.Win32.Jobs" />
     </ItemGroup>
     <ItemGroup Condition="'$(Environment)' != 'Development'">

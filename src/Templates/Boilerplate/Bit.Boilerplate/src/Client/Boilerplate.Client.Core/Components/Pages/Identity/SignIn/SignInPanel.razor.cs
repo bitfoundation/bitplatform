@@ -30,7 +30,7 @@ public partial class SignInPanel
     public string? ReturnUrl { get; set; }
 
     [Parameter]
-    public SignInPanelType SignInPanelType { get; set; } // Checkout SignInModalService for more details
+    public SignInPanelType SignInPanelType { get; set; } // Check out SignInModalService for more details
 
     protected override async Task OnAfterFirstRenderAsync()
     {
