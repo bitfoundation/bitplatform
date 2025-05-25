@@ -991,9 +991,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>Send Magic link and OTP</value>
   </data>
     <data name="SignInByPassword" xml:space="preserve">
-    <value>Use by password</value>
+    <value>Use Password</value>
   </data>
-    <data name="SignInByOTP" xml:space="preserve">
+    <data name="SignInByOtp" xml:space="preserve">
     <value>Use OTP</value>
   </data>
     <data name="OtpEmailOrPhoneNumberSubtitle" xml:space="preserve">

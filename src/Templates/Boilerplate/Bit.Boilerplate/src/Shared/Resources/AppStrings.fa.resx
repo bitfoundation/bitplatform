@@ -987,7 +987,7 @@
     <data name="SignInByPassword" xml:space="preserve">
     <value>استفاده از رمز</value>
   </data>
-    <data name="SignInByOTP" xml:space="preserve">
+    <data name="SignInByOtp" xml:space="preserve">
     <value>استفاده از رمز بک بار مصرف</value>
   </data>
     <data name="OtpEmailOrPhoneNumberSubtitle" xml:space="preserve">

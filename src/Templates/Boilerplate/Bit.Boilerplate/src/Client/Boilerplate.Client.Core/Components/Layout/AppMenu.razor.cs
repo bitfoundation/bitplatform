@@ -117,6 +117,7 @@ public partial class AppMenu
 
     private async Task ModalSignIn()
     {
+        isOpen = false;
         await signInModalService.SignIn();
     }
 }
