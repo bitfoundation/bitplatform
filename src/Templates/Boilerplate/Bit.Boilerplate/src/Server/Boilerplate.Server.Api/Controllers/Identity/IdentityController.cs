@@ -119,7 +119,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (signInResult.IsNotAllowed && await userConfirmation.IsConfirmedAsync(userManager, user) is false)
         {
-            await SendConfirmationToken(user, request.ReturnUrl, cancellationToken);
+            try
+            {
+                await SendConfirmationToken(user, request.ReturnUrl, cancellationToken);
+            }
+            catch (TooManyRequestsExceptions) { }
             throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]).WithData("UserId", user.Id);
         }
 
