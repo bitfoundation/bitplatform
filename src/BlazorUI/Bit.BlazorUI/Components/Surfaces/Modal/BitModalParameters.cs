@@ -112,6 +112,7 @@ public class BitModalParameters
                 await params2.OnOverlayClick.InvokeAsync();
             }),
             Position = params1.Position ?? params2.Position,
+            ScrollerElement = params1.ScrollerElement ?? params2.ScrollerElement,
             ScrollerSelector = params1.ScrollerSelector ?? params2.ScrollerSelector,
             Styles = BitModalClassStyles.Merge(params1.Styles, params2.Styles),
             SubtitleAriaId = params1.SubtitleAriaId ?? params2.SubtitleAriaId,
