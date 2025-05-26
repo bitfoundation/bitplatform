@@ -113,60 +113,60 @@ jobs:
           CLOUDFLARE_ZONE: ${{ secrets.BITPLATFORM_DEV_CLOUDFLARE_ZONE }}
           CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
 
-  # build_blazor_hybrid_windows:
-  #   name: build blazor hybrid (windows)
-  #   runs-on: windows-2022
+  build_blazor_hybrid_windows:
+    name: build blazor hybrid (windows)
+    runs-on: windows-2022
   
-  #   steps:
+    steps:
      
-  #   - name: Checkout source code
-  #     uses: actions/checkout@v4
+    - name: Checkout source code
+      uses: actions/checkout@v4
 
-  #   - name: Setup .NET
-  #     uses: actions/setup-dotnet@v4
-  #     with:
-  #       global-json-file: src\global.json
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: src\global.json
 
-  #   - uses: actions/setup-node@v4
-  #     with:
-  #       node-version: 23
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 23
 
-  #   - name: Create project from Boilerplate
-  #     run: |
-  #       cd src\Templates\Boilerplate && dotnet build -c Release
-  #       dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-  #       dotnet new install Bit.Boilerplate.0.0.0.nupkg
-  #       cd ..\..\..\ && dotnet new bit-bp --name SalesModule --database PostgreSQL --module Sales --appInsights --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --captcha reCaptcha --signalR --ads
+    - name: Create project from Boilerplate
+      run: |
+        cd src\Templates\Boilerplate && dotnet build -c Release
+        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+        dotnet new install Bit.Boilerplate.0.0.0.nupkg
+        cd ..\..\..\ && dotnet new bit-bp --name SalesModule --database PostgreSQL --module Sales --appInsights --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --captcha reCaptcha --signalR --ads
   
-  #   - name: Update core appsettings.json
-  #     uses: devops-actions/variable-substitution@v1.2 
-  #     with:
-  #       files: 'SalesModule\**\appsettings*json'
-  #     env:
-  #       WebAppUrl: ${{ env.SERVER_ADDRESS }}
-  #       ServerAddress: ${{ env.SERVER_ADDRESS }}
-  #       GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
-  #       WindowsUpdate.FilesUrl: https://windows-sales.bitplatform.dev
-  #       ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+    - name: Update core appsettings.json
+      uses: devops-actions/variable-substitution@v1.2 
+      with:
+        files: 'SalesModule\**\appsettings*json'
+      env:
+        WebAppUrl: ${{ env.SERVER_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_ADDRESS }}
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
+        WindowsUpdate.FilesUrl: https://windows-sales.bitplatform.dev
+        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
-  #   - name: Use Bit.ResxTranslator
-  #     run: |
-  #           cd SalesModule
-  #           dotnet tool install --global Bit.ResxTranslator --prerelease
-  #           bit-resx-translate
+    - name: Use Bit.ResxTranslator
+      run: |
+            cd SalesModule
+            dotnet tool install --global Bit.ResxTranslator --prerelease
+            bit-resx-translate
 
-  #   - name: Generate CSS/JS files
-  #     run: dotnet build SalesModule\src\Client\SalesModule.Client.Core\SalesModule.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
+    - name: Generate CSS/JS files
+      run: dotnet build SalesModule\src\Client\SalesModule.Client.Core\SalesModule.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
 
-  #   - name: Publish
-  #     run: |
-  #         cd SalesModule\src\Client\SalesModule.Client.Windows\
-  #         dotnet publish SalesModule.Client.Windows.csproj -c Release -o .\publish-result -r win-x64 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:PublishReadyToRun=true -p:PublishReadyToRunComposite=true --self-contained
-  #         dotnet tool restore
-  #         dotnet vpk pack -u SalesModule.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e SalesModule.Client.Windows.exe -r win-x64 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'SalesModule'
+    - name: Publish
+      run: |
+          cd SalesModule\src\Client\SalesModule.Client.Windows\
+          dotnet publish SalesModule.Client.Windows.csproj -c Release -o .\publish-result -r win-x64 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:PublishReadyToRun=true -p:PublishReadyToRunComposite=true --self-contained
+          dotnet tool restore
+          dotnet vpk pack -u SalesModule.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e SalesModule.Client.Windows.exe -r win-x64 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'SalesModule'
   
-  #   - name: Upload artifact
-  #     uses: actions/upload-artifact@v4
-  #     with:
-  #       name: win-exe-bundle
-  #       path: SalesModule\src\Client\SalesModule.Client.Windows\Releases
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: win-exe-bundle
+        path: SalesModule\src\Client\SalesModule.Client.Windows\Releases
