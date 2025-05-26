@@ -31,11 +31,8 @@ section {
     }
 
     .log-modal {
+        width: 100%;
         overflow: auto;
-        max-width: 40rem;
-        max-height: 40rem;
-        white-space: nowrap;
-        height: min(20rem, #{$bit-env-height-available} - 4rem);
-        width: min(40rem, calc(#{$bit-env-width-available} - 2rem));
+        height: calc(100% - 3rem);
     }
 }

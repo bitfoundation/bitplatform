@@ -128,7 +128,13 @@ public partial class AppDiagnosticModal
 
         foreach (var item in await cookie.GetAll())
         {
-            await cookie.Remove(item.Name!);
+            await cookie.Remove(new ButilCookie()
+            {
+                Name = item.Name,
+                Path = "/",
+                SameSite = SameSite.Strict,
+                Secure = AppEnvironment.IsDev() is false
+            });
         }
 
         if (AppPlatform.IsBlazorHybrid is false)

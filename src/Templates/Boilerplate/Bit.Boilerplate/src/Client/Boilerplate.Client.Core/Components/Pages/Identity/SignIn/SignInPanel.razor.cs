@@ -12,9 +12,10 @@ public partial class SignInPanel
     private bool showWebAuthn;
     private bool successfulSignIn;
     private bool requiresTwoFactor;
+    private SignInPanelTab currentTab;
     private Action? pubSubUnsubscribe;
     private JsonElement? webAuthnAssertion;
-    private SignInPanelTab currentTab;
+    private SignInPanelType internalSignInPanelType;
     private readonly SignInRequestDto model = new();
     private AppDataAnnotationsValidator? validatorRef;
     private string ReturnUrl => ReturnUrlQueryString ?? NavigationManager.GetRelativePath() ?? Urls.HomePage;
@@ -39,8 +40,7 @@ public partial class SignInPanel
     public string? ErrorQueryString { get; set; }
 
     [Parameter] public Action? OnSuccess { get; set; } // The SignInModalService will show this page as a modal dialog, and this action will be invoked when the sign-in is successful.
-    [Parameter] public SignInPanelType SignInPanelType { get; set; } = SignInPanelType.Full; // Check out SignInModalService for more details
-
+    [Parameter] public SignInPanelType SignInPanelType { get; set; } // Check out SignInModalService for more details
 
     [AutoInject] private IWebAuthnService webAuthnService = default!;
     [AutoInject] private ILocalHttpServer localHttpServer = default!;
@@ -51,6 +51,8 @@ public partial class SignInPanel
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();
+
+        internalSignInPanelType = SignInPanelType;
 
         model.UserName = UserNameQueryString;
         model.Email = EmailQueryString;
@@ -102,6 +104,8 @@ public partial class SignInPanel
 
         isWaiting = true;
         successfulSignIn = false;
+
+        await InvokeAsync(StateHasChanged); // Social sign-in callback will eventually call this method, so we need to update the UI immediately. See ClientPubSubMessages.SOCIAL_SIGN_IN references.
 
         try
         {
@@ -200,6 +204,7 @@ public partial class SignInPanel
         finally
         {
             isWaiting = false;
+            await InvokeAsync(StateHasChanged); // Social sign-in callback will eventually call this method, so we need to update the UI immediately. See ClientPubSubMessages.SOCIAL_SIGN_IN references.
         }
     }
 
@@ -215,20 +220,29 @@ public partial class SignInPanel
                 var queryIndex = uri!.IndexOf('?');
                 var queryParams = AppQueryStringCollection.Parse(uri[queryIndex..]);
 
-                queryParams.TryGetValue("return-url", out var returnUrl);
-                ReturnUrlQueryString = returnUrl?.ToString() ?? Urls.HomePage;
-                queryParams.TryGetValue("userName", out var userName);
-                UserNameQueryString = userName?.ToString();
-                queryParams.TryGetValue("email", out var email);
-                EmailQueryString = email?.ToString();
-                queryParams.TryGetValue("phoneNumber", out var phoneNumber);
-                PhoneNumberQueryString = phoneNumber?.ToString();
-                queryParams.TryGetValue("otp", out var otp);
-                OtpQueryString = otp?.ToString();
-                queryParams.TryGetValue("error", out var error);
-                ErrorQueryString = error?.ToString();
+                string? GetValue(object? value)
+                {
+                    var valueAsString = value?.ToString();
 
-                await OnInitAsync();
+                    if (string.IsNullOrEmpty(valueAsString)) return null;
+
+                    return Uri.UnescapeDataString(valueAsString);
+                }
+
+                queryParams.TryGetValue("return-url", out var returnUrl);
+                ReturnUrlQueryString = GetValue(returnUrl ?? Urls.HomePage);
+                queryParams.TryGetValue("userName", out var userName);
+                UserNameQueryString = GetValue(userName);
+                queryParams.TryGetValue("email", out var email);
+                EmailQueryString = GetValue(email);
+                queryParams.TryGetValue("phoneNumber", out var phoneNumber);
+                PhoneNumberQueryString = GetValue(phoneNumber);
+                queryParams.TryGetValue("otp", out var otp);
+                OtpQueryString = GetValue(otp);
+                queryParams.TryGetValue("error", out var error);
+                ErrorQueryString = GetValue(error);
+
+                await InvokeAsync(OnInitAsync);
             });
 
             var port = localHttpServer.EnsureStarted();
@@ -245,7 +259,6 @@ public partial class SignInPanel
 
     private async Task PasswordlessSignIn()
     {
-        if (isWaiting) return;
         isWaiting = true;
 
         try
@@ -290,6 +303,8 @@ public partial class SignInPanel
     {
         try
         {
+            isWaiting = true;
+
             CleanModel();
 
             if (model.Email is null && model.PhoneNumber is null) return;
@@ -325,12 +340,17 @@ public partial class SignInPanel
         {
             SnackBarService.Error(e.Message);
         }
+        finally
+        {
+            isWaiting = false;
+        }
     }
 
     private async Task SendTfaToken()
     {
         try
         {
+            isWaiting = true;
             if (webAuthnAssertion.HasValue is false)
             {
                 CleanModel();
@@ -349,6 +369,10 @@ public partial class SignInPanel
         catch (KnownException e)
         {
             SnackBarService.Error(e.Message);
+        }
+        finally
+        {
+            isWaiting = false;
         }
     }
 
@@ -399,5 +423,10 @@ public partial class SignInPanel
     private async Task OnTabChange(BitPivotItem item)
     {
         currentTab = Enum.Parse<SignInPanelTab>(item.Key!);
+    }
+
+    private async Task ChangeSignInPanelType(SignInPanelType type)
+    {
+        internalSignInPanelType = type;
     }
 }
