@@ -1,6 +1,6 @@
 # Navigating the Blazor Maze: A Developer's Journey to Production-Ready Web Apps
 
-The growing number of https://asp.net Blazor rendering modes—**Server**, **Auto**, **WebAssembly**, **Hybrid**, and **Static SSR**—coupled with crucial aspects like Progressive Web Applications (**PWA**) and **Pre-Rendering**, has clearly made it harder to build applications that are ready for real-world use.
+The growing number of ASP.NET Blazor rendering modes—**Server**, **Auto**, **WebAssembly**, **Hybrid**, and **Static SSR**—coupled with crucial aspects like Progressive Web Applications (**PWA**) and **Pre-Rendering**, has clearly made it harder to build applications that are ready for real-world use.
 
 We are going to discuss the following headlines:
 
