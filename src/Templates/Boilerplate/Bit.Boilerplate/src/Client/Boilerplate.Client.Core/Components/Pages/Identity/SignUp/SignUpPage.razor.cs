@@ -45,6 +45,11 @@ public partial class SignUpPage
         {
             NavigateToConfirmPage();
         }
+        catch (TooManyRequestsExceptions e)
+        {
+            SnackBarService.Error(e.Message);
+            NavigateToConfirmPage();
+        }
         catch (KnownException e)
         {
             var message = e is ResourceValidationException re
