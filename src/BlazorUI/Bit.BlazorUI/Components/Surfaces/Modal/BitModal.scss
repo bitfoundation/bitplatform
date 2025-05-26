@@ -10,7 +10,7 @@
     position: fixed;
     font-weight: 400;
     align-items: center;
-    pointer-events: auto;
+    pointer-events: none;
     z-index: $zindex-modal;
     justify-content: center;
     font-size: spacing(1.75);
@@ -36,12 +36,14 @@
     inset: 0;
     z-index: 0;
     position: absolute;
+    pointer-events: all;
     background-color: $clr-bg-overlay;
 }
 
 .bit-mdl-ctn {
     max-width: 100%;
     position: absolute;
+    pointer-events: all;
     box-sizing: border-box;
     background-color: $clr-bg-pri;
     box-shadow: $box-shadow-callout;

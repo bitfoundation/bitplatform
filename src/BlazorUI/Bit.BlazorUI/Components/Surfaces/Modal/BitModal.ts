@@ -9,6 +9,7 @@
 
             const element = document.getElementById(containerId)! as HTMLElement;
             const dragElement = document.querySelector(dragElementSelector)! as HTMLElement;
+            if (!element || !dragElement) return;
 
             let x = 0;
             let y = 0;
@@ -60,6 +61,7 @@
             if (!listeners) return;
 
             const dragElement = document.querySelector(dragElementSelector)! as HTMLElement;
+            if (!dragElement) return;
 
             dragElement.removeEventListener('pointerdown', listeners['pointerdown']);
             dragElement.style.cursor = '';

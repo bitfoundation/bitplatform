@@ -92,8 +92,8 @@
             } catch (e) { console.error("BitBlazorUI.Utils.setStyle:", e); }
         }
 
-        public static toggleOverflow(selector: string, isOpen: boolean) {
-            const element = document.querySelector(selector) as HTMLElement;
+        public static toggleOverflow(selector: string | HTMLElement, isOpen: boolean) {
+            const element = selector instanceof HTMLElement ? selector : document.querySelector(selector) as HTMLElement;
 
             if (!element) return 0;
 

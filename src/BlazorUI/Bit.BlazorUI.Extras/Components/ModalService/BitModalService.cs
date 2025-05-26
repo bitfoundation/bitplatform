@@ -128,11 +128,15 @@ public class BitModalService
 
         var modal = new RenderFragment(builder =>
         {
-            builder.OpenComponent<BitModal>(0);
+            var seq = 0;
+            builder.OpenComponent<BitModal>(seq++);
             builder.SetKey(modalReference.Id);
-            builder.AddComponentParameter(1, nameof(BitModal.IsOpen), true);
-            builder.AddComponentParameter(2, nameof(BitModal.OnOverlayClick), EventCallback.Factory.Create<MouseEventArgs>(modalReference, () => modalReference.Close()));
-            builder.AddComponentParameter(3, nameof(BitModal.ChildContent), content);
+            builder.AddComponentParameter(seq++, nameof(BitModal.IsOpen), true);
+            if (modalParameters?.Blocking is not true)
+            {
+                builder.AddComponentParameter(seq++, nameof(BitModal.OnOverlayClick), EventCallback.Factory.Create<MouseEventArgs>(modalReference, () => modalReference.Close()));
+            }
+            builder.AddComponentParameter(seq++, nameof(BitModal.ChildContent), content);
             builder.CloseComponent();
         });
         modalReference.SetModal(modal);
