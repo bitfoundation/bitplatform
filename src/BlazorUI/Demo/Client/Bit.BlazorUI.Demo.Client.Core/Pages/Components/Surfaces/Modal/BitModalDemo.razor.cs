@@ -2,6 +2,11 @@
 
 public partial class BitModalDemo
 {
+    [CascadingParameter(Name = BitAppShell.Container)]
+    private ElementReference? appShellContainer { get; set; }
+
+
+
     private readonly List<ComponentParameter> componentParameters =
     [
         new()
@@ -120,9 +125,16 @@ public partial class BitModalDemo
         },
         new()
         {
+            Name = "ScrollerElement",
+            Type = "ElementReference?",
+            DefaultValue = "null",
+            Description = "Set the element reference for which the Modal disables its scroll if applicable.",
+        },
+        new()
+        {
             Name = "ScrollerSelector",
-            Type = "string",
-            DefaultValue = "body",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Set the element selector for which the Modal disables its scroll if applicable.",
         },
         new()
