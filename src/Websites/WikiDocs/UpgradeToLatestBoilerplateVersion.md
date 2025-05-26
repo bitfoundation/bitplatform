@@ -23,13 +23,13 @@ You can also modify the boilerplate versions (e.g., 9.7.3 to 9.7.4) or `dotnet n
      for /f "delims=" %i in ('dir /b /a-d ^| findstr /v ".git"') do del /f /q "%i"
      cd ..
      dotnet new install Bit.Boilerplate::9.7.4
-     dotnet new bit-bp --name UpgradeTestProejct --signalR --force
-     cd UpgradeTestProejct
+     dotnet new bit-bp --name UpgradeTestProject --signalR --force
+     cd UpgradeTestProject
      git add .
      ```
 
 2. **Compare Old and New Boilerplate Versions**
-   - Use your preferred Git client (e.g., VS Code, Visual Studio, GitHub Desktop) or a diff tool to compare the new boilerplate (e.g., 9.7.4) with the old one (e.g., 9.7.3) and identify changes in `UpgradeTestProejct` folder.
+   - Use your preferred Git client (e.g., VS Code, Visual Studio, GitHub Desktop) or a diff tool to compare the new boilerplate (e.g., 9.7.4) with the old one (e.g., 9.7.3) and identify changes in `UpgradeTestProject` folder.
 
 3. **Port Changes to Your Main Project**
    - Manually merge changes from the new boilerplate into your main project, leveraging packages like `Bit.BlazorUI`, `Bit.Bswup`, `Bit.Butil`, and `Bit.Besql` to adopt new functionality while preserving your custom developments.
