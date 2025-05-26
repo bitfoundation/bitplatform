@@ -41,11 +41,6 @@ public partial class MainLayout : IDisposable
         });
     }
 
-    protected override void OnParametersSet()
-    {
-        base.OnParametersSet();
-    }
-
 
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
