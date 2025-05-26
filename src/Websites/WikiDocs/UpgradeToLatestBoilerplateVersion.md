@@ -11,8 +11,6 @@ You can also modify the boilerplate versions (e.g., 9.7.3 to 9.7.4) or `dotnet n
    - Create a new temporary directory (e.g., `C:\Temp\BoilerplateUpgradeTest`) and run the following commands in the Windows Command Line to simulate the upgrade:
 
      ```cmd
-     mkdir UpgradeTestProject
-     cd UpgradeTestProject
      dotnet new install Bit.Boilerplate::9.7.3
      dotnet new bit-bp --name UpgradeTestProject --signalR
      cd UpgradeTestProject
