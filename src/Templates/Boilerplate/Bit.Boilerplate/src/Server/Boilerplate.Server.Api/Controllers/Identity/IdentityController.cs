@@ -58,11 +58,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
             if (await userConfirmation.IsConfirmedAsync(userManager, existingUser) is false)
             {
-                try
-                {
-                    await SendConfirmationToken(existingUser, request.ReturnUrl, cancellationToken);
-                }
-                catch { }
+                await SendConfirmationToken(existingUser, request.ReturnUrl, cancellationToken);
                 throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]).WithData("UserId", existingUser.Id);
             }
             else
@@ -123,11 +119,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (signInResult.IsNotAllowed && await userConfirmation.IsConfirmedAsync(userManager, user) is false)
         {
-            try
-            {
-                await SendConfirmationToken(user, request.ReturnUrl, cancellationToken);
-            }
-            catch { }
+            await SendConfirmationToken(user, request.ReturnUrl, cancellationToken);
             throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]).WithData("UserId", user.Id);
         }
 
@@ -304,11 +296,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (await userConfirmation.IsConfirmedAsync(userManager, user) is false)
         {
-            try
-            {
-                await SendConfirmationToken(user, request.ReturnUrl, cancellationToken);
-            }
-            catch { }
+            await SendConfirmationToken(user, request.ReturnUrl, cancellationToken);
             throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]).WithData("UserId", user.Id);
         }
 

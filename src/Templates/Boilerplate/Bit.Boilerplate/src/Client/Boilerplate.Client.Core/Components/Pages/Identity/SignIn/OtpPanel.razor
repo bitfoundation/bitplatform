@@ -35,20 +35,20 @@
 
             <BitText Typography="BitTypography.Body2">
                 @Localizer[nameof(AppStrings.OtpResendMessage)]
-                <BitLink OnClick="WrapHandled(async () => await OnResendOtp.InvokeAsync())">@Localizer[nameof(AppStrings.Resend)]</BitLink>
+                <BitLink IsEnabled="IsWaiting is false" OnClick="WrapHandled(async () => await OnResendOtp.InvokeAsync())">@Localizer[nameof(AppStrings.Resend)]</BitLink>
             </BitText>
 
             @if (hasEmail)
             {
                 <BitStack Horizontal Gap="2rem" HorizontalAlign="BitAlignment.Center">
-                    <BitLink Href="https://www.gmail.com">
+                    <BitLink Href="https://www.gmail.com" Target="_blank">
                         <BitStack Horizontal>
                             <BitImage Src="_content/Boilerplate.Client.Core/images/icons/gmail-icon.png" />
                             <BitText>Open Gmail</BitText>
                         </BitStack>
                     </BitLink>
 
-                    <BitLink Href="https://www.outlook.com">
+                    <BitLink Href="https://www.outlook.com" Target="_blank">
                         <BitStack Horizontal>
                             <BitImage Src="_content/Boilerplate.Client.Core/images/icons/outlook-icon.png" />
                             <BitText>Open Outlook</BitText>

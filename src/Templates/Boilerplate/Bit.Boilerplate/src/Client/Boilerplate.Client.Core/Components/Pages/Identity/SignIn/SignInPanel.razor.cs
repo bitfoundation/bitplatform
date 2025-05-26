@@ -303,6 +303,8 @@ public partial class SignInPanel
     {
         try
         {
+            isWaiting = true;
+
             CleanModel();
 
             if (model.Email is null && model.PhoneNumber is null) return;
@@ -338,12 +340,17 @@ public partial class SignInPanel
         {
             SnackBarService.Error(e.Message);
         }
+        finally
+        {
+            isWaiting = false;
+        }
     }
 
     private async Task SendTfaToken()
     {
         try
         {
+            isWaiting = true;
             if (webAuthnAssertion.HasValue is false)
             {
                 CleanModel();
@@ -362,6 +369,10 @@ public partial class SignInPanel
         catch (KnownException e)
         {
             SnackBarService.Error(e.Message);
+        }
+        finally
+        {
+            isWaiting = false;
         }
     }
 
