@@ -96,7 +96,7 @@
             </div>
         </BitModal>
 
-        <BitModal @bind-IsOpen="isOpenAutoToggleScroll" AutoToggleScroll>
+        <BitModal @bind-IsOpen="isOpenAutoToggleScroll" AutoToggleScroll ScrollerElement="appShellContainer">
             <div class="modal-header">
                 <span class="modal-header-text">AutoToggleScroll</span>
                 <BitButton Variant="BitVariant.Text" OnClick="() => isOpenAutoToggleScroll = false" IconName="@BitIconName.ChromeClose" Title="Close" />

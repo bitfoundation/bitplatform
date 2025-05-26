@@ -9,6 +9,8 @@ public partial class BitModal : BitComponentBase
     private bool _internalIsOpen;
     private string _containerId = default!;
 
+
+
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
@@ -104,6 +106,11 @@ public partial class BitModal : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitPosition? Position { get; set; }
+
+    /// <summary>
+    /// Set the element reference for which the Modal disables its scroll if applicable.
+    /// </summary>
+    [Parameter] public ElementReference? ScrollerElement { get; set; }
 
     /// <summary>
     /// Set the element selector for which the Modal disables its scroll if applicable.
@@ -237,7 +244,14 @@ public partial class BitModal : BitComponentBase
     {
         if (ModalParameters.AutoToggleScroll is false) return;
 
-        _offsetTop = await _js.BitUtilsToggleOverflow(ModalParameters.ScrollerSelector ?? "body", isOpen);
+        if (modalParameters.ScrollerElement.HasValue)
+        {
+            _offsetTop = await _js.BitUtilsToggleOverflow(ModalParameters.ScrollerElement!.Value, isOpen);
+        }
+        else
+        {
+            _offsetTop = await _js.BitUtilsToggleOverflow(ModalParameters.ScrollerSelector ?? "body", isOpen);
+        }
     }
 
     private void OnSetIsOpen()

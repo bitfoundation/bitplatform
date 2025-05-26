@@ -2,34 +2,34 @@
 
 public class BitModalParameters
 {
-    public bool IsEnabled { get { return _modal?.IsEnabled ?? field; } set; } = true;
+    public bool IsEnabled { get { return _modal?.IsEnabled is false ? false : field; } set; } = true;
 
     public Dictionary<string, object> HtmlAttributes { get { return _modal?.HtmlAttributes ?? field; } set; } = [];
 
     public BitDir? Dir { get { return _modal?.Dir ?? field; } set; }
 
 
-    public bool AutoToggleScroll { get { return _modal?.AutoToggleScroll ?? field; } set; }
+    public bool AutoToggleScroll { get { return _modal?.AutoToggleScroll is true ? true : field; } set; }
 
-    public bool AbsolutePosition { get { return _modal?.AbsolutePosition ?? field; } set; }
+    public bool AbsolutePosition { get { return _modal?.AbsolutePosition is true ? true : field; } set; }
 
-    public bool Blocking { get { return _modal?.Blocking ?? field; } set; }
+    public bool Blocking { get { return _modal?.Blocking is true ? true : field; } set; }
 
     public BitModalClassStyles? Classes { get; set; }
 
     public string? DragElementSelector { get { return _modal?.DragElementSelector ?? field; } set; }
 
-    public bool Draggable { get { return _modal?.Draggable ?? field; } set; }
+    public bool Draggable { get { return _modal?.Draggable is true ? true : field; } set; }
 
-    public bool FullHeight { get { return _modal?.FullHeight ?? field; } set; }
+    public bool FullHeight { get { return _modal?.FullHeight is true ? true : field; } set; }
 
-    public bool FullSize { get { return _modal?.FullSize ?? field; } set; }
+    public bool FullSize { get { return _modal?.FullSize is true ? true : field; } set; }
 
-    public bool FullWidth { get { return _modal?.FullWidth ?? field; } set; }
+    public bool FullWidth { get { return _modal?.FullWidth is true ? true : field; } set; }
 
     public bool? IsAlert { get { return _modal?.IsAlert ?? field; } set; }
 
-    public bool Modeless { get { return _modal?.Modeless ?? field; } set; }
+    public bool Modeless { get { return _modal?.Modeless is true ? true : field; } set; }
 
     public EventCallback<MouseEventArgs> OnDismiss
     {
@@ -58,6 +58,8 @@ public class BitModalParameters
     }
 
     public BitPosition? Position { get { return _modal?.Position ?? field; } set; }
+
+    public ElementReference? ScrollerElement { get { return _modal?.ScrollerElement ?? field; } set; }
 
     public string? ScrollerSelector { get { return _modal?.ScrollerSelector ?? field; } set; }
 
@@ -110,6 +112,7 @@ public class BitModalParameters
                 await params2.OnOverlayClick.InvokeAsync();
             }),
             Position = params1.Position ?? params2.Position,
+            ScrollerElement = params1.ScrollerElement ?? params2.ScrollerElement,
             ScrollerSelector = params1.ScrollerSelector ?? params2.ScrollerSelector,
             Styles = BitModalClassStyles.Merge(params1.Styles, params2.Styles),
             SubtitleAriaId = params1.SubtitleAriaId ?? params2.SubtitleAriaId,

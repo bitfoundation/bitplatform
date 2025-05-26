@@ -9,6 +9,9 @@ namespace Bit.BlazorUI;
 [SuppressMessage("Trimming", "IL2110:Field with 'DynamicallyAccessedMembersAttribute' is accessed via reflection. Trimmer can't guarantee availability of the requirements of the field.", Justification = "<Pending>")]
 public partial class BitAppShell : BitComponentBase
 {
+    public const string Container = "BitAppShell.Container";
+
+
     private bool _locationChanged;
     private ElementReference _containerRef = default!;
 
@@ -58,6 +61,11 @@ public partial class BitAppShell : BitComponentBase
     {
         await _js.BitExtrasGoToTop(_containerRef, behavior);
     }
+
+    /// <summary>
+    /// The element reference to the main container of the ap shell.
+    /// </summary>
+    public ElementReference ContainerRef => _containerRef;
 
 
 

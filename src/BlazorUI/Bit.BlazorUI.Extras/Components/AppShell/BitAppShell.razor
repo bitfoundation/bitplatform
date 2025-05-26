@@ -13,9 +13,11 @@
          dir="@Dir?.ToString().ToLower()">
         <div style="@Styles?.Left" class="bit-ash-left @Classes?.Left"></div>
         <div id="BitAppShell-container" @ref="_containerRef" style="@Styles?.Main" class="bit-ash-main @Classes?.Main">
-            <BitCascadingValueProvider Values="CascadingValues">
-                @ChildContent
-            </BitCascadingValueProvider>
+            <CascadingValue Name="@BitAppShell.Container" Value="_containerRef">
+                <BitCascadingValueProvider Values="CascadingValues">
+                    @ChildContent
+                </BitCascadingValueProvider>
+            </CascadingValue>
         </div>
         <div style="@Styles?.Right" class="bit-ash-right @Classes?.Right"></div>
     </div>

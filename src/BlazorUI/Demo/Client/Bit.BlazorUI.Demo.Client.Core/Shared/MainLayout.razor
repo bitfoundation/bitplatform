@@ -1,7 +1,7 @@
 ﻿@inherits LayoutComponentBase
 
 <BitAppShell @ref="_appShellRef" PersistScroll>
-    <BitLayout HideNavPanel="_isHomePage" NavPanelWidth="_isNavPanelOpen ? 0 : 14*16" StickyHeader>
+    <BitLayout HideNavPanel="_isHomePage" NavPanelWidth="_isNavPanelOpen ? 0 : 14 * 16" StickyHeader>
         <Header>
             <AppHeader IsHomePage="_isHomePage" OnToggleNavPanel="() => _isNavPanelOpen = true" />
         </Header>
@@ -25,4 +25,4 @@
     </BitLayout>
 </BitAppShell>
 
-<BitModalContainer />
+<BitModalContainer ModalParameters="@(new() { AutoToggleScroll = true, ScrollerSelector = "#BitAppShell-container" })" />
