@@ -14,8 +14,8 @@ You can also modify the boilerplate versions (e.g., 9.7.3 to 9.7.4) or `dotnet n
      mkdir BoilerplateUpgradeTest
      cd BoilerplateUpgradeTest
      dotnet new install Bit.Boilerplate::9.7.3
-     dotnet new bit-bp --name UpgradeTestProejct --signalR
-     cd UpgradeTestProejct
+     dotnet new bit-bp --name UpgradeTestProject --signalR
+     cd UpgradeTestProject
      git init
      git add .
      git commit -m "project with older version"
