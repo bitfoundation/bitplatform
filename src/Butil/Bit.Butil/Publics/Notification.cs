@@ -44,7 +44,7 @@ public class Notification(IJSRuntime js)
     /// </summary>
     public async ValueTask<NotificationPermission> RequestPermission()
     {
-        var permission = await js.InvokeAsync<string>("BitButil.notification.requestPermission");
+        var permission = await js.Invoke<string>("BitButil.notification.requestPermission");
 
         return permission switch
         {
