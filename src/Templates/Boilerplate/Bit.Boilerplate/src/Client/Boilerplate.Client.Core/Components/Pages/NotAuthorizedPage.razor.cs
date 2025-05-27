@@ -5,7 +5,13 @@ public partial class NotAuthorizedPage
     private bool lacksValidPrivilege;
     private bool isUpdatingAuthState = true;
 
-    [SupplyParameterFromQuery(Name = "return-url"), Parameter] public string? ReturnUrl { get; set; }
+
+    [SupplyParameterFromQuery(Name = "return-url"), Parameter]
+    public string? ReturnUrl { get; set; }
+
+
+    [AutoInject] private SignInModalService signInModalService = default!;
+
 
     protected override async Task OnAfterFirstRenderAsync()
     {
@@ -39,6 +45,7 @@ public partial class NotAuthorizedPage
         }
     }
 
+
     private async Task SignIn()
     {
         await AuthManager.SignOut(CurrentCancellationToken);
@@ -47,18 +54,10 @@ public partial class NotAuthorizedPage
         NavigationManager.NavigateTo($"{Urls.SignInPage}?return-url={Uri.EscapeDataString(returnUrl)}");
         // Alternatively, display utilize SignInModalService to trigger a modal-based sign-in.
     }
-}
 
-public partial class RedirectToSignInPage : AppComponentBase
-{
-    [Parameter] public string? ReturnUrl { get; set; }
-
-    protected override async Task OnAfterFirstRenderAsync()
+    private async Task SignInModal()
     {
-        await base.OnAfterFirstRenderAsync();
-
         await AuthManager.SignOut(CurrentCancellationToken);
-        var returnUrl = ReturnUrl ?? NavigationManager.GetRelativePath();
-        NavigationManager.NavigateTo($"{Urls.SignInPage}?return-url={Uri.EscapeDataString(returnUrl)}");
+        await signInModalService.SignIn(ReturnUrl);
     }
 }

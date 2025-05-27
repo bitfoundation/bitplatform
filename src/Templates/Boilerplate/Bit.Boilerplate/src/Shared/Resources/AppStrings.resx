@@ -148,7 +148,7 @@
     <value>Request could not be processed because of conflict in the request</value>
   </data>
     <data name="NotAuthorizedPageTitle" xml:space="preserve">
-    <value>403</value>
+    <value>Not authorized</value>
   </data>
     <data name="ForbiddenException" xml:space="preserve">
     <value>Access to the requested resource is forbidden</value>
@@ -1477,5 +1477,11 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>Page URL</value>
+  </data>
+    <data name="YouAreNotAuthorized" xml:space="preserve">
+    <value>You are not authorized</value>
+  </data>
+    <data name="YouAreNotAuthorizedMessage" xml:space="preserve">
+    <value>You don’t have permission to access this page.</value>
   </data>
 </root>
