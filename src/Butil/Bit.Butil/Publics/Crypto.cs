@@ -32,21 +32,21 @@ public class Crypto(IJSRuntime js)
                 _ => "SHA-256",
             };
 
-            return js.InvokeAsync<byte[]>("BitButil.crypto.encryptRsaOaep", algorithm, key, data, keyHashString);
+            return js.Invoke<byte[]>("BitButil.crypto.encryptRsaOaep", algorithm, key, data, keyHashString);
         }
 
         if (algorithm.GetType() == typeof(AesCtrCryptoAlgorithmParams))
         {
-            return js.InvokeAsync<byte[]>("BitButil.crypto.encryptAesCtr", algorithm, key, data);
+            return js.Invoke<byte[]>("BitButil.crypto.encryptAesCtr", algorithm, key, data);
         }
 
         if (algorithm.GetType() == typeof(AesCbcCryptoAlgorithmParams))
         {
-            return js.InvokeAsync<byte[]>("BitButil.crypto.encryptAesCbc", algorithm, key, data);
+            return js.Invoke<byte[]>("BitButil.crypto.encryptAesCbc", algorithm, key, data);
         }
 
 
-        return js.InvokeAsync<byte[]>("BitButil.crypto.encryptAesGcm", algorithm, key, data);
+        return js.Invoke<byte[]>("BitButil.crypto.encryptAesGcm", algorithm, key, data);
     }
 
     /// <summary>
@@ -79,20 +79,20 @@ public class Crypto(IJSRuntime js)
                 _ => "SHA-256",
             };
 
-            return js.InvokeAsync<byte[]>("BitButil.crypto.decryptRsaOaep", algorithm, key, data, keyHashString);
+            return js.Invoke<byte[]>("BitButil.crypto.decryptRsaOaep", algorithm, key, data, keyHashString);
         }
 
         if (algorithm.GetType() == typeof(AesCtrCryptoAlgorithmParams))
         {
-            return js.InvokeAsync<byte[]>("BitButil.crypto.decryptAesCtr", algorithm, key, data);
+            return js.Invoke<byte[]>("BitButil.crypto.decryptAesCtr", algorithm, key, data);
         }
 
         if (algorithm.GetType() == typeof(AesCbcCryptoAlgorithmParams))
         {
-            return js.InvokeAsync<byte[]>("BitButil.crypto.decryptAesCbc", algorithm, key, data);
+            return js.Invoke<byte[]>("BitButil.crypto.decryptAesCbc", algorithm, key, data);
         }
 
-        return js.InvokeAsync<byte[]>("BitButil.crypto.decryptAesGcm", algorithm, key, data);
+        return js.Invoke<byte[]>("BitButil.crypto.decryptAesGcm", algorithm, key, data);
     }
     /// <summary>
     /// The Decrypt method of the Crypto interface that decrypts data.

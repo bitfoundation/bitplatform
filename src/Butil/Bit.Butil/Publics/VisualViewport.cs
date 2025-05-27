@@ -246,9 +246,12 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
 
     protected virtual async ValueTask DisposeAsync(bool disposing)
     {
-        if (disposing)
+        if (disposing is false) return;
+
+        try
         {
             await RemoveAllEventHandlers();
         }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 }
