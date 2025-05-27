@@ -39,6 +39,13 @@
         <Compile Remove="Services\ScssCompilerService.cs" />
     </ItemGroup>
 
+    <ItemGroup Condition=" '$(api)' == 'Integrated' OR '$(api)' == ''">
+        <None Include="..\Boilerplate.Server.Api\*.json">
+            <Link>%(Filename)%(Extension)</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
     <!--
     https://learn.microsoft.com/en-us/dotnet/core/docker/publish-as-container
     https://learn.microsoft.com/en-us/visualstudio/containers/container-msbuild-properties
