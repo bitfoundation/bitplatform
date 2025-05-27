@@ -24,13 +24,14 @@ public partial class SignInModalService : IAsyncDisposable
     private BitModalReference? modalReference = null;
     private TaskCompletionSource<bool>? signInModalTcs;
 
-    public async Task<bool> SignIn()
+    public async Task<bool> SignIn(string? returnUrl = null)
     {
         signInModalTcs?.TrySetCanceled();
         signInModalTcs = new();
 
         Dictionary<string, object> signInParameters = new()
         {
+            { nameof(SignInModal.ReturnUrl), returnUrl ?? navigationManager.GetRelativePath() },
             { nameof(SignInModal.OnClose), () => { signInModalTcs.SetResult(false); modalReference?.Close(); } },
             { nameof(SignInModal.OnSuccess), () => { signInModalTcs.SetResult(true); modalReference?.Close(); } },
         };

@@ -4,7 +4,6 @@ public partial class NotAuthorizedPage
 {
     private bool lacksValidPrivilege;
     private bool isUpdatingAuthState = true;
-    private ClaimsPrincipal user = default!;
 
     [SupplyParameterFromQuery(Name = "return-url"), Parameter] public string? ReturnUrl { get; set; }
 
@@ -29,7 +28,7 @@ public partial class NotAuthorizedPage
                 }
             }
 
-            user = (await AuthenticationStateTask).User;
+            var user = (await AuthenticationStateTask).User;
 
             lacksValidPrivilege = await AuthorizationService.IsAuthorizedAsync(user, AuthPolicies.PRIVILEGED_ACCESS);
         }
@@ -40,11 +39,13 @@ public partial class NotAuthorizedPage
         }
     }
 
-    private async Task SignOut()
+    private async Task SignIn()
     {
         await AuthManager.SignOut(CurrentCancellationToken);
         var returnUrl = ReturnUrl ?? NavigationManager.GetRelativePath();
+
         NavigationManager.NavigateTo($"{Urls.SignInPage}?return-url={Uri.EscapeDataString(returnUrl)}");
+        // Alternatively, display utilize SignInModalService to trigger a modal-based sign-in.
     }
 }
 

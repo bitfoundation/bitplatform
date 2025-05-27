@@ -20,7 +20,7 @@ else
                         @Localizer[nameof(AppStrings.ForbiddenException)]
                     </BitText>
 
-                    <BitText>@Localizer[nameof(AppStrings.YouAreSignedInAs)] <b>@user.GetDisplayName()</b></BitText>
+                    <BitText>@Localizer[nameof(AppStrings.YouAreSignedInAs)] <b>@context.User.GetDisplayName()</b></BitText>
 
                     @if (lacksValidPrivilege)
                     {
@@ -33,7 +33,7 @@ else
 
                     <BitButton AutoLoading
                                Style="width:300px"
-                               OnClick="WrapHandled(SignOut)">
+                               OnClick="WrapHandled(SignIn)">
                         @Localizer[nameof(AppStrings.SignInAsDifferentUser)]
                     </BitButton>
 
@@ -42,6 +42,7 @@ else
         </Authorized>
         <NotAuthorized>
             <RedirectToSignInPage ReturnUrl="@ReturnUrl" />
+            <!-- Alternatively, display a sign-in button here and utilize SignInModalService to trigger a modal-based sign-in. -->
         </NotAuthorized>
     </AuthorizeView>
 }
