@@ -28,8 +28,10 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
 
     public int EnsureStarted()
     {
-        if (port != -1)
-            return port;
+        if (localHttpServer?.State is WebServerState.Listening or WebServerState.Loading)
+            return port is -1 ? throw new InvalidOperationException() : port;
+
+        localHttpServer?.Dispose();
 
         port = GetAvailableTcpPort();
 
