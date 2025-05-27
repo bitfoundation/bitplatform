@@ -40,7 +40,7 @@
     </ItemGroup>
 
     <ItemGroup Condition=" '$(api)' == 'Integrated' OR '$(api)' == ''">
-        <None Include="..\Boilerplate.Server.Api\*.json">
+        <None Include="..\Boilerplate.Server.Api\appsettings*.json">
             <Link>%(Filename)%(Extension)</Link>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
