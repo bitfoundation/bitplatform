@@ -36,7 +36,7 @@ public partial class NotAuthorizedPage
 
             var user = (await AuthenticationStateTask).User;
 
-            lacksValidPrivilege = await AuthorizationService.IsAuthorizedAsync(user, AuthPolicies.PRIVILEGED_ACCESS);
+            lacksValidPrivilege = (await AuthorizationService.IsAuthorizedAsync(user, AuthPolicies.PRIVILEGED_ACCESS)) is false;
         }
         finally
         {
@@ -45,19 +45,13 @@ public partial class NotAuthorizedPage
         }
     }
 
-
     private async Task SignIn()
     {
         await AuthManager.SignOut(CurrentCancellationToken);
         var returnUrl = ReturnUrl ?? NavigationManager.GetRelativePath();
+        await signInModalService.SignIn(returnUrl);
 
-        NavigationManager.NavigateTo($"{Urls.SignInPage}?return-url={Uri.EscapeDataString(returnUrl)}");
-        // Alternatively, display utilize SignInModalService to trigger a modal-based sign-in.
-    }
-
-    private async Task SignInModal()
-    {
-        await AuthManager.SignOut(CurrentCancellationToken);
-        await signInModalService.SignIn(ReturnUrl);
+        // Alternatively, you can redirect the user to the sign-in page.
+        // NavigationManager.NavigateTo($"{Urls.SignInPage}?return-url={Uri.EscapeDataString(returnUrl)}");
     }
 }
