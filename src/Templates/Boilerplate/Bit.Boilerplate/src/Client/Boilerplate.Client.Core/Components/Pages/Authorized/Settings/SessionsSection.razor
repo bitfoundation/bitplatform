@@ -33,13 +33,14 @@
                                 Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)"/>
                     <BitSpacer />
                     @*#if (signalR == true || notification == true)*@
-                    <BitButton FixedColor AutoLoading
-                        Variant="BitVariant.Text"
-                        Color="BitColor.SecondaryBackground"
-                        Title="@Localizer[nameof(AppStrings.ToggleNotification)]"
-                        OnClick="WrapHandled(() => ToggleNotification(currentSession))">
-                        @(currentSession.NotificationsAllowed ? "🔔" : "🔕")
-                    </BitButton>
+                    <BitButton IconOnly
+                               FixedColor 
+                               AutoLoading 
+                               Variant="BitVariant.Text"
+                               Color="BitColor.SecondaryBackground"
+                               OnClick="WrapHandled(() => ToggleNotification(currentSession))"
+                               IconName="@(currentSession.NotificationsAllowed ? BitIconName.RingerSolid : BitIconName.Ringer)" 
+                               Title="@($"{(Localizer[nameof(AppStrings.ToggleNotification)])} ({(currentSession.NotificationsAllowed ? Localizer[nameof(AppStrings.Off)] : Localizer[nameof(AppStrings.On)])})")"/>
                     @*#endif*@
                 </BitStack>
             </BitCard>
@@ -70,13 +71,14 @@
                                            OnClick="WrapHandled(() => RevokeSession(session))"
                                            IconName="@(revokingSessionIds.Contains(session.Id) ? BitIconName.Process : BitIconName.Delete)" />
                                 @*#if (signalR == true || notification == true)*@
-                                <BitButton FixedColor AutoLoading
-                                    Variant="BitVariant.Text"
-                                    Color="BitColor.SecondaryBackground"
-                                    Title="@Localizer[nameof(AppStrings.ToggleNotification)]"
-                                    OnClick="WrapHandled(() => ToggleNotification(session))">
-                                    @(session.NotificationsAllowed ? "🔔" : "🔕")
-                                </BitButton>
+                                <BitButton IconOnly
+                                           FixedColor 
+                                           AutoLoading 
+                                           Variant="BitVariant.Text"
+                                           Color="BitColor.SecondaryBackground"
+                                           OnClick="WrapHandled(() => ToggleNotification(session))"
+                                           IconName="@(session.NotificationsAllowed ? BitIconName.RingerSolid : BitIconName.Ringer)" 
+                                           Title="@($"{(Localizer[nameof(AppStrings.ToggleNotification)])} ({(session.NotificationsAllowed ? Localizer[nameof(AppStrings.Off)] : Localizer[nameof(AppStrings.On)])})")" />
                                 @*#endif*@
                             </BitStack>
                         </BitCard>
