@@ -4,9 +4,14 @@ public partial class NotAuthorizedPage
 {
     private bool lacksValidPrivilege;
     private bool isUpdatingAuthState = true;
-    private ClaimsPrincipal user = default!;
 
-    [SupplyParameterFromQuery(Name = "return-url"), Parameter] public string? ReturnUrl { get; set; }
+
+    [SupplyParameterFromQuery(Name = "return-url"), Parameter]
+    public string? ReturnUrl { get; set; }
+
+
+    [AutoInject] private SignInModalService signInModalService = default!;
+
 
     protected override async Task OnAfterFirstRenderAsync()
     {
@@ -29,9 +34,9 @@ public partial class NotAuthorizedPage
                 }
             }
 
-            user = (await AuthenticationStateTask).User;
+            var user = (await AuthenticationStateTask).User;
 
-            lacksValidPrivilege = await AuthorizationService.IsAuthorizedAsync(user, AuthPolicies.PRIVILEGED_ACCESS);
+            lacksValidPrivilege = (await AuthorizationService.IsAuthorizedAsync(user, AuthPolicies.PRIVILEGED_ACCESS)) is false;
         }
         finally
         {
@@ -40,24 +45,13 @@ public partial class NotAuthorizedPage
         }
     }
 
-    private async Task SignOut()
+    private async Task SignIn()
     {
         await AuthManager.SignOut(CurrentCancellationToken);
         var returnUrl = ReturnUrl ?? NavigationManager.GetRelativePath();
-        NavigationManager.NavigateTo($"{Urls.SignInPage}?return-url={Uri.EscapeDataString(returnUrl)}");
-    }
-}
+        await signInModalService.SignIn(returnUrl);
 
-public partial class RedirectToSignInPage : AppComponentBase
-{
-    [Parameter] public string? ReturnUrl { get; set; }
-
-    protected override async Task OnAfterFirstRenderAsync()
-    {
-        await base.OnAfterFirstRenderAsync();
-
-        await AuthManager.SignOut(CurrentCancellationToken);
-        var returnUrl = ReturnUrl ?? NavigationManager.GetRelativePath();
-        NavigationManager.NavigateTo($"{Urls.SignInPage}?return-url={Uri.EscapeDataString(returnUrl)}");
+        // Alternatively, you can redirect the user to the sign-in page.
+        // NavigationManager.NavigateTo($"{Urls.SignInPage}?return-url={Uri.EscapeDataString(returnUrl)}");
     }
 }

@@ -7,6 +7,8 @@
                    Color="BitColor.Tertiary"
                    Variant="BitVariant.Text"
                    IconName="@BitIconName.ChromeClose" />
-        <SignInPanel OnSuccess="OnSuccess" SignInPanelType="SignInPanelType.OtpOnly" />
+        <SignInPanel OnSuccess="OnSuccess"
+                     ReturnUrlQueryString="@ReturnUrl"
+                     SignInPanelType="SignInPanelType.OtpOnly" />
     </BitStack>
 </section>

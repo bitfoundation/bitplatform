@@ -20,7 +20,7 @@ else
                         @Localizer[nameof(AppStrings.ForbiddenException)]
                     </BitText>
 
-                    <BitText>@Localizer[nameof(AppStrings.YouAreSignedInAs)] <b>@user.GetDisplayName()</b></BitText>
+                    <BitText>@Localizer[nameof(AppStrings.YouAreSignedInAs)] <b>@context.User.GetDisplayName()</b></BitText>
 
                     @if (lacksValidPrivilege)
                     {
@@ -33,7 +33,7 @@ else
 
                     <BitButton AutoLoading
                                Style="width:300px"
-                               OnClick="WrapHandled(SignOut)">
+                               OnClick="WrapHandled(SignIn)">
                         @Localizer[nameof(AppStrings.SignInAsDifferentUser)]
                     </BitButton>
 
@@ -41,7 +41,25 @@ else
             </section>
         </Authorized>
         <NotAuthorized>
-            <RedirectToSignInPage ReturnUrl="@ReturnUrl" />
+            <section>
+                <BitStack Alignment="BitAlignment.Center">
+                    <BitImage Src="_content/Boilerplate.Client.Core/images/401.svg" Width="100%" Style="max-width:600px" />
+                    <BitText Typography="BitTypography.H3" Align="BitTextAlign.Center">
+                        @Localizer[nameof(AppStrings.YouAreNotAuthorized)]
+                    </BitText>
+                    <BitText Typography="BitTypography.Subtitle1" Align="BitTextAlign.Center" Gutter>
+                        @Localizer[nameof(AppStrings.YouAreNotAuthorizedMessage)]
+                    </BitText>
+                    <BitButton AutoLoading
+                               Variant="BitVariant.Outline"
+                               OnClick="WrapHandled(SignIn)"
+                               IconName="@BitIconName.Signin">
+                        @Localizer[nameof(AppStrings.SignIn)]
+                    </BitButton>
+                </BitStack>
+            </section>
+            <!-- Alternatively, you can redirect the user to the sign-in page. -->
+            @* <RedirectToSignInPage ReturnUrl="@ReturnUrl" /> *@
         </NotAuthorized>
     </AuthorizeView>
 }

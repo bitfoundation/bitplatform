@@ -148,7 +148,7 @@
     <value>درخواست به دلیل مغایرت داشتن پردازش نشد</value>
   </data>
     <data name="NotAuthorizedPageTitle" xml:space="preserve">
-    <value>403</value>
+    <value>عدم دسترسی</value>
   </data>
     <data name="ForbiddenException" xml:space="preserve">
     <value>دسترسی به منابع درخواست شده ممنوع است</value>
