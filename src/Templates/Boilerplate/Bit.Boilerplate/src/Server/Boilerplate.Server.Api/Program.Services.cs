@@ -495,28 +495,8 @@ public static partial class Program
         })
         .AddBearerToken(IdentityConstants.BearerScheme, options =>
         {
-            var validationParameters = new TokenValidationParameters
-            {
-                ClockSkew = TimeSpan.Zero,
-                RequireSignedTokens = true,
-
-                ValidateIssuerSigningKey = env.IsDevelopment() is false,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(appSettings.Identity.JwtIssuerSigningKeySecret)),
-
-                RequireExpirationTime = true,
-                ValidateLifetime = true,
-
-                ValidateAudience = true,
-                ValidAudience = identityOptions.Audience,
-
-                ValidateIssuer = true,
-                ValidIssuer = identityOptions.Issuer,
-
-                AuthenticationType = IdentityConstants.BearerScheme
-            };
-
-            options.BearerTokenProtector = new AppJwtSecureDataFormat(appSettings, validationParameters);
-            options.RefreshTokenProtector = new AppJwtSecureDataFormat(appSettings, validationParameters);
+            options.BearerTokenProtector = new AppJwtSecureDataFormat(appSettings, BuildTokenValidationParameters());
+            options.RefreshTokenProtector = new AppJwtSecureDataFormat(appSettings, BuildTokenValidationParameters(validateExpiry: false /* IdentityController.Refresh will validate expiry itself */));
 
             options.Events = new()
             {
@@ -528,6 +508,26 @@ public static partial class Program
             };
 
             configuration.GetRequiredSection("Identity").Bind(options);
+
+            TokenValidationParameters BuildTokenValidationParameters(bool validateExpiry = true) => new()
+            {
+                ClockSkew = TimeSpan.Zero,
+                RequireSignedTokens = true,
+
+                ValidateIssuerSigningKey = env.IsDevelopment() is false,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(appSettings.Identity.JwtIssuerSigningKeySecret)),
+
+                RequireExpirationTime = true,
+                ValidateLifetime = validateExpiry,
+
+                ValidateAudience = true,
+                ValidAudience = identityOptions.Audience,
+
+                ValidateIssuer = true,
+                ValidIssuer = identityOptions.Issuer,
+
+                AuthenticationType = IdentityConstants.BearerScheme
+            };
         });
 
         services.AddAuthorization();
