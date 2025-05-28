@@ -235,16 +235,18 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             var refreshTokenProtector = bearerTokenOptions.Get(IdentityConstants.BearerScheme).RefreshTokenProtector;
             var refreshTicket = refreshTokenProtector.Unprotect(request.RefreshToken);
 
-            if (refreshTicket?.Principal.IsAuthenticated() is false
-                || (refreshTicket!.Properties.ExpiresUtc ?? DateTimeOffset.MinValue) < DateTimeOffset.UtcNow)
+            if (refreshTicket?.Principal?.IsAuthenticated() is not true)
+                throw new UnauthorizedException();
+
+            var currentSessionId = refreshTicket.Principal.GetSessionId();
+            userSession = await DbContext.UserSessions
+                .FirstOrDefaultAsync(us => us.Id == currentSessionId, cancellationToken) ?? throw new UnauthorizedException().WithData("UserSessionId", currentSessionId); // User session has been deleted.
+
+            if ((refreshTicket.Properties.ExpiresUtc ?? DateTimeOffset.MinValue) < DateTimeOffset.UtcNow)
                 throw new UnauthorizedException(); // refresh token is expired.
 
             var user = await signInManager.ValidateSecurityStampAsync(refreshTicket.Principal) ?? throw new UnauthorizedException(); // Security stamp has been updated (for example after 2fa configuration)
-            var userId = refreshTicket!.Principal.GetUserId().ToString();
-            var currentSessionId = refreshTicket.Principal.GetSessionId();
-
-            userSession = await DbContext.UserSessions
-                .FirstOrDefaultAsync(us => us.Id == currentSessionId, cancellationToken) ?? throw new UnauthorizedException().WithData("UserSessionId", currentSessionId); // User session has been deleted.
+            var userId = refreshTicket.Principal.GetUserId().ToString();
 
             if (string.IsNullOrEmpty(request.ElevatedAccessToken) is false)
             {
