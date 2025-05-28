@@ -31,6 +31,7 @@
                                 CoinVariant="@(currentSession.Privileged ? BitVariant.Fill : BitVariant.Outline)"
                                 ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(currentSession.DeviceInfo)}")"
                                 Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)"/>
+                    <BitSpacer />
                     @*#if (signalR == true || notification == true)*@
                     <BitButton FixedColor AutoLoading
                         Variant="BitVariant.Text"
