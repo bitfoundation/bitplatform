@@ -123,10 +123,16 @@ public partial class SessionsSection
             // User is going to allow notifications so it's an opportune time to request permission.
 
             //#if (notification == true)
-            await pushNotificationService.RequestPermission(CurrentCancellationToken);
-            await pushNotificationService.Subscribe(CurrentCancellationToken);
+            if (AppPlatform.IsWindows is false)
+            {
+                await pushNotificationService.RequestPermission(CurrentCancellationToken);
+                await pushNotificationService.Subscribe(CurrentCancellationToken);
+            }
             //#else
-            await notification.RequestPermission();
+            if (await notification.IsSupported())
+            {
+                await notification.RequestPermission();
+            }
             //#endif
         }
 

@@ -63,7 +63,7 @@ public partial class AndroidPushNotificationService : PushNotificationServiceBas
     }
     public static void Configure()
     {
-        FirebaseMessaging.Instance.GetToken().AddOnSuccessListener((MainActivity)Platform.AppContext.ApplicationContext!);
+        FirebaseMessaging.Instance.GetToken().AddOnSuccessListener((MainActivity)Platform.CurrentActivity!);
         LocalNotificationCenter.Current.NotificationActionTapped += (e) =>
         {
             if (string.IsNullOrEmpty(e.Request.ReturningData))
