@@ -32,8 +32,9 @@
                                 ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(currentSession.DeviceInfo)}")"
                                 Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)"/>
                     @*#if (signalR == true || notification == true)*@
-                    <BitButton AutoLoading
+                    <BitButton FixedColor AutoLoading
                         Variant="BitVariant.Text"
+                        Color="BitColor.SecondaryBackground"
                         Title="@Localizer[nameof(AppStrings.ToggleNotification)]"
                         OnClick="WrapHandled(() => ToggleNotification(currentSession))">
                         @(currentSession.NotificationsAllowed ? "🔔" : "🔕")
@@ -68,8 +69,9 @@
                                            OnClick="WrapHandled(() => RevokeSession(session))"
                                            IconName="@(revokingSessionIds.Contains(session.Id) ? BitIconName.Process : BitIconName.Delete)" />
                                 @*#if (signalR == true || notification == true)*@
-                                <BitButton AutoLoading
+                                <BitButton FixedColor AutoLoading
                                     Variant="BitVariant.Text"
+                                    Color="BitColor.SecondaryBackground"
                                     Title="@Localizer[nameof(AppStrings.ToggleNotification)]"
                                     OnClick="WrapHandled(() => ToggleNotification(session))">
                                     @(session.NotificationsAllowed ? "🔔" : "🔕")

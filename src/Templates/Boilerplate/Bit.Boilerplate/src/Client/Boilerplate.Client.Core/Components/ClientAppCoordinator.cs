@@ -176,7 +176,11 @@ public partial class ClientAppCoordinator : AppComponentBase
             {
                 // Show local notification
                 // Note that this code has nothing to do with push notification.
-                await notification.Show("Boilerplate SignalR", new() { Body = message });
+                await notification.Show("Boilerplate SignalR", new()
+                {
+                    Icon = "/images/icons/bit-icon-512.png",
+                    Body = message
+                });
             }
             else
             {
