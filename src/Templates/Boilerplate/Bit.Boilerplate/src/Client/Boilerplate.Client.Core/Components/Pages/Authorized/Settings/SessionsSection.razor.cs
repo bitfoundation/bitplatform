@@ -15,9 +15,10 @@ public partial class SessionsSection
     private UserSessionDto[] otherSessions = [];
 
     [AutoInject] private IUserController userController = default!;
-    //#if (signalR == true || notification == true)
-    [AutoInject] private Notification notification = default!;
+    //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
+    //#elseif (signalR == true)
+    [AutoInject] private Notification notification = default!;
     //#endif
 
 
