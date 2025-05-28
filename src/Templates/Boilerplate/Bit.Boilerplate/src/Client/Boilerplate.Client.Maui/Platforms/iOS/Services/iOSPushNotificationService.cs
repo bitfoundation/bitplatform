@@ -1,4 +1,5 @@
 ﻿using UIKit;
+using UserNotifications;
 using Plugin.LocalNotification;
 using Boilerplate.Shared.Dtos.PushNotification;
 
@@ -6,16 +7,23 @@ namespace Boilerplate.Client.Maui.Platforms.iOS.Services;
 
 public partial class iOSPushNotificationService : PushNotificationServiceBase
 {
-    public override async Task<bool> IsPushNotificationSupported(CancellationToken cancellationToken)
+    public override async Task<bool> IsAvailable(CancellationToken cancellationToken)
     {
         return await MainThread.InvokeOnMainThreadAsync(async () =>
         {
-            if (await LocalNotificationCenter.Current.AreNotificationsEnabled() is false)
-            {
-                await LocalNotificationCenter.Current.RequestNotificationPermission();
-            }
-
             return await LocalNotificationCenter.Current.AreNotificationsEnabled();
+        });
+    }
+
+    public override async Task RequestPermission(CancellationToken cancellationToken)
+    {
+        await MainThread.InvokeOnMainThreadAsync(async () =>
+        {
+            if (await IsAvailable(cancellationToken) is false
+                && await LocalNotificationCenter.Current.RequestNotificationPermission())
+            {
+                await Configure();
+            }
         });
     }
 
@@ -49,5 +57,14 @@ public partial class iOSPushNotificationService : PushNotificationServiceBase
         };
 
         return subscription;
+    }
+
+    public static async Task Configure()
+    {
+        await MainThread.InvokeOnMainThreadAsync(() =>
+        {
+            UIApplication.SharedApplication.RegisterForRemoteNotifications();
+            UNUserNotificationCenter.Current.Delegate = new AppUNUserNotificationCenterDelegate();
+        });
     }
 }

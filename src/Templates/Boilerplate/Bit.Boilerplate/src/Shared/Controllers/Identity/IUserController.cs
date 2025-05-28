@@ -59,4 +59,9 @@ public interface IUserController : IAppController
 
     [HttpDelete]
     Task DeleteAllWebAuthnCredentials(CancellationToken cancellationToken);
+
+    //#if (signalR == true || notification == true)
+    [HttpPost("{userSessionId}")]
+    Task<bool> ToggleNotification(Guid userSessionId, CancellationToken cancellationToken);
+    //#endif
 }

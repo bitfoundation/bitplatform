@@ -24,10 +24,4 @@ public partial class PushNotificationController : AppControllerBase, IPushNotifi
 
         await pushNotificationService.Subscribe(subscription, cancellationToken);
     }
-
-    [HttpPost("{deviceId}")]
-    public async Task Unsubscribe([Required] string deviceId, CancellationToken cancellationToken)
-    {
-        await pushNotificationService.Unsubscribe(deviceId, cancellationToken);
-    }
 }

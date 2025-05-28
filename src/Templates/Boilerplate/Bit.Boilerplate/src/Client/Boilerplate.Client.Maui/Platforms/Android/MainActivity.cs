@@ -6,7 +6,6 @@ using Android.Content;
 using Android.Content.PM;
 //#if (notification == true)
 using Android.Gms.Tasks;
-using Firebase.Messaging;
 using Plugin.LocalNotification;
 //#endif
 using Boilerplate.Client.Core.Components;
@@ -78,21 +77,11 @@ public partial class MainActivity : MauiAppCompatActivity
                 }
             }
         }
-        PushNotificationService.IsPushNotificationSupported(default).ContinueWith(task =>
+        PushNotificationService.IsAvailable(default).ContinueWith(task =>
         {
             if (task.Result)
             {
-                FirebaseMessaging.Instance.GetToken().AddOnSuccessListener(this);
-                LocalNotificationCenter.Current.NotificationActionTapped += (e) =>
-                {
-                    if (string.IsNullOrEmpty(e.Request.ReturningData))
-                        return;
-                    var data = JsonSerializer.Deserialize<Dictionary<string, string>>(e.Request.ReturningData)!;
-                    if (data.TryGetValue("pageUrl", out var pageUrl))
-                    {
-                        _ = Routes.OpenUniversalLink(pageUrl ?? Urls.HomePage);
-                    }
-                };
+                Services.AndroidPushNotificationService.Configure();
             }
         });
         //#endif

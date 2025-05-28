@@ -1,3 +1,4 @@
+@*+:cnd:noEmit*@
 @inherits AppComponentBase
 
 <section>
@@ -19,16 +20,26 @@
 
             <BitText>@Localizer[nameof(AppStrings.CurrentSession)]</BitText>
             <BitCard FullWidth>
-                <BitPersona PrimaryText="@($"{currentSession.Address} ({currentSession.IP})")"
-                            SecondaryText="@GetLastSeenOn(currentSession.RenewedOnDateTimeOffset)"
-                            TertiaryText="@currentSession.DeviceInfo"
-                            Class="session-persona"
-                            Size="BitPersonaSize.Size72"
-                            Styles="@(new() { Image = "width:50%;height:50%" })"
-                            ImageInitials="@(currentSession.Privileged ? "✓" : "✘")"
-                            CoinVariant="@(currentSession.Privileged ? BitVariant.Fill : BitVariant.Outline)"
-                            ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(currentSession.DeviceInfo)}")"
-                            Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
+                <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
+                    <BitPersona PrimaryText="@($"{currentSession.Address} ({currentSession.IP})")"
+                                SecondaryText="@GetLastSeenOn(currentSession.RenewedOnDateTimeOffset)"
+                                TertiaryText="@currentSession.DeviceInfo"
+                                Class="session-persona"
+                                Size="BitPersonaSize.Size72"
+                                Styles="@(new() { Image = "width:50%;height:50%" })"
+                                ImageInitials="@(currentSession.Privileged ? "✓" : "✘")"
+                                CoinVariant="@(currentSession.Privileged ? BitVariant.Fill : BitVariant.Outline)"
+                                ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(currentSession.DeviceInfo)}")"
+                                Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)"/>
+                    @*#if (signalR == true || notification == true)*@
+                    <BitButton AutoLoading
+                        Variant="BitVariant.Text"
+                        Title="@Localizer[nameof(AppStrings.ToggleNotification)]"
+                        OnClick="WrapHandled(() => ToggleNotification(currentSession))">
+                        @(currentSession.NotificationsAllowed ? "🔔" : "🔕")
+                    </BitButton>
+                    @*#endif*@
+                </BitStack>
             </BitCard>
         }
 
@@ -56,6 +67,14 @@
                                            Variant="BitVariant.Text"
                                            OnClick="WrapHandled(() => RevokeSession(session))"
                                            IconName="@(revokingSessionIds.Contains(session.Id) ? BitIconName.Process : BitIconName.Delete)" />
+                                @*#if (signalR == true || notification == true)*@
+                                <BitButton AutoLoading
+                                    Variant="BitVariant.Text"
+                                    Title="@Localizer[nameof(AppStrings.ToggleNotification)]"
+                                    OnClick="WrapHandled(() => ToggleNotification(session))">
+                                    @(session.NotificationsAllowed ? "🔔" : "🔕")
+                                </BitButton>
+                                @*#endif*@
                             </BitStack>
                         </BitCard>
                     </RowTemplate>

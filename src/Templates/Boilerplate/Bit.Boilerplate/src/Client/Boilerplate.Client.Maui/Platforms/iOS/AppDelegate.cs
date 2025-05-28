@@ -2,9 +2,6 @@
 using UIKit;
 using Foundation;
 using Boilerplate.Client.Maui.Platforms.iOS.Services;
-//#if (notification == true)
-using UserNotifications;
-//#endif
 
 namespace Boilerplate.Client.Maui.Platforms.iOS;
 
@@ -21,15 +18,11 @@ public partial class AppDelegate : MauiUIApplicationDelegate
     public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
     {
         //#if (notification == true)
-        NotificationService.IsPushNotificationSupported(default).ContinueWith(task =>
+        NotificationService.IsAvailable(default).ContinueWith(async task =>
         {
             if (task.Result)
             {
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    UIApplication.SharedApplication.RegisterForRemoteNotifications();
-                    UNUserNotificationCenter.Current.Delegate = new AppUNUserNotificationCenterDelegate();
-                });
+                await iOSPushNotificationService.Configure();
             }
         });
 

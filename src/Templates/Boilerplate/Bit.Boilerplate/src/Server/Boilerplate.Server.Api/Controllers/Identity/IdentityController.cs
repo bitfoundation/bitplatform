@@ -334,7 +334,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         //#endif
 
         //#if (signalR == true)
-        sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(SignalREvents.SHOW_MESSAGE, pushMessage, cancellationToken));
+        var userConnectionIds = await DbContext.UserSessions
+            .Where(us => us.NotificationsAllowed && us.UserId == user.Id)
+            .Select(us => us.SignalRConnectionId!)
+            .ToArrayAsync(cancellationToken);
+        sendMessagesTasks.Add(appHubContext.Clients.Clients(userConnectionIds).SendAsync(SignalREvents.SHOW_MESSAGE, pushMessage, cancellationToken));
         //#endif
 
         //#if (notification == true)
@@ -399,7 +403,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (firstStepAuthenticationMethod != "Push")
         {
             //#if (signalR == true)
-            sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(SignalREvents.SHOW_MESSAGE, message, cancellationToken));
+            var userConnectionIds = await DbContext.UserSessions
+                .Where(us => us.NotificationsAllowed && us.UserId == user.Id)
+                .Select(us => us.SignalRConnectionId!)
+                .ToArrayAsync(cancellationToken);
+            sendMessagesTasks.Add(appHubContext.Clients.Clients(userConnectionIds).SendAsync(SignalREvents.SHOW_MESSAGE, message, cancellationToken));
             //#endif
             //#if (notification == true)
             sendMessagesTasks.Add(pushNotificationService.RequestPush(message: message, userRelatedPush: true, customSubscriptionFilter: s => s.UserSession!.UserId == user.Id, cancellationToken: cancellationToken));

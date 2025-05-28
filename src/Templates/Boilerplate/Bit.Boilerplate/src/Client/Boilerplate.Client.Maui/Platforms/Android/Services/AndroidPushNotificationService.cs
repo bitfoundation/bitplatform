@@ -1,23 +1,32 @@
-using Android.Gms.Common;
+﻿using Android.Gms.Common;
+using Firebase.Messaging;
 using Plugin.LocalNotification;
 using static Android.Provider.Settings;
+using Boilerplate.Client.Core.Components;
 using Boilerplate.Shared.Dtos.PushNotification;
 
 namespace Boilerplate.Client.Maui.Platforms.Android.Services;
 
 public partial class AndroidPushNotificationService : PushNotificationServiceBase
 {
-    public override async Task<bool> IsPushNotificationSupported(CancellationToken cancellationToken)
+    public override async Task<bool> IsAvailable(CancellationToken cancellationToken)
     {
         return await MainThread.InvokeOnMainThreadAsync(async () =>
         {
-            if (await LocalNotificationCenter.Current.AreNotificationsEnabled() is false)
-            {
-                await LocalNotificationCenter.Current.RequestNotificationPermission();
-            }
+            return await LocalNotificationCenter.Current.AreNotificationsEnabled()
+                && GoogleApiAvailability.Instance.IsGooglePlayServicesAvailable(Platform.AppContext) == ConnectionResult.Success;
+        });
+    }
 
-            return await LocalNotificationCenter.Current.AreNotificationsEnabled() &&
-                GoogleApiAvailability.Instance.IsGooglePlayServicesAvailable(Platform.AppContext) == ConnectionResult.Success;
+    public override async Task RequestPermission(CancellationToken cancellationToken)
+    {
+        await MainThread.InvokeOnMainThreadAsync(async () =>
+        {
+            if (await IsAvailable(cancellationToken) is false
+                && await LocalNotificationCenter.Current.RequestNotificationPermission())
+            {
+                Configure();
+            }
         });
     }
 
@@ -51,5 +60,19 @@ public partial class AndroidPushNotificationService : PushNotificationServiceBas
         };
 
         return subscription;
+    }
+    public static void Configure()
+    {
+        FirebaseMessaging.Instance.GetToken().AddOnSuccessListener((MainActivity)Platform.AppContext.ApplicationContext!);
+        LocalNotificationCenter.Current.NotificationActionTapped += (e) =>
+        {
+            if (string.IsNullOrEmpty(e.Request.ReturningData))
+                return;
+            var data = JsonSerializer.Deserialize<Dictionary<string, string>>(e.Request.ReturningData)!;
+            if (data.TryGetValue("pageUrl", out var pageUrl))
+            {
+                _ = Routes.OpenUniversalLink(pageUrl ?? Urls.HomePage);
+            }
+        };
     }
 }

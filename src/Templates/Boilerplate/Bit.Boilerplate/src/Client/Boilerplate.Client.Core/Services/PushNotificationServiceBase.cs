@@ -1,4 +1,4 @@
-using Boilerplate.Shared.Dtos.PushNotification;
+﻿using Boilerplate.Shared.Dtos.PushNotification;
 using Boilerplate.Shared.Controllers.PushNotification;
 
 namespace Boilerplate.Client.Core.Services;
@@ -9,12 +9,13 @@ public abstract partial class PushNotificationServiceBase : IPushNotificationSer
     [AutoInject] protected IPushNotificationController pushNotificationController = default!;
 
     public virtual string Token { get; set; }
-    public virtual Task<bool> IsPushNotificationSupported(CancellationToken cancellationToken) => Task.FromResult(false);
+    public virtual Task<bool> IsAvailable(CancellationToken cancellationToken) => Task.FromResult(false);
     public abstract Task<PushNotificationSubscriptionDto> GetSubscription(CancellationToken cancellationToken);
+    public abstract Task RequestPermission(CancellationToken cancellationToken);
 
     public async Task Subscribe(CancellationToken cancellationToken)
     {
-        if (await IsPushNotificationSupported(cancellationToken) is false)
+        if (await IsAvailable(cancellationToken) is false)
         {
             Logger.LogWarning("Notifications are not supported/allowed on this platform/device.");
             return;
@@ -29,10 +30,5 @@ public abstract partial class PushNotificationServiceBase : IPushNotificationSer
         }
 
         await pushNotificationController.Subscribe(subscription, cancellationToken);
-    }
-
-    public async Task Unsubscribe(string deviceId, CancellationToken cancellationToken)
-    {
-        await pushNotificationController.Unsubscribe(deviceId, cancellationToken);
     }
 }

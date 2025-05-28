@@ -1,5 +1,6 @@
-﻿using Boilerplate.Shared.Dtos.Identity;
+﻿using Bit.Butil;
 using Boilerplate.Shared.Controllers.Identity;
+using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings;
 
@@ -14,6 +15,10 @@ public partial class SessionsSection
     private UserSessionDto[] otherSessions = [];
 
     [AutoInject] private IUserController userController = default!;
+    //#if (signalR == true || notification == true)
+    [AutoInject] private Notification notification = default!;
+    [AutoInject] private IPushNotificationService pushNotificationService = default!;
+    //#endif
 
 
     protected override async Task OnInitAsync()
@@ -109,4 +114,23 @@ public partial class SessionsSection
                     : DateTimeOffset.UtcNow - renewedOn < TimeSpan.FromMinutes(15) ? Localizer[nameof(AppStrings.Recently)]
                     : renewedOn.ToLocalTime().ToString("g");
     }
+
+    //#if (signalR == true || notification == true)
+    private async Task ToggleNotification(UserSessionDto userSession)
+    {
+        if (userSession.NotificationsAllowed is false)
+        {
+            // User is going to allow notifications so it's an opportune time to request permission.
+
+            //#if (notification == true)
+            await pushNotificationService.RequestPermission(CurrentCancellationToken);
+            await pushNotificationService.Subscribe(CurrentCancellationToken);
+            //#else
+            await notification.RequestPermission();
+            //#endif
+        }
+
+        userSession.NotificationsAllowed = await userController.ToggleNotification(userSession.Id, CurrentCancellationToken);
+    }
+    //#endif
 }
