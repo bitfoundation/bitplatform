@@ -5,7 +5,10 @@ public partial class UserClaimsService
     [AutoInject]
     private AppDbContext dbContext = default!;
 
-    public async Task<T?> GetUserClaimValue<T>(Guid userId, string claimType, CancellationToken cancellationToken)
+    /// <summary>
+    /// Returns all claim values of a specific type for a user, including those inherited from roles.
+    /// </summary>
+    public async Task<T?[]> GetUserClaimValues<T>(Guid userId, string claimType, CancellationToken cancellationToken)
     {
         var userClaimsQuery = dbContext.UserClaims.Where(uc => uc.UserId == userId).Select(uc => new { uc.ClaimType, uc.ClaimValue });
         var userRoleClaimsQuery = dbContext.UserRoles.Where(ur => ur.UserId == userId).SelectMany(ur => ur.Role!.Claims).Select(uc => new { uc.ClaimType, uc.ClaimValue });
@@ -17,16 +20,25 @@ public partial class UserClaimsService
             .ToArrayAsync(cancellationToken);
 
         if (results.Any() is false)
-            return default;
+            return [];
 
         try
         {
             Type targetType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
-            return results.Select(r => (T)Convert.ChangeType(r, targetType, CultureInfo.InvariantCulture)!).Max(); // User might have multiple roles with this claim.
+            return [.. results.Select(r => (T)Convert.ChangeType(r, targetType, CultureInfo.InvariantCulture)!)];
         }
         catch (Exception ex)
         {
             throw new InvalidOperationException($"Failed to convert claim values for {claimType} to type {typeof(T).Name}.", ex);
         }
+    }
+
+    /// <summary>
+    /// Returns claim value of a specific type for a user, including those inherited from roles.
+    /// User might have multiple claims of the same type because of her roles or directly assigned user claims, so we return the maximum value
+    /// </summary>
+    public async Task<T?> GetUserClaimValue<T>(Guid userId, string claimType, CancellationToken cancellationToken)
+    {
+        return (await GetUserClaimValues<T>(userId, claimType, cancellationToken)).Max();
     }
 }

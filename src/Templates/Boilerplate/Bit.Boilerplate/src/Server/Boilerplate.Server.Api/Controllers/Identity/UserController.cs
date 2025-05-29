@@ -444,13 +444,13 @@ public partial class UserController : AppControllerBase, IUserController
         {
             //#if (notification == true)
             await pushNotificationService.RequestPush(message: Localizer[nameof(AppStrings.TestNotificationMessage1)], userRelatedPush: true, customSubscriptionFilter: us => us.UserSessionId == userSessionId, cancellationToken: cancellationToken);
-            //#if
+            //#endif
             //#if (signalR == true)
             if (userSession.SignalRConnectionId != null)
             {
                 await appHubContext.Clients.Client(userSession.SignalRConnectionId).SendAsync(SignalREvents.SHOW_MESSAGE, (string)Localizer[nameof(AppStrings.TestNotificationMessage2)], cancellationToken);
             }
-            //#if
+            //#endif
         }
 
         return userSession.NotificationsAllowed;

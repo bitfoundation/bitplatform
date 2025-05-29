@@ -9,15 +9,17 @@ public partial class SessionsSection
     private bool isLoading;
     private Guid? currentSessionId;
     private UserSessionDto? currentSession;
-    private int currentPrivilegedCount;
+    private int currentPrivilegedSessionsCount;
     private int maxPrivilegedSessionsCount;
+    private bool hasUnlimitedPrivilegedSessions;
     private List<Guid> revokingSessionIds = [];
     private UserSessionDto[] otherSessions = [];
 
     [AutoInject] private IUserController userController = default!;
-    //#if (signalR == true || notification == true)
-    [AutoInject] private Notification notification = default!;
+    //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
+    //#elseif (signalR == true)
+    [AutoInject] private Notification notification = default!;
     //#endif
 
 
@@ -46,7 +48,8 @@ public partial class SessionsSection
             currentSession = userSessions.Single(s => s.Id == currentSessionId);
 
             maxPrivilegedSessionsCount = user.GetClaimValue<int>(AppClaimTypes.MAX_PRIVILEGED_SESSIONS);
-            currentPrivilegedCount = userSessions.Count(us => us.Privileged);
+            hasUnlimitedPrivilegedSessions = user.HasClaim(AppClaimTypes.MAX_PRIVILEGED_SESSIONS, "-1");
+            currentPrivilegedSessionsCount = userSessions.Count(us => us.Privileged);
         }
         catch (KnownException e)
         {
@@ -123,10 +126,16 @@ public partial class SessionsSection
             // User is going to allow notifications so it's an opportune time to request permission.
 
             //#if (notification == true)
-            await pushNotificationService.RequestPermission(CurrentCancellationToken);
-            await pushNotificationService.Subscribe(CurrentCancellationToken);
+            if (AppPlatform.IsWindows is false)
+            {
+                await pushNotificationService.RequestPermission(CurrentCancellationToken);
+                await pushNotificationService.Subscribe(CurrentCancellationToken);
+            }
             //#else
-            await notification.RequestPermission();
+            if (await notification.IsSupported())
+            {
+                await notification.RequestPermission();
+            }
             //#endif
         }
 

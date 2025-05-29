@@ -16,8 +16,10 @@
         }
         @if (currentSession is not null)
         {
-            <BitText Element="pre" Style="word-break:break-all;white-space:break-spaces" Typography="BitTypography.Body1">@Localizer[nameof(AppStrings.PrivilegedDeviceLimitMessage), maxPrivilegedSessionsCount.ToString("N0"), currentPrivilegedCount.ToString("N0")]</BitText>
-
+            @if (hasUnlimitedPrivilegedSessions is false)
+            {
+                <BitText Element="pre" Style="word-break:break-all;white-space:break-spaces" Typography="BitTypography.Body1">@Localizer[nameof(AppStrings.PrivilegedDeviceLimitMessage), maxPrivilegedSessionsCount.ToString("N0"), currentPrivilegedSessionsCount.ToString("N0")]</BitText>
+            }
             <BitText>@Localizer[nameof(AppStrings.CurrentSession)]</BitText>
             <BitCard FullWidth>
                 <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
@@ -30,17 +32,17 @@
                                 ImageInitials="@(currentSession.Privileged ? "✓" : "✘")"
                                 CoinVariant="@(currentSession.Privileged ? BitVariant.Fill : BitVariant.Outline)"
                                 ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(currentSession.DeviceInfo)}")"
-                                Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)"/>
+                                Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
                     <BitSpacer />
                     @*#if (signalR == true || notification == true)*@
                     <BitButton IconOnly
-                               FixedColor 
-                               AutoLoading 
+                               FixedColor
+                               AutoLoading
                                Variant="BitVariant.Text"
                                Color="BitColor.SecondaryBackground"
                                OnClick="WrapHandled(() => ToggleNotification(currentSession))"
-                               IconName="@(currentSession.NotificationsAllowed ? BitIconName.RingerSolid : BitIconName.Ringer)" 
-                               Title="@($"{(Localizer[nameof(AppStrings.ToggleNotification)])} ({(currentSession.NotificationsAllowed ? Localizer[nameof(AppStrings.Off)] : Localizer[nameof(AppStrings.On)])})")"/>
+                               IconName="@(currentSession.NotificationsAllowed ? BitIconName.RingerSolid : BitIconName.Ringer)"
+                               Title="@($"{(Localizer[nameof(AppStrings.ToggleNotification)])} ({(currentSession.NotificationsAllowed ? Localizer[nameof(AppStrings.Off)] : Localizer[nameof(AppStrings.On)])})")" />
                     @*#endif*@
                 </BitStack>
             </BitCard>
@@ -72,12 +74,12 @@
                                            IconName="@(revokingSessionIds.Contains(session.Id) ? BitIconName.Process : BitIconName.Delete)" />
                                 @*#if (signalR == true || notification == true)*@
                                 <BitButton IconOnly
-                                           FixedColor 
-                                           AutoLoading 
+                                           FixedColor
+                                           AutoLoading
                                            Variant="BitVariant.Text"
                                            Color="BitColor.SecondaryBackground"
                                            OnClick="WrapHandled(() => ToggleNotification(session))"
-                                           IconName="@(session.NotificationsAllowed ? BitIconName.RingerSolid : BitIconName.Ringer)" 
+                                           IconName="@(session.NotificationsAllowed ? BitIconName.RingerSolid : BitIconName.Ringer)"
                                            Title="@($"{(Localizer[nameof(AppStrings.ToggleNotification)])} ({(session.NotificationsAllowed ? Localizer[nameof(AppStrings.Off)] : Localizer[nameof(AppStrings.On)])})")" />
                                 @*#endif*@
                             </BitStack>
