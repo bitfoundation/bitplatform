@@ -1,6 +1,7 @@
 ﻿using UIKit;
 using UserNotifications;
 using Plugin.LocalNotification;
+using Microsoft.Extensions.Logging;
 using Boilerplate.Shared.Dtos.PushNotification;
 
 namespace Boilerplate.Client.Maui.Platforms.MacCatalyst.Services;
@@ -20,17 +21,17 @@ public partial class MacCatalystPushNotificationService : PushNotificationServic
     {
         await MainThread.InvokeOnMainThreadAsync(async () =>
         {
-            if (await IsAvailable(cancellationToken) is false
-                && await LocalNotificationCenter.Current.RequestNotificationPermission())
-            {
-                await Configure();
-            }
+            if (LocalNotificationCenter.Current.IsSupported is false)
+                return;
+
+            await LocalNotificationCenter.Current.RequestNotificationPermission();
+            await Configure();
         });
     }
 
     public string GetDeviceId() => UIDevice.CurrentDevice.IdentifierForVendor!.ToString();
 
-    public override async Task<PushNotificationSubscriptionDto> GetSubscription(CancellationToken cancellationToken)
+    public override async Task<PushNotificationSubscriptionDto?> GetSubscription(CancellationToken cancellationToken)
     {
         using CancellationTokenSource cts = new(TimeSpan.FromSeconds(15));
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
@@ -47,7 +48,7 @@ public partial class MacCatalystPushNotificationService : PushNotificationServic
         }
         catch (Exception exp)
         {
-            throw new InvalidOperationException("Unable to resolve token for APNS.", exp);
+            Logger.LogError(exp, "Unable to resolve token for APNS.");
         }
 
         var subscription = new PushNotificationSubscriptionDto

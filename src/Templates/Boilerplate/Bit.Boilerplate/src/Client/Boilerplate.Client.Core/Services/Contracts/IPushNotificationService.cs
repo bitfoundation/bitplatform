@@ -10,6 +10,6 @@ public interface IPushNotificationService
     /// </summary>
     Task<bool> IsAvailable(CancellationToken cancellationToken);
     Task RequestPermission(CancellationToken cancellationToken);
-    Task<PushNotificationSubscriptionDto> GetSubscription(CancellationToken cancellationToken);
+    Task<PushNotificationSubscriptionDto?> GetSubscription(CancellationToken cancellationToken);
     Task Subscribe(CancellationToken cancellationToken);
 }

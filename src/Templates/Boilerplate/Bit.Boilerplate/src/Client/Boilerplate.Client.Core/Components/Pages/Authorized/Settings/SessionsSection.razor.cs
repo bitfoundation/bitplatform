@@ -127,7 +127,7 @@ public partial class SessionsSection
             // The permission might have already been requested (if userSession.NotificationStatus is UserSessionNotificationStatus.Muted), but there's no harm in asking for permission again.
 
             //#if (notification == true)
-            if (AppPlatform.IsWindows is false)
+            if (AppPlatform.IsBlazorHybrid is false || AppPlatform.IsWindows is false)
             {
                 await pushNotificationService.RequestPermission(CurrentCancellationToken);
                 await pushNotificationService.Subscribe(CurrentCancellationToken);

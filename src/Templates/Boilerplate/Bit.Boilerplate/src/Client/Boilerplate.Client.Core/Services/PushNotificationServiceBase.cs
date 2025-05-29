@@ -10,7 +10,7 @@ public abstract partial class PushNotificationServiceBase : IPushNotificationSer
 
     public virtual string Token { get; set; }
     public virtual Task<bool> IsAvailable(CancellationToken cancellationToken) => Task.FromResult(false);
-    public abstract Task<PushNotificationSubscriptionDto> GetSubscription(CancellationToken cancellationToken);
+    public abstract Task<PushNotificationSubscriptionDto?> GetSubscription(CancellationToken cancellationToken);
     public abstract Task RequestPermission(CancellationToken cancellationToken);
 
     public async Task Subscribe(CancellationToken cancellationToken)
@@ -24,10 +24,7 @@ public abstract partial class PushNotificationServiceBase : IPushNotificationSer
         var subscription = await GetSubscription(cancellationToken);
 
         if (subscription is null)
-        {
-            Logger.LogWarning("Could not retrieve push notification subscription"); // Browser's incognito mode etc.
             return;
-        }
 
         await pushNotificationController.Subscribe(subscription, cancellationToken);
     }

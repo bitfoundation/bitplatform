@@ -1,5 +1,6 @@
 ﻿using Firebase.Messaging;
 using Plugin.LocalNotification;
+using Microsoft.Extensions.Logging;
 using static Android.Provider.Settings;
 using Boilerplate.Client.Core.Components;
 using Boilerplate.Shared.Dtos.PushNotification;
@@ -21,17 +22,17 @@ public partial class AndroidPushNotificationService : PushNotificationServiceBas
     {
         await MainThread.InvokeOnMainThreadAsync(async () =>
         {
-            if (await IsAvailable(cancellationToken) is false
-                && await LocalNotificationCenter.Current.RequestNotificationPermission())
-            {
-                Configure();
-            }
+            if (LocalNotificationCenter.Current.IsSupported is false)
+                return;
+
+            await LocalNotificationCenter.Current.RequestNotificationPermission();
+            Configure();
         });
     }
 
     public string GetDeviceId() => Secure.GetString(Platform.AppContext.ContentResolver, Secure.AndroidId)!;
 
-    public override async Task<PushNotificationSubscriptionDto> GetSubscription(CancellationToken cancellationToken)
+    public override async Task<PushNotificationSubscriptionDto?> GetSubscription(CancellationToken cancellationToken)
     {
         try
         {
@@ -48,7 +49,8 @@ public partial class AndroidPushNotificationService : PushNotificationServiceBas
         }
         catch (Exception exp)
         {
-            throw new InvalidOperationException("Unable to resolve token for FCMv1.", exp);
+            Logger.LogError(exp, "Unable to resolve token for FCMv1.");
+            return null;
         }
 
         var subscription = new PushNotificationSubscriptionDto
