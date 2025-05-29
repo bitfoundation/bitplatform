@@ -212,10 +212,14 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     {
         var userId = userSession.UserId;
 
-        var maxPrivilegedSessionsCount = await userClaimsService.GetUserClaimValue<int?>(userId, AppClaimTypes.MAX_PRIVILEGED_SESSIONS, cancellationToken)
-             ?? AppSettings.Identity.MaxPrivilegedSessionsCount;
+        var maxPrivilegedSessionsClaimValues = await userClaimsService.GetUserClaimValues<int?>(userId, AppClaimTypes.MAX_PRIVILEGED_SESSIONS, cancellationToken);
 
-        var isPrivileged = userSession.Privileged is true || // Once session gets privileged, it stays privileged until gets deleted.
+        var hasUnlimitedPrivilegedSessions = maxPrivilegedSessionsClaimValues.Any(v => v == -1); // -1 means no limit
+
+        var maxPrivilegedSessionsCount = hasUnlimitedPrivilegedSessions ? -1 : maxPrivilegedSessionsClaimValues.Max() ?? AppSettings.Identity.MaxPrivilegedSessionsCount; // If no claim is found, use the default value from app settings.
+
+        var isPrivileged = hasUnlimitedPrivilegedSessions ||
+            userSession.Privileged is true || // Once session gets privileged, it stays privileged until gets deleted.
             await DbContext.UserSessions.CountAsync(us => us.UserId == userSession.UserId && us.Privileged == true, cancellationToken) < maxPrivilegedSessionsCount;
 
         userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, isPrivileged ? "true" : "false"));

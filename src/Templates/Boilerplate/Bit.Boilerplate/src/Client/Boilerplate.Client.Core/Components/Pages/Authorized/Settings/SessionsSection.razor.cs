@@ -9,7 +9,7 @@ public partial class SessionsSection
     private bool isLoading;
     private Guid? currentSessionId;
     private UserSessionDto? currentSession;
-    private int currentPrivilegedCount;
+    private int currentPrivilegedSessionsCount;
     private int maxPrivilegedSessionsCount;
     private List<Guid> revokingSessionIds = [];
     private UserSessionDto[] otherSessions = [];
@@ -47,7 +47,7 @@ public partial class SessionsSection
             currentSession = userSessions.Single(s => s.Id == currentSessionId);
 
             maxPrivilegedSessionsCount = user.GetClaimValue<int>(AppClaimTypes.MAX_PRIVILEGED_SESSIONS);
-            currentPrivilegedCount = userSessions.Count(us => us.Privileged);
+            currentPrivilegedSessionsCount = userSessions.Count(us => us.Privileged);
         }
         catch (KnownException e)
         {
