@@ -1,5 +1,4 @@
-﻿using Android.Gms.Common;
-using Firebase.Messaging;
+﻿using Firebase.Messaging;
 using Plugin.LocalNotification;
 using static Android.Provider.Settings;
 using Boilerplate.Client.Core.Components;
@@ -13,8 +12,8 @@ public partial class AndroidPushNotificationService : PushNotificationServiceBas
     {
         return await MainThread.InvokeOnMainThreadAsync(async () =>
         {
-            return await LocalNotificationCenter.Current.AreNotificationsEnabled()
-                && GoogleApiAvailability.Instance.IsGooglePlayServicesAvailable(Platform.AppContext) == ConnectionResult.Success;
+            return LocalNotificationCenter.Current.IsSupported
+                && await LocalNotificationCenter.Current.AreNotificationsEnabled();
         });
     }
 

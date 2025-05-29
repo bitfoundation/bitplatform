@@ -11,7 +11,8 @@ public partial class iOSPushNotificationService : PushNotificationServiceBase
     {
         return await MainThread.InvokeOnMainThreadAsync(async () =>
         {
-            return await LocalNotificationCenter.Current.AreNotificationsEnabled();
+            return LocalNotificationCenter.Current.IsSupported
+                && await LocalNotificationCenter.Current.AreNotificationsEnabled();
         });
     }
 
