@@ -51,7 +51,7 @@ public partial class DiagnosticsController : AppControllerBase, IDiagnosticsCont
 
             result.AppendLine($"Subscription exists: {(subscription is not null).ToString().ToLowerInvariant()}");
 
-            await pushNotificationService.RequestPush("Test Push", $"Open terms page. {DateTimeOffset.Now:HH:mm:ss}", "testAction", Urls.TermsPage, userRelatedPush: false, u => u.DeviceId == pushNotificationSubscriptionDeviceId, cancellationToken);
+            await pushNotificationService.RequestPush("Test Push", $"Open terms page. {DateTimeOffset.Now:HH:mm:ss}", "testAction", Urls.TermsPage, userRelatedPush: false, s => s.DeviceId == pushNotificationSubscriptionDeviceId, cancellationToken);
         }
         //#endif
 
