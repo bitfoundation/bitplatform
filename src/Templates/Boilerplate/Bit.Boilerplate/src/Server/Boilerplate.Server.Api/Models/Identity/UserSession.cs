@@ -46,4 +46,8 @@ public partial class UserSession
     //#if (signalR == true)
     public string? SignalRConnectionId { get; set; }
     //#endif
+
+    //#if (signalR == true || notification == true)
+    public UserSessionNotificationStatus NotificationStatus { get; set; }
+    //#endif
 }

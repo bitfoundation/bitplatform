@@ -1,27 +1,37 @@
 ﻿using UIKit;
+using UserNotifications;
 using Plugin.LocalNotification;
+using Microsoft.Extensions.Logging;
 using Boilerplate.Shared.Dtos.PushNotification;
 
 namespace Boilerplate.Client.Maui.Platforms.iOS.Services;
 
 public partial class iOSPushNotificationService : PushNotificationServiceBase
 {
-    public override async Task<bool> IsPushNotificationSupported(CancellationToken cancellationToken)
+    public override async Task<bool> IsAvailable(CancellationToken cancellationToken)
     {
         return await MainThread.InvokeOnMainThreadAsync(async () =>
         {
-            if (await LocalNotificationCenter.Current.AreNotificationsEnabled() is false)
-            {
-                await LocalNotificationCenter.Current.RequestNotificationPermission();
-            }
+            return LocalNotificationCenter.Current.IsSupported
+                && await LocalNotificationCenter.Current.AreNotificationsEnabled();
+        });
+    }
 
-            return await LocalNotificationCenter.Current.AreNotificationsEnabled();
+    public override async Task RequestPermission(CancellationToken cancellationToken)
+    {
+        await MainThread.InvokeOnMainThreadAsync(async () =>
+        {
+            if (LocalNotificationCenter.Current.IsSupported is false)
+                return;
+
+            await LocalNotificationCenter.Current.RequestNotificationPermission();
+            await Configure();
         });
     }
 
     public string GetDeviceId() => UIDevice.CurrentDevice.IdentifierForVendor!.ToString();
 
-    public override async Task<PushNotificationSubscriptionDto> GetSubscription(CancellationToken cancellationToken)
+    public override async Task<PushNotificationSubscriptionDto?> GetSubscription(CancellationToken cancellationToken)
     {
         using CancellationTokenSource cts = new(TimeSpan.FromSeconds(15));
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
@@ -38,7 +48,7 @@ public partial class iOSPushNotificationService : PushNotificationServiceBase
         }
         catch (Exception exp)
         {
-            throw new InvalidOperationException("Unable to resolve token for APNS.", exp);
+            Logger.LogError(exp, "Unable to resolve token for APNS.");
         }
 
         var subscription = new PushNotificationSubscriptionDto
@@ -49,5 +59,14 @@ public partial class iOSPushNotificationService : PushNotificationServiceBase
         };
 
         return subscription;
+    }
+
+    public static async Task Configure()
+    {
+        await MainThread.InvokeOnMainThreadAsync(() =>
+        {
+            UIApplication.SharedApplication.RegisterForRemoteNotifications();
+            UNUserNotificationCenter.Current.Delegate = new AppUNUserNotificationCenterDelegate();
+        });
     }
 }

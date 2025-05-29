@@ -38,4 +38,8 @@ public partial class UserSessionDto
     //#if (signalR == true)
     public string? SignalRConnectionId { get; set; }
     //#endif
+
+    //#if (signalR == true || notification == true)
+    public UserSessionNotificationStatus NotificationStatus { get; set; }
+    //#endif
 }

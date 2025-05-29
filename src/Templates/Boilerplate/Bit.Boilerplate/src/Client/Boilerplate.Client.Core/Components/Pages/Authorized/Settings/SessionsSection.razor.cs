@@ -1,5 +1,6 @@
-﻿using Boilerplate.Shared.Dtos.Identity;
+﻿using Bit.Butil;
 using Boilerplate.Shared.Controllers.Identity;
+using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings;
 
@@ -8,12 +9,18 @@ public partial class SessionsSection
     private bool isLoading;
     private Guid? currentSessionId;
     private UserSessionDto? currentSession;
-    private int currentPrivilegedCount;
+    private int currentPrivilegedSessionsCount;
     private int maxPrivilegedSessionsCount;
+    private bool hasUnlimitedPrivilegedSessions;
     private List<Guid> revokingSessionIds = [];
     private UserSessionDto[] otherSessions = [];
 
     [AutoInject] private IUserController userController = default!;
+    //#if (notification == true)
+    [AutoInject] private IPushNotificationService pushNotificationService = default!;
+    //#elseif (signalR == true)
+    [AutoInject] private Notification notification = default!;
+    //#endif
 
 
     protected override async Task OnInitAsync()
@@ -41,7 +48,8 @@ public partial class SessionsSection
             currentSession = userSessions.Single(s => s.Id == currentSessionId);
 
             maxPrivilegedSessionsCount = user.GetClaimValue<int>(AppClaimTypes.MAX_PRIVILEGED_SESSIONS);
-            currentPrivilegedCount = userSessions.Count(us => us.Privileged);
+            hasUnlimitedPrivilegedSessions = user.HasClaim(AppClaimTypes.MAX_PRIVILEGED_SESSIONS, "-1");
+            currentPrivilegedSessionsCount = userSessions.Count(us => us.Privileged);
         }
         catch (KnownException e)
         {
@@ -109,4 +117,30 @@ public partial class SessionsSection
                     : DateTimeOffset.UtcNow - renewedOn < TimeSpan.FromMinutes(15) ? Localizer[nameof(AppStrings.Recently)]
                     : renewedOn.ToLocalTime().ToString("g");
     }
+
+    //#if (signalR == true || notification == true)
+    private async Task ToggleNotification(UserSessionDto userSession)
+    {
+        if (userSession.NotificationStatus is not UserSessionNotificationStatus.Allowed)
+        {
+            // User is going to allow notifications so it's an opportune time to request permission.
+            // The permission might have already been requested (if userSession.NotificationStatus is UserSessionNotificationStatus.Muted), but there's no harm in asking for permission again.
+
+            //#if (notification == true)
+            if (AppPlatform.IsBlazorHybrid is false || AppPlatform.IsWindows is false)
+            {
+                await pushNotificationService.RequestPermission(CurrentCancellationToken);
+                await pushNotificationService.Subscribe(CurrentCancellationToken);
+            }
+            //#else
+            if (await notification.IsSupported())
+            {
+                await notification.RequestPermission();
+            }
+            //#endif
+        }
+
+        userSession.NotificationStatus = await userController.ToggleNotification(userSession.Id, CurrentCancellationToken);
+    }
+    //#endif
 }

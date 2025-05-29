@@ -1363,6 +1363,18 @@
     <data name="SendRoleNotification" xml:space="preserve">
     <value>ارسال اعلان</value>
   </data>
+    <data name="EnableNotifications" xml:space="preserve">
+    <value>فعال‌سازی اعلان‌ها</value>
+  </data>
+    <data name="DisableNotifications" xml:space="preserve">
+    <value>فیر فعال‌سازی اعلان‌ها</value>
+  </data>
+    <data name="TestNotificationMessage1" xml:space="preserve">
+    <value>پیام تستی ۱</value>
+  </data>
+    <data name="TestNotificationMessage2" xml:space="preserve">
+    <value>پیام تستی ۲</value>
+  </data>
     <!--#endif -->
     <data name="RoleExistErrorMessage" xml:space="preserve">
     <value>این گروه کاربری وجود دارد</value>

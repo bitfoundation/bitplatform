@@ -45,12 +45,6 @@ public partial class PushNotificationService
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task Unsubscribe(string deviceId, CancellationToken cancellationToken)
-    {
-        dbContext.PushNotificationSubscriptions.Remove(new() { DeviceId = deviceId });
-        await dbContext.SaveChangesAsync(cancellationToken);
-    }
-
     public async Task RequestPush(string? title = null, 
         string? message = null,
         string? action = null,
@@ -67,6 +61,7 @@ public partial class PushNotificationService
 
         var query = dbContext.PushNotificationSubscriptions
             .Where(sub => sub.ExpirationTime > now)
+            .Where(sub => sub.UserSessionId == null || sub.UserSession!.NotificationStatus == UserSessionNotificationStatus.Allowed)
             .WhereIf(customSubscriptionFilter is not null, customSubscriptionFilter!)
             .WhereIf(userRelatedPush is true, sub => (now - sub.RenewedOn) < serverApiSettings.Identity.RefreshTokenExpiration.TotalSeconds);
 

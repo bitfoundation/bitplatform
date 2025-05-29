@@ -42,6 +42,7 @@ public static partial class SignalRMethods
     /// In contrast to production loggers (e.g., Sentry, AppInsights), which use a Warning level by default (except for specific categories at Information level) to reduce costs,
     /// the diagnostic logger defaults to Information level to capture all logs, stored solely in the client device's memory.
     /// Uploading these logs for display in the support staff's diagnostic modal log viewer aids in pinpointing the root cause of user issues during live troubleshooting.
+    /// Another benefit of having this feature is in dev environment when you wanna see your Android, iOS logs on your desktop wide screen.
     /// </summary>
     public const string UPLOAD_DIAGNOSTIC_LOGGER_STORE = nameof(UPLOAD_DIAGNOSTIC_LOGGER_STORE);
 }

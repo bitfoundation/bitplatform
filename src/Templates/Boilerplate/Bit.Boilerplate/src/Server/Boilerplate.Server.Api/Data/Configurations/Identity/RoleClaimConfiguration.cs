@@ -15,7 +15,7 @@ public partial class RoleClaimConfiguration : IEntityTypeConfiguration<RoleClaim
         {
             Id = 1,
             ClaimType = AppClaimTypes.MAX_PRIVILEGED_SESSIONS,
-            ClaimValue = "99",
+            ClaimValue = "-1",
             RoleId = superAdminRoleId
         });
 

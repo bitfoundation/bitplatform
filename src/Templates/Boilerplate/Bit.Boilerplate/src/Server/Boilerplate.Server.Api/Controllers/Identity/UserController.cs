@@ -10,8 +10,6 @@ using Boilerplate.Shared.Controllers.Identity;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.SignalR;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Authentication;
 //#endif
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
@@ -82,7 +80,7 @@ public partial class UserController : AppControllerBase, IUserController
             throw new BadRequestException(); // "Call SignOut instead"
 
         var userSession = await DbContext.UserSessions
-            .FirstOrDefaultAsync(us => us.Id == id, cancellationToken) ?? throw new ResourceNotFoundException();
+            .FirstOrDefaultAsync(us => us.Id == id && us.UserId == userId, cancellationToken) ?? throw new ResourceNotFoundException();
 
         DbContext.UserSessions.Remove(userSession);
         await DbContext.SaveChangesAsync(cancellationToken);
@@ -415,7 +413,7 @@ public partial class UserController : AppControllerBase, IUserController
             //#if (signalR == true)
             // Check out AppHub's comments for more info.
             var userSessionIdsExceptCurrentUserSessionId = await DbContext.UserSessions
-                .Where(us => us.UserId == user.Id && us.Id != currentUserSessionId && us.SignalRConnectionId != null)
+                .Where(us => us.NotificationStatus == UserSessionNotificationStatus.Allowed && us.UserId == user.Id && us.Id != currentUserSessionId && us.SignalRConnectionId != null)
                 .Select(us => us.SignalRConnectionId!)
                 .ToArrayAsync(cancellationToken);
             sendMessagesTasks.Add(appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId).SendAsync(SignalREvents.SHOW_MESSAGE, message, cancellationToken));
@@ -428,6 +426,37 @@ public partial class UserController : AppControllerBase, IUserController
 
         await Task.WhenAll(sendMessagesTasks);
     }
+
+    //#if (signalR == true || notification == true)
+    [HttpPost("{userSessionId}")]
+    public async Task<UserSessionNotificationStatus> ToggleNotification(Guid userSessionId, CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+
+        var userSession = await DbContext.UserSessions
+            .FirstOrDefaultAsync(us => us.Id == userSessionId && us.UserId == userId, cancellationToken) ?? throw new ResourceNotFoundException();
+
+        userSession.NotificationStatus = userSession.NotificationStatus is UserSessionNotificationStatus.NotConfigured ? UserSessionNotificationStatus.Allowed :
+            userSession.NotificationStatus is UserSessionNotificationStatus.Allowed ? UserSessionNotificationStatus.Muted : UserSessionNotificationStatus.Allowed;
+
+        await DbContext.SaveChangesAsync(cancellationToken);
+
+        if (userSession.NotificationStatus is UserSessionNotificationStatus.Allowed)
+        {
+            //#if (notification == true)
+            await pushNotificationService.RequestPush(message: Localizer[nameof(AppStrings.TestNotificationMessage1)], userRelatedPush: true, customSubscriptionFilter: us => us.UserSessionId == userSessionId, cancellationToken: cancellationToken);
+            //#endif
+            //#if (signalR == true)
+            if (userSession.SignalRConnectionId != null)
+            {
+                await appHubContext.Clients.Client(userSession.SignalRConnectionId).SendAsync(SignalREvents.SHOW_MESSAGE, (string)Localizer[nameof(AppStrings.TestNotificationMessage2)], cancellationToken);
+            }
+            //#endif
+        }
+
+        return userSession.NotificationStatus;
+    }
+    //#endif
 
     private static string FormatKey(string unformattedKey)
     {
