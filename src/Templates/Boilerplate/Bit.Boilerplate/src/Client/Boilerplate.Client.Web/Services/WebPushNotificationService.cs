@@ -28,6 +28,9 @@ public partial class WebPushNotificationService : PushNotificationServiceBase
         if (string.IsNullOrEmpty(clientWebSettings.AdsPushVapid?.PublicKey))
             return;
 
+        if (await notification.IsSupported() is false)
+            return;
+
         await notification.RequestPermission();
     }
 }
