@@ -62,6 +62,6 @@ public interface IUserController : IAppController
 
     //#if (signalR == true || notification == true)
     [HttpPost("{userSessionId}")]
-    Task<bool> ToggleNotification(Guid userSessionId, CancellationToken cancellationToken);
+    Task<UserSessionNotificationStatus> ToggleNotification(Guid userSessionId, CancellationToken cancellationToken);
     //#endif
 }

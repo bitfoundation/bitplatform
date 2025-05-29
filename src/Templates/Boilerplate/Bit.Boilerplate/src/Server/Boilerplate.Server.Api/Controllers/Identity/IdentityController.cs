@@ -339,7 +339,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         //#if (signalR == true)
         var userConnectionIds = await DbContext.UserSessions
-            .Where(us => us.NotificationsAllowed && us.UserId == user.Id)
+            .Where(us => us.NotificationStatus == UserSessionNotificationStatus.Allowed && us.UserId == user.Id)
             .Select(us => us.SignalRConnectionId!)
             .ToArrayAsync(cancellationToken);
         sendMessagesTasks.Add(appHubContext.Clients.Clients(userConnectionIds).SendAsync(SignalREvents.SHOW_MESSAGE, pushMessage, cancellationToken));
@@ -408,7 +408,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         {
             //#if (signalR == true)
             var userConnectionIds = await DbContext.UserSessions
-                .Where(us => us.NotificationsAllowed && us.UserId == user.Id)
+                .Where(us => us.NotificationStatus == UserSessionNotificationStatus.Allowed && us.UserId == user.Id)
                 .Select(us => us.SignalRConnectionId!)
                 .ToArrayAsync(cancellationToken);
             sendMessagesTasks.Add(appHubContext.Clients.Clients(userConnectionIds).SendAsync(SignalREvents.SHOW_MESSAGE, message, cancellationToken));

@@ -40,10 +40,6 @@ public partial class UserSessionDto
     //#endif
 
     //#if (signalR == true || notification == true)
-    /// <summary>
-    /// This property, in addition to the OS/Browser's detection of whether the user has permitted notifications,
-    /// determines if the user is willing to receive notifications from the server.
-    /// </summary>
-    public bool NotificationsAllowed { get; set; }
+    public UserSessionNotificationStatus NotificationStatus { get; set; }
     //#endif
 }

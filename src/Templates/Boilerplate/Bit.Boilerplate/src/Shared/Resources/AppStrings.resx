@@ -1369,8 +1369,11 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="SendRoleNotification" xml:space="preserve">
     <value>Send notification</value>
   </data>
-    <data name="ToggleNotification" xml:space="preserve">
-    <value>Toggle notification</value>
+    <data name="EnableNotifications" xml:space="preserve">
+    <value>Enable notifications</value>
+  </data>
+    <data name="DisableNotifications" xml:space="preserve">
+    <value>Disable notifications</value>
   </data>
     <data name="TestNotificationMessage1" xml:space="preserve">
     <value>Test notification 1</value>
@@ -1492,11 +1495,5 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <data name="YouAreNotAuthorizedMessage" xml:space="preserve">
     <value>You don’t have permission to access this page.</value>
-  </data>
-    <data name="Off" xml:space="preserve">
-    <value>Off</value>
-  </data>
-    <data name="On" xml:space="preserve">
-    <value>On</value>
   </data>
 </root>

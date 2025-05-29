@@ -413,7 +413,7 @@ public partial class UserController : AppControllerBase, IUserController
             //#if (signalR == true)
             // Check out AppHub's comments for more info.
             var userSessionIdsExceptCurrentUserSessionId = await DbContext.UserSessions
-                .Where(us => us.NotificationsAllowed && us.UserId == user.Id && us.Id != currentUserSessionId && us.SignalRConnectionId != null)
+                .Where(us => us.NotificationStatus == UserSessionNotificationStatus.Allowed && us.UserId == user.Id && us.Id != currentUserSessionId && us.SignalRConnectionId != null)
                 .Select(us => us.SignalRConnectionId!)
                 .ToArrayAsync(cancellationToken);
             sendMessagesTasks.Add(appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId).SendAsync(SignalREvents.SHOW_MESSAGE, message, cancellationToken));
@@ -429,18 +429,19 @@ public partial class UserController : AppControllerBase, IUserController
 
     //#if (signalR == true || notification == true)
     [HttpPost("{userSessionId}")]
-    public async Task<bool> ToggleNotification(Guid userSessionId, CancellationToken cancellationToken)
+    public async Task<UserSessionNotificationStatus> ToggleNotification(Guid userSessionId, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
 
         var userSession = await DbContext.UserSessions
             .FirstOrDefaultAsync(us => us.Id == userSessionId && us.UserId == userId, cancellationToken) ?? throw new ResourceNotFoundException();
 
-        userSession.NotificationsAllowed = !userSession.NotificationsAllowed;
+        userSession.NotificationStatus = userSession.NotificationStatus is UserSessionNotificationStatus.NotConfigured ? UserSessionNotificationStatus.Allowed :
+            userSession.NotificationStatus is UserSessionNotificationStatus.Allowed ? UserSessionNotificationStatus.Muted : UserSessionNotificationStatus.Allowed;
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        if (userSession.NotificationsAllowed)
+        if (userSession.NotificationStatus is UserSessionNotificationStatus.Allowed)
         {
             //#if (notification == true)
             await pushNotificationService.RequestPush(message: Localizer[nameof(AppStrings.TestNotificationMessage1)], userRelatedPush: true, customSubscriptionFilter: us => us.UserSessionId == userSessionId, cancellationToken: cancellationToken);
@@ -453,7 +454,7 @@ public partial class UserController : AppControllerBase, IUserController
             //#endif
         }
 
-        return userSession.NotificationsAllowed;
+        return userSession.NotificationStatus;
     }
     //#endif
 

@@ -205,7 +205,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     public async Task SendNotification(SendNotificationToRoleDto dto, CancellationToken cancellationToken)
     {
         //#if (signalR == true)
-        var signalRConnectionIds = await DbContext.UserSessions.Where(us => us.NotificationsAllowed &&
+        var signalRConnectionIds = await DbContext.UserSessions.Where(us => us.NotificationStatus == UserSessionNotificationStatus.Allowed &&
                                                                             us.SignalRConnectionId != null &&
                                                                             us.User!.Roles.Any(r => r.RoleId == dto.RoleId))
                                                                .Select(us => us.SignalRConnectionId!).ToArrayAsync(cancellationToken);

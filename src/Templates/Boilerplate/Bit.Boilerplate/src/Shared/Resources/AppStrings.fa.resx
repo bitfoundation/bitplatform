@@ -1366,6 +1366,12 @@
     <data name="ToggleNotification" xml:space="preserve">
     <value>فعال/غیر‌فعال سازی اعلان</value>
   </data>
+    <data name="EnableNotifications" xml:space="preserve">
+    <value>فعال‌سازی اعلان‌ها</value>
+  </data>
+    <data name="DisableNotifications" xml:space="preserve">
+    <value>فیر فعال‌سازی اعلان‌ها</value>
+  </data>
     <data name="TestNotificationMessage1" xml:space="preserve">
     <value>پیام تستی ۱</value>
   </data>

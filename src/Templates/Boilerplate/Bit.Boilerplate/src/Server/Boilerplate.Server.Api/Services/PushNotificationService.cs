@@ -61,7 +61,7 @@ public partial class PushNotificationService
 
         var query = dbContext.PushNotificationSubscriptions
             .Where(sub => sub.ExpirationTime > now)
-            .Where(sub => sub.UserSessionId == null || sub.UserSession!.NotificationsAllowed)
+            .Where(sub => sub.UserSessionId == null || sub.UserSession!.NotificationStatus == UserSessionNotificationStatus.Allowed)
             .WhereIf(customSubscriptionFilter is not null, customSubscriptionFilter!)
             .WhereIf(userRelatedPush is true, sub => (now - sub.RenewedOn) < serverApiSettings.Identity.RefreshTokenExpiration.TotalSeconds);
 

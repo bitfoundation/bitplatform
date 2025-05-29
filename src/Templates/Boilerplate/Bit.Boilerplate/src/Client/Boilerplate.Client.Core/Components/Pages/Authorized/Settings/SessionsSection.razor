@@ -41,8 +41,8 @@
                                Variant="BitVariant.Text"
                                Color="BitColor.SecondaryBackground"
                                OnClick="WrapHandled(() => ToggleNotification(currentSession))"
-                               IconName="@(currentSession.NotificationsAllowed ? BitIconName.RingerSolid : BitIconName.Ringer)"
-                               Title="@($"{(Localizer[nameof(AppStrings.ToggleNotification)])} ({(currentSession.NotificationsAllowed ? Localizer[nameof(AppStrings.Off)] : Localizer[nameof(AppStrings.On)])})")" />
+                               IconName="@(currentSession.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitIconName.Ringer : BitIconName.RingerSolid)"
+                               Title="@($"{(currentSession.NotificationStatus is UserSessionNotificationStatus.Allowed ? Localizer[nameof(AppStrings.DisableNotifications)] : Localizer[nameof(AppStrings.EnableNotifications)])}")" />
                     @*#endif*@
                 </BitStack>
             </BitCard>
@@ -79,8 +79,9 @@
                                            Variant="BitVariant.Text"
                                            Color="BitColor.SecondaryBackground"
                                            OnClick="WrapHandled(() => ToggleNotification(session))"
-                                           IconName="@(session.NotificationsAllowed ? BitIconName.RingerSolid : BitIconName.Ringer)"
-                                           Title="@($"{(Localizer[nameof(AppStrings.ToggleNotification)])} ({(session.NotificationsAllowed ? Localizer[nameof(AppStrings.Off)] : Localizer[nameof(AppStrings.On)])})")" />
+                                           IsEnabled="session.NotificationStatus is not UserSessionNotificationStatus.NotConfigured"
+                                           IconName="@(session.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitIconName.Ringer : BitIconName.RingerSolid)"
+                                           Title="@($"{(session.NotificationStatus is UserSessionNotificationStatus.Allowed ? Localizer[nameof(AppStrings.DisableNotifications)] : Localizer[nameof(AppStrings.EnableNotifications)])}")" />
                                 @*#endif*@
                             </BitStack>
                         </BitCard>
