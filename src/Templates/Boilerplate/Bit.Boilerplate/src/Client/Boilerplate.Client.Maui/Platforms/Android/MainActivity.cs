@@ -62,6 +62,7 @@ public partial class MainActivity : MauiAppCompatActivity
         }
         //#if (notification == true)
         var dataString = Intent?.GetStringExtra(LocalNotificationCenter.ReturnRequest);
+        string? pageUrl = null;
         if (string.IsNullOrEmpty(dataString) is false)
         {
             var request = JsonSerializer.Deserialize<NotificationRequest>(dataString, options: new()
@@ -71,11 +72,16 @@ public partial class MainActivity : MauiAppCompatActivity
             if (request?.ReturningData is not null)
             {
                 var returningData = JsonSerializer.Deserialize<Dictionary<string, object>>(request.ReturningData);
-                if (returningData?.TryGetValue("pageUrl", out var pageUrl) is true)
+                if (returningData?.ContainsKey("pageUrl") is true)
                 {
-                    _ = Routes.OpenUniversalLink(pageUrl?.ToString() ?? Urls.AboutPage);
+                    pageUrl = returningData["pageUrl"]?.ToString();
                 }
             }
+        }
+        pageUrl ??= Intent?.GetStringExtra("pageUrl");
+        if (string.IsNullOrEmpty(pageUrl) is false)
+        {
+            _ = Routes.OpenUniversalLink(pageUrl ?? Urls.HomePage);
         }
         PushNotificationService.IsAvailable(default).ContinueWith(task =>
         {

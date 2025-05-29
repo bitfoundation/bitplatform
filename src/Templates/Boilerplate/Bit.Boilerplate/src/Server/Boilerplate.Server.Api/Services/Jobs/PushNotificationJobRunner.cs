@@ -25,13 +25,17 @@ public partial class PushNotificationJobRunner
         var payload = new AdsPushBasicSendPayload()
         {
             Title = AdsPushText.CreateUsingString(title ?? "Boilerplate push"),
-            Detail = AdsPushText.CreateUsingString(message ?? string.Empty),
-            Parameters = new Dictionary<string, object>()
-            {
-                { "pageUrl", pageUrl ?? string.Empty },
-                { "action", action ?? string.Empty },
-            }
+            Detail = AdsPushText.CreateUsingString(message ?? string.Empty)
         };
+
+        if (string.IsNullOrEmpty(action) is false)
+        {
+            payload.Parameters.Add("action", action);
+        }
+        if (string.IsNullOrEmpty(pageUrl) is false)
+        {
+            payload.Parameters.Add("pageUrl", pageUrl);
+        }
 
         ConcurrentBag<Exception> exceptions = [];
 
