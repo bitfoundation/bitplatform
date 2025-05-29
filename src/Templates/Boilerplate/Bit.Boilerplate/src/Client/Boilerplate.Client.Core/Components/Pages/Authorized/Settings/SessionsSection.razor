@@ -41,7 +41,7 @@
                                Variant="BitVariant.Text"
                                Color="BitColor.SecondaryBackground"
                                OnClick="WrapHandled(() => ToggleNotification(currentSession))"
-                               IconName="@(currentSession.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitIconName.RingerSolid : BitIconName.Ringer)"
+                               IconName="@(currentSession.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitIconName.Ringer : BitIconName.RingerOff)"
                                Title="@($"{(currentSession.NotificationStatus is UserSessionNotificationStatus.Allowed ? Localizer[nameof(AppStrings.DisableNotifications)] : Localizer[nameof(AppStrings.EnableNotifications)])}")" />
                     @*#endif*@
                 </BitStack>
@@ -80,7 +80,7 @@
                                            Color="BitColor.SecondaryBackground"
                                            OnClick="WrapHandled(() => ToggleNotification(session))"
                                            IsEnabled="session.NotificationStatus is not UserSessionNotificationStatus.NotConfigured"
-                                           IconName="@(session.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitIconName.RingerSolid : BitIconName.Ringer)"
+                                           IconName="@(session.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitIconName.Ringer : BitIconName.RingerOff)"
                                            Title="@($"{(session.NotificationStatus is UserSessionNotificationStatus.Allowed ? Localizer[nameof(AppStrings.DisableNotifications)] : Localizer[nameof(AppStrings.EnableNotifications)])}")" />
                                 @*#endif*@
                             </BitStack>
