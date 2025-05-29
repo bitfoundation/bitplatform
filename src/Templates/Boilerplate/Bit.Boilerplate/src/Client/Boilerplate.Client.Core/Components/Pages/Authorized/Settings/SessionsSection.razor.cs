@@ -11,6 +11,7 @@ public partial class SessionsSection
     private UserSessionDto? currentSession;
     private int currentPrivilegedSessionsCount;
     private int maxPrivilegedSessionsCount;
+    private bool hasUnlimitedPrivilegedSessions;
     private List<Guid> revokingSessionIds = [];
     private UserSessionDto[] otherSessions = [];
 
@@ -47,6 +48,7 @@ public partial class SessionsSection
             currentSession = userSessions.Single(s => s.Id == currentSessionId);
 
             maxPrivilegedSessionsCount = user.GetClaimValue<int>(AppClaimTypes.MAX_PRIVILEGED_SESSIONS);
+            hasUnlimitedPrivilegedSessions = user.HasClaim(AppClaimTypes.MAX_PRIVILEGED_SESSIONS, "-1");
             currentPrivilegedSessionsCount = userSessions.Count(us => us.Privileged);
         }
         catch (KnownException e)

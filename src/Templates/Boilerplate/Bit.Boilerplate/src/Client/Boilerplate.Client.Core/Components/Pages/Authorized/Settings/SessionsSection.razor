@@ -16,7 +16,7 @@
         }
         @if (currentSession is not null)
         {
-            @if (maxPrivilegedSessionsCount != -1)
+            @if (hasUnlimitedPrivilegedSessions is false)
             {
                 <BitText Element="pre" Style="word-break:break-all;white-space:break-spaces" Typography="BitTypography.Body1">@Localizer[nameof(AppStrings.PrivilegedDeviceLimitMessage), maxPrivilegedSessionsCount.ToString("N0"), currentPrivilegedSessionsCount.ToString("N0")]</BitText>
             }
