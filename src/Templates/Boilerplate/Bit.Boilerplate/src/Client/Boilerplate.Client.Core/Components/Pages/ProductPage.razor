@@ -70,6 +70,7 @@
                             <BitText Color="BitColor.Info">@product.CategoryName</BitText>
                             <BitText Typography="BitTypography.H6">@((MarkupString)product.DescriptionHTML!)</BitText>
                             <BitText Typography="BitTypography.H4">@product.FormattedPrice</BitText>
+                            <BitButton AutoLoading OnClick="WrapHandled(Buy)">@Localizer[nameof(AppStrings.Buy)]</BitButton>
                         </BitStack>
                     </BitStack>
                 </BitCard>

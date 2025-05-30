@@ -32,11 +32,18 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(Environment)' == 'Development'">
-        <!-- Checkout ScssCompilerService.cs source code. -->
+        <!-- Check out  ScssCompilerService.cs source code. -->
         <PackageReference Include="Meziantou.Framework.Win32.Jobs" />
     </ItemGroup>
     <ItemGroup Condition="'$(Environment)' != 'Development'">
         <Compile Remove="Services\ScssCompilerService.cs" />
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(api)' == 'Integrated' OR '$(api)' == ''">
+        <None Include="..\Boilerplate.Server.Api\appsettings*.json">
+            <Link>%(Filename)%(Extension)</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
     <!--

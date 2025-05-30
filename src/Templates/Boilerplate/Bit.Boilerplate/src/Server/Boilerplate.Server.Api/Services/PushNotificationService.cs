@@ -45,13 +45,10 @@ public partial class PushNotificationService
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task Unsubscribe(string deviceId, CancellationToken cancellationToken)
-    {
-        dbContext.PushNotificationSubscriptions.Remove(new() { DeviceId = deviceId });
-        await dbContext.SaveChangesAsync(cancellationToken);
-    }
-
-    public async Task RequestPush(string? title = null, string? message = null, string? action = null,
+    public async Task RequestPush(string? title = null, 
+        string? message = null,
+        string? action = null,
+        string? pageUrl = null,
         bool userRelatedPush = false,
         Expression<Func<PushNotificationSubscription, bool>>? customSubscriptionFilter = null,
         CancellationToken cancellationToken = default)
@@ -64,6 +61,7 @@ public partial class PushNotificationService
 
         var query = dbContext.PushNotificationSubscriptions
             .Where(sub => sub.ExpirationTime > now)
+            .Where(sub => sub.UserSessionId == null || sub.UserSession!.NotificationStatus == UserSessionNotificationStatus.Allowed)
             .WhereIf(customSubscriptionFilter is not null, customSubscriptionFilter!)
             .WhereIf(userRelatedPush is true, sub => (now - sub.RenewedOn) < serverApiSettings.Identity.RefreshTokenExpiration.TotalSeconds);
 
@@ -74,6 +72,6 @@ public partial class PushNotificationService
 
         var pushNotificationSubscriptionIds = await query.Select(pns => pns.Id).ToArrayAsync(cancellationToken);
 
-        backgroundJobClient.Enqueue<PushNotificationJobRunner>(runner => runner.RequestPush(pushNotificationSubscriptionIds, title, message, action, userRelatedPush, default));
+        backgroundJobClient.Enqueue<PushNotificationJobRunner>(runner => runner.RequestPush(pushNotificationSubscriptionIds, title, message, action, pageUrl, userRelatedPush, default));
     }
 }

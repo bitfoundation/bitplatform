@@ -170,8 +170,8 @@
                    IconName="@BitIconName.Up" />
     </BitModal>
 
-    <BitModal @bind-IsOpen="isLogModalOpen">
-        <div style="padding:1rem;">
+    <BitModal @bind-IsOpen="isLogModalOpen" FullSize>
+        <BitStack style="padding:1rem;">
             <BitStack Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
                 <BitText Typography="BitTypography.H6">Log details</BitText>
                 <BitButton IconOnly
@@ -187,10 +187,10 @@
                            OnClick="() => isLogModalOpen = false"
                            IconName="@BitIconName.ChromeClose" />
             </BitStack>
-            <br />
+            
             <BitText Class="log-modal" Color="GetColor(selectedLog?.Level)">
                 <pre style="margin:0">@GetContent(selectedLog)</pre>
             </BitText>
-        </div>
+        </BitStack>
     </BitModal>
 </div>

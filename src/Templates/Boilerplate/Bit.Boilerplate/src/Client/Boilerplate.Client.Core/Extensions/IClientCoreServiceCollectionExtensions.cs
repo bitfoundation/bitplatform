@@ -30,6 +30,7 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddScoped<ThemeService>();
         services.AddScoped<CultureService>();
         services.AddScoped<LazyAssemblyLoader>();
+        services.AddScoped<SignInModalService>();
         services.AddScoped<IAuthTokenProvider, ClientSideAuthTokenProvider>();
         services.AddScoped<IExternalNavigationService, DefaultExternalNavigationService>();
         //#if (ads == true)

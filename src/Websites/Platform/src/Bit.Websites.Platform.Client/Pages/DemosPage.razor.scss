@@ -1,35 +1,26 @@
 ﻿@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_mixins.scss';
 @import '../Styles/abstracts/_functions.scss';
-@import '../Styles/abstracts/_media-queries.scss';
 
 .page-container {
     width: 100%;
     display: flex;
     overflow: hidden;
+    align-items: center;
     box-sizing: border-box;
-    align-items: flex-start;
-    justify-content: center;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
     padding-top: rem2($HeaderHeight);
-
 
     @include lt-lg {
         padding-top: rem2(calc($HeaderHeight + $HeaderSecondRowHeight));
     }
 }
 
-.page-content {
-    width: 100%;
-    display: flex;
-    max-width: 1200px;
-    margin-bottom: 3rem;
-    padding-inline: 1rem;
-    flex-flow: column nowrap;
-}
-
 .page-section {
     width: 100%;
     display: flex;
+    text-align: center;
     justify-content: center;
 }
 
@@ -43,6 +34,18 @@
     padding-inline: rem2(20px);
 }
 
+.mid-section {
+    padding-block: 4rem;
+    background: $bit-color-background-secondary;
+
+    .mid-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-flow: column nowrap;
+    }
+}
+
 .page-flex-container {
     gap: 1rem;
     width: 100%;
@@ -54,6 +57,14 @@
     @include lt-lg {
         flex-direction: column;
     }
+}
+
+.page-content {
+    width: 100%;
+    display: flex;
+    max-width: 1200px;
+    padding-inline: 1rem;
+    flex-flow: column nowrap;
 }
 
 .page-content-container {
@@ -194,18 +205,64 @@
     video {
         width: 100%;
     }
+}
 
-    .skip-button {
-        left: 0;
-        bottom: -20px;
-        cursor: pointer;
-        position: absolute;
-        border-radius: 2px;
-        background: transparent;
+.section-title-line {
+    height: 2px;
+    flex-grow: 1;
+    margin-top: 6px;
+    background-image: linear-gradient(351deg, transparent 20%, #8c85ff 100%);
 
-        &:hover {
-            opacity: .75;
-            background-color: #212121;
+    &.boilerplate {
+        width: 350px;
+
+        @include lt-md {
+            width: 250px;
         }
     }
+
+    &.platform {
+        width: 500px;
+
+        @include lt-md {
+            width: 400px;
+        }
+    }
+
+    &.blazorui {
+        width: 250px;
+
+        @include lt-md {
+            width: 200px;
+        }
+    }
+}
+
+.products-container {
+    line-height: 2.5em;
+    margin-bottom: 2em;
+
+    span {
+        display: block;
+        min-width: 5em;
+        font-weight: bold;
+    }
+
+    a {
+        margin: 0.5em;
+        border: 1px solid;
+        border-radius: 0.5em;
+        padding: 0.25em 0.5em;
+        text-decoration: none;
+        color: $bit-color-primary-dark;
+        border-color: $bit-color-primary-dark;
+        background-color: rgb(150 150 250 / 0.05);
+    }
+}
+
+.highlight-1 {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(351deg, #31b3ec 23%, #524add 87%);
 }

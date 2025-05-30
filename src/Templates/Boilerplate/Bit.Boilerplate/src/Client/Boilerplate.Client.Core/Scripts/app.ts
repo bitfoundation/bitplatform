@@ -81,9 +81,12 @@ class App {
 window.addEventListener('message', handleMessage);
 window.addEventListener('load', handleLoad);
 window.addEventListener('resize', setCssWindowSizes);
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', handleMessage);
+}
 
 function handleMessage(e: MessageEvent) {
-    // Enable publishing messages from JavaScript's `window.postMessage` to the C# `PubSubService`.
+    // Enable publishing messages from JavaScript's `window.postMessage` or `client.postMessage` to the C# `PubSubService`.
     if (e.data.key === 'PUBLISH_MESSAGE') {
         App.publishMessage(e.data.message, e.data.payload);
     }
@@ -95,8 +98,9 @@ function handleLoad() {
         // The IExternalNavigationService is responsible for opening pages in a new window,
         // such as during social sign-in flows. Once the external navigation is complete,
         // and the user is redirected back to the newly opened window,
-        // the following code ensures that the original window is notified of where it should navigate next.
-        window.opener.postMessage({ key: 'PUBLISH_MESSAGE', message: 'NAVIGATE_TO', payload: window.location.href });
+        // the following code ensures that the original window is notified.
+        // If IExternalNavigationService fails to navigate to the new window (Typically on iOS/Safari), the window.opener will be null and the page normally loads.
+        window.opener.postMessage({ key: 'PUBLISH_MESSAGE', message: 'SOCIAL_SIGN_IN', payload: window.location.href });
         setTimeout(() => window.close(), 100);
     }
 }

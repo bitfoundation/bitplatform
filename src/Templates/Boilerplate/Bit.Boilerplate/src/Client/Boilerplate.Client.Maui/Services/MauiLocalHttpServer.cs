@@ -1,9 +1,9 @@
 ﻿using System.Net;
-using System.Net.Sockets;
 using System.Text;
-using Boilerplate.Client.Core.Components;
+using System.Net.Sockets;
 using EmbedIO;
 using EmbedIO.Actions;
+using Boilerplate.Client.Core.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Boilerplate.Client.Maui.Services;
@@ -12,9 +12,8 @@ namespace Boilerplate.Client.Maui.Services;
 public partial class MauiLocalHttpServer : ILocalHttpServer
 {
     [AutoInject] private HtmlRenderer htmlRenderer;
+    [AutoInject] private PubSubService pubSubService;
     [AutoInject] private IExceptionHandler exceptionHandler;
-    [AutoInject] private ClientMauiSettings clientMauiSettings;
-    [AutoInject] private AbsoluteServerAddressProvider absoluteServerAddressProvider;
 
     public MauiWebAuthnService? WebAuthnService { get; set; }
 
@@ -27,8 +26,10 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
 
     public int EnsureStarted()
     {
-        if (port != -1)
-            return port;
+        if (localHttpServer?.State is WebServerState.Listening or WebServerState.Loading)
+            return port is -1 ? throw new InvalidOperationException() : port;
+
+        localHttpServer?.Dispose();
 
         port = GetAvailableTcpPort();
 
@@ -70,8 +71,11 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
-                    var urlToOpen = ctx.Request.QueryString["urlToOpen"];
-                    await Routes.OpenUniversalLink(urlToOpen!, replace: true);
+                    await MainThread.InvokeOnMainThreadAsync(() =>
+                    {
+                        var urlToOpen = ctx.Request.QueryString["urlToOpen"];
+                        pubSubService.Publish(ClientPubSubMessages.SOCIAL_SIGN_IN, urlToOpen);
+                    });
                 }
                 finally
                 {

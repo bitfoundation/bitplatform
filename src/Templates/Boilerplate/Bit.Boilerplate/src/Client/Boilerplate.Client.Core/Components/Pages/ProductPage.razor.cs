@@ -11,6 +11,7 @@ public partial class ProductPage
     [Parameter] public int Id { get; set; }
 
 
+    [AutoInject] private SignInModalService signInModalService = default!;
     [AutoInject] private IProductViewController productViewController = default!;
 
 
@@ -75,6 +76,16 @@ public partial class ProductPage
         }
     }
 
+    private async Task Buy()
+    {
+        if ((await AuthenticationStateTask).User.IsAuthenticated() is false && await signInModalService.SignIn() is false)
+        {
+            SnackBarService.Error(Localizer[nameof(AppStrings.YouNeedToSignIn)]);
+            return;
+        }
+
+        SnackBarService.Success(Localizer[nameof(AppStrings.PurchaseSuccessful)]);
+    }
 
     private string? GetProductImageUrl(ProductDto? product) => product?.GetPrimaryMediumImageUrl(AbsoluteServerAddress);
 }

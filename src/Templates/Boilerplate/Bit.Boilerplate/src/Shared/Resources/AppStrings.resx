@@ -148,7 +148,7 @@
     <value>Request could not be processed because of conflict in the request</value>
   </data>
     <data name="NotAuthorizedPageTitle" xml:space="preserve">
-    <value>403</value>
+    <value>Not authorized</value>
   </data>
     <data name="ForbiddenException" xml:space="preserve">
     <value>Access to the requested resource is forbidden</value>
@@ -759,6 +759,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="SignIn" xml:space="preserve">
     <value>Sign in</value>
   </data>
+    <data name="SignInByModal" xml:space="preserve">
+    <value>Sign in (Popup)</value>
+  </data>
     <data name="Confirm" xml:space="preserve">
     <value>Confirm</value>
   </data>
@@ -982,7 +985,16 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>An OTP has been generated and sent to you.</value>
   </data>
     <data name="SendOtpButtonText" xml:space="preserve">
-    <value>Send OTP / Magic link</value>
+    <value>Send OTP</value>
+  </data>
+    <data name="SendMagicLinkButtonText" xml:space="preserve">
+    <value>Send Magic link and OTP</value>
+  </data>
+    <data name="SignInByPassword" xml:space="preserve">
+    <value>Use Password</value>
+  </data>
+    <data name="SignInByOtp" xml:space="preserve">
+    <value>Use OTP</value>
   </data>
     <data name="OtpEmailOrPhoneNumberSubtitle" xml:space="preserve">
     <value>Enter your email or phone number:</value>
@@ -1215,6 +1227,12 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="SiblingProducts" xml:space="preserve">
     <value>Products in the same category</value>
   </data>
+    <data name="Buy" xml:space="preserve">
+    <value>Buy</value>
+  </data>
+    <data name="PurchaseSuccessful" xml:space="preserve">
+    <value>Purchase successful!</value>
+  </data>
     <!--#endif -->
     <data name="Passwordless" xml:space="preserve">
     <value>Passwordless</value>
@@ -1351,6 +1369,18 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="SendRoleNotification" xml:space="preserve">
     <value>Send notification</value>
   </data>
+    <data name="EnableNotifications" xml:space="preserve">
+    <value>Enable notifications</value>
+  </data>
+    <data name="DisableNotifications" xml:space="preserve">
+    <value>Disable notifications</value>
+  </data>
+    <data name="TestNotificationMessage1" xml:space="preserve">
+    <value>Test notification 1</value>
+  </data>
+    <data name="TestNotificationMessage2" xml:space="preserve">
+    <value>Test notification 2</value>
+  </data>
     <!--#endif -->
     <data name="RoleExistErrorMessage" xml:space="preserve">
     <value>This user group already exists</value>
@@ -1439,10 +1469,31 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="UserCantRemoveAllItsSessionsErrorMessage" xml:space="preserve">
     <value>You can't remove all of your own sessions</value>
   </data>
-    <data name="SearchRolePlaceholder" xml:space="preserve">
+    <data name="SearchRolesPlaceholder" xml:space="preserve">
     <value>Search user groups</value>
   </data>
-    <data name="SearchUserPlaceholder" xml:space="preserve">
+    <data name="SearchUsersPlaceholder" xml:space="preserve">
     <value>Search users</value>
+  </data>
+    <data name="SearchRoleUsersPlaceholder" xml:space="preserve">
+    <value>Search users</value>
+  </data>
+    <data name="SearchUserSessionsPlaceholder" xml:space="preserve">
+    <value>Search user sessions</value>
+  </data>
+    <data name="RemoveRoleFromAllUsers" xml:space="preserve">
+    <value>Remove user group from all users</value>
+  </data>
+    <data name="RemoveRoleFromAllUsersConfrimMessage" xml:space="preserve">
+    <value>Are you sure you want to remove all users from {0}?</value>
+  </data>
+    <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
+    <value>Page URL</value>
+  </data>
+    <data name="YouAreNotAuthorized" xml:space="preserve">
+    <value>You are not authorized</value>
+  </data>
+    <data name="YouAreNotAuthorizedMessage" xml:space="preserve">
+    <value>You don’t have permission to access this page.</value>
   </data>
 </root>

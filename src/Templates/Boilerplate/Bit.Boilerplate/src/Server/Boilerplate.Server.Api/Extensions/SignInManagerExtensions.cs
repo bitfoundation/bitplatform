@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using System.Reflection;
 using Boilerplate.Server.Api;
 using Boilerplate.Server.Api.Models.Identity;
@@ -79,6 +79,12 @@ public static partial class SignInManagerExtensions
 
             return SignInResult.TwoFactorRequired;
         }
+
+        await signInManager.UserManager.ResetAccessFailedCountAsync(user);
+        user.OtpRequestedOn = null; // invalidates the OTP. For those with 2fa, the OTP is invalidated when the user signs in successfully in TwoFactorSignIn method.
+        var updateResult = await signInManager.UserManager.UpdateAsync(user);
+        if (updateResult.Succeeded is false)
+            throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData("UserId", user.Id);
 
         await signInManager.SignInWithClaimsAsync(user!, isPersistent: false, [new Claim("amr", "otp")]);
 

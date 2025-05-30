@@ -173,7 +173,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Toggle" RazorCode="@example6RazorCode" Id="example6">
+<DemoExample Title="Toggle" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
     <div>The Toggle in BitButtonGroup allows you to control the active or inactive state of each button, providing clear visual feedback to users about which buttons are selected or currently in use.</div>
     <br /><br />
     <div class="example-content">
@@ -202,6 +202,23 @@
             <BitButtonGroupOption OnText="Forward (2X)" OffText="Forward (1X)" OnIconName="@BitIconName.FastForwardTwoX" OffIconName="@BitIconName.FastForward" ReversedIcon />
         </BitButtonGroup>
     </div>
+    <br /><br /><br /><br />
+    <div>Binding:</div><br />
+    <BitButtonGroup Toggle Variant="BitVariant.Outline" TItem="BitButtonGroupOption" @bind-ToggleKey="toggleKey">
+        <BitButtonGroupOption Key="back" OnText="Back (2X)" OffText="Back (1X)" OnIconName="@BitIconName.RewindTwoX" OffIconName="@BitIconName.Rewind" />
+        <BitButtonGroupOption Key="play" OnTitle="Resume" OffTitle="Play" OnIconName="@BitIconName.PlayResume" OffIconName="@BitIconName.Play" />
+        <BitButtonGroupOption Key="forward" OnText="Forward (2X)" OffText="Forward (1X)" OnIconName="@BitIconName.FastForwardTwoX" OffIconName="@BitIconName.FastForward" ReversedIcon />
+    </BitButtonGroup>
+    <div>Toggle key: @toggleKey</div>
+    <BitButton OnClick="@(() => toggleKey = "forward")">Forward</BitButton>
+    <br /><br /><br /><br />
+    <div>OnToggleChange:</div><br />
+    <BitButtonGroup Toggle Variant="BitVariant.Outline" TItem="BitButtonGroupOption" DefaultToggleKey="forward" OnToggleChange="(BitButtonGroupOption o) => onChangeToggleOption = o">
+        <BitButtonGroupOption Key="back" OnText="Back (2X)" OffText="Back (1X)" OnIconName="@BitIconName.RewindTwoX" OffIconName="@BitIconName.Rewind" />
+        <BitButtonGroupOption Key="play" OnTitle="Resume" OffTitle="Play" OnIconName="@BitIconName.PlayResume" OffIconName="@BitIconName.Play" />
+        <BitButtonGroupOption Key="forward" OnText="Forward (2X)" OffText="Forward (1X)" OnIconName="@BitIconName.FastForwardTwoX" OffIconName="@BitIconName.FastForward" ReversedIcon />
+    </BitButtonGroup>
+    <div>Changed toggle: @onChangeToggleOption?.Key , @onChangeToggleOption?.IsToggled</div>
 </DemoExample>
 
 <DemoExample Title="Vertical" RazorCode="@example7RazorCode" Id="example7">

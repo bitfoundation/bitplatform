@@ -192,9 +192,12 @@ public class History(IJSRuntime js) : IAsyncDisposable
 
     protected virtual async ValueTask DisposeAsync(bool disposing)
     {
-        if (disposing)
+        if (disposing is false) return;
+
+        try
         {
             await RemoveAllPopStates();
         }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 }

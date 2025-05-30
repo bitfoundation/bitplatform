@@ -76,6 +76,9 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     {
         var role = await GetRoleByIdAsync(roleDto.Id, cancellationToken);
 
+        if (role.ConcurrencyStamp != roleDto.ConcurrencyStamp)
+            throw new ConflictException();
+
         roleDto.Patch(role);
 
         var result = await roleManager.UpdateAsync(role);
@@ -86,11 +89,14 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         return role.Map();
     }
 
-    [HttpPost("{roleId}")]
+    [HttpPost("{roleId}/{concurrencyStamp}")]
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
-    public async Task Delete(Guid roleId, CancellationToken cancellationToken)
+    public async Task Delete(Guid roleId, string concurrencyStamp, CancellationToken cancellationToken)
     {
         var role = await GetRoleByIdAsync(roleId, cancellationToken);
+
+        if (role.ConcurrencyStamp != concurrencyStamp)
+            throw new ConflictException();
 
         await roleManager.DeleteAsync(role);
     }
@@ -184,13 +190,23 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         }
     }
 
+    [HttpPost("{roleId}")]
+    [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
+    public async Task RemoveRoleFromAllUsers(Guid roleId, CancellationToken cancellationToken)
+    {
+        var role = await GetRoleByIdAsync(roleId, cancellationToken);
+
+        await DbContext.UserRoles.Where(ur => ur.RoleId == roleId).ExecuteDeleteAsync(cancellationToken);
+    }
+
     //#if (notification == true || signalR == true)
     [HttpPost]
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task SendNotification(SendNotificationToRoleDto dto, CancellationToken cancellationToken)
     {
         //#if (signalR == true)
-        var signalRConnectionIds = await DbContext.UserSessions.Where(us => us.SignalRConnectionId != null && 
+        var signalRConnectionIds = await DbContext.UserSessions.Where(us => us.NotificationStatus == UserSessionNotificationStatus.Allowed &&
+                                                                            us.SignalRConnectionId != null &&
                                                                             us.User!.Roles.Any(r => r.RoleId == dto.RoleId))
                                                                .Select(us => us.SignalRConnectionId!).ToArrayAsync(cancellationToken);
 
@@ -200,6 +216,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
 
         //#if (notification == true)
         await pushNotificationService.RequestPush(message: dto.Message, 
+                                                  pageUrl: dto.PageUrl,
                                                   userRelatedPush: true, 
                                                   customSubscriptionFilter: s => s.UserSession!.User!.Roles.Any(r => r.RoleId == dto.RoleId), 
                                                   cancellationToken: cancellationToken);

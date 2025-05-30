@@ -6,9 +6,9 @@
 public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 {
     private decimal diffXPanel;
-    private BitNav<TItem> _bitNavRef = default!;
+    private BitNav<TItem>? _bitNavRef;
+    private BitSearchBox? _searchBoxRef;
     private IList<TItem> _filteredNavItems = [];
-    private BitSearchBox _searchBoxRef = default!;
     private IEnumerable<TItem> _flatNavItemList = [];
 
 
@@ -81,6 +81,11 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     /// The render mode of the custom HeaderTemplate of the nav.
     /// </summary>
     [Parameter] public BitNavItemTemplateRenderMode HeaderTemplateRenderMode { get; set; }
+
+    /// <summary>
+    /// Removes the toggle button.
+    /// </summary>
+    [Parameter] public bool HideToggle { get; set; }
 
     /// <summary>
     /// Renders an anchor wrapping the icon to navigate to the specified url.
@@ -234,6 +239,16 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
 
 
+    /// <summary>
+    /// Toggles the nav panel if possible.
+    /// </summary>
+    public async Task Toggle()
+    {
+        await ToggleNavPanel();
+    }
+
+
+
     protected override string RootElementClass => "bit-npn";
 
     protected override void RegisterCssClasses()
@@ -284,11 +299,11 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     {
         await OnItemClick.InvokeAsync(item);
 
-        if (_bitNavRef.GetUrl(item).HasNoValue()) return;
+        if (_bitNavRef?.GetUrl(item).HasNoValue() is true) return;
 
         _filteredNavItems = Items;
 
-        await _searchBoxRef.Clear();
+        _ = _searchBoxRef?.Clear();
 
         await ClosePanel();
     }
@@ -311,6 +326,8 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     private async Task ToggleForSearch()
     {
         if (await AssignIsToggled(false) is false) return;
+
+        if (_searchBoxRef is null) return;
 
         await Task.Delay(1);
         await _searchBoxRef.FocusAsync();
@@ -364,14 +381,14 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
         }
     }
 
-    private string? GetPanelStyle()
+    private string? GetPanelStyle(bool isToggled)
     {
-        if (IsOpen is false) return StyleBuilder.Value;
+        if (IsOpen is false) return $"{StyleBuilder.Value};{(isToggled ? Styles?.Toggled : string.Empty)}".Trim(';');
 
         var translate = ((Dir != BitDir.Rtl && diffXPanel < 0) || (Dir == BitDir.Rtl && diffXPanel > 0))
                             ? $"transform: translateX({diffXPanel}px)"
                             : string.Empty;
-        return $"{translate};{StyleBuilder.Value}".Trim(';');
+        return $"{translate};{StyleBuilder.Value};{(isToggled ? Styles?.Toggled : string.Empty)}".Trim(';');
     }
 
     private async Task OnItemsSet()

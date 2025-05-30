@@ -161,7 +161,7 @@ public partial class ProductController : AppControllerBase, IProductController
     //#if (signalR == true)
     private async Task PublishDashboardDataChanged(CancellationToken cancellationToken)
     {
-        // Checkout AppHub's comments for more info.
+        // Check out AppHub's comments for more info.
         // In order to exclude current user session, gets its signalR connection id from database and use GroupExcept instead.
         await appHubContext.Clients.Group("AuthenticatedClients").SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.DASHBOARD_DATA_CHANGED, null, cancellationToken);
     }

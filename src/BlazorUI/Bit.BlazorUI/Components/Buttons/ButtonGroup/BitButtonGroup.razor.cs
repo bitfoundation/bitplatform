@@ -9,6 +9,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 {
     private TItem? _toggleItem;
     private List<TItem> _items = [];
+    private string? _internalToggleKey;
     private IEnumerable<TItem> _oldItems = default!;
 
 
@@ -39,6 +40,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// The default key that will be initially used to set toggled item in toggle mode if the ToggleKey parameter is not set.
     /// </summary>
     [Parameter] public string? DefaultToggleKey { get; set; }
+
+    /// <summary>
+    /// Enables the fixed-toggle mode that ensures one item to be always toggled.
+    /// </summary>
+    [Parameter] public bool FixedToggle { get; set; }
 
     /// <summary>
     /// Expand the ButtonGroup width to 100% of the available width.
@@ -128,9 +134,23 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
         _items.Add(item);
 
-        if (Toggle && DefaultToggleKey.HasValue() && option.Key == DefaultToggleKey)
+        if (Toggle)
         {
-            _ = SetToggled(item);
+            var toggleKey = string.Empty;
+
+            if (ToggleKeyHasBeenSet)
+            {
+                toggleKey = ToggleKey;
+            }
+            else if (DefaultToggleKey.HasValue())
+            {
+                toggleKey = DefaultToggleKey;
+            }
+
+            if (toggleKey.HasValue() && option.Key == toggleKey)
+            {
+                _ = UpdateItemToggle(item, false);
+            }
         }
 
         StateHasChanged();
@@ -200,35 +220,62 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     protected override async Task OnInitializedAsync()
     {
-        if (Toggle && DefaultToggleKey.HasValue())
+        _items = Items is not null ? [.. Items] : [];
+
+        if (Toggle && Items is not null && Items.Any())
         {
-            var item = _items.FirstOrDefault(i => GetItemKey(i) == DefaultToggleKey);
-            if (item is not null)
+            var toggleKey = string.Empty;
+
+            if (ToggleKeyHasBeenSet)
             {
-                await SetToggled(item);
+                toggleKey = ToggleKey;
+                _internalToggleKey = ToggleKey;
+            }
+            else if (DefaultToggleKey.HasValue())
+            {
+                toggleKey = DefaultToggleKey;
+            }
+
+            if (toggleKey.HasValue())
+            {
+                var item = Items.FirstOrDefault(i => GetItemKey(i) == toggleKey);
+                await UpdateItemToggle(item, false);
             }
         }
 
         await base.OnInitializedAsync();
     }
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
-        base.OnParametersSet();
-
-        if (ChildContent is not null || Items is null || Items.Any() is false) return;
-
-        if (_oldItems is not null && Items.SequenceEqual(_oldItems)) return;
-
-        _oldItems = Items;
-        _items = [.. Items];
-
-        for (int i = 0; i < _items.Count; i++)
+        if (ChildContent is null && Items is not null && Items.Any())
         {
-            if (GetItemKey(_items.ElementAt(i)).HasValue()) continue;
+            if (_oldItems is null || Items.SequenceEqual(_oldItems) is false)
+            {
+                _oldItems = Items;
+                _items = [.. Items];
 
-            SetItemKey(_items.ElementAt(i), i.ToString());
+                for (int i = 0; i < _items.Count; i++)
+                {
+                    if (GetItemKey(_items.ElementAt(i)).HasValue()) continue;
+
+                    SetItemKey(_items.ElementAt(i), i.ToString());
+                }
+            }
         }
+
+        if (_internalToggleKey != ToggleKey)
+        {
+            _internalToggleKey = ToggleKey;
+
+            if (_internalToggleKey.HasValue())
+            {
+                var item = _items.FirstOrDefault(i => GetItemKey(i) == _internalToggleKey);
+                await UpdateItemToggle(item, false);
+            }
+        }
+
+        await base.OnParametersSetAsync();
     }
 
 
@@ -261,7 +308,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             }
         }
 
-        await SetToggled(item);
+        await UpdateItemToggle(item);
     }
 
     private string? GetItemClass(TItem item)
@@ -273,7 +320,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             classes.Add("bit-btg-rvi");
         }
 
-        if (IsToggled(item))
+        if (IsItemToggled(item))
         {
             classes.Add("bit-btg-chk");
 
@@ -312,7 +359,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             styles.Add(Styles.Button!.Trim(';'));
         }
 
-        if (IsToggled(item) && (Styles?.ToggledButton.HasValue() ?? false))
+        if (IsItemToggled(item) && (Styles?.ToggledButton.HasValue() ?? false))
         {
             styles.Add(Styles.ToggledButton!);
         }
@@ -326,7 +373,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
         if (Toggle)
         {
-            if (IsToggled(item))
+            if (IsItemToggled(item))
             {
                 var onText = GetOnText(item);
                 if (onText.HasValue())
@@ -351,7 +398,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     {
         if (Toggle)
         {
-            if (IsToggled(item))
+            if (IsItemToggled(item))
             {
                 var onTitle = GetOnTitle(item);
                 if (onTitle.HasValue())
@@ -376,7 +423,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     {
         if (Toggle)
         {
-            if (IsToggled(item))
+            if (IsItemToggled(item))
             {
                 var onIconName = GetOnIconName(item);
                 if (onIconName.HasValue())
@@ -397,15 +444,19 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return GetIconName(item);
     }
 
-    private async Task SetToggled(TItem item)
+    private async Task UpdateItemToggle(TItem? item, bool isToggled = true)
     {
+        if (item is null) return;
         if (Toggle is false) return;
-        if (_items is null) return;
+        if (_items is null || _items.Count == 0) return;
+        if (ToggleKeyHasBeenSet && ToggleKeyChanged.HasDelegate is false) return;
 
-        string? toggleKey = null;
-        var toggleItem = _items.FirstOrDefault(i => IsToggled(i));
+        string? toggleKey = GetItemKey(_toggleItem);
+        var oldToggledItem = _items.FirstOrDefault(IsItemToggled);
 
-        if (toggleItem != item)
+        if (oldToggledItem == item && (isToggled is false || FixedToggle)) return;
+
+        if (oldToggledItem != item)
         {
             _toggleItem = item;
             SetIsToggled(item, true);
@@ -413,21 +464,20 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         }
         else
         {
+            toggleKey = null;
             _toggleItem = null;
         }
 
-        if (toggleItem is not null)
+        if (oldToggledItem is not null)
         {
-            SetIsToggled(toggleItem, false);
+            SetIsToggled(oldToggledItem, false);
         }
-
-        if (ToggleKeyHasBeenSet && ToggleKeyChanged.HasDelegate is false) return;
 
         await AssignToggleKey(toggleKey);
         await OnToggleChange.InvokeAsync(item);
     }
 
-    private bool IsToggled(TItem item)
+    private bool IsItemToggled(TItem item)
     {
         return _toggleItem == item;
     }

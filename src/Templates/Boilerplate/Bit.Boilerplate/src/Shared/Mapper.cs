@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Boilerplate.Shared.Dtos.Identity;
 
 //#if (sample == true)
@@ -9,6 +9,9 @@ using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Shared.Dtos.Categories;
 //#endif
 using Riok.Mapperly.Abstractions;
+//#if (signalR == true)
+using Boilerplate.Shared.Dtos.Chatbot;
+//#endif
 
 namespace Boilerplate.Shared;
 
@@ -34,4 +37,7 @@ public static partial class Mapper
     public static partial void Patch(this UserDto source, UserDto destination);
     public static partial void Patch(this EditUserDto source, UserDto destination);
     public static partial void Patch(this UserDto source, EditUserDto destination);
+    //#if (signalR == true)
+    public static partial void Patch(this SystemPromptDto source, SystemPromptDto destination);
+    //#endif
 }

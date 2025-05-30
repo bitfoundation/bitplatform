@@ -1,5 +1,6 @@
 ﻿//+:cnd:noEmit
 using System.Reflection;
+using Boilerplate.Client.Core.Services;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace Boilerplate.Client.Core.Components.Layout;
@@ -31,6 +32,7 @@ public partial class MainLayout : IAsyncDisposable
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
     [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private NavigationManager navigationManager = default!;
+    [AutoInject] private SignInModalService signInModalService = default!;
     [AutoInject] private IPrerenderStateService prerenderStateService = default!;
 
 
@@ -189,6 +191,11 @@ public partial class MainLayout : IAsyncDisposable
         return isIdentityPage is true ? "identity"
              : isIdentityPage is false ? "non-identity"
              : string.Empty;
+    }
+
+    private async Task ModalSignIn()
+    {
+        await signInModalService.SignIn();
     }
 
 

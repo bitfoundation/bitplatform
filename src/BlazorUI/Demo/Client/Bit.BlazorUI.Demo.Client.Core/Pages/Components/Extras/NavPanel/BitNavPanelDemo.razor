@@ -8,6 +8,7 @@
           Description="BitNavPanel is a navigation component specialized to be rendered in a vertical panel."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
+          PublicMembers="componentPublicMembers"
           SubEnums="componentSubEnums"
           GitHubExtrasUrl="NavPanel/BitNavPanel.razor"
           GitHubDemoUrl="Extras/NavPanel/BitNavPanelDemo.razor">
@@ -118,7 +119,7 @@
             </BitNavPanel>
         </DemoExample>
 
-        <DemoExample Title="Event" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <DemoExample Title="Events" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div class="open-btn">
                 <BitToggleButton @bind-IsChecked="eventIsOpen" OnText="Close" OffText="Open" />
             </div>
@@ -135,16 +136,26 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Color" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <DemoExample Title="Public APIs" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <div class="open-btn">
+                <BitToggleButton @bind-IsChecked="publicApiIsOpen" OnText="Close" OffText="Open" />
+            </div>
+            <BitButton OnClick="async () => await navPanelRef.Toggle()">Toggle</BitButton>
+            <div style="width:222px">
+                <BitNavPanel @bind-IsOpen="publicApiIsOpen" @ref="navPanelRef" Items="basicNavItems" HideToggle />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Color" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div class="open-btn">
                 <BitToggleButton @bind-IsChecked="colorIsOpen" OnText="Close" OffText="Open" />
             </div>
             <div style="width:222px">
-                <BitNavPanel @bind-IsOpen="colorIsOpen" Items="basicNavItems" SingleExpand />
+                <BitNavPanel @bind-IsOpen="colorIsOpen" Items="basicNavItems" Color="BitColor.Secondary" Accent="BitColor.SecondaryBackground" />
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div class="open-btn">
                 <BitToggleButton @bind-IsChecked="classStyleIsOpen" OnText="Close" OffText="Open" />
             </div>
@@ -163,7 +174,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <DemoExample Title="RTL" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
             <div class="open-btn">
                 <BitToggleButton @bind-IsChecked="rtlIsOpen" OnText="Close" OffText="Open" />
             </div>

@@ -26,6 +26,9 @@ public partial class ServerApiSettings : SharedSettings
     public string UserProfileImagesDir { get; set; } = default!;
 
     //#if (captcha == "reCaptcha")
+    /// <summary>
+    /// Create one at https://console.cloud.google.com/security/recaptcha/create for Web Application Type and use site key in Client.Core
+    /// </summary>
     [Required]
     public string GoogleRecaptchaSecretKey { get; set; } = default!;
     //#endif

@@ -10,12 +10,13 @@
 
 <PageTitle>Bit Besql weather forecast sample</PageTitle>
 
-<button class="btn btn-primary" @onclick="ReadDataSample">Read data sample</button>
-<button class="btn btn-primary" @onclick="AddWeatherForecastSample">Add weather forecast</button>
-<button class="btn btn-primary" @onclick="DeleteSomeForecastsSample">Delete some forecasts</button>
-<button class="btn btn-primary" @onclick="PauseResumeSyncSample">Pause / resume sync</button>
-<button class="btn btn-primary" @onclick="UsePrePopulatedDatabaseSample">Use pre populated database</button>
+<button class="btn btn-primary" @onclick="ReadData">Read data</button>
+<button class="btn btn-primary" @onclick="AddData">Add data</button>
+<button class="btn btn-primary" @onclick="BatchOperations">Batch operations</button>
+<button class="btn btn-primary" @onclick="PauseResumePersistent">Pause / resume persistent</button>
+<button class="btn btn-primary" @onclick="UsePrePopulatedDatabase">Use pre populated database</button>
 <button class="btn btn-primary" @onclick="ReCreateDatabase">Re-create database</button>
+<button class="btn btn-primary" @onclick="Backup">Backup</button>
 
 <h1>@forecastsCount</h1>
 
@@ -23,13 +24,13 @@
 
     private int? forecastsCount;
 
-    private async Task ReadDataSample()
+    private async Task ReadData()
     {
         await using var dbContext = await DbContextFactory.CreateDbContextAsync();
         forecastsCount = await dbContext.WeatherForecasts.CountAsync();
     }
 
-    private async Task AddWeatherForecastSample()
+    private async Task AddData()
     {
         await using var dbContext = await DbContextFactory.CreateDbContextAsync();
         await dbContext.WeatherForecasts.AddAsync(new()
@@ -46,10 +47,10 @@
         });
         await dbContext.SaveChangesAsync();
 
-        await ReadDataSample();
+        await ReadData();
     }
 
-    private async Task DeleteSomeForecastsSample()
+    private async Task BatchOperations()
     {
         await using var dbContext = await DbContextFactory.CreateDbContextAsync();
         var deletedCount = await dbContext.WeatherForecasts
@@ -59,30 +60,30 @@
             .Where(w => w.TemperatureC % 3 == 0)
             .ExecuteDeleteAsync();
 
-        await ReadDataSample();
+        await ReadData();
     }
 
-    private async Task PauseResumeSyncSample()
+    private async Task PauseResumePersistent()
     {
         BitBesqlStorage.PauseAutomaticPersistent();
 
         try
         {
-            await AddWeatherForecastSample();
+            await AddData();
 
             await Task.Delay(5_000);
 
-            await AddWeatherForecastSample();
+            await AddData();
         }
         finally
         {
             await BitBesqlStorage.ResumeAutomaticPersistent();
         }
 
-        await ReadDataSample();
+        await ReadData();
     }
 
-    private async Task UsePrePopulatedDatabaseSample()
+    private async Task UsePrePopulatedDatabase()
     {
         // This feature can alternatively be implemented as an API that dynamically fills a SQLite database.
         // Note: If the `dbContext` used to populate the SQLite database file is not instantiated by `bit Besql`,
@@ -96,7 +97,7 @@
         }
         await BitBesqlStorage.Persist(fileName);
 
-        await ReadDataSample();
+        await ReadData();
     }
 
     private async Task ReCreateDatabase()
@@ -110,5 +111,22 @@
         await dbContext.Database.ConfigureSqliteJournalMode();
 
         await dbContext.Database.MigrateAsync();
+    }
+
+    private async Task Backup()
+    {
+
+        {
+            await using var dbContext = await DbContextFactory.CreateDbContextAsync();
+            await using var sourceStream = File.OpenRead("Offline-Client.db");
+            await using var destinationStream = File.OpenWrite("Offline-Client2.db"); // You can upload the file to a server or cloud storage.
+            await sourceStream.CopyToAsync(destinationStream);
+        }
+
+        await using var testDbContext = new OfflineDbContext(new DbContextOptionsBuilder<OfflineDbContext>()
+            .UseSqlite("Data Source=Offline-Client2.db")
+            .Options);
+
+        forecastsCount = await testDbContext.WeatherForecasts.CountAsync();
     }
 }

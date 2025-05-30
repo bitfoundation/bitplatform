@@ -13,7 +13,7 @@ public class Clipboard(IJSRuntime js)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/readText">https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/readText</see>
     /// </summary>
     public async ValueTask<string> ReadText()
-        => await js.InvokeAsync<string>("BitButil.clipboard.readText");
+        => await js.Invoke<string>("BitButil.clipboard.readText");
 
     /// <summary>
     /// Writes text to the system clipboard, returning a Promise that is 
@@ -25,7 +25,7 @@ public class Clipboard(IJSRuntime js)
     {
         if (text is not null)
         {
-            await js.InvokeVoidAsync("BitButil.clipboard.writeText", text);
+            await js.InvokeVoid("BitButil.clipboard.writeText", text);
         }
     }
 
@@ -38,8 +38,8 @@ public class Clipboard(IJSRuntime js)
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ClipboardItem))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ClipboardFormats))]
     public async ValueTask<ClipboardItem[]> Read(ClipboardFormats? formats = null)
-        => await (formats is null ? js.InvokeAsync<ClipboardItem[]>("BitButil.clipboard.read")
-                                  : js.InvokeAsync<ClipboardItem[]>("BitButil.clipboard.read", formats));
+        => await (formats is null ? js.Invoke<ClipboardItem[]>("BitButil.clipboard.read")
+                                  : js.Invoke<ClipboardItem[]>("BitButil.clipboard.read", formats));
 
     /// <summary>
     /// Writes arbitrary data to the system clipboard, returning a Promise 
@@ -51,7 +51,7 @@ public class Clipboard(IJSRuntime js)
     {
         if (items is not null)
         {
-            await js.InvokeVoidAsync("BitButil.clipboard.write", (object)items);
+            await js.InvokeVoid("BitButil.clipboard.write", (object)items);
         }
     }
 }

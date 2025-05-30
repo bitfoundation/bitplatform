@@ -40,7 +40,16 @@ public partial class ForgotPasswordPage
         try
         {
             model.ReturnUrl = ReturnUrlQueryString;
-            await identityController.SendResetPasswordToken(model, CurrentCancellationToken);
+
+            try
+            {
+                await identityController.SendResetPasswordToken(model, CurrentCancellationToken);
+            }
+            catch (TooManyRequestsExceptions e)
+            {
+                SnackBarService.Error(e.Message);
+                // Let's go to the reset password page anyway.
+            }
 
             var queryParams = new Dictionary<string, object?>
             {
@@ -60,7 +69,7 @@ public partial class ForgotPasswordPage
         }
         catch (BadRequestException e) when (e.Key == nameof(AppStrings.UserIsNotConfirmed))
         {
-            NavigateToConfirmPage();
+            NavigateToConfirmPage(); // Check out SignInModalService for more details
         }
         catch (KnownException e)
         {

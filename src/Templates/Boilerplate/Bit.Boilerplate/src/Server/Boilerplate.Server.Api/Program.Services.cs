@@ -5,6 +5,9 @@ using System.IO.Compression;
 //#if (signalR == true || database == "PostgreSQL")
 using System.ClientModel.Primitives;
 //#endif
+//#if (database == "Sqlite")
+using Microsoft.Data.Sqlite;
+//#endif
 using Microsoft.Identity.Web;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.OData;
@@ -214,7 +217,10 @@ public static partial class Program
                 .EnableDetailedErrors(env.IsDevelopment());
 
             //#if (database == "Sqlite")
-            options.UseSqlite(configuration.GetConnectionString("SqliteConnectionString"), dbOptions =>
+            var connectionStringBuilder = new SqliteConnectionStringBuilder(configuration.GetConnectionString("SqliteConnectionString"));
+            connectionStringBuilder.DataSource = Environment.ExpandEnvironmentVariables(connectionStringBuilder.DataSource);
+            Directory.CreateDirectory(Path.GetDirectoryName(connectionStringBuilder.DataSource)!);
+            options.UseSqlite(connectionStringBuilder.ConnectionString, dbOptions =>
             {
 
             });
@@ -268,34 +274,33 @@ public static partial class Program
         var emailSettings = appSettings.Email ?? throw new InvalidOperationException("Email settings are required.");
         var fluentEmailServiceBuilder = services.AddFluentEmail(emailSettings.DefaultFromEmail);
 
-        if (emailSettings.UseLocalFolderForEmails)
+        fluentEmailServiceBuilder.AddSmtpSender(() =>
         {
-            var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
-            var sentEmailsFolderPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data", "sent-emails");
-
-            Directory.CreateDirectory(sentEmailsFolderPath);
-
-            fluentEmailServiceBuilder.AddSmtpSender(() => new SmtpClient
+            if (emailSettings.UseLocalFolderForEmails)
             {
-                DeliveryMethod = SmtpDeliveryMethod.SpecifiedPickupDirectory,
-                PickupDirectoryLocation = sentEmailsFolderPath
-            });
-        }
-        else
-        {
+                var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
+                var sentEmailsFolderPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data", "sent-emails");
+
+                Directory.CreateDirectory(sentEmailsFolderPath);
+
+                return new SmtpClient
+                {
+                    DeliveryMethod = SmtpDeliveryMethod.SpecifiedPickupDirectory,
+                    PickupDirectoryLocation = sentEmailsFolderPath
+                };
+            }
+
             if (emailSettings.HasCredential)
             {
-                fluentEmailServiceBuilder.AddSmtpSender(() => new(emailSettings.Host, emailSettings.Port)
+                return new(emailSettings.Host, emailSettings.Port)
                 {
                     Credentials = new NetworkCredential(emailSettings.UserName, emailSettings.Password),
                     EnableSsl = true
-                });
+                };
             }
-            else
-            {
-                fluentEmailServiceBuilder.AddSmtpSender(emailSettings.Host, emailSettings.Port);
-            }
-        }
+
+            return new(emailSettings.Host, emailSettings.Port);
+        });
 
         //#if (captcha == "reCaptcha")
         services.AddHttpClient<GoogleRecaptchaService>(c =>
@@ -490,28 +495,8 @@ public static partial class Program
         })
         .AddBearerToken(IdentityConstants.BearerScheme, options =>
         {
-            var validationParameters = new TokenValidationParameters
-            {
-                ClockSkew = TimeSpan.Zero,
-                RequireSignedTokens = true,
-
-                ValidateIssuerSigningKey = env.IsDevelopment() is false,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(appSettings.Identity.JwtIssuerSigningKeySecret)),
-
-                RequireExpirationTime = true,
-                ValidateLifetime = true,
-
-                ValidateAudience = true,
-                ValidAudience = identityOptions.Audience,
-
-                ValidateIssuer = true,
-                ValidIssuer = identityOptions.Issuer,
-
-                AuthenticationType = IdentityConstants.BearerScheme
-            };
-
-            options.BearerTokenProtector = new AppJwtSecureDataFormat(appSettings, validationParameters);
-            options.RefreshTokenProtector = new AppJwtSecureDataFormat(appSettings, validationParameters);
+            options.BearerTokenProtector = new AppJwtSecureDataFormat(appSettings, BuildTokenValidationParameters());
+            options.RefreshTokenProtector = new AppJwtSecureDataFormat(appSettings, BuildTokenValidationParameters(validateExpiry: false /* IdentityController.Refresh will validate expiry itself */));
 
             options.Events = new()
             {
@@ -523,6 +508,26 @@ public static partial class Program
             };
 
             configuration.GetRequiredSection("Identity").Bind(options);
+
+            TokenValidationParameters BuildTokenValidationParameters(bool validateExpiry = true) => new()
+            {
+                ClockSkew = TimeSpan.Zero,
+                RequireSignedTokens = true,
+
+                ValidateIssuerSigningKey = env.IsDevelopment() is false,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(appSettings.Identity.JwtIssuerSigningKeySecret)),
+
+                RequireExpirationTime = true,
+                ValidateLifetime = validateExpiry,
+
+                ValidateAudience = true,
+                ValidAudience = identityOptions.Audience,
+
+                ValidateIssuer = true,
+                ValidIssuer = identityOptions.Issuer,
+
+                AuthenticationType = IdentityConstants.BearerScheme
+            };
         });
 
         services.AddAuthorization();

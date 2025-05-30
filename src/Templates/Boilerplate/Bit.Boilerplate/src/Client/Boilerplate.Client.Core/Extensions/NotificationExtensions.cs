@@ -1,4 +1,4 @@
-namespace Bit.Butil;
+﻿namespace Bit.Butil;
 
 public static class NotificationExtensions
 {
@@ -9,7 +9,6 @@ public static class NotificationExtensions
         {
             if (await notification.GetPermission() is NotificationPermission.Granted)
                 return true;
-            return await notification.RequestPermission() is NotificationPermission.Granted;
         }
         return false;
     }

@@ -1,5 +1,6 @@
-using Android.Gms.Common;
+﻿using Firebase.Messaging;
 using Plugin.LocalNotification;
+using Microsoft.Extensions.Logging;
 using static Android.Provider.Settings;
 using Boilerplate.Shared.Dtos.PushNotification;
 
@@ -7,23 +8,30 @@ namespace Boilerplate.Client.Maui.Platforms.Android.Services;
 
 public partial class AndroidPushNotificationService : PushNotificationServiceBase
 {
-    public override async Task<bool> IsPushNotificationSupported(CancellationToken cancellationToken)
+    public override async Task<bool> IsAvailable(CancellationToken cancellationToken)
     {
         return await MainThread.InvokeOnMainThreadAsync(async () =>
         {
-            if (await LocalNotificationCenter.Current.AreNotificationsEnabled() is false)
-            {
-                await LocalNotificationCenter.Current.RequestNotificationPermission();
-            }
+            return LocalNotificationCenter.Current.IsSupported
+                && await LocalNotificationCenter.Current.AreNotificationsEnabled();
+        });
+    }
 
-            return await LocalNotificationCenter.Current.AreNotificationsEnabled() &&
-                GoogleApiAvailability.Instance.IsGooglePlayServicesAvailable(Platform.AppContext) == ConnectionResult.Success;
+    public override async Task RequestPermission(CancellationToken cancellationToken)
+    {
+        await MainThread.InvokeOnMainThreadAsync(async () =>
+        {
+            if (LocalNotificationCenter.Current.IsSupported is false)
+                return;
+
+            await LocalNotificationCenter.Current.RequestNotificationPermission();
+            Configure();
         });
     }
 
     public string GetDeviceId() => Secure.GetString(Platform.AppContext.ContentResolver, Secure.AndroidId)!;
 
-    public override async Task<PushNotificationSubscriptionDto> GetSubscription(CancellationToken cancellationToken)
+    public override async Task<PushNotificationSubscriptionDto?> GetSubscription(CancellationToken cancellationToken)
     {
         try
         {
@@ -40,7 +48,8 @@ public partial class AndroidPushNotificationService : PushNotificationServiceBas
         }
         catch (Exception exp)
         {
-            throw new InvalidOperationException("Unable to resolve token for FCMv1.", exp);
+            Logger.LogError(exp, "Unable to resolve token for FCMv1.");
+            return null;
         }
 
         var subscription = new PushNotificationSubscriptionDto
@@ -51,5 +60,14 @@ public partial class AndroidPushNotificationService : PushNotificationServiceBas
         };
 
         return subscription;
+    }
+
+    private static bool _isConfigured = false;
+    public static void Configure()
+    {
+        if (_isConfigured)
+            return;
+        _isConfigured = true;
+        FirebaseMessaging.Instance.GetToken().AddOnSuccessListener((MainActivity)Platform.CurrentActivity!);
     }
 }

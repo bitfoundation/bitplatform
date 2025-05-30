@@ -1,3 +1,4 @@
+@*+:cnd:noEmit*@
 @inherits AppComponentBase
 
 <section>
@@ -15,23 +16,35 @@
         }
         @if (currentSession is not null)
         {
-            @if (maxPrivilegedSessionsCount != -1) // -1 means unlimited
+            @if (hasUnlimitedPrivilegedSessions is false)
             {
-                <BitText Element="pre" Style="word-break:break-all;white-space:break-spaces" Typography="BitTypography.Body1">@Localizer[nameof(AppStrings.PrivilegedDeviceLimitMessage), maxPrivilegedSessionsCount, currentPrivilegedCount]</BitText>
+                <BitText Element="pre" Style="word-break:break-all;white-space:break-spaces" Typography="BitTypography.Body1">@Localizer[nameof(AppStrings.PrivilegedDeviceLimitMessage), maxPrivilegedSessionsCount.ToString("N0"), currentPrivilegedSessionsCount.ToString("N0")]</BitText>
             }
-
             <BitText>@Localizer[nameof(AppStrings.CurrentSession)]</BitText>
             <BitCard FullWidth>
-                <BitPersona PrimaryText="@($"{currentSession.Address} ({currentSession.IP})")"
-                            SecondaryText="@GetLastSeenOn(currentSession.RenewedOnDateTimeOffset)"
-                            TertiaryText="@currentSession.DeviceInfo"
-                            Class="session-persona"
-                            Size="BitPersonaSize.Size72"
-                            Styles="@(new() { Image = "width:50%;height:50%" })"
-                            ImageInitials="@(currentSession.Privileged ? "✓" : "✘")"
-                            CoinVariant="@(currentSession.Privileged ? BitVariant.Fill : BitVariant.Outline)"
-                            ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(currentSession.DeviceInfo)}")"
-                            Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
+                <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
+                    <BitPersona PrimaryText="@($"{currentSession.Address} ({currentSession.IP})")"
+                                SecondaryText="@GetLastSeenOn(currentSession.RenewedOnDateTimeOffset)"
+                                TertiaryText="@currentSession.DeviceInfo"
+                                Class="session-persona"
+                                Size="BitPersonaSize.Size72"
+                                Styles="@(new() { Image = "width:50%;height:50%" })"
+                                ImageInitials="@(currentSession.Privileged ? "✓" : "✘")"
+                                CoinVariant="@(currentSession.Privileged ? BitVariant.Fill : BitVariant.Outline)"
+                                ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(currentSession.DeviceInfo)}")"
+                                Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
+                    <BitSpacer />
+                    @*#if (signalR == true || notification == true)*@
+                    <BitButton IconOnly
+                               FixedColor
+                               AutoLoading
+                               Variant="BitVariant.Text"
+                               Color="BitColor.SecondaryBackground"
+                               OnClick="WrapHandled(() => ToggleNotification(currentSession))"
+                               IconName="@(currentSession.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitIconName.Ringer : BitIconName.RingerOff)"
+                               Title="@($"{(currentSession.NotificationStatus is UserSessionNotificationStatus.Allowed ? Localizer[nameof(AppStrings.DisableNotifications)] : Localizer[nameof(AppStrings.EnableNotifications)])}")" />
+                    @*#endif*@
+                </BitStack>
             </BitCard>
         }
 
@@ -59,6 +72,17 @@
                                            Variant="BitVariant.Text"
                                            OnClick="WrapHandled(() => RevokeSession(session))"
                                            IconName="@(revokingSessionIds.Contains(session.Id) ? BitIconName.Process : BitIconName.Delete)" />
+                                @*#if (signalR == true || notification == true)*@
+                                <BitButton IconOnly
+                                           FixedColor
+                                           AutoLoading
+                                           Variant="BitVariant.Text"
+                                           Color="BitColor.SecondaryBackground"
+                                           OnClick="WrapHandled(() => ToggleNotification(session))"
+                                           IsEnabled="session.NotificationStatus is not UserSessionNotificationStatus.NotConfigured"
+                                           IconName="@(session.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitIconName.Ringer : BitIconName.RingerOff)"
+                                           Title="@($"{(session.NotificationStatus is UserSessionNotificationStatus.Allowed ? Localizer[nameof(AppStrings.DisableNotifications)] : Localizer[nameof(AppStrings.EnableNotifications)])}")" />
+                                @*#endif*@
                             </BitStack>
                         </BitCard>
                     </RowTemplate>

@@ -98,13 +98,6 @@
         </EmbeddedResource>
     </ItemGroup>
 
-    <ItemGroup Condition=" '$(api)' == 'Integrated' OR '$(api)' == ''">
-        <Content Update="appsettings*.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-        </Content>
-    </ItemGroup>
-
     <!--
     https://learn.microsoft.com/en-us/dotnet/core/docker/publish-as-container
     https://learn.microsoft.com/en-us/visualstudio/containers/container-msbuild-properties

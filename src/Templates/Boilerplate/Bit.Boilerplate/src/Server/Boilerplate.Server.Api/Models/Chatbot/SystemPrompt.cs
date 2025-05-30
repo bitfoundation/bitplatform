@@ -8,4 +8,6 @@ public class SystemPrompt
 
     [Required]
     public string? Markdown { get; set; }
+
+    public byte[] ConcurrencyStamp { get; set; } = [];
 }

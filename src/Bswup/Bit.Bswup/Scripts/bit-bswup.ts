@@ -1,53 +1,5 @@
 ﻿var BitBswup = BitBswup || {};
-BitBswup.version = window['bit-bswup version'] = '9.7.4';
-
-BitBswup.checkForUpdate = async () => {
-    if (!('serviceWorker' in navigator)) {
-        return console.warn('no serviceWorker in navigator');
-    }
-
-    const reg = await navigator.serviceWorker.getRegistration();
-    const result = await reg.update();
-    return result;
-}
-
-BitBswup.forceRefresh = async () => {
-    if (!('serviceWorker' in navigator)) {
-        return console.warn('no serviceWorker in navigator');
-    }
-
-    const cacheKeys = await caches.keys();
-    const cachePromises = cacheKeys.filter(key => key.startsWith('bit-bswup') || key.startsWith('blazor-resources')).map(key => caches.delete(key));
-    await Promise.all(cachePromises);
-
-    const regs = await navigator.serviceWorker.getRegistrations();
-    const regPromises = regs.map(r => r.unregister());
-    await Promise.all(regPromises);
-
-    window.location.reload();
-}
-
-declare const Blazor: { start: () => Promise<unknown> };
-
-interface BswupOptions {
-    log: 'none' | 'info' | 'verbose' | 'debug' | 'error'
-    sw: string
-    scope: string
-    handlerName: string
-    blazorScript: string
-    handler?(...args: any[]): void
-}
-
-const BswupMessage = {
-    downloadStarted: 'DOWNLOAD_STARTED',
-    downloadProgress: 'DOWNLOAD_PROGRESS',
-    downloadFinished: 'DOWNLOAD_FINISHED',
-    activate: 'ACTIVATE',
-    updateInstalled: 'UPDATE_INSTALLED',
-    updateReady: 'UPDATE_READY',
-    updateFound: 'UPDATE_FOUND',
-    stateChanged: 'STATE_CHANGED'
-};
+BitBswup.version = window['bit-bswup version'] = '9.8.0';
 
 (function () {
     const bitBswupScript = document.currentScript;
@@ -66,12 +18,18 @@ const BswupMessage = {
 
         startBlazor();
 
-        navigator.serviceWorker.register(options.sw, { scope: options.scope, updateViaCache: 'none' }).then(prepareRegistration);
-        navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
-        navigator.serviceWorker.addEventListener('message', handleMessage);
-
         let reload: () => void;
         let blazorStartResolver: (value: unknown) => void;
+
+        try {
+            navigator.serviceWorker.register(options.sw, { scope: options.scope, updateViaCache: 'none' }).then(prepareRegistration);
+            navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
+            navigator.serviceWorker.addEventListener('message', handleMessage);
+        } catch (e) {
+            startBlazor(true);
+            return warn('serviceWorker registration failed');
+        }
+
         function prepareRegistration(reg) {
             reload = () => {
                 if (navigator.serviceWorker.controller) {
@@ -193,7 +151,7 @@ const BswupMessage = {
                 return warn('no "autostart=false" found on the blazor script tag!');
             }
 
-            if (navigator.serviceWorker.controller || forceStart) {
+            if (forceStart || navigator?.serviceWorker?.controller) {
                 Blazor.start();
             }
         }
@@ -257,3 +215,51 @@ const BswupMessage = {
         }
     }
 }());
+
+BitBswup.checkForUpdate = async () => {
+    if (!('serviceWorker' in navigator)) {
+        return console.warn('no serviceWorker in navigator');
+    }
+
+    const reg = await navigator.serviceWorker.getRegistration();
+    const result = await reg.update();
+    return result;
+}
+
+BitBswup.forceRefresh = async () => {
+    if (!('serviceWorker' in navigator)) {
+        return console.warn('no serviceWorker in navigator');
+    }
+
+    const cacheKeys = await caches.keys();
+    const cachePromises = cacheKeys.filter(key => key.startsWith('bit-bswup') || key.startsWith('blazor-resources')).map(key => caches.delete(key));
+    await Promise.all(cachePromises);
+
+    const regs = await navigator.serviceWorker.getRegistrations();
+    const regPromises = regs.map(r => r.unregister());
+    await Promise.all(regPromises);
+
+    window.location.reload();
+}
+
+const BswupMessage = {
+    downloadStarted: 'DOWNLOAD_STARTED',
+    downloadProgress: 'DOWNLOAD_PROGRESS',
+    downloadFinished: 'DOWNLOAD_FINISHED',
+    activate: 'ACTIVATE',
+    updateInstalled: 'UPDATE_INSTALLED',
+    updateReady: 'UPDATE_READY',
+    updateFound: 'UPDATE_FOUND',
+    stateChanged: 'STATE_CHANGED'
+};
+
+declare const Blazor: { start: () => Promise<unknown> }
+
+interface BswupOptions {
+    log: 'none' | 'info' | 'verbose' | 'debug' | 'error'
+    sw: string
+    scope: string
+    handlerName: string
+    blazorScript: string
+    handler?(...args: any[]): void
+}

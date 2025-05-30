@@ -25,6 +25,7 @@
 }
 
 .page-section-content {
+    gap: 1rem;
     display: flex;
     align-items: center;
     max-width: rem2(1200px);
@@ -103,7 +104,7 @@
     .member-card-list {
         gap: 1rem;
         display: flex;
-        margin-top: 3rem;
+        margin-top: 1rem;
         flex-flow: row wrap;
         justify-content: center;
     }

@@ -14,7 +14,7 @@ public class ScssCompilerService
             return;
 
         if (Environment.GetEnvironmentVariable("IN_APP_SCSS_COMPILER_ENABLED") is not "true")
-            return; // Checkout Visual Studio's launchSettings.json
+            return; // Check out Visual Studio's launchSettings.json
 
         if (AppPlatform.IsWindows is false)
             return;

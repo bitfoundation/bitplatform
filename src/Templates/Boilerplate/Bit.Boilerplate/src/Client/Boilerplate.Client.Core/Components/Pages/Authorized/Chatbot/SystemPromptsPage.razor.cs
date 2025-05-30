@@ -1,4 +1,5 @@
 ﻿
+using Boilerplate.Shared.Dtos.Chatbot;
 using Boilerplate.Shared.Controllers.Chatbot;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Chatbot;
@@ -7,7 +8,7 @@ public partial class SystemPromptsPage
 {
     [AutoInject] private IChatbotController chatbotController = default!;
 
-    private string? systemPromptMarkdown;
+    private SystemPromptDto? systemPrompt;
 
     private bool isLoading = true;
 
@@ -17,7 +18,7 @@ public partial class SystemPromptsPage
 
         try
         {
-            systemPromptMarkdown = await chatbotController.GetSystemPromptMarkdown(PromptKind.Support, CurrentCancellationToken);
+            systemPrompt = await chatbotController.GetSystemPrompt(PromptKind.Support, CurrentCancellationToken);
         }
         finally
         {
@@ -30,7 +31,7 @@ public partial class SystemPromptsPage
     {
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken))
         {
-            await chatbotController.UpdateSystemPrompt(new() { Kind = PromptKind.Support, Markdown = systemPromptMarkdown }, CurrentCancellationToken);
+            (await chatbotController.UpdateSystemPrompt(systemPrompt!, CurrentCancellationToken)).Patch(systemPrompt);
         }
     }
 }

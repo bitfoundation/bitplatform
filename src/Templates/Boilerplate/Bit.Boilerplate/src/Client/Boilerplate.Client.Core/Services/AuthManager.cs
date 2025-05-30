@@ -219,7 +219,13 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         await storageService.RemoveItem("refresh_token");
         if (AppPlatform.IsBlazorHybrid is false)
         {
-            await cookie.Remove("access_token");
+            await cookie.Remove(new ButilCookie()
+            {
+                Name = "access_token",
+                Path = "/",
+                SameSite = SameSite.Strict,
+                Secure = AppEnvironment.IsDev() is false
+            });
         }
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }

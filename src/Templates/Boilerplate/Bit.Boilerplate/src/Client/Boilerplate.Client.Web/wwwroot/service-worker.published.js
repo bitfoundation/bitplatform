@@ -1,21 +1,43 @@
 //+:cnd:noEmit
-// bit version: 9.7.4
+// bit version: 9.8.0
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 //#if (notification == true)
 
 self.addEventListener('push', function (event) {
 
-    const data = event.data.json();
+    const eventData = event.data.json();
 
-    self.registration.showNotification(data.title, {
+    self.registration.showNotification(eventData.title, {
 
-        body: data.message,
-
+        data: eventData.data,
+        body: eventData.message,
         icon: '/images/icons/bit-icon-512.png'
 
     });
 
+});
+
+self.addEventListener('notificationclick', function (event) {
+    event.notification.close();
+    const pageUrl = event.notification.data.pageUrl;
+    if (pageUrl != null) {
+        event.waitUntil(
+            clients
+                .matchAll({
+                    type: 'window',
+                    includeUncontrolled: true,
+                })
+                .then((clientList) => {
+                    for (const client of clientList) {
+                        if (!client.focus || !client.postMessage) continue;
+                        client.postMessage({ key: 'PUBLISH_MESSAGE', message: 'NAVIGATE_TO', payload: pageUrl });
+                        return client.focus();
+                    }
+                    return clients.openWindow(pageUrl);
+                })
+        );
+    }
 });
 
 //#endif

@@ -19,11 +19,8 @@ public partial class IdentityController
 
         if (await userConfirmation.IsConfirmedAsync(userManager, user) is false)
         {
-            try
-            {
-                await SendConfirmationToken(user, request.ReturnUrl, cancellationToken);
-            }
-            catch { }
+            await SendConfirmationToken(user, request.ReturnUrl, cancellationToken);
+
             throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]).WithData("UserId", user.Id);
         }
 
@@ -61,7 +58,11 @@ public partial class IdentityController
         }
 
         //#if (signalR == true)
-        sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(SignalREvents.SHOW_MESSAGE, message, cancellationToken));
+        var userConnectionIds = await DbContext.UserSessions
+            .Where(us => us.NotificationStatus == UserSessionNotificationStatus.Allowed && us.UserId == user.Id)
+            .Select(us => us.SignalRConnectionId!)
+            .ToArrayAsync(cancellationToken);
+        sendMessagesTasks.Add(appHubContext.Clients.Clients(userConnectionIds).SendAsync(SignalREvents.SHOW_MESSAGE, message, cancellationToken));
         //#endif
 
         //#if (notification == true)
