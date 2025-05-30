@@ -1,7 +1,6 @@
 ﻿//+:cnd:noEmit
 using UIKit;
 using Foundation;
-using Boilerplate.Client.Maui.Platforms.iOS.Services;
 
 namespace Boilerplate.Client.Maui.Platforms.iOS;
 
