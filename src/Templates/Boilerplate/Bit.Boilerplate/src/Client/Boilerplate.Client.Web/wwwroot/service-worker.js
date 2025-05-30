@@ -24,21 +24,7 @@ self.addEventListener('notificationclick', function (event) {
     event.notification.close();
     const pageUrl = event.notification.data.pageUrl;
     if (pageUrl != null) {
-        event.waitUntil(
-            clients
-                .matchAll({
-                    type: 'window',
-                    includeUncontrolled: true,
-                })
-                .then((clientList) => {
-                    clients.openWindow(pageUrl);
-                    for (const client of clientList) {
-                        if (!client.focus || !client.postMessage) continue;
-                        client.postMessage({ key: 'PUBLISH_MESSAGE', message: 'NAVIGATE_TO', payload: pageUrl });
-                        client.focus();
-                    }
-                })
-        );
+        event.waitUntil(clients.openWindow(pageUrl));
     }
 });
 
