@@ -16,6 +16,7 @@
     "display_override": [ "window-controls-overlay" ],
     "description": "bit Boilerplate is a project template that includes all the necessary parts to create a fully-featured web app.",
 
+    "related_applications": [],
     "capture_links": "existing-client-navigate",
     "launch_handler": {
         "client_mode": "auto"
