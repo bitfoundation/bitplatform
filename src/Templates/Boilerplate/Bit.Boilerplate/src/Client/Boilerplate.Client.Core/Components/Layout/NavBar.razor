@@ -12,7 +12,7 @@
         </AuthorizeView>
         @*#endif*@
 
-        @*#if (sample == Admin)*@
+        @*#if (module == "Admin")*@
         <AuthorizeView Policy="@AppFeatures.AdminPanel.Dashboard">
             <BitNavBarOption Text="@Localizer[nameof(AppStrings.Dashboard)]" IconName="@BitIconName.BarChartVerticalFill" Url="@Urls.DashboardPage" />
         </AuthorizeView>
