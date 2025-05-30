@@ -74,8 +74,11 @@ public partial class MainActivity : MauiAppCompatActivity
     }
 
     //#if (notification == true)
-    private static void HandlePushNotificationTap(Intent intent)
+    private static void HandlePushNotificationTap(Intent? intent)
     {
+        if (intent is null) 
+            return;
+
         var dataString = intent.GetStringExtra(LocalNotificationCenter.ReturnRequest);
         string? pageUrl = null;
         if (string.IsNullOrEmpty(dataString) is false)
@@ -104,6 +107,8 @@ public partial class MainActivity : MauiAppCompatActivity
 
     protected override void OnNewIntent(Intent? intent)
     {
+        base.OnNewIntent(intent);
+
         var action = intent!.Action; // Handling universal deep links handling when the is running.
         var url = intent.DataString;
         if (action is Intent.ActionView && string.IsNullOrWhiteSpace(url) is false)
@@ -114,8 +119,6 @@ public partial class MainActivity : MauiAppCompatActivity
         //#if (notification == true)
         HandlePushNotificationTap(intent); // Handling push notification taps when the app is running.
         //#endif
-
-        base.OnNewIntent(intent);
     }
 
     //#if (notification == true)
