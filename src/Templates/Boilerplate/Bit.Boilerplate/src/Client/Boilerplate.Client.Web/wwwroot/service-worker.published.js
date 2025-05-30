@@ -21,25 +21,55 @@ self.addEventListener('push', function (event) {
 self.addEventListener('notificationclick', function (event) {
     event.notification.close();
     const pageUrl = event.notification.data.pageUrl;
-    if (pageUrl != null) {
-        event.waitUntil(
-            self.clients
-                .matchAll({
-                    type: 'window',
-                    includeUncontrolled: true,
-                })
-                .then((clientList) => {
-                    for (const client of clientList) {
-                        if (!client.focus || !client.postMessage) continue;
-                        client.postMessage({ key: 'PUBLISH_MESSAGE', message: 'NAVIGATE_TO', payload: pageUrl });
-                        return client.focus();
-                    }
-                    return clients.openWindow(pageUrl);
-                })
-        );
-    }
-});
 
+    if (pageUrl === null || pageUrl === undefined) {
+        return;
+    }
+
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true })
+            .then(clientList => {
+                let targetClient = null;
+
+                // Priority 1: Find the currently focused PWA window within our scope
+                // This is the ideal scenario where the user is actively using the PWA.
+                targetClient = clientList.find(client =>
+                    client.focused && client.url.startsWith(self.registration.scope)
+                );
+
+                // Priority 2: If no focused client, find an existing PWA window on the target URL
+                // This handles cases where the PWA is open in the background on the correct page.
+                if (!targetClient) {
+                    targetClient = clientList.find(client =>
+                        client.url === pageUrl && client.url.startsWith(self.registration.scope)
+                    );
+                }
+
+                // Priority 3: If still no specific URL match, find any PWA window within our scope
+                // This covers cases where the PWA is open but on a different page.
+                if (!targetClient) {
+                    targetClient = clientList.find(client =>
+                        client.url.startsWith(self.registration.scope) && 'focus' in client
+                    );
+                }
+
+                if (targetClient && targetClient.focus) {
+                    return targetClient.focus().then(focusedClient => {
+                        if (focusedClient && focusedClient.postMessage) {
+                            focusedClient.postMessage({ key: 'PUBLISH_MESSAGE', message: 'NAVIGATE_TO', payload: pageUrl });
+                        } else {
+                            return clients.openWindow(pageUrl);
+                        }
+                    });
+                } else {
+                    return clients.openWindow(pageUrl);
+                }
+            })
+            .catch(error => {
+                return clients.openWindow(pageUrl);
+            })
+    );
+});
 //#endif
 
 self.assetsInclude = [];
