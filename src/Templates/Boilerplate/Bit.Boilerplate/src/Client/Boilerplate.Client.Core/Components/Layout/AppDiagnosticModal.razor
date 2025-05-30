@@ -58,7 +58,7 @@
                              TItem="BitDropdownItem<LogLevel>" TValue="LogLevel" />
 
                 <BitDropdown FitWidth
-                             Responsive    
+                             Responsive
                              MultiSelect
                              ShowSearchBox
                              ShowClearButton
@@ -108,13 +108,11 @@
 
                 @*#if (signalR == true)*@
                 <AuthorizeView Policy="@AppFeatures.System.ManageLogs">
-                    <Authorized>
-                        <BitButton IconOnly AutoLoading
-                                   OnClick="ReadAnotherUserLogs"
-                                   Title="Read another user logs"
-                                   Color="BitColor.SecondaryBackground"
-                                   IconName="@BitIconName.Download" />
-                    </Authorized>
+                    <BitButton IconOnly AutoLoading
+                               OnClick="ReadAnotherUserLogs"
+                               Title="Read another user logs"
+                               Color="BitColor.SecondaryBackground"
+                               IconName="@BitIconName.Download" />
                 </AuthorizeView>
                 @*#endif*@
 
@@ -187,7 +185,7 @@
                            OnClick="() => isLogModalOpen = false"
                            IconName="@BitIconName.ChromeClose" />
             </BitStack>
-            
+
             <BitText Class="log-modal" Color="GetColor(selectedLog?.Level)">
                 <pre style="margin:0">@GetContent(selectedLog)</pre>
             </BitText>
