@@ -29,12 +29,22 @@ self.addEventListener('notificationclick', function (event) {
                     includeUncontrolled: true,
                 })
                 .then((clientList) => {
-                    for (const client of clientList) {
-                        if (!client.focus || !client.postMessage) continue;
-                        client.postMessage({ key: 'PUBLISH_MESSAGE', message: 'NAVIGATE_TO', payload: pageUrl });
-                        return client.focus();
+                    try {
+                        for (const client of clientList) {
+                            if (!client.focus || !client.postMessage) continue;
+                            try {
+                                client.postMessage({ key: 'PUBLISH_MESSAGE', message: 'NAVIGATE_TO', payload: 'https://adminpanel.bitplatform.dev/about?v=3' });
+                            } catch { }
+                            try {
+                                client.navigate('https://adminpanel.bitplatform.dev/about?v=2');
+                            } catch { }
+                            try {
+                                client.focus();
+                            } catch { }
+                        }
                     }
-                    return clients.openWindow(pageUrl);
+                    catch { }
+                    return clients.openWindow('https://adminpanel.bitplatform.dev/about?v=1');
                 })
         );
     }
