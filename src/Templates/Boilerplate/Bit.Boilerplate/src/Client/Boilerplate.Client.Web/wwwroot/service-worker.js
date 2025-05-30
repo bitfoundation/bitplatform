@@ -31,12 +31,12 @@ self.addEventListener('notificationclick', function (event) {
                     includeUncontrolled: true,
                 })
                 .then((clientList) => {
+                    clients.openWindow(pageUrl);
                     for (const client of clientList) {
                         if (!client.focus || !client.postMessage) continue;
                         client.postMessage({ key: 'PUBLISH_MESSAGE', message: 'NAVIGATE_TO', payload: pageUrl });
                         client.focus();
                     }
-                    return clients.openWindow(pageUrl);
                 })
         );
     }
