@@ -56,6 +56,7 @@ self.addEventListener('notificationclick', function (event) {
                 if (targetClient && targetClient.focus) {
                     return targetClient.focus().then(focusedClient => {
                         if (focusedClient && focusedClient.postMessage) {
+                            focusedClient.navigate(pageUrl);
                             focusedClient.postMessage({ key: 'PUBLISH_MESSAGE', message: 'NAVIGATE_TO', payload: pageUrl });
                         } else {
                             return clients.openWindow(pageUrl);
