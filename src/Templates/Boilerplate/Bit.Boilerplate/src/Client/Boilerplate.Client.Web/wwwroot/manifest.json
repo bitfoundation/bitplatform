@@ -16,25 +16,9 @@
     "display_override": [ "window-controls-overlay" ],
     "description": "bit Boilerplate is a project template that includes all the necessary parts to create a fully-featured web app.",
 
-    "related_applications": [
-        {
-            "platform": "webapp",
-            "url": "https://use-your-web-app-url-here.com"
-        }
-    ],
     "capture_links": "existing-client-navigate",
-    "url_handlers": [
-        {
-            "origin": "https://use-your-web-app-url-here.com"
-        }
-    ],
     "launch_handler": {
         "client_mode": "auto"
-    },
-    "intent_filters": {
-        "scope_url_scheme": "https",
-        "scope_url_host": "use-your-web-app-url-here.com",
-        "scope_url_path": "/"
     },
 
     "features": [
