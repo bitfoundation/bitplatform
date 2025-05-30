@@ -1,4 +1,6 @@
 {
+    "version": "1",
+
     "dir": "ltr",
     "lang": "en",
     "scope": "/",
@@ -7,13 +9,34 @@
     "id": "bitBoilerplate",
     "display": "standalone",
     "theme_color": "#2EA3FF",
-    "related_applications": [],
     "name": "bit Boilerplate",
     "background_color": "#0D2960",
     "short_name": "bit Boilerplate",
     "prefer_related_applications": false,
     "display_override": [ "window-controls-overlay" ],
     "description": "bit Boilerplate is a project template that includes all the necessary parts to create a fully-featured web app.",
+
+    "related_applications": [
+        {
+            "platform": "webapp",
+            "url": "https://use-your-web-app-url-here.com"
+        }
+    ],
+    "capture_links": "existing-client-navigate",
+    "url_handlers": [
+        {
+            "origin": "https://use-your-web-app-url-here.com"
+        }
+    ],
+    "launch_handler": {
+        "client_mode": "auto"
+    },
+    "intent_filters": {
+        "scope_url_scheme": "https",
+        "scope_url_host": "use-your-web-app-url-here.com",
+        "scope_url_path": "/"
+    },
+
     "features": [
         "Cross Platform",
         "fast",
