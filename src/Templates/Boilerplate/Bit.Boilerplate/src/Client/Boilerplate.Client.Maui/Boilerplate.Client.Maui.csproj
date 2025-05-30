@@ -23,6 +23,7 @@
 
         <!-- Required for C# Hot Reload -->
         <UseInterpreter Condition="'$(Environment)' == 'Development'">True</UseInterpreter>
+        <SkipStaticLibraryValidation Condition="'$(Environment)' == 'Development'">true</SkipStaticLibraryValidation>
 
         <NoWarn>$(NoWarn);ClassWithoutModifierAnalyzer</NoWarn>
 

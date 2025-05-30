@@ -21,7 +21,7 @@ self.addEventListener('push', function (event) {
 self.addEventListener('notificationclick', function (event) {
     event.notification.close();
     const pageUrl = event.notification.data.pageUrl;
-    if (pageUrl != null || true) {
+    if (pageUrl != null) {
         event.waitUntil(
             clients
                 .matchAll({
@@ -29,26 +29,17 @@ self.addEventListener('notificationclick', function (event) {
                     includeUncontrolled: true,
                 })
                 .then((clientList) => {
-                    try {
-                        for (const client of clientList) {
-                            if (!client.focus || !client.postMessage) continue;
-                            try {
-                                client.postMessage({ key: 'PUBLISH_MESSAGE', message: 'NAVIGATE_TO', payload: 'https://adminpanel.bitplatform.dev/about?v=3' });
-                            } catch { }
-                            try {
-                                client.navigate('https://adminpanel.bitplatform.dev/about?v=2');
-                            } catch { }
-                            try {
-                                client.focus();
-                            } catch { }
-                        }
+                    for (const client of clientList) {
+                        if (!client.focus || !client.postMessage) continue;
+                        client.postMessage({ key: 'PUBLISH_MESSAGE', message: 'NAVIGATE_TO', payload: pageUrl });
+                        return client.focus();
                     }
-                    catch { }
-                    return clients.openWindow('https://adminpanel.bitplatform.dev/about?v=1');
+                    return clients.openWindow(pageUrl);
                 })
         );
     }
 });
+
 //#endif
 
 self.assetsInclude = [];

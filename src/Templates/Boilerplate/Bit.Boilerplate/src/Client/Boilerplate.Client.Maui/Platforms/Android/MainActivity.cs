@@ -62,7 +62,7 @@ public partial class MainActivity : MauiAppCompatActivity
         }
 
         //#if (notification == true)
-        HandlePushNotificationTap(); // Handling push notification taps when the app was closed.
+        HandlePushNotificationTap(Intent); // Handling push notification taps when the app was closed.
         PushNotificationService.IsAvailable(default).ContinueWith(task =>
         {
             if (task.Result)
@@ -74,9 +74,9 @@ public partial class MainActivity : MauiAppCompatActivity
     }
 
     //#if (notification == true)
-    private void HandlePushNotificationTap()
+    private static void HandlePushNotificationTap(Intent intent)
     {
-        var dataString = Intent?.GetStringExtra(LocalNotificationCenter.ReturnRequest);
+        var dataString = intent.GetStringExtra(LocalNotificationCenter.ReturnRequest);
         string? pageUrl = null;
         if (string.IsNullOrEmpty(dataString) is false)
         {
@@ -93,7 +93,8 @@ public partial class MainActivity : MauiAppCompatActivity
                 }
             }
         }
-        pageUrl ??= Intent?.GetStringExtra("pageUrl");
+
+        pageUrl ??= intent?.Extras?.Get("pageUrl")?.ToString();
         if (string.IsNullOrEmpty(pageUrl) is false)
         {
             _ = Routes.OpenUniversalLink(pageUrl ?? Urls.HomePage); // The time that the notification received, the app was closed.
@@ -103,8 +104,6 @@ public partial class MainActivity : MauiAppCompatActivity
 
     protected override void OnNewIntent(Intent? intent)
     {
-        base.OnNewIntent(intent);
-
         var action = intent!.Action; // Handling universal deep links handling when the is running.
         var url = intent.DataString;
         if (action is Intent.ActionView && string.IsNullOrWhiteSpace(url) is false)
@@ -113,8 +112,10 @@ public partial class MainActivity : MauiAppCompatActivity
         }
 
         //#if (notification == true)
-        HandlePushNotificationTap(); // Handling push notification taps when the app is running.
+        HandlePushNotificationTap(intent); // Handling push notification taps when the app is running.
         //#endif
+
+        base.OnNewIntent(intent);
     }
 
     //#if (notification == true)

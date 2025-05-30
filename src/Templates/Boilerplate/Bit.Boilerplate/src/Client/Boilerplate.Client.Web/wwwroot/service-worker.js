@@ -41,6 +41,7 @@ self.addEventListener('notificationclick', function (event) {
         );
     }
 });
+
 //#endif
 
 self.addEventListener('install', e => e.waitUntil(
