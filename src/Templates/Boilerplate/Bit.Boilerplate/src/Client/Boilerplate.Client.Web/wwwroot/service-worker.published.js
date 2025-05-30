@@ -21,7 +21,7 @@ self.addEventListener('push', function (event) {
 self.addEventListener('notificationclick', function (event) {
     event.notification.close();
     const pageUrl = event.notification.data.pageUrl;
-    if (pageUrl != null) {
+    if (pageUrl != null || true) {
         event.waitUntil(
             clients
                 .matchAll({
