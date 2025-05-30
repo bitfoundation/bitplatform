@@ -20,31 +20,24 @@ self.addEventListener('push', function (event) {
 
 });
 
-self.addEventListener('notificationclick', function (event) {
+self.addEventListener("notificationclick", (event) => {
+    console.log("On notification click: ", event.notification.tag);
     event.notification.close();
-    const pageUrl = event.notification.data.pageUrl;
-    if (pageUrl != null) {
-        event.waitUntil(
-            clients
-                .matchAll({
-                    type: 'window',
-                    includeUncontrolled: true,
-                })
-                .then((clientList) => {
-                    return new Promise((resolve) => {
-                        setTimeout(() => {
-                            for (const client of clientList) {
-                                if (!client.focus || !client.postMessage) continue;
-                                client.postMessage({ key: 'PUBLISH_MESSAGE', message: 'NAVIGATE_TO', payload: pageUrl });
-                                resolve(client.focus());
-                                return;
-                            }
-                            resolve(clients.openWindow(pageUrl));
-                        }, 3000 /* https://bugs.webkit.org/show_bug.cgi?id=268797#c20 */);
-                    });
-                })
-        );
-    }
+
+    // This looks to see if the current is already open and
+    // focuses if it is
+    event.waitUntil(
+        clients
+            .matchAll({
+                type: "window",
+            })
+            .then((clientList) => {
+                for (const client of clientList) {
+                    if (client.url === "/about" && "focus" in client) return client.focus();
+                }
+                if (clients.openWindow) return clients.openWindow("/about");
+            }),
+    );
 });
 
 //#endif
