@@ -22,7 +22,26 @@ self.addEventListener('notificationclick', function (event) {
     event.notification.close();
     const pageUrl = event.notification.data.pageUrl;
     if (pageUrl != null) {
-        event.waitUntil(clients.openWindow(pageUrl));
+        event.waitUntil(
+            clients
+                .matchAll({
+                    type: 'window',
+                    includeUncontrolled: true,
+                })
+                .then((clientList) => {
+                    return new Promise((resolve) => {
+                        setTimeout(() => {
+                            for (const client of clientList) {
+                                if (!client.focus || !client.postMessage) continue;
+                                client.postMessage({ key: 'PUBLISH_MESSAGE', message: 'NAVIGATE_TO', payload: pageUrl });
+                                resolve(client.focus());
+                                return;
+                            }
+                            resolve(clients.openWindow(pageUrl));
+                        }, 3000 /* https://bugs.webkit.org/show_bug.cgi?id=268797#c20 */);
+                    });
+                })
+        );
     }
 });
 
