@@ -32,7 +32,7 @@ self.addEventListener('notificationclick', function (event) {
                     for (const client of clientList) {
                         if (!client.focus || !client.postMessage) continue;
                         client.postMessage({ key: 'PUBLISH_MESSAGE', message: 'NAVIGATE_TO', payload: pageUrl });
-                        return client.focus();
+                        client.focus();
                     }
                     return clients.openWindow(pageUrl);
                 })

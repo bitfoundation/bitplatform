@@ -55,12 +55,27 @@ public partial class MainActivity : MauiAppCompatActivity
 
         base.OnCreate(savedInstanceState);
 
-        var url = Intent?.DataString;
+        var url = Intent?.DataString; // Handling universal deep links handling when the app was closed.
         if (string.IsNullOrWhiteSpace(url) is false)
         {
             _ = Routes.OpenUniversalLink(new URL(url).File ?? Urls.HomePage);
         }
+
         //#if (notification == true)
+        HandlePushNotificationTap(); // Handling push notification taps when the app was closed.
+        PushNotificationService.IsAvailable(default).ContinueWith(task =>
+        {
+            if (task.Result)
+            {
+                Services.AndroidPushNotificationService.Configure();
+            }
+        });
+        //#endif
+    }
+
+    //#if (notification == true)
+    private void HandlePushNotificationTap()
+    {
         var dataString = Intent?.GetStringExtra(LocalNotificationCenter.ReturnRequest);
         string? pageUrl = null;
         if (string.IsNullOrEmpty(dataString) is false)
@@ -74,35 +89,32 @@ public partial class MainActivity : MauiAppCompatActivity
                 var returningData = JsonSerializer.Deserialize<Dictionary<string, object>>(request.ReturningData);
                 if (returningData?.ContainsKey("pageUrl") is true)
                 {
-                    pageUrl = returningData["pageUrl"]?.ToString();
+                    pageUrl = returningData["pageUrl"]?.ToString(); // The time that the notification received, the app was open. (See PushNotificationFirebaseMessagingService's OnMessageReceived)
                 }
             }
         }
         pageUrl ??= Intent?.GetStringExtra("pageUrl");
         if (string.IsNullOrEmpty(pageUrl) is false)
         {
-            _ = Routes.OpenUniversalLink(pageUrl ?? Urls.HomePage);
+            _ = Routes.OpenUniversalLink(pageUrl ?? Urls.HomePage); // The time that the notification received, the app was closed.
         }
-        PushNotificationService.IsAvailable(default).ContinueWith(task =>
-        {
-            if (task.Result)
-            {
-                Services.AndroidPushNotificationService.Configure();
-            }
-        });
-        //#endif
     }
+    //#endif
 
     protected override void OnNewIntent(Intent? intent)
     {
         base.OnNewIntent(intent);
 
-        var action = intent!.Action;
+        var action = intent!.Action; // Handling universal deep links handling when the is running.
         var url = intent.DataString;
         if (action is Intent.ActionView && string.IsNullOrWhiteSpace(url) is false)
         {
             _ = Routes.OpenUniversalLink(new URL(url).File ?? Urls.HomePage);
         }
+
+        //#if (notification == true)
+        HandlePushNotificationTap(); // Handling push notification taps when the app is running.
+        //#endif
     }
 
     //#if (notification == true)

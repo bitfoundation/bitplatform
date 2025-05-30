@@ -62,18 +62,13 @@ public partial class AndroidPushNotificationService : PushNotificationServiceBas
 
         return subscription;
     }
+
+    private static bool _isConfigured = false;
     public static void Configure()
     {
+        if (_isConfigured)
+            return;
+        _isConfigured = true;
         FirebaseMessaging.Instance.GetToken().AddOnSuccessListener((MainActivity)Platform.CurrentActivity!);
-        LocalNotificationCenter.Current.NotificationActionTapped += (e) =>
-        {
-            if (string.IsNullOrEmpty(e.Request.ReturningData))
-                return;
-            var data = JsonSerializer.Deserialize<Dictionary<string, string>>(e.Request.ReturningData)!;
-            if (data.TryGetValue("pageUrl", out var pageUrl))
-            {
-                _ = Routes.OpenUniversalLink(pageUrl ?? Urls.HomePage);
-            }
-        };
     }
 }
