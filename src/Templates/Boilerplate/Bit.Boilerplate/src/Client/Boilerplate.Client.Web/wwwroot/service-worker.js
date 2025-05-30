@@ -20,24 +20,26 @@ self.addEventListener('push', function (event) {
 
 });
 
-self.addEventListener("notificationclick", (event) => {
-    console.log("On notification click: ", event.notification.tag);
+self.addEventListener('notificationclick', function (event) {
     event.notification.close();
-
-    // This looks to see if the current is already open and
-    // focuses if it is
-    event.waitUntil(
-        clients
-            .matchAll({
-                type: "window",
-            })
-            .then((clientList) => {
-                for (const client of clientList) {
-                    if (client.url === "/about" && "focus" in client) return client.focus();
-                }
-                if (clients.openWindow) return clients.openWindow("/about");
-            }),
-    );
+    const pageUrl = event.notification.data.pageUrl;
+    if (pageUrl != null) {
+        event.waitUntil(
+            self.clients
+                .matchAll({
+                    type: 'window',
+                    includeUncontrolled: true,
+                })
+                .then((clientList) => {
+                    for (const client of clientList) {
+                        if (!client.focus || !client.postMessage) continue;
+                        client.postMessage({ key: 'PUBLISH_MESSAGE', message: 'NAVIGATE_TO', payload: pageUrl });
+                        return client.focus();
+                    }
+                    return clients.openWindow(pageUrl);
+                })
+        );
+    }
 });
 
 //#endif
