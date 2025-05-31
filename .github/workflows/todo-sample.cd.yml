@@ -40,7 +40,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads
 
     - name: Use Bit.ResxTranslator
       run: |
@@ -56,7 +56,6 @@ jobs:
         WebAppRender.PrerenderEnabled: true
         ServerAddress: ${{ env.SERVER_ADDRESS }}
         WebAppRender.BlazorMode: 'BlazorWebAssembly'
-        Logging.Sentry.Dsn: ${{ secrets.TODO_SENTRY_DSN }}
         AdsPushVapid.PublicKey: ${{ secrets.TODO_PUBLIC_VAPIDKEY }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
@@ -280,7 +279,7 @@ jobs:
         cd src\Templates\Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ..\..\..\ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --captcha reCaptcha --signalR --ads
+        cd ..\..\..\ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --captcha reCaptcha --signalR --ads
   
     - name: Use Bit.ResxTranslator
       run: |
@@ -298,7 +297,6 @@ jobs:
         Logging.Sentry.Dsn: ${{ secrets.TODO_SENTRY_DSN }}
         WindowsUpdate.FilesUrl: https://windows-todo.bitplatform.dev
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
-        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Generate CSS/JS files
       run: dotnet build TodoSample\src\Client\TodoSample.Client.Core\TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
@@ -339,7 +337,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1.2
@@ -370,7 +368,6 @@ jobs:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
         Logging.Sentry.Dsn: ${{ secrets.TODO_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
-        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Install maui
       run: cd src && dotnet workload install maui-android
@@ -439,7 +436,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads
       
     - name: Use Bit.ResxTranslator
       run: |
@@ -456,7 +453,6 @@ jobs:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
         Logging.Sentry.Dsn: ${{ secrets.TODO_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
-        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Install maui
       run: cd src && dotnet workload install maui
