@@ -1,7 +1,9 @@
 ﻿//+:cnd:noEmit
 using UIKit;
 using Foundation;
+//#if (notification == true)
 using Boilerplate.Client.Maui.Platforms.iOS.Services;
+//#endif
 
 namespace Boilerplate.Client.Maui.Platforms.iOS;
 
