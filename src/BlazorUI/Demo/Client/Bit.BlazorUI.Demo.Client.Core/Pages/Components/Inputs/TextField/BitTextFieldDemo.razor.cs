@@ -6,10 +6,36 @@ public partial class BitTextFieldDemo
     [
         new()
         {
+            Name = "Accent",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The general color of the text field used when focused.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum",
+        },
+        new()
+        {
             Name = "AutoHeight",
             Type = "bool",
             DefaultValue = "false",
             Description = "Automatically adjust the height of the input in Multiline mode.",
+        },new()
+        {
+            Name = "Background",
+            Type = "BitColorKind?",
+            DefaultValue = "null",
+            Description = "The color kind of the text field background.",
+            LinkType = LinkType.Link,
+            Href = "#color-kind-enum",
+        },
+        new()
+        {
+            Name = "Border",
+            Type = "BitColorKind?",
+            DefaultValue = "null",
+            Description = "The color kind of the text field border.",
+            LinkType = LinkType.Link,
+            Href = "#color-kind-enum",
         },
         new()
         {
@@ -47,6 +73,13 @@ public partial class BitTextFieldDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Shows the custom description for text field.",
+        },
+        new()
+        {
+            Name = "FullWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Forces the text field fill 100% of its container width.",
         },
         new()
         {
@@ -252,8 +285,8 @@ public partial class BitTextFieldDemo
             Id = "textfield-class-styles",
             Title = "BitTextFieldClassStyles",
             Description = "",
-            Parameters = new()
-            {
+            Parameters =
+            [
                 new()
                 {
                     Name = "Root",
@@ -366,12 +399,157 @@ public partial class BitTextFieldDemo
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the BitTextField's description."
                 }
-            }
+            ]
         }
     ];
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
+
+        new()
+        {
+            Id = "color-enum",
+            Name = "BitColor",
+            Description = "Defines the general colors available in the bit BlazorUI.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Primary",
+                    Description="Info Primary general color.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Secondary",
+                    Description="Secondary general color.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Tertiary",
+                    Description="Tertiary general color.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Info",
+                    Description="Info general color.",
+                    Value="3",
+                },
+                new()
+                {
+                    Name= "Success",
+                    Description="Success general color.",
+                    Value="4",
+                },
+                new()
+                {
+                    Name= "Warning",
+                    Description="Warning general color.",
+                    Value="5",
+                },
+                new()
+                {
+                    Name= "SevereWarning",
+                    Description="SevereWarning general color.",
+                    Value="6",
+                },
+                new()
+                {
+                    Name= "Error",
+                    Description="Error general color.",
+                    Value="7",
+                },
+                new()
+                {
+                    Name= "PrimaryBackground",
+                    Description="Primary background color.",
+                    Value="8",
+                },
+                new()
+                {
+                    Name= "SecondaryBackground",
+                    Description="Secondary background color.",
+                    Value="9",
+                },
+                new()
+                {
+                    Name= "TertiaryBackground",
+                    Description="Tertiary background color.",
+                    Value="10",
+                },
+                new()
+                {
+                    Name= "PrimaryForeground",
+                    Description="Primary foreground color.",
+                    Value="11",
+                },
+                new()
+                {
+                    Name= "SecondaryForeground",
+                    Description="Secondary foreground color.",
+                    Value="12",
+                },
+                new()
+                {
+                    Name= "TertiaryForeground",
+                    Description="Tertiary foreground color.",
+                    Value="13",
+                },
+                new()
+                {
+                    Name= "PrimaryBorder",
+                    Description="Primary border color.",
+                    Value="14",
+                },
+                new()
+                {
+                    Name= "SecondaryBorder",
+                    Description="Secondary border color.",
+                    Value="15",
+                },
+                new()
+                {
+                    Name= "TertiaryBorder",
+                    Description="Tertiary border color.",
+                    Value="16",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "color-kind-enum",
+            Name = "BitColorKind",
+            Description = "Defines the color kinds available in the bit BlazorUI.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Primary",
+                    Description = "The primary color kind.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Secondary",
+                    Description = "The secondary color kind.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Tertiary",
+                    Description = "The tertiary color kind.",
+                    Value = "2",
+                },
+                new()
+                {
+                    Name = "Transparent",
+                    Description = "The transparent color kind.",
+                    Value = "3",
+                },
+            ]
+        },
         new()
         {
             Id = "input-type-enum",
@@ -636,6 +814,93 @@ private string notTrimmedValue;";
 
     private readonly string example11RazorCode = @"
 <style>
+    .validation-message {
+        color: red;
+    }
+</style>
+
+
+<EditForm Model=""validationTextFieldModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
+    <DataAnnotationsValidator />
+
+    <BitTextField Label=""Required"" Required @bind-Value=""validationTextFieldModel.Text"" />
+    <ValidationMessage For=""() => validationTextFieldModel.Text"" />
+
+    <BitTextField Label=""Numeric"" @bind-Value=""validationTextFieldModel.NumericText"" />
+    <ValidationMessage For=""() => validationTextFieldModel.NumericText"" />
+
+    <BitTextField Label=""Only chars"" @bind-Value=""validationTextFieldModel.CharacterText"" />
+    <ValidationMessage For=""() => validationTextFieldModel.CharacterText"" />
+
+    <BitTextField Label=""Email"" @bind-Value=""validationTextFieldModel.EmailText"" />
+    <ValidationMessage For=""() => validationTextFieldModel.EmailText"" />
+
+    <BitTextField Label=""3 < Length < 5"" @bind-Value=""validationTextFieldModel.RangeText"" />
+    <ValidationMessage For=""() => validationTextFieldModel.RangeText"" />
+
+    <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+</EditForm>";
+    private readonly string example11CsharpCode = @"
+public class ValidationTextFieldModel
+{
+    [Required(ErrorMessage = ""This field is required."")]
+    public string Text { get; set; }
+
+    [RegularExpression(""0*[1-9][0-9]*"", ErrorMessage = ""Only numeric values are allowed."")]
+    public string NumericText { get; set; }
+
+    [RegularExpression(""^[a-zA-Z0-9.]*$"", ErrorMessage = ""Only letters(a-z), numbers(0-9), and period(.) are allowed."")]
+    public string CharacterText { get; set; }
+
+    [EmailAddress(ErrorMessage = ""Invalid e-mail address."")]
+    public string EmailText { get; set; }
+
+    [StringLength(5, MinimumLength = 3, ErrorMessage = ""The text length must be between 3 and 5 chars."")]
+    public string RangeText { get; set; }
+}
+
+private ValidationTextFieldModel validationTextFieldModel = new();
+
+private void HandleValidSubmit() { }
+private void HandleInvalidSubmit() { }";
+
+    private readonly string example12RazorCode = @"
+<BitTextField Label=""Primary"" Background=""BitColorKind.Primary"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""Secondary"" Background=""BitColorKind.Secondary"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""Tertiary"" Background=""BitColorKind.Tertiary"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""Transparent"" Background=""BitColorKind.Transparent"" IconName=""@BitIconName.Calendar"" />";
+
+    private readonly string example13RazorCode = @"
+<BitTextField Label=""Primary"" Border=""BitColorKind.Primary"" />
+<BitTextField Label=""Secondary"" Border=""BitColorKind.Secondary"" />
+<BitTextField Label=""Tertiary"" Border=""BitColorKind.Tertiary"" />
+<BitTextField Label=""Transparent"" Border=""BitColorKind.Transparent"" />";
+
+    private readonly string example14RazorCode = @"
+<BitTextField Label=""Primary"" Color=""BitColor.Primary"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""Secondary"" Color=""BitColor.Secondary"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""Tertiary"" Color=""BitColor.Tertiary"" IconName=""@BitIconName.Calendar"" />
+
+<BitTextField Label=""Info"" Color=""BitColor.Info"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""Success"" Color=""BitColor.Success"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""Warning"" Color=""BitColor.Warning"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""SevereWarning"" Color=""BitColor.SevereWarning"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""Error"" Color=""BitColor.Error"" IconName=""@BitIconName.Calendar"" />
+
+<BitTextField Label=""PrimaryBackground"" Color=""BitColor.PrimaryBackground"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""SecondaryBackground"" Color=""BitColor.SecondaryBackground"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""TertiaryBackground"" Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Calendar"" />
+
+<BitTextField Label=""PrimaryForeground"" Color=""BitColor.PrimaryForeground"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""SecondaryForeground"" Color=""BitColor.SecondaryForeground"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""TertiaryForeground"" Color=""BitColor.TertiaryForeground"" IconName=""@BitIconName.Calendar"" />
+
+<BitTextField Label=""PrimaryBorder"" Color=""BitColor.PrimaryBorder"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""SecondaryBorder"" Color=""BitColor.SecondaryBorder"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""TertiaryBorder"" Color=""BitColor.TertiaryBorder"" IconName=""@BitIconName.Calendar"" />";
+
+    private readonly string example15RazorCode = @"
+<style>
     .custom-class {
         overflow: hidden;
         margin-inline: 1rem;
@@ -743,62 +1008,10 @@ private string notTrimmedValue;";
                                  Focused = ""custom-focus"",
                                  Input = ""custom-input"",
                                  Label = $""custom-label{(string.IsNullOrEmpty(classesValue) ? string.Empty : "" custom-label-top"")}"" })"" />";
-    private readonly string example11CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private string? classesValue;";
 
-    private readonly string example12RazorCode = @"
-<style>
-    .validation-message {
-        color: red;
-    }
-</style>
-
-
-<EditForm Model=""validationTextFieldModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
-    <DataAnnotationsValidator />
-
-    <BitTextField Label=""Required"" Required @bind-Value=""validationTextFieldModel.Text"" />
-    <ValidationMessage For=""() => validationTextFieldModel.Text"" />
-
-    <BitTextField Label=""Numeric"" @bind-Value=""validationTextFieldModel.NumericText"" />
-    <ValidationMessage For=""() => validationTextFieldModel.NumericText"" />
-
-    <BitTextField Label=""Only chars"" @bind-Value=""validationTextFieldModel.CharacterText"" />
-    <ValidationMessage For=""() => validationTextFieldModel.CharacterText"" />
-
-    <BitTextField Label=""Email"" @bind-Value=""validationTextFieldModel.EmailText"" />
-    <ValidationMessage For=""() => validationTextFieldModel.EmailText"" />
-
-    <BitTextField Label=""3 < Length < 5"" @bind-Value=""validationTextFieldModel.RangeText"" />
-    <ValidationMessage For=""() => validationTextFieldModel.RangeText"" />
-
-    <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-</EditForm>";
-    private readonly string example12CsharpCode = @"
-public class ValidationTextFieldModel
-{
-    [Required(ErrorMessage = ""This field is required."")]
-    public string Text { get; set; }
-
-    [RegularExpression(""0*[1-9][0-9]*"", ErrorMessage = ""Only numeric values are allowed."")]
-    public string NumericText { get; set; }
-
-    [RegularExpression(""^[a-zA-Z0-9.]*$"", ErrorMessage = ""Only letters(a-z), numbers(0-9), and period(.) are allowed."")]
-    public string CharacterText { get; set; }
-
-    [EmailAddress(ErrorMessage = ""Invalid e-mail address."")]
-    public string EmailText { get; set; }
-
-    [StringLength(5, MinimumLength = 3, ErrorMessage = ""The text length must be between 3 and 5 chars."")]
-    public string RangeText { get; set; }
-}
-
-private ValidationTextFieldModel validationTextFieldModel = new();
-
-private void HandleValidSubmit() { }
-private void HandleInvalidSubmit() { }";
-
-    private readonly string example13RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitTextField Dir=""BitDir.Rtl""
               Placeholder=""پست الکترونیکی""
               IconName=""@BitIconName.EditMail"" />

@@ -124,8 +124,8 @@ public class BitTextFieldTests : BunitTestContext
         });
 
         var textField = component.Find(".bit-tfl-inp");
-        var revealPasswordBtn = component.Find(".bit-tfl-prb");
-        var revealPasswordIcon = component.Find(".bit-tfl-prb > span > i");
+        var revealPasswordBtn = component.Find(".bit-tfl-rpb");
+        var revealPasswordIcon = component.Find(".bit-tfl-rpb > span > i");
 
         Assert.AreEqual("password", textField.GetAttribute("type"));
         Assert.IsTrue(revealPasswordIcon.ClassList.Contains($"bit-icon--View"));
