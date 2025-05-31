@@ -24,10 +24,26 @@ public partial class BitTextField : BitTextInputBase<string?>
 
 
     /// <summary>
+    /// The general color of the text field used when focused.
+    /// </summary>
+    [Parameter] public BitColor? Accent { get; set; }
+
+    /// <summary>
     /// Automatically adjust the height of the input in Multiline mode.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool AutoHeight { get; set; }
+
+    /// <summary>
+    /// The color kind of the text field background.
+    /// </summary>
+    [Parameter] public BitColorKind? Background { get; set; }
+
+    /// <summary>
+    /// The color kind of the text field border.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColorKind? Border { get; set; }
 
     /// <summary>
     /// Whether to show the reveal password button for input type 'password'.
@@ -53,6 +69,11 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// Shows the custom description for text field.
     /// </summary>
     [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
+
+    /// <summary>
+    /// Forces the text field fill 100% of its container width.
+    /// </summary>
+    [Parameter] public bool FullWidth { get; set; }
 
     /// <summary>
     /// The icon name for the icon shown in the far right end of the text field.
@@ -236,6 +257,48 @@ public partial class BitTextField : BitTextInputBase<string?>
         ClassBuilder.Register(() => _hasFocus ? $"bit-tfl-fcs {Classes?.Focused}" : string.Empty);
 
         ClassBuilder.Register(() => Required && Label is null ? "bit-tfl-rnl" : string.Empty);
+
+        ClassBuilder.Register(() => FullWidth ? "bit-tfl-fwd" : string.Empty);
+
+        ClassBuilder.Register(() => Accent switch
+        {
+            BitColor.Primary => "bit-tfl-pri",
+            BitColor.Secondary => "bit-tfl-sec",
+            BitColor.Tertiary => "bit-tfl-ter",
+            BitColor.Info => "bit-tfl-inf",
+            BitColor.Success => "bit-tfl-suc",
+            BitColor.Warning => "bit-tfl-wrn",
+            BitColor.SevereWarning => "bit-tfl-swr",
+            BitColor.Error => "bit-tfl-err",
+            BitColor.PrimaryBackground => "bit-tfl-pbg",
+            BitColor.SecondaryBackground => "bit-tfl-sbg",
+            BitColor.TertiaryBackground => "bit-tfl-tbg",
+            BitColor.PrimaryForeground => "bit-tfl-pfg",
+            BitColor.SecondaryForeground => "bit-tfl-sfg",
+            BitColor.TertiaryForeground => "bit-tfl-tfg",
+            BitColor.PrimaryBorder => "bit-tfl-pbr",
+            BitColor.SecondaryBorder => "bit-tfl-sbr",
+            BitColor.TertiaryBorder => "bit-tfl-tbr",
+            _ => "bit-tfl-pri"
+        });
+
+        ClassBuilder.Register(() => Background switch
+        {
+            BitColorKind.Primary => "bit-tfl-bpr",
+            BitColorKind.Secondary => "bit-tfl-bse",
+            BitColorKind.Tertiary => "bit-tfl-btr",
+            BitColorKind.Transparent => "bit-tfl-btn",
+            _ => "bit-tfl-bpr"
+        });
+
+        ClassBuilder.Register(() => Border switch
+        {
+            BitColorKind.Primary => "bit-tfl-brp",
+            BitColorKind.Secondary => "bit-tfl-brs",
+            BitColorKind.Tertiary => "bit-tfl-brt",
+            BitColorKind.Transparent => "bit-tfl-brn",
+            _ => "bit-tfl-brp"
+        });
     }
 
     protected override void RegisterCssStyles()

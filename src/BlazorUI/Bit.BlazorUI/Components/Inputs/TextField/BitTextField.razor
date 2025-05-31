@@ -101,14 +101,14 @@
             {
                 <button @onclick="ToggleRevealPassword"
                         style="@Styles?.RevealPassword"
-                        class="bit-tfl-prb @Classes?.RevealPassword"
+                        class="bit-tfl-rpb @Classes?.RevealPassword"
                         type="button"
                         aria-label="@RevealPasswordAriaLabel"
                         aria-pressed="@(_elementType == BitInputType.Text ? "true" : "false")">
                     <span style="@Styles?.RevealPasswordIconContainer"
-                          class="bit-tfl-rin @Classes?.RevealPasswordIconContainer">
+                          class="bit-tfl-rpc @Classes?.RevealPasswordIconContainer">
                         <i style="@Styles?.RevealPasswordIcon"
-                           class="bit-tfl-ric bit-icon bit-icon--@(_elementType == BitInputType.Text ? "Hide3" : "View") @Classes?.RevealPasswordIcon"
+                           class="bit-tfl-rpi bit-icon bit-icon--@(_elementType == BitInputType.Text ? "Hide3" : "View") @Classes?.RevealPasswordIcon"
                            aria-hidden="true" />
                     </span>
                 </button>
