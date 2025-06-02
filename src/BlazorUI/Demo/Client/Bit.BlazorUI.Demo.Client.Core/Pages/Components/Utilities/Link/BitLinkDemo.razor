@@ -92,11 +92,22 @@
         <BitLink Rel="BitLinkRel.NoFollow | BitLinkRel.NoReferrer" Href="https://github.com/bitfoundation/bitplatform">Link with a rel attribute (nofollow & noreferrer)</BitLink>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example8RazorCode" Id="example8">
+    <DemoExample Title="NoColor" RazorCode="@example8RazorCode" Id="example8">
+        <BitLink Href="https://github.com/bitfoundation/bitplatform">
+            <BitText Typography="BitTypography.H4">Link with default color!</BitText>
+            <BitText Typography="BitTypography.Subtitle1">this text color is coming from the link itself.</BitText>
+        </BitLink>
+        <br /><br />
+        <BitLink Href="https://github.com/bitfoundation/bitplatform" NoColor>
+            <BitText>Link with NoColor!</BitText>
+        </BitLink>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example9RazorCode" Id="example9">
         <div>Offering a range of specialized color variants with Primary being the default, providing visual cues for specific actions or states within your application.</div>
         <br />
         <div>
-            <BitLink Color="BitColor.Primary" Href="https://github.com/bitfoundation/bitplatform">Primary Color Link</BitLink>
+            <BitLink Color="BitColor.Primary" Href="https://github.com/bitfoundation/bitplatform">Primary Color Link (default)</BitLink>
             <br /><br />
             <BitLink Color="BitColor.Secondary" Href="https://github.com/bitfoundation/bitplatform">Secondary Color Link</BitLink>
             <br /><br />
@@ -112,7 +123,7 @@
             <br /><br />
             <BitLink Color="BitColor.Error" Href="https://github.com/bitfoundation/bitplatform">Error Color Link</BitLink>
             <br /><br />
-            <div style="background:var(--bit-clr-fg-sec);color:var(--bit-clr-bg-sec);padding:1rem">
+            <div style="background:var(--bit-clr-fg-sec);padding:1rem">
                 <BitLink Color="BitColor.PrimaryBackground" Href="https://github.com/bitfoundation/bitplatform">PrimaryBackground Color Link</BitLink>
                 <br /><br />
                 <BitLink Color="BitColor.SecondaryBackground" Href="https://github.com/bitfoundation/bitplatform">SecondaryBackground Color Link</BitLink>
@@ -138,13 +149,13 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example9RazorCode" Id="example9">
+    <DemoExample Title="Style & Class" RazorCode="@example10RazorCode" Id="example10">
         <BitLink Style="color: goldenrod; font-weight:bold" Href="https://github.com/bitfoundation/bitplatform">Link with style</BitLink>
         <br /><br />
         <BitLink Class="custom-class" Href="https://github.com/bitfoundation/bitplatform">Link with class</BitLink>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example10RazorCode" Id="example10">
+    <DemoExample Title="RTL" RazorCode="@example11RazorCode" Id="example11">
         <div dir="rtl">
             <BitLink Dir="BitDir.Rtl" Href="https://github.com/bitfoundation/bitplatform">پیوند راست به چپ</BitLink>
         </div>

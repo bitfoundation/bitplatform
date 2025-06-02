@@ -32,6 +32,13 @@ public partial class BitLinkDemo
         },
         new()
         {
+            Name = "NoColor",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Removes the applying any foreground color to the link content.",
+        },
+        new()
+        {
             Name = "NoUnderline",
             Type = "bool",
             DefaultValue = "false",

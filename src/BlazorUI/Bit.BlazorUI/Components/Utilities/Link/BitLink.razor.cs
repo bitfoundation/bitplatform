@@ -32,6 +32,12 @@ public partial class BitLink : BitComponentBase
     public string? Href { get; set; }
 
     /// <summary>
+    /// Removes the applying any foreground color to the link content.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool NoColor { get; set; }
+
+    /// <summary>
     /// Styles the link to have no underline at any state.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -69,6 +75,8 @@ public partial class BitLink : BitComponentBase
         ClassBuilder.Register(() => NoUnderline ? "bit-lnk-nun" : string.Empty);
 
         ClassBuilder.Register(() => Underlined ? "bit-lnk-und" : string.Empty);
+
+        ClassBuilder.Register(() => NoColor ? "bit-lnk-ncl" : string.Empty);
 
         ClassBuilder.Register(() => Color switch
         {

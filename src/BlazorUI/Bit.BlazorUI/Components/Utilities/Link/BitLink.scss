@@ -40,6 +40,16 @@
     }
 }
 
+.bit-lnk-ncl {
+    color: unset;
+
+    &:hover,
+    &:active,
+    &:focus {
+        color: unset;
+    }
+}
+
 .bit-lnk-nun {
     text-decoration: none;
 

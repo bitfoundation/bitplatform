@@ -77,6 +77,16 @@ starting point. The possibilities are endless, and the journey begins now.
 <BitLink Rel=""BitLinkRel.NoFollow | BitLinkRel.NoReferrer"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a rel attribute (nofollow & noreferrer)</BitLink>";
 
     private readonly string example8RazorCode = @"
+<BitLink Href=""https://github.com/bitfoundation/bitplatform"">
+    <BitText Typography=""BitTypography.H4"">Link with default color!</BitText>
+    <BitText Typography=""BitTypography.Subtitle1"">this text color is coming from the link itself.</BitText>
+</BitLink>
+
+<BitLink Href=""https://github.com/bitfoundation/bitplatform"" NoColor>
+    <BitText>Link with NoColor!</BitText>
+</BitLink>";
+
+    private readonly string example9RazorCode = @"
  <BitLink Color=""BitColor.Primary"" Href=""https://github.com/bitfoundation/bitplatform"">Primary Color Link</BitLink>
 <BitLink Color=""BitColor.Secondary"" Href=""https://github.com/bitfoundation/bitplatform"">Secondary Color Link</BitLink>
 <BitLink Color=""BitColor.Tertiary"" Href=""https://github.com/bitfoundation/bitplatform"">Tertiary Color Link</BitLink>
@@ -98,7 +108,7 @@ starting point. The possibilities are endless, and the journey begins now.
 <BitLink Color=""BitColor.SecondaryBorder"" Href=""https://github.com/bitfoundation/bitplatform"">SecondaryBorder Color Link</BitLink>
 <BitLink Color=""BitColor.TertiaryBorder"" Href=""https://github.com/bitfoundation/bitplatform"">TertiaryBorder Color Link</BitLink>";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem;
@@ -110,6 +120,6 @@ starting point. The possibilities are endless, and the journey begins now.
 <BitLink Style=""color: goldenrod; font-weight:bold"" Href=""https://github.com/bitfoundation/bitplatform"">Link with style</BitLink>
 <BitLink Class=""custom-class"" Href=""https://github.com/bitfoundation/bitplatform"">Link with class</BitLink>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitLink Dir=""BitDir.Rtl"" Href=""https://github.com/bitfoundation/bitplatform"">پیوند راست به چپ</BitLink>";
 }
