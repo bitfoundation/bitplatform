@@ -921,8 +921,11 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   <data name="Update" xml:space="preserve">
     <value>Update</value>
   </data>
-    <data name="NewVersionIsAvailable" xml:space="preserve">
-    <value>New version {0} is available</value>
+    <data name="ForceUpdateTitle" xml:space="preserve">
+    <value>Time for an update</value>
+  </data>
+    <data name="ForceUpdateBody" xml:space="preserve">
+    <value>This update is required to keep your app running smoothly</value>
   </data>
   <data name="About" xml:space="preserve">
     <value>About</value>

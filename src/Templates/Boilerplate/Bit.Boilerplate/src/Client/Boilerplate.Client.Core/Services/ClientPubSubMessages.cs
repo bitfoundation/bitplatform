@@ -6,7 +6,7 @@ namespace Boilerplate.Client.Core.Services;
 public partial class ClientPubSubMessages
     //#if (signalR == true)
     : SharedPubSubMessages
-    //#endif
+//#endif
 {
     public const string SHOW_SNACK = nameof(SHOW_SNACK);
     public const string SHOW_MODAL = nameof(SHOW_MODAL);
@@ -41,4 +41,6 @@ public partial class ClientPubSubMessages
     //#endif
 
     public const string SOCIAL_SIGN_IN = nameof(SOCIAL_SIGN_IN);
+
+    public const string FORCE_UPDATE = nameof(FORCE_UPDATE);
 }

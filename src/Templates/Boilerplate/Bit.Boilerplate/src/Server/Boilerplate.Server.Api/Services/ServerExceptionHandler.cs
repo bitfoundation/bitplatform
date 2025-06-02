@@ -107,8 +107,10 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
             }
         }
 
-        using (var scope = logger.BeginScope(data))
+        if (IgnoreException(exception) is false)
         {
+            using var scope = logger.BeginScope(data);
+
             var exceptionMessageToLog = GetExceptionMessageToLog(exception);
 
             if (exception is KnownException)

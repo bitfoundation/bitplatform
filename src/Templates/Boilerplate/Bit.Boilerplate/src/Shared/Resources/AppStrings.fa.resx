@@ -915,8 +915,11 @@
   <data name="Update" xml:space="preserve">
     <value>بروز رسانی</value>
   </data>
-    <data name="NewVersionIsAvailable" xml:space="preserve">
-    <value>نسخه جدید {0} در دسترس است</value>
+    <data name="ForceUpdateTitle" xml:space="preserve">
+    <value>زمان بروز‌رسانی</value>
+  </data>
+    <data name="ForceUpdateBody" xml:space="preserve">
+    <value>دریافت این بروز‌رسانی برای عملکرد صحیح برنامه الزامی است</value>
   </data>
   <data name="About" xml:space="preserve">
     <value>درباره</value>

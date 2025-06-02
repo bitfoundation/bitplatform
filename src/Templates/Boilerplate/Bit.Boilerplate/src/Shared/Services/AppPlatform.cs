@@ -12,7 +12,7 @@ public static partial class AppPlatform
     public static bool IsAndroid => IsBlazorHybrid && OperatingSystem.IsAndroid();
 
     [SupportedOSPlatformGuard("ios")]
-    public static bool IsIOS => IsBlazorHybrid && OperatingSystem.IsIOS() && !IsIosOnMacOS;
+    public static bool IsIos => IsBlazorHybrid && OperatingSystem.IsIOS() && !IsIosOnMacOS;
 
     [SupportedOSPlatformGuard("windows")]
     public static bool IsWindows => IsBlazorHybrid && OperatingSystem.IsWindows();
@@ -36,17 +36,17 @@ public static partial class AppPlatform
 
     public static AppPlatformType Type =>
         IsAndroid ? AppPlatformType.Android :
-        IsIOS ? AppPlatformType.iOS :
+        IsIos ? AppPlatformType.Ios :
         IsWindows ? AppPlatformType.Windows :
-        IsMacOS ? AppPlatformType.macOS :
+        IsMacOS ? AppPlatformType.MacOS :
         IsLinux ? AppPlatformType.Linux : AppPlatformType.Web;
 }
 
 public enum AppPlatformType
 {
     Web,
-    iOS,
-    macOS,
+    Ios,
+    MacOS,
     Linux,
     Android,
     Windows

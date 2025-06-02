@@ -1,13 +1,20 @@
 ﻿//+:cnd:noEmit
+using Boilerplate.Client.Web;
+//#if (api == "Integrated")
+using Boilerplate.Server.Api;
+//#endif
+using Boilerplate.Client.Core;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Boilerplate.Client.Web;
-using Boilerplate.Client.Core;
 
 namespace Boilerplate.Server.Web;
 
 public partial class ServerWebSettings : ClientWebSettings
 {
+    //#if (api == "Integrated")
+    public SupportedAppVersionsOptions? SupportedAppVersions { get; set; }
+    //#endif
+
     public ForwardedHeadersOptions? ForwardedHeaders { get; set; } = default!;
 
     public ResponseCachingOptions? ResponseCaching { get; set; } = default!;

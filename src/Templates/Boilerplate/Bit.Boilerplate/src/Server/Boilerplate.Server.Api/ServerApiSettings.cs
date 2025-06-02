@@ -61,6 +61,8 @@ public partial class ServerApiSettings : SharedSettings
 
     public HangfireOptions? Hangfire { get; set; }
 
+    public SupportedAppVersionsOptions? SupportedAppVersions { get; set; }
+
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         var validationResults = base.Validate(validationContext).ToList();
@@ -283,4 +285,26 @@ public class HangfireOptions
     /// Useful for testing or in production when managing multiple codebases with a single database.
     /// </summary>
     public bool UseIsolatedStorage { get; set; }
+}
+
+public class SupportedAppVersionsOptions
+{
+    public string? MinimumSupportedAndroidAppVersion { get; set; }
+    public string? MinimumSupportedIosAppVersion { get; set; }
+    public string? MinimumSupportedMacOSAppVersion { get; set; }
+    public string? MinimumSupportedWindowsAppVersion { get; set; }
+    public string? MinimumSupportedWebAppVersion { get; set; }
+
+    public string? GetMinimumSupportedAppVersion(AppPlatformType platformType)
+    {
+        return platformType switch
+        {
+            AppPlatformType.Android => MinimumSupportedAndroidAppVersion,
+            AppPlatformType.Ios => MinimumSupportedIosAppVersion,
+            AppPlatformType.MacOS => MinimumSupportedMacOSAppVersion,
+            AppPlatformType.Windows => MinimumSupportedWindowsAppVersion,
+            AppPlatformType.Web => MinimumSupportedWebAppVersion,
+            _ => throw new ArgumentOutOfRangeException(nameof(platformType), platformType, null)
+        };
+    }
 }

@@ -13,7 +13,7 @@ public partial class Routes
 
         if (CultureInfoManager.InvariantGlobalization is false &&
             forceLoad == false &&
-            (AppPlatform.IsAndroid || AppPlatform.IsIOS))
+            (AppPlatform.IsAndroid || AppPlatform.IsIos))
         {
             var currentCulture = CultureInfo.CurrentUICulture.Name;
             var uri = new Uri(url);

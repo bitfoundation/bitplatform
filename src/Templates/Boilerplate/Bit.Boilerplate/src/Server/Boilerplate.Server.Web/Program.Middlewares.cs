@@ -10,6 +10,7 @@ using Boilerplate.Shared;
 using Boilerplate.Shared.Attributes;
 //#if (api == "Integrated")
 using Hangfire;
+using Boilerplate.Server.Api;
 using Boilerplate.Server.Api.Filters;
 using Boilerplate.Server.Api.Services;
 //#endif
@@ -139,6 +140,11 @@ public static partial class Program
             DarkModeEnabled = true,
             Authorization = [new HangfireDashboardAuthorizationFilter()]
         });
+
+        if (settings.SupportedAppVersions != null)
+        {
+            app.UseForceUpdateMiddleware(settings.SupportedAppVersions);
+        }
 
         app.MapGet("/api/minimal-api-sample/{routeParameter}", [AppResponseCache(MaxAge = 3600 * 24)] (string routeParameter, [FromQuery] string queryStringParameter) => new
         {
