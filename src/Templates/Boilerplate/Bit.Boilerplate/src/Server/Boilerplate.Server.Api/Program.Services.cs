@@ -174,7 +174,13 @@ public static partial class Program
         services.AddSingleton<HtmlSanitizer>();
 
         services
-            .AddControllers()
+            .AddControllers(options =>
+            {
+                if (appSettings.SupportedAppVersions is not null)
+                {
+                    options.Filters.Add<ForceUpdateActionFilter>();
+                }
+            })
             .AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;

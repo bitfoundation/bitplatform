@@ -81,11 +81,6 @@ public static partial class Program
             Authorization = [new HangfireDashboardAuthorizationFilter()]
         });
 
-        if (settings.SupportedAppVersions != null)
-        {
-            app.UseForceUpdateMiddleware(settings.SupportedAppVersions);
-        }
-
         app.MapGet("/api/minimal-api-sample/{routeParameter}", [AppResponseCache(MaxAge = 3600 * 24)] (string routeParameter, [FromQuery] string queryStringParameter) => new
         {
             RouteParameter = routeParameter,
@@ -99,25 +94,5 @@ public static partial class Program
         app.MapControllers()
            .RequireAuthorization()
            .CacheOutput("AppResponseCachePolicy");
-    }
-
-    public static WebApplication UseForceUpdateMiddleware(this WebApplication app, SupportedAppVersionsOptions settings)
-    {
-        app.Use(async (context, next) =>
-        {
-            if (context.Request.Headers.TryGetValue("X-App-Version", out var appVersionHeaderValue)
-                && appVersionHeaderValue.Any())
-            {
-                var appVersion = appVersionHeaderValue.Single()!;
-                var appPlatformType = Enum.Parse<AppPlatformType>(context.Request.Headers["X-App-Platform"].Single()!);
-                var minimumSupportedVersion = settings.GetMinimumSupportedAppVersion(appPlatformType);
-                if (minimumSupportedVersion != null && Version.Parse(appVersion) < Version.Parse(minimumSupportedVersion))
-                    throw new ClientNotSupportedException();
-            }
-
-            await next(context);
-        });
-
-        return app;
     }
 }

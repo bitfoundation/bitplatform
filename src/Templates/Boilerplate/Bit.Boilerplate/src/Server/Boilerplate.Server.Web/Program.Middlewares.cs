@@ -141,11 +141,6 @@ public static partial class Program
             Authorization = [new HangfireDashboardAuthorizationFilter()]
         });
 
-        if (settings.SupportedAppVersions != null)
-        {
-            app.UseForceUpdateMiddleware(settings.SupportedAppVersions);
-        }
-
         app.MapGet("/api/minimal-api-sample/{routeParameter}", [AppResponseCache(MaxAge = 3600 * 24)] (string routeParameter, [FromQuery] string queryStringParameter) => new
         {
             RouteParameter = routeParameter,
