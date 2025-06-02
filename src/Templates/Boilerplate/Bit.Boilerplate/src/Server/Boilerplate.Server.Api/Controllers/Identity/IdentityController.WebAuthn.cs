@@ -57,7 +57,7 @@ public partial class IdentityController
     }
 
     [HttpPost, Produces<SignInResponseDto>()]
-    public async Task VerifyWebAuthAndSignIn(VerifyWebAuthnAndSignInDto<AuthenticatorAssertionRawResponse> request, CancellationToken cancellationToken)
+    public async Task VerifyWebAuthAndSignIn(VerifyWebAuthnAndSignInRequestDto<AuthenticatorAssertionRawResponse> request, CancellationToken cancellationToken)
     {
         var (verifyResult, credential) = await Verify(request.ClientResponse, cancellationToken);
 
@@ -73,7 +73,7 @@ public partial class IdentityController
             await DbContext.SaveChangesAsync(cancellationToken);
         }
 
-        await SignIn(new() { Otp = otp, TwoFactorCode = request.TfaCode, DeviceInfo = request.DeviceInfo }, user, cancellationToken);
+        await SignIn(new() { Otp = otp, TwoFactorCode = request.TfaCode }, user, cancellationToken);
     }
 
     [HttpPost]

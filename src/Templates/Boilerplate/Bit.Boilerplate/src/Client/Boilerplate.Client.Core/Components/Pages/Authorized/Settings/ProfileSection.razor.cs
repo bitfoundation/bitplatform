@@ -17,7 +17,7 @@ public partial class ProfileSection
     private bool isSaving;
     private bool isUploading;
     private BitFileUpload fileUploadRef = default!;
-    private readonly EditUserDto editUserDto = new();
+    private readonly EditUserRequestDto editUserDto = new();
 
     private string? ProfileImageUrl => User?.GetProfileImageUrl(AbsoluteServerAddress);
 

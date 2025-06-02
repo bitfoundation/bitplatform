@@ -14,7 +14,7 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(TokenResponseDto))]
 [JsonSerializable(typeof(RefreshRequestDto))]
 [JsonSerializable(typeof(SignUpRequestDto))]
-[JsonSerializable(typeof(EditUserDto))]
+[JsonSerializable(typeof(EditUserRequestDto))]
 [JsonSerializable(typeof(SendEmailTokenRequestDto))]
 [JsonSerializable(typeof(SendPhoneTokenRequestDto))]
 [JsonSerializable(typeof(ConfirmEmailRequestDto))]
@@ -31,6 +31,7 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(List<UserDto>))]
 [JsonSerializable(typeof(List<ClaimDto>))]
 [JsonSerializable(typeof(UserRoleDto))]
+[JsonSerializable(typeof(UpdateUserSessionRequestDto))]
 public partial class IdentityJsonContext : JsonSerializerContext
 {
 }

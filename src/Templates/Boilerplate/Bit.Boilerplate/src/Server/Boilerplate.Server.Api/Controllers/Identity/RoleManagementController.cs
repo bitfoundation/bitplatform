@@ -155,7 +155,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
 
     [HttpPost]
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
-    public async Task ToggleUser(UserRoleDto dto, CancellationToken cancellationToken)
+    public async Task ToggleUserRole(UserRoleDto dto, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(dto.UserId.ToString())
             ?? throw new ResourceNotFoundException();
@@ -211,7 +211,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
                                                                .Select(us => us.SignalRConnectionId!).ToArrayAsync(cancellationToken);
 
         await appHubContext.Clients.Clients(signalRConnectionIds)
-                                   .SendAsync(SignalREvents.SHOW_MESSAGE, dto.Message, cancellationToken);
+                                   .SendAsync(SignalREvents.SHOW_MESSAGE, dto.Message, dto.PageUrl is null ? null : new { pageUrl = dto.PageUrl }, cancellationToken);
         //#endif
 
         //#if (notification == true)

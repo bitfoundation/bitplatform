@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
 
@@ -24,6 +24,9 @@ public partial class RequestHeadersDelegatingHandler(ITelemetryContext telemetry
         {
             request.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(CultureInfo.CurrentUICulture.Name));
         }
+
+        request.Headers.Add("X-App-Version", telemetryContext.AppVersion);
+        request.Headers.Add("X-App-Platform", AppPlatform.Type.ToString());
 
         return await base.SendAsync(request, cancellationToken);
     }

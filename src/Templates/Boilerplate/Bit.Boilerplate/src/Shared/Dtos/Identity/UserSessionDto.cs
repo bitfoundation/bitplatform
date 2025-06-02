@@ -7,9 +7,6 @@ public partial class UserSessionDto
 
     public string? IP { get; set; }
 
-    /// <summary>
-    /// Populated during sign-in using the <see cref="SignInRequestDto.DeviceInfo"/> property.
-    /// </summary>
     public string? DeviceInfo { get; set; }
 
     public string? Address { get; set; }
