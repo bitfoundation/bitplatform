@@ -26,7 +26,7 @@ public interface IIdentityController : IAppController
 
     public const string RefreshUri = "api/Identity/Refresh";
     [HttpPost]
-    Task<TokenResponseDto> Refresh(RefreshRequestDto request, CancellationToken cancellationToken) => default!;
+    Task<TokenResponseDto> Refresh(RefreshTokenRequestDto request, CancellationToken cancellationToken) => default!;
 
     [HttpPost]
     //#if (captcha == "reCaptcha")
