@@ -25,6 +25,8 @@ public partial class RequestHeadersDelegatingHandler(ITelemetryContext telemetry
             request.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(CultureInfo.CurrentUICulture.Name));
         }
 
+        // Until the force-update feature is implemented, we can leverage the headers and nameof(AppStrings.NewVersionIsAvailable)
+        // to raise an exception through a Web API action filter, which will be reflected in the app's UI.
         request.Headers.Add("X-App-Version", telemetryContext.AppVersion);
         request.Headers.Add("X-App-Platform", AppPlatform.Type.ToString());
 
