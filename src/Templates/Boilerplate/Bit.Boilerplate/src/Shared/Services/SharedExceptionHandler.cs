@@ -47,8 +47,10 @@ public partial class SharedExceptionHandler
 
     public virtual bool IgnoreException(Exception exception)
     {
+        // Ignoring exception here will prevent it from being logged in both client and server.
+
         if (exception is ClientNotSupportedException)
-            return true;
+            return true; // See ExceptionDelegatingHandler
 
         if (exception is KnownException)
             return false;
