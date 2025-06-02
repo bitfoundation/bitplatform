@@ -7,7 +7,7 @@
     <BodyTemplate>
         <BitStack>
             <BitText Typography="BitTypography.Body1">@Localizer[nameof(AppStrings.ForceUpdateBody)]</BitText>
-            <BitButton>@Localizer[nameof(AppStrings.Update)]</BitButton>
+            <BitButton OnClick="WrapHandled(Update)">@Localizer[nameof(AppStrings.Update)]</BitButton>
         </BitStack>
     </BodyTemplate>
 </BitSnackBar>

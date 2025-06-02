@@ -39,4 +39,9 @@ public partial class ForceUpdatePanel
             await bitSnackBar.Show(string.Empty);
         }
     }
+
+    private async Task Update()
+    {
+        await appUpdateService.Update();
+    }
 }
