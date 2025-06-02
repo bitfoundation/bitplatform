@@ -2,5 +2,5 @@
 
 public interface IAppUpdateService
 {
-    Task Update();
+    Task ForceUpdate();
 }

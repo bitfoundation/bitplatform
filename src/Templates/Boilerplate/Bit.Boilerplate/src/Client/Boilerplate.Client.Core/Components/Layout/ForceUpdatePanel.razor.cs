@@ -42,6 +42,6 @@ public partial class ForceUpdatePanel
 
     private async Task Update()
     {
-        await appUpdateService.Update();
+        await appUpdateService.ForceUpdate();
     }
 }

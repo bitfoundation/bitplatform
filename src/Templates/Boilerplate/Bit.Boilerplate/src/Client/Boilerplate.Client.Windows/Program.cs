@@ -71,7 +71,7 @@ public partial class Program
         {
             try
             {
-                await Services.GetRequiredService<IAppUpdateService>().Update();
+                await ((WindowsAppUpdateService)Services.GetRequiredService<IAppUpdateService>()).Update();
             }
             catch (Exception exp)
             {
