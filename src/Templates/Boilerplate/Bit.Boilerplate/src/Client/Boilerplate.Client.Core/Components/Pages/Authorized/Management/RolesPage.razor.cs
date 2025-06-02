@@ -263,7 +263,7 @@ public partial class RolesPage
             RoleId = Guid.Parse(selectedRoleItem.Key!)
         };
 
-        await roleManagementController.ToggleUser(dto, CurrentCancellationToken);
+        await roleManagementController.ToggleUserRole(dto, CurrentCancellationToken);
 
         if (IsUserAssigned(user) is false)
         {

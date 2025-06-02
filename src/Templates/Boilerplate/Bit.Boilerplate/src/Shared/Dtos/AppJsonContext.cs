@@ -57,7 +57,7 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(OverallAnalyticsStatsDataResponseDto))]
 [JsonSerializable(typeof(List<ProductPercentagePerCategoryResponseDto>))]
 //#endif
-[JsonSerializable(typeof(VerifyWebAuthnAndSignInDto))]
+[JsonSerializable(typeof(VerifyWebAuthnAndSignInRequestDto))]
 [JsonSerializable(typeof(WebAuthnAssertionOptionsRequestDto))]
 
 //#if (signalR == true)

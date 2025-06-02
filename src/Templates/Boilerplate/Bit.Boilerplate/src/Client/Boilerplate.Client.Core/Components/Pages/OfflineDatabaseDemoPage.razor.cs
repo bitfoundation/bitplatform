@@ -11,7 +11,7 @@ public partial class OfflineDatabaseDemoPage
     private bool isSaving;
     private bool isLoading = true;
     private UserDto user = new();
-    private readonly EditUserDto userToEdit = new();
+    private readonly EditUserRequestDto userToEdit = new();
 
     protected override async Task OnInitAsync()
     {

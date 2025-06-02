@@ -17,8 +17,11 @@ public interface IUserController : IAppController
     [HttpPost("{id}")]
     Task RevokeSession(Guid id, CancellationToken cancellationToken);
 
+    [HttpPost]
+    Task UpdateSession(UpdateUserSessionRequestDto request, CancellationToken cancellationToken);
+
     [HttpPut]
-    Task<UserDto> Update(EditUserDto userDto, CancellationToken cancellationToken);
+    Task<UserDto> Update(EditUserRequestDto userDto, CancellationToken cancellationToken);
 
     [HttpPost]
     Task ChangePassword(ChangePasswordRequestDto request, CancellationToken cancellationToken);

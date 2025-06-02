@@ -16,7 +16,7 @@ public class ScssCompilerService
         if (Environment.GetEnvironmentVariable("IN_APP_SCSS_COMPILER_ENABLED") is not "true")
             return; // Check out Visual Studio's launchSettings.json
 
-        if (AppPlatform.IsWindows is false)
+        if (OperatingSystem.IsWindows() is false)
             return;
 
         var clientCorePath = Path.Combine(Environment.CurrentDirectory, "../../Client/Boilerplate.Client.Core");

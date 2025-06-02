@@ -37,7 +37,7 @@ public interface IRoleManagementController : IAppController
     Task DeleteClaims(Guid roleId, List<ClaimDto> roleClaims, CancellationToken cancellationToken);
 
     [HttpPost]
-    Task ToggleUser(UserRoleDto dto, CancellationToken cancellationToken);
+    Task ToggleUserRole(UserRoleDto dto, CancellationToken cancellationToken);
 
     [HttpPost("{roleId}")]
     Task RemoveRoleFromAllUsers(Guid roleId, CancellationToken cancellationToken);
