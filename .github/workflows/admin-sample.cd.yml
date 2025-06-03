@@ -73,11 +73,11 @@ jobs:
       
     - name: Generate CSS/JS files
       run: |
-          dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
-          dotnet build AdminPanel/src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
+          dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_VERSION}}" --no-restore -c Release
+          dotnet build AdminPanel/src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_VERSION}}" --no-restore -c Release
       
     - name: Publish
-      run: dotnet publish AdminPanel/src/Server/AdminPanel.Server.Web/AdminPanel.Server.Web.csproj -c Release -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:WasmEnableSIMD=false
+      run: dotnet publish AdminPanel/src/Server/AdminPanel.Server.Web/AdminPanel.Server.Web.csproj -c Release -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APPLICATION_VERSION}}" -p:WasmEnableSIMD=false
 
     - name: Upload server artifact
       uses: actions/upload-artifact@v4
@@ -129,10 +129,10 @@ jobs:
           sed -i "s/\/\/ self.prerenderMode = 'initial'/self.prerenderMode = 'initial'/g" AdminPanel/src/Client/AdminPanel.Client.Web/wwwroot/service-worker.published.js
       
     - name: Generate CSS/JS files
-      run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
+      run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_VERSION}}" --no-restore -c Release
       
     - name: Publish
-      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/client -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
+      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/client -p:Version="${{ vars.APPLICATION_VERSION}}"
 
     - name: Upload to asw
       run: |
@@ -215,14 +215,14 @@ jobs:
         WindowsUpdate.FilesUrl: https://windows-adminpanel.bitplatform.dev
 
     - name: Generate CSS/JS files
-      run: dotnet build AdminPanel\src\Client\AdminPanel.Client.Core\AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
+      run: dotnet build AdminPanel\src\Client\AdminPanel.Client.Core\AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_VERSION}}" --no-restore -c Release
 
     - name: Publish
       run: |
           cd AdminPanel\src\Client\AdminPanel.Client.Windows\
-          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\publish-result -r win-x64 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:PublishReadyToRun=true -p:PublishReadyToRunComposite=true --self-contained
+          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\publish-result -r win-x64 -p:Version="${{ vars.APPLICATION_VERSION}}" -p:PublishReadyToRun=true -p:PublishReadyToRunComposite=true --self-contained
           dotnet tool restore
-          dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows.exe -r win-x64 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel'
+          dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APPLICATION_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows.exe -r win-x64 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel'
   
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -293,11 +293,11 @@ jobs:
   
     - name: Generate CSS/JS files
       run: |
-          dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
-          dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
+          dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_VERSION}}" --no-restore -c Release
+          dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_VERSION}}" --no-restore -c Release
   
     - name: Publish aab
-      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -f net9.0-android
+      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -f net9.0-android
   
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -369,11 +369,11 @@ jobs:
 
     - name: Generate CSS/JS files
       run: |
-          dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
-          dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
+          dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_VERSION}}" --no-restore -c Release
+          dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_VERSION}}" --no-restore -c Release
   
     - name: Build ipa
-      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="AdminPanel" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -f net9.0-ios
+      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="AdminPanel" -p:Version="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -f net9.0-ios
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4

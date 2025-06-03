@@ -921,8 +921,11 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   <data name="Update" xml:space="preserve">
     <value>Update</value>
   </data>
-    <data name="NewVersionIsAvailable" xml:space="preserve">
-    <value>New version {0} is available</value>
+    <data name="ForceUpdateTitle" xml:space="preserve">
+    <value>Time for an update</value>
+  </data>
+    <data name="ForceUpdateBody" xml:space="preserve">
+    <value>This update is required to keep your app running smoothly</value>
   </data>
   <data name="About" xml:space="preserve">
     <value>About</value>
@@ -1130,13 +1133,19 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>How can I install the PWA version of the app?</value>
   </data>
-  <!--#if (module == "Admin") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <!--#if (module == "Admin") -->
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
     <value>Where can I find reports about products?</value>
   </data>
-  <!--#elif (module == "Sales") -->
-  <!--#else -->
-  <!--#endif -->
+    <!--#elif (module == "Sales") -->
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>I'm searching for a Benz SUV electric car with a 75K budget!</value>
+  </data>
+    <!--#else -->
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>I have some feedback I'd like to share!</value>
+  </data>
+    <!--#endif -->
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>Write a message...</value>
   </data>

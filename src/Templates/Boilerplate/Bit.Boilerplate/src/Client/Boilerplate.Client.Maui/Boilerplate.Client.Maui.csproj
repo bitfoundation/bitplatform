@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
         <TargetFrameworks>net9.0-android;net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
@@ -17,10 +17,6 @@
         <!-- App Identifier -->
         <ApplicationId>com.bitplatform.template</ApplicationId>
 
-        <!-- Versions -->
-        <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-        <ApplicationVersion>1</ApplicationVersion>
-
         <!-- Required for C# Hot Reload -->
         <UseInterpreter Condition="'$(Environment)' == 'Development'">True</UseInterpreter>
         <SkipStaticLibraryValidation Condition="'$(Environment)' == 'Development'">true</SkipStaticLibraryValidation>
@@ -37,6 +33,27 @@
         <CompressionEnabled>false</CompressionEnabled>
         <!-- Enabling compression generates `.br` and `.gz` files for static assets.
         While this is beneficial for Blazor WebAssembly, it only adds to the app bundle size in MAUI without offering any advantages. -->
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
+        <!-- Android requires a unique, increasing integer for `versionCode`. We derive it from Version (e.g., '1.0' or '1.0.0') by extracting major, minor, and patch numbers, setting patch to 0 if absent, and calculating versionCode as major*10000 + minor*100 + patch (e.g., '1.0' becomes 10000, '1.0.1' becomes 10001). -->
+		<_MajorVersionString>$([System.Text.RegularExpressions.Regex]::Match($(Version), '^(\d+)').Groups[1].Value)</_MajorVersionString>
+		<_MinorVersionString>$([System.Text.RegularExpressions.Regex]::Match($(Version), '^\d+\.(\d+)').Groups[1].Value)</_MinorVersionString>
+		<_PatchVersionString>$([System.Text.RegularExpressions.Regex]::Match($(Version), '^\d+\.\d+\.(\d+)$').Groups[1].Value)</_PatchVersionString>
+
+		<MajorVersion>$([System.Int32]::Parse($(_MajorVersionString)))</MajorVersion>
+		<MinorVersion>$([System.Int32]::Parse($(_MinorVersionString)))</MinorVersion>
+
+		<_PatchVersionString Condition="'$(_PatchVersionString)' == ''">0</_PatchVersionString>
+		<PatchVersion>$([System.Int32]::Parse($(_PatchVersionString)))</PatchVersion>
+
+		<ApplicationVersion>$([MSBuild]::Add(
+			$([MSBuild]::Add(
+				$([MSBuild]::Multiply($(MajorVersion), 10000)),
+				$([MSBuild]::Multiply($(MinorVersion), 100))
+			)),
+			$(PatchVersion)
+		))</ApplicationVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Environment)' != 'Development'">
@@ -161,6 +178,7 @@
         <PackageReference Include="Microsoft.Extensions.Logging.EventSource" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition="'$(module)' == 'Admin' OR '$(module)' == ''" Include="Newtonsoft.Json" />
+        <PackageReference Include="Oscore.Maui.AppStoreInfo" />
         <PackageReference Include="Plugin.Maui.AppRating" />
         <PackageReference Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.Extensions.Logging.ApplicationInsights" />

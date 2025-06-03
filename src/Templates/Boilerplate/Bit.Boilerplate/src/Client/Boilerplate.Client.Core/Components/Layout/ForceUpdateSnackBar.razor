@@ -1,0 +1,13 @@
+@inherits AppComponentBase
+
+<BitSnackBar @ref=bitSnackBar AutoDismiss="false" OnDismiss="WrapHandled(OnDismiss)">
+    <TitleTemplate>
+        <BitText Typography="BitTypography.H5">@Localizer[nameof(AppStrings.ForceUpdateTitle)]</BitText>
+    </TitleTemplate>
+    <BodyTemplate>
+        <BitStack>
+            <BitText Typography="BitTypography.Body1">@Localizer[nameof(AppStrings.ForceUpdateBody)]</BitText>
+            <BitButton OnClick="WrapHandled(Update)">@Localizer[nameof(AppStrings.Update)]</BitButton>
+        </BitStack>
+    </BodyTemplate>
+</BitSnackBar>

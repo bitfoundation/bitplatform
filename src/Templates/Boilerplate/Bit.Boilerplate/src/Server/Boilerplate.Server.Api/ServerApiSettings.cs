@@ -61,6 +61,8 @@ public partial class ServerApiSettings : SharedSettings
 
     public HangfireOptions? Hangfire { get; set; }
 
+    public SupportedAppVersionsOptions? SupportedAppVersions { get; set; }
+
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         var validationResults = base.Validate(validationContext).ToList();
@@ -90,6 +92,10 @@ public partial class ServerApiSettings : SharedSettings
         if (ResponseCaching is not null)
         {
             Validator.TryValidateObject(ResponseCaching, new ValidationContext(ResponseCaching), validationResults, true);
+        }
+        if (SupportedAppVersions is not null)
+        {
+            Validator.TryValidateObject(SupportedAppVersions, new ValidationContext(SupportedAppVersions), validationResults, true);
         }
 
         const int MinimumJwtIssuerSigningKeySecretByteLength = 64; // 512 bits = 64 bytes, minimum for HS512
@@ -283,4 +289,30 @@ public class HangfireOptions
     /// Useful for testing or in production when managing multiple codebases with a single database.
     /// </summary>
     public bool UseIsolatedStorage { get; set; }
+}
+
+public class SupportedAppVersionsOptions
+{
+    public Version? MinimumSupportedAndroidAppVersion { get; set; }
+
+    public Version? MinimumSupportedIosAppVersion { get; set; }
+
+    public Version? MinimumSupportedMacOSAppVersion { get; set; }
+
+    public Version? MinimumSupportedWindowsAppVersion { get; set; }
+
+    public Version? MinimumSupportedWebAppVersion { get; set; }
+
+    public Version? GetMinimumSupportedAppVersion(AppPlatformType platformType)
+    {
+        return platformType switch
+        {
+            AppPlatformType.Android => MinimumSupportedAndroidAppVersion,
+            AppPlatformType.Ios => MinimumSupportedIosAppVersion,
+            AppPlatformType.MacOS => MinimumSupportedMacOSAppVersion,
+            AppPlatformType.Windows => MinimumSupportedWindowsAppVersion,
+            AppPlatformType.Web => MinimumSupportedWebAppVersion,
+            _ => throw new ArgumentOutOfRangeException(nameof(platformType), platformType, null)
+        };
+    }
 }

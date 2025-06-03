@@ -159,9 +159,9 @@ jobs:
     - name: Publish
       run: |
         cd src\Client\Boilerplate.Client.Windows\
-        dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --self-contained
+        dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APPLICATION_VERSION}}" --self-contained
           dotnet tool restore
-          dotnet vpk pack -u Boilerplate.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'Boilerplate'
+          dotnet vpk pack -u Boilerplate.Client.Windows -v "${{ vars.APPLICATION_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'Boilerplate'
   
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -283,7 +283,7 @@ jobs:
           dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -t:BeforeBuildTasks --no-restore -c Release
   
     - name: Build ipa
-      run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="${{ env.IOS_CODE_SIGN_PROVISION }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net9.0-ios
+      run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="${{ env.IOS_CODE_SIGN_PROVISION }}" -p:Version="${{ vars.APPLICATION_VERSION }}" -f net9.0-ios
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4

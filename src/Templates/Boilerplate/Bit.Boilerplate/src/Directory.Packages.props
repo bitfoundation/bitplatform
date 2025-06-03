@@ -28,6 +28,7 @@
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="9.0.70" />
         <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.3240.44" />
         <PackageVersion Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
+        <PackageVersion Include="Oscore.Maui.AppStoreInfo" Version="1.2.0" />
         <PackageVersion Include="Plugin.Maui.AppRating" Version="1.2.1" />
         <PackageVersion Include="Velopack" Version="0.0.1251" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="9.0.5" />

@@ -915,8 +915,11 @@
   <data name="Update" xml:space="preserve">
     <value>بروز رسانی</value>
   </data>
-    <data name="NewVersionIsAvailable" xml:space="preserve">
-    <value>نسخه جدید {0} در دسترس است</value>
+    <data name="ForceUpdateTitle" xml:space="preserve">
+    <value>زمان بروز‌رسانی</value>
+  </data>
+    <data name="ForceUpdateBody" xml:space="preserve">
+    <value>دریافت این بروز‌رسانی برای عملکرد صحیح برنامه الزامی است</value>
   </data>
   <data name="About" xml:space="preserve">
     <value>درباره</value>
@@ -1124,13 +1127,19 @@
   <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>چگونه میتوانم نسخه PWA برنامه رو نصب کنم؟</value>
   </data>
-  <!--#if (module == "Admin") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <!--#if (module == "Admin") -->
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
     <value>کجا میتونم گزارشات محصولات رو ببینم؟</value>
   </data>
-  <!--#elif (module == "Sales") -->
-  <!--#else -->
-  <!--#endif -->
+    <!--#elif (module == "Sales") -->
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>دنبال ماشین SUV مرسدس بنز با ۷۰هزار دلار بودجه میگردم!</value>
+  </data>
+    <!--#else -->
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>یه سری فیدبک دارم که بگم!</value>
+  </data>
+    <!--#endif -->
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>پیامی را وارد کنید...</value>
   </data>

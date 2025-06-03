@@ -1,6 +1,4 @@
-﻿//+:cnd:noEmit
-
-namespace Boilerplate.Client.Maui.Components.Pages;
+﻿namespace Boilerplate.Client.Maui.Components.Pages;
 
 public partial class AboutPage
 {
@@ -26,6 +24,12 @@ public partial class AboutPage
         platform = telemetryContext.Platform!;
         oem = DeviceInfo.Current.Manufacturer;
         appVersion = telemetryContext.AppVersion!;
+        if (AppPlatform.IsAndroid)
+        {
+#if Android
+            appVersion += " / " + Platform.CurrentActivity!.PackageManager!.GetPackageInfo(AppInfo.PackageName, default(Android.Content.PM.PackageInfoFlags))!.VersionCode;
+#endif
+        }
         processId = Environment.ProcessId.ToString();
     }
 }

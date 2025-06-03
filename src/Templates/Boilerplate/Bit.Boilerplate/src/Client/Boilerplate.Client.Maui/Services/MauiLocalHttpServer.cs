@@ -37,7 +37,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
 
         async Task GoBackToApp()
         {
-            if (AppPlatform.IsIOS)
+            if (AppPlatform.IsIos)
             {
                 // CloseBrowserPage.razor's `window.close()` does NOT work on iOS's in app browser.
                 await MainThread.InvokeOnMainThreadAsync(() =>
