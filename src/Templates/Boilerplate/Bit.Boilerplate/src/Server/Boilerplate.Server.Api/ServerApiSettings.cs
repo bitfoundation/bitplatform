@@ -293,22 +293,17 @@ public class HangfireOptions
 
 public class SupportedAppVersionsOptions
 {
-    [RegularExpression(@"^\d+\.\d+(\.\d+)?(\.\d+)?$")]
-    public string? MinimumSupportedAndroidAppVersion { get; set; }
+    public Version? MinimumSupportedAndroidAppVersion { get; set; }
 
-    [RegularExpression(@"^\d+\.\d+(\.\d+)?(\.\d+)?$")]
-    public string? MinimumSupportedIosAppVersion { get; set; }
+    public Version? MinimumSupportedIosAppVersion { get; set; }
 
-    [RegularExpression(@"^\d+\.\d+(\.\d+)?(\.\d+)?$")]
-    public string? MinimumSupportedMacOSAppVersion { get; set; }
+    public Version? MinimumSupportedMacOSAppVersion { get; set; }
 
-    [RegularExpression(@"^\d+\.\d+(\.\d+)?(\.\d+)?$")]
-    public string? MinimumSupportedWindowsAppVersion { get; set; }
+    public Version? MinimumSupportedWindowsAppVersion { get; set; }
 
-    [RegularExpression(@"^\d+\.\d+(\.\d+)?(\.\d+)?$")]
-    public string? MinimumSupportedWebAppVersion { get; set; }
+    public Version? MinimumSupportedWebAppVersion { get; set; }
 
-    public string? GetMinimumSupportedAppVersion(AppPlatformType platformType)
+    public Version? GetMinimumSupportedAppVersion(AppPlatformType platformType)
     {
         return platformType switch
         {

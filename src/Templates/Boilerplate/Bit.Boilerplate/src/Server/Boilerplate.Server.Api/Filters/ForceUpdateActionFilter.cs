@@ -14,7 +14,7 @@ public partial class ForceUpdateActionFilter : ActionFilterAttribute
             var appVersion = appVersionHeaderValue.Single()!;
             var appPlatformType = Enum.Parse<AppPlatformType>(context.HttpContext.Request.Headers["X-App-Platform"].Single()!);
             var minimumSupportedVersion = settings.SupportedAppVersions!.GetMinimumSupportedAppVersion(appPlatformType);
-            if (minimumSupportedVersion != null && Version.Parse(appVersion) < Version.Parse(minimumSupportedVersion))
+            if (minimumSupportedVersion != null && Version.Parse(appVersion) < minimumSupportedVersion)
                 throw new ClientNotSupportedException();
         }
 
