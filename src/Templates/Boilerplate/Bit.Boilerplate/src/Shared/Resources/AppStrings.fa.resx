@@ -1127,13 +1127,19 @@
   <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>چگونه میتوانم نسخه PWA برنامه رو نصب کنم؟</value>
   </data>
-  <!--#if (module == "Admin") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <!--#if (module == "Admin") -->
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
     <value>کجا میتونم گزارشات محصولات رو ببینم؟</value>
   </data>
-  <!--#elif (module == "Sales") -->
-  <!--#else -->
-  <!--#endif -->
+    <!--#elif (module == "Sales") -->
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>دنبال ماشین SUV مرسدس بنز با ۷۰هزار دلار بودجه میگردم!</value>
+  </data>
+    <!--#else -->
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>یه سری فیدبک دارم که بگم!</value>
+  </data>
+    <!--#endif -->
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>پیامی را وارد کنید...</value>
   </data>
