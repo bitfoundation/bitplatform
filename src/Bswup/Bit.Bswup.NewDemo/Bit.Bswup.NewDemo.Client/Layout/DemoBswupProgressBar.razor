@@ -1,8 +1,6 @@
 ﻿<script>
     function demoHandler(message, data) {
-        switch (message) {
-            // case BswupMessage.updateFound: return console.log('a new update found!!!');
-        }
+        console.log('[DemoBswupProgressBar]:', message, data);
     }
 </script>
 
@@ -24,6 +22,6 @@
             <circle r="40%" cx="50%" cy="50%" />
             <circle r="40%" cx="50%" cy="50%" />
         </svg>
-        <button id="bit-bswup-reload">Update available, Click to Reload</button>
     </BswupProgress>
+    <button id="bit-bswup-reload">Update available, Click to Reload</button>
 </div>
