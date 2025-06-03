@@ -1,6 +1,6 @@
 ﻿window['bit-bswup.progress version'] = '9.8.0';
 
-; (function () {
+(function () {
     const _config: IBswupProgressConfigs = {};
 
     (window as any).BitBswupProgress = {
@@ -103,7 +103,6 @@
                 }
             }
         }
-
     };
 
     function config(newConfig: IBswupProgressConfigs) {
