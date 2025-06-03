@@ -74,6 +74,11 @@ class App {
         };
     };
     //#endif
+
+    public static forceUpdate() {
+        (window as any).BitBswupProgress.config({ autoReload: true });
+        (window as any).BitBswup.checkForUpdate();
+    }
 }
 
 (window as any).App = App;

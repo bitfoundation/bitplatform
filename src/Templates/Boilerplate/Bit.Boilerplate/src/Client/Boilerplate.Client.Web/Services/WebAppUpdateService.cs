@@ -7,6 +7,6 @@ public partial class WebAppUpdateService : IAppUpdateService
 
     public async Task ForceUpdate()
     {
-        await jsRuntime.InvokeVoidAsync("BitBswup.forceRefresh"); // TODO: Replace this with `BitBswup.checkForUpdate` after next bswup pre-release.
+        await jsRuntime.InvokeVoidAsync("App.forceUpdate");
     }
 }
