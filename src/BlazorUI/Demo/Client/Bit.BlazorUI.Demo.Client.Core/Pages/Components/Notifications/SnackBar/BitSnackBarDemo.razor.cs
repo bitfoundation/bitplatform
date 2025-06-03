@@ -311,6 +311,7 @@ public partial class BitSnackBarDemo
         {
             Id = "snackbar-item",
             Title = "BitSnackBarItem",
+            Description = "A class to represent each snack bar item.",
             Parameters =
             [
                 new()
@@ -318,28 +319,28 @@ public partial class BitSnackBarDemo
                     Name = "Id",
                     Type = "Guid",
                     DefaultValue = "Guid.NewGuid()",
-                    Description = ""
+                    Description = "The unique identifier of the snack bar item."
                 },
                 new()
                 {
                     Name = "Title",
                     Type = "string",
                     DefaultValue = "null",
-                    Description = ""
+                    Description = "The title text of the snack bar item."
                 },
                 new()
                 {
                     Name = "Body",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = ""
+                    Description = "The body text of the snack bar item."
                 },
                 new()
                 {
                     Name = "Color",
                     Type = "BitColor?",
                     DefaultValue = "null",
-                    Description = "",
+                    Description = "The color theme of the snack bar item.",
                     LinkType = LinkType.Link,
                     Href = "#color-enum",
                 },
@@ -348,21 +349,21 @@ public partial class BitSnackBarDemo
                     Name = "CssClass",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = ""
+                    Description = "Custom CSS class to apply to the snack bar item."
                 },
                 new()
                 {
                     Name = "CssStyle",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = ""
+                    Description = "Custom CSS style to apply to the snack bar item."
                 },
                 new()
                 {
                     Name = "Persistent",
                     Type = "bool",
                     DefaultValue = "false",
-                    Description = ""
+                    Description = "Makes this specific snack bar item non-dismissible and removes its dismiss button."
                 },
             ]
         }
@@ -397,7 +398,7 @@ public partial class BitSnackBarDemo
         new()
         {
             Name = "SevereWarning",
-            Type = "Task<BitSnackBarItem> Warning(string title, string? body = \"\", bool persistent = false)",
+            Type = "Task<BitSnackBarItem> SevereWarning(string title, string? body = \"\", bool persistent = false)",
             Description = "Shows a new snackbar with SevereWarning color.",
             LinkType = LinkType.Link,
             Href = "#snackbar-item",
