@@ -17,12 +17,14 @@
         transform: translateX(-50%);
         font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
     }
+
         #bit-bswup .bswup-container {
             width: 3rem;
             height: 3rem;
             display: block;
             position: relative;
         }
+
             #bit-bswup .bswup-container circle {
                 fill: none;
                 stroke: #e0e0e0;
@@ -30,11 +32,13 @@
                 transform-origin: 50% 50%;
                 transform: rotate(-90deg);
             }
+
                 #bit-bswup .bswup-container circle:last-child {
                     stroke: #1b6ec2;
                     transition: stroke-dasharray 0.05s ease-in-out;
                     stroke-dasharray: calc(3.141 * var(--bit-bswup-percent, 0%) * 0.8), 500%;
                 }
+
         #bit-bswup .bswup-progress-text {
             top: 50%;
             left: 50%;
@@ -44,8 +48,13 @@
             font-weight: normal;
             transform: translate(-50%, -50%);
         }
+
             #bit-bswup .bswup-progress-text::after {
                 content: var(--bit-bswup-percent-text, "");
+            }
+
+            #bit-bswup[style*="--bit-bswup-percent: 100"] {
+                display: none !important;
             }
 </style>
 

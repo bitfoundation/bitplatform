@@ -93,6 +93,10 @@ public partial class ServerApiSettings : SharedSettings
         {
             Validator.TryValidateObject(ResponseCaching, new ValidationContext(ResponseCaching), validationResults, true);
         }
+        if (SupportedAppVersions is not null)
+        {
+            Validator.TryValidateObject(SupportedAppVersions, new ValidationContext(SupportedAppVersions), validationResults, true);
+        }
 
         const int MinimumJwtIssuerSigningKeySecretByteLength = 64; // 512 bits = 64 bytes, minimum for HS512
         var jwtIssuerSigningKeySecretByteLength = Encoding.UTF8.GetBytes(Identity.JwtIssuerSigningKeySecret).Length;
@@ -289,10 +293,19 @@ public class HangfireOptions
 
 public class SupportedAppVersionsOptions
 {
+    [RegularExpression(@"^\d+\.\d+(\.\d+)?(\.\d+)?$")]
     public string? MinimumSupportedAndroidAppVersion { get; set; }
+
+    [RegularExpression(@"^\d+\.\d+(\.\d+)?(\.\d+)?$")]
     public string? MinimumSupportedIosAppVersion { get; set; }
+
+    [RegularExpression(@"^\d+\.\d+(\.\d+)?(\.\d+)?$")]
     public string? MinimumSupportedMacOSAppVersion { get; set; }
+
+    [RegularExpression(@"^\d+\.\d+(\.\d+)?(\.\d+)?$")]
     public string? MinimumSupportedWindowsAppVersion { get; set; }
+
+    [RegularExpression(@"^\d+\.\d+(\.\d+)?(\.\d+)?$")]
     public string? MinimumSupportedWebAppVersion { get; set; }
 
     public string? GetMinimumSupportedAppVersion(AppPlatformType platformType)

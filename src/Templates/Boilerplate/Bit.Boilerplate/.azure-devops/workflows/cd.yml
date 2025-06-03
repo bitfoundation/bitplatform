@@ -174,9 +174,9 @@ jobs:
       targetType: 'inline'
       script: |
         cd src\Client\Boilerplate.Client.Windows\
-        dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --self-contained
+        dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APPLICATION_VERSION}}" --self-contained
           dotnet tool restore
-          dotnet vpk pack -u Boilerplate.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'Boilerplate'
+          dotnet vpk pack -u Boilerplate.Client.Windows -v "${{ vars.APPLICATION_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'Boilerplate'
 
   - task: PublishPipelineArtifact@1
     displayName: Upload artifact
