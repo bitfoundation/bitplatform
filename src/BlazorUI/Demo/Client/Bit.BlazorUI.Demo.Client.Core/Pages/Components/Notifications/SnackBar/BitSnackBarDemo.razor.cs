@@ -32,7 +32,7 @@ public partial class BitSnackBarDemo
             DefaultValue = "null",
             Description = "Custom CSS classes for different parts of the snack bar.",
             LinkType = LinkType.Link,
-            Href = "#snackbar-class-styles",
+            Href = "#class-styles",
         },
         new()
         {
@@ -56,6 +56,13 @@ public partial class BitSnackBarDemo
         },
         new()
         {
+            Name = "Persistent",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the snack bar non-dismissible in UI and removes the dismiss button.",
+        },
+        new()
+        {
             Name = "Position",
             Type = "BitSnackBarPosition?",
             DefaultValue = "null",
@@ -70,7 +77,7 @@ public partial class BitSnackBarDemo
             Description = "Custom CSS styles for different parts of the snack bar.",
             DefaultValue = "null",
             LinkType = LinkType.Link,
-            Href = "#snackbar-class-styles",
+            Href = "#class-styles",
         },
         new()
         {
@@ -238,7 +245,7 @@ public partial class BitSnackBarDemo
     [
         new()
         {
-            Id = "snackbar-class-styles",
+            Id = "class-styles",
             Title = "BitSnackBarClassStyles",
             Parameters =
             [
@@ -299,53 +306,134 @@ public partial class BitSnackBarDemo
                     Description = "Custom CSS classes/styles for the progress bar of the BitSnackBar."
                 }
             ]
-        }
-    ];
-
-    private readonly List<ComponentParameter> componentPublicMembers = 
-    [
-        new()
-        {
-            Name = "Show",
-            Type = "async Task Show(string title, string? body = \"\", BitColor color = BitColor.Info, string? cssClass = null, string? cssStyle = null)",
-            DefaultValue = "",
-            Description = "Shows the snackbar.",
         },
         new()
         {
+            Id = "snackbar-item",
+            Title = "BitSnackBarItem",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Id",
+                    Type = "Guid",
+                    DefaultValue = "Guid.NewGuid()",
+                    Description = ""
+                },
+                new()
+                {
+                    Name = "Title",
+                    Type = "string",
+                    DefaultValue = "null",
+                    Description = ""
+                },
+                new()
+                {
+                    Name = "Body",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = ""
+                },
+                new()
+                {
+                    Name = "Color",
+                    Type = "BitColor?",
+                    DefaultValue = "null",
+                    Description = "",
+                    LinkType = LinkType.Link,
+                    Href = "#color-enum",
+                },
+                new()
+                {
+                    Name = "CssClass",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = ""
+                },
+                new()
+                {
+                    Name = "CssStyle",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = ""
+                },
+                new()
+                {
+                    Name = "Persistent",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = ""
+                },
+            ]
+        }
+    ];
+
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
             Name = "Info",
-            Type = "Task Info(string title, string? body = \"\")",
-            DefaultValue = "",
-            Description = "Shows the snackbar with Info color.",
+            Type = "Task<BitSnackBarItem> Info(string title, string? body = \"\", bool persistent = false)",
+            Description = "Shows a new snackbar with Info color.",
+            LinkType = LinkType.Link,
+            Href = "#snackbar-item",
         },
         new()
         {
             Name = "Success",
-            Type = "Task Success(string title, string? body = \"\")",
-            DefaultValue = "",
-            Description = "Shows the snackbar with Success color.",
+            Type = "Task<BitSnackBarItem> Success(string title, string? body = \"\", bool persistent = false)",
+            Description = "Shows a new snackbar with Success color.",
+            LinkType = LinkType.Link,
+            Href = "#snackbar-item",
         },
         new()
         {
             Name = "Warning",
-            Type = "Task Warning(string title, string? body = \"\")",
-            DefaultValue = "",
-            Description = "Shows the snackbar with Warning color.",
+            Type = "Task<BitSnackBarItem> Warning(string title, string? body = \"\", bool persistent = false)",
+            Description = "Shows a new snackbar with Warning color.",
+            LinkType = LinkType.Link,
+            Href = "#snackbar-item",
         },
         new()
         {
             Name = "SevereWarning",
-            Type = "Task Warning(string title, string? body = \"\")",
-            DefaultValue = "",
-            Description = "Shows the snackbar with SevereWarning color.",
+            Type = "Task<BitSnackBarItem> Warning(string title, string? body = \"\", bool persistent = false)",
+            Description = "Shows a new snackbar with SevereWarning color.",
+            LinkType = LinkType.Link,
+            Href = "#snackbar-item",
         },
         new()
         {
             Name = "Error",
-            Type = "Task Error(string title, string? body = \"\")",
-            DefaultValue = "",
-            Description = "Shows the snackbar with Error color.",
-        }
+            Type = "Task<BitSnackBarItem> Error(string title, string? body = \"\", bool persistent = false)",
+            Description = "Shows a new snackbar with Error color.",
+            LinkType = LinkType.Link,
+            Href = "#snackbar-item",
+        },
+        new()
+        {
+            Name = "Show",
+            Type = "Task<BitSnackBarItem> Show(string title, string? body = \"\", BitColor color = BitColor.Info, string? cssClass = null, string? cssStyle = null, bool persistent = false)",
+            Description = "Shows a new snackbar.",
+            LinkType = LinkType.Link,
+            Href = "#snackbar-item",
+        },
+        new()
+        {
+            Name = "Show",
+            Type = "Task<BitSnackBarItem> Show(BitSnackBarItem item)",
+            Description = "Shows a new snackbar.",
+            LinkType = LinkType.Link,
+            Href = "#snackbar-item",
+        },
+        new()
+        {
+            Name = "Close",
+            Type = "Task Close(BitSnackBarItem item)",
+            Description = "Closes a snackbar item.",
+            LinkType = LinkType.Link,
+            Href = "#snackbar-item",
+        },
     ];
 
 
@@ -354,6 +442,24 @@ public partial class BitSnackBarDemo
     private async Task OpenBasicSnackBar()
     {
         await basicRef.Info("This is title", "This is body");
+    }
+
+
+    private BitSnackBarItem? persistentItem;
+    private BitSnackBar persistentRef = default!;
+    private async Task OpenPersistentSnackBar()
+    {
+        await ClosePersistentSnackBar();
+
+        persistentItem = await persistentRef.Info("This is persistent title", "This is persistent body");
+    }
+    private async Task ClosePersistentSnackBar()
+    {
+        if (persistentItem is not null)
+        {
+            await persistentRef.Close(persistentItem);
+            persistentItem = null;
+        }
     }
 
 

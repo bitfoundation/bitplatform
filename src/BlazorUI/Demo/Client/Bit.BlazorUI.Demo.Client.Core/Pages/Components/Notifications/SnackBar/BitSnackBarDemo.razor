@@ -79,6 +79,12 @@
         <br />
     </DemoExample>
 
+    <DemoExample Title="Persistent" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+        <BitSnackBar @ref="persistentRef" Persistent />
+        <BitButton OnClick="OpenPersistentSnackBar">Open SnackBar</BitButton>
+        <BitButton OnClick="ClosePersistentSnackBar">Close SnackBar</BitButton>
+    </DemoExample>
+
     <DemoExample Title="Templates" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <BitSnackBar @ref="dismissIconNameRef" DismissIconName="@BitIconName.Go" />
         <BitButton OnClick="OpenDismissIconName">Dismiss Icon Name</BitButton>

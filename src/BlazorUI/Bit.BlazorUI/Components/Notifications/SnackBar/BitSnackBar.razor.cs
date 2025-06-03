@@ -30,7 +30,7 @@ public partial class BitSnackBar : BitComponentBase
     [Parameter] public BitSnackBarClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The icon name of the dismiss button
+    /// The icon name of the dismiss button.
     /// </summary>
     [Parameter] public string? DismissIconName { get; set; }
 
@@ -43,6 +43,11 @@ public partial class BitSnackBar : BitComponentBase
     /// Callback for when any snack bar is dismissed.
     /// </summary>
     [Parameter] public EventCallback OnDismiss { get; set; }
+
+    /// <summary>
+    /// Makes the snack bar non-dismissible in UI and removes the dismiss button.
+    /// </summary>
+    [Parameter] public bool Persistent { get; set; }
 
     /// <summary>
     /// The position of the snack bars to show (default is bottom right).
@@ -63,9 +68,34 @@ public partial class BitSnackBar : BitComponentBase
 
 
     /// <summary>
-    /// Shows the snackbar.
+    /// Shows a new snackbar with Info color.
     /// </summary>
-    public async Task Show(string title, string? body = "", BitColor color = BitColor.Info, string? cssClass = null, string? cssStyle = null)
+    public Task<BitSnackBarItem> Info(string title, string? body = "", bool persistent = false) => Show(title, body, BitColor.Info, persistent: persistent);
+
+    /// <summary>
+    /// Shows a new snackbar with Success color.
+    /// </summary>
+    public Task<BitSnackBarItem> Success(string title, string? body = "", bool persistent = false) => Show(title, body, BitColor.Success, persistent: persistent);
+
+    /// <summary>
+    /// Shows a new snackbar with Warning color.
+    /// </summary>
+    public Task<BitSnackBarItem> Warning(string title, string? body = "", bool persistent = false) => Show(title, body, BitColor.Warning, persistent: persistent);
+
+    /// <summary>
+    /// Shows a new snackbar with SevereWarning color.
+    /// </summary>
+    public Task<BitSnackBarItem> SevereWarning(string title, string? body = "", bool persistent = false) => Show(title, body, BitColor.SevereWarning, persistent: persistent);
+
+    /// <summary>
+    /// Shows a new snackbar with Error color.
+    /// </summary>
+    public Task<BitSnackBarItem> Error(string title, string? body = "", bool persistent = false) => Show(title, body, BitColor.Error, persistent: persistent);
+
+    /// <summary>
+    /// Shows a new snackbar.
+    /// </summary>
+    public Task<BitSnackBarItem> Show(string title, string? body = "", BitColor color = BitColor.Info, string? cssClass = null, string? cssStyle = null, bool persistent = false)
     {
         var item = new BitSnackBarItem
         {
@@ -73,10 +103,19 @@ public partial class BitSnackBar : BitComponentBase
             Body = body,
             Color = color,
             CssClass = cssClass,
-            CssStyle = cssStyle
+            CssStyle = cssStyle,
+            Persistent = persistent
         };
 
-        if (AutoDismiss)
+        return Show(item);
+    }
+
+    /// <summary>
+    /// Shows a new snackbar.
+    /// </summary>
+    public async Task<BitSnackBarItem> Show(BitSnackBarItem item)
+    {
+        if (AutoDismiss && Persistent is false && item.Persistent is false)
         {
             var timer = new System.Timers.Timer((AutoDismissTime ?? TimeSpan.FromSeconds(3)).TotalMilliseconds);
             timer.Elapsed += (_, _) =>
@@ -90,32 +129,17 @@ public partial class BitSnackBar : BitComponentBase
         _items.Add(item);
 
         await InvokeAsync(StateHasChanged);
+
+        return item;
     }
 
     /// <summary>
-    /// Shows the snackbar with Info color.
+    /// Closes a snackbar item.
     /// </summary>
-    public Task Info(string title, string? body = "") => Show(title, body, BitColor.Info);
-
-    /// <summary>
-    /// Shows the snackbar with Success color.
-    /// </summary>
-    public Task Success(string title, string? body = "") => Show(title, body, BitColor.Success);
-
-    /// <summary>
-    /// Shows the snackbar with Warning color.
-    /// </summary>
-    public Task Warning(string title, string? body = "") => Show(title, body, BitColor.Warning);
-
-    /// <summary>
-    /// Shows the snackbar with SevereWarning color.
-    /// </summary>
-    public Task SevereWarning(string title, string? body = "") => Show(title, body, BitColor.SevereWarning);
-
-    /// <summary>
-    /// Shows the snackbar with Error color.
-    /// </summary>
-    public Task Error(string title, string? body = "") => Show(title, body, BitColor.Error);
+    public async Task Close(BitSnackBarItem item)
+    {
+        Dismiss(item);
+    }
 
 
 
@@ -146,6 +170,8 @@ public partial class BitSnackBar : BitComponentBase
 
     private void Dismiss(BitSnackBarItem item)
     {
+        if (_items.Contains(item) is false) return;
+
         _items.Remove(item);
 
         OnDismiss.InvokeAsync();

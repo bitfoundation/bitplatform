@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-internal class BitSnackBarItem
+public class BitSnackBarItem
 {
     public readonly Guid Id = Guid.NewGuid();
 
@@ -13,4 +13,6 @@ internal class BitSnackBarItem
     public string? CssClass { get; set; }
 
     public string? CssStyle { get; set; }
+
+    public bool Persistent { get; set; }
 }
