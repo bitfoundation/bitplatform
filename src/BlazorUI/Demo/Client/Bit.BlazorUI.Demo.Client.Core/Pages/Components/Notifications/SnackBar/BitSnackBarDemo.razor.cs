@@ -32,7 +32,7 @@ public partial class BitSnackBarDemo
             DefaultValue = "null",
             Description = "Custom CSS classes for different parts of the snack bar.",
             LinkType = LinkType.Link,
-            Href = "#snackbar-class-styles",
+            Href = "#class-styles",
         },
         new()
         {
@@ -56,6 +56,13 @@ public partial class BitSnackBarDemo
         },
         new()
         {
+            Name = "Persistent",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the snack bar non-dismissible in UI and removes the dismiss button.",
+        },
+        new()
+        {
             Name = "Position",
             Type = "BitSnackBarPosition?",
             DefaultValue = "null",
@@ -70,7 +77,7 @@ public partial class BitSnackBarDemo
             Description = "Custom CSS styles for different parts of the snack bar.",
             DefaultValue = "null",
             LinkType = LinkType.Link,
-            Href = "#snackbar-class-styles",
+            Href = "#class-styles",
         },
         new()
         {
@@ -238,7 +245,7 @@ public partial class BitSnackBarDemo
     [
         new()
         {
-            Id = "snackbar-class-styles",
+            Id = "class-styles",
             Title = "BitSnackBarClassStyles",
             Parameters =
             [
@@ -299,53 +306,135 @@ public partial class BitSnackBarDemo
                     Description = "Custom CSS classes/styles for the progress bar of the BitSnackBar."
                 }
             ]
-        }
-    ];
-
-    private readonly List<ComponentParameter> componentPublicMembers = 
-    [
-        new()
-        {
-            Name = "Show",
-            Type = "async Task Show(string title, string? body = \"\", BitColor color = BitColor.Info, string? cssClass = null, string? cssStyle = null)",
-            DefaultValue = "",
-            Description = "Shows the snackbar.",
         },
         new()
         {
+            Id = "snackbar-item",
+            Title = "BitSnackBarItem",
+            Description = "A class to represent each snack bar item.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Id",
+                    Type = "Guid",
+                    DefaultValue = "Guid.NewGuid()",
+                    Description = "The unique identifier of the snack bar item."
+                },
+                new()
+                {
+                    Name = "Title",
+                    Type = "string",
+                    DefaultValue = "null",
+                    Description = "The title text of the snack bar item."
+                },
+                new()
+                {
+                    Name = "Body",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The body text of the snack bar item."
+                },
+                new()
+                {
+                    Name = "Color",
+                    Type = "BitColor?",
+                    DefaultValue = "null",
+                    Description = "The color theme of the snack bar item.",
+                    LinkType = LinkType.Link,
+                    Href = "#color-enum",
+                },
+                new()
+                {
+                    Name = "CssClass",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS class to apply to the snack bar item."
+                },
+                new()
+                {
+                    Name = "CssStyle",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS style to apply to the snack bar item."
+                },
+                new()
+                {
+                    Name = "Persistent",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Makes this specific snack bar item non-dismissible and removes its dismiss button."
+                },
+            ]
+        }
+    ];
+
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
             Name = "Info",
-            Type = "Task Info(string title, string? body = \"\")",
-            DefaultValue = "",
-            Description = "Shows the snackbar with Info color.",
+            Type = "Task<BitSnackBarItem> Info(string title, string? body = \"\", bool persistent = false)",
+            Description = "Shows a new snackbar with Info color.",
+            LinkType = LinkType.Link,
+            Href = "#snackbar-item",
         },
         new()
         {
             Name = "Success",
-            Type = "Task Success(string title, string? body = \"\")",
-            DefaultValue = "",
-            Description = "Shows the snackbar with Success color.",
+            Type = "Task<BitSnackBarItem> Success(string title, string? body = \"\", bool persistent = false)",
+            Description = "Shows a new snackbar with Success color.",
+            LinkType = LinkType.Link,
+            Href = "#snackbar-item",
         },
         new()
         {
             Name = "Warning",
-            Type = "Task Warning(string title, string? body = \"\")",
-            DefaultValue = "",
-            Description = "Shows the snackbar with Warning color.",
+            Type = "Task<BitSnackBarItem> Warning(string title, string? body = \"\", bool persistent = false)",
+            Description = "Shows a new snackbar with Warning color.",
+            LinkType = LinkType.Link,
+            Href = "#snackbar-item",
         },
         new()
         {
             Name = "SevereWarning",
-            Type = "Task Warning(string title, string? body = \"\")",
-            DefaultValue = "",
-            Description = "Shows the snackbar with SevereWarning color.",
+            Type = "Task<BitSnackBarItem> SevereWarning(string title, string? body = \"\", bool persistent = false)",
+            Description = "Shows a new snackbar with SevereWarning color.",
+            LinkType = LinkType.Link,
+            Href = "#snackbar-item",
         },
         new()
         {
             Name = "Error",
-            Type = "Task Error(string title, string? body = \"\")",
-            DefaultValue = "",
-            Description = "Shows the snackbar with Error color.",
-        }
+            Type = "Task<BitSnackBarItem> Error(string title, string? body = \"\", bool persistent = false)",
+            Description = "Shows a new snackbar with Error color.",
+            LinkType = LinkType.Link,
+            Href = "#snackbar-item",
+        },
+        new()
+        {
+            Name = "Show",
+            Type = "Task<BitSnackBarItem> Show(string title, string? body = \"\", BitColor color = BitColor.Info, string? cssClass = null, string? cssStyle = null, bool persistent = false)",
+            Description = "Shows a new snackbar.",
+            LinkType = LinkType.Link,
+            Href = "#snackbar-item",
+        },
+        new()
+        {
+            Name = "Show",
+            Type = "Task<BitSnackBarItem> Show(BitSnackBarItem item)",
+            Description = "Shows a new snackbar.",
+            LinkType = LinkType.Link,
+            Href = "#snackbar-item",
+        },
+        new()
+        {
+            Name = "Close",
+            Type = "Task Close(BitSnackBarItem item)",
+            Description = "Closes a snackbar item.",
+            LinkType = LinkType.Link,
+            Href = "#snackbar-item",
+        },
     ];
 
 
@@ -354,6 +443,24 @@ public partial class BitSnackBarDemo
     private async Task OpenBasicSnackBar()
     {
         await basicRef.Info("This is title", "This is body");
+    }
+
+
+    private BitSnackBarItem? persistentItem;
+    private BitSnackBar persistentRef = default!;
+    private async Task OpenPersistentSnackBar()
+    {
+        await ClosePersistentSnackBar();
+
+        persistentItem = await persistentRef.Info("This is persistent title", "This is persistent body");
+    }
+    private async Task ClosePersistentSnackBar()
+    {
+        if (persistentItem is not null)
+        {
+            await persistentRef.Close(persistentItem);
+            persistentItem = null;
+        }
     }
 
 
@@ -418,189 +525,4 @@ public partial class BitSnackBarDemo
     {
         await snackBarClassesRef.Show("This is title", "This is body");
     }
-
-
-
-    private readonly string example1RazorCode = @"
-<BitSnackBar @ref=""basicRef"" />
-<BitButton OnClick=""OpenBasicSnackBar"">Open SnackBar</BitButton>";
-    private readonly string example1CsharpCode = @"
-private BitSnackBar basicRef = default!;
-private async Task OpenBasicSnackBar()
-{
-    await basicRef.Info(""This is title"", ""This is body"");
-}";
-
-    private readonly string example2RazorCode = @"
-<BitSnackBar @ref=""basicSnackBarRef""
-             Dir=""direction""
-             Position=""@basicSnackBarPosition""
-             AutoDismiss=""@basicSnackBarAutoDismiss""
-             AutoDismissTime=""TimeSpan.FromSeconds(basicSnackBarDismissSeconds)"" />
-
-<BitButton OnClick=""OpenBasicSnackBar"">Show</BitButton>
-
-<BitChoiceGroup @bind-Value=""basicSnackBarColor"" Label=""Type"" TItem=""BitChoiceGroupOption<BitColor>"" TValue=""BitColor"">
-    <BitChoiceGroupOption Text=""Primary"" Value=""BitColor.Primary"" />
-    <BitChoiceGroupOption Text=""Secondary"" Value=""BitColor.Secondary"" />
-    <BitChoiceGroupOption Text=""Tertiary"" Value=""BitColor.Tertiary"" />
-    <BitChoiceGroupOption Text=""Info"" Value=""BitColor.Info"" />
-    <BitChoiceGroupOption Text=""Success"" Value=""BitColor.Success"" />
-    <BitChoiceGroupOption Text=""Warning"" Value=""BitColor.Warning"" />
-    <BitChoiceGroupOption Text=""SevereWarning"" Value=""BitColor.SevereWarning"" />
-    <BitChoiceGroupOption Text=""Error"" Value=""BitColor.Error"" />
-    <BitChoiceGroupOption Text=""PrimaryBackground"" Value=""BitColor.PrimaryBackground"" />
-    <BitChoiceGroupOption Text=""SecondaryBackground"" Value=""BitColor.SecondaryBackground"" />
-    <BitChoiceGroupOption Text=""TertiaryBackground"" Value=""BitColor.TertiaryBackground"" />
-    <BitChoiceGroupOption Text=""PrimaryForeground"" Value=""BitColor.PrimaryForeground"" />
-    <BitChoiceGroupOption Text=""SecondaryForeground"" Value=""BitColor.SecondaryForeground"" />
-    <BitChoiceGroupOption Text=""TertiaryForeground"" Value=""BitColor.TertiaryForeground"" />
-    <BitChoiceGroupOption Text=""PrimaryBorder"" Value=""BitColor.PrimaryBorder"" />
-    <BitChoiceGroupOption Text=""SecondaryBorder"" Value=""BitColor.SecondaryBorder"" />
-    <BitChoiceGroupOption Text=""TertiaryBorder"" Value=""BitColor.TertiaryBorder"" />
-</BitChoiceGroup>
-
-<BitChoiceGroup @bind-Value=""basicSnackBarPosition"" Label=""Position"" TItem=""BitChoiceGroupOption<BitSnackBarPosition>"" TValue=""BitSnackBarPosition"">
-    <BitChoiceGroupOption Text=""TopStart"" Value=""BitSnackBarPosition.TopStart"" />
-    <BitChoiceGroupOption Text=""TopCenter"" Value=""BitSnackBarPosition.TopCenter"" />
-    <BitChoiceGroupOption Text=""TopEnd"" Value=""BitSnackBarPosition.TopEnd"" />
-    <BitChoiceGroupOption Text=""BottomStart"" Value=""BitSnackBarPosition.BottomStart"" />
-    <BitChoiceGroupOption Text=""BottomCenter"" Value=""BitSnackBarPosition.BottomCenter"" />
-    <BitChoiceGroupOption Text=""BottomEnd"" Value=""BitSnackBarPosition.BottomEnd"" />
-</BitChoiceGroup>
-
-<BitChoiceGroup @bind-Value=""direction"" Label=""Direction"" TItem=""BitChoiceGroupOption<BitDir>"" TValue=""BitDir"">
-    <BitChoiceGroupOption Text=""LTR"" Value=""BitDir.Ltr"" />
-    <BitChoiceGroupOption Text=""RTL"" Value=""BitDir.Rtl"" />
-    <BitChoiceGroupOption Text=""Auto"" Value=""BitDir.Auto"" />
-</BitChoiceGroup>
-
-<BitToggle @bind-Value=""basicSnackBarAutoDismiss"" Label=""Auto Dismiss"" />
-<BitNumberField @bind-Value=""basicSnackBarDismissSeconds"" Step=""1"" Min=""1"" Label=""Dismiss Time (based on second)"" />
-
-<BitToggle @bind-Value=""basicSnackBarMultiline"" Label=""Multiline"" Inline />
-
-<BitTextField @bind-Value=""basicSnackBarTitle"" Label=""Title"" DefaultValue=""Title"" />
-<BitTextField @bind-Value=""basicSnackBarBody"" Label=""Body"" Multiline Rows=""6"" DefaultValue=""This is a body!"" />";
-    private readonly string example2CsharpCode = @"
-private BitDir direction;
-private bool basicSnackBarMultiline;
-private bool basicSnackBarAutoDismiss;
-private int basicSnackBarDismissSeconds = 3;
-private BitSnackBar customizationRef = default!;
-private string basicSnackBarBody = ""This is body"";
-private string basicSnackBarTitle = ""This is title"";
-private BitColor basicSnackBarColor = BitColor.Info;
-private BitSnackBarPosition basicSnackBarPosition = BitSnackBarPosition.BottomEnd;
-
-private async Task OpenBasicSnackBar()
-{
-    await basicSnackBarRef.Show(basicSnackBarTitle, basicSnackBarBody, basicSnackBarColor);
-}";
-
-    private readonly string example3RazorCode = @"
-<BitSnackBar @ref=""dismissIconNameRef"" DismissIconName=""@BitIconName.Go"" />
-<BitButton OnClick=""OpenDismissIconName"">Dismiss Icon Name</BitButton>
-
-<BitSnackBar @ref=""titleTemplateRef"" AutoDismiss=""false"">
-    <TitleTemplate Context=""title"">
-        <div style=""display: flex; flex-direction: row; gap: 10px;"">
-            <span>@title</span>
-            <BitProgress Thickness=""20"" Style=""width: 40px;"" Indeterminate />
-        </div>
-    </TitleTemplate>
-</BitSnackBar>
-<BitButton OnClick=""OpenTitleTemplate"">Title Template</BitButton>
-
-<BitSnackBar @ref=""bodyTemplateRef"" AutoDismiss=""false"">
-    <BodyTemplate Context=""body"">
-        <div style=""display: flex; flex-flow: column nowrap; gap: 5px;"">
-            <span style=""font-size: 12px; margin-bottom: 5px;"">@body</span>
-            <div style=""display: flex; gap: 10px;"">
-                <BitButton OnClick=""@(() => bodyTemplateAnswer = ""Yes"")"">Yes</BitButton>
-                <BitButton OnClick=""@(() => bodyTemplateAnswer = ""No"")"">No</BitButton>
-            </div>
-            <span>Answer: @bodyTemplateAnswer</span>
-        </div>
-    </BodyTemplate>
-</BitSnackBar>
-<BitButton OnClick=""OpenBodyTemplate"">Body Template</BitButton>";
-    private readonly string example3CsharpCode = @"
-private string? bodyTemplateAnswer;
-private BitSnackBar bodyTemplateRef = default!;
-private BitSnackBar titleTemplateRef = default!;
-private BitSnackBar dismissIconNameRef = default!;
-
-private async Task OpenDismissIconName()
-{
-    await dismissIconNameRef.Success(""This is title"", ""This is body"");
-}
-
-private async Task OpenTitleTemplate()
-{
-    await titleTemplateRef.Warning(""This is title"", ""This is body"");
-}
-
-private async Task OpenBodyTemplate()
-{
-    await bodyTemplateRef.Error(""This is title"", ""This is body"");
-}";
-
-    private readonly string example4RazorCode = @"
-<style>
-    .custom-class {
-        background-color: tomato;
-        box-shadow: gold 0 0 1rem;
-    }
-
-    .custom-container {
-        border: 1px solid gold;
-    }
-
-    .custom-progress {
-        background-color: red;
-    }
-</style>
-
-
-<BitSnackBar @ref=""snackBarStyleRef"" />
-<BitButton OnClick=""OpenSnackBarStyle"">Custom style</BitButton>
-
-<BitSnackBar @ref=""snackBarClassRef"" />
-<BitButton OnClick=""OpenSnackBarClass"">Custom style</BitButton>
-
-<BitSnackBar @ref=""snackBarStylesRef""
-             Styles=""@(new() { Container = ""width: 16rem; background-color: purple;"",
-                               Header = ""background-color: rebeccapurple; padding: 0.2rem;"" })"" />
-<BitButton OnClick=""OpenSnackBarStyles"">Custom styles</BitButton>
-
-<BitSnackBar @ref=""snackBarClassesRef"" AutoDismiss
-             Classes=""@(new() { Container = ""custom-container"",
-                                ProgressBar = ""custom-progress"" })"" />
-<BitButton OnClick=""OpenSnackBarClasses"">Custom classes</BitButton>";
-    private readonly string example4CsharpCode = @"
-private BitSnackBar snackBarStyleRef = default!;
-private BitSnackBar snackBarClassRef = default!;
-private BitSnackBar snackBarStylesRef = default!;
-private BitSnackBar snackBarClassesRef = default!;
-
-private async Task OpenSnackBarStyle()
-{
-    await snackBarClassRef.Show(""This is title"", ""This is body"", cssStyle: ""background-color: dodgerblue; border-radius: 0.5rem;"");
-}
-
-private async Task OpenSnackBarClass()
-{
-    await snackBarStyleRef.Show(""This is title"", ""This is body"", cssClass: ""custom-class"");
-}
-
-private async Task OpenSnackBarStyles()
-{
-    await snackBarStylesRef.Show(""This is title"", ""This is body"");
-}
-
-private async Task OpenSnackBarClasses()
-{
-    await snackBarClassesRef.Show(""This is title"", ""This is body"");
-}";
 }
