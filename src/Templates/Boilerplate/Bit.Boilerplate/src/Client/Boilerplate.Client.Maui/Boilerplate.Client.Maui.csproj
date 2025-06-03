@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
         <TargetFrameworks>net9.0-android;net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
@@ -33,6 +33,16 @@
         <CompressionEnabled>false</CompressionEnabled>
         <!-- Enabling compression generates `.br` and `.gz` files for static assets.
         While this is beneficial for Blazor WebAssembly, it only adds to the app bundle size in MAUI without offering any advantages. -->
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
+        <!-- Android requires a unique, increasing integer for `versionCode`. We derive it from Version (e.g., '1.0' or '1.0.0') by extracting major, minor, and patch numbers,
+            setting patch to 0 if absent, and calculating versionCode as major*10000 + minor*100 + patch (e.g., '1.0' becomes 10000, '1.0.1' becomes 10001). -->
+        <MajorVersion>$([System.Text.RegularExpressions.Regex]::Match($(Version), '^\d+').Value)</MajorVersion>
+        <MinorVersion>$([System.Text.RegularExpressions.Regex]::Match($(Version), '\.(\d+)').Value)</MinorVersion>
+        <PatchVersion>$([System.Text.RegularExpressions.Regex]::Match($(Version), '\.\d+\.(\d+)$').Value)</PatchVersion>
+        <PatchVersion Condition="'$(PatchVersion)' == ''">0</PatchVersion>
+        <ApplicationVersion>$([MSBuild]::Add($([MSBuild]::Multiply($(MajorVersion), 10000)), $([MSBuild]::Add($([MSBuild]::Multiply($(MinorVersion), 100)), $(PatchVersion)))))</ApplicationVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Environment)' != 'Development'">
