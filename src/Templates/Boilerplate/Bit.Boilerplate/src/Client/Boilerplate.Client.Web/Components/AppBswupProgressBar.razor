@@ -52,14 +52,10 @@
             #bit-bswup .bswup-progress-text::after {
                 content: var(--bit-bswup-percent-text, "");
             }
-
-            #bit-bswup[style*="--bit-bswup-percent: 100"] {
-                display: none !important;
-            }
 </style>
 
 <div>
-    <BswupProgress AppContainer="#app-container" HideApp="false" AutoReload="false" ShowLogs="false">
+    <BswupProgress AppContainer="#app-container" HideApp="false" AutoReload="false" ShowLogs="false" ShowAssets="false" AutoHide="true">
         <div class="bswup-progress-text" />
         <svg class="bswup-container">
             <circle r="40%" cx="50%" cy="50%" />

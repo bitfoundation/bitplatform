@@ -93,10 +93,6 @@
                 #bit-bswup .bswup-progress-text::after {
                     content: var(--bit-bswup-percent-text, "");
                 }
-
-                #bit-bswup[style*="--bit-bswup-percent: 100"] {
-                    display: none !important;
-                }
     </style>
     <style>
         .bit-lds-grid div {
@@ -210,8 +206,8 @@
     <script src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_content/Bit.BlazorES2019/blazor.webassembly.js"></script>
     <script src="_content/Bit.Bswup/bit-bswup.progress.js"></script>
     <script>
-        const autoReload = false, showLogs = false, showAssets = false, appContainer = '#app-container', hideApp = false, handler = null;
-        startBswupProgress(autoReload, showLogs, showAssets, appContainer, hideApp, handler);
+        const autoReload = false, showLogs = false, showAssets = false, appContainer = '#app-container', hideApp = false, autoHide = true, handler = null;
+        BitBswupProgress.start(autoReload, showLogs, showAssets, appContainer, hideApp, autoHide, handler);
     </script>
     <script src="_content/Bit.Butil/bit-butil.js"></script>
     <!--#if (offlineDb == true) -->

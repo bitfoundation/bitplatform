@@ -4,10 +4,11 @@ public partial class ForceUpdateSnackBar
 {
     [AutoInject] private IAppUpdateService appUpdateService = default!;
 
-    private BitSnackBar bitSnackBar = default!;
 
     private Action? unsubscribe;
-    private bool isVisible = false;
+    private bool isShown = false;
+    private BitSnackBar bitSnackBar = default!;
+
 
     protected override async Task OnInitAsync()
     {
@@ -17,21 +18,19 @@ public partial class ForceUpdateSnackBar
 
         unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.FORCE_UPDATE, async (_) =>
         {
-            if (isVisible) return;
-            isVisible = true;
+            if (isShown) return;
+
+            isShown = true;
             await bitSnackBar.Show(string.Empty);
         });
     }
+
 
     private async Task Update()
     {
         await appUpdateService.ForceUpdate();
     }
 
-    private void OnDismiss()
-    {
-        isVisible = false;
-    }
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
