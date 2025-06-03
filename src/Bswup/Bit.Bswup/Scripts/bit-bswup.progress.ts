@@ -13,7 +13,7 @@
         showAssets: boolean,
         appContainerSelector: string,
         hideApp: boolean,
-        hideProgress: boolean,
+        autoHide: boolean,
         handler?: string) {
 
         const appEl = document.querySelector(appContainerSelector) as HTMLElement;
@@ -40,9 +40,9 @@
             function handleInternal(message: string, data: any) {
                 const hideApp_ = _config.hideApp ?? hideApp;
                 const showLogs_ = _config.showLogs ?? showLogs;
+                const autoHide_ = _config.autoHide ?? autoHide;
                 const showAssets_ = _config.showAssets ?? showAssets;
                 const autoReload_ = _config.autoReload ?? autoReload;
-                const hideProgress_ = _config.hideProgress ?? hideProgress;
 
                 switch (message) {
                     case BswupMessage.updateFound: return showLogs_ ? console.log('an update found.') : undefined;
@@ -76,7 +76,8 @@
                         return showLogs_ ? console.log('asset downloaded:', data) : undefined;
 
                     case BswupMessage.downloadFinished:
-                        if (hideProgress_) {
+                        if (autoHide_) {
+                            hideApp && appEl && (appEl.style.display = appElOriginalDisplay);
                             bswupEl && (bswupEl.style.display = 'none');
                         }
 
@@ -115,5 +116,5 @@ interface IBswupProgressConfigs {
     showLogs?: boolean | undefined;
     showAssets?: boolean | undefined;
     hideApp?: boolean | undefined;
-    hideProgress?: boolean | undefined;
+    autoHide?: boolean | undefined;
 };
