@@ -19,6 +19,7 @@ public partial class AppDiagnosticModal
     //#endif
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IUserController userController = default!;
+    [AutoInject] private IAppUpdateService appUpdateService = default!;
 
     private static async Task ThrowTestException()
     {
@@ -145,6 +146,11 @@ public partial class AppDiagnosticModal
         {
             NavigationManager.Refresh(forceReload: true);
         }
+    }
+
+    private async Task UpdateApp()
+    {
+        await appUpdateService.ForceUpdate();
     }
 
     //#if (signalR == true)

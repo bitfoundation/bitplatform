@@ -131,6 +131,13 @@
                            OnClick="ClearCache"
                            IconName="@BitIconName.RemoveFrom"
                            Color="BitColor.SecondaryBackground" />
+
+                <BitButton IconOnly
+                           AutoLoading
+                           Title="Update app"
+                           OnClick="UpdateApp"
+                           IconName="@BitIconName.UpdateRestore"
+                           Color="BitColor.SecondaryBackground" />
             </BitStack>
 
             <BitBasicList @ref="logStackRef"
