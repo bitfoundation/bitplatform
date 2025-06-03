@@ -264,7 +264,9 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     }
 
     //#if (database == "PostgreSQL")
-    // In order to enable embedding, the `pgvector` extension for must be installed in your PostgreSQL.
+    // In order to enable embedding, the `pgvector` extension must be installed in your PostgreSQL.
+    // The following command runs the postgreSQL container with the `pgvector` extension:
+    // docker run -d --name postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=BoilerplateDb -p 5432:5432 -v pgdata:/var/lib/postgresql/data --restart unless-stopped pgvector/pgvector:pg17
     public static readonly bool EmbeddingIsEnabled = false;
     //#endif
 }
