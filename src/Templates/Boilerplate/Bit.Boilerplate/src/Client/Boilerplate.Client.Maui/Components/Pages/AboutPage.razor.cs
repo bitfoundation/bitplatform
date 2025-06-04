@@ -26,9 +26,11 @@ public partial class AboutPage
         appVersion = telemetryContext.AppVersion!;
         if (AppPlatform.IsAndroid)
         {
+            //-:cnd:noEmit
 #if Android
             appVersion += " / " + Platform.CurrentActivity!.PackageManager!.GetPackageInfo(AppInfo.PackageName, default(Android.Content.PM.PackageInfoFlags))!.VersionCode;
 #endif
+            //+:cnd:noEmit
         }
         processId = Environment.ProcessId.ToString();
     }
