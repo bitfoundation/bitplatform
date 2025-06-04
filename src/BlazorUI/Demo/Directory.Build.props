@@ -9,6 +9,7 @@
         <WarningsAsErrors>$(WarningsAsErrors);CS0114</WarningsAsErrors>
 
         <Version>1.0.0</Version>
+        <ApplicationDisplayVersion>$(Version)</ApplicationDisplayVersion>
 
         <NeutralLanguage>en-US</NeutralLanguage>
 
