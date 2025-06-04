@@ -5,8 +5,8 @@ public partial class ForceUpdateSnackBar
     [AutoInject] private IAppUpdateService appUpdateService = default!;
 
 
+    private bool isShown;
     private Action? unsubscribe;
-    private bool isShown = false;
     private BitSnackBar bitSnackBar = default!;
 
 
@@ -21,7 +21,7 @@ public partial class ForceUpdateSnackBar
             if (isShown) return;
 
             isShown = true;
-            await bitSnackBar.Show(string.Empty);
+            await bitSnackBar.Success(string.Empty);
         });
     }
 
