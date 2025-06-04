@@ -7,7 +7,7 @@ public partial class MainLayout
     [AutoInject] protected IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] protected IAuthorizationService authorizationService = default!;
 
-    private async Task SetNavPanelItems()
+    private async Task SetNavPanelItems(ClaimsPrincipal authUser)
     {
         navPanelItems =
         [
@@ -21,8 +21,8 @@ public partial class MainLayout
 
         //#if (module == "Admin")
 
-        var (dashboard, manageProductCatalog) = await (authorizationService.IsAuthorizedAsync(user!, AppFeatures.AdminPanel.Dashboard),
-            authorizationService.IsAuthorizedAsync(user!, AppFeatures.AdminPanel.ManageProductCatalog));
+        var (dashboard, manageProductCatalog) = await (authorizationService.IsAuthorizedAsync(authUser!, AppFeatures.AdminPanel.Dashboard),
+            authorizationService.IsAuthorizedAsync(authUser!, AppFeatures.AdminPanel.ManageProductCatalog));
 
         if (dashboard || manageProductCatalog)
         {
@@ -67,7 +67,7 @@ public partial class MainLayout
         //#endif
 
         //#if (sample == true)
-        if (await authorizationService.IsAuthorizedAsync(user!, AppFeatures.Todo.ManageTodo))
+        if (await authorizationService.IsAuthorizedAsync(authUser!, AppFeatures.Todo.ManageTodo))
         {
             navPanelItems.Add(new()
             {
@@ -101,9 +101,9 @@ public partial class MainLayout
             Url = Urls.AboutPage,
         });
 
-        var (manageRoles, manageUsers, manageAiPrompt) = await (authorizationService.IsAuthorizedAsync(user!, AppFeatures.Management.ManageRoles),
-            authorizationService.IsAuthorizedAsync(user!, AppFeatures.Management.ManageUsers),
-            authorizationService.IsAuthorizedAsync(user!, AppFeatures.Management.ManageAiPrompt));
+        var (manageRoles, manageUsers, manageAiPrompt) = await (authorizationService.IsAuthorizedAsync(authUser!, AppFeatures.Management.ManageRoles),
+            authorizationService.IsAuthorizedAsync(authUser!, AppFeatures.Management.ManageUsers),
+            authorizationService.IsAuthorizedAsync(authUser!, AppFeatures.Management.ManageAiPrompt));
 
         if (manageRoles || manageUsers || manageAiPrompt)
         {
@@ -149,7 +149,7 @@ public partial class MainLayout
             //#endif
         }
 
-        if (user.IsAuthenticated())
+        if (authUser.IsAuthenticated())
         {
             navPanelItems.Add(new()
             {

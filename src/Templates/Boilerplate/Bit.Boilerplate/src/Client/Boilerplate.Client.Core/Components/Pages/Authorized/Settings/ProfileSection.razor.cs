@@ -8,7 +8,7 @@ namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings;
 public partial class ProfileSection
 {
     [Parameter] public bool Loading { get; set; }
-    [Parameter] public UserDto? User { get; set; }
+    [CascadingParameter] public UserDto? User { get; set; }
 
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private IAttachmentController attachmentController = default!;

@@ -1,13 +1,9 @@
-using Boilerplate.Client.Core.Services.HttpMessageHandlers;
+﻿using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 namespace Boilerplate.Client.Core.Components;
 
 public class Parameters
 {
-    public const string CurrentDir = nameof(CurrentDir);
-    public const string CurrentTheme = nameof(CurrentTheme);
-    public const string CurrentRouteData = nameof(CurrentRouteData);
-
     /// <summary>
     /// Indicates the connection status, with default behavior tied to the SignalR connection status.
     /// <see cref="ExceptionDelegatingHandler"/> allows this value to be updated based on server responses:

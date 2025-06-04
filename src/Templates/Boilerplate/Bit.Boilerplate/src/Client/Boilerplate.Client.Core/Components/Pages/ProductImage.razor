@@ -5,8 +5,7 @@
 </div>
 
 @code {
-    [CascadingParameter(Name = Parameters.CurrentTheme)]
-    private AppThemeType? currentTheme { get; set; }
+    [CascadingParameter] private AppThemeType? currentTheme { get; set; }
 
     [Parameter] public string? Src { get; set; }
     [Parameter] public string? Width { get; set; }
