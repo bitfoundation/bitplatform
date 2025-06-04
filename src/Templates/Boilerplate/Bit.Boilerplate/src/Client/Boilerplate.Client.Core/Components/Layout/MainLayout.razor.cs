@@ -1,6 +1,5 @@
 ﻿//+:cnd:noEmit
 using System.Reflection;
-using System.Threading.Tasks;
 using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 using Microsoft.AspNetCore.Components.Routing;
@@ -25,6 +24,7 @@ public partial class MainLayout : IAsyncDisposable
     private RouteData? currentRouteData;
     private List<Action> unsubscribers = [];
     private Guid? userIdForUpdateAuthRelatedUI;
+    private CancellationTokenSource? getCurrentUserCts;
 
     [AutoInject] private Keyboard keyboard = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
@@ -168,6 +168,13 @@ public partial class MainLayout : IAsyncDisposable
 
         await SetNavPanelItems(authUser);
 
+        if (getCurrentUserCts is not null)
+        {
+            using var currentCts = getCurrentUserCts;
+            await currentCts.CancelAsync();
+        }
+        getCurrentUserCts = new();
+
         if (authUser.IsAuthenticated() is false)
         {
             user = null;
@@ -176,7 +183,7 @@ public partial class MainLayout : IAsyncDisposable
         else if (authUser.GetUserId() != userIdForUpdateAuthRelatedUI)
         {
             userIdForUpdateAuthRelatedUI = authUser.GetUserId();
-            user = await userController.GetCurrentUser(default);
+            user = await userController.GetCurrentUser(getCurrentUserCts.Token);
         }
     }
 
@@ -231,6 +238,12 @@ public partial class MainLayout : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        if (getCurrentUserCts is not null)
+        {
+            await getCurrentUserCts.CancelAsync();
+            getCurrentUserCts.Dispose();
+        }
+
         navigationManager.LocationChanged -= NavigationManager_LocationChanged;
         authManager.AuthenticationStateChanged -= AuthenticationStateChanged;
 
