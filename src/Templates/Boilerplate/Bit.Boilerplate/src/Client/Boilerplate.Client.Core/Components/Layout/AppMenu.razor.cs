@@ -26,7 +26,7 @@ public partial class AppMenu
     private AppThemeType? CurrentTheme { get; set; }
 
     [CascadingParameter(Name = Parameters.CurrentUser)]
-    UserDto? CurrentUser { get; set; }
+    private UserDto? CurrentUser { get; set; }
 
     private string? ProfileImageUrl => CurrentUser?.GetProfileImageUrl(AbsoluteServerAddress);
 

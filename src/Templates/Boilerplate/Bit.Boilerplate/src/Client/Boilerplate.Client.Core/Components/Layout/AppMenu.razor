@@ -39,61 +39,9 @@
                                 <BitPersona Class="persona"
                                             ImageUrl="@ProfileImageUrl"
                                             OnImageClick="GoToProfile"
-                                            Size="BitPersonaSize.AspNetCore.Components.EventCallback.Factory.Create<global::Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
-#nullable restore
-#line (41,59)-(41,70) "D:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Core\Components\Layout\AppMenu.razor"
-GoToProfile
-
-#line default
-#line hidden
-#nullable disable
-                            )));
-                            __builder5.AddComponentParameter(56, nameof(global::Bit.BlazorUI.BitPersona.
-#nullable restore
-#line (42,45)-(42,49) "D:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Core\Components\Layout\AppMenu.razor"
-Size
-
-#line default
-#line hidden
-#nullable disable
-                            ), global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<global::Bit.BlazorUI.BitPersonaSize>(
-#nullable restore
-#line (42,51)-(42,72) "D:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Core\Components\Layout\AppMenu.razor"
-BitPersonaSize.Size48
-
-#line default
-#line hidden
-#nullable disable
-                            ));
-                            __builder5.AddComponentParameter(57, nameof(global::Bit.BlazorUI.BitPersona.
-#nullable restore
-#line (43,45)-(43,56) "D:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Core\Components\Layout\AppMenu.razor"
-PrimaryText
-
-#line default
-#line hidden
-#nullable disable
-                            ), global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<global::System.String>(
-#nullable restore
-#line (43,59)-(43,83) "D:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Core\Components\Layout\AppMenu.razor"
-CurrentUser?.DisplayName
-
-#line default
-#line hidden
-#nullable disable
-                            ));
-                            __builder5.AddComponentParameter(58, nameof(global::Bit.BlazorUI.BitPersona.
-#nullable restore
-#line (44,45)-(44,58) "D:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Core\Components\Layout\AppMenu.razor"
-SecondaryText
-
-#line default
-#line hidden
-#nullable disable
-                            ), global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<global::System.String>(
-#nullable restore
-#line (44,62)-(44,108) "D:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Core\Components\Layout\AppMenu.razor"
-CurrentUser?.Email ?? CurrentUser?.PhoneNumber)"
+                                            Size="BitPersonaSize.Size48"
+                                            PrimaryText="@CurrentUser?.DisplayName"
+                                            SecondaryText="@(CurrentUser?.Email ?? CurrentUser?.PhoneNumber)"
                                             Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)">
                                     <ImageOverlayTemplate>
                                         <span>@Localizer[nameof(AppStrings.Edit)]</span>
