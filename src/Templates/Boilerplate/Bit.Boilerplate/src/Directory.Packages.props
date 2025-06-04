@@ -13,7 +13,7 @@
         <PackageVersion Include="Fido2.AspNet" Version="4.0.0-beta.16" />
         <PackageVersion Include="Fido2.Models" Version="4.0.0-beta.16" />
         <PackageVersion Include="HtmlSanitizer" Version="9.0.884" />
-        <PackageVersion Include="libphonenumber-csharp" Version="9.0.5" />
+        <PackageVersion Include="libphonenumber-csharp" Version="9.0.6" />
         <PackageVersion Include="Meziantou.Framework.Win32.Jobs" Version="3.4.3" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.5" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.5" />
@@ -26,7 +26,7 @@
         <PackageVersion Include="Microsoft.Maui.Controls" Version="9.0.70" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.70" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="9.0.70" />
-        <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.3240.44" />
+        <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.3296.44" />
         <PackageVersion Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
         <PackageVersion Include="Oscore.Maui.AppStoreInfo" Version="1.2.0" />
         <PackageVersion Include="Plugin.Maui.AppRating" Version="1.2.1" />
@@ -39,9 +39,9 @@
         <!--/+:msbuild-conditional:noEmit -->
         <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.20" />
         <PackageVersion Include="Hangfire.EntityFrameworkCore" Version="0.7.0" />
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" Version="5.8.0" />
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" Version="5.8.0" />
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" Version="5.8.0" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" Version="5.9.0" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" Version="5.9.0" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" Version="5.9.0" />
         <PackageVersion Include="Xamarin.AndroidX.Activity" Version="1.10.1.1" />
         <PackageVersion Include="Xamarin.AndroidX.Activity.Ktx" Version="1.10.1.1" />
         <PackageVersion Include="Xamarin.AndroidX.Collection" Version="1.5.0.1" />
@@ -89,8 +89,8 @@
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.5" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.5" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.5" />
-        <PackageVersion Include="Swashbuckle.AspNetCore" Version="8.1.1" />
-        <PackageVersion Include="Microsoft.Identity.Web" Version="3.9.1" />
+        <PackageVersion Include="Swashbuckle.AspNetCore" Version="8.1.4" />
+        <PackageVersion Include="Microsoft.Identity.Web" Version="3.9.3" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.5" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="9.0.5" />
         <PackageVersion Include="AspNet.Security.OAuth.Apple" Version="9.4.0" />
@@ -106,9 +106,9 @@
         <PackageVersion Include="System.Text.Json" Version="9.0.5" />
         <PackageVersion Include="coverlet.collector" Version="6.0.4" />
         <PackageVersion Include="FakeItEasy" Version="8.3.0" />
-        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
-        <PackageVersion Include="Microsoft.Playwright.MSTest" Version="1.51.0" />
-        <PackageVersion Include="MSTest.TestAdapter" Version="3.8.3" />
-        <PackageVersion Include="MSTest.TestFramework" Version="3.8.3" />
+        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+        <PackageVersion Include="Microsoft.Playwright.MSTest" Version="1.52.0" />
+        <PackageVersion Include="MSTest.TestAdapter" Version="3.9.1" />
+        <PackageVersion Include="MSTest.TestFramework" Version="3.9.1" />
     </ItemGroup>
 </Project>
