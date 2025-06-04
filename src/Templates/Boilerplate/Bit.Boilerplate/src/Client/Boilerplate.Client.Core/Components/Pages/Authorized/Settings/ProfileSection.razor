@@ -31,7 +31,7 @@
                         {
                             <BitPersona HidePersonaDetails
                                         ImageUrl="@ProfileImageUrl"
-                                        PrimaryText="@User?.FullName"
+                                        PrimaryText="@CurrentUser?.FullName"
                                         Size=@BitPersonaSize.Size72
                                         Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
                             <BitLink OnClick="() => fileUploadRef.Browse()" NoUnderline>
@@ -47,7 +47,7 @@
                 </LabelTemplate>
             </BitFileUpload>
 
-            @if (User?.HasProfilePicture is true)
+            @if (CurrentUser?.HasProfilePicture is true)
             {
                 <BitButton IsLoading=@isSaving OnClick="WrapHandled(RemoveProfileImage)" Color="BitColor.Error">
                     @Localizer[nameof(AppStrings.Remove)]

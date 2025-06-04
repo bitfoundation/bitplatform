@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components.Routing;
+﻿using Microsoft.AspNetCore.Components.Routing;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -9,7 +9,9 @@ public partial class Header : AppComponentBase
     private bool showGoBackButton;
     private Action unsubscribePageTitleChanged = default!;
 
-    [CascadingParameter] private BitDir? currentDir { get; set; }
+    [CascadingParameter(Name = Parameters.CurrentDir)]
+    private BitDir? CurrentDir { get; set; }
+
 
     [AutoInject] private History history = default!;
 

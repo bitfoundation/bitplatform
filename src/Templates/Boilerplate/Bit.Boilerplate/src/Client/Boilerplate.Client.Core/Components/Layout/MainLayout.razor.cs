@@ -19,7 +19,7 @@ public partial class MainLayout : IAsyncDisposable
     /// </summary>
     private bool? isOnline;
 
-    private UserDto? user;
+    private UserDto? currentUser;
     private AppThemeType? currentTheme;
     private RouteData? currentRouteData;
     private List<Action> unsubscribers = [];
@@ -60,7 +60,7 @@ public partial class MainLayout : IAsyncDisposable
             // we can still assume that if the client is displaying a pre-rendered result, it is online.
 
             navigationManager.LocationChanged += NavigationManager_LocationChanged;
-            authManager.AuthenticationStateChanged += AuthenticationStateChanged;
+            authManager.AuthenticationStateChanged += AuthManager_AuthenticationStateChanged;
 
             unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async _ =>
             {
@@ -99,14 +99,14 @@ public partial class MainLayout : IAsyncDisposable
             {
                 if (payload is null) return;
 
-                user = payload is JsonElement jsonDocument
+                currentUser = payload is JsonElement jsonDocument
                     ? jsonDocument.Deserialize(jsonSerializerOptions.GetTypeInfo<UserDto>())! // PROFILE_UPDATED can be invoked from server through SignalR
                     : (UserDto)payload;
 
                 await InvokeAsync(StateHasChanged);
             }));
 
-            await UpdateAuthRelatedUI(AuthenticationStateTask);
+            await SetCurrentUser(AuthenticationStateTask);
 
             SetCurrentDir();
             currentTheme = await themeService.GetCurrentTheme();
@@ -146,11 +146,11 @@ public partial class MainLayout : IAsyncDisposable
         StateHasChanged();
     }
 
-    private async void AuthenticationStateChanged(Task<AuthenticationState> task)
+    private async void AuthManager_AuthenticationStateChanged(Task<AuthenticationState> task)
     {
         try
         {
-            await UpdateAuthRelatedUI(task);
+            await SetCurrentUser(task);
         }
         catch (Exception ex)
         {
@@ -162,7 +162,7 @@ public partial class MainLayout : IAsyncDisposable
         }
     }
 
-    private async Task UpdateAuthRelatedUI(Task<AuthenticationState> task)
+    private async Task SetCurrentUser(Task<AuthenticationState> task)
     {
         var authUser = (await task).User;
 
@@ -177,13 +177,13 @@ public partial class MainLayout : IAsyncDisposable
 
         if (authUser.IsAuthenticated() is false)
         {
-            user = null;
+            currentUser = null;
             userIdForUpdateAuthRelatedUI = null;
         }
         else if (authUser.GetUserId() != userIdForUpdateAuthRelatedUI)
         {
             userIdForUpdateAuthRelatedUI = authUser.GetUserId();
-            user = await userController.GetCurrentUser(getCurrentUserCts.Token);
+            currentUser = await userController.GetCurrentUser(getCurrentUserCts.Token);
         }
     }
 
@@ -245,7 +245,7 @@ public partial class MainLayout : IAsyncDisposable
         }
 
         navigationManager.LocationChanged -= NavigationManager_LocationChanged;
-        authManager.AuthenticationStateChanged -= AuthenticationStateChanged;
+        authManager.AuthenticationStateChanged -= AuthManager_AuthenticationStateChanged;
 
         unsubscribers.ForEach(d => d.Invoke());
 

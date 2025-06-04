@@ -8,11 +8,11 @@
             <BitIcon IconName="@BitIconName.ChevronDown" Size="BitSize.Small" Color="BitColor.Info" Class="menu-chevron" />
             <AuthorizeView>
                 <Authorized>
-                    <BitText Class="menu-displayname">@User?.DisplayName</BitText>
+                    <BitText Class="menu-displayname">@CurrentUser?.DisplayName</BitText>
                     <BitPersona Class="persona"
                                 ImageUrl="@ProfileImageUrl"
                                 Size=@BitPersonaSize.Size32
-                                PrimaryText="@User?.DisplayName"
+                                PrimaryText="@CurrentUser?.DisplayName"
                                 Classes="@(new() { DetailsContainer = "persona-details" })"
                                 Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
                 </Authorized>
@@ -39,9 +39,61 @@
                                 <BitPersona Class="persona"
                                             ImageUrl="@ProfileImageUrl"
                                             OnImageClick="GoToProfile"
-                                            Size="BitPersonaSize.Size48"
-                                            PrimaryText="@User?.DisplayName"
-                                            SecondaryText="@(User?.Email ?? User?.PhoneNumber)"
+                                            Size="BitPersonaSize.AspNetCore.Components.EventCallback.Factory.Create<global::Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
+#nullable restore
+#line (41,59)-(41,70) "D:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Core\Components\Layout\AppMenu.razor"
+GoToProfile
+
+#line default
+#line hidden
+#nullable disable
+                            )));
+                            __builder5.AddComponentParameter(56, nameof(global::Bit.BlazorUI.BitPersona.
+#nullable restore
+#line (42,45)-(42,49) "D:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Core\Components\Layout\AppMenu.razor"
+Size
+
+#line default
+#line hidden
+#nullable disable
+                            ), global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<global::Bit.BlazorUI.BitPersonaSize>(
+#nullable restore
+#line (42,51)-(42,72) "D:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Core\Components\Layout\AppMenu.razor"
+BitPersonaSize.Size48
+
+#line default
+#line hidden
+#nullable disable
+                            ));
+                            __builder5.AddComponentParameter(57, nameof(global::Bit.BlazorUI.BitPersona.
+#nullable restore
+#line (43,45)-(43,56) "D:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Core\Components\Layout\AppMenu.razor"
+PrimaryText
+
+#line default
+#line hidden
+#nullable disable
+                            ), global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<global::System.String>(
+#nullable restore
+#line (43,59)-(43,83) "D:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Core\Components\Layout\AppMenu.razor"
+CurrentUser?.DisplayName
+
+#line default
+#line hidden
+#nullable disable
+                            ));
+                            __builder5.AddComponentParameter(58, nameof(global::Bit.BlazorUI.BitPersona.
+#nullable restore
+#line (44,45)-(44,58) "D:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Core\Components\Layout\AppMenu.razor"
+SecondaryText
+
+#line default
+#line hidden
+#nullable disable
+                            ), global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<global::System.String>(
+#nullable restore
+#line (44,62)-(44,108) "D:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Core\Components\Layout\AppMenu.razor"
+CurrentUser?.Email ?? CurrentUser?.PhoneNumber)"
                                             Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)">
                                     <ImageOverlayTemplate>
                                         <span>@Localizer[nameof(AppStrings.Edit)]</span>
@@ -81,7 +133,7 @@
                                     <BitSpacer />
                                     <BitIcon Size="BitSize.Small"
                                              Color="BitColor.SecondaryForeground"
-                                             IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChevronLeft : BitIconName.ChevronRight)" />
+                                             IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.ChevronLeft : BitIconName.ChevronRight)" />
                                 </BitStack>
                             </BitActionButton>
                         }
@@ -89,10 +141,10 @@
                         <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
                             <BitActionButton Style="flex-grow:1"
                                              OnClick="ToggleTheme"
-                                             IconName="@(currentTheme == AppThemeType.Light ? BitIconName.Sunny : BitIconName.ClearNight)">
-                                @(currentTheme == AppThemeType.Light ? Localizer[nameof(AppStrings.Light)] : Localizer[nameof(AppStrings.Dark)])
+                                             IconName="@(CurrentTheme == AppThemeType.Light ? BitIconName.Sunny : BitIconName.ClearNight)">
+                                @(CurrentTheme == AppThemeType.Light ? Localizer[nameof(AppStrings.Light)] : Localizer[nameof(AppStrings.Dark)])
                             </BitActionButton>
-                            <BitToggle OnChange="ToggleTheme" Value="currentTheme == AppThemeType.Light" ValueChanged="v => { }" />
+                            <BitToggle OnChange="ToggleTheme" Value="CurrentTheme == AppThemeType.Light" ValueChanged="v => { }" />
                         </BitStack>
 
                         <AuthorizeView>
@@ -111,7 +163,7 @@
                         <BitActionButton FullWidth
                                          Style="align-items:flex-end"
                                          OnClick="() => showCultures = false"
-                                         IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)">
+                                         IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)">
                             @Localizer[nameof(AppStrings.SelectLanguage)]
                         </BitActionButton>
 

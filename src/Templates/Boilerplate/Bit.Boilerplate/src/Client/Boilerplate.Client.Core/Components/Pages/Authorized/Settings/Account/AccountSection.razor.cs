@@ -4,7 +4,8 @@ namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings.Account;
 
 public partial class AccountSection
 {
-    [CascadingParameter] public UserDto? User { get; set; }
+    [CascadingParameter(Name = Parameters.CurrentUser)]
+    public UserDto? CurrentUser { get; set; }
 
 
     [AutoInject] private IWebAuthnService webAuthnService = default!;

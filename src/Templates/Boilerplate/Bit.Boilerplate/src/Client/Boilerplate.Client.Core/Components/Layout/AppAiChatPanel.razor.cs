@@ -27,9 +27,11 @@ public partial class AppAiChatPanel
     [AutoInject] private HubConnection hubConnection = default!;
 
 
-    [CascadingParameter] private AppThemeType? currentTheme { get; set; }
+    [CascadingParameter(Name = Parameters.CurrentTheme)]
+    private AppThemeType? CurrentTheme { get; set; }
 
-    [CascadingParameter] private BitDir? currentDir { get; set; }
+    [CascadingParameter(Name = Parameters.CurrentDir)]
+    private BitDir? CurrentDir { get; set; }
 
 
     protected override Task OnInitAsync()

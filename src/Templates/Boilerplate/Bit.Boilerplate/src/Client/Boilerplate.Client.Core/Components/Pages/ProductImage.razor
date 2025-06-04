@@ -1,11 +1,12 @@
 <div style="width:@Width;overflow:hidden;position:relative;" class="@Class">
     <img style="width:100%;height:auto;display:block;"
-         src="@(Src ?? $"_content/Boilerplate.Client.Core/images/car_placeholder_{((currentTheme ?? AppThemeType.Dark).ToString().ToLower())}.png")" />
+         src="@(Src ?? $"_content/Boilerplate.Client.Core/images/car_placeholder_{((CurrentTheme ?? AppThemeType.Dark).ToString().ToLower())}.png")" />
     @* src="@(Src ?? $"_content/Boilerplate.Client.Core/images/car_placeholder.png")" /> *@
 </div>
 
 @code {
-    [CascadingParameter] private AppThemeType? currentTheme { get; set; }
+    [CascadingParameter(Name = Parameters.CurrentTheme)]
+    private AppThemeType? CurrentTheme { get; set; }
 
     [Parameter] public string? Src { get; set; }
     [Parameter] public string? Width { get; set; }

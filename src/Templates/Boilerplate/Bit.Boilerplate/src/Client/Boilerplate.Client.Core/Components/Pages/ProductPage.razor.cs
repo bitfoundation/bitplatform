@@ -15,7 +15,8 @@ public partial class ProductPage
     [AutoInject] private IProductViewController productViewController = default!;
 
 
-    [CascadingParameter] private BitDir? currentDir { get; set; }
+    [CascadingParameter(Name = Parameters.CurrentUser)]
+    private BitDir? CurrentDir { get; set; }
 
 
     private ProductDto? product;

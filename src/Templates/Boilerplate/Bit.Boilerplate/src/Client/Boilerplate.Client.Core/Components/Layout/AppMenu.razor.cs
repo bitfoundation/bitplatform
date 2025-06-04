@@ -19,12 +19,16 @@ public partial class AppMenu
     [AutoInject] private SignInModalService signInModalService = default!;
 
 
-    [CascadingParameter] private BitDir? currentDir { get; set; }
-    [CascadingParameter] private AppThemeType? currentTheme { get; set; }
+    [CascadingParameter(Name = Parameters.CurrentDir)]
+    private BitDir? CurrentDir { get; set; }
 
-    [CascadingParameter] UserDto? User { get; set; }
+    [CascadingParameter(Name = Parameters.CurrentTheme)]
+    private AppThemeType? CurrentTheme { get; set; }
 
-    private string? ProfileImageUrl => User?.GetProfileImageUrl(AbsoluteServerAddress);
+    [CascadingParameter(Name = Parameters.CurrentUser)]
+    UserDto? CurrentUser { get; set; }
+
+    private string? ProfileImageUrl => CurrentUser?.GetProfileImageUrl(AbsoluteServerAddress);
 
 
     protected override async Task OnInitAsync()
