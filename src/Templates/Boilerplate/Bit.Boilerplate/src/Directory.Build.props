@@ -11,6 +11,7 @@
         <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
 
         <Version>1.0.0</Version>
+        <ApplicationDisplayVersion>$(Version)</ApplicationDisplayVersion>
 
         <!-- You have the flexibility to modify all of these properties using the -p parameters during the build process. -->
         <!-- Examples: dotnet publish -c Release -p:InvariantGlobalization=true -->
