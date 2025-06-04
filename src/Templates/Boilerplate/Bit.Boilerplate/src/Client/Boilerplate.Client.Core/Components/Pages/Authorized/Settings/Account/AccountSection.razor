@@ -3,15 +3,15 @@
 <section>
     <BitPivot Alignment="BitAlignment.Center">
         <BitPivotItem Key="@nameof(AppStrings.Email)" HeaderText="@Localizer[nameof(AppStrings.Email)]">
-            <ChangeEmailTab Email="@User?.Email" />
+            <ChangeEmailTab Email="@CurrentUser?.Email" />
         </BitPivotItem>
         <BitPivotItem Key="@nameof(AppStrings.Phone)" HeaderText="@Localizer[nameof(AppStrings.Phone)]">
-            <ChangePhoneNumberTab PhoneNumber="@User?.PhoneNumber" />
+            <ChangePhoneNumberTab PhoneNumber="@CurrentUser?.PhoneNumber" />
         </BitPivotItem>
         @if (showPasswordless)
         {
             <BitPivotItem Key="@nameof(AppStrings.Passwordless)" HeaderText="@Localizer[nameof(AppStrings.Passwordless)]">
-                <PasswordlessTab User="User" />
+                <PasswordlessTab User="CurrentUser" />
             </BitPivotItem>
         }
         <BitPivotItem Key="@nameof(AppStrings.Delete)">

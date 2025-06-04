@@ -1,6 +1,7 @@
 ﻿//+:cnd:noEmit
 using System.Reflection;
-using Boilerplate.Client.Core.Services;
+using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Shared.Controllers.Identity;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace Boilerplate.Client.Core.Components.Layout;
@@ -18,21 +19,25 @@ public partial class MainLayout : IAsyncDisposable
     /// </summary>
     private bool? isOnline;
 
-    private ClaimsPrincipal? user;
+    private UserDto? currentUser;
     private AppThemeType? currentTheme;
     private RouteData? currentRouteData;
     private List<Action> unsubscribers = [];
+    private Guid? userIdForUpdateAuthRelatedUI;
+    private CancellationTokenSource? getCurrentUserCts;
 
     [AutoInject] private Keyboard keyboard = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private AuthManager authManager = default!;
     [AutoInject] private ThemeService themeService = default!;
     [AutoInject] private PubSubService pubSubService = default!;
+    [AutoInject] private IUserController userController = default!;
     [AutoInject] private BitExtraServices bitExtraServices = default!;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
     [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private NavigationManager navigationManager = default!;
     [AutoInject] private SignInModalService signInModalService = default!;
+    [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
     [AutoInject] private IPrerenderStateService prerenderStateService = default!;
 
 
@@ -90,9 +95,18 @@ public partial class MainLayout : IAsyncDisposable
                 StateHasChanged();
             }));
 
-            user = (await AuthenticationStateTask).User;
+            unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.PROFILE_UPDATED, async payload =>
+            {
+                if (payload is null) return;
 
-            await SetNavPanelItems();
+                currentUser = payload is JsonElement jsonDocument
+                    ? jsonDocument.Deserialize(jsonSerializerOptions.GetTypeInfo<UserDto>())! // PROFILE_UPDATED can be invoked from server through SignalR
+                    : (UserDto)payload;
+
+                await InvokeAsync(StateHasChanged);
+            }));
+
+            await SetCurrentUser(AuthenticationStateTask);
 
             SetCurrentDir();
             currentTheme = await themeService.GetCurrentTheme();
@@ -136,9 +150,7 @@ public partial class MainLayout : IAsyncDisposable
     {
         try
         {
-            user = (await task).User;
-            
-            await SetNavPanelItems();
+            await SetCurrentUser(task);
         }
         catch (Exception ex)
         {
@@ -147,6 +159,31 @@ public partial class MainLayout : IAsyncDisposable
         finally
         {
             await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task SetCurrentUser(Task<AuthenticationState> task)
+    {
+        var authUser = (await task).User;
+
+        await SetNavPanelItems(authUser);
+
+        if (getCurrentUserCts is not null)
+        {
+            using var currentCts = getCurrentUserCts;
+            await currentCts.CancelAsync();
+        }
+        getCurrentUserCts = new();
+
+        if (authUser.IsAuthenticated() is false)
+        {
+            currentUser = null;
+            userIdForUpdateAuthRelatedUI = null;
+        }
+        else if (authUser.GetUserId() != userIdForUpdateAuthRelatedUI)
+        {
+            userIdForUpdateAuthRelatedUI = authUser.GetUserId();
+            currentUser = await userController.GetCurrentUser(getCurrentUserCts.Token);
         }
     }
 
@@ -201,6 +238,12 @@ public partial class MainLayout : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        if (getCurrentUserCts is not null)
+        {
+            await getCurrentUserCts.CancelAsync();
+            getCurrentUserCts.Dispose();
+        }
+
         navigationManager.LocationChanged -= NavigationManager_LocationChanged;
         authManager.AuthenticationStateChanged -= AuthManager_AuthenticationStateChanged;
 
