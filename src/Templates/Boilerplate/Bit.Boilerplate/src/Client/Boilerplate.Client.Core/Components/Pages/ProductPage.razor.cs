@@ -16,7 +16,7 @@ public partial class ProductPage
 
 
     [CascadingParameter(Name = Parameters.CurrentUser)]
-    private BitDir? CurrentDir { get; set; }
+    public BitDir? CurrentDir { get; set; }
 
 
     private ProductDto? product;

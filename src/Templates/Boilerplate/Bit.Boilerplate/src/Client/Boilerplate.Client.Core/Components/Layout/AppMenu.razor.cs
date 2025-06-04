@@ -20,13 +20,13 @@ public partial class AppMenu
 
 
     [CascadingParameter(Name = Parameters.CurrentDir)]
-    private BitDir? CurrentDir { get; set; }
+    public BitDir? CurrentDir { get; set; }
 
     [CascadingParameter(Name = Parameters.CurrentTheme)]
-    private AppThemeType? CurrentTheme { get; set; }
+    public AppThemeType? CurrentTheme { get; set; }
 
     [CascadingParameter(Name = Parameters.CurrentUser)]
-    private UserDto? CurrentUser { get; set; }
+    public UserDto? CurrentUser { get; set; }
 
     private string? ProfileImageUrl => CurrentUser?.GetProfileImageUrl(AbsoluteServerAddress);
 

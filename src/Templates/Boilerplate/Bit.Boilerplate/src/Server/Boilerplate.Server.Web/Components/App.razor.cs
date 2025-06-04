@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Boilerplate.Client.Core.Services;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Components.Web;
@@ -9,7 +9,7 @@ namespace Boilerplate.Server.Web.Components;
 public partial class App
 {
     private static readonly IComponentRenderMode noPrerenderBlazorWebAssembly = new InteractiveWebAssemblyRenderMode(prerender: false);
-    [CascadingParameter] HttpContext HttpContext { get; set; } = default!;
+    [CascadingParameter] public HttpContext HttpContext { get; set; } = default!;
 
     [AutoInject] ServerWebSettings serverWebSettings = default!;
     [AutoInject] IStringLocalizer<AppStrings> localizer = default!;

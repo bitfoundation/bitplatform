@@ -11,10 +11,10 @@ public partial class IdentityHeader : AppComponentBase
 
 
     [CascadingParameter(Name = Parameters.CurrentDir)]
-    private BitDir? CurrentDir { get; set; }
+    public BitDir? CurrentDir { get; set; }
 
     [CascadingParameter(Name = Parameters.CurrentTheme)]
-    private AppThemeType? CurrentTheme { get; set; }
+    public AppThemeType? CurrentTheme { get; set; }
 
 
     protected override async Task OnInitAsync()

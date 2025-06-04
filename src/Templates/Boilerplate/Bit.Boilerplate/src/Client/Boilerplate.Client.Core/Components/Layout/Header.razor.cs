@@ -10,7 +10,7 @@ public partial class Header : AppComponentBase
     private Action unsubscribePageTitleChanged = default!;
 
     [CascadingParameter(Name = Parameters.CurrentDir)]
-    private BitDir? CurrentDir { get; set; }
+    public BitDir? CurrentDir { get; set; }
 
 
     [AutoInject] private History history = default!;

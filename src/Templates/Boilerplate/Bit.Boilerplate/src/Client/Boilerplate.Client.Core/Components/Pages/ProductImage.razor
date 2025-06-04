@@ -6,7 +6,7 @@
 
 @code {
     [CascadingParameter(Name = Parameters.CurrentTheme)]
-    private AppThemeType? CurrentTheme { get; set; }
+    public AppThemeType? CurrentTheme { get; set; }
 
     [Parameter] public string? Src { get; set; }
     [Parameter] public string? Width { get; set; }

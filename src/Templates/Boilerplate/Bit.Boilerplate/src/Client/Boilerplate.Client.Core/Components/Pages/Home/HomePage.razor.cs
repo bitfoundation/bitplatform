@@ -7,7 +7,7 @@ namespace Boilerplate.Client.Core.Components.Pages.Home;
 public partial class HomePage
 {
     [CascadingParameter(Name = Parameters.CurrentDir)]
-    private BitDir? CurrentDir { get; set; }
+    public BitDir? CurrentDir { get; set; }
 
 
     //#if(module != "Sales")

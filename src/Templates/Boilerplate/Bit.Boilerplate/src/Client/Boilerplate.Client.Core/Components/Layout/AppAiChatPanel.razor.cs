@@ -28,10 +28,10 @@ public partial class AppAiChatPanel
 
 
     [CascadingParameter(Name = Parameters.CurrentTheme)]
-    private AppThemeType? CurrentTheme { get; set; }
+    public AppThemeType? CurrentTheme { get; set; }
 
     [CascadingParameter(Name = Parameters.CurrentDir)]
-    private BitDir? CurrentDir { get; set; }
+    public BitDir? CurrentDir { get; set; }
 
 
     protected override Task OnInitAsync()
