@@ -150,7 +150,7 @@ public static partial class Program
                 ServerApiSettings settings = new();
                 configuration.Bind(settings);
 
-                policy.SetIsOriginAllowed(origin => Uri.TryCreate(origin, UriKind.Absolute, out var uri) && settings.IsAllowedOrigin(uri))
+                policy.SetIsOriginAllowed(origin => Uri.TryCreate(origin, UriKind.Absolute, out var uri) && settings.IsTrustedOrigin(uri))
                       .AllowAnyHeader()
                       .AllowAnyMethod()
                       .WithExposedHeaders(HeaderNames.RequestId, "Age", "App-Cache-Response");

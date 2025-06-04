@@ -16,13 +16,17 @@ public static partial class Program
 
         ServerApiSettings settings = new();
         configuration.Bind(settings);
-        var forwardedHeadersOptions = settings.ForwardedHeaders;
 
-        if (forwardedHeadersOptions is not null
-            && (app.Environment.IsDevelopment() || forwardedHeadersOptions.AllowedHosts.Any()))
+        var forwardedHeadersOptions = settings.ForwardedHeaders;
+        if (forwardedHeadersOptions != null)
         {
-            // If the list is empty then all hosts are allowed. Failing to restrict this these values may allow an attacker to spoof links generated for reset password etc.
-            app.UseForwardedHeaders(forwardedHeadersOptions);
+            forwardedHeadersOptions.AllowedHosts = [.. (forwardedHeadersOptions.AllowedHosts ?? []).Union(settings.TrustedOrigins.Select(origin => origin.ToString()))];
+
+            if (app.Environment.IsDevelopment() || forwardedHeadersOptions.AllowedHosts.Any())
+            {
+                // If the list is empty then all hosts are allowed. Failing to restrict this these values may allow an attacker to spoof links generated for reset password etc.
+                app.UseForwardedHeaders(forwardedHeadersOptions);
+            }
         }
 
         if (CultureInfoManager.InvariantGlobalization is false)
