@@ -49,7 +49,7 @@
 
 		<ApplicationVersion>$([MSBuild]::Add(
 			$([MSBuild]::Add(
-				$([MSBuild]::Multiply($(MajorVersion), 1000)),
+				$([MSBuild]::Multiply($(MajorVersion), 10000)),
 				$([MSBuild]::Multiply($(MinorVersion), 100))
 			)),
 			$(PatchVersion)
