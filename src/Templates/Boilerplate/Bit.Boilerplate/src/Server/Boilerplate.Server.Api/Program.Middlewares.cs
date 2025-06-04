@@ -20,7 +20,7 @@ public static partial class Program
         var forwardedHeadersOptions = settings.ForwardedHeaders;
         if (forwardedHeadersOptions != null)
         {
-            forwardedHeadersOptions.AllowedHosts = [.. (forwardedHeadersOptions.AllowedHosts ?? []).Union(settings.TrustedOrigins.Select(origin => origin.Host))];
+            forwardedHeadersOptions.AllowedHosts = [.. (forwardedHeadersOptions.AllowedHosts ?? []).Union(settings.TrustedOrigins.Select(origin => origin.Port.HasValue ? $"{origin.Host}:{origin.Port}" : origin.Host))];
 
             if (app.Environment.IsDevelopment() || forwardedHeadersOptions.AllowedHosts.Any())
             {
