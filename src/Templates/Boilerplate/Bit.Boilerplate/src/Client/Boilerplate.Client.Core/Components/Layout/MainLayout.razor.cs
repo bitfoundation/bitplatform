@@ -33,6 +33,7 @@ public partial class MainLayout : IAsyncDisposable
     [AutoInject] private PubSubService pubSubService = default!;
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private BitExtraServices bitExtraServices = default!;
+    [AutoInject] private IAppUpdateService appUpdateService = default!;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
     [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private NavigationManager navigationManager = default!;
@@ -233,6 +234,18 @@ public partial class MainLayout : IAsyncDisposable
     private async Task ModalSignIn()
     {
         await signInModalService.SignIn();
+    }
+
+    private async Task UpdateApp()
+    {
+        try
+        {
+            await appUpdateService.ForceUpdate();
+        }
+        catch(Exception exp)
+        {
+            exceptionHandler.Handle(exp);
+        }
     }
 
 
