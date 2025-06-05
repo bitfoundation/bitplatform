@@ -1197,6 +1197,9 @@
   <data name="Users" xml:space="preserve">
     <value>کاربران</value>
   </data>
+    <data name="UsersWithCount" xml:space="preserve">
+    <value>کاربران {0}</value>
+  </data>
   <data name="Features" xml:space="preserve">
     <value>امکانات</value>
   </data>
@@ -1242,10 +1245,13 @@
     <value>حذف گروه کاربران</value>
   </data>
   <data name="Sessions" xml:space="preserve">
-    <value>سشن‌ها</value>
+    <value>سشن‌ها {0}</value>
   </data>
   <data name="DeleteUser" xml:space="preserve">
     <value>حذف کاربر</value>
+  </data>
+    <data name="AppVersion" xml:space="preserve">
+    <value>ورژن اپ</value>
   </data>
   <data name="IP" xml:space="preserve">
     <value>آی پی</value>
@@ -1314,7 +1320,7 @@
     <value>جستجوی سشن کاربران</value>
   </data>
   <data name="RemoveRoleFromAllUsers" xml:space="preserve">
-    <value>حذف گروه کاربران از تمام کاربران</value>
+    <value>حذف تمام کاربران از گروه کاربران</value>
   </data>
   <data name="RemoveRoleFromAllUsersConfrimMessage" xml:space="preserve">
     <value>آیا برای حذف گروه کاربری {0} از تمام کاربران مطمئن هستید?</value>

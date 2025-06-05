@@ -115,4 +115,14 @@ main {
             width: 210px;
         }
     }
+
+    .footer-stack {
+        position: relative;
+    }
+
+    .app-version {
+        position: absolute;
+        inset-block-end: 0;
+        inset-inline-end: 0;
+    }
 }

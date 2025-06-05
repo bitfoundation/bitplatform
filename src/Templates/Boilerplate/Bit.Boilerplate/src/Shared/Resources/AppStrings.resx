@@ -1203,6 +1203,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   <data name="Users" xml:space="preserve">
     <value>Users</value>
   </data>
+    <data name="UsersWithCount" xml:space="preserve">
+    <value>Users {0}</value>
+  </data>
   <data name="Features" xml:space="preserve">
     <value>Features</value>
   </data>
@@ -1248,10 +1251,13 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>Delete user group</value>
   </data>
   <data name="Sessions" xml:space="preserve">
-    <value>Sessions</value>
+    <value>Sessions {0}</value>
   </data>
-  <data name="DeleteUser" xml:space="preserve">
+    <data name="DeleteUser" xml:space="preserve">
     <value>Delete user</value>
+  </data>
+    <data name="AppVersion" xml:space="preserve">
+    <value>App version</value>
   </data>
   <data name="IP" xml:space="preserve">
     <value>IP</value>
@@ -1320,7 +1326,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>Search user sessions</value>
   </data>
   <data name="RemoveRoleFromAllUsers" xml:space="preserve">
-    <value>Remove user group from all users</value>
+    <value>Remove all users from user group</value>
   </data>
   <data name="RemoveRoleFromAllUsersConfrimMessage" xml:space="preserve">
     <value>Are you sure you want to remove all users from {0}?</value>

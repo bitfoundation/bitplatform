@@ -71,6 +71,10 @@ public partial class DiagnosticsController : AppControllerBase, IDiagnosticsCont
             result.AppendLine($"{header.Key}: {header.Value}");
         }
 
+        result.AppendLine();
+        result.AppendLine("Base url: " + Request.GetBaseUrl());
+        result.AppendLine("Web app url: " + Request.GetWebAppUrl());
+
         return result.ToString();
     }
 }

@@ -115,7 +115,7 @@
                             @*#endif*@
                         </BitStack>
                     </BitPivotItem>
-                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Users)]">
+                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.UsersWithCount), selectedRoleUsers.Count > 0 ? selectedRoleUsers.Count : ""]">
                         @if (isLoadingUsers)
                         {
                             <BitRollingSquareLoading Size="BitSize.Small" />
