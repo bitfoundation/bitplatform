@@ -216,17 +216,16 @@ BitBswup.version = window['bit-bswup version'] = '9.9.0-pre-02';
     }
 }());
 
-BitBswup.checkForUpdate = async () => {
+BitBswup.checkForUpdate = async (): Promise<void> => {
     if (!('serviceWorker' in navigator)) {
         return console.warn('no serviceWorker in navigator');
     }
 
     const reg = await navigator.serviceWorker.getRegistration();
-    const result = await reg.update();
-    return result;
+    await reg.update();
 }
 
-BitBswup.forceRefresh = async () => {
+BitBswup.forceRefresh = async (): Promise<void> => {
     if (!('serviceWorker' in navigator)) {
         return console.warn('no serviceWorker in navigator');
     }
@@ -243,6 +242,11 @@ BitBswup.forceRefresh = async () => {
 }
 
 BitBswup.skipWaiting = async (): Promise<boolean> => {
+    if (!('serviceWorker' in navigator)) {
+        console.warn('no serviceWorker in navigator');
+        return false;
+    }
+
     const reg = await navigator.serviceWorker.getRegistration();
 
     if (reg?.waiting) {
