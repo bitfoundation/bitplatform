@@ -96,7 +96,7 @@ BitBswup.version = window['bit-bswup version'] = '9.9.0-pre-02';
 
             if (e.data === 'CLIENTS_CLAIMED') {
                 Blazor.start().then(() => {
-                    blazorStartResolver(undefined);
+                    blazorStartResolver?.(undefined);
                     e.source.postMessage('BLAZOR_STARTED');
                 });
                 return;
@@ -240,6 +240,17 @@ BitBswup.forceRefresh = async () => {
     await Promise.all(regPromises);
 
     window.location.reload();
+}
+
+BitBswup.skipWaiting = async (): Promise<boolean> => {
+    const reg = await navigator.serviceWorker.getRegistration();
+
+    if (reg?.waiting) {
+        reg.waiting.postMessage('SKIP_WAITING');
+        return true;
+    }
+
+    return false;
 }
 
 const BswupMessage = {
