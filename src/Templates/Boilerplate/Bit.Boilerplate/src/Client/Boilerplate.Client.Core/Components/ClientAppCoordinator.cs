@@ -150,7 +150,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             }
 
             //#if (signalR == true)
-            await StartSignalR();
+            await EnsureSignalRStarted();
             //#endif
 
             //#if (notification == true)
@@ -229,13 +229,19 @@ public partial class ClientAppCoordinator : AppComponentBase
         hubConnection.Reconnecting += HubConnectionStateChange;
     }
 
-    private async Task StartSignalR()
+    private async Task EnsureSignalRStarted()
     {
         try
         {
-            await hubConnection.StopAsync(CurrentCancellationToken);
-            await hubConnection.StartAsync(CurrentCancellationToken);
-            await HubConnectionConnected(null);
+            if (hubConnection.State is not HubConnectionState.Connected or HubConnectionState.Connecting)
+            {
+                await hubConnection.StartAsync(CurrentCancellationToken);
+                await HubConnectionConnected(null);
+            }
+            else
+            {
+                await hubConnection.InvokeAsync("ChangeAuthenticationState", await AuthTokenProvider.GetAccessToken(), CurrentCancellationToken);
+            }
         }
         catch (Exception exp)
         {
