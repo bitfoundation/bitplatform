@@ -43,16 +43,16 @@ public partial class ServerApiSettings : SharedSettings
 
     public ForwardedHeadersOptions? ForwardedHeaders { get; set; }
 
+    /// <summary>
+    /// Specifies the allowed origins for CORS requests, URLs returned after social sign-in and email confirmation, and permitted origins for Web Auth, as well as forwarded headers middleware in ASP.NET Core.
+    /// </summary>
+    public Uri[] TrustedOrigins { get; set; } = [];
+
     //#if (cloudflare == true)
     public CloudflareOptions? Cloudflare { get; set; }
     //#endif
 
     public ResponseCachingOptions? ResponseCaching { get; set; }
-
-    /// <summary>
-    /// Lists the permitted origins for CORS requests, return URLs following social sign-in and email confirmation, etc., along with allowed origins for Web Auth.
-    /// </summary>
-    public Uri[] TrustedOrigins { get; set; } = [];
 
     //#if (module == "Admin" || module == "Sales")
     [Required]
@@ -132,7 +132,7 @@ public partial class ServerApiSettings : SharedSettings
         return validationResults;
     }
 
-    internal bool IsAllowedOrigin(Uri origin)
+    internal bool IsTrustedOrigin(Uri origin)
     {
         return TrustedOrigins.Any(trustedOrigin => trustedOrigin == origin)
             || TrustedOriginsRegex().IsMatch(origin.ToString());
