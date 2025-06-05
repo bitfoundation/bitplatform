@@ -1248,10 +1248,13 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>Delete user group</value>
   </data>
   <data name="Sessions" xml:space="preserve">
-    <value>Sessions</value>
+    <value>Sessions {0}</value>
   </data>
-  <data name="DeleteUser" xml:space="preserve">
+    <data name="DeleteUser" xml:space="preserve">
     <value>Delete user</value>
+  </data>
+    <data name="AppVersion" xml:space="preserve">
+    <value>App version</value>
   </data>
   <data name="IP" xml:space="preserve">
     <value>IP</value>

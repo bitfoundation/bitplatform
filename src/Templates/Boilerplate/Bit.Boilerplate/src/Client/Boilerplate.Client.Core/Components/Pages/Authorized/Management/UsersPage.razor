@@ -126,7 +126,7 @@
                             </BitStack>
                         </BitStack>
                     </BitPivotItem>
-                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Sessions)]">
+                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Sessions), allUserSessions.Count == 0 ? "" : allUserSessions.Count]">
                         @if (selectedUserItem is null)
                         {
                             @Localizer[nameof(AppStrings.NoUserSelectedMessage)]
@@ -162,6 +162,8 @@
                                                 <BitText>@Localizer[nameof(AppStrings.Address)]: @session.Address</BitText>
                                                 <BitText>@Localizer[nameof(AppStrings.DeviceInfo)]: @session.DeviceInfo</BitText>
                                                 <BitText>@Localizer[nameof(AppStrings.Privileged)]: @session.Privileged</BitText>
+                                                <BitText>@Localizer[nameof(AppStrings.Culture)]: @session.CultureName</BitText>
+                                                <BitText>@Localizer[nameof(AppStrings.AppVersion)]: @session.AppVersion</BitText>
                                                 <BitText>@Localizer[nameof(AppStrings.RenewedOn)]: @session.RenewedOnDateTimeOffset.ToLocalTime()</BitText>
                                                 <BitText>
                                                     @Localizer[nameof(AppStrings.Id)]:

@@ -1247,6 +1247,9 @@
   <data name="DeleteUser" xml:space="preserve">
     <value>حذف کاربر</value>
   </data>
+    <data name="AppVersion" xml:space="preserve">
+    <value>ورژن اپ</value>
+  </data>
   <data name="IP" xml:space="preserve">
     <value>آی پی</value>
   </data>
