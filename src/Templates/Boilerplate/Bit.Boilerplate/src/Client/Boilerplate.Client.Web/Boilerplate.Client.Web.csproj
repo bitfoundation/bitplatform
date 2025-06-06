@@ -11,7 +11,7 @@
         <BlazorCacheBootResources>false</BlazorCacheBootResources>
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
         <!--/+:msbuild-conditional:noEmit -->
-        <!-- If you need support for older browsers, uncomment this. <WasmEnableSIMD>false</WasmEnableSIMD> -->
+        <WasmEnableSIMD>false</WasmEnableSIMD>
         <WasmStripILAfterAOT Condition=" '$(offlineDb)' == 'false'">true</WasmStripILAfterAOT>
         <WasmBuildNative Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">true</WasmBuildNative>
         <!--/-:msbuild-conditional:noEmit -->
