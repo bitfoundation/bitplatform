@@ -383,36 +383,6 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         _inputMode = InputMode?.ToString().ToLower();
     }
 
-    private async Task ToggleCallout()
-    {
-        if (IsEnabled is false || IsDisposed) return;
-
-        await _js.BitCalloutToggleCallout(_dotnetObj,
-                                          _Id,
-                                          null,
-                                          _calloutId,
-                                          null,
-                                          _isOpen,
-                                          BitResponsiveMode.None,
-                                          BitDropDirection.TopAndBottom,
-                                          Dir is BitDir.Rtl,
-                                          _scrollContainerId,
-                                          0,
-                                          string.Empty,
-                                          string.Empty,
-                                          true);
-    }
-
-    private async Task CloseCallout()
-    {
-        if (IsEnabled is false) return;
-
-        _isOpen = false;
-        await ToggleCallout();
-
-        StateHasChanged();
-    }
-
     private async Task SearchItems()
     {
         if (CurrentValue.HasNoValue() || CurrentValue!.Length < MinSuggestTriggerChars)
@@ -454,13 +424,44 @@ public partial class BitSearchBox : BitTextInputBase<string?>
             {
                 _isOpen = true;
                 await ToggleCallout();
-                StateHasChanged();
             }
+
+            StateHasChanged();
         }
         else
         {
             await CloseCallout();
         }
+    }
+
+    private async Task CloseCallout()
+    {
+        if (IsEnabled is false) return;
+
+        _isOpen = false;
+        await ToggleCallout();
+
+        StateHasChanged();
+    }
+
+    private async Task ToggleCallout()
+    {
+        if (IsEnabled is false || IsDisposed) return;
+
+        await _js.BitCalloutToggleCallout(_dotnetObj,
+                                          _Id,
+                                          null,
+                                          _calloutId,
+                                          null,
+                                          _isOpen,
+                                          BitResponsiveMode.None,
+                                          BitDropDirection.TopAndBottom,
+                                          Dir is BitDir.Rtl,
+                                          _scrollContainerId,
+                                          0,
+                                          string.Empty,
+                                          string.Empty,
+                                          true);
     }
 
     private async Task ChangeSelectedItem(bool isArrowUp)
