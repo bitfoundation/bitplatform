@@ -440,6 +440,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         }
 
         await OpenOrCloseCallout();
+
+        StateHasChanged();
     }
 
     private async Task OpenOrCloseCallout()
