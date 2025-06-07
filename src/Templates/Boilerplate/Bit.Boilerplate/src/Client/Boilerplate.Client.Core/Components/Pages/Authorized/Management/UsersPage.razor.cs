@@ -1,6 +1,11 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
+//#if (signalR == true)
+using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Shared.Dtos.Diagnostic;
+using Boilerplate.Client.Core.Services.DiagnosticLog;
+using Microsoft.AspNetCore.SignalR.Client;
+//#endif
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Management;
 
@@ -26,7 +31,9 @@ public partial class UsersPage
 
 
     [AutoInject] IUserManagementController userManagementController = default!;
-
+    //#if (signalR == true)
+    [AutoInject] HubConnection hubConnection = default!;
+    //#endif
 
     protected override async Task OnInitAsync()
     {
@@ -177,4 +184,22 @@ public partial class UsersPage
             filteredUserSessions = [.. allUserSessions.Where(us => ((us.IP + us.Address + us.DeviceInfo + us.RenewedOnDateTimeOffset + us.Id) ?? string.Empty).Contains(t, StringComparison.InvariantCultureIgnoreCase))];
         }
     }
+
+    //#if (signalR == true)
+    /// <summary>
+    /// <inheritdoc cref="SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE"/>
+    /// </summary>
+    private async Task ReadUserSessionLogs(Guid userSessionId)
+    {
+        var logs = await hubConnection.InvokeAsync<DiagnosticLogDto[]>("GetUserSessionLogs", userSessionId, CurrentCancellationToken);
+
+        DiagnosticLogger.Store.Clear();
+        foreach (var log in logs)
+        {
+            DiagnosticLogger.Store.Enqueue(log);
+        }
+
+        PubSubService.Publish(ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL);
+    }
+    //#endif
 }

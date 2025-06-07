@@ -175,6 +175,11 @@
                                                     @if (string.IsNullOrWhiteSpace(session.SignalRConnectionId) is false)
                                                     {
                                                         <BitTag Color="BitColor.SecondaryBackground" Size="BitSize.Large" Class="selectable">@session.SignalRConnectionId</BitTag>
+                                                        <BitButton IconOnly AutoLoading
+                                                                   OnClick="WrapHandled(() => ReadUserSessionLogs(session.Id))"
+                                                                   Title="Read user session logs"
+                                                                   Color="BitColor.SecondaryBackground"
+                                                                   IconName="@BitIconName.Download" />
                                                     }
                                                 </BitText>
                                                 @*#endif*@
