@@ -21,7 +21,7 @@ public partial class ForceUpdateSnackBar
             if (isShown) return;
 
             isShown = true;
-            await bitSnackBar.Show(string.Empty);
+            await bitSnackBar.Error(string.Empty);
         });
     }
 
