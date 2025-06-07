@@ -8,7 +8,8 @@ namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings;
 public partial class ProfileSection
 {
     [Parameter] public bool Loading { get; set; }
-    [Parameter] public UserDto? User { get; set; }
+    [CascadingParameter(Name = Parameters.CurrentUser)]
+    public UserDto? CurrentUser { get; set; }
 
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private IAttachmentController attachmentController = default!;
@@ -17,29 +18,29 @@ public partial class ProfileSection
     private bool isSaving;
     private bool isUploading;
     private BitFileUpload fileUploadRef = default!;
-    private readonly EditUserDto editUserDto = new();
+    private readonly EditUserRequestDto editUserDto = new();
 
-    private string? ProfileImageUrl => User?.GetProfileImageUrl(AbsoluteServerAddress);
+    private string? ProfileImageUrl => CurrentUser?.GetProfileImageUrl(AbsoluteServerAddress);
 
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
 
-        User?.Patch(editUserDto);
+        CurrentUser?.Patch(editUserDto);
     }
 
 
     private async Task SaveProfile()
     {
-        if (isSaving || User is null) return;
+        if (isSaving || CurrentUser is null) return;
 
         isSaving = true;
 
         try
         {
-            editUserDto.Patch(User);
+            editUserDto.Patch(CurrentUser);
 
-            (await userController.Update(editUserDto, CurrentCancellationToken)).Patch(User);
+            (await userController.Update(editUserDto, CurrentCancellationToken)).Patch(CurrentUser);
 
             PublishUserDataUpdated();
 
@@ -57,14 +58,14 @@ public partial class ProfileSection
 
     private async Task RemoveProfileImage()
     {
-        if (isSaving || User is null) return;
+        if (isSaving || CurrentUser is null) return;
         isSaving = true;
 
         try
         {
             await attachmentController.DeleteUserProfilePicture(CurrentCancellationToken);
 
-            User.HasProfilePicture = false;
+            CurrentUser.HasProfilePicture = false;
 
             PublishUserDataUpdated();
         }
@@ -80,13 +81,13 @@ public partial class ProfileSection
 
     private async Task HandleOnUploadComplete()
     {
-        if (User is null) return;
+        if (CurrentUser is null) return;
 
         try
         {
             var updatedUser = await userController.GetCurrentUser(CurrentCancellationToken);
 
-            updatedUser.Patch(User);
+            updatedUser.Patch(CurrentUser);
 
             PublishUserDataUpdated();
         }
@@ -108,7 +109,7 @@ public partial class ProfileSection
 
     private void PublishUserDataUpdated()
     {
-        PubSubService.Publish(ClientPubSubMessages.PROFILE_UPDATED, User);
+        PubSubService.Publish(ClientPubSubMessages.PROFILE_UPDATED, CurrentUser);
     }
 
     private async Task<string> GetUploadUrl()

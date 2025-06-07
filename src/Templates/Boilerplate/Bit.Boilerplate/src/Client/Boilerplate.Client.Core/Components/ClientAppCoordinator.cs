@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using BlazorApplicationInsights.Interfaces;
 //#endif
 using Microsoft.AspNetCore.Components.Routing;
+using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Client.Core.Services.DiagnosticLog;
 
 namespace Boilerplate.Client.Core.Components;
@@ -28,6 +29,7 @@ public partial class ClientAppCoordinator : AppComponentBase
     //#endif
     [AutoInject] private UserAgent userAgent = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
+    [AutoInject] private IUserController userController = default!;
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private ILogger<AuthManager> authLogger = default!;
     [AutoInject] private ILogger<Navigator> navigatorLogger = default!;
@@ -116,7 +118,6 @@ public partial class ClientAppCoordinator : AppComponentBase
             if (lastPropagatedUserId == userId)
                 return;
             await Abort(); // Cancels ongoing user id propagation, because the new authentication state is available.
-            lastPropagatedUserId = userId;
             TelemetryContext.UserId = userId;
             TelemetryContext.UserSessionId = isAuthenticated ? user.GetSessionId() : null;
 
@@ -148,12 +149,19 @@ public partial class ClientAppCoordinator : AppComponentBase
             }
 
             //#if (signalR == true)
-            await StartSignalR();
+            await EnsureSignalRStarted();
             //#endif
 
             //#if (notification == true)
             await pushNotificationService.Subscribe(CurrentCancellationToken);
             //#endif
+
+            if (isAuthenticated)
+            {
+                await UpdateUserSession();
+            }
+
+            lastPropagatedUserId = userId;
         }
         catch (Exception exp)
         {
@@ -169,7 +177,7 @@ public partial class ClientAppCoordinator : AppComponentBase
     //#if (signalR == true)
     private void SubscribeToSignalREventsMessages()
     {
-        signalROnDisposables.Add(hubConnection.On<string>(SignalREvents.SHOW_MESSAGE, async (message) =>
+        signalROnDisposables.Add(hubConnection.On<string, object, bool>(SignalREvents.SHOW_MESSAGE, async (message, data) =>
         {
             logger.LogInformation("SignalR Message {Message} received from server to show.", message);
             if (await notification.IsNotificationAvailable())
@@ -179,13 +187,18 @@ public partial class ClientAppCoordinator : AppComponentBase
                 await notification.Show("Boilerplate SignalR", new()
                 {
                     Icon = "/images/icons/bit-icon-512.png",
-                    Body = message
+                    Body = message,
+                    Data = data
                 });
             }
             else
             {
+                if (data is not null) return false; // Snack bar service does not support payload data. It would be a good idea to return false to the server so server knows that the message was not shown.
+
                 SnackBarService.Show("Boilerplate", message);
             }
+
+            return true; // Message gets shown successfully. You CAN (not implemented yet) use this in server side in order to not to send push notifications for messages that are already shown in the client side.
 
             // The following code block is not required for Bit.BlazorUI components to perform UI changes. However, it may be necessary in other scenarios.
             /*await InvokeAsync(async () =>
@@ -217,13 +230,19 @@ public partial class ClientAppCoordinator : AppComponentBase
         hubConnection.Reconnecting += HubConnectionStateChange;
     }
 
-    private async Task StartSignalR()
+    private async Task EnsureSignalRStarted()
     {
         try
         {
-            await hubConnection.StopAsync(CurrentCancellationToken);
-            await hubConnection.StartAsync(CurrentCancellationToken);
-            await HubConnectionConnected(null);
+            if (hubConnection.State is not HubConnectionState.Connected or HubConnectionState.Connecting)
+            {
+                await hubConnection.StartAsync(CurrentCancellationToken);
+                await HubConnectionConnected(null);
+            }
+            else
+            {
+                await hubConnection.InvokeAsync("ChangeAuthenticationState", await AuthTokenProvider.GetAccessToken(), CurrentCancellationToken);
+            }
         }
         catch (Exception exp)
         {
@@ -257,6 +276,17 @@ public partial class ClientAppCoordinator : AppComponentBase
     }
 
     //#endif
+
+    private async Task UpdateUserSession()
+    {
+        await userController.UpdateSession(new()
+        {
+            AppVersion = TelemetryContext.AppVersion,
+            DeviceInfo = TelemetryContext.Platform,
+            CultureName = CultureInfoManager.InvariantGlobalization ? null : CultureInfo.CurrentUICulture.Name,
+            PlatformType = AppPlatform.Type
+        }, CurrentCancellationToken);
+    }
 
     private async Task ConfigureUISetup()
     {

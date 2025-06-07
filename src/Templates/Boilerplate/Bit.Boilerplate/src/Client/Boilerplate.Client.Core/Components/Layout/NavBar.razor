@@ -8,23 +8,17 @@
 
         @*#if (sample == true)*@
         <AuthorizeView Policy="@AppFeatures.Todo.ManageTodo">
-            <Authorized>
-                <BitNavBarOption Text="@Localizer[nameof(AppStrings.Todo)]" IconName="@BitIconName.ToDoLogoOutline" Url="@Urls.TodoPage" />
-            </Authorized>
+            <BitNavBarOption Text="@Localizer[nameof(AppStrings.Todo)]" IconName="@BitIconName.ToDoLogoOutline" Url="@Urls.TodoPage" />
         </AuthorizeView>
         @*#endif*@
 
-        @*#if (sample == Admin)*@
+        @*#if (module == "Admin")*@
         <AuthorizeView Policy="@AppFeatures.AdminPanel.Dashboard">
-            <Authorized>
-                <BitNavBarOption Text="@Localizer[nameof(AppStrings.Dashboard)]" IconName="@BitIconName.BarChartVerticalFill" Url="@Urls.DashboardPage" />
-            </Authorized>
+            <BitNavBarOption Text="@Localizer[nameof(AppStrings.Dashboard)]" IconName="@BitIconName.BarChartVerticalFill" Url="@Urls.DashboardPage" />
         </AuthorizeView>
         <AuthorizeView Policy="@AppFeatures.AdminPanel.ManageProductCatalog">
-            <Authorized>
-                <BitNavBarOption Text="@Localizer[nameof(AppStrings.Categories)]" IconName="@BitIconName.BuildQueue" Url="@Urls.CategoriesPage" />
-                <BitNavBarOption Text="@Localizer[nameof(AppStrings.Products)]" IconName="@BitIconName.Product" Url="@Urls.ProductsPage" />
-            </Authorized>
+            <BitNavBarOption Text="@Localizer[nameof(AppStrings.Categories)]" IconName="@BitIconName.BuildQueue" Url="@Urls.CategoriesPage" />
+            <BitNavBarOption Text="@Localizer[nameof(AppStrings.Products)]" IconName="@BitIconName.Product" Url="@Urls.ProductsPage" />
         </AuthorizeView>
         @*#endif*@
 

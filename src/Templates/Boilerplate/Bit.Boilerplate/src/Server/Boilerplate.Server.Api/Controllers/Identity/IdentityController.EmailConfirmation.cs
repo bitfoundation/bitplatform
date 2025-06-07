@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Humanizer;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
@@ -60,7 +60,7 @@ public partial class IdentityController
 
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"Otp_Email,{user.OtpRequestedOn?.ToUniversalTime()}"));
 
-        await SignIn(new() { Email = request.Email, Otp = token, DeviceInfo = request.DeviceInfo }, cancellationToken);
+        await SignIn(new() { Email = request.Email, Otp = token }, cancellationToken);
     }
 
 

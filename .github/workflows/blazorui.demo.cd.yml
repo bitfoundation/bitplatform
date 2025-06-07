@@ -1,4 +1,4 @@
-﻿name: Blazor UI Demo CD
+name: Blazor UI Demo CD
 
 env:
   SERVER_ADDRESS: 'https://blazorui.bitplatform.dev/api/'
@@ -46,10 +46,10 @@ jobs:
       run:  sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Services/AppRenderMode.cs
 
     - name: Generate CSS/JS files
-      run: dotnet build src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -c Release
+      run: dotnet build src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj -p:Version="${{ vars.APP_VERSION}}" -c Release
 
     - name: Publish
-      run: dotnet publish src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj -c Release -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server
+      run: dotnet publish src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj -c Release -p:Version="${{ vars.APP_VERSION}}" --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server
 
     - name: Upload server artifact
       uses: actions/upload-artifact@v4
@@ -115,14 +115,14 @@ jobs:
         WindowsUpdateSettings.FilesUrl: https://windows-components.bitplatform.dev
   
     - name: Generate CSS/JS files
-      run: dotnet build src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Core\Bit.BlazorUI.Demo.Client.Core.csproj -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -c Release
+      run: dotnet build src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Core\Bit.BlazorUI.Demo.Client.Core.csproj -p:Version="${{ vars.APP_VERSION}}" -c Release
 
     - name: Publish
       run: |
           cd src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\
-          dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:CompressionEnabled=false -p:PublishReadyToRun=true -p:PublishReadyToRunComposite=true --self-contained
+          dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APP_VERSION}}" -p:CompressionEnabled=false -p:PublishReadyToRun=true -p:PublishReadyToRunComposite=true --self-contained
           dotnet tool restore
-          dotnet vpk pack -u Bit.BlazorUI.Demo.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e Bit.BlazorUI.Demo.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'Bit Blazor UI'
+          dotnet vpk pack -u Bit.BlazorUI.Demo.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e Bit.BlazorUI.Demo.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'Bit Blazor UI'
   
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -169,10 +169,10 @@ jobs:
       run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
   
     - name: Generate CSS/JS files
-      run: dotnet build src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.csproj -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -c Release
+      run: dotnet build src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.csproj -p:Version="${{ vars.APP_VERSION}}" -c Release
   
     - name: Publish aab
-      run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="BitBlazorUIDemo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:CompressionEnabled=false -f net9.0-android
+      run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="BitBlazorUIDemo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:CompressionEnabled=false -f net9.0-android
   
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -227,10 +227,10 @@ jobs:
         api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
 
     - name: Generate CSS/JS files
-      run: dotnet build src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.csproj -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -c Release
+      run: dotnet build src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.csproj -p:Version="${{ vars.APP_VERSION}}" -c Release
   
     - name: Build ipa
-      run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="Bit Blazor UI Demo" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:CompressionEnabled=false -f net9.0-ios
+      run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="Bit Blazor UI Demo" -p:Version="${{ vars.APP_VERSION }}" -p:CompressionEnabled=false -f net9.0-ios
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4

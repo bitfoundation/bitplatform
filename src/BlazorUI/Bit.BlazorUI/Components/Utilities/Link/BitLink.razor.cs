@@ -19,11 +19,23 @@ public partial class BitLink : BitComponentBase
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// The general color of the link.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
+
+    /// <summary>
     /// URL the link points to.
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetHrefAndRel))]
     public string? Href { get; set; }
+
+    /// <summary>
+    /// Removes the applying any foreground color to the link content.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool NoColor { get; set; }
 
     /// <summary>
     /// Styles the link to have no underline at any state.
@@ -63,6 +75,30 @@ public partial class BitLink : BitComponentBase
         ClassBuilder.Register(() => NoUnderline ? "bit-lnk-nun" : string.Empty);
 
         ClassBuilder.Register(() => Underlined ? "bit-lnk-und" : string.Empty);
+
+        ClassBuilder.Register(() => NoColor ? "bit-lnk-ncl" : string.Empty);
+
+        ClassBuilder.Register(() => Color switch
+        {
+            BitColor.Primary => "bit-lnk-pri",
+            BitColor.Secondary => "bit-lnk-sec",
+            BitColor.Tertiary => "bit-lnk-ter",
+            BitColor.Info => "bit-lnk-inf",
+            BitColor.Success => "bit-lnk-suc",
+            BitColor.Warning => "bit-lnk-wrn",
+            BitColor.SevereWarning => "bit-lnk-swr",
+            BitColor.Error => "bit-lnk-err",
+            BitColor.PrimaryBackground => "bit-lnk-pbg",
+            BitColor.SecondaryBackground => "bit-lnk-sbg",
+            BitColor.TertiaryBackground => "bit-lnk-tbg",
+            BitColor.PrimaryForeground => "bit-lnk-pfg",
+            BitColor.SecondaryForeground => "bit-lnk-sfg",
+            BitColor.TertiaryForeground => "bit-lnk-tfg",
+            BitColor.PrimaryBorder => "bit-lnk-pbr",
+            BitColor.SecondaryBorder => "bit-lnk-sbr",
+            BitColor.TertiaryBorder => "bit-lnk-tbr",
+            _ => "bit-lnk-pri"
+        });
     }
 
     protected virtual async Task HandleClick(MouseEventArgs e)

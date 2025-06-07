@@ -14,6 +14,7 @@ public static partial class Program
 
         services.AddScoped<IWebAuthnService, WindowsWebAuthnService>();
         services.AddScoped<IExceptionHandler, WindowsExceptionHandler>();
+        services.AddScoped<IAppUpdateService, WindowsAppUpdateService>();
         services.AddScoped<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
 
         services.AddScoped(sp =>

@@ -150,7 +150,7 @@ public static partial class Program
                 ServerApiSettings settings = new();
                 configuration.Bind(settings);
 
-                policy.SetIsOriginAllowed(origin => Uri.TryCreate(origin, UriKind.Absolute, out var uri) && settings.IsAllowedOrigin(uri))
+                policy.SetIsOriginAllowed(origin => Uri.TryCreate(origin, UriKind.Absolute, out var uri) && settings.IsTrustedOrigin(uri))
                       .AllowAnyHeader()
                       .AllowAnyMethod()
                       .WithExposedHeaders(HeaderNames.RequestId, "Age", "App-Cache-Response");
@@ -174,7 +174,13 @@ public static partial class Program
         services.AddSingleton<HtmlSanitizer>();
 
         services
-            .AddControllers()
+            .AddControllers(options =>
+            {
+                if (appSettings.SupportedAppVersions is not null)
+                {
+                    options.Filters.Add<ForceUpdateActionFilter>();
+                }
+            })
             .AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;

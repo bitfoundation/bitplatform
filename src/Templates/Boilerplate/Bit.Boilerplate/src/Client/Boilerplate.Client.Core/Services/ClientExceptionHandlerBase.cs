@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -6,6 +6,7 @@ namespace Boilerplate.Client.Core.Services;
 
 public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandler, IExceptionHandler
 {
+    [AutoInject] protected readonly PubSubService PubSubService = default!;
     [AutoInject] protected readonly SnackBarService SnackBarService = default!;
     [AutoInject] protected readonly ITelemetryContext TelemetryContext = default!;
     [AutoInject] protected readonly BitMessageBoxService MessageBoxService = default!;
@@ -80,5 +81,12 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
             return ExceptionDisplayKind.NonInterrupting;
 
         return ExceptionDisplayKind.Interrupting;
+    }
+
+    public override bool IgnoreException(Exception exception)
+    {
+        return exception is TaskCanceledException ||
+            exception is OperationCanceledException ||
+            exception is TimeoutException || base.IgnoreException(exception);
     }
 }

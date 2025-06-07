@@ -12,11 +12,6 @@ public partial class UserSession
 
     public string? IP { get; set; }
 
-    /// <summary>
-    /// <inheritdoc cref="UserSessionDto.DeviceInfo"/>
-    /// </summary>
-    public string? DeviceInfo { get; set; }
-
     public string? Address { get; set; }
 
     /// <summary>
@@ -50,4 +45,18 @@ public partial class UserSession
     //#if (signalR == true || notification == true)
     public UserSessionNotificationStatus NotificationStatus { get; set; }
     //#endif
+
+    public string? DeviceInfo { get; set; }
+
+    public AppPlatformType? PlatformType { get; set; }
+
+    /// <summary>
+    /// The culture selected by the user for this session.
+    /// </summary>
+    public string? CultureName { get; set; }
+
+    /// <summary>
+    /// The version of the application used for this session.
+    /// </summary>
+    public string? AppVersion { get; set; }
 }

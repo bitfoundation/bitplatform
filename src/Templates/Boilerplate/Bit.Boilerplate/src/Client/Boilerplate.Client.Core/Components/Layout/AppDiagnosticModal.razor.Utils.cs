@@ -5,8 +5,6 @@ using Boilerplate.Shared.Controllers.Identity;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR.Client;
 //#endif
-using Boilerplate.Shared.Dtos.Diagnostic;
-using Boilerplate.Client.Core.Services.DiagnosticLog;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -14,11 +12,9 @@ public partial class AppDiagnosticModal
 {
     [AutoInject] private Cookie cookie = default!;
     [AutoInject] private AuthManager authManager = default!;
-    //#if (signalR == true)
-    [AutoInject] private PromptService promptService = default!;
-    //#endif
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IUserController userController = default!;
+    [AutoInject] private IAppUpdateService appUpdateService = default!;
 
     private static async Task ThrowTestException()
     {
@@ -147,19 +143,8 @@ public partial class AppDiagnosticModal
         }
     }
 
-    //#if (signalR == true)
-    /// <summary>
-    /// <inheritdoc cref="SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE"/>
-    /// </summary>
-    private async Task ReadAnotherUserLogs()
+    private async Task UpdateApp()
     {
-        var userQuery = await promptService.Show("Enter `UserId`, `UserSessionId`, `Email` or `PhoneNumber`:", "Get other user logs");
-        var logs = await hubConnection.InvokeAsync<DiagnosticLogDto[]>("GetUserDiagnosticLogs", userQuery, CurrentCancellationToken);
-
-        filterCategoryValues = null;
-        filterLogLevelValues = [LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical];
-
-        LoadLogs(logs);
+        await appUpdateService.ForceUpdate();
     }
-    //#endif
 }

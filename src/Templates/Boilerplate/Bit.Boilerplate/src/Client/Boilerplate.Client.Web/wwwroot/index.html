@@ -93,18 +93,6 @@
                 #bit-bswup .bswup-progress-text::after {
                     content: var(--bit-bswup-percent-text, "");
                 }
-
-        #bit-bswup-reload {
-            top: 38px;
-            left: 50%;
-            display: none;
-            cursor: pointer;
-            position: fixed;
-            padding: 4px 8px;
-            z-index: 999999999;
-            border-radius: 2px;
-            transform: translateX(-50%);
-        }
     </style>
     <style>
         .bit-lds-grid div {
@@ -217,12 +205,9 @@
     <script src="_content/Bit.BlazorES2019/blazor.webassembly.js" autostart="false"></script>
     <script src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_content/Bit.BlazorES2019/blazor.webassembly.js"></script>
     <script src="_content/Bit.Bswup/bit-bswup.progress.js"></script>
-    <!-- If you want the update to be applied after the user approves the new Pwa version and not automatically,
-    set autoReload parameter of startBswupProgress to false and uncomment the bit-bswup-reload button code. -->
-    <!-- <button id="bit-bswup-reload">Update</button> -->
     <script>
-        const autoReload = true, showLogs = false, showAssets = false, appContainer = '#app-container', hideApp = false, handler = null;
-        startBswupProgress(autoReload, showLogs, showAssets, appContainer, hideApp, handler);
+        const autoReload = false, showLogs = false, showAssets = false, appContainer = '#app-container', hideApp = false, autoHide = true, handler = null;
+        BitBswupProgress.start(autoReload, showLogs, showAssets, appContainer, hideApp, autoHide, handler);
     </script>
     <script src="_content/Bit.Butil/bit-butil.js"></script>
     <!--#if (offlineDb == true) -->

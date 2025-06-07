@@ -147,20 +147,8 @@
   <data name="NotFoundText" xml:space="preserve">
     <value>Det finns inget här.</value>
   </data>
-  <data name="UnknownDevice" xml:space="preserve">
-    <value>Okänd enhet</value>
-  </data>
   <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
     <value>Profilen har uppdaterats.</value>
-  </data>
-  <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
-    <value>Ditt lösenord har ändrats.</value>
-  </data>
-  <data name="ResendConfirmationEmailTokenMessage" xml:space="preserve">
-    <value>Bekräftelsekod har skickats om till din e-postadress.</value>
-  </data>
-  <data name="ResetPasswordTokenSentMessage" xml:space="preserve">
-    <value>Koden för återställning av lösenord har skickats till din e-postadress.</value>
   </data>
   <data name="ConfirmEmailMessage" xml:space="preserve">
     <value>Vänligen bekräfta din e-post genom att skriva in koden här.</value>
@@ -174,9 +162,6 @@
   <data name="NotReceivedPhoneMessage" xml:space="preserve">
     <value>Har du inte fått koden på din telefon?</value>
   </data>
-  <data name="ResendConfirmationPhoneTokenMessage" xml:space="preserve">
-    <value>Bekräftelsekoden har skickats om till din telefon.</value>
-  </data>
   <data name="ResendPhoneTokenButtonText" xml:space="preserve">
     <value>Skicka kod igen</value>
   </data>
@@ -185,9 +170,6 @@
   </data>
   <data name="ForgotPasswordMessage" xml:space="preserve">
     <value>Ange din e-postadress eller telefonnummer så att vi kan skicka en kod för återställning av lösenord till dig.</value>
-  </data>
-  <data name="InvalidConfirmationTokenMessage" xml:space="preserve">
-    <value>Det verkar som att bekräftelsekoden antingen är ogiltig eller har gått ut.</value>
   </data>
   <data name="ResetPasswordSubtitle" xml:space="preserve">
     <value>Vi har skickat en kod till din telefon eller e-post.</value>

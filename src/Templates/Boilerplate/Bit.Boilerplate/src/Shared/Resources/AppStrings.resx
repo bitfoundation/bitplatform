@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
-    <!-- 
+  <!-- 
     Microsoft ResX Schema 
     
     Version 2.0
@@ -60,240 +60,219 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
-        <xsd:element name="root" msdata:IsDataSet="true">
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
             <xsd:complexType>
-                <xsd:choice maxOccurs="unbounded">
-                    <xsd:element name="metadata">
-                        <xsd:complexType>
-                            <xsd:sequence>
-                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
-                            </xsd:sequence>
-                            <xsd:attribute name="name" use="required" type="xsd:string" />
-                            <xsd:attribute name="type" type="xsd:string" />
-                            <xsd:attribute name="mimetype" type="xsd:string" />
-                            <xsd:attribute ref="xml:space" />
-                        </xsd:complexType>
-                    </xsd:element>
-                    <xsd:element name="assembly">
-                        <xsd:complexType>
-                            <xsd:attribute name="alias" type="xsd:string" />
-                            <xsd:attribute name="name" type="xsd:string" />
-                        </xsd:complexType>
-                    </xsd:element>
-                    <xsd:element name="data">
-                        <xsd:complexType>
-                            <xsd:sequence>
-                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
-                            </xsd:sequence>
-                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
-                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-                            <xsd:attribute ref="xml:space" />
-                        </xsd:complexType>
-                    </xsd:element>
-                    <xsd:element name="resheader">
-                        <xsd:complexType>
-                            <xsd:sequence>
-                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                            </xsd:sequence>
-                            <xsd:attribute name="name" type="xsd:string" use="required" />
-                        </xsd:complexType>
-                    </xsd:element>
-                </xsd:choice>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
             </xsd:complexType>
-        </xsd:element>
-    </xsd:schema>
-    <resheader name="resmimetype">
-        <value>text/microsoft-resx</value>
-    </resheader>
-    <resheader name="version">
-        <value>2.0</value>
-    </resheader>
-    <resheader name="reader">
-        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-    </resheader>
-    <resheader name="writer">
-        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-    </resheader>
-    <!-- .NET Validation messages -->
-    <data name="CompareAttribute_ValidationError" xml:space="preserve">
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- .NET Validation messages -->
+  <data name="CompareAttribute_ValidationError" xml:space="preserve">
     <value>'{0}' and '{1}' do not match.</value>
   </data>
-    <data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
+  <data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
     <value>The {0} field is not a valid e-mail address.</value>
   </data>
-    <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
+  <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
     <value>MaxLengthAttribute must have a Length value that is greater than zero. Use MaxLength() without parameters to indicate that the string or array can have the maximum allowable length.</value>
   </data>
-    <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
+  <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>The field {0} must be a string or array type with a minimum length of '{1}'.</value>
   </data>
-    <data name="RangeAttribute_ValidationError" xml:space="preserve">
+  <data name="RangeAttribute_ValidationError" xml:space="preserve">
     <value>The field {0} must be between {1} and {2}.</value>
   </data>
-    <data name="RequiredAttribute_ValidationError" xml:space="preserve">
+  <data name="RequiredAttribute_ValidationError" xml:space="preserve">
     <value>The {0} field is required.</value>
   </data>
-    <data name="PhoneAttribute_ValidationError" xml:space="preserve">
+  <data name="PhoneAttribute_ValidationError" xml:space="preserve">
     <value>The {0} field is not a valid phone number.</value>
   </data>
-    <!-- Exceptions -->
-    <data name="BadRequestException" xml:space="preserve">
+  <!-- Exceptions -->
+  <data name="BadRequestException" xml:space="preserve">
     <value>Invalid request</value>
   </data>
-    <data name="ConflictException" xml:space="preserve">
+  <data name="ConflictException" xml:space="preserve">
     <value>Request could not be processed because of conflict in the request</value>
   </data>
-    <data name="NotAuthorizedPageTitle" xml:space="preserve">
+  <data name="NotAuthorizedPageTitle" xml:space="preserve">
     <value>Not authorized</value>
   </data>
-    <data name="ForbiddenException" xml:space="preserve">
+  <data name="ForbiddenException" xml:space="preserve">
     <value>Access to the requested resource is forbidden</value>
   </data>
-    <data name="ResourceValidationException" xml:space="preserve">
+  <data name="ResourceValidationException" xml:space="preserve">
     <value>Request data is not valid</value>
   </data>
-    <data name="RestException" xml:space="preserve">
+  <data name="RestException" xml:space="preserve">
     <value>An error occurred while communicating with server</value>
   </data>
-    <data name="UnauthorizedException" xml:space="preserve">
+  <data name="UnauthorizedException" xml:space="preserve">
     <value>Your request lacks valid authentication credentials</value>
   </data>
-    <data name="UnknownException" xml:space="preserve">
+  <data name="UnknownException" xml:space="preserve">
     <value>Unknown error has occurred</value>
   </data>
-    <data name="UpdateConcurrencyException" xml:space="preserve">
+  <data name="UpdateConcurrencyException" xml:space="preserve">
     <value>The record was modified by another user after you got the original data. the operation was canceled.</value>
   </data>
-    <data name="ResourceNotFoundException" xml:space="preserve">
+  <data name="ResourceNotFoundException" xml:space="preserve">
     <value>Resource not found</value>
   </data>
-    <data name="TooManyRequestsExceptions" xml:space="preserve">
+  <data name="TooManyRequestsExceptions" xml:space="preserve">
     <value>Too many requests</value>
   </data>
-    <data name="ServerConnectionException" xml:space="preserve">
+  <data name="ServerConnectionException" xml:space="preserve">
     <value>Unable to connect to server.</value>
   </data>
-    <!-- Boilerplate strings -->
-    <data name="Active" xml:space="preserve">
+  <!-- Boilerplate strings -->
+  <data name="Active" xml:space="preserve">
     <value>Active</value>
   </data>
-    <data name="All" xml:space="preserve">
+  <data name="All" xml:space="preserve">
     <value>All</value>
   </data>
-    <data name="Alphabetical" xml:space="preserve">
+  <data name="Alphabetical" xml:space="preserve">
     <value>A-Z</value>
   </data>
-    <data name="Completed" xml:space="preserve">
+  <data name="Completed" xml:space="preserve">
     <value>Completed</value>
   </data>
-    <data name="Date" xml:space="preserve">
+  <data name="Date" xml:space="preserve">
     <value>Date</value>
   </data>
-    <data name="SettingsPageTitle" xml:space="preserve">
+  <data name="SettingsPageTitle" xml:space="preserve">
     <value>Settings</value>
   </data>
-    <data name="Settings" xml:space="preserve">
+  <data name="Settings" xml:space="preserve">
     <value>Settings</value>
   </data>
-    <data name="Dark" xml:space="preserve">
+  <data name="Dark" xml:space="preserve">
     <value>Dark</value>
   </data>
-    <data name="Light" xml:space="preserve">
+  <data name="Light" xml:space="preserve">
     <value>Light</value>
   </data>
-    <data name="Language" xml:space="preserve">
+  <data name="Language" xml:space="preserve">
     <value>Language</value>
   </data>
-    <data name="SelectLanguage" xml:space="preserve">
+  <data name="SelectLanguage" xml:space="preserve">
     <value>Select language</value>
   </data>
-    <data name="ProfileTitle" xml:space="preserve">
+  <data name="ProfileTitle" xml:space="preserve">
     <value>Profile</value>
   </data>
-    <data name="ProfileSubtitle" xml:space="preserve">
+  <data name="ProfileSubtitle" xml:space="preserve">
     <value>Edit your profile data</value>
   </data>
-    <data name="EditProfileTitle" xml:space="preserve">
-    <value>Edit profile</value>
-  </data>
-    <data name="ChangeEmailTitle" xml:space="preserve">
-    <value>Change email</value>
-  </data>
-    <data name="ChangePhoneNumberTitle" xml:space="preserve">
-    <value>Change phone number</value>
-  </data>
-    <data name="SuccessfulSendChangeEmailTokenMessage" xml:space="preserve">
+  <data name="SuccessfulSendChangeEmailTokenMessage" xml:space="preserve">
     <value>Change email token has been sent to you</value>
   </data>
-    <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
+  <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
     <value>Change phone number token has been sent to you</value>
   </data>
-    <data name="SuccessfulSendTokenMessage" xml:space="preserve">
+  <data name="SuccessfulSendTokenMessage" xml:space="preserve">
     <value>The token has been sent to you</value>
   </data>
-    <data name="SessionsTitle" xml:space="preserve">
+  <data name="SessionsTitle" xml:space="preserve">
     <value>Sessions</value>
   </data>
-    <data name="SessionsSubtitle" xml:space="preserve">
+  <data name="SessionsSubtitle" xml:space="preserve">
     <value>Your active sessions across multiple devices</value>
   </data>
-    <data name="UserSessionsTitle" xml:space="preserve">
-    <value>Your sessions</value>
-  </data>
-    <data name="CurrentSession" xml:space="preserve">
+  <data name="CurrentSession" xml:space="preserve">
     <value>Current session</value>
   </data>
-    <data name="PrivilegedDeviceLimitMessage" xml:space="preserve">
+  <data name="PrivilegedDeviceLimitMessage" xml:space="preserve">
     <value>From {0} devices allowed for full features, you've used {1}.
 After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
-    <data name="OtherSessions" xml:space="preserve">
+  <data name="OtherSessions" xml:space="preserve">
     <value>Other sessions</value>
   </data>
-    <data name="RemoveSession" xml:space="preserve">
-    <value>Remove session</value>
-  </data>
-    <data name="TryRemovingOtherSessions" xml:space="preserve">
+  <data name="TryRemovingOtherSessions" xml:space="preserve">
     <value>Try removing other sessions</value>
   </data>
-    <data name="RemoveSessionSuccessMessage" xml:space="preserve">
+  <data name="RemoveSessionSuccessMessage" xml:space="preserve">
     <value>Session removed successfully</value>
   </data>
-    <data name="NotFoundPageTitle" xml:space="preserve">
+  <data name="NotFoundPageTitle" xml:space="preserve">
     <value>404</value>
   </data>
-    <data name="NotFoundText" xml:space="preserve">
+  <data name="NotFoundText" xml:space="preserve">
     <value>There is nothing here.</value>
   </data>
-    <data name="UnknownDevice" xml:space="preserve">
-    <value>Unknown device</value>
-  </data>
-    <data name="UpdateWebViewThroughGooglePlay" xml:space="preserve">
+  <data name="UpdateWebViewThroughGooglePlay" xml:space="preserve">
     <value>Please update webview through google play.</value>
   </data>
-    <data name="Ok" xml:space="preserve">
+  <data name="Ok" xml:space="preserve">
     <value>Ok</value>
   </data>
-    <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
-    <value>Please ensure you're not running multiple sessions of the app simultaneously on the same device or browser.</value>
-  </data>
-    <!--#if (signalR == true) -->
-    <data name="SystemPromptsTitle" xml:space="preserve">
+  <!--#if (signalR == true) -->
+  <data name="SystemPromptsTitle" xml:space="preserve">
     <value>System prompts</value>
   </data>
-    <data name="SystemPromptsSubTitle" xml:space="preserve">
+  <data name="SystemPromptsSubTitle" xml:space="preserve">
     <value>View the system prompts for chatbot here.</value>
   </data>
-    <!--#endif-->
-    <!--#if (offlineDb == true) -->
-    <data name="OfflineDatabaseDemoTitle" xml:space="preserve">
+  <!--#endif-->
+  <!--#if (offlineDb == true) -->
+  <data name="OfflineDatabaseDemoTitle" xml:space="preserve">
     <value>Offline database demo</value>
   </data>
-    <data name="OfflineDatabaseDemoMessage" xml:space="preserve">
+  <data name="OfflineDatabaseDemoMessage" xml:space="preserve">
     <value>Entity Framework Core / SQLite powered offline form inside your web/mobile/desktop apps:
  • Migrations
  • Transaction
@@ -302,976 +281,856 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
  • Schema based database
 </value>
   </data>
-    <!--#endif-->
-    <data name="FullName" xml:space="preserve">
+  <!--#endif-->
+  <data name="FullName" xml:space="preserve">
     <value>Full name</value>
   </data>
-    <data name="TermsPageTitle" xml:space="preserve">
+  <data name="TermsPageTitle" xml:space="preserve">
     <value>Terms</value>
   </data>
-    <data name="Terms" xml:space="preserve">
+  <data name="Terms" xml:space="preserve">
     <value>Terms</value>
   </data>
-    <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
+  <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
     <value>Profile updated successfully.</value>
   </data>
-    <data name="ConfirmPassword" xml:space="preserve">
+  <data name="ConfirmPassword" xml:space="preserve">
     <value>Confirm Password</value>
   </data>
-    <data name="ConfirmNewPassword" xml:space="preserve">
+  <data name="ConfirmNewPassword" xml:space="preserve">
     <value>Confirm New Password</value>
   </data>
-    <data name="Email" xml:space="preserve">
+  <data name="Email" xml:space="preserve">
     <value>Email</value>
   </data>
-    <data name="CurrentEmail" xml:space="preserve">
-    <value>Current email</value>
-  </data>
-    <data name="NewEmail" xml:space="preserve">
+  <data name="NewEmail" xml:space="preserve">
     <value>New email</value>
   </data>
-    <data name="NewEmailPlaceholder" xml:space="preserve">
+  <data name="NewEmailPlaceholder" xml:space="preserve">
     <value>Enter new email</value>
   </data>
-    <data name="Phone" xml:space="preserve">
+  <data name="Phone" xml:space="preserve">
     <value>Phone</value>
   </data>
-    <data name="PhoneNumber" xml:space="preserve">
+  <data name="PhoneNumber" xml:space="preserve">
     <value>Phone Number</value>
   </data>
-    <data name="CurrentPhoneNumber" xml:space="preserve">
-    <value>Current phone number</value>
-  </data>
-    <data name="NewPhoneNumber" xml:space="preserve">
+  <data name="NewPhoneNumber" xml:space="preserve">
     <value>New phone number</value>
   </data>
-    <data name="NewPhoneNumberPlaceholder" xml:space="preserve">
+  <data name="NewPhoneNumberPlaceholder" xml:space="preserve">
     <value>Enter new phone number</value>
   </data>
-    <data name="GoBack" xml:space="preserve">
+  <data name="GoBack" xml:space="preserve">
     <value>Back</value>
   </data>
-    <data name="Password" xml:space="preserve">
+  <data name="Password" xml:space="preserve">
     <value>Password</value>
   </data>
-    <data name="PasswordPlaceholder" xml:space="preserve">
+  <data name="PasswordPlaceholder" xml:space="preserve">
     <value>Enter password</value>
   </data>
-    <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
-    <value>Your password changed successfully.</value>
-  </data>
-    <data name="ResendConfirmationEmailTokenMessage" xml:space="preserve">
-    <value>The confirmation token has been re-sent to your email address.</value>
-  </data>
-    <data name="ResetPasswordTokenSentMessage" xml:space="preserve">
-    <value>The reset password token has been sent to your email address.</value>
-  </data>
-    <data name="ImageCouldNotBeFound" xml:space="preserve">
+  <data name="ImageCouldNotBeFound" xml:space="preserve">
     <value>Image could not be found</value>
   </data>
-    <data name="Error" xml:space="preserve">
+  <data name="Error" xml:space="preserve">
     <value>Error</value>
   </data>
-    <data name="YouHaveToAcceptTerms" xml:space="preserve">
-    <value>You must agree to our terms.</value>
-  </data>
-    <data name="AcceptTermsMessage" xml:space="preserve">
-    <value>By signing up, you agree to our</value>
-  </data>
-    <data name="Gender" xml:space="preserve">
+  <data name="Gender" xml:space="preserve">
     <value>Gender</value>
   </data>
-    <data name="BirthDate" xml:space="preserve">
+  <data name="BirthDate" xml:space="preserve">
     <value>Birthdate</value>
   </data>
-    <data name="UserName" xml:space="preserve">
+  <data name="UserName" xml:space="preserve">
     <value>Username</value>
   </data>
-    <data name="Name" xml:space="preserve">
+  <data name="Name" xml:space="preserve">
     <value>Name</value>
   </data>
-    <data name="Description" xml:space="preserve">
+  <data name="Description" xml:space="preserve">
     <value>Description</value>
   </data>
-    <data name="Price" xml:space="preserve">
+  <data name="Price" xml:space="preserve">
     <value>Price</value>
   </data>
-    <data name="EitherProvideEmailOrPhoneNumber" xml:space="preserve">
+  <data name="EitherProvideEmailOrPhoneNumber" xml:space="preserve">
     <value>Either provide email or phone number.</value>
   </data>
-    <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
+  <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
     <value>Either provide username, email or phone number.</value>
   </data>
-    <data name="YouNeedToSignIn" xml:space="preserve">
+  <data name="YouNeedToSignIn" xml:space="preserve">
     <value>You must be signed in to continue.</value>
   </data>
-    <data name="InvalidUserCredentials" xml:space="preserve">
+  <data name="InvalidUserCredentials" xml:space="preserve">
     <value>Invalid user credentials</value>
   </data>
-    <data name="EmailAlreadyConfirmed" xml:space="preserve">
+  <data name="EmailAlreadyConfirmed" xml:space="preserve">
     <value>Your email is already confirmed.</value>
   </data>
-    <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
+  <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
     <value>Your phone number is already confirmed.</value>
   </data>
-    <data name="Title" xml:space="preserve">
+  <data name="Title" xml:space="preserve">
     <value>Title</value>
   </data>
-    <data name="AreYouSureWannaDelete" xml:space="preserve">
+  <data name="AreYouSureWannaDelete" xml:space="preserve">
     <value>Are you sure you want to delete {0}?</value>
   </data>
-    <data name="Home" xml:space="preserve">
+  <data name="Home" xml:space="preserve">
     <value>Home</value>
   </data>
-    <data name="Refresh" xml:space="preserve">
+  <data name="Refresh" xml:space="preserve">
     <value>Refresh</value>
   </data>
-    <data name="Recover" xml:space="preserve">
+  <data name="Recover" xml:space="preserve">
     <value>Recover</value>
   </data>
-    <data name="SomethingWentWrong" xml:space="preserve">
+  <data name="SomethingWentWrong" xml:space="preserve">
     <value>Oops, something went wrong...</value>
   </data>
-    <data name="BackToHome" xml:space="preserve">
+  <data name="BackToHome" xml:space="preserve">
     <value>Back to home</value>
   </data>
-    <data name="UserLockedOut" xml:space="preserve">
+  <data name="UserLockedOut" xml:space="preserve">
     <value>User is locked out. Try again in {0}</value>
   </data>
-    <data name="UserIsNotConfirmed" xml:space="preserve">
+  <data name="UserIsNotConfirmed" xml:space="preserve">
     <value>User is not confirmed.</value>
   </data>
-    <data name="UserNotFound" xml:space="preserve">
+  <data name="UserNotFound" xml:space="preserve">
     <value>User does not exist.</value>
   </data>
-    <data name="DuplicateEmailOrPhoneNumber" xml:space="preserve">
+  <data name="DuplicateEmailOrPhoneNumber" xml:space="preserve">
     <value>This email or phone number is already taken.</value>
   </data>
-    <data name="Add" xml:space="preserve">
+  <data name="Add" xml:space="preserve">
     <value>Add</value>
   </data>
-    <data name="Token" xml:space="preserve">
+  <data name="Token" xml:space="preserve">
     <value>Token</value>
   </data>
-    <data name="InvalidToken" xml:space="preserve">
+  <data name="InvalidToken" xml:space="preserve">
     <value>Invalid token.</value>
   </data>
-    <data name="ExpiredToken" xml:space="preserve">
+  <data name="ExpiredToken" xml:space="preserve">
     <value>Expired token.</value>
   </data>
-    <data name="SignInMessageInSignUp" xml:space="preserve">
+  <data name="SignInMessageInSignUp" xml:space="preserve">
     <value>Already have an account?</value>
   </data>
-    <data name="ConfirmMessageInSignUp" xml:space="preserve">
-    <value>Want to confirm an account?</value>
-  </data>
-    <data name="ConfirmMessageInProfile" xml:space="preserve">
+  <data name="ConfirmMessageInProfile" xml:space="preserve">
     <value>Already have a token?</value>
   </data>
-    <data name="ConfirmEmailHeaderText" xml:space="preserve">
+  <data name="ConfirmEmailHeaderText" xml:space="preserve">
     <value>Email Address</value>
   </data>
-    <data name="ConfirmEmailSubtitle" xml:space="preserve">
+  <data name="ConfirmEmailSubtitle" xml:space="preserve">
     <value>We have sent a confirmation token to your email address.</value>
   </data>
-    <data name="ConfirmPageTitle" xml:space="preserve">
+  <data name="ConfirmPageTitle" xml:space="preserve">
     <value>Confirm</value>
   </data>
-    <data name="ConfirmTitle" xml:space="preserve">
+  <data name="ConfirmTitle" xml:space="preserve">
     <value>Confirm your account</value>
   </data>
-    <data name="ConfirmEmailMessage" xml:space="preserve">
+  <data name="ConfirmEmailMessage" xml:space="preserve">
     <value>Please confirm your email by typing the token here.</value>
   </data>
-    <data name="EmailPlaceholder" xml:space="preserve">
+  <data name="EmailPlaceholder" xml:space="preserve">
     <value>Enter email address</value>
   </data>
-    <data name="EmailToken" xml:space="preserve">
+  <data name="EmailToken" xml:space="preserve">
     <value>Code</value>
   </data>
-    <data name="EmailTokenConfirmButtonText" xml:space="preserve">
+  <data name="EmailTokenConfirmButtonText" xml:space="preserve">
     <value>Confirm Email Address</value>
   </data>
-    <data name="EmailConfirmationSuccessTitle" xml:space="preserve">
+  <data name="EmailConfirmationSuccessTitle" xml:space="preserve">
     <value>Your email address ({0}) has been confirmed.</value>
   </data>
-    <data name="EmailConfirmationSuccessMessage" xml:space="preserve">
+  <data name="EmailConfirmationSuccessMessage" xml:space="preserve">
     <value>You can now sign-in with your account.</value>
   </data>
-    <data name="ConfirmPhoneHeaderText" xml:space="preserve">
+  <data name="ConfirmPhoneHeaderText" xml:space="preserve">
     <value>Phone Number</value>
   </data>
-    <data name="ConfirmPhoneSubtitle" xml:space="preserve">
+  <data name="ConfirmPhoneSubtitle" xml:space="preserve">
     <value>We have sent a confirmation token to your phone.</value>
   </data>
-    <data name="ConfirmPhoneMessage" xml:space="preserve">
+  <data name="ConfirmPhoneMessage" xml:space="preserve">
     <value>Please confirm your phone number by typing the token here.</value>
   </data>
-    <data name="PhoneNumberPlaceholder" xml:space="preserve">
+  <data name="PhoneNumberPlaceholder" xml:space="preserve">
     <value>Enter phone number</value>
   </data>
-    <data name="PhoneToken" xml:space="preserve">
+  <data name="PhoneToken" xml:space="preserve">
     <value>Code</value>
   </data>
-    <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
+  <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
     <value>Confirm Phone Number</value>
   </data>
-    <data name="NotReceivedPhoneMessage" xml:space="preserve">
+  <data name="NotReceivedPhoneMessage" xml:space="preserve">
     <value>Haven't you received the token on your phone?</value>
   </data>
-    <data name="ResendConfirmationPhoneTokenMessage" xml:space="preserve">
-    <value>The confirmation token has been re-sent to your phone.</value>
-  </data>
-    <data name="ResendPhoneTokenButtonText" xml:space="preserve">
+  <data name="ResendPhoneTokenButtonText" xml:space="preserve">
     <value>Resend code</value>
   </data>
-    <data name="PhoneConfirmationSuccessTitle" xml:space="preserve">
+  <data name="PhoneConfirmationSuccessTitle" xml:space="preserve">
     <value>Your phone number ({0}) has been confirmed.</value>
   </data>
-    <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
+  <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
     <value>You can now sign-in with your account.</value>
   </data>
-    <data name="AccountTitle" xml:space="preserve">
+  <data name="AccountTitle" xml:space="preserve">
     <value>Account</value>
   </data>
-    <data name="AccountSubtitle" xml:space="preserve">
+  <data name="AccountSubtitle" xml:space="preserve">
     <value>Change your account email, phone number, or passwordless settings</value>
   </data>
-    <data name="DeleteAccount" xml:space="preserve">
+  <data name="DeleteAccount" xml:space="preserve">
     <value>Delete Account</value>
   </data>
-    <data name="DeleteAccountPrompt" xml:space="preserve">
+  <data name="DeleteAccountPrompt" xml:space="preserve">
     <value>Are you sure you want to delete your account?</value>
   </data>
-    <data name="DontHaveAccountMessage" xml:space="preserve">
+  <data name="DontHaveAccountMessage" xml:space="preserve">
     <value>Don't have an account?</value>
   </data>
-    <data name="Edit" xml:space="preserve">
+  <data name="Edit" xml:space="preserve">
     <value>Edit</value>
   </data>
-    <data name="EmailConfirmationFailedMessage" xml:space="preserve">
-    <value>Email Confirmation Failed!</value>
-  </data>
-    <data name="EmailConfirmationTitle" xml:space="preserve">
-    <value>Email Confirmation</value>
-  </data>
-    <data name="EmailConfirmedSuccessfullyMessage" xml:space="preserve">
-    <value>Email Confirmed Successfully!</value>
-  </data>
-    <data name="FileUploadFailed" xml:space="preserve">
+  <data name="FileUploadFailed" xml:space="preserve">
     <value>An error occurred while uploading file</value>
   </data>
-    <data name="ForgotPasswordPageTitle" xml:space="preserve">
+  <data name="ForgotPasswordPageTitle" xml:space="preserve">
     <value>Forgot password</value>
   </data>
-    <data name="ForgotPasswordTitle" xml:space="preserve">
+  <data name="ForgotPasswordTitle" xml:space="preserve">
     <value>Forgot password</value>
   </data>
-    <data name="ForgotPasswordMessage" xml:space="preserve">
+  <data name="ForgotPasswordMessage" xml:space="preserve">
     <value>Please enter your email address or phone number so we can send a reset password token to you.</value>
   </data>
-    <data name="GenderMale" xml:space="preserve">
+  <data name="GenderMale" xml:space="preserve">
     <value>Male</value>
   </data>
-    <data name="GenderOther" xml:space="preserve">
+  <data name="GenderOther" xml:space="preserve">
     <value>Other</value>
   </data>
-    <data name="GitHubRepo" xml:space="preserve">
-    <value>GitHub Repo</value>
-  </data>
-    <data name="GoToToday" xml:space="preserve">
+  <data name="GoToToday" xml:space="preserve">
     <value>Go to today</value>
   </data>
-    <data name="HomeMessage" xml:space="preserve">
+  <data name="HomeMessage" xml:space="preserve">
     <value>Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor app easily in the shortest time ever!</value>
   </data>
-    <data name="HomePageTitle" xml:space="preserve">
+  <data name="HomePageTitle" xml:space="preserve">
     <value>Home</value>
   </data>
-    <data name="HomePanelTitle" xml:space="preserve">
+  <data name="HomePanelTitle" xml:space="preserve">
     <value>Build all of your apps</value>
   </data>
-    <data name="HomePanelSubtitle" xml:space="preserve">
+  <data name="HomePanelSubtitle" xml:space="preserve">
     <value>using what you already know and love</value>
   </data>
-    <data name="WatchVideo" xml:space="preserve">
+  <data name="WatchVideo" xml:space="preserve">
     <value>Watch video</value>
   </data>
-    <data name="LearnMore" xml:space="preserve">
+  <data name="LearnMore" xml:space="preserve">
     <value>Learn more</value>
   </data>
-    <data name="BitPlatformMessage" xml:space="preserve">
+  <data name="BitPlatformMessage" xml:space="preserve">
     <value>A set of tools for .NET developers across multiple platforms</value>
   </data>
-    <data name="BitBlazorUIMessage" xml:space="preserve">
+  <data name="BitBlazorUIMessage" xml:space="preserve">
     <value>A set of performant, easy-to-customize and beautiful Blazor components</value>
   </data>
-    <data name="BitProjectTemplateMessage" xml:space="preserve">
+  <data name="BitProjectTemplateMessage" xml:space="preserve">
     <value>A feature-rich .NET project template that works everywhere seamlessly</value>
   </data>
-    <data name="DescriptionMetaTagValue" xml:space="preserve">
+  <data name="DescriptionMetaTagValue" xml:space="preserve">
     <value>The Boilerplate is built with ASP.NET Core, Identity, Web API, EF Core and Blazor.</value>
   </data>
-    <data name="InvalidConfirmationTokenMessage" xml:space="preserve">
-    <value>Looks like the confirmation token either is invalid or has expired.</value>
-  </data>
-    <data name="NewPassword" xml:space="preserve">
+  <data name="NewPassword" xml:space="preserve">
     <value>New Password</value>
   </data>
-    <data name="OldPassword" xml:space="preserve">
+  <data name="OldPassword" xml:space="preserve">
     <value>Old Password</value>
   </data>
-    <data name="No" xml:space="preserve">
+  <data name="No" xml:space="preserve">
     <value>No</value>
   </data>
-    <data name="NotReceivedEmailMessage" xml:space="preserve">
+  <data name="NotReceivedEmailMessage" xml:space="preserve">
     <value>Haven't you received the email?</value>
   </data>
-    <data name="Or" xml:space="preserve">
+  <data name="Or" xml:space="preserve">
     <value>or</value>
   </data>
-    <data name="ProfileImage" xml:space="preserve">
-    <value>Profile Image</value>
-  </data>
-    <data name="Remove" xml:space="preserve">
+  <data name="Remove" xml:space="preserve">
     <value>Remove</value>
   </data>
-    <data name="ResendEmailTokenButtonText" xml:space="preserve">
+  <data name="ResendEmailTokenButtonText" xml:space="preserve">
     <value>Resend code</value>
   </data>
-    <data name="ResetPasswordPageTitle" xml:space="preserve">
+  <data name="ResetPasswordPageTitle" xml:space="preserve">
     <value>Reset password</value>
   </data>
-    <data name="ResetPassword" xml:space="preserve">
+  <data name="ResetPassword" xml:space="preserve">
     <value>Reset password</value>
   </data>
-    <data name="ResetPasswordTitle" xml:space="preserve">
+  <data name="ResetPasswordTitle" xml:space="preserve">
     <value>Reset password</value>
   </data>
-    <data name="ResetPasswordSubtitle" xml:space="preserve">
+  <data name="ResetPasswordSubtitle" xml:space="preserve">
     <value>We have sent a token to your phone or email.</value>
   </data>
-    <data name="ResetPasswordMessage" xml:space="preserve">
+  <data name="ResetPasswordMessage" xml:space="preserve">
     <value>Please submit the token together with your new password here.</value>
   </data>
-    <data name="ResetPasswordButtonText" xml:space="preserve">
+  <data name="ResetPasswordButtonText" xml:space="preserve">
     <value>Set Password</value>
   </data>
-    <data name="ResetPasswordSuccessTitle" xml:space="preserve">
+  <data name="ResetPasswordSuccessTitle" xml:space="preserve">
     <value>Your password has been reset.</value>
   </data>
-    <data name="ResetPasswordSuccessBody" xml:space="preserve">
+  <data name="ResetPasswordSuccessBody" xml:space="preserve">
     <value>You can now sign-in with your password.</value>
   </data>
-    <data name="ResetPasswordMessageInForgot" xml:space="preserve">
+  <data name="ResetPasswordMessageInForgot" xml:space="preserve">
     <value>Already have a reset password token?</value>
   </data>
-    <data name="Save" xml:space="preserve">
+  <data name="Save" xml:space="preserve">
     <value>Save</value>
   </data>
-    <data name="SignInPageTitle" xml:space="preserve">
+  <data name="SignInPageTitle" xml:space="preserve">
     <value>Sign in</value>
   </data>
-    <data name="SignInPanelTitle" xml:space="preserve">
+  <data name="SignInPanelTitle" xml:space="preserve">
     <value>Welcome</value>
   </data>
-    <data name="SignInPanelSubtitle" xml:space="preserve">
+  <data name="SignInPanelSubtitle" xml:space="preserve">
     <value>Continue with your</value>
   </data>
-    <data name="Continue" xml:space="preserve">
+  <data name="Continue" xml:space="preserve">
     <value>Continue</value>
   </data>
-    <data name="CloseBrowserMessageTitle" xml:space="preserve">
-    <value>Go back to app</value>
-  </data>
-    <data name="CloseBrowserMessageBody" xml:space="preserve">
-    <value>You can go back to the application now</value>
-  </data>
-    <data name="GoogleSignInButtonText" xml:space="preserve">
+  <data name="GoogleSignInButtonText" xml:space="preserve">
     <value>Sign in with Google</value>
   </data>
-    <data name="GitHubSignInButtonText" xml:space="preserve">
+  <data name="GitHubSignInButtonText" xml:space="preserve">
     <value>Sign in with GitHub</value>
   </data>
-    <data name="TwitterSignInButtonText" xml:space="preserve">
+  <data name="TwitterSignInButtonText" xml:space="preserve">
     <value>Sign in with Twitter (X)</value>
   </data>
-    <data name="AppleSignInButtonText" xml:space="preserve">
+  <data name="AppleSignInButtonText" xml:space="preserve">
     <value>Sign in with Apple</value>
   </data>
-    <data name="SignOut" xml:space="preserve">
+  <data name="SignOut" xml:space="preserve">
     <value>Sign out</value>
   </data>
-    <data name="SignOutPrompt" xml:space="preserve">
+  <data name="SignOutPrompt" xml:space="preserve">
     <value>Are you sure you want to Sign out?</value>
   </data>
-    <data name="SignUp" xml:space="preserve">
+  <data name="SignUp" xml:space="preserve">
     <value>Sign up</value>
   </data>
-    <data name="SignUpPageTitle" xml:space="preserve">
+  <data name="SignUpPageTitle" xml:space="preserve">
     <value>Sign up</value>
   </data>
-    <data name="SignUpPanelTitle" xml:space="preserve">
+  <data name="SignUpPanelTitle" xml:space="preserve">
     <value>Get started today</value>
   </data>
-    <data name="SignUpPanelSubtitle" xml:space="preserve">
+  <data name="SignUpPanelSubtitle" xml:space="preserve">
     <value>Create new account with</value>
   </data>
-    <data name="Submit" xml:space="preserve">
+  <data name="Submit" xml:space="preserve">
     <value>Submit</value>
   </data>
-    <data name="TermsMessage" xml:space="preserve">
-    <value>I agree to the</value>
-  </data>
-    <data name="UploadNewImage" xml:space="preserve">
+  <data name="UploadNewImage" xml:space="preserve">
     <value>Drag or select an image</value>
   </data>
-    <data name="Yes" xml:space="preserve">
+  <data name="Yes" xml:space="preserve">
     <value>Yes</value>
   </data>
-    <data name="SelectBirthDate" xml:space="preserve">
+  <data name="SelectBirthDate" xml:space="preserve">
     <value>Select your birth date</value>
   </data>
-    <data name="Action" xml:space="preserve">
+  <data name="Action" xml:space="preserve">
     <value>Action</value>
   </data>
-    <data name="Back" xml:space="preserve">
+  <data name="Back" xml:space="preserve">
     <value>Back</value>
   </data>
-    <data name="Cancel" xml:space="preserve">
+  <data name="Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
-    <data name="CheckSpamMailMessage" xml:space="preserve">
+  <data name="CheckSpamMailMessage" xml:space="preserve">
     <value>Check your Spam/Junk, if you could not find it in the Inbox.</value>
   </data>
-    <data name="Color" xml:space="preserve">
+  <data name="Color" xml:space="preserve">
     <value>Color</value>
   </data>
-    <data name="CustomColor" xml:space="preserve">
+  <data name="CustomColor" xml:space="preserve">
     <value>Custom color</value>
   </data>
-    <data name="Delete" xml:space="preserve">
+  <data name="Delete" xml:space="preserve">
     <value>Delete</value>
   </data>
-    <data name="Id" xml:space="preserve">
+  <data name="Id" xml:space="preserve">
     <value>Id</value>
   </data>
-    <data name="SignIn" xml:space="preserve">
+  <data name="SignIn" xml:space="preserve">
     <value>Sign in</value>
   </data>
-    <data name="SignInByModal" xml:space="preserve">
+  <data name="SignInByModal" xml:space="preserve">
     <value>Sign in (Popup)</value>
   </data>
-    <data name="Confirm" xml:space="preserve">
+  <data name="Confirm" xml:space="preserve">
     <value>Confirm</value>
   </data>
-    <data name="SignInAsDifferentUser" xml:space="preserve">
+  <data name="SignInAsDifferentUser" xml:space="preserve">
     <value>Sign in as different user</value>
   </data>
-    <data name="YouAreSignedInAs" xml:space="preserve">
+  <data name="YouAreSignedInAs" xml:space="preserve">
     <value>You're signed in as</value>
   </data>
-    <data name="ForgotPasswordLink" xml:space="preserve">
+  <data name="ForgotPasswordLink" xml:space="preserve">
     <value>Forgot password?</value>
   </data>
-    <data name="GenderFemale" xml:space="preserve">
+  <data name="GenderFemale" xml:space="preserve">
     <value>Female</value>
   </data>
-    <data name="RememberMe" xml:space="preserve">
+  <data name="RememberMe" xml:space="preserve">
     <value>Remember me?</value>
   </data>
-    <data name="Copy" xml:space="preserve">
+  <data name="Copy" xml:space="preserve">
     <value>Copy</value>
   </data>
-    <data name="Copied" xml:space="preserve">
+  <data name="Copied" xml:space="preserve">
     <value>Copied</value>
   </data>
-    <data name="TfaTitle" xml:space="preserve">
+  <data name="TfaTitle" xml:space="preserve">
     <value>Two-factor authentication</value>
   </data>
-    <data name="TfaSubtitle" xml:space="preserve">
+  <data name="TfaSubtitle" xml:space="preserve">
     <value>Manage your account's multi-factor authentication</value>
   </data>
-    <data name="TwoFactorCode" xml:space="preserve">
+  <data name="TwoFactorCode" xml:space="preserve">
     <value>2FA code</value>
   </data>
-    <data name="TwoFactorRecoveryCode" xml:space="preserve">
+  <data name="TwoFactorRecoveryCode" xml:space="preserve">
     <value>Recovery code</value>
   </data>
-    <data name="TfaPanelTitle" xml:space="preserve">
+  <data name="TfaPanelTitle" xml:space="preserve">
     <value>2-Factor Authentication</value>
   </data>
-    <data name="TfaPanelSubtitle" xml:space="preserve">
+  <data name="TfaPanelSubtitle" xml:space="preserve">
     <value>Get a new code from your authenticator app or use your recovery code.</value>
   </data>
-    <data name="TfaPanelAnotherWayTitle" xml:space="preserve">
+  <data name="TfaPanelAnotherWayTitle" xml:space="preserve">
     <value>Try another way</value>
   </data>
-    <data name="TfaPanelAnotherWaySubtitle" xml:space="preserve">
+  <data name="TfaPanelAnotherWaySubtitle" xml:space="preserve">
     <value>You can get a new code at your email or phone.</value>
   </data>
-    <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
+  <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
     <value>Get code</value>
   </data>
-    <data name="TwoFactorAuthTitle" xml:space="preserve">
-    <value>2FA</value>
-  </data>
-    <data name="TfaResetSharedKeyError" xml:space="preserve">
+  <data name="TfaResetSharedKeyError" xml:space="preserve">
     <value>Resetting the 2fa shared key must disable 2fa until a 2fa token based on the new shared key is validated.</value>
   </data>
-    <data name="TfaEmptyCodeError" xml:space="preserve">
+  <data name="TfaEmptyCodeError" xml:space="preserve">
     <value>No 2fa token was provided by the request. A valid 2fa token is required to enable 2fa.</value>
   </data>
-    <data name="TfaInvalidCodeError" xml:space="preserve">
+  <data name="TfaInvalidCodeError" xml:space="preserve">
     <value>The 2fa token provided by the request was invalid. A valid 2fa token is required to enable 2fa.</value>
   </data>
-    <data name="TfaProtectedSignInSubtitle" xml:space="preserve">
-    <value>Your sign-in is protected with an authenticator app.</value>
-  </data>
-    <data name="TfaEnterCodeInSignInMessage" xml:space="preserve">
-    <value>Enter your authenticator code:</value>
-  </data>
-    <data name="TfaEnterRecoveryCodeInSignInMessage" xml:space="preserve">
-    <value>Or enter your recovery code:</value>
-  </data>
-    <data name="TfaAuthenticatorAppVerifiedMessage" xml:space="preserve">
-    <value>Your authenticator app has been verified.</value>
-  </data>
-    <data name="TfaConfigureAutAppTitle" xml:space="preserve">
+  <data name="TfaConfigureAutAppTitle" xml:space="preserve">
     <value>Configure authenticator app</value>
   </data>
-    <data name="TfaConfigureAutAppSubtitle" xml:space="preserve">
+  <data name="TfaConfigureAutAppSubtitle" xml:space="preserve">
     <value>To use an authenticator app go through the following steps:</value>
   </data>
-    <data name="TfaConfigureAutAppStep1" xml:space="preserve">
+  <data name="TfaConfigureAutAppStep1" xml:space="preserve">
     <value>Download a two-factor authenticator app like Google Authenticator for {0} and {1}.</value>
   </data>
-    <data name="TfaConfigureAutAppStep2" xml:space="preserve">
+  <data name="TfaConfigureAutAppStep2" xml:space="preserve">
     <value>Scan/click the QR Code or enter the following key into your two factor authenticator app (spaces and casing do not matter):</value>
   </data>
-    <data name="TfaConfigureAutAppStep3" xml:space="preserve">
+  <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>Once you have scanned the QR code or input the key above, your two factor authentication app will provide you with a unique code. Enter the code in the confirmation box below.</value>
   </data>
-    <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
+  <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
     <value>Two-factor authentication has been enabled.</value>
   </data>
-    <data name="TwoFactorAuthenticationDisabled" xml:space="preserve">
+  <data name="TwoFactorAuthenticationDisabled" xml:space="preserve">
     <value>Two-factor authentication has been disabled.</value>
   </data>
-    <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
+  <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>Verification Code:</value>
   </data>
-    <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
+  <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
     <value>Enter verification code.</value>
   </data>
-    <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
+  <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>Verify</value>
   </data>
-    <data name="TfaRecoveryCodesHeader" xml:space="preserve">
+  <data name="TfaRecoveryCodesHeader" xml:space="preserve">
     <value>Recovery</value>
   </data>
-    <data name="TfaRecoveryCodesZeroLeftTitle" xml:space="preserve">
+  <data name="TfaRecoveryCodesZeroLeftTitle" xml:space="preserve">
     <value>You have no recovery codes left.</value>
   </data>
-    <data name="TfaRecoveryCodesZeroLeftSubtitle" xml:space="preserve">
+  <data name="TfaRecoveryCodesZeroLeftSubtitle" xml:space="preserve">
     <value>You must generate a new set of recovery codes before you can sign in with a recovery code.</value>
   </data>
-    <data name="TfaRecoveryCodesOneLeftTitle" xml:space="preserve">
+  <data name="TfaRecoveryCodesOneLeftTitle" xml:space="preserve">
     <value>You have 1 recovery code left.</value>
   </data>
-    <data name="TfaRecoveryCodesOneLeftSubtitle" xml:space="preserve">
+  <data name="TfaRecoveryCodesOneLeftSubtitle" xml:space="preserve">
     <value>You can generate a new set of recovery codes.</value>
   </data>
-    <data name="TfaRecoveryCodesThreeLeftTitle" xml:space="preserve">
+  <data name="TfaRecoveryCodesThreeLeftTitle" xml:space="preserve">
     <value>You have {0} recovery codes left.</value>
   </data>
-    <data name="TfaRecoveryCodesThreeLeftSubtitle" xml:space="preserve">
+  <data name="TfaRecoveryCodesThreeLeftSubtitle" xml:space="preserve">
     <value>You should generate a new set of recovery codes.</value>
   </data>
-    <data name="TfaRecoveryCodesGenerateWraning" xml:space="preserve">
+  <data name="TfaRecoveryCodesGenerateWraning" xml:space="preserve">
     <value>Generating new recovery codes does not change the keys used in authenticator apps. If you wish to change the key used in an authenticator app you should reset your authenticator keys in the next tab.</value>
   </data>
-    <data name="TfaRecoveryCodesGenerateButtonText" xml:space="preserve">
+  <data name="TfaRecoveryCodesGenerateButtonText" xml:space="preserve">
     <value>Generate Recovery Codes</value>
   </data>
-    <data name="TfaRecoveryCodesWarningTitle" xml:space="preserve">
+  <data name="TfaRecoveryCodesWarningTitle" xml:space="preserve">
     <value>Put these codes in a safe place.</value>
   </data>
-    <data name="TfaRecoveryCodesWarning" xml:space="preserve">
+  <data name="TfaRecoveryCodesWarning" xml:space="preserve">
     <value>If you lose your authenticator device and don't have the recovery codes you will lose access to your account.</value>
   </data>
-    <data name="TfaRecoveryCodesTitle" xml:space="preserve">
+  <data name="TfaRecoveryCodesTitle" xml:space="preserve">
     <value>Recovery codes:</value>
   </data>
-    <data name="TfaAuthAppHeader" xml:space="preserve">
+  <data name="TfaAuthAppHeader" xml:space="preserve">
     <value>Authenticator</value>
   </data>
-    <data name="TfaAuthAppWarningTitle" xml:space="preserve">
+  <data name="TfaAuthAppWarningTitle" xml:space="preserve">
     <value>If you reset your authenticator key your authenticator app will not work until you reconfigure it.</value>
   </data>
-    <data name="TfaAuthAppWarning" xml:space="preserve">
+  <data name="TfaAuthAppWarning" xml:space="preserve">
     <value>This process disables 2FA until you verify your authenticator app. If you do not complete your authenticator app configuration you may lose access to your account.</value>
   </data>
-    <data name="TfaAuthAppResetKeyButtonText" xml:space="preserve">
+  <data name="TfaAuthAppResetKeyButtonText" xml:space="preserve">
     <value>Reset authenticator key</value>
   </data>
-    <data name="TfaDisable2faHeader" xml:space="preserve">
+  <data name="TfaDisable2faHeader" xml:space="preserve">
     <value>Disable</value>
   </data>
-    <data name="TfaDisable2faWarningTitle" xml:space="preserve">
+  <data name="TfaDisable2faWarningTitle" xml:space="preserve">
     <value>This action only disables 2FA.</value>
   </data>
-    <data name="TfaDisable2faWarning" xml:space="preserve">
+  <data name="TfaDisable2faWarning" xml:space="preserve">
     <value>Disabling 2FA does not change the keys used in authenticator apps. If you wish to change the key used in an authenticator app you should reset your authenticator keys in the previous tab.</value>
   </data>
-    <data name="TfaDisable2faButtonText" xml:space="preserve">
+  <data name="TfaDisable2faButtonText" xml:space="preserve">
     <value>Disable 2FA</value>
   </data>
-    <data name="TwoFactorToken" xml:space="preserve">
-    <value>2FA Token</value>
-  </data>
-    <data name="TfaTokenSignInTitle" xml:space="preserve">
-    <value>No access to authenticator app?</value>
-  </data>
-    <data name="TfaTokenGenerateButtonText" xml:space="preserve">
-    <value>Generate and Send 2FA Token</value>
-  </data>
-    <data name="TfaTokenSentMessage" xml:space="preserve">
+  <data name="TfaTokenSentMessage" xml:space="preserve">
     <value>The 2FA token has been generated and sent to you.</value>
   </data>
-    <data name="EnterElevatedAccessToken" xml:space="preserve">
+  <data name="EnterElevatedAccessToken" xml:space="preserve">
     <value>Please enter the elevated access token we just sent you or your authenticator app code to continue.</value>
   </data>
-    <data name="ElevatedAccessTokenShortText" xml:space="preserve">
+  <data name="ElevatedAccessTokenShortText" xml:space="preserve">
     <value>{0} is your code in Boilerplate.</value>
   </data>
-    <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
+  <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>You have already requested the confirmation email. Try again in {0}</value>
   </data>
-    <data name="WaitForPhoneNumberTokenRequestResendDelay" xml:space="preserve">
+  <data name="WaitForPhoneNumberTokenRequestResendDelay" xml:space="preserve">
     <value>You have already requested the confirmation sms. Try again in {0}</value>
   </data>
-    <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
+  <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
     <value>You have already requested the reset password token. Try again in {0}</value>
   </data>
-    <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
+  <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
     <value>You have already requested an OTP. Try again in {0}</value>
   </data>
-    <data name="WaitForElevatedAccessTokenRequestResendDelay" xml:space="preserve">
+  <data name="WaitForElevatedAccessTokenRequestResendDelay" xml:space="preserve">
     <value>You have already requested a elevated access token. Try again in {0}</value>
   </data>
-    <data name="Otp" xml:space="preserve">
+  <data name="Otp" xml:space="preserve">
     <value>OTP</value>
   </data>
-    <data name="OtpPanelTitle" xml:space="preserve">
+  <data name="OtpPanelTitle" xml:space="preserve">
     <value>Check your {0}</value>
   </data>
-    <data name="OtpPanelSubtitle" xml:space="preserve">
+  <data name="OtpPanelSubtitle" xml:space="preserve">
     <value>Confirm your {0} by entering the code sent to {1}</value>
   </data>
-    <data name="Code" xml:space="preserve">
+  <data name="Code" xml:space="preserve">
     <value>Code</value>
   </data>
-    <data name="OtpResendMessage" xml:space="preserve">
+  <data name="OtpResendMessage" xml:space="preserve">
     <value>Didn't get the code?</value>
   </data>
-    <data name="Resend" xml:space="preserve">
+  <data name="Resend" xml:space="preserve">
     <value>Resend</value>
   </data>
-    <data name="OtpPlaceholder" xml:space="preserve">
-    <value>Enter OTP</value>
-  </data>
-    <data name="OtpSentMessage" xml:space="preserve">
-    <value>An OTP has been generated and sent to you.</value>
-  </data>
-    <data name="SendOtpButtonText" xml:space="preserve">
+  <data name="SendOtpButtonText" xml:space="preserve">
     <value>Send OTP</value>
   </data>
-    <data name="SendMagicLinkButtonText" xml:space="preserve">
+  <data name="SendMagicLinkButtonText" xml:space="preserve">
     <value>Send Magic link and OTP</value>
   </data>
-    <data name="SignInByPassword" xml:space="preserve">
+  <data name="SignInByPassword" xml:space="preserve">
     <value>Use Password</value>
   </data>
-    <data name="SignInByOtp" xml:space="preserve">
+  <data name="SignInByOtp" xml:space="preserve">
     <value>Use OTP</value>
   </data>
-    <data name="OtpEmailOrPhoneNumberSubtitle" xml:space="preserve">
-    <value>Enter your email or phone number:</value>
-  </data>
-    <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
+  <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
     <value>Either provide password or OTP</value>
   </data>
-    <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
+  <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
     <value>You have already requested the 2FA token email. Try again in {0}.</value>
   </data>
-    <data name="ChangePhoneNumberTokenShortText" xml:space="preserve">
+  <data name="ChangePhoneNumberTokenShortText" xml:space="preserve">
     <value>{0} is your code in Boilerplate.</value>
   </data>
-    <data name="ConfirmPhoneTokenShortText" xml:space="preserve">
+  <data name="ConfirmPhoneTokenShortText" xml:space="preserve">
     <value>{0} is your code in Boilerplate.</value>
   </data>
-    <data name="TwoFactorTokenShortText" xml:space="preserve">
+  <data name="TwoFactorTokenShortText" xml:space="preserve">
     <value>{0} is your code in Boilerplate.</value>
   </data>
-    <data name="OtpShortText" xml:space="preserve">
+  <data name="OtpShortText" xml:space="preserve">
     <value>{0} is your code in Boilerplate.</value>
   </data>
-    <data name="ResetPasswordTokenShortText" xml:space="preserve">
+  <data name="ResetPasswordTokenShortText" xml:space="preserve">
     <value>{0} is your code in Boilerplate.</value>
   </data>
-    <data name="Online" xml:space="preserve">
+  <data name="Online" xml:space="preserve">
     <value>Online</value>
   </data>
-    <data name="Recently" xml:space="preserve">
+  <data name="Recently" xml:space="preserve">
     <value>Recently</value>
   </data>
-    <data name="Update" xml:space="preserve">
+  <data name="Update" xml:space="preserve">
     <value>Update</value>
   </data>
-    <data name="NewVersionIsAvailable" xml:space="preserve">
-    <value>New version {0} is available</value>
+    <data name="ForceUpdateTitle" xml:space="preserve">
+    <value>Time for an update</value>
   </data>
-    <data name="UpdateToNewVersion" xml:space="preserve">
-    <value>Would you like to update to the new version? {0}</value>
+    <data name="ForceUpdateBody" xml:space="preserve">
+    <value>This update is required to keep your app running smoothly</value>
   </data>
-    <data name="About" xml:space="preserve">
+  <data name="About" xml:space="preserve">
     <value>About</value>
   </data>
-    <data name="AboutPageTitle" xml:space="preserve">
+  <data name="AboutPageTitle" xml:space="preserve">
     <value>About</value>
   </data>
-    <data name="NothingFound" xml:space="preserve">
-    <value>Nothing found!</value>
-  </data>
-    <!--#if (sample == true) -->
-    <data name="TodoAddPlaceholder" xml:space="preserve">
+  <!--#if (sample == true) -->
+  <data name="TodoAddPlaceholder" xml:space="preserve">
     <value>Add a todo</value>
   </data>
-    <data name="NoTodos" xml:space="preserve">
+  <data name="NoTodos" xml:space="preserve">
     <value>No todos yet</value>
   </data>
-    <data name="TodoSearchPlaceholder" xml:space="preserve">
+  <data name="TodoSearchPlaceholder" xml:space="preserve">
     <value>Search todo...</value>
   </data>
-    <data name="ToDoItemCouldNotBeFound" xml:space="preserve">
+  <data name="ToDoItemCouldNotBeFound" xml:space="preserve">
     <value>Todo item could not be found</value>
   </data>
-    <data name="TodoPageTitle" xml:space="preserve">
+  <data name="TodoPageTitle" xml:space="preserve">
     <value>Todo</value>
   </data>
-    <data name="Todo" xml:space="preserve">
+  <data name="Todo" xml:space="preserve">
     <value>Todo</value>
   </data>
-    <data name="DeleteTodoItem" xml:space="preserve">
+  <data name="DeleteTodoItem" xml:space="preserve">
     <value>Delete todo item</value>
   </data>
-    <!--#endif -->
-    <!--#if (module == "Admin" || module == "Sales") -->
-    <data name="CategoryCouldNotBeFound" xml:space="preserve">
+  <!--#endif -->
+  <!--#if (module == "Admin" || module == "Sales") -->
+  <data name="CategoryCouldNotBeFound" xml:space="preserve">
     <value>Category entity could not be found</value>
   </data>
-    <data name="ProductCouldNotBeFound" xml:space="preserve">
+  <data name="ProductCouldNotBeFound" xml:space="preserve">
     <value>Product entity could not be found</value>
   </data>
-    <data name="Category" xml:space="preserve">
+  <data name="Category" xml:space="preserve">
     <value>Category</value>
   </data>
-    <!--#endif -->
-    <!--#if (module == "Admin") -->
-    <data name="AdminPanel" xml:space="preserve">
+  <!--#endif -->
+  <!--#if (module == "Admin") -->
+  <data name="AdminPanel" xml:space="preserve">
     <value>Admin panel</value>
   </data>
-    <data name="PaginatorSummary" xml:space="preserve">
+  <data name="PaginatorSummary" xml:space="preserve">
     <value>{0} items</value>
   </data>
-    <data name="PaginatorFirstButtonTitle" xml:space="preserve">
-    <value>Go to the first page</value>
-  </data>
-    <data name="PaginatorPrevButtonTitle" xml:space="preserve">
-    <value>Go to the previous page</value>
-  </data>
-    <data name="PaginatorNextButtonTitle" xml:space="preserve">
-    <value>Go to the next page</value>
-  </data>
-    <data name="PaginatorLastButtonTitle" xml:space="preserve">
-    <value>Go to the last page</value>
-  </data>
-    <data name="Page" xml:space="preserve">
+  <data name="Page" xml:space="preserve">
     <value>Page</value>
   </data>
-    <data name="Of" xml:space="preserve">
+  <data name="Of" xml:space="preserve">
     <value>of</value>
   </data>
-    <data name="ProductsCount" xml:space="preserve">
-    <value>Products count</value>
-  </data>
-    <data name="Last30DaysProductCount" xml:space="preserve">
+  <data name="Last30DaysProductCount" xml:space="preserve">
     <value>Last 30 days product count</value>
   </data>
-    <data name="AddProduct" xml:space="preserve">
+  <data name="AddProduct" xml:space="preserve">
     <value>Add product</value>
   </data>
-    <data name="SearchProductsPlaceholder" xml:space="preserve">
+  <data name="SearchProductsPlaceholder" xml:space="preserve">
     <value>Search through product's name, category and description here...</value>
   </data>
-    <data name="SelectCategory" xml:space="preserve">
+  <data name="SelectCategory" xml:space="preserve">
     <value>Select category</value>
   </data>
-    <data name="TotalCategories" xml:space="preserve">
+  <data name="TotalCategories" xml:space="preserve">
     <value>Total categories</value>
   </data>
-    <data name="TotalProducts" xml:space="preserve">
+  <data name="TotalProducts" xml:space="preserve">
     <value>Total products</value>
   </data>
-    <data name="EditCategory" xml:space="preserve">
+  <data name="EditCategory" xml:space="preserve">
     <value>Edit category</value>
   </data>
-    <data name="AddCategory" xml:space="preserve">
+  <data name="AddCategory" xml:space="preserve">
     <value>New category</value>
   </data>
-    <data name="CategoriesPageTitle" xml:space="preserve">
+  <data name="CategoriesPageTitle" xml:space="preserve">
     <value>Categories</value>
   </data>
-    <data name="EnterCategoryName" xml:space="preserve">
+  <data name="EnterCategoryName" xml:space="preserve">
     <value>Enter category name</value>
   </data>
-    <data name="EnterProductName" xml:space="preserve">
+  <data name="EnterProductName" xml:space="preserve">
     <value>Enter product name</value>
   </data>
-    <data name="CategoriesWithProductCount" xml:space="preserve">
+  <data name="CategoriesWithProductCount" xml:space="preserve">
     <value>Categories with product count</value>
   </data>
-    <data name="ProductSales" xml:space="preserve">
-    <value>Product sales</value>
-  </data>
-    <data name="ProductSalesText" xml:space="preserve">
-    <value>This chart shows the sale number of each product.</value>
-  </data>
-    <data name="SearchOnName" xml:space="preserve">
+  <data name="SearchOnName" xml:space="preserve">
     <value>Search on name</value>
   </data>
-    <data name="ProductsCountPerCategoryChart" xml:space="preserve">
+  <data name="ProductsCountPerCategoryChart" xml:space="preserve">
     <value>Products count per category chart</value>
   </data>
-    <data name="ProductsCountPerCategoryChartText" xml:space="preserve">
+  <data name="ProductsCountPerCategoryChartText" xml:space="preserve">
     <value>This chart shows the number of products in each category.</value>
   </data>
-    <data name="ProductsPageTitle" xml:space="preserve">
+  <data name="ProductsPageTitle" xml:space="preserve">
     <value>Products</value>
   </data>
-    <data name="ProductsPercentagePerCategory" xml:space="preserve">
+  <data name="ProductsPercentagePerCategory" xml:space="preserve">
     <value>Products percentage per category</value>
   </data>
-    <data name="ProductsPercentagePerCategoryText" xml:space="preserve">
+  <data name="ProductsPercentagePerCategoryText" xml:space="preserve">
     <value>This chart shows the percentage of products in each category.</value>
   </data>
-    <data name="Categories" xml:space="preserve">
+  <data name="Categories" xml:space="preserve">
     <value>Categories</value>
   </data>
-    <data name="ProductCategory" xml:space="preserve">
-    <value>Product category</value>
-  </data>
-    <data name="Products" xml:space="preserve">
+  <data name="Products" xml:space="preserve">
     <value>Products</value>
   </data>
-    <data name="CategoryNotEmpty" xml:space="preserve">
+  <data name="CategoryNotEmpty" xml:space="preserve">
     <value>This category contain some products, so you can't delete it</value>
   </data>
-    <data name="AreYouSureWannaDeleteCategory" xml:space="preserve">
-    <value>Are you sure you want to delete category {0}</value>
-  </data>
-    <data name="AreYouSureWannaDeleteProduct" xml:space="preserve">
+  <data name="AreYouSureWannaDeleteProduct" xml:space="preserve">
     <value>Are you sure you want to delete product {0}</value>
   </data>
-    <data name="DeleteCategory" xml:space="preserve">
-    <value>Delete category</value>
-  </data>
-    <data name="DeleteProduct" xml:space="preserve">
+  <data name="DeleteProduct" xml:space="preserve">
     <value>Delete product</value>
   </data>
-    <data name="DefaultColorPicker" xml:space="preserve">
+  <data name="DefaultColorPicker" xml:space="preserve">
     <value>Default color picker</value>
   </data>
-    <data name="EditProduct" xml:space="preserve">
+  <data name="EditProduct" xml:space="preserve">
     <value>Edit product {0}</value>
   </data>
-    <data name="DuplicateProductName" xml:space="preserve">
+  <data name="DuplicateProductName" xml:space="preserve">
     <value>Duplicate product name</value>
   </data>
-    <data name="DuplicateCategoryName" xml:space="preserve">
+  <data name="DuplicateCategoryName" xml:space="preserve">
     <value>Duplicate category name</value>
   </data>
-    <data name="DashboardPageTitle" xml:space="preserve">
+  <data name="DashboardPageTitle" xml:space="preserve">
     <value>Dashboard</value>
   </data>
-    <data name="Dashboard" xml:space="preserve">
+  <data name="Dashboard" xml:space="preserve">
     <value>Dashboard</value>
   </data>
-    <data name="DashboardSubtitle" xml:space="preserve">
+  <data name="DashboardSubtitle" xml:space="preserve">
     <value>Here's your analytic data</value>
   </data>
-    <!--#endif -->
-    <!--#if (captcha == "reCaptcha") -->
-    <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
+  <!--#endif -->
+  <!--#if (captcha == "reCaptcha") -->
+  <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
     <value>Invalid Google reCAPTCHA response.</value>
   </data>
-    <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
+  <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
     <value>You need to pass the Google reCAPTCHA challenge.</value>
   </data>
-    <!--#endif -->
-    <!--#if (module == "Sales") -->
-    <data name="SimilarProducts" xml:space="preserve">
+  <!--#endif -->
+  <!--#if (module == "Sales") -->
+  <data name="SimilarProducts" xml:space="preserve">
     <value>Similar products</value>
   </data>
-    <data name="SiblingProducts" xml:space="preserve">
+  <data name="SiblingProducts" xml:space="preserve">
     <value>Products in the same category</value>
   </data>
-    <data name="Buy" xml:space="preserve">
+  <data name="Buy" xml:space="preserve">
     <value>Buy</value>
   </data>
-    <data name="PurchaseSuccessful" xml:space="preserve">
+  <data name="PurchaseSuccessful" xml:space="preserve">
     <value>Purchase successful!</value>
   </data>
-    <!--#endif -->
-    <data name="Passwordless" xml:space="preserve">
+  <!--#endif -->
+  <data name="Passwordless" xml:space="preserve">
     <value>Passwordless</value>
   </data>
-    <data name="PasswordlessTitle" xml:space="preserve">
+  <data name="PasswordlessTitle" xml:space="preserve">
     <value>Passwordless sign-in</value>
   </data>
-    <data name="EnablePasswordless" xml:space="preserve">
+  <data name="EnablePasswordless" xml:space="preserve">
     <value>Enable passwordless sign-in</value>
   </data>
-    <data name="EnablePasswordlessSucsessMessage" xml:space="preserve">
+  <data name="EnablePasswordlessSucsessMessage" xml:space="preserve">
     <value>Passwordless sign-in enabled successfully</value>
   </data>
-    <data name="DisablePasswordless" xml:space="preserve">
+  <data name="DisablePasswordless" xml:space="preserve">
     <value>Disable passwordless sign-in</value>
   </data>
-    <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
+  <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
     <value>Passwordless sign-in disabled successfully</value>
   </data>
-    <data name="Clear" xml:space="preserve">
+  <data name="Clear" xml:space="preserve">
     <value>Clear</value>
   </data>
-    <data name="Send" xml:space="preserve">
+  <data name="Send" xml:space="preserve">
     <value>Send</value>
   </data>
-    <data name="Canceled" xml:space="preserve">
+  <data name="Canceled" xml:space="preserve">
     <value>Canceled</value>
   </data>
-    <!--#if (signalR == true) -->
-    <data name="AiChatPanelTitle" xml:space="preserve">
+  <!--#if (signalR == true) -->
+  <data name="AiChatPanelTitle" xml:space="preserve">
     <value>AI chat panel</value>
   </data>
-    <data name="AiChatPanelInitialResponse" xml:space="preserve">
+  <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>Greetings! I'm here to make your app experience awesome! Got a question or need a hand?</value>
   </data>
-    <data name="AiChatPanelPrompt1" xml:space="preserve">
+  <data name="AiChatPanelPrompt1" xml:space="preserve">
     <value>How can I reset my password?</value>
   </data>
-    <data name="AiChatPanelPrompt2" xml:space="preserve">
+  <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>How can I install the PWA version of the app?</value>
   </data>
     <!--#if (module == "Admin") -->
@@ -1287,213 +1146,198 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>I have some feedback I'd like to share!</value>
   </data>
     <!--#endif -->
-    <data name="AiChatPanelPlaceholder" xml:space="preserve">
+  <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>Write a message...</value>
   </data>
-    <data name="AiChatPanelCommunicatingPlaceholder" xml:space="preserve">
+  <data name="AiChatPanelCommunicatingPlaceholder" xml:space="preserve">
     <value>Thinking...</value>
   </data>
-    <!--#endif -->
-    <!--#if (ads == true) -->
-    <data name="Upgrade" xml:space="preserve">
+  <!--#endif -->
+  <!--#if (ads == true) -->
+  <data name="Upgrade" xml:space="preserve">
     <value>Upgrade</value>
   </data>
-    <data name="UpgradeTitle" xml:space="preserve">
+  <data name="UpgradeTitle" xml:space="preserve">
     <value>Upgrade account</value>
   </data>
-    <data name="UpgradeSubtitle" xml:space="preserve">
+  <data name="UpgradeSubtitle" xml:space="preserve">
     <value>There is no account upgrade here. this is just a demo for rewarding ads.</value>
   </data>
-    <data name="UpgradeSuccessMessage" xml:space="preserve">
+  <data name="UpgradeSuccessMessage" xml:space="preserve">
     <value>Upgrade account done successfuly.</value>
   </data>
-    <data name="UpgradeFailMessage" xml:space="preserve">
+  <data name="UpgradeFailMessage" xml:space="preserve">
     <value>Upgrade account failed.</value>
   </data>
-    <data name="UpgradeAdHaveTrouble" xml:space="preserve">
+  <data name="UpgradeAdHaveTrouble" xml:space="preserve">
     <value>Having trouble watching ad?</value>
   </data>
-    <data name="UpgradeAdHaveTroublePrompt" xml:space="preserve">
+  <data name="UpgradeAdHaveTroublePrompt" xml:space="preserve">
     <value>I'm having trouble watching in app ads.</value>
   </data>
-    <!--#endif -->
-    <data name="PleaseWait" xml:space="preserve">
+  <!--#endif -->
+  <data name="PleaseWait" xml:space="preserve">
     <value>Please wait</value>
   </data>
-    <data name="Management" xml:space="preserve">
+  <data name="Management" xml:space="preserve">
     <value>Management</value>
   </data>
-    <data name="UserGroups" xml:space="preserve">
+  <data name="UserGroups" xml:space="preserve">
     <value>User groups</value>
   </data>
-    <data name="RolesPageTitle" xml:space="preserve">
+  <data name="RolesPageTitle" xml:space="preserve">
     <value>Manage user groups</value>
   </data>
-    <data name="NoRoleMessage" xml:space="preserve">
+  <data name="NoRoleMessage" xml:space="preserve">
     <value>No user groups</value>
   </data>
-    <data name="AddRole" xml:space="preserve">
+  <data name="AddRole" xml:space="preserve">
     <value>Add user group</value>
   </data>
-    <data name="EditRole" xml:space="preserve">
+  <data name="EditRole" xml:space="preserve">
     <value>Edit user group</value>
   </data>
-    <data name="NewRoleName" xml:space="preserve">
+  <data name="NewRoleName" xml:space="preserve">
     <value>New user group's name</value>
   </data>
-    <data name="Users" xml:space="preserve">
+  <data name="Users" xml:space="preserve">
     <value>Users</value>
   </data>
-    <data name="Features" xml:space="preserve">
+    <data name="UsersWithCount" xml:space="preserve">
+    <value>Users {0}</value>
+  </data>
+  <data name="Features" xml:space="preserve">
     <value>Features</value>
   </data>
-    <data name="Quota" xml:space="preserve">
+  <data name="Quota" xml:space="preserve">
     <value>Quota</value>
   </data>
-    <data name="QuotaDescription" xml:space="preserve">
+  <data name="QuotaDescription" xml:space="preserve">
     <value>To restrict the usage of features, you can define quotas on this tab, which can vary for each role. For example, the number of devices a user can sign in to or the number of times they can use a specific app feature.</value>
   </data>
-    <data name="MaxPrevilegedSessions" xml:space="preserve">
+  <data name="MaxPrevilegedSessions" xml:space="preserve">
     <value>Max privileged sessions</value>
   </data>
-    <data name="General" xml:space="preserve">
+  <data name="General" xml:space="preserve">
     <value>General</value>
   </data>
-    <data name="RoleName" xml:space="preserve">
+  <data name="RoleName" xml:space="preserve">
     <value>User group name</value>
   </data>
-    <!--#if (notification == true || signalR == true) -->
-    <data name="RoleNotificationLabel" xml:space="preserve">
+  <!--#if (notification == true || signalR == true) -->
+  <data name="RoleNotificationLabel" xml:space="preserve">
     <value>Notification message</value>
   </data>
-    <data name="SendRoleNotification" xml:space="preserve">
+  <data name="SendRoleNotification" xml:space="preserve">
     <value>Send notification</value>
   </data>
-    <data name="EnableNotifications" xml:space="preserve">
+  <data name="EnableNotifications" xml:space="preserve">
     <value>Enable notifications</value>
   </data>
-    <data name="DisableNotifications" xml:space="preserve">
+  <data name="DisableNotifications" xml:space="preserve">
     <value>Disable notifications</value>
   </data>
-    <data name="TestNotificationMessage1" xml:space="preserve">
+  <data name="TestNotificationMessage1" xml:space="preserve">
     <value>Test notification 1</value>
   </data>
-    <data name="TestNotificationMessage2" xml:space="preserve">
+  <data name="TestNotificationMessage2" xml:space="preserve">
     <value>Test notification 2</value>
   </data>
-    <!--#endif -->
-    <data name="RoleExistErrorMessage" xml:space="preserve">
-    <value>This user group already exists</value>
-  </data>
-    <data name="Users" xml:space="preserve">
-    <value>Users</value>
-  </data>
-    <data name="UsersPageTitle" xml:space="preserve">
+  <!--#endif -->
+  <data name="UsersPageTitle" xml:space="preserve">
     <value>Manage users</value>
   </data>
-    <data name="DeleteRole" xml:space="preserve">
+  <data name="DeleteRole" xml:space="preserve">
     <value>Delete user group</value>
   </data>
-    <data name="NewUserUsername" xml:space="preserve">
-    <value>New User's username</value>
-  </data>
-    <data name="NewUserEmail" xml:space="preserve">
-    <value>New User's email</value>
-  </data>
-    <data name="NewUserPhoneNumber" xml:space="preserve">
-    <value>New User's phone number</value>
-  </data>
-    <data name="AddUser" xml:space="preserve">
-    <value>Add user</value>
-  </data>
-    <data name="EditUser" xml:space="preserve">
-    <value>Edit user</value>
-  </data>
-    <data name="Sessions" xml:space="preserve">
-    <value>Sessions</value>
+  <data name="Sessions" xml:space="preserve">
+    <value>Sessions {0}</value>
   </data>
     <data name="DeleteUser" xml:space="preserve">
     <value>Delete user</value>
   </data>
-    <data name="IP" xml:space="preserve">
+    <data name="AppVersion" xml:space="preserve">
+    <value>App version</value>
+  </data>
+  <data name="IP" xml:space="preserve">
     <value>IP</value>
   </data>
-    <data name="Address" xml:space="preserve">
+  <data name="Address" xml:space="preserve">
     <value>Address</value>
   </data>
-    <data name="DeviceInfo" xml:space="preserve">
+  <data name="DeviceInfo" xml:space="preserve">
     <value>DeviceInfo</value>
   </data>
-    <data name="Privileged" xml:space="preserve">
+  <data name="Privileged" xml:space="preserve">
     <value>Privileged</value>
   </data>
-    <data name="RenewedOn" xml:space="preserve">
+  <data name="RenewedOn" xml:space="preserve">
     <value>RenewedOn</value>
   </data>
-    <data name="OnlineUsers" xml:space="preserve">
+  <data name="OnlineUsers" xml:space="preserve">
     <value>Online users: {0}</value>
   </data>
-    <data name="DeleteSession" xml:space="preserve">
+  <data name="DeleteSession" xml:space="preserve">
     <value>Delete session</value>
   </data>
-    <data name="NoUserMessage" xml:space="preserve">
+  <data name="NoUserMessage" xml:space="preserve">
     <value>No users</value>
   </data>
-    <data name="NoUserSessionMessage" xml:space="preserve">
+  <data name="NoUserSessionMessage" xml:space="preserve">
     <value>No user session</value>
   </data>
-    <data name="NoUserSelectedMessage" xml:space="preserve">
+  <data name="NoUserSelectedMessage" xml:space="preserve">
     <value>Please select a user first</value>
   </data>
-    <data name="RevokeAllSessions" xml:space="preserve">
+  <data name="RevokeAllSessions" xml:space="preserve">
     <value>Revoke all sessions</value>
   </data>
-    <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
+  <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
     <value>Are you sure you want to revoke all sessions of {0}?</value>
   </data>
-    <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
+  <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
     <value>You can't remove the SuperAdmin role from this user</value>
   </data>
-    <data name="UserCantChangeSuperAdminRoleErrorMessage" xml:space="preserve">
+  <data name="UserCantChangeSuperAdminRoleErrorMessage" xml:space="preserve">
     <value>You can't change the SuperAdmin role</value>
   </data>
-    <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
+  <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
     <value>You can't remove your own user</value>
   </data>
-    <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
+  <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>You can't remove this SuperAdmin user</value>
   </data>
-    <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
+  <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>You can't remove your current session</value>
   </data>
-    <data name="UserCantRemoveAllItsSessionsErrorMessage" xml:space="preserve">
+  <data name="UserCantRemoveAllItsSessionsErrorMessage" xml:space="preserve">
     <value>You can't remove all of your own sessions</value>
   </data>
-    <data name="SearchRolesPlaceholder" xml:space="preserve">
+  <data name="SearchRolesPlaceholder" xml:space="preserve">
     <value>Search user groups</value>
   </data>
-    <data name="SearchUsersPlaceholder" xml:space="preserve">
+  <data name="SearchUsersPlaceholder" xml:space="preserve">
     <value>Search users</value>
   </data>
-    <data name="SearchRoleUsersPlaceholder" xml:space="preserve">
+  <data name="SearchRoleUsersPlaceholder" xml:space="preserve">
     <value>Search users</value>
   </data>
-    <data name="SearchUserSessionsPlaceholder" xml:space="preserve">
+  <data name="SearchUserSessionsPlaceholder" xml:space="preserve">
     <value>Search user sessions</value>
   </data>
-    <data name="RemoveRoleFromAllUsers" xml:space="preserve">
-    <value>Remove user group from all users</value>
+  <data name="RemoveRoleFromAllUsers" xml:space="preserve">
+    <value>Remove all users from user group</value>
   </data>
-    <data name="RemoveRoleFromAllUsersConfrimMessage" xml:space="preserve">
+  <data name="RemoveRoleFromAllUsersConfrimMessage" xml:space="preserve">
     <value>Are you sure you want to remove all users from {0}?</value>
   </data>
-    <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
+  <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>Page URL</value>
   </data>
-    <data name="YouAreNotAuthorized" xml:space="preserve">
+  <data name="YouAreNotAuthorized" xml:space="preserve">
     <value>You are not authorized</value>
   </data>
-    <data name="YouAreNotAuthorizedMessage" xml:space="preserve">
+  <data name="YouAreNotAuthorizedMessage" xml:space="preserve">
     <value>You don’t have permission to access this page.</value>
   </data>
 </root>

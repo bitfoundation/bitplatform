@@ -1,14 +1,19 @@
 ﻿//+:cnd:noEmit
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Boilerplate.Client.Web;
 using Boilerplate.Client.Core;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Boilerplate.Server.Web;
 
 public partial class ServerWebSettings : ClientWebSettings
 {
     public ForwardedHeadersOptions? ForwardedHeaders { get; set; } = default!;
+
+    /// <summary>
+    /// Specifies the allowed origins for CORS requests, URLs returned after social sign-in and email confirmation, and permitted origins for Web Auth, as well as forwarded headers middleware in ASP.NET Core.
+    /// </summary>
+    public Uri[] TrustedOrigins { get; set; } = [];
 
     public ResponseCachingOptions? ResponseCaching { get; set; } = default!;
 

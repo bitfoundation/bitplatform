@@ -58,7 +58,7 @@
                              TItem="BitDropdownItem<LogLevel>" TValue="LogLevel" />
 
                 <BitDropdown FitWidth
-                             Responsive    
+                             Responsive
                              MultiSelect
                              ShowSearchBox
                              ShowClearButton
@@ -106,18 +106,6 @@
                            Color="BitColor.SecondaryBackground"
                            IconName="@BitIconName.DeveloperTools" />
 
-                @*#if (signalR == true)*@
-                <AuthorizeView Policy="@AppFeatures.System.ManageLogs">
-                    <Authorized>
-                        <BitButton IconOnly AutoLoading
-                                   OnClick="ReadAnotherUserLogs"
-                                   Title="Read another user logs"
-                                   Color="BitColor.SecondaryBackground"
-                                   IconName="@BitIconName.Download" />
-                    </Authorized>
-                </AuthorizeView>
-                @*#endif*@
-
                 @if (AppPlatform.IsBrowser is false)
                 {
                     <BitButton IconOnly
@@ -132,6 +120,13 @@
                            Title="Clear cache"
                            OnClick="ClearCache"
                            IconName="@BitIconName.RemoveFrom"
+                           Color="BitColor.SecondaryBackground" />
+
+                <BitButton IconOnly
+                           AutoLoading
+                           Title="Update app"
+                           OnClick="UpdateApp"
+                           IconName="@BitIconName.UpdateRestore"
                            Color="BitColor.SecondaryBackground" />
             </BitStack>
 
@@ -187,7 +182,7 @@
                            OnClick="() => isLogModalOpen = false"
                            IconName="@BitIconName.ChromeClose" />
             </BitStack>
-            
+
             <BitText Class="log-modal" Color="GetColor(selectedLog?.Level)">
                 <pre style="margin:0">@GetContent(selectedLog)</pre>
             </BitText>

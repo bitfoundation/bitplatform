@@ -1,4 +1,4 @@
-using Boilerplate.Client.Core.Services.HttpMessageHandlers;
+﻿using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 namespace Boilerplate.Client.Core.Components;
 
@@ -16,4 +16,6 @@ public class Parameters
     /// By default, this value is null (Unknown).
     /// </summary>
     public const string IsOnline = nameof(IsOnline);
+
+    public const string CurrentUser = nameof(CurrentUser);
 }

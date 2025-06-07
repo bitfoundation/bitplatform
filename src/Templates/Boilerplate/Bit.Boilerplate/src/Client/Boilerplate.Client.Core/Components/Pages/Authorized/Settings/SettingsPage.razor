@@ -14,14 +14,14 @@
                    Name="@Urls.SettingsSections.Profile"
                    Title="@Localizer[nameof(AppStrings.ProfileTitle)]"
                    Subtitle="@Localizer[nameof(AppStrings.ProfileSubtitle)]">
-            <ProfileSection Loading="isLoading" User="user" />
+            <ProfileSection Loading="isLoading" />
         </Accordion>
 
         <Accordion @bind-Value="@openedAccordion"
                    Name="@Urls.SettingsSections.Account"
                    Title="@Localizer[nameof(AppStrings.AccountTitle)]"
                    Subtitle="@Localizer[nameof(AppStrings.AccountSubtitle)]">
-            <AccountSection User="user" />
+            <AccountSection />
         </Accordion>
 
         <Accordion @bind-Value="@openedAccordion"

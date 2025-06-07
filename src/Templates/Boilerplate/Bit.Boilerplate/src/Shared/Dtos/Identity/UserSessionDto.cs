@@ -7,11 +7,6 @@ public partial class UserSessionDto
 
     public string? IP { get; set; }
 
-    /// <summary>
-    /// Populated during sign-in using the <see cref="SignInRequestDto.DeviceInfo"/> property.
-    /// </summary>
-    public string? DeviceInfo { get; set; }
-
     public string? Address { get; set; }
 
     /// <summary>
@@ -42,4 +37,16 @@ public partial class UserSessionDto
     //#if (signalR == true || notification == true)
     public UserSessionNotificationStatus NotificationStatus { get; set; }
     //#endif
+
+    public string? DeviceInfo { get; set; }
+
+    /// <summary>
+    /// The culture selected by the user for this session.
+    /// </summary>
+    public string? CultureName { get; set; }
+
+    /// <summary>
+    /// The version of the application used for this session.
+    /// </summary>
+    public string? AppVersion { get; set; }
 }

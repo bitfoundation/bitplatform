@@ -1,0 +1,23 @@
+@inherits AppComponentBase
+
+<BitSnackBar @ref="bitSnackBar" AutoDismiss="false" Persistent>
+    <TitleTemplate>
+        <BitStack FitHeight>
+            <BitText Typography="BitTypography.H5">
+                @Localizer[nameof(AppStrings.ForceUpdateTitle)]
+            </BitText>
+        </BitStack>
+    </TitleTemplate>
+    <BodyTemplate>
+        <BitStack>
+            <BitText Typography="BitTypography.Body1">
+                @Localizer[nameof(AppStrings.ForceUpdateBody)]
+            </BitText>
+            <BitButton Color="BitColor.Tertiary"
+                       OnClick="WrapHandled(Update)"
+                       IconName="@BitIconName.Download">
+                @Localizer[nameof(AppStrings.Update)]
+            </BitButton>
+        </BitStack>
+    </BodyTemplate>
+</BitSnackBar>

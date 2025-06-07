@@ -41,4 +41,6 @@ public partial class ClientPubSubMessages
     //#endif
 
     public const string SOCIAL_SIGN_IN = nameof(SOCIAL_SIGN_IN);
+
+    public const string FORCE_UPDATE = nameof(FORCE_UPDATE);
 }

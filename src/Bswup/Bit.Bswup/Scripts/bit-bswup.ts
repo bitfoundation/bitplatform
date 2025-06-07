@@ -1,5 +1,5 @@
 ﻿var BitBswup = BitBswup || {};
-BitBswup.version = window['bit-bswup version'] = '9.8.0';
+BitBswup.version = window['bit-bswup version'] = '9.9.0';
 
 (function () {
     const bitBswupScript = document.currentScript;
@@ -96,7 +96,7 @@ BitBswup.version = window['bit-bswup version'] = '9.8.0';
 
             if (e.data === 'CLIENTS_CLAIMED') {
                 Blazor.start().then(() => {
-                    blazorStartResolver(undefined);
+                    blazorStartResolver?.(undefined);
                     e.source.postMessage('BLAZOR_STARTED');
                 });
                 return;
@@ -216,17 +216,16 @@ BitBswup.version = window['bit-bswup version'] = '9.8.0';
     }
 }());
 
-BitBswup.checkForUpdate = async () => {
+BitBswup.checkForUpdate = async (): Promise<void> => {
     if (!('serviceWorker' in navigator)) {
         return console.warn('no serviceWorker in navigator');
     }
 
     const reg = await navigator.serviceWorker.getRegistration();
-    const result = await reg.update();
-    return result;
+    await reg.update();
 }
 
-BitBswup.forceRefresh = async () => {
+BitBswup.forceRefresh = async (): Promise<void> => {
     if (!('serviceWorker' in navigator)) {
         return console.warn('no serviceWorker in navigator');
     }
@@ -240,6 +239,22 @@ BitBswup.forceRefresh = async () => {
     await Promise.all(regPromises);
 
     window.location.reload();
+}
+
+BitBswup.skipWaiting = async (): Promise<boolean> => {
+    if (!('serviceWorker' in navigator)) {
+        console.warn('no serviceWorker in navigator');
+        return false;
+    }
+
+    const reg = await navigator.serviceWorker.getRegistration();
+
+    if (reg?.waiting) {
+        reg.waiting.postMessage('SKIP_WAITING');
+        return true;
+    }
+
+    return false;
 }
 
 const BswupMessage = {

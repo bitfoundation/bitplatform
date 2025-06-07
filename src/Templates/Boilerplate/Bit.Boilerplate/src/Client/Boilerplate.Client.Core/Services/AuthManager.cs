@@ -117,7 +117,6 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                     var refreshTokenResponse = await identityController.Refresh(new()
                     {
                         RefreshToken = refreshToken,
-                        DeviceInfo = telemetryContext.Platform,
                         ElevatedAccessToken = elevatedAccessToken
                     }, default);
                     await StoreTokens(refreshTokenResponse);

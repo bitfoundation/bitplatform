@@ -45,15 +45,17 @@ public partial class SharedExceptionHandler
         return exception;
     }
 
-    public bool IgnoreException(Exception exception)
+    public virtual bool IgnoreException(Exception exception)
     {
+        // Ignoring exception here will prevent it from being logged in both client and server.
+
+        if (exception is ClientNotSupportedException)
+            return true; // See ExceptionDelegatingHandler
+
         if (exception is KnownException)
             return false;
 
-        return exception is TaskCanceledException ||
-            exception is OperationCanceledException ||
-            exception is TimeoutException ||
-            (exception.InnerException is not null && IgnoreException(exception.InnerException));
+        return exception.InnerException is not null && IgnoreException(exception.InnerException);
     }
 
     protected IDictionary<string, object?> GetExceptionData(Exception exp)

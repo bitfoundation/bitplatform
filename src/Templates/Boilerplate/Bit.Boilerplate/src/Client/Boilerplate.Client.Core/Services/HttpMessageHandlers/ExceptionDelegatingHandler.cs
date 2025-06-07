@@ -56,6 +56,11 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
 
                 return response;
             }
+            catch (ClientNotSupportedException)
+            {
+                pubSubService.Publish(ClientPubSubMessages.FORCE_UPDATE, persistent: true);
+                throw;
+            }
             catch (Exception exp) when (IsServerConnectionException(exp) || (exp is HttpRequestException && serverCommunicationSuccess is false))
             {
                 serverCommunicationSuccess = false; // Let's treat the server communication as failed if an exception is caught here.

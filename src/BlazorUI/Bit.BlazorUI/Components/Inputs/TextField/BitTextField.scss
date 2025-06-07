@@ -74,6 +74,10 @@
     }
 }
 
+.bit-tfl-fwd {
+    width: 100%;
+}
+
 .bit-tfl-lbl {
     margin: 0;
     display: block;
@@ -99,8 +103,8 @@
     min-height: spacing(4);
     box-sizing: border-box;
     border-radius: $shp-border-radius;
-    background-color: $clr-bg-pri;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    background-color: var(--bit-tfl-clr-bg);
+    border: $shp-border-width $shp-border-style var(--bit-tfl-clr-brd);
 }
 
 .bit-tfl-inp {
@@ -128,7 +132,7 @@
     }
 }
 
-.bit-tfl-prb {
+.bit-tfl-rpb {
     height: 100%;
     border: none;
     cursor: pointer;
@@ -137,7 +141,7 @@
     outline: transparent;
     padding: 0 spacing(0.5);
     min-height: spacing(3.75);
-    color: $clr-pri;
+    color: var(--bit-tfl-clr);
     background-color: transparent;
 
     @media (hover: hover) {
@@ -147,22 +151,22 @@
     }
 }
 
-.bit-tfl-rin {
+.bit-tfl-rpc {
     display: flex;
     align-items: center;
     font-size: spacing(2);
     justify-content: center;
 }
 
-.bit-tfl-ric {
-    color: $clr-pri;
+.bit-tfl-rpi {
+    color: var(--bit-tfl-clr);
 }
 
 .bit-tfl-ico {
     color: $clr-fg-pri;
 }
 
-.bit-tfl-ric,
+.bit-tfl-rpi,
 .bit-tfl-ico {
     width: spacing(4);
     text-align: center;
@@ -231,13 +235,22 @@
 }
 
 .bit-tfl-fcs {
+    .bit-tfl-ico {
+        color: var(--bit-tfl-clr);
+    }
+
+    .bit-tfl-pre,
+    .bit-tfl-suf {
+        color: var(--bit-tfl-clr);
+    }
+
     .bit-tfl-fgp::after {
         content: "";
         position: absolute;
         pointer-events: none;
         inset: spacing(-0.125);
         border-radius: $shp-border-radius;
-        border: spacing(0.25) $shp-border-style $clr-pri;
+        border: spacing(0.25) $shp-border-style var(--bit-tfl-clr);
     }
 
     &.bit-tfl-und {
@@ -250,7 +263,7 @@
             position: absolute;
             pointer-events: none;
             inset: spacing(-0.125);
-            border-bottom: spacing(0.25) $shp-border-style $clr-pri;
+            border-bottom: spacing(0.25) $shp-border-style var(--bit-tfl-clr);
         }
     }
 }
@@ -259,7 +272,7 @@
     .bit-tfl-wrp {
         width: 100%;
         display: flex;
-        border-bottom: $shp-border-width $shp-border-style $clr-brd-pri;
+        border-bottom: $shp-border-width $shp-border-style var(--bit-tfl-clr-brd);
     }
 
     .bit-tfl-lbl {
@@ -298,4 +311,107 @@
     .bit-tfl-fgp {
         border: none;
     }
+}
+
+
+.bit-tfl-pri {
+    --bit-tfl-clr: #{$clr-pri};
+}
+
+.bit-tfl-sec {
+    --bit-tfl-clr: #{$clr-sec};
+}
+
+.bit-tfl-ter {
+    --bit-tfl-clr: #{$clr-ter};
+}
+
+.bit-tfl-inf {
+    --bit-tfl-clr: #{$clr-inf};
+}
+
+.bit-tfl-suc {
+    --bit-tfl-clr: #{$clr-suc};
+}
+
+.bit-tfl-wrn {
+    --bit-tfl-clr: #{$clr-wrn};
+}
+
+.bit-tfl-swr {
+    --bit-tfl-clr: #{$clr-swr};
+}
+
+.bit-tfl-err {
+    --bit-tfl-clr: #{$clr-err};
+}
+
+.bit-tfl-pbg {
+    --bit-tfl-clr: #{$clr-bg-pri};
+}
+
+.bit-tfl-sbg {
+    --bit-tfl-clr: #{$clr-bg-sec};
+}
+
+.bit-tfl-tbg {
+    --bit-tfl-clr: #{$clr-bg-ter};
+}
+
+.bit-tfl-pfg {
+    --bit-tfl-clr: #{$clr-fg-pri};
+}
+
+.bit-tfl-sfg {
+    --bit-tfl-clr: #{$clr-fg-sec};
+}
+
+.bit-tfl-tfg {
+    --bit-tfl-clr: #{$clr-fg-ter};
+}
+
+.bit-tfl-pbr {
+    --bit-tfl-clr: #{$clr-brd-pri};
+}
+
+.bit-tfl-sbr {
+    --bit-tfl-clr: #{$clr-brd-sec};
+}
+
+.bit-tfl-tbr {
+    --bit-tfl-clr: #{$clr-brd-ter};
+}
+
+
+.bit-tfl-bpr {
+    --bit-tfl-clr-bg: #{$clr-bg-pri};
+}
+
+.bit-tfl-bse {
+    --bit-tfl-clr-bg: #{$clr-bg-sec};
+}
+
+.bit-tfl-btr {
+    --bit-tfl-clr-bg: #{$clr-bg-ter};
+}
+
+.bit-tfl-btn {
+    --bit-tfl-clr-bg: transparent;
+}
+
+
+.bit-tfl-brp {
+    --bit-tfl-clr-brd: #{$clr-brd-pri};
+}
+
+.bit-tfl-brs {
+    --bit-tfl-clr-brd: #{$clr-brd-sec};
+}
+
+.bit-tfl-brt {
+    --bit-tfl-clr-brd: #{$clr-brd-ter};
+}
+
+.bit-tfl-brn {
+    --bit-tfl-clr-brd: transparent;
 }

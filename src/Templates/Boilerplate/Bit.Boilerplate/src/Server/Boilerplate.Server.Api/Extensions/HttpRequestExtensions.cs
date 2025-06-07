@@ -1,4 +1,4 @@
-using Boilerplate.Server.Api;
+﻿using Boilerplate.Server.Api;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http;
@@ -16,7 +16,7 @@ public static partial class HttpRequestExtensions
         if (origin is null)
             return serverUrl; // Assume that web app and server are hosted in one place.
 
-        if (origin == serverUrl || settings.IsAllowedOrigin(origin))
+        if (origin == serverUrl || settings.IsTrustedOrigin(origin))
             return origin;
 
         throw new BadRequestException($"Invalid origin {origin}");

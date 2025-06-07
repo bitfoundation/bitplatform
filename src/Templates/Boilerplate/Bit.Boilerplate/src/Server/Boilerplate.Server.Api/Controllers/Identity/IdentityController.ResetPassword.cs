@@ -62,7 +62,7 @@ public partial class IdentityController
             .Where(us => us.NotificationStatus == UserSessionNotificationStatus.Allowed && us.UserId == user.Id)
             .Select(us => us.SignalRConnectionId!)
             .ToArrayAsync(cancellationToken);
-        sendMessagesTasks.Add(appHubContext.Clients.Clients(userConnectionIds).SendAsync(SignalREvents.SHOW_MESSAGE, message, cancellationToken));
+        sendMessagesTasks.Add(appHubContext.Clients.Clients(userConnectionIds).SendAsync(SignalREvents.SHOW_MESSAGE, message, null, cancellationToken));
         //#endif
 
         //#if (notification == true)

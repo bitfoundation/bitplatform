@@ -10,8 +10,11 @@ public partial class IdentityHeader : AppComponentBase
     [AutoInject] private CultureService cultureService = default!;
 
 
-    [CascadingParameter] private BitDir? currentDir { get; set; }
-    [CascadingParameter(Name = Parameters.CurrentTheme)] private AppThemeType? currentTheme { get; set; }
+    [CascadingParameter(Name = Parameters.CurrentDir)]
+    public BitDir? CurrentDir { get; set; }
+
+    [CascadingParameter(Name = Parameters.CurrentTheme)]
+    public AppThemeType? CurrentTheme { get; set; }
 
 
     protected override async Task OnInitAsync()

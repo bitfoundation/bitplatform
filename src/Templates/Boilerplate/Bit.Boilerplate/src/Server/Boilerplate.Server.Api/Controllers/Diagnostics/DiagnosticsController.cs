@@ -58,7 +58,7 @@ public partial class DiagnosticsController : AppControllerBase, IDiagnosticsCont
         //#if (signalR == true)
         if (string.IsNullOrEmpty(signalRConnectionId) is false)
         {
-            await appHubContext.Clients.Client(signalRConnectionId).SendAsync(SignalREvents.SHOW_MESSAGE, DateTimeOffset.Now.ToString("HH:mm:ss"), cancellationToken);
+            await appHubContext.Clients.Client(signalRConnectionId).SendAsync(SignalREvents.SHOW_MESSAGE, $"Open terms page. {DateTimeOffset.Now:HH:mm:ss}", new { pageUrl = Urls.TermsPage, action = "testAction" }, cancellationToken);
         }
         //#endif
 
@@ -70,6 +70,10 @@ public partial class DiagnosticsController : AppControllerBase, IDiagnosticsCont
         {
             result.AppendLine($"{header.Key}: {header.Value}");
         }
+
+        result.AppendLine();
+        result.AppendLine("Base url: " + Request.GetBaseUrl());
+        result.AppendLine("Web app url: " + Request.GetWebAppUrl());
 
         return result.ToString();
     }

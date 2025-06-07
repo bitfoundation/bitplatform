@@ -1,4 +1,4 @@
-
+﻿
 namespace Boilerplate.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
@@ -11,9 +11,6 @@ public partial class ConfirmEmailRequestDto
 
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     public string? Token { get; set; }
-
-    /// <example>Samsung Android 14</example>
-    public string? DeviceInfo { get; set; }
 }
 
 public partial class ChangeEmailRequestDto : ConfirmEmailRequestDto

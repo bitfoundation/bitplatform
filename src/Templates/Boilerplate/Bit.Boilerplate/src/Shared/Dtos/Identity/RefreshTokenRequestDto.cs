@@ -1,7 +1,7 @@
-namespace Boilerplate.Shared.Dtos.Identity;
+﻿namespace Boilerplate.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
-public partial class RefreshRequestDto
+public partial class RefreshTokenRequestDto
 {
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     public string? RefreshToken { get; set; }
@@ -10,6 +10,4 @@ public partial class RefreshRequestDto
     /// <inheritdoc cref="AuthPolicies.ELEVATED_ACCESS" />
     /// </summary>
     public string? ElevatedAccessToken { get; set; }
-
-    public string? DeviceInfo { get; set; }
 }
