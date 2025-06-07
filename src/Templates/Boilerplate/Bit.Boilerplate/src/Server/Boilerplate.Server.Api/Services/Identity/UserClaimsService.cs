@@ -1,8 +1,4 @@
-﻿using System.Security.Claims;
-using Boilerplate.Server.Api.Models.Identity;
-using ImageMagick;
-
-namespace Boilerplate.Server.Api.Services.Identity;
+﻿namespace Boilerplate.Server.Api.Services.Identity;
 
 public partial class UserClaimsService
 {
