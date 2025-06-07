@@ -8,6 +8,9 @@ declare class BitButil {
 };
 
 class HybridAppWebInterop {
+
+    private static autoClose = true;
+
     public static async run() {
         try {
             const urlParams = new URLSearchParams(location.search);
@@ -33,15 +36,27 @@ class HybridAppWebInterop {
             });
         }
         finally {
-            window.close();
-            location.href = 'about:blank';
+            if (HybridAppWebInterop.autoClose) {
+                window.close();
+                location.href = 'about:blank';
+            }
         }
     }
 
     private static async socialSignInCallback() {
         const urlParams = new URLSearchParams(location.search);
         const urlToOpen = urlParams.get('url')!.toString();
-        const localHttpPort = Number.parseInt(urlParams.get('localHttpPort')!.toString());
+        const localHttpPort = urlParams.get('localHttpPort')?.toString();
+        if (!localHttpPort) {
+            if (window.opener) {
+                window.opener.postMessage({ key: 'PUBLISH_MESSAGE', message: 'SOCIAL_SIGN_IN', payload: urlToOpen });
+            }
+            else {
+                HybridAppWebInterop.autoClose = false;
+                location.href = urlToOpen;
+            }
+            return;
+        }
         await fetch(`http://localhost:${localHttpPort}/api/SocialSignInCallback?urlToOpen=${encodeURIComponent(urlToOpen)}`, {
             method: 'POST',
             credentials: 'omit'

@@ -31,7 +31,7 @@ public partial class IdentityController
     [HttpGet]
     public async Task<ActionResult> SocialSignInCallback(string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default)
     {
-        string? url;
+        string? signInPageUri;
         ExternalLoginInfo? info = null;
 
         try
@@ -87,21 +87,23 @@ public partial class IdentityController
                 await userManager.UpdateAsync(user);
             }
 
-            (_, url) = await GenerateAutomaticSignInLink(user, returnUrl, originalAuthenticationMethod: "Social"); // Sign in with a magic link, and 2FA will be prompted if already enabled.
+            (_, signInPageUri) = await GenerateAutomaticSignInLink(user, returnUrl, originalAuthenticationMethod: "Social"); // Sign in with a magic link, and 2FA will be prompted if already enabled.
         }
         catch (Exception exp)
         {
             serverExceptionHandler.Handle(exp, new() { { "LoginProvider", info?.LoginProvider }, { "Principal", info?.Principal?.GetDisplayName() } });
-            url = $"{Urls.SignInPage}?error={Uri.EscapeDataString(exp is KnownException ? Localizer[exp.Message] : Localizer[nameof(AppStrings.UnknownException)])}";
+            signInPageUri = $"{Urls.SignInPage}?error={Uri.EscapeDataString(exp is KnownException ? Localizer[exp.Message] : Localizer[nameof(AppStrings.UnknownException)])}";
         }
         finally
         {
             await Request.HttpContext.SignOutAsync(IdentityConstants.ExternalScheme); // We'll handle sign-in with the following redirects, so no external identity cookie is needed.
         }
 
-        if (localHttpPort is not null)
-            if (localHttpPort is not null) return Redirect($"http://localhost:{localHttpPort}/hybrid-app-web-interop?actionName=SocialSignInCallback&url={Uri.EscapeDataString(url!)}&localHttpPort={localHttpPort}"); // Check out HybridAppWebInterop.razor's comments.
+        var redirectRelativeUrl = $"hybrid-app-web-interop?actionName=SocialSignInCallback&url={Uri.EscapeDataString(signInPageUri!)}&localHttpPort={localHttpPort}";
 
-        return Redirect(new Uri(Request.HttpContext.Request.GetWebAppUrl(), url).ToString());
+        if (localHttpPort is not null)
+            if (localHttpPort is not null) return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}"), redirectRelativeUrl).ToString()); // Check out HybridAppWebInterop.razor's comments.
+
+        return Redirect(new Uri(Request.HttpContext.Request.GetWebAppUrl(), redirectRelativeUrl).ToString());
     }
 }
