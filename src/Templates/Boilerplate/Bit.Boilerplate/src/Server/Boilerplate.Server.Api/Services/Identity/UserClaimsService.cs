@@ -12,7 +12,7 @@ public partial class UserClaimsService
     /// </summary>
     public async Task<T?[]> GetClaimValues<T>(Guid userId, string claimType, CancellationToken cancellationToken)
     {
-        var results = (await GetClaims(userId))
+        var results = (await GetClaims(userId, cancellationToken))
             .Where(uc => uc.Type == claimType)
             .Select(uc => uc.Value)
             .ToArray();
@@ -44,7 +44,7 @@ public partial class UserClaimsService
     /// Loads all user claims, role claims and role names for a user in a single query that gets cached in-memory for current request lifetime.
     /// There's no need for complex caching here as the service is not being called in parallel.
     /// </summary>
-    public async Task<Claim[]> GetClaims(Guid userId)
+    public async Task<Claim[]> GetClaims(Guid userId, CancellationToken cancellationToken)
     {
         if (_cachedClaims.TryGetValue(userId, out var cachedClaims))
             return cachedClaims;
@@ -52,7 +52,7 @@ public partial class UserClaimsService
         var userRoleClaimsQuery = dbContext.UserRoles.Where(ur => ur.UserId == userId).SelectMany(ur => ur.Role!.Claims).Select(uc => new { uc.ClaimType, uc.ClaimValue });
         var roleClaimQuery = dbContext.Roles.Where(role => role.Users.Any(ur => ur.UserId == userId)).Select(role => new { ClaimType = ClaimTypes.Role, ClaimValue = role.Name! });
         var allUserClaimsQuery = userClaimsQuery.Union(userRoleClaimsQuery).Union(roleClaimQuery);
-        _cachedClaims.Add(userId, await allUserClaimsQuery.Select(uc => new Claim(uc.ClaimType!, uc.ClaimValue)).ToArrayAsync());
+        _cachedClaims.Add(userId, await allUserClaimsQuery.Select(uc => new Claim(uc.ClaimType!, uc.ClaimValue)).ToArrayAsync(cancellationToken));
         return _cachedClaims[userId];
     }
 }
