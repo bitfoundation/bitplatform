@@ -118,7 +118,6 @@ public partial class ClientAppCoordinator : AppComponentBase
             if (lastPropagatedUserId == userId)
                 return;
             await Abort(); // Cancels ongoing user id propagation, because the new authentication state is available.
-            lastPropagatedUserId = userId;
             TelemetryContext.UserId = userId;
             TelemetryContext.UserSessionId = isAuthenticated ? user.GetSessionId() : null;
 
@@ -161,6 +160,8 @@ public partial class ClientAppCoordinator : AppComponentBase
             {
                 await UpdateUserSession();
             }
+
+            lastPropagatedUserId = userId;
         }
         catch (Exception exp)
         {

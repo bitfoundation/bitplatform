@@ -211,7 +211,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     {
         var userId = userSession.UserId;
 
-        var maxPrivilegedSessionsClaimValues = await userClaimsService.GetUserClaimValues<int?>(userId, AppClaimTypes.MAX_PRIVILEGED_SESSIONS, cancellationToken);
+        var maxPrivilegedSessionsClaimValues = await userClaimsService.GetClaimValues<int?>(userId, AppClaimTypes.MAX_PRIVILEGED_SESSIONS, cancellationToken);
 
         var hasUnlimitedPrivilegedSessions = maxPrivilegedSessionsClaimValues.Any(v => v == -1); // -1 means no limit
 

@@ -71,30 +71,21 @@ public partial class AppHub : Hub
     /// <summary>
     /// <inheritdoc cref="SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE"/>
     /// </summary>
-    /// <param name="userQuery">`UserId`, `UserSessionId`, `Email` or `PhoneNumber`</param>
-    /// <returns></returns>
     [Authorize(Policy = AppFeatures.System.ManageLogs)]
-    public async Task<DiagnosticLogDto[]> GetUserDiagnosticLogs(string? userQuery)
+    public async Task<DiagnosticLogDto[]> GetUserSessionLogs(Guid userSessionId)
     {
-        if (string.IsNullOrEmpty(userQuery))
-            return [];
-
-        userQuery = userQuery.Trim().ToUpperInvariant();
-
         await using var scope = serviceProvider.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        var isGuidId = Guid.TryParse(userQuery, out var id);
-
-        var userSessionSignalRConnectionIds = await dbContext.UserSessions
-            .WhereIf(isGuidId, us => us.Id == id || us.UserId == id)
-            .WhereIf(isGuidId is false, us => us.User!.NormalizedEmail == userQuery || us.User.PhoneNumber == userQuery || us.User.UserName == userQuery)
-            .Where(us => us.SignalRConnectionId != null)
+        var userSessionSignalRConnectionId = await dbContext.UserSessions
+            .Where(us => us.Id == userSessionId)
             .Select(us => us.SignalRConnectionId)
-            .ToArrayAsync(Context.ConnectionAborted);
+            .FirstOrDefaultAsync(Context.ConnectionAborted);
 
-        return [.. (await Task.WhenAll(userSessionSignalRConnectionIds.Select(id => Clients.Client(id!).InvokeAsync<DiagnosticLogDto[]>(SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE, Context.ConnectionAborted))))
-            .SelectMany(_ => _)];
+        if (string.IsNullOrEmpty(userSessionSignalRConnectionId))
+            return [];
+
+        return await Clients.Client(userSessionSignalRConnectionId).InvokeAsync<DiagnosticLogDto[]>(SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE, Context.ConnectionAborted);
     }
 
     private async Task ChangeAuthenticationStateImplementation(ClaimsPrincipal? user)

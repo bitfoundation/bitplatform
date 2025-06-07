@@ -23,8 +23,7 @@ public partial class MainLayout : IAsyncDisposable
     private AppThemeType? currentTheme;
     private RouteData? currentRouteData;
     private List<Action> unsubscribers = [];
-    private Guid? userIdForUpdateAuthRelatedUI;
-    private CancellationTokenSource? getCurrentUserCts;
+    private CancellationTokenSource getCurrentUserCts = new();
 
     [AutoInject] private Keyboard keyboard = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
@@ -169,21 +168,16 @@ public partial class MainLayout : IAsyncDisposable
 
         await SetNavPanelItems(authUser);
 
-        if (getCurrentUserCts is not null)
-        {
-            using var currentCts = getCurrentUserCts;
-            await currentCts.CancelAsync();
-        }
+        using var currentCts = getCurrentUserCts;
         getCurrentUserCts = new();
+        await currentCts.CancelAsync();
 
         if (authUser.IsAuthenticated() is false)
         {
             currentUser = null;
-            userIdForUpdateAuthRelatedUI = null;
         }
-        else if (authUser.GetUserId() != userIdForUpdateAuthRelatedUI)
+        else if (authUser.GetUserId() != currentUser?.Id)
         {
-            userIdForUpdateAuthRelatedUI = authUser.GetUserId();
             currentUser = await userController.GetCurrentUser(getCurrentUserCts.Token);
         }
     }
@@ -242,7 +236,7 @@ public partial class MainLayout : IAsyncDisposable
         {
             await appUpdateService.ForceUpdate();
         }
-        catch(Exception exp)
+        catch (Exception exp)
         {
             exceptionHandler.Handle(exp);
         }

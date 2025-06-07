@@ -106,16 +106,6 @@
                            Color="BitColor.SecondaryBackground"
                            IconName="@BitIconName.DeveloperTools" />
 
-                @*#if (signalR == true)*@
-                <AuthorizeView Policy="@AppFeatures.System.ManageLogs">
-                    <BitButton IconOnly AutoLoading
-                               OnClick="ReadAnotherUserLogs"
-                               Title="Read another user logs"
-                               Color="BitColor.SecondaryBackground"
-                               IconName="@BitIconName.Download" />
-                </AuthorizeView>
-                @*#endif*@
-
                 @if (AppPlatform.IsBrowser is false)
                 {
                     <BitButton IconOnly
