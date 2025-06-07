@@ -111,7 +111,7 @@ function handleLoad() {
         // the following code ensures that the original window is notified.
         // If IExternalNavigationService fails to navigate to the new window (Typically on iOS/Safari), the window.opener will be null and the page normally loads.
         window.opener.postMessage({ key: 'PUBLISH_MESSAGE', message: 'SOCIAL_SIGN_IN', payload: window.location.href });
-        setTimeout(() => window.close(), 100);
+        window.close();
     }
 }
 
