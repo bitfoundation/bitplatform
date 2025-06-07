@@ -1,4 +1,8 @@
-﻿namespace Boilerplate.Server.Api.Services.Identity;
+﻿using System.Security.Claims;
+using Boilerplate.Server.Api.Models.Identity;
+using ImageMagick;
+
+namespace Boilerplate.Server.Api.Services.Identity;
 
 public partial class UserClaimsService
 {
@@ -48,11 +52,19 @@ public partial class UserClaimsService
     {
         if (_cachedClaims.TryGetValue(userId, out var cachedClaims))
             return cachedClaims;
-        var userClaimsQuery = dbContext.UserClaims.Where(uc => uc.UserId == userId).Select(uc => new { uc.ClaimType, uc.ClaimValue });
-        var userRoleClaimsQuery = dbContext.UserRoles.Where(ur => ur.UserId == userId).SelectMany(ur => ur.Role!.Claims).Select(uc => new { uc.ClaimType, uc.ClaimValue });
-        var roleClaimQuery = dbContext.Roles.Where(role => role.Users.Any(ur => ur.UserId == userId)).Select(role => new { ClaimType = ClaimTypes.Role, ClaimValue = role.Name! });
-        var allUserClaimsQuery = userClaimsQuery.Union(userRoleClaimsQuery).Union(roleClaimQuery);
-        _cachedClaims.Add(userId, await allUserClaimsQuery.Select(uc => new Claim(uc.ClaimType!, uc.ClaimValue)).ToArrayAsync(cancellationToken));
+
+        var userClaimsQuery = dbContext.UserClaims.Where(uc => uc.UserId == userId).Select(uc => new { ClaimType = uc.ClaimType!, ClaimValue = uc.ClaimValue! });
+
+        var userRolesQuery = dbContext.Roles.Where(role => role.Users.Any(ur => ur.UserId == userId));
+
+        var userRoleClaimsQuery = userRolesQuery.SelectMany(r => r.Claims.Select(rc => new { ClaimType = rc.ClaimType!, ClaimValue = rc.ClaimValue! }));
+
+        var roleClaimQuery = userRolesQuery.Select(role => new { ClaimType = ClaimTypes.Role, ClaimValue = role.Name! });
+
+        var allUserClaimsQuery = userClaimsQuery.Union(userRoleClaimsQuery).Union(roleClaimQuery).TagWith("Get claims");
+
+        _cachedClaims.Add(userId, await allUserClaimsQuery.Select(uc => new Claim(uc.ClaimType!, uc.ClaimValue!)).ToArrayAsync(cancellationToken));
+
         return _cachedClaims[userId];
     }
 }
