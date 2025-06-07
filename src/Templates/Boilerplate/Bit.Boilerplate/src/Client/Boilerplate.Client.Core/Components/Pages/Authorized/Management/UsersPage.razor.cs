@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Shared.Controllers.Identity;
-//#if (signalR == true)
 using Boilerplate.Shared.Dtos.Identity;
+//#if (signalR == true)
 using Boilerplate.Shared.Dtos.Diagnostic;
 using Boilerplate.Client.Core.Services.DiagnosticLog;
 using Microsoft.AspNetCore.SignalR.Client;
