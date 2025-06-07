@@ -12,8 +12,6 @@ public partial class UserClaimsService
     /// </summary>
     public async Task<T?[]> GetUserClaimValues<T>(Guid userId, string claimType, CancellationToken cancellationToken)
     {
-        var userClaimsQuery = dbContext.UserClaims.Where(uc => uc.UserId == userId).Select(uc => new { uc.ClaimType, uc.ClaimValue });
-        var userRoleClaimsQuery = dbContext.UserRoles.Where(ur => ur.UserId == userId).SelectMany(ur => ur.Role!.Claims).Select(uc => new { uc.ClaimType, uc.ClaimValue });
         var allUserClaimsQuery = await GetAllUserClaims(userId);
 
         var results = allUserClaimsQuery
