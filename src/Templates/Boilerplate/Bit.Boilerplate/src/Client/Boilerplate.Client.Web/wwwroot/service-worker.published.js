@@ -113,5 +113,6 @@ self.prerenderMode = 'none'; // Demo: https://adminpanel.bitplatform.dev/ (No-Pr
 // self.prerenderMode = 'initial'; // Demo: https://todo.bitplatform.dev/ (Pre-Render on first site visit + Offline support)
 
 self.enableIntegrityCheck = false;
+self.enableFetchDiagnostics = true;
 
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');
