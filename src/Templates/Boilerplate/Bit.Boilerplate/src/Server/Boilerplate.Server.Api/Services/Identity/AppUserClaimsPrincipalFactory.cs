@@ -26,7 +26,7 @@ public partial class AppUserClaimsPrincipalFactory(UserClaimsService userClaimsS
     /// <summary>
     /// aspnetcore identity's code to retrieve claims is not performant enough,
     /// because it doesn't have access to navigation properties and has to query the database for user claims, user roles and role claims separately,
-    /// while we use <see cref="UserClaimsService.GetAllUserClaims(Guid)"/> to retrieve all claims in a single query.
+    /// while we use <see cref="UserClaimsService.GetClaims(Guid)"/> to retrieve all claims in a single query.
     /// The original code borrowed from https://github.com/dotnet/aspnetcore/blob/main/src/Identity/Extensions.Core/src/UserClaimsPrincipalFactory.cs#L71
     /// </summary>
     private async Task<ClaimsIdentity> GenerateClaims(User user)
@@ -45,7 +45,7 @@ public partial class AppUserClaimsPrincipalFactory(UserClaimsService userClaimsS
         }
         id.AddClaim(new Claim(Options.ClaimsIdentity.SecurityStampClaimType, user.SecurityStamp!));
 
-        foreach (var claim in await userClaimsService.GetAllUserClaims(user.Id))
+        foreach (var claim in await userClaimsService.GetClaims(user.Id))
         {
             if (id.HasClaim(claim.Type, claim.Value) is false)
                 id.AddClaim(new(claim.Type, claim.Value));
