@@ -12,9 +12,7 @@ public partial class UserClaimsService
     /// </summary>
     public async Task<T?[]> GetClaimValues<T>(Guid userId, string claimType, CancellationToken cancellationToken)
     {
-        var allUserClaimsQuery = await GetClaims(userId);
-
-        var results = allUserClaimsQuery
+        var results = (await GetClaims(userId))
             .Where(uc => uc.Type == claimType)
             .Select(uc => uc.Value)
             .ToArray();
