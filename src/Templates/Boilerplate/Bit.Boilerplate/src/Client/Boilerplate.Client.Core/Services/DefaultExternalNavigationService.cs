@@ -28,16 +28,21 @@ public partial class DefaultExternalNavigationService : IExternalNavigationServi
             await window.Close(lastOpenedWindowId); // Only one open window at a time.
         }
 
-        pubSubUnsubscribe?.Invoke();
-        pubSubUnsubscribe = pubSubService.Subscribe(ClientPubSubMessages.SOCIAL_SIGN_IN, async _ =>
-        {
-            await window.Close(lastOpenedWindowId); // It's time to close the social sign-in popup window.
-        });
-
         if ((lastOpenedWindowId = await window.Open(url, "_blank", new WindowFeatures() { Popup = true, Width = 1024, Height = 768 })) is null // Let's try with popup first.
             && (lastOpenedWindowId = await window.Open(url, "_blank", new WindowFeatures() { Popup = false })) is null) // Let's try new tab
         {
             navigationManager.NavigateTo(url, forceLoad: true, replace: true); // If all else fails, let's try to navigate in the same tab.
+        }
+        else
+        {
+            pubSubUnsubscribe?.Invoke();
+            pubSubUnsubscribe = pubSubService.Subscribe(ClientPubSubMessages.SOCIAL_SIGN_IN, async _ =>
+            {
+                if (lastOpenedWindowId != null)
+                {
+                    await window.Close(lastOpenedWindowId); // It's time to close the social sign-in popup / tab.
+                }
+            });
         }
     }
 
