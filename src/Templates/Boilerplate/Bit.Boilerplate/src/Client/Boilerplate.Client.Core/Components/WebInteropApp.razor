@@ -1,3 +1,4 @@
+@*+:cnd:noEmit*@
 @*
 Most web features like animations, videos, or Google reCAPTCHA work fine in Blazor Hybrid.
 However, since Blazor Hybrid uses Web View with an IP-based Origin (http://0.0.0.1)
@@ -111,6 +112,12 @@ allowing the main Window to resume its operations.
             }
         }
     </style>
+
+    @*#if (appInsights == true)*@
+    <link rel="preconnect" href="https://js.monitor.azure.com" crossorigin />
+    <!-- Perform the initial static render of ApplicationInsightsInit to start App Insights ASAP. -->
+    <BlazorApplicationInsights.ApplicationInsightsInit />
+    @*#endif*@
 </head>
 <body>
     <div class="title">@Localizer[nameof(AppStrings.PleaseWait)]</div>
