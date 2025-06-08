@@ -101,8 +101,8 @@ public partial class IdentityController
 
         var redirectRelativeUrl = $"hybrid-app-web-interop?actionName=SocialSignInCallback&url={Uri.EscapeDataString(signInPageUri!)}&localHttpPort={localHttpPort}";
 
-        if (localHttpPort is not null)
-            if (localHttpPort is not null) return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}"), redirectRelativeUrl).ToString()); // Check out HybridAppWebInterop.razor's comments.
+        if (localHttpPort is not null) 
+            return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}"), redirectRelativeUrl).ToString()); // Check out HybridAppWebInterop.razor's comments.
 
         return Redirect(new Uri(Request.HttpContext.Request.GetWebAppUrl(), redirectRelativeUrl).ToString());
     }
