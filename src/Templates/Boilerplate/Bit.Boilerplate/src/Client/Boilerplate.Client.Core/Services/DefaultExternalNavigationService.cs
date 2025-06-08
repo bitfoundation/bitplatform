@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Client.Core.Services;
 
-public partial class DefaultExternalNavigationService : IExternalNavigationService
+public partial class DefaultExternalNavigationService : IExternalNavigationService, IAsyncDisposable
 {
     [AutoInject] private readonly Window window = default!;
     [AutoInject] private readonly PubSubService pubSubService = default!;
@@ -39,5 +39,10 @@ public partial class DefaultExternalNavigationService : IExternalNavigationServi
         {
             navigationManager.NavigateTo(url, forceLoad: true, replace: true); // If all else fails, let's try to navigate in the same tab.
         }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        pubSubUnsubscribe?.Invoke();
     }
 }
