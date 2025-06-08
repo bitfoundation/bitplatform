@@ -103,7 +103,7 @@ self.serverHandledUrls = [
     /\/products.xml/,
     //#endif
     /\/sitemap_index.xml/,
-    /\/hybrid-app-web-interop/
+    /\/web-interop-app/
 ];
 
 self.prerenderMode = 'none'; // Demo: https://adminpanel.bitplatform.dev/ (No-Prerendering + Offline support)

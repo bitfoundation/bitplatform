@@ -1,15 +1,15 @@
 @*
-Leveraging Web Features in Blazor Hybrid:
+Most web features like animations, videos, or Google reCAPTCHA work fine in Blazor Hybrid.
+However, since Blazor Hybrid uses Web View with an IP-based Origin (http://0.0.0.1)
+more sensitive features like Social Sign-in and Face-ID/Fingerprint Sign-in using WebAuthn do not function properly in Web View.
+To address this, within a Blazor Hybrid App, you can use a Local HTTP Server to load a lightweight WebInteropApp component that
+only loads app.js (without Blazor.web.js) on an Origin like localhost.
+Then, using IExternalNavigationService, you can display it via an In-App Browser to bypass Web View limitations.
 
-1. WebView Integration: Directly utilize standard web technologies like CSS animations and external frames (e.g., Google reCaptcha) within the Blazor WebView.
-
-2. Addressing Origin Restrictions for Sensitive Web APIs:
-   - Due to the our WebView's fixed origin (http://0.0.0.1), certain security-sensitive web features like WebAuthn and social sign-in will not function directly within the WebView.
-   - Solution for WebAuthn: Employ a local HTTP server (see WindowsLocalHttpServer and MauiHttpLocalServer) to serve the HybridAppWebInterop component via a GET endpoint. Use IExternalNavigationService to open an in-app browser, facilitating authentication (e.g., Face ID).
-   - Limitation for Social Sign-in: Social sign-in providers generally restrict WebView usage due to security considerations, regardless of the origin.
-
-3. Utilizing Website Origin (Such as https://adminpanel.bitplatform.dev):
-   - For scenarios requiring your website's actual origin or other features incompatible even with a localhost origin, use IExternalNavigationService to navigate to the /HybridAppWebInterop minimal API endpoint (defined in HybridWebAppInteropEndpoint.cs).
+Additionally, in a Web Browser, if Social Sign-in is performed in a Popup or a new Tab to preserve the app's
+state and avoid restarting Blazor upon returning from Social Sign-in, the Popup should redirect back to WebAppInterop
+after authentication. Using app.js, it can notify the main Window via window.opener.postMessage({ key: 'PUBLISH_MESSAGE', ... }),
+allowing the main Window to resume its operations.
 *@
 
 @code {
@@ -123,7 +123,7 @@ Leveraging Web Features in Blazor Hybrid:
     <script src="_content/Bit.Butil/bit-butil.js"></script>
     <script src="_content/Boilerplate.Client.Core/scripts/app.js"></script>
     <script type="text/javascript">
-        HybridAppWebInterop.run();
+        WebInteropApp.run();
     </script>
 </body>
 </html>

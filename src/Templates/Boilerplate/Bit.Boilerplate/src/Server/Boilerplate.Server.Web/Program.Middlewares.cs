@@ -175,7 +175,7 @@ public static partial class Program
         //#endif
 
         app.UseSiteMap();
-        app.UseHybridWebAppInterop();
+        app.UseWebInteropApp();
 
         // Handle the rest of requests with blazor
         var blazorApp = app.MapRazorComponents<Components.App>()

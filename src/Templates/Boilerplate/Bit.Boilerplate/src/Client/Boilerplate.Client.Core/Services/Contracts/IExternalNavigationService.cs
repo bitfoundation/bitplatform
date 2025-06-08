@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Client.Core.Services.Contracts;
 
-// Check out HybridAppWebInterop.razor's comments.
+// Check out WebInteropApp.razor's comments.
 public interface IExternalNavigationService
 {
     Task NavigateToAsync(string url);
