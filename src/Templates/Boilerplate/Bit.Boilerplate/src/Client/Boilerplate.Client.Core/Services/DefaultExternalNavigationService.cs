@@ -35,7 +35,7 @@ public partial class DefaultExternalNavigationService : IExternalNavigationServi
         });
 
         if ((lastOpenedWindowId = await window.Open(url, "_blank", new WindowFeatures() { Popup = true, Width = 1024, Height = 768 })) is null // Let's try with popup first.
-        && (lastOpenedWindowId = await window.Open(url, "_blank", new WindowFeatures() { Popup = false })) is null) // Let's try new tab
+            && (lastOpenedWindowId = await window.Open(url, "_blank", new WindowFeatures() { Popup = false })) is null) // Let's try new tab
         {
             navigationManager.NavigateTo(url, forceLoad: true, replace: true); // If all else fails, let's try to navigate in the same tab.
         }
