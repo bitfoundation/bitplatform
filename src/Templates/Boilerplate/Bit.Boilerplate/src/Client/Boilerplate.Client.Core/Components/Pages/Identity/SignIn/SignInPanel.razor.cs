@@ -18,7 +18,7 @@ public partial class SignInPanel
     private SignInPanelType internalSignInPanelType;
     private readonly SignInRequestDto model = new();
     private AppDataAnnotationsValidator? validatorRef;
-    private string ReturnUrl => ReturnUrlQueryString ?? NavigationManager.GetRelativePath() ?? Urls.HomePage;
+    private string ReturnUrl => ReturnUrlQueryString ?? Urls.HomePage;
 
 
     [Parameter, SupplyParameterFromQuery(Name = "return-url")]

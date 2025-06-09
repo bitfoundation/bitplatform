@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Components.Web;
 
 namespace Boilerplate.Client.Windows.Services;
 
-// Checkout HybridAppWebInterop.razor's comments.
+// Checkout WebInteropApp.razor's comments.
 public partial class WindowsLocalHttpServer : ILocalHttpServer
 {
     [AutoInject] private HtmlRenderer htmlRenderer;
@@ -111,10 +111,10 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
 
                 await GoBackToApp();
             }))
-            .WithModule(new ActionModule("/hybrid-app-web-interop", HttpVerbs.Get, async ctx =>
+            .WithModule(new ActionModule("/web-interop-app", HttpVerbs.Get, async ctx =>
             {
                 var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
-                    (await htmlRenderer.RenderComponentAsync<HybridAppWebInterop>()).ToHtmlString());
+                    (await htmlRenderer.RenderComponentAsync<WebInteropApp>()).ToHtmlString());
 
                 await ctx.SendStringAsync(html, "text/html", Encoding.UTF8);
             }))

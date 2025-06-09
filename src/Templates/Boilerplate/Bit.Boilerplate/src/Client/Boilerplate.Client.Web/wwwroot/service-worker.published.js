@@ -1,5 +1,5 @@
 //+:cnd:noEmit
-// bit version: 9.9.0
+// bit version: 9.9.1
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 //#if (notification == true)
@@ -103,7 +103,7 @@ self.serverHandledUrls = [
     /\/products.xml/,
     //#endif
     /\/sitemap_index.xml/,
-    /\/hybrid-app-web-interop/
+    /\/web-interop-app/
 ];
 
 self.prerenderMode = 'none'; // Demo: https://adminpanel.bitplatform.dev/ (No-Prerendering + Offline support)
@@ -111,7 +111,5 @@ self.prerenderMode = 'none'; // Demo: https://adminpanel.bitplatform.dev/ (No-Pr
 // On apps with Prerendering enabled, to have the best experience for the end user un-comment one of the following lines:
 // self.prerenderMode = 'always'; // Demo: https://sales.bitplatform.dev/ (Always show pre-render without offline support)
 // self.prerenderMode = 'initial'; // Demo: https://todo.bitplatform.dev/ (Pre-Render on first site visit + Offline support)
-
-self.enableIntegrityCheck = false;
 
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');
