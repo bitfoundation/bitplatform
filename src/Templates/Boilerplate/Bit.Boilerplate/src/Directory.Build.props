@@ -90,7 +90,7 @@
             <RazorCssFiles Include="**\*.razor.css" />
             <UnmatchedRazorCssFiles Include="@(RazorCssFiles)" Condition="!Exists('%(RecursiveDir)%(FileName).scss')" />
         </ItemGroup>
-        <Delete Files="@(UnmatchedRazorCssFiles)" Condition="'@(UnmatchedRazorCssFiles)' != ''" />
+        <Delete Files="@(UnmatchedRazorCssFiles)" />
     </Target>
 
 </Project>
