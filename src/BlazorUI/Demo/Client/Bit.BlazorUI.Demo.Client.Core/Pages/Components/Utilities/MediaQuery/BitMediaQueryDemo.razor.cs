@@ -207,7 +207,7 @@ public partial class BitMediaQueryDemo
 
     private string example4RazorCode = @"
 <BitMediaQuery ScreenQuery=""BitScreenQuery.Md"" OnChange=""v => isMatched = v"" />
-<div>IsMatched: @isMatched</div>";
+<div>[BitScreenQuery.Md] IsMatched?: <b>@isMatched</b></div>";
     private string example4CsharpCode = @"
 private bool isMatched;";
 }
