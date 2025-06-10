@@ -12,11 +12,11 @@ public class AppFeatures
         /// <summary>
         /// Change AI Chatbot's system prompt.
         /// </summary>
-        public const string ManageAiPrompt = "0";
+        public const string ManageAiPrompt = "1.0"; // It can be anything (1.0.0, m-1.0, m-ai etc), but it has to be unique.
 
-        public const string ManageRoles = "1";
+        public const string ManageRoles = "1.1";
 
-        public const string ManageUsers = "2";
+        public const string ManageUsers = "1.2";
     }
 
     public class System
@@ -24,27 +24,27 @@ public class AppFeatures
         /// <summary>
         /// <inheritdoc cref="SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE" />
         /// </summary>
-        public const string ManageLogs = "3";
+        public const string ManageLogs = "2.0";
 
         /// <summary>
         /// Manage background jobs using hangfire's dashboard.
         /// </summary>
-        public const string ManageJobs = "4";
+        public const string ManageJobs = "2.1";
     }
 
     public class AdminPanel
     {
-        public const string Dashboard = "5";
+        public const string Dashboard = "3.0";
 
         /// <summary>
         /// Add/Modify/Delete products and categories.
         /// </summary>
-        public const string ManageProductCatalog = "6";
+        public const string ManageProductCatalog = "3.1";
     }
 
     public class Todo
     {
-        public const string ManageTodo = "7";
+        public const string ManageTodo = "4.0";
     }
 
 
