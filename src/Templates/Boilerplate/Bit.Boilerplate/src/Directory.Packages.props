@@ -20,6 +20,7 @@
         <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="9.0.5" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.5" />
         <PackageVersion Include="EmbedIO" Version="3.5.2" />
+        <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="9.0.5" />
         <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="9.0.5" />
         <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.5" />
         <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="9.0.5" />

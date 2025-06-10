@@ -374,19 +374,26 @@ public partial class SignInPanel
 
     private void CleanModel()
     {
+        if (internalSignInPanelType is SignInPanelType.OtpOnly)
+        {
+            model.Password = null;
+            validatorRef?.EditContext.NotifyFieldChanged(validatorRef.EditContext.Field(nameof(SignInRequestDto.Password)));
+        }
+        else if (internalSignInPanelType is SignInPanelType.PasswordOnly && isOtpSent is false)
+        {
+            model.Otp = null;
+            validatorRef?.EditContext.NotifyFieldChanged(validatorRef.EditContext.Field(nameof(SignInRequestDto.Otp)));
+        }
+
         if (currentTab is SignInPanelTab.Email)
         {
             model.PhoneNumber = null;
-            if (validatorRef is null) return;
-
-            validatorRef.EditContext.NotifyFieldChanged(validatorRef.EditContext.Field(nameof(SignInRequestDto.PhoneNumber)));
+            validatorRef?.EditContext.NotifyFieldChanged(validatorRef.EditContext.Field(nameof(SignInRequestDto.PhoneNumber)));
         }
         else
         {
             model.Email = null;
-            if (validatorRef is null) return;
-
-            validatorRef.EditContext.NotifyFieldChanged(validatorRef.EditContext.Field(nameof(SignInRequestDto.Email)));
+            validatorRef?.EditContext.NotifyFieldChanged(validatorRef.EditContext.Field(nameof(SignInRequestDto.Email)));
         }
     }
 

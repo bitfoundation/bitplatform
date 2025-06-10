@@ -382,13 +382,13 @@ public partial class RolesPage
         }
     }
 
-    private async Task RemoveRoleFromAllUsers()
+    private async Task RemoveAllUsersFromRole()
     {
         if (selectedRoleItem is null) return;
 
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
 
-        await roleManagementController.RemoveRoleFromAllUsers(Guid.Parse(selectedRoleItem.Key!), CurrentCancellationToken);
+        await roleManagementController.RemoveAllUsersFromRole(Guid.Parse(selectedRoleItem.Key!), CurrentCancellationToken);
 
         selectedRoleUsers.Clear();
     }
