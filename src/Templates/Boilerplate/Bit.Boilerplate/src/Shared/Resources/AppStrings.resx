@@ -1296,10 +1296,13 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>Are you sure you want to revoke all sessions of {0}?</value>
   </data>
   <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
-    <value>You can't remove the SuperAdmin role from this user</value>
+    <value>You can't remove this user from the SuperAdmin user group.</value>
   </data>
-  <data name="UserCantChangeSuperAdminRoleErrorMessage" xml:space="preserve">
-    <value>You can't change the SuperAdmin role</value>
+  <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
+    <value>Super admin permissions may not be modified.</value>
+  </data>
+    <data name="CanNotChangeBuiltInRole" xml:space="preserve">
+    <value>User group {0} can't be modified.</value>
   </data>
   <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
     <value>You can't remove your own user</value>

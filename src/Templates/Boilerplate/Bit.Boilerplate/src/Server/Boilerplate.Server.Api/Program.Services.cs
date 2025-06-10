@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.OData;
 using Microsoft.Net.Http.Headers;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.ResponseCompression;
 using Twilio;
 using Ganss.Xss;
@@ -274,6 +275,9 @@ public static partial class Program
         services.AddEndpointsApiExplorer();
 
         AddSwaggerGen(builder);
+
+        services.AddDataProtection()
+           .PersistKeysToDbContext<AppDbContext>(); // It's advised to secure database-stored keys with a certificate by invoking ProtectKeysWithCertificate.
 
         AddIdentity(builder);
 

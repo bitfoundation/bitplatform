@@ -1292,11 +1292,14 @@
   <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
     <value>شما نمیتوانید کاربر خود را حذف کنید</value>
   </data>
-  <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
+    <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
     <value>شما نمیتوانید گروه کاربری SuperAdmin از این کاربر بگیرید</value>
   </data>
-  <data name="UserCantChangeSuperAdminRoleErrorMessage" xml:space="preserve">
-    <value>شما نمیتوانید تغییری در گروه کاربری SuperAdmin ایجاد کنید</value>
+    <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
+    <value>دسترسی‌های گروه کاربری SuperAdmin قابل ویرایش نیست</value>
+  </data>
+    <data name="CanNotChangeBuiltInRole" xml:space="preserve">
+    <value>شما نمیتوانید تغییری در گروه کاربری {0} ایجاد کنید</value>
   </data>
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>شما نمیتوانید این کاربر SuperAdmin را حذف کنید</value>

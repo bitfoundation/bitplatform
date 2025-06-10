@@ -229,7 +229,7 @@
            Title="@Localizer[nameof(AppStrings.DeleteRole)]"
            Message="@Localizer.GetString(nameof(AppStrings.AreYouSureWannaDelete), selectedRoleItem?.Text ?? "")" />
 
-<BitDialog OnOk="WrapHandled(RemoveRoleFromAllUsers)"
+<BitDialog OnOk="WrapHandled(RemoveAllUsersFromRole)"
            @bind-IsOpen="isRemoveRoleFromAllUsersDialogOpen"
            OkText="@Localizer[nameof(AppStrings.Yes)]"
            CancelText="@Localizer[nameof(AppStrings.No)]"
