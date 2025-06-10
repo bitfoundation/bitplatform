@@ -12,7 +12,7 @@ public class AppFeatures
         /// <summary>
         /// Change AI Chatbot's system prompt.
         /// </summary>
-        public const string ManageAiPrompt = "1.0"; // It can be anything (1.0.0, m-1.0, m-ai etc) but it has to be unique.
+        public const string ManageAiPrompt = "1.0"; // It can be anything (1.0.0, m-1.0, m-ai etc), but it has to be unique.
 
         public const string ManageRoles = "1.1";
 
