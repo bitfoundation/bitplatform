@@ -1298,7 +1298,7 @@
     <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
     <value>دسترسی‌های گروه کاربری SuperAdmin قابل ویرایش نیست</value>
   </data>
-    <data name="CanNotChangeBuitlInRole" xml:space="preserve">
+    <data name="CanNotChangeBuiltInRole" xml:space="preserve">
     <value>شما نمیتوانید تغییری در گروه کاربری {0} ایجاد کنید</value>
   </data>
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">

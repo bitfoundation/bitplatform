@@ -77,7 +77,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         var role = await GetRoleByIdAsync(roleDto.Id, cancellationToken);
 
         if (AppRoles.IsBuiltInRole(role.Name!))
-            throw new BadRequestException(Localizer[nameof(AppStrings.CanNotChangeBuitlInRole), role.Name!]);
+            throw new BadRequestException(Localizer[nameof(AppStrings.CanNotChangeBuiltInRole), role.Name!]);
 
         if (role.ConcurrencyStamp != roleDto.ConcurrencyStamp)
             throw new ConflictException();
@@ -99,7 +99,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         var role = await GetRoleByIdAsync(roleId, cancellationToken);
 
         if (AppRoles.IsBuiltInRole(role.Name!))
-            throw new BadRequestException(Localizer[nameof(AppStrings.CanNotChangeBuitlInRole), role.Name!]);
+            throw new BadRequestException(Localizer[nameof(AppStrings.CanNotChangeBuiltInRole), role.Name!]);
 
         if (role.ConcurrencyStamp != concurrencyStamp)
             throw new ConflictException();

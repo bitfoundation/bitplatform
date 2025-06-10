@@ -1301,7 +1301,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
     <value>Super admin permissions may not be modified.</value>
   </data>
-    <data name="CanNotChangeBuitlInRole" xml:space="preserve">
+    <data name="CanNotChangeBuiltInRole" xml:space="preserve">
     <value>User group {0} can't be modified.</value>
   </data>
   <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
