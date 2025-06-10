@@ -88,6 +88,7 @@ public partial class AppAiChatPanel
 
     private async Task HubConnection_Reconnected(string? _)
     {
+        if (channel is null) return;
         await RestartChannel();
     }
 
