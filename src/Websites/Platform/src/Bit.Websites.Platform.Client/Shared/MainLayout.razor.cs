@@ -36,6 +36,7 @@ public partial class MainLayout : IDisposable
         new BitNavItem { Text = "Create project", Url = "/templates/create-project", AdditionalUrls = [ "/boilerplate/create-project" ] },
         new BitNavItem { Text = "Run project", Url = "/templates/run-project", AdditionalUrls = [ "/boilerplate/run-project" ] },
         new BitNavItem { Text = "Add new feature", Url = "/templates/add-new-feature", AdditionalUrls = ["/boilerplate/add-new-feature"] },
+        new BitNavItem { Text = "AI Powered Wiki", Url = "/templates/wiki", AdditionalUrls = ["/boilerplate/wiki", "/templates/next-steps", "/boilerplate/next-steps"] },
     ];
 
     private readonly List<BitNavItem> bswupNavItems =
