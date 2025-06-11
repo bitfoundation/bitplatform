@@ -1,0 +1,51 @@
+@import '../../../Styles/abstracts/_media-queries.scss';
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+
+section {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+
+    @include lt-md {
+        height: calc(#{$bit-env-height-available} - 10.5rem);
+    }
+
+    @include lt-sm {
+        height: calc(#{$bit-env-height-available} - 9.5rem);
+    }
+}
+
+::deep {
+    .roles-card {
+        min-width: 15rem;
+        max-width: 15rem;
+        overflow: hidden auto;
+    }
+
+    .feat-card {
+        overflow: auto;
+        min-width: 36rem;
+        position: relative;
+    }
+
+    .page-card {
+        @include gt-sm {
+            height: calc(#{$bit-env-height-available} - 10rem);
+        }
+    }
+
+    .refresh-selected-btn {
+        top: 1rem;
+        right: 1rem;
+        position: absolute;
+    }
+
+    .user-row {
+        padding: 0.25rem;
+        margin-bottom: 0.25rem;
+
+        &:hover {
+            background-color: $bit-color-background-secondary-hover;
+        }
+    }
+}

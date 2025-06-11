@@ -1,0 +1,9 @@
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+
+header {
+    width: 100%;
+    height: 65px;
+    padding: 1rem;
+    position: absolute;
+    z-index: $bit-zindex-base;
+}
