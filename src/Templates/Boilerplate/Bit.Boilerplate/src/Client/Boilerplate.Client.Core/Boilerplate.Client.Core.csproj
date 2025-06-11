@@ -44,6 +44,7 @@
         <Using Include="Bit.BlazorUI" />
         <Using Include="Boilerplate.Shared" />
         <Using Include="Boilerplate.Client.Core.Components.Layout" />
+        <Using Include="Boilerplate.Client.Core.Components.Common" />
         <Using Include="Boilerplate.Client.Core.Services.Contracts" />
         <Using Include="Boilerplate.Client.Core.Services" />
     </ItemGroup>

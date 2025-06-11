@@ -1,0 +1,25 @@
+@import '../../../Styles/abstracts/_media-queries.scss';
+
+section {
+    width: 100%;
+}
+
+::deep {
+    .session-persona {
+        @include lt-sm {
+            max-width: calc(100% - 30px);
+        }
+    }
+
+    .other-session-persona {
+        @include lt-sm {
+            max-width: calc(100% - 60px);
+        }
+    }
+
+    .sessions-list {
+        width: 100%;
+        padding: 2px;
+        height: 20rem;
+    }
+}
