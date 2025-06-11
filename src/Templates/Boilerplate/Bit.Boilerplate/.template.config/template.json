@@ -414,9 +414,9 @@
                         "src/Shared/Controllers/Dashboard/**",
                         "src/Shared/Controllers/Categories/**",
                         "src/Shared/Controllers/Products/IProductController.cs",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Dashboard/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Categories/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Products/**"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Dashboard/**",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Categories/**",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Products/**"
                     ]
                 },
                 {
@@ -453,7 +453,7 @@
                         "src/Server/Boilerplate.Server.Api/Models/Todo/**",
                         "src/Server/Boilerplate.Server.Api/Data/Configurations/Todo/**",
                         "src/Shared/Controllers/Todo/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Todo/**"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/TodoPage.*"
                     ]
                 },
                 {
@@ -483,7 +483,7 @@
                         "src/Server/Boilerplate.Server.Api/Mappers/ChatbotMapper.cs",
                         "src/Server/Boilerplate.Server.Api/Data/Configurations/Chatbot/**",
                         "src/Client/Boilerplate.Client.Core/Components/Layout/AppAiChatPanel.*",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Chatbot/**",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/SystemPromptsPage.*",
                         "src/Client/Boilerplate.Client.Core/Services/SignalRInfiniteRetryPolicy.cs"
                     ]
                 },
@@ -590,7 +590,7 @@
                 {
                     "condition": "(ads != true)",
                     "exclude": [
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Settings/UpgradeAccountSection*.*",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Settings/UpgradeAccountSection*.*",
                         "src/Client/Boilerplate.Client.Core/Scripts/Ads.ts",
                         "src/Client/Boilerplate.Client.Core/Services/Contracts/IAdsService.cs",
                         "src/Client/Boilerplate.Client.Core/Services/AdsService.cs"
