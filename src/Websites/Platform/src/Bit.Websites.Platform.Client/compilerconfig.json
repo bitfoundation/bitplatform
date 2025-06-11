@@ -132,6 +132,18 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Templates/Templates07AddNewFeature.razor.css",
+        "inputFile": "Pages/Templates/Templates07AddNewFeature.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Templates/Templates08NextStep.razor.css",
+        "inputFile": "Pages/Templates/Templates08NextStep.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Bswup/Bswup01OverviewPage.razor.css",
         "inputFile": "Pages/Bswup/Bswup01OverviewPage.razor.scss",
         "minify": { "enabled": false },
