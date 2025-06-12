@@ -7,9 +7,10 @@ namespace Boilerplate.Client.Core.Components.Pages.Settings;
 
 public partial class ProfileSection
 {
+    [CascadingParameter] public UserDto? CurrentUser { get; set; }
+
     [Parameter] public bool Loading { get; set; }
-    [CascadingParameter(Name = Parameters.CurrentUser)]
-    public UserDto? CurrentUser { get; set; }
+
 
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private IAttachmentController attachmentController = default!;
@@ -21,6 +22,7 @@ public partial class ProfileSection
     private readonly EditUserRequestDto editUserDto = new();
 
     private string? ProfileImageUrl => CurrentUser?.GetProfileImageUrl(AbsoluteServerAddress);
+
 
     protected override void OnParametersSet()
     {

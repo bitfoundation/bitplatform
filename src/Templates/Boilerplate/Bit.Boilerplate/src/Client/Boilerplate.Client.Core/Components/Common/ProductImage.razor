@@ -3,12 +3,3 @@
          src="@(Src ?? $"_content/Boilerplate.Client.Core/images/car_placeholder_{((CurrentTheme ?? AppThemeType.Dark).ToString().ToLower())}.png")" />
     @* src="@(Src ?? $"_content/Boilerplate.Client.Core/images/car_placeholder.png")" /> *@
 </div>
-
-@code {
-    [CascadingParameter(Name = Parameters.CurrentTheme)]
-    public AppThemeType? CurrentTheme { get; set; }
-
-    [Parameter] public string? Src { get; set; }
-    [Parameter] public string? Width { get; set; }
-    [Parameter] public string? Class { get; set; }
-}

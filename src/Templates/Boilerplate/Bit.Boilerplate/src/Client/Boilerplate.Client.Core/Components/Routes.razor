@@ -1,6 +1,6 @@
 <AppErrorBoundary>
     <CascadingAuthenticationState>
-        <ClientAppCoordinator />
+        <AppClientCoordinator />
         <LayoutView Layout="@(Layout ?? typeof(MainLayout))">
             <Router AppAssembly="@GetType().Assembly"
                     AdditionalAssemblies="@(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate.Client") is true))">
