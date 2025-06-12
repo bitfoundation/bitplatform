@@ -20,6 +20,8 @@ public partial class PromptService
         };
         var modalParameters = new BitModalParameters()
         {
+            Draggable = true,
+            DragElementSelector = ".header-stack",
             OnOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => tcs.SetResult(null))
         };
         modalReference = await modalService.Show<Prompt>(promptParameters, modalParameters);

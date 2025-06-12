@@ -1,8 +1,8 @@
 @inherits AppComponentBase
 
 <section>
-    <BitStack Class="stack">
-        <BitStack Horizontal AutoHeight>
+    <BitStack Gap="0">
+        <BitStack Horizontal AutoHeight Class="header-stack">
             <BitText Typography="BitTypography.H5" Color="BitColor.Tertiary">
                 @Title
             </BitText>
@@ -15,35 +15,33 @@
                        IconName="@BitIconName.ChromeClose" />
         </BitStack>
 
-        <div class="body">
-            <BitStack HorizontalAlign="BitAlignment.Center">
-                <BitText Color="BitColor.Tertiary" Style="white-space:break-spaces;max-width:500px;">
-                    @Body
-                </BitText>
-                @if (OtpInput)
-                {
-                    <BitOtpInput @bind-Value="value"
-                                 AutoFocus
-                                 Length="6"
-                                 Size="BitSize.Large"
-                                 Type="BitInputType.Number"
-                                 Style="justify-content:center"
-                                 OnFill="WrapHandled(async (string? otp) => OnOk?.Invoke(value))" />
-                }
-                else
-                {
-                    <BitTextField @bind-Value="value"
-                                  AutoFocus
-                                  Immediate
-                                  OnEnter="WrapHandled(async (KeyboardEventArgs args) => OnOk?.Invoke(value))" />
-                }
-            </BitStack>
-        </div>
+        <BitStack HorizontalAlign="BitAlignment.Center" Class="stack">
+            <BitText Color="BitColor.Tertiary" Style="white-space:break-spaces;max-width:500px;">
+                @Body
+            </BitText>
+            @if (OtpInput)
+            {
+                <BitOtpInput @bind-Value="value"
+                             AutoFocus
+                             Length="6"
+                             Size="BitSize.Large"
+                             Type="BitInputType.Number"
+                             Style="justify-content:center"
+                             OnFill="WrapHandled(async (string? otp) => OnOk?.Invoke(value))" />
+            }
+            else
+            {
+                <BitTextField @bind-Value="value"
+                              AutoFocus
+                              Immediate
+                              OnEnter="WrapHandled(async (KeyboardEventArgs args) => OnOk?.Invoke(value))" />
+            }
 
-        <BitStack Alignment="BitAlignment.Center" AutoHeight>
-            <BitButton OnClick="OnOkClick" Color="BitColor.Tertiary">
-                @Localizer[nameof(AppStrings.Ok)]
-            </BitButton>
+            <BitStack Alignment="BitAlignment.Center" AutoHeight>
+                <BitButton OnClick="OnOkClick" Color="BitColor.Tertiary">
+                    @Localizer[nameof(AppStrings.Ok)]
+                </BitButton>
+            </BitStack>
         </BitStack>
     </BitStack>
 </section>
