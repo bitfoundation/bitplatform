@@ -71,6 +71,8 @@ public partial class AppShell
 
         unsubscribers.ForEach(us => us.Invoke());
 
+        NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
+
         await base.DisposeAsync(disposing);
     }
 }
