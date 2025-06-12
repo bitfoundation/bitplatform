@@ -5,6 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <NoWarn>$(NoWarn);CS1998;CS1591</NoWarn>
+        <WarningsAsErrors>$(WarningsAsErrors);CS0114;RZ10012</WarningsAsErrors>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <NeutralLanguage>en</NeutralLanguage>
     </PropertyGroup>
