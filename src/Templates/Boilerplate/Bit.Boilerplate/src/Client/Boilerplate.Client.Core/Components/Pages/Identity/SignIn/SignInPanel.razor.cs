@@ -374,12 +374,12 @@ public partial class SignInPanel
 
     private void CleanModel()
     {
-        if (internalSignInPanelType is SignInPanelType.OtpOnly)
+        if (internalSignInPanelType is SignInPanelType.Otp)
         {
             model.Password = null;
             validatorRef?.EditContext.NotifyFieldChanged(validatorRef.EditContext.Field(nameof(SignInRequestDto.Password)));
         }
-        else if (internalSignInPanelType is SignInPanelType.PasswordOnly && isOtpSent is false)
+        else if (internalSignInPanelType is SignInPanelType.Password && isOtpSent is false)
         {
             model.Otp = null;
             validatorRef?.EditContext.NotifyFieldChanged(validatorRef.EditContext.Field(nameof(SignInRequestDto.Otp)));

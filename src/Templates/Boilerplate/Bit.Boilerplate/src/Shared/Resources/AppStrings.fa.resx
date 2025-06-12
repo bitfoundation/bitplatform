@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
-  <!-- 
+    <!-- 
     Microsoft ResX Schema 
     
     Version 2.0
@@ -60,859 +60,859 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
-    <xsd:element name="root" msdata:IsDataSet="true">
-      <xsd:complexType>
-        <xsd:choice maxOccurs="unbounded">
-          <xsd:element name="metadata">
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
             <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" />
-              </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string" />
-              <xsd:attribute name="type" type="xsd:string" />
-              <xsd:attribute name="mimetype" type="xsd:string" />
-              <xsd:attribute ref="xml:space" />
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
             </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="assembly">
-            <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string" />
-              <xsd:attribute name="name" type="xsd:string" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="data">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-              <xsd:attribute ref="xml:space" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="resheader">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" />
-            </xsd:complexType>
-          </xsd:element>
-        </xsd:choice>
-      </xsd:complexType>
-    </xsd:element>
-  </xsd:schema>
-  <resheader name="resmimetype">
-    <value>text/microsoft-resx</value>
-  </resheader>
-  <resheader name="version">
-    <value>2.0</value>
-  </resheader>
-  <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
-  <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
-  <!-- .NET Validation messages -->
-  <data name="CompareAttribute_ValidationError" xml:space="preserve">
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <!-- .NET Validation messages -->
+    <data name="CompareAttribute_ValidationError" xml:space="preserve">
     <value>"{0}" و "{1}" مطابقت ندارند.</value>
   </data>
-  <data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
+    <data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
     <value>مقدار {0} یک آدرس ایمیل معتبر نیست.</value>
   </data>
-  <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
+    <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
     <value>MaxLengthAttribute must have a Length value that is greater than zero. Use MaxLength() without parameters to indicate that the string or array can have the maximum allowable length.</value>
   </data>
-  <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
+    <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>مقدار {0} باید یک نوع رشته یا لیستی با حداقل طول "{1}" باشد.</value>
   </data>
-  <data name="RangeAttribute_ValidationError" xml:space="preserve">
+    <data name="RangeAttribute_ValidationError" xml:space="preserve">
     <value>مقدار {0} باید بین {1} و {2} باشد.</value>
   </data>
-  <data name="RequiredAttribute_ValidationError" xml:space="preserve">
+    <data name="RequiredAttribute_ValidationError" xml:space="preserve">
     <value>مقدار {0} الزامی است.</value>
   </data>
-  <data name="PhoneAttribute_ValidationError" xml:space="preserve">
+    <data name="PhoneAttribute_ValidationError" xml:space="preserve">
     <value>مقدار {0} یک شماره تلفن معتبر نیست.</value>
   </data>
-  <!-- Exceptions -->
-  <data name="BadRequestException" xml:space="preserve">
+    <!-- Exceptions -->
+    <data name="BadRequestException" xml:space="preserve">
     <value>درخواست نامعتبر</value>
   </data>
-  <data name="ConflictException" xml:space="preserve">
+    <data name="ConflictException" xml:space="preserve">
     <value>درخواست به دلیل مغایرت داشتن پردازش نشد</value>
   </data>
-  <data name="NotAuthorizedPageTitle" xml:space="preserve">
+    <data name="NotAuthorizedPageTitle" xml:space="preserve">
     <value>عدم دسترسی</value>
   </data>
-  <data name="ForbiddenException" xml:space="preserve">
+    <data name="ForbiddenException" xml:space="preserve">
     <value>دسترسی به منابع درخواست شده ممنوع است</value>
   </data>
-  <data name="ResourceValidationException" xml:space="preserve">
+    <data name="ResourceValidationException" xml:space="preserve">
     <value>داده‌های درخواست معتبر نیستند</value>
   </data>
-  <data name="RestException" xml:space="preserve">
+    <data name="RestException" xml:space="preserve">
     <value>هنگام برقراری ارتباط با سرور خطایی رخ داد</value>
   </data>
-  <data name="UnauthorizedException" xml:space="preserve">
+    <data name="UnauthorizedException" xml:space="preserve">
     <value>درخواست شما فاقد اعتبارنامه معتبر احراز هویت است</value>
   </data>
-  <data name="UnknownException" xml:space="preserve">
+    <data name="UnknownException" xml:space="preserve">
     <value>خطای ناشناخته رخ داده است</value>
   </data>
-  <data name="UpdateConcurrencyException" xml:space="preserve">
+    <data name="UpdateConcurrencyException" xml:space="preserve">
     <value>رکورد توسط یک کاربر دیگر پس از دریافت داده های اصلی تغییر یافته است. عملیات لغو شد.</value>
   </data>
-  <data name="ResourceNotFoundException" xml:space="preserve">
+    <data name="ResourceNotFoundException" xml:space="preserve">
     <value>منبع یافت نشد</value>
   </data>
-  <data name="TooManyRequestsExceptions" xml:space="preserve">
+    <data name="TooManyRequestsExceptions" xml:space="preserve">
     <value>درخواست های بیش از حد</value>
   </data>
-  <data name="ServerConnectionException" xml:space="preserve">
+    <data name="ServerConnectionException" xml:space="preserve">
     <value>قادر به اتصال به سرور نیست.</value>
   </data>
-  <!-- Boilerplate strings -->
-  <data name="Active" xml:space="preserve">
+    <!-- Boilerplate strings -->
+    <data name="Active" xml:space="preserve">
     <value>فعال</value>
   </data>
-  <data name="All" xml:space="preserve">
+    <data name="All" xml:space="preserve">
     <value>همه</value>
   </data>
-  <data name="Alphabetical" xml:space="preserve">
+    <data name="Alphabetical" xml:space="preserve">
     <value>ا-ی</value>
   </data>
-  <data name="Completed" xml:space="preserve">
+    <data name="Completed" xml:space="preserve">
     <value>تمام شده</value>
   </data>
-  <data name="Date" xml:space="preserve">
+    <data name="Date" xml:space="preserve">
     <value>تاریخ</value>
   </data>
-  <data name="SettingsPageTitle" xml:space="preserve">
+    <data name="SettingsPageTitle" xml:space="preserve">
     <value>تنظیمات</value>
   </data>
-  <data name="Settings" xml:space="preserve">
+    <data name="Settings" xml:space="preserve">
     <value>تنظیمات</value>
   </data>
-  <data name="Dark" xml:space="preserve">
+    <data name="Dark" xml:space="preserve">
     <value>تیره</value>
   </data>
-  <data name="Light" xml:space="preserve">
+    <data name="Light" xml:space="preserve">
     <value>روشن</value>
   </data>
-  <data name="Language" xml:space="preserve">
+    <data name="Language" xml:space="preserve">
     <value>زبان</value>
   </data>
-  <data name="SelectLanguage" xml:space="preserve">
+    <data name="SelectLanguage" xml:space="preserve">
     <value>انتخاب زبان</value>
   </data>
-  <data name="ProfileTitle" xml:space="preserve">
+    <data name="ProfileTitle" xml:space="preserve">
     <value>پروفایل</value>
   </data>
-  <data name="ProfileSubtitle" xml:space="preserve">
+    <data name="ProfileSubtitle" xml:space="preserve">
     <value>داده های پروفایل خود را تغییر دهید</value>
   </data>
-  <data name="SuccessfulSendChangeEmailTokenMessage" xml:space="preserve">
+    <data name="SuccessfulSendChangeEmailTokenMessage" xml:space="preserve">
     <value>توکن تغییر ایمیل برای شما ارسال شد</value>
   </data>
-  <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
+    <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
     <value>توکن تغییر شماره تلفن برای شما ارسال شد</value>
   </data>
-  <data name="SuccessfulSendTokenMessage" xml:space="preserve">
+    <data name="SuccessfulSendTokenMessage" xml:space="preserve">
     <value>توکن برای شما ارسال شد</value>
   </data>
-  <data name="SessionsTitle" xml:space="preserve">
+    <data name="SessionsTitle" xml:space="preserve">
     <value>جلسات - سشن‌ها</value>
   </data>
-  <data name="SessionsSubtitle" xml:space="preserve">
+    <data name="SessionsSubtitle" xml:space="preserve">
     <value>جلسه (سشن) های فعال شما در دستگاههای مختلف</value>
   </data>
-  <data name="CurrentSession" xml:space="preserve">
+    <data name="CurrentSession" xml:space="preserve">
     <value>جلسه - سشن جاری</value>
   </data>
-  <data name="PrivilegedDeviceLimitMessage" xml:space="preserve">
+    <data name="PrivilegedDeviceLimitMessage" xml:space="preserve">
     <value>از مجموع {0} دستگاه با دسترسی کامل، شما {1} دستگاه را استفاده کرده‌اید.
 پس از رسیدن به {0} دستگاه، دستگاه‌های اضافی با امکانات محدود خواهد بود.</value>
   </data>
-  <data name="OtherSessions" xml:space="preserve">
+    <data name="OtherSessions" xml:space="preserve">
     <value>سایر جلسات (سشن‌ها)</value>
   </data>
-  <data name="TryRemovingOtherSessions" xml:space="preserve">
+    <data name="TryRemovingOtherSessions" xml:space="preserve">
     <value>حذف سایر جلسات (سشن)</value>
   </data>
-  <data name="RemoveSessionSuccessMessage" xml:space="preserve">
+    <data name="RemoveSessionSuccessMessage" xml:space="preserve">
     <value>حذف جلسه - سشن با موفقیت انجام شد</value>
   </data>
-  <data name="NotFoundPageTitle" xml:space="preserve">
+    <data name="NotFoundPageTitle" xml:space="preserve">
     <value>404</value>
   </data>
-  <data name="NotFoundText" xml:space="preserve">
+    <data name="NotFoundText" xml:space="preserve">
     <value>چیزی پیدا نشد.</value>
   </data>
-  <data name="UpdateWebViewThroughGooglePlay" xml:space="preserve">
+    <data name="UpdateWebViewThroughGooglePlay" xml:space="preserve">
     <value>لطفا وب ویو را از طریق Google Play آپدیت کنید</value>
   </data>
-  <data name="Ok" xml:space="preserve">
+    <data name="Ok" xml:space="preserve">
     <value>باشه</value>
   </data>
-  <!--#if (signalR == true) -->
-  <data name="SystemPromptsTitle" xml:space="preserve">
+    <!--#if (signalR == true) -->
+    <data name="SystemPromptsTitle" xml:space="preserve">
     <value>پرامپت‌های سیستمی</value>
   </data>
-  <data name="SystemPromptsSubTitle" xml:space="preserve">
+    <data name="SystemPromptsSubTitle" xml:space="preserve">
     <value>این‌جا میتونید پرامپت‌های سیستمی مورد استفاده چت بات رو مشاهده کنید</value>
   </data>
-  <!--#endif-->
-  <!--#if (offlineDb == true) -->
-  <data name="OfflineDatabaseDemoTitle" xml:space="preserve">
+    <!--#endif-->
+    <!--#if (offlineDb == true) -->
+    <data name="OfflineDatabaseDemoTitle" xml:space="preserve">
     <value>ویرایش پروفایل آفلاین</value>
   </data>
-  <data name="OfflineDatabaseDemoMessage" xml:space="preserve">
+    <data name="OfflineDatabaseDemoMessage" xml:space="preserve">
     <value>فرم ویرایش آفلاین مبتنی‌بر EF Core / Sqlite قابل‌ استفاده در برنامه های وب / موبایل / دسکتاپ شما!</value>
   </data>
-  <!--#endif-->
-  <data name="FullName" xml:space="preserve">
+    <!--#endif-->
+    <data name="FullName" xml:space="preserve">
     <value>نام کامل</value>
   </data>
-  <data name="TermsPageTitle" xml:space="preserve">
+    <data name="TermsPageTitle" xml:space="preserve">
     <value>شرایط</value>
   </data>
-  <data name="Terms" xml:space="preserve">
+    <data name="Terms" xml:space="preserve">
     <value>شرایط</value>
   </data>
-  <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
+    <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
     <value>پروفایل با موفقیت به روز شد.</value>
   </data>
-  <data name="ConfirmPassword" xml:space="preserve">
+    <data name="ConfirmPassword" xml:space="preserve">
     <value>تایید رمز عبور</value>
   </data>
-  <data name="ConfirmNewPassword" xml:space="preserve">
+    <data name="ConfirmNewPassword" xml:space="preserve">
     <value>تایید رمز عبور جدید</value>
   </data>
-  <data name="Email" xml:space="preserve">
+    <data name="Email" xml:space="preserve">
     <value>ایمیل</value>
   </data>
-  <data name="NewEmail" xml:space="preserve">
+    <data name="NewEmail" xml:space="preserve">
     <value>ایمیل جدید</value>
   </data>
-  <data name="NewEmailPlaceholder" xml:space="preserve">
+    <data name="NewEmailPlaceholder" xml:space="preserve">
     <value>ایمیل جدید را وارد کنید</value>
   </data>
-  <data name="Phone" xml:space="preserve">
+    <data name="Phone" xml:space="preserve">
     <value>تلفن</value>
   </data>
-  <data name="PhoneNumber" xml:space="preserve">
+    <data name="PhoneNumber" xml:space="preserve">
     <value>شماره تلفن</value>
   </data>
-  <data name="NewPhoneNumber" xml:space="preserve">
+    <data name="NewPhoneNumber" xml:space="preserve">
     <value>شماره تلفن جدید</value>
   </data>
-  <data name="NewPhoneNumberPlaceholder" xml:space="preserve">
+    <data name="NewPhoneNumberPlaceholder" xml:space="preserve">
     <value>شماره تلفن جدید را وارد کنید</value>
   </data>
-  <data name="GoBack" xml:space="preserve">
+    <data name="GoBack" xml:space="preserve">
     <value>بازگشت</value>
   </data>
-  <data name="Password" xml:space="preserve">
+    <data name="Password" xml:space="preserve">
     <value>رمز عبور</value>
   </data>
-  <data name="PasswordPlaceholder" xml:space="preserve">
+    <data name="PasswordPlaceholder" xml:space="preserve">
     <value>پسورد را وارد کنید</value>
   </data>
-  <data name="ImageCouldNotBeFound" xml:space="preserve">
+    <data name="ImageCouldNotBeFound" xml:space="preserve">
     <value>تصویر پیدا نشد</value>
   </data>
-  <data name="Error" xml:space="preserve">
+    <data name="Error" xml:space="preserve">
     <value>خطا</value>
   </data>
-  <data name="Gender" xml:space="preserve">
+    <data name="Gender" xml:space="preserve">
     <value>جنسیت</value>
   </data>
-  <data name="BirthDate" xml:space="preserve">
+    <data name="BirthDate" xml:space="preserve">
     <value>تاریخ تولد</value>
   </data>
-  <data name="UserName" xml:space="preserve">
+    <data name="UserName" xml:space="preserve">
     <value>نام کاربری</value>
   </data>
-  <data name="Name" xml:space="preserve">
+    <data name="Name" xml:space="preserve">
     <value>نام</value>
   </data>
-  <data name="Description" xml:space="preserve">
+    <data name="Description" xml:space="preserve">
     <value>توضیحات</value>
   </data>
-  <data name="Price" xml:space="preserve">
+    <data name="Price" xml:space="preserve">
     <value>قيمت</value>
   </data>
-  <data name="EitherProvideEmailOrPhoneNumber" xml:space="preserve">
+    <data name="EitherProvideEmailOrPhoneNumber" xml:space="preserve">
     <value>یا ایمیل یا شماره تلفن را وارد کنید.</value>
   </data>
-  <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
+    <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
     <value>یا ایمیل یا شماره تلفن یا نام کاربری را وارد کنید.</value>
   </data>
-  <data name="YouNeedToSignIn" xml:space="preserve">
+    <data name="YouNeedToSignIn" xml:space="preserve">
     <value>برای ادامه باید وارد شوید.</value>
   </data>
-  <data name="InvalidUserCredentials" xml:space="preserve">
+    <data name="InvalidUserCredentials" xml:space="preserve">
     <value>اطلاعات کاربری نادرست است</value>
   </data>
-  <data name="EmailAlreadyConfirmed" xml:space="preserve">
+    <data name="EmailAlreadyConfirmed" xml:space="preserve">
     <value>ایمیل شما قبلا تایید شده است.</value>
   </data>
-  <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
+    <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
     <value>شماره تلفن شما قبلا تایید شده است</value>
   </data>
-  <data name="Title" xml:space="preserve">
+    <data name="Title" xml:space="preserve">
     <value>عنوان</value>
   </data>
-  <data name="AreYouSureWannaDelete" xml:space="preserve">
+    <data name="AreYouSureWannaDelete" xml:space="preserve">
     <value>آیا مطمئن هستید که می خواهید {0} را حذف کنید؟</value>
   </data>
-  <data name="Home" xml:space="preserve">
+    <data name="Home" xml:space="preserve">
     <value>خانه</value>
   </data>
-  <data name="Refresh" xml:space="preserve">
+    <data name="Refresh" xml:space="preserve">
     <value>تلاش مجدد</value>
   </data>
-  <data name="Recover" xml:space="preserve">
+    <data name="Recover" xml:space="preserve">
     <value>بازیابی</value>
   </data>
-  <data name="SomethingWentWrong" xml:space="preserve">
+    <data name="SomethingWentWrong" xml:space="preserve">
     <value>اوه! به نظر مشکلی پیش اومده...</value>
   </data>
-  <data name="BackToHome" xml:space="preserve">
+    <data name="BackToHome" xml:space="preserve">
     <value>بازگشت به خانه</value>
   </data>
-  <data name="UserLockedOut" xml:space="preserve">
+    <data name="UserLockedOut" xml:space="preserve">
     <value>کاربر قفل شده است. دوباره امتحان کنید در {0}</value>
   </data>
-  <data name="UserIsNotConfirmed" xml:space="preserve">
+    <data name="UserIsNotConfirmed" xml:space="preserve">
     <value>حساب خود را تایید نکرده اید</value>
   </data>
-  <data name="UserNotFound" xml:space="preserve">
+    <data name="UserNotFound" xml:space="preserve">
     <value>کاربر وجود ندارد.</value>
   </data>
-  <data name="DuplicateEmailOrPhoneNumber" xml:space="preserve">
+    <data name="DuplicateEmailOrPhoneNumber" xml:space="preserve">
     <value>این ایمیل یا شماره تلفن قبلا گرفته شده است.</value>
   </data>
-  <data name="Add" xml:space="preserve">
+    <data name="Add" xml:space="preserve">
     <value>اضافه کردن</value>
   </data>
-  <data name="Token" xml:space="preserve">
+    <data name="Token" xml:space="preserve">
     <value>توکن</value>
   </data>
-  <data name="InvalidToken" xml:space="preserve">
+    <data name="InvalidToken" xml:space="preserve">
     <value>توکن معتبر نیست.</value>
   </data>
-  <data name="ExpiredToken" xml:space="preserve">
+    <data name="ExpiredToken" xml:space="preserve">
     <value>توکن منقضی شده است.</value>
   </data>
-  <data name="SignInMessageInSignUp" xml:space="preserve">
+    <data name="SignInMessageInSignUp" xml:space="preserve">
     <value>از قبل حساب کاربری دارید؟</value>
   </data>
-  <data name="ConfirmMessageInProfile" xml:space="preserve">
+    <data name="ConfirmMessageInProfile" xml:space="preserve">
     <value>توکنی از قبل دارید؟</value>
   </data>
-  <data name="ConfirmEmailHeaderText" xml:space="preserve">
+    <data name="ConfirmEmailHeaderText" xml:space="preserve">
     <value>آدرس ایمیل</value>
   </data>
-  <data name="ConfirmEmailSubtitle" xml:space="preserve">
+    <data name="ConfirmEmailSubtitle" xml:space="preserve">
     <value>ما یک توکن به آدرس ایمیل شما ارسال کرده ایم.</value>
   </data>
-  <data name="ConfirmPageTitle" xml:space="preserve">
+    <data name="ConfirmPageTitle" xml:space="preserve">
     <value>تایید</value>
   </data>
-  <data name="ConfirmTitle" xml:space="preserve">
+    <data name="ConfirmTitle" xml:space="preserve">
     <value>تایید حساب کاربری</value>
   </data>
-  <data name="ConfirmEmailMessage" xml:space="preserve">
+    <data name="ConfirmEmailMessage" xml:space="preserve">
     <value>لطفا ایمیل خود را با تایپ توکن در اینجا تایید کنید.</value>
   </data>
-  <data name="EmailPlaceholder" xml:space="preserve">
+    <data name="EmailPlaceholder" xml:space="preserve">
     <value>آدرس ایمیل را وارد کنید</value>
   </data>
-  <data name="EmailToken" xml:space="preserve">
+    <data name="EmailToken" xml:space="preserve">
     <value>توکن ایمیل</value>
   </data>
-  <data name="EmailTokenConfirmButtonText" xml:space="preserve">
+    <data name="EmailTokenConfirmButtonText" xml:space="preserve">
     <value>تایید آدرس ایمیل</value>
   </data>
-  <data name="EmailConfirmationSuccessTitle" xml:space="preserve">
+    <data name="EmailConfirmationSuccessTitle" xml:space="preserve">
     <value>آدرس ایمیل شما ({0}) تایید شد.</value>
   </data>
-  <data name="EmailConfirmationSuccessMessage" xml:space="preserve">
+    <data name="EmailConfirmationSuccessMessage" xml:space="preserve">
     <value>اکنون می توانید با حساب کاربری خود وارد شوید.</value>
   </data>
-  <data name="ConfirmPhoneHeaderText" xml:space="preserve">
+    <data name="ConfirmPhoneHeaderText" xml:space="preserve">
     <value>شماره تلفن</value>
   </data>
-  <data name="ConfirmPhoneSubtitle" xml:space="preserve">
+    <data name="ConfirmPhoneSubtitle" xml:space="preserve">
     <value>ما یک توکن به تلفن شما ارسال کرده ایم.</value>
   </data>
-  <data name="ConfirmPhoneMessage" xml:space="preserve">
+    <data name="ConfirmPhoneMessage" xml:space="preserve">
     <value>لطفاً شماره تلفن خود را با تایپ توکن در اینجا تأیید کنید.</value>
   </data>
-  <data name="PhoneNumberPlaceholder" xml:space="preserve">
+    <data name="PhoneNumberPlaceholder" xml:space="preserve">
     <value>شماره تلفن را وارد کنید</value>
   </data>
-  <data name="PhoneToken" xml:space="preserve">
+    <data name="PhoneToken" xml:space="preserve">
     <value>توکن تلفن</value>
   </data>
-  <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
+    <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
     <value>تایید شماره تلفن</value>
   </data>
-  <data name="NotReceivedPhoneMessage" xml:space="preserve">
+    <data name="NotReceivedPhoneMessage" xml:space="preserve">
     <value>آیا توکن تلفن خود را دریافت نکرده اید؟</value>
   </data>
-  <data name="ResendPhoneTokenButtonText" xml:space="preserve">
+    <data name="ResendPhoneTokenButtonText" xml:space="preserve">
     <value>ارسال دوباره توکن تلفن</value>
   </data>
-  <data name="PhoneConfirmationSuccessTitle" xml:space="preserve">
+    <data name="PhoneConfirmationSuccessTitle" xml:space="preserve">
     <value>شماره تلفن شما ({0}) تایید شد.</value>
   </data>
-  <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
+    <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
     <value>اکنون می توانید با حساب کاربری خود وارد شوید.</value>
   </data>
-  <data name="AccountTitle" xml:space="preserve">
+    <data name="AccountTitle" xml:space="preserve">
     <value>حساب کاربری</value>
   </data>
-  <data name="AccountSubtitle" xml:space="preserve">
+    <data name="AccountSubtitle" xml:space="preserve">
     <value>ایمیل، شماره تلفن یا تنظیمات بی رمز حساب کاربری خود را تغییر دهید</value>
   </data>
-  <data name="DeleteAccount" xml:space="preserve">
+    <data name="DeleteAccount" xml:space="preserve">
     <value>حذف حساب</value>
   </data>
-  <data name="DeleteAccountPrompt" xml:space="preserve">
+    <data name="DeleteAccountPrompt" xml:space="preserve">
     <value>آیا مطمئن هستید که می خواهید حساب خود را حذف کنید؟</value>
   </data>
-  <data name="DontHaveAccountMessage" xml:space="preserve">
+    <data name="DontHaveAccountMessage" xml:space="preserve">
     <value>حساب ندارید؟</value>
   </data>
-  <data name="Edit" xml:space="preserve">
+    <data name="Edit" xml:space="preserve">
     <value>ویرایش</value>
   </data>
-  <data name="FileUploadFailed" xml:space="preserve">
+    <data name="FileUploadFailed" xml:space="preserve">
     <value>هنگام بارگذاری فایل خطایی رخ داد</value>
   </data>
-  <data name="ForgotPasswordPageTitle" xml:space="preserve">
+    <data name="ForgotPasswordPageTitle" xml:space="preserve">
     <value>فراموشی رمزعبور</value>
   </data>
-  <data name="ForgotPasswordTitle" xml:space="preserve">
+    <data name="ForgotPasswordTitle" xml:space="preserve">
     <value>رمزعبور را فراموش کردم</value>
   </data>
-  <data name="ForgotPasswordMessage" xml:space="preserve">
+    <data name="ForgotPasswordMessage" xml:space="preserve">
     <value>لطفا آدرس ایمیل یا شماره تلفن خود را وارد کنید تا بتوانیم توکن بازنشانی رمزعبور را برای شما ارسال کنیم.</value>
   </data>
-  <data name="GenderMale" xml:space="preserve">
+    <data name="GenderMale" xml:space="preserve">
     <value>مرد</value>
   </data>
-  <data name="GenderOther" xml:space="preserve">
+    <data name="GenderOther" xml:space="preserve">
     <value>غیره</value>
   </data>
-  <data name="GoToToday" xml:space="preserve">
+    <data name="GoToToday" xml:space="preserve">
     <value>برو به امروز</value>
   </data>
-  <data name="HomeMessage" xml:space="preserve">
+    <data name="HomeMessage" xml:space="preserve">
     <value>برنامه blazor مالتی مد (WASM, Server, Hybrid, pre-rendering) خود را به آسانی و در سریع‌ترین زمان بسازید</value>
   </data>
-  <data name="DescriptionMetaTagValue" xml:space="preserve">
+    <data name="DescriptionMetaTagValue" xml:space="preserve">
     <value>پروژه Boilerplate با ASP.NET Core, Identity, Web API, EF Core و Blazor ساخته شده</value>
   </data>
-  <data name="HomePageTitle" xml:space="preserve">
+    <data name="HomePageTitle" xml:space="preserve">
     <value>خانه</value>
   </data>
-  <data name="HomePanelTitle" xml:space="preserve">
+    <data name="HomePanelTitle" xml:space="preserve">
     <value>تمام اپهای خود را بسازید</value>
   </data>
-  <data name="HomePanelSubtitle" xml:space="preserve">
+    <data name="HomePanelSubtitle" xml:space="preserve">
     <value>با استفاده چیزی که میدانید و دوستش دارید</value>
   </data>
-  <data name="WatchVideo" xml:space="preserve">
+    <data name="WatchVideo" xml:space="preserve">
     <value>مشاهده ویدئو</value>
   </data>
-  <data name="LearnMore" xml:space="preserve">
+    <data name="LearnMore" xml:space="preserve">
     <value>بیشتر بدانید</value>
   </data>
-  <data name="BitPlatformMessage" xml:space="preserve">
+    <data name="BitPlatformMessage" xml:space="preserve">
     <value>ابزارهایی برای دولوپرهای دات نت در پلتفرهای گوناگون</value>
   </data>
-  <data name="BitBlazorUIMessage" xml:space="preserve">
+    <data name="BitBlazorUIMessage" xml:space="preserve">
     <value>مجموعه ای از کمپوننتهای کارا، ساده و زیبای بلیزری</value>
   </data>
-  <data name="BitProjectTemplateMessage" xml:space="preserve">
+    <data name="BitProjectTemplateMessage" xml:space="preserve">
     <value>تمپلیت پروژه ای فول امکانات که همه جا کار میکند</value>
   </data>
-  <data name="NewPassword" xml:space="preserve">
+    <data name="NewPassword" xml:space="preserve">
     <value>رمز عبور جدید</value>
   </data>
-  <data name="OldPassword" xml:space="preserve">
+    <data name="OldPassword" xml:space="preserve">
     <value>رمز عبور قبلی</value>
   </data>
-  <data name="No" xml:space="preserve">
+    <data name="No" xml:space="preserve">
     <value>نه</value>
   </data>
-  <data name="NotReceivedEmailMessage" xml:space="preserve">
+    <data name="NotReceivedEmailMessage" xml:space="preserve">
     <value>ایمیلی دریافت نکرده اید؟</value>
   </data>
-  <data name="Or" xml:space="preserve">
+    <data name="Or" xml:space="preserve">
     <value>یا</value>
   </data>
-  <data name="Remove" xml:space="preserve">
+    <data name="Remove" xml:space="preserve">
     <value>حذف</value>
   </data>
-  <data name="ResendEmailTokenButtonText" xml:space="preserve">
+    <data name="ResendEmailTokenButtonText" xml:space="preserve">
     <value>ارسال دوباره ایمیل</value>
   </data>
-  <data name="ResetPasswordPageTitle" xml:space="preserve">
+    <data name="ResetPasswordPageTitle" xml:space="preserve">
     <value>ریست رمز عبور</value>
   </data>
-  <data name="ResetPassword" xml:space="preserve">
+    <data name="ResetPassword" xml:space="preserve">
     <value>ریست رمز عبور</value>
   </data>
-  <data name="ResetPasswordTitle" xml:space="preserve">
+    <data name="ResetPasswordTitle" xml:space="preserve">
     <value>ریست رمز عبور</value>
   </data>
-  <data name="ResetPasswordSubtitle" xml:space="preserve">
+    <data name="ResetPasswordSubtitle" xml:space="preserve">
     <value>ما یک توکن به تلفن یا ایمیل شما ارسال کرده ایم.</value>
   </data>
-  <data name="ResetPasswordMessage" xml:space="preserve">
+    <data name="ResetPasswordMessage" xml:space="preserve">
     <value>لطفا توکن را همراه با رمز عبور جدید خود در اینجا ارسال کنید.</value>
   </data>
-  <data name="ResetPasswordButtonText" xml:space="preserve">
+    <data name="ResetPasswordButtonText" xml:space="preserve">
     <value>تغییر پسورد</value>
   </data>
-  <data name="ResetPasswordSuccessTitle" xml:space="preserve">
+    <data name="ResetPasswordSuccessTitle" xml:space="preserve">
     <value>رمزعبور شما بازنشانی شد.</value>
   </data>
-  <data name="ResetPasswordSuccessBody" xml:space="preserve">
+    <data name="ResetPasswordSuccessBody" xml:space="preserve">
     <value>اکنون می توانید با رمزعبور خود وارد شوید.</value>
   </data>
-  <data name="ResetPasswordMessageInForgot" xml:space="preserve">
+    <data name="ResetPasswordMessageInForgot" xml:space="preserve">
     <value>از قبل یک توکن بازنشانی رمزعبور دارید?</value>
   </data>
-  <data name="Save" xml:space="preserve">
+    <data name="Save" xml:space="preserve">
     <value>ذخیره</value>
   </data>
-  <data name="SignInPageTitle" xml:space="preserve">
+    <data name="SignInPageTitle" xml:space="preserve">
     <value>ورود به برنامه</value>
   </data>
-  <data name="SignInPanelTitle" xml:space="preserve">
+    <data name="SignInPanelTitle" xml:space="preserve">
     <value>خوش آمدید</value>
   </data>
-  <data name="SignInPanelSubtitle" xml:space="preserve">
+    <data name="SignInPanelSubtitle" xml:space="preserve">
     <value>وارد حساب کاربری خود شوید با</value>
   </data>
-  <data name="Continue" xml:space="preserve">
+    <data name="Continue" xml:space="preserve">
     <value>ادامه</value>
   </data>
-  <data name="GoogleSignInButtonText" xml:space="preserve">
+    <data name="GoogleSignInButtonText" xml:space="preserve">
     <value>ورود با گوگل</value>
   </data>
-  <data name="GitHubSignInButtonText" xml:space="preserve">
+    <data name="GitHubSignInButtonText" xml:space="preserve">
     <value>ورود با گیتهاب</value>
   </data>
-  <data name="TwitterSignInButtonText" xml:space="preserve">
+    <data name="TwitterSignInButtonText" xml:space="preserve">
     <value>ورود با توییتر (X)</value>
   </data>
-  <data name="AppleSignInButtonText" xml:space="preserve">
+    <data name="AppleSignInButtonText" xml:space="preserve">
     <value>ورود با اپل</value>
   </data>
-  <data name="SignOut" xml:space="preserve">
+    <data name="SignOut" xml:space="preserve">
     <value>خروج از سیستم</value>
   </data>
-  <data name="SignOutPrompt" xml:space="preserve">
+    <data name="SignOutPrompt" xml:space="preserve">
     <value>آیا مطمئن هستید که می خواهید خارج شوید؟</value>
   </data>
-  <data name="SignUp" xml:space="preserve">
+    <data name="SignUp" xml:space="preserve">
     <value>ثبت نام</value>
   </data>
-  <data name="SignUpPageTitle" xml:space="preserve">
+    <data name="SignUpPageTitle" xml:space="preserve">
     <value>ثبت نام</value>
   </data>
-  <data name="SignUpPanelTitle" xml:space="preserve">
+    <data name="SignUpPanelTitle" xml:space="preserve">
     <value>امروز آغاز کنید</value>
   </data>
-  <data name="SignUpPanelSubtitle" xml:space="preserve">
+    <data name="SignUpPanelSubtitle" xml:space="preserve">
     <value>یک اکانت جدید بسازید با</value>
   </data>
-  <data name="Submit" xml:space="preserve">
+    <data name="Submit" xml:space="preserve">
     <value>ارسال</value>
   </data>
-  <data name="UploadNewImage" xml:space="preserve">
+    <data name="UploadNewImage" xml:space="preserve">
     <value>یک تصویر را انتخاب یا به اینجا بکشید</value>
   </data>
-  <data name="Yes" xml:space="preserve">
+    <data name="Yes" xml:space="preserve">
     <value>بله</value>
   </data>
-  <data name="SelectBirthDate" xml:space="preserve">
+    <data name="SelectBirthDate" xml:space="preserve">
     <value>تاریخ تولد خود را انتخاب کنید</value>
   </data>
-  <data name="Action" xml:space="preserve">
+    <data name="Action" xml:space="preserve">
     <value>عملیات</value>
   </data>
-  <data name="Back" xml:space="preserve">
+    <data name="Back" xml:space="preserve">
     <value>بازگشت</value>
   </data>
-  <data name="Cancel" xml:space="preserve">
+    <data name="Cancel" xml:space="preserve">
     <value>لغو</value>
   </data>
-  <data name="CheckSpamMailMessage" xml:space="preserve">
+    <data name="CheckSpamMailMessage" xml:space="preserve">
     <value>اگر ایمیل را در Inbox نیافتید، فولدر اسپم / Junk خود را بررسی کنید</value>
   </data>
-  <data name="Color" xml:space="preserve">
+    <data name="Color" xml:space="preserve">
     <value>رنگ</value>
   </data>
-  <data name="CustomColor" xml:space="preserve">
+    <data name="CustomColor" xml:space="preserve">
     <value>رنگ سفارشی</value>
   </data>
-  <data name="Delete" xml:space="preserve">
+    <data name="Delete" xml:space="preserve">
     <value>حذف</value>
   </data>
-  <data name="Id" xml:space="preserve">
+    <data name="Id" xml:space="preserve">
     <value>شناسه</value>
   </data>
-  <data name="SignIn" xml:space="preserve">
+    <data name="SignIn" xml:space="preserve">
     <value>ورود به برنامه</value>
   </data>
-  <data name="SignInByModal" xml:space="preserve">
+    <data name="SignInByModal" xml:space="preserve">
     <value>ورود به برنامه پاپ‌آپ</value>
   </data>
-  <data name="Confirm" xml:space="preserve">
+    <data name="Confirm" xml:space="preserve">
     <value>تایید</value>
   </data>
-  <data name="SignInAsDifferentUser" xml:space="preserve">
+    <data name="SignInAsDifferentUser" xml:space="preserve">
     <value>ورود به سیستم به عنوان کاربر متفاوت</value>
   </data>
-  <data name="YouAreSignedInAs" xml:space="preserve">
+    <data name="YouAreSignedInAs" xml:space="preserve">
     <value>شما به سیستم وارد شده اید با</value>
   </data>
-  <data name="ForgotPasswordLink" xml:space="preserve">
+    <data name="ForgotPasswordLink" xml:space="preserve">
     <value>رمز عبور را فراموش کرده اید؟</value>
   </data>
-  <data name="GenderFemale" xml:space="preserve">
+    <data name="GenderFemale" xml:space="preserve">
     <value>زن</value>
   </data>
-  <data name="RememberMe" xml:space="preserve">
+    <data name="RememberMe" xml:space="preserve">
     <value>من رو به خاطر بسپار؟</value>
   </data>
-  <data name="Copy" xml:space="preserve">
+    <data name="Copy" xml:space="preserve">
     <value>کپی</value>
   </data>
-  <data name="Copied" xml:space="preserve">
+    <data name="Copied" xml:space="preserve">
     <value>کپی شد</value>
   </data>
-  <data name="TfaTitle" xml:space="preserve">
+    <data name="TfaTitle" xml:space="preserve">
     <value>احراز هویت دو عاملی</value>
   </data>
-  <data name="TfaSubtitle" xml:space="preserve">
+    <data name="TfaSubtitle" xml:space="preserve">
     <value>احراز هویت چند عاملی حساب کاربری خود را مدیریت کنید</value>
   </data>
-  <data name="TwoFactorCode" xml:space="preserve">
+    <data name="TwoFactorCode" xml:space="preserve">
     <value>کد 2-عاملی</value>
   </data>
-  <data name="TwoFactorRecoveryCode" xml:space="preserve">
+    <data name="TwoFactorRecoveryCode" xml:space="preserve">
     <value>کد بازیابی</value>
   </data>
-  <data name="TfaPanelTitle" xml:space="preserve">
+    <data name="TfaPanelTitle" xml:space="preserve">
     <value>احراز هویت 2-عاملی</value>
   </data>
-  <data name="TfaPanelSubtitle" xml:space="preserve">
+    <data name="TfaPanelSubtitle" xml:space="preserve">
     <value>یک کد جدید از برنامه احراز هویت خود دریافت کنید یا از کد بازیابی خود استفاده کنید.</value>
   </data>
-  <data name="TfaPanelAnotherWayTitle" xml:space="preserve">
+    <data name="TfaPanelAnotherWayTitle" xml:space="preserve">
     <value>راه دیگری را آزمایش کنید</value>
   </data>
-  <data name="TfaPanelAnotherWaySubtitle" xml:space="preserve">
+    <data name="TfaPanelAnotherWaySubtitle" xml:space="preserve">
     <value>شما میتوانید یک کد جدید در ایمیل یا تلفن خود دریافت کنید.</value>
   </data>
-  <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
+    <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
     <value>Get code</value>
   </data>
-  <data name="TfaResetSharedKeyError" xml:space="preserve">
+    <data name="TfaResetSharedKeyError" xml:space="preserve">
     <value>تنظیم مجدد کلید مشترک 2fa باید 2fa را غیرفعال کند تا زمانی که یک توکن 2fa بر اساس کلید مشترک جدید تأیید شود.</value>
   </data>
-  <data name="TfaEmptyCodeError" xml:space="preserve">
+    <data name="TfaEmptyCodeError" xml:space="preserve">
     <value>هیچ کد 2fa توسط درخواست ارائه نشد. یک توکن معتبر 2fa برای فعال کردن 2fa لازم است.</value>
   </data>
-  <data name="TfaInvalidCodeError" xml:space="preserve">
+    <data name="TfaInvalidCodeError" xml:space="preserve">
     <value>توکن 2fa ارائه شده توسط درخواست نامعتبر بود. یک توکن معتبر 2fa برای فعال کردن 2fa لازم است.</value>
   </data>
-  <data name="TfaConfigureAutAppTitle" xml:space="preserve">
+    <data name="TfaConfigureAutAppTitle" xml:space="preserve">
     <value>پیکربندی برنامه احراز هویت</value>
   </data>
-  <data name="TfaConfigureAutAppSubtitle" xml:space="preserve">
+    <data name="TfaConfigureAutAppSubtitle" xml:space="preserve">
     <value>برای استفاده از برنامه احراز هویت مراحل زیر را طی کنید:</value>
   </data>
-  <data name="TfaConfigureAutAppStep1" xml:space="preserve">
+    <data name="TfaConfigureAutAppStep1" xml:space="preserve">
     <value>دانلود یک برنامه احراز هویت دو مرحله ای مانند Google Authenticator برای {0} و {1}.</value>
   </data>
-  <data name="TfaConfigureAutAppStep2" xml:space="preserve">
+    <data name="TfaConfigureAutAppStep2" xml:space="preserve">
     <value>کد QR را اسکن یا کلیک کنید یا کلید زیر را در برنامه احراز هویت دو عاملی خود وارد کنید (فضاها و بدنه مهم نیستند):</value>
   </data>
-  <data name="TfaConfigureAutAppStep3" xml:space="preserve">
+    <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>هنگامی که کد QR را اسکن کردید یا کلید بالا را وارد کردید، برنامه احراز هویت دو عاملی شما یک کد منحصر به فرد را در اختیار شما قرار می دهد. کد را در کادر تایید زیر وارد کنید.</value>
   </data>
-  <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
+    <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
     <value>احراز هویت دو مرحله‌ای فعال شد.</value>
   </data>
-  <data name="TwoFactorAuthenticationDisabled" xml:space="preserve">
+    <data name="TwoFactorAuthenticationDisabled" xml:space="preserve">
     <value>احراز هویت دو مرحله‌ای غیرفعال شد.</value>
   </data>
-  <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
+    <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>کد تایید:</value>
   </data>
-  <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
+    <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
     <value>لطفا کد تایید را وارد کنید.</value>
   </data>
-  <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
+    <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>تأیید</value>
   </data>
-  <data name="TfaRecoveryCodesHeader" xml:space="preserve">
+    <data name="TfaRecoveryCodesHeader" xml:space="preserve">
     <value>بازیابی</value>
   </data>
-  <data name="TfaRecoveryCodesZeroLeftTitle" xml:space="preserve">
+    <data name="TfaRecoveryCodesZeroLeftTitle" xml:space="preserve">
     <value>هیچ کد بازیابی ندارید.</value>
   </data>
-  <data name="TfaRecoveryCodesZeroLeftSubtitle" xml:space="preserve">
+    <data name="TfaRecoveryCodesZeroLeftSubtitle" xml:space="preserve">
     <value>قبل از اینکه بتوانید با کد بازیابی وارد شوید، باید مجموعه جدیدی از کدهای بازیابی را ایجاد کنید.</value>
   </data>
-  <data name="TfaRecoveryCodesOneLeftTitle" xml:space="preserve">
+    <data name="TfaRecoveryCodesOneLeftTitle" xml:space="preserve">
     <value>شما 1 کد بازیابی باقی مانده است.</value>
   </data>
-  <data name="TfaRecoveryCodesOneLeftSubtitle" xml:space="preserve">
+    <data name="TfaRecoveryCodesOneLeftSubtitle" xml:space="preserve">
     <value>می توانید مجموعه جدیدی از کدهای بازیابی را ایجاد کنید.</value>
   </data>
-  <data name="TfaRecoveryCodesThreeLeftTitle" xml:space="preserve">
+    <data name="TfaRecoveryCodesThreeLeftTitle" xml:space="preserve">
     <value>شما {0} کد بازیابی باقی مانده است.</value>
   </data>
-  <data name="TfaRecoveryCodesThreeLeftSubtitle" xml:space="preserve">
+    <data name="TfaRecoveryCodesThreeLeftSubtitle" xml:space="preserve">
     <value>شما باید مجموعه جدیدی از کدهای بازیابی را ایجاد کنید.</value>
   </data>
-  <data name="TfaRecoveryCodesGenerateWraning" xml:space="preserve">
+    <data name="TfaRecoveryCodesGenerateWraning" xml:space="preserve">
     <value>ایجاد کدهای بازیابی جدید، کلیدهای مورد استفاده در برنامه های احراز هویت را تغییر نمی دهد. اگر می خواهید کلید مورد استفاده در یک برنامه احراز هویت را تغییر دهید، باید کلیدهای احراز هویت خود را در تب بعدی بازنشانی کنید.</value>
   </data>
-  <data name="TfaRecoveryCodesGenerateButtonText" xml:space="preserve">
+    <data name="TfaRecoveryCodesGenerateButtonText" xml:space="preserve">
     <value>کدهای بازیابی را ایجاد کنید</value>
   </data>
-  <data name="TfaRecoveryCodesWarningTitle" xml:space="preserve">
+    <data name="TfaRecoveryCodesWarningTitle" xml:space="preserve">
     <value>این کدها را در مکانی امن قرار دهید.</value>
   </data>
-  <data name="TfaRecoveryCodesWarning" xml:space="preserve">
+    <data name="TfaRecoveryCodesWarning" xml:space="preserve">
     <value>اگر دستگاه احراز هویت خود را گم کنید و کدهای بازیابی را نداشته باشید، دسترسی به حساب خود را از دست خواهید داد.</value>
   </data>
-  <data name="TfaRecoveryCodesTitle" xml:space="preserve">
+    <data name="TfaRecoveryCodesTitle" xml:space="preserve">
     <value>کدهای بازیابی:</value>
   </data>
-  <data name="TfaAuthAppHeader" xml:space="preserve">
+    <data name="TfaAuthAppHeader" xml:space="preserve">
     <value>برنامه</value>
   </data>
-  <data name="TfaAuthAppWarningTitle" xml:space="preserve">
+    <data name="TfaAuthAppWarningTitle" xml:space="preserve">
     <value>اگر کلید احراز هویت خود را بازنشانی کنید، برنامه احراز هویت شما تا زمانی که آن را دوباره پیکربندی نکنید، کار نخواهد کرد.</value>
   </data>
-  <data name="TfaAuthAppWarning" xml:space="preserve">
+    <data name="TfaAuthAppWarning" xml:space="preserve">
     <value>این فرآیند تا زمانی که برنامه احراز هویت خود را تأیید نکنید، 2FA را غیرفعال می کند. اگر پیکربندی برنامه authenticator خود را کامل نکنید، ممکن است دسترسی به حساب خود را از دست بدهید.</value>
   </data>
-  <data name="TfaAuthAppResetKeyButtonText" xml:space="preserve">
+    <data name="TfaAuthAppResetKeyButtonText" xml:space="preserve">
     <value>کلید احراز هویت را بازنشانی کنید</value>
   </data>
-  <data name="TfaDisable2faHeader" xml:space="preserve">
+    <data name="TfaDisable2faHeader" xml:space="preserve">
     <value>غیرفعالسازی</value>
   </data>
-  <data name="TfaDisable2faWarningTitle" xml:space="preserve">
+    <data name="TfaDisable2faWarningTitle" xml:space="preserve">
     <value>این عمل فقط 2FA را غیرفعال می کند.</value>
   </data>
-  <data name="TfaDisable2faWarning" xml:space="preserve">
+    <data name="TfaDisable2faWarning" xml:space="preserve">
     <value>غیرفعال کردن 2FA کلیدهای مورد استفاده در برنامه های احراز هویت را تغییر نمی دهد. اگر می خواهید کلید مورد استفاده در یک برنامه احراز هویت را تغییر دهید، باید کلیدهای احراز هویت خود را در برگه قبلی بازنشانی کنید.</value>
   </data>
-  <data name="TfaDisable2faButtonText" xml:space="preserve">
+    <data name="TfaDisable2faButtonText" xml:space="preserve">
     <value>2FA را غیرفعال کنید</value>
   </data>
-  <data name="TfaTokenSentMessage" xml:space="preserve">
+    <data name="TfaTokenSentMessage" xml:space="preserve">
     <value>توکن 2FA تولید و برای شما ارسال شده است.</value>
   </data>
-  <data name="EnterElevatedAccessToken" xml:space="preserve">
+    <data name="EnterElevatedAccessToken" xml:space="preserve">
     <value>لطفا کد ۶ رقمی که ارسال کردیم یا کد Authenticator app خود را وارد کنید</value>
   </data>
-  <data name="ElevatedAccessTokenShortText" xml:space="preserve">
+    <data name="ElevatedAccessTokenShortText" xml:space="preserve">
     <value>{0} کد شماست در Boilerplate</value>
   </data>
-  <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
+    <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا ایمیل تایید را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
   </data>
-  <data name="WaitForPhoneNumberTokenRequestResendDelay" xml:space="preserve">
+    <data name="WaitForPhoneNumberTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا پیامک تایید را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
   </data>
-  <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
+    <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا توکن تغییر رمز‌عبور را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
   </data>
-  <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
+    <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
     <value>شما قبلا رمز عبور یک‌بار مصرف را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
   </data>
-  <data name="WaitForElevatedAccessTokenRequestResendDelay" xml:space="preserve">
+    <data name="WaitForElevatedAccessTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا توکن دسترسی ویژه را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
   </data>
-  <data name="Otp" xml:space="preserve">
+    <data name="Otp" xml:space="preserve">
     <value>رمز یک‌بار مصرف</value>
   </data>
-  <data name="OtpPanelTitle" xml:space="preserve">
+    <data name="OtpPanelTitle" xml:space="preserve">
     <value>{0} خود را بررسی کنید</value>
   </data>
-  <data name="OtpPanelSubtitle" xml:space="preserve">
+    <data name="OtpPanelSubtitle" xml:space="preserve">
     <value>{0} خود را با ورود کد ارسال شده به {1} تایید کنید</value>
   </data>
-  <data name="Code" xml:space="preserve">
+    <data name="Code" xml:space="preserve">
     <value>کد</value>
   </data>
-  <data name="OtpResendMessage" xml:space="preserve">
+    <data name="OtpResendMessage" xml:space="preserve">
     <value>آیا کدی دریافت نکردید?</value>
   </data>
-  <data name="Resend" xml:space="preserve">
+    <data name="Resend" xml:space="preserve">
     <value>ارسال دوباره</value>
   </data>
-  <data name="SendOtpButtonText" xml:space="preserve">
+    <data name="SendOtpButtonText" xml:space="preserve">
     <value>ارسال رمز یکبار مصرف</value>
   </data>
-  <data name="SendMagicLinkButtonText" xml:space="preserve">
+    <data name="SendMagicLinkButtonText" xml:space="preserve">
     <value>ارسال رمز یکبار مصرف و لینک جادویی</value>
   </data>
-  <data name="SignInByPassword" xml:space="preserve">
+    <data name="SignInByPassword" xml:space="preserve">
     <value>استفاده از رمز</value>
   </data>
-  <data name="SignInByOtp" xml:space="preserve">
+    <data name="SignInByOtp" xml:space="preserve">
     <value>استفاده از رمز بک بار مصرف</value>
   </data>
-  <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
+    <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
     <value>رمز عبور اصلی یا یک‌بار مصرف را وارد کنید</value>
   </data>
-  <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
+    <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا درخواست ایمیل توکن 2FA را دارید. دوباره امتحان کنید در {0}</value>
   </data>
-  <data name="ChangePhoneNumberTokenShortText" xml:space="preserve">
+    <data name="ChangePhoneNumberTokenShortText" xml:space="preserve">
     <value>{0} کد شماست در Boilerplate</value>
   </data>
-  <data name="ConfirmPhoneTokenShortText" xml:space="preserve">
+    <data name="ConfirmPhoneTokenShortText" xml:space="preserve">
     <value>{0} کد شماست در Boilerplate</value>
   </data>
-  <data name="TwoFactorTokenShortText" xml:space="preserve">
+    <data name="TwoFactorTokenShortText" xml:space="preserve">
     <value>{0} کد شماست در Boilerplate</value>
   </data>
-  <data name="OtpShortText" xml:space="preserve">
+    <data name="OtpShortText" xml:space="preserve">
     <value>{0} کد شماست در Boilerplate</value>
   </data>
-  <data name="ResetPasswordTokenShortText" xml:space="preserve">
+    <data name="ResetPasswordTokenShortText" xml:space="preserve">
     <value>{0} کد شماست در Boilerplate</value>
   </data>
-  <data name="Online" xml:space="preserve">
+    <data name="Online" xml:space="preserve">
     <value>آنلاین</value>
   </data>
-  <data name="Recently" xml:space="preserve">
+    <data name="Recently" xml:space="preserve">
     <value>اخیرا</value>
   </data>
-  <data name="Update" xml:space="preserve">
+    <data name="Update" xml:space="preserve">
     <value>بروز رسانی</value>
   </data>
     <data name="ForceUpdateTitle" xml:space="preserve">
@@ -921,210 +921,210 @@
     <data name="ForceUpdateBody" xml:space="preserve">
     <value>دریافت این بروز‌رسانی برای عملکرد صحیح برنامه الزامی است</value>
   </data>
-  <data name="About" xml:space="preserve">
+    <data name="About" xml:space="preserve">
     <value>درباره</value>
   </data>
-  <data name="AboutPageTitle" xml:space="preserve">
+    <data name="AboutPageTitle" xml:space="preserve">
     <value>درباره</value>
   </data>
-  <!--#if (sample == true) -->
-  <data name="TodoAddPlaceholder" xml:space="preserve">
+    <!--#if (sample == true) -->
+    <data name="TodoAddPlaceholder" xml:space="preserve">
     <value>افزودن یک کار</value>
   </data>
-  <data name="NoTodos" xml:space="preserve">
+    <data name="NoTodos" xml:space="preserve">
     <value>هنوز کاری ثبت نشده</value>
   </data>
-  <data name="TodoSearchPlaceholder" xml:space="preserve">
+    <data name="TodoSearchPlaceholder" xml:space="preserve">
     <value>جستجوی کارها...</value>
   </data>
-  <data name="ToDoItemCouldNotBeFound" xml:space="preserve">
+    <data name="ToDoItemCouldNotBeFound" xml:space="preserve">
     <value>کار پیدا نشد</value>
   </data>
-  <data name="TodoPageTitle" xml:space="preserve">
+    <data name="TodoPageTitle" xml:space="preserve">
     <value>کار</value>
   </data>
-  <data name="Todo" xml:space="preserve">
+    <data name="Todo" xml:space="preserve">
     <value>کار</value>
   </data>
-  <data name="DeleteTodoItem" xml:space="preserve">
+    <data name="DeleteTodoItem" xml:space="preserve">
     <value>حذف کار</value>
   </data>
-  <!--#endif -->
-  <!--#if (module == "Admin" || module == "Sales") -->
-  <data name="CategoryCouldNotBeFound" xml:space="preserve">
+    <!--#endif -->
+    <!--#if (module == "Admin" || module == "Sales") -->
+    <data name="CategoryCouldNotBeFound" xml:space="preserve">
     <value>دسته مورد نظر پیدا نشد</value>
   </data>
-  <data name="ProductCouldNotBeFound" xml:space="preserve">
+    <data name="ProductCouldNotBeFound" xml:space="preserve">
     <value>محصول پیدا نشد</value>
   </data>
-  <data name="Category" xml:space="preserve">
+    <data name="Category" xml:space="preserve">
     <value>دسته</value>
   </data>
-  <!--#endif -->
-  <!--#if (module == "Admin") -->
-  <data name="AdminPanel" xml:space="preserve">
+    <!--#endif -->
+    <!--#if (module == "Admin") -->
+    <data name="AdminPanel" xml:space="preserve">
     <value>پنل ادمین</value>
   </data>
-  <data name="PaginatorSummary" xml:space="preserve">
+    <data name="PaginatorSummary" xml:space="preserve">
     <value>{0} آیتم</value>
   </data>
-  <data name="Page" xml:space="preserve">
+    <data name="Page" xml:space="preserve">
     <value>برگه</value>
   </data>
-  <data name="Of" xml:space="preserve">
+    <data name="Of" xml:space="preserve">
     <value>از</value>
   </data>
-  <data name="Last30DaysProductCount" xml:space="preserve">
+    <data name="Last30DaysProductCount" xml:space="preserve">
     <value>تعداد محصولات ۳۰ روز گذشته</value>
   </data>
-  <data name="AddProduct" xml:space="preserve">
+    <data name="AddProduct" xml:space="preserve">
     <value>افزودن محصول</value>
   </data>
-  <data name="SearchProductsPlaceholder" xml:space="preserve">
+    <data name="SearchProductsPlaceholder" xml:space="preserve">
     <value>نام محصول، دسته بندی و توضیحات را در اینجا جستجو کنید...</value>
   </data>
-  <data name="SelectCategory" xml:space="preserve">
+    <data name="SelectCategory" xml:space="preserve">
     <value>انتخاب دسته</value>
   </data>
-  <data name="TotalCategories" xml:space="preserve">
+    <data name="TotalCategories" xml:space="preserve">
     <value>تعداد دسته بندی ها</value>
   </data>
-  <data name="TotalProducts" xml:space="preserve">
+    <data name="TotalProducts" xml:space="preserve">
     <value>تعداد محصولات</value>
   </data>
-  <data name="EditCategory" xml:space="preserve">
+    <data name="EditCategory" xml:space="preserve">
     <value>ویرایش دسته</value>
   </data>
-  <data name="AddCategory" xml:space="preserve">
+    <data name="AddCategory" xml:space="preserve">
     <value>دسته جدید</value>
   </data>
-  <data name="CategoriesPageTitle" xml:space="preserve">
+    <data name="CategoriesPageTitle" xml:space="preserve">
     <value>دسته بندی ها</value>
   </data>
-  <data name="EnterCategoryName" xml:space="preserve">
+    <data name="EnterCategoryName" xml:space="preserve">
     <value>نام دسته را وارد کنید</value>
   </data>
-  <data name="EnterProductName" xml:space="preserve">
+    <data name="EnterProductName" xml:space="preserve">
     <value>نام محصول را وارد کنید</value>
   </data>
-  <data name="CategoriesWithProductCount" xml:space="preserve">
+    <data name="CategoriesWithProductCount" xml:space="preserve">
     <value>تعداد دسته های دارای محصول</value>
   </data>
-  <data name="SearchOnName" xml:space="preserve">
+    <data name="SearchOnName" xml:space="preserve">
     <value>جستجو در نام</value>
   </data>
-  <data name="ProductsCountPerCategoryChart" xml:space="preserve">
+    <data name="ProductsCountPerCategoryChart" xml:space="preserve">
     <value>چارت تعداد محصولات در هر دسته</value>
   </data>
-  <data name="ProductsCountPerCategoryChartText" xml:space="preserve">
+    <data name="ProductsCountPerCategoryChartText" xml:space="preserve">
     <value>این نمودار تعداد محصولات در هر دسته را نشان می دهد.</value>
   </data>
-  <data name="ProductsPageTitle" xml:space="preserve">
+    <data name="ProductsPageTitle" xml:space="preserve">
     <value>محصولات</value>
   </data>
-  <data name="ProductsPercentagePerCategory" xml:space="preserve">
+    <data name="ProductsPercentagePerCategory" xml:space="preserve">
     <value>درصد محصولات هر دسته</value>
   </data>
-  <data name="ProductsPercentagePerCategoryText" xml:space="preserve">
+    <data name="ProductsPercentagePerCategoryText" xml:space="preserve">
     <value>این نمودار درصد محصولات هر دسته را نشان می دهد.</value>
   </data>
-  <data name="Categories" xml:space="preserve">
+    <data name="Categories" xml:space="preserve">
     <value>دسته ها</value>
   </data>
-  <data name="Products" xml:space="preserve">
+    <data name="Products" xml:space="preserve">
     <value>محصولات</value>
   </data>
-  <data name="CategoryNotEmpty" xml:space="preserve">
+    <data name="CategoryNotEmpty" xml:space="preserve">
     <value>این دسته دارای محصول است، بنابراین نمی توانید ان را حذف کنید</value>
   </data>
-  <data name="AreYouSureWannaDeleteProduct" xml:space="preserve">
+    <data name="AreYouSureWannaDeleteProduct" xml:space="preserve">
     <value>آیا مطمئن هستید که می خواهید محصول {0} را حذف کنید؟</value>
   </data>
-  <data name="DeleteProduct" xml:space="preserve">
+    <data name="DeleteProduct" xml:space="preserve">
     <value>حذف محصول</value>
   </data>
-  <data name="DefaultColorPicker" xml:space="preserve">
+    <data name="DefaultColorPicker" xml:space="preserve">
     <value>انتخاب کننده رنگ پیش فرض</value>
   </data>
-  <data name="EditProduct" xml:space="preserve">
+    <data name="EditProduct" xml:space="preserve">
     <value>ویرایش محصول {0}</value>
   </data>
-  <data name="DuplicateProductName" xml:space="preserve">
+    <data name="DuplicateProductName" xml:space="preserve">
     <value>نام محصول تکراری است</value>
   </data>
-  <data name="DuplicateCategoryName" xml:space="preserve">
+    <data name="DuplicateCategoryName" xml:space="preserve">
     <value>نام دسته تکراری است</value>
   </data>
-  <data name="DashboardPageTitle" xml:space="preserve">
+    <data name="DashboardPageTitle" xml:space="preserve">
     <value>داشبورد</value>
   </data>
-  <data name="Dashboard" xml:space="preserve">
+    <data name="Dashboard" xml:space="preserve">
     <value>داشبورد</value>
   </data>
-  <data name="DashboardSubtitle" xml:space="preserve">
+    <data name="DashboardSubtitle" xml:space="preserve">
     <value>داده های تحلیلی شما</value>
   </data>
-  <!--#endif -->
-  <!--#if (captcha == "reCaptcha") -->
-  <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
+    <!--#endif -->
+    <!--#if (captcha == "reCaptcha") -->
+    <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
     <value>پاسخ گوگل ریکپچا نامعتبر است.</value>
   </data>
-  <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
+    <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
     <value>شما باید چالش گوگل ریکپچا را به سرانجام برسانید.</value>
   </data>
-  <!--#endif -->
-  <!--#if (module == "Sales") -->
-  <data name="SimilarProducts" xml:space="preserve">
+    <!--#endif -->
+    <!--#if (module == "Sales") -->
+    <data name="SimilarProducts" xml:space="preserve">
     <value>محصولات مشابه</value>
   </data>
-  <data name="SiblingProducts" xml:space="preserve">
+    <data name="SiblingProducts" xml:space="preserve">
     <value>محصولات در همین دسته</value>
   </data>
-  <data name="Buy" xml:space="preserve">
+    <data name="Buy" xml:space="preserve">
     <value>خرید</value>
   </data>
-  <data name="PurchaseSuccessful" xml:space="preserve">
+    <data name="PurchaseSuccessful" xml:space="preserve">
     <value>خرید موفقیت آمیز بود!</value>
   </data>
-  <!--#endif -->
-  <data name="Passwordless" xml:space="preserve">
+    <!--#endif -->
+    <data name="Passwordless" xml:space="preserve">
     <value>بی رمز</value>
   </data>
-  <data name="PasswordlessTitle" xml:space="preserve">
+    <data name="PasswordlessTitle" xml:space="preserve">
     <value>ورود بی رمز</value>
   </data>
-  <data name="EnablePasswordless" xml:space="preserve">
+    <data name="EnablePasswordless" xml:space="preserve">
     <value>فعالسازی ورود بی رمز</value>
   </data>
-  <data name="EnablePasswordlessSucsessMessage" xml:space="preserve">
+    <data name="EnablePasswordlessSucsessMessage" xml:space="preserve">
     <value>ورود بی رمز با موفقیت فعال شد</value>
   </data>
-  <data name="DisablePasswordless" xml:space="preserve">
+    <data name="DisablePasswordless" xml:space="preserve">
     <value>غیرفعالسازی ورود بی رمز</value>
   </data>
-  <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
+    <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
     <value>ورود بی رمز با موفقیت غیرفعال شد</value>
   </data>
-  <data name="Clear" xml:space="preserve">
+    <data name="Clear" xml:space="preserve">
     <value>پاک کردن</value>
   </data>
-  <data name="Send" xml:space="preserve">
+    <data name="Send" xml:space="preserve">
     <value>ارسال</value>
   </data>
-  <data name="Canceled" xml:space="preserve">
+    <data name="Canceled" xml:space="preserve">
     <value>لغو شده</value>
   </data>
-  <!--#if (signalR == true) -->
-  <data name="AiChatPanelTitle" xml:space="preserve">
+    <!--#if (signalR == true) -->
+    <data name="AiChatPanelTitle" xml:space="preserve">
     <value>پنل هوش مصنوعی</value>
   </data>
-  <data name="AiChatPanelInitialResponse" xml:space="preserve">
+    <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>سلام! من اینجا هستم تا تجربه اپلیکیشن شما رو فوق‌العاده کنم! سؤالی دارید یا به کمک نیاز دارید؟</value>
   </data>
-  <data name="AiChatPanelPrompt1" xml:space="preserve">
+    <data name="AiChatPanelPrompt1" xml:space="preserve">
     <value>چگونه میتوانم رمزعبور خود را ریست کنم؟</value>
   </data>
-  <data name="AiChatPanelPrompt2" xml:space="preserve">
+    <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>چگونه میتوانم نسخه PWA برنامه رو نصب کنم؟</value>
   </data>
     <!--#if (module == "Admin") -->
@@ -1140,156 +1140,156 @@
     <value>یه سری فیدبک دارم که بگم!</value>
   </data>
     <!--#endif -->
-  <data name="AiChatPanelPlaceholder" xml:space="preserve">
+    <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>پیامی را وارد کنید...</value>
   </data>
-  <data name="AiChatPanelCommunicatingPlaceholder" xml:space="preserve">
+    <data name="AiChatPanelCommunicatingPlaceholder" xml:space="preserve">
     <value>درحال فکر کردن...</value>
   </data>
-  <!--#endif -->
-  <!--#if (ads == true) -->
-  <data name="Upgrade" xml:space="preserve">
+    <!--#endif -->
+    <!--#if (ads == true) -->
+    <data name="Upgrade" xml:space="preserve">
     <value>ارتقاء</value>
   </data>
-  <data name="UpgradeTitle" xml:space="preserve">
+    <data name="UpgradeTitle" xml:space="preserve">
     <value>ارتقاء حساب کاربری</value>
   </data>
-  <data name="UpgradeSubtitle" xml:space="preserve">
+    <data name="UpgradeSubtitle" xml:space="preserve">
     <value>در اینجا هیچ ارتقاء حسابی وجود ندارد. این فقط یک نسخه نمایشی برای تبلیغات باپاداش است.</value>
   </data>
-  <data name="UpgradeSuccessMessage" xml:space="preserve">
+    <data name="UpgradeSuccessMessage" xml:space="preserve">
     <value>ارتقاء حساب با موفقیت انجام شد.</value>
   </data>
-  <data name="UpgradeFailMessage" xml:space="preserve">
+    <data name="UpgradeFailMessage" xml:space="preserve">
     <value>ارتقاء حساب با شکست مواجه شد.</value>
   </data>
-  <data name="UpgradeAdHaveTrouble" xml:space="preserve">
+    <data name="UpgradeAdHaveTrouble" xml:space="preserve">
     <value>مشکلی برای مشاهده تبلیغ دارید؟</value>
   </data>
-  <data name="UpgradeAdHaveTroublePrompt" xml:space="preserve">
+    <data name="UpgradeAdHaveTroublePrompt" xml:space="preserve">
     <value>من تو تماشای تبلیغات درون برنامه‌ای مشکل دارم</value>
   </data>
-  <!--#endif -->
-  <data name="PleaseWait" xml:space="preserve">
+    <!--#endif -->
+    <data name="PleaseWait" xml:space="preserve">
     <value>لطفا صبر کنید</value>
   </data>
-  <data name="Management" xml:space="preserve">
+    <data name="Management" xml:space="preserve">
     <value>مدیریت</value>
   </data>
-  <data name="UserGroups" xml:space="preserve">
+    <data name="UserGroups" xml:space="preserve">
     <value>گروههای کاربری</value>
   </data>
-  <data name="RolesPageTitle" xml:space="preserve">
+    <data name="RolesPageTitle" xml:space="preserve">
     <value>مدیریت گروههای کاربری</value>
   </data>
-  <data name="NoRoleMessage" xml:space="preserve">
+    <data name="NoRoleMessage" xml:space="preserve">
     <value>گروه کاربری وجود ندارد</value>
   </data>
-  <data name="AddRole" xml:space="preserve">
+    <data name="AddRole" xml:space="preserve">
     <value>افزودن گروه کاربری</value>
   </data>
-  <data name="EditRole" xml:space="preserve">
+    <data name="EditRole" xml:space="preserve">
     <value>ویرایش گروه کاربری</value>
   </data>
-  <data name="NewRoleName" xml:space="preserve">
+    <data name="NewRoleName" xml:space="preserve">
     <value>نام گروه کاربری جدید</value>
   </data>
-  <data name="Users" xml:space="preserve">
+    <data name="Users" xml:space="preserve">
     <value>کاربران</value>
   </data>
     <data name="UsersWithCount" xml:space="preserve">
     <value>کاربران {0}</value>
   </data>
-  <data name="Features" xml:space="preserve">
+    <data name="Features" xml:space="preserve">
     <value>امکانات</value>
   </data>
-  <data name="Quota" xml:space="preserve">
+    <data name="Quota" xml:space="preserve">
     <value>ظرفیت</value>
   </data>
-  <data name="QuotaDescription" xml:space="preserve">
+    <data name="QuotaDescription" xml:space="preserve">
     <value>برای محدود کردن استفاده از ویژگی‌ها، می‌توانید سهمیه‌هایی را در این تب تعیین کنید که می‌تواند برای هر نقش متفاوت باشد. به عنوان مثال، تعداد دستگاه‌هایی که یک کاربر می‌تواند وارد آن‌ها شود یا تعداد دفعاتی که می‌تواند از یک ویژگی خاص اپلیکیشن استفاده کند.</value>
   </data>
-  <data name="MaxPrevilegedSessions" xml:space="preserve">
+    <data name="MaxPrevilegedSessions" xml:space="preserve">
     <value>حداکثر جلسات امتیازدار</value>
   </data>
-  <data name="General" xml:space="preserve">
+    <data name="General" xml:space="preserve">
     <value>عمومی</value>
   </data>
-  <data name="RoleName" xml:space="preserve">
+    <data name="RoleName" xml:space="preserve">
     <value>نام گروه کاربری</value>
   </data>
-  <!--#if (notification == true || signalR == true) -->
-  <data name="RoleNotificationLabel" xml:space="preserve">
+    <!--#if (notification == true || signalR == true) -->
+    <data name="RoleNotificationLabel" xml:space="preserve">
     <value>پیام اعلان</value>
   </data>
-  <data name="SendRoleNotification" xml:space="preserve">
+    <data name="SendRoleNotification" xml:space="preserve">
     <value>ارسال اعلان</value>
   </data>
-  <data name="EnableNotifications" xml:space="preserve">
+    <data name="EnableNotifications" xml:space="preserve">
     <value>فعال‌سازی اعلان‌ها</value>
   </data>
-  <data name="DisableNotifications" xml:space="preserve">
+    <data name="DisableNotifications" xml:space="preserve">
     <value>فیر فعال‌سازی اعلان‌ها</value>
   </data>
-  <data name="TestNotificationMessage1" xml:space="preserve">
+    <data name="TestNotificationMessage1" xml:space="preserve">
     <value>پیام تستی ۱</value>
   </data>
-  <data name="TestNotificationMessage2" xml:space="preserve">
+    <data name="TestNotificationMessage2" xml:space="preserve">
     <value>پیام تستی ۲</value>
   </data>
-  <!--#endif -->
-  <data name="UsersPageTitle" xml:space="preserve">
+    <!--#endif -->
+    <data name="UsersPageTitle" xml:space="preserve">
     <value>مدیریت کاربران</value>
   </data>
-  <data name="DeleteRole" xml:space="preserve">
+    <data name="DeleteRole" xml:space="preserve">
     <value>حذف گروه کاربران</value>
   </data>
-  <data name="Sessions" xml:space="preserve">
+    <data name="Sessions" xml:space="preserve">
     <value>سشن‌ها {0}</value>
   </data>
-  <data name="DeleteUser" xml:space="preserve">
+    <data name="DeleteUser" xml:space="preserve">
     <value>حذف کاربر</value>
   </data>
     <data name="AppVersion" xml:space="preserve">
     <value>ورژن اپ</value>
   </data>
-  <data name="IP" xml:space="preserve">
+    <data name="IP" xml:space="preserve">
     <value>آی پی</value>
   </data>
-  <data name="Address" xml:space="preserve">
+    <data name="Address" xml:space="preserve">
     <value>نشانی</value>
   </data>
-  <data name="DeviceInfo" xml:space="preserve">
+    <data name="DeviceInfo" xml:space="preserve">
     <value>اطلاعات دستگاه</value>
   </data>
-  <data name="Privileged" xml:space="preserve">
+    <data name="Privileged" xml:space="preserve">
     <value>دسترسی ممتاز</value>
   </data>
-  <data name="RenewedOn" xml:space="preserve">
+    <data name="RenewedOn" xml:space="preserve">
     <value>بازسازی در</value>
   </data>
-  <data name="OnlineUsers" xml:space="preserve">
+    <data name="OnlineUsers" xml:space="preserve">
     <value>کاربران آنلاین: {0}</value>
   </data>
-  <data name="DeleteSession" xml:space="preserve">
+    <data name="DeleteSession" xml:space="preserve">
     <value>حذف سشن</value>
   </data>
-  <data name="NoUserMessage" xml:space="preserve">
+    <data name="NoUserMessage" xml:space="preserve">
     <value>کاربری وجود ندارد</value>
   </data>
-  <data name="NoUserSessionMessage" xml:space="preserve">
+    <data name="NoUserSessionMessage" xml:space="preserve">
     <value>سشنی وجود ندارد</value>
   </data>
-  <data name="NoUserSelectedMessage" xml:space="preserve">
+    <data name="NoUserSelectedMessage" xml:space="preserve">
     <value>لطفا ابتدا کاربری را انتخاب کنید</value>
   </data>
-  <data name="RevokeAllSessions" xml:space="preserve">
+    <data name="RevokeAllSessions" xml:space="preserve">
     <value>حذف تمام سشن‌ها</value>
   </data>
-  <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
+    <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
     <value>آیا برای حذف تمام سشنهای کاربر {0} مطمئن هستید?</value>
   </data>
-  <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
+    <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
     <value>شما نمیتوانید کاربر خود را حذف کنید</value>
   </data>
     <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
@@ -1301,34 +1301,46 @@
     <data name="CanNotChangeBuiltInRole" xml:space="preserve">
     <value>شما نمیتوانید تغییری در گروه کاربری {0} ایجاد کنید</value>
   </data>
-  <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
+    <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>شما نمیتوانید این کاربر SuperAdmin را حذف کنید</value>
   </data>
-  <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
+    <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>شما نمیتوانید سشن جاری خود را حذف کنید</value>
   </data>
-  <data name="UserCantRemoveAllItsSessionsErrorMessage" xml:space="preserve">
+    <data name="UserCantRemoveAllItsSessionsErrorMessage" xml:space="preserve">
     <value>شما نمیتوانید تمامی سشن‌های خود را حذف کنید</value>
   </data>
-  <data name="SearchRolesPlaceholder" xml:space="preserve">
+    <data name="SearchRolesPlaceholder" xml:space="preserve">
     <value>جستجوی گروه‌های کاربری</value>
   </data>
-  <data name="SearchUsersPlaceholder" xml:space="preserve">
+    <data name="SearchUsersPlaceholder" xml:space="preserve">
     <value>جستجوی کاربران</value>
   </data>
-  <data name="SearchRoleUsersPlaceholder" xml:space="preserve">
+    <data name="SearchRoleUsersPlaceholder" xml:space="preserve">
     <value>جستجوی کاربران</value>
   </data>
-  <data name="SearchUserSessionsPlaceholder" xml:space="preserve">
+    <data name="SearchUserSessionsPlaceholder" xml:space="preserve">
     <value>جستجوی سشن کاربران</value>
   </data>
-  <data name="RemoveRoleFromAllUsers" xml:space="preserve">
+    <data name="RemoveRoleFromAllUsers" xml:space="preserve">
     <value>حذف تمام کاربران از گروه کاربران</value>
   </data>
-  <data name="RemoveRoleFromAllUsersConfrimMessage" xml:space="preserve">
+    <data name="RemoveRoleFromAllUsersConfrimMessage" xml:space="preserve">
     <value>آیا برای حذف گروه کاربری {0} از تمام کاربران مطمئن هستید?</value>
   </data>
-  <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
+    <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>نشانی صفحه</value>
+  </data>
+    <data name="YouAreNotAuthorized" xml:space="preserve">
+    <value>شما دسترسی ندارید</value>
+  </data>
+    <data name="YouAreNotAuthorizedMessage" xml:space="preserve">
+    <value>شما اجازه دسترسی به این صفحه را ندارید.</value>
+  </data>
+    <data name="SignInPasswordMessage1" xml:space="preserve">
+    <value>این اولین بار است؟</value>
+  </data>
+    <data name="SignInPasswordMessage2" xml:space="preserve">
+    <value>ما بصورت خودکار یک حساب کاربری برای شما ایجاد خواهیم کرد.</value>
   </data>
 </root>
