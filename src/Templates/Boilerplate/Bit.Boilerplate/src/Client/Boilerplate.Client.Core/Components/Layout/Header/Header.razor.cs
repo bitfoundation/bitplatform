@@ -4,16 +4,17 @@ namespace Boilerplate.Client.Core.Components.Layout.Header;
 
 public partial class Header : AppComponentBase
 {
+    [CascadingParameter] public BitDir? CurrentDir { get; set; }
+
+
+    [AutoInject] private History history = default!;
+
+
     private string? pageTitle;
     private string? pageSubtitle;
     private bool showGoBackButton;
     private Action unsubscribePageTitleChanged = default!;
 
-    [CascadingParameter(Name = Parameters.CurrentDir)]
-    public BitDir? CurrentDir { get; set; }
-
-
-    [AutoInject] private History history = default!;
 
     protected override async Task OnInitAsync()
     {
@@ -29,13 +30,6 @@ public partial class Header : AppComponentBase
         NavigationManager.LocationChanged += NavigationManager_LocationChanged;
     }
 
-    private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        // The sign-in and sign-up button hrefs are bound to NavigationManager.GetRelativePath().
-        // To ensure the bound values update with each route change, it's necessary to call StateHasChanged on location changes.
-        StateHasChanged();
-    }
-
 
     private void OpenNavPanel()
     {
@@ -46,6 +40,14 @@ public partial class Header : AppComponentBase
     {
         await history.GoBack();
     }
+
+    private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        // The sign-in and sign-up button hrefs are bound to NavigationManager.GetRelativePath().
+        // To ensure the bound values update with each route change, it's necessary to call StateHasChanged on location changes.
+        StateHasChanged();
+    }
+
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {

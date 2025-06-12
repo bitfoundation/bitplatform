@@ -1,11 +1,11 @@
 @*+:cnd:noEmit*@
 @inherits LayoutComponentBase
 
-<CascadingValue Name="@Parameters.CurrentUser" Value=currentUser>
-    <CascadingValue Name=@Parameters.IsOnline Value=isOnline>
-        <CascadingValue Name="@Parameters.CurrentDir" Value=currentDir>
-            <CascadingValue Name="@Parameters.CurrentTheme" Value=currentTheme>
-                <CascadingValue Name="@Parameters.CurrentRouteData" Value=currentRouteData>
+<CascadingValue Value="currentDir">
+    <CascadingValue Name=@Parameters.IsOnline Value="isOnline">
+        <CascadingValue Name="@Parameters.CurrentUser" Value="currentUser">
+            <CascadingValue Name="@Parameters.CurrentTheme" Value="currentTheme">
+                <CascadingValue Name="@Parameters.CurrentRouteData" Value="currentRouteData">
 
                     <BitAppShell PersistScroll>
                         <main class="@GetMainCssClass()">

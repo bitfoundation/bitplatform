@@ -8,6 +8,15 @@ namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class AppAiChatPanel
 {
+    [CascadingParameter] public BitDir? CurrentDir { get; set; }
+
+    [CascadingParameter(Name = Parameters.CurrentTheme)]
+    public AppThemeType? CurrentTheme { get; set; }
+
+
+    [AutoInject] private HubConnection hubConnection = default!;
+
+
     private bool isOpen;
     private bool isLoading;
     private string? userInput;
@@ -22,16 +31,6 @@ public partial class AppAiChatPanel
     //#if(ads == true)
     private Action unsubAdHaveTrouble = default!;
     //#endif
-
-
-    [AutoInject] private HubConnection hubConnection = default!;
-
-
-    [CascadingParameter(Name = Parameters.CurrentTheme)]
-    public AppThemeType? CurrentTheme { get; set; }
-
-    [CascadingParameter(Name = Parameters.CurrentDir)]
-    public BitDir? CurrentDir { get; set; }
 
 
     protected override Task OnInitAsync()

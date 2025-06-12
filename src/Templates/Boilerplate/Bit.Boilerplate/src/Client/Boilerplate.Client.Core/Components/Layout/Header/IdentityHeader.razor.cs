@@ -2,7 +2,10 @@
 
 public partial class IdentityHeader : AppComponentBase
 {
-    private BitDropdownItem<string>[] cultures = default!;
+    [CascadingParameter] public BitDir? CurrentDir { get; set; }
+
+    [CascadingParameter(Name = Parameters.CurrentTheme)]
+    public AppThemeType? CurrentTheme { get; set; }
 
 
     [AutoInject] private History history = default!;
@@ -10,11 +13,7 @@ public partial class IdentityHeader : AppComponentBase
     [AutoInject] private CultureService cultureService = default!;
 
 
-    [CascadingParameter(Name = Parameters.CurrentDir)]
-    public BitDir? CurrentDir { get; set; }
-
-    [CascadingParameter(Name = Parameters.CurrentTheme)]
-    public AppThemeType? CurrentTheme { get; set; }
+    private BitDropdownItem<string>[] cultures = default!;
 
 
     protected override async Task OnInitAsync()
@@ -28,6 +27,7 @@ public partial class IdentityHeader : AppComponentBase
                         .ToArray();
         }
     }
+
 
     private async Task HandleGoHomeLink()
     {
