@@ -100,11 +100,14 @@
                                 @if (internalSignInPanelType is SignInPanelType.Full or SignInPanelType.Password)
                                 {
                                     <BitStack Alignment="BitAlignment.Center" FitHeight FillContent>
-                                        <BitText Typography="BitTypography.Body2" Align="BitTextAlign.Center">
-                                            <b>@Localizer[nameof(AppStrings.SignInPasswordMessage1)]</b>
-                                            <br />
-                                            @Localizer[nameof(AppStrings.SignInPasswordMessage2)]
-                                        </BitText>
+                                        @if (internalSignInPanelType is SignInPanelType.Password)
+                                        {
+                                            <BitText Typography="BitTypography.Body2" Align="BitTextAlign.Center">
+                                                <b>@Localizer[nameof(AppStrings.SignInPasswordMessage1)]</b>
+                                                <br />
+                                                @Localizer[nameof(AppStrings.SignInPasswordMessage2)]
+                                            </BitText>
+                                        }
                                         <BitButton IsLoading="isWaiting"
                                                    IsEnabled="isWaiting is false"
                                                    ButtonType="BitButtonType.Submit">
