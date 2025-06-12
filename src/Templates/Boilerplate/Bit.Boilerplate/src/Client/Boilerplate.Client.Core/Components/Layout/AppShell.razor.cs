@@ -8,7 +8,7 @@ public partial class AppShell
     [Parameter] public bool? IsIdentityPage { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public List<BitNavItem> NavPanelItems { get; set; } = [];
-    [Parameter] public bool IsNavPanelOpen { get; set; }
+
 
     [AutoInject] private IAppUpdateService appUpdateService = default!;
     [AutoInject] private SignInModalService signInModalService = default!;
@@ -64,6 +64,7 @@ public partial class AppShell
         // To ensure the bound values update with each route change, it's necessary to call StateHasChanged on location changes.
         StateHasChanged();
     }
+
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
