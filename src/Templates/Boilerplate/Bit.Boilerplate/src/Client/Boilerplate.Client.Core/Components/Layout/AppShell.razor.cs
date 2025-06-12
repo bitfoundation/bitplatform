@@ -21,6 +21,8 @@ public partial class AppShell
 
     protected override async Task OnInitAsync()
     {
+        await base.OnInitAsync();
+
         NavigationManager.LocationChanged += NavigationManager_LocationChanged;
 
         unsubscribers.Add(PubSubService.Subscribe(ClientPubSubMessages.OPEN_NAV_PANEL, async _ =>
