@@ -14,7 +14,6 @@ public partial class MainLayout : IAsyncDisposable
 
 
     [AutoInject] private Keyboard keyboard = default!;
-    [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private AuthManager authManager = default!;
     [AutoInject] private ThemeService themeService = default!;
     [AutoInject] private PubSubService pubSubService = default!;
@@ -97,7 +96,7 @@ public partial class MainLayout : IAsyncDisposable
 
             SetCurrentDir();
             currentTheme = await themeService.GetCurrentTheme();
-            
+
             await bitExtraServices.AddRootCssClasses();
         }
         catch (Exception exp)
