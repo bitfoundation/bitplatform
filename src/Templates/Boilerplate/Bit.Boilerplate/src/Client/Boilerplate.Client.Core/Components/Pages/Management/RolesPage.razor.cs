@@ -165,7 +165,7 @@ public partial class RolesPage
     private async Task DeleteRole()
     {
         if (selectedRoleItem is null) return;
-        if (selectedRoleItem.Text == AppRoles.SuperAdmin) return;
+        if (AppRoles.IsBuiltInRole(selectedRoleItem.Text)) return;
 
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
         var roleId = Guid.Parse(selectedRoleItem.Key!);
