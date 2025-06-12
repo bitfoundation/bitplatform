@@ -62,6 +62,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     {
         var role = roleDto.Map();
 
+        role.ConcurrencyStamp = Guid.NewGuid().ToString();
         var result = await roleManager.CreateAsync(role);
 
         if (result.Succeeded is false)
@@ -92,7 +93,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         return role.Map();
     }
 
-    [HttpPost("{roleId}/{concurrencyStamp}")]
+    [HttpDelete("{roleId}/{concurrencyStamp}")]
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task Delete(Guid roleId, string concurrencyStamp, CancellationToken cancellationToken)
     {
