@@ -6,10 +6,14 @@ namespace Boilerplate.Client.Core.Components.Layout.Header;
 
 public partial class AppMenu
 {
-    private bool isOpen;
-    private bool showCultures;
-    private bool isSignOutConfirmOpen;
-    private BitChoiceGroupItem<string>[] cultures = default!;
+    [CascadingParameter] public BitDir? CurrentDir { get; set; }
+
+    [CascadingParameter(Name = Parameters.CurrentTheme)]
+    public AppThemeType? CurrentTheme { get; set; }
+
+    [CascadingParameter(Name = Parameters.CurrentUser)]
+    public UserDto? CurrentUser { get; set; }
+
 
     [AutoInject] private Cookie cookie = default!;
     [AutoInject] private ThemeService themeService = default!;
@@ -19,14 +23,11 @@ public partial class AppMenu
     [AutoInject] private SignInModalService signInModalService = default!;
 
 
-    [CascadingParameter(Name = Parameters.CurrentDir)]
-    public BitDir? CurrentDir { get; set; }
+    private bool isOpen;
+    private bool showCultures;
+    private bool isSignOutConfirmOpen;
+    private BitChoiceGroupItem<string>[] cultures = default!;
 
-    [CascadingParameter(Name = Parameters.CurrentTheme)]
-    public AppThemeType? CurrentTheme { get; set; }
-
-    [CascadingParameter(Name = Parameters.CurrentUser)]
-    public UserDto? CurrentUser { get; set; }
 
     private string? ProfileImageUrl => CurrentUser?.GetProfileImageUrl(AbsoluteServerAddress);
 
