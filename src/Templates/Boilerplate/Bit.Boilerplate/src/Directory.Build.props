@@ -7,7 +7,7 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
         <NoWarn>$(NoWarn);CS1998;CS1591</NoWarn>
-        <WarningsAsErrors>$(WarningsAsErrors);CS0114;CS8785</WarningsAsErrors>
+        <WarningsAsErrors>$(WarningsAsErrors);CS0114;CS8785;RZ10012</WarningsAsErrors>
         <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
 
         <Version>1.0.0</Version>
