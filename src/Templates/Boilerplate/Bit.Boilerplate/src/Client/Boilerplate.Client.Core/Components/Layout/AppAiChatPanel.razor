@@ -13,7 +13,7 @@
                Variant="BitVariant.Outline"
                OnClick="() => isOpen = true"
                FloatPosition="BitPosition.BottomRight"
-               IconUrl="@(CurrentTheme.HasValue ? $"_content/Boilerplate.Client.Core/images/icons/ai-icon-{CurrentTheme?.ToString().ToLower()}.png" : null)" />
+               IconUrl="@(CurrentTheme.HasValue ? $"_content/Boilerplate.Client.Core/images/icons/ai-icon-{CurrentTheme?.ToString().ToLowerInvariant()}.png" : null)" />
 
     <BitProPanel ShowCloseButton
                  @bind-IsOpen="isOpen"
