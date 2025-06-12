@@ -1,29 +1,17 @@
 ﻿//+:cnd:noEmit
 using System.Reflection;
-using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
-using Microsoft.AspNetCore.Components.Routing;
+using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class MainLayout : IAsyncDisposable
 {
-    private BitDir? currentDir;
-    private bool isNavPanelOpen;
-    private bool? isIdentityPage;
-    private bool isNavPanelToggled;
-    private readonly BitModalParameters modalParameters = new() { Classes = new() { Root = "modal" } };
+    private static readonly BitModalParameters ModalParameters = new() { Classes = new() { Root = "modal" } };
 
-    /// <summary>
-    /// <inheritdoc cref="Parameters.IsOnline"/>
-    /// </summary>
-    private bool? isOnline;
 
-    private UserDto? currentUser;
-    private AppThemeType? currentTheme;
-    private RouteData? currentRouteData;
-    private List<Action> unsubscribers = [];
-    private CancellationTokenSource getCurrentUserCts = new();
+    [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
 
     [AutoInject] private Keyboard keyboard = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
@@ -32,16 +20,23 @@ public partial class MainLayout : IAsyncDisposable
     [AutoInject] private PubSubService pubSubService = default!;
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private BitExtraServices bitExtraServices = default!;
-    [AutoInject] private IAppUpdateService appUpdateService = default!;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
     [AutoInject] private ITelemetryContext telemetryContext = default!;
-    [AutoInject] private NavigationManager navigationManager = default!;
-    [AutoInject] private SignInModalService signInModalService = default!;
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
     [AutoInject] private IPrerenderStateService prerenderStateService = default!;
 
 
-    [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+    /// <summary>
+    /// <inheritdoc cref="Parameters.IsOnline"/>
+    /// </summary>
+    private bool? isOnline;
+    private BitDir? currentDir;
+    private bool? isIdentityPage;
+    private UserDto? currentUser;
+    private AppThemeType? currentTheme;
+    private RouteData? currentRouteData;
+    private List<Action> unsubscribers = [];
+    private CancellationTokenSource getCurrentUserCts = new();
 
 
     protected override async Task OnInitializedAsync()
@@ -51,15 +46,14 @@ public partial class MainLayout : IAsyncDisposable
         try
         {
             var inPrerenderSession = RendererInfo.IsInteractive is false;
-            isOnline = await prerenderStateService.GetValue<bool?>(nameof(isOnline), async () => isOnline ?? inPrerenderSession is true ? true : null);
             // During pre-rendering, if any API calls are made, the `isOnline` value will be set 
             // using PubSub's `ClientPubSubMessages.IS_ONLINE_CHANGED`, depending on the success 
             // or failure of the API call. However, if a pre-rendered page has no HTTP API call 
             // dependencies, its value remains null. 
             // Even though Server.Web and Server.Api may be deployed on different servers, 
             // we can still assume that if the client is displaying a pre-rendered result, it is online.
+            isOnline = await prerenderStateService.GetValue<bool?>(nameof(isOnline), async () => isOnline ?? inPrerenderSession is true ? true : null);
 
-            navigationManager.LocationChanged += NavigationManager_LocationChanged;
             authManager.AuthenticationStateChanged += AuthManager_AuthenticationStateChanged;
 
             unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async _ =>
@@ -88,13 +82,6 @@ public partial class MainLayout : IAsyncDisposable
                 await InvokeAsync(StateHasChanged);
             }));
 
-            unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.OPEN_NAV_PANEL, async _ =>
-            {
-                isNavPanelOpen = true;
-                isNavPanelToggled = false;
-                StateHasChanged();
-            }));
-
             unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.PROFILE_UPDATED, async payload =>
             {
                 if (payload is null) return;
@@ -110,22 +97,13 @@ public partial class MainLayout : IAsyncDisposable
 
             SetCurrentDir();
             currentTheme = await themeService.GetCurrentTheme();
-
+            
             await bitExtraServices.AddRootCssClasses();
         }
         catch (Exception exp)
         {
             exceptionHandler.Handle(exp);
         }
-    }
-
-    protected override void OnParametersSet()
-    {
-        // TODO: we can try to recover from exception after rendering the ErrorBoundary with this line.
-        // but for now it's better to persist the error ui until a force refresh.
-        // ErrorBoundaryRef.Recover();
-
-        base.OnParametersSet();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -138,13 +116,6 @@ public partial class MainLayout : IAsyncDisposable
         }
     }
 
-
-    private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        // The sign-in and sign-up buttons href are bound to NavigationManager.GetRelativePath().
-        // To ensure the bound values update with each route change, it's necessary to call StateHasChanged on location changes.
-        StateHasChanged();
-    }
 
     private async void AuthManager_AuthenticationStateChanged(Task<AuthenticationState> task)
     {
@@ -206,7 +177,7 @@ public partial class MainLayout : IAsyncDisposable
         if (type.Namespace?.Contains("Client.Core.Components.Pages.Identity") is true)
         {
             isIdentityPage = true;
-            isNavPanelOpen = false;
+            pubSubService.Publish(ClientPubSubMessages.CLOSE_NAV_PANEL);
             return;
         }
 
@@ -218,30 +189,6 @@ public partial class MainLayout : IAsyncDisposable
         pubSubService.Publish(ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL);
     }
 
-    private string GetMainCssClass()
-    {
-        return isIdentityPage is true ? "identity"
-             : isIdentityPage is false ? "non-identity"
-             : string.Empty;
-    }
-
-    private async Task ModalSignIn()
-    {
-        await signInModalService.SignIn();
-    }
-
-    private async Task UpdateApp()
-    {
-        try
-        {
-            await appUpdateService.ForceUpdate();
-        }
-        catch (Exception exp)
-        {
-            exceptionHandler.Handle(exp);
-        }
-    }
-
 
     public async ValueTask DisposeAsync()
     {
@@ -251,10 +198,9 @@ public partial class MainLayout : IAsyncDisposable
             getCurrentUserCts.Dispose();
         }
 
-        navigationManager.LocationChanged -= NavigationManager_LocationChanged;
         authManager.AuthenticationStateChanged -= AuthManager_AuthenticationStateChanged;
 
-        unsubscribers.ForEach(d => d.Invoke());
+        unsubscribers.ForEach(us => us.Invoke());
 
         if (keyboard is not null)
         {

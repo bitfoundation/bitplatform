@@ -4,9 +4,6 @@ namespace Boilerplate.Client.Core.Components;
 
 public class Parameters
 {
-    public const string CurrentTheme = nameof(CurrentTheme);
-    public const string CurrentRouteData = nameof(CurrentRouteData);
-
     /// <summary>
     /// Indicates the connection status, with default behavior tied to the SignalR connection status.
     /// <see cref="ExceptionDelegatingHandler"/> allows this value to be updated based on server responses:
@@ -15,6 +12,4 @@ public class Parameters
     /// By default, this value is null (Unknown).
     /// </summary>
     public const string IsOnline = nameof(IsOnline);
-
-    public const string CurrentUser = nameof(CurrentUser);
 }

@@ -8,11 +8,9 @@ public partial class AppMenu
 {
     [CascadingParameter] public BitDir? CurrentDir { get; set; }
 
-    [CascadingParameter(Name = Parameters.CurrentTheme)]
-    public AppThemeType? CurrentTheme { get; set; }
+    [CascadingParameter] public UserDto? CurrentUser { get; set; }
 
-    [CascadingParameter(Name = Parameters.CurrentUser)]
-    public UserDto? CurrentUser { get; set; }
+    [CascadingParameter] public AppThemeType? CurrentTheme { get; set; }
 
 
     [AutoInject] private Cookie cookie = default!;
