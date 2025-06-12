@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.5" Condition="'$(Framework)' == 'net9.0'" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.6" Condition="'$(Framework)' == 'net9.0'" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.15" Condition="'$(Framework)' == 'net8.0'" />
   </ItemGroup>
 
