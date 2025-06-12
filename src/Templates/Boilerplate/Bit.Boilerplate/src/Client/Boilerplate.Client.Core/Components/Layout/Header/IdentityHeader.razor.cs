@@ -4,8 +4,7 @@ public partial class IdentityHeader : AppComponentBase
 {
     [CascadingParameter] public BitDir? CurrentDir { get; set; }
 
-    [CascadingParameter(Name = Parameters.CurrentTheme)]
-    public AppThemeType? CurrentTheme { get; set; }
+    [CascadingParameter] public AppThemeType? CurrentTheme { get; set; }
 
 
     [AutoInject] private History history = default!;
