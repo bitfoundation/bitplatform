@@ -120,8 +120,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.71" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.71" />
+        <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.80" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.80" />
     </ItemGroup>
 
     <!-- Build Properties must be defined within these property groups to ensure successful publishing
