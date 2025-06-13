@@ -185,12 +185,14 @@ public partial class AppDiagnosticModal
 
     private async Task NavLog(bool isNext)
     {
-        var newIndex = selectedLogIndex + (isNext ? +1 : -1);
-        newIndex = newIndex < 0 ? 0 :
-                   newIndex >= filteredLogs.Length ? filteredLogs.Length - 1 :
-                   newIndex;
-        var newLog = filteredLogs[newIndex];
-        await OpenLog(newLog, newIndex);
+        if (filteredLogs.Length == 0) return;
+
+        selectedLogIndex = Math.Clamp(
+            selectedLogIndex + (isNext ? 1 : -1),
+            0,
+            filteredLogs.Length - 1);
+
+        await OpenLog(filteredLogs[selectedLogIndex], selectedLogIndex);
     }
 
     protected override async ValueTask DisposeAsync(bool disposing)
