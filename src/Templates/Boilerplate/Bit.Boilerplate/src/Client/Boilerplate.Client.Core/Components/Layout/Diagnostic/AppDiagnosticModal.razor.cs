@@ -6,7 +6,7 @@ using Boilerplate.Client.Core.Services.DiagnosticLog;
 using System.Text.RegularExpressions;
 using Boilerplate.Shared.Dtos.Diagnostic;
 
-namespace Boilerplate.Client.Core.Components.Layout;
+namespace Boilerplate.Client.Core.Components.Layout.Diagnostic;
 
 /// <summary>
 /// This modal can be opened by clicking 7 times on the spacer of the header or by pressing Ctrl+Shift+X.
@@ -14,12 +14,28 @@ namespace Boilerplate.Client.Core.Components.Layout;
 /// </summary>
 public partial class AppDiagnosticModal
 {
+    [CascadingParameter] public BitDir? CurrentDir { get; set; }
+
+
+    [AutoInject] private Clipboard clipboard = default!;
+    //#if (signalR == true)
+    [AutoInject] private HubConnection hubConnection = default!;
+    //#endif
+    [AutoInject] private ITelemetryContext telemetryContext = default!;
+    [AutoInject] private BitMessageBoxService messageBoxService = default!;
+    [AutoInject] private IDiagnosticsController diagnosticsController = default!;
+    //#if (notification == true)
+    [AutoInject] private IPushNotificationService pushNotificationService = default!;
+    //#endif
+
+
     private static bool showKnownException = true;
 
     private bool isOpen;
     private bool enableRegExp;
     private string? searchText;
     private bool isLogModalOpen;
+    private int selectedLogIndex;
     private DiagnosticLogDto? selectedLog;
     private bool isDescendingSort = true;
     private Action unsubscribe = default!;
@@ -33,17 +49,6 @@ public partial class AppDiagnosticModal
                                                             ? [LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical]
                                                             : [LogLevel.Warning, LogLevel.Error, LogLevel.Critical];
 
-
-    [AutoInject] private Clipboard clipboard = default!;
-    //#if (signalR == true)
-    [AutoInject] private HubConnection hubConnection = default!;
-    //#endif
-    [AutoInject] private ITelemetryContext telemetryContext = default!;
-    [AutoInject] private BitMessageBoxService messageBoxService = default!;
-    [AutoInject] private IDiagnosticsController diagnosticsController = default!;
-    //#if (notification == true)
-    [AutoInject] private IPushNotificationService pushNotificationService = default!;
-    //#endif
 
     protected override async Task OnInitAsync()
     {
@@ -69,16 +74,18 @@ public partial class AppDiagnosticModal
         await clipboard.WriteText(string.Join(Environment.NewLine, telemetryContext.ToDictionary().Select(c => $"{c.Key}: {c.Value}")));
     }
 
-    private async Task CopyException(DiagnosticLogDto? log)
+    private async Task CopyLog(DiagnosticLogDto? log)
     {
         if (log is null) return;
 
         await clipboard.WriteText(GetContent(log));
     }
 
-    private async Task OpenLog(DiagnosticLogDto log)
+    private async Task OpenLog(DiagnosticLogDto log, int index)
     {
         selectedLog = log;
+        selectedLogIndex = index;
+
         isLogModalOpen = true;
     }
 
@@ -176,6 +183,17 @@ public partial class AppDiagnosticModal
         }
     }
 
+    private async Task NavLog(bool isNext)
+    {
+        if (filteredLogs.Length == 0) return;
+
+        selectedLogIndex = Math.Clamp(
+            selectedLogIndex + (isNext ? 1 : -1),
+            0,
+            filteredLogs.Length - 1);
+
+        await OpenLog(filteredLogs[selectedLogIndex], selectedLogIndex);
+    }
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {

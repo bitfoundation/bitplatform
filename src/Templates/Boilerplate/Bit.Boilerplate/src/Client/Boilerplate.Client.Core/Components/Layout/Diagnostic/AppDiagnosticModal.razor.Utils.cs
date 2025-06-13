@@ -6,7 +6,7 @@ using Boilerplate.Shared.Controllers.Identity;
 using Microsoft.AspNetCore.SignalR.Client;
 //#endif
 
-namespace Boilerplate.Client.Core.Components.Layout;
+namespace Boilerplate.Client.Core.Components.Layout.Diagnostic;
 
 public partial class AppDiagnosticModal
 {
