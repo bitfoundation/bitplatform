@@ -1,15 +1,16 @@
 @inherits AppPageBase
 
-@if (isOpen)
+@if (isChanged)
 {
-    <!-- Close this dialog when navigation occurs instead of navigating away from the categories page -->
-    <NavigationLock OnBeforeInternalNavigation="@((args) => { args.PreventNavigation(); isOpen = false; })" />
+    <NavigationLock OnBeforeInternalNavigation="@((args) => { args.PreventNavigation(); })" />
 }
 
-<BitModal @bind-IsOpen="isOpen" AutoToggleScroll="false">
+<BitModal @bind-IsOpen="isOpen"
+          AutoToggleScroll="false" Blocking="isChanged"
+          Draggable DragElementSelector=".header-stack">
     <section>
-        <BitStack Style="padding:1rem">
-            <BitStack VerticalAlign="BitAlignment.Center" Gap="0.5rem" Horizontal>
+        <BitStack Class="stack">
+            <BitStack VerticalAlign="BitAlignment.Center" Class="header-stack" Horizontal>
                 <BitText Typography="BitTypography.H5">
                     @if (category.Id == default)
                     {
@@ -28,7 +29,7 @@
                            OnClick="() => isOpen = false" />
             </BitStack>
             <BitCard FullSize>
-                <EditForm Model="category" OnValidSubmit="WrapHandled(Save)" novalidate>
+                <EditForm @ref="editForm" Model="category" OnValidSubmit="WrapHandled(Save)" novalidate>
                     <AppDataAnnotationsValidator @ref="validatorRef" />
 
                     <BitStack Gap="0.25rem">
@@ -69,7 +70,7 @@
                         <ValidationMessage For="() => category.Color" />
                         <br />
                         <BitStack Horizontal>
-                            <BitButton ButtonType="BitButtonType.Button" Href="@Urls.CategoriesPage" Variant="BitVariant.Outline">
+                            <BitButton ButtonType="BitButtonType.Button" OnClick="(() => isOpen = false)" Variant="BitVariant.Outline">
                                 @Localizer[nameof(AppStrings.Cancel)]
                             </BitButton>
 
