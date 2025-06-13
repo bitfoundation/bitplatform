@@ -1,8 +1,8 @@
 @inherits AppPageBase
 
-@if (isChanged)
+@if (isOpen)
 {
-    <NavigationLock OnBeforeInternalNavigation="@((args) => { args.PreventNavigation(); })" />
+    <NavigationLock OnBeforeInternalNavigation="OnNavigation" />
 }
 
 <BitModal @bind-IsOpen="isOpen"

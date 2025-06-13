@@ -1,6 +1,7 @@
 ﻿using Boilerplate.Shared.Dtos.Categories;
 using Boilerplate.Shared.Controllers.Categories;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Boilerplate.Client.Core.Components.Pages.Categories;
 
@@ -66,5 +67,12 @@ public partial class AddOrEditCategoryModal
         {
             isSaving = false;
         }
+    }
+
+    private void OnNavigation(LocationChangingContext args)
+    {
+        args.PreventNavigation();
+        if (isChanged) return;
+        isOpen = false;
     }
 }
