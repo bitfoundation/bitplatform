@@ -12,7 +12,6 @@ public partial class DiagnosticLogModal
     [Parameter] public EventCallback<bool> IsLogModalOpenChanged { get; set; }
     [Parameter] public EventCallback OnCopy { get; set; }
     [Parameter] public EventCallback<bool> OnNav { get; set; }
-    [Parameter] public DiagnosticLogDto? SelectedLog { get; set; }
 
 
     [AutoInject] private Clipboard clipboard = default!;

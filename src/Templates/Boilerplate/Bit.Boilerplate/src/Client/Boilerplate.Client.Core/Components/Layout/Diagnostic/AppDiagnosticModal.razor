@@ -167,7 +167,6 @@
 
     <DiagnosticLogModal @bind-IsLogModalOpen="isLogModalOpen" 
                         OnNav="NavLog"
-                        SelectedLog="selectedLog"
                         Content="@GetContent(selectedLog)"
                         OnCopy="() => CopyLog(selectedLog)"
                         Color="GetColor(selectedLog?.Level)" />
