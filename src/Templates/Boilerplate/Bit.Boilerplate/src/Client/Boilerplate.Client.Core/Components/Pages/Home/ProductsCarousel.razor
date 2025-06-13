@@ -44,8 +44,16 @@ else
             }
         </BitCarousel>
         <BitStack Horizontal FitSize Class="carousel-buttons">
-            <BitButton Size="BitSize.Small" Color="BitColor.Tertiary" IconName="@BitIconName.ChevronLeft" IconOnly OnClick="() => carouselRef.GoPrev()"></BitButton>
-            <BitButton Size="BitSize.Small" Color="BitColor.Tertiary" IconName="@BitIconName.ChevronRight" IconOnly OnClick="() => carouselRef.GoNext()"></BitButton>
+            <BitButton IconOnly 
+                       Size="BitSize.Small" 
+                       Color="BitColor.Tertiary" 
+                       OnClick="() => carouselRef.GoPrev()" 
+                       IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.ChevronRight : BitIconName.ChevronLeft)" />
+            <BitButton IconOnly 
+                       Size="BitSize.Small" 
+                       Color="BitColor.Tertiary" 
+                       OnClick="() => carouselRef.GoNext()" 
+                       IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.ChevronLeft : BitIconName.ChevronRight)" />
         </BitStack>
     </BitCard>
 }

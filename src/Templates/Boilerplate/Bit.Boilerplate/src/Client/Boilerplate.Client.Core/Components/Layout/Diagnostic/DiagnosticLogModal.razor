@@ -1,0 +1,39 @@
+@inherits AppComponentBase
+
+<div>
+    <BitModal @bind-IsOpen="IsLogModalOpen" FullSize>
+        <BitStack style="padding:1rem;">
+            <BitStack Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
+                <BitText Typography="BitTypography.H6">Log details</BitText>
+                <BitButton IconOnly
+                           Title="Copy"
+                           OnClick="OnCopy"
+                           Color="BitColor.Info"
+                           Variant="BitVariant.Text"
+                           IconName="@BitIconName.Copy" />
+                <BitSpacer />
+                <BitButton IconOnly
+                           Title="Prev"
+                           Color="BitColor.Tertiary"
+                           Variant="BitVariant.Text"
+                           OnClick="async () => await OnNav.InvokeAsync(false)" 
+                           IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.ChevronRightMed : BitIconName.ChevronLeftMed)" />
+                <BitButton IconOnly
+                           Title="Next"
+                           Color="BitColor.Tertiary"
+                           Variant="BitVariant.Text"
+                           OnClick="async () => await OnNav.InvokeAsync(true)" 
+                           IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.ChevronLeftMed : BitIconName.ChevronRightMed)" />
+                <BitButton IconOnly
+                           Color="BitColor.Info"
+                           Variant="BitVariant.Text"
+                           IconName="@BitIconName.ChromeClose" 
+                           OnClick="async () => { IsLogModalOpen = false; await IsLogModalOpenChanged.InvokeAsync(false); }" />
+            </BitStack>
+
+            <BitText Class="log-modal" Color="Color">
+                <pre style="margin:0">@Content</pre>
+            </BitText>
+        </BitStack>
+    </BitModal>
+</div>

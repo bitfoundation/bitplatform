@@ -5,11 +5,14 @@ namespace Boilerplate.Client.Core.Components.Pages.Home;
 
 public partial class ProductsCarousel
 {
+    [CascadingParameter] public BitDir? CurrentDir { get; set; }
+ 
+ 
+    [AutoInject] private IProductViewController productViewController = default!;
+
+
     private BitCarousel carouselRef = default!;
     private IEnumerable<ProductDto>? carouselProducts;
-
-
-    [AutoInject] private IProductViewController productViewController = default!;
 
 
     protected override async Task OnInitAsync()
@@ -24,6 +27,7 @@ public partial class ProductsCarousel
                                     })
                                     .Get(CurrentCancellationToken);
     }
+
 
     private string? GetProductImageUrl(ProductDto product) => product.GetPrimaryMediumImageUrl(AbsoluteServerAddress);
 }

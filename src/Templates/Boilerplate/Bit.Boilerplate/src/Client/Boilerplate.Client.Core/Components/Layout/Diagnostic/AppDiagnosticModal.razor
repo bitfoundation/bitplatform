@@ -143,13 +143,13 @@
                                    Color="BitColor.Info"
                                    Variant="BitVariant.Text"
                                    IconName="@BitIconName.Copy"
-                                   OnClick="() => CopyException(logIndex.item)" />
+                                   OnClick="() => CopyLog(logIndex.item)" />
                         <BitButton IconOnly
                                    Title="Details"
                                    Color="BitColor.Info"
                                    Variant="BitVariant.Text"
-                                   IconName="@BitIconName.GiftboxOpen"
-                                   OnClick="() => OpenLog(logIndex.item)" />
+                                   IconName="@BitIconName.DiagnosticDataViewerApp"
+                                   OnClick="() => OpenLog(logIndex.item, logIndex.index)" />
                         <BitText Style="white-space:nowrap" Color="GetColor(logIndex.item.Level)">[@logIndex.item.Category]</BitText>
                         <BitText Style="white-space:nowrap">@logIndex.item.Message</BitText>
                     </BitStack>
@@ -165,27 +165,10 @@
                    IconName="@BitIconName.Up" />
     </BitModal>
 
-    <BitModal @bind-IsOpen="isLogModalOpen" FullSize>
-        <BitStack style="padding:1rem;">
-            <BitStack Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
-                <BitText Typography="BitTypography.H6">Log details</BitText>
-                <BitButton IconOnly
-                           Title="Copy"
-                           Color="BitColor.Info"
-                           Variant="BitVariant.Text"
-                           IconName="@BitIconName.Copy"
-                           OnClick="() => CopyException(selectedLog)" />
-                <BitSpacer />
-                <BitButton IconOnly
-                           Color="BitColor.Info"
-                           Variant="BitVariant.Text"
-                           OnClick="() => isLogModalOpen = false"
-                           IconName="@BitIconName.ChromeClose" />
-            </BitStack>
-
-            <BitText Class="log-modal" Color="GetColor(selectedLog?.Level)">
-                <pre style="margin:0">@GetContent(selectedLog)</pre>
-            </BitText>
-        </BitStack>
-    </BitModal>
+    <DiagnosticLogModal @bind-IsLogModalOpen="isLogModalOpen" 
+                        OnNav="NavLog"
+                        SelectedLog="selectedLog"
+                        Content="@GetContent(selectedLog)"
+                        OnCopy="() => CopyLog(selectedLog)"
+                        Color="GetColor(selectedLog?.Level)" />
 </div>
