@@ -1,0 +1,173 @@
+@inherits AppComponentBase
+
+<div>
+    <BitModal @bind-IsOpen="isOpen"
+              FullSize
+              Class="modal"
+              OnDismiss="() => searchText = null"
+              Styles="@(new() { Content = "overflow:auto" })">
+        <BitStack FillContent Class="container">
+            <BitStack Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
+                <BitText Typography="BitTypography.H3">Diagnostic</BitText>
+                <BitSpacer />
+                <BitButton IconOnly
+                           Color="BitColor.Info"
+                           Variant="BitVariant.Text"
+                           OnClick="() => isOpen = false"
+                           IconName="@BitIconName.ChromeClose" />
+            </BitStack>
+
+            <BitAccordion Title="Telemetry Context">
+                <BitButton IconOnly
+                           Color="BitColor.Info"
+                           OnClick="CopyTelemetry"
+                           Variant="BitVariant.Text"
+                           IconName="@BitIconName.Copy" />
+                <BitScrollablePane>
+                    <BitStack>
+                        @foreach (var (key, value) in telemetryContext.ToDictionary())
+                        {
+                            <BitText NoWrap><b>@key</b>: @value</BitText>
+                        }
+                    </BitStack>
+                </BitScrollablePane>
+            </BitAccordion>
+
+            <BitStack Horizontal FitHeight Wrap>
+                <BitStack Horizontal Gap="4px" FitWidth AutoHeight>
+                    <BitSearchBox FixedIcon
+                                  Immediate
+                                  DebounceTime="500"
+                                  @bind-Value="@searchText"
+                                  OnChange="_ => FilterLogs()" />
+                    <BitToggleButton Variant="BitVariant.Text"
+                                     Color="BitColor.Secondary"
+                                     OnChange="_ => FilterLogs()"
+                                     Style="width:2rem;height:2rem"
+                                     @bind-IsChecked="enableRegExp"
+                                     Title="Enable Regular Expression"
+                                     IconName="@BitIconName.FilterSettings" />
+                </BitStack>
+
+                <BitDropdown FitWidth
+                             MultiSelect
+                             Items="logLevelItems"
+                             Placeholder="Select a log level"
+                             OnValuesChange="_ => FilterLogs()"
+                             @bind-Values="filterLogLevelValues"
+                             TItem="BitDropdownItem<LogLevel>" TValue="LogLevel" />
+
+                <BitDropdown FitWidth
+                             Responsive
+                             MultiSelect
+                             ShowSearchBox
+                             ShowClearButton
+                             Items="allCategoryItems"
+                             Placeholder="Select a category"
+                             OnValuesChange="_ => FilterLogs()"
+                             @bind-Values="filterCategoryValues"
+                             TItem="BitDropdownItem<string>" TValue="string">
+                    <TextTemplate>Categories&nbsp;</TextTemplate>
+                </BitDropdown>
+
+                <BitButton IconOnly
+                           Title="Sort"
+                           OnClick="HandleOnSortClick"
+                           Color="BitColor.SecondaryBackground"
+                           IconName="@(isDescendingSort? BitIconName.SortDown: BitIconName.SortUp)" />
+                &nbsp;
+                <BitButton IconOnly
+                           Title="Reload logs"
+                           OnClick="ReloadLogs"
+                           IconName="@BitIconName.Refresh"
+                           Color="BitColor.SecondaryBackground" />
+
+                <BitButton IconOnly
+                           Title="Clear logs"
+                           OnClick="ClearLogs"
+                           IconName="@BitIconName.Delete"
+                           Color="BitColor.SecondaryBackground" />
+
+                <BitButton IconOnly
+                           Title="Throw test error"
+                           OnClick="ThrowTestException"
+                           IconName="@BitIconName.Error"
+                           Color="BitColor.SecondaryBackground" />
+
+                <BitButton IconOnly AutoLoading
+                           Title="Call Diag API"
+                           OnClick="CallDiagnosticsApi"
+                           Color="BitColor.SecondaryBackground"
+                           IconName="@BitIconName.DiagnosticDataViewerApp" />
+
+                <BitButton IconOnly AutoLoading
+                           OnClick="OpenDevTools"
+                           Title="Open dev tools"
+                           Color="BitColor.SecondaryBackground"
+                           IconName="@BitIconName.DeveloperTools" />
+
+                @if (AppPlatform.IsBrowser is false)
+                {
+                    <BitButton IconOnly
+                               Title="Call GC"
+                               OnClick="CallGC"
+                               IconName="@BitIconName.RecycleBin"
+                               Color="BitColor.SecondaryBackground" />
+                }
+
+                <BitButton IconOnly
+                           AutoLoading
+                           Title="Clear cache"
+                           OnClick="ClearCache"
+                           IconName="@BitIconName.RemoveFrom"
+                           Color="BitColor.SecondaryBackground" />
+
+                <BitButton IconOnly
+                           AutoLoading
+                           Title="Update app"
+                           OnClick="UpdateApp"
+                           IconName="@BitIconName.UpdateRestore"
+                           Color="BitColor.SecondaryBackground" />
+            </BitStack>
+
+            <BitBasicList @ref="logStackRef"
+                          Style="height:unset"
+                          EnableVirtualization
+                          Items="filteredLogs.Indexed().ToArray()">
+                <EmptyContent>Nothing to show!</EmptyContent>
+                <RowTemplate Context="logIndex">
+                    <BitStack @key="logIndex.item.CreatedOn" Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
+                        <BitText Style="min-width:7rem">@($"{logIndex.index + 1}. [{logIndex.item.CreatedOn.ToString("HH:mm:ss")}]")</BitText>
+                        <BitButton IconOnly
+                                   Title="Copy"
+                                   Color="BitColor.Info"
+                                   Variant="BitVariant.Text"
+                                   IconName="@BitIconName.Copy"
+                                   OnClick="() => CopyLog(logIndex.item)" />
+                        <BitButton IconOnly
+                                   Title="Details"
+                                   Color="BitColor.Info"
+                                   Variant="BitVariant.Text"
+                                   IconName="@BitIconName.DiagnosticDataViewerApp"
+                                   OnClick="() => OpenLog(logIndex.item, logIndex.index)" />
+                        <BitText Style="white-space:nowrap" Color="GetColor(logIndex.item.Level)">[@logIndex.item.Category]</BitText>
+                        <BitText Style="white-space:nowrap">@logIndex.item.Message</BitText>
+                    </BitStack>
+                </RowTemplate>
+            </BitBasicList>
+        </BitStack>
+
+        <BitButton IconOnly
+                   OnClick="GoTop"
+                   Color="BitColor.Info"
+                   Class="go-top-button"
+                   Variant="BitVariant.Text"
+                   IconName="@BitIconName.Up" />
+    </BitModal>
+
+    <DiagnosticLogModal @bind-IsLogModalOpen="isLogModalOpen" 
+                        OnNav="NavLog"
+                        Content="@GetContent(selectedLog)"
+                        OnCopy="() => CopyLog(selectedLog)"
+                        Color="GetColor(selectedLog?.Level)" />
+</div>

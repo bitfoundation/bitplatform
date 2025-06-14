@@ -114,8 +114,10 @@ public partial class CategoryController : AppControllerBase, ICategoryController
 
     private async Task Validate(Category category, CancellationToken cancellationToken)
     {
+        var entry = DbContext.Entry(category);
         // Remote validation example: Any errors thrown here will be displayed in the client's edit form component.
-        if (DbContext.Entry(category).Property(c => c.Name).IsModified && await DbContext.Categories.AnyAsync(p => p.Name == category.Name, cancellationToken))
+        if ((entry.State is EntityState.Added || entry.Property(c => c.Name).IsModified)
+            && await DbContext.Categories.AnyAsync(p => p.Name == category.Name, cancellationToken))
             throw new ResourceValidationException((nameof(CategoryDto.Name), [Localizer[nameof(AppStrings.DuplicateCategoryName)]]));
     }
 }

@@ -1,0 +1,49 @@
+@import '../../../Styles/abstracts/_media-queries.scss';
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+
+::deep {
+    .app-menu-callout {
+        min-width: 225px;
+
+        @include lt-sm {
+            height: unset;
+            box-shadow: none;
+            top: $bit-env-inset-top !important;
+            bottom: $bit-env-inset-bottom !important;
+            inset-inline-end: $bit-env-inset-inline-start !important;
+        }
+    }
+
+    .app-menu-card {
+        @include lt-sm {
+            box-shadow: none;
+        }
+    }
+
+    .persona {
+        max-width: 12rem;
+    }
+
+    .persona-details {
+        display: none;
+    }
+
+
+    .menu-chevron,
+    .menu-displayname {
+        @include lt-sm {
+            display: none;
+        }
+    }
+
+    .menu-icon {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        color: $bit-color-info-text;
+        background: $bit-color-info;
+    }
+}

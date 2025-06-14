@@ -1,0 +1,22 @@
+@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
+
+section {
+    min-width: 20rem;
+    max-height: $bit-env-height-available;
+
+    @include lt-sm {
+        min-width: unset;
+    }
+}
+
+::deep {
+    .header-stack {
+        padding: 1rem;
+    }
+
+    .stack {
+        padding: 1rem;
+        padding-top: 0;
+    }
+}

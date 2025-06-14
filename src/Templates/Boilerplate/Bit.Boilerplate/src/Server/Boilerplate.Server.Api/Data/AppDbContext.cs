@@ -17,11 +17,12 @@ using System.Security.Cryptography;
 //#endif
 using Hangfire.EntityFrameworkCore;
 using Boilerplate.Server.Api.Models.Attachments;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 
 namespace Boilerplate.Server.Api.Data;
 
 public partial class AppDbContext(DbContextOptions<AppDbContext> options)
-    : IdentityDbContext<User, Role, Guid, UserClaim, UserRole, UserLogin, RoleClaim, UserToken>(options)
+    : IdentityDbContext<User, Role, Guid, UserClaim, UserRole, UserLogin, RoleClaim, UserToken>(options), IDataProtectionKeyContext
 {
     public DbSet<UserSession> UserSessions { get; set; } = default!;
 
@@ -43,6 +44,8 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     //#endif
 
     public DbSet<Attachment> Attachments { get; set; } = default!;
+
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = default!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

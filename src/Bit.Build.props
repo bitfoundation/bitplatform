@@ -27,7 +27,7 @@
 		<PackageProjectUrl>https://github.com/bitfoundation/bitplatform</PackageProjectUrl>
 
 		<!-- Version -->
-		<ReleaseVersion>9.9.1</ReleaseVersion>
+		<ReleaseVersion>9.9.2</ReleaseVersion>
   		<PackageVersion>$(ReleaseVersion)</PackageVersion>
 		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)</PackageReleaseNotes>
 		<Version Condition=" '$(Configuration)' == 'Release' ">$([System.String]::Copy($(ReleaseVersion)).Replace('-pre-', '.'))</Version>
@@ -39,6 +39,7 @@
 		<LangVersion>preview</LangVersion>
 		<Nullable>enable</Nullable>
 		<NoWarn>$(NoWarn);NU1605;CS1591;NU1701;CA1303;CA1308;CA2007;CA1014;CA2227;BL0007;CA1056;BL0005;CS1998</NoWarn>
+        <WarningsAsErrors>$(WarningsAsErrors);CS0114;RZ10012</WarningsAsErrors>
 		<!-- https://stackoverflow.com/a/46815541/2720104 -->
 		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
 	</PropertyGroup>

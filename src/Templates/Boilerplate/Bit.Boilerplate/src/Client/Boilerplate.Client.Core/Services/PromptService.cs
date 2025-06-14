@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components.Web;
+﻿using Microsoft.AspNetCore.Components.Web;
 
 namespace Boilerplate.Client.Core.Services;
 
@@ -20,6 +20,8 @@ public partial class PromptService
         };
         var modalParameters = new BitModalParameters()
         {
+            Draggable = true,
+            DragElementSelector = ".header-stack",
             OnOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => tcs.SetResult(null))
         };
         modalReference = await modalService.Show<Prompt>(promptParameters, modalParameters);

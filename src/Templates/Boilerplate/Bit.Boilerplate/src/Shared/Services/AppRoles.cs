@@ -9,4 +9,9 @@ public class AppRoles
 
 
     public const string Demo = "demo";
+
+    public static bool IsBuiltInRole(string name)
+    {
+        return name is SuperAdmin or Demo;
+    }
 }

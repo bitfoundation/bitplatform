@@ -29,6 +29,7 @@
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.ApplicationInsights.AspNetCore" />
         <PackageReference Include="Humanizer" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
+        <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
         <PackageReference Include="NWebsec.AspNetCore.Middleware" />
         <PackageReference Include="QRCoder" />
         <PackageReference Include="Magick.NET-Q16-AnyCPU" />

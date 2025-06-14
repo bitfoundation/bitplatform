@@ -99,7 +99,7 @@
                             {
                                 <br />
                                 <BitAccordion Title="Ubuntu instructions">
-                                <CodeBox>wget https://builds.dotnet.microsoft.com/dotnet/Sdk/9.0.300/dotnet-sdk-9.0.300-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
+                                <CodeBox>wget https://builds.dotnet.microsoft.com/dotnet/Sdk/9.0.301/dotnet-sdk-9.0.301-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
 mkdir -p $HOME/.dotnet
 tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
 echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
@@ -152,8 +152,8 @@ rm $HOME/dotnet.tar.gz</CodeBox>
                             }
                         </li>
                         <li>
-                            <div style="margin-bottom:8px">Install <a href="https://www.nuget.org/packages/Bit.Boilerplate/9.9.1" target="_blank">Bit Boilerplate</a> project template</div>
-                            <CodeBox>dotnet new install Bit.Boilerplate::9.9.1</CodeBox>
+                            <div style="margin-bottom:8px">Install <a href="https://www.nuget.org/packages/Bit.Boilerplate/9.9.2" target="_blank">Bit Boilerplate</a> project template</div>
+                            <CodeBox>dotnet new install Bit.Boilerplate::9.9.2</CodeBox>
                         </li>
                         @if (showCrossPlatform && devOS is "Windows")
                         {

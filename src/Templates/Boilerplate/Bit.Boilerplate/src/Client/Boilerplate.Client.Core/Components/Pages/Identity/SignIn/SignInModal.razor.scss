@@ -3,9 +3,7 @@
 
 section {
     height: 100%;
-    padding: 3rem;
     overflow: auto;
-    position: relative;
     max-height: $bit-env-height-available;
 
     @include lt-sm {
@@ -23,9 +21,13 @@ section {
         }
     }
 
-    .close-btn {
-        top: 1rem;
-        position: absolute;
-        inset-inline-end: 1rem;
+    .header-stack {
+        padding-top: 1rem;
+        padding-inline-end: 1rem;
+    }
+
+    .stack {
+        padding: 3rem;
+        padding-top: 0;
     }
 }

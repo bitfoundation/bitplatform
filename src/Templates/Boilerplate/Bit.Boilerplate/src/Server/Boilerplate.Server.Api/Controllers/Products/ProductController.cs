@@ -169,8 +169,9 @@ public partial class ProductController : AppControllerBase, IProductController
 
     private async Task Validate(Product product, CancellationToken cancellationToken)
     {
+        var entry = DbContext.Entry(product);
         // Remote validation example: Any errors thrown here will be displayed in the client's edit form component.
-        if (DbContext.Entry(product).Property(c => c.Name).IsModified
+        if ((entry.State is EntityState.Added || entry.Property(c => c.Name).IsModified)
             && await DbContext.Products.AnyAsync(p => p.Name == product.Name, cancellationToken))
             throw new ResourceValidationException((nameof(ProductDto.Name), [Localizer[nameof(AppStrings.DuplicateProductName)]]));
     }

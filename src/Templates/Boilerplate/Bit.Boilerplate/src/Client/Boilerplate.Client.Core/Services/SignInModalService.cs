@@ -37,6 +37,8 @@ public partial class SignInModalService : IAsyncDisposable
         };
         var modalParameters = new BitModalParameters()
         {
+            Draggable = true,
+            DragElementSelector = ".header-stack",
             OnOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => signInModalTcs.SetResult(false))
         };
 
