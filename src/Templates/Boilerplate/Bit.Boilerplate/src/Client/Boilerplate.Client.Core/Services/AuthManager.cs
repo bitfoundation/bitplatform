@@ -78,7 +78,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         catch (Exception exp) when (exp is ServerConnectionException or UnauthorizedException or ResourceNotFoundException or ClientNotSupportedException)
         {
             // If the client's access token is expired, the client would attempt to refresh it,
-            // but if the client is offline or out dated, the refresh token request will fail.
+            // but if the client is offline or outdated, the refresh token request will fail.
             // These exceptions are intentionally ignored in these cases.
         }
         finally
