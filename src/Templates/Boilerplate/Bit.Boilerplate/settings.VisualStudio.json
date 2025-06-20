@@ -7,5 +7,7 @@
     "languages.defaults.tabs.tabSize": 4,
     "debugging.hotReload.enableHotReload": true,
     "debugging.hotReload.enableForNoDebugLaunch": true,
-    "projectsAndSolutions.aspNetCore.general.hotReloadCssChanges": true
+    "projectsAndSolutions.aspNetCore.general.hotReloadCssChanges": true,
+    "copilot.general.chat.enableMicrosoftLearnFunction": true,
+    "copilot.general.completions.enableNextEditSuggestions": true
 }
