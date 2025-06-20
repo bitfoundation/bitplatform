@@ -1,7 +1,8 @@
-﻿using Boilerplate.Shared.Controllers;
-using Boilerplate.Shared.Dtos.Products;
-using Boilerplate.Shared.Controllers.Products;
+﻿using System.IO;
+using Boilerplate.Shared.Controllers;
 using Boilerplate.Shared.Controllers.Categories;
+using Boilerplate.Shared.Controllers.Products;
+using Boilerplate.Shared.Dtos.Products;
 
 namespace Boilerplate.Client.Core.Components.Pages.Products;
 
@@ -93,10 +94,10 @@ public partial class AddOrEditProductPage
         isManagingFile = false;
     }
 
-    private async Task HandleOnUploadFailed()
+    private async Task HandleOnUploadFailed(BitFileInfo fileInfo)
     {
         isManagingFile = false;
-        SnackBarService.Error(Localizer[nameof(AppStrings.FileUploadFailed)]);
+        SnackBarService.Error(string.IsNullOrEmpty(fileInfo.Message) ? Localizer[nameof(AppStrings.FileUploadFailed)] : fileInfo.Message);
     }
 
     private async Task RemoveProductImage()
@@ -121,7 +122,14 @@ public partial class AddOrEditProductPage
 
     private async Task<string> GetUploadUrl()
     {
-        return new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadProductPrimaryImage/{Id ?? product.Id}").ToString();
+        var uploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadProductPrimaryImage/{Id ?? product.Id}").ToString();
+
+        if (CultureInfoManager.InvariantGlobalization is false)
+        {
+            uploadUrl += $"?culture={CultureInfo.CurrentUICulture.Name}"; // To have localized error messages from the server (if any).
+        }
+
+        return uploadUrl;
     }
 
     private async Task<Dictionary<string, string>> GetUploadRequestHeaders()
