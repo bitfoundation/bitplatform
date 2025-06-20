@@ -29,21 +29,21 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
     [HttpPost]
     [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
-    public async Task UploadUserProfilePicture(IFormFile? file, CancellationToken cancellationToken)
+    public async Task<IActionResult> UploadUserProfilePicture(IFormFile? file, CancellationToken cancellationToken)
     {
-        await UploadAttachment(
-            User.GetUserId(),
-            [AttachmentKind.UserProfileImageSmall, AttachmentKind.UserProfileImageOriginal],
-            file,
-            cancellationToken);
+        return await UploadAttachment(
+             User.GetUserId(),
+             [AttachmentKind.UserProfileImageSmall, AttachmentKind.UserProfileImageOriginal],
+             file,
+             cancellationToken);
     }
 
     //#if (module == "Sales" || module == "Admin")
     [HttpPost("{productId}")]
     [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
-    public async Task UploadProductPrimaryImage(Guid productId, IFormFile? file, CancellationToken cancellationToken)
+    public async Task<IActionResult> UploadProductPrimaryImage(Guid productId, IFormFile? file, CancellationToken cancellationToken)
     {
-        await UploadAttachment(
+        return await UploadAttachment(
             productId,
             [AttachmentKind.ProductPrimaryImageMedium, AttachmentKind.ProductPrimaryImageOriginal],
             file,
@@ -150,7 +150,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
         }
     }
 
-    private async Task UploadAttachment(Guid attachmentId, AttachmentKind[] kinds, IFormFile? file, CancellationToken cancellationToken)
+    private async Task<IActionResult> UploadAttachment(Guid attachmentId, AttachmentKind[] kinds, IFormFile? file, CancellationToken cancellationToken)
     {
         if (file is null)
             throw new BadRequestException();
@@ -182,29 +182,23 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                 await blobStorage.DeleteAsync(attachment.Path, cancellationToken);
             }
 
-            var needsResize = kind switch
+            (bool NeedsResize, uint Width, uint Height) imageResizeContext = kind switch
             {
-                AttachmentKind.UserProfileImageSmall => true,
+                AttachmentKind.UserProfileImageSmall => (true, 256, 256),
                 //#if (module == "Sales" || module == "Admin")
-                AttachmentKind.ProductPrimaryImageMedium => true,
+                AttachmentKind.ProductPrimaryImageMedium => (true, 512, 512),
                 //#endif
-                _ => false
+                _ => (false, 0, 0)
             };
 
-            if (needsResize)
+            if (imageResizeContext.NeedsResize)
             {
-                var resizedImageSize = kind switch
-                {
-                    AttachmentKind.UserProfileImageSmall => new MagickGeometry(256, 256),
-                    //#if (module == "Sales" || module == "Admin")
-                    AttachmentKind.ProductPrimaryImageMedium => new MagickGeometry(512, 512),
-                    //#endif
-                    _ => throw new NotImplementedException()
-                };
-
                 using MagickImage sourceImage = new(file.OpenReadStream());
 
-                sourceImage.Resize(resizedImageSize);
+                if (sourceImage.Width < imageResizeContext.Width || sourceImage.Height < imageResizeContext.Height)
+                    return BadRequest(Localizer[nameof(AppStrings.ImageTooSmall), imageResizeContext.Width, imageResizeContext.Height, sourceImage.Width, sourceImage.Height].ToString());
+
+                sourceImage.Resize(new MagickGeometry(imageResizeContext.Width, imageResizeContext.Height));
 
                 await blobStorage.WriteAsync(attachment.Path, sourceImage.ToByteArray(MagickFormat.WebP), cancellationToken: cancellationToken);
             }
@@ -243,5 +237,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                 //#endif
             }
         }
+
+        return Ok();
     }
 }

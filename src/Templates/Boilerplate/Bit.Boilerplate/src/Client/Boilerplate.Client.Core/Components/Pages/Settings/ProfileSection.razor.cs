@@ -103,10 +103,10 @@ public partial class ProfileSection
         }
     }
 
-    private async Task HandleOnUploadFailed()
+    private async Task HandleOnUploadFailed(BitFileInfo fileInfo)
     {
         isUploading = false;
-        SnackBarService.Error(Localizer[nameof(AppStrings.FileUploadFailed)]);
+        SnackBarService.Error(string.IsNullOrEmpty(fileInfo.Message) ? Localizer[nameof(AppStrings.FileUploadFailed)] : fileInfo.Message);
     }
 
     private void PublishUserDataUpdated()
@@ -116,7 +116,14 @@ public partial class ProfileSection
 
     private async Task<string> GetUploadUrl()
     {
-        return new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadUserProfilePicture").ToString();
+        var uploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadUserProfilePicture").ToString();
+
+        if (CultureInfoManager.InvariantGlobalization is false)
+        {
+            uploadUrl += $"?culture={CultureInfo.CurrentUICulture.Name}"; // To have localized error messages from the server (if any).
+        }
+
+        return uploadUrl;
     }
 
     private async Task<Dictionary<string, string>> GetUploadRequestHeaders()

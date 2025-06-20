@@ -1343,4 +1343,7 @@
     <data name="SignInPasswordMessage2" xml:space="preserve">
     <value>ما بصورت خودکار یک حساب کاربری برای شما ایجاد خواهیم کرد.</value>
   </data>
+    <data name="ImageTooSmall" xml:space="preserve">
+    <value>تصویر خیلی کوچک است. حداقل ابعاد مورد نیاز {0}x{1} است، اما ابعاد فعلی {2}x{3} است.</value>
+  </data>
 </root>

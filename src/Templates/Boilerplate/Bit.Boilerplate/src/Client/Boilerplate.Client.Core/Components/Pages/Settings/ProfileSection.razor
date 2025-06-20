@@ -22,7 +22,7 @@
                            MaxSize="1024 * 1024 * 10"
                            UploadUrlProvider="GetUploadUrl"
                            OnUploading="() => isUploading = true"
-                           OnUploadFailed="WrapHandled(HandleOnUploadFailed)"
+                           OnUploadFailed="HandleOnUploadFailed"
                            OnUploadComplete="WrapHandled(HandleOnUploadComplete)"
                            UploadRequestHttpHeadersProvider="WrapHandled(GetUploadRequestHeaders)">
                 <LabelTemplate>
