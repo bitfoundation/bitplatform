@@ -21,6 +21,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
     //#if (signalR == true || database == "PostgreSQL")
     [AutoInject] private IServiceProvider serviceProvider = default!;
+    [AutoInject] private ILogger<AttachmentController> logger = default!;
     //#endif
 
     //#if (signalR == true)
@@ -209,7 +210,14 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                             Contents = [new DataContent(imageBytes, "image/webp")]
                         }], cancellationToken: cancellationToken, options: new() { Temperature = 0 })).Text.Trim().ToLower();
 
-                    if (responseText is "no") return BadRequest(Localizer[nameof(AppStrings.ImageNotCarError)].ToString());
+                    if (responseText is "no")
+                    {
+                        return BadRequest(Localizer[nameof(AppStrings.ImageNotCarError)].ToString());
+                    }
+                    else if (responseText is not "yes")
+                    {
+                        logger.LogWarning("Unexpected AI response for car detection: {Response}", responseText);
+                    }
                 }
                 //#endif
 
