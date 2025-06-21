@@ -19,6 +19,10 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     [AutoInject] private IBlobStorage blobStorage = default!;
     [AutoInject] private UserManager<User> userManager = default!;
 
+    //#if (signalR == true || database == "PostgreSQL")
+    [AutoInject] private IServiceProvider serviceProvider = default!;
+    //#endif
+
     //#if (signalR == true)
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
@@ -54,18 +58,9 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     [AllowAnonymous]
     [HttpGet("{attachmentId}/{kind}")]
     [AppResponseCache(MaxAge = 3600 * 24 * 7, UserAgnostic = true)]
-    public async Task<IActionResult> GetAttachment(Guid attachmentId, AttachmentKind kind, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAttachment(Guid attachmentId, AttachmentKind kind, CancellationToken cancellationToken = default)
     {
-        var filePath = kind switch
-        {
-            //#if (module == "Sales" || module == "Admin")
-            AttachmentKind.ProductPrimaryImageMedium => $"{AppSettings.ProductImagesDir}{attachmentId}_{kind}.webp",
-            //#endif
-            AttachmentKind.UserProfileImageSmall => $"{AppSettings.UserProfileImagesDir}{attachmentId}_{kind}.webp",
-            _ => throw new NotImplementedException()
-        };
-
-        filePath = Environment.ExpandEnvironmentVariables(filePath);
+        var filePath = GetFilePath(attachmentId, kind);
 
         if (await blobStorage.ExistsAsync(filePath, cancellationToken) is false)
             throw new ResourceNotFoundException();
@@ -85,7 +80,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     }
 
     //#if (module == "Sales" || module == "Admin")
-    [HttpDelete("{productId}")]
+    [HttpDelete("{productId}"), Authorize(Policy = AppFeatures.AdminPanel.ManageProductCatalog)]
     public async Task DeleteProductPrimaryImage(Guid productId, CancellationToken cancellationToken)
     {
         await DeleteAttachment(productId, [AttachmentKind.ProductPrimaryImageMedium, AttachmentKind.ProductPrimaryImageOriginal], cancellationToken);
@@ -163,19 +158,8 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             {
                 Id = attachmentId,
                 Kind = kind,
-                Path = kind switch
-                {
-                    AttachmentKind.UserProfileImageOriginal => $"{AppSettings.UserProfileImagesDir}{attachmentId}_{kind}{Path.GetExtension(file.FileName)}",
-                    AttachmentKind.UserProfileImageSmall => $"{AppSettings.UserProfileImagesDir}{attachmentId}_{kind}.webp",
-                    //#if (module == "Sales" || module == "Admin")
-                    AttachmentKind.ProductPrimaryImageOriginal => $"{AppSettings.ProductImagesDir}{attachmentId}_{kind}{Path.GetExtension(file.FileName)}",
-                    AttachmentKind.ProductPrimaryImageMedium => $"{AppSettings.ProductImagesDir}{attachmentId}_{kind}.webp",
-                    //#endif
-                    _ => throw new NotImplementedException()
-                }
+                Path = GetFilePath(attachmentId, kind, file.FileName),
             };
-
-            attachment.Path = Environment.ExpandEnvironmentVariables(attachment.Path);
 
             if (await blobStorage.ExistsAsync(attachment.Path, cancellationToken))
             {
@@ -191,6 +175,8 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                 _ => (false, 0, 0)
             };
 
+            byte[]? imageBytes = null;
+
             if (imageResizeContext.NeedsResize)
             {
                 using MagickImage sourceImage = new(file.OpenReadStream());
@@ -200,7 +186,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
                 sourceImage.Resize(new MagickGeometry(imageResizeContext.Width, imageResizeContext.Height));
 
-                await blobStorage.WriteAsync(attachment.Path, sourceImage.ToByteArray(MagickFormat.WebP), cancellationToken: cancellationToken);
+                await blobStorage.WriteAsync(attachment.Path, imageBytes = sourceImage.ToByteArray(MagickFormat.WebP), cancellationToken: cancellationToken);
             }
             else
             {
@@ -211,8 +197,22 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             await DbContext.SaveChangesAsync(cancellationToken);
 
             //#if (module == "Sales" || module == "Admin")
-            if (attachment.Kind is AttachmentKind.ProductPrimaryImageOriginal)
+            if (attachment.Kind is AttachmentKind.ProductPrimaryImageMedium)
             {
+                //#if (signalR == true || database == "PostgreSQL")
+                if (serviceProvider.GetService<IChatClient>() is IChatClient chatClient)
+                {
+                    string responseText = (await chatClient.GetResponseAsync([
+                        new ChatMessage(ChatRole.System, "Respond with EXACTLY one word: 'Yes' if the image contains a car, 'No' if it does not. Do NOT describe the image, explain, or add any other text. Violating this will result in an invalid response."),
+                        new ChatMessage(ChatRole.User, "Is this an image of a car?")
+                        {
+                            Contents = [new DataContent(imageBytes, "image/webp")]
+                        }], cancellationToken: cancellationToken, options: new() { Temperature = 0 })).Text.Trim().ToLower();
+
+                    if (responseText is "no") return BadRequest(Localizer[nameof(AppStrings.ImageNotCarError)].ToString());
+                }
+                //#endif
+
                 var product = await DbContext.Products.FindAsync([attachment.Id], cancellationToken);
                 if (product is not null) // else means product is being added to the database.
                 {
@@ -223,7 +223,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             }
             //#endif
 
-            if (kind is AttachmentKind.UserProfileImageOriginal)
+            if (kind is AttachmentKind.UserProfileImageSmall)
             {
                 var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
                 user!.HasProfilePicture = true;
@@ -239,5 +239,23 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
         }
 
         return Ok();
+    }
+
+    private string GetFilePath(Guid attachmentId, AttachmentKind kind, string? fileName = null)
+    {
+        var filePath = kind switch
+        {
+            //#if (module == "Sales" || module == "Admin")
+            AttachmentKind.ProductPrimaryImageMedium => $"{AppSettings.ProductImagesDir}{attachmentId}_{kind}.webp",
+            AttachmentKind.ProductPrimaryImageOriginal => $"{AppSettings.ProductImagesDir}{attachmentId}_{kind}{Path.GetExtension(fileName)}",
+            //#endif
+            AttachmentKind.UserProfileImageSmall => $"{AppSettings.UserProfileImagesDir}{attachmentId}_{kind}.webp",
+            AttachmentKind.UserProfileImageOriginal => $"{AppSettings.UserProfileImagesDir}{attachmentId}_{kind}{Path.GetExtension(fileName)}",
+            _ => throw new NotImplementedException()
+        };
+
+        filePath = Environment.ExpandEnvironmentVariables(filePath);
+
+        return filePath;
     }
 }
