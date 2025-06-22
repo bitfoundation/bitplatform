@@ -104,19 +104,6 @@
         <AndroidAotProfile Condition="Exists('custom.aprof')" Include="custom.aprof" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" />
-        <PackageReference Include="Xamarin.AndroidX.Collection" />
-        <PackageReference Include="Xamarin.AndroidX.Collection.Ktx" />
-        <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel" />
-        <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel.Ktx" />
-        <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModelSavedState" />
-        <PackageReference Include="Xamarin.AndroidX.Lifecycle.Runtime" />
-        <PackageReference Include="Xamarin.AndroidX.Lifecycle.Runtime.Ktx" />
-        <PackageReference Include="Xamarin.AndroidX.Activity" />
-        <PackageReference Include="Xamarin.AndroidX.Activity.Ktx" />
-        <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
-        <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData.Core.Ktx" />
-        <PackageReference Include="Xamarin.GooglePlayServices.Basement" />
-        <PackageReference Include="Xamarin.Google.Android.Play.Review.Ktx" />
         <!--/-:msbuild-conditional:noEmit -->
         <!-- Run the following commands to create custom.aprof file which improves the Android app performance -->
         <!-- dotnet add package Mono.AotProfiler.Android -->

@@ -40,20 +40,20 @@
         <!--/+:msbuild-conditional:noEmit -->
         <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.20" />
         <PackageVersion Include="Hangfire.EntityFrameworkCore" Version="0.7.0" />
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" Version="5.10.0" />
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" Version="5.10.0" />
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" Version="5.10.0" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" Version="5.11.1" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" Version="5.11.1" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" Version="5.11.1" />
         <PackageVersion Include="Xamarin.AndroidX.Activity" Version="1.10.1.2" />
         <PackageVersion Include="Xamarin.AndroidX.Activity.Ktx" Version="1.10.1.2" />
         <PackageVersion Include="Xamarin.AndroidX.Collection" Version="1.5.0.2" />
         <PackageVersion Include="Xamarin.AndroidX.Collection.Ktx" Version="1.5.0.2" />
-        <PackageVersion Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.8.7.4" />
-        <PackageVersion Include="Xamarin.AndroidX.Lifecycle.LiveData.Core.Ktx" Version="2.8.7.4" />
-        <PackageVersion Include="Xamarin.AndroidX.Lifecycle.Runtime" Version="2.8.7.4" />
-        <PackageVersion Include="Xamarin.AndroidX.Lifecycle.Runtime.Ktx" Version="2.8.7.4" />
-        <PackageVersion Include="Xamarin.AndroidX.Lifecycle.ViewModel" Version="2.8.7.4" />
-        <PackageVersion Include="Xamarin.AndroidX.Lifecycle.ViewModel.Ktx" Version="2.8.7.4" />
-        <PackageVersion Include="Xamarin.AndroidX.Lifecycle.ViewModelSavedState" Version="2.8.7.4" />
+        <PackageVersion Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.9.0" />
+        <PackageVersion Include="Xamarin.AndroidX.Lifecycle.LiveData.Core.Ktx" Version="2.9.0" />
+        <PackageVersion Include="Xamarin.AndroidX.Lifecycle.Runtime" Version="2.9.0" />
+        <PackageVersion Include="Xamarin.AndroidX.Lifecycle.Runtime.Ktx" Version="2.9.0" />
+        <PackageVersion Include="Xamarin.AndroidX.Lifecycle.ViewModel" Version="2.9.0" />
+        <PackageVersion Include="Xamarin.AndroidX.Lifecycle.ViewModel.Ktx" Version="2.9.0" />
+        <PackageVersion Include="Xamarin.AndroidX.Lifecycle.ViewModelSavedState" Version="2.9.0" />
         <PackageVersion Include="Xamarin.GooglePlayServices.Basement" Version="118.7.0.2" />
         <PackageVersion Include="Xamarin.Google.Android.Play.Review.Ktx" Version="2.0.2.4" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" Version="124.1.1.2" />
@@ -76,7 +76,7 @@
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
         <PackageVersion Condition=" '$(pipeline)' == 'GitHub' OR '$(pipeline)' == '' " Include="GitHubActionsTestLogger" Version="2.4.1" />
         <PackageVersion Condition=" '$(pipeline)' == 'Azure' " Include="AzurePipelines.TestLogger" Version="1.2.3" />
-        <PackageVersion Condition=" '$(advancedTests)' == 'true' OR '$(advancedTests)' == '' " Include="MsgReader" Version="5.7.2" />
+        <PackageVersion Condition=" '$(advancedTests)' == 'true' OR '$(advancedTests)' == '' " Include="MsgReader" Version="6.0.0" />
         <!--/-:msbuild-conditional:noEmit -->
         <PackageVersion Include="Humanizer" Version="2.14.1" />
         <PackageVersion Include="QRCoder" Version="1.6.0" />
@@ -90,8 +90,8 @@
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.6" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.6" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6" />
-        <PackageVersion Include="Swashbuckle.AspNetCore" Version="8.1.4" />
-        <PackageVersion Include="Microsoft.Identity.Web" Version="3.9.3" />
+        <PackageVersion Include="Swashbuckle.AspNetCore" Version="9.0.1" />
+        <PackageVersion Include="Microsoft.Identity.Web" Version="3.9.4" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.6" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="9.0.6" />
         <PackageVersion Include="AspNet.Security.OAuth.Apple" Version="9.4.0" />
@@ -109,7 +109,7 @@
         <PackageVersion Include="FakeItEasy" Version="8.3.0" />
         <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
         <PackageVersion Include="Microsoft.Playwright.MSTest" Version="1.52.0" />
-        <PackageVersion Include="MSTest.TestAdapter" Version="3.9.1" />
-        <PackageVersion Include="MSTest.TestFramework" Version="3.9.1" />
+        <PackageVersion Include="MSTest.TestAdapter" Version="3.9.3" />
+        <PackageVersion Include="MSTest.TestFramework" Version="3.9.3" />
     </ItemGroup>
 </Project>
