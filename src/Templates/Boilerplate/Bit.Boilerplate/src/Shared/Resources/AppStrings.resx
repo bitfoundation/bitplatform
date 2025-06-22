@@ -1352,4 +1352,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="ImageTooSmall" xml:space="preserve">
     <value>Image's too small. Minimum required dimensions are {0}x{1}, but the current dimensions are {2}x{3}.</value>
   </data>
+    <data name="ImageNotCarError" xml:space="preserve">
+    <value>The provided image does not contain a car.</value>
+  </data>
 </root>
