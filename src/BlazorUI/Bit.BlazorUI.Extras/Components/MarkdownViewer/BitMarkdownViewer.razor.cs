@@ -28,25 +28,30 @@ public partial class BitMarkdownViewer : BitComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        _html = await _markdownService.Parse(Markdown, _cts.Token);
-
-        StateHasChanged();
+        await ParseAndRender();
 
         await base.OnInitializedAsync();
     }
 
 
 
-    private async Task OnMarkdownSet()
+    private void OnMarkdownSet()
     {
         if (IsRendered is false) return;
 
-        await ParseAndRender();
+        _ = ParseAndRender();
     }
 
     private async Task ParseAndRender()
     {
-        _html = await _markdownService.Parse(Markdown, _cts.Token);
+        try
+        {
+            _html = await _markdownService.Parse(Markdown, _cts.Token);
+        }
+        catch
+        {
+            _html = "<b>Failed to parse the markdown!</b>";
+        }
 
         StateHasChanged();
     }
