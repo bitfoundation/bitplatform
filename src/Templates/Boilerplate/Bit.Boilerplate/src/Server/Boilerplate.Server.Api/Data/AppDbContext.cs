@@ -56,7 +56,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         {
             //#endif
             //#if (database == "PostgreSQL")
-            if (EmbeddingIsEnabled)
+            if (IsEmbeddingEnabled)
             {
                 modelBuilder.HasPostgresExtension("vector");
             }
@@ -274,6 +274,6 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     //#elif (database == "SqlServer")
     // This requires SQL Server 2025+
     //#endif
-    public static readonly bool EmbeddingIsEnabled = false;
+    public static readonly bool IsEmbeddingEnabled = false;
     //#endif
 }

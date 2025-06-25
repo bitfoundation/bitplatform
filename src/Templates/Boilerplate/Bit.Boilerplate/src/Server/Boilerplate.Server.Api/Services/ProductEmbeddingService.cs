@@ -82,7 +82,7 @@ public partial class ProductEmbeddingService
         //#if (database != "PostgreSQL" && database != "SqlServer")
         return null;
         //#else
-        if (AppDbContext.EmbeddingIsEnabled is false)
+        if (AppDbContext.IsEmbeddingEnabled is false)
             return null;
         var embeddingGenerator = serviceProvider.GetService<IEmbeddingGenerator<string, Embedding<float>>>();
         if (embeddingGenerator is null)

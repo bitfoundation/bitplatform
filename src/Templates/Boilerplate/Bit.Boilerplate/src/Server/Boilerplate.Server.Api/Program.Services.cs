@@ -238,7 +238,7 @@ public static partial class Program
             //#if (database == "SqlServer")
             options.UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), dbOptions =>
             {
-                if (AppDbContext.EmbeddingIsEnabled)
+                if (AppDbContext.IsEmbeddingEnabled)
                 {
                     dbOptions.UseVectorSearch();
                 }

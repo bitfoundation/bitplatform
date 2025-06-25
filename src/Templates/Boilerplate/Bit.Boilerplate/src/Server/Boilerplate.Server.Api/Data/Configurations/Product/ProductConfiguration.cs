@@ -17,7 +17,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(p => p.ShortId).UseSequence("ProductShortId");
         //#endif
         //#if (database == "PostgreSQL" || database == "SqlServer")
-        if (AppDbContext.EmbeddingIsEnabled)
+        if (AppDbContext.IsEmbeddingEnabled)
         {
             builder.Property(p => p.Embedding).HasColumnType("vector(1536)"); // 1536 for text-embedding-3-small
         }
