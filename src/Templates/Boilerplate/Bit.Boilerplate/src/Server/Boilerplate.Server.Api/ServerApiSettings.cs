@@ -16,7 +16,7 @@ public partial class ServerApiSettings : SharedSettings
     [Required]
     public EmailOptions Email { get; set; } = default!;
 
-    //#if (signalR == true || database == "PostgreSQL")
+    //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
     public AIOptions? AI { get; set; }
     //#endif
 
@@ -190,7 +190,7 @@ public partial class AppIdentityOptions : IdentityOptions
     public int MaxPrivilegedSessionsCount { get; set; }
 }
 
-//#if (signalR == true || database == "PostgreSQL")
+//#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
 public partial class AIOptions
 {
     public OpenAIOptions? OpenAI { get; set; }

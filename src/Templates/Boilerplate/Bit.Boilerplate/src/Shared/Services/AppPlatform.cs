@@ -18,7 +18,7 @@ public static partial class AppPlatform
     public static bool IsWindows => IsBlazorHybrid && OperatingSystem.IsWindows();
 
     /// <summary>
-    /// Blazor WebAssembly
+    /// Code executes in the browser via Blazor WebAssembly.
     /// </summary>
     [SupportedOSPlatformGuard("browser")]
     public static bool IsBrowser => OperatingSystem.IsBrowser();

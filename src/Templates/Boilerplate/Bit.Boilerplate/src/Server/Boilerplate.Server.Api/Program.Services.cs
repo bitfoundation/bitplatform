@@ -2,7 +2,7 @@
 using System.Net;
 using System.Net.Mail;
 using System.IO.Compression;
-//#if (signalR == true || database == "PostgreSQL")
+//#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
 using System.ClientModel.Primitives;
 //#endif
 //#if (database == "Sqlite")
@@ -54,7 +54,7 @@ public static partial class Program
         services.AddScoped<PhoneService>();
         services.AddScoped<PhoneServiceJobsRunner>();
         //#if (module == "Sales" || module == "Admin")
-        //#if (signalR == true || database == "PostgreSQL")
+        //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
         services.AddScoped<ProductEmbeddingService>();
         //#endif
         //#endif
@@ -238,7 +238,10 @@ public static partial class Program
             //#if (database == "SqlServer")
             options.UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), dbOptions =>
             {
-
+                if (AppDbContext.IsEmbeddingEnabled)
+                {
+                    dbOptions.UseVectorSearch();
+                }
             });
             //#elif (database == "PostgreSQL")
             options.UseNpgsql(configuration.GetConnectionString("PostgreSQLConnectionString"), dbOptions =>
@@ -372,7 +375,7 @@ public static partial class Program
             return options;
         });
 
-        //#if (signalR == true || database == "PostgreSQL")
+        //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
         services.AddHttpClient("AI", c =>
         {
             c.DefaultRequestVersion = HttpVersion.Version20;

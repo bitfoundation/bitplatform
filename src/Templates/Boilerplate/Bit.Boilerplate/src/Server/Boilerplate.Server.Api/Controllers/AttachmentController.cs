@@ -19,7 +19,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     [AutoInject] private IBlobStorage blobStorage = default!;
     [AutoInject] private UserManager<User> userManager = default!;
 
-    //#if (signalR == true || database == "PostgreSQL")
+    //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
     [AutoInject] private IServiceProvider serviceProvider = default!;
     [AutoInject] private ILogger<AttachmentController> logger = default!;
     //#endif
@@ -200,7 +200,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             //#if (module == "Sales" || module == "Admin")
             if (attachment.Kind is AttachmentKind.ProductPrimaryImageMedium)
             {
-                //#if (signalR == true || database == "PostgreSQL")
+                //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
                 if (serviceProvider.GetService<IChatClient>() is IChatClient chatClient)
                 {
                     string responseText = (await chatClient.GetResponseAsync([
