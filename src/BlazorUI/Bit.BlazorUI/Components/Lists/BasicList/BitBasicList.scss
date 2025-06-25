@@ -4,3 +4,16 @@
     overflow: auto;
     height: spacing(62.5);
 }
+
+.bit-bsl-lmb {
+    display: contents;
+}
+
+.bit-bsl-lmt {
+    width: 100%;
+    display: flex;
+    cursor: pointer;
+    padding: spacing(2);
+    align-items: center;
+    justify-content: center;
+}

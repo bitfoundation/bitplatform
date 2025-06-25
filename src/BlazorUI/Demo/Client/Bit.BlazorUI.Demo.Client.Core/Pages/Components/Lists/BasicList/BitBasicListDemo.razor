@@ -11,170 +11,244 @@
           GitHubUrl="Lists/BasicList/BitBasicList.razor"
           GitHubDemoUrl="Lists/BasicList/BitBasicListDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-        <div>
-            <div>
-                Explore the essential use of BitBasicList, displaying a simple list of people.
-            </div>
-            <br />
-            <BitBasicList Items="FewPeople" Style="border: 1px #a19f9d solid; border-radius: 4px;">
-                <RowTemplate Context="person">
-                    <div style="padding: 5px 20px; margin: 10px; background-color: #75737329;">
-                        Name: <strong>@person.FirstName</strong>
-                    </div>
-                </RowTemplate>
-            </BitBasicList>
-        </div>
+        <div>Explore the essential use of BitBasicList, displaying a simple list of people.</div><br />
+        <BitBasicList Items="fewPeople" Style="border: 1px #a19f9d solid; border-radius: 4px;">
+            <RowTemplate Context="person">
+                <div style="padding: 5px 20px; margin: 10px; background-color: #75737329;">
+                    Name: <strong>@person.FirstName</strong>
+                </div>
+            </RowTemplate>
+        </BitBasicList>
     </DemoExample>
 
     <DemoExample Title="Virtualization" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-        <div>
-            <div>
-                Experience BasicList with virtualization enabled to efficiently render large lists.
-            </div>
-            <br />
-            <BitBasicList Items="LotsOfPeople"
-                          EnableVirtualization="true"
-                          Style="border: 1px #a19f9d solid; border-radius: 4px;">
-                <RowTemplate Context="person">
-                    <div @key="person.Id" style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
-                        <img width="100" height="100" src="https://picsum.photos/100/100?random=@(person.Id)">
-                        <div style="margin-left:3%; display: inline-block;">
-                            <p>Id: <strong>@person.Id</strong></p>
-                            <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
-                            <p>Job: <strong>@person.Job</strong></p>
-                        </div>
+        <div>Experience BasicList with virtualization enabled to efficiently render large lists.</div><br />
+        <BitBasicList Virtualize
+                      Items="lotsOfPeople"
+                      Style="border: 1px #a19f9d solid; border-radius: 4px;">
+            <RowTemplate Context="person">
+                <div @key="person.Id" style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                    <img width="100" height="100" src="https://picsum.photos/100/100?random=@(person.Id)">
+                    <div style="margin-left:3%; display: inline-block;">
+                        <p>Id: <strong>@person.Id</strong></p>
+                        <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
+                        <p>Job: <strong>@person.Job</strong></p>
                     </div>
-                </RowTemplate>
-            </BitBasicList>
-        </div>
+                </div>
+            </RowTemplate>
+        </BitBasicList>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-        <div>
-            <div>
-                Empower customization by setting styles and classes, allowing tailored design modifications to suit specific UI requirements.
-            </div>
-            <br />
-            <BitBasicList Items="LotsOfPeople"
-                          Role="list"
-                          Class="custom-class"
-                          EnableVirtualization="true"
-                          Style="border: 1px #a19f9d solid; border-radius: 4px;">
-                <RowTemplate Context="person">
-                    <div @key="person.Id" class="list-item">
-                        <span>Id: <strong>@person.Id</strong></span>
-                        <span>Full Name: <strong>@person.FirstName</strong></span>
-                        <span>Job: <strong>@person.Job</strong></span>
+    <DemoExample Title="OverscanCount" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <div>Experience BitBasicList with overscan count and virtualization for improved scrolling performance.</div><br />
+        <BitBasicList Virtualize
+                      ItemSize="300"
+                      OverscanCount="5"
+                      Items="lotsOfPeople"
+                      Style="border: 1px #a19f9d solid; border-radius: 4px;">
+            <RowTemplate Context="person">
+                <div @key="person.Id" style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                    <img width="100" height="100" src="https://picsum.photos/100/100?random=@(person.Id)">
+                    <div style="margin-left:3%; display: inline-block;">
+                        <p>Id: <strong>@person.Id</strong></p>
+                        <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
+                        <p>Job: <strong>@person.Job</strong></p>
                     </div>
-                </RowTemplate>
-            </BitBasicList>
-        </div>
+                </div>
+            </RowTemplate>
+        </BitBasicList>
     </DemoExample>
 
-    <DemoExample Title="OverscanCount" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-        <div>
-            <div>
-                Experience BitBasicList with overscan count and virtualization for improved scrolling performance.
-            </div>
-            <br />
-            <BitBasicList Items="LotsOfPeople"
-                          ItemSize="300"
-                          OverscanCount="5"
-                          EnableVirtualization="true"
-                          Style="border: 1px #a19f9d solid; border-radius: 4px;">
-                <RowTemplate Context="person">
-                    <div @key="person.Id" style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
-                        <img width="100" height="100" src="https://picsum.photos/100/100?random=@(person.Id)">
-                        <div style="margin-left:3%; display: inline-block;">
-                            <p>Id: <strong>@person.Id</strong></p>
-                            <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
-                            <p>Job: <strong>@person.Job</strong></p>
-                        </div>
-                    </div>
-                </RowTemplate>
-            </BitBasicList>
-        </div>
+    <DemoExample Title="ItemsProvider" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <div>Utilize BitBasicList with an ItemsProvider for displaying data and custom placeholders.</div><br />
+        <BitBasicList Virtualize
+                      ItemSize="83"
+                      TItem="ProductDto"
+                      ItemsProvider="productsProvider"
+                      Style="border: 1px #a19f9d solid; border-radius: 4px;">
+            <RowTemplate Context="product">
+                <div @key="product.Id" style="border-bottom: 1px #8a8886 solid; padding: 5px 20px;">
+                    <div>Id: <strong>@product.Id</strong></div>
+                    <div>Name: <strong>@product.Name</strong></div>
+                    <div>Price: <strong>@product.Price</strong></div>
+                </div>
+            </RowTemplate>
+            <VirtualizePlaceholder>
+                <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px;">
+                    <div>Id: <strong>Loading...</strong></div>
+                    <div>Name: <strong>Loading...</strong></div>
+                    <div>Price: <strong>Loading...</strong></div>
+                </div>
+            </VirtualizePlaceholder>
+        </BitBasicList>
     </DemoExample>
 
-    <DemoExample Title="ItemsProvider" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-        <div>
-            <div>
-                Utilize BitBasicList with an ItemsProvider for displaying data and custom placeholders.
-            </div>
-            <br />
-            <BitBasicList TItem="ProductDto"
-                          ItemSize="83"
-                          EnableVirtualization="true"
-                          ItemsProvider="@ProductsProvider"
-                          Style="border: 1px #a19f9d solid; border-radius: 4px;">
-                <RowTemplate Context="product">
-                    <div @key="product.Id" style="border-bottom: 1px #8a8886 solid; padding: 5px 20px;">
-                        <div>Id: <strong>@product.Id</strong></div>
-                        <div>Name: <strong>@product.Name</strong></div>
-                        <div>Price: <strong>@product.Price</strong></div>
+    <DemoExample Title="Grouped ItemsProvider" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <div>See BitBasicList with an ItemsProvider, categorizing and displaying data for products and categories.</div><br />
+        <BitBasicList Virtualize
+                      ItemSize="83"
+                      TItem="CategoryOrProductDto"
+                      ItemsProvider="categoriesAndProductsProvider"
+                      Style="border: 1px #a19f9d solid; border-radius: 4px;">
+            <RowTemplate Context="catOrProd">
+                @if (catOrProd.IsProduct)
+                {
+                    <div @key="@($"{catOrProd.CategoryId}-{catOrProd.ProductId}")" style="border-bottom: 1px #8a8886 solid; padding: 5px 10px; display:flex; flex-flow:row;">
+                        <div style="width:184px;">Name: <strong>@catOrProd.Name</strong></div>
+                        <div>Price: <strong>@catOrProd.Price</strong></div>
                     </div>
-                </RowTemplate>
-                <VirtualizePlaceholder>
-                    <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px;">
-                        <div>Id: <strong>Loading...</strong></div>
-                        <div>Name: <strong>Loading...</strong></div>
-                        <div>Price: <strong>Loading...</strong></div>
+                }
+                else
+                {
+                    <div @key="catOrProd.CategoryId" style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; background-color: #75737329;">
+                        <div>@catOrProd.Name</div>
                     </div>
-                </VirtualizePlaceholder>
-            </BitBasicList>
-        </div>
+                }
+            </RowTemplate>
+            <VirtualizePlaceholder>
+                <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px;">
+                    Loading...
+                </div>
+            </VirtualizePlaceholder>
+        </BitBasicList>
     </DemoExample>
 
-    <DemoExample Title="Grouped ItemsProvider" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-        <div>
-            <div>
-                See BitBasicList with an ItemsProvider, categorizing and displaying data for products and categories.
-            </div>
-            <br />
-            <BitBasicList TItem="CategoryOrProductDto"
-                          ItemSize="83"
-                          EnableVirtualization="true"
-                          ItemsProvider="@CategoriesAndProductsProvider"
-                          Style="border: 1px #a19f9d solid; border-radius: 4px;">
-                <RowTemplate Context="catOrProd">
-                    @if (catOrProd.IsProduct)
-                    {
-                        <div @key="@($"{catOrProd.CategoryId}-{catOrProd.ProductId}")" style="border-bottom: 1px #8a8886 solid; padding: 5px 10px; display:flex; flex-flow:row;">
-                            <div style="width:184px;">Name: <strong>@catOrProd.Name</strong></div>
-                            <div>Price: <strong>@catOrProd.Price</strong></div>
-                        </div>
-                    }
-                    else
-                    {
-                        <div @key="catOrProd.CategoryId" style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; background-color: #75737329;">
-                            <div>@catOrProd.Name</div>
-                        </div>
-                    }
-                </RowTemplate>
-                <VirtualizePlaceholder>
-                    <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px;">
-                        Loading...
-                    </div>
-                </VirtualizePlaceholder>
-            </BitBasicList>
-        </div>
+    <DemoExample Title="LoadMore" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <div>See the LoadMore feature of the BitBasicList in action.</div><br />
+        <div>Basic LoadMore:</div><br />
+        <BitBasicList LoadMore
+                      Items="fewPeople"
+                      Style="border: 1px #a19f9d solid; border-radius: 4px; height: 250px;">
+            <RowTemplate Context="person">
+                <div style="padding: 5px 20px; margin: 10px; background-color: #75737329;">
+                    Name: <strong>@person.FirstName</strong>
+                </div>
+            </RowTemplate>
+        </BitBasicList>
+        <br /><br /><br /><br />
+        <div>LoadMoreText:</div><br />
+        <BitBasicList LoadMore
+                      LoadMoreText="Bring more people here"
+                      Items="fewPeople"
+                      Style="border: 1px #a19f9d solid; border-radius: 4px; height: 250px;">
+            <RowTemplate Context="person">
+                <div style="padding: 5px 20px; margin: 10px; background-color: #75737329;">
+                    Name: <b>@person.FirstName</b>
+                </div>
+            </RowTemplate>
+        </BitBasicList>
+        <br /><br /><br /><br />
+        <div>LoadMoreTemplate:</div><br />
+        <BitBasicList LoadMore
+                      Items="fewPeople"
+                      Style="border: 1px #a19f9d solid; border-radius: 4px; height: 250px;">
+            <RowTemplate Context="person">
+                <div style="padding: 5px 20px; margin: 10px; background-color: #75737329;">
+                    Name: <b>@person.FirstName</b>
+                </div>
+            </RowTemplate>
+            <LoadMoreTemplate>
+                <BitStack FitHeight Horizontal Style="padding:8px">
+                    <BitButton IconName="@BitIconName.Download" FullWidth>Load more people</BitButton>
+                </BitStack>
+            </LoadMoreTemplate>
+        </BitBasicList>
+        <br /><br /><br /><br />
+        <div>Virtualize LoadMore:</div><br />
+        <BitBasicList LoadMore
+                      Virtualize
+                      Items="lotsOfPeople"
+                      Style="border: 1px #a19f9d solid; border-radius: 4px; height: 250px;">
+            <RowTemplate Context="person">
+                <div @key="person.Id" style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                    Full Name: <b>@person.FirstName @person.LastName</b>
+                </div>
+            </RowTemplate>
+        </BitBasicList>
+        <br /><br /><br /><br />
+        <div>ItemsProvider LoadMore:</div><br />
+        <BitBasicList LoadMore
+                      ItemsProvider="loadMoreProvider"
+                      Style="border: 1px #a19f9d solid; border-radius: 4px; height: 250px;">
+            <RowTemplate Context="person">
+                <div @key="person.Id" style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                    Full Name: <b>@person.FirstName @person.LastName</b>
+                </div>
+            </RowTemplate>
+            <LoadMoreTemplate Context="isLoading">
+                @if (isLoading is false)
+                {
+                    <BitStack FitHeight Horizontal Alignment="BitAlignment.Center" Style="padding:1rem">
+                        <BitIcon IconName="@BitIconName.Download" />
+                        <BitText>Load more people</BitText>
+                    </BitStack>
+                }
+                else
+                {
+                    <BitStack FitHeight Horizontal Alignment="BitAlignment.Center">
+                        <BitRollingSquareLoading />
+                        <BitText>Loading...</BitText>
+                    </BitStack>
+                }
+            </LoadMoreTemplate>
+        </BitBasicList>
+        <br /><br /><br /><br />
+        <div>Virtualize & ItemsProvider LoadMore:</div><br />
+        <BitBasicList LoadMore
+                      Virtualize
+                      ItemsProvider="loadMoreVirtualizeProvider"
+                      Style="border: 1px #a19f9d solid; border-radius: 4px; height: 250px;">
+            <RowTemplate Context="person">
+                <div @key="person.Id" style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                    Full Name: <b>@person.FirstName @person.LastName</b>
+                </div>
+            </RowTemplate>
+            <LoadMoreTemplate Context="isLoading">
+                @if (isLoading is false)
+                {
+                    <BitStack FitHeight Horizontal Alignment="BitAlignment.Center" Style="padding:1rem">
+                        <BitIcon IconName="@BitIconName.Download" />
+                        <BitText>Load more people</BitText>
+                    </BitStack>
+                }
+                else
+                {
+                    <BitStack FitHeight Horizontal Alignment="BitAlignment.Center">
+                        <BitRollingSquareLoading />
+                        <BitText>Loading...</BitText>
+                    </BitStack>
+                }
+            </LoadMoreTemplate>
+        </BitBasicList>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-        <div>
-            <div>
-                Use BitBasicList in right-to-left (RTL).
-            </div>
-            <br />
-            <BitBasicList Dir="BitDir.Rtl" Items="FewPeopleRtl" Style="border: 1px #a19f9d solid; border-radius: 4px;">
-                <RowTemplate Context="person">
-                    <div style="padding: 5px 20px; margin: 10px; background-color: #75737329;">
-                        <p>شناسه: <strong>@person.Id</strong></p>
-                        <p>نام کامل: <strong>@person.FirstName @person.LastName</strong></p>
-                        <p>شغل: <strong>@person.Job</strong></p>
-                    </div>
-                </RowTemplate>
-            </BitBasicList>
-        </div>
+    <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <div>Empower customization by setting styles and classes, allowing tailored design modifications to suit specific UI requirements.</div><br />
+        <BitBasicList Virtualize
+                      Role="list"
+                      Items="lotsOfPeople"
+                      Class="custom-class"
+                      Style="border: 1px #a19f9d solid; border-radius: 4px;">
+            <RowTemplate Context="person">
+                <div @key="person.Id" class="list-item">
+                    <span>Id: <strong>@person.Id</strong></span>
+                    <span>Full Name: <strong>@person.FirstName</strong></span>
+                    <span>Job: <strong>@person.Job</strong></span>
+                </div>
+            </RowTemplate>
+        </BitBasicList>
+    </DemoExample>
+
+    <DemoExample Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div>Use BitBasicList in right-to-left (RTL).</div><br />
+        <BitBasicList Dir="BitDir.Rtl" Items="fewPeopleRtl" Style="border: 1px #a19f9d solid; border-radius: 4px;">
+            <RowTemplate Context="person">
+                <div style="padding: 5px 20px; margin: 10px; background-color: #75737329;">
+                    <p>شناسه: <strong>@person.Id</strong></p>
+                    <p>نام کامل: <strong>@person.FirstName @person.LastName</strong></p>
+                    <p>شغل: <strong>@person.Job</strong></p>
+                </div>
+            </RowTemplate>
+        </BitBasicList>
     </DemoExample>
 </DemoPage>
