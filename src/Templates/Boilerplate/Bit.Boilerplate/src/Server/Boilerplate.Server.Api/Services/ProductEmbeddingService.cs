@@ -37,12 +37,12 @@ public partial class ProductEmbeddingService
         //#endif
         return dbContext.Products
         //#if (database == "PostgreSQL")
-            .Where(p => p.Embedding!.CosineDistance(value!) < 0.85f);
+            .Where(p => p.Embedding!.CosineDistance(value!) < 0.85f).OrderBy(p => p.Embedding!.CosineDistance(value!));
         //#elif (database == "SqlServer")
         //#if (IsInsideProjectTemplate == true)
         /*
         //#endif
-            .Where(p => EF.Functions.VectorDistance("cosine", p.Embedding, value!) < 0.85f);
+            .Where(p => p.Embedding != null && EF.Functions.VectorDistance("cosine", p.Embedding, value!) < 0.85f).OrderBy(p => EF.Functions.VectorDistance("cosine", p.Embedding!, value!));
         //#if (IsInsideProjectTemplate == true)
         */
         //#endif
@@ -58,7 +58,7 @@ public partial class ProductEmbeddingService
         await dbContext.Entry(product).Reference(p => p.Category).LoadAsync(cancellationToken);
 
         // TODO: Needs to be improved.
-        var embedding = await EmbedText($"Name: {product.Name}, Manufactor: {product.Category!.Name}, Description: {product.DescriptionText}, Price: {product.Price}", cancellationToken);
+        var embedding = await EmbedText($"Name: {product.Name}, Manufacture: {product.Category!.Name}, Description: {product.DescriptionText}, Price: {product.Price}", cancellationToken);
 
         if (embedding.HasValue)
         {
