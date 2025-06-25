@@ -41,5 +41,13 @@ public partial class Product
 
     //#if (database == "PostgreSQL")
     public Pgvector.Vector? Embedding { get; set; }
+    //#elif (database == "SqlServer")
+    //#if (IsInsideProjectTemplate == true)
+    /*
+    //#endif
+    public float[]? Embedding { get; set; }
+    //#if (IsInsideProjectTemplate == true)
+    */
+    //#endif
     //#endif
 }

@@ -488,7 +488,7 @@
                     ]
                 },
                 {
-                    "condition": "(signalR != true && database != PostgreSQL)",
+                    "condition": "(signalR != true && database != PostgreSQL && database != SqlServer)",
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Services/ProductEmbeddingService.cs"
                     ]
@@ -520,7 +520,7 @@
                     ]
                 },
                 {
-                    "condition": "(signalR != true && notification != PostgreSQL)",
+                    "condition": "(signalR != true && notification != true)",
                     "exclude": [
                         "src/Shared/Boilerplate.Shared/Dtos/Identity/SendNotificationToRoleDto.cs"
                     ]
