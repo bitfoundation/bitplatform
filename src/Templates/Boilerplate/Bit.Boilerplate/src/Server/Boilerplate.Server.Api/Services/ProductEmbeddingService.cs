@@ -86,7 +86,7 @@ public partial class ProductEmbeddingService
             return null;
         var embeddingGenerator = serviceProvider.GetService<IEmbeddingGenerator<string, Embedding<float>>>();
         if (embeddingGenerator is null)
-            return env.IsDevelopment() ? throw new InvalidOperationException("Embedding generator is not registered.") : null;
+            return env.IsDevelopment() ? null : throw new InvalidOperationException("Embedding generator is not registered.");
         var embedding = await embeddingGenerator.GenerateVectorAsync(input, options: new() { }, cancellationToken);
         return embedding.ToArray();
         //#endif
