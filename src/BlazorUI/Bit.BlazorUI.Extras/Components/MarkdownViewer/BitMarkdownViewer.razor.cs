@@ -50,7 +50,7 @@ public partial class BitMarkdownViewer : BitComponentBase
         }
         catch
         {
-            _html = "<b>Failed to parse the markdown!</b>";
+            _html = "<b>The BitMarkdownViewer failed to parse the markdown!</b>";
         }
 
         StateHasChanged();
