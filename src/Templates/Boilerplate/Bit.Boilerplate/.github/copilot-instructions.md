@@ -61,7 +61,7 @@ dotnet run
 ### Testing the Application
 To run the tests, navigate to the test project directory and execute:
 ```bash
-cd src/Tests/Boilerplate.Tests
+cd src/Tests
 dotnet test
 ```
 
