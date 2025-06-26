@@ -57,7 +57,7 @@ namespace {namespaceName}
         if (twoWayParameters.Length > 0) builder.AppendLine("");
         builder.AppendLine($@"        [global::System.Diagnostics.DebuggerNonUserCode]
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-        public override Task SetParametersAsync(ParameterView parameters)
+        public override async Task SetParametersAsync(ParameterView parameters)
         {{");
         foreach (var par in twoWayParameters)
         {
@@ -87,7 +87,7 @@ namespace {namespaceName}
                 builder.AppendLine($"                       {paramName}HasBeenSet = true;");
             }
             builder.AppendLine($"                       var {varName} = parameter.Value is null ? default! : ({paramType})parameter.Value;");
-            if (par.ResetClassBuilder || par.ResetStyleBuilder || string.IsNullOrWhiteSpace(par.CallOnSetMethodName) is false)
+            if (par.ResetClassBuilder || par.ResetStyleBuilder || string.IsNullOrWhiteSpace(par.CallOnSetMethodName) is false || string.IsNullOrWhiteSpace(par.CallOnSetAsyncMethodName) is false)
             {
                 builder.AppendLine($"                       var notEquals{paramName} = EqualityComparer<{paramType}>.Default.Equals({paramName}, {varName}) is false;");
             }
@@ -103,6 +103,10 @@ namespace {namespaceName}
             if (string.IsNullOrWhiteSpace(par.CallOnSetMethodName) is false)
             {
                 builder.AppendLine($"                       if (notEquals{paramName}) {par.CallOnSetMethodName}();");
+            }
+            if (string.IsNullOrWhiteSpace(par.CallOnSetAsyncMethodName) is false)
+            {
+                builder.AppendLine($"                       if (notEquals{paramName}) await {par.CallOnSetAsyncMethodName}();");
             }
             builder.AppendLine("                       parametersDictionary.Remove(parameter.Key);");
             builder.AppendLine("                       break;");
@@ -121,17 +125,17 @@ namespace {namespaceName}
         builder.AppendLine("            }");
         if (isBaseTypeComponentBase)
         {
-            builder.AppendLine("            return base.SetParametersAsync(ParameterView.Empty);");
+            builder.AppendLine("            await base.SetParametersAsync(ParameterView.Empty);");
         }
         else
         {
             if (doesSupporteParametersViewCache)
             {
-                builder.AppendLine("            return base.SetParametersAsync(ParameterView.Empty);");
+                builder.AppendLine("            await base.SetParametersAsync(ParameterView.Empty);");
             }
             else
             {
-                builder.AppendLine("            return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary as IDictionary<string, object?>));");
+                builder.AppendLine("            await base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary as IDictionary<string, object?>));");
             }
         }
         builder.AppendLine(@"        }");
@@ -161,6 +165,10 @@ namespace {namespaceName}
             if (string.IsNullOrWhiteSpace(par.CallOnSetMethodName) is false)
             {
                 builder.AppendLine($"                {par.CallOnSetMethodName}();");
+            }
+            if (string.IsNullOrWhiteSpace(par.CallOnSetAsyncMethodName) is false)
+            {
+                builder.AppendLine($"                await {par.CallOnSetAsyncMethodName}();");
             }
             builder.AppendLine("            }");
             builder.AppendLine($"            return true;");

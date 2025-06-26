@@ -12,4 +12,5 @@ public class BlazorParameter(IPropertySymbol propertySymbol, bool resetClassBuil
     public bool ResetStyleBuilder { get; set; } = resetStyleBuilder;
 
     public string? CallOnSetMethodName { get; set; }
+    public string? CallOnSetAsyncMethodName { get; set; }
 }
