@@ -44,9 +44,12 @@ public class ComponentSyntaxContextReceiver : ISyntaxContextReceiver
             var parameter = new BlazorParameter(propertySymbol, resetClassBuilder, resetStyleBuilder, isTwoWayBound);
 
             var callOnSetAttribute = attributes.SingleOrDefault(a => a.AttributeClass?.ToDisplayString() == "Bit.BlazorUI.CallOnSetAttribute");
-            var name = callOnSetAttribute?.ConstructorArguments.FirstOrDefault().Value as string;
+            var callOnSetName = callOnSetAttribute?.ConstructorArguments.FirstOrDefault().Value as string;
+            parameter.CallOnSetMethodName = callOnSetName;
 
-            parameter.CallOnSetMethodName = name;
+            var callOnSetAsyncAttribute = attributes.SingleOrDefault(a => a.AttributeClass?.ToDisplayString() == "Bit.BlazorUI.CallOnSetAsyncAttribute");
+            var callOnSetAsyncName = callOnSetAsyncAttribute?.ConstructorArguments.FirstOrDefault().Value as string;
+            parameter.CallOnSetAsyncMethodName = callOnSetAsyncName;
 
             Parameters.Add(parameter);
         }
