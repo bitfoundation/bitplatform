@@ -182,6 +182,7 @@ public partial class BitBasicList<TItem> : BitComponentBase
     {
         if (reset)
         {
+            _viewItems = [];
             _loadMoreSkip = 0;
             _loadMoreFinished = false;
         }
@@ -213,7 +214,8 @@ public partial class BitBasicList<TItem> : BitComponentBase
                     {
                         _viewItems = [.. _viewItems, .. result.Items];
 
-                        _loadMoreFinished = _viewItems.Count >= result.TotalItemCount;
+                        //_loadMoreFinished = _viewItems.Count >= result.TotalItemCount; // for performance purposes we won't use TotalItemCount here!
+                        _loadMoreFinished = result.Items.Any() is false;
                     }
                 }
 

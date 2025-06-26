@@ -243,8 +243,8 @@ public partial class AppJsonContext : JsonSerializerContext { }";
 
 
 <BitBasicList LoadMore
-              LoadMoreText=""Bring more people here""
               Items=""fewPeople""
+              LoadMoreText=""Bring more people here""
               Style=""border: 1px #a19f9d solid; border-radius: 4px; height: 250px;"">
     <RowTemplate Context=""person"">
         <div style=""padding: 5px 20px; margin: 10px; background-color: #75737329;"">
@@ -263,7 +263,7 @@ public partial class AppJsonContext : JsonSerializerContext { }";
         </div>
     </RowTemplate>
     <LoadMoreTemplate>
-        <BitStack FitHeight Horizontal Style=""padding:8px"">
+        <BitStack FitHeight Horizontal Style=""padding:8px;cursor:pointer"">
             <BitButton IconName=""@BitIconName.Download"" FullWidth>Load more people</BitButton>
         </BitStack>
     </LoadMoreTemplate>
@@ -293,7 +293,7 @@ public partial class AppJsonContext : JsonSerializerContext { }";
     <LoadMoreTemplate Context=""isLoading"">
         @if (isLoading is false)
         {
-            <BitStack FitHeight Horizontal Alignment=""BitAlignment.Center"" Style=""padding:1rem"">
+            <BitStack FitHeight Horizontal Alignment=""BitAlignment.Center"" Style=""padding:1rem;cursor:pointer"">
                 <BitIcon IconName=""@BitIconName.Download"" />
                 <BitText>Load more people</BitText>
             </BitStack>
@@ -321,7 +321,7 @@ public partial class AppJsonContext : JsonSerializerContext { }";
     <LoadMoreTemplate Context=""isLoading"">
         @if (isLoading is false)
         {
-            <BitStack FitHeight Horizontal Alignment=""BitAlignment.Center"" Style=""padding:1rem"">
+            <BitStack FitHeight Horizontal Alignment=""BitAlignment.Center"" Style=""padding:1rem;cursor:pointer"">
                 <BitIcon IconName=""@BitIconName.Download"" />
                 <BitText>Load more people</BitText>
             </BitStack>
