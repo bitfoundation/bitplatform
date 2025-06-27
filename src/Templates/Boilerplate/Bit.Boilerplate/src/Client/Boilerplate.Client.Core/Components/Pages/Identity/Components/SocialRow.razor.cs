@@ -33,6 +33,6 @@ public partial class SocialRow
 
     private async Task HandleIdentityServerDemo()
     {
-        await OnClick.InvokeAsync("Identity-Server-Demo");
+        await OnClick.InvokeAsync("IdentityServerDemo");
     }
 }

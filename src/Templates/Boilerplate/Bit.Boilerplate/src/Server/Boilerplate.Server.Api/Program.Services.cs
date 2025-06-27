@@ -610,7 +610,7 @@ public static partial class Program
         // Note: The following demo server doesn't require licensing.
         if (builder.Environment.IsDevelopment())
         {
-            authenticationBuilder.AddOpenIdConnect("Identity-Server-Demo", options =>
+            authenticationBuilder.AddOpenIdConnect("IdentityServerDemo", options =>
             {
                 options.Authority = "https://demo.duendesoftware.com";
 
