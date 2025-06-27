@@ -75,10 +75,11 @@ The project is optimized for GitHub Codespaces development with pre-configured c
 7. **Async Programming** - prefer async/await for I/O-bound operations, avoid blocking calls
 
 ### Tool Usage: DeepWiki for BitPlatform
-You have a special tool, `deepwiki`, for accessing documentation about the `bitfoundation/bitplatform` library.
+You have a special tool, `deepwiki`, for accessing documentation about the `bitplatform`, `bit BlazorUI`, `bit Bswup`, `bit Butil`, `bit Besql` and `bit Boilerplate`.
 
-**RULE:** If a question mentions or implies the use of a "Bit" component (like `BitButton`, `BitTooltip`, `BitTextField`), or refers to the "bitplatform" or "bit Boilerplate",
-you **MUST** use the `deepwiki` tool to find the correct implementation before writing any code. Do not use generic HTML/CSS/JS solutions for these components.
+**RULE:** If a question mentions or implies the use of a bit BlazorUI components (like `BitButton`, `BitTooltip`, `BitTextField`),
+or refers to the `bitplatform`, `bit Bswup`, `bit Butil`, `bit Besql` and `bit Boilerplate`, you **MUST** use the `deepwiki` mcp tool to
+find the correct implementation before writing any code. Do not use generic HTML/CSS/JS solutions for these components.
 
 **Command:**
 `deepwiki fetch bitfoundation/bitplatform`
