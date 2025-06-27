@@ -85,4 +85,4 @@ you **MUST** use the `deepwiki` tool to find the correct implementation before w
 
 **Example Usage:**
 *   **User Prompt:** "How do I make a BitButton disabled?"
-*   **Your Action:** First, run `deepwiki fetch bitfoundation/bitplatform to search for How do I make a BitButton disabled?`. Then, use the documentation to answer the user.
+*   **Your Action:** First, run `deepwiki fetch bitfoundation/bitplatform How do I make a BitButton disabled?`. Then, use the documentation to answer the user.
