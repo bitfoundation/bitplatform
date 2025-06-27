@@ -395,7 +395,7 @@
                 {
                     "condition": "(pipeline != GitHub)",
                     "exclude": [
-                        ".github/**"
+                        ".github/workflows**"
                     ]
                 },
                 {

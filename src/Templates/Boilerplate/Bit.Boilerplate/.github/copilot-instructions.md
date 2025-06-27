@@ -2,36 +2,51 @@
 
 ### Architecture & Project Structure
 
-- **Client Projects**: Multiple platform-specific clients sharing core infrastructure 
-  - `Client.Core`: Blazor pages, shared components, service, typescript and SCSS files.
-  - `Client.Web`: PWA Blazor WebAssembly.
-  - `Client.Maui`: Cross-platform MAUI based Blazor Hybrid app.
-  - `Client.Windows`: Windows forms based Blazor Hybrid app.
+- **Client Projects**: Multiple platform-specific clients sharing a common core.
+  - `Boilerplate.Client.Core`: Contains shared Blazor pages, components, services, TypeScript, and SCSS files.
+  - `Boilerplate.Client.Web`: A Progressive Web App (PWA) built with Blazor WebAssembly.
+  - `Boilerplate.Client.Maui`: A cross-platform Blazor Hybrid application using .NET MAUI.
+  - `Boilerplate.Client.Windows`: A Windows Forms-based Blazor Hybrid application.
 
-- **Server Projects**: API and web
-  - `Server.Api`: Web API controllers, entity framework core db context, type configurations and migrations plus SignalR, Hangfire, models, services and mappers.
-  - `Server.Web`: Blazor Server, Auto and WebAssembly, with or without pre-rendering.
+- **Server Projects**: API endpoints and web hosting.
+  - `Boilerplate.Server.Api`: Hosts Web API controllers, Entity Framework Core DbContext, migrations, and services for SignalR, Hangfire, data models, and mappers.
+  - `Boilerplate.Server.Web`: The main web host supporting Blazor Server, Auto, and WebAssembly render modes, with optional pre-rendering.
 
-- **Shared**: Dto classes, enums, interfaces, resx resources etc.
+- `Boilerplate.Shared`: A shared library for Data Transfer Objects (DTOs), enums, interfaces, and RESX resource files.
 
-- **Boilerplate.Tests**: Integration api and UI tests using Playwright and MSTest.
+- `Boilerplate.Tests`: Contains integration (API) and UI tests written with Playwright and MSTest.
+
+### Technologies
+- **C# 13.0**
+- **ASP.NET Core 9.0**
+- **Blazor**: Component-based web UI framework
+- **.NET MAUI**: Cross-platform app development
+- **ASP.NET Core Identity**: Authentication and authorization
+- **Entity Framework Core**: Data access
+- **SignalR**: Real-time communication
+- **Hangfire**: Background job processing
+- **OData**: Advanced querying capabilities
+- **Bit.BlazorUI**: Primary UI component library
+- **Microsoft.Extensions.AI**: AI integration
+- **TypeScript**: Type-safe JavaScript development
+- **SCSS**: Advanced CSS preprocessing
 
 ### Building the Application
-Navigate to the server directory and run:
+To build the application run:
 ```bash
 cd src/Server/Boilerplate.Server.Web
 dotnet build
 ```
 
 ### Running the Application
-To run the application, execute the following command in the server directory:
+To run the application, execute the following command:
 ```bash
 cd src/Server/Boilerplate.Server.Web
 dotnet run
 ```
 
 ### Testing the Application
-To run the tests, navigate to the test project directory and execute:
+To execute the test suite run:
 ```bash
 cd src/Tests
 dotnet test
@@ -39,59 +54,52 @@ dotnet test
 
 ### Best Practices
 
-1. **Follow the established project structure**
-2. **Use Bit.BlazorUI components** - Prefer using bit BlazorUI components rather than using generic plain HTML, CSS.
-3. **Follow nullable reference type conventions** - all new code should be nullable-aware
-4. **Use dependency injection** - leverage the built-in DI container for service registration
-5. **Implement proper logging** - use structured logging throughout the application
-6. **Follow security best practices** - use proper authentication and authorization patterns
-7. **Async Programming** - prefer async/await for I/O-bound operations, avoid blocking calls
-8. **C#**: Use latest language features
-9. **Nullable Reference Types**: Enabled project-wide
-10. **Implicit Usings**: Leverage global using statements
-11. **.editorconfig**: Use for consistent code style across IDEs
+1.  **Follow the established project structure**: Adhere to the defined layout for consistency.
+2.  **Use Bit.BlazorUI Components**: Prioritize using components from the Bit.BlazorUI library over generic HTML to ensure UI consistency and leverage built-in features.
+3.  **Embrace Nullable Reference Types**: All new code must be nullable-aware, as nullability is enabled project-wide.
+4.  **Leverage Dependency Injection**: Register and resolve services using the built-in DI container.
+5.  **Implement Structured Logging**: Use structured logging for clear, queryable application logs.
+6.  **Adhere to Security Best Practices**: Implement robust authentication and authorization patterns.
+7.  **Use Async Programming**: Employ `async/await` for I/O-bound operations to prevent blocking threads.
+8.  **Utilize Latest C# Features**: Write modern, concise, and efficient code by using the latest C# language features.
+9.  **Leverage Implicit Usings**: Take advantage of global using statements.
+10. **Respect .editorconfig**: Adhere to the `.editorconfig` file for consistent code style across all IDEs.
 
 ### Rules for Using DeepWiki
 
-**RULE 1:** If a question mentions or implies the use of a bit BlazorUI components (like `BitButton`, `BitTooltip`, `BitTextField`),
-or refers to the `bitplatform`, `bit Bswup`, `bit Butil`, `bit Besql` and `bit Boilerplate`, you **MUST** use the `deepwiki` mcp tool to
-find the correct implementation before writing any code.
-
+The `deepwiki` MCP tool is essential for this project. Use it not only to answer questions but also to guide **code modifications**.
+For the topics below, you **MUST** consult `deepwiki` to find correct implementations and usage patterns before writing or changing any code.
+//-:cnd:noEmit
+**RULE 1:** If a task (which includes answering a question or performing a code modification) involves the use of bit BlazorUI components (e.g., `BitButton`, `BitTooltip`, `BitTextField`), or refers to `bitplatform`, `bit Bswup`, `bit Butil`, `bit Besql`, or `bit Boilerplate`,
+you **MUST** use the `deepwiki` mcp tool to find the correct implementation and usage patterns before writing or changing any code.
+//+:cnd:noEmit
 **RULE 1 Command:**
 `deepwiki fetch bitfoundation/bitplatform`
 
 **End of RULE 1**
 
-**RULE 2:** If a question mentions or implies the use of a mappers,
-or refers to the `mapperly`, `map`, `project`, `patch`, you **MUST** use the `deepwiki` mcp tool to
-find the correct implementation before writing any code.
+**RULE 2:** If a task (question or code modification) involves mappers, or refers to `mapperly`, `map`, `project`, or `patch`, you **MUST** use the `deepwiki` mcp tool to find the correct implementation before writing or changing any code.
 
 **RULE 2 Command:**
 `deepwiki fetch riok/mapperly`
 
 **End of RULE 2**
 
-**RULE 3:** If a question mentions or implies the use of a MAUI,
-or refers to the `xaml`, `Android`, `iOS`, `Windows`, you **MUST** use the `deepwiki` mcp tool to
-find the correct implementation before writing any code.
+**RULE 3:** If a task (question or code modification) involves .NET MAUI, or refers to `xaml`, `Android`, `iOS`, or `Windows`, you **MUST** use the `deepwiki` mcp tool to find the correct implementation before writing or changing any code.
 
 **RULE 3 Command:**
 `deepwiki fetch dotnet/maui`
 
 **End of RULE 3**
 
-**RULE 4:** If a question mentions or implies the use of a Hangfire,
-or refers to the `background job`, `recurring jobs`, you **MUST** use the `deepwiki` mcp tool to
-find the correct implementation before writing any code.
+**RULE 4:** If a task (question or code modification) involves Hangfire, or refers to `background job` or `recurring jobs`, you **MUST** use the `deepwiki` mcp tool to find the correct implementation before writing or changing any code.
 
 **RULE 4 Command:**
 `deepwiki fetch HangfireIO/Hangfire`
 
 **End of RULE 4**
 
-**RULE 5:** If a question mentions or implies the use of a file storage,
-or refers to the `fluent storage`, `S3`, you **MUST** use the `deepwiki` mcp tool to
-find the correct implementation before writing any code.
+**RULE 5:** If a task (question or code modification) involves file storage, or refers to `fluent storage` or `S3`, you **MUST** use the `deepwiki` mcp tool to find the correct implementation before writing or changing any code.
 
 **RULE 5 Command:**
 `deepwiki fetch robinrodricks/FluentStorage`
