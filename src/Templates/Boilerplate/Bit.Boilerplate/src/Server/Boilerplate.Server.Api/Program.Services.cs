@@ -603,6 +603,33 @@ public static partial class Program
                 configuration.GetRequiredSection("Authentication:AzureAD").Bind(options);
             }, openIdConnectScheme: "AzureAD");
         }
+
+        // While Google, GitHub, Twitter(X), Apple and AzureAD needs account creation in their corresponding developer portals,
+        // and configuring the client ID and secret, the following OpenID Connect configuration is for Duende IdentityServer demo server,
+        // which is a public server that allows you to test Social sign-in feature without needing to configure anything.
+        authenticationBuilder.AddOpenIdConnect("Identity-Server-Demo", options =>
+        {
+            options.Authority = "https://demo.duendesoftware.com";
+
+            options.ClientId = "interactive.confidential";
+            options.ClientSecret = "secret";
+            options.ResponseType = "code";
+            options.ResponseMode = "query";
+
+            options.Scope.Clear();
+            options.Scope.Add("openid");
+            options.Scope.Add("profile");
+            options.Scope.Add("api");
+            options.Scope.Add("offline_access");
+            options.Scope.Add("email");
+
+            options.MapInboundClaims = false;
+            options.GetClaimsFromUserInfoEndpoint = true;
+            options.SaveTokens = true;
+            options.DisableTelemetry = true;
+
+            options.Prompt = "login"; // Force login every time
+        });
     }
 
     private static void AddSwaggerGen(WebApplicationBuilder builder)

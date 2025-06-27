@@ -30,4 +30,9 @@ public partial class SocialRow
     {
         await OnClick.InvokeAsync("AzureAD");
     }
+
+    private async Task HandleIdentityServerDemo()
+    {
+        await OnClick.InvokeAsync("Identity-Server-Demo");
+    }
 }
