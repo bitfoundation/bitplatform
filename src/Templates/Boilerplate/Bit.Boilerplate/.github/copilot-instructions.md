@@ -40,7 +40,7 @@ dotnet test
 ### Best Practices
 
 1. **Follow the established project structure**
-2. **Use Bit.BlazorUI components** - Do not use generic HTML/CSS/JS solutions for these components.
+2. **Use Bit.BlazorUI components** - Prefer using bit BlazorUI components rather than using generic plain HTML, CSS.
 3. **Follow nullable reference type conventions** - all new code should be nullable-aware
 4. **Use dependency injection** - leverage the built-in DI container for service registration
 5. **Implement proper logging** - use structured logging throughout the application
@@ -70,3 +70,30 @@ find the correct implementation before writing any code.
 `deepwiki fetch riok/mapperly`
 
 **End of RULE 2**
+
+**RULE 3:** If a question mentions or implies the use of a MAUI,
+or refers to the `xaml`, `Android`, `iOS`, `Windows`, you **MUST** use the `deepwiki` mcp tool to
+find the correct implementation before writing any code.
+
+**RULE 3 Command:**
+`deepwiki fetch dotnet/maui`
+
+**End of RULE 3**
+
+**RULE 4:** If a question mentions or implies the use of a Hangfire,
+or refers to the `background job`, `recurring tasks`, you **MUST** use the `deepwiki` mcp tool to
+find the correct implementation before writing any code.
+
+**RULE 4 Command:**
+`deepwiki fetch HangfireIO/Hangfire`
+
+**End of RULE 4**
+
+**RULE 5:** If a question mentions or implies the use of a file storage,
+or refers to the `fluent storage`, `S3`, you **MUST** use the `deepwiki` mcp tool to
+find the correct implementation before writing any code.
+
+**RULE 5 Command:**
+`deepwiki fetch robinrodricks/FluentStorage`
+
+**End of RULE 5**
