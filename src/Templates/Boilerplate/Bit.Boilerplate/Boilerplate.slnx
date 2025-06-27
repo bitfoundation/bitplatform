@@ -22,8 +22,11 @@
     <File Path=".azure-devops/workflows/cd.yml" />
     <File Path=".azure-devops/workflows/ci.yml" />
   </Folder>
-//#elif (pipeline == "GitHub")
-  <Folder Name="/.SolutionItems/.github/" Id="351df30f-2daa-a858-be55-4affc8d70af2" />
+//#endif
+  <Folder Name="/.SolutionItems/.github/" Id="351df30f-2daa-a858-be55-4affc8d70af2">
+	<File Path=".github/copilot-instructions.md" />
+  </Folder>
+//#if (pipeline == "GitHub")
   <Folder Name="/.SolutionItems/.github/workflows/" Id="c0ca9c70-aac5-bd27-2f07-59fab982d30d">
     <File Path=".github/workflows/cd.yml" />
     <File Path=".github/workflows/ci.yml" />

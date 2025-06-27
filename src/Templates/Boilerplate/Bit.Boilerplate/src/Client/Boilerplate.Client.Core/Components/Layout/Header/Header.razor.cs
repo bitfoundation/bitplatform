@@ -22,7 +22,7 @@ public partial class Header : AppComponentBase
 
         unsubscribePageTitleChanged = PubSubService.Subscribe(ClientPubSubMessages.PAGE_DATA_CHANGED, async payload =>
         {
-            (pageTitle, pageSubtitle, showGoBackButton) = ((string?, string?,bool))payload!;
+            (pageTitle, pageSubtitle, showGoBackButton) = ((string?, string?, bool))payload!;
 
             StateHasChanged();
         });

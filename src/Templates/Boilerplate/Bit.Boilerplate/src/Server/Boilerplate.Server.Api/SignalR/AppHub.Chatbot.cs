@@ -93,7 +93,7 @@ public partial class AppHub
                                         .LogError("Chat reported issue: User email: {emailAddress}, Conversation history: {conversationHistory}", emailAddress, conversationHistory);
                                 }, name: "SaveUserEmailAndConversationHistory", description: "Saves the user's email address and the conversation history for future reference. Use this tool when the user provides their email address during the conversation. Parameters: emailAddress (string), conversationHistory (string)"),
                                 //#if (module == "Sales")
-                                AIFunctionFactory.Create(async ([Description("Concise summary of these user requirements in English Language")] string userNeeds, [Description("Car manufactor's English name (Optional)")] string? manufactor) =>
+                                AIFunctionFactory.Create(async ([Description("Concise summary of these user requirements in English Language")] string userNeeds, [Description("Car manufacturer's English name (Optional)")] string? manufacturer) =>
                                 {
                                     if (messageSpecificCancellationToken.IsCancellationRequested)
                                         return null;
@@ -102,14 +102,17 @@ public partial class AppHub
 
                                     await using var scope = serviceProvider.CreateAsyncScope();
                                     var productEmbeddingService = scope.ServiceProvider.GetRequiredService<ProductEmbeddingService>();
-                                    var recommendedProducts = await (await productEmbeddingService.GetProductsBySearchQuery($"{userNeeds}, Manufactor: {manufactor}", messageSpecificCancellationToken))
+                                    var searchQuery = string.IsNullOrWhiteSpace(manufacturer)
+                                        ? userNeeds
+                                        : $"{userNeeds}, Manufacturer: {manufacturer}";
+                                    var recommendedProducts = await (await productEmbeddingService.GetProductsBySearchQuery(searchQuery, messageSpecificCancellationToken))
                                         .Take(10)
                                         .Project()
                                         .Select(p => new
                                         {
                                             p.Name,
                                             PageUrl = new Uri(baseApiUrl, p.PageUrl),
-                                            Manufactor = p.CategoryName,
+                                            Manufacturer = p.CategoryName,
                                             Price = p.FormattedPrice,
                                             Description = p.DescriptionText
                                         })

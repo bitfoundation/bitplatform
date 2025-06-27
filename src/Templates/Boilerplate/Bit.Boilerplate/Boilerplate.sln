@@ -37,9 +37,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		.azure-devops\workflows\ci.yml = .azure-devops\workflows\ci.yml
 	EndProjectSection
 EndProject
-#elif (pipeline == "GitHub")
+#endif
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{3E577755-186F-4E63-8153-B8DE890015C9}"
+	ProjectSection(SolutionItems) = preProject
+		.github\copilot-instructions.md = .github\copilot-instructions.md
+	EndProjectSection
 EndProject
+#if (pipeline == "GitHub")
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{2347E3B2-FDDE-427E-A0AE-E4DCD47C2989}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\cd.yml = .github\workflows\cd.yml
