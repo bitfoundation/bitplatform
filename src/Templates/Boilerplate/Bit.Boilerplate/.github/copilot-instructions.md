@@ -46,7 +46,7 @@ dotnet test
 5. **Implement proper logging** - use structured logging throughout the application
 6. **Follow security best practices** - use proper authentication and authorization patterns
 7. **Async Programming** - prefer async/await for I/O-bound operations, avoid blocking calls
-8. **C# 13.0**: Use latest language features
+8. **C#**: Use latest language features
 9. **Nullable Reference Types**: Enabled project-wide
 10. **Implicit Usings**: Leverage global using statements
 11. **.editorconfig**: Use for consistent code style across IDEs
@@ -81,7 +81,7 @@ find the correct implementation before writing any code.
 **End of RULE 3**
 
 **RULE 4:** If a question mentions or implies the use of a Hangfire,
-or refers to the `background job`, `recurring tasks`, you **MUST** use the `deepwiki` mcp tool to
+or refers to the `background job`, `recurring jobs`, you **MUST** use the `deepwiki` mcp tool to
 find the correct implementation before writing any code.
 
 **RULE 4 Command:**
