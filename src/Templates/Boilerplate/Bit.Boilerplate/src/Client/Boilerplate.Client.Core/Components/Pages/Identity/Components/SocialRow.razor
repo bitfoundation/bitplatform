@@ -2,6 +2,14 @@
 
 <section>
     <BitStack Horizontal Alignment="BitAlignment.SpaceBetween">
+
+        @if (AppEnvironment.IsDev())
+        {
+            <SocialButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleIdentityServerDemo)" Title="@Localizer[AppStrings.IdentityServerDemoSignInButtonText]">
+                <IdentityServerDemoIcon />
+            </SocialButton>
+        }
+
         <SocialButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleGoogle)" Title="@Localizer[AppStrings.GoogleSignInButtonText]">
             <GoogleIcon />
         </SocialButton>
@@ -14,8 +22,14 @@
             <TwitterIcon />
         </SocialButton>
 
+        @*
         <SocialButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleApple)" Title="@Localizer[AppStrings.AppleSignInButtonText]">
             <AppleIcon />
         </SocialButton>
+
+        <SocialButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleAzureAD)" Title="@Localizer[AppStrings.AzureEntraSignInButtonText]">
+            <AzureEntraIcon />
+        </SocialButton>
+        *@
     </BitStack>
 </section>

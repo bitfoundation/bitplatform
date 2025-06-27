@@ -624,6 +624,12 @@
     <data name="SignOut" xml:space="preserve">
     <value>خروج از سیستم</value>
   </data>
+    <data name="IdentityServerDemoSignInButtonText" xml:space="preserve">
+    <value>ورود با سرور تستی</value>
+  </data>
+    <data name="AzureEntraSignInButtonText" xml:space="preserve">
+    <value>ورود با Azure Entra</value>
+  </data>
     <data name="SignOutPrompt" xml:space="preserve">
     <value>آیا مطمئن هستید که می خواهید خارج شوید؟</value>
   </data>

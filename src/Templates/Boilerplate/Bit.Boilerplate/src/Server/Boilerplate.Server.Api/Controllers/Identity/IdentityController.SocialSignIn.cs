@@ -49,7 +49,7 @@ public partial class IdentityController
 
             if (user is null)
             {
-                var name = info.Principal.FindFirstValue("preferred_username") ?? info.Principal.FindFirstValue(ClaimTypes.Name) ?? info.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
+                var name = info.Principal.FindFirstValue("preferred_username") ?? info.Principal.FindFirstValue(ClaimTypes.Name) ?? info.Principal.FindFirstValue(ClaimTypes.NameIdentifier) ?? info.Principal.FindFirstValue("name");
                 // Instead of automatically creating a user here, you can navigate to the sign-up page and pass the email and phone number in the query string.
 
                 user = new()
