@@ -1,21 +1,5 @@
 # copilot-instructions.md
 
-### Architecture & Project Structure
-
-- **Client Projects**: Multiple platform-specific clients sharing a common core.
-  - `Boilerplate.Client.Core`: Contains shared Blazor pages, components, services, TypeScript, and SCSS files.
-  - `Boilerplate.Client.Web`: A Progressive Web App (PWA) built with Blazor WebAssembly.
-  - `Boilerplate.Client.Maui`: A cross-platform Blazor Hybrid application using .NET MAUI.
-  - `Boilerplate.Client.Windows`: A Windows Forms-based Blazor Hybrid application.
-
-- **Server Projects**: API endpoints and web hosting.
-  - `Boilerplate.Server.Api`: Hosts Web API controllers, Entity Framework Core DbContext, migrations, and services for SignalR, Hangfire, data models, and mappers.
-  - `Boilerplate.Server.Web`: The main web host supporting Blazor Server, Auto, and WebAssembly render modes, with optional pre-rendering.
-
-- `Boilerplate.Shared`: A shared library for Data Transfer Objects (DTOs), enums, interfaces, and RESX resource files.
-
-- `Boilerplate.Tests`: Contains integration (API) and UI tests written with Playwright and MSTest.
-
 ### Technologies
 - **C# 13.0**
 - **ASP.NET Core 9.0**
@@ -30,27 +14,6 @@
 - **Microsoft.Extensions.AI**: AI integration
 - **TypeScript**: Type-safe JavaScript development
 - **SCSS**: Advanced CSS preprocessing
-
-### Building the Application
-To build the application run:
-```bash
-cd src/Server/Boilerplate.Server.Web
-dotnet build
-```
-
-### Running the Application
-To run the application, execute the following command:
-```bash
-cd src/Server/Boilerplate.Server.Web
-dotnet run
-```
-
-### Testing the Application
-To execute the test suite run:
-```bash
-cd src/Tests
-dotnet test
-```
 
 ### Best Practices
 
@@ -69,10 +32,10 @@ dotnet test
 
 The `deepwiki` MCP tool is essential for this project. Use it not only to answer questions but also to guide **code modifications**.
 For the topics below, you **MUST** consult `deepwiki` to find correct implementations and usage patterns before writing or changing any code.
-//-:cnd:noEmit
+
 **RULE 1:** If a task (which includes answering a question or performing a code modification) involves the use of bit BlazorUI components (e.g., `BitButton`, `BitTooltip`, `BitTextField`), or refers to `bitplatform`, `bit Bswup`, `bit Butil`, `bit Besql`, or `bit Boilerplate`,
 you **MUST** use the `deepwiki` mcp tool to find the correct implementation and usage patterns before writing or changing any code.
-//+:cnd:noEmit
+
 **RULE 1 Command:**
 `deepwiki fetch bitfoundation/bitplatform`
 
