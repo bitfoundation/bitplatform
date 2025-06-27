@@ -42,3 +42,5 @@ The following questions give you an idea what kind of questions can be answered 
 
 ## copilot-instructions.md
 
+Thanks to the [copilot-instructions.md file](https://github.com/bitfoundation/bitplatform/blob/develop/src/Templates/Boilerplate/Bit.Boilerplate/.github/copilot-instructions.md#tool-usage-deepwiki-for-bitplatform),
+it uses `deepwiki` to answer questions about the `bitplatform`.
