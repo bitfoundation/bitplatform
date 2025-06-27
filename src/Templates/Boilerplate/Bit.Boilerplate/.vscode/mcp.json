@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "DeepWiki": {
+      "type": "sse",
+      "url": "https://mcp.deepwiki.com/sse"
+    }
+  }
+}

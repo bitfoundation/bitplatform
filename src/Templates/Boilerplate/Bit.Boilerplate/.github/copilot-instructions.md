@@ -1,6 +1,6 @@
 # copilot-instructions.md
 
-## Architecture & Project Structure
+### Architecture & Project Structure
 
 - **Client Projects**: Multiple platform-specific clients sharing core infrastructure 
   - `Client.Core`: Blazor pages, shared components, service, typescript and SCSS files.
@@ -16,8 +16,6 @@
 
 - **Boilerplate.Tests**: Integration api and UI tests using Playwright and MSTest.
 
-## Technology Stack
-
 ### Technologies
 - **C# 13.0**
 - **ASP.NET Core 9.0**
@@ -32,8 +30,6 @@
 - **Microsoft.Extensions.AI**: AI integration
 - **TypeScript**: Type-safe JavaScript development 
 - **SCSS**: Advanced CSS preprocessing
-
-## Development Guidelines
 
 ### Code Style & Conventions
 - **C# 13.0**: Use latest language features
@@ -68,7 +64,7 @@ dotnet test
 ### GitHub Codespaces Support
 The project is optimized for GitHub Codespaces development with pre-configured container support. 
 
-## Best Practices
+### Best Practices
 
 1. **Follow the established project structure**
 2. **Use Bit.BlazorUI components** - leverage the framework's built-in components and utilities
@@ -77,3 +73,16 @@ The project is optimized for GitHub Codespaces development with pre-configured c
 5. **Implement proper logging** - use structured logging throughout the application
 6. **Follow security best practices** - use proper authentication and authorization patterns
 7. **Async Programming** - prefer async/await for I/O-bound operations, avoid blocking calls
+
+### Tool Usage: DeepWiki for BitPlatform
+You have a special tool, `deepwiki`, for accessing documentation about the `bitfoundation/bitplatform` library.
+
+**RULE:** If a question mentions or implies the use of a "Bit" component (like `BitButton`, `BitTooltip`, `BitTextField`), or refers to the "bitplatform" or "bit Boilerplate",
+you **MUST** use the `deepwiki` tool to find the correct implementation before writing any code. Do not use generic HTML/CSS/JS solutions for these components.
+
+**Command:**
+`deepwiki fetch bitfoundation/bitplatform`
+
+**Example Usage:**
+*   **User Prompt:** "How do I make a BitButton disabled?"
+*   **Your Action:** First, run `deepwiki fetch bitfoundation/bitplatform to search for How do I make a BitButton disabled?`. Then, use the documentation to answer the user.
