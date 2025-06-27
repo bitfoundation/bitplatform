@@ -12,33 +12,9 @@
   - `Server.Api`: Web API controllers, entity framework core db context, type configurations and migrations plus SignalR, Hangfire, models, services and mappers.
   - `Server.Web`: Blazor Server, Auto and WebAssembly, with or without pre-rendering.
 
-- **Shared**: Dto classes, enums, interfaces etc.
+- **Shared**: Dto classes, enums, interfaces, resx resources etc.
 
 - **Boilerplate.Tests**: Integration api and UI tests using Playwright and MSTest.
-
-### Technologies
-- **C# 13.0**
-- **ASP.NET Core 9.0**
-- **Blazor**: Component-based web UI framework
-- **MAUI**: Cross-platform app development
-- **ASP.NET Core Identity**: Authentication and authorization
-- **Entity Framework Core**: Data access
-- **SignalR**: Real-time communication 
-- **Hangfire**: Background job processing
-- **OData**: Advanced querying capabilities
-- **Bit.BlazorUI**: Primary UI framework 
-- **Microsoft.Extensions.AI**: AI integration
-- **TypeScript**: Type-safe JavaScript development 
-- **SCSS**: Advanced CSS preprocessing
-
-### Code Style & Conventions
-- **C# 13.0**: Use latest language features
-- **Nullable Reference Types**: Enabled project-wide
-- **Implicit Usings**: Leverage global using statements
-- **.editorconfig**: Use for consistent code style across IDEs
-
-### Global Using Statements
-The project uses extensive global using statements for common namespaces:
 
 ### Building the Application
 Navigate to the server directory and run:
@@ -61,29 +37,36 @@ cd src/Tests
 dotnet test
 ```
 
-### GitHub Codespaces Support
-The project is optimized for GitHub Codespaces development with pre-configured container support. 
-
 ### Best Practices
 
 1. **Follow the established project structure**
-2. **Use Bit.BlazorUI components** - leverage the framework's built-in components and utilities
+2. **Use Bit.BlazorUI components** - Do not use generic HTML/CSS/JS solutions for these components.
 3. **Follow nullable reference type conventions** - all new code should be nullable-aware
 4. **Use dependency injection** - leverage the built-in DI container for service registration
 5. **Implement proper logging** - use structured logging throughout the application
 6. **Follow security best practices** - use proper authentication and authorization patterns
 7. **Async Programming** - prefer async/await for I/O-bound operations, avoid blocking calls
+8. **C# 13.0**: Use latest language features
+9. **Nullable Reference Types**: Enabled project-wide
+10. **Implicit Usings**: Leverage global using statements
+11. **.editorconfig**: Use for consistent code style across IDEs
 
-### Tool Usage: DeepWiki for BitPlatform
-You have a special tool, `deepwiki`, for accessing documentation about the `bitplatform`, `bit BlazorUI`, `bit Bswup`, `bit Butil`, `bit Besql` and `bit Boilerplate`.
+### Rules for Using DeepWiki
 
-**RULE:** If a question mentions or implies the use of a bit BlazorUI components (like `BitButton`, `BitTooltip`, `BitTextField`),
+**RULE 1:** If a question mentions or implies the use of a bit BlazorUI components (like `BitButton`, `BitTooltip`, `BitTextField`),
 or refers to the `bitplatform`, `bit Bswup`, `bit Butil`, `bit Besql` and `bit Boilerplate`, you **MUST** use the `deepwiki` mcp tool to
-find the correct implementation before writing any code. Do not use generic HTML/CSS/JS solutions for these components.
+find the correct implementation before writing any code.
 
-**Command:**
+**RULE 1 Command:**
 `deepwiki fetch bitfoundation/bitplatform`
 
-**Example Usage:**
-*   **User Prompt:** "How do I make a BitButton disabled?"
-*   **Your Action:** First, run `deepwiki fetch bitfoundation/bitplatform How do I make a BitButton disabled?`. Then, use the documentation to answer the user.
+**End of RULE 1**
+
+**RULE 2:** If a question mentions or implies the use of a mappers,
+or refers to the `mapperly`, `map`, `project`, `patch`, you **MUST** use the `deepwiki` mcp tool to
+find the correct implementation before writing any code.
+
+**RULE 2 Command:**
+`deepwiki fetch riok/mapperly`
+
+**End of RULE 2**
