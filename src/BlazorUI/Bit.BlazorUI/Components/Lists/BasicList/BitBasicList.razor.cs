@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Drawing;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitBasicList provides a base component for rendering large sets of items. It’s agnostic of layout, the tile component used, and selection management.
@@ -18,6 +20,11 @@ public partial class BitBasicList<TItem> : BitComponentBase
     private bool _isLoadingMore => _globalCts is not null;
 
 
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the list.
+    /// </summary>
+    [Parameter] public BitBasicListClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The custom content that will be rendered when there is no item to show.
@@ -111,6 +118,11 @@ public partial class BitBasicList<TItem> : BitComponentBase
     [Parameter] public RenderFragment<TItem>? RowTemplate { get; set; }
 
     /// <summary>
+    /// Custom CSS styles for different parts of the list.
+    /// </summary>
+    [Parameter] public BitBasicListClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// Enables virtualization in rendering the list.
     /// </summary>
     [Parameter] public bool Virtualize { get; set; }
@@ -138,8 +150,15 @@ public partial class BitBasicList<TItem> : BitComponentBase
 
     protected override string RootElementClass => "bit-bsl";
 
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+    }
+
     protected override void RegisterCssStyles()
     {
+        StyleBuilder.Register(() => Styles?.Root);
+
         StyleBuilder.Register(() => (FullSize || FullWidth) ? "width:100%" : string.Empty);
         StyleBuilder.Register(() => (FullSize || FullHeight) ? "height:100%" : string.Empty);
 

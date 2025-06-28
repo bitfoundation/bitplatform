@@ -50,14 +50,17 @@
 
     @if (LoadMore && _loadMoreFinished is false)
     {
-        <button class="bit-bsl-lmb" @onclick="() => PerformLoadMore(false)">
+        <button @onclick="() => PerformLoadMore(false)"
+                style="@Styles?.LoadMoreButton"
+                class="bit-bsl-lmb @Classes?.LoadMoreButton">
             @if (LoadMoreTemplate is not null)
             {
                 @LoadMoreTemplate(_isLoadingMore)
             }
             else
             {
-                <div class="bit-bsl-lmt">
+                <div style="@Styles?.LoadMoreText"
+                     class="bit-bsl-lmt @Classes?.LoadMoreText">
                     @if (_isLoadingMore)
                     {
                         <span>...</span>

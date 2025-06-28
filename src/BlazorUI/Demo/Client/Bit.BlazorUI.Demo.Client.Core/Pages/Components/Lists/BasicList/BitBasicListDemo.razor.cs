@@ -6,6 +6,15 @@ public partial class BitBasicListDemo
     [
         new()
         {
+            Name = "Classes",
+            Type = "BitBasicListClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the list.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
+        },
+        new()
+        {
             Name = "EmptyContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -125,6 +134,15 @@ public partial class BitBasicListDemo
         },
         new()
         {
+            Name = "Styles",
+            Type = "BitBasicListClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the list.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
+        },
+        new()
+        {
             Name = "Virtualize",
             Type = "bool",
             DefaultValue = "false",
@@ -137,6 +155,40 @@ public partial class BitBasicListDemo
             DefaultValue = "null",
             Description = "The template for items that have not yet rendered.",
         },
+    ];
+
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
+        new()
+        {
+            Id = "class-styles",
+            Title = "BitBasicListClassStyles",
+            Description = "",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the root element of the list.",
+                },
+                new()
+                {
+                    Name = "LoadMoreButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the LoadMore button of the list.",
+                },
+                new()
+                {
+                    Name = "LoadMoreText",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the LoadMore text of the list.",
+                },
+            ]
+        }
     ];
 
 
