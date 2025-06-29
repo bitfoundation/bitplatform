@@ -376,7 +376,8 @@
                     "copyOnly": [
                         "**/*.svg",
                         "**/*.png",
-                        "**/*.sh"
+                        "**/*.sh",
+			".github/copilot-instructions.md"
                     ],
                     "exclude": [
                         ".vs/**",
@@ -395,7 +396,7 @@
                 {
                     "condition": "(pipeline != GitHub)",
                     "exclude": [
-                        ".github/**"
+                        ".github/workflows**"
                     ]
                 },
                 {

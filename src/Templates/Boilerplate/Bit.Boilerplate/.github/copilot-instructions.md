@@ -1,89 +1,70 @@
 # copilot-instructions.md
 
-### Architecture & Project Structure
-
-- **Client Projects**: Multiple platform-specific clients sharing core infrastructure 
-  - `Client.Core`: Blazor pages, shared components, service, typescript and SCSS files.
-  - `Client.Web`: PWA Blazor WebAssembly.
-  - `Client.Maui`: Cross-platform MAUI based Blazor Hybrid app.
-  - `Client.Windows`: Windows forms based Blazor Hybrid app.
-
-- **Server Projects**: API and web
-  - `Server.Api`: Web API controllers, entity framework core db context, type configurations and migrations plus SignalR, Hangfire, models, services and mappers.
-  - `Server.Web`: Blazor Server, Auto and WebAssembly, with or without pre-rendering.
-
-- **Shared**: Dto classes, enums, interfaces etc.
-
-- **Boilerplate.Tests**: Integration api and UI tests using Playwright and MSTest.
-
 ### Technologies
 - **C# 13.0**
 - **ASP.NET Core 9.0**
 - **Blazor**: Component-based web UI framework
-- **MAUI**: Cross-platform app development
+- **.NET MAUI**: Cross-platform app development
 - **ASP.NET Core Identity**: Authentication and authorization
 - **Entity Framework Core**: Data access
-- **SignalR**: Real-time communication 
+- **SignalR**: Real-time communication
 - **Hangfire**: Background job processing
 - **OData**: Advanced querying capabilities
-- **Bit.BlazorUI**: Primary UI framework 
+- **Bit.BlazorUI**: Primary UI component library
 - **Microsoft.Extensions.AI**: AI integration
-- **TypeScript**: Type-safe JavaScript development 
+- **TypeScript**: Type-safe JavaScript development
 - **SCSS**: Advanced CSS preprocessing
-
-### Code Style & Conventions
-- **C# 13.0**: Use latest language features
-- **Nullable Reference Types**: Enabled project-wide
-- **Implicit Usings**: Leverage global using statements
-- **.editorconfig**: Use for consistent code style across IDEs
-
-### Global Using Statements
-The project uses extensive global using statements for common namespaces:
-
-### Building the Application
-Navigate to the server directory and run:
-```bash
-cd src/Server/Boilerplate.Server.Web
-dotnet build
-```
-
-### Running the Application
-To run the application, execute the following command in the server directory:
-```bash
-cd src/Server/Boilerplate.Server.Web
-dotnet run
-```
-
-### Testing the Application
-To run the tests, navigate to the test project directory and execute:
-```bash
-cd src/Tests
-dotnet test
-```
-
-### GitHub Codespaces Support
-The project is optimized for GitHub Codespaces development with pre-configured container support. 
 
 ### Best Practices
 
-1. **Follow the established project structure**
-2. **Use Bit.BlazorUI components** - leverage the framework's built-in components and utilities
-3. **Follow nullable reference type conventions** - all new code should be nullable-aware
-4. **Use dependency injection** - leverage the built-in DI container for service registration
-5. **Implement proper logging** - use structured logging throughout the application
-6. **Follow security best practices** - use proper authentication and authorization patterns
-7. **Async Programming** - prefer async/await for I/O-bound operations, avoid blocking calls
+1.  **Follow the established project structure**: Adhere to the defined layout for consistency.
+2.  **Use Bit.BlazorUI Components**: Prioritize using components from the Bit.BlazorUI library over generic HTML to ensure UI consistency and leverage built-in features.
+3.  **Embrace Nullable Reference Types**: All new code must be nullable-aware, as nullability is enabled project-wide.
+4.  **Leverage Dependency Injection**: Register and resolve services using the built-in DI container.
+5.  **Implement Structured Logging**: Use structured logging for clear, queryable application logs.
+6.  **Adhere to Security Best Practices**: Implement robust authentication and authorization patterns.
+7.  **Use Async Programming**: Employ `async/await` for I/O-bound operations to prevent blocking threads.
+8.  **Utilize Latest C# Features**: Write modern, concise, and efficient code by using the latest C# language features.
+9.  **Leverage Implicit Usings**: Take advantage of global using statements.
+10. **Respect .editorconfig**: Adhere to the `.editorconfig` file for consistent code style across all IDEs.
 
-### Tool Usage: DeepWiki for BitPlatform
-You have a special tool, `deepwiki`, for accessing documentation about the `bitplatform`, `bit BlazorUI`, `bit Bswup`, `bit Butil`, `bit Besql` and `bit Boilerplate`.
+### Rules for Using DeepWiki
 
-**RULE:** If a question mentions or implies the use of a bit BlazorUI components (like `BitButton`, `BitTooltip`, `BitTextField`),
-or refers to the `bitplatform`, `bit Bswup`, `bit Butil`, `bit Besql` and `bit Boilerplate`, you **MUST** use the `deepwiki` mcp tool to
-find the correct implementation before writing any code. Do not use generic HTML/CSS/JS solutions for these components.
+The `deepwiki` MCP tool is essential for this project. Use it not only to answer questions but also to guide **code modifications**.
+For the topics below, you **MUST** consult `deepwiki` to find correct implementations and usage patterns before writing or changing any code.
 
-**Command:**
+**RULE 1:** If a task (which includes answering a question or performing a code modification) involves the use of bit BlazorUI components (e.g., `BitButton`, `BitTooltip`, `BitTextField`), or refers to `bitplatform`, `bit Bswup`, `bit Butil`, `bit Besql`, or `bit Boilerplate`,
+you **MUST** use the `deepwiki` mcp tool to find the correct implementation and usage patterns before writing or changing any code.
+
+**RULE 1 Command:**
 `deepwiki fetch bitfoundation/bitplatform`
 
-**Example Usage:**
-*   **User Prompt:** "How do I make a BitButton disabled?"
-*   **Your Action:** First, run `deepwiki fetch bitfoundation/bitplatform How do I make a BitButton disabled?`. Then, use the documentation to answer the user.
+**End of RULE 1**
+
+**RULE 2:** If a task (question or code modification) involves mappers, or refers to `mapperly`, `map`, `project`, or `patch`, you **MUST** use the `deepwiki` mcp tool to find the correct implementation before writing or changing any code.
+
+**RULE 2 Command:**
+`deepwiki fetch riok/mapperly`
+
+**End of RULE 2**
+
+**RULE 3:** If a task (question or code modification) involves .NET MAUI, or refers to `xaml`, `Android`, `iOS`, or `Windows`, you **MUST** use the `deepwiki` mcp tool to find the correct implementation before writing or changing any code.
+
+**RULE 3 Command:**
+`deepwiki fetch dotnet/maui`
+
+**End of RULE 3**
+
+**RULE 4:** If a task (question or code modification) involves Hangfire, or refers to `background job` or `recurring jobs`, you **MUST** use the `deepwiki` mcp tool to find the correct implementation before writing or changing any code.
+
+**RULE 4 Command:**
+`deepwiki fetch HangfireIO/Hangfire`
+
+**End of RULE 4**
+
+**RULE 5:** If a task (question or code modification) involves file storage, or refers to `fluent storage` or `S3`, you **MUST** use the `deepwiki` mcp tool to find the correct implementation before writing or changing any code.
+
+**RULE 5 Command:**
+`deepwiki fetch robinrodricks/FluentStorage`
+
+**End of RULE 5**
