@@ -11,6 +11,8 @@ namespace Boilerplate.Server.Api.Services;
 /// </summary>
 public partial class ProductEmbeddingService
 {
+    private const float SIMILARITY_THRESHOLD = 0.85f;
+
     [AutoInject] private AppDbContext dbContext = default!;
     [AutoInject] private IWebHostEnvironment env = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
@@ -37,12 +39,12 @@ public partial class ProductEmbeddingService
         //#endif
         return dbContext.Products
         //#if (database == "PostgreSQL")
-            .Where(p => p.Embedding!.CosineDistance(value!) < 0.85f).OrderBy(p => p.Embedding!.CosineDistance(value!));
+            .Where(p => p.Embedding!.CosineDistance(value!) < SIMILARITY_THRESHOLD).OrderBy(p => p.Embedding!.CosineDistance(value!));
         //#elif (database == "SqlServer")
         //#if (IsInsideProjectTemplate == true)
         /*
         //#endif
-            .Where(p => p.Embedding != null && EF.Functions.VectorDistance("cosine", p.Embedding, value!) < 0.85f).OrderBy(p => EF.Functions.VectorDistance("cosine", p.Embedding!, value!));
+            .Where(p => p.Embedding != null && EF.Functions.VectorDistance("cosine", p.Embedding, value!) < SIMILARITY_THRESHOLD).OrderBy(p => EF.Functions.VectorDistance("cosine", p.Embedding!, value!));
         //#if (IsInsideProjectTemplate == true)
         */
         //#endif
