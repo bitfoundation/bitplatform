@@ -1,35 +1,52 @@
 @inherits AppComponentBase
 
 <section>
-    <BitStack Horizontal Alignment="BitAlignment.SpaceBetween">
-
-        @if (AppEnvironment.IsDev())
+    <BitStack Horizontal>
+        @if (isLoadingProviders)
         {
-            <SocialButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleIdentityServerDemo)" Title="@Localizer[AppStrings.IdentityServerDemoSignInButtonText]">
-                <IdentityServerDemoIcon />
-            </SocialButton>
+            @for (int i = 0; i < 4; i++)
+            {
+                <BitShimmer Height="60px" Width="60px" Shape="BitShimmerShape.Rectangle" Background="BitColor.SecondaryBackground" />
+            }
         }
-
-        <SocialButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleGoogle)" Title="@Localizer[AppStrings.GoogleSignInButtonText]">
-            <GoogleIcon />
-        </SocialButton>
-
-        <SocialButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleGitHub)" Title="@Localizer[AppStrings.GitHubSignInButtonText]">
-            <GitHubIcon />
-        </SocialButton>
-
-        <SocialButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleTwitter)" Title="@Localizer[AppStrings.TwitterSignInButtonText]">
-            <TwitterIcon />
-        </SocialButton>
-
-        @*
-        <SocialButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleApple)" Title="@Localizer[AppStrings.AppleSignInButtonText]">
-            <AppleIcon />
-        </SocialButton>
-
-        <SocialButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleAzureAD)" Title="@Localizer[AppStrings.AzureEntraSignInButtonText]">
-            <AzureEntraIcon />
-        </SocialButton>
-        *@
+        else
+        {
+            @if (supportedProviders.Contains("IdentityServerDemo"))
+            {
+                <SocialButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleIdentityServerDemo)" Title="@Localizer[AppStrings.IdentityServerDemoSignInButtonText]">
+                    <IdentityServerDemoIcon />
+                </SocialButton>
+            }
+            @if (supportedProviders.Contains("Google"))
+            {
+                <SocialButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleGoogle)" Title="@Localizer[AppStrings.GoogleSignInButtonText]">
+                    <GoogleIcon />
+                </SocialButton>
+            }
+            @if (supportedProviders.Contains("GitHub"))
+            {
+                <SocialButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleGitHub)" Title="@Localizer[AppStrings.GitHubSignInButtonText]">
+                    <GitHubIcon />
+                </SocialButton>
+            }
+            @if (supportedProviders.Contains("Twitter"))
+            {
+                <SocialButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleTwitter)" Title="@Localizer[AppStrings.TwitterSignInButtonText]">
+                    <TwitterIcon />
+                </SocialButton>
+            }
+            @if (supportedProviders.Contains("Apple"))
+            {
+                <SocialButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleApple)" Title="@Localizer[AppStrings.AppleSignInButtonText]">
+                    <AppleIcon />
+                </SocialButton>
+            }
+            @if (supportedProviders.Contains("AzureAD"))
+            {
+                <SocialButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleAzureAD)" Title="@Localizer[AppStrings.AzureEntraSignInButtonText]">
+                    <AzureEntraIcon />
+                </SocialButton>
+            }
+        }
     </BitStack>
 </section>

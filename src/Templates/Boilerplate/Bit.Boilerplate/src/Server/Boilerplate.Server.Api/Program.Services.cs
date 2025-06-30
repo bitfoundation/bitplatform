@@ -244,7 +244,9 @@ public static partial class Program
                 }
             });
             //#elif (database == "PostgreSQL")
-            options.UseNpgsql(configuration.GetConnectionString("PostgreSQLConnectionString"), dbOptions =>
+            var dataSourceBuilder = new Npgsql.NpgsqlDataSourceBuilder(configuration.GetConnectionString("PostgreSQLConnectionString"));
+            dataSourceBuilder.EnableDynamicJson();
+            options.UseNpgsql(dataSourceBuilder.Build(), dbOptions =>
             {
                 dbOptions.UseVector();
             });
