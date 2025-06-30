@@ -1,12 +1,12 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Boilerplate.Shared.Attributes;
 using Microsoft.AspNetCore.Components.Endpoints;
 
 namespace Microsoft.AspNetCore.Http;
 
-internal static class HttpContextExtensions
+public static class HttpContextExtensions
 {
-    internal static AppResponseCacheAttribute? GetResponseCacheAttribute(this HttpContext context)
+    public static AppResponseCacheAttribute? GetResponseCacheAttribute(this HttpContext context)
     {
         var att = context.GetEndpoint()?.Metadata.OfType<AppResponseCacheAttribute>().FirstOrDefault();
 
@@ -16,7 +16,7 @@ internal static class HttpContextExtensions
         return att;
     }
 
-    internal static bool IsBlazorPageContext(this HttpContext context)
+    public static bool IsBlazorPageContext(this HttpContext context)
     {
         return context.GetEndpoint()?.Metadata?.OfType<ComponentTypeMetadata>()?.Any() is true;
     }

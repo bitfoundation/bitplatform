@@ -162,6 +162,13 @@
                 }
             ]
         },
+        "aspire": {
+            "displayName": "Add aspire?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false",
+            "description": "Adds aspire"
+        },
         "notification": {
             "displayName": "Add push notification?",
             "type": "parameter",
@@ -263,6 +270,33 @@
                 "high": 5000
             },
             "replaces": "5030"
+        },
+        "aspirePortGenerated_1": {
+            "type": "generated",
+            "generator": "port",
+            "parameters": {
+                "low": 2001,
+                "high": 2300
+            },
+            "replaces": "2030"
+        },
+        "aspirePortGenerated_2": {
+            "type": "generated",
+            "generator": "port",
+            "parameters": {
+                "low": 2001,
+                "high": 2300
+            },
+            "replaces": "2031"
+        },
+        "aspirePortGenerated_3": {
+            "type": "generated",
+            "generator": "port",
+            "parameters": {
+                "low": 2001,
+                "high": 2300
+            },
+            "replaces": "2032"
         },
         "serveApiPortGenerated": {
             "type": "generated",
@@ -377,7 +411,7 @@
                         "**/*.svg",
                         "**/*.png",
                         "**/*.sh",
-			".github/copilot-instructions.md"
+                        ".github/copilot-instructions.md"
                     ],
                     "exclude": [
                         ".vs/**",
@@ -559,9 +593,13 @@
                     "condition": "(api == Integrated)",
                     "exclude": [
                         "src/Server/Boilerplate.Server.Web/appsettings*.json",
-                        "src/Server/Boilerplate.Server.Web/Services/AppResponseCachePolicy.cs",
-                        "src/Server/Boilerplate.Server.Web/Services/SimpleJwtSecureDataFormat.cs",
-                        "src/Server/Boilerplate.Server.Web/Extensions/HttpContextExtensions.cs"
+                        "src/Server/Boilerplate.Server.Web/Services/SimpleJwtSecureDataFormat.cs"
+                    ]
+                },
+                {
+                    "condition": "(aspire == false)",
+                    "exclude": [
+                        "src/Server/Boilerplate.Server.AppHost/**"
                     ]
                 },
                 {

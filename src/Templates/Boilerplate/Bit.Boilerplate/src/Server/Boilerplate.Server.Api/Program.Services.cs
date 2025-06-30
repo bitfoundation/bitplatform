@@ -31,6 +31,7 @@ using AdsPush.Abstraction;
 //#endif
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Server.Api.Controllers;
+using Boilerplate.Server.Shared.Services;
 using Boilerplate.Server.Api.Services.Jobs;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Services.Identity;
@@ -45,6 +46,8 @@ public static partial class Program
         var env = builder.Environment;
         var services = builder.Services;
         var configuration = builder.Configuration;
+
+        builder.AddServerSharedServices();
 
         ServerApiSettings appSettings = new();
         configuration.Bind(appSettings);
@@ -114,31 +117,6 @@ public static partial class Program
         services.AddSingleton(sp => (IProblemDetailsWriter)sp.GetRequiredService<ServerExceptionHandler>());
         services.AddProblemDetails();
 
-        services.AddOutputCache(options =>
-        {
-            options.AddPolicy("AppResponseCachePolicy", policy =>
-            {
-                var builder = policy.AddPolicy<AppResponseCachePolicy>();
-            }, excludeDefaultPolicy: true);
-        });
-        services.AddDistributedMemoryCache();
-
-        services.AddHttpContextAccessor();
-
-        services.AddResponseCompression(opts =>
-        {
-            opts.EnableForHttps = true;
-            opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/octet-stream"]).ToArray();
-            opts.Providers.Add<BrotliCompressionProvider>();
-            opts.Providers.Add<GzipCompressionProvider>();
-        })
-            .Configure<BrotliCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest)
-            .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
-
-        //#if (appInsights == true)
-        services.AddApplicationInsightsTelemetry(options => configuration.GetRequiredSection("ApplicationInsights").Bind(options));
-        //#endif
-
         services.AddCors(builder =>
         {
             builder.AddDefaultPolicy(policy =>
@@ -157,8 +135,6 @@ public static partial class Program
                       .WithExposedHeaders(HeaderNames.RequestId, "Age", "App-Cache-Response");
             });
         });
-
-        services.AddAntiforgery();
 
         services.AddSingleton(sp =>
         {
@@ -397,9 +373,9 @@ public static partial class Program
                 Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
             }).AsIChatClient())
             .UseLogging()
-            .UseFunctionInvocation();
+            .UseFunctionInvocation()
+            .UseOpenTelemetry();
             // .UseDistributedCache()
-            // .UseOpenTelemetry()
         }
         else if (string.IsNullOrEmpty(appSettings.AI?.AzureOpenAI?.ChatApiKey) is false)
         {
@@ -411,9 +387,9 @@ public static partial class Program
                     Transport = new Azure.Core.Pipeline.HttpClientTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
                 }).AsIChatClient(appSettings.AI.AzureOpenAI.ChatModel))
             .UseLogging()
-            .UseFunctionInvocation();
+            .UseFunctionInvocation()
+            .UseOpenTelemetry();
             // .UseDistributedCache()
-            // .UseOpenTelemetry()
         }
 
         if (string.IsNullOrEmpty(appSettings.AI?.OpenAI?.EmbeddingApiKey) is false)
@@ -423,9 +399,9 @@ public static partial class Program
                 Endpoint = appSettings.AI.OpenAI.EmbeddingEndpoint,
                 Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
             }).AsIEmbeddingGenerator())
-            .UseLogging();
+            .UseLogging()
+            .UseOpenTelemetry();
             // .UseDistributedCache()
-            // .UseOpenTelemetry()
         }
         else if (string.IsNullOrEmpty(appSettings.AI?.AzureOpenAI?.EmbeddingApiKey) is false)
         {
@@ -435,9 +411,9 @@ public static partial class Program
                 {
                     Transport = new Azure.Core.Pipeline.HttpClientTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
                 }).AsIEmbeddingGenerator(appSettings.AI.AzureOpenAI.EmbeddingModel))
-            .UseLogging();
+            .UseLogging()
+            .UseOpenTelemetry();
             // .UseDistributedCache()
-            // .UseOpenTelemetry()
         }
         //#endif
 

@@ -18,11 +18,11 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Tools" PrivateAssets="all" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
-        <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.ApplicationInsights.AspNetCore" />
         <PackageReference Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" />
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Boilerplate.Server.Shared\Boilerplate.Server.Shared.csproj" />
         <ProjectReference Condition=" '$(api)' == 'Integrated' OR '$(api)' == ''" Include="..\Boilerplate.Server.Api\Boilerplate.Server.Api.csproj" />
         <ProjectReference Include="..\..\Client\Boilerplate.Client.Web\Boilerplate.Client.Web.csproj" />
     </ItemGroup>

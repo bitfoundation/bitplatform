@@ -3,12 +3,12 @@
 using AdsPush.Abstraction.Settings;
 //#endif
 using System.Text;
-using System.Text.RegularExpressions;
 using Boilerplate.Server.Api.Services;
+using Boilerplate.Server.Shared;
 
 namespace Boilerplate.Server.Api;
 
-public partial class ServerApiSettings : SharedSettings
+public partial class ServerApiSettings : ServerSharedSettings
 {
     [Required]
     public AppIdentityOptions Identity { get; set; } = default!;
@@ -41,18 +41,9 @@ public partial class ServerApiSettings : SharedSettings
     public AdsPushAPNSSettings? AdsPushAPNS { get; set; }
     //#endif
 
-    public ForwardedHeadersOptions? ForwardedHeaders { get; set; }
-
-    /// <summary>
-    /// Specifies the allowed origins for CORS requests, URLs returned after social sign-in and email confirmation, and permitted origins for Web Auth, as well as forwarded headers middleware in ASP.NET Core.
-    /// </summary>
-    public Uri[] TrustedOrigins { get; set; } = [];
-
     //#if (cloudflare == true)
     public CloudflareOptions? Cloudflare { get; set; }
     //#endif
-
-    public ResponseCachingOptions? ResponseCaching { get; set; }
 
     //#if (module == "Admin" || module == "Sales")
     [Required]
@@ -85,14 +76,6 @@ public partial class ServerApiSettings : SharedSettings
             Validator.TryValidateObject(AdsPushVapid, new ValidationContext(AdsPushVapid), validationResults, true);
         }
         //#endif
-        if (ForwardedHeaders is not null)
-        {
-            Validator.TryValidateObject(ForwardedHeaders, new ValidationContext(ForwardedHeaders), validationResults, true);
-        }
-        if (ResponseCaching is not null)
-        {
-            Validator.TryValidateObject(ResponseCaching, new ValidationContext(ResponseCaching), validationResults, true);
-        }
         if (SupportedAppVersions is not null)
         {
             Validator.TryValidateObject(SupportedAppVersions, new ValidationContext(SupportedAppVersions), validationResults, true);
@@ -131,24 +114,6 @@ public partial class ServerApiSettings : SharedSettings
 
         return validationResults;
     }
-
-    internal bool IsTrustedOrigin(Uri origin)
-    {
-        return TrustedOrigins.Any(trustedOrigin => trustedOrigin == origin)
-            || TrustedOriginsRegex().IsMatch(origin.ToString());
-    }
-
-    //-:cnd:noEmit
-    /// <summary>
-    /// Blazor Hybrid's webview, localhost, devtunnels, github codespaces.
-    /// </summary>
-#if Development
-    [GeneratedRegex(@"^(http|https|app):\/\/(localhost|0\.0\.0\.0|0\.0\.0\.1|127\.0\.0\.1|.*?devtunnels\.ms|.*?github\.dev)(:\d+)?(\/.*)?$")]
-#else
-    [GeneratedRegex(@"^(http|https|app):\/\/(localhost|0\.0\.0\.0|0\.0\.0\.1|127\.0\.0\.1)(:\d+)?(\/.*)?$")]
-#endif
-    //+:cnd:noEmit
-    private partial Regex TrustedOriginsRegex();
 }
 
 public partial class AppIdentityOptions : IdentityOptions
@@ -268,19 +233,6 @@ public partial class SmsOptions
     public bool Configured => string.IsNullOrEmpty(FromPhoneNumber) is false &&
                               string.IsNullOrEmpty(TwilioAccountSid) is false &&
                               string.IsNullOrEmpty(TwilioAutoToken) is false;
-}
-
-public class ResponseCachingOptions
-{
-    /// <summary>
-    /// Enables ASP.NET Core's response output caching
-    /// </summary>
-    public bool EnableOutputCaching { get; set; }
-
-    /// <summary>
-    /// Enables CDN's edge servers caching
-    /// </summary>
-    public bool EnableCdnEdgeCaching { get; set; }
 }
 
 public class HangfireOptions

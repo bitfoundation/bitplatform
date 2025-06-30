@@ -1,13 +1,15 @@
 ﻿//+:cnd:noEmit
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.Extensions.Hosting;
 
-namespace Boilerplate.Server.Api.Services;
+namespace Boilerplate.Server.Shared.Services;
 
 /// <summary>
 /// An implementation of this interface can update how the current request is cached.
 /// </summary>
-public class AppResponseCachePolicy(IHostEnvironment env, ServerApiSettings settings) : IOutputCachePolicy
+public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings settings) : IOutputCachePolicy
 {
     /// <summary>
     /// Updates the <see cref="OutputCacheContext"/> before the cache middleware is invoked.
@@ -59,7 +61,6 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerApiSettings sett
             outputCacheTtl = -1;
         }
 
-        //#if (api == "Integrated")
         if (context.HttpContext.IsBlazorPageContext() && CultureInfoManager.InvariantGlobalization is false)
         {
             // Note: Currently, we are not keeping the current culture in the URL. 
@@ -74,7 +75,6 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerApiSettings sett
             edgeCacheTtl = -1;
             outputCacheTtl = -1;
         }
-        //#endif
 
         // Edge - Client Cache
         if (clientCacheTtl != -1 || edgeCacheTtl != -1)
@@ -98,9 +98,7 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerApiSettings sett
             context.ResponseExpirationTimeSpan = TimeSpan.FromSeconds(outputCacheTtl);
         }
 
-        //#if (api == "Integrated")
         context.HttpContext.Items["AppResponseCachePolicy__DisableStreamPrerendering"] = outputCacheTtl > 0 || edgeCacheTtl > 0;
-        //#endif
         context.HttpContext.Response.Headers.TryAdd("App-Cache-Response", FormattableString.Invariant($"Output:{outputCacheTtl},Edge:{edgeCacheTtl},Client:{clientCacheTtl}"));
     }
 
