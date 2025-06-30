@@ -108,6 +108,7 @@ public partial class IdentityController
     }
 
     [HttpGet]
+    [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5)]
     public async Task<string[]> GetSupportedSocialAuthSchemes(CancellationToken cancellationToken = default)
     {
         var schemes = await authenticationSchemeProvider.GetAllSchemesAsync();
