@@ -27,6 +27,8 @@
 8.  **Utilize Latest C# Features**: Write modern, concise, and efficient code by using the latest C# language features.
 9.  **Leverage Implicit Usings**: Take advantage of global using statements.
 10. **Respect .editorconfig**: Adhere to the `.editorconfig` file for consistent code style across all IDEs.
+12. **Prefer razor.cs code-behind files**: Use `.razor.cs` files for component logic instead of @code blocks in `.razor` files.
+13. **Pre razor.scss files**: Use `.razor.scss` files for component styles instead of inline styles in `.razor` files.
 
 ### Rules for Using DeepWiki
 
