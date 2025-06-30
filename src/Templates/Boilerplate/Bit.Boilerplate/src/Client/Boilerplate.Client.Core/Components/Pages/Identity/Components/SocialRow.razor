@@ -1,18 +1,13 @@
 @inherits AppComponentBase
 
 <section>
-    <BitStack Horizontal Alignment="BitAlignment.SpaceBetween">
-
-        <!-- Find more svg icons at https://www.svgrepo.com/collection/company-logo -->
-
+    <BitStack Horizontal>
         @if (isLoadingProviders)
         {
-            <BitStack Horizontal Alignment="BitAlignment.SpaceBetween">
-                @for (int i = 0; i < 4; i++)
-                {
-                    <BitShimmer Width="48px" Height="48px" Circle />
-                }
-            </BitStack>
+            @for (int i = 0; i < 4; i++)
+            {
+                <BitShimmer Height="60px" Width="60px" Shape="BitShimmerShape.Rectangle" Background="BitColor.SecondaryBackground" />
+            }
         }
         else
         {
@@ -22,35 +17,30 @@
                     <IdentityServerDemoIcon />
                 </SocialButton>
             }
-
             @if (supportedProviders.Contains("Google"))
             {
                 <SocialButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleGoogle)" Title="@Localizer[AppStrings.GoogleSignInButtonText]">
                     <GoogleIcon />
                 </SocialButton>
             }
-
             @if (supportedProviders.Contains("GitHub"))
             {
                 <SocialButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleGitHub)" Title="@Localizer[AppStrings.GitHubSignInButtonText]">
                     <GitHubIcon />
                 </SocialButton>
             }
-
             @if (supportedProviders.Contains("Twitter"))
             {
                 <SocialButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleTwitter)" Title="@Localizer[AppStrings.TwitterSignInButtonText]">
                     <TwitterIcon />
                 </SocialButton>
             }
-
             @if (supportedProviders.Contains("Apple"))
             {
                 <SocialButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleApple)" Title="@Localizer[AppStrings.AppleSignInButtonText]">
                     <AppleIcon />
                 </SocialButton>
             }
-
             @if (supportedProviders.Contains("AzureAD"))
             {
                 <SocialButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleAzureAD)" Title="@Localizer[AppStrings.AzureEntraSignInButtonText]">

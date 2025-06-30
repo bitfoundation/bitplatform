@@ -18,6 +18,7 @@ public partial class SocialRow
     {
         try
         {
+            await Task.Delay(3_000, CurrentCancellationToken);
             var providers = await IdentityController.GetSupportedSocialAuthSchemes(CurrentCancellationToken);
             supportedProviders = providers;
         }
