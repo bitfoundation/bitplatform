@@ -449,7 +449,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         if (_viewSuggestedItems.Any())
         {
-            //_selectedIndex = _viewSuggestedItems.FindIndex(i => i == CurrentValue);
+            await Task.Delay(100); // wait for UI to be rendered by Blazor before showing the callout so the calculation would be correct!
 
             if (_isOpen is false)
             {
@@ -508,13 +508,11 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         {
             _selectedIndex = count - 1;
         }
-        
+
         if (_selectedIndex >= count)
         {
             _selectedIndex = 0;
         }
-
-        //CurrentValue = _viewSuggestedItems[_selectedIndex];
 
         await _js.BitSearchBoxMoveCursorToEnd(InputElement);
     }
