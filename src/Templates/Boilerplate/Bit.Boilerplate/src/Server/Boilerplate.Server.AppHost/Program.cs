@@ -52,12 +52,12 @@ var s3Storage = builder.AddContainer("minio", "minio/minio", "latest")
     .WithVolume("/var/lib/minio/Boilerplate/data");
 //#endif
 
-var serverWebProject = builder.AddProject<Boilerplate_Server_Web>("serverweb")
-    .WithExternalHttpEndpoints(); // Replace . with _ if needed to ensure the project builds successfully.
+var serverWebProject = builder.AddProject<Boilerplate_Server_Web>("serverweb") // Replace . with _ if needed to ensure the project builds successfully.
+    .WithExternalHttpEndpoints();
 
 //#if (api == "Standalone")
-var serverApiProject = builder.AddProject<Boilerplate_Server_Api>("serverapi")
-    .WithExternalHttpEndpoints(); // Replace . with _ if needed to ensure the project builds successfully.
+var serverApiProject = builder.AddProject<Boilerplate_Server_Api>("serverapi") // Replace . with _ if needed to ensure the project builds successfully.
+    .WithExternalHttpEndpoints();
 
 serverWebProject.WithReference(serverApiProject).WaitFor(serverApiProject);
 //#if (database == "SqlServer")
