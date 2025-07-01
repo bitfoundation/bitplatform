@@ -74,9 +74,12 @@
 
     @if ((SuggestItems?.Any() ?? false) || SuggestItemsProvider is not null)
     {
-        <div @onclick="CloseCallout"
-             style="display:@(_isOpen ? "block" : "none");@Styles?.Overlay"
-             class="bit-srb-ovl @Classes?.Overlay"></div>
+        if (Modeless is false)
+        {
+            <div @onclick="CloseCallout"
+                 style="display:@(_isOpen ? "block" : "none");@Styles?.Overlay"
+                 class="bit-srb-ovl @Classes?.Overlay"></div>
+        }
 
         <div id="@_calloutId"
              tabindex="0"
@@ -87,11 +90,11 @@
             <div id="@_scrollContainerId"
                  style="@Styles?.ScrollContainer"
                  class="bit-srb-scn @Classes?.ScrollContainer">
-                @foreach (var text in _searchItems)
+                @foreach (var text in _viewSuggestedItems)
                 {
                     var isSelected = GetIsSelected(text);
                     <div style="@Styles?.SuggestItemWrapper" class="@Classes?.SuggestItemWrapper">
-                        <button @onclick="()=> HandleOnItemClick(text)"
+                        <button @onclick="() => HandleOnSuggestedItemClick(text)"
                                 type="button"
                                 role="option"
                                 title="@text"

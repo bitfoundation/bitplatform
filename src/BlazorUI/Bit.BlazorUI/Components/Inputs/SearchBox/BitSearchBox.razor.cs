@@ -12,8 +12,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     private bool _inputHasFocus;
     private int _selectedIndex = -1;
     private string _inputId = string.Empty;
-    private List<string> _searchItems = [];
     private string _calloutId = string.Empty;
+    private List<string> _viewSuggestedItems = [];
     private string _scrollContainerId = string.Empty;
     private CancellationTokenSource? _cancellationTokenSource;
     private DotNetObjectReference<BitSearchBox> _dotnetObj = default!;
@@ -95,6 +95,11 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// The minimum character requirement for doing a search in suggest items.
     /// </summary>
     [Parameter] public int MinSuggestTriggerChars { get; set; } = 3;
+
+    /// <summary>
+    /// Removes the overlay of suggest items callout.
+    /// </summary>
+    [Parameter] public bool Modeless { get; set; }
 
     /// <summary>
     /// Removes the default border of the search box.
@@ -289,7 +294,12 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     private void HandleOnValueChanged(object? sender, EventArgs args)
     {
-        _ = SearchItems();
+        if (_selectedIndex == -1)
+        {
+            _ = SearchItems();
+        }
+
+        _selectedIndex = -1;
 
         ClassBuilder.Reset();
     }
@@ -334,9 +344,19 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         if (eventArgs.Key == "Enter")
         {
-            CurrentValue = await _js.BitUtilsGetProperty(InputElement, "value");
-            await CloseCallout();
-            await OnSearch.InvokeAsync(CurrentValue);
+            if (_selectedIndex > -1 && _viewSuggestedItems.Count > _selectedIndex)
+            {
+                await HandleOnSuggestedItemClick(_viewSuggestedItems[_selectedIndex]);
+            }
+            else
+            {
+                CurrentValue = await _js.BitUtilsGetProperty(InputElement, "value");
+
+                await CloseCallout();
+
+                await OnSearch.InvokeAsync(CurrentValue);
+            }
+
             return;
         }
 
@@ -344,11 +364,22 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         if (eventArgs.Key == "Escape")
         {
+            if (_isOpen)
+            {
+                await CloseCallout();
+                return;
+            }
+
             CurrentValue = string.Empty;
+
             await CloseCallout();
+
             await OnEscape.InvokeAsync();
+
             await OnClear.InvokeAsync();
+
             //await InputElement.FocusAsync(); // is it required when the keydown event is captured on the input itself?
+
             return;
         }
 
@@ -365,17 +396,17 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         }
     }
 
-    private async Task HandleOnItemClick(string item)
+    private async Task HandleOnSuggestedItemClick(string item)
     {
         if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
 
-        CurrentValue = item;
-
         await CloseCallout();
 
-        await OnSearch.InvokeAsync(CurrentValueAsString);
+        _selectedIndex = 0;
 
-        StateHasChanged();
+        CurrentValue = item;
+
+        await OnSearch.InvokeAsync(CurrentValueAsString);
     }
 
     private void SetInputMode()
@@ -387,18 +418,18 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     {
         if (CurrentValue.HasNoValue() || CurrentValue!.Length < MinSuggestTriggerChars)
         {
-            _searchItems = [];
+            _viewSuggestedItems = [];
         }
         else if (SuggestItemsProvider is not null)
         {
             _cancellationTokenSource?.Cancel();
             _cancellationTokenSource?.Dispose();
             _cancellationTokenSource = new();
-            _searchItems = [.. (await SuggestItemsProvider(new(CurrentValue, MaxSuggestCount, _cancellationTokenSource.Token))).Take(MaxSuggestCount)];
+            _viewSuggestedItems = [.. (await SuggestItemsProvider(new(CurrentValue, MaxSuggestCount, _cancellationTokenSource.Token))).Take(MaxSuggestCount)];
         }
         else if (SuggestItems is not null)
         {
-            _searchItems = [.. SuggestItems
+            _viewSuggestedItems = [.. SuggestItems
                             .Where(i => SuggestFilterFunction is not null
                                         ? SuggestFilterFunction.Invoke(CurrentValue, i)
                                         : (i?.Contains(CurrentValue!, StringComparison.OrdinalIgnoreCase) ?? false))
@@ -406,7 +437,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         }
         else
         {
-            _searchItems = [];
+            _viewSuggestedItems = [];
         }
 
         await OpenOrCloseCallout();
@@ -416,9 +447,9 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     {
         if (IsEnabled is false) return;
 
-        if (_searchItems.Any())
+        if (_viewSuggestedItems.Any())
         {
-            _selectedIndex = _searchItems.FindIndex(i => i == CurrentValue);
+            await Task.Delay(100); // wait for UI to be rendered by Blazor before showing the callout so the calculation would be correct!
 
             if (_isOpen is false)
             {
@@ -467,51 +498,40 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     private async Task ChangeSelectedItem(bool isArrowUp)
     {
         if (_isOpen is false) return;
-        if (_searchItems.Any() is false) return;
+        if (_viewSuggestedItems.Any() is false) return;
 
-        var count = _searchItems.Count;
+        _selectedIndex += isArrowUp ? -1 : +1;
 
-        if (_selectedIndex < 0 || count == 1)
-        {
-            _selectedIndex = isArrowUp ? count - 1 : 0;
-        }
-        else if (_selectedIndex == count - 1 && isArrowUp is false)
-        {
-            _selectedIndex = 0;
-        }
-        else if (_selectedIndex == 0 && isArrowUp)
+        var count = _viewSuggestedItems.Count;
+
+        if (_selectedIndex < 0)
         {
             _selectedIndex = count - 1;
         }
-        else if (isArrowUp)
-        {
-            _selectedIndex--;
-        }
-        else
-        {
-            _selectedIndex++;
-        }
 
-        CurrentValue = _searchItems[_selectedIndex];
+        if (_selectedIndex >= count)
+        {
+            _selectedIndex = 0;
+        }
 
         await _js.BitSearchBoxMoveCursorToEnd(InputElement);
     }
 
     private int? GetTotalItems()
     {
-        if (_searchItems is null) return null;
+        if (_viewSuggestedItems is null) return null;
 
-        return _searchItems.Count;
+        return _viewSuggestedItems.Count;
     }
 
     private int? GetItemPosInSet(string item)
     {
-        return _searchItems?.IndexOf(item) + 1;
+        return _viewSuggestedItems?.IndexOf(item) + 1;
     }
 
     private bool GetIsSelected(string item)
     {
-        return _selectedIndex > -1 && _searchItems.IndexOf(item) == _selectedIndex;
+        return _selectedIndex > -1 && _viewSuggestedItems.IndexOf(item) == _selectedIndex;
     }
 
 
