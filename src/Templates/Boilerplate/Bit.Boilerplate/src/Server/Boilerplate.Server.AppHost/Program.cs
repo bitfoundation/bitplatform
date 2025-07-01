@@ -6,25 +6,25 @@ using Aspire.Hosting.ApplicationModel;
 var builder = DistributedApplication.CreateBuilder(args);
 
 //#if (database == "SqlServer")
-var sqlDatabase = builder.AddSqlServer("sql-server")
+var sqlDatabase = builder.AddSqlServer("sqlserver")
         .WithLifetime(ContainerLifetime.Persistent)
         .WithVolume("/var/lib/sql-server/Boilerplate/data")
         .WithImage("mssql/server", "2025-latest")
-        .AddDatabase("SqlServerDb"); // Sql server 2025 supports embedded vector search.
+        .AddDatabase("sqldb"); // Sql server 2025 supports embedded vector search.
 
 //#elif (database == "PostgreSql")
-var postgresDatabase = builder.AddPostgres("postgres-server")
+var postgresDatabase = builder.AddPostgres("postgresserver")
         .WithLifetime(ContainerLifetime.Persistent)
         .WithVolume("/var/lib/postgres-server/Boilerplate/data")
         .WithImage("pgvector/pgvector", "pg17") // pgvector supports embedded vector search.
-        .AddDatabase("PostgreSQLDb");
+        .AddDatabase("postgresdb");
 
 //#elif (database == "MySql")
 
-var mySqlDatabase = builder.AddMySql("mySql-server")
+var mySqlDatabase = builder.AddMySql("mysqlserver")
         .WithLifetime(ContainerLifetime.Persistent)
         .WithVolume("/var/lib/mySql-server/Boilerplate/data")
-        .AddDatabase("MySqlDb");
+        .AddDatabase("mysqldb");
 
 //#endif
 //#if (filesStorage == "AzureBlobStorage")
@@ -42,10 +42,10 @@ var azureBlobStorage = builder.AddAzureStorage("storage")
 
 //#endif
 
-var serverWebProject = builder.AddProject<Boilerplate_Server_Web>("server-web"); // Replace . with _ if needed to ensure the project builds successfully.
+var serverWebProject = builder.AddProject<Boilerplate_Server_Web>("serverweb"); // Replace . with _ if needed to ensure the project builds successfully.
 
 //#if (api == "Standalone")
-var serverApiProject = builder.AddProject<Boilerplate_Server_Api>("server-api"); // Replace . with _ if needed to ensure the project builds successfully.
+var serverApiProject = builder.AddProject<Boilerplate_Server_Api>("serverapi"); // Replace . with _ if needed to ensure the project builds successfully.
 
 serverWebProject.WithReference(serverApiProject).WaitFor(serverApiProject);
 //#if (database == "SqlServer")
