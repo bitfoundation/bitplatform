@@ -1,5 +1,4 @@
-﻿using Boilerplate.Server.Shared;
-using Microsoft.Net.Http.Headers;
+﻿using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -8,11 +7,19 @@ public static partial class HttpRequestExtensions
     public static Uri GetUri(this HttpRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Scheme))
-        {
             throw new ArgumentException("Http request Scheme is not specified");
-        }
 
-        return new Uri($"{request.Scheme}://{((!request.Host.HasValue) ? "UNKNOWN-HOST" : ((request.Host.Value.IndexOf(',') > 0) ? "MULTIPLE-HOST" : request.Host.Value))}{(request.PathBase.HasValue ? request.PathBase.Value : string.Empty)}{(request.Path.HasValue ? request.Path.Value : string.Empty)}{(request.QueryString.HasValue ? request.QueryString.Value : string.Empty)}");
+        var hostValue = !request.Host.HasValue ? "UNKNOWN-HOST" :
+            request.Host.Value.IndexOf(',') > 0 ? "MULTIPLE-HOST" :
+            request.Host.Value;
+
+        var uriBuilder = new UriBuilder(request.Scheme, hostValue)
+        {
+            Path = $"{request.PathBase}{request.Path}",
+            Query = request.QueryString.HasValue ? request.QueryString.Value.TrimStart('?') : string.Empty
+        };
+
+        return uriBuilder.Uri;
     }
 
     /// <summary>

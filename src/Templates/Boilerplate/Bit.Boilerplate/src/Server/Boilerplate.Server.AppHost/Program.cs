@@ -50,7 +50,7 @@ serverApiProject.WithReference(sqlDatabase, "SqlServerConnectionString").WaitFor
 //#elif (database == "PostgreSql")
 serverApiProject.WithReference(postgresDatabase, "PostgreSQLConnectionString").WaitFor(postgresDatabase);
 //#elif (database == "MySql")
-serverApiProject.WithReference(mysqlDatabase, "MySqlSQLConnectionString").WaitFor(mysqlDatabase);
+serverApiProject.WithReference(mysqlDatabase, "MySqlConnectionString").WaitFor(mysqlDatabase);
 //#endif
 //#if (filesStorage == "AzureBlobStorage")
 serverApiProject.WithReference(azureBlobStorage).WaitFor(azureBlobStorage);
@@ -63,7 +63,7 @@ serverWebProject.WithReference(sqlDatabase, "SqlServerConnectionString").WaitFor
 //#elif (database == "PostgreSql")
 serverWebProject.WithReference(postgresDatabase, "PostgreSQLConnectionString").WaitFor(postgresDatabase);
 //#elif (database == "MySql")
-serverWebProject.WithReference(mysqlDatabase, "MySqlSQLConnectionString").WaitFor(mysqlDatabase);
+serverWebProject.WithReference(mysqlDatabase, "MySqlConnectionString").WaitFor(mysqlDatabase);
 //#endif
 //#if (filesStorage == "AzureBlobStorage")
 serverWebProject.WithReference(azureBlobStorage, "AzureBlobStorageSasUrl").WaitFor(azureBlobStorage);

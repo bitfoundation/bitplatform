@@ -227,7 +227,7 @@ public static partial class Program
                 dbOptions.UseVector();
             });
             //#elif (database == "MySql")
-            options.UseMySql(configuration.GetConnectionString("MySqlSQLConnectionString"), ServerVersion.AutoDetect(configuration.GetConnectionString("MySqlSQLConnectionString")), dbOptions =>
+            options.UseMySql(configuration.GetConnectionString("MySqlConnectionString"), ServerVersion.AutoDetect(configuration.GetConnectionString("MySqlConnectionString")), dbOptions =>
             {
 
             });
