@@ -364,6 +364,12 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         if (eventArgs.Key == "Escape")
         {
+            if (_isOpen)
+            {
+                await CloseCallout();
+                return;
+            }
+
             CurrentValue = string.Empty;
 
             await CloseCallout();
@@ -494,27 +500,18 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         if (_isOpen is false) return;
         if (_viewSuggestedItems.Any() is false) return;
 
+        _selectedIndex += isArrowUp ? -1 : +1;
+
         var count = _viewSuggestedItems.Count;
 
-        if (_selectedIndex < 0 || count == 1)
-        {
-            _selectedIndex = isArrowUp ? count - 1 : 0;
-        }
-        else if (_selectedIndex == count - 1 && isArrowUp is false)
-        {
-            _selectedIndex = 0;
-        }
-        else if (_selectedIndex == 0 && isArrowUp)
+        if (_selectedIndex < 0)
         {
             _selectedIndex = count - 1;
         }
-        else if (isArrowUp)
+        
+        if (_selectedIndex >= count)
         {
-            _selectedIndex--;
-        }
-        else
-        {
-            _selectedIndex++;
+            _selectedIndex = 0;
         }
 
         //CurrentValue = _viewSuggestedItems[_selectedIndex];
