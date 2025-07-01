@@ -29,6 +29,9 @@ using Hangfire.EntityFrameworkCore;
 using AdsPush;
 using AdsPush.Abstraction;
 //#endif
+//#if (filesStorage == "AzureBlobStorage")
+using Azure.Storage.Blobs;
+//#endif
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Server.Api.Controllers;
 using Boilerplate.Server.Shared.Services;
@@ -75,10 +78,24 @@ public static partial class Program
             Directory.CreateDirectory(appDataDirPath);
             return StorageFactory.Blobs.DirectoryFiles(appDataDirPath);
             //#elif (filesStorage == "AzureBlobStorage")
-            var azureBlobStorageSasUrl = configuration.GetConnectionString("AzureBlobStorageSasUrl");
-            return (IBlobStorage)(azureBlobStorageSasUrl is "emulator"
-                                 ? StorageFactory.Blobs.AzureBlobStorageWithLocalEmulator()
-                                 : StorageFactory.Blobs.AzureBlobStorageWithSas(azureBlobStorageSasUrl));
+            string ExtractAccountKey(string connectionString)
+            {
+                if (connectionString is "UseDevelopmentStorage=true")
+                    return "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="; // https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio%2Cblob-storage#well-known-storage-account-and-key
+
+                var parts = connectionString.Split(';');
+                foreach (var part in parts)
+                {
+                    if (part.StartsWith("AccountKey="))
+                        return part["AccountKey=".Length..];
+                }
+                throw new ArgumentException("Invalid connection string: AccountKey not found.");
+            }
+            var azureBlobStorageConnectionString = configuration.GetConnectionString("AzureBlobStorageConnectionString")!;
+            var blobServiceClient = new BlobServiceClient(azureBlobStorageConnectionString);
+            string accountName = blobServiceClient.AccountName;
+            string accountKey = ExtractAccountKey(azureBlobStorageConnectionString);
+            return StorageFactory.Blobs.AzureBlobStorageWithSharedKey(accountName, accountKey, blobServiceClient.Uri);
             //#else
             // Note that FluentStorage.AWS can be used with any S3 compatible S3 implementation such as Digital Ocean's Spaces Object Storage.
             throw new NotImplementedException("Install and configure any storage supported by fluent storage (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)");
