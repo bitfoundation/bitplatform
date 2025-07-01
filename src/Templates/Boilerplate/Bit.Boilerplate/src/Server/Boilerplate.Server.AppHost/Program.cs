@@ -41,10 +41,11 @@ var azureBlobStorage = builder.AddAzureStorage("storage")
 
 //#endif
 
-var serverWebProject = builder.AddProject<Projects.Boilerplate_Server_Web>("server-web");
+var serverWebProject = builder.AddProject<Projects.Boilerplate_Server_Web>("server-web"); // Replace . with _ if needed to ensure the project builds successfully.
 
 //#if (api == "Standalone")
-var serverApiProject = builder.AddProject<Projects.Boilerplate_Server_Api>("server-api");
+var serverApiProject = builder.AddProject<Projects.Boilerplate_Server_Api>("server-api"); // Replace . with _ if needed to ensure the project builds successfully.
+
 serverWebProject.WithReference(serverApiProject).WaitFor(serverApiProject);
 //#if (database == "SqlServer")
 serverApiProject.WithReference(sqlDatabase, "SqlServerConnectionString").WaitFor(sqlDatabase);
