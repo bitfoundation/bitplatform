@@ -31,11 +31,11 @@ var azureBlobStorage = builder.AddAzureStorage("storage")
                    .RunAsEmulator(azurite =>
                    {
                        azurite
-                        .WithLifetime(ContainerLifetime.Persistent)
-                        .WithDataVolume("BoilerplateStorage")
-                        .WithBlobPort(10000)
-                        .WithQueuePort(10001)
-                        .WithTablePort(10002);
+                           .WithLifetime(ContainerLifetime.Persistent)
+                           .WithDataVolume("BoilerplateStorage")
+                           .WithBlobPort(10000)
+                           .WithQueuePort(10001)
+                           .WithTablePort(10002);
                    })
                    .AddBlobs("blobs");
 //#endif

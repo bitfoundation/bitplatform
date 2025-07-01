@@ -66,6 +66,7 @@ public static class WebApplicationBuilderExtensions
     }
 
     //#if (aspire == true)
+    #region Aspire
     /// <summary>
     /// Also knows as AddServiceDefaults
     /// Adds common .NET Aspire services: service discovery, resilience, health checks, and OpenTelemetry.
@@ -120,7 +121,7 @@ public static class WebApplicationBuilderExtensions
         return builder;
     }
 
-    private static TBuilder AddOpenTelemetryExporters<TBuilder>(this TBuilder builder) 
+    private static TBuilder AddOpenTelemetryExporters<TBuilder>(this TBuilder builder)
         where TBuilder : IHostApplicationBuilder
     {
         var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
@@ -133,7 +134,7 @@ public static class WebApplicationBuilderExtensions
         return builder;
     }
 
-    private static TBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder) 
+    private static TBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder)
         where TBuilder : IHostApplicationBuilder
     {
         builder.Services.AddHealthChecks()
@@ -142,5 +143,6 @@ public static class WebApplicationBuilderExtensions
 
         return builder;
     }
+    #endregion
     //#endif
 }
