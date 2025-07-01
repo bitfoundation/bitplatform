@@ -97,7 +97,9 @@ public static partial class Program
             string accountKey = ExtractAccountKey(azureBlobStorageConnectionString);
             return StorageFactory.Blobs.AzureBlobStorageWithSharedKey(accountName, accountKey, blobServiceClient.Uri);
             //#elif (filesStorage == "S3")
-            // Checkout https://github.com/robinrodricks/FluentStorage for more S3 providers samples such as Digital Ocean's Spaces Object Storage, MinIO, etc.
+            // Checkout https://github.com/robinrodricks/FluentStorage for more S3 providers samples such as Digital Ocean's Spaces Object Storage, AWS, etc.
+            // Run through docker using `docker run -d -p 9000:9000 -p 9001:9001 -e "MINIO_ROOT_USER=minioadmin" -e "MINIO_ROOT_PASSWORD=minioadmin" quay.io/minio/minio server /data --console-address ":9001"`
+            // Open MinIO console at http://127.0.0.1:9001/browser
             StorageFactory.Modules.UseAwsStorage();
             return StorageFactory.Blobs.FromConnectionString(configuration.GetConnectionString("MinIOS3ConnectionString"));
             //#else
