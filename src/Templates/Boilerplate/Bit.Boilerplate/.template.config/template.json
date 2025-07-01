@@ -80,6 +80,10 @@
                     "description": "Use either the local App_Data folder or the /container_volume for Docker containers."
                 },
                 {
+                    "choice": "S3",
+                    "description": "S3"
+                },
+                {
                     "choice": "AzureBlobStorage",
                     "description": "Azure blob storage"
                 },

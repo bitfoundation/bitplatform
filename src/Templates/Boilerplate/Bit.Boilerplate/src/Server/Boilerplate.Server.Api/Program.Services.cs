@@ -96,6 +96,10 @@ public static partial class Program
             string accountName = blobServiceClient.AccountName;
             string accountKey = ExtractAccountKey(azureBlobStorageConnectionString);
             return StorageFactory.Blobs.AzureBlobStorageWithSharedKey(accountName, accountKey, blobServiceClient.Uri);
+            //#elif (filesStorage == "S3")
+            // Checkout https://github.com/robinrodricks/FluentStorage for more S3 providers samples such as Digital Ocean's Spaces Object Storage, MinIO, etc.
+            StorageFactory.Modules.UseAwsStorage();
+            return StorageFactory.Blobs.FromConnectionString(configuration.GetConnectionString("MinIOS3ConnectionString"));
             //#else
             // Note that FluentStorage.AWS can be used with any S3 compatible S3 implementation such as Digital Ocean's Spaces Object Storage.
             throw new NotImplementedException("Install and configure any storage supported by fluent storage (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)");

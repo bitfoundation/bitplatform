@@ -73,6 +73,7 @@ public partial class Templates05CreateProjectPage
         [
             new() { Text = "Local", Value = "Local" },
             new() { Text = "AzureBlobStorage", Value = "AzureBlobStorage" },
+            new() { Text = "S3", Value = "S3" },
             new() { Text = "Other", Value = "Other" },
         ]
     };

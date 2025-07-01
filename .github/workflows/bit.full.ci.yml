@@ -193,7 +193,7 @@ jobs:
 
     - name: Test sample configuration 2
       run: |
-        dotnet new bit-bp --name TestProject2 --database Other --filesStorage Other --api Standalone --captcha None --pipeline None --module None --offlineDb false --appInsights false --sentry false --signalR false --notification false --cloudflare false --ads false --aspire false
+        dotnet new bit-bp --name TestProject2 --database Other --filesStorage S3 --api Standalone --captcha None --pipeline None --module None --offlineDb false --appInsights false --sentry false --signalR false --notification false --cloudflare false --ads false --aspire false
         dotnet build TestProject2/TestProject2.sln -p:InvariantGlobalization=true -p:Environment=Development
         rm -r "TestProject2"
 

@@ -40,12 +40,24 @@ var azureBlobStorage = builder.AddAzureStorage("storage")
         })
         .AddBlobs("blobs");
 
+//#elif (filesStorage == "S3")
+// minio docker instance for testing purposes.
+var s3Storage = builder.AddContainer("minio", "minio/minio", "latest")
+    .WithLifetime(ContainerLifetime.Persistent)
+    .WithArgs("server", "/data", "--console-address", ":9001") // Add MinIO server command
+    .WithEnvironment("MINIO_ROOT_USER", "minioadmin")
+    .WithEnvironment("MINIO_ROOT_PASSWORD", "minioadmin")
+    .WithEndpoint(port: 9000, targetPort: 9000, "api")
+    .WithEndpoint(port: 9001, targetPort: 9001, "console") // http://127.0.0.1:9001/browser
+    .WithVolume("/var/lib/minio/Boilerplate/data");
 //#endif
 
-var serverWebProject = builder.AddProject<Boilerplate_Server_Web>("serverweb"); // Replace . with _ if needed to ensure the project builds successfully.
+var serverWebProject = builder.AddProject<Boilerplate_Server_Web>("serverweb")
+    .WithExternalHttpEndpoints(); // Replace . with _ if needed to ensure the project builds successfully.
 
 //#if (api == "Standalone")
-var serverApiProject = builder.AddProject<Boilerplate_Server_Api>("serverapi"); // Replace . with _ if needed to ensure the project builds successfully.
+var serverApiProject = builder.AddProject<Boilerplate_Server_Api>("serverapi")
+    .WithExternalHttpEndpoints(); // Replace . with _ if needed to ensure the project builds successfully.
 
 serverWebProject.WithReference(serverApiProject).WaitFor(serverApiProject);
 //#if (database == "SqlServer")
@@ -57,6 +69,10 @@ serverApiProject.WithReference(mySqlDatabase, "MySqlConnectionString").WaitFor(m
 //#endif
 //#if (filesStorage == "AzureBlobStorage")
 serverApiProject.WithReference(azureBlobStorage, "AzureBlobStorageConnectionString").WaitFor(azureBlobStorage);
+//#elif (filesStorage == "S3")
+serverApiProject
+    .WithEnvironment("ConnectionStrings__MinIOS3ConnectionString", "minio.s3://keyId=minioadmin;key=minioadmin;serviceUrl=http://localhost:9000;bucket=attachments")
+    .WaitFor(s3Storage);
 //#endif
 
 //#else
@@ -70,6 +86,10 @@ serverWebProject.WithReference(mySqlDatabase, "MySqlConnectionString").WaitFor(m
 //#endif
 //#if (filesStorage == "AzureBlobStorage")
 serverWebProject.WithReference(azureBlobStorage, "AzureBlobStorageConnectionString").WaitFor(azureBlobStorage);
+//#elif (filesStorage == "S3")
+serverWebProject
+    .WithEnvironment("ConnectionStrings__MinIOS3ConnectionString", "minio.s3://keyId=minioadmin;key=minioadmin;serviceUrl=http://localhost:9000;bucket=attachments")
+    .WaitFor(s3Storage);
 //#endif
 
 //#endif
