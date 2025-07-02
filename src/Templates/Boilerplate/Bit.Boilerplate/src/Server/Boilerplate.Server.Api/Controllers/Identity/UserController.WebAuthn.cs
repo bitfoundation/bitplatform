@@ -114,7 +114,7 @@ public partial class UserController
                     ?? throw new ResourceNotFoundException();
 
         var affectedRows = await DbContext.WebAuthnCredential
-            .Where(webAuthCred => webAuthCred.Id == assertionResponse.Id)
+            .Where(webAuthCred => webAuthCred.Id == assertionResponse.RawId)
             .ExecuteDeleteAsync(cancellationToken);
 
         if (affectedRows == 0)
