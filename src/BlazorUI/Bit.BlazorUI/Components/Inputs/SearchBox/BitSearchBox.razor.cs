@@ -393,12 +393,14 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         if (eventArgs.Key == "ArrowUp")
         {
             await ChangeSelectedItem(true);
+
             return;
         }
 
         if (eventArgs.Key == "ArrowDown")
         {
             await ChangeSelectedItem(false);
+
             return;
         }
     }
@@ -466,6 +468,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
                 await ToggleCallout();
             }
+
+            StateHasChanged();
         }
         else
         {
@@ -505,8 +509,12 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     private async Task ChangeSelectedItem(bool isArrowUp)
     {
-        if (_isOpen is false) return;
         if (_viewSuggestedItems.Any() is false) return;
+
+        if (_isOpen is false)
+        {
+            await OpenOrCloseCallout();
+        }
 
         _selectedIndex += isArrowUp ? -1 : +1;
 
