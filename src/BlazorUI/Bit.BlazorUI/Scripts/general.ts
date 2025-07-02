@@ -1,4 +1,4 @@
-﻿(BitBlazorUI as any).version = (window as any)['bit-blazorui version'] = '9.9.2';
+﻿(BitBlazorUI as any).version = (window as any)['bit-blazorui version'] = '9.10.0-pre-01';
 
 interface DotNetObject {
     invokeMethod<T>(methodIdentifier: string, ...args: any[]): T;
