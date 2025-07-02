@@ -112,6 +112,13 @@
                     <b>Server.Web:</b> This project references Server.Api by default.
                     Running this project will make the features mentioned in Server.Api section available on port 5000 as well as server components for Blazor pre-rendering and Blazor Server.
                 </li>
+                <li>
+                    <b>Server.AppHost:</b> This is the app host for <a href="https://learn.microsoft.com/en-us/dotnet/aspire/" target="_blank">ASP.NET Aspire</a>, which is <b>optional</b> to use.
+                </li>
+                <li>
+                    <b>Server.Shared:</b> The Server.Shared project includes code shared between the Server.Api and Server.Web projects.
+                    Optionally, it may contain code for use within ASP.NET Aspire, similar to the Aspire's `ServiceDefaults` project.
+                </li>
             </ul>
 
             With Server.Web project, you can run the application in various modes: Blazor Server, Blazor WebAssembly, Blazor Auto, with optionally enabled PWA and/or pre-rendering.

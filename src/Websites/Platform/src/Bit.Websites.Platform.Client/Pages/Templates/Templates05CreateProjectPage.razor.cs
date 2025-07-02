@@ -14,12 +14,13 @@ public partial class Templates05CreateProjectPage
     private Parameter<bool> appInsight = new() { Value = false, Default = false };
     private Parameter<bool> signalR = new() { Value = false, Default = false };
     private Parameter<bool> googleAds = new() { Value = false, Default = false };
+    private Parameter<bool> aspire = new() { Value = false, Default = false };
 
     private Parameter<string> captcha = new()
     {
         Value = "None",
         Default = "None",
-        Items = 
+        Items =
         [
             new() { Text = "None", Value = "None" },
             new() { Text = "reCaptcha", Value = "reCaptcha" },
@@ -30,7 +31,7 @@ public partial class Templates05CreateProjectPage
     {
         Value = "GitHub",
         Default = "GitHub",
-        Items = 
+        Items =
         [
             new() { Text = "None", Value = "None" },
             new() { Text = "GitHub", Value = "GitHub" },
@@ -42,7 +43,7 @@ public partial class Templates05CreateProjectPage
     {
         Value = "None",
         Default = "None",
-        Items = 
+        Items =
         [
             new() { Text = "None", Value = "None" },
             new() { Text = "Admin", Value = "Admin" },
@@ -54,7 +55,7 @@ public partial class Templates05CreateProjectPage
     {
         Value = "Sqlite",
         Default = "Sqlite",
-        Items = 
+        Items =
         [
             new() { Text = "SQLite", Value = "Sqlite" },
             new() { Text = "SqlServer", Value = "SqlServer" },
@@ -68,10 +69,11 @@ public partial class Templates05CreateProjectPage
     {
         Value = "Local",
         Default = "Local",
-        Items = 
+        Items =
         [
             new() { Text = "Local", Value = "Local" },
             new() { Text = "AzureBlobStorage", Value = "AzureBlobStorage" },
+            new() { Text = "S3", Value = "S3" },
             new() { Text = "Other", Value = "Other" },
         ]
     };
@@ -80,7 +82,7 @@ public partial class Templates05CreateProjectPage
     {
         Value = "Integrated",
         Default = "Integrated",
-        Items = 
+        Items =
         [
             new() { Text = "Integrated", Value = "Integrated" },
             new() { Text = "Standalone", Value = "Standalone" },
@@ -134,6 +136,11 @@ public partial class Templates05CreateProjectPage
         if (googleAds.IsModified)
         {
             finalCommand.Append(GetGoogleAdsCommand());
+        }
+
+        if (aspire.IsModified)
+        {
+            finalCommand.Append(GetAspireCommand());
         }
 
         if (fileStorage.IsModified)
@@ -237,6 +244,11 @@ public partial class Templates05CreateProjectPage
     private string GetGoogleAdsCommand()
     {
         return $"--ads{(googleAds.Value ? string.Empty : " false")} ";
+    }
+
+    private string GetAspireCommand()
+    {
+        return $"--aspire{(aspire.Value ? string.Empty : " false")} ";
     }
 
     private class Parameter<T>

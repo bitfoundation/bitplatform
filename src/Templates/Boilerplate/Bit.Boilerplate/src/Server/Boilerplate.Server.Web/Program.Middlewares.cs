@@ -31,31 +31,9 @@ public static partial class Program
         ServerWebSettings settings = new();
         configuration.Bind(settings);
 
-        var forwardedHeadersOptions = settings.ForwardedHeaders;
-        if (forwardedHeadersOptions != null)
-        {
-            forwardedHeadersOptions.AllowedHosts = [.. (forwardedHeadersOptions.AllowedHosts ?? []).Union(settings.TrustedOrigins.Select(origin => origin.Host))];
+        app.UseAppForwardedHeaders();
 
-            if (app.Environment.IsDevelopment() || forwardedHeadersOptions.AllowedHosts.Any())
-            {
-                // If the list is empty then all hosts are allowed. Failing to restrict this these values may allow an attacker to spoof links generated for reset password etc.
-                app.UseForwardedHeaders(forwardedHeadersOptions);
-            }
-        }
-
-        if (CultureInfoManager.InvariantGlobalization is false)
-        {
-            var supportedCultures = CultureInfoManager.SupportedCultures.Select(sc => sc.Culture).ToArray();
-            var options = new RequestLocalizationOptions
-            {
-                SupportedCultures = supportedCultures,
-                SupportedUICultures = supportedCultures,
-                ApplyCurrentCultureToResponseHeaders = true
-            };
-            options.SetDefaultCulture(CultureInfoManager.DefaultCulture.Name);
-            options.RequestCultureProviders.Insert(1, new RouteDataRequestCultureProvider() { Options = options });
-            app.UseRequestLocalization(options);
-        }
+        app.UseLocalization();
 
         //#if (api == "Integrated")
         app.UseExceptionHandler();
@@ -130,6 +108,10 @@ public static partial class Program
         app.UseOutputCache();
 
         app.UseAntiforgery();
+
+        //#if (aspire == true)
+        app.MapAspire();
+        //#endif
 
         //#if (api == "Integrated")
         app.UseSwagger();

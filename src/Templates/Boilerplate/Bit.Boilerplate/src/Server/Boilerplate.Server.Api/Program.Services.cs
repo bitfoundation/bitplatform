@@ -29,8 +29,12 @@ using Hangfire.EntityFrameworkCore;
 using AdsPush;
 using AdsPush.Abstraction;
 //#endif
+//#if (filesStorage == "AzureBlobStorage")
+using Azure.Storage.Blobs;
+//#endif
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Server.Api.Controllers;
+using Boilerplate.Server.Shared.Services;
 using Boilerplate.Server.Api.Services.Jobs;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Services.Identity;
@@ -45,6 +49,8 @@ public static partial class Program
         var env = builder.Environment;
         var services = builder.Services;
         var configuration = builder.Configuration;
+
+        builder.AddServerSharedServices();
 
         ServerApiSettings appSettings = new();
         configuration.Bind(appSettings);
@@ -72,10 +78,30 @@ public static partial class Program
             Directory.CreateDirectory(appDataDirPath);
             return StorageFactory.Blobs.DirectoryFiles(appDataDirPath);
             //#elif (filesStorage == "AzureBlobStorage")
-            var azureBlobStorageSasUrl = configuration.GetConnectionString("AzureBlobStorageSasUrl");
-            return (IBlobStorage)(azureBlobStorageSasUrl is "emulator"
-                                 ? StorageFactory.Blobs.AzureBlobStorageWithLocalEmulator()
-                                 : StorageFactory.Blobs.AzureBlobStorageWithSas(azureBlobStorageSasUrl));
+            string ExtractAccountKey(string connectionString)
+            {
+                if (connectionString is "UseDevelopmentStorage=true")
+                    return "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="; // https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio%2Cblob-storage#well-known-storage-account-and-key
+
+                var parts = connectionString.Split(';');
+                foreach (var part in parts)
+                {
+                    if (part.StartsWith("AccountKey="))
+                        return part["AccountKey=".Length..];
+                }
+                throw new ArgumentException("Invalid connection string: AccountKey not found.");
+            }
+            var azureBlobStorageConnectionString = configuration.GetConnectionString("AzureBlobStorageConnectionString")!;
+            var blobServiceClient = new BlobServiceClient(azureBlobStorageConnectionString);
+            string accountName = blobServiceClient.AccountName;
+            string accountKey = ExtractAccountKey(azureBlobStorageConnectionString);
+            return StorageFactory.Blobs.AzureBlobStorageWithSharedKey(accountName, accountKey, blobServiceClient.Uri);
+            //#elif (filesStorage == "S3")
+            // Checkout https://github.com/robinrodricks/FluentStorage for more S3 providers samples such as Digital Ocean's Spaces Object Storage, AWS, etc.
+            // Run through docker using `docker run -d -p 9000:9000 -p 9001:9001 -e "MINIO_ROOT_USER=minioadmin" -e "MINIO_ROOT_PASSWORD=minioadmin" quay.io/minio/minio server /data --console-address ":9001"`
+            // Open MinIO console at http://127.0.0.1:9001/browser
+            StorageFactory.Modules.UseAwsStorage();
+            return StorageFactory.Blobs.FromConnectionString(configuration.GetConnectionString("MinIOS3ConnectionString"));
             //#else
             // Note that FluentStorage.AWS can be used with any S3 compatible S3 implementation such as Digital Ocean's Spaces Object Storage.
             throw new NotImplementedException("Install and configure any storage supported by fluent storage (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)");
@@ -114,31 +140,6 @@ public static partial class Program
         services.AddSingleton(sp => (IProblemDetailsWriter)sp.GetRequiredService<ServerExceptionHandler>());
         services.AddProblemDetails();
 
-        services.AddOutputCache(options =>
-        {
-            options.AddPolicy("AppResponseCachePolicy", policy =>
-            {
-                var builder = policy.AddPolicy<AppResponseCachePolicy>();
-            }, excludeDefaultPolicy: true);
-        });
-        services.AddDistributedMemoryCache();
-
-        services.AddHttpContextAccessor();
-
-        services.AddResponseCompression(opts =>
-        {
-            opts.EnableForHttps = true;
-            opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/octet-stream"]).ToArray();
-            opts.Providers.Add<BrotliCompressionProvider>();
-            opts.Providers.Add<GzipCompressionProvider>();
-        })
-            .Configure<BrotliCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest)
-            .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
-
-        //#if (appInsights == true)
-        services.AddApplicationInsightsTelemetry(options => configuration.GetRequiredSection("ApplicationInsights").Bind(options));
-        //#endif
-
         services.AddCors(builder =>
         {
             builder.AddDefaultPolicy(policy =>
@@ -157,8 +158,6 @@ public static partial class Program
                       .WithExposedHeaders(HeaderNames.RequestId, "Age", "App-Cache-Response");
             });
         });
-
-        services.AddAntiforgery();
 
         services.AddSingleton(sp =>
         {
@@ -251,7 +250,7 @@ public static partial class Program
                 dbOptions.UseVector();
             });
             //#elif (database == "MySql")
-            options.UseMySql(configuration.GetConnectionString("MySqlSQLConnectionString"), ServerVersion.AutoDetect(configuration.GetConnectionString("MySqlSQLConnectionString")), dbOptions =>
+            options.UseMySql(configuration.GetConnectionString("MySqlConnectionString"), ServerVersion.AutoDetect(configuration.GetConnectionString("MySqlConnectionString")), dbOptions =>
             {
 
             });
@@ -397,9 +396,9 @@ public static partial class Program
                 Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
             }).AsIChatClient())
             .UseLogging()
-            .UseFunctionInvocation();
+            .UseFunctionInvocation()
+            .UseOpenTelemetry();
             // .UseDistributedCache()
-            // .UseOpenTelemetry()
         }
         else if (string.IsNullOrEmpty(appSettings.AI?.AzureOpenAI?.ChatApiKey) is false)
         {
@@ -411,9 +410,9 @@ public static partial class Program
                     Transport = new Azure.Core.Pipeline.HttpClientTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
                 }).AsIChatClient(appSettings.AI.AzureOpenAI.ChatModel))
             .UseLogging()
-            .UseFunctionInvocation();
+            .UseFunctionInvocation()
+            .UseOpenTelemetry();
             // .UseDistributedCache()
-            // .UseOpenTelemetry()
         }
 
         if (string.IsNullOrEmpty(appSettings.AI?.OpenAI?.EmbeddingApiKey) is false)
@@ -423,9 +422,9 @@ public static partial class Program
                 Endpoint = appSettings.AI.OpenAI.EmbeddingEndpoint,
                 Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
             }).AsIEmbeddingGenerator())
-            .UseLogging();
+            .UseLogging()
+            .UseOpenTelemetry();
             // .UseDistributedCache()
-            // .UseOpenTelemetry()
         }
         else if (string.IsNullOrEmpty(appSettings.AI?.AzureOpenAI?.EmbeddingApiKey) is false)
         {
@@ -435,9 +434,9 @@ public static partial class Program
                 {
                     Transport = new Azure.Core.Pipeline.HttpClientTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
                 }).AsIEmbeddingGenerator(appSettings.AI.AzureOpenAI.EmbeddingModel))
-            .UseLogging();
+            .UseLogging()
+            .UseOpenTelemetry();
             // .UseDistributedCache()
-            // .UseOpenTelemetry()
         }
         //#endif
 

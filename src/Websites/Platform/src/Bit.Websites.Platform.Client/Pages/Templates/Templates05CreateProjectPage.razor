@@ -158,6 +158,25 @@
 
         <BitGridItem Class="grid-item md" ColumnSpan="2">
             <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>Aspire</BitText>
+                <BitToggle @bind-Value="aspire.Value" OnText="true" OffText="false" />
+            </div>
+            <br />
+            <BitText Typography="BitTypography.Body1" Gutter>
+                Aspire helps you publish your project not only on Azure, AWS, and Kubernetes, but also on a simple Linux VPS running a basic Docker Compose setup, automatically building the database, API projects, and more.
+            </BitText>
+            <br />
+            <CodeBox>
+                @GetAspireCommand()
+            </CodeBox>
+            <br />
+            <BitText Typography="BitTypography.Body2">
+                Aspire helps you build, test, and deploy distributed applications with ease. Learn more at <a href="https://learn.microsoft.com/en-us/dotnet/aspire/" target="_blank">ASP.NET Core Aspire</a>.
+            </BitText>
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item md" ColumnSpan="2">
+            <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>API</BitText>
                 <BitDropdown Placeholder="Choose api" Items="@api.Items" @bind-Value="@api.Value" />
             </div>

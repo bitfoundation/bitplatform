@@ -1,18 +1,12 @@
 ﻿//+:cnd:noEmit
-using System.IO.Compression;
 using Microsoft.Net.Http.Headers;
-using Microsoft.AspNetCore.ResponseCompression;
 //#if (api == "Integrated")
 using Boilerplate.Server.Api;
-//#else
-using Microsoft.AspNetCore.Identity;
 //#endif
 using Boilerplate.Client.Web;
 using Boilerplate.Server.Web.Services;
 using Microsoft.AspNetCore.Antiforgery;
 using Boilerplate.Client.Core.Services.Contracts;
-using Boilerplate.Client.Web.Services;
-using Boilerplate.Client.Core.Services;
 
 namespace Boilerplate.Server.Web;
 
@@ -31,50 +25,17 @@ public static partial class Program
 
         services.AddClientWebProjectServices(configuration);
 
-        services.AddSingleton(sp =>
-        {
-            ServerWebSettings settings = new();
-            configuration.Bind(settings);
-            return settings;
-        });
-
         //#if (api == "Integrated")
         builder.AddServerApiProjectServices();
         //#else
-        services.AddOutputCache(options =>
-        {
-            options.AddPolicy("AppResponseCachePolicy", policy =>
-            {
-                var builder = policy.AddPolicy<AppResponseCachePolicy>();
-            }, excludeDefaultPolicy: true);
-        });
-        services.AddDistributedMemoryCache();
-
-        services.AddHttpContextAccessor();
-
-        services.AddResponseCompression(opts =>
-        {
-            opts.EnableForHttps = true;
-            opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/octet-stream"]).ToArray();
-            opts.Providers.Add<BrotliCompressionProvider>();
-            opts.Providers.Add<GzipCompressionProvider>();
-        })
-            .Configure<BrotliCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest)
-            .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
-
-        //#if (appInsights == true)
-        services.AddApplicationInsightsTelemetry(configuration);
-        //#endif
-
-        services.AddAntiforgery();
-
         //#if (IsInsideProjectTemplate)
         /*
         //#endif
+        builder.AddServerSharedServices();
         services.AddAuthentication(options =>
         {
-            options.DefaultScheme = IdentityConstants.BearerScheme;
-        }).AddBearerToken(IdentityConstants.BearerScheme, options =>
+            options.DefaultScheme = Microsoft.AspNetCore.Identity.IdentityConstants.BearerScheme;
+        }).AddBearerToken(Microsoft.AspNetCore.Identity.IdentityConstants.BearerScheme, options =>
         {
             options.BearerTokenProtector = new SimpleJwtSecureDataFormat();
             options.RefreshTokenProtector = new SimpleJwtSecureDataFormat();
@@ -91,8 +52,14 @@ public static partial class Program
         //#if (IsInsideProjectTemplate)
         */
         //#endif
-        services.AddAuthorization();
         //#endif
+
+        services.AddSingleton(sp =>
+        {
+            ServerWebSettings settings = new();
+            configuration.Bind(settings);
+            return settings;
+        });
 
         services.AddOptions<ServerWebSettings>()
             .Bind(configuration)

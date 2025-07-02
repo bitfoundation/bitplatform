@@ -27,12 +27,6 @@ public static partial class Program
         builder.WebHost.UseSentry(configureOptions: options => builder.Configuration.GetRequiredSection("Logging:Sentry").Bind(options));
         //#endif
 
-        // The following line (using the * in the URL), allows the emulators and mobile devices to access the app using the host IP address.
-        if (builder.Environment.IsDevelopment() && OperatingSystem.IsWindows())
-        {
-            builder.WebHost.UseUrls("http://localhost:5030", "http://*:5030");
-        }
-
         builder.AddServerWebProjectServices();
 
         var app = builder.Build();
