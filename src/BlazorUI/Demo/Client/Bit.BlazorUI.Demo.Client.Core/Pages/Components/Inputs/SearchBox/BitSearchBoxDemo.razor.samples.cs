@@ -75,27 +75,27 @@ private string onSearchValue;";
     private readonly string example9RazorCode = @"
 <BitSearchBox @bind-Value=""@searchValue""
               Immediate
-              Placeholder=""e.g. Apple""
+              Placeholder=""e.g. app""
               SuggestItems=""GetSuggestedItems()"" />
 
 
 <BitSearchBox @bind-Value=""@searchValueWithSuggestFilterFunction""
               Immediate
-              Placeholder=""e.g. Apple""
+              Placeholder=""e.g. app""
               SuggestItems=""GetSuggestedItems()""
               SuggestFilterFunction=""@SearchFunc"" />
 
 
 <BitSearchBox @bind-Value=""@searchValueWithMinSearchLength""
               Immediate
-              Placeholder=""e.g. Apple""
+              Placeholder=""e.g. app""
               MinSuggestTriggerChars=""1""
               SuggestItems=""GetSuggestedItems()"" />
 
 
 <BitSearchBox @bind-Value=""@searchValueWithMaxSuggestedItems""
               Immediate
-              Placeholder=""e.g. Apple""
+              Placeholder=""e.g. app""
               MaxSuggestCount=""2""
               SuggestItems=""GetSuggestedItems()"" />
 
@@ -103,13 +103,13 @@ private string onSearchValue;";
 <BitSearchBox @bind-Value=""@searchValueWithSearchDelay""
               Immediate
               DebounceTime=""2000""
-              Placeholder=""e.g. Apple""
+              Placeholder=""e.g. app""
               SuggestItems=""GetSuggestedItems()"" />
 
 
 <BitSearchBox @bind-Value=""@searchValueWithItemsProvider""
               Immediate
-              Placeholder=""e.g. Pro""
+              Placeholder=""e.g. pro""
               SuggestItemsProvider=""LoadItems"" />
 <div>SearchValue: @searchValueWithItemsProvider</div>";
     private readonly string example9CsharpCode = @"
