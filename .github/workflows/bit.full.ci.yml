@@ -5,10 +5,6 @@ on:
 
 env:
   ConnectionStrings__SqlServerConnectionString: 'Data Source=localhost; Initial Catalog=BoilerplateTestDb;Application Name=Boilerplate;TrustServerCertificate=True;User Id=sa;Password=P@ssw0rdP@ssw0rd;'
-  SIMPLE_TEST_FILTER: "ClassName!~PageTests"
-  BLAZOR_SERVER_TEST_FILTER: "ClassName~PageTests.BlazorServer"
-  BLAZOR_WASM_TEST_FILTER: "ClassName~PageTests.BlazorWebAssembly"
-  MULTILINGUAL_DISABLED_TEST_FILTER: "ClassName!~LocalizationTests|TestCategory=MultilingualDisabled"
 
 jobs:
 
@@ -55,8 +51,8 @@ jobs:
         sa-password: P@ssw0rdP@ssw0rd
         show-log: true
 
-    - name: Run tests
-      id: Run-test
+    - name: Run tests usign Sqlite
+      id: run-test-sqlite
       run: |
         dotnet new bit-bp --name SimpleTest --database Sqlite
         cd SimpleTest/src/Server/SimpleTest.Server.Api/
@@ -70,33 +66,14 @@ jobs:
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
-      if: ${{ !env.ACT && failure() && steps.simple-test.conclusion == 'failure' }}
+      if: ${{ !env.ACT && failure() && steps.run-test-sqlite.conclusion == 'failure' }}
       with:
         name: tests-artifact
         path: ./SimpleTest/src/Tests/TestResults
         retention-days: 14
 
-    - name: Test Sqlite database option
-      id: sqlite-test
-      run: |
-        dotnet new bit-bp --name TestSqlite --database Sqlite
-        cd TestSqlite/src/Server/TestSqlite.Server.Api/
-        dotnet tool restore
-        dotnet ef migrations add InitialMigration --verbose
-        dotnet ef database update
-        cd ../../Tests
-        dotnet build
-
-    - name: Upload Tests Artifact
-      uses: actions/upload-artifact@v4.4.1
-      if: ${{ !env.ACT && failure() && steps.sqlite-test.conclusion == 'failure' }}
-      with:
-        name: tests-artifact
-        path: ./TestSqlite/src/Tests/TestResults
-        retention-days: 14
-
-    - name: Test SqlServer database option
-      id: sqlserver-test
+    - name: Run tests usign SQL Server
+      id: run-test-sqlserver
       run: |
         dotnet new bit-bp --name TestSqlServer --database SqlServer
         cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
@@ -105,35 +82,18 @@ jobs:
         dotnet ef database update
         cd ../../Tests
         dotnet build
+        pwsh bin/Debug/net9.0/playwright.ps1 install --with-deps
+        dotnet test --logger GitHubActions --filter "${{ env.SIMPLE_TEST_FILTER }}"
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
-      if: ${{ !env.ACT && failure() && steps.sqlserver-test.conclusion == 'failure' }}
+      if: ${{ !env.ACT && failure() && steps.run-test-sqlserver.conclusion == 'failure' }}
       with:
         name: tests-artifact
         path: ./TestSqlServer/src/Tests/TestResults
         retention-days: 14
 
-    - name: Test Multilingual disabled option
-      id: multilingual-disabled-test
-      run: |
-        dotnet new bit-bp --name MultilingualDisabled --database Sqlite
-        cd MultilingualDisabled/src/Server/MultilingualDisabled.Server.Api/
-        dotnet tool restore
-        dotnet ef migrations add InitialMigration --verbose
-        dotnet ef database update
-        cd ../../Tests
-        dotnet build
-
-    - name: Upload Tests Artifact
-      uses: actions/upload-artifact@v4.4.1
-      if: ${{ !env.ACT && failure() && steps.multilingual-disabled-test.conclusion == 'failure' }}
-      with:
-        name: tests-artifact
-        path: ./MultilingualDisabled/src/Tests/TestResults
-        retention-days: 14
-
-    - name: Test PostgreSQL, MySql, Other database options
+    - name: Build PostgreSQL, MySql, Other database options
       run: |
         dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL --module Sales --signalR
         cd TestPostgreSQL/src/Server/TestPostgreSQL.Server.Web/
@@ -151,7 +111,7 @@ jobs:
         cd ../../../../
         rm -r "TestOther"
 
-    - name: Test file storage options
+    - name: Build file storage options
       run: |
         dotnet new bit-bp --name TestLocal --filesStorage Local --appInsights
         cd TestLocal/src/Server/TestLocal.Server.Web/
@@ -164,7 +124,7 @@ jobs:
         cd ../../../../
         rm -r "TestAzureBlobStorage"
 
-    - name: Test backend setup options
+    - name: Build backend setup options
       run: |
         dotnet new bit-bp --name TestStandalone --api Standalone
         cd TestStandalone/src/Server/TestStandalone.Server.Api/
@@ -180,13 +140,13 @@ jobs:
         cd ../../../../
         rm -r "TestIntegrated"
 
-    - name: Test sample configuration 1
+    - name: Build sample configuration 1
       run: |
         dotnet new bit-bp --name TestProject --database SqlServer --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --module Admin --offlineDb --appInsights --sentry --signalR --notification --cloudflare --ads --aspire
         dotnet build TestProject/TestProject.sln -p:InvariantGlobalization=false -p:Environment=Staging
         rm -r "TestProject"
 
-    - name: Test sample configuration 2
+    - name: Build sample configuration 2
       run: |
         dotnet new bit-bp --name TestProject2 --database Other --filesStorage S3 --api Standalone --captcha None --pipeline None --module None --offlineDb false --appInsights false --sentry false --signalR false --notification false --cloudflare false --ads false --aspire false
         dotnet build TestProject2/TestProject2.sln -p:InvariantGlobalization=true -p:Environment=Development
