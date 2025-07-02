@@ -47,6 +47,12 @@
                     <AzureEntraIcon />
                 </SocialButton>
             }
+            @if (supportedProviders.Contains("Facebook"))
+            {
+                <SocialButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleFacebook)" Title="@Localizer[AppStrings.FacebookSignInButtonText]">
+                    <FacebookIcon />
+                </SocialButton>
+            }
         }
     </BitStack>
 </section>

@@ -608,6 +608,15 @@ public static partial class Program
             }, openIdConnectScheme: "AzureAD");
         }
 
+        if (string.IsNullOrEmpty(configuration["Authentication:Facebook:AppId"]) is false)
+        {
+            authenticationBuilder.AddFacebook(options =>
+            {
+                options.SignInScheme = IdentityConstants.ExternalScheme;
+                configuration.GetRequiredSection("Authentication:Facebook").Bind(options);
+            });
+        }
+
         // While Google, GitHub, Twitter(X), Apple and AzureAD needs account creation in their corresponding developer portals,
         // and configuring the client ID and secret, the following OpenID Connect configuration is for Duende IdentityServer demo server,
         // which is a public server that allows you to test Social sign-in feature without needing to configure anything.

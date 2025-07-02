@@ -612,6 +612,9 @@
     <data name="GoogleSignInButtonText" xml:space="preserve">
     <value>ورود با گوگل</value>
   </data>
+    <data name="FacebookSignInButtonText" xml:space="preserve">
+    <value>ورود با فیسبوک</value>
+  </data>
     <data name="GitHubSignInButtonText" xml:space="preserve">
     <value>ورود با گیتهاب</value>
   </data>
