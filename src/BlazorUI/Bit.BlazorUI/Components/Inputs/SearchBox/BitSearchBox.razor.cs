@@ -309,6 +309,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         _inputHasFocus = true;
         ClassBuilder.Reset();
         StyleBuilder.Reset();
+
+        _ = OpenOrCloseCallout();
     }
 
     private void HandleInputFocusOut()
@@ -316,6 +318,11 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         _inputHasFocus = false;
         ClassBuilder.Reset();
         StyleBuilder.Reset();
+
+        if (Modeless)
+        {
+            _ = CloseCallout();
+        }
     }
 
     private async Task HandleOnSearchButtonClick()
@@ -386,12 +393,14 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         if (eventArgs.Key == "ArrowUp")
         {
             await ChangeSelectedItem(true);
+
             return;
         }
 
         if (eventArgs.Key == "ArrowDown")
         {
             await ChangeSelectedItem(false);
+
             return;
         }
     }
@@ -449,11 +458,14 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         if (_viewSuggestedItems.Any())
         {
-            await Task.Delay(100); // wait for UI to be rendered by Blazor before showing the callout so the calculation would be correct!
-
             if (_isOpen is false)
             {
                 _isOpen = true;
+
+                StateHasChanged();
+
+                await Task.Delay(100); // wait for UI to be rendered by Blazor before showing the callout so the calculation would be correct!
+
                 await ToggleCallout();
             }
 
@@ -497,8 +509,12 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     private async Task ChangeSelectedItem(bool isArrowUp)
     {
-        if (_isOpen is false) return;
         if (_viewSuggestedItems.Any() is false) return;
+
+        if (_isOpen is false)
+        {
+            await OpenOrCloseCallout();
+        }
 
         _selectedIndex += isArrowUp ? -1 : +1;
 

@@ -148,57 +148,64 @@
             <div>Examples of BitSearchBox with suggestion list, including custom filtering, minimum trigger characters, and more.</div>
             <br /><br /><br />
             <div class="example-box">
-                <div>SuggestItems</div><br />
+                <div><b>SuggestItems</b></div><br />
                 <BitSearchBox @bind-Value="@searchValue"
                               Immediate
-                              Placeholder="e.g. Apple"
+                              Placeholder="e.g. app"
                               SuggestItems="GetSuggestedItems()" />
                 <br />
                 <div>SearchValue: @searchValue</div>
                 <br /><br /><br /><br />
-                <div>SuggestFilterFunction</div><br />
+                <div><b>SuggestFilterFunction</b></div><br />
                 <BitSearchBox @bind-Value="@searchValueWithSuggestFilterFunction"
                               Immediate
-                              Placeholder="e.g. Apple"
+                              Placeholder="e.g. app"
                               SuggestItems="GetSuggestedItems()"
                               SuggestFilterFunction="@SearchFunc" />
                 <br />
                 <div>SearchValue: @searchValueWithSuggestFilterFunction</div>
                 <br /><br /><br /><br />
-                <div>MinSuggestTriggerChars(1)</div><br />
+                <div><b>MinSuggestTriggerChars(1)</b></div><br />
                 <BitSearchBox @bind-Value="@searchValueWithMinSearchLength"
                               Immediate
-                              Placeholder="e.g. Apple"
+                              Placeholder="e.g. app"
                               MinSuggestTriggerChars="1"
                               SuggestItems="GetSuggestedItems()" />
                 <br />
                 <div>SearchValue: @searchValueWithMinSearchLength</div>
                 <br /><br /><br /><br />
-                <div>MaxSuggestCount equals(2)</div><br />
+                <div><b>MaxSuggestCount(2)</b></div><br />
                 <BitSearchBox @bind-Value="@searchValueWithMaxSuggestedItems"
                               Immediate
-                              Placeholder="e.g. Apple"
+                              Placeholder="e.g. app"
                               MaxSuggestCount="2"
                               SuggestItems="GetSuggestedItems()" />
                 <br />
                 <div>SearchValue: @searchValueWithMaxSuggestedItems</div>
                 <br /><br /><br /><br />
-                <div>DebounceTime(2000)</div><br />
+                <div><b>DebounceTime(2000)</b></div><br />
                 <BitSearchBox @bind-Value="@searchValueWithSearchDelay"
                               Immediate
                               DebounceTime="2000"
-                              Placeholder="e.g. Apple"
+                              Placeholder="e.g. app"
                               SuggestItems="GetSuggestedItems()" />
                 <br />
                 <div>SearchValue: @searchValueWithSearchDelay</div>
                 <br /><br /><br /><br />
-                <div>ItemsProvider</div><br />
+                <div><b>ItemsProvider</b></div><br />
                 <BitSearchBox @bind-Value="@searchValueWithItemsProvider"
                               Immediate
-                              Placeholder="e.g. Pro"
+                              Placeholder="e.g. pro"
                               SuggestItemsProvider="LoadItems" />
                 <br />
                 <div>SearchValue: @searchValueWithItemsProvider</div>
+                <br /><br /><br /><br />
+                <div><b>Modeless</b></div><br />
+                <BitSearchBox Modeless
+                              Immediate
+                              DebounceTime="300"
+                              Placeholder="e.g. pro"
+                              SuggestItemsProvider="LoadItems" />
             </div>
         </DemoExample>
 
