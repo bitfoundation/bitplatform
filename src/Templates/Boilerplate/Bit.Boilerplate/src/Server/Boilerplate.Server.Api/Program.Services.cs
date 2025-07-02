@@ -225,7 +225,10 @@ public static partial class Program
             //#if (database == "Sqlite")
             var connectionStringBuilder = new SqliteConnectionStringBuilder(configuration.GetConnectionString("SqliteConnectionString"));
             connectionStringBuilder.DataSource = Environment.ExpandEnvironmentVariables(connectionStringBuilder.DataSource);
-            Directory.CreateDirectory(Path.GetDirectoryName(connectionStringBuilder.DataSource)!);
+            if (connectionStringBuilder.Mode is not SqliteOpenMode.Memory)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(connectionStringBuilder.DataSource)!);
+            }
             options.UseSqlite(connectionStringBuilder.ConnectionString, dbOptions =>
             {
 

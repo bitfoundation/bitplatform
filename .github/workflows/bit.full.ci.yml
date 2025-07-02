@@ -55,9 +55,8 @@ jobs:
         sa-password: P@ssw0rdP@ssw0rd
         show-log: true
 
-    - name: Simple tests (no --advancedTests)
-      id: simple-test
-      continue-on-error: true
+    - name: Run tests
+      id: Run-test
       run: |
         dotnet new bit-bp --name SimpleTest --database Sqlite
         cd SimpleTest/src/Server/SimpleTest.Server.Api/
@@ -80,16 +79,13 @@ jobs:
     - name: Test Sqlite database option
       id: sqlite-test
       run: |
-        dotnet new bit-bp --name TestSqlite --database Sqlite --advancedTests
+        dotnet new bit-bp --name TestSqlite --database Sqlite
         cd TestSqlite/src/Server/TestSqlite.Server.Api/
         dotnet tool restore
         dotnet ef migrations add InitialMigration --verbose
         dotnet ef database update
         cd ../../Tests
         dotnet build
-        pwsh bin/Debug/net9.0/playwright.ps1 install --with-deps
-        # dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_SERVER_TEST_FILTER }}"
-        # dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_WASM_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
@@ -102,14 +98,13 @@ jobs:
     - name: Test SqlServer database option
       id: sqlserver-test
       run: |
-        dotnet new bit-bp --name TestSqlServer --database SqlServer --advancedTests
+        dotnet new bit-bp --name TestSqlServer --database SqlServer
         cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
         dotnet tool restore
         dotnet ef migrations add InitialMigration --verbose
         dotnet ef database update
         cd ../../Tests
-        # dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_SERVER_TEST_FILTER }}"
-        # dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_WASM_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
+        dotnet build
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
@@ -122,13 +117,13 @@ jobs:
     - name: Test Multilingual disabled option
       id: multilingual-disabled-test
       run: |
-        dotnet new bit-bp --name MultilingualDisabled --database Sqlite --advancedTests
+        dotnet new bit-bp --name MultilingualDisabled --database Sqlite
         cd MultilingualDisabled/src/Server/MultilingualDisabled.Server.Api/
         dotnet tool restore
         dotnet ef migrations add InitialMigration --verbose
         dotnet ef database update
         cd ../../Tests
-        # dotnet test -p:InvariantGlobalization=true --logger GitHubActions --filter "${{ env.MULTILINGUAL_DISABLED_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
+        dotnet build
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
