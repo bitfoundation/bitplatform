@@ -109,9 +109,17 @@ private string onSearchValue;";
 
 <BitSearchBox @bind-Value=""@searchValueWithItemsProvider""
               Immediate
+              DebounceTime=""300""
               Placeholder=""e.g. pro""
               SuggestItemsProvider=""LoadItems"" />
-<div>SearchValue: @searchValueWithItemsProvider</div>";
+<div>SearchValue: @searchValueWithItemsProvider</div>
+
+
+<BitSearchBox Modeless
+              Immediate
+              DebounceTime=""300""
+              Placeholder=""e.g. pro""
+              SuggestItemsProvider=""LoadItems"" />";
     private readonly string example9CsharpCode = @"
 private string searchValue;
 private string searchValueWithSuggestFilterFunction;
