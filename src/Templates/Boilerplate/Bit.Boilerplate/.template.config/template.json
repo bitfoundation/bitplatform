@@ -363,13 +363,6 @@
                 ]
             },
             "replaces": "use-your-web-app-url-here.com"
-        },
-        "advancedTests": {
-            "displayName": "Include advanced automated tests?",
-            "type": "parameter",
-            "datatype": "bool",
-            "defaultValue": "false",
-            "description": "Includes advanced automated tests."
         }
     },
     "postActions": [
@@ -604,30 +597,6 @@
                     "condition": "(aspire == false)",
                     "exclude": [
                         "src/Server/Boilerplate.Server.AppHost/**"
-                    ]
-                },
-                {
-                    "condition": "(advancedTests != true)",
-                    "exclude": [
-                        "src/Tests/PageTests/**",
-                        "src/Tests/Services/CulturedStringLocalizer.cs",
-                        "src/Tests/Services/EmailReaderService.cs",
-                        "src/Tests/Services/UserService.cs",
-                        "src/Tests/Services/FakePhoneService.cs",
-                        "src/Tests/Services/FakeGoogleRecaptchaService.cs",
-                        "src/Tests/Extensions/PlaywrightAssetCachingExtensions.cs",
-                        "src/Tests/Extensions/PlaywrightCacheStorageExtensions.cs",
-                        "src/Tests/Extensions/PlaywrightNetworkExtensions.cs",
-                        "src/Tests/Extensions/PlaywrightCacheExtensions.cs",
-                        "src/Tests/Extensions/PlaywrightHydrationExtensions.cs",
-                        "src/Tests/Extensions/BrowserContextExtensions.cs"
-                    ]
-                },
-                {
-                    "condition": "(advancedTests == true)",
-                    "exclude": [
-                        "src/Tests/IdentityApiTests.cs",
-                        "src/Tests/IdentityPagesTests.cs"
                     ]
                 },
                 {

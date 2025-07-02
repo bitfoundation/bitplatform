@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Boilerplate.Server.Web;
 using Boilerplate.Tests.Services;
 using Boilerplate.Server.Api.Services;
@@ -13,12 +13,7 @@ public static partial class WebApplicationBuilderExtensions
 
         builder.AddServerWebProjectServices();
 
-        //#if (advancedTests == true)
-        services.AddTransient<PhoneService, FakePhoneService>();
-        //#if (captcha == "reCaptcha")
-        services.AddTransient<GoogleRecaptchaService, FakeGoogleRecaptchaService>();
-        //#endif
-        //#endif
+        // Register test-specific services for all tests here
 
         services.AddTransient(sp =>
         {

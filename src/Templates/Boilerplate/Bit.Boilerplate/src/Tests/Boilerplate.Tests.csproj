@@ -42,10 +42,4 @@
         <!--/-:msbuild-conditional:noEmit -->
     </ItemGroup>
 
-    <!--/+:msbuild-conditional:noEmit -->
-    <ItemGroup Condition=" '$(advancedTests)' == 'true' OR '$(advancedTests)' == ''">
-        <PackageReference Include="MsgReader" />
-    </ItemGroup>
-    <!--/-:msbuild-conditional:noEmit -->
-
 </Project>
