@@ -618,6 +618,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="GoogleSignInButtonText" xml:space="preserve">
     <value>Sign in with Google</value>
   </data>
+    <data name="FacebookSignInButtonText" xml:space="preserve">
+    <value>Sign in with Facebook</value>
+  </data>
     <data name="GitHubSignInButtonText" xml:space="preserve">
     <value>Sign in with GitHub</value>
   </data>
