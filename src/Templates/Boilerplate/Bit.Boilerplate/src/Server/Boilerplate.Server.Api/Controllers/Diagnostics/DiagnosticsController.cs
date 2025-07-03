@@ -21,7 +21,7 @@ public partial class DiagnosticsController : AppControllerBase, IDiagnosticsCont
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
 
-    [HttpPost]
+    [HttpGet]
     public async Task<string> PerformDiagnostics([FromQuery] string? signalRConnectionId, [FromQuery] string? pushNotificationSubscriptionDeviceId, CancellationToken cancellationToken)
     {
         StringBuilder result = new();
