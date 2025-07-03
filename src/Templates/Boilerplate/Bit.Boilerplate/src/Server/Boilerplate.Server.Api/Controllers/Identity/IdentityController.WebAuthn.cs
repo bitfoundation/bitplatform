@@ -105,7 +105,7 @@ public partial class IdentityController
         // since the TFA needs this option we won't remove it from cache manually and just wait for it to expire.
         // await cache.RemoveAsync(key, cancellationToken);
 
-        var credential = (await DbContext.WebAuthnCredential.FirstOrDefaultAsync(c => c.Id == clientResponse.Id, cancellationToken))
+        var credential = (await DbContext.WebAuthnCredential.FirstOrDefaultAsync(c => c.Id == clientResponse.RawId, cancellationToken))
                             ?? throw new ResourceNotFoundException();
 
         var verifyResult = await fido2.MakeAssertionAsync(new MakeAssertionParams
