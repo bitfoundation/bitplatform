@@ -23,9 +23,12 @@ public partial class AppHub
 
         string? supportSystemPrompt = null;
         var culture = CultureInfo.GetCultureInfo(request.CultureId);
+        Uri webAppUri = default!;
 
         try
         {
+            webAppUri = Context.GetHttpContext()!.Request.GetBaseUrl();
+
             await using var scope = serviceProvider.CreateAsyncScope();
 
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -98,8 +101,6 @@ public partial class AppHub
                                     if (messageSpecificCancellationToken.IsCancellationRequested)
                                         return null;
 
-                                    var baseApiUrl = Context.GetHttpContext()!.Request.GetBaseUrl();
-
                                     await using var scope = serviceProvider.CreateAsyncScope();
                                     var productEmbeddingService = scope.ServiceProvider.GetRequiredService<ProductEmbeddingService>();
                                     var searchQuery = string.IsNullOrWhiteSpace(manufacturer)
@@ -111,7 +112,7 @@ public partial class AppHub
                                         .Select(p => new
                                         {
                                             p.Name,
-                                            PageUrl = new Uri(baseApiUrl, p.PageUrl),
+                                            PageUrl = new Uri(webAppUri, p.PageUrl),
                                             Manufacturer = p.CategoryName,
                                             Price = p.FormattedPrice,
                                             Description = p.DescriptionText
