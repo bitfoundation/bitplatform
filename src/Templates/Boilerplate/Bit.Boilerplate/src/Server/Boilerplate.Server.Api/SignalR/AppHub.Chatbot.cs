@@ -21,13 +21,15 @@ public partial class AppHub
         // While processing a user message, a new message may arrive.
         // To handle this, we cancel the ongoing message processing using `messageSpecificCancellationTokenSrc` and start processing the new message.
 
-        string? supportSystemPrompt = null;
-        var culture = CultureInfo.GetCultureInfo(request.CultureId);
-        Uri webAppUri = default!;
+        Uri? webAppUri;
+        CultureInfo? culture;
+        string? supportSystemPrompt;
 
         try
         {
-            webAppUri = Context.GetHttpContext()!.Request.GetBaseUrl();
+            culture = CultureInfo.GetCultureInfo(request.CultureId);
+
+            webAppUri = Context.GetHttpContext()!.Request.GetWebAppUrl();
 
             await using var scope = serviceProvider.CreateAsyncScope();
 
