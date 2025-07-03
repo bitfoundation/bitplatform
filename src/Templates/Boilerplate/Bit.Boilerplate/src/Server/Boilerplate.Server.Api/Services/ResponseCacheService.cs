@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Microsoft.AspNetCore.OutputCaching;
 //#if (module == "Sales" || module == "Admin")
 using Boilerplate.Server.Api.Models.Products;
@@ -58,8 +58,9 @@ public partial class ResponseCacheService
         var apiToken = serverApiSettings.Cloudflare.ApiToken;
 
         var files = serverApiSettings.Cloudflare.AdditionalDomains
-            .Union([httpContextAccessor.HttpContext!.Request.GetBaseUrl()])
+            .Union([httpContextAccessor.HttpContext!.Request.GetBaseUrl(), httpContextAccessor.HttpContext!.Request.GetWebAppUrl()])
             .SelectMany(baseUri => relativePaths.Select(path => new Uri(baseUri, path)))
+            .Distinct()
             .ToArray();
 
         using var request = new HttpRequestMessage(HttpMethod.Post, $"{zoneId}/purge_cache");

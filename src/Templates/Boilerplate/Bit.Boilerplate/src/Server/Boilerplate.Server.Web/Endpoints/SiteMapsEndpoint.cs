@@ -32,7 +32,7 @@ public static partial class SiteMapEndpoint
 //#endif
 </sitemapindex>";
 
-            var baseUrl = context.Request.GetBaseUrl();
+            var baseUrl = context.Request.GetWebAppUrl();
 
             context.Response.Headers.ContentType = "application/xml";
 
@@ -54,7 +54,7 @@ public static partial class SiteMapEndpoint
                     ? urls.Union(CultureInfoManager.SupportedCultures.SelectMany(sc => urls.Select(url => $"{sc.Culture.Name}{url}"))).ToArray()
                     : urls;
 
-            var baseUrl = context.Request.GetBaseUrl();
+            var baseUrl = context.Request.GetWebAppUrl();
 
             var siteMap = @$"{siteMapHeader}
     {string.Join(Environment.NewLine, urls.Select(u => $"<url><loc>{new Uri(baseUrl, u)}</loc></url>"))}
@@ -68,7 +68,7 @@ public static partial class SiteMapEndpoint
         //#if(module == "Sales")
         app.MapGet("/products.xml", [AppResponseCache(SharedMaxAge = 60 * 5)] async (IProductViewController controller, HttpContext context) =>
         {
-            var baseUrl = context.Request.GetBaseUrl();
+            var baseUrl = context.Request.GetWebAppUrl();
             var products = await controller.WithQuery(new ODataQuery() { Select = $"{nameof(ProductDto.ShortId)},{nameof(ProductDto.Name)}" }).Get(context.RequestAborted);
             var productsUrls = products.Select(p => p.PageUrl).ToArray();
 
