@@ -81,7 +81,7 @@ public static partial class Program
                     if (part.StartsWith($"{key}="))
                         return part[$"{key}=".Length..];
                 }
-                throw new ArgumentException("Invalid connection string: AccountKey not found.");
+                throw new ArgumentException($"Invalid connection string: '{key}' not found.");
             }
             //#endif
 
