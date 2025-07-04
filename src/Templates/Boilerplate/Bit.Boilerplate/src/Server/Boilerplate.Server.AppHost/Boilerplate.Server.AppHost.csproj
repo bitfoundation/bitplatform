@@ -15,6 +15,7 @@
         <PackageReference Condition=" '$(database)' == 'SqlServer' OR '$(database)' == ''" Include="Aspire.Hosting.SqlServer" />
         <PackageReference Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Aspire.Hosting.PostgreSQL" />
         <PackageReference Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="Aspire.Hosting.Azure.Storage" />
+        <PackageReference Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="CommunityToolkit.Aspire.Hosting.Minio" />
     </ItemGroup>
 
     <ItemGroup>

@@ -72,38 +72,38 @@ public static partial class Program
         services.AddSingleton(_ => PhoneNumberUtil.GetInstance());
         services.AddSingleton<IBlobStorage>(sp =>
         {
+            //#if (filesStorage == "AzureBlobStorage" || filesStorage == "S3")
+            string GetValue(string connectionString, string key)
+            {
+                var parts = connectionString.Split(';');
+                foreach (var part in parts)
+                {
+                    if (part.StartsWith($"{key}="))
+                        return part[$"{key}=".Length..];
+                }
+                throw new ArgumentException($"Invalid connection string: '{key}' not found.");
+            }
+            //#endif
+
             //#if (filesStorage == "Local")
             var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
             var appDataDirPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
             Directory.CreateDirectory(appDataDirPath);
             return StorageFactory.Blobs.DirectoryFiles(appDataDirPath);
             //#elif (filesStorage == "AzureBlobStorage")
-            string ExtractAccountKey(string connectionString)
-            {
-                if (connectionString is "UseDevelopmentStorage=true")
-                    return "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="; // https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio%2Cblob-storage#well-known-storage-account-and-key
-
-                var parts = connectionString.Split(';');
-                foreach (var part in parts)
-                {
-                    if (part.StartsWith("AccountKey="))
-                        return part["AccountKey=".Length..];
-                }
-                throw new ArgumentException("Invalid connection string: AccountKey not found.");
-            }
             var azureBlobStorageConnectionString = configuration.GetConnectionString("AzureBlobStorageConnectionString")!;
             var blobServiceClient = new BlobServiceClient(azureBlobStorageConnectionString);
             string accountName = blobServiceClient.AccountName;
-            string accountKey = ExtractAccountKey(azureBlobStorageConnectionString);
+            string accountKey = azureBlobStorageConnectionString is "UseDevelopmentStorage=true" ? "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==" // https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio%2Cblob-storage#well-known-storage-account-and-key
+                : GetValue(azureBlobStorageConnectionString, "AccountKey");
             return StorageFactory.Blobs.AzureBlobStorageWithSharedKey(accountName, accountKey, blobServiceClient.Uri);
             //#elif (filesStorage == "S3")
             // Checkout https://github.com/robinrodricks/FluentStorage for more S3 providers samples such as Digital Ocean's Spaces Object Storage, AWS, etc.
             // Run through docker using `docker run -d -p 9000:9000 -p 9001:9001 -e "MINIO_ROOT_USER=minioadmin" -e "MINIO_ROOT_PASSWORD=minioadmin" quay.io/minio/minio server /data --console-address ":9001"`
             // Open MinIO console at http://127.0.0.1:9001/browser
-            StorageFactory.Modules.UseAwsStorage();
-            return StorageFactory.Blobs.FromConnectionString(configuration.GetConnectionString("MinIOS3ConnectionString"));
+            var minIOConnectionString = configuration.GetConnectionString("MinIOS3ConnectionString")!;
+            return StorageFactory.Blobs.MinIO(GetValue(minIOConnectionString, "AccessKey"), GetValue(minIOConnectionString, "SecretKey"), "attachments", "us-east-1" /*Region doesn't matter for MinIO*/, GetValue(minIOConnectionString, "Endpoint"));
             //#else
-            // Note that FluentStorage.AWS can be used with any S3 compatible S3 implementation such as Digital Ocean's Spaces Object Storage.
             throw new NotImplementedException("Install and configure any storage supported by fluent storage (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)");
             //#endif
         });
