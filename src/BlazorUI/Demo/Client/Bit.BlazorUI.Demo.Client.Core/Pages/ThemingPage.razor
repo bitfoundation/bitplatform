@@ -345,10 +345,11 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</code></pre>
         <pre class="code"><code class="language-js">BitTheme.init({
     system: true,
     persist: true,
+    theme: 'custom-dark',
     default: 'custom-dark',
     darkTheme: 'custom-dark',
     lightTheme: 'custom-light',
-    onChange: (newTheme: string, oldThem: string) => {
+    onChange: (newTheme: string, oldTheme: string) => {
         if (newTheme === 'custom-dark') {
             document.querySelector("meta[name=theme-color]")!.setAttribute('content', '#0d1117');
         } else {

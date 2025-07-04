@@ -38,7 +38,7 @@ declare class BitTheme { static init(options: any): void; };
 BitTheme.init({
     system: true,
     persist: true,
-    onChange: (newTheme: string, oldThem: string) => {
+    onChange: (newTheme: string, oldTheme: string) => {
         if (newTheme === 'dark') {
             document.body.classList.add('bit-blazorui-dark-theme');
             document.body.classList.remove('bit-blazorui-light-theme');

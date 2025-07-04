@@ -1,41 +1,51 @@
 type onThemeChangeType = (newThemeName: string, oldThemeName: string) => void;
 
+interface BitThemeOptions {
+    system?: boolean;
+    persist?: boolean;
+    theme?: string | null;
+    default?: string | null;
+    darkTheme?: string | null;
+    lightTheme?: string | null;
+    onChange?: onThemeChangeType;
+}
+
 class BitTheme {
     private static SYSTEM_THEME = 'system';
     private static THEME_ATTRIBUTE = 'bit-theme';
     private static THEME_STORAGE_KEY = 'bit-current-theme';
 
-    private static _darkTheme: string = 'dark';
-    private static _lightTheme: string = 'light';
 
     private static _persist = false;
+    private static _darkTheme: string = 'dark';
+    private static _lightTheme: string = 'light';
+    private static _initOptions: BitThemeOptions = {};
     private static _currentTheme = BitTheme._lightTheme;
     private static _onThemeChange: onThemeChangeType = () => { };
 
-    public static init(options: any) {
-        if (options.onChange) {
-            BitTheme._onThemeChange = options.onChange;
+
+    public static init(options: BitThemeOptions) {
+        Object.assign(BitTheme._initOptions, options);
+
+        if (BitTheme._initOptions.onChange) {
+            BitTheme._onThemeChange = BitTheme._initOptions.onChange;
         }
 
-        if (options.darkTheme) {
-            BitTheme._darkTheme = options.darkTheme;
+        if (BitTheme._initOptions.darkTheme) {
+            BitTheme._darkTheme = BitTheme._initOptions.darkTheme;
         }
 
-        if (options.lightTheme) {
-            BitTheme._lightTheme = options.lightTheme;
+        if (BitTheme._initOptions.lightTheme) {
+            BitTheme._lightTheme = BitTheme._initOptions.lightTheme;
         }
 
-        let theme = BitTheme._lightTheme;
+        let theme = BitTheme._initOptions.theme || BitTheme._initOptions.default || BitTheme._lightTheme;
 
-        if (options.system) {
-            theme = BitTheme.isSystemDark()
-                ? BitTheme._darkTheme
-                : BitTheme._lightTheme;
-        } else if (options.default) {
-            theme = options.default;
+        if (BitTheme._initOptions.system) {
+            theme = BitTheme.isSystemDark() ? BitTheme._darkTheme : BitTheme._lightTheme;
         }
 
-        if (options.persist) {
+        if (BitTheme._initOptions.persist) {
             BitTheme._persist = true;
             theme = BitTheme.getPersisted() || theme;
         }
@@ -110,11 +120,12 @@ class BitTheme {
 
 (function () {
     const options = {
+        system: document.documentElement.hasAttribute('bit-theme-system'),
+        persist: document.documentElement.hasAttribute('bit-theme-persist'),
+        theme: document.documentElement.getAttribute('bit-theme'),
+        default: document.documentElement.getAttribute('bit-theme-default'),
         darkTheme: document.documentElement.getAttribute('bit-theme-dark'),
         lightTheme: document.documentElement.getAttribute('bit-theme-light'),
-        system: document.documentElement.hasAttribute('bit-theme-system'),
-        default: document.documentElement.getAttribute('bit-theme-default'),
-        persist: document.documentElement.hasAttribute('bit-theme-persist'),
     };
 
     BitTheme.init(options);
