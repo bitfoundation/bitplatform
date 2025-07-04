@@ -78,19 +78,21 @@
         <Watch Remove="*.scss" />
     </ItemGroup>
 
-    <!-- Deletes *.razor.css files that lack a corresponding .razor file in the project before the build process.
-         This is necessary in Blazor projects with Scoped CSS to prevent build errors caused by orphaned razor.css files,
-         which may remain after their source razor files are deleted or renamed. For example, if a developer deletes
-         a razor, razor.cs and razor.scss files and commits the change to Git, another developer who pulls the updated repository will have the
-         razor, razor.cs and razor.scss file removed from their system, but the generated razor.css file may remain.
-         This orphaned razor.css file can cause build errors in the ApplyCssScopes task.
-         The following target ensures such files are deleted before the build, maintaining consistency and preventing errors. -->
-    <Target Name="DeleteUnmatchedRazorCss" BeforeTargets="ComputeCssScope">
+    <!-- 
+    Deletes residual *.razor.css* files (such as .razor.css & .razor.css.map) that are missing a corresponding .razor file in the project before build.
+    This is necessary in Blazor projects with Scoped CSS to prevent build errors caused by orphaned razor.css files,
+    which may remain after their source razor files are deleted or renamed. For example, if a developer deletes
+    a razor, razor.cs and razor.scss files and commits the change to Git, another developer who pulls the updated repository will have the
+    razor, razor.cs and razor.scss file removed from their system, but the generated razor.css file may remain.
+    This orphaned razor.css file can cause build errors in the ApplyCssScopes task.
+    The following target ensures such files are deleted before the build, maintaining consistency and preventing errors.
+    -->
+    <Target Name="DeleteResidualRazorCssFiles" BeforeTargets="ComputeCssScope">
         <ItemGroup>
-            <RazorCssFiles Include="**\*.razor.css" />
-            <UnmatchedRazorCssFiles Include="@(RazorCssFiles)" Condition="!Exists('%(RecursiveDir)%(FileName)')" />
+            <RazorCssFiles Include="**\*.razor.css*" />
+            <ResidualRazorCssFiles Include="@(RazorCssFiles)" Condition="!Exists('%(RecursiveDir)%(FileName)')" />
         </ItemGroup>
-        <Delete Files="@(UnmatchedRazorCssFiles)" />
+        <Delete Files="@(ResidualRazorCssFiles)" />
     </Target>
 
 </Project>
