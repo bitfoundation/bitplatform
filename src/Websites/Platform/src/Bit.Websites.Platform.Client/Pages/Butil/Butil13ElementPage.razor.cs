@@ -451,9 +451,7 @@ public partial class Butil13ElementPage
 
 
     private string getAttributeExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""getAttributeElementRef""
+@"<div @ref=""getAttributeElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -475,9 +473,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string getAttributeNamesExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""getAttributeNamesElementRef""
+@"<div @ref=""getAttributeNamesElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -497,9 +493,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string getBoundingClientRectExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""getBoundingClientRectElementRef""
+@"<div @ref=""getBoundingClientRectElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -524,9 +518,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string hasAttributeExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""hasAttributeElementRef""
+@"<div @ref=""hasAttributeElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -549,9 +541,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string hasAttributesExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""hasAttributesElementRef""
+@"<div @ref=""hasAttributesElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -571,9 +561,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string requestPointerLockExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""requestPointerLockExampleCode""
+@"<div @ref=""requestPointerLockExampleCode""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -586,9 +574,7 @@ public partial class Butil13ElementPage
     private ElementReference requestPointerLockExampleCode;
 }";
     private string requestFullScreenExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""requestFullScreenElementRef""
+@"<div @ref=""requestFullScreenElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -605,9 +591,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string matchesExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""matchesElementRef""
+@"<div @ref=""matchesElementRef""
      id=""target""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
@@ -631,9 +615,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string scrollExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""scrollElementRef""
+@"<div @ref=""scrollElementRef""
      style=""max-width:6rem;
             max-height:6rem;
             color: white;
@@ -675,9 +657,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string scrollByExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""scrollByElementRef""
+@"<div @ref=""scrollByElementRef""
      style=""max-width:6rem;
             max-height:6rem;
             color: white;
@@ -719,9 +699,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string scrollIntoViewExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""scrollIntoViewElementRef""
+@"<div @ref=""scrollIntoViewElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -773,9 +751,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string removeAttributeExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""removeAttributeElementRef""
+@"<div @ref=""removeAttributeElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -794,9 +770,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string setAttributeExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""setAttributeElementRef""
+@"<div @ref=""setAttributeElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -818,9 +792,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string toggleAttributeExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""toggleAttributeElementRef""
+@"<div @ref=""toggleAttributeElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -842,9 +814,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string accessKeyExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""accessKeyElementRef""
+@"<div @ref=""accessKeyElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -873,9 +843,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string classNameExampleCode  =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""classNameElementRef""
+@"<div @ref=""classNameElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -904,9 +872,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string getClientHeightExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""getClientHeightElementRef""
+@"<div @ref=""getClientHeightElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -926,9 +892,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string getClientLeftExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""getClientLeftElementRef""
+@"<div @ref=""getClientLeftElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -948,9 +912,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string getClientTopExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""getClientTopElementRef""
+@"<div @ref=""getClientTopElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -970,9 +932,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string getClientWidthExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""getClientWidthElementRef""
+@"<div @ref=""getClientWidthElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -992,9 +952,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string idExampleCode  =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""idElementRef""
+@"<div @ref=""idElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -1023,9 +981,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string innerHTMLExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""innerHTMLElementRef""
+@"<div @ref=""innerHTMLElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -1054,9 +1010,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string outerHTMLExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""outerHTMLElementRef""
+@"<div @ref=""outerHTMLElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -1075,9 +1029,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string getScrollHeightExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""getScrollHeightElementRef""
+@"<div @ref=""getScrollHeightElementRef""
      style=""max-width:6rem;
             max-height:6rem;
             color: white;
@@ -1101,9 +1053,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string getScrollLeftExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""getScrollLeftElementRef""
+@"<div @ref=""getScrollLeftElementRef""
      style=""max-width:6rem;
             max-height:6rem;
             color: white;
@@ -1127,9 +1077,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string getScrollTopExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""getScrollTopElementRef""
+@"<div @ref=""getScrollTopElementRef""
      style=""max-width:6rem;
             max-height:6rem;
             color: white;
@@ -1153,9 +1101,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string getScrollWidthExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""getScrollWidthElementRef""
+@"<div @ref=""getScrollWidthElementRef""
      style=""max-width:6rem;
             max-height:6rem;
             color: white;
@@ -1179,9 +1125,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string getTagNameExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""getTagNameElementRef""
+@"<div @ref=""getTagNameElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -1201,9 +1145,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string isContentEditableExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""isContentEditableElementRef""
+@"<div @ref=""isContentEditableElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -1223,9 +1165,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string contentEditableExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""contentEditableElementRef""
+@"<div @ref=""contentEditableElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -1262,9 +1202,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string dirExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""dirElementRef""
+@"<div @ref=""dirElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -1301,9 +1239,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string enterKeyHintExampleCode =
-@"@inject Bit.Butil.Element element
-
-<input @ref=""enterKeyHintElementRef"" placeholder=""Element""
+@"<input @ref=""enterKeyHintElementRef"" placeholder=""Element""
        style=""width:6rem; height:6rem; background: dodgerblue;"" />
 
 <BitChoiceGroup @bind-Value=""newEnterKeyHint""
@@ -1342,9 +1278,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string inertExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""inertElementRef""
+@"<div @ref=""inertElementRef""
      style=""max-width:6rem;
             max-height:6rem;
             color: white;
@@ -1378,9 +1312,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string innerTextExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""innerTextElementRef""
+@"<div @ref=""innerTextElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -1409,9 +1341,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string inputModeExampleCode =
-@"@inject Bit.Butil.Element element
-
-<input @ref=""inputModeElementRef"" placeholder=""Element""
+@"<input @ref=""inputModeElementRef"" placeholder=""Element""
        style=""width:6rem; height:6rem; background: dodgerblue;"" />
 
 <BitChoiceGroup @bind-Value=""newInputMode""
@@ -1451,9 +1381,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string tabIndexExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""tabIndexElementRef""
+@"<div @ref=""tabIndexElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -1483,9 +1411,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string getOffsetHeightExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""getOffsetHeightElementRef""
+@"<div @ref=""getOffsetHeightElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -1505,9 +1431,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string getOffsetLeftExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""getOffsetLeftElementRef""
+@"<div @ref=""getOffsetLeftElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -1527,9 +1451,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string getOffsetTopExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""getOffsetTopElementRef""
+@"<div @ref=""getOffsetTopElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -1549,9 +1471,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string getOffsetWidthExampleCode =
-@"@inject Bit.Butil.Element element
-
-<div @ref=""getOffsetWidthElementRef""
+@"<div @ref=""getOffsetWidthElementRef""
      style=""width:6rem; height:6rem; background: dodgerblue;"">
     Element
 </div>
@@ -1571,9 +1491,7 @@ public partial class Butil13ElementPage
     }
 }";
     private string blurExampleCode =
-@"@inject Bit.Butil.Element element
-
-<input @ref=""blurElementRef"" placeholder=""Element""
+@"<input @ref=""blurElementRef"" placeholder=""Element""
        style=""width:6rem; height:6rem; background: dodgerblue;"" />
 
 <BitButton OnClick=""@(() => blurElementRef.Blur())"">Blur</BitButton>

@@ -16,17 +16,15 @@
     <section class="section-card">
         <BitText Typography="BitTypography.H5" Gutter>Usage</BitText>
         <div class="section-card-txt">
-            To use the browser Element features you need to inject the Bit.Butil.Element class and use it like this:
+            To use the browser Element features you need to just use the Bit.Butil namesapce and utilize its extension methods like this:
 <CodeBox HideCopyButton>
-@@inject Bit.Butil.Element element
+@@using Bit.Butil
 
 &lt;div @@ref="elementRef">Element&lt;/div>
 
 @@code {
     private ElementReference elementRef;
   
-    var rect = await element.GetBoundingClientRect(elementRef);
-    // or
     var rect = await elementRef.GetBoundingClientRect();
 }</CodeBox>
         </div>
