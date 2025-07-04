@@ -5,9 +5,13 @@ section {
 ::deep {
     .md-editor {
         height: auto;
-        
+
         textarea {
             font-size: 1rem;
         }
+    }
+
+    .md-viewer {
+        overflow: auto;
     }
 }

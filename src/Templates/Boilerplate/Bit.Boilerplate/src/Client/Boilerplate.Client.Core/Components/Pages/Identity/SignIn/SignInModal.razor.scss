@@ -15,10 +15,6 @@ section {
 ::deep {
     form {
         width: 304px;
-
-        @include lt-md {
-            width: unset;
-        }
     }
 
     .header-stack {

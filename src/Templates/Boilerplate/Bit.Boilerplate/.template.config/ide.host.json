@@ -12,6 +12,9 @@
             "id": "helpUrl"
         },
         {
+            "id": "aspire"
+        },
+        {
             "id": "database"
         },
         {
@@ -59,10 +62,6 @@
         },
         {
             "id": "webAppUrl",
-            "isVisible": false
-        },
-        {
-            "id": "advancedTests",
             "isVisible": false
         }
     ]

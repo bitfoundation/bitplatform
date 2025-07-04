@@ -618,6 +618,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="GoogleSignInButtonText" xml:space="preserve">
     <value>Sign in with Google</value>
   </data>
+    <data name="FacebookSignInButtonText" xml:space="preserve">
+    <value>Sign in with Facebook</value>
+  </data>
     <data name="GitHubSignInButtonText" xml:space="preserve">
     <value>Sign in with GitHub</value>
   </data>
@@ -626,6 +629,12 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <data name="AppleSignInButtonText" xml:space="preserve">
     <value>Sign in with Apple</value>
+  </data>
+    <data name="IdentityServerDemoSignInButtonText" xml:space="preserve">
+    <value>Sign in with Test server</value>
+  </data>
+    <data name="AzureEntraSignInButtonText" xml:space="preserve">
+    <value>Sign in with Azure Entra</value>
   </data>
     <data name="SignOut" xml:space="preserve">
     <value>Sign out</value>
@@ -1348,5 +1357,11 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <data name="SignInPasswordMessage2" xml:space="preserve">
     <value>We'll automatically create an account for you.</value>
+  </data>
+    <data name="ImageTooSmall" xml:space="preserve">
+    <value>Image's too small. Minimum required dimensions are {0}x{1}, but the current dimensions are {2}x{3}.</value>
+  </data>
+    <data name="ImageNotCarError" xml:space="preserve">
+    <value>The provided image does not contain a car.</value>
   </data>
 </root>

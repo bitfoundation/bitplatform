@@ -39,3 +39,8 @@ The following questions give you an idea what kind of questions can be answered 
 [How does `passwordless authentication` work in Boilerplate, particularly in Blazor Hybrid versions of the app, given that this feature is browser-only?](https://wiki.bitplatform.dev/search/how-does-passwordless-authenti_79dfa280-bcff-4a2e-9178-504ce32b3082)
 
 [How does using `embeddings` with the PostgreSQL `vector` extension enable product search functionality via LINQ and Entity Framework Core?](https://wiki.bitplatform.dev/search/describe-how-product-embedding_c1df611d-feeb-48e2-918a-aa75df00c771)
+
+## copilot-instructions.md
+
+Thanks to the [copilot-instructions.md file](https://github.com/bitfoundation/bitplatform/blob/develop/src/Templates/Boilerplate/Bit.Boilerplate/.github/copilot-instructions.md#rules-for-using-deepwiki),
+projects built using the bit Boilerplate project template use `deepwiki` to answer questions about the `bitplatform`.

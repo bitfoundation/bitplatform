@@ -107,6 +107,13 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "Modeless",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Removes the overlay of suggest items callout.",
+        },
+        new()
+        {
             Name = "NoBorder",
             Type = "bool",
             DefaultValue = "false",

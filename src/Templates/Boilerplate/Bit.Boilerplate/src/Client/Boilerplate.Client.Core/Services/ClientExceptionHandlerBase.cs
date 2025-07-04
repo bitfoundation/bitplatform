@@ -80,6 +80,9 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
         if (exception is ServerConnectionException)
             return ExceptionDisplayKind.NonInterrupting;
 
+        if (exception is UnauthorizedException)
+            return ExceptionDisplayKind.NonInterrupting;
+
         return ExceptionDisplayKind.Interrupting;
     }
 

@@ -21,11 +21,13 @@ public partial class AppHub
         // While processing a user message, a new message may arrive.
         // To handle this, we cancel the ongoing message processing using `messageSpecificCancellationTokenSrc` and start processing the new message.
 
-        string? supportSystemPrompt = null;
-        var culture = CultureInfo.GetCultureInfo(request.CultureId);
+        CultureInfo? culture;
+        string? supportSystemPrompt;
 
         try
         {
+            culture = CultureInfo.GetCultureInfo(request.CultureId);
+
             await using var scope = serviceProvider.CreateAsyncScope();
 
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -93,23 +95,24 @@ public partial class AppHub
                                         .LogError("Chat reported issue: User email: {emailAddress}, Conversation history: {conversationHistory}", emailAddress, conversationHistory);
                                 }, name: "SaveUserEmailAndConversationHistory", description: "Saves the user's email address and the conversation history for future reference. Use this tool when the user provides their email address during the conversation. Parameters: emailAddress (string), conversationHistory (string)"),
                                 //#if (module == "Sales")
-                                AIFunctionFactory.Create(async ([Description("Concise summary of these user requirements in English Language")] string userNeeds, [Description("Car manufactor's English name (Optional)")] string? manufactor) =>
+                                AIFunctionFactory.Create(async ([Description("Concise summary of these user requirements in English Language")] string userNeeds, [Description("Car manufacturer's English name (Optional)")] string? manufacturer) =>
                                 {
                                     if (messageSpecificCancellationToken.IsCancellationRequested)
                                         return null;
 
-                                    var baseApiUrl = Context.GetHttpContext()!.Request.GetBaseUrl();
-
                                     await using var scope = serviceProvider.CreateAsyncScope();
                                     var productEmbeddingService = scope.ServiceProvider.GetRequiredService<ProductEmbeddingService>();
-                                    var recommendedProducts = await (await productEmbeddingService.GetProductsBySearchQuery($"{userNeeds}, Manufactor: {manufactor}", messageSpecificCancellationToken))
+                                    var searchQuery = string.IsNullOrWhiteSpace(manufacturer)
+                                        ? userNeeds
+                                        : $"{userNeeds}, Manufacturer: {manufacturer}";
+                                    var recommendedProducts = await (await productEmbeddingService.GetProductsBySearchQuery(searchQuery, messageSpecificCancellationToken))
                                         .Take(10)
                                         .Project()
                                         .Select(p => new
                                         {
                                             p.Name,
-                                            PageUrl = new Uri(baseApiUrl, p.PageUrl),
-                                            Manufactor = p.CategoryName,
+                                            p.PageUrl,
+                                            Manufacturer = p.CategoryName,
                                             Price = p.FormattedPrice,
                                             Description = p.DescriptionText
                                         })

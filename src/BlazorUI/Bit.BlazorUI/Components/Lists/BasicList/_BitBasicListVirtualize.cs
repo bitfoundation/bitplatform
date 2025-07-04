@@ -35,16 +35,16 @@ public class _BitBasicListVirtualize<TItem> : ComponentBase
     {
         var seq = 0;
         builder.OpenComponent<Virtualize<TItem>>(seq++);
-        builder.AddAttribute(seq++, nameof(Virtualize<TItem>.Items), Items);
-        builder.AddAttribute(seq++, nameof(Virtualize<TItem>.ItemSize), ItemSize);
-        builder.AddAttribute(seq++, nameof(Virtualize<TItem>.Placeholder), Placeholder);
-        builder.AddAttribute(seq++, nameof(Virtualize<TItem>.ItemsProvider), ItemsProvider);
-        builder.AddAttribute(seq++, nameof(Virtualize<TItem>.OverscanCount), OverscanCount);
+        builder.AddAttribute(seq++, nameof(Virtualize<>.Items), Items);
+        builder.AddAttribute(seq++, nameof(Virtualize<>.ItemSize), ItemSize);
+        builder.AddAttribute(seq++, nameof(Virtualize<>.Placeholder), Placeholder);
+        builder.AddAttribute(seq++, nameof(Virtualize<>.ItemsProvider), ItemsProvider);
+        builder.AddAttribute(seq++, nameof(Virtualize<>.OverscanCount), OverscanCount);
 
-        builder.AddAttribute(seq++, nameof(Virtualize<TItem>.ItemContent),
-            (RenderFragment<TItem>)(item => b => b.AddContent(seq++, (ItemContent ?? ChildContent)?.Invoke(item))));
+        builder.AddAttribute(seq++, nameof(Virtualize<>.ItemContent),
+                                    (RenderFragment<TItem>)(item => b => b.AddContent(seq++, (ItemContent ?? ChildContent)?.Invoke(item))));
 
-        builder.AddAttribute(seq++, nameof(Virtualize<TItem>.EmptyContent), (RenderFragment)(b => b.AddContent(seq++, EmptyContent)));
+        builder.AddAttribute(seq++, nameof(Virtualize<>.EmptyContent), (RenderFragment)(b => b.AddContent(seq++, EmptyContent)));
 
         builder.AddComponentReferenceCapture(seq++, v => _virtualizeRef = (Virtualize<TItem>)v);
 

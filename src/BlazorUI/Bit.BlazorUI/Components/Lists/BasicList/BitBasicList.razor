@@ -4,45 +4,73 @@
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
+     role="@Role"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()"
-     role="@Role">
-
-    @if (EnableVirtualization)
+     dir="@Dir?.ToString().ToLower()">
+    @if (RowTemplate is not null)
     {
-        if (ItemsProvider is null)
+        if (Virtualize)
         {
-            <_BitBasicListVirtualize Items="Items"
-                                     ItemSize="@ItemSize"
-                                     OverscanCount="@OverscanCount"
-                                     EmptyContent="EmptyContent">
-                @RowTemplate(context)
-            </_BitBasicListVirtualize>
-        }
-        else
-        {
-            <_BitBasicListVirtualize @ref="_bitBasicListVirtualizeRef"
-                                     OverscanCount="@OverscanCount"
-                                     Placeholder="VirtualizePlaceholder"
-                                     ItemsProvider="ProvideVirtualizedItems"
-                                     EmptyContent="EmptyContent">
-                @RowTemplate(context)
-            </_BitBasicListVirtualize>
-        }
-    }
-    else
-    {
-        if (Items.Count > 0)
-        {
-            foreach (var item in Items)
+            if (ItemsProvider is null || LoadMore)
             {
-                @RowTemplate(item)
+                <_BitBasicListVirtualize Items="_viewItems"
+                                         ItemSize="@ItemSize"
+                                         EmptyContent="EmptyContent"
+                                         OverscanCount="@OverscanCount">
+                    @RowTemplate(context)
+                </_BitBasicListVirtualize>
+            }
+            else
+            {
+                <_BitBasicListVirtualize @ref="_bitBasicListVirtualizeRef"
+                                         EmptyContent="EmptyContent"
+                                         OverscanCount="@OverscanCount"
+                                         Placeholder="VirtualizePlaceholder"
+                                         ItemsProvider="ProvideVirtualizedItems">
+                    @RowTemplate(context)
+                </_BitBasicListVirtualize>
             }
         }
         else
         {
-            @EmptyContent
+            if (_viewItems.Count > 0)
+            {
+                foreach (var item in _viewItems)
+                {
+                    @RowTemplate(item)
+                }
+            }
+            else if (_isLoadingMore is false)
+            {
+                @EmptyContent
+            }
         }
+    }
+
+    @if (LoadMore && _loadMoreFinished is false)
+    {
+        <button @onclick="() => PerformLoadMore(false)"
+                style="@Styles?.LoadMoreButton"
+                class="bit-bsl-lmb @Classes?.LoadMoreButton">
+            @if (LoadMoreTemplate is not null)
+            {
+                @LoadMoreTemplate(_isLoadingMore)
+            }
+            else
+            {
+                <div style="@Styles?.LoadMoreText"
+                     class="bit-bsl-lmt @Classes?.LoadMoreText">
+                    @if (_isLoadingMore)
+                    {
+                        <span>...</span>
+                    }
+                    else
+                    {
+                        <span>@LoadMoreText</span>
+                    }
+                </div>
+            }
+        </button>
     }
 </div>

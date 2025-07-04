@@ -23,7 +23,7 @@
             <AuthorizeView Policy="@AppFeatures.Management.ManageAiPrompt">
                 <BitMarkdownEditor @bind-Value="systemPrompt.Markdown" Class="md-editor" />
             </AuthorizeView>
-            <BitMarkdownViewer Markdown="@systemPrompt.Markdown" Style="word-break:break-all" />
+            <BitMarkdownViewer Markdown="@systemPrompt.Markdown" Class="md-viewer" />
         </BitStack>
     }
 </section>

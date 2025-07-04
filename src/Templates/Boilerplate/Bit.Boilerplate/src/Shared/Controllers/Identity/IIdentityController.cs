@@ -57,4 +57,7 @@ public interface IIdentityController : IAppController
 
     [HttpPost]
     Task VerifyWebAuthAndSendTwoFactorToken(JsonElement clientResponse, CancellationToken cancellationToken) => default!;
+
+    [HttpGet]
+    Task<string[]> GetSupportedSocialAuthSchemes(CancellationToken cancellationToken);
 }

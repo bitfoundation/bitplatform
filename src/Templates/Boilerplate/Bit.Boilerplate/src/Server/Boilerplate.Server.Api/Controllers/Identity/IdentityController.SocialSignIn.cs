@@ -1,6 +1,5 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Server.Api.Services;
-using Boilerplate.Shared.Services;
 using Microsoft.AspNetCore.Authentication;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
@@ -8,6 +7,7 @@ namespace Boilerplate.Server.Api.Controllers.Identity;
 public partial class IdentityController
 {
     [AutoInject] private ServerExceptionHandler serverExceptionHandler = default!;
+    [AutoInject] private IAuthenticationSchemeProvider authenticationSchemeProvider = default!;
 
     [HttpGet]
     [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5)]
@@ -49,7 +49,7 @@ public partial class IdentityController
 
             if (user is null)
             {
-                var name = info.Principal.FindFirstValue("preferred_username") ?? info.Principal.FindFirstValue(ClaimTypes.Name) ?? info.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
+                var name = info.Principal.FindFirstValue("preferred_username") ?? info.Principal.FindFirstValue(ClaimTypes.Name) ?? info.Principal.FindFirstValue(ClaimTypes.NameIdentifier) ?? info.Principal.FindFirstValue("name");
                 // Instead of automatically creating a user here, you can navigate to the sign-up page and pass the email and phone number in the query string.
 
                 user = new()
@@ -105,5 +105,19 @@ public partial class IdentityController
             return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}"), redirectRelativeUrl).ToString()); // Check out WebInteropApp.razor's comments.
 
         return Redirect(new Uri(Request.HttpContext.Request.GetWebAppUrl(), redirectRelativeUrl).ToString());
+    }
+
+    [HttpGet]
+    [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5)]
+    public async Task<string[]> GetSupportedSocialAuthSchemes(CancellationToken cancellationToken = default)
+    {
+        var schemes = await authenticationSchemeProvider.GetAllSchemesAsync();
+
+        var providers = schemes
+            .Where(s => string.IsNullOrEmpty(s.DisplayName) is false && s.Name != IdentityConstants.ExternalScheme)
+            .Select(s => s.Name)
+            .ToArray();
+
+        return providers;
     }
 }

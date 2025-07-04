@@ -17,14 +17,17 @@
     <File Path="src/Directory.Packages.props" />
   </Folder>
 //#if (pipeline == "Azure")
-  <Folder Name="/.SolutionItems/.azure-devops/" Id="3f1dd063-d3a3-f428-24f8-626958d189fb" />
-  <Folder Name="/.SolutionItems/.azure-devops/workflows/" Id="d5673a47-b807-7464-ee0f-fd95c5542ac5">
+  <Folder Name="/.SolutionItems/.azure-devops/" />
+  <Folder Name="/.SolutionItems/.azure-devops/workflows/">
     <File Path=".azure-devops/workflows/cd.yml" />
     <File Path=".azure-devops/workflows/ci.yml" />
   </Folder>
-//#elif (pipeline == "GitHub")
-  <Folder Name="/.SolutionItems/.github/" Id="351df30f-2daa-a858-be55-4affc8d70af2" />
-  <Folder Name="/.SolutionItems/.github/workflows/" Id="c0ca9c70-aac5-bd27-2f07-59fab982d30d">
+//#endif
+  <Folder Name="/.SolutionItems/.github/">
+	<File Path=".github/copilot-instructions.md" />
+  </Folder>
+//#if (pipeline == "GitHub")
+  <Folder Name="/.SolutionItems/.github/workflows/">
     <File Path=".github/workflows/cd.yml" />
     <File Path=".github/workflows/ci.yml" />
   </Folder>
@@ -32,6 +35,10 @@
   <Folder Name="/Server/">
 	<Project Path="src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj" />
     <Project Path="src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj" />
+	<Project Path="src/Server/Boilerplate.Server.Shared/Boilerplate.Server.Shared.csproj" />
+//#if (aspire == true)
+	<Project Path="src/Server/Boilerplate.Server.AppHost/Boilerplate.Server.AppHost.csproj" />
+//#endif
   </Folder>
   <Folder Name="/Client/">
     <Project Path="src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj" />

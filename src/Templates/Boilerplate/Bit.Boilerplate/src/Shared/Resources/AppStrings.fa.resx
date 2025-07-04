@@ -612,6 +612,9 @@
     <data name="GoogleSignInButtonText" xml:space="preserve">
     <value>ورود با گوگل</value>
   </data>
+    <data name="FacebookSignInButtonText" xml:space="preserve">
+    <value>ورود با فیسبوک</value>
+  </data>
     <data name="GitHubSignInButtonText" xml:space="preserve">
     <value>ورود با گیتهاب</value>
   </data>
@@ -623,6 +626,12 @@
   </data>
     <data name="SignOut" xml:space="preserve">
     <value>خروج از سیستم</value>
+  </data>
+    <data name="IdentityServerDemoSignInButtonText" xml:space="preserve">
+    <value>ورود با سرور تستی</value>
+  </data>
+    <data name="AzureEntraSignInButtonText" xml:space="preserve">
+    <value>ورود با Azure Entra</value>
   </data>
     <data name="SignOutPrompt" xml:space="preserve">
     <value>آیا مطمئن هستید که می خواهید خارج شوید؟</value>
@@ -1342,5 +1351,11 @@
   </data>
     <data name="SignInPasswordMessage2" xml:space="preserve">
     <value>ما بصورت خودکار یک حساب کاربری برای شما ایجاد خواهیم کرد.</value>
+  </data>
+    <data name="ImageTooSmall" xml:space="preserve">
+    <value>تصویر خیلی کوچک است. حداقل ابعاد مورد نیاز {0}x{1} است، اما ابعاد فعلی {2}x{3} است.</value>
+  </data>
+    <data name="ImageNotCarError" xml:space="preserve">
+    <value>تصویر ارائه شده حاوی ماشین نیست.</value>
   </data>
 </root>

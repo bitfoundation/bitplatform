@@ -26,7 +26,6 @@
         <PackageReference Include="Hangfire.EntityFrameworkCore" />
         <PackageReference Include="HtmlSanitizer" />
         <PackageReference Include="libphonenumber-csharp" />
-        <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.ApplicationInsights.AspNetCore" />
         <PackageReference Include="Humanizer" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
@@ -35,12 +34,14 @@
         <PackageReference Include="Magick.NET-Q16-AnyCPU" />
         <PackageReference Include="FluentEmail.Smtp" />
         <PackageReference Include="FluentStorage" />
+        <PackageReference Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="FluentStorage.AWS" />
         <PackageReference Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="FluentStorage.Azure.Blobs" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
         <PackageReference Include="Microsoft.AspNetCore.OData" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" />
+        <PackageReference Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="EFCore.SqlServer.VectorSearch" />
         <PackageReference Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
         <PackageReference Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
@@ -52,14 +53,15 @@
         <PackageReference Include="Microsoft.Identity.Web" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" />
         <PackageReference Include="AspNet.Security.OAuth.Apple" />
         <PackageReference Include="AspNet.Security.OAuth.GitHub" />
         <PackageReference Include="Riok.Mapperly" />
         <PackageReference Include="Twilio" />
         <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="AdsPush" />
-        <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Microsoft.Extensions.AI" />
-        <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Microsoft.Extensions.AI.AzureAIInference" />
-        <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Microsoft.Extensions.AI.OpenAI" />
+        <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI" />
+        <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI.AzureAIInference" />
+        <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI.OpenAI" />
         <PackageReference Condition=" ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Pgvector.EntityFrameworkCore" />
 
         <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
@@ -76,7 +78,7 @@
         <Using Include="Microsoft.AspNetCore.OData.Query" />
         <Using Include="Microsoft.AspNetCore.Mvc" />
 
-        <Using Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Microsoft.Extensions.AI" />
+        <Using Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI" />
         <Using Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Boilerplate.Server.Api.Models.Chatbot" />
         <Content Include="..\..\..\Bit.ResxTranslator.json" Link="Resources\Bit.ResxTranslator.json" />
 
@@ -84,7 +86,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Shared\Boilerplate.Shared.csproj" />
+        <ProjectReference Include="..\Boilerplate.Server.Shared\Boilerplate.Server.Shared.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,4 +1,4 @@
-using Boilerplate.Tests.Extensions;
+﻿using Boilerplate.Tests.Extensions;
 
 namespace Boilerplate.Tests;
 
@@ -6,7 +6,7 @@ namespace Boilerplate.Tests;
 public partial class IdentityPagesTests : PageTest
 {
     [TestMethod]
-    public async Task UnauthorizedUser_Should_RedirectToSignInPage()
+    public async Task UnauthorizedUser_Should_RenderNotAuthorizedComponent()
     {
         await using var server = new AppTestServer();
 
@@ -17,7 +17,7 @@ public partial class IdentityPagesTests : PageTest
 
         await Page.GotoAsync(new Uri(server.WebAppServerAddress, Urls.SettingsPage).ToString());
 
-        await Expect(Page).ToHaveURLAsync(new Uri(server.WebAppServerAddress, "/sign-in?return-url=settings").ToString());
+        await Expect(Page).ToHaveTitleAsync(AppStrings.NotAuthorizedPageTitle);
     }
 
     [TestMethod]
@@ -36,7 +36,7 @@ public partial class IdentityPagesTests : PageTest
 
         await Page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);
         await Page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillAsync(password);
-        await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn, Exact = true }).ClickAsync();
+        await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Continue, Exact = true }).ClickAsync();
 
         await Expect(Page).ToHaveURLAsync(server.WebAppServerAddress.ToString());
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = userFullName })).ToBeVisibleAsync();
