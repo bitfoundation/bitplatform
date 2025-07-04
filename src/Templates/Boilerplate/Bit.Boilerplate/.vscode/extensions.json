@@ -5,6 +5,8 @@
         "ms-dotnettools.csdevkit",
         "DominicVonk.vscode-resx-editor",
         "ms-dotnettools.vscode-dotnet-runtime",
-        "kevin-chatham.aspnetcorerazor-html-css-class-completion"
+        "kevin-chatham.aspnetcorerazor-html-css-class-completion",
+        "GitHub.copilot-chat",
+        "GitHub.copilot"
     ]
 }

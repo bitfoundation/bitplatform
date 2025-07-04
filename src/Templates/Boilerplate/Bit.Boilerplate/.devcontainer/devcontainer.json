@@ -19,7 +19,9 @@
                 "DominicVonk.vscode-resx-editor",
                 "ms-dotnetools.csharp",
                 "ms-dotnettools.vscode-dotnet-runtime",
-                "ms-dotnettools.csdevkit"
+                "ms-dotnettools.csdevkit",
+                "GitHub.copilot-chat",
+                "GitHub.copilot"
             ]
         }
     },
