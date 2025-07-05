@@ -28,7 +28,7 @@ jobs:
         node-version: 23
 
     - name: Build
-      run: dotnet build Boilerplate.sln -c Release
+      run: dotnet build Boilerplate.slnx -c Release
 
     - name: Install Playwright
       run: pwsh src/Tests/bin/Debug/net9.0/playwright.ps1 install --with-deps
