@@ -1,0 +1,10 @@
+{
+  "solution": {
+    "path": "Bit.Butil.slnx",
+    "projects": [
+      "Bit.Butil\\Bit.Butil.csproj",
+      "Demo\\Bit.Butil.Demo.Core\\Bit.Butil.Demo.Core.csproj",
+      "Demo\\Bit.Butil.Demo.Web\\Bit.Butil.Demo.Web.csproj"
+    ]
+  }
+}

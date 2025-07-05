@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/Demo/">
+    <Project Path="Demo/Bit.Besql.Demo.Client/Bit.Besql.Demo.Client.csproj" />
+    <Project Path="Demo/Bit.Besql.Demo/Bit.Besql.Demo.csproj" />
+  </Folder>
+  <Project Path="Bit.Besql/Bit.Besql.csproj" />
+</Solution>

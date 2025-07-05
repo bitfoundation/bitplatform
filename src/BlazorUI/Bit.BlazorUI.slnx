@@ -1,0 +1,37 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="iPhone" />
+    <Platform Name="iPhoneSimulator" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/.Solution Items/">
+    <File Path="../../.gitignore" />
+    <File Path="../.editorconfig" />
+    <File Path="../Bit.Build.props" />
+    <File Path="../global.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Demo/">
+    <File Path="Demo/.gitignore" />
+    <File Path="Demo/Directory.Build.props" />
+    <File Path="Demo/README.md" />
+    <Project Path="Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj" />
+    <Project Path="Demo/Bit.BlazorUI.Demo.Shared/Bit.BlazorUI.Demo.Shared.csproj" />
+  </Folder>
+  <Folder Name="/Demo/Client/">
+    <Project Path="Demo/Client/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.csproj" />
+    <Project Path="Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj">
+      <Deploy />
+    </Project>
+    <Project Path="Demo/Client/Bit.BlazorUI.Demo.Client.Web/Bit.BlazorUI.Demo.Client.Web.csproj" />
+    <Project Path="Demo/Client/Bit.BlazorUI.Demo.Client.Windows/Bit.BlazorUI.Demo.Client.Windows.csproj" />
+  </Folder>
+  <Project Path="Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj" />
+  <Project Path="Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj" />
+  <Project Path="Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj" />
+  <Project Path="Bit.BlazorUI.SourceGenerators/Bit.BlazorUI.SourceGenerators.csproj" />
+  <Project Path="Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj" />
+  <Project Path="Bit.BlazorUI/Bit.BlazorUI.csproj" />
+</Solution>

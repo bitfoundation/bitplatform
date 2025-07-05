@@ -1,0 +1,19 @@
+<Solution>
+  <Folder Name="/.Solution Items/">
+    <File Path="../../.gitignore" />
+    <File Path="../.editorconfig" />
+    <File Path="../Bit.Build.props" />
+    <File Path="../global.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/FullDemo/">
+    <Project Path="FullDemo/Client/Bit.Bswup.Demo.Client.csproj" />
+    <Project Path="FullDemo/Server/Bit.Bswup.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/NewDemo/">
+    <Project Path="Bit.Bswup.NewDemo/Bit.Bswup.NewDemo.Client/Bit.Bswup.NewDemo.Client.csproj" />
+    <Project Path="Bit.Bswup.NewDemo/Bit.Bswup.NewDemo/Bit.Bswup.NewDemo.csproj" />
+  </Folder>
+  <Project Path="Bit.Bswup.Demo/Bit.Bswup.Demo.csproj" />
+  <Project Path="Bit.Bswup/Bit.Bswup.csproj" />
+</Solution>
