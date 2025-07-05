@@ -4,7 +4,6 @@
     "cpus": 4
   },
   "features": {
-    "ghcr.io/devcontainers/features/node": {},
     "ghcr.io/devcontainers/features/python": {},
     "ghcr.io/devcontainers/features/powershell:1": {},
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
@@ -12,7 +11,8 @@
       "version": "latest",
       "helm": "latest",
       "minikube": "latest"
-    }
+    },
+    "ghcr.io/devcontainers/features/node:1": { "version": "23" }
   },
   "image": "mcr.microsoft.com/devcontainers/dotnet:dev-9.0-bookworm",
   "postStartCommand": "dotnet workload install wasm-tools && dotnet dev-certs https --trust",
