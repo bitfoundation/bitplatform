@@ -1,0 +1,17 @@
+{
+  "solution": {
+    "path": "Bit.BlazorUI.slnx",
+    "projects": [
+      "Bit.BlazorUI.Assets\\Bit.BlazorUI.Assets.csproj",
+      "Bit.BlazorUI.Extras\\Bit.BlazorUI.Extras.csproj",
+      "Bit.BlazorUI.Icons\\Bit.BlazorUI.Icons.csproj",
+      "Bit.BlazorUI.SourceGenerators\\Bit.BlazorUI.SourceGenerators.csproj",
+      "Bit.BlazorUI.Tests\\Bit.BlazorUI.Tests.csproj",
+      "Bit.BlazorUI\\Bit.BlazorUI.csproj",
+      "Demo\\Bit.BlazorUI.Demo.Server\\Bit.BlazorUI.Demo.Server.csproj",
+      "Demo\\Bit.BlazorUI.Demo.Shared\\Bit.BlazorUI.Demo.Shared.csproj",
+      "Demo\\Client\\Bit.BlazorUI.Demo.Client.Core\\Bit.BlazorUI.Demo.Client.Core.csproj",
+      "Demo\\Client\\Bit.BlazorUI.Demo.Client.Web\\Bit.BlazorUI.Demo.Client.Web.csproj"
+    ]
+  }
+}

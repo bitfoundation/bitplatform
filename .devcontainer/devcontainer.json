@@ -1,37 +1,54 @@
 {
-    "name": "bit platform",
-    "hostRequirements": {
-        "cpus": 4
+  "name": "bit platform",
+  "hostRequirements": {
+    "cpus": 4
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/node": {},
+    "ghcr.io/devcontainers/features/python": {},
+    "ghcr.io/devcontainers/features/powershell:1": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "onCreateCommand": "wget https://builds.dotnet.microsoft.com/dotnet/Sdk/9.0.301/dotnet-sdk-9.0.301-linux-x64.tar.gz -O $HOME/dotnet.tar.gz && export DOTNET_ROOT=$HOME/.dotnet && mkdir -p \"$DOTNET_ROOT\" && tar zxf $HOME/dotnet.tar.gz -C \"$DOTNET_ROOT\" && export PATH=$DOTNET_ROOT:$DOTNET_ROOT/tools:$PATH && find . -type f -name '*.csproj' -exec sed -i 's/Microsoft.NET.Sdk.BlazorWebAssembly/Microsoft.NET.Sdk.Web/g' {} \\;",
+  "postStartCommand": "dotnet workload install wasm-tools && dotnet dev-certs https --trust",
+  "waitFor": "onCreateCommand",
+  "customizations": {
+    "codespaces": {
+      "openFiles": [
+        "CONTRIBUTING.md"
+      ]
     },
-    "onCreateCommand": "wget https://builds.dotnet.microsoft.com/dotnet/Sdk/9.0.301/dotnet-sdk-9.0.301-linux-x64.tar.gz -O $HOME/dotnet.tar.gz && export DOTNET_ROOT=$HOME/.dotnet && mkdir -p \"$DOTNET_ROOT\" && tar zxf $HOME/dotnet.tar.gz -C \"$DOTNET_ROOT\" && export PATH=$DOTNET_ROOT:$DOTNET_ROOT/tools:$PATH && find . -type f -name '*.csproj' -exec sed -i 's/Microsoft.NET.Sdk.BlazorWebAssembly/Microsoft.NET.Sdk.Web/g' {} \\;",
-    "waitFor": "onCreateCommand",
-    "customizations": {
-        "codespaces": {
-            "openFiles": [
-                "CONTRIBUTING.md"
-            ]
-        },
-        "vscode": {
-            "extensions": [
-                "glenn2223.live-sass"
-            ]
-        }
-    },
-    "forwardPorts": [
-        4000,
-        4001,
-        5000,
-        5001,
-        4030,
-        4031,
-        4040,
-        4041,
-        5030,
-        5031,
-        5040,
-        5041
-    ],
-    "remoteEnv": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+    "vscode": {
+      "extensions": [
+        "GitHub.copilot",
+        "glenn2223.live-sass",
+        "GitHub.copilot-chat",
+        "ms-dotnetools.csharp",
+        "ms-dotnettools.csdevkit",
+        "DominicVonk.vscode-resx-editor",
+        "ms-dotnettools.vscode-dotnet-runtime",
+        "kevin-chatham.aspnetcorerazor-html-css-class-completion"
+      ]
     }
+  },
+  "forwardPorts": [
+    2030,
+    2031,
+    2032,
+    4000,
+    4001,
+    5000,
+    5001,
+    4030,
+    4031,
+    4040,
+    4041,
+    5030,
+    5031,
+    5040,
+    5041
+  ],
+  "remoteEnv": {
+    "ASPNETCORE_ENVIRONMENT": "Development"
+  }
 }
