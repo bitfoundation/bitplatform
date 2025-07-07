@@ -304,16 +304,17 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         ClassBuilder.Reset();
     }
 
-    private void HandleInputFocusIn()
+    private async Task HandleInputFocusIn()
     {
         _inputHasFocus = true;
         ClassBuilder.Reset();
         StyleBuilder.Reset();
 
-        _ = OpenOrCloseCallout();
+        await Task.Delay(100);
+        await OpenOrCloseCallout();
     }
 
-    private void HandleInputFocusOut()
+    private async Task HandleInputFocusOut()
     {
         _inputHasFocus = false;
         ClassBuilder.Reset();
@@ -321,7 +322,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         if (Modeless)
         {
-            _ = CloseCallout();
+            await Task.Delay(100);
+            await CloseCallout();
         }
     }
 
@@ -416,6 +418,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         CurrentValue = item;
 
         await OnSearch.InvokeAsync(CurrentValueAsString);
+
+        await SearchItems(false);
     }
 
     private void SetInputMode()
@@ -423,7 +427,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         _inputMode = InputMode?.ToString().ToLower();
     }
 
-    private async Task SearchItems()
+    private async Task SearchItems(bool openCallout = true)
     {
         if (CurrentValue.HasNoValue() || CurrentValue!.Length < MinSuggestTriggerChars)
         {
@@ -449,7 +453,10 @@ public partial class BitSearchBox : BitTextInputBase<string?>
             _viewSuggestedItems = [];
         }
 
-        await OpenOrCloseCallout();
+        if (openCallout)
+        {
+            await OpenOrCloseCallout();
+        }
     }
 
     private async Task OpenOrCloseCallout()
