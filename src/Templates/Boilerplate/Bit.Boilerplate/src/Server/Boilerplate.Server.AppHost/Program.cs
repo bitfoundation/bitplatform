@@ -1,12 +1,11 @@
 ﻿//+:cnd:noEmit
 using Projects;
-using Aspire.Hosting;
-using Aspire.Hosting.ApplicationModel;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
 //#if (database == "SqlServer")
 var sqlDatabase = builder.AddSqlServer("sqlserver")
+        .WithDbGate(config => config.WithLifetime(ContainerLifetime.Persistent).WithVolume("/var/lib/dbgate/Boilerplate/data"))
         .WithLifetime(ContainerLifetime.Persistent)
         .WithVolume("/var/lib/sql-server/Boilerplate/data")
         .WithImage("mssql/server", "2025-latest")
