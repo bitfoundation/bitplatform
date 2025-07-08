@@ -7,8 +7,9 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 //#if (database == "SqlServer")
 var sqlDatabase = builder.AddSqlServer("sqlserver")
+        .WithDbGate(config => config.WithLifetime(ContainerLifetime.Persistent).WithDataVolume())
         .WithLifetime(ContainerLifetime.Persistent)
-        .WithVolume("/var/lib/sql-server/Boilerplate/data")
+        .WithDataVolume()
         .WithImage("mssql/server", "2025-latest")
         .AddDatabase("sqldb"); // Sql server 2025 supports embedded vector search.
 
@@ -16,7 +17,7 @@ var sqlDatabase = builder.AddSqlServer("sqlserver")
 var postgresDatabase = builder.AddPostgres("postgresserver")
         .WithPgAdmin(config => config.WithLifetime(ContainerLifetime.Persistent).WithVolume("/var/lib/pgadmin/Boilerplate/data"))
         .WithLifetime(ContainerLifetime.Persistent)
-        .WithVolume("/var/lib/postgres-server/Boilerplate/data")
+        .WithDataVolume()
         .WithImage("pgvector/pgvector", "pg17") // pgvector supports embedded vector search.
         .AddDatabase("postgresdb");
 
@@ -25,7 +26,7 @@ var postgresDatabase = builder.AddPostgres("postgresserver")
 var mySqlDatabase = builder.AddMySql("mysqlserver")
         .WithPhpMyAdmin(config => config.WithLifetime(ContainerLifetime.Persistent).WithVolume("/var/lib/phpMyAdmin/Boilerplate/data"))
         .WithLifetime(ContainerLifetime.Persistent)
-        .WithVolume("/var/lib/mySql-server/Boilerplate/data")
+        .WithDataVolume()
         .AddDatabase("mysqldb");
 
 //#endif
@@ -35,7 +36,7 @@ var azureBlobStorage = builder.AddAzureStorage("storage")
         {
             azurite
                 .WithLifetime(ContainerLifetime.Persistent)
-                .WithDataVolume("BoilerplateStorage");
+                .WithDataVolume();
         })
         .AddBlobs("blobs");
 
