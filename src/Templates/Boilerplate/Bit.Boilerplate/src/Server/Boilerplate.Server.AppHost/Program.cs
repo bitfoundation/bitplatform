@@ -14,6 +14,7 @@ var sqlDatabase = builder.AddSqlServer("sqlserver")
 
 //#elif (database == "PostgreSql")
 var postgresDatabase = builder.AddPostgres("postgresserver")
+        .WithPgAdmin(config => config.WithLifetime(ContainerLifetime.Persistent).WithVolume("/var/lib/pgadmin/Boilerplate/data"))
         .WithLifetime(ContainerLifetime.Persistent)
         .WithVolume("/var/lib/postgres-server/Boilerplate/data")
         .WithImage("pgvector/pgvector", "pg17") // pgvector supports embedded vector search.
@@ -22,6 +23,7 @@ var postgresDatabase = builder.AddPostgres("postgresserver")
 //#elif (database == "MySql")
 
 var mySqlDatabase = builder.AddMySql("mysqlserver")
+        .WithPhpMyAdmin(config => config.WithLifetime(ContainerLifetime.Persistent).WithVolume("/var/lib/phpMyAdmin/Boilerplate/data"))
         .WithLifetime(ContainerLifetime.Persistent)
         .WithVolume("/var/lib/mySql-server/Boilerplate/data")
         .AddDatabase("mysqldb");
@@ -80,6 +82,8 @@ serverWebProject.WithReference(s3Storage, "MinIOS3ConnectionString").WaitFor(s3S
 //#endif
 
 //#endif
+
+builder.AddAspireDashboard();
 
 await builder
     .Build()

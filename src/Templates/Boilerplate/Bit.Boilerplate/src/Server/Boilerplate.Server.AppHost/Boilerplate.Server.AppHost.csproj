@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <Sdk Name="Aspire.AppHost.Sdk" Version="9.0.0" />
+    <Sdk Name="Aspire.AppHost.Sdk" Version="9.3.0" />
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
@@ -19,8 +19,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Remove="*" />
         <ProjectReference Include="..\Boilerplate.Server.Web\Boilerplate.Server.Web.csproj" />
+        <ProjectReference Include="..\Boilerplate.Server.Shared\Boilerplate.Server.Shared.csproj" IsAspireProjectResource="false" />
         <ProjectReference Condition=" '$(api)' == 'Standalone' OR '$(api)' == ''" Include="..\Boilerplate.Server.Api\Boilerplate.Server.Api.csproj" />
     </ItemGroup>
 
