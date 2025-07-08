@@ -64,6 +64,17 @@ public partial class SharedExceptionHandler
             .Zip(exp.Data.Values.Cast<object?>())
             .ToDictionary(item => item.First, item => item.Second);
 
+        if (exp is ResourceValidationException resValExp)
+        {
+            foreach (var detail in resValExp.Payload.Details)
+            {
+                foreach (var error in detail.Errors)
+                {
+                    data[$"{detail.Name}:{error.Key}"] = error.Message;
+                }
+            }
+        }
+
         if (exp.InnerException is not null)
         {
             var innerData = GetExceptionData(exp.InnerException);
