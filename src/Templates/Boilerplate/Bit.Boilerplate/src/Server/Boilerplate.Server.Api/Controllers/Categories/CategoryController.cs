@@ -118,7 +118,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
         // Remote validation example: Any errors thrown here will be displayed in the client's edit form component.
         if ((entry.State is EntityState.Added || entry.Property(c => c.Name).IsModified)
             && await DbContext.Categories.AnyAsync(p => p.Name == category.Name, cancellationToken))
-            throw new ResourceValidationException((nameof(CategoryDto.Name), [Localizer[nameof(AppStrings.DuplicateCategoryName)]]));
+            throw new ResourceValidationException((nameof(CategoryDto.Name), [Localizer[nameof(AppStrings.DuplicateCategoryName), category.Name!]]));
     }
 }
 

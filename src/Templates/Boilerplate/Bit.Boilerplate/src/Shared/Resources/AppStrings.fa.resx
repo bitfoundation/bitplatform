@@ -1062,7 +1062,7 @@
     <value>نام محصول تکراری است</value>
   </data>
     <data name="DuplicateCategoryName" xml:space="preserve">
-    <value>نام دسته تکراری است</value>
+    <value>نام دسته {0} تکراری است</value>
   </data>
     <data name="DashboardPageTitle" xml:space="preserve">
     <value>داشبورد</value>
