@@ -14,7 +14,7 @@ public static class IDistributedApplicationBuilderExtensions
         if (builder.ExecutionContext.IsPublishMode)
         {
             // The name aspire-dashboard is special cased and excluded from the default
-            var dashboard = builder.AddContainer("dashboard", "mcr.microsoft.com/dotnet/aspire-dashboard:9.0")
+            var dashboard = builder.AddContainer("dashboard", "mcr.microsoft.com/dotnet/aspire-dashboard:9.3")
                    .WithHttpEndpoint(targetPort: 18888)
                    .WithHttpEndpoint(name: "otlp", targetPort: 18889);
 
