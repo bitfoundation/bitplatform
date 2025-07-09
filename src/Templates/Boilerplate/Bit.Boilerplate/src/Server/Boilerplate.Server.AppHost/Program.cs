@@ -5,8 +5,11 @@ using Aspire.Hosting.ApplicationModel;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
+// Check out appsettings.json for credential settings.
+
 //#if (database == "SqlServer")
-var sqlDatabase = builder.AddSqlServer("sqlserver")
+var sqlServerPassword = builder.AddParameter("SqlServerPassword", secret: true);
+var sqlDatabase = builder.AddSqlServer("sqlserver", password: sqlServerPassword)
         .WithDbGate(config => config.WithLifetime(ContainerLifetime.Persistent).WithDataVolume())
         .WithLifetime(ContainerLifetime.Persistent)
         .WithDataVolume()
@@ -14,7 +17,8 @@ var sqlDatabase = builder.AddSqlServer("sqlserver")
         .AddDatabase("sqldb"); // Sql server 2025 supports embedded vector search.
 
 //#elif (database == "PostgreSql")
-var postgresDatabase = builder.AddPostgres("postgresserver")
+var postgresPassword = builder.AddParameter("PostgresPassword", secret: true);
+var postgresDatabase = builder.AddPostgres("postgresserver", password: postgresPassword)
         .WithPgAdmin(config => config.WithLifetime(ContainerLifetime.Persistent).WithVolume("/var/lib/pgadmin/Boilerplate/data"))
         .WithLifetime(ContainerLifetime.Persistent)
         .WithDataVolume()
@@ -22,8 +26,8 @@ var postgresDatabase = builder.AddPostgres("postgresserver")
         .AddDatabase("postgresdb");
 
 //#elif (database == "MySql")
-
-var mySqlDatabase = builder.AddMySql("mysqlserver")
+var mySqlPassword = builder.AddParameter("MySqlPassword", secret: true);
+var mySqlDatabase = builder.AddMySql("mysqlserver", password: mySqlPassword)
         .WithPhpMyAdmin(config => config.WithLifetime(ContainerLifetime.Persistent).WithVolume("/var/lib/phpMyAdmin/Boilerplate/data"))
         .WithLifetime(ContainerLifetime.Persistent)
         .WithDataVolume()
@@ -41,9 +45,9 @@ var azureBlobStorage = builder.AddAzureStorage("storage")
         .AddBlobs("blobs");
 
 //#elif (filesStorage == "S3")
-var username = builder.AddParameter("user", "minioadmin");
-var password = builder.AddParameter("password", "minioadmin", secret: true);
-var s3Storage = builder.AddMinioContainer("minio", rootUser: username, rootPassword: password);
+var minioUsername = builder.AddParameter("MinIOUser");
+var minioPassword = builder.AddParameter("MinIOPassword", secret: true);
+var s3Storage = builder.AddMinioContainer("minio", rootUser: minioUsername, rootPassword: minioPassword);
 //#endif
 
 var serverWebProject = builder.AddProject<Boilerplate_Server_Web>("serverweb") // Replace . with _ if needed to ensure the project builds successfully.
