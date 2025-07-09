@@ -5,7 +5,7 @@ using Aspire.Hosting.ApplicationModel;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-// Checkout appsettings.json for credential settings.
+// Check out appsettings.json for credential settings.
 
 //#if (database == "SqlServer")
 var sqlServerPassword = builder.AddParameter("SqlServerPassword", secret: true);
