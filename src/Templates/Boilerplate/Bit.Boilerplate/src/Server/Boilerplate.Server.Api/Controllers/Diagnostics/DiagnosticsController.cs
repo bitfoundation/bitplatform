@@ -14,6 +14,7 @@ namespace Boilerplate.Server.Api.Controllers.Diagnostics;
 [Route("api/[controller]/[action]")]
 public partial class DiagnosticsController : AppControllerBase, IDiagnosticsController
 {
+    [AutoInject] private IHostEnvironment env = default!;
     //#if (notification == true)
     [AutoInject] private PushNotificationService pushNotificationService = default!;
     //#endif
@@ -76,6 +77,7 @@ public partial class DiagnosticsController : AppControllerBase, IDiagnosticsCont
         }
 
         result.AppendLine();
+        result.AppendLine($"Environment: {env.EnvironmentName}");
         result.AppendLine("Base url: " + Request.GetBaseUrl());
         result.AppendLine("Web app url: " + Request.GetWebAppUrl());
 
