@@ -1,4 +1,4 @@
-//-:cnd:noEmit
+﻿//-:cnd:noEmit
 namespace Boilerplate.Shared.Services;
 
 /// <summary>
@@ -11,15 +11,18 @@ namespace Boilerplate.Shared.Services;
 public static partial class AppEnvironment
 {
     const string DEV = "Development";
+    const string TEST = "TEST";
     const string STAGING = "Staging";
     const string PROD = "Production";
 
     public static string Current { get; private set; } =
-#if Development     // dotnet publish -c Debug
+#if DEVELOPMENT || DEV     // dotnet publish -c Debug
         DEV;
-#elif Staging       // dotnet publish -c Release -p:Environment=Staging
+#elif TEST                 // dotnet publish -c Release -p:Environment=Test
+        TEST;
+#elif STAGING              // dotnet publish -c Release -p:Environment=Staging
         STAGING;
-#else               // dotnet publish -c Release
+#else                      // dotnet publish -c Release
         PROD;
 #endif
 
@@ -28,14 +31,19 @@ public static partial class AppEnvironment
         return Is(DEV);
     }
 
-    public static bool IsProd()
+    public static bool IsTest()
     {
-        return Is(PROD);
+        return Is(TEST);
     }
 
     public static bool IsStaging()
     {
         return Is(STAGING);
+    }
+
+    public static bool IsProd()
+    {
+        return Is(PROD);
     }
 
     public static bool Is(string name)

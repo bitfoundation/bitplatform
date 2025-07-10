@@ -52,7 +52,9 @@ EndProject
 #if (pipeline == "GitHub")
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{2347E3B2-FDDE-427E-A0AE-E4DCD47C2989}"
 	ProjectSection(SolutionItems) = preProject
-		.github\workflows\cd.yml = .github\workflows\cd.yml
+		.github\workflows\cd-prod.yml = .github\workflows\cd-prod.yml
+		.github\workflows\cd-test.yml = .github\workflows\cd-test.yml
+		.github\workflows\cd-template.yml = .github\workflows\cd-template.yml
 		.github\workflows\ci.yml = .github\workflows\ci.yml
 	EndProjectSection
 EndProject

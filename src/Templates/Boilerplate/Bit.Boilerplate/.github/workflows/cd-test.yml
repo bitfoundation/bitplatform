@@ -1,0 +1,14 @@
+name: Boilerplate Test CD
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "test" ]
+
+jobs:
+  build_and_deploy_test:
+    name: build and deploy to test
+    uses: ./.github/workflows/cd-template.yml
+    with:
+      ENV_NAME: test
+    secrets: inherit
