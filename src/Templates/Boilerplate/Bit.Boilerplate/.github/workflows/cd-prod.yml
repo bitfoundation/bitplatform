@@ -10,4 +10,4 @@ jobs:
     name: build ande deploy to production
     uses: ./.github/workflows/cd-template.yml
     with:
-      environment_name: production
+      ENV_NAME: production

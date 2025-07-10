@@ -10,4 +10,4 @@ jobs:
     name: build ande deploy to test
     uses: ./.github/workflows/cd-template.yml
     with:
-      environment_name: test
+      ENV_NAME: test
