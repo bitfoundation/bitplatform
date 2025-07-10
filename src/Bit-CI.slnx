@@ -128,6 +128,8 @@
   </Folder>
   <Folder Name="/Templates/Boilerplate/Server/">
     <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj" />
+    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Server/Boilerplate.Server.AppHost/Boilerplate.Server.AppHost.csproj" />
+    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Server/Boilerplate.Server.Shared/Boilerplate.Server.Shared.csproj" />
     <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj" />
   </Folder>
   <Folder Name="/Templates/Boilerplate/Shared/">
