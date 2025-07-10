@@ -88,6 +88,16 @@ serverWebProject.WithReference(s3Storage, "MinIOS3ConnectionString").WaitFor(s3S
 
 //#endif
 
+if (builder.ExecutionContext.IsRunMode) // The following projects are only added for testing purposes.
+{
+    // Blazor WebAssembly Standalone project.
+    builder.AddProject<Boilerplate_Client_Web>("clientwebwasm"); // Replace . with _ if needed to ensure the project builds successfully.
+
+    // Blazor Hybrid Windows project.
+    builder.AddProject<Boilerplate_Client_Windows>("clientwindows") // Replace . with _ if needed to ensure the project builds successfully.
+        .WithExplicitStart();
+}
+
 builder.AddAspireDashboard();
 
 await builder
