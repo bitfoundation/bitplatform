@@ -11,3 +11,4 @@ jobs:
     uses: ./.github/workflows/cd-template.yml
     with:
       ENV_NAME: production
+    secrets: inherit
