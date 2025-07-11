@@ -218,7 +218,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                         {
                             Temperature = 0,
                             ResponseFormat = ChatResponseFormat.Json,
-                            AdditionalProperties = new AdditionalPropertiesDictionary
+                            AdditionalProperties = new()
                             {
                                 ["response_format"] = new { type = "json_object" }
                             }
