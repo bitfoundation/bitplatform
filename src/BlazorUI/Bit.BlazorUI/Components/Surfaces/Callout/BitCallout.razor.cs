@@ -51,6 +51,16 @@ public partial class BitCallout : BitComponentBase
     [Parameter] public BitDropDirection? Direction { get; set; }
 
     /// <summary>
+    /// The id of the footer element that renders at the end of the scrolling container of the callout contnet.
+    /// </summary>
+    [Parameter] public string? FooterId { get; set; }
+
+    /// <summary>
+    /// The id of the header element that renders at the top of the scrolling container of the callout contnet.
+    /// </summary>
+    [Parameter] public string? HeaderId { get; set; }
+
+    /// <summary>
     /// Determines the opening state of the callout.
     /// </summary>
     [Parameter]
@@ -59,9 +69,29 @@ public partial class BitCallout : BitComponentBase
     public bool IsOpen { get; set; }
 
     /// <summary>
+    /// The max window width to consider when calculating the position of the callout before openning.
+    /// </summary>
+    [Parameter] public int? MaxWindowWidth { get; set; }
+
+    /// <summary>
     /// The callback that is called when the callout opens or closes.
     /// </summary>
     [Parameter] public EventCallback<bool> OnToggle { get; set; }
+
+    /// <summary>
+    /// Force the callout to set its content container width while openning it based on the available space and actual content.
+    /// </summary>
+    [Parameter] public bool SetCalloutWidth { get; set; }
+
+    /// <summary>
+    /// The id of the element which needs to be scrollable in the content of the callout.
+    /// </summary>
+    [Parameter] public string? ScrollContainerId { get; set; }
+
+    /// <summary>
+    /// The vertical offset of the scroll container to consider in the positining and height calculation of the callout.
+    /// </summary>
+    [Parameter] public int? ScrollOffset { get; set; }
 
     /// <summary>
     /// Configures the responsive mode of the callout for the small screens.
@@ -155,20 +185,22 @@ public partial class BitCallout : BitComponentBase
 
         var id = Anchor is not null ? _anchorId : AnchorId ?? _Id;
 
-        await _js.BitCalloutToggleCallout(_dotnetObj,
-                                id,
-                                AnchorEl is null ? null : AnchorEl(),
-                                _contentId,
-                                null,
-                                IsOpen,
-                                ResponsiveMode ?? BitResponsiveMode.None,
-                                Direction ?? BitDropDirection.TopAndBottom,
-                                Dir is BitDir.Rtl,
-                                "",
-                                0,
-                                "",
-                                "",
-                                false);
+        await _js.BitCalloutToggleCallout(
+            dotnetObj: _dotnetObj,
+            componentId: id,
+            component: AnchorEl is null ? null : AnchorEl(),
+            calloutId: _contentId,
+            callout: null,
+            isCalloutOpen: IsOpen,
+            responsiveMode: ResponsiveMode ?? BitResponsiveMode.None,
+            dropDirection: Direction ?? BitDropDirection.TopAndBottom,
+            isRtl: Dir is BitDir.Rtl,
+            scrollContainerId: ScrollContainerId ?? "",
+            scrollOffset: ScrollOffset ?? 0,
+            headerId: HeaderId ?? "",
+            footerId: FooterId ?? "",
+            setCalloutWidth: SetCalloutWidth,
+            maxWindowWidth: MaxWindowWidth ?? 0);
 
         await OnToggle.InvokeAsync(IsOpen);
     }
