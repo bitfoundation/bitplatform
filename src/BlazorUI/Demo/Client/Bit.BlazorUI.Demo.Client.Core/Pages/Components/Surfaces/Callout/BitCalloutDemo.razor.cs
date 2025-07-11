@@ -80,6 +80,13 @@ public partial class BitCalloutDemo
         },
         new()
         {
+            Name = "MaxWindowWidth",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The max window width to consider when calculating the position of the callout before openning."
+        },
+        new()
+        {
             Name = "OnToggle",
             Type = "EventCallback<bool>",
             DefaultValue = "",
