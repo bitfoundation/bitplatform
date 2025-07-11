@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Boilerplate.Server.Api.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250702084958_Initial")]
+    [Migration("20250711145344_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -576,6 +576,9 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("Price")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PrimaryImageAltText")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("ShortId")
