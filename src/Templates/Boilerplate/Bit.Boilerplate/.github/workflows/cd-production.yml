@@ -1,4 +1,4 @@
-name: Boilerplate Prod CD
+name: Boilerplate Production CD
 
 on:
   workflow_dispatch:
