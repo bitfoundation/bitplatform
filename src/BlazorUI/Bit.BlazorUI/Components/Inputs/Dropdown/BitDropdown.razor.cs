@@ -1143,6 +1143,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             if (InvalidValueBinding()) return;
 
             CurrentValue = default;
+
+            _selectedItems.Clear();
         }
 
         UpdateSelectedItemsFromValues();
