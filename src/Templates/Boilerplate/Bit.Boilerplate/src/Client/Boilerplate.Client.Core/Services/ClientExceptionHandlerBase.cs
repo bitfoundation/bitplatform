@@ -38,7 +38,7 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
         ExceptionDisplayKind displayKind,
         Dictionary<string, object> parameters)
     {
-        var isDevEnv = AppEnvironment.IsDev();
+        var isDevEnv = AppEnvironment.IsDevelopment();
 
         using (var scope = Logger.BeginScope(parameters.ToDictionary(i => i.Key, i => i.Value ?? string.Empty)))
         {

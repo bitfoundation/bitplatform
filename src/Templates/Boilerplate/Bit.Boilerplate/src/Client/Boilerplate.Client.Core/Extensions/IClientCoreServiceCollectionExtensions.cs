@@ -123,13 +123,13 @@ public static partial class IClientCoreServiceCollectionExtensions
 
             });
 
-            if (AppEnvironment.IsDev() is false)
+            if (AppEnvironment.IsDevelopment() is false)
             {
                 optionsBuilder.UseModel(OfflineDbContextModel.Instance);
             }
 
-            optionsBuilder.EnableSensitiveDataLogging(AppEnvironment.IsDev())
-                    .EnableDetailedErrors(AppEnvironment.IsDev());
+            optionsBuilder.EnableSensitiveDataLogging(AppEnvironment.IsDevelopment())
+                    .EnableDetailedErrors(AppEnvironment.IsDevelopment());
 
         }, dbContextInitializer: async (sp, dbContext) => await Task.Run(async () => await dbContext.Database.MigrateAsync()));
         //#endif

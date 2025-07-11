@@ -10,40 +10,40 @@ namespace Boilerplate.Shared.Services;
 /// </summary>
 public static partial class AppEnvironment
 {
-    const string DEV = "Development";
-    const string TEST = "TEST";
-    const string STAGING = "Staging";
-    const string PROD = "Production";
+    private static readonly string Development = nameof(Development);
+    private static readonly string Test = nameof(Test);
+    private static readonly string Staging = nameof(Staging);
+    private static readonly string Production = nameof(Production);
 
     public static string Current { get; private set; } =
-#if DEVELOPMENT || DEV     // dotnet publish -c Debug
-        DEV;
-#elif TEST                 // dotnet publish -c Release -p:Environment=Test
-        TEST;
-#elif STAGING              // dotnet publish -c Release -p:Environment=Staging
-        STAGING;
+#if Development            // dotnet publish -c Debug
+        Development;
+#elif Test                 // dotnet publish -c Release -p:Environment=Test
+        Test;
+#elif Staging              // dotnet publish -c Release -p:Environment=Staging
+        Staging;
 #else                      // dotnet publish -c Release
-        PROD;
+        Production;
 #endif
 
-    public static bool IsDev()
+    public static bool IsDevelopment()
     {
-        return Is(DEV);
+        return Is(Development);
     }
 
     public static bool IsTest()
     {
-        return Is(TEST);
+        return Is(Test);
     }
 
     public static bool IsStaging()
     {
-        return Is(STAGING);
+        return Is(Staging);
     }
 
-    public static bool IsProd()
+    public static bool IsProduction()
     {
-        return Is(PROD);
+        return Is(Production);
     }
 
     public static bool Is(string name)

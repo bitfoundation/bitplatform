@@ -11,7 +11,7 @@ public partial class SharedExceptionHandler
         if (exception is KnownException)
             return exception.Message;
 
-        if (AppEnvironment.IsDev())
+        if (AppEnvironment.IsDevelopment())
             return exception.ToString();
 
         return Localizer[nameof(AppStrings.UnknownException)];

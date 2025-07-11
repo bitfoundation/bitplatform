@@ -129,7 +129,7 @@ public partial class AppDiagnosticModal
                 Name = item.Name,
                 Path = "/",
                 SameSite = SameSite.Strict,
-                Secure = AppEnvironment.IsDev() is false
+                Secure = AppEnvironment.IsDevelopment() is false
             });
         }
 
