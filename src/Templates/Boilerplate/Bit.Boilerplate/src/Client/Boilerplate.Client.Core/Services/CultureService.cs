@@ -24,7 +24,7 @@ public partial class CultureService
                 MaxAge = 3600 * 24 * 30,
                 Path = "/",
                 SameSite = SameSite.Strict,
-                Secure = AppEnvironment.IsDev() is false
+                Secure = AppEnvironment.IsDevelopment() is false
             });
         }
 

@@ -30,7 +30,7 @@ public partial class SimpleJwtSecureDataFormat : ISecureDataFormat<Authenticatio
         }
         catch (Exception ex)
         {
-            if (AppEnvironment.IsDev())
+            if (AppEnvironment.IsDevelopment())
             {
                 Console.WriteLine(ex); // since we do not have access to any logger at this point!
             }

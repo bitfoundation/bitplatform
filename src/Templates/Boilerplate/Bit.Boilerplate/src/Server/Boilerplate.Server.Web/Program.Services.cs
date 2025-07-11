@@ -18,7 +18,7 @@ public static partial class Program
         var services = builder.Services;
         var configuration = builder.Configuration;
 
-        if (AppEnvironment.IsDev())
+        if (AppEnvironment.IsDevelopment())
         {
             builder.Logging.AddDiagnosticLogger();
         }

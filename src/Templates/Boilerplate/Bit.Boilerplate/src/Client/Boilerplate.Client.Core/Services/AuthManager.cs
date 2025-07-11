@@ -62,7 +62,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                 MaxAge = rememberMe is true ? response.ExpiresIn : null, // to create a session cookie
                 Path = "/",
                 SameSite = SameSite.Strict,
-                Secure = AppEnvironment.IsDev() is false
+                Secure = AppEnvironment.IsDevelopment() is false
             });
         }
 
@@ -224,7 +224,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                 Name = "access_token",
                 Path = "/",
                 SameSite = SameSite.Strict,
-                Secure = AppEnvironment.IsDev() is false
+                Secure = AppEnvironment.IsDevelopment() is false
             });
         }
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));

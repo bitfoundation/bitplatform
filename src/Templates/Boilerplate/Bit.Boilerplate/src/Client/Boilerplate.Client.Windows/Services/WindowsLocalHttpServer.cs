@@ -128,7 +128,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
                     // In development, Blazor employs complex methods to locate files across all installed NuGet packages.
                     // To streamline this, we utilize a web server to serve static files in the development environment.
                     // In production, as all files are deployed to a single folder, we rely on the default file provider.
-                    if (AppEnvironment.IsDev())
+                    if (AppEnvironment.IsDevelopment())
                     {
                         ctx.Redirect(new Uri(clientWindowsSettings.WebAppUrl ?? absoluteServerAddressProvider.GetAddress(), requestFilePath).ToString());
                     }

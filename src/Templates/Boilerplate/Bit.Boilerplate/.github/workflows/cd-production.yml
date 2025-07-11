@@ -10,5 +10,5 @@ jobs:
     name: build and deploy to production
     uses: ./.github/workflows/cd-template.yml
     with:
-      ENV_NAME: prod
+      ENV_NAME: Production
     secrets: inherit

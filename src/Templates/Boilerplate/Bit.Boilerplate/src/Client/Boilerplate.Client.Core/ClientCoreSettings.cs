@@ -28,7 +28,7 @@ public partial class ClientCoreSettings : SharedSettings
         var validationResults = base.Validate(validationContext).ToList();
 
         //#if (captcha == "reCaptcha")
-        if (AppEnvironment.IsDev() is false && GoogleRecaptchaSiteKey is "6LdMKr4pAAAAAKMyuEPn3IHNf04EtULXA8uTIVRw")
+        if (AppEnvironment.IsDevelopment() is false && GoogleRecaptchaSiteKey is "6LdMKr4pAAAAAKMyuEPn3IHNf04EtULXA8uTIVRw")
         {
             validationResults.Add(new ValidationResult("Please set your own GoogleRecaptchaSiteKey in Client.Core's appsettings.json"));
         }

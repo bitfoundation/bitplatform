@@ -1,4 +1,4 @@
-namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
+﻿namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 public partial class RetryDelegatingHandler(HttpMessageHandler handler)
     : DelegatingHandler(handler)
@@ -20,7 +20,7 @@ public partial class RetryDelegatingHandler(HttpMessageHandler handler)
             }
             catch (Exception exp) when (exp is not KnownException || exp is ServerConnectionException) // If the exception is either unknown or a server connection issue, let's retry once more.
             {
-                if (request.HasNoRetryPolicyAttribute() || AppEnvironment.IsDev())
+                if (request.HasNoRetryPolicyAttribute() || AppEnvironment.IsDevelopment())
                     throw;
                 retryCount++;
                 logScopeData["RetryCount"] = retryCount;

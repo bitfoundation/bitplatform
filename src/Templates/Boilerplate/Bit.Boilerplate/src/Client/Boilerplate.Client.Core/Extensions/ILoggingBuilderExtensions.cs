@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Boilerplate.Client.Core.Services.DiagnosticLog;
 
 namespace Microsoft.Extensions.Logging;
@@ -16,7 +16,7 @@ public static class ILoggingBuilderExtensions
     {
         loggingBuilder.AddConfiguration(configuration.GetSection("Logging"));
 
-        if (AppEnvironment.IsDev())
+        if (AppEnvironment.IsDevelopment())
         {
             loggingBuilder.AddDebug();
         }
@@ -31,7 +31,7 @@ public static class ILoggingBuilderExtensions
         //#if (sentry == true)
         loggingBuilder.AddSentry(options =>
         {
-            options.Debug = AppEnvironment.IsDev();
+            options.Debug = AppEnvironment.IsDevelopment();
             options.Environment = AppEnvironment.Current;
             configuration.GetRequiredSection("Logging:Sentry").Bind(options);
         });

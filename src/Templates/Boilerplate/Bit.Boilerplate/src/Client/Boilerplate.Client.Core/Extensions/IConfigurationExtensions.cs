@@ -1,4 +1,4 @@
-//-:cnd:noEmit
+﻿//-:cnd:noEmit
 
 using Boilerplate.Client.Core;
 
@@ -11,7 +11,7 @@ public static partial class IConfigurationExtensions
         configuration.Bind(settings);
         var serverAddress = settings.ServerAddress;
 
-        if (AppEnvironment.IsDev() &&
+        if (AppEnvironment.IsDevelopment() &&
             AppPlatform.IsAndroid &&
             serverAddress.Contains("localhost", StringComparison.InvariantCultureIgnoreCase))
         {

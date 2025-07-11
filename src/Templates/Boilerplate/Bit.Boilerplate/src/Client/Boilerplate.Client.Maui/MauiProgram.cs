@@ -134,7 +134,7 @@ public static partial class MauiProgram
                             args.Handled = true;
                             args.State = Microsoft.Web.WebView2.Core.CoreWebView2PermissionState.Allow;
                         };
-                        if (AppEnvironment.IsDev() is false)
+                        if (AppEnvironment.IsDevelopment() is false)
                         {
                             var settings = webView.CoreWebView2.Settings;
                             settings.IsZoomControlEnabled = false;
@@ -173,7 +173,7 @@ public static partial class MauiProgram
                 settings.JavaScriptCanOpenWindowsAutomatically =
                 settings.DomStorageEnabled = true;
 
-            if (AppEnvironment.IsDev())
+            if (AppEnvironment.IsDevelopment())
             {
                 settings.MixedContentMode = Android.Webkit.MixedContentHandling.AlwaysAllow;
             }
@@ -212,7 +212,7 @@ public static partial class MauiProgram
             services.GetRequiredService<IExceptionHandler>().Handle(exp, parameters: new()
             {
                 { nameof(reportedBy), reportedBy }
-            }, displayKind: AppEnvironment.IsDev() ? ExceptionDisplayKind.NonInterrupting : ExceptionDisplayKind.None);
+            }, displayKind: AppEnvironment.IsDevelopment() ? ExceptionDisplayKind.NonInterrupting : ExceptionDisplayKind.None);
         }
         else
         {

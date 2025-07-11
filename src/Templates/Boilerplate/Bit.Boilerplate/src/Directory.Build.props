@@ -32,7 +32,7 @@
         <DefineConstants Condition="  $(TargetFramework.Contains('-windows')) ">$(DefineConstants);Windows</DefineConstants>
         <DefineConstants Condition="  $(TargetFramework.Contains('-mac')) ">$(DefineConstants);Mac</DefineConstants>
         <DefineConstants Condition=" '$(InvariantGlobalization)' == 'true' ">$(DefineConstants);InvariantGlobalization</DefineConstants>
-        <DefineConstants>$(DefineConstants);$(Environment.ToUpper());$(Configuration)</DefineConstants>
+        <DefineConstants>$(DefineConstants);$(Environment);$(Configuration)</DefineConstants>
         <DefineConstants Condition="$(Configuration.Contains('Debug'))">$(DefineConstants);DEBUG</DefineConstants>
         <CompressionEnabled Condition="'$(Environment)' == 'Development'">false</CompressionEnabled>
     </PropertyGroup>
