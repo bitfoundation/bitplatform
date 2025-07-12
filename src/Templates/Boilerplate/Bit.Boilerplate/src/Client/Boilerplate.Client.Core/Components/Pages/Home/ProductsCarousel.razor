@@ -27,7 +27,7 @@ else
                 <BitCarouselItem Style="width:100%">
                     <BitLink Href="@product.PageUrl" NoUnderline Style="color:unset">
                         <BitStack Horizontal Class="carousel-stack">
-                            <ProductImage Src="@GetProductImageUrl(product)" Width="50%" Class="carousel-image" />
+                            <ProductImage Src="@GetProductImageUrl(product)" Alt="@product.PrimaryImageAltText" Width="50%" Class="carousel-image" />
                             <BitStack AutoHeight>
                                 <br />
                                 <BitText Typography="BitTypography.H3" Color="BitColor.Secondary">
