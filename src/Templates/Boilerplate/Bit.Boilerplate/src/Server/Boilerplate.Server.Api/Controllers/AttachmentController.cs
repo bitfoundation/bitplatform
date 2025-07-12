@@ -151,6 +151,8 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
         if (file is null)
             throw new BadRequestException();
 
+        string? altText = null; // For future use, e.g., AI-generated alt text.
+
         await DbContext.Attachments.Where(att => att.Id == attachmentId).ExecuteDeleteAsync(cancellationToken);
 
         foreach (var kind in kinds)
@@ -203,21 +205,32 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                 //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
                 if (serviceProvider.GetService<IChatClient>() is IChatClient chatClient)
                 {
-                    string responseText = (await chatClient.GetResponseAsync([
-                        new ChatMessage(ChatRole.System, "Respond with EXACTLY one word: 'Yes' if the image contains a car, 'No' if it does not. Do NOT describe the image, explain, or add any other text. Violating this will result in an invalid response."),
-                        new ChatMessage(ChatRole.User, "Is this an image of a car?")
+                    var response = await chatClient.GetResponseAsync<AIImageReviewResponse>(
+                        messages: [
+                            new ChatMessage(ChatRole.System, "Return a JSON object with two properties: 'isCar' (boolean, true if the image contains a car, false otherwise) and 'alt' (string, describing the image content). Do not include any other properties or text."),
+                            new ChatMessage(ChatRole.User, "Analyze this image.")
+                            {
+                                Contents = [new DataContent(imageBytes, "image/webp")]
+                            }
+                        ],
+                        cancellationToken: cancellationToken,
+                        options: new()
                         {
-                            Contents = [new DataContent(imageBytes, "image/webp")]
-                        }], cancellationToken: cancellationToken, options: new() { Temperature = 0 })).Text.Trim().ToLower();
+                            Temperature = 0,
+                            ResponseFormat = ChatResponseFormat.Json,
+                            AdditionalProperties = new()
+                            {
+                                ["response_format"] = new { type = "json_object" }
+                            }
+                        });
 
-                    if (responseText is "no")
+                    if (response.Result.IsCar is false)
                     {
+                        logger.LogWarning("Unexpected AI response for Car detection: {Response}", response.Result.Alt);
                         return BadRequest(Localizer[nameof(AppStrings.ImageNotCarError)].ToString());
                     }
-                    else if (responseText is not "yes")
-                    {
-                        logger.LogWarning("Unexpected AI response for car detection: {Response}", responseText);
-                    }
+
+                    altText = response.Result.Alt;
                 }
                 //#endif
 
@@ -246,7 +259,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             }
         }
 
-        return Ok();
+        return Ok(altText);
     }
 
     private string GetFilePath(Guid attachmentId, AttachmentKind kind, string? fileName = null)
@@ -266,4 +279,12 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
         return filePath;
     }
+
+    //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
+    public class AIImageReviewResponse
+    {
+        public bool IsCar { get; set; }
+        public string? Alt { get; set; }
+    }
+    //#endif
 }

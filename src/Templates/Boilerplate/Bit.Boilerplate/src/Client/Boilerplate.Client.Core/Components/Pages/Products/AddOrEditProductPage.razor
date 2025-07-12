@@ -53,7 +53,7 @@
                                    UploadUrlProvider="GetUploadUrl"
                                    OnUploading="() => isManagingFile = true"
                                    OnUploadFailed="HandleOnUploadFailed"
-                                   OnUploadComplete="WrapHandled(HandleOnUploadComplete)"
+                                   OnUploadComplete="HandleOnUploadComplete"
                                    UploadRequestHttpHeadersProvider="WrapHandled(GetUploadRequestHeaders)">
                         <LabelTemplate>
                             <BitCard FullSize>
@@ -70,6 +70,11 @@
                                                        OnClick="WrapHandled(RemoveProductImage)">
                                                 @Localizer[nameof(AppStrings.Remove)]
                                             </BitButton>
+
+                                            <BitTextField Multiline
+                                                          Label="@Localizer[nameof(AppStrings.AltText)]"
+                                                          @bind-Value="product.PrimaryImageAltText" />
+                                            <ValidationMessage For="() => product.PrimaryImageAltText" />
                                         }
 
                                         <BitLink OnClick="() => fileUploadRef.Browse()" NoUnderline>

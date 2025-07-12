@@ -975,6 +975,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="Category" xml:space="preserve">
     <value>Category</value>
   </data>
+    <data name="AltText" xml:space="preserve">
+    <value>Alt text</value>
+  </data>
     <!--#endif -->
     <!--#if (module == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">

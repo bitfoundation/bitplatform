@@ -969,6 +969,9 @@
     <data name="Category" xml:space="preserve">
     <value>دسته</value>
   </data>
+    <data name="AltText" xml:space="preserve">
+    <value>متن جایگزین</value>
+  </data>
     <!--#endif -->
     <!--#if (module == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">

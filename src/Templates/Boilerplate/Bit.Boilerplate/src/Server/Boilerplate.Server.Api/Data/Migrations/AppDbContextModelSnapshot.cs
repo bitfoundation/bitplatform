@@ -575,6 +575,9 @@ namespace Boilerplate.Server.Api.Data.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("PrimaryImageAltText")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("ShortId")
                         .HasColumnType("INTEGER");
 

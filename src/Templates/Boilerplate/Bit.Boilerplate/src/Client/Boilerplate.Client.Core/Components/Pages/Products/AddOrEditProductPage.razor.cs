@@ -87,9 +87,10 @@ public partial class AddOrEditProductPage
         NavigationManager.NavigateTo(Urls.ProductsPage);
     }
 
-    private async Task HandleOnUploadComplete()
+    private async Task HandleOnUploadComplete(BitFileInfo fileInfo)
     {
         product.HasPrimaryImage = true;
+        product.PrimaryImageAltText = fileInfo.Message;
         product.ConcurrencyStamp = Guid.NewGuid().ToByteArray(); // To update the product image's url when user changes product image multiple time within the same page.
         isManagingFile = false;
     }
