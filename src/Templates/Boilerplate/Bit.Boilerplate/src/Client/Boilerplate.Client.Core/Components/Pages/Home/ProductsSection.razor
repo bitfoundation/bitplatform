@@ -5,7 +5,7 @@
         <BitLink Href="@product.PageUrl" NoUnderline Class="product-item">
             <BitCard FullSize>
                 <BitStack Class="product-stack">
-                    <ProductImage Src="@GetProductImageUrl(product)" Width="100%" />
+                    <ProductImage Src="@GetProductImageUrl(product)" Alt="@product.PrimaryImageAltText" Width="100%" />
                     <BitText>@product.Name</BitText>
                     <div>@((MarkupString)product.DescriptionHTML!)</div>
                     <BitText Typography="BitTypography.H6">@product.FormattedPrice</BitText>

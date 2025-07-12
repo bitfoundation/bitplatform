@@ -60,7 +60,7 @@
                                 <BitStack HorizontalAlign="BitAlignment.Center">
                                     @if (isManagingFile is false)
                                     {
-                                        <ProductImage Src="@product.GetPrimaryMediumImageUrl(AbsoluteServerAddress)" Width="50%" />
+                                        <ProductImage Src="@product.GetPrimaryMediumImageUrl(AbsoluteServerAddress)" Alt="@product.PrimaryImageAltText" Width="50%" />
 
                                         @if (product.HasPrimaryImage)
                                         {
@@ -71,9 +71,9 @@
                                                 @Localizer[nameof(AppStrings.Remove)]
                                             </BitButton>
 
-                                            <BitTextField Multiline
-                                                          Label="@Localizer[nameof(AppStrings.AltText)]"
-                                                          @bind-Value="product.PrimaryImageAltText" />
+                                            <BitTextField @bind-Value="product.PrimaryImageAltText"
+                                                          Multiline FullWidth AutoHeight
+                                                          Label="@Localizer[nameof(AppStrings.AltText)]" />
                                             <ValidationMessage For="() => product.PrimaryImageAltText" />
                                         }
 

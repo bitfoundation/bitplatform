@@ -64,7 +64,7 @@
             {
                 <BitCard FullWidth Style="padding:3rem 1rem;">
                     <BitStack Horizontal HorizontalAlign="BitAlignment.Center" Gap="2rem" Class="product-stack">
-                        <ProductImage Src="@GetProductImageUrl(product)" Width="50%" />
+                        <ProductImage Src="@GetProductImageUrl(product)" Alt="@product.PrimaryImageAltText" Width="50%" />
                         <BitStack AutoWidth Grows>
                             <BitText Typography="BitTypography.H2">@product.Name</BitText>
                             <BitText Color="BitColor.Info">@product.CategoryName</BitText>
@@ -145,7 +145,7 @@
                         <BitLink Href="@prd.PageUrl" NoUnderline Style="width:250px">
                             <BitCard FullSize>
                                 <BitStack>
-                                    <ProductImage Src="@GetProductImageUrl(prd)" Width="100%" />
+                                    <ProductImage Src="@GetProductImageUrl(prd)" Alt="@prd.PrimaryImageAltText" Width="100%" />
                                     <BitText>@prd.Name</BitText>
                                     <BitText Typography="BitTypography.Body2">@((MarkupString)prd.DescriptionHTML!)</BitText>
                                     <BitText Typography="BitTypography.H6">@prd.FormattedPrice</BitText>
@@ -191,7 +191,7 @@
                         <BitLink Href="@prd.PageUrl" NoUnderline Style="width:250px">
                             <BitCard FullSize>
                                 <BitStack>
-                                    <ProductImage Src="@GetProductImageUrl(prd)" Width="100%" />
+                                    <ProductImage Src="@GetProductImageUrl(prd)" Alt="@prd.PrimaryImageAltText" Width="100%" />
                                     <BitText>@prd.Name</BitText>
                                     <BitText Typography="BitTypography.Body2">@((MarkupString)prd.DescriptionHTML!)</BitText>
                                     <BitText Typography="BitTypography.H6">@prd.FormattedPrice</BitText>
