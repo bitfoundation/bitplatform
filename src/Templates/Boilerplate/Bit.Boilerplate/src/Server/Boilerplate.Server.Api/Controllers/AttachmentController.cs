@@ -121,6 +121,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                 if (product is not null) // else means product is being added to the database.
                 {
                     product.HasPrimaryImage = false;
+                    product.PrimaryImageAltText = null;
                     await DbContext.SaveChangesAsync(cancellationToken);
                     await responseCacheService.PurgeProductCache(product.ShortId);
                 }
@@ -233,14 +234,6 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                     altText = response.Result.Alt;
                 }
                 //#endif
-
-                var product = await DbContext.Products.FindAsync([attachment.Id], cancellationToken);
-                if (product is not null) // else means product is being added to the database.
-                {
-                    product.HasPrimaryImage = true;
-                    await DbContext.SaveChangesAsync(cancellationToken);
-                    await responseCacheService.PurgeProductCache(product.ShortId);
-                }
             }
             //#endif
 
@@ -281,10 +274,6 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     }
 
     //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
-    public class AIImageReviewResponse
-    {
-        public bool IsCar { get; set; }
-        public string? Alt { get; set; }
-    }
+    public record AIImageReviewResponse(bool IsCar, string? Alt);
     //#endif
 }
