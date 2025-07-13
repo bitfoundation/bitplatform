@@ -27,6 +27,11 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     [Parameter] public RenderFragment<TItem>? ChildContent { get; set; }
 
     /// <summary>
+    /// The custom template to render when there is no item available.
+    /// </summary>
+    [Parameter] public RenderFragment? EmptyTemplate { get; set; }
+
+    /// <summary>
     /// The item provider function that will be called when scrolling ends.
     /// </summary>
     [Parameter] public BitInfiniteScrollingItemsProvider<TItem>? ItemsProvider { get; set; }
