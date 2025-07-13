@@ -13,10 +13,15 @@
     }
     else if (Label.HasValue())
     {
-        <button class="bit-upl-lbl" @onclick="Browse">@Label</button>
+        <button @onclick="Browse"
+                type="button"
+                class="bit-upl-lbl">
+            @Label
+        </button>
     }
 
-    <input @ref="_inputRef" @onchange="HandleOnChange"
+    <input @ref="_inputRef" 
+           @onchange="HandleOnChange"
            type="file"
            id="@InputId"
            class="bit-upl-fi"
