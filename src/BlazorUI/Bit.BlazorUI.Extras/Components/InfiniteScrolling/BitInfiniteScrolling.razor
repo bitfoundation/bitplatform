@@ -17,7 +17,18 @@
         {
             @template(item)
         }
+    }
 
+    @if (_isLoading is false && _currentItems.Count == 0)
+    {
+        if (EmptyTemplate is null)
+        {
+            <div class="bit-isc-emp">There is no item</div>
+        }
+        else
+        {
+            @EmptyTemplate
+        }
     }
 
     <div @ref="_lastElementRef"
