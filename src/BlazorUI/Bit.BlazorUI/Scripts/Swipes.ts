@@ -185,7 +185,7 @@
                 if (scrollContainer) {
                     scrollContainer.addEventListener('touchstart', e => {
                         touchOnScrollContainer = true;
-                        console.log(scrollContainer.scrollLeft)
+
                         if (Math.abs(scrollContainer.scrollLeft) <= 2) return;
 
                         e.stopPropagation();
