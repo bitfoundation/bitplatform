@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.ComponentModel;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// DropMenu component is a versatile dropdown menu used in Blazor applications. It allows you to create a button that, when clicked, opens a callout or dropdown menu.
@@ -57,6 +59,11 @@ public partial class BitDropMenu : BitComponentBase
     [Parameter] public EventCallback OnDismiss { get; set; }
 
     /// <summary>
+    /// The id of the element which needs to be scrollable in the content of the callout of the drop menu.
+    /// </summary>
+    [Parameter] public string? ScrollContainerId { get; set; }
+
+    /// <summary>
     /// Renders the drop menu in responsive mode on small screens.
     /// </summary>
     [Parameter] public bool Responsive { get; set; }
@@ -94,19 +101,19 @@ public partial class BitDropMenu : BitComponentBase
     [JSInvokable("OnStart")]
     public async Task _OnStart(decimal startX, decimal startY)
     {
-        
+
     }
 
     [JSInvokable("OnMove")]
     public async Task _OnMove(decimal diffX, decimal diffY)
     {
-        
+
     }
 
     [JSInvokable("OnEnd")]
     public async Task _OnEnd(decimal diffX, decimal diffY)
     {
-        
+
     }
 
     [JSInvokable("OnClose")]
@@ -148,12 +155,20 @@ public partial class BitDropMenu : BitComponentBase
         await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender is false) return;
-        
+
         _dotnetObj = DotNetObjectReference.Create(this);
 
         if (Responsive is false) return;
 
-        await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.End, Dir is BitDir.Rtl, BitSwipeOrientation.Horizontal, _dotnetObj);
+        await _js.BitSwipesSetup(
+            id: _calloutId,
+            trigger: 0.25m,
+            position: BitPanelPosition.End,
+            isRtl: Dir is BitDir.Rtl,
+            orientationLock: BitSwipeOrientation.Horizontal,
+            dotnetObj: _dotnetObj,
+            isResponsive: true,
+            scrollContainerId: ScrollContainerId ?? "");
     }
 
 
@@ -185,20 +200,22 @@ public partial class BitDropMenu : BitComponentBase
     {
         if (IsEnabled is false || IsDisposed) return;
 
-        await _js.BitCalloutToggleCallout(_dotnetObj,
-                                _Id,
-                                null,
-                                _calloutId,
-                                null,
-                                IsOpen,
-                                Responsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
-                                BitDropDirection.TopAndBottom,
-                                Dir is BitDir.Rtl,
-                                "",
-                                0,
-                                "",
-                                "",
-                                false);
+        await _js.BitCalloutToggleCallout(
+            dotnetObj: _dotnetObj,
+            componentId: _Id,
+            component: null,
+            calloutId: _calloutId,
+            callout: null,
+            isCalloutOpen: IsOpen,
+            responsiveMode: Responsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
+            dropDirection: BitDropDirection.TopAndBottom,
+            isRtl: Dir is BitDir.Rtl,
+            scrollContainerId: ScrollContainerId ?? "",
+            scrollOffset: 0,
+            headerId: "",
+            footerId: "",
+            setCalloutWidth: false,
+            maxWindowWidth: 0);
     }
 
     private void OnSetIsOpen()
