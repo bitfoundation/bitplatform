@@ -18,8 +18,10 @@ public partial class SignInPanel
     private SignInPanelType internalSignInPanelType;
     private readonly SignInRequestDto model = new();
     private AppDataAnnotationsValidator? validatorRef;
-    private string ReturnUrl => ReturnUrlQueryString ?? Urls.HomePage;
+    private string GetReturnUrl() => ReturnUrl ?? ReturnUrlQueryString ?? Urls.HomePage;
 
+    [Parameter]
+    public string? ReturnUrl { get; set; }
 
     [Parameter, SupplyParameterFromQuery(Name = "return-url")]
     public string? ReturnUrlQueryString { get; set; }
@@ -139,7 +141,7 @@ public partial class SignInPanel
 
                 if (isNewUser is false)
                 {
-                    model.ReturnUrl = ReturnUrl;
+                    model.ReturnUrl = GetReturnUrl();
 
                     requiresTwoFactor = await AuthManager.SignIn(model, CurrentCancellationToken);
 
@@ -183,7 +185,7 @@ public partial class SignInPanel
                 }
                 else
                 {
-                    NavigationManager.NavigateTo(ReturnUrl ?? Urls.HomePage, replace: true);
+                    NavigationManager.NavigateTo(GetReturnUrl(), replace: true);
                 }
             }
         }
@@ -243,7 +245,7 @@ public partial class SignInPanel
 
             var port = localHttpServer.EnsureStarted();
 
-            var redirectUrl = await identityController.GetSocialSignInUri(provider, ReturnUrl, port is -1 ? null : port, CurrentCancellationToken);
+            var redirectUrl = await identityController.GetSocialSignInUri(provider, GetReturnUrl(), port is -1 ? null : port, CurrentCancellationToken);
 
             await externalNavigationService.NavigateToAsync(redirectUrl);
         }
@@ -319,7 +321,7 @@ public partial class SignInPanel
 
             var request = new IdentityRequestDto { UserName = model.UserName, Email = model.Email, PhoneNumber = model.PhoneNumber };
 
-            await identityController.SendOtp(request, ReturnUrl, CurrentCancellationToken);
+            await identityController.SendOtp(request, GetReturnUrl(), CurrentCancellationToken);
 
             isOtpSent = true;
         }
