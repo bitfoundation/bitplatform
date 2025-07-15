@@ -41,13 +41,15 @@ public partial class BitDropMenuDemo
 </BitDropMenu>";
 
     private readonly string example3RazorCode = @"
-<BitDropMenu Text=""Responsive"" Responsive>
-    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
-        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
-        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
-        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
-        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
-    </BitStack>
+<BitDropMenu Text=""Responsive"" Responsive ScrollContainerId=""sc-con"">
+    <div style=""max-width:200px;overflow:auto"" id=""sc-con"">
+        <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+            <BitText Typography=""BitTypography.Subtitle1"" NoWrap>This is the content This is the content This is the content</BitText>
+            <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+            <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+            <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+        </BitStack>
+    </div>
 </BitDropMenu>";
 
     private readonly string example4RazorCode = @"
@@ -148,10 +150,14 @@ private int clickCounter;";
     </BitStack>
 </BitDropMenu>
 
-<BitDropMenu Text=""ریسپانسیو منو"" Dir=""BitDir.Rtl"" Responsive>
-    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
-        <BitText Typography=""BitTypography.Subtitle1"">این یک محتوای تستی می باشد.</BitText>
-    </BitStack>
+<BitDropMenu Text=""ریسپانسیو منو"" Dir=""BitDir.Rtl"" Responsive ScrollContainerId=""sc-con-rtl"">
+    <div style=""max-width:200px;overflow:auto"" id=""sc-con-rtl"">
+        <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+            <BitText Typography=""BitTypography.Subtitle1"" NoWrap>این یک محتوای تستی می باشد این یک محتوای تستی می باشد این یک محتوای تستی می باشد</BitText>
+            <BitText Typography=""BitTypography.Subtitle1"" NoWrap>این یک محتوای تستی می باشد</BitText>
+            <BitText Typography=""BitTypography.Subtitle1"" NoWrap>این یک محتوای تستی می باشد</BitText>
+        </BitStack>
+    </div>
 </BitDropMenu>";
 
 }
