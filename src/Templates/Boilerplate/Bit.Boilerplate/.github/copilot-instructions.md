@@ -70,3 +70,8 @@ you **MUST** use the deepwiki's `ask_question` mcp tool to find the correct impl
 `deepwiki fetch robinrodricks/FluentStorage`
 
 **End of RULE 5**
+
+**RULE 6 Command:**
+Use Playwright MCP tools like browser_navigate for URLs, browser_click for interactions, and browser_snapshot for page analysis.
+
+**End of RULE 6**
