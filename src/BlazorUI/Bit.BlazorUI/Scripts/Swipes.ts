@@ -122,7 +122,7 @@
 
                     if (touchOnScrollContainer) {
                         const isScrollAtLeft = Math.abs(scrollContainer!.scrollLeft) <= 2;
-                        const isScrollAtRight = scrollContainer!.scrollLeft + scrollContainer!.clientWidth >= (scrollContainer!.scrollWidth - 2);
+                        const isScrollAtRight = Math.abs(scrollContainer!.scrollLeft) + scrollContainer!.clientWidth >= (scrollContainer!.scrollWidth - 2);
 
                         if (diffX < 0 && (isRtl ? isScrollAtRight : isScrollAtLeft)) return;
                         if (diffX > 0 && (isRtl ? isScrollAtLeft : isScrollAtRight)) return;
@@ -186,13 +186,11 @@
                     scrollContainer.addEventListener('touchstart', e => {
                         touchOnScrollContainer = true;
 
-                        console.log(scrollContainer.scrollLeft, scrollContainer.scrollWidth, scrollContainer.clientWidth);
+                        const isScrollAtLeft = Math.abs(scrollContainer!.scrollLeft) <= 2;
+                        const isScrollAtRight = Math.abs(scrollContainer!.scrollLeft) + scrollContainer!.clientWidth >= (scrollContainer!.scrollWidth - 2);
 
-                        //const edge = (isRtl && position === BitSwipePosition.Start || !isRtl && position === BitSwipePosition.End) ? Math.abs(scrollContainer.scrollLeft)
-                        //    : (isRtl && position === BitSwipePosition.Start || !isRtl && position === BitSwipePosition.End) ? Math.abs(scrollContainer.scrollLeft)
-                        //        : 0;
-
-                        //if (edge <= 2) return;
+                        if ((isRtl && position === BitSwipePosition.End) || (!isRtl && position === BitSwipePosition.End)) { if (isScrollAtLeft) return; }
+                        if ((isRtl && position === BitSwipePosition.Start) || (!isRtl && position === BitSwipePosition.Start)) { if (isScrollAtRight) return; }
 
                         e.stopPropagation();
                     });
