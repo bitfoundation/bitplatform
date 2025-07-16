@@ -8,6 +8,5 @@
     "debugging.hotReload.enableHotReload": true,
     "debugging.hotReload.enableForNoDebugLaunch": true,
     "projectsAndSolutions.aspNetCore.general.hotReloadCssChanges": true,
-    "copilot.general.chat.enableMicrosoftLearnFunction": true,
     "copilot.general.completions.enableNextEditSuggestions": true
 }

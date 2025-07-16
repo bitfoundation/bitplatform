@@ -1,8 +1,25 @@
 {
-  "servers": {
-    "DeepWiki": {
-      "type": "sse",
-      "url": "https://mcp.deepwiki.com/sse"
+    "servers": {
+        "DeepWiki": {
+            "type": "sse",
+            "url": "https://mcp.deepwiki.com/sse"
+        },
+        "microsoft.docs.mcp": {
+            "type": "http",
+            "url": "https://learn.microsoft.com/api/mcp"
+        },
+        //#if (pipeline == "GitHub")
+        "github": {
+            "type": "http",
+            "url": "https://api.githubcopilot.com/mcp/"
+        },
+        //#endif
+        "playwright": {
+            "type": "stdio",
+            "command": "npx",
+            "args": [
+                "@playwright/mcp@latest"
+            ]
+        }
     }
-  }
 }
