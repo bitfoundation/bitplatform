@@ -54,7 +54,7 @@
     <DemoExample Title="Responsive" RazorCode="@example3RazorCode" Id="example3">
         <div>Rendering the callout in responsive mode on small screens.</div><br />
         
-        <BitDropMenu Text="Responsive" Responsive ScrollContainerId="sc-con1" PanelPosition="BitPanelPosition.End">
+        <BitDropMenu Text="End PanelPosition" Responsive ScrollContainerId="sc-con1" PanelPosition="BitPanelPosition.End">
             <div style="max-width:200px;overflow:auto" id="sc-con1">
                 <BitStack FitWidth Gap="1rem" Style="padding:0.5rem">
                     <BitText Typography="BitTypography.Subtitle1" NoWrap>This is the content This is the content This is the content</BitText>
@@ -64,10 +64,8 @@
                 </BitStack>
             </div>
         </BitDropMenu>
-
-        <br /><br />
-
-        <BitDropMenu Text="Responsive" Responsive ScrollContainerId="sc-con2" PanelPosition="BitPanelPosition.Start">
+        <br />
+        <BitDropMenu Text="Start PanelPosition" Responsive ScrollContainerId="sc-con2" PanelPosition="BitPanelPosition.Start">
             <div style="max-width:200px;overflow:auto" id="sc-con2">
                 <BitStack FitWidth Gap="1rem" Style="padding:0.5rem">
                     <BitText Typography="BitTypography.Subtitle1" NoWrap>This is the content This is the content This is the content</BitText>
@@ -156,7 +154,7 @@
                 </BitStack>
             </BitDropMenu>
             <br />
-            <BitDropMenu Text="ریسپانسیو منو" Dir="BitDir.Rtl" Responsive ScrollContainerId="sc-con-rtl1">
+            <BitDropMenu Text="ریسپانسیو منو در انتها" Dir="BitDir.Rtl" Responsive ScrollContainerId="sc-con-rtl1">
                 <div style="max-width:200px;overflow:auto" id="sc-con-rtl1">
                     <BitStack Gap="1rem" Style="padding:0.5rem">
                         <BitText Typography="BitTypography.Subtitle1" NoWrap>این یک محتوای تستی می باشد این یک محتوای تستی می باشد این یک محتوای تستی می باشد</BitText>
@@ -166,7 +164,7 @@
                 </div>
             </BitDropMenu>
             <br />
-            <BitDropMenu Text="ریسپانسیو منو" Dir="BitDir.Rtl" Responsive ScrollContainerId="sc-con-rtl2" PanelPosition="BitPanelPosition.Start">
+            <BitDropMenu Text="ریسپانسیو منو در ابتدا" Dir="BitDir.Rtl" Responsive ScrollContainerId="sc-con-rtl2" PanelPosition="BitPanelPosition.Start">
                 <div style="max-width:200px;overflow:auto" id="sc-con-rtl2">
                     <BitStack Gap="1rem" Style="padding:0.5rem">
                         <BitText Typography="BitTypography.Subtitle1" NoWrap>این یک محتوای تستی می باشد این یک محتوای تستی می باشد این یک محتوای تستی می باشد</BitText>
