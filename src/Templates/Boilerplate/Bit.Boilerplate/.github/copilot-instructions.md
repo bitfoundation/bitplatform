@@ -25,8 +25,7 @@
 5.  **Implement Structured Logging**: Use structured logging for clear, queryable application logs.
 6.  **Adhere to Security Best Practices**: Implement robust authentication and authorization patterns.
 7.  **Use Async Programming**: Employ `async/await` for I/O-bound operations to prevent blocking threads.
-8.   **Modern C#**: Write modern, concise, and efficient code by using the latest C# language features like implicit usings.
-9.  **Leverage Implicit Usings**: Take advantage of global using statements.
+8.   **Modern C#**: Write modern, concise, and efficient code by using the latest C# language features, including implicit usings and global using statements.
 10. **Respect .editorconfig**: Adhere to the `.editorconfig` file for consistent code style across all IDEs.
 11. **Prefer razor.cs code-behind files**: Use `.razor.cs` files for component logic instead of @code blocks in `.razor` files.
 12. **Prefer razor.scss files**: Use `.razor.scss` files for component styles instead of inline styles in `.razor` files.
