@@ -5,7 +5,7 @@
 - **C# 13.0**
 - **ASP.NET Core 9.0**
 - **Blazor**: Component-based web UI framework
-- **.NET MAUI**: Cross-platform app development
+- **.NET MAUI Blazor Hybrid**: Cross-platform app development
 - **ASP.NET Core Identity**: Authentication and authorization
 - **Entity Framework Core**: Data access
 - **SignalR**: Real-time communication
