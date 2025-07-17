@@ -121,8 +121,7 @@
                     if (!e.cancelable) return;
 
                     if (touchOnScrollContainer) {
-                        const isScrollAtLeft = Math.abs(scrollContainer!.scrollLeft) <= 2;
-                        const isScrollAtRight = Math.abs(scrollContainer!.scrollLeft) + scrollContainer!.clientWidth >= (scrollContainer!.scrollWidth - 2);
+                        const [isScrollAtLeft, isScrollAtRight] = calcScrolls();
 
                         if (diffX < 0 && (isRtl ? isScrollAtRight : isScrollAtLeft)) return;
                         if (diffX > 0 && (isRtl ? isScrollAtLeft : isScrollAtRight)) return;
@@ -135,6 +134,7 @@
 
             const onEnd = async (e: TouchEvent | PointerEvent): Promise<void> => {
                 touchOnScrollContainer = false;
+
                 if (startX === -1 || startY === -1) return;
 
                 startX = startY = -1;
@@ -186,8 +186,7 @@
                     scrollContainer.addEventListener('touchstart', e => {
                         touchOnScrollContainer = true;
 
-                        const isScrollAtLeft = Math.abs(scrollContainer!.scrollLeft) <= 2;
-                        const isScrollAtRight = Math.abs(scrollContainer!.scrollLeft) + scrollContainer!.clientWidth >= (scrollContainer!.scrollWidth - 2);
+                        const [isScrollAtLeft, isScrollAtRight] = calcScrolls();
 
                         if (position === BitSwipePosition.End && isScrollAtLeft) return;
                         if (position === BitSwipePosition.Start && isScrollAtRight) return;
@@ -219,6 +218,13 @@
                 }
             });
             Swipes._swipes.push(swipe);
+
+            const calcScrolls = () => {
+                const isScrollAtLeft = Math.abs(scrollContainer!.scrollLeft) <= 2;
+                const isScrollAtRight = Math.abs(scrollContainer!.scrollLeft) + scrollContainer!.clientWidth >= (scrollContainer!.scrollWidth - 2);
+
+                return [isScrollAtLeft, isScrollAtRight];
+            }
         }
 
         public static dispose(id: string) {
