@@ -189,8 +189,8 @@
                         const isScrollAtLeft = Math.abs(scrollContainer!.scrollLeft) <= 2;
                         const isScrollAtRight = Math.abs(scrollContainer!.scrollLeft) + scrollContainer!.clientWidth >= (scrollContainer!.scrollWidth - 2);
 
-                        if ((isRtl && position === BitSwipePosition.End) || (!isRtl && position === BitSwipePosition.End)) { if (isScrollAtLeft) return; }
-                        if ((isRtl && position === BitSwipePosition.Start) || (!isRtl && position === BitSwipePosition.Start)) { if (isScrollAtRight) return; }
+                        if (position === BitSwipePosition.End && isScrollAtLeft) return;
+                        if (position === BitSwipePosition.Start && isScrollAtRight) return;
 
                         e.stopPropagation();
                     });
