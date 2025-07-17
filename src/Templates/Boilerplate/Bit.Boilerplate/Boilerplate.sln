@@ -21,6 +21,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".Solution
 		src\Directory.Build.props = src\Directory.Build.props
 		src\Directory.Packages.props = src\Directory.Packages.props
 		global.json = global.json
+		.vscode\mcp.json=.vscode\mcp.json
 		README.md = README.md
 	EndProjectSection
 EndProject
