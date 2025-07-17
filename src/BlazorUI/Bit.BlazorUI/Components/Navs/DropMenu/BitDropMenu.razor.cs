@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// DropMenu component is a versatile dropdown menu used in Blazor applications. It allows you to create a button that, when clicked, opens a callout or dropdown menu.
@@ -57,6 +55,11 @@ public partial class BitDropMenu : BitComponentBase
     /// The callback is called when the drop menu is dismissed.
     /// </summary>
     [Parameter] public EventCallback OnDismiss { get; set; }
+
+    /// <summary>
+    /// The position of the responsive panel to show on the screen.
+    /// </summary>
+    [Parameter] public BitPanelPosition? PanelPosition { get; set; }
 
     /// <summary>
     /// The id of the element which needs to be scrollable in the content of the callout of the drop menu.
@@ -163,7 +166,7 @@ public partial class BitDropMenu : BitComponentBase
         await _js.BitSwipesSetup(
             id: _calloutId,
             trigger: 0.25m,
-            position: BitPanelPosition.End,
+            position: PanelPosition ?? BitPanelPosition.End,
             isRtl: Dir is BitDir.Rtl,
             orientationLock: BitSwipeOrientation.Horizontal,
             dotnetObj: _dotnetObj,
@@ -243,6 +246,15 @@ public partial class BitDropMenu : BitComponentBase
         {
             classes.Add("bit-drm-res");
         }
+
+        classes.Add(PanelPosition switch
+        {
+            BitPanelPosition.Start => "bit-drm-sta",
+            BitPanelPosition.End => "bit-drm-end",
+            BitPanelPosition.Top => "bit-drm-top",
+            BitPanelPosition.Bottom => "bit-drm-btm",
+            _ => "bit-drm-end"
+        });
 
         return string.Join(' ', classes).Trim();
     }
