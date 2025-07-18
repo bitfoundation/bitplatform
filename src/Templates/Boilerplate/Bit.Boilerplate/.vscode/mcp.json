@@ -2,7 +2,7 @@
     "servers": {
         "DeepWiki": {
             "type": "sse",
-            "url": "https://mcp.deepwiki.com/sse"
+            "url": "https://mcp.deepwiki.com/mcp"
         },
         "microsoft.docs.mcp": {
             "type": "http",
