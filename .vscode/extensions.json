@@ -1,0 +1,15 @@
+{
+    "recommendations": [
+        "GitHub.copilot",
+        "glenn2223.live-sass",
+        "GitHub.copilot-chat",
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.csdevkit",
+        "ms-dotnettools.dotnet-maui",
+        "ms-azuretools.vscode-docker",
+        "DominicVonk.vscode-resx-editor",
+        "ms-vscode-remote.remote-containers",
+        "ms-dotnettools.blazorwasm-companion",
+        "ms-dotnettools.vscode-dotnet-runtime"
+    ]
+}
