@@ -29,49 +29,17 @@
 10. **Respect .editorconfig**: Adhere to the `.editorconfig` file for consistent code style across all IDEs.
 11. **Prefer razor.cs code-behind files**: Use `.razor.cs` files for component logic instead of @code blocks in `.razor` files.
 12. **Prefer razor.scss files**: Use `.razor.scss` files for component styles instead of inline styles in `.razor` files.
+13. **After applying changes, make sure project builds successfully**: Always verify that the project builds without errors after making changes.
 
-### Rules for Using DeepWiki
+### Rules for Using MCP
 
-The deepwiki's `ask_question` mcp tool is essential for this project. Use it not only to answer questions but also to guide **code modifications**.
-For the topics below, you **MUST** consult `deepwiki` to find correct implementations and usage patterns before writing or changing any code.
-
-**RULE 1:** If a task (which includes answering a question or performing a code modification) involves the use of bit BlazorUI components (e.g., `BitButton`, `BitTooltip`, `BitTextField`), or refers to `bitplatform`, `bit Bswup`, `bit Butil`, `bit Besql`, or `bit Boilerplate`,
-you **MUST** use the deepwiki's `ask_question` mcp tool to find the correct implementation and usage patterns before writing or changing any code.
-
-**RULE 1 Command:**
-`deepwiki fetch bitfoundation/bitplatform`
+**RULE 1:** If a task (question or code modification) involves the use of bit BlazorUI components (e.g., `BitButton`, `BitTooltip`, `BitTextField`),
+or refers to `bitplatform`, `bit Bswup`, `bit Butil`, `bit Besql`, or `bit Boilerplate`, or involves UI components without explicitly specifying their UI toolkit,
+you **MUST** use the deepwiki's `ask_question` mcp tool to find the correct implementation and usage patterns of `bitfoundation/bitplatform` deep wiki before writing or changing any code.
 
 **End of RULE 1**
 
-**RULE 2:** If a task (question or code modification) involves mappers, or refers to `mapperly`, `map`, `project`, or `patch`, you **MUST** use the deepwiki's `ask_question` mcp tool to find the correct implementation before writing or changing any code.
-
 **RULE 2 Command:**
-`deepwiki fetch riok/mapperly`
-
-**End of RULE 2**
-
-**RULE 3:** If a task (question or code modification) involves .NET MAUI, or refers to `xaml`, `Android`, `iOS`, or `Windows`, you **MUST** use the deepwiki's `ask_question` mcp tool to find the correct implementation before writing or changing any code.
-
-**RULE 3 Command:**
-`deepwiki fetch dotnet/maui`
-
-**End of RULE 3**
-
-**RULE 4:** If a task (question or code modification) involves Hangfire, or refers to `background job` or `recurring jobs`, you **MUST** use the deepwiki's `ask_question` mcp tool to find the correct implementation before writing or changing any code.
-
-**RULE 4 Command:**
-`deepwiki fetch HangfireIO/Hangfire`
-
-**End of RULE 4**
-
-**RULE 5:** If a task (question or code modification) involves file storage, or refers to `fluent storage` or `S3`, you **MUST** use the deepwiki's `ask_question` mcp tool to find the correct implementation before writing or changing any code.
-
-**RULE 5 Command:**
-`deepwiki fetch robinrodricks/FluentStorage`
-
-**End of RULE 5**
-
-**RULE 6 Command:**
 Use Playwright MCP tools like browser_navigate for URLs, browser_click for interactions, and browser_snapshot for page analysis.
 
-**End of RULE 6**
+**End of RULE 2**
