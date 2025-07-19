@@ -22,9 +22,7 @@ public static class WebApplicationBuilderExtensions
 
         services.AddSharedProjectServices(configuration);
 
-        //#if (aspire == true)
-        builder.AddAspireServiceDefaults();
-        //#endif
+        builder.AddServiceDefaults();
 
         services.AddSingleton(sp =>
         {
@@ -65,15 +63,13 @@ public static class WebApplicationBuilderExtensions
         return builder;
     }
 
-    //#if (aspire == true)
-    #region Aspire
     /// <summary>
     /// Also knows as AddServiceDefaults
-    /// Adds common .NET Aspire services: service discovery, resilience, health checks, and OpenTelemetry.
+    /// Adds common services for API: service discovery, resilience, health checks, and OpenTelemetry.
     /// This project should be referenced by each service project in your solution.
     /// To learn more about using this project, see https://aka.ms/dotnet/aspire/service-defaults
     /// </summary>
-    private static TBuilder AddAspireServiceDefaults<TBuilder>(this TBuilder builder)
+    private static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder)
         where TBuilder : IHostApplicationBuilder
     {
         builder.ConfigureOpenTelemetry();
@@ -88,6 +84,12 @@ public static class WebApplicationBuilderExtensions
             http.AddStandardResilienceHandler();
             // Turn on service discovery by default
             http.AddServiceDiscovery();
+
+            http.UseSocketsHttpHandler((handler, sp) =>
+            {
+                handler.EnableMultipleHttp2Connections = true;
+                handler.EnableMultipleHttp3Connections = true;
+            });
         });
 
         return builder;
@@ -113,7 +115,9 @@ public static class WebApplicationBuilderExtensions
             {
                 tracing.AddSource(builder.Environment.ApplicationName)
                     .AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation();
+                    .AddHttpClientInstrumentation()
+                    .AddEntityFrameworkCoreInstrumentation()
+                    .AddHangfireInstrumentation();
             });
 
         builder.AddOpenTelemetryExporters();
@@ -143,6 +147,4 @@ public static class WebApplicationBuilderExtensions
 
         return builder;
     }
-    #endregion
-    //#endif
 }

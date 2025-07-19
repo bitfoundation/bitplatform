@@ -18,6 +18,8 @@
         <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
         <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.ApplicationInsights.AspNetCore" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.Hangfire" />
     </ItemGroup>
 
     <ItemGroup>

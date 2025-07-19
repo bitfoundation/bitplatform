@@ -109,9 +109,7 @@ public static partial class Program
 
         app.UseAntiforgery();
 
-        //#if (aspire == true)
-        app.MapAspire();
-        //#endif
+        app.MappAppHealthChecks();
 
         //#if (api == "Integrated")
         app.UseSwagger();
