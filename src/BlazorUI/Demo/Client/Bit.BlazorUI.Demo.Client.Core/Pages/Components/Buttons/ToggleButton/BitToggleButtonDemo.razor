@@ -51,10 +51,18 @@
         <BitToggleButton OnText="Muted" OnIconName="@BitIconName.MicOff"
                          OffText="Unmuted" OffIconName="@BitIconName.Microphone" />
         <br/><br/><br/><br/>
-        <div>IconOnly:</div><br/>
+        <div>No text:</div><br/>
         <div class="example-box">
             <BitToggleButton IconName="@BitIconName.Microphone" />
             <BitToggleButton OnIconName="@BitIconName.MicOff" OffIconName="@BitIconName.Microphone" />
+        </div>
+        <br/><br/><br/>
+        <div>IconOnly:</div><br/>
+        <div class="example-box">
+            <BitToggleButton IconOnly IconName="@BitIconName.Microphone" Text="Microphone" />
+            <BitToggleButton IconOnly
+                             OnText="Muted" OnIconName="@BitIconName.MicOff" 
+                             OffText="Unmuted" OffIconName="@BitIconName.Microphone" />
         </div>
     </DemoExample>
 

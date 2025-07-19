@@ -26,7 +26,12 @@ public partial class BitToggleButtonDemo
                  OffText=""Unmuted"" OffIconName=""@BitIconName.Microphone"" />
 
 <BitToggleButton IconName=""@BitIconName.Microphone"" />
-<BitToggleButton OnIconName=""@BitIconName.MicOff"" OffIconName=""@BitIconName.Microphone"" />";
+<BitToggleButton OnIconName=""@BitIconName.MicOff"" OffIconName=""@BitIconName.Microphone"" />
+
+<BitToggleButton IconOnly IconName=""@BitIconName.Microphone"" Text=""Microphone"" />
+<BitToggleButton IconOnly
+                 OnText=""Muted"" OnIconName=""@BitIconName.MicOff"" 
+                 OffText=""Unmuted"" OffIconName=""@BitIconName.Microphone"" />";
 
     private readonly string example5RazorCode = @"
 <BitToggleButton DefaultIsChecked=""true""
