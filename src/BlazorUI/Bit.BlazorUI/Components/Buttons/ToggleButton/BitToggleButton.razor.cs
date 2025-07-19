@@ -46,9 +46,21 @@ public partial class BitToggleButton : BitComponentBase
     [Parameter] public bool? DefaultIsChecked { get; set; }
 
     /// <summary>
+    /// Preserves the foreground color of the toggle button through hover and focus.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FixedColor { get; set; }
+
+    /// <summary>
     /// The icon name that renders inside the toggle button.
     /// </summary>
     [Parameter] public string? IconName { get; set; }
+
+    /// <summary>
+    /// Determines that only the icon should be rendered and changes the styles accordingly.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool IconOnly { get; set; }
 
     /// <summary>
     /// Determines if the toggle button is in the checked state.
@@ -132,6 +144,10 @@ public partial class BitToggleButton : BitComponentBase
         ClassBuilder.Register(() => Classes?.Root);
 
         ClassBuilder.Register(() => IsChecked ? $"bit-tgb-chk {Classes?.Checked}" : string.Empty);
+
+        ClassBuilder.Register(() => ((ChildContent is null && (Text ?? OnText ?? OffText) is null) || IconOnly) ? $"bit-tgb-ntx" : string.Empty);
+
+        ClassBuilder.Register(() => FixedColor ? "bit-tgb-fxc" : string.Empty);
 
         ClassBuilder.Register(() => Color switch
         {

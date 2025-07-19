@@ -59,10 +59,24 @@ public partial class BitToggleButtonDemo
         },
         new()
         {
+            Name = "FixedColor",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Preserves the foreground color of the toggle button through hover and focus.",
+        },
+        new()
+        {
             Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
             Description = "The icon name that renders inside the toggle button.",
+        },
+        new()
+        {
+            Name = "IconOnly",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines that only the icon should be rendered and changes the styles accordingly.",
         },
         new()
         {
@@ -374,8 +388,8 @@ public partial class BitToggleButtonDemo
 
 
 
-    private bool example51Value;
-    private bool example52Value;
+    private bool twoWayBoundValue;
+    private bool onChangeValue;
 
     private int clickCounter;
 }

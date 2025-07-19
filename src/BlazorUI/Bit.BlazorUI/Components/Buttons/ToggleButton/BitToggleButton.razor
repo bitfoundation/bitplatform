@@ -19,10 +19,15 @@
     else
     {
         var iconName = GetIconName();
+        var text = GetText();
         if (iconName.HasValue())
         {
             <i style="@Styles?.Icon" class="bit-tgb-ico bit-icon bit-icon--@iconName @Classes?.Icon" />
         }
-        <span style="@Styles?.Text" class="bit-tgb-btx @Classes?.Text">@GetText()</span>
+
+        if (IconOnly is false && text.HasValue())
+        {
+            <span style="@Styles?.Text" class="bit-tgb-btx @Classes?.Text">@text</span>
+        }
     }
 </button>
