@@ -50,9 +50,7 @@ public static partial class Program
 
         app.UseAntiforgery();
 
-        //#if (aspire == true)
-        app.MapAspire();
-        //#endif
+        app.MappAppHealthChecks();
 
         app.UseSwagger();
 
