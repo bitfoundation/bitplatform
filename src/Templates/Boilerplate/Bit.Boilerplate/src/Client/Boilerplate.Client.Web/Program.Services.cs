@@ -1,6 +1,7 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Client.Web.Services;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 namespace Boilerplate.Client.Web;
 
@@ -23,9 +24,10 @@ public static partial class Program
             serverAddress = new Uri(new Uri(builder.HostEnvironment.BaseAddress), serverAddress);
         }
 
-        services.AddScoped(sp =>
+        services.AddScoped<HttpClient>(sp =>
         {
-            var httpClient = new HttpClient(sp.GetRequiredService<HttpMessageHandler>())
+            var handlerFactory = sp.GetRequiredService<HttpMessageHandlersChainFactory>();
+            var httpClient = new HttpClient(handlerFactory.Invoke())
             {
                 BaseAddress = serverAddress
             };
@@ -34,7 +36,6 @@ public static partial class Program
 
             return httpClient;
         });
-        services.AddKeyedScoped<HttpMessageHandler, HttpClientHandler>("PrimaryHttpMessageHandler");
         services.AddScoped<IExceptionHandler, WebClientExceptionHandler>();
 
         services.AddTransient<IPrerenderStateService, WebClientPrerenderStateService>();

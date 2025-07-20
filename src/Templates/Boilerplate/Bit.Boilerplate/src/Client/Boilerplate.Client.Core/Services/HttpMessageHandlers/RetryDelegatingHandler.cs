@@ -22,6 +22,8 @@ public partial class RetryDelegatingHandler(HttpMessageHandler handler)
             {
                 if (request.HasNoRetryPolicyAttribute() || AppEnvironment.IsDevelopment())
                     throw;
+                if (AppPlatform.IsBlazorHybrid is false && AppPlatform.IsBrowser is false)
+                    throw; // Disable retry-policy during pre-rendering and Blazor Server.
                 retryCount++;
                 logScopeData["RetryCount"] = retryCount;
                 lastExp = exp;

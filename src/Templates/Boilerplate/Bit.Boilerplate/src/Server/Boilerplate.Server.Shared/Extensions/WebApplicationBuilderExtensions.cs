@@ -1,5 +1,6 @@
 ﻿//+:cnd:noEmit
 using System.IO.Compression;
+using System.Net;
 using Boilerplate.Server.Shared;
 using Boilerplate.Server.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -80,6 +81,12 @@ public static class WebApplicationBuilderExtensions
 
         builder.Services.ConfigureHttpClientDefaults(http =>
         {
+            http.ConfigureHttpClient(httpClient =>
+            {
+                httpClient.DefaultRequestVersion = HttpVersion.Version20;
+                httpClient.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+            });
+
             // Turn on resilience by default
             http.AddStandardResilienceHandler();
             // Turn on service discovery by default
@@ -89,6 +96,12 @@ public static class WebApplicationBuilderExtensions
             {
                 handler.EnableMultipleHttp2Connections = true;
                 handler.EnableMultipleHttp3Connections = true;
+                handler.PooledConnectionLifetime = TimeSpan.FromMinutes(15);
+                handler.AutomaticDecompression = DecompressionMethods.All;
+                handler.SslOptions = new()
+                {
+                    EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12 | System.Security.Authentication.SslProtocols.Tls13
+                };
             });
         });
 
@@ -116,7 +129,7 @@ public static class WebApplicationBuilderExtensions
                 tracing.AddSource(builder.Environment.ApplicationName)
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddEntityFrameworkCoreInstrumentation()
+                    .AddEntityFrameworkCoreInstrumentation(options => options.Filter = (providerName, command) => command?.CommandText?.Contains("Hangfire") is false /* Ignore Hangfire */)
                     .AddHangfireInstrumentation();
             });
 
