@@ -122,11 +122,11 @@ public partial class BitCarousel : BitComponentBase
     }
 
     /// <summary>
-    /// Navigates to the given carousel item index.
+    /// Navigates to the given carousel item number.
     /// </summary>
-    public async Task GoTo(int index)
+    public async Task GoTo(int number)
     {
-        await GotoPage(index - 1);
+        await GotoPage(number - 1);
     }
 
     /// <summary>

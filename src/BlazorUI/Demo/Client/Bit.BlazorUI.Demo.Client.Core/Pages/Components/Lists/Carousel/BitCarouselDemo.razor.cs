@@ -208,7 +208,7 @@ public partial class BitCarouselDemo
         {
             Name = "GoTo",
             Type = "Task",
-            Description = "Navigates to the given carousel item index.",
+            Description = "Navigates to the given carousel item number.",
         },
         new()
         {
