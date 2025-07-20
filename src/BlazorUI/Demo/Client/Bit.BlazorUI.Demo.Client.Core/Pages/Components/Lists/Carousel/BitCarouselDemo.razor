@@ -95,7 +95,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Public API" RazorCode="@example4RazorCode" CsharpCode="@example4CsCode" Id="example4">
+    <DemoExample Title="Public API" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div>
             Use the public API of BitCarousel to control the slides programmatically.
             This example shows how to navigate slides using buttons.
@@ -136,7 +136,7 @@
             </div>
             <div class="goto-container">
                 <BitButton Class="goto-button" OnClick="GoTo">GoTo</BitButton>
-                <BitNumberField @bind-Value="index" />
+                <BitNumberField @bind-Value="number" Min="1" Max="4" Mode="BitSpinButtonMode.Compact" />
             </div>
         </div>
     </DemoExample>

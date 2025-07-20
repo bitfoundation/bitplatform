@@ -226,7 +226,7 @@ public partial class BitCarouselDemo
 
 
 
-    private int index;
+    private int number = 1;
     private BitCarousel carousel = default!;
 
     private async Task GoNext()
@@ -241,7 +241,7 @@ public partial class BitCarouselDemo
 
     private async Task GoTo()
     {
-        await carousel.GoTo(index);
+        await carousel.GoTo(number);
     }
 
 
@@ -407,63 +407,42 @@ public partial class BitCarouselDemo
         text-align: center;
         color: #FFFFFF;
     }
-
-    .buttons-container {
-        display: flex;
-        justify-content: space-between;
-    }
-
-    .goto-container {
-        display: flex;
-        justify-content: space-around;
-    }
-
-    .goto-button {
-        margin-right: rem(10px);
-    }
 </style>
 
-<div>
-    <BitCarousel HideNextPrev @ref=""carousel"">
-        <BitCarouselItem>
-            <div class=""numbertext"">1 / 4</div>
-            <img class=""image"" src=""img1.jpg"" />
-            <div class=""text-title"">Aurora</div>
-            <div class=""text-description"">This is Aurora and it's fantastic</div>
-        </BitCarouselItem>
-        <BitCarouselItem>
-            <div class=""numbertext"">2 / 4</div>
-            <img class=""image"" src=""img2.jpg"" />
-            <div class=""text-title"">Beautiful Mountain</div>
-            <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
-        </BitCarouselItem>
-        <BitCarouselItem>
-            <div class=""numbertext"">3 / 4</div>
-            <img class=""image"" src=""img3.jpg"" />
-            <div class=""text-title"">Forest In The Valley</div>
-            <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
-        </BitCarouselItem>
-        <BitCarouselItem>
-            <div class=""numbertext"">4 / 4</div>
-            <img class=""image"" src=""img4.jpg"" />
-            <div class=""text-title"">Road Among The Mountains</div>
-            <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
-        </BitCarouselItem>
-    </BitCarousel>
-</div>
+<BitCarousel HideNextPrev @ref=""carousel"">
+    <BitCarouselItem>
+        <div class=""numbertext"">1 / 4</div>
+        <img class=""image"" src=""img1.jpg"" />
+        <div class=""text-title"">Aurora</div>
+        <div class=""text-description"">This is Aurora and it's fantastic</div>
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <div class=""numbertext"">2 / 4</div>
+        <img class=""image"" src=""img2.jpg"" />
+        <div class=""text-title"">Beautiful Mountain</div>
+        <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <div class=""numbertext"">3 / 4</div>
+        <img class=""image"" src=""img3.jpg"" />
+        <div class=""text-title"">Forest In The Valley</div>
+        <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <div class=""numbertext"">4 / 4</div>
+        <img class=""image"" src=""img4.jpg"" />
+        <div class=""text-title"">Road Among The Mountains</div>
+        <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
+    </BitCarouselItem>
+</BitCarousel>
 
-<div class=""buttons-container"">
-    <div>
-        <BitButton OnClick=""GoPrev"">&lt; Prev</BitButton>
-        <BitButton OnClick=""GoNext"">Next &gt;</BitButton>
-    </div>
-    <div class=""goto-container"">
-        <BitButton Class=""goto-button"" OnClick=""GoTo"">GoTo</BitButton>
-        <BitNumberField @bind-Value=""index"" />
-    </div>
-</div>";
-    private readonly string example4CsCode = @"
-private int index;
+<BitButton OnClick=""GoPrev"">&lt; Prev</BitButton>
+<BitButton OnClick=""GoNext"">Next &gt;</BitButton>
+
+<BitButton OnClick=""GoTo"">GoTo</BitButton>
+<BitNumberField @bind-Value=""number"" Min=""1"" Max=""4"" Mode=""BitSpinButtonMode.Compact"" />";
+    private readonly string example4CsharpCode = @"
+private int number = 1;
 private BitCarousel carousel;
 
 private async Task GoNext()
@@ -478,7 +457,7 @@ private async Task GoPrev()
 
 private async Task GoTo()
 {
-    await carousel.GoTo(index);
+    await carousel.GoTo(number);
 }";
 
     private readonly string example5RazorCode = @"
@@ -504,20 +483,6 @@ private async Task GoTo()
         font-size: 0.6875rem;
         text-align: center;
         color: #FFFFFF;
-    }
-
-    .buttons-container {
-        display: flex;
-        justify-content: space-between;
-    }
-
-    .goto-container {
-        display: flex;
-        justify-content: space-around;
-    }
-
-    .goto-button {
-        margin-right: rem(10px);
     }
 </style>
 
