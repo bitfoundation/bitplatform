@@ -141,9 +141,24 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     /// </summary>
     [Parameter] public bool ResizableColumns { get; set; }
 
+    /// <summary>
+    /// The CSS class of all rows of the data grid.
+    /// </summary>
     [Parameter] public string? RowClass { get; set; }
+
+    /// <summary>
+    /// The function to generate the CSS class of each row of the data grid.
+    /// </summary>
     [Parameter] public Func<TGridItem, string>? RowClassSelector { get; set; }
+
+    /// <summary>
+    /// The CSS style of all row of the data grid.
+    /// </summary>
     [Parameter] public string? RowStyle { get; set; }
+
+    /// <summary>
+    /// The function to generate the CSS style of each row of the data grid.
+    /// </summary>
     [Parameter] public Func<TGridItem, string>? RowStyleSelector { get; set; }
 
     /// <summary>
