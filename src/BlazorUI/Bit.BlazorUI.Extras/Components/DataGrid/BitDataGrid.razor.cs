@@ -79,6 +79,17 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
 
 
     /// <summary>
+    /// Defines the child components of this instance. For example, you may define columns by adding
+    /// components derived from the <see cref="BitDataGridColumnBase{TGridItem}"/> base class.
+    /// </summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// An optional CSS class name. If given, this will be included in the class attribute of the rendered table.
+    /// </summary>
+    [Parameter] public string? Class { get; set; }
+
+    /// <summary>
     /// A queryable source of data for the grid.
     ///
     /// This could be in-memory data converted to queryable using the
@@ -88,55 +99,6 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     /// You should supply either <see cref="Items"/> or <see cref="ItemsProvider"/>, but not both.
     /// </summary>
     [Parameter] public IQueryable<TGridItem>? Items { get; set; }
-
-    /// <summary>
-    /// A callback that supplies data for the rid.
-    ///
-    /// You should supply either <see cref="Items"/> or <see cref="ItemsProvider"/>, but not both.
-    /// </summary>
-    [Parameter] public BitDataGridItemsProvider<TGridItem>? ItemsProvider { get; set; }
-
-    /// <summary>
-    /// An optional CSS class name. If given, this will be included in the class attribute of the rendered table.
-    /// </summary>
-    [Parameter] public string? Class { get; set; }
-
-    /// <summary>
-    /// A theme name, with default value "default". This affects which styling rules match the table.
-    /// </summary>
-    [Parameter] public string? Theme { get; set; } = "default";
-
-    /// <summary>
-    /// Defines the child components of this instance. For example, you may define columns by adding
-    /// components derived from the <see cref="BitDataGridColumnBase{TGridItem}"/> base class.
-    /// </summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
-
-    /// <summary>
-    /// If true, the grid will be rendered with virtualization. This is normally used in conjunction with
-    /// scrolling and causes the grid to fetch and render only the data around the current scroll viewport.
-    /// This can greatly improve the performance when scrolling through large data sets.
-    ///
-    /// If you use <see cref="Virtualize"/>, you should supply a value for <see cref="ItemSize"/> and must
-    /// ensure that every row renders with the same constant height.
-    ///
-    /// Generally it's preferable not to use <see cref="Virtualize"/> if the amount of data being rendered
-    /// is small or if you are using pagination.
-    /// </summary>
-    [Parameter] public bool Virtualize { get; set; }
-
-    /// <summary>
-    /// This is applicable only when using <see cref="Virtualize"/>. It defines an expected height in pixels for
-    /// each row, allowing the virtualization mechanism to fetch the correct number of items to match the display
-    /// size and to ensure accurate scrolling.
-    /// </summary>
-    [Parameter] public float ItemSize { get; set; } = 50;
-
-    /// <summary>
-    /// If true, renders draggable handles around the column headers, allowing the user to resize the columns
-    /// manually. Size changes are not persisted.
-    /// </summary>
-    [Parameter] public bool ResizableColumns { get; set; }
 
     /// <summary>
     /// Optionally defines a value for @key on each rendered row. Typically this should be used to specify a
@@ -151,6 +113,20 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     [Parameter] public Func<TGridItem, object> ItemKey { get; set; } = x => x!;
 
     /// <summary>
+    /// A callback that supplies data for the rid.
+    ///
+    /// You should supply either <see cref="Items"/> or <see cref="ItemsProvider"/>, but not both.
+    /// </summary>
+    [Parameter] public BitDataGridItemsProvider<TGridItem>? ItemsProvider { get; set; }
+
+    /// <summary>
+    /// This is applicable only when using <see cref="Virtualize"/>. It defines an expected height in pixels for
+    /// each row, allowing the virtualization mechanism to fetch the correct number of items to match the display
+    /// size and to ensure accurate scrolling.
+    /// </summary>
+    [Parameter] public float ItemSize { get; set; } = 50;
+
+    /// <summary>
     /// Optionally links this <see cref="BitDataGrid{TGridItem}"/> instance with a <see cref="BitDataGridPaginationState"/> model,
     /// causing the grid to fetch and render only the current page of data.
     ///
@@ -158,6 +134,50 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     /// that displays and updates the supplied <see cref="BitDataGridPaginationState"/> instance.
     /// </summary>
     [Parameter] public BitDataGridPaginationState? Pagination { get; set; }
+
+    /// <summary>
+    /// If true, renders draggable handles around the column headers, allowing the user to resize the columns
+    /// manually. Size changes are not persisted.
+    /// </summary>
+    [Parameter] public bool ResizableColumns { get; set; }
+
+    /// <summary>
+    /// The CSS class of all rows of the data grid.
+    /// </summary>
+    [Parameter] public string? RowClass { get; set; }
+
+    /// <summary>
+    /// The function to generate the CSS class of each row of the data grid.
+    /// </summary>
+    [Parameter] public Func<TGridItem, string>? RowClassSelector { get; set; }
+
+    /// <summary>
+    /// The CSS style of all row of the data grid.
+    /// </summary>
+    [Parameter] public string? RowStyle { get; set; }
+
+    /// <summary>
+    /// The function to generate the CSS style of each row of the data grid.
+    /// </summary>
+    [Parameter] public Func<TGridItem, string>? RowStyleSelector { get; set; }
+
+    /// <summary>
+    /// A theme name, with default value "default". This affects which styling rules match the table.
+    /// </summary>
+    [Parameter] public string? Theme { get; set; } = "default";
+
+    /// <summary>
+    /// If true, the grid will be rendered with virtualization. This is normally used in conjunction with
+    /// scrolling and causes the grid to fetch and render only the data around the current scroll viewport.
+    /// This can greatly improve the performance when scrolling through large data sets.
+    ///
+    /// If you use <see cref="Virtualize"/>, you should supply a value for <see cref="ItemSize"/> and must
+    /// ensure that every row renders with the same constant height.
+    ///
+    /// Generally it's preferable not to use <see cref="Virtualize"/> if the amount of data being rendered
+    /// is small or if you are using pagination.
+    /// </summary>
+    [Parameter] public bool Virtualize { get; set; }
 
 
 
@@ -406,12 +426,49 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
         _displayOptionsForColumn = null;
     }
 
+    private string? GetRowClass(TGridItem item)
+    {
+        var classes = new List<string>();
+
+        if (RowClass is not null)
+        {
+            classes.Add(RowClass);
+        }
+
+        if (RowClassSelector is not null)
+        {
+            classes.Add(RowClassSelector(item));
+        }
+
+        return classes.Any() ? string.Join(' ', classes) : null;
+    }
+
+    private string? GetRowStyle(TGridItem item)
+    {
+        var styles = new List<string>();
+
+        if (RowStyle is not null)
+        {
+            styles.Add(RowStyle);
+        }
+
+        if (RowStyleSelector is not null)
+        {
+            styles.Add(RowStyleSelector(item));
+        }
+
+        return styles.Any() ? string.Join(';', styles) : null;
+    }
+
+
+
     private static string? ColumnClass(BitDataGridColumnBase<TGridItem> column) => column.Align switch
     {
         BitDataGridAlign.Center => $"col-justify-center {column.Class}",
         BitDataGridAlign.Right => $"col-justify-end {column.Class}",
         _ => column.Class,
     };
+
 
 
 
@@ -446,7 +503,7 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
             // The JS side may routinely be gone already if the reason we're disposing is that
             // the client disconnected. This is not an error.
         }
-        catch(JSException ex)
+        catch (JSException ex)
         {
             // it seems it's safe to just ignore this exception here.
             // otherwise it will blow up the MAUI app in a page refresh for example.
