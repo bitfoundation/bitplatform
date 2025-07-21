@@ -1,6 +1,9 @@
 ﻿//+:cnd:noEmit
 using System.IO.Compression;
 using System.Net;
+//#if (appInsights == true)
+using Azure.Monitor.OpenTelemetry.AspNetCore;
+//#endif
 using Boilerplate.Server.Shared;
 using Boilerplate.Server.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -53,10 +56,6 @@ public static class WebApplicationBuilderExtensions
         })
             .Configure<BrotliCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest)
             .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
-
-        //#if (appInsights == true)
-        services.AddApplicationInsightsTelemetry(configuration);
-        //#endif
 
         services.AddAntiforgery();
 
@@ -165,12 +164,24 @@ public static class WebApplicationBuilderExtensions
     private static TBuilder AddOpenTelemetryExporters<TBuilder>(this TBuilder builder)
         where TBuilder : IHostApplicationBuilder
     {
-        var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
+        var useOtlpExporter = string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false;
 
         if (useOtlpExporter)
         {
             builder.Services.AddOpenTelemetry().UseOtlpExporter();
         }
+
+        //#if (appInsights == true)
+        var appInsightsConnectionString = string.IsNullOrWhiteSpace(builder.Configuration["ApplicationInsights:ConnectionString"]) is false ? builder.Configuration["ApplicationInsights:ConnectionString"] : null;
+
+        if (appInsightsConnectionString is not null)
+        {
+            builder.Services.AddOpenTelemetry().UseAzureMonitor(options =>
+            {
+                options.ConnectionString = appInsightsConnectionString;
+            });
+        }
+        //#endif
 
         return builder;
     }
