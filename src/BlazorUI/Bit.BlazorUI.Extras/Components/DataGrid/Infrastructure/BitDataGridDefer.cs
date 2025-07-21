@@ -6,7 +6,7 @@
 /// <summary>
 /// For internal use only. Do not use.
 /// </summary>
-public class Defer : ComponentBase
+public class BitDataGridDefer : ComponentBase
 {
     /// <summary>
     /// For internal use only. Do not use.
