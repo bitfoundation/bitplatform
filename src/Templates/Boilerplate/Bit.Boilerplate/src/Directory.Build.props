@@ -74,6 +74,7 @@
         <Using Include="Boilerplate.Shared.Exceptions" />
         <Using Include="Boilerplate.Shared.Services" />
         <Using Include="Boilerplate.Shared.Services.Contracts" />
+        <Using Include="System.Diagnostics" />
 
         <Watch Remove="*.scss" />
     </ItemGroup>

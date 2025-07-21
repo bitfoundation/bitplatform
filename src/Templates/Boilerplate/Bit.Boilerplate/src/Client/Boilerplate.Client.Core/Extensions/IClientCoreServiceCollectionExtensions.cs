@@ -43,7 +43,11 @@ public static partial class IClientCoreServiceCollectionExtensions
         }
         else
         {
-            services.AddScoped<AbsoluteServerAddressProvider>(sp => new() { GetAddress = () => sp.GetRequiredService<HttpClient>().BaseAddress! /* Read AbsoluteServerAddressProvider's comments for more info. */ });
+            services.AddScoped<AbsoluteServerAddressProvider>(sp => new()
+            {
+                /* Read AbsoluteServerAddressProvider's comments for more info. */
+                GetAddress = () => sp.GetRequiredService<HttpClient>().BaseAddress!
+            });
         }
 
         // The following services must be unique to each app session.
@@ -79,28 +83,27 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddBitBlazorUIServices();
         services.AddBitBlazorUIExtrasServices(trySingleton: AppPlatform.IsBlazorHybrid);
 
-        // This code constructs a chain of HTTP message handlers. By default, it uses `HttpClientHandler` 
-        // to send requests to the server. However, you can replace `HttpClientHandler` with other HTTP message 
-        // handlers, such as `SocketsHttpHandler` or ASP.NET Core's `HttpMessageHandler` from the Test Host, which is useful for integration tests.
+        // Read HttpMessageHandlersChainFactory comments for more info.
         services.AddScoped<HttpMessageHandlersChainFactory>(serviceProvider => transportHandler =>
         {
+            transportHandler ??= AppPlatform.IsBrowser ? new HttpClientHandler() : new SocketsHttpHandler() // SocketsHttpHandler doesn't work in BlazorWebAssembly.
+            {
+                EnableMultipleHttp2Connections = true,
+                EnableMultipleHttp3Connections = true,
+                PooledConnectionLifetime = TimeSpan.FromMinutes(15),
+                AutomaticDecompression = System.Net.DecompressionMethods.All,
+                SslOptions = new()
+                {
+                    EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12 | System.Security.Authentication.SslProtocols.Tls13
+                }
+            };
+
             var constructedHttpMessageHandler = ActivatorUtilities.CreateInstance<LoggingDelegatingHandler>(serviceProvider,
                         [ActivatorUtilities.CreateInstance<CacheDelegatingHandler>(serviceProvider,
                         [ActivatorUtilities.CreateInstance<RequestHeadersDelegatingHandler>(serviceProvider,
                         [ActivatorUtilities.CreateInstance<AuthDelegatingHandler>(serviceProvider,
                         [ActivatorUtilities.CreateInstance<RetryDelegatingHandler>(serviceProvider,
-                        [ActivatorUtilities.CreateInstance<ExceptionDelegatingHandler>(serviceProvider, [transportHandler])])])])])]);
-            return constructedHttpMessageHandler;
-        });
-        services.AddScoped<AuthDelegatingHandler>();
-        services.AddScoped<CacheDelegatingHandler>();
-        services.AddScoped<RetryDelegatingHandler>();
-        services.AddScoped<ExceptionDelegatingHandler>();
-        services.AddScoped<RequestHeadersDelegatingHandler>();
-        services.AddScoped(serviceProvider =>
-        {
-            var transportHandler = serviceProvider.GetRequiredKeyedService<HttpMessageHandler>("PrimaryHttpMessageHandler");
-            var constructedHttpMessageHandler = serviceProvider.GetRequiredService<HttpMessageHandlersChainFactory>().Invoke(transportHandler);
+                        [ActivatorUtilities.CreateInstance<ExceptionDelegatingHandler>(serviceProvider, [transportHandler!])])])])])]);
             return constructedHttpMessageHandler;
         });
 
