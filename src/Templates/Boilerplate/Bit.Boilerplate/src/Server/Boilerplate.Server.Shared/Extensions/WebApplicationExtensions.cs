@@ -8,14 +8,7 @@ namespace Microsoft.AspNetCore.Builder;
 
 public static class WebApplicationExtensions
 {
-    //#if (aspire == true)
-    /// <summary>
-    /// Also known as MapDefaultEndpoints
-    /// Adds common .NET Aspire services: service discovery, resilience, health checks, and OpenTelemetry.
-    /// This project should be referenced by each service project in your solution.
-    /// To learn more about using this project, see https://aka.ms/dotnet/aspire/service-defaults
-    /// </summary>
-    public static WebApplication MapAspire(this WebApplication app)
+    public static WebApplication MappAppHealthChecks(this WebApplication app)
     {
         // Adding health checks endpoints to applications in non-development environments has security implications.
         // See https://aka.ms/dotnet/aspire/healthchecks for details before enabling these endpoints in non-development environments.
@@ -33,7 +26,6 @@ public static class WebApplicationExtensions
 
         return app;
     }
-    //#endif
 
     public static WebApplication UseAppForwardedHeaders(this WebApplication app)
     {
