@@ -172,13 +172,13 @@ public static class WebApplicationBuilderExtensions
         }
 
         //#if (appInsights == true)
-        var azureConnectionString = string.IsNullOrWhiteSpace(builder.Configuration["ApplicationInsights:ConnectionString"]) is false ? builder.Configuration["ApplicationInsights:ConnectionString"] : null;
+        var appInsightsConnectionString = string.IsNullOrWhiteSpace(builder.Configuration["ApplicationInsights:ConnectionString"]) is false ? builder.Configuration["ApplicationInsights:ConnectionString"] : null;
 
-        if (azureConnectionString is not null)
+        if (appInsightsConnectionString is not null)
         {
             builder.Services.AddOpenTelemetry().UseAzureMonitor(options =>
             {
-                options.ConnectionString = azureConnectionString;
+                options.ConnectionString = appInsightsConnectionString;
             });
         }
         //#endif
