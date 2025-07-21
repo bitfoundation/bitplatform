@@ -457,7 +457,7 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
             styles.Add(RowStyleSelector(item));
         }
 
-        return styles.Any() ? string.Join(' ', styles) : null;
+        return styles.Any() ? string.Join(';', styles) : null;
     }
 
 
