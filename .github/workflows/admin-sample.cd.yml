@@ -65,7 +65,7 @@ jobs:
 
     - name: Configure text embedding
       run: |
-          sed -i 's/EmbeddingIsEnabled = false/EmbeddingIsEnabled = true/' AdminPanel/src/Server/AdminPanel.Server.Api/Data/AppDbContext.cs
+          sed -i 's/IsEmbeddingEnabled = false/IsEmbeddingEnabled = true/' AdminPanel/src/Server/AdminPanel.Server.Api/Data/AppDbContext.cs
 
     - name: Configure bswup # The adminpanel.bitplatform.cc lacks pre-rendering functionality, but the configuration below enables lazy loading of files when feasible. True offline support is not expected for this demo.
       run: |
