@@ -428,36 +428,36 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
 
     private string? GetRowClass(TGridItem item)
     {
-        var result = string.Empty;
+        var classes = new List<string>();
 
         if (RowClass is not null)
         {
-            result += RowClass;
+            classes.Add(RowClass);
         }
 
         if (RowClassSelector is not null)
         {
-            result += RowClassSelector(item);
+            classes.Add(RowClassSelector(item));
         }
 
-        return result.HasValue() ? result : null;
+        return classes.Any() ? string.Join(' ', classes) : null;
     }
 
     private string? GetRowStyle(TGridItem item)
     {
-        var result = string.Empty;
+        var styles = new List<string>();
 
         if (RowStyle is not null)
         {
-            result += RowStyle;
+            styles.Add(RowStyle);
         }
 
         if (RowStyleSelector is not null)
         {
-            result += RowStyleSelector(item);
+            styles.Add(RowStyleSelector(item));
         }
 
-        return result.HasValue() ? result : null;
+        return styles.Any() ? string.Join(' ', styles) : null;
     }
 
 
