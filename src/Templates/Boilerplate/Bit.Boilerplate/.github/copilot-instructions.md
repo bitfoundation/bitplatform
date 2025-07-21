@@ -39,7 +39,12 @@ you **MUST** use the deepwiki's `ask_question` mcp tool to find the correct impl
 
 **End of RULE 1**
 
-**RULE 2 Command:**
-Use Playwright MCP tools like browser_navigate for URLs, browser_click for interactions, and browser_snapshot for page analysis.
+**RULE 2:** If a task (question, code modification, or review) involves Microsoft technologies such as C#, F#, ASP.NET Core, Microsoft.Extensions, NuGet, Entity Framework, Blazor or the `dotnet` runtime,
+you **MUST** use the `microsoft.docs.mcp` server to search Microsoft's latest official documentation for detailed and up-to-date information before responding to specific or narrowly defined questions.
 
 **End of RULE 2**
+
+**RULE 3 Command:**
+Use Playwright MCP tools like browser_navigate for URLs, browser_click for interactions, and browser_snapshot for page analysis.
+
+**End of RULE 3**
