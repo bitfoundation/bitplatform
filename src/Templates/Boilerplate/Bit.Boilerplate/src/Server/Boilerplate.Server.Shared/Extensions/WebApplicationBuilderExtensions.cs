@@ -129,7 +129,18 @@ public static class WebApplicationBuilderExtensions
             {
                 tracing.AddSource(builder.Environment.ApplicationName)
                     .AddProcessor<AppOpenTelemetryProcessor>()
-                    .AddAspNetCoreInstrumentation()
+                                .AddAspNetCoreInstrumentation(options =>
+                                {
+                                    // Filter out Blazor static file requests
+                                    options.Filter = context =>
+                                    {
+                                        if (context.Request.Path.HasValue is false)
+                                            return true;
+                                        var path = context.Request.Path.Value;
+                                        return path.StartsWith("/_framework", StringComparison.OrdinalIgnoreCase) is false &&
+                                               path.StartsWith("/_content", StringComparison.OrdinalIgnoreCase) is false;
+                                    };
+                                })
                     .AddHttpClientInstrumentation()
                     .AddEntityFrameworkCoreInstrumentation(options => options.Filter = (providerName, command) => command?.CommandText?.Contains("Hangfire") is false /* Ignore Hangfire */)
                     .AddHangfireInstrumentation();
