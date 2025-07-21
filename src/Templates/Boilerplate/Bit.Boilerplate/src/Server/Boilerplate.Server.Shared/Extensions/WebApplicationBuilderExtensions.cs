@@ -9,6 +9,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
 namespace Microsoft.Extensions.Hosting;
@@ -132,6 +133,17 @@ public static class WebApplicationBuilderExtensions
                     .AddHttpClientInstrumentation()
                     .AddEntityFrameworkCoreInstrumentation(options => options.Filter = (providerName, command) => command?.CommandText?.Contains("Hangfire") is false /* Ignore Hangfire */)
                     .AddHangfireInstrumentation();
+            })
+            .ConfigureResource(resource =>
+            {
+                resource.AddAzureAppServiceDetector()
+                    .AddAzureContainerAppsDetector()
+                    .AddAzureVMDetector()
+                    .AddContainerDetector()
+                    .AddHostDetector()
+                    .AddOperatingSystemDetector()
+                    .AddProcessDetector()
+                    .AddProcessRuntimeDetector();
             });
 
         builder.AddOpenTelemetryExporters();

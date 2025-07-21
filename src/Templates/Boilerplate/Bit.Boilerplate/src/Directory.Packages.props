@@ -31,6 +31,12 @@
         <PackageVersion Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
         <PackageVersion Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.12.0-beta.2" />
         <PackageVersion Include="OpenTelemetry.Instrumentation.Hangfire" Version="1.12.0-beta.1" />
+        <PackageVersion Include="OpenTelemetry.Resources.Azure" Version="1.12.0-beta.1" />
+        <PackageVersion Include="OpenTelemetry.Resources.Container" Version="1.12.0-beta.1" />
+        <PackageVersion Include="OpenTelemetry.Resources.Host" Version="1.12.0-beta.1" />
+        <PackageVersion Include="OpenTelemetry.Resources.OperatingSystem" Version="1.12.0-beta.1" />
+        <PackageVersion Include="OpenTelemetry.Resources.Process" Version="1.12.0-beta.1" />
+        <PackageVersion Include="OpenTelemetry.Resources.ProcessRuntime" Version="1.12.0-beta.1" />
         <PackageVersion Include="Oscore.Maui.AppStoreInfo" Version="1.3.1" />
         <PackageVersion Include="Plugin.Maui.AppRating" Version="1.2.1" />
         <PackageVersion Include="Velopack" Version="0.0.1298" />
