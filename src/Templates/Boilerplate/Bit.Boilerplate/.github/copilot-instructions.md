@@ -51,16 +51,11 @@ you **MUST** use the deepwiki's `ask_question` mcp tool to find the correct impl
 
 **End of RULE 1**
 
-**RULE 3:** If a task (question, code modification, or review) involves Microsoft technologies such as C#, F#, ASP.NET Core, Microsoft.Extensions, NuGet, Entity Framework, Blazor or the `dotnet` runtime,
+**RULE 2:** If a task (question, code modification, or review) involves Microsoft technologies such as C#, F#, ASP.NET Core, Microsoft.Extensions, NuGet, Entity Framework, Blazor or the `dotnet` runtime,
 you **MUST** use the `microsoft.docs.mcp` server to search Microsoft's latest official documentation for detailed and up-to-date information before responding to specific or narrowly defined questions.
 
+**End of RULE 2**
+
+**RULE 3:** You **MUST** use the read-website-fast's `fetch` mcp tools, to gather information from URLs provided by the user.
+
 **End of RULE 3**
-
-**RULE 4:** You **MUST** use the read-website-fast's `fetch` mcp tools, to gather information from URLs provided by the user.
-
-**End of RULE 4**
-
-**RULE 5:** If the user request is "resume" or "continue" or "try again", check the previous conversation history to see what the next incomplete step in the todo list is. Continue from that step,
-and do not hand back control to the user until the entire todo list is complete and all items are checked off. Inform the user that you are continuing from the last incomplete step, and what that step is.
-
-**End of RULE 5**
