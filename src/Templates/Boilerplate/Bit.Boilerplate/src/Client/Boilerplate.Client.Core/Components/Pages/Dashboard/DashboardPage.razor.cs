@@ -19,7 +19,7 @@ public partial class DashboardPage
         //#if (signalR == true)
         unsubscribe = PubSubService.Subscribe(SharedPubSubMessages.DASHBOARD_DATA_CHANGED, async _ =>
         {
-            NavigationManager.NavigateTo(Urls.DashboardPage, replace: true);
+            NavigationManager.NavigateTo(PageUrls.DashboardPage, replace: true);
         });
         //#endif
         try

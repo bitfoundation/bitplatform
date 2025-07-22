@@ -1,6 +1,6 @@
 @*+:cnd:noEmit*@
-@attribute [Route(Urls.SettingsPage + "/{Section?}")]
-@attribute [Route("{culture?}" + Urls.SettingsPage + "/{Section?}")]
+@attribute [Route(PageUrls.SettingsPage + "/{Section?}")]
+@attribute [Route("{culture?}" + PageUrls.SettingsPage + "/{Section?}")]
 @attribute [Authorize]
 @inherits AppPageBase
 
@@ -10,35 +10,35 @@
 <section>
     <BitStack Class="stack">
         <Accordion @bind-Value="@openedAccordion"
-                   Name="@Urls.SettingsSections.Profile"
+                   Name="@PageUrls.SettingsSections.Profile"
                    Title="@Localizer[nameof(AppStrings.ProfileTitle)]"
                    Subtitle="@Localizer[nameof(AppStrings.ProfileSubtitle)]">
             <ProfileSection Loading="isLoading" />
         </Accordion>
 
         <Accordion @bind-Value="@openedAccordion"
-                   Name="@Urls.SettingsSections.Account"
+                   Name="@PageUrls.SettingsSections.Account"
                    Title="@Localizer[nameof(AppStrings.AccountTitle)]"
                    Subtitle="@Localizer[nameof(AppStrings.AccountSubtitle)]">
             <AccountSection />
         </Accordion>
 
         <Accordion @bind-Value="@openedAccordion"
-                   Name="@Urls.SettingsSections.Tfa"
+                   Name="@PageUrls.SettingsSections.Tfa"
                    Title="@Localizer[nameof(AppStrings.TfaTitle)]"
                    Subtitle="@Localizer[nameof(AppStrings.TfaSubtitle)]">
             <TwoFactorSection />
         </Accordion>
 
         <Accordion @bind-Value="@openedAccordion"
-                   Name="@Urls.SettingsSections.Sessions"
+                   Name="@PageUrls.SettingsSections.Sessions"
                    Title="@Localizer[nameof(AppStrings.SessionsTitle)]"
                    Subtitle="@Localizer[nameof(AppStrings.SessionsSubtitle)]">
             <SessionsSection />
         </Accordion>
         @*#if (ads == true)*@
         <Accordion @bind-Value="@openedAccordion"
-                   Name="@Urls.SettingsSections.UpgradeAccount"
+                   Name="@PageUrls.SettingsSections.UpgradeAccount"
                    Title="@Localizer[nameof(AppStrings.UpgradeTitle)]"
                    Subtitle="@Localizer[nameof(AppStrings.UpgradeSubtitle)]">
             <UpgradeAccountSection />

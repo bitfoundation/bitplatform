@@ -1,5 +1,5 @@
-@attribute [Route(Urls.CategoriesPage)]
-@attribute [Route("{culture?}" + Urls.CategoriesPage)]
+@attribute [Route(PageUrls.CategoriesPage)]
+@attribute [Route("{culture?}" + PageUrls.CategoriesPage)]
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
 @attribute [Authorize(Policy = AppFeatures.AdminPanel.ManageProductCatalog)]
 @inherits AppPageBase

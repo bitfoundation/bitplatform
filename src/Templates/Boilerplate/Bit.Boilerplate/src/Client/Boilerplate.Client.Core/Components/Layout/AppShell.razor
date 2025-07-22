@@ -19,7 +19,7 @@
                                 <NotAuthorized>
                                     <BitActionButton IconOnly="isNavPanelToggled"
                                                      IconName="@BitIconName.Signin"
-                                                     Href="@($"{Urls.SignInPage}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")">
+                                                     Href="@($"{PageUrls.SignInPage}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")">
                                         @(isNavPanelToggled ? "" : Localizer[nameof(AppStrings.SignIn)])
                                     </BitActionButton>
                                     <BitActionButton IconOnly="isNavPanelToggled"
@@ -29,7 +29,7 @@
                                     </BitActionButton>
                                     <BitActionButton IconOnly="isNavPanelToggled"
                                                      IconName="@BitIconName.AddFriend"
-                                                     Href="@($"{Urls.SignUpPage}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")">
+                                                     Href="@($"{PageUrls.SignUpPage}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")">
                                         @(isNavPanelToggled ? "" : Localizer[nameof(AppStrings.SignUp)])
                                     </BitActionButton>
                                 </NotAuthorized>

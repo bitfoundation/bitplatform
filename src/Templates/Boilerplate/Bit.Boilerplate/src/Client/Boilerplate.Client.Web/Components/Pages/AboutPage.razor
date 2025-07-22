@@ -1,5 +1,5 @@
-@attribute [Route(Urls.AboutPage)]
-@attribute [Route("{culture?}" + Urls.AboutPage)]
+@attribute [Route(PageUrls.AboutPage)]
+@attribute [Route("{culture?}" + PageUrls.AboutPage)]
 @attribute [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5)]
 @inherits AppPageBase
 

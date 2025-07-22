@@ -16,22 +16,22 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
                         DataSchemes = ["https", "http"],
                         DataHosts = ["use-your-web-app-url-here.com"],
                         // the following app links will be opened in app instead of browser if the app is installed on Android device.
-                        DataPaths = [Urls.HomePage],
+                        DataPaths = [PageUrls.HomePage],
                         DataPathPrefixes = [
                             "/en-US", "/en-GB", "/nl-NL", "/fa-IR", "sv-SE", "hi-IN", "zh-CN", "es-ES", "fr-FR", "ar-SA", "de-DE",
-                            Urls.ConfirmPage, Urls.ForgotPasswordPage, Urls.SettingsPage, Urls.ResetPasswordPage, Urls.SignInPage,
-                            Urls.SignUpPage, Urls.NotAuthorizedPage, Urls.NotFoundPage, Urls.TermsPage, Urls.AboutPage, Urls.Authorize, Urls.AboutPage,
+                            PageUrls.ConfirmPage, PageUrls.ForgotPasswordPage, PageUrls.SettingsPage, PageUrls.ResetPasswordPage, PageUrls.SignInPage,
+                            PageUrls.SignUpPage, PageUrls.NotAuthorizedPage, PageUrls.NotFoundPage, PageUrls.TermsPage, PageUrls.AboutPage, PageUrls.Authorize, PageUrls.AboutPage,
                             //#if (module == "Admin")
-                            Urls.AddOrEditProductPage, Urls.CategoriesPage, Urls.DashboardPage, Urls.ProductsPage,
+                            PageUrls.AddOrEditProductPage, PageUrls.CategoriesPage, PageUrls.DashboardPage, PageUrls.ProductsPage,
                             //#endif
                             //#if (module == "Sales")
-                            Urls.ProductPage,
+                            PageUrls.ProductPage,
                             //#endif
                             //#if (sample == true)
-                            Urls.TodoPage,
+                            PageUrls.TodoPage,
                             //#endif
                             //#if (offlineDb == true)
-                            Urls.OfflineDatabaseDemo
+                            PageUrls.OfflineDatabaseDemo
                             //#endif
                             ],
                         AutoVerify = true,
@@ -58,7 +58,7 @@ public partial class MainActivity : MauiAppCompatActivity
         var url = Intent?.DataString; // Handling universal deep links handling when the app was closed.
         if (string.IsNullOrWhiteSpace(url) is false)
         {
-            _ = Routes.OpenUniversalLink(new URL(url).File ?? Urls.HomePage);
+            _ = Routes.OpenUniversalLink(new URL(url).File ?? PageUrls.HomePage);
         }
 
         //#if (notification == true)
@@ -100,7 +100,7 @@ public partial class MainActivity : MauiAppCompatActivity
         pageUrl ??= intent?.Extras?.Get("pageUrl")?.ToString();
         if (string.IsNullOrEmpty(pageUrl) is false)
         {
-            _ = Routes.OpenUniversalLink(pageUrl ?? Urls.HomePage); // The time that the notification received, the app was closed.
+            _ = Routes.OpenUniversalLink(pageUrl ?? PageUrls.HomePage); // The time that the notification received, the app was closed.
         }
     }
     //#endif
@@ -113,7 +113,7 @@ public partial class MainActivity : MauiAppCompatActivity
         var url = intent.DataString;
         if (action is Intent.ActionView && string.IsNullOrWhiteSpace(url) is false)
         {
-            _ = Routes.OpenUniversalLink(new URL(url).File ?? Urls.HomePage);
+            _ = Routes.OpenUniversalLink(new URL(url).File ?? PageUrls.HomePage);
         }
 
         //#if (notification == true)

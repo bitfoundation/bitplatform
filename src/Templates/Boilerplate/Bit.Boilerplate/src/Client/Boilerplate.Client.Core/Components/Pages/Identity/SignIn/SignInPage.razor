@@ -1,6 +1,6 @@
 @*+:cnd:noEmit*@
-@attribute [Route(Urls.SignInPage)]
-@attribute [Route("{culture?}" + Urls.SignInPage)]
+@attribute [Route(PageUrls.SignInPage)]
+@attribute [Route("{culture?}" + PageUrls.SignInPage)]
 @inherits AppPageBase
 
 <AppPageData Title="@Localizer[nameof(AppStrings.SignInPageTitle)]" />

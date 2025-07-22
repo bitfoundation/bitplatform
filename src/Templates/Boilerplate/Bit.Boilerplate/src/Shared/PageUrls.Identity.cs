@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
 namespace Boilerplate.Shared;
 
-public static partial class Urls
+public static partial class PageUrls
 {
     public const string NotAuthorizedPage = "/not-authorized";
 

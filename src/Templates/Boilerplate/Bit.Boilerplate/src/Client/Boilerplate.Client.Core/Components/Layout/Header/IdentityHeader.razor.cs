@@ -30,7 +30,7 @@ public partial class IdentityHeader : AppComponentBase
 
     private async Task HandleGoHomeLink()
     {
-        NavigationManager.NavigateTo(Urls.HomePage, replace: true);
+        NavigationManager.NavigateTo(PageUrls.HomePage, replace: true);
     }
 
     private async Task ToggleTheme()

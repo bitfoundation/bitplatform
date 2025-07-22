@@ -1,5 +1,5 @@
-@attribute [Route(Urls.AboutPage)]
-@attribute [Route("{culture?}" + Urls.AboutPage)]
+@attribute [Route(PageUrls.AboutPage)]
+@attribute [Route("{culture?}" + PageUrls.AboutPage)]
 @inherits AppPageBase
 
 <AppPageData Title="@Localizer[nameof(AppStrings.About)]"

@@ -1,5 +1,5 @@
-@attribute [Route(Urls.ProductPage + "/{Id:int}")]
-@attribute [Route("{culture?}" + Urls.ProductPage + "/{Id:int}")]
+@attribute [Route(PageUrls.ProductPage + "/{Id:int}")]
+@attribute [Route("{culture?}" + PageUrls.ProductPage + "/{Id:int}")]
 @attribute [AppResponseCache(SharedMaxAge = 3600 * 24, MaxAge = 60 * 5)]
 @inherits AppPageBase
 

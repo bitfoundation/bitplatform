@@ -103,7 +103,7 @@ public partial class ProductsPage
 
     private async Task CreateProduct()
     {
-        NavigationManager.NavigateTo(Urls.AddOrEditProductPage);
+        NavigationManager.NavigateTo(PageUrls.AddOrEditProductPage);
     }
 
     private async Task DeleteProduct()

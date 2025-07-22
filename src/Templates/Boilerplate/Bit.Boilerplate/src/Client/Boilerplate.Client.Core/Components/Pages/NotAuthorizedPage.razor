@@ -1,5 +1,5 @@
-@attribute [Route(Urls.NotAuthorizedPage)]
-@attribute [Route("{culture?}" + Urls.NotAuthorizedPage)]
+@attribute [Route(PageUrls.NotAuthorizedPage)]
+@attribute [Route("{culture?}" + PageUrls.NotAuthorizedPage)]
 @inherits AppPageBase
 
 <AppPageData Title="@Localizer[nameof(AppStrings.NotAuthorizedPageTitle)]" />
@@ -26,7 +26,7 @@ else
                     {
                         <BitButton Style="width:300px"
                                    Color="BitColor.SevereWarning"
-                                   Href="@($"{Urls.SettingsPage}/{Urls.SettingsSections.Sessions}")">
+                                   Href="@($"{PageUrls.SettingsPage}/{PageUrls.SettingsSections.Sessions}")">
                             @Localizer[nameof(AppStrings.TryRemovingOtherSessions)]
                         </BitButton>
                     }

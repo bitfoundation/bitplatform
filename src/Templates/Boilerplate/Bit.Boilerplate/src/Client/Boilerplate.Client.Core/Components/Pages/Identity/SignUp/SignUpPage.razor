@@ -1,6 +1,6 @@
 @*+:cnd:noEmit*@
-@attribute [Route(Urls.SignUpPage)]
-@attribute [Route("{culture?}" + Urls.SignUpPage)]
+@attribute [Route(PageUrls.SignUpPage)]
+@attribute [Route("{culture?}" + PageUrls.SignUpPage)]
 @inherits AppPageBase
 
 <AppPageData Title="@Localizer[nameof(AppStrings.SignUp)]"
@@ -77,14 +77,14 @@
             <br />
             <BitText Typography="BitTypography.Body2">
                 @Localizer[nameof(AppStrings.SignInMessageInSignUp)]
-                <BitLink Href="@($"{Urls.SignInPage}?return-url={Uri.EscapeDataString(ReturnUrlQueryString ?? Urls.HomePage)}")">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
+                <BitLink Href="@($"{PageUrls.SignInPage}?return-url={Uri.EscapeDataString(ReturnUrlQueryString ?? PageUrls.HomePage)}")">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
                 @Localizer[nameof(AppStrings.Or)]
-                <BitLink Href="@($"{Urls.ConfirmPage}?email={Uri.EscapeDataString(signUpModel.Email ?? "")}&phoneNumber={Uri.EscapeDataString(signUpModel.PhoneNumber ?? "")}&return-url={Uri.EscapeDataString(ReturnUrlQueryString ?? Urls.HomePage)}")">
+                <BitLink Href="@($"{PageUrls.ConfirmPage}?email={Uri.EscapeDataString(signUpModel.Email ?? "")}&phoneNumber={Uri.EscapeDataString(signUpModel.PhoneNumber ?? "")}&return-url={Uri.EscapeDataString(ReturnUrlQueryString ?? PageUrls.HomePage)}")">
                     @Localizer[nameof(AppStrings.Confirm)]
                 </BitLink>
             </BitText>
             <BitText Typography="BitTypography.Body2">
-                By signing up, you agree to our <BitLink Href="@Urls.TermsPage">@Localizer[nameof(AppStrings.Terms)]</BitLink>
+                By signing up, you agree to our <BitLink Href="@PageUrls.TermsPage">@Localizer[nameof(AppStrings.Terms)]</BitLink>
             </BitText>
         </BitStack>
     </BitStack>

@@ -1,7 +1,7 @@
 @inherits AppComponentBase
 
 <BitErrorBoundary @ref="boundaryRef"
-                  HomeUrl="@Urls.HomePage"
+                  HomeUrl="@PageUrls.HomePage"
                   ShowException="AppEnvironment.IsDevelopment()"
                   OnError="e => exceptionHandler.Handle(e)"
                   HomeText="@localizer[nameof(AppStrings.Home)]"
