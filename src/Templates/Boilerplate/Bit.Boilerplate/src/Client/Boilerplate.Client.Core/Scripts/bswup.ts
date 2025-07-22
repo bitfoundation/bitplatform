@@ -3,7 +3,7 @@
  * Called by `WebAppUpdateService.cs` when the user clicks the app version in `AppShell.razor`
  * or when `ForceUpdateSnackbar.razor` appears after a forced update.
  */
-async function tryUpdatingPwa(autoReload?: boolean) {
+async function tryUpdatePwa(autoReload?: boolean) {
     const bswup = (window as any).BitBswup; // https://bitplatform.dev/bswup
     const bswupProgress = (window as any).BitBswupProgress;
 
@@ -14,7 +14,7 @@ async function tryUpdatingPwa(autoReload?: boolean) {
 }
 
 // To minimize user-facing force updates, the following code attempts to update the PWA ASAP.
-window.addEventListener('beforeunload', () => tryUpdatingPwa(true));
+window.addEventListener('beforeunload', () => tryUpdatePwa(true));
 
 let appIsInBackground = false; // App is in the background if visibilityState is 'hidden' for 20 seconds.
 let visibilityChangeTimeout: number;
@@ -30,4 +30,4 @@ window.addEventListener('visibilitychange', () => {
 });
 
 // This would download the updates, but reloads the app only if it's in the background.
-setInterval(() => tryUpdatingPwa(appIsInBackground), 60 * 1000 /* 1 minute */);
+setInterval(() => tryUpdatePwa(appIsInBackground), 60 * 1000 /* 1 minute */);
