@@ -16,6 +16,18 @@
 - **TypeScript**: Type-safe JavaScript development
 - **SCSS**: Advanced CSS preprocessing
 
+## Project Structure
+- **Server.Api**: Controllers, Mappers, DbContext, Migrations, Components for email templates, action filters, models, SignalR, server's appsettings.json
+- **Server.Web**: App.razor and other files to server Blazor Server and pre-rendering.
+- **Server.Shared (Also knows as Aspire's ServiceDefaults)**: Common codes shared between Server.Api and Server.Web.
+- **Server.AppHost**: Aspire's appsettings and Program.cs
+- **Shared**: Dtos, Enums, custom exceptions, shared services, resx files.
+- **Tests**: UI and integration tests.
+- **Client.Core**: Components, Pages, Layout, Client services, app.ts (TypeScript), app.scss (SCSS), and appsettings.json for the client.
+- **Client.Web**: Blazor WebAssembly standalone project.
+- **Client.Maui**: .NET MAUI based Blazor Hybrid project.
+- **Client.Windows**: Windows forms based Blazor Hybrid project.
+
 ## Coding Conventions & Best Practices
 
 1.  **Follow the established project structure**: Adhere to the defined layout for consistency.
@@ -31,7 +43,7 @@
 12. **Prefer razor.scss files**: Use `.razor.scss` files for component styles instead of inline styles in `.razor` files.
 13. **After applying changes, make sure project builds successfully**: Always verify that the project builds without errors after making changes.
 
-### Rules for Using MCP
+## Rules
 
 **RULE 1:** If a task (question, code modification or review) involves the use of bit BlazorUI components (e.g., `BitButton`, `BitTooltip`, `BitTextField`),
 or refers to `bitplatform`, `bit Bswup`, `bit Butil`, `bit Besql`, or `bit Boilerplate`, or involves UI components without explicitly specifying their UI toolkit,
@@ -39,12 +51,16 @@ you **MUST** use the deepwiki's `ask_question` mcp tool to find the correct impl
 
 **End of RULE 1**
 
-**RULE 2:** If a task (question, code modification, or review) involves Microsoft technologies such as C#, F#, ASP.NET Core, Microsoft.Extensions, NuGet, Entity Framework, Blazor or the `dotnet` runtime,
+**RULE 3:** If a task (question, code modification, or review) involves Microsoft technologies such as C#, F#, ASP.NET Core, Microsoft.Extensions, NuGet, Entity Framework, Blazor or the `dotnet` runtime,
 you **MUST** use the `microsoft.docs.mcp` server to search Microsoft's latest official documentation for detailed and up-to-date information before responding to specific or narrowly defined questions.
 
-**End of RULE 2**
-
-**RULE 3 Command:**
-Use Playwright MCP tools like browser_navigate for URLs, browser_click for interactions, and browser_snapshot for page analysis.
-
 **End of RULE 3**
+
+**RULE 4:** You **MUST** use the read-website-fast's `fetch` mcp tools, to gather information from URLs provided by the user.
+
+**End of RULE 4**
+
+**RULE 5:** If the user request is "resume" or "continue" or "try again", check the previous conversation history to see what the next incomplete step in the todo list is. Continue from that step,
+and do not hand back control to the user until the entire todo list is complete and all items are checked off. Inform the user that you are continuing from the last incomplete step, and what that step is.
+
+**End of RULE 5**
