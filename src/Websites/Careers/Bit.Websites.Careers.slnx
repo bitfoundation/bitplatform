@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/.SolutionItems/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="Clean.bat" />
+    <File Path="src/Directory.Build.props" />
+  </Folder>
+  <Project Path="src/Bit.Websites.Careers.Client/Bit.Websites.Careers.Client.csproj" />
+  <Project Path="src/Bit.Websites.Careers.Server/Bit.Websites.Careers.Server.csproj" />
+  <Project Path="src/Bit.Websites.Careers.Shared/Bit.Websites.Careers.Shared.csproj" />
+</Solution>

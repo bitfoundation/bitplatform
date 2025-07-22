@@ -31,7 +31,17 @@
                 </BitInfiniteScrolling>
             </DemoExample>
 
-            <DemoExample Title="Advanced" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <DemoExample Title="EmptyTemplate" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+                <BitInfiniteScrolling ItemsProvider="LoadEmptyItems" Class="basic" Context="item">
+                    <EmptyTemplate>
+                        <div style="display:flex;width:100%;height:100px;justify-content:center;align-items:center">
+                            <b>--- No item ---</b>
+                        </div>
+                    </EmptyTemplate>
+                </BitInfiniteScrolling>
+            </DemoExample>
+
+            <DemoExample Title="Advanced" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
                 <BitInfiniteScrolling ItemsProvider="LoadAdvancedItems" Class="advanced" LastElementHeight="96px" ScrollerSelector="body" Preload>
                     <ItemTemplate Context="item">
                         <div class="item">Item @item</div>

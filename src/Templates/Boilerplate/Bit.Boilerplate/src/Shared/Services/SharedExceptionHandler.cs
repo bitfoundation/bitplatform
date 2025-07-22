@@ -11,7 +11,7 @@ public partial class SharedExceptionHandler
         if (exception is KnownException)
             return exception.Message;
 
-        if (AppEnvironment.IsDev())
+        if (AppEnvironment.IsDevelopment())
             return exception.ToString();
 
         return Localizer[nameof(AppStrings.UnknownException)];
@@ -63,6 +63,17 @@ public partial class SharedExceptionHandler
         var data = exp.Data.Keys.Cast<string>()
             .Zip(exp.Data.Values.Cast<object?>())
             .ToDictionary(item => item.First, item => item.Second);
+
+        if (exp is ResourceValidationException resValExp)
+        {
+            foreach (var detail in resValExp.Payload.Details)
+            {
+                foreach (var error in detail.Errors)
+                {
+                    data[$"{detail.Name}:{error.Key}"] = error.Message;
+                }
+            }
+        }
 
         if (exp.InnerException is not null)
         {

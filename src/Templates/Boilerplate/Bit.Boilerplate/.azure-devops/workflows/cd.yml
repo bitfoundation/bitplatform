@@ -6,8 +6,6 @@ trigger:
 variables:
   APP_SERVICE_NAME: 'app-service-bp-test'
   AZURE_SUBSCRIPTION: 'bp-test-service-connection' # https://learn.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml#azure-resource-manager-service-connection
-  ConnectionStrings.SqlServerConnectionString: $(DB_CONNECTION_STRING)
-  Identity.JwtIssuerSigningKeySecret: $(Jwt_Issuer_Signing_Key_Secret)
   ServerAddress: 'https://use-your-api-server-url-here.com/'
   WindowsUpdate.FilesUrl: 'https://use-your-api-server-url-here.com/windows' # Deploy the published Windows application files to your desired hosting location and use the host url here.
   WebAppRender.BlazorMode: 'BlazorWebAssembly'
@@ -71,19 +69,6 @@ jobs:
       artifact: 'server-bundle'
       publishLocation: 'pipeline'
 
-  - task: Bash@3
-    displayName: 'Build migrations bundle'
-    inputs:
-      targetType: 'inline'
-      script: 'cd src/Server/Boilerplate.Server.Api/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project Boilerplate.Server.Api.csproj --verbose'
-  
-  - task: PublishPipelineArtifact@1
-    displayName: Upload ef migrations bundle
-    inputs:
-      targetPath: 'src/Boilerplate.Server.Api/efbundle'
-      artifact: 'migrations-bundle'
-      publishLocation: 'pipeline'
-
 - job: deploy_api_blazor
   dependsOn: build_api_blazor
   displayName: 'deploy api + blazor'
@@ -99,28 +84,12 @@ jobs:
       artifact: 'server-bundle'
       path: ./
 
-  - task: DownloadPipelineArtifact@2
-    displayName: Retrieve migrations bundle
-    inputs:
-      artifact: 'migrations-bundle'
-      path: ./
-
   - task: FileTransform@2
     displayName: Update appsettings.json
     inputs:
       fileType: 'json'
       folderPath: './'
       targetFiles: 'appsettings.json'
-
-  - task: Bash@3
-    displayName: 'Run migrations'
-    inputs:
-      targetType: 'inline'
-      script: |
-        chmod +x efbundle
-        ./efbundle
-        rm efbundle
-      failOnStderr: true
 
   - task: AzureRmWebAppDeployment@4
     displayName: 'Deploy to App Service'

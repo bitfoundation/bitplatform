@@ -1,5 +1,6 @@
 <div style="width:@Width;overflow:hidden;position:relative;" class="@Class">
-    <img style="width:100%;height:auto;display:block;"
+    <img alt="@Alt"
+         style="width:100%;height:auto;display:block;"
          src="@(Src ?? $"_content/Boilerplate.Client.Core/images/car_placeholder_{((CurrentTheme ?? AppThemeType.Dark).ToString().ToLower())}.png")" />
     @* src="@(Src ?? $"_content/Boilerplate.Client.Core/images/car_placeholder.png")" /> *@
 </div>

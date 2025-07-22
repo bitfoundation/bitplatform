@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
-using System.Security.Authentication;
 using Boilerplate.Client.Maui.Services;
+using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 namespace Boilerplate.Client.Maui;
 
@@ -21,10 +21,10 @@ public static partial class MauiProgram
         services.AddScoped<IBitDeviceCoordinator, MauiDeviceCoordinator>();
         services.AddScoped<IExternalNavigationService, MauiExternalNavigationService>();
 
-        services.AddScoped(sp =>
+        services.AddScoped<HttpClient>(sp =>
         {
-            var handler = sp.GetRequiredService<HttpMessageHandler>();
-            var httpClient = new HttpClient(handler)
+            var handlerFactory = sp.GetRequiredService<HttpMessageHandlersChainFactory>();
+            var httpClient = new HttpClient(handlerFactory.Invoke())
             {
                 BaseAddress = new Uri(configuration.GetServerAddress(), UriKind.Absolute)
             };
@@ -33,17 +33,6 @@ public static partial class MauiProgram
                 httpClient.DefaultRequestHeaders.Add("X-Origin", origin.ToString());
             }
             return httpClient;
-        });
-        services.AddKeyedScoped<HttpMessageHandler, SocketsHttpHandler>("PrimaryHttpMessageHandler", (sp, key) => new()
-        {
-            EnableMultipleHttp2Connections = true,
-            EnableMultipleHttp3Connections = true,
-            PooledConnectionLifetime = TimeSpan.FromMinutes(15),
-            AutomaticDecompression = System.Net.DecompressionMethods.All,
-            SslOptions = new()
-            {
-                EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13
-            }
         });
 
         services.AddSingleton<IStorageService, MauiStorageService>();

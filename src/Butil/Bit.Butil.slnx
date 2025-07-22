@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/.Solution Items/">
+    <File Path="../../.gitignore" />
+    <File Path="../.editorconfig" />
+    <File Path="../Bit.Build.props" />
+    <File Path="../global.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Demo/">
+    <Project Path="Demo/Bit.Butil.Demo.Core/Bit.Butil.Demo.Core.csproj" />
+    <Project Path="Demo/Bit.Butil.Demo.Maui/Bit.Butil.Demo.Maui.csproj">
+      <Deploy />
+    </Project>
+    <Project Path="Demo/Bit.Butil.Demo.Web/Bit.Butil.Demo.Web.csproj" />
+  </Folder>
+  <Project Path="Bit.Butil/Bit.Butil.csproj" />
+</Solution>

@@ -26,7 +26,7 @@ jobs:
     displayName: 'Build'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build Boilerplate.sln -c Release'
+      script: 'dotnet build Boilerplate.slnx -c Release'
 
   - task: Bash@3
     displayName: 'Install Playwright'

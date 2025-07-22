@@ -4,7 +4,7 @@
     "hostRequirements": {
         "cpus": 4
     },
-    "onCreateCommand": "dotnet workload install wasm-tools",
+    "onCreateCommand": "dotnet workload install wasm-tools && dotnet dev-certs https --trust",
     "waitFor": "onCreateCommand",
     "customizations": {
         "codespaces": {
@@ -14,23 +14,37 @@
         },
         "vscode": {
             "extensions": [
+                "GitHub.copilot",
                 "glenn2223.live-sass",
-                "kevin-chatham.aspnetcorerazor-html-css-class-completion",
+                "GitHub.copilot-chat",
+                "ms-dotnettools.csharp",
+                "ms-dotnettools.csdevkit",
+                "ms-azuretools.vscode-docker",
                 "DominicVonk.vscode-resx-editor",
-                "ms-dotnetools.csharp",
-                "ms-dotnettools.vscode-dotnet-runtime",
-                "ms-dotnettools.csdevkit"
+                "ms-vscode-remote.remote-containers",
+                "ms-dotnettools.blazorwasm-companion",
+                "ms-dotnettools.vscode-dotnet-runtime"
             ]
         }
     },
     "forwardPorts": [
+        2030,
+        2031,
+        2032,
         4030,
         5030,
         5031
     ],
     "features": {
-        "ghcr.io/devcontainers/features/node": {},
-        "ghcr.io/devcontainers/features/python": {}
+        "ghcr.io/devcontainers/features/python": {},
+        "ghcr.io/devcontainers/features/powershell:1": {},
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+        "ghcr.io/devcontainers/features/node:1": { "version": "23" },
+        "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
+            "version": "latest",
+            "helm": "latest",
+            "minikube": "latest"
+        }
     },
     "remoteEnv": {
         "ASPNETCORE_ENVIRONMENT": "Development"

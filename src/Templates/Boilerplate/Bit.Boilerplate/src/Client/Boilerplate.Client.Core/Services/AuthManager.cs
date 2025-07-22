@@ -16,11 +16,11 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private ILogger<AuthManager> authLogger = default!;
     [AutoInject] private IAuthTokenProvider tokenProvider = default!;
-    [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private IIdentityController identityController = default!;
     [AutoInject] private IAuthorizationService authorizationService = default!;
+    [AutoInject] private AbsoluteServerAddressProvider absoluteServerAddress = default!;
 
     public void OnInit()
     {
@@ -61,8 +61,9 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                 Value = response.AccessToken,
                 MaxAge = rememberMe is true ? response.ExpiresIn : null, // to create a session cookie
                 Path = "/",
+                Domain = absoluteServerAddress.GetAddress().Host,
                 SameSite = SameSite.Strict,
-                Secure = AppEnvironment.IsDev() is false
+                Secure = AppEnvironment.IsDevelopment() is false
             });
         }
 
@@ -223,8 +224,9 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
             {
                 Name = "access_token",
                 Path = "/",
+                Domain = absoluteServerAddress.GetAddress().Host,
                 SameSite = SameSite.Strict,
-                Secure = AppEnvironment.IsDev() is false
+                Secure = AppEnvironment.IsDevelopment() is false
             });
         }
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));

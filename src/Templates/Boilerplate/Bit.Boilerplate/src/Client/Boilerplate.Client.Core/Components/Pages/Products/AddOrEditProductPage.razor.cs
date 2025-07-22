@@ -87,10 +87,10 @@ public partial class AddOrEditProductPage
         NavigationManager.NavigateTo(Urls.ProductsPage);
     }
 
-    private async Task HandleOnUploadComplete()
+    private async Task HandleOnUploadComplete(BitFileInfo fileInfo)
     {
         product.HasPrimaryImage = true;
-        product.ConcurrencyStamp = Guid.NewGuid().ToByteArray(); // To update the product image's url when user changes product image multiple time within the same page.
+        product.PrimaryImageAltText = fileInfo.Message;
         isManagingFile = false;
     }
 
@@ -108,7 +108,10 @@ public partial class AddOrEditProductPage
         try
         {
             await attachmentController.DeleteProductPrimaryImage(product.Id, CurrentCancellationToken);
-            product.HasPrimaryImage = false;
+            if (Id is not null)
+            {
+                product = await productController.Get(Id.Value, CurrentCancellationToken); // To get latest concurrency stamp and other properties modified by the server.
+            }
         }
         catch (KnownException e)
         {

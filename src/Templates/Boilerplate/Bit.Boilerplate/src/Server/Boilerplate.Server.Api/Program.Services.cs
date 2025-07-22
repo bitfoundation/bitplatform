@@ -73,7 +73,7 @@ public static partial class Program
         services.AddSingleton<IBlobStorage>(sp =>
         {
             //#if (filesStorage == "AzureBlobStorage" || filesStorage == "S3")
-            string GetValue(string connectionString, string key)
+            string GetValue(string connectionString, string key, string? defaultValue = null)
             {
                 var parts = connectionString.Split(';');
                 foreach (var part in parts)
@@ -81,7 +81,7 @@ public static partial class Program
                     if (part.StartsWith($"{key}="))
                         return part[$"{key}=".Length..];
                 }
-                throw new ArgumentException($"Invalid connection string: '{key}' not found.");
+                return defaultValue ?? throw new ArgumentException($"Invalid connection string: '{key}' not found.");
             }
             //#endif
 
@@ -98,11 +98,10 @@ public static partial class Program
                 : GetValue(azureBlobStorageConnectionString, "AccountKey");
             return StorageFactory.Blobs.AzureBlobStorageWithSharedKey(accountName, accountKey, blobServiceClient.Uri);
             //#elif (filesStorage == "S3")
-            // Checkout https://github.com/robinrodricks/FluentStorage for more S3 providers samples such as Digital Ocean's Spaces Object Storage, AWS, etc.
             // Run through docker using `docker run -d -p 9000:9000 -p 9001:9001 -e "MINIO_ROOT_USER=minioadmin" -e "MINIO_ROOT_PASSWORD=minioadmin" quay.io/minio/minio server /data --console-address ":9001"`
             // Open MinIO console at http://127.0.0.1:9001/browser
             var minIOConnectionString = configuration.GetConnectionString("MinIOS3ConnectionString")!;
-            return StorageFactory.Blobs.MinIO(GetValue(minIOConnectionString, "AccessKey"), GetValue(minIOConnectionString, "SecretKey"), "attachments", "us-east-1" /*Region doesn't matter for MinIO*/, GetValue(minIOConnectionString, "Endpoint"));
+            return StorageFactory.Blobs.MinIO(GetValue(minIOConnectionString, "AccessKey"), GetValue(minIOConnectionString, "SecretKey"), GetValue(minIOConnectionString, "BucketName", defaultValue: "files"), GetValue(minIOConnectionString, "Region", defaultValue: "us-east-1"), GetValue(minIOConnectionString, "Endpoint"));
             //#else
             throw new NotImplementedException("Install and configure any storage supported by fluent storage (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)");
             //#endif
@@ -324,12 +323,6 @@ public static partial class Program
         {
             c.Timeout = TimeSpan.FromSeconds(10);
             c.BaseAddress = new Uri("https://www.google.com/recaptcha/");
-            c.DefaultRequestVersion = HttpVersion.Version20;
-            c.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
-        }).ConfigurePrimaryHttpMessageHandler(sp => new SocketsHttpHandler()
-        {
-            EnableMultipleHttp2Connections = true,
-            EnableMultipleHttp3Connections = true
         });
         //#endif
 
@@ -338,23 +331,12 @@ public static partial class Program
             c.Timeout = TimeSpan.FromSeconds(3);
             c.BaseAddress = new Uri("https://azuresearch-usnc.nuget.org");
             c.DefaultRequestVersion = HttpVersion.Version11;
-            c.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
-        }).ConfigurePrimaryHttpMessageHandler(sp => new SocketsHttpHandler()
-        {
-            EnableMultipleHttp2Connections = true,
-            EnableMultipleHttp3Connections = true
         });
 
         services.AddHttpClient<ResponseCacheService>(c =>
         {
             c.Timeout = TimeSpan.FromSeconds(10);
             c.BaseAddress = new Uri("https://api.cloudflare.com/client/v4/zones/");
-            c.DefaultRequestVersion = HttpVersion.Version20;
-            c.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
-        }).ConfigurePrimaryHttpMessageHandler(sp => new SocketsHttpHandler()
-        {
-            EnableMultipleHttp2Connections = true,
-            EnableMultipleHttp3Connections = true
         });
 
         services.AddFido2(options =>
@@ -380,15 +362,7 @@ public static partial class Program
         });
 
         //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
-        services.AddHttpClient("AI", c =>
-        {
-            c.DefaultRequestVersion = HttpVersion.Version20;
-            c.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
-        }).ConfigurePrimaryHttpMessageHandler(sp => new SocketsHttpHandler()
-        {
-            EnableMultipleHttp2Connections = true,
-            EnableMultipleHttp3Connections = true
-        });
+        services.AddHttpClient("AI");
 
         if (string.IsNullOrEmpty(appSettings.AI?.OpenAI?.ChatApiKey) is false)
         {

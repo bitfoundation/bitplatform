@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Environment)' != 'Development'">
+        <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
         <SelfContained>true</SelfContained>
         <PublishReadyToRun>true</PublishReadyToRun>
         <PublishReadyToRunComposite>true</PublishReadyToRunComposite>

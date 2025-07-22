@@ -21,9 +21,6 @@ public partial class Templates03GettingStartedPage
             (text:"echo 'Set execution policy';",
             command:"Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force;"),
 
-            (text:"echo 'Install - Update winget';",
-            command:"$ProgressPreference = 'SilentlyContinue'; Install-PackageProvider -Name \"NuGet\" -Force; Set-PSRepository -Name \"PSGallery\" -InstallationPolicy Trusted; Install-Script winget-install -Force; winget-install -Force;"),
-
             (text:@"echo 'Install .NET SDK https://dotnet.microsoft.com/en-us/download';",
             command: $"winget install Microsoft.DotNet.SDK.9 --accept-source-agreements --accept-package-agreements;"),
 
@@ -37,7 +34,7 @@ public partial class Templates03GettingStartedPage
             command:"dotnet nuget add source \"https://api.nuget.org/v3/index.json\" --name \"nuget.org\"; dotnet workload install wasm-tools;"),
 
             (text:@"echo 'Install the Bit.Boilerplate project template https://www.nuget.org/packages/Boilerplate.Templates';",
-            command:"dotnet new install Bit.Boilerplate::9.10.0;")
+            command:"dotnet new install Bit.Boilerplate::9.11.0;")
         ];
 
         if (enableVirtualization)
@@ -86,21 +83,33 @@ public partial class Templates03GettingStartedPage
                 (text: @"echo 'Install the C# Dev Kit extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit';",
                 command: "code --install-extension ms-dotnettools.csdevkit;"),
 
-                (text: @"echo 'Install Dev Containers extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers';",
-                command: "code --install-extension ms-vscode-remote.remote-containers;"),
-
-                (text: @"echo 'Install the Blazor WASM Companion extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.blazorwasm-companion';",
-                command: "code --install-extension ms-dotnettools.blazorwasm-companion;"),
+                (text: @"echo 'Install the GitHub Copilot extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=GitHub.copilot';",
+                command: "code --install-extension GitHub.copilot;"),
 
                 (text: @"echo 'Install the Live Sass Compiler extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=glenn2223.live-sass';",
                 command: "code --install-extension glenn2223.live-sass;"),
 
-                (text: @"echo 'Install the ASP.NET Core Razor IntelliSense for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=kevin-chatham.aspnetcorerazor-html-css-class-completion';",
-                command: "code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion;"),
+                (text: @"echo 'Install the GitHub Copilot Chat extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat';",
+                command: "code --install-extension GitHub.copilot-chat;"),
 
-                (text: @"echo 'Install the .NET MAUI extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-maui';",
-                command: "code --install-extension ms-dotnettools.dotnet-maui;")]
-            );
+                (text: @"echo 'Install the C# extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp';",
+                command: "code --install-extension ms-dotnettools.csharp;"),
+
+                (text: @"echo 'Install the Docker extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker';",
+                command: "code --install-extension ms-azuretools.vscode-docker;"),
+
+                (text: @"echo 'Install the RESX Editor extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=DominicVonk.vscode-resx-editor';",
+                command: "code --install-extension DominicVonk.vscode-resx-editor;"),
+
+                (text: @"echo 'Install Dev Containers extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers';",
+                command: "code --install-extension ms-vscode-remote.remote-containers;"),
+
+                (text: @"echo 'Install the Microsoft.AspNetCore.Razor.VSCode.BlazorWasmDebuggingExtension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.blazorwasm-companion';",
+                command: "code --install-extension ms-dotnettools.blazorwasm-companion;"),
+
+                (text: @"echo 'Install the .NET Install Tool extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.vscode-dotnet-runtime';",
+                command: "code --install-extension ms-dotnettools.vscode-dotnet-runtime;")
+            ]);
         }
 
         if (installVs)

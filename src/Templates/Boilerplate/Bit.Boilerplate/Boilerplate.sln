@@ -21,6 +21,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".Solution
 		src\Directory.Build.props = src\Directory.Build.props
 		src\Directory.Packages.props = src\Directory.Packages.props
 		global.json = global.json
+		.vscode\mcp.json=.vscode\mcp.json
 		README.md = README.md
 	EndProjectSection
 EndProject
@@ -52,7 +53,9 @@ EndProject
 #if (pipeline == "GitHub")
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{2347E3B2-FDDE-427E-A0AE-E4DCD47C2989}"
 	ProjectSection(SolutionItems) = preProject
-		.github\workflows\cd.yml = .github\workflows\cd.yml
+		.github\workflows\cd-production.yml = .github\workflows\cd-production.yml
+		.github\workflows\cd-test.yml = .github\workflows\cd-test.yml
+		.github\workflows\cd-template.yml = .github\workflows\cd-template.yml
 		.github\workflows\ci.yml = .github\workflows\ci.yml
 	EndProjectSection
 EndProject

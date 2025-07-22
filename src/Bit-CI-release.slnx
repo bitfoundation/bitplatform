@@ -1,0 +1,69 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="iPhone" />
+    <Platform Name="iPhoneSimulator" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/.Solution Items/">
+    <File Path="../.gitignore" />
+    <File Path="../CODE_OF_CONDUCT.md" />
+    <File Path="../CONTRIBUTING.md" />
+    <File Path="../ISSUE_TEMPLATE.md" />
+    <File Path="../LICENSE" />
+    <File Path="../README.md" />
+    <File Path=".editorconfig" />
+    <File Path="Bit.Build.props" />
+    <File Path="Clean.bat" />
+    <File Path="global.json" />
+  </Folder>
+  <Folder Name="/Besql/">
+    <Project Path="Besql/Bit.Besql/Bit.Besql.csproj" />
+  </Folder>
+  <Folder Name="/Besql/Demo/">
+    <Project Path="Besql/Demo/Bit.Besql.Demo.Client/Bit.Besql.Demo.Client.csproj" />
+    <Project Path="Besql/Demo/Bit.Besql.Demo/Bit.Besql.Demo.csproj" />
+  </Folder>
+  <Folder Name="/BlazorES2019/">
+    <Project Path="BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj" />
+  </Folder>
+  <Folder Name="/BlazorUI/">
+    <File Path="BlazorUI/Clean.bat" />
+    <File Path="BlazorUI/README.md" />
+    <Project Path="BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj" />
+    <Project Path="BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj" />
+    <Project Path="BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj" />
+    <Project Path="BlazorUI/Bit.BlazorUI.SourceGenerators/Bit.BlazorUI.SourceGenerators.csproj" />
+    <Project Path="BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj" />
+    <Project Path="BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj" />
+  </Folder>
+  <Folder Name="/Bswup/">
+    <File Path="Bswup/README.md" />
+    <Project Path="Bswup/Bit.Bswup.Demo/Bit.Bswup.Demo.csproj" />
+    <Project Path="Bswup/Bit.Bswup/Bit.Bswup.csproj" />
+  </Folder>
+  <Folder Name="/Bswup/FullDemo/">
+    <Project Path="Bswup/FullDemo/Client/Bit.Bswup.Demo.Client.csproj" />
+    <Project Path="Bswup/FullDemo/Server/Bit.Bswup.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Butil/">
+    <File Path="Butil/README.md" />
+    <Project Path="Butil/Bit.Butil/Bit.Butil.csproj" />
+  </Folder>
+  <Folder Name="/Butil/Demo/">
+    <Project Path="Butil/Demo/Bit.Butil.Demo.Core/Bit.Butil.Demo.Core.csproj" />
+    <Project Path="Butil/Demo/Bit.Butil.Demo.Web/Bit.Butil.Demo.Web.csproj" />
+  </Folder>
+  <Folder Name="/CodeAnalyzers/">
+    <File Path="CodeAnalyzers/README.md" />
+    <Project Path="CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj" />
+  </Folder>
+  <Folder Name="/ResxTranslator/">
+    <Project Path="ResxTranslator/Bit.ResxTranslator/Bit.ResxTranslator.csproj" />
+  </Folder>
+  <Folder Name="/SourceGenerators/">
+    <File Path="SourceGenerators/README.md" />
+    <Project Path="SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj" />
+  </Folder>
+</Solution>

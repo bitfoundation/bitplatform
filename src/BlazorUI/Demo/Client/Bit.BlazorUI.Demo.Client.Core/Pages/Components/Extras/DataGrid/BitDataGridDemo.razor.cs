@@ -72,7 +72,35 @@ public partial class BitDataGridDemo : AppComponentBase
             DefaultValue = "false",
             Description = @"If true, renders draggable handles around the column headers, allowing the user to resize the columns
                             manually. Size changes are not persisted.",
-        },
+         },
+         new()
+         {
+            Name = "RowClass",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = @"The CSS class of all rows of the data grid.",
+         },
+         new()
+         {
+            Name = "RowClassSelector",
+            Type = "Func<TGridItem, string>?",
+            DefaultValue = "null",
+            Description = @"The function to generate the CSS class of each row of the data grid.",
+         },
+         new()
+         {
+            Name = "RowStyle",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = @"The CSS style of all rows of the data grid.",
+         },
+         new()
+         {
+            Name = "RowStyleSelector",
+            Type = "Func<TGridItem, string>?",
+            DefaultValue = "null",
+            Description = @"The function to generate the CSS style of each row of the data grid.",
+         },
          new()
          {
              Name = "ItemKey",

@@ -79,46 +79,65 @@
     <DemoExample Title="DropDirection" RazorCode="@example4RazorCode" Id="example4">
         <div>Explores different drop directions for the BitCallout component, including automatic and explicit directions.</div>
         <br /><br />
-        <div>
-            <div>DropDirection: All</div><br />
-            <BitCallout Direction="BitDropDirection.All">
-                <Anchor>
-                    <BitButton>Show callout</BitButton>
-                </Anchor>
-                <Content>
-                    <div style="padding: 1rem; border: 1px solid gray;">
-                        @for (int i = 1; i < 13; i++)
-                        {
-                            var item = i;
-                            <div>Callout content @(item)</div>
+        <div>DropDirection: All</div><br />
+        <BitCallout Direction="BitDropDirection.All">
+            <Anchor>
+                <BitButton>Show callout</BitButton>
+            </Anchor>
+            <Content>
+                <div style="padding: 1rem; border: 1px solid gray;">
+                    @for (int i = 1; i < 13; i++)
+                    {
+                        var item = i;
+                        <div>Callout content @(item)</div>
 
-                            <br />
-                        }
-                    </div>
-                </Content>
-            </BitCallout>
-            <br /><br />
-            <div>DropDirection: TopAndBottom</div><br />
-            <BitCallout Direction="BitDropDirection.TopAndBottom">
-                <Anchor>
-                    <BitButton>Show callout</BitButton>
-                </Anchor>
-                <Content>
-                    <div style="padding: 1rem; border: 1px solid gray;">
-                        @for (int i = 1; i < 13; i++)
-                        {
-                            var item = i;
-                            <div>Callout content @(item)</div>
+                        <br />
+                    }
+                </div>
+            </Content>
+        </BitCallout>
+        <br /><br /><br />
+        <div>DropDirection: TopAndBottom</div><br />
+        <BitCallout Direction="BitDropDirection.TopAndBottom">
+            <Anchor>
+                <BitButton>Show callout</BitButton>
+            </Anchor>
+            <Content>
+                <div style="padding: 1rem; border: 1px solid gray;">
+                    @for (int i = 1; i < 13; i++)
+                    {
+                        var item = i;
+                        <div>Callout content @(item)</div>
 
-                            <br />
-                        }
-                    </div>
-                </Content>
-            </BitCallout>
-        </div>
+                        <br />
+                    }
+                </div>
+            </Content>
+        </BitCallout>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="ScrollContainerId" RazorCode="@example5RazorCode" Id="example5">
+        <div>Utilizaing the ScrollContainerId one can enable scrolling the content of the callout.</div>
+        <br /><br />
+        <BitCallout ScrollContainerId="scroller-container">
+            <Anchor>
+                <BitButton>Show callout</BitButton>
+            </Anchor>
+            <Content>
+                <div id="scroller-container" style="padding: 1rem; border: 1px solid gray; overflow: auto;">
+                    @for (int i = 1; i < 69; i++)
+                    {
+                        var item = i;
+                        <div>Callout content @(item)</div>
+
+                        <br />
+                    }
+                </div>
+            </Content>
+        </BitCallout>
+</DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
         <div>Explores styling and class customization for BitCallout, including component styles, custom classes, and detailed style options.</div>
         <br />
         <div>

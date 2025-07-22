@@ -42,7 +42,7 @@ public partial class App
                         return;
                     }
 
-                    await AppRating.Default!.PerformInAppRateAsync(isTestOrDebugMode: AppEnvironment.IsDev());
+                    await AppRating.Default!.PerformInAppRateAsync(isTestOrDebugMode: AppEnvironment.IsDevelopment());
                     await storageService.SetItem("StoreReviewRequested", "true");
 
                     logger.LogInformation("Store review request sent");

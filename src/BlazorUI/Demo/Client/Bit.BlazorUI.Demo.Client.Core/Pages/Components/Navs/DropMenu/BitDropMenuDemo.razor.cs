@@ -64,6 +64,13 @@ public partial class BitDropMenuDemo
         },
         new()
         {
+            Name = "ScrollContainerId",
+            Type = "string?",
+            DefaultValue = "",
+            Description = "The id of the element which needs to be scrollable in the content of the callout of the drop menu."
+        },
+        new()
+        {
             Name = "Responsive",
             Type = "bool",
             DefaultValue = "false",

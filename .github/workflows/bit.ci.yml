@@ -35,10 +35,10 @@ jobs:
 
     - name: Run InstallNodejsDependencies
       continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
-      run: dotnet build src/Bit-CI-release.sln -t:InstallNodejsDependencies -m:1 -f net9.0
+      run: dotnet build src/Bit-CI-release.slnx -t:InstallNodejsDependencies -m:1 -f net9.0
 
     - name: MSBuild prerelease
-      run: dotnet build src/Bit-CI-release.sln
+      run: dotnet build src/Bit-CI-release.slnx
 
     - name: Test
       run: dotnet test --no-build --verbosity normal src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj
@@ -76,10 +76,10 @@ jobs:
 
     - name: Run InstallNodejsDependencies
       continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
-      run: dotnet build src/Bit-CI.sln -t:InstallNodejsDependencies -m:1 -f net9.0
+      run: dotnet build src/Bit-CI.slnx -t:InstallNodejsDependencies -m:1 -f net9.0
 
     - name: Build
-      run: dotnet build src/Bit-CI.sln -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Bit-CI.slnx -p:WarningLevel=0 -p:RunCodeAnalysis=false
       
     - name: Test
       run: dotnet test --no-build --verbosity normal src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
         <TargetFrameworks>net9.0-android;net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
@@ -37,23 +37,25 @@
 
     <PropertyGroup>
         <!-- Android requires a unique, increasing integer for `versionCode`. We derive it from Version (e.g., '1.0' or '1.0.0') by extracting major, minor, and patch numbers, setting patch to 0 if absent, and calculating versionCode as major*10000 + minor*100 + patch (e.g., '1.0' becomes 10000, '1.0.1' becomes 10001). -->
-		<_MajorVersionString>$([System.Text.RegularExpressions.Regex]::Match($(Version), '^(\d+)').Groups[1].Value)</_MajorVersionString>
-		<_MinorVersionString>$([System.Text.RegularExpressions.Regex]::Match($(Version), '^\d+\.(\d+)').Groups[1].Value)</_MinorVersionString>
-		<_PatchVersionString>$([System.Text.RegularExpressions.Regex]::Match($(Version), '^\d+\.\d+\.(\d+)$').Groups[1].Value)</_PatchVersionString>
+        <_MajorVersionString>$([System.Text.RegularExpressions.Regex]::Match($(Version), '^(\d+)').Groups[1].Value)</_MajorVersionString>
+        <_MinorVersionString>$([System.Text.RegularExpressions.Regex]::Match($(Version), '^\d+\.(\d+)').Groups[1].Value)</_MinorVersionString>
+        <_PatchVersionString>$([System.Text.RegularExpressions.Regex]::Match($(Version), '^\d+\.\d+\.(\d+)$').Groups[1].Value)</_PatchVersionString>
 
-		<MajorVersion>$([System.Int32]::Parse($(_MajorVersionString)))</MajorVersion>
-		<MinorVersion>$([System.Int32]::Parse($(_MinorVersionString)))</MinorVersion>
+        <MajorVersion>$([System.Int32]::Parse($(_MajorVersionString)))</MajorVersion>
+        <MinorVersion>$([System.Int32]::Parse($(_MinorVersionString)))</MinorVersion>
 
-		<_PatchVersionString Condition="'$(_PatchVersionString)' == ''">0</_PatchVersionString>
-		<PatchVersion>$([System.Int32]::Parse($(_PatchVersionString)))</PatchVersion>
+        <_PatchVersionString Condition="'$(_PatchVersionString)' == ''">0</_PatchVersionString>
+        <PatchVersion>$([System.Int32]::Parse($(_PatchVersionString)))</PatchVersion>
 
-		<ApplicationVersion>$([MSBuild]::Add(
-			$([MSBuild]::Add(
-				$([MSBuild]::Multiply($(MajorVersion), 10000)),
-				$([MSBuild]::Multiply($(MinorVersion), 100))
-			)),
-			$(PatchVersion)
-		))</ApplicationVersion>
+        <ApplicationVersion>
+            $([MSBuild]::Add(
+                $([MSBuild]::Add(
+                    $([MSBuild]::Multiply($(MajorVersion), 10000)),
+                    $([MSBuild]::Multiply($(MinorVersion), 100))
+                )),
+                $(PatchVersion)
+            ))
+        </ApplicationVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Environment)' != 'Development'">
@@ -104,6 +106,8 @@
         <AndroidAotProfile Condition="Exists('custom.aprof')" Include="custom.aprof" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.SavedState" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.SavedState.SavedState.Ktx" />
         <!--/-:msbuild-conditional:noEmit -->
         <!-- Run the following commands to create custom.aprof file which improves the Android app performance -->
         <!-- dotnet add package Mono.AotProfiler.Android -->

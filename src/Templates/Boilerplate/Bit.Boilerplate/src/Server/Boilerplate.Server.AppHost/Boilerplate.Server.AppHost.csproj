@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <Sdk Name="Aspire.AppHost.Sdk" Version="9.0.0" />
+    <Sdk Name="Aspire.AppHost.Sdk" Version="9.3.1" />
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
@@ -13,14 +13,17 @@
         <PackageReference Include="Aspire.Hosting.AppHost" />
         <PackageReference Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Aspire.Hosting.MySql" />
         <PackageReference Condition=" '$(database)' == 'SqlServer' OR '$(database)' == ''" Include="Aspire.Hosting.SqlServer" />
+        <PackageReference Condition=" '$(database)' == 'SqlServer' OR '$(database)' == ''" Include="CommunityToolkit.Aspire.Hosting.SqlServer.Extensions" />
         <PackageReference Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Aspire.Hosting.PostgreSQL" />
         <PackageReference Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="Aspire.Hosting.Azure.Storage" />
         <PackageReference Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="CommunityToolkit.Aspire.Hosting.Minio" />
     </ItemGroup>
 
     <ItemGroup>
-        <Using Remove="*" />
+        <ProjectReference Include="..\..\Client\Boilerplate.Client.Web\Boilerplate.Client.Web.csproj" />
+        <ProjectReference Include="..\..\Client\Boilerplate.Client.Windows\Boilerplate.Client.Windows.csproj" />
         <ProjectReference Include="..\Boilerplate.Server.Web\Boilerplate.Server.Web.csproj" />
+        <ProjectReference Include="..\Boilerplate.Server.Shared\Boilerplate.Server.Shared.csproj" IsAspireProjectResource="false" />
         <ProjectReference Condition=" '$(api)' == 'Standalone' OR '$(api)' == ''" Include="..\Boilerplate.Server.Api\Boilerplate.Server.Api.csproj" />
     </ItemGroup>
 

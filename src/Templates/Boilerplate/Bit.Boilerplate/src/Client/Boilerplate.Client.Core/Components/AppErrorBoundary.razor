@@ -2,7 +2,7 @@
 
 <BitErrorBoundary @ref="boundaryRef"
                   HomeUrl="@Urls.HomePage"
-                  ShowException="AppEnvironment.IsDev()"
+                  ShowException="AppEnvironment.IsDevelopment()"
                   OnError="e => exceptionHandler.Handle(e)"
                   HomeText="@localizer[nameof(AppStrings.Home)]"
                   RefreshText="@localizer[nameof(AppStrings.Refresh)]"

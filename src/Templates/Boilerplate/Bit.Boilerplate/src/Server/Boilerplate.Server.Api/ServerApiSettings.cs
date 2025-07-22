@@ -90,7 +90,7 @@ public partial class ServerApiSettings : ServerSharedSettings
                 $"({MinimumJwtIssuerSigningKeySecretByteLength * 8} bits) for HS512. Current key is {jwtIssuerSigningKeySecretByteLength} bytes.");
         }
 
-        if (AppEnvironment.IsDev() is false)
+        if (AppEnvironment.IsDevelopment() is false)
         {
             if (Identity.JwtIssuerSigningKeySecret is "VeryLongJWTIssuerSiginingKeySecretThatIsMoreThan64BytesToEnsureCompatibilityWithHS512Algorithm")
             {

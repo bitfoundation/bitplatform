@@ -975,6 +975,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="Category" xml:space="preserve">
     <value>Category</value>
   </data>
+    <data name="AltText" xml:space="preserve">
+    <value>Alt text</value>
+  </data>
     <!--#endif -->
     <!--#if (module == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
@@ -1068,7 +1071,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>Duplicate product name</value>
   </data>
     <data name="DuplicateCategoryName" xml:space="preserve">
-    <value>Duplicate category name</value>
+    <value>Duplicate category {0}</value>
   </data>
     <data name="DashboardPageTitle" xml:space="preserve">
     <value>Dashboard</value>

@@ -17,7 +17,15 @@
         <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
         <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
         <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
-        <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.ApplicationInsights.AspNetCore" />
+        <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Azure.Monitor.OpenTelemetry.AspNetCore" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.Hangfire" />
+        <PackageReference Include="OpenTelemetry.Resources.Azure" />
+        <PackageReference Include="OpenTelemetry.Resources.Container" />
+        <PackageReference Include="OpenTelemetry.Resources.Host" />
+        <PackageReference Include="OpenTelemetry.Resources.OperatingSystem" />
+        <PackageReference Include="OpenTelemetry.Resources.Process" />
+        <PackageReference Include="OpenTelemetry.Resources.ProcessRuntime" />
     </ItemGroup>
 
     <ItemGroup>

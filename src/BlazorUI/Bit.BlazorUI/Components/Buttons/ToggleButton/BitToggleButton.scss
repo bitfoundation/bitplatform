@@ -7,7 +7,6 @@
     align-items: center;
     display: inline-flex;
     text-decoration: none;
-
     box-sizing: border-box;
     justify-content: center;
     font-family: $tg-font-family;
@@ -15,18 +14,20 @@
     border-width: $shp-border-width;
     border-style: $shp-border-style;
     border-radius: $shp-border-radius;
+    font-size: var(--bit-tgb-fontsize);
+    --bit-tgb-icn-margin: #{spacing(0.5)};
 
     &.bit-dis {
         cursor: default;
-        pointer-events: none;
         color: $clr-fg-dis;
+        pointer-events: none;
     }
 }
 
 .bit-tgb-ico {
     flex-shrink: 0;
     text-align: center;
-    margin: 0 spacing(0.5);
+    margin-inline-end: var(--bit-tgb-icn-margin);
 }
 
 .bit-tgb-btx {
@@ -290,16 +291,36 @@
 
 
 .bit-tgb-sm {
-    font-size: spacing(1.5);
     padding: spacing(0.5) spacing(1.5);
+    --bit-tgb-fontsize: #{spacing(1.5)};
+    --bit-tgb-ntx-pad: #{spacing(0.5)};
+    --bit-tgb-ntx-icn-size: #{spacing(2.00)};
 }
 
 .bit-tgb-md {
-    font-size: spacing(1.75);
     padding: spacing(0.75) spacing(2);
+    --bit-tgb-fontsize: #{spacing(1.75)};
+    --bit-tgb-ntx-pad: #{spacing(0.75)};
+    --bit-tgb-ntx-icn-size: #{spacing(2.35)};
 }
 
 .bit-tgb-lg {
-    font-size: spacing(2);
     padding: spacing(1) spacing(2.5);
+    --bit-tgb-fontsize: #{spacing(2)};
+    --bit-tgb-ntx-pad: #{spacing(1.0)};
+    --bit-tgb-ntx-icn-size: #{spacing(3.35)};
+}
+
+
+
+// important: these need to be here at the end!
+
+.bit-tgb-fxc {
+    color: var(--bit-tgb-clr-txt);
+}
+
+.bit-tgb-ntx {
+    padding: var(--bit-tgb-ntx-pad);
+    --bit-tgb-icn-margin: 0;
+    --bit-tgb-fontsize: var(--bit-tgb-ntx-icn-size);
 }

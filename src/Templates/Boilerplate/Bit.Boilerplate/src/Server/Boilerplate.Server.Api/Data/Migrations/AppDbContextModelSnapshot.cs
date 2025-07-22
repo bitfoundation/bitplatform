@@ -15,7 +15,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.6");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.7");
 
             modelBuilder.Entity("Boilerplate.Server.Api.Models.Attachments.Attachment", b =>
                 {
@@ -573,6 +573,9 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("Price")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PrimaryImageAltText")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("ShortId")

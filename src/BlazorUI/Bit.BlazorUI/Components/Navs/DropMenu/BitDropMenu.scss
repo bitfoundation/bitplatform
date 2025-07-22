@@ -8,6 +8,11 @@
     font-weight: $tg-font-weight;
     background-color: $clr-bg-pri;
     border-radius: $shp-border-radius;
+    --bit-drm-transform-factor: 1;
+
+    &.bit-rtl {
+        --bit-drm-transform-factor: -1;
+    }
 
     @media (hover: hover) {
         &:hover {
@@ -83,26 +88,41 @@
 
 .bit-drm-res {
     @include lt-sm {
-        top: 0;
-        right: 0;
         opacity: 0;
         height: 100%;
         display: block;
         overflow: hidden;
         max-height: unset;
         animation-name: unset;
-        transform: translateX(100%);
         box-shadow: $box-shadow-callout;
         transition: transform 200ms ease-out, opacity 100ms linear;
-    }
-}
 
-.bit-rtl {
-    .bit-drm-res {
-        @include lt-sm {
-            left: 0;
-            right: unset;
-            transform: translateX(-100%);
+        &.bit-drm-sta {
+            inset-block: 0;
+            inset-inline-start: 0;
+            transform: translateX(calc(var(--bit-drm-transform-factor) * -100%));
+        }
+
+        &.bit-drm-end {
+            inset-block: 0;
+            inset-inline-end: 0;
+            transform: translateX(calc(var(--bit-drm-transform-factor) * 100%));
+        }
+
+        &.bit-drm-top {
+            top: 0;
+            width: 100%;
+            max-width: 100%;
+            inset-inline: 0;
+            transform: translateY(-100%);
+        }
+
+        &.bit-drm-btm {
+            bottom: 0;
+            width: 100%;
+            max-width: 100%;
+            inset-inline: 0;
+            transform: translateY(100%);
         }
     }
 }

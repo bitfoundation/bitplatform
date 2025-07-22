@@ -45,7 +45,7 @@ public partial class AppDiagnosticModal
     private DiagnosticLogDto[] filteredLogs = default!;
     private BitBasicList<(DiagnosticLogDto, int)> logStackRef = default!;
     private readonly BitDropdownItem<LogLevel>[] logLevelItems = Enum.GetValues<LogLevel>().Select(v => new BitDropdownItem<LogLevel>() { Value = v, Text = v.ToString() }).ToArray();
-    private IEnumerable<LogLevel> filterLogLevelValues = AppEnvironment.IsDev()
+    private IEnumerable<LogLevel> filterLogLevelValues = AppEnvironment.IsDevelopment()
                                                             ? [LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical]
                                                             : [LogLevel.Warning, LogLevel.Error, LogLevel.Critical];
 

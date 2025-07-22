@@ -59,6 +59,20 @@ public partial class BitCalloutDemo
         },
         new()
         {
+            Name = "FooterId",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The id of the footer element that renders at the end of the scrolling container of the callout contnet."
+        },
+        new()
+        {
+            Name = "HeaderId",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The id of the header element that renders at the top of the scrolling container of the callout contnet."
+        },
+        new()
+        {
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
@@ -66,10 +80,38 @@ public partial class BitCalloutDemo
         },
         new()
         {
+            Name = "MaxWindowWidth",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The max window width to consider when calculating the position of the callout before openning."
+        },
+        new()
+        {
             Name = "OnToggle",
             Type = "EventCallback<bool>",
             DefaultValue = "",
             Description = "The callback that is called when the callout opens or closes."
+        },
+        new()
+        {
+            Name = "SetCalloutWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Force the callout to set its content container width while openning it based on the available space and actual content."
+        },
+        new()
+        {
+            Name = "ScrollContainerId",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The id of the element which needs to be scrollable in the content of the callout."
+        },
+        new()
+        {
+            Name = "ScrollOffset",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The vertical offset of the scroll container to consider in the positining and height calculation of the callout."
         },
         new()
         {
@@ -296,6 +338,24 @@ private bool isOpen;";
 </BitCallout>";
 
     private readonly string example5RazorCode = @"
+<BitCallout ScrollContainerId=""scroller-container"">
+    <Anchor>
+        <BitButton>Show callout</BitButton>
+    </Anchor>
+    <Content>
+        <div id=""scroller-container"" style=""padding: 1rem; border: 1px solid gray; overflow: auto;"">
+            @for (int i = 1; i < 69; i++)
+            {
+                var item = i;
+                <div>Callout content @(item)</div>
+
+                <br />
+            }
+        </div>
+    </Content>
+</BitCallout>";
+
+    private readonly string example6RazorCode = @"
 <style>
     .custom-class {
         width: fit-content;

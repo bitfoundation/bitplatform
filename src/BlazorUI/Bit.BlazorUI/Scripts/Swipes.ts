@@ -9,7 +9,9 @@
             isRtl: boolean,
             orientationLock: BitSwipeOrientation,
             dotnetObj: DotNetObject,
-            isResponsive: boolean) {
+            isResponsive: boolean,
+            scrollContainerId: string) {
+
             if (isResponsive) {
                 const windowWidth = window.innerWidth;
                 if (windowWidth >= Utils.MAX_MOBILE_WIDTH) return;
@@ -17,6 +19,9 @@
 
             const element = document.getElementById(id);
             if (!element) return;
+
+            let touchOnScrollContainer = false;
+            const scrollContainer = scrollContainerId ? document.getElementById(scrollContainerId) : null;
 
             let diffX = 0;
             let diffY = 0;
@@ -113,14 +118,23 @@
                 await dotnetObj.invokeMethodAsync('OnMove', diffX, diffY);
 
                 function cancel() {
-                    if (e.cancelable) {
-                        e.preventDefault();
-                        e.stopPropagation();
+                    if (!e.cancelable) return;
+
+                    if (touchOnScrollContainer) {
+                        const [isScrollAtLeft, isScrollAtRight] = calcScrolls();
+
+                        if (diffX < 0 && (isRtl ? isScrollAtRight : isScrollAtLeft)) return;
+                        if (diffX > 0 && (isRtl ? isScrollAtLeft : isScrollAtRight)) return;
                     }
+
+                    e.preventDefault();
+                    e.stopPropagation();
                 }
             };
 
             const onEnd = async (e: TouchEvent | PointerEvent): Promise<void> => {
+                touchOnScrollContainer = false;
+
                 if (startX === -1 || startY === -1) return;
 
                 startX = startY = -1;
@@ -168,6 +182,18 @@
             }
 
             if (isTouchDevice) {
+                if (scrollContainer) {
+                    scrollContainer.addEventListener('touchstart', e => {
+                        touchOnScrollContainer = true;
+
+                        const [isScrollAtLeft, isScrollAtRight] = calcScrolls();
+
+                        if (position === BitSwipePosition.End && isScrollAtLeft) return;
+                        if (position === BitSwipePosition.Start && isScrollAtRight) return;
+
+                        e.stopPropagation();
+                    });
+                }
                 element.addEventListener('touchstart', onStart);
                 element.addEventListener('touchmove', onMove);
                 element.addEventListener('touchend', onEnd);
@@ -192,6 +218,13 @@
                 }
             });
             Swipes._swipes.push(swipe);
+
+            const calcScrolls = () => {
+                const isScrollAtLeft = Math.abs(scrollContainer!.scrollLeft) <= 2;
+                const isScrollAtRight = Math.abs(scrollContainer!.scrollLeft) + scrollContainer!.clientWidth >= (scrollContainer!.scrollWidth - 2);
+
+                return [isScrollAtLeft, isScrollAtRight];
+            }
         }
 
         public static dispose(id: string) {
@@ -216,6 +249,7 @@
             this.trigger = trigger;
             this.dotnetObj = dotnetObj;
         }
+
         public setDisposer(disposer: () => void) {
             this.disposer = disposer;
         }

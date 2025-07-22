@@ -1,4 +1,4 @@
-namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
+﻿namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 public partial class RetryDelegatingHandler(HttpMessageHandler handler)
     : DelegatingHandler(handler)
@@ -20,8 +20,10 @@ public partial class RetryDelegatingHandler(HttpMessageHandler handler)
             }
             catch (Exception exp) when (exp is not KnownException || exp is ServerConnectionException) // If the exception is either unknown or a server connection issue, let's retry once more.
             {
-                if (request.HasNoRetryPolicyAttribute() || AppEnvironment.IsDev())
+                if (request.HasNoRetryPolicyAttribute() || AppEnvironment.IsDevelopment())
                     throw;
+                if (AppPlatform.IsBlazorHybrid is false && AppPlatform.IsBrowser is false)
+                    throw; // Disable retry-policy during pre-rendering and Blazor Server.
                 retryCount++;
                 logScopeData["RetryCount"] = retryCount;
                 lastExp = exp;

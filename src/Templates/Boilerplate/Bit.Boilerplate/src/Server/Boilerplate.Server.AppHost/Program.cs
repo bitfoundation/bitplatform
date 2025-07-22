@@ -5,25 +5,32 @@ using Aspire.Hosting.ApplicationModel;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
+// Check out appsettings.json for credential settings.
+
 //#if (database == "SqlServer")
-var sqlDatabase = builder.AddSqlServer("sqlserver")
+var sqlServerPassword = builder.AddParameter("SqlServerPassword", secret: true);
+var sqlDatabase = builder.AddSqlServer("sqlserver", password: sqlServerPassword)
+        .WithDbGate(config => config.WithLifetime(ContainerLifetime.Persistent).WithDataVolume())
         .WithLifetime(ContainerLifetime.Persistent)
-        .WithVolume("/var/lib/sql-server/Boilerplate/data")
+        .WithDataVolume()
         .WithImage("mssql/server", "2025-latest")
         .AddDatabase("sqldb"); // Sql server 2025 supports embedded vector search.
 
 //#elif (database == "PostgreSql")
-var postgresDatabase = builder.AddPostgres("postgresserver")
+var postgresPassword = builder.AddParameter("PostgresPassword", secret: true);
+var postgresDatabase = builder.AddPostgres("postgresserver", password: postgresPassword)
+        .WithPgAdmin(config => config.WithLifetime(ContainerLifetime.Persistent).WithVolume("/var/lib/pgadmin/Boilerplate/data"))
         .WithLifetime(ContainerLifetime.Persistent)
-        .WithVolume("/var/lib/postgres-server/Boilerplate/data")
+        .WithDataVolume()
         .WithImage("pgvector/pgvector", "pg17") // pgvector supports embedded vector search.
         .AddDatabase("postgresdb");
 
 //#elif (database == "MySql")
-
-var mySqlDatabase = builder.AddMySql("mysqlserver")
+var mySqlPassword = builder.AddParameter("MySqlPassword", secret: true);
+var mySqlDatabase = builder.AddMySql("mysqlserver", password: mySqlPassword)
+        .WithPhpMyAdmin(config => config.WithLifetime(ContainerLifetime.Persistent).WithVolume("/var/lib/phpMyAdmin/Boilerplate/data"))
         .WithLifetime(ContainerLifetime.Persistent)
-        .WithVolume("/var/lib/mySql-server/Boilerplate/data")
+        .WithDataVolume()
         .AddDatabase("mysqldb");
 
 //#endif
@@ -33,14 +40,14 @@ var azureBlobStorage = builder.AddAzureStorage("storage")
         {
             azurite
                 .WithLifetime(ContainerLifetime.Persistent)
-                .WithDataVolume("BoilerplateStorage");
+                .WithDataVolume();
         })
         .AddBlobs("blobs");
 
 //#elif (filesStorage == "S3")
-var username = builder.AddParameter("user", "minioadmin");
-var password = builder.AddParameter("password", "minioadmin", secret: true);
-var s3Storage = builder.AddMinioContainer("minio", rootUser: username, rootPassword: password);
+var minioUsername = builder.AddParameter("MinIOUser");
+var minioPassword = builder.AddParameter("MinIOPassword", secret: true);
+var s3Storage = builder.AddMinioContainer("minio", rootUser: minioUsername, rootPassword: minioPassword);
 //#endif
 
 var serverWebProject = builder.AddProject<Boilerplate_Server_Web>("serverweb") // Replace . with _ if needed to ensure the project builds successfully.
@@ -80,6 +87,18 @@ serverWebProject.WithReference(s3Storage, "MinIOS3ConnectionString").WaitFor(s3S
 //#endif
 
 //#endif
+
+if (builder.ExecutionContext.IsRunMode) // The following projects are only added for testing purposes.
+{
+    // Blazor WebAssembly Standalone project.
+    builder.AddProject<Boilerplate_Client_Web>("clientwebwasm"); // Replace . with _ if needed to ensure the project builds successfully.
+
+    // Blazor Hybrid Windows project.
+    builder.AddProject<Boilerplate_Client_Windows>("clientwindows") // Replace . with _ if needed to ensure the project builds successfully.
+        .WithExplicitStart();
+}
+
+builder.AddAspireDashboard();
 
 await builder
     .Build()
