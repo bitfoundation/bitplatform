@@ -3,32 +3,32 @@ namespace Boilerplate.Shared;
 
 public static partial class PageUrls
 {
-    public const string HomePage = "/";
+    public const string Home = "/";
 
-    public const string NotFoundPage = "/not-found";
+    public const string NotFound = "/not-found";
 
-    public const string TermsPage = "/terms";
+    public const string Terms = "/terms";
 
-    public const string SettingsPage = "/settings";
+    public const string Settings = "/settings";
 
-    public const string AboutPage = "/about";
+    public const string About = "/about";
 
     //#if (module == "Admin")
 
-    public const string CategoriesPage = "/categories";
+    public const string Categories = "/categories";
 
-    public const string DashboardPage = "/dashboard";
+    public const string Dashboard = "/dashboard";
 
-    public const string ProductsPage = "/products";
+    public const string Products = "/products";
 
-    public const string AddOrEditProductPage = "/add-edit-product";
+    public const string AddOrEditProduct = "/add-edit-product";
 
     //#endif
     //#if (sample == true)
-    public const string TodoPage = "/todo";
+    public const string Todo = "/todo";
     //#endif
     //#if (module == "Sales")
-    public const string ProductPage = "/product";
+    public const string Product = "/product";
     //#endif
 
     //#if (signalR == true)
@@ -37,9 +37,9 @@ public static partial class PageUrls
 
     public const string Authorize = "/authorize";
 
-    public const string RolesPage = "/user-groups";
+    public const string Roles = "/user-groups";
 
-    public const string UsersPage = "/users";
+    public const string Users = "/users";
 
     //#if (offlineDb == true)
     public const string OfflineDatabaseDemo = "/offline-database-demo";

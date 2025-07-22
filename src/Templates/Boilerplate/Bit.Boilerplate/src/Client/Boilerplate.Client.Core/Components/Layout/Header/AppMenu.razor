@@ -50,14 +50,14 @@
 
                                 <BitSeparator />
 
-                                <BitActionButton IconName="@BitIconName.Contact" Href="@($"{PageUrls.SettingsPage}/{PageUrls.SettingsSections.Profile}")" FullWidth OnClick="() => isOpen = false">
+                                <BitActionButton IconName="@BitIconName.Contact" Href="@($"{PageUrls.Settings}/{PageUrls.SettingsSections.Profile}")" FullWidth OnClick="() => isOpen = false">
                                     @Localizer[nameof(AppStrings.ProfileTitle)]
                                 </BitActionButton>
                             </Authorized>
                             <NotAuthorized>
                                 <BitActionButton FullWidth
                                                  IconName="@BitIconName.Signin"
-                                                 Href="@($"{PageUrls.SignInPage}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")">
+                                                 Href="@($"{PageUrls.SignIn}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")">
                                     @Localizer[nameof(AppStrings.SignIn)]
                                 </BitActionButton>
                                 <BitActionButton FullWidth
@@ -67,7 +67,7 @@
                                 </BitActionButton>
                                 <BitActionButton FullWidth
                                                  IconName="@BitIconName.AddFriend"
-                                                 Href="@($"{PageUrls.SignUpPage}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")">
+                                                 Href="@($"{PageUrls.SignUp}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")">
                                     @Localizer[nameof(AppStrings.SignUp)]
                                 </BitActionButton>
                             </NotAuthorized>

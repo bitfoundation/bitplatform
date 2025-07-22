@@ -63,7 +63,7 @@ public partial class AppMenu
 
     private async Task GoToProfile()
     {
-        NavigationManager.NavigateTo(PageUrls.SettingsPage);
+        NavigationManager.NavigateTo(PageUrls.Settings);
     }
 
 

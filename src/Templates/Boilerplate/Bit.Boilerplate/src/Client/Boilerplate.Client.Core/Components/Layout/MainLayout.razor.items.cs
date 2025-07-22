@@ -15,7 +15,7 @@ public partial class MainLayout
             {
                 Text = localizer[nameof(AppStrings.Home)],
                 IconName = BitIconName.Home,
-                Url = PageUrls.HomePage,
+                Url = PageUrls.Home,
             }
         ];
 
@@ -41,7 +41,7 @@ public partial class MainLayout
                 {
                     Text = localizer[nameof(AppStrings.Dashboard)],
                     IconName = BitIconName.BarChartVerticalFill,
-                    Url = PageUrls.DashboardPage,
+                    Url = PageUrls.Dashboard,
                 });
             }
 
@@ -53,13 +53,13 @@ public partial class MainLayout
                         {
                             Text = localizer[nameof(AppStrings.Categories)],
                             IconName = BitIconName.BuildQueue,
-                            Url = PageUrls.CategoriesPage,
+                            Url = PageUrls.Categories,
                         },
                         new()
                         {
                             Text = localizer[nameof(AppStrings.Products)],
                             IconName = BitIconName.Product,
-                            Url = PageUrls.ProductsPage,
+                            Url = PageUrls.Products,
                         }
                 ]);
             }
@@ -73,7 +73,7 @@ public partial class MainLayout
             {
                 Text = localizer[nameof(AppStrings.Todo)],
                 IconName = BitIconName.ToDoLogoOutline,
-                Url = PageUrls.TodoPage,
+                Url = PageUrls.Todo,
             });
         }
         //#endif
@@ -91,14 +91,14 @@ public partial class MainLayout
         {
             Text = localizer[nameof(AppStrings.Terms)],
             IconName = BitIconName.EntityExtraction,
-            Url = PageUrls.TermsPage,
+            Url = PageUrls.Terms,
         });
 
         navPanelItems.Add(new()
         {
             Text = localizer[nameof(AppStrings.About)],
             IconName = BitIconName.Info,
-            Url = PageUrls.AboutPage,
+            Url = PageUrls.About,
         });
 
         var (manageRoles, manageUsers, manageAiPrompt) = await (authorizationService.IsAuthorizedAsync(authUser!, AppFeatures.Management.ManageRoles),
@@ -122,7 +122,7 @@ public partial class MainLayout
                 {
                     Text = localizer[nameof(AppStrings.UserGroups)],
                     IconName = BitIconName.WorkforceManagement,
-                    Url = PageUrls.RolesPage,
+                    Url = PageUrls.Roles,
                 });
             }
 
@@ -132,7 +132,7 @@ public partial class MainLayout
                 {
                     Text = localizer[nameof(AppStrings.Users)],
                     IconName = BitIconName.SecurityGroup,
-                    Url = PageUrls.UsersPage,
+                    Url = PageUrls.Users,
                 });
             }
 
@@ -155,14 +155,14 @@ public partial class MainLayout
             {
                 Text = localizer[nameof(AppStrings.Settings)],
                 IconName = BitIconName.Equalizer,
-                Url = PageUrls.SettingsPage,
+                Url = PageUrls.Settings,
                 AdditionalUrls =
                 [
-                    $"{PageUrls.SettingsPage}/{PageUrls.SettingsSections.Profile}",
-                    $"{PageUrls.SettingsPage}/{PageUrls.SettingsSections.Account}",
-                    $"{PageUrls.SettingsPage}/{PageUrls.SettingsSections.Tfa}",
-                    $"{PageUrls.SettingsPage}/{PageUrls.SettingsSections.Sessions}",
-                    $"{PageUrls.SettingsPage}/{PageUrls.SettingsSections.UpgradeAccount}",
+                    $"{PageUrls.Settings}/{PageUrls.SettingsSections.Profile}",
+                    $"{PageUrls.Settings}/{PageUrls.SettingsSections.Account}",
+                    $"{PageUrls.Settings}/{PageUrls.SettingsSections.Tfa}",
+                    $"{PageUrls.Settings}/{PageUrls.SettingsSections.Sessions}",
+                    $"{PageUrls.Settings}/{PageUrls.SettingsSections.UpgradeAccount}",
                 ]
             });
         }

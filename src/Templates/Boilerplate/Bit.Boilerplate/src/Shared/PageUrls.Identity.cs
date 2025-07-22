@@ -3,15 +3,15 @@ namespace Boilerplate.Shared;
 
 public static partial class PageUrls
 {
-    public const string NotAuthorizedPage = "/not-authorized";
+    public const string NotAuthorized = "/not-authorized";
 
-    public const string ConfirmPage = "/confirm";
+    public const string Confirm = "/confirm";
 
-    public const string ForgotPasswordPage = "/forgot-password";
+    public const string ForgotPassword = "/forgot-password";
 
-    public const string ResetPasswordPage = "/reset-password";
+    public const string ResetPassword = "/reset-password";
 
-    public const string SignInPage = "/sign-in";
+    public const string SignIn = "/sign-in";
 
-    public const string SignUpPage = "/sign-up";
+    public const string SignUp = "/sign-up";
 }

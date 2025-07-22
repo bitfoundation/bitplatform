@@ -1,5 +1,5 @@
-@attribute [Route(PageUrls.TermsPage)]
-@attribute [Route("{culture?}" + PageUrls.TermsPage)]
+@attribute [Route(PageUrls.Terms)]
+@attribute [Route("{culture?}" + PageUrls.Terms)]
 @attribute [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5)]
 @inherits AppPageBase
 
@@ -53,7 +53,7 @@
                 <BitLink Href="https://sentry.io/trust/privacy/">Sentry documentation</BitLink>
                 <br />
                 bit platform also provides a feature in the settings page for users to delete their accounts and their data completely
-                (<BitLink Href="@($"{PageUrls.SettingsPage}/{PageUrls.SettingsSections.Account}")">Account settings</BitLink>).
+                (<BitLink Href="@($"{PageUrls.Settings}/{PageUrls.SettingsSections.Account}")">Account settings</BitLink>).
             </BitText>
             <br />
             <BitText Typography="BitTypography.H5">Push Notification</BitText>

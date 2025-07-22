@@ -1,5 +1,5 @@
-@attribute [Route(PageUrls.TodoPage)]
-@attribute [Route("{culture?}" + PageUrls.TodoPage)]
+@attribute [Route(PageUrls.Todo)]
+@attribute [Route("{culture?}" + PageUrls.Todo)]
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
 @attribute [Authorize(Policy = AppFeatures.Todo.ManageTodo)]
 @inherits AppPageBase

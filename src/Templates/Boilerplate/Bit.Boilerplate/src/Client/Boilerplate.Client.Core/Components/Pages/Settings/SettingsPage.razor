@@ -1,6 +1,6 @@
 @*+:cnd:noEmit*@
-@attribute [Route(PageUrls.SettingsPage + "/{Section?}")]
-@attribute [Route("{culture?}" + PageUrls.SettingsPage + "/{Section?}")]
+@attribute [Route(PageUrls.Settings + "/{Section?}")]
+@attribute [Route("{culture?}" + PageUrls.Settings + "/{Section?}")]
 @attribute [Authorize]
 @inherits AppPageBase
 

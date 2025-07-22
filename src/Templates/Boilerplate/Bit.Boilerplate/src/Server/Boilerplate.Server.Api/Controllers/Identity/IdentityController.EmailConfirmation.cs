@@ -66,7 +66,7 @@ public partial class IdentityController
 
     private async Task SendConfirmEmailToken(User user, string? returnUrl, CancellationToken cancellationToken)
     {
-        returnUrl ??= PageUrls.HomePage;
+        returnUrl ??= PageUrls.Home;
 
         var resendDelay = (DateTimeOffset.Now - user.EmailTokenRequestedOn) - AppSettings.Identity.EmailTokenLifetime;
 
@@ -81,7 +81,7 @@ public partial class IdentityController
 
         var email = user.Email!;
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"VerifyEmail:{email},{user.EmailTokenRequestedOn?.ToUniversalTime()}"));
-        var link = new Uri(HttpContext.Request.GetWebAppUrl(), $"{PageUrls.ConfirmPage}?email={Uri.EscapeDataString(email)}&emailToken={Uri.EscapeDataString(token)}&culture={CultureInfo.CurrentUICulture.Name}&return-url={Uri.EscapeDataString(returnUrl)}");
+        var link = new Uri(HttpContext.Request.GetWebAppUrl(), $"{PageUrls.Confirm}?email={Uri.EscapeDataString(email)}&emailToken={Uri.EscapeDataString(token)}&culture={CultureInfo.CurrentUICulture.Name}&return-url={Uri.EscapeDataString(returnUrl)}");
 
         await emailService.SendEmailToken(user, email, token, link, cancellationToken);
     }

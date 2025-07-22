@@ -84,7 +84,7 @@ public partial class AddOrEditProductPage
 
     private void GoBack()
     {
-        NavigationManager.NavigateTo(PageUrls.ProductsPage);
+        NavigationManager.NavigateTo(PageUrls.Products);
     }
 
     private async Task HandleOnUploadComplete(BitFileInfo fileInfo)

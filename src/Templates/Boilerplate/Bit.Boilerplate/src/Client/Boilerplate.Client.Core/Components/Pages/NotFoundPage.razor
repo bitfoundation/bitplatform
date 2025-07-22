@@ -1,5 +1,5 @@
-@attribute [Route(PageUrls.NotFoundPage)]
-@attribute [Route("{culture?}" + PageUrls.NotFoundPage)]
+@attribute [Route(PageUrls.NotFound)]
+@attribute [Route("{culture?}" + PageUrls.NotFound)]
 @inherits AppPageBase
 
 <PageTitle>@Localizer[nameof(AppStrings.NotFoundPageTitle)]</PageTitle>
@@ -10,6 +10,6 @@
     <BitStack HorizontalAlign="BitAlignment.Center">
         <BitImage Src="_content/Boilerplate.Client.Core/images/404.svg" Width="100%" Style="max-width:600px" />
         <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.NotFoundText)]</BitText>
-        <BitButton Href="@PageUrls.HomePage">@Localizer[nameof(AppStrings.BackToHome)]</BitButton>
+        <BitButton Href="@PageUrls.Home">@Localizer[nameof(AppStrings.BackToHome)]</BitButton>
     </BitStack>
 </section>

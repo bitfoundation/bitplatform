@@ -437,7 +437,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             qs += $"&return-url={Uri.EscapeDataString(returnUrl)}";
         }
 
-        var url = $"{PageUrls.SignInPage}?otp={Uri.EscapeDataString(token)}&{qs}&culture={CultureInfo.CurrentUICulture.Name}";
+        var url = $"{PageUrls.SignIn}?otp={Uri.EscapeDataString(token)}&{qs}&culture={CultureInfo.CurrentUICulture.Name}";
 
         return (token, url);
     }

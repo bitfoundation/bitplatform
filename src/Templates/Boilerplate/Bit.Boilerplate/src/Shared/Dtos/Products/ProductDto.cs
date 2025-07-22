@@ -65,6 +65,6 @@ public partial class ProductDto
     }
 
     //#if (module == "Sales")
-    public string PageUrl => $"{PageUrls.ProductPage}/{ShortId}";
+    public string PageUrl => $"{PageUrls.Product}/{ShortId}";
     //#endif
 }

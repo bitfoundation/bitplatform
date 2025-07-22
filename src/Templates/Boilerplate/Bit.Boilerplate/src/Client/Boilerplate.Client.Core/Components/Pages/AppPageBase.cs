@@ -17,7 +17,7 @@ public abstract partial class AppPageBase : AppComponentBase
                 {
                     // Because Blazor router doesn't support regex, the '/{culture?}/' captures some irrelevant routes
                     // such as non existing routes like /some-invalid-url, we need to make sure that the first segment of the route is a valid culture name.
-                    NavigationManager.NavigateTo($"{PageUrls.NotFoundPage}?url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}", replace: true);
+                    NavigationManager.NavigateTo($"{PageUrls.NotFound}?url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}", replace: true);
                 }
             }
         }
