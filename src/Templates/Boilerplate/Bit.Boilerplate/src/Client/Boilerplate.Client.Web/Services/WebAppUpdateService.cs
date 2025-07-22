@@ -7,6 +7,6 @@ public partial class WebAppUpdateService : IAppUpdateService
 
     public async Task ForceUpdate()
     {
-        await jsRuntime.InvokeVoidAsync("tryUpdatingPWA");
+        await jsRuntime.InvokeVoidAsync("tryUpdatePwa");
     }
 }

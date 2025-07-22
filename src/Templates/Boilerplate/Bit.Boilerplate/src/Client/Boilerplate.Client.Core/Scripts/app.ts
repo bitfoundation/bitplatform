@@ -74,16 +74,6 @@ class App {
         };
     };
     //#endif
-
-    public static async forceUpdate() {
-        const bswup = (window as any).BitBswup;
-        const bswupProgress = (window as any).BitBswupProgress;
-
-        if (await bswup.skipWaiting()) return;
-
-        bswupProgress.config({ autoReload: true });
-        bswup.checkForUpdate();
-    }
 }
 
 (window as any).App = App;
