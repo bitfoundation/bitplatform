@@ -86,7 +86,7 @@ public partial class ConfirmPage
 
             await AuthManager.StoreTokens(signInResponse, true);
 
-            NavigationManager.NavigateTo(ReturnUrlQueryString ?? Urls.HomePage, replace: true);
+            NavigationManager.NavigateTo(ReturnUrlQueryString ?? PageUrls.Home, replace: true);
 
             isEmailConfirmed = true;
         });
@@ -116,7 +116,7 @@ public partial class ConfirmPage
 
             await AuthManager.StoreTokens(signInResponse, true);
 
-            NavigationManager.NavigateTo(ReturnUrlQueryString ?? Urls.HomePage, replace: true);
+            NavigationManager.NavigateTo(ReturnUrlQueryString ?? PageUrls.Home, replace: true);
 
             isPhoneConfirmed = true;
         });

@@ -1,6 +1,6 @@
 @*+:cnd:noEmit*@
-@attribute [Route(Urls.ConfirmPage)]
-@attribute [Route("{culture?}" + Urls.ConfirmPage)]
+@attribute [Route(PageUrls.Confirm)]
+@attribute [Route("{culture?}" + PageUrls.Confirm)]
 @inherits AppPageBase
 
 <AppPageData Title="@Localizer[nameof(AppStrings.Confirm)]"
@@ -76,7 +76,7 @@
                                     @Localizer[nameof(AppStrings.EmailConfirmationSuccessMessage)]
                                 </BitText>
 
-                                <BitLink Href="@($"{Urls.SignInPage}?return-url={Uri.EscapeDataString(ReturnUrlQueryString ?? Urls.HomePage)}")">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
+                                <BitLink Href="@($"{PageUrls.SignIn}?return-url={Uri.EscapeDataString(ReturnUrlQueryString ?? PageUrls.Home)}")">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
                             }
                         </BitStack>
                     </BitPivotItem>
@@ -141,7 +141,7 @@
                                     @Localizer[nameof(AppStrings.PhoneConfirmationSuccessMessage)]
                                 </BitText>
 
-                                <BitLink Href="@($"{Urls.SignInPage}?return-url={Uri.EscapeDataString(ReturnUrlQueryString ?? Urls.HomePage)}")">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
+                                <BitLink Href="@($"{PageUrls.SignIn}?return-url={Uri.EscapeDataString(ReturnUrlQueryString ?? PageUrls.Home)}")">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
                             }
                         </BitStack>
                     </BitPivotItem>
@@ -149,9 +149,9 @@
             </BitPivot>
             <br />
             <BitStack Horizontal HorizontalAlign="BitAlignment.Center">
-                <BitLink Href="@($"{Urls.SignInPage}?return-url={Uri.EscapeDataString(ReturnUrlQueryString ?? Urls.HomePage)}")">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
+                <BitLink Href="@($"{PageUrls.SignIn}?return-url={Uri.EscapeDataString(ReturnUrlQueryString ?? PageUrls.Home)}")">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
                 <BitText>@Localizer[nameof(AppStrings.Or)]</BitText>
-                <BitLink Href="@($"{Urls.SignUpPage}?return-url={Uri.EscapeDataString(ReturnUrlQueryString ?? Urls.HomePage)}")">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
+                <BitLink Href="@($"{PageUrls.SignUp}?return-url={Uri.EscapeDataString(ReturnUrlQueryString ?? PageUrls.Home)}")">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
             </BitStack>
         </BitStack>
     </BitStack>

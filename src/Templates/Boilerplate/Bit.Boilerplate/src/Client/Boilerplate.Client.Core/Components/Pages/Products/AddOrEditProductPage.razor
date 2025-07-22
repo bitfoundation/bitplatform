@@ -1,5 +1,5 @@
-@attribute [Route(Urls.AddOrEditProductPage + "/{Id:guid?}")]
-@attribute [Route("{culture?}" + Urls.AddOrEditProductPage + "/{Id:guid?}")]
+@attribute [Route(PageUrls.AddOrEditProduct + "/{Id:guid?}")]
+@attribute [Route("{culture?}" + PageUrls.AddOrEditProduct + "/{Id:guid?}")]
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
 @attribute [Authorize(Policy = AppFeatures.AdminPanel.ManageProductCatalog)]
 @inherits AppPageBase

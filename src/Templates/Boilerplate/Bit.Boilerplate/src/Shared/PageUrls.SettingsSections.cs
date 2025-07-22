@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Shared;
 
-public static partial class Urls
+public static partial class PageUrls
 {
     public static class SettingsSections
     {

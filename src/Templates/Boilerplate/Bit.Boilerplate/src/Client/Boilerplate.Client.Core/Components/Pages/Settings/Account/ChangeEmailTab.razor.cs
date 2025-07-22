@@ -83,7 +83,7 @@ public partial class ChangeEmailTab
         {
             await userController.ChangeEmail(changeModel, CurrentCancellationToken);
 
-            NavigationManager.NavigateTo($"{Urls.SettingsPage}/{Urls.SettingsSections.Account}", forceLoad: true);
+            NavigationManager.NavigateTo($"{PageUrls.Settings}/{PageUrls.SettingsSections.Account}", forceLoad: true);
         }
         catch (KnownException e)
         {
