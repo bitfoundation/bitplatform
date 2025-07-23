@@ -502,6 +502,12 @@
                     ]
                 },
                 {
+                    "condition": "(filesStorage != S3)",
+                    "exclude": [
+                        "src/Server/Boilerplate.Server.Api/Services/S3HttpClientFactory.cs"
+                    ]
+                },
+                {
                     "condition": "(signalR != true)",
                     "exclude": [
                         "src/Shared/Dtos/Chatbot/**",
