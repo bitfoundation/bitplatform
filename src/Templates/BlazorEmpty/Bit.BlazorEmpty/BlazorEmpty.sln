@@ -6,6 +6,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorEmpty", "BlazorEmpty\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorEmpty.Client", "BlazorEmpty.Client\BlazorEmpty.Client.csproj", "{5990939C-7E7B-4CFA-86FF-44CA5756498A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".SolutionItems", "{5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		settings.VisualStudio.json = settings.VisualStudio.json
+		Clean.bat = Clean.bat
+		global.json = global.json
+		.vscode\mcp.json=.vscode\mcp.json
+		.github\copilot-instructions.md=.github\copilot-instructions.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
