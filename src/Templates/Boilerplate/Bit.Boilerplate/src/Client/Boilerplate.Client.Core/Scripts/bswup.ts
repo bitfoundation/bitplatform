@@ -26,7 +26,6 @@ setInterval(() => {
     if (document.visibilityState === 'visible') {
         lastRunInForeground = now;
     }
-    // App was in background for more than 2 minutes. Set interval typically won't run in background for more than a few seconds on modern browsers,
-    // and it runs immediately after the app is resumed, so if lastRunInForeground was more than 2 minutes ago, we assume the app was in background or not focused.
+    // Detect if the app was backgrounded for over 2 minutes. Modern browsers throttle intervals in the background, so large time gaps suggest the app was not focused.
     tryUpdatePwa(resuming);
 }, 60 * 1000);
