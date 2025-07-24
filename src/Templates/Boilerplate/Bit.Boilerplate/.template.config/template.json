@@ -407,8 +407,7 @@
                     "copyOnly": [
                         "**/*.svg",
                         "**/*.png",
-                        "**/*.sh",
-                        ".github/copilot-instructions.md"
+                        "**/*.sh"
                     ],
                     "exclude": [
                         ".vs/**",
