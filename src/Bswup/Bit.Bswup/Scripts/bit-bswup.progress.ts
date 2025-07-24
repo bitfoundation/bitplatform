@@ -1,4 +1,4 @@
-﻿window['bit-bswup.progress version'] = '9.11.0';
+﻿window['bit-bswup.progress version'] = '9.11.1-pre-01';
 
 (function () {
     const _config: IBswupProgressConfigs = {};
