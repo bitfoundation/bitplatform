@@ -100,12 +100,29 @@ public static partial class Program
             //#elif (filesStorage == "S3")
             // Run through docker using `docker run -d -p 9000:9000 -p 9001:9001 -e "MINIO_ROOT_USER=minioadmin" -e "MINIO_ROOT_PASSWORD=minioadmin" quay.io/minio/minio server /data --console-address ":9001"`
             // Open MinIO console at http://127.0.0.1:9001/browser
-            var minIOConnectionString = configuration.GetConnectionString("MinIOS3ConnectionString")!;
-            return StorageFactory.Blobs.MinIO(GetValue(minIOConnectionString, "AccessKey"), GetValue(minIOConnectionString, "SecretKey"), GetValue(minIOConnectionString, "BucketName", defaultValue: "files"), GetValue(minIOConnectionString, "Region", defaultValue: "us-east-1"), GetValue(minIOConnectionString, "Endpoint"));
+            var s3ConnectionString = configuration.GetConnectionString("S3ConnectionString")!;
+            var clientConfig = new Amazon.S3.AmazonS3Config
+            {
+                AuthenticationRegion = GetValue(s3ConnectionString, "Region", defaultValue: "us-east-1"),
+                ServiceURL = GetValue(s3ConnectionString, "Endpoint"),
+                ForcePathStyle = true,
+                HttpClientFactory = sp.GetRequiredService<S3HttpClientFactory>()
+            };
+            return StorageFactory.Blobs.AwsS3(accessKeyId: GetValue(s3ConnectionString, "AccessKey"),
+                secretAccessKey: GetValue(s3ConnectionString, "SecretKey"),
+                sessionToken: null!,
+                bucketName: GetValue(s3ConnectionString, "BucketName", defaultValue: "files"),
+                clientConfig);
             //#else
             throw new NotImplementedException("Install and configure any storage supported by fluent storage (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)");
             //#endif
         });
+
+        //#if (filesStorage == "S3")
+        services.AddSingleton<S3HttpClientFactory>();
+        services.AddHttpClient("S3");
+        //#endif
+
         //#if (notification == true)
         services.AddSingleton(_ =>
         {
@@ -336,7 +353,9 @@ public static partial class Program
         services.AddHttpClient<ResponseCacheService>(c =>
         {
             c.Timeout = TimeSpan.FromSeconds(10);
+            //#if (cloudflare == true)
             c.BaseAddress = new Uri("https://api.cloudflare.com/client/v4/zones/");
+            //#endif
         });
 
         services.AddFido2(options =>
