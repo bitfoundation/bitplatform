@@ -33,7 +33,7 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
 
         if (exception is AuthenticationFailureException)
         {
-            httpContext.Response.Redirect($"{Urls.SignInPage}?error={Uri.EscapeDataString(exception.Message)}");
+            httpContext.Response.Redirect($"{PageUrls.SignIn}?error={Uri.EscapeDataString(exception.Message)}");
             return;
         }
 

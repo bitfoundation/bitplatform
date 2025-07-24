@@ -14,11 +14,14 @@
             "url": "https://api.githubcopilot.com/mcp/"
         },
         //#endif
-        "playwright": {
+        "read-website-fast": {
             "type": "stdio",
-            "command": "npx",
+            "command": "docker",
             "args": [
-                "@playwright/mcp@latest"
+                "run",
+                "-i",
+                "--rm",
+                "mcp/fetch"
             ]
         }
     }

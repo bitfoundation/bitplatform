@@ -47,7 +47,7 @@ public static partial class SiteMapEndpoint
                  .SelectMany(t => t.GetCustomAttributes<Microsoft.AspNetCore.Components.RouteAttribute>())
                  .Where(att => RouteRegex().IsMatch(att.Template) is false)
                  .Select(att => att.Template)
-                 .Except([Urls.NotFoundPage, Urls.NotAuthorizedPage])
+                 .Except([PageUrls.NotFound, PageUrls.NotAuthorized])
                  .ToArray();
 
             urls = CultureInfoManager.InvariantGlobalization is false

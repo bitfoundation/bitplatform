@@ -1,5 +1,5 @@
-@attribute [Route(Urls.DashboardPage)]
-@attribute [Route("{culture?}" + Urls.DashboardPage)]
+@attribute [Route(PageUrls.Dashboard)]
+@attribute [Route("{culture?}" + PageUrls.Dashboard)]
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
 @attribute [Authorize(Policy = AppFeatures.AdminPanel.Dashboard)]
 @inherits AppPageBase

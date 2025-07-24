@@ -18,7 +18,7 @@ public partial class SignInPanel
     private SignInPanelType internalSignInPanelType;
     private readonly SignInRequestDto model = new();
     private AppDataAnnotationsValidator? validatorRef;
-    private string GetReturnUrl() => ReturnUrl ?? ReturnUrlQueryString ?? Urls.HomePage;
+    private string GetReturnUrl() => ReturnUrl ?? ReturnUrlQueryString ?? PageUrls.Home;
 
     [Parameter]
     public string? ReturnUrl { get; set; }
@@ -228,7 +228,7 @@ public partial class SignInPanel
                 }
 
                 queryParams.TryGetValue("return-url", out var returnUrl);
-                ReturnUrlQueryString = GetValue(returnUrl ?? Urls.HomePage);
+                ReturnUrlQueryString = GetValue(returnUrl ?? PageUrls.Home);
                 queryParams.TryGetValue("userName", out var userName);
                 UserNameQueryString = GetValue(userName);
                 queryParams.TryGetValue("email", out var email);

@@ -2,7 +2,7 @@
     "name": "Boilerplate",
     "image": "mcr.microsoft.com/dotnet/sdk:9.0",
     "hostRequirements": {
-        "cpus": 4
+        "cpus": 8
     },
     "onCreateCommand": "dotnet workload install wasm-tools && dotnet dev-certs https --trust",
     "waitFor": "onCreateCommand",

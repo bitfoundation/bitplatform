@@ -1,5 +1,5 @@
-@attribute [Route(Urls.SystemPrompts)]
-@attribute [Route("{culture?}" + Urls.SystemPrompts)]
+@attribute [Route(PageUrls.SystemPrompts)]
+@attribute [Route("{culture?}" + PageUrls.SystemPrompts)]
 @attribute [Authorize(Policy = AppFeatures.Management.ManageAiPrompt)]
 @inherits AppPageBase
 

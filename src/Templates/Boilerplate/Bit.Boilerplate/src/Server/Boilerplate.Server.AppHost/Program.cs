@@ -68,7 +68,7 @@ serverApiProject.WithReference(mySqlDatabase, "MySqlConnectionString").WaitFor(m
 //#if (filesStorage == "AzureBlobStorage")
 serverApiProject.WithReference(azureBlobStorage, "AzureBlobStorageConnectionString").WaitFor(azureBlobStorage);
 //#elif (filesStorage == "S3")
-serverApiProject.WithReference(s3Storage, "MinIOS3ConnectionString").WaitFor(s3Storage);
+serverApiProject.WithReference(s3Storage, "S3ConnectionString").WaitFor(s3Storage);
 //#endif
 
 //#else
@@ -83,7 +83,7 @@ serverWebProject.WithReference(mySqlDatabase, "MySqlConnectionString").WaitFor(m
 //#if (filesStorage == "AzureBlobStorage")
 serverWebProject.WithReference(azureBlobStorage, "AzureBlobStorageConnectionString").WaitFor(azureBlobStorage);
 //#elif (filesStorage == "S3")
-serverWebProject.WithReference(s3Storage, "MinIOS3ConnectionString").WaitFor(s3Storage);
+serverWebProject.WithReference(s3Storage, "S3ConnectionString").WaitFor(s3Storage);
 //#endif
 
 //#endif
