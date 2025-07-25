@@ -15,6 +15,18 @@
 - **TypeScript**: Type-safe JavaScript development
 - **SCSS**: Advanced CSS preprocessing
 
+## Project Structure
+- **Boilerplate.Server.Api**: Controllers, Mappers, DbContext, Migrations, Components for email templates, action filters, models, SignalR, server's appsettings.json
+- **Boilerplate.Server.Web**: App.razor and other files to server Blazor Server and pre-rendering.
+- **Boilerplate.Server.Shared (Also knows as Aspire's ServiceDefaults)**: Common codes shared between Server.Api and Server.Web.
+- **Boilerplate.Server.AppHost**: Aspire's appsettings and Program.cs
+- **Boilerplate.Shared**: Dtos, Enums, custom exceptions, shared services, resx files.
+- **Boilerplate.Tests**: UI and integration tests.
+- **Boilerplate.Client.Core**: Components, Pages, Layout, Client services, app.ts (TypeScript), app.scss (SCSS), and appsettings.json for the client.
+- **Boilerplate.Client.Web**: Blazor WebAssembly standalone project.
+- **Boilerplate.Client.Maui**: .NET MAUI based Blazor Hybrid project.
+- **Boilerplate.Client.Windows**: Windows forms based Blazor Hybrid project.
+
 ## CLI commands
 - **Build the solution**: Change directory to the `Boilerplate.Server.Web` project and run:
   ```bash
@@ -33,20 +45,7 @@
   dotnet ef migrations add <MigrationName> --verbose
   ```
 
-## Project Structure
-- **Boilerplate.Server.Api**: Controllers, Mappers, DbContext, Migrations, Components for email templates, action filters, models, SignalR, server's appsettings.json
-- **Boilerplate.Server.Web**: App.razor and other files to server Blazor Server and pre-rendering.
-- **Boilerplate.Server.Shared (Also knows as Aspire's ServiceDefaults)**: Common codes shared between Server.Api and Server.Web.
-- **Boilerplate.Server.AppHost**: Aspire's appsettings and Program.cs
-- **Boilerplate.Shared**: Dtos, Enums, custom exceptions, shared services, resx files.
-- **Boilerplate.Tests**: UI and integration tests.
-- **Boilerplate.Client.Core**: Components, Pages, Layout, Client services, app.ts (TypeScript), app.scss (SCSS), and appsettings.json for the client.
-- **Boilerplate.Client.Web**: Blazor WebAssembly standalone project.
-- **Boilerplate.Client.Maui**: .NET MAUI based Blazor Hybrid project.
-- **Boilerplate.Client.Windows**: Windows forms based Blazor Hybrid project.
-
 ## Coding Conventions & Best Practices
-
 01. **Follow the established project structure**: Adhere to the defined layout for consistency.
 02. **Use Bit.BlazorUI Components**: Prioritize using components from the Bit.BlazorUI library over generic HTML to ensure UI consistency and leverage built-in features.
 03. **Embrace Nullable Reference Types**: All new code must be nullable-aware, as nullability is enabled project-wide.
