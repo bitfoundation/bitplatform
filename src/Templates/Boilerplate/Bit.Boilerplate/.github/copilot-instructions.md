@@ -64,3 +64,17 @@ For build errors related to bit BlazorUI components (e.g., `BitButton`, `BitTool
 or `bit Boiler plate template` , you **MUST** use the deepwiki's `ask_question` mcp tool to find the correct implementation and usage patterns of `bitfoundation/bitplatform` deep wiki.
 
 **End of RULE 4**
+
+**RULE 5:** Avoid using !important in SCSS when working with bit BlazorUI components. Before using !important, you **MUST** use the deepwiki's `ask_question` mcp tool of `bitfoundation/bitplatform` deep wiki to validate if it's truly necessary,
+as bit components typically provide built-in parameters and styling approaches that eliminate the need for CSS overrides.
+**End of RULE 5**
+
+**RULE 6:** For components inheriting from `AppComponentBase` and pages inheriting from `AppPageBase`, use these safer lifecycle method alternatives:
+Use `OnInitAsync` instead of `OnInitializedAsync`
+Use `OnParamsSetAsync` instead of `OnParametersSetAsync`
+Use `OnAfterFirstRenderAsync` instead of `OnAfterRenderAsync`
+Always pass `CurrentCancellationToken` to async methods that accept cancellation tokens.
+**End of RULE 6**
+
+**RULE 7:** Continue processing and do not stop unless all project requirements are met and project builds successfully.
+**End of RULE 7**
