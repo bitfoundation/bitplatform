@@ -1,7 +1,6 @@
 # GitHub Copilot Instructions
 
 ## Key Technologies
-
 - **C# 13.0**
 - **ASP.NET Core 9.0**
 - **Blazor**: Component-based web UI framework
@@ -15,6 +14,24 @@
 - **Microsoft.Extensions.AI**: AI integration
 - **TypeScript**: Type-safe JavaScript development
 - **SCSS**: Advanced CSS preprocessing
+
+## CLI commands
+- **Build the solution**: Change directory to the `Boilerplate.Server.Web` project and run:
+  ```bash
+  dotnet build
+  ```
+- **Run the project**: Change directory to the `Boilerplate.Server.Web` project and run:
+  ```bash
+  dotnet run
+  ```
+- **Run tests**: Change directory to the `Boilerplate.Tests` project and run:
+  ```bash
+  dotnet test
+  ```
+- **Add new migrations**: Change directory to the `Boilerplate.Server.Api` project and run:
+  ```bash
+  dotnet ef migrations add <MigrationName> --verbose
+  ```
 
 ## Project Structure
 - **Boilerplate.Server.Api**: Controllers, Mappers, DbContext, Migrations, Components for email templates, action filters, models, SignalR, server's appsettings.json
@@ -30,14 +47,14 @@
 
 ## Coding Conventions & Best Practices
 
-01.  **Follow the established project structure**: Adhere to the defined layout for consistency.
-02.  **Use Bit.BlazorUI Components**: Prioritize using components from the Bit.BlazorUI library over generic HTML to ensure UI consistency and leverage built-in features.
-03.  **Embrace Nullable Reference Types**: All new code must be nullable-aware, as nullability is enabled project-wide.
-04.  **Leverage Dependency Injection**: Register and resolve services using the built-in DI container.
-05.  **Implement Structured Logging**: Use structured logging for clear, queryable application logs.
-06.  **Adhere to Security Best Practices**: Implement robust authentication and authorization patterns.
-07.  **Use Async Programming**: Employ `async/await` for I/O-bound operations to prevent blocking threads.
-08.  **Modern C#**: Write modern, concise, and efficient code by using the latest C# language features, including implicit usings and global using statements.
+01. **Follow the established project structure**: Adhere to the defined layout for consistency.
+02. **Use Bit.BlazorUI Components**: Prioritize using components from the Bit.BlazorUI library over generic HTML to ensure UI consistency and leverage built-in features.
+03. **Embrace Nullable Reference Types**: All new code must be nullable-aware, as nullability is enabled project-wide.
+04. **Leverage Dependency Injection**: Register and resolve services using the built-in DI container.
+05. **Implement Structured Logging**: Use structured logging for clear, queryable application logs.
+06. **Adhere to Security Best Practices**: Implement robust authentication and authorization patterns.
+07. **Use Async Programming**: Employ `async/await` for I/O-bound operations to prevent blocking threads.
+08. **Modern C#**: Write modern, concise, and efficient code by using the latest C# language features, including implicit usings and global using statements.
 09. **Respect .editorconfig**: Adhere to the `.editorconfig` file for consistent code style across all IDEs.
 10. **Prefer razor.cs code-behind files**: Use `.razor.cs` files for component logic instead of @code blocks in `.razor` files.
 11. **Prefer razor.scss files**: Use `.razor.scss` files for component styles instead of inline styles in `.razor` files.
