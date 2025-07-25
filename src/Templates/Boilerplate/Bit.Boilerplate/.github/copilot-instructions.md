@@ -45,6 +45,11 @@
   dotnet ef migrations add <MigrationName> --verbose
   ```
 
+  - **Generate Resx C#**: Change directory to the `Boilerplate.Shared` project and run:
+  ```bash
+- dotnet build -t:PrepareResources
+- ```
+
 ## Coding Conventions & Best Practices
 01. **Follow the established project structure**: Adhere to the defined layout for consistency.
 02. **Use Bit.BlazorUI Components**: Prioritize using components from the Bit.BlazorUI library over generic HTML to ensure UI consistency and leverage built-in features.
