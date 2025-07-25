@@ -27,6 +27,9 @@ jobs:
       with:
         node-version: 23
 
+    - name: Workload restore
+      run: dotnet workload restore
+
     - name: Build
       run: dotnet build Boilerplate.slnx -c Release
 
