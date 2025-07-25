@@ -33,6 +33,7 @@
     <File Path=".github/workflows/cd-test.yml" />
     <File Path=".github/workflows/cd-template.yml" />
     <File Path=".github/workflows/ci.yml" />
+    <File Path=".github/workflows/copilot-setup-steps.yml" />
   </Folder>
 //#endif
   <Folder Name="/Server/">

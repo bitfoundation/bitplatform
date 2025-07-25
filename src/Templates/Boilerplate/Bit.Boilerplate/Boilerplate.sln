@@ -57,6 +57,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		.github\workflows\cd-test.yml = .github\workflows\cd-test.yml
 		.github\workflows\cd-template.yml = .github\workflows\cd-template.yml
 		.github\workflows\ci.yml = .github\workflows\ci.yml
+		.github\workflows\copilot-setup-steps.yml = .github\workflows\copilot-setup-steps.yml
 	EndProjectSection
 EndProject
 #endif

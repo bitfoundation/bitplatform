@@ -11,7 +11,7 @@ on:
 
 jobs:
   copilot-setup-steps:
-    runs-on: ubuntu-20.04-16core
+    runs-on: ubuntu-20.04
 
     steps:
 
