@@ -23,10 +23,16 @@ jobs:
     displayName: 'Install Node.js'
 
   - task: Bash@3
+    displayName: 'Workload restore'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet workload restore'
+
+  - task: Bash@3
     displayName: 'Build'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build Boilerplate.slnx -c Release'
+      script: 'dotnet build Boilerplate.slnx'
 
   - task: Bash@3
     displayName: 'Install Playwright'
