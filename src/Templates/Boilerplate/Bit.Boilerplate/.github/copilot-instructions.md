@@ -83,4 +83,6 @@
 Use `::deep` instead of `:global` when necessary.
 12. **Use BitColor theme colors** in C#, Razor, and `_bit-css-variables.scss` SCSS files instead of custom colors to ensure dark/light mode support and maintain consistency throughout the application.
 13. **Prefer bit BlazorUI components**: Use Bit.BlazorUI components like `BitButton`, `BitShimmer`, `BitCard`, `BitChart`, `BitCarousel`, etc., instead of HTML elements or other libraries to ensure consistency and leverage built-in features.
-14. **Use Enhanced Lifecycle Methods**: For components inheriting from `AppComponentBase` and pages from `AppPageBase`, use these alternatives: `OnInitAsync` (instead of `OnInitializedAsync`), `OnParamsSetAsync` (instead of `OnParametersSetAsync`), and `OnAfterFirstRenderAsync` (instead of `OnAfterRenderAsync`). Always pass the `CurrentCancellationToken` to async methods that accept it.
+14. **Use Enhanced Lifecycle Methods**: For components inheriting from `AppComponentBase` and pages from `AppPageBase`, use these alternatives: `OnInitAsync` (instead of `OnInitializedAsync`),
+`OnParamsSetAsync` (instead of `OnParametersSetAsync`), and `OnAfterFirstRenderAsync` (instead of `OnAfterRenderAsync`). Always pass the `CurrentCancellationToken` to async methods that accept it.
+14. **AutoInject** Prefer the bit `AutoInject` attribute for dependency injection in components over @inject, constructor injection, `Inject` attribute or primary constructor injection.
