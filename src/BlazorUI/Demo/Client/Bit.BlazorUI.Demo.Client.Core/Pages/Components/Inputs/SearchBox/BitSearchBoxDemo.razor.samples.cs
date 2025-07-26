@@ -42,10 +42,10 @@ public partial class BitSearchBoxDemo
     private readonly string example7RazorCode = @"
 <BitSearchBox Placeholder=""HideClearButton"" HideClearButton />
 
-<BitSearchBox Placeholder=""CleanButtonTemplate"">
-    <CleanButtonTemplate>
+<BitSearchBox Placeholder=""ClearButtonTemplate"">
+    <ClearButtonTemplate>
         <BitIcon IconName=""@BitIconName.RemoveFilter"" />
-    </CleanButtonTemplate>
+    </ClearButtonTemplate>
 </BitSearchBox>";
 
     private readonly string example8RazorCode = @"

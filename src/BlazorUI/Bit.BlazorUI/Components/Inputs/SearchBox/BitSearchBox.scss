@@ -23,6 +23,11 @@
             }
         }
 
+        .bit-srb-pre,
+        .bit-srb-suf {
+            color: $clr-fg-dis;
+        }
+
         @media (hover: hover) {
             &:hover {
                 .bit-srb-cnt {
@@ -211,6 +216,24 @@
     color: $clr-fg-pri;
 }
 
+.bit-srb-pre,
+.bit-srb-suf {
+    height: 100%;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    white-space: nowrap;
+    padding: 0 spacing(1.25);
+    min-height: spacing(3.75);
+    color: $clr-fg-pri;
+    background: $clr-bg-sec;
+
+    span {
+        font-size: spacing(1.75);
+        padding-bottom: spacing(0.125);
+    }
+}
+
 .bit-srb-cbt {
     height: auto;
     border: none;
@@ -312,6 +335,11 @@
         i {
             opacity: 0;
         }
+    }
+
+    .bit-srb-pre,
+    .bit-srb-suf {
+        color: var(--bit-srb-clr);
     }
 
     @media (hover: hover) {

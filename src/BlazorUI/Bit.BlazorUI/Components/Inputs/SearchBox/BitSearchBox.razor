@@ -9,10 +9,30 @@
     <div class="bit-srb-cnt @Classes?.InputContainer" style="@Styles?.InputContainer">
         @if (HideIcon is false)
         {
-            <div style="@Styles?.IconWrapper" class="bit-srb-iwp @Classes?.IconWrapper" aria-hidden="true">
-                <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" aria-hidden="true" />
+            <div aria-hidden="true"
+                 style="@Styles?.IconWrapper" 
+                 class="bit-srb-iwp @Classes?.IconWrapper">
+                <i aria-hidden="true" 
+                   style="@Styles?.Icon" 
+                   class="bit-icon bit-icon--@IconName @Classes?.Icon" />
             </div>
         }
+
+        @if (PrefixTemplate is not null)
+        {
+            @PrefixTemplate
+        }
+        else if (Prefix.HasValue())
+        {
+            <div style="@Styles?.PrefixContainer" 
+                 class="bit-srb-pre @Classes?.PrefixContainer">
+                <span style="@Styles?.Prefix" 
+                      class="@Classes?.Prefix">
+                    @Prefix
+                </span>
+            </div>
+        }
+
         <input @ref="InputElement" @attributes="InputHtmlAttributes"
                @onkeydown="@HandleOnKeyDown"
                @onfocusin="HandleInputFocusIn"
@@ -33,18 +53,32 @@
                autocomplete="@AutoComplete"
                disabled="@(IsEnabled is false)"
                class="bit-srb-inp @Classes?.Input" />
+
+        @if (SuffixTemplate is not null)
+        {
+            @SuffixTemplate
+        }
+        else if (Suffix.HasValue())
+        {
+            <div style="@Styles?.SuffixContainer" class="bit-srb-suf @Classes?.SuffixContainer">
+                <span style="@Styles?.Suffix" class="@Classes?.Suffix">
+                    @Suffix
+                </span>
+            </div>
+        }
+
         @if (HideClearButton is false && CurrentValue.HasValue())
         {
             <button @onclick="HandleOnClearButtonClick"
-                    style="@Styles?.ClearButton"
-                    class="bit-srb-cbt @Classes?.ClearButton"
                     type="button"
                     aria-hidden="true"
                     aria-label="Clear text"
-                    disabled="@(CurrentValue.HasNoValue())">
-                @if (CleanButtonTemplate is not null)
+                    style="@Styles?.ClearButton"
+                    disabled="@(CurrentValue.HasNoValue())"
+                    class="bit-srb-cbt @Classes?.ClearButton">
+                @if (ClearButtonTemplate is not null)
                 {
-                    @CleanButtonTemplate
+                    @ClearButtonTemplate
                 }
                 else
                 {
@@ -53,14 +87,15 @@
             </button>
         }
     </div>
+
     @if (ShowSearchButton)
     {
         <button @onclick="HandleOnSearchButtonClick"
-                style="@Styles?.SearchButton"
-                class="bit-srb-sbn @Classes?.SearchButton"
                 type="button"
                 aria-hidden="true"
-                aria-label="Search text">
+                aria-label="Search text"
+                style="@Styles?.SearchButton"
+                class="bit-srb-sbn @Classes?.SearchButton">
             @if (SearchButtonTemplate is not null)
             {
                 @SearchButtonTemplate
@@ -77,8 +112,8 @@
         if (Modeless is false)
         {
             <div @onclick="CloseCallout"
-                 style="display:@(_isOpen ? "block" : "none");@Styles?.Overlay"
-                 class="bit-srb-ovl @Classes?.Overlay"></div>
+                 class="bit-srb-ovl @Classes?.Overlay"
+                 style="display:@(_isOpen ? "block" : "none");@Styles?.Overlay" />
         }
 
         <div id="@_calloutId"
@@ -95,24 +130,24 @@
                     var isSelected = GetIsSelected(text);
                     <div style="@Styles?.SuggestItemWrapper" class="@Classes?.SuggestItemWrapper">
                         <button @onclick="() => HandleOnSuggestedItemClick(text)"
+                                tabindex="0"
                                 type="button"
                                 role="option"
                                 title="@text"
-                                tabindex="0"
-                                style="@Styles?.SuggestItemButton"
-                                class="bit-srb-itm@(isSelected ? " bit-srb-sel" : "") @Classes?.SuggestItemButton"
                                 aria-label="@text"
                                 aria-setsize="@GetTotalItems()"
+                                style="@Styles?.SuggestItemButton"
+                                aria-posinset="@GetItemPosInSet(text)"
                                 aria-selected="@(isSelected ? "true" : "false")"
-                                aria-posinset="@GetItemPosInSet(text)">
+                                class="bit-srb-itm@(isSelected ? " bit-srb-sel" : "") @Classes?.SuggestItemButton">
                             @if (SuggestItemTemplate is not null)
                             {
                                 @SuggestItemTemplate(text)
                             }
                             else
                             {
-                                <span class="@Classes?.SuggestItemText"
-                                      style="@Styles?.SuggestItemText">
+                                <span style="@Styles?.SuggestItemText"
+                                      class="@Classes?.SuggestItemText">
                                     @text
                                 </span>
                             }
