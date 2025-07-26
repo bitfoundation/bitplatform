@@ -43,6 +43,7 @@
 6.  **Verification and Iteration**:
     *   After applying changes, you **MUST** ensure the project builds successfully. If the build fails, you must fix the issues. For build errors related to Bit.BlazorUI components (e.g., `BitButton`, `BitTooltip`), or `bitplatform`, `bit Bswup`, `bit Butil`, `bit Besql`, `bit Boiler plate template`, refer back to the `DeepWiki` tool as specified in step 3.
     *   Continue this process until all project requirements are fully met and the solution is in a stable, buildable state.
+    Do not ask questions like "Wanna proceed?" or suggest reviewing plans. Proceed directly with implementation suggestions.
 
 ## CLI commands
 - **Build the project**: Change directory to the `Boilerplate.Server.Web` project and run:
