@@ -37,6 +37,7 @@
 3.  **Research & Information Gathering**:
     *   If a task involves Bit.BlazorUI components (e.g., `BitButton`, `BitTooltip`), refers to `bitplatform`, `bit Bswup`, `bit Butil`, `bit Besql`, `bit Boiler plate template`, or involves UI components without a specified UI toolkit, you **MUST** use the `DeepWiki`'s `ask_question` tool to find the correct implementation and usage patterns. This is also required for resolving build errors related to these technologies.
     *   If the user provides a URL, you **MUST** use a `fetch` tool to retrieve its content.
+    *   If the user provides a git commit id/hash, you **MUST** run the `git --no-pager show <commit-id>` command to retrieve the commit details.
 4.  **Create a Step-by-Step Plan**: Outline the actions and code modifications you will perform. This ensures a structured approach and helps verify that all requirements are being met.
 5.  **Implementation**: Execute the plan by writing or modifying the code. Throughout this process, adhere strictly to the **Coding Conventions & Best Practices**.
 6.  **Verification and Iteration**:
