@@ -8,5 +8,6 @@
     "debugging.hotReload.enableHotReload": true,
     "debugging.hotReload.enableForNoDebugLaunch": true,
     "projectsAndSolutions.aspNetCore.general.hotReloadCssChanges": true,
-    "copilot.general.completions.enableNextEditSuggestions": true
+    "copilot.general.completions.enableNextEditSuggestions": true,
+    "environment.terminal.profiles+defaultItemIndex": 1
 }
