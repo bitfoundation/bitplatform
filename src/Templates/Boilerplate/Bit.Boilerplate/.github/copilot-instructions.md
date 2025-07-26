@@ -28,7 +28,7 @@
 - **Boilerplate.Client.Windows**: Windows forms based Blazor Hybrid project.
 
 ## MCP Tools
-- **DeepWiki**: Provides access to an extensive knowledge base for the `bitfoundation/bitplatform` repository. Use the `ask_question` tool to find the correct implementation and usage patterns for anything related to Bit.BlazorUI, `bit Bswup`, `bit Butil`, `bit Besql`, or the bit boilerplate template.
+- **DeepWiki**: Provides access to an extensive knowledge base for the `bitfoundation/bitplatform` repository. Use the `ask_question` tool to find the correct implementation and usage patterns for anything related to Bit.BlazorUI, `bit Bswup`, `bit Butil`, `bit Besql`, or the bit Boilerplate template.
 - **Website Fetcher**: Gathers information from URLs provided by the user. Prefer the built-in `fetch` tool if available; otherwise, use the `read-website-fast` tool.
 
 ## Workflow
@@ -79,4 +79,5 @@
 10. **Prefer razor.cs code-behind files**: Use `.razor.cs` files for component logic instead of `@code` blocks in `.razor` files.
 11. **Prefer razor.scss files**: Use `.razor.scss` files for component styles instead of inline styles in `.razor` files.
 .razor.scss act as isolated css styles for each component, so you might need ::deep selector or !important to override styles of Bit.BlazorUI components, but before doing so, you **MUST** consult the `DeepWiki` tool to verify if there is a better way to achieve the desired styling.
-12. **Use Enhanced Lifecycle Methods**: For components inheriting from `AppComponentBase` and pages from `AppPageBase`, use these alternatives: `OnInitAsync` (instead of `OnInitializedAsync`), `OnParamsSetAsync` (instead of `OnParametersSetAsync`), and `OnAfterFirstRenderAsync` (instead of `OnAfterRenderAsync`). Always pass the `CurrentCancellationToken` to async methods that accept it.
+12. **Use BitColor theme colors** in C#, Razor, and `_bit-css-variables.scss` SCSS files instead of custom colors to ensure dark/light mode support and maintain consistency throughout the application.
+13. **Use Enhanced Lifecycle Methods**: For components inheriting from `AppComponentBase` and pages from `AppPageBase`, use these alternatives: `OnInitAsync` (instead of `OnInitializedAsync`), `OnParamsSetAsync` (instead of `OnParametersSetAsync`), and `OnAfterFirstRenderAsync` (instead of `OnAfterRenderAsync`). Always pass the `CurrentCancellationToken` to async methods that accept it.
