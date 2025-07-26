@@ -11,5 +11,8 @@
         "*.razor": "$(capture).*.razor, $(capture).razor.cs, $(capture).razor.scss",
         "*.scss": "$(capture).*.scss, $(capture).css, $(capture).css.map",
         "*.json": "$(capture).*.json, $(capture).*.json"
-    }
+    },
+    "terminal.integrated.defaultProfile.windows": "Command Prompt",
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "terminal.integrated.defaultProfile.osx": "bash"
 }
