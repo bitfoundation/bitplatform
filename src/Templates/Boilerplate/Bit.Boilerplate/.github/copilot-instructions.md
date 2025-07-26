@@ -17,7 +17,7 @@
 
 ## Project Structure
 - **Boilerplate.Server.Api**: Controllers, Mappers, DbContext, Migrations, Components for email templates, action filters, models, SignalR, server's appsettings.json
-- **Boilerplate.Server.Web**: App.razor and other files to server Blazor Server and pre-rendering.
+- **Boilerplate.Server.Web**: App's default startup project and entry point. Contains App.razor and other files to server Blazor Server and pre-rendering.
 - **Boilerplate.Server.Shared (Also knows as Aspire's ServiceDefaults)**: Common codes shared between Server.Api and Server.Web.
 - **Boilerplate.Server.AppHost**: Aspire's appsettings and Program.cs
 - **Boilerplate.Shared**: Dtos, Enums, custom exceptions, shared services, resx files.
@@ -27,8 +27,24 @@
 - **Boilerplate.Client.Maui**: .NET MAUI based Blazor Hybrid project.
 - **Boilerplate.Client.Windows**: Windows forms based Blazor Hybrid project.
 
+## MCP Tools
+- **DeepWiki**: Provides access to an extensive knowledge base for the `bitfoundation/bitplatform` repository. Use the `ask_question` tool to find the correct implementation and usage patterns for anything related to Bit.BlazorUI, `bit Bswup`, `bit Butil`, `bit Besql`, or the bit boilerplate template.
+- **Website Fetcher**: Gathers information from URLs provided by the user. Prefer the built-in `fetch` tool if available; otherwise, use the `read-website-fast` tool.
+
+## Workflow
+1.  **Problem Understanding**: Carefully analyze the user's request—whether it's a question, a code modification, or a review—to fully understand the requirements and objectives.
+2.  **Codebase Investigation**: Before writing or modifying code, thoroughly examine the relevant parts of the project to understand the existing structure, logic, and potential impacts of your changes.
+3.  **Research & Information Gathering**:
+    *   If a task involves Bit.BlazorUI components (e.g., `BitButton`, `BitTooltip`), refers to `bitplatform`, `bit Bswup`, `bit Butil`, `bit Besql`, `bit Boiler plate template`, or involves UI components without a specified UI toolkit, you **MUST** use the `DeepWiki`'s `ask_question` tool to find the correct implementation and usage patterns. This is also required for resolving build errors related to these technologies.
+    *   If the user provides a URL, you **MUST** use a `fetch` tool to retrieve its content.
+4.  **Create a Step-by-Step Plan**: Outline the actions and code modifications you will perform. This ensures a structured approach and helps verify that all requirements are being met.
+5.  **Implementation**: Execute the plan by writing or modifying the code. Throughout this process, adhere strictly to the **Coding Conventions & Best Practices**.
+6.  **Verification and Iteration**:
+    *   After applying changes, you **MUST** ensure the project builds successfully. If the build fails, you must fix the issues. For build errors related to Bit.BlazorUI components (e.g., `BitButton`, `BitTooltip`), or `bitplatform`, `bit Bswup`, `bit Butil`, `bit Besql`, `bit Boiler plate template`, refer back to the `DeepWiki` tool as specified in step 3.
+    *   Continue this process until all project requirements are fully met and the solution is in a stable, buildable state.
+
 ## CLI commands
-- **Build the solution**: Change directory to the `Boilerplate.Server.Web` project and run:
+- **Build the project**: Change directory to the `Boilerplate.Server.Web` project and run:
   ```bash
   dotnet build
   ```
@@ -44,11 +60,10 @@
   ```bash
   dotnet ef migrations add <MigrationName> --verbose
   ```
-
-  - **Generate Resx C#**: Change directory to the `Boilerplate.Shared` project and run:
+- **Generate Resx C#**: Change directory to the `Boilerplate.Shared` project and run:
   ```bash
-- dotnet build -t:PrepareResources
-- ```
+  dotnet build -t:PrepareResources
+  ```
 
 ## Coding Conventions & Best Practices
 01. **Follow the established project structure**: Adhere to the defined layout for consistency.
@@ -60,42 +75,7 @@
 07. **Use Async Programming**: Employ `async/await` for I/O-bound operations to prevent blocking threads.
 08. **Modern C#**: Write modern, concise, and efficient code by using the latest C# language features, including implicit usings and global using statements.
 09. **Respect .editorconfig**: Adhere to the `.editorconfig` file for consistent code style across all IDEs.
-10. **Prefer razor.cs code-behind files**: Use `.razor.cs` files for component logic instead of @code blocks in `.razor` files.
+10. **Prefer razor.cs code-behind files**: Use `.razor.cs` files for component logic instead of `@code` blocks in `.razor` files.
 11. **Prefer razor.scss files**: Use `.razor.scss` files for component styles instead of inline styles in `.razor` files.
-
-## Rules
-
-**RULE 1:** If a task (question, code modification or review) involves the use of bit BlazorUI components (e.g., `BitButton`, `BitTooltip`, `BitTextField`),
-or refers to `bitplatform`, `bit Bswup`, `bit Butil`, `bit Besql`, or `bit Boiler plate template`, or involves UI components without explicitly specifying their UI toolkit,
-you **MUST** use the deepwiki's `ask_question` mcp tool to find the correct implementation and usage patterns of `bitfoundation/bitplatform` deep wiki before writing or changing any code.
-
-**End of RULE 1**
-
-**RULE 2:** If a task (question, code modification, or review) involves Microsoft technologies such as C#, F#, ASP.NET Core, Aspire, Microsoft.Extensions, NuGet, Entity Framework, Blazor or the `dotnet` runtime,
-you **MUST** use the `microsoft.docs.mcp` server to search Microsoft's latest official documentation for detailed and up-to-date information before responding to specific or narrowly defined questions.
-
-**End of RULE 2**
-
-**RULE 3:** You **MUST** use the read-website-fast's `fetch` mcp tools, to gather information from URLs provided by the user.
-
-**End of RULE 3**
-
-**RULE 4:** Always make sure project builds successfully after applying changes. If the project does not build, you **MUST** fix the issues before submitting the code.
-For build errors related to bit BlazorUI components (e.g., `BitButton`, `BitTooltip`, `BitTextField`) or refers to `bitplatform`, `bit Bswup`, `bit Butil`, `bit Besql`,
-or `bit Boiler plate template` , you **MUST** use the deepwiki's `ask_question` mcp tool to find the correct implementation and usage patterns of `bitfoundation/bitplatform` deep wiki.
-
-**End of RULE 4**
-
-**RULE 5:** Avoid using !important in SCSS when working with bit BlazorUI components. Before using !important, you **MUST** use the deepwiki's `ask_question` mcp tool of `bitfoundation/bitplatform` deep wiki to validate if it's truly necessary,
-as bit components typically provide built-in parameters and styling approaches that eliminate the need for CSS overrides.
-**End of RULE 5**
-
-**RULE 6:** For components inheriting from `AppComponentBase` and pages inheriting from `AppPageBase`, use these safer lifecycle method alternatives:
-Use `OnInitAsync` instead of `OnInitializedAsync`
-Use `OnParamsSetAsync` instead of `OnParametersSetAsync`
-Use `OnAfterFirstRenderAsync` instead of `OnAfterRenderAsync`
-Always pass `CurrentCancellationToken` to async methods that accept cancellation tokens.
-**End of RULE 6**
-
-**RULE 7:** Continue processing and do not stop unless all project requirements are met and project builds successfully.
-**End of RULE 7**
+12. **Avoid `!important` in SCSS**: Before using `!important` with Bit.BlazorUI components, you **MUST** first consult the `DeepWiki` tool. Bit components typically provide built-in parameters and styling approaches that make CSS overrides unnecessary.
+13. **Use Enhanced Lifecycle Methods**: For components inheriting from `AppComponentBase` and pages from `AppPageBase`, use these alternatives: `OnInitAsync` (instead of `OnInitializedAsync`), `OnParamsSetAsync` (instead of `OnParametersSetAsync`), and `OnAfterFirstRenderAsync` (instead of `OnAfterRenderAsync`). Always pass the `CurrentCancellationToken` to async methods that accept it.
