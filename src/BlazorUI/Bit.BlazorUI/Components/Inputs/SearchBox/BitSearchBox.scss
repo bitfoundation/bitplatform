@@ -105,7 +105,7 @@
     @media (hover: hover) {
         &:hover {
             .bit-srb-cnt,
-            .bit-srb-sbn {
+            &.bit-srb-und .bit-srb-sbn {
                 border-color: $clr-brd-pri-hover;
             }
 
@@ -295,48 +295,21 @@
     .bit-srb-cnt {
         border-radius: 0;
         border-width: 0 0 spacing(0.125);
-        padding: spacing(0.125) spacing(1) 0;
 
         @media (hover: hover) {
             &:hover {
                 border-top-width: 0;
-                border-left-width: 0;
-                border-right-width: 0;
+                border-inline-end-width: 0;
+                border-inline-start-width: 0;
             }
         }
     }
 
     .bit-srb-sbn {
         border-top-width: 0;
-        border-left-width: 0;
-        border-right-width: 0;
+        border-inline-end-width: 0;
+        border-inline-start-width: 0;
         border-color: $clr-brd-pri;
-        background-color: transparent;
-
-        i {
-            color: var(--bit-srb-clr);
-        }
-
-        @media (hover: hover) {
-            &:hover {
-                background-color: var(--bit-srb-clr-hover);
-
-                i {
-                    color: var(--bit-srb-clr-txt);
-                }
-            }
-        }
-    }
-}
-
-.bit-srb-nbr {
-    .bit-srb-cnt,
-    .bit-srb-cnt::after {
-        border: none;
-    }
-
-    .bit-srb-sbn {
-        border: none;
         background-color: transparent;
 
         i {
@@ -395,11 +368,37 @@
     }
 }
 
+.bit-srb-nbr {
+    .bit-srb-cnt,
+    .bit-srb-cnt::after {
+        border: none;
+    }
+
+    .bit-srb-sbn {
+        border: none;
+        background-color: transparent;
+
+        i {
+            color: var(--bit-srb-clr);
+        }
+
+        @media (hover: hover) {
+            &:hover {
+                background-color: var(--bit-srb-clr-hover);
+
+                i {
+                    color: var(--bit-srb-clr-txt);
+                }
+            }
+        }
+    }
+}
+
 .bit-srb-hvl {
     @media (hover: hover) {
         &:hover {
             .bit-srb-iwp {
-                width: spacing(0.5);
+                width: 0;
 
                 i {
                     opacity: 0;
