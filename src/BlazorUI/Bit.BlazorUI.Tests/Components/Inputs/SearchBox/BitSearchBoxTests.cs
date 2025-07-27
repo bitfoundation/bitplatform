@@ -101,7 +101,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         var bitSearchBox = component.Find(".bit-srb");
 
-        Assert.AreEqual(fixedIcon, bitSearchBox.ClassList.Contains("bit-srb-fic-hvl"));
+        Assert.AreEqual(fixedIcon, bitSearchBox.ClassList.Contains("bit-srb-fic"));
     }
 
     [Ignore("bypassed - BUnit oninput event issue")]

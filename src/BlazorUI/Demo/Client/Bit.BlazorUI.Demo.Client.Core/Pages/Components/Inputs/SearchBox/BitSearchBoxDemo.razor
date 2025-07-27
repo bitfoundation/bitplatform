@@ -100,21 +100,46 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Clean Button" RazorCode="@example7RazorCode" Id="example7">
-            <div>Showcasing BitSearchBox with a clean button in various configurations, including custom button icon and hide this button.</div>
+        <DemoExample Title="Clear Button" RazorCode="@example7RazorCode" Id="example7">
+            <div>Showcasing BitSearchBox with a clear button in various configurations, including custom button icon and hide this button.</div>
             <br /><br />
             <div class="example-box">
                 <BitSearchBox Placeholder="HideClearButton" HideClearButton />
                 <br /><br />
-                <BitSearchBox Placeholder="CleanButtonTemplate">
-                    <CleanButtonTemplate>
+                <BitSearchBox Placeholder="ClearButtonTemplate">
+                    <ClearButtonTemplate>
                         <BitIcon IconName="@BitIconName.RemoveFilter" />
-                    </CleanButtonTemplate>
+                    </ClearButtonTemplate>
                 </BitSearchBox>
             </div>
         </DemoExample>
 
-        <DemoExample Title="Binding" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <DemoExample Title="Prefix & Suffix" RazorCode="@example8RazorCode" Id="example8">
+            <div>Explore prefixing and suffixing features of the BitSearchbox.</div>
+            <br /><br />
+            <div class="example-box">
+                <BitSearchBox Placeholder="Prefix" Prefix="https://" HideIcon />
+                <br /><br />
+                <BitSearchBox Placeholder="Suffix" Suffix=".com" HideIcon />
+                <br /><br />
+                <BitSearchBox Placeholder="Prefix & Suffix + Icon" Prefix="https://" Suffix=".com" />
+                <br /><br />
+                <BitSearchBox Placeholder="Templates" HideIcon>
+                    <PrefixTemplate>
+                        <BitStack FitWidth Alignment="BitAlignment.Center" style="background:gray;padding:0 0.5rem;">
+                            <BitIcon IconName="@BitIconName.Calendar" Color="BitColor.PrimaryForeground" />
+                        </BitStack>
+                    </PrefixTemplate>
+                    <SuffixTemplate>
+                        <BitStack FitWidth Alignment="BitAlignment.Center" style="background:cadetblue;padding:0 0.5rem;">
+                            <BitIcon IconName="@BitIconName.ArrowTallUpRight" Color="BitColor.PrimaryForeground" />
+                        </BitStack>
+                    </SuffixTemplate>
+                </BitSearchBox>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Binding" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div>Binding examples for BitSearchBox including two-way binding, OnChange, and OnSearch events.</div>
             <br /><br /><br />
             <div class="example-box">
@@ -144,7 +169,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Suggestion (AutoComplete)" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <DemoExample Title="Suggestion (AutoComplete)" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>Examples of BitSearchBox with suggestion list, including custom filtering, minimum trigger characters, and more.</div>
             <br /><br /><br />
             <div class="example-box">
@@ -209,7 +234,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <DemoExample Title="Validation" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
             <div>Demonstrating validation of BitSearchBox using data annotations.</div>
             <br />
             <div class="example-box">
@@ -223,47 +248,81 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Color" RazorCode="@example11RazorCode" Id="example11">
+        <DemoExample Title="Color" RazorCode="@example12RazorCode" Id="example12">
             <div>Offering a range of specialized color variants with Primary being the default, providing visual cues for specific actions or states within your application.</div>
             <br /><br />
             <div class="example-box">
-                <BitSearchBox Placeholder="Search" ShowSearchButton Color="BitColor.Primary" />
-                <br /><br />
-                <BitSearchBox Placeholder="Search" ShowSearchButton Color="BitColor.Secondary" />
-                <br /><br />
-                <BitSearchBox Placeholder="Search" ShowSearchButton Color="BitColor.Tertiary" />
-                <br /><br />
-                <BitSearchBox Placeholder="Search" ShowSearchButton Color="BitColor.Info" />
-                <br /><br />
-                <BitSearchBox Placeholder="Search" ShowSearchButton Color="BitColor.Success" />
-                <br /><br />
-                <BitSearchBox Placeholder="Search" ShowSearchButton Color="BitColor.Warning" />
-                <br /><br />
-                <BitSearchBox Placeholder="Search" ShowSearchButton Color="BitColor.SevereWarning" />
-                <br /><br />
-                <BitSearchBox Placeholder="Search" ShowSearchButton Color="BitColor.Error" />
-                <br /><br />
-                <BitSearchBox Placeholder="Search" ShowSearchButton Color="BitColor.PrimaryBackground" />
-                <br /><br />
-                <BitSearchBox Placeholder="Search" ShowSearchButton Color="BitColor.SecondaryBackground" />
-                <br /><br />
-                <BitSearchBox Placeholder="Search" ShowSearchButton Color="BitColor.TertiaryBackground" />
-                <br /><br />
-                <BitSearchBox Placeholder="Search" ShowSearchButton Color="BitColor.PrimaryForeground" />
-                <br /><br />
-                <BitSearchBox Placeholder="Search" ShowSearchButton Color="BitColor.SecondaryForeground" />
-                <br /><br />
-                <BitSearchBox Placeholder="Search" ShowSearchButton Color="BitColor.TertiaryForeground" />
-                <br /><br />
-                <BitSearchBox Placeholder="Search" ShowSearchButton Color="BitColor.PrimaryBorder" />
-                <br /><br />
-                <BitSearchBox Placeholder="Search" ShowSearchButton Color="BitColor.SecondaryBorder" />
-                <br /><br />
-                <BitSearchBox Placeholder="Search" ShowSearchButton Color="BitColor.TertiaryBorder" />
+                <BitSearchBox Placeholder="Primary" ShowSearchButton Color="BitColor.Primary" />
+                <br />
+                <BitSearchBox Placeholder="Primary" ShowSearchButton Color="BitColor.Primary" Underlined />
+                <br /><br /><br />
+                <BitSearchBox Placeholder="Secondary" ShowSearchButton Color="BitColor.Secondary" />
+                <br />
+                <BitSearchBox Placeholder="Secondary" ShowSearchButton Color="BitColor.Secondary" Underlined />
+                <br /><br /><br />
+                <BitSearchBox Placeholder="Tertiary" ShowSearchButton Color="BitColor.Tertiary" />
+                <br />
+                <BitSearchBox Placeholder="Tertiary" ShowSearchButton Color="BitColor.Tertiary" Underlined />
+                <br /><br /><br />
+                <BitSearchBox Placeholder="Info" ShowSearchButton Color="BitColor.Info" />
+                <br />
+                <BitSearchBox Placeholder="Info" ShowSearchButton Color="BitColor.Info" Underlined />
+                <br /><br /><br />
+                <BitSearchBox Placeholder="Success" ShowSearchButton Color="BitColor.Success" />
+                <br />
+                <BitSearchBox Placeholder="Success" ShowSearchButton Color="BitColor.Success" Underlined />
+                <br /><br /><br />
+                <BitSearchBox Placeholder="Warning" ShowSearchButton Color="BitColor.Warning" />
+                <br />
+                <BitSearchBox Placeholder="Warning" ShowSearchButton Color="BitColor.Warning" Underlined />
+                <br /><br /><br />
+                <BitSearchBox Placeholder="SevereWarning" ShowSearchButton Color="BitColor.SevereWarning" />
+                <br />
+                <BitSearchBox Placeholder="SevereWarning" ShowSearchButton Color="BitColor.SevereWarning" Underlined />
+                <br /><br /><br />
+                <BitSearchBox Placeholder="Error" ShowSearchButton Color="BitColor.Error" />
+                <br />
+                <BitSearchBox Placeholder="Error" ShowSearchButton Color="BitColor.Error" Underlined />
+                <br /><br /><br />
+                <BitSearchBox Placeholder="PrimaryBackground" ShowSearchButton Color="BitColor.PrimaryBackground" />
+                <br />
+                <BitSearchBox Placeholder="PrimaryBackground" ShowSearchButton Color="BitColor.PrimaryBackground" Underlined />
+                <br /><br /><br />
+                <BitSearchBox Placeholder="SecondaryBackground" ShowSearchButton Color="BitColor.SecondaryBackground" />
+                <br />
+                <BitSearchBox Placeholder="SecondaryBackground" ShowSearchButton Color="BitColor.SecondaryBackground" Underlined />
+                <br /><br /><br />
+                <BitSearchBox Placeholder="TertiaryBackground" ShowSearchButton Color="BitColor.TertiaryBackground" />
+                <br />
+                <BitSearchBox Placeholder="TertiaryBackground" ShowSearchButton Color="BitColor.TertiaryBackground" Underlined />
+                <br /><br /><br />
+                <BitSearchBox Placeholder="PrimaryForeground" ShowSearchButton Color="BitColor.PrimaryForeground" />
+                <br />
+                <BitSearchBox Placeholder="PrimaryForeground" ShowSearchButton Color="BitColor.PrimaryForeground" Underlined />
+                <br /><br /><br />
+                <BitSearchBox Placeholder="SecondaryForeground" ShowSearchButton Color="BitColor.SecondaryForeground" />
+                <br />
+                <BitSearchBox Placeholder="SecondaryForeground" ShowSearchButton Color="BitColor.SecondaryForeground" Underlined />
+                <br /><br /><br />
+                <BitSearchBox Placeholder="TertiaryForeground" ShowSearchButton Color="BitColor.TertiaryForeground" />
+                <br />
+                <BitSearchBox Placeholder="TertiaryForeground" ShowSearchButton Color="BitColor.TertiaryForeground" Underlined />
+                <br /><br /><br />
+                <BitSearchBox Placeholder="PrimaryBorder" ShowSearchButton Color="BitColor.PrimaryBorder" />
+                <br />
+                <BitSearchBox Placeholder="PrimaryBorder" ShowSearchButton Color="BitColor.PrimaryBorder" Underlined />
+                <br /><br /><br />
+                <BitSearchBox Placeholder="SecondaryBorder" ShowSearchButton Color="BitColor.SecondaryBorder" />
+                <br />
+                <BitSearchBox Placeholder="SecondaryBorder" ShowSearchButton Color="BitColor.SecondaryBorder" Underlined />
+                <br /><br /><br />
+                <BitSearchBox Placeholder="TertiaryBorder" ShowSearchButton Color="BitColor.TertiaryBorder" />
+                <br />
+                <BitSearchBox Placeholder="TertiaryBorder" ShowSearchButton Color="BitColor.TertiaryBorder" Underlined />
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
+        <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" Id="example13">
             <div>Explore styling and class customization for BitSearchBox, including component styles, custom classes, and detailed styles.</div>
             <br /><br />
             <div class="example-box">
@@ -290,7 +349,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
+        <DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
             <div>Use the BitSearchBox component in right-to-left (RTL).</div>
             <br /><br />
             <div dir="rtl">
