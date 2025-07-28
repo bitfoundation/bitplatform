@@ -38,7 +38,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// <summary>
     /// The custom template for clear button icon.
     /// </summary>
-    [Parameter] public RenderFragment? CleanButtonTemplate { get; set; }
+    [Parameter] public RenderFragment? ClearButtonTemplate { get; set; }
 
     /// <summary>
     /// The general color of the search box, used for colored parts like icons.
@@ -128,6 +128,16 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     [Parameter] public string? Placeholder { get; set; }
 
     /// <summary>
+    /// Prefix text displayed before the searchbox input. This is not included in the value.
+    /// </summary>
+    [Parameter] public string? Prefix { get; set; }
+
+    /// <summary>
+    /// The custom template for the prefix of the searchbox.
+    /// </summary>
+    [Parameter] public RenderFragment? PrefixTemplate { get; set; }
+
+    /// <summary>
     /// Custom icon name for the search button.
     /// </summary>
     [Parameter] public string SearchButtonIconName { get; set; } = "ChromeBackMirrored";
@@ -147,6 +157,16 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// Custom CSS styles for different parts of the BitSearchBox.
     /// </summary>
     [Parameter] public BitSearchBoxClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// Suffix text displayed after the searchbox input. This is not included in the value. 
+    /// </summary>
+    [Parameter] public string? Suffix { get; set; }
+
+    /// <summary>
+    /// The custom template for the suffix of the searchbox.
+    /// </summary>
+    [Parameter] public RenderFragment? SuffixTemplate { get; set; }
 
     /// <summary>
     /// Custom search function to be used in place of the default search algorithm.
@@ -204,13 +224,15 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => CurrentValue.HasValue() ? $"bit-srb-{(FixedIcon ? "fic-" : string.Empty)}hvl" : string.Empty);
+        ClassBuilder.Register(() => FixedIcon ? "bit-srb-fic" : string.Empty);
+
+        ClassBuilder.Register(() => CurrentValue.HasValue() ? $"bit-srb-hvl" : string.Empty);
 
         ClassBuilder.Register(() => DisableAnimation ? "bit-srb-nan" : string.Empty);
 
         ClassBuilder.Register(() => Underlined ? "bit-srb-und" : string.Empty);
 
-        ClassBuilder.Register(() => _inputHasFocus ? $"bit-srb-{(FixedIcon ? "fic-" : string.Empty)}foc {Classes?.Focused}" : string.Empty);
+        ClassBuilder.Register(() => _inputHasFocus ? $"bit-srb-foc {Classes?.Focused}" : string.Empty);
 
         ClassBuilder.Register(() => ShowSearchButton ? "bit-srb-ssb" : string.Empty);
 

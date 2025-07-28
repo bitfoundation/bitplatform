@@ -26,7 +26,7 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
-            Name = "CleanButtonTemplate",
+            Name = "ClearButtonTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The custom template for clear button icon.",
@@ -146,6 +146,20 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "Prefix",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Prefix text displayed before the searchbox input. This is not included in the value.",
+        },
+        new()
+        {
+            Name = "PrefixTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template for the prefix of the searchbox.",
+        },
+        new()
+        {
             Name = "SearchButtonIconName",
             Type = "string",
             DefaultValue = "ChromeBackMirrored",
@@ -173,6 +187,20 @@ public partial class BitSearchBoxDemo
             LinkType = LinkType.Link,
             Href = "#searchbox-class-styles",
             Description = "Custom CSS styles for different parts of the BitSearchBox.",
+        },
+        new()
+        {
+            Name = "Suffix",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Suffix text displayed after the searchbox input. This is not included in the value.",
+        },
+        new()
+        {
+            Name = "SuffixTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template for the suffix of the searchbox.",
         },
         new()
         {
@@ -229,45 +257,45 @@ public partial class BitSearchBoxDemo
                 },
                 new()
                 {
-                    Name = "InputContainer",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the input container of the BitSearchBox.",
-                },
-                new()
-                {
                     Name = "Focused",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the focus state of the BitSearchBox.",
+                    Description = "Custom CSS classes/styles for the focus state of the search box.",
                 },
                 new()
                 {
-                    Name = "ClearButton",
+                    Name = "InputContainer",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the search box's clear button.",
+                    Description = "Custom CSS classes/styles for the search box's input container.",
                 },
                 new()
                 {
-                    Name = "ClearButtonContainer",
+                    Name = "IconWrapper",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the search box's clear button container.",
+                    Description = "Custom CSS classes/styles for the search box's icon wrapper.",
                 },
                 new()
                 {
-                    Name = "ClearButtonIcon",
+                    Name = "Icon",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the search box's clear button icon.",
+                    Description = "Custom CSS classes/styles for the search box's search icon.",
                 },
                 new()
                 {
-                    Name = "ClearButtonIconContainer",
+                    Name = "PrefixContainer",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the search box's clear button icon container.",
+                    Description = "Custom CSS classes/styles for the search box's search prefix container.",
+                },
+                new()
+                {
+                    Name = "Prefix",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the search box's search prefix.",
                 },
                 new()
                 {
@@ -278,18 +306,88 @@ public partial class BitSearchBoxDemo
                 },
                 new()
                 {
-                    Name = "SearchIcon",
+                    Name = "SuffixContainer",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the search box search icon.",
+                    Description = "Custom CSS classes/styles for the search box's search suffix container.",
                 },
                 new()
                 {
-                    Name = "SearchIconContainer",
+                    Name = "Suffix",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the search box's search icon container.",
-                }
+                    Description = "Custom CSS classes/styles for the search box's search suffix.",
+                },
+                new()
+                {
+                    Name = "ClearButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the search box's clear button.",
+                },
+                new()
+                {
+                    Name = "ClearButtonIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the search box's clear button icon.",
+                },
+                new()
+                {
+                    Name = "SearchButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the search box's search button.",
+                },
+                new()
+                {
+                    Name = "SearchButtonIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the search box's search button icon.",
+                },
+                new()
+                {
+                    Name = "Overlay",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the search box's overlay.",
+                },
+                new()
+                {
+                    Name = "Callout",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the search box's callout.",
+                },
+                new()
+                {
+                    Name = "ScrollContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the search box's scroll container.",
+                },
+                new()
+                {
+                    Name = "SuggestItemWrapper",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the search box's suggest item wrapper.",
+                },
+                new()
+                {
+                    Name = "SuggestItemButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the search box's suggest item button.",
+                },
+                new()
+                {
+                    Name = "SuggestItemText",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the search box's suggest item text.",
+                },
             ]
         }
     ];
