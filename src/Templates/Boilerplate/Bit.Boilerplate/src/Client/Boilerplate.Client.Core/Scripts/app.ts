@@ -74,49 +74,25 @@ class App {
         };
     };
     //#endif
-}
 
-(window as any).App = App;
+    /* Checks for and applies updates if available.
+       Called by `WebAppUpdateService.cs` when the user clicks the app version in `AppShell.razor`
+       or when `ForceUpdateSnackbar.razor` appears after a forced update. */
+    public static async tryUpdatePwa(autoReload: boolean) {
+        const bswup = (window as any).BitBswup; // https://bitplatform.dev/bswup
+        if (!bswup) return;
 
-window.addEventListener('message', handleMessage);
-window.addEventListener('load', handleLoad);
-window.addEventListener('resize', setCssWindowSizes);
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.addEventListener('message', handleMessage);
-}
+        if (autoReload) {
+            if (await bswup.skipWaiting()) return; // Use new service worker if available and reload the page.
+        }
 
-function handleMessage(e: MessageEvent) {
-    // Enable publishing messages from JavaScript's `window.postMessage` or `client.postMessage` to the C# `PubSubService`.
-    if (e.data.key === 'PUBLISH_MESSAGE') {
-        App.publishMessage(e.data.message, e.data.payload);
+        const bswupProgress = (window as any).BitBswupProgress;
+        if (!bswupProgress) return;
+
+        bswupProgress.config({ autoReload });
+
+        bswup.checkForUpdate();
     }
 }
 
-function handleLoad() {
-    setCssWindowSizes();
-}
-
-function setCssWindowSizes() {
-    document.documentElement.style.setProperty('--win-width', `${window.innerWidth}px`);
-    document.documentElement.style.setProperty('--win-height', `${window.innerHeight}px`);
-}
-
-declare class BitTheme { static init(options: any): void; };
-
-if (typeof BitTheme != "undefined") {
-    BitTheme.init({
-        system: true,
-        persist: true,
-        onChange: (newTheme: string, oldThem: string) => {
-            if (newTheme === 'dark') {
-                document.body.classList.add('theme-dark');
-                document.body.classList.remove('theme-light');
-            } else {
-                document.body.classList.add('theme-light');
-                document.body.classList.remove('theme-dark');
-            }
-            const primaryBgColor = getComputedStyle(document.documentElement).getPropertyValue('--bit-clr-bg-pri');
-            document.querySelector('meta[name=theme-color]')!.setAttribute('content', primaryBgColor);
-        }
-    });
-}
+(window as any).App = App;

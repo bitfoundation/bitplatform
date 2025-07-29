@@ -8,6 +8,6 @@ public partial class WebAppUpdateService : IAppUpdateService
     public async Task ForceUpdate()
     {
         const bool autoReload = true;
-        await jsRuntime.InvokeVoidAsync("tryUpdatePwa", autoReload);
+        await jsRuntime.InvokeVoidAsync("App.tryUpdatePwa", autoReload);
     }
 }
