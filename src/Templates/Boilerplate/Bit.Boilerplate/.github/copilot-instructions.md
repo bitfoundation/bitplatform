@@ -23,7 +23,7 @@
 - **Boilerplate.Server.AppHost**: Aspire's appsettings and Program.cs
 - **Boilerplate.Shared**: Dtos, Enums, custom exceptions, shared services, resx files.
 - **Boilerplate.Tests**: UI and integration tests.
-- **Boilerplate.Client.Core**: Components, Pages, Layout, Client services, App.ts (TypeScript), app.scss (SCSS), and appsettings.json for the client.
+- **Boilerplate.Client.Core**: Components, Pages, Layout, Client services, app.ts (TypeScript), app.scss (SCSS), and appsettings.json for the client.
 - **Boilerplate.Client.Web**: Blazor WebAssembly standalone project.
 - **Boilerplate.Client.Maui**: .NET MAUI based Blazor Hybrid project.
 - **Boilerplate.Client.Windows**: Windows forms based Blazor Hybrid project.
