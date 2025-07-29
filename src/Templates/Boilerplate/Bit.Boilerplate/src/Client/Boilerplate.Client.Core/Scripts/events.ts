@@ -15,8 +15,8 @@
 
     function handleMessage(e: MessageEvent) {
         // Enable publishing messages from JavaScript's `window.postMessage` or `client.postMessage` to the C# `PubSubService`.
-        if (e.data.key === 'PUBLISH_MESSAGE') {
-            App.publishMessage(e.data.message, e.data.payload);
+        if (e.data?.key === 'PUBLISH_MESSAGE') {
+            App.publishMessage(e.data?.message, e.data?.payload);
         }
     }
 

@@ -50,11 +50,11 @@ class App {
         if (!registration) return null;
 
         const pushManager = registration.pushManager;
-        if (pushManager == null) return null;
+        if (!pushManager) return null;
 
         let subscription = await pushManager.getSubscription();
 
-        if (subscription == null) {
+        if (!subscription) {
             subscription = await pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: vapidPublicKey

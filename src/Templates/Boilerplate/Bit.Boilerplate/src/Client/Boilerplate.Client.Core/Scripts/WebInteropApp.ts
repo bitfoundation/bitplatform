@@ -8,13 +8,13 @@ declare class BitButil {
 };
 
 class WebInteropApp {
-
     private static autoClose = true;
 
     public static async run() {
         try {
             const urlParams = new URLSearchParams(location.search);
             const action = urlParams.get('actionName');
+
             switch (action) {
                 case 'SocialSignInCallback':
                     await WebInteropApp.socialSignInCallback();
@@ -30,21 +30,22 @@ class WebInteropApp {
         catch (err: any) {
             const urlParams = new URLSearchParams(location.search);
             const localHttpPort = urlParams.get('localHttpPort')?.toString();
-            if (localHttpPort) {
-                // Blazor Hybrid:
-                const errMsg = `${JSON.stringify(err, Object.getOwnPropertyNames(err))} ${err.toString()}`;
-                await fetch('api/LogError', {
-                    method: 'POST',
-                    credentials: 'omit',
-                    body: errMsg
-                });
-            }
+            if (!localHttpPort) return;
+
+            // Blazor Hybrid:
+            const errMsg = `${JSON.stringify(err, Object.getOwnPropertyNames(err))} ${err.toString()}`;
+            await fetch('api/LogError', {
+                method: 'POST',
+                credentials: 'omit',
+                body: errMsg
+            });
+
         }
         finally {
-            if (WebInteropApp.autoClose) {
-                window.close();
-                location.href = 'about:blank';
-            }
+            if (!WebInteropApp.autoClose) return;
+
+            window.close();
+            location.href = 'about:blank';
         }
     }
 
@@ -52,6 +53,7 @@ class WebInteropApp {
         const urlParams = new URLSearchParams(location.search);
         const urlToOpen = urlParams.get('url')!.toString();
         const localHttpPort = urlParams.get('localHttpPort')?.toString();
+
         if (!localHttpPort) {
             // Blazor WebAssembly, Auto or Server:
             if (window.opener) {
@@ -63,6 +65,7 @@ class WebInteropApp {
             }
             return;
         }
+
         // Blazor Hybrid:
         await fetch(`http://localhost:${localHttpPort}/api/SocialSignInCallback?urlToOpen=${encodeURIComponent(urlToOpen)}`, {
             method: 'POST',
@@ -74,6 +77,7 @@ class WebInteropApp {
         // Blazor Hybrid:
         const webAuthnCredentialOptions = await (await fetch(`api/GetWebAuthnCredentialOptions`, { credentials: 'omit' })).json();
         const webAuthnCredential = await BitButil.webAuthn.getCredential(webAuthnCredentialOptions);
+
         await fetch(`api/WebAuthnCredential`, {
             method: 'POST',
             headers: {
@@ -89,6 +93,7 @@ class WebInteropApp {
         // Blazor Hybrid:
         const webAuthnCredentialOptions = await (await fetch(`api/GetCreateWebAuthnCredentialOptions`, { credentials: 'omit' })).json();
         const webAuthnCredential = await BitButil.webAuthn.createCredential(webAuthnCredentialOptions);
+
         await fetch(`api/CreateWebAuthnCredential`, {
             method: 'POST',
             headers: {
@@ -99,3 +104,5 @@ class WebInteropApp {
         });
     }
 }
+
+(window as any).WebInteropApp = WebInteropApp;
