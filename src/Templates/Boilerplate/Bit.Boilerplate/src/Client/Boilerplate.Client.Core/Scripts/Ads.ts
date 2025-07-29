@@ -74,7 +74,7 @@ class Ads {
         const allScripts = Array.from(document.scripts).map(s => s.src);
         const notAddedScripts = scripts.filter(s => !allScripts.find(as => as.includes(s)));
 
-        if (notAddedScripts.length == 0) return Promise.resolve();
+        if (notAddedScripts.length === 0) return Promise.resolve();
 
         const promise = new Promise(async (res: any, rej: any) => {
             try {
