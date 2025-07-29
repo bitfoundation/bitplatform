@@ -3,34 +3,32 @@ name: 'bitplatform wiki'
 on:
   issues:
     types: [opened]
+  discussion:
+    types: [created]
 
 jobs:
   build-and-comment:
     runs-on: ubuntu-latest
     permissions:
       issues: write
+      discussions: write
 
     steps:
-      # Step 1: Check out the repository's files to access the script
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 2: Install jq, the robust JSON processor
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
 
-      # Step 3: Execute the wiki.sh script
       - name: Run wiki query script
         id: run-mcp-query
         run: |
-          # Make the script executable and then run it
           chmod +x ./.github/workflows/wiki.sh
           echo "wiki_url=$(./.github/workflows/wiki.sh)" >> $GITHUB_OUTPUT
         env:
-          ISSUE_TITLE: ${{ github.event.issue.title }}
-          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_TITLE: ${{ github.event.issue.title || github.event.discussion.title }}
+          ISSUE_BODY: ${{ github.event.issue.body || github.event.discussion.body }}
 
-      # Step 4: Post the friendly comment on the issue
       - name: Write comment
         if: steps.run-mcp-query.outputs.wiki_url
         uses: actions/github-script@v7
@@ -40,15 +38,34 @@ jobs:
             const commentBody = `
             Hello there! I'm a wiki 🤖.
 
-            Based on the content of this issue, I've found a potentially relevant wiki page for you!
+            Based on the content of this thread, I've found a potentially relevant wiki page for you!
 
             **✨ [View Wiki Page](${{ steps.run-mcp-query.outputs.wiki_url }})**
 
             I hope this helps!
             `;
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: commentBody
-            })
+
+            if (context.eventName === 'issues') {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: commentBody
+              });
+            } else if (context.eventName === 'discussion') {
+              const discussionId = context.payload.discussion.node_id;
+              
+              await github.graphql(
+                `mutation($discussionId: ID!, $body: String!) {
+                  addDiscussionComment(input: {discussionId: $discussionId, body: $body}) {
+                    comment {
+                      id
+                    }
+                  }
+                }`,
+                {
+                  discussionId: discussionId,
+                  body: commentBody
+                }
+              );
+            }
