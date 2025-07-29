@@ -2,11 +2,44 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "dotnet build",
+            "label": "before-build",
             "type": "shell",
             "command": "dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks",
             "runOptions": {
                 "runOn": "folderOpen"
+            }
+        },
+        {
+            "label": "build",
+            "type": "shell",
+            "command": "dotnet build src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj"
+        },
+        {
+            "label": "generate-resx-files",
+            "type": "shell",
+            "command": "dotnet build src/Shared/Boilerplate.Shared.csproj -t:PrepareResources"
+        },
+        {
+            "label": "run",
+            "type": "shell",
+            "command": "dotnet",
+            "args": [
+                "run"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/src/Server/Boilerplate.Server.Web"
+            },
+            "isBackground": true
+        },
+        {
+            "label": "run-tests",
+            "type": "shell",
+            "command": "dotnet",
+            "args": [
+                "test"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/src/Tests"
             }
         }
     ]
