@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Shared.Controllers.Identity;
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
@@ -14,7 +15,8 @@ public partial class RequestHeadersDelegatingHandler(ITelemetryContext telemetry
         // we need to set the request `credentials` to `include` in api calls that return access token in their responses.
         // In other actions, `credentials include` only result into double sending the access token in the request headers unnecessarily. (Authorization and Cookie headers).
         var responseType = request.Options.GetValueOrDefault(RequestOptionNames.ResponseType, null) as Type;
-        var includeCredentials = responseType == typeof(SignInResponseDto) || responseType == typeof(TokenResponseDto);
+        var actionName = request.Options.GetValueOrDefault(RequestOptionNames.ActionName, null) as string;
+        var includeCredentials = responseType == typeof(SignInResponseDto) || responseType == typeof(TokenResponseDto) || actionName is nameof(IUserController.SignOut);
         request.SetBrowserRequestCredentials(includeCredentials ? BrowserRequestCredentials.Include : BrowserRequestCredentials.Omit);
 
         request.SetBrowserResponseStreamingEnabled(true);

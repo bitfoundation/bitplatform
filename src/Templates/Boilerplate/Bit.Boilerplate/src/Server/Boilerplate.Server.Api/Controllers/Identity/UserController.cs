@@ -58,6 +58,8 @@ public partial class UserController : AppControllerBase, IUserController
     [HttpPost]
     public async Task SignOut(CancellationToken cancellationToken)
     {
+        Response.Cookies.Delete("access_token");
+
         var currentSessionId = User.GetSessionId();
 
         var userSession = await DbContext.UserSessions
@@ -65,8 +67,6 @@ public partial class UserController : AppControllerBase, IUserController
 
         DbContext.UserSessions.Remove(userSession);
         await DbContext.SaveChangesAsync(cancellationToken);
-
-        Response.Cookies.Delete("access_token");
 
         await signInManager.SignOutAsync();
     }
