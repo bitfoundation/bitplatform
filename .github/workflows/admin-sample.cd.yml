@@ -230,80 +230,80 @@ jobs:
   #       name: win-exe-bundle
   #       path: AdminPanel\src\Client\AdminPanel.Client.Windows\Releases
   
-  # build_blazor_hybrid_android:
-  #   name: build blazor hybrid (android)
-  #   runs-on: ubuntu-24.04
+  build_blazor_hybrid_android:
+    name: build blazor hybrid (android)
+    runs-on: ubuntu-24.04
   
-  #   steps:
+    steps:
      
-  #   - name: Checkout source code
-  #     uses: actions/checkout@v4
+    - name: Checkout source code
+      uses: actions/checkout@v4
      
-  #   - name: Setup .NET
-  #     uses: actions/setup-dotnet@v4
-  #     with:
-  #       global-json-file: src/global.json
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: src/global.json
 
-  #   - name: Create project from Boilerplate
-  #     run: |
-  #      cd src/Templates/Boilerplate && dotnet build -c Release
-  #      dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-  #      dotnet new install Bit.Boilerplate.0.0.0.nupkg
-  #      cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads
+    - name: Create project from Boilerplate
+      run: |
+       cd src/Templates/Boilerplate && dotnet build -c Release
+       dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+       dotnet new install Bit.Boilerplate.0.0.0.nupkg
+       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads
 
-  #   - uses: actions/setup-node@v4
-  #     with:
-  #       node-version: 23
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 23
   
-  #   - name: Extract Android signing key from env
-  #     uses: timheuer/base64-to-file@v1.2
-  #     with:
-  #         fileDir: './AdminPanel/src/Client/AdminPanel.Client.Maui/'
-  #         fileName: 'AdminPanel.keystore'
-  #         encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
+    - name: Extract Android signing key from env
+      uses: timheuer/base64-to-file@v1.2
+      with:
+          fileDir: './AdminPanel/src/Client/AdminPanel.Client.Maui/'
+          fileName: 'AdminPanel.keystore'
+          encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
 
-  #   - name: Extract Android signing key from env
-  #     uses: timheuer/base64-to-file@v1.2
-  #     with:
-  #         fileDir: './AdminPanel/src/Client/AdminPanel.Client.Maui/Platforms/Android'
-  #         fileName: 'google-services.json'
-  #         encodedString: ${{ secrets.ADMINPANEL_GOOGLE_SERVICES_JSON_BASE64 }}
+    - name: Extract Android signing key from env
+      uses: timheuer/base64-to-file@v1.2
+      with:
+          fileDir: './AdminPanel/src/Client/AdminPanel.Client.Maui/Platforms/Android'
+          fileName: 'google-services.json'
+          encodedString: ${{ secrets.ADMINPANEL_GOOGLE_SERVICES_JSON_BASE64 }}
   
-  #   - name: Use Bit.ResxTranslator
-  #     run: |
-  #           cd AdminPanel
-  #           dotnet tool install --global Bit.ResxTranslator --prerelease
-  #           bit-resx-translate
+    - name: Use Bit.ResxTranslator
+      run: |
+            cd AdminPanel
+            dotnet tool install --global Bit.ResxTranslator --prerelease
+            bit-resx-translate
 
-  #   - name: Update core appsettings.json
-  #     uses: devops-actions/variable-substitution@v1.2 
-  #     with:
-  #       files: 'AdminPanel/**/appsettings*json'
-  #     env:
-  #       WebAppUrl: ${{ env.SERVER_ADDRESS }}  
-  #       ServerAddress: ${{ env.SERVER_ADDRESS }}
-  #       Logging.Sentry.Dsn: ${{ secrets.ADMINPANEL_SENTRY_DSN }}
-  #       GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
+    - name: Update core appsettings.json
+      uses: devops-actions/variable-substitution@v1.2 
+      with:
+        files: 'AdminPanel/**/appsettings*json'
+      env:
+        WebAppUrl: ${{ env.SERVER_ADDRESS }}  
+        ServerAddress: ${{ env.SERVER_ADDRESS }}
+        Logging.Sentry.Dsn: ${{ secrets.ADMINPANEL_SENTRY_DSN }}
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
 
-  #   - name: Install maui
-  #     run: cd src && dotnet workload install maui-android
+    - name: Install maui
+      run: cd src && dotnet workload install maui-android
 
-  #   - name: Install Android Sdk platform tools
-  #     run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+    - name: Install Android Sdk platform tools
+      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
   
-  #   - name: Generate CSS/JS files
-  #     run: |
-  #         dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
-  #         dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
+    - name: Generate CSS/JS files
+      run: |
+          dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
+          dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
   
-  #   - name: Publish aab
-  #     run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -f net9.0-android
+    - name: Publish aab
+      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -f net9.0-android
   
-  #   - name: Upload artifact
-  #     uses: actions/upload-artifact@v4
-  #     with:
-  #       name: android-bundle
-  #       path: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/Release/net9.0-android/*-Signed.*
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: android-bundle
+        path: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/Release/net9.0-android/*-Signed.*
   
   build_blazor_hybrid_ios:
     name: build blazor hybrid (iOS-macOS)
