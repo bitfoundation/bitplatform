@@ -11,7 +11,7 @@ public partial class RequestHeadersDelegatingHandler(ITelemetryContext telemetry
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        // Having `credentials` set to `Include` will double send access tokens in the request headers (Cookeies and Authorization header).
+        // Having `credentials` set to `Include` will double send access tokens in the request headers (Cookies and Authorization header).
         // But in order to make server's Set-Cookie work properly, we need to set `credentials` to `Include`.
         var responseType = request.Options.GetValueOrDefault(RequestOptionNames.ResponseType, null) as Type;
         var actionName = request.Options.GetValueOrDefault(RequestOptionNames.ActionName, null) as string;
