@@ -15,8 +15,8 @@ public partial class RequestHeadersDelegatingHandler(ITelemetryContext telemetry
         // But in order to make server's Set-Cookie work properly, we need to set `credentials` to `Include`.
         var responseType = request.Options.GetValueOrDefault(RequestOptionNames.ResponseType, null) as Type;
         var actionName = request.Options.GetValueOrDefault(RequestOptionNames.ActionName, null) as string;
-        var actionHasSetCookieInServerSide = responseType == typeof(SignInResponseDto) || responseType == typeof(TokenResponseDto) || actionName is nameof(IUserController.SignOut);
-        request.SetBrowserRequestCredentials(actionHasSetCookieInServerSide ? BrowserRequestCredentials.Include : BrowserRequestCredentials.Omit);
+        var actionWithSetCookieInServerSide = responseType == typeof(SignInResponseDto) || responseType == typeof(TokenResponseDto) || actionName is nameof(IUserController.SignOut);
+        request.SetBrowserRequestCredentials(actionWithSetCookieInServerSide ? BrowserRequestCredentials.Include : BrowserRequestCredentials.Omit);
 
         request.SetBrowserResponseStreamingEnabled(true);
 
