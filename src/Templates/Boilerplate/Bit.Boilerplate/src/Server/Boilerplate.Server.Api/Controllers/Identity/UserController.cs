@@ -66,6 +66,8 @@ public partial class UserController : AppControllerBase, IUserController
         DbContext.UserSessions.Remove(userSession);
         await DbContext.SaveChangesAsync(cancellationToken);
 
+        Response.Cookies.Delete("access_token");
+
         await signInManager.SignOutAsync();
     }
 

@@ -53,20 +53,6 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         await storageService.SetItem("access_token", response!.AccessToken, rememberMe is true);
         await storageService.SetItem("refresh_token", response!.RefreshToken, rememberMe is true);
 
-        if (AppPlatform.IsBlazorHybrid is false && jsRuntime.IsInitialized())
-        {
-            await cookie.Set(new()
-            {
-                Name = "access_token",
-                Value = response.AccessToken,
-                MaxAge = rememberMe is true ? response.ExpiresIn : null, // to create a session cookie
-                Path = "/",
-                Domain = absoluteServerAddress.GetAddress().Host,
-                SameSite = SameSite.Strict,
-                Secure = AppEnvironment.IsDevelopment() is false
-            });
-        }
-
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
 
@@ -218,17 +204,6 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     {
         await storageService.RemoveItem("access_token");
         await storageService.RemoveItem("refresh_token");
-        if (AppPlatform.IsBlazorHybrid is false)
-        {
-            await cookie.Remove(new ButilCookie()
-            {
-                Name = "access_token",
-                Path = "/",
-                Domain = absoluteServerAddress.GetAddress().Host,
-                SameSite = SameSite.Strict,
-                Secure = AppEnvironment.IsDevelopment() is false
-            });
-        }
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
 

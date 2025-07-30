@@ -10,6 +10,8 @@ namespace Boilerplate.Server.Api.Services.Identity;
 public partial class AppJwtSecureDataFormat(ServerApiSettings appSettings, TokenValidationParameters validationParameters)
     : ISecureDataFormat<AuthenticationTicket>
 {
+    public HttpContext HttpContextToSetAccessTokenCookie { get; set; } = default!;
+
     public AuthenticationTicket? Unprotect(string? protectedText) => Unprotect(protectedText, null);
 
     public AuthenticationTicket? Unprotect(string? protectedText, string? purpose)
@@ -77,6 +79,23 @@ public partial class AppJwtSecureDataFormat(ServerApiSettings appSettings, Token
             });
 
         var encodedJwt = jwtSecurityTokenHandler.WriteToken(securityToken);
+
+        if (HttpContextToSetAccessTokenCookie is not null)
+        {
+            // Set access_token cookie for pre-rendering.
+            HttpContextToSetAccessTokenCookie.Response.Cookies.Append(
+                "access_token",
+                encodedJwt,
+                new()
+                {
+                    HttpOnly = true,
+                    Secure = AppEnvironment.IsDevelopment() is false,
+                    SameSite = SameSiteMode.Strict,
+                    IsEssential = true,
+                    Path = "/",
+                    MaxAge = appSettings.Identity.BearerTokenExpiration
+                });
+        }
 
         return encodedJwt;
     }
