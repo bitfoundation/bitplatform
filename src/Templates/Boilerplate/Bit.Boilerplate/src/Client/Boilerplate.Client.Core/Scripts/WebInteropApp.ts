@@ -54,6 +54,19 @@ class WebInteropApp {
         const urlToOpen = urlParams.get('url')!.toString();
         const localHttpPort = urlParams.get('localHttpPort')?.toString();
 
+        try {
+            const redirectUrl = new URL(urlToOpen, window.location.origin);
+            if (redirectUrl.protocol !== "http:" && redirectUrl.protocol !== "https:") {
+                throw new Error("Invalid protocol for redirection.");
+            }
+            if (redirectUrl.origin !== window.location.origin) {
+                throw new Error("Redirect to a different origin is not allowed.");
+            }
+        } catch (e) {
+            console.error("Invalid or malicious redirect URL detected:", e);
+            return
+        }
+
         if (!localHttpPort) {
             // Blazor WebAssembly, Auto or Server:
             if (window.opener) {
