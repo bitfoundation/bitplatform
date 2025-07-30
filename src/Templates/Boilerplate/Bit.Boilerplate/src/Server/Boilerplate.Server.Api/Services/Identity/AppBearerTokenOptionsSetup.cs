@@ -1,16 +1,76 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using System.Text;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.BearerToken;
 
 namespace Boilerplate.Server.Api.Services.Identity;
+
+public class AppBearerTokenOptionsSetup(IConfiguration configuration,
+    IServiceProvider serviceProvider) : IPostConfigureOptions<BearerTokenOptions>
+{
+    public void PostConfigure(string? name, BearerTokenOptions options)
+    {
+        options.BearerTokenProtector = ActivatorUtilities.CreateInstance<AppJwtSecureDataFormat>(serviceProvider, "AccessToken");
+        options.RefreshTokenProtector = ActivatorUtilities.CreateInstance<AppJwtSecureDataFormat>(serviceProvider, "RefreshToken");
+
+        options.Events = new()
+        {
+            OnMessageReceived = async context =>
+            {
+                // The server accepts the accessToken from either the authorization header, the cookie, or the request URL query string
+                context.Token ??= context.Request.Query.ContainsKey("access_token") ? context.Request.Query["access_token"] : context.Request.Cookies["access_token"];
+            }
+        };
+
+        configuration.GetRequiredSection("Identity").Bind(options);
+    }
+}
+
 
 /// <summary>
 /// Stores bearer token in jwt format
 /// </summary>
-public partial class AppJwtSecureDataFormat(ServerApiSettings appSettings, TokenValidationParameters validationParameters)
+public partial class AppJwtSecureDataFormat
     : ISecureDataFormat<AuthenticationTicket>
 {
-    public HttpContext? HttpContextToSetAccessTokenCookie { get; set; }
+    private readonly string tokenType;
+    private readonly ServerApiSettings appSettings;
+    private readonly ILogger<AppJwtSecureDataFormat> logger;
+    private readonly IHttpContextAccessor httpContextAccessor;
+    private readonly TokenValidationParameters validationParameters;
+
+    public AppJwtSecureDataFormat(ServerApiSettings appSettings,
+        IHostEnvironment env,
+        ILogger<AppJwtSecureDataFormat> logger,
+        IHttpContextAccessor httpContextAccessor,
+        string tokenType)
+    {
+        this.appSettings = appSettings;
+        this.logger = logger;
+        this.httpContextAccessor = httpContextAccessor;
+        this.tokenType = tokenType;
+
+        validationParameters = new()
+        {
+            ClockSkew = TimeSpan.Zero,
+            RequireSignedTokens = true,
+
+            ValidateIssuerSigningKey = env.IsDevelopment() is false,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(appSettings.Identity.JwtIssuerSigningKeySecret)),
+
+            RequireExpirationTime = true,
+            ValidateLifetime = tokenType is "AccessToken", /* IdentityController.Refresh will validate expiry itself while refreshing the token */
+
+            ValidateAudience = true,
+            ValidAudience = appSettings.Identity.Audience,
+
+            ValidateIssuer = true,
+            ValidIssuer = appSettings.Identity.Issuer,
+
+            AuthenticationType = IdentityConstants.BearerScheme
+        };
+    }
 
     public AuthenticationTicket? Unprotect(string? protectedText) => Unprotect(protectedText, null);
 
@@ -47,10 +107,7 @@ public partial class AppJwtSecureDataFormat(ServerApiSettings appSettings, Token
         }
         catch (Exception ex)
         {
-            if (AppEnvironment.IsDevelopment())
-            {
-                Console.WriteLine(ex); // since we do not have access to any logger at this point!
-            }
+            logger.LogWarning(ex, "Failed to unprotect the {TokenType}.", tokenType);
 
             return Anonymous();
         }
@@ -80,10 +137,12 @@ public partial class AppJwtSecureDataFormat(ServerApiSettings appSettings, Token
 
         var encodedJwt = jwtSecurityTokenHandler.WriteToken(securityToken);
 
-        if (HttpContextToSetAccessTokenCookie is not null)
+        if (tokenType is "AccessToken")
         {
+            var context = httpContextAccessor?.HttpContext ?? throw new InvalidOperationException();
+
             // Set access_token cookie for pre-rendering.
-            HttpContextToSetAccessTokenCookie.Response.Cookies.Append(
+            context.Response.Cookies.Append(
                 "access_token",
                 encodedJwt,
                 new()

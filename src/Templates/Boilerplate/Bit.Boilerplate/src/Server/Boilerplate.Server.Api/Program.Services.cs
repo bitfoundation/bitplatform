@@ -497,48 +497,14 @@ public static partial class Program
         services.AddScoped(sp => (IUserPhoneNumberStore<User>)sp.GetRequiredService<IUserStore<User>>());
         services.AddScoped(sp => (AppUserClaimsPrincipalFactory)sp.GetRequiredService<IUserClaimsPrincipalFactory<User>>());
 
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenOptions>, AppBearerTokenOptionsSetup>());
         var authenticationBuilder = services.AddAuthentication(options =>
         {
             options.DefaultScheme = IdentityConstants.BearerScheme;
             options.DefaultChallengeScheme = IdentityConstants.BearerScheme;
             options.DefaultAuthenticateScheme = IdentityConstants.BearerScheme;
         })
-        .AddBearerToken(IdentityConstants.BearerScheme, options =>
-        {
-            options.BearerTokenProtector = new AppJwtSecureDataFormat(appSettings, BuildTokenValidationParameters());
-            options.RefreshTokenProtector = new AppJwtSecureDataFormat(appSettings, BuildTokenValidationParameters(validateExpiry: false /* IdentityController.Refresh will validate expiry itself */));
-
-            options.Events = new()
-            {
-                OnMessageReceived = async context =>
-                {
-                    // The server accepts the accessToken from either the authorization header, the cookie, or the request URL query string
-                    context.Token ??= context.Request.Query.ContainsKey("access_token") ? context.Request.Query["access_token"] : context.Request.Cookies["access_token"];
-                }
-            };
-
-            configuration.GetRequiredSection("Identity").Bind(options);
-
-            TokenValidationParameters BuildTokenValidationParameters(bool validateExpiry = true) => new()
-            {
-                ClockSkew = TimeSpan.Zero,
-                RequireSignedTokens = true,
-
-                ValidateIssuerSigningKey = env.IsDevelopment() is false,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(appSettings.Identity.JwtIssuerSigningKeySecret)),
-
-                RequireExpirationTime = true,
-                ValidateLifetime = validateExpiry,
-
-                ValidateAudience = true,
-                ValidAudience = identityOptions.Audience,
-
-                ValidateIssuer = true,
-                ValidIssuer = identityOptions.Issuer,
-
-                AuthenticationType = IdentityConstants.BearerScheme
-            };
-        });
+        .AddBearerToken(IdentityConstants.BearerScheme);
 
         services.AddAuthorization();
 

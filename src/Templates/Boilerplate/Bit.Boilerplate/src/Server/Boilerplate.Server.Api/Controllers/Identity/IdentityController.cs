@@ -99,9 +99,6 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
     private async Task SignIn(SignInRequestDto request, User user, CancellationToken cancellationToken)
     {
-        var appJwtSecureDataFormat = (AppJwtSecureDataFormat)bearerTokenOptions.Get(IdentityConstants.BearerScheme).BearerTokenProtector;
-        appJwtSecureDataFormat.HttpContextToSetAccessTokenCookie = HttpContext; // It wasn't possible to inject HttpContext in the constructor, so we set it here.
-
         signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 
         var userSession = await CreateUserSession(user.Id, cancellationToken);
@@ -237,9 +234,6 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         try
         {
-            var appJwtSecureDataFormat = (AppJwtSecureDataFormat)bearerTokenOptions.Get(IdentityConstants.BearerScheme).BearerTokenProtector;
-            appJwtSecureDataFormat.HttpContextToSetAccessTokenCookie = HttpContext; // It wasn't possible to inject HttpContext in the constructor, so we set it here.
-
             var refreshTokenProtector = bearerTokenOptions.Get(IdentityConstants.BearerScheme).RefreshTokenProtector;
             var refreshTicket = refreshTokenProtector.Unprotect(request.RefreshToken);
 
