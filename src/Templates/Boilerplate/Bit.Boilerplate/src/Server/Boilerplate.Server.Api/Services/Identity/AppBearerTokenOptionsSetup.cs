@@ -141,7 +141,7 @@ public partial class AppJwtSecureDataFormat
 
         if (tokenType is "AccessToken")
         {
-            var context = httpContextAccessor?.HttpContext ?? throw new InvalidOperationException();
+            var context = httpContextAccessor?.HttpContext ?? throw new InvalidOperationException("HttpContext is not available.");
 
             // Set access token cookie for pre-rendering.
             context.Response.Cookies.Append(
