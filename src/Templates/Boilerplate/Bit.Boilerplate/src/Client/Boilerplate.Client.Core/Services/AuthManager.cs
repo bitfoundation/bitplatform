@@ -50,8 +50,25 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     {
         rememberMe ??= await storageService.IsPersistent("refresh_token");
 
-        await storageService.SetItem("access_token", response!.AccessToken, rememberMe is true);
+        await storageService.SetItem("access_token", response!.AccessToken);
         await storageService.SetItem("refresh_token", response!.RefreshToken, rememberMe is true);
+
+        if (AppPlatform.IsBlazorHybridOrBrowser is false && jsRuntime.IsInitialized())
+        {
+            // Blazor WebAssembly stores http-only cookies using JavaScript's fetch API that is the underlying implementation of HttpClient.
+            // But Blazor Server doesn't support http-only cookies this way, so we need to set the cookie manually.
+            // Blazor Hybrid doesn't have pre-rendering, so setting cookie is not necessary.
+            await cookie.Set(new()
+            {
+                Name = "access_token",
+                Value = response.AccessToken,
+                MaxAge = response.ExpiresIn,
+                Path = "/",
+                Domain = absoluteServerAddress.GetAddress().Host,
+                SameSite = SameSite.Strict,
+                Secure = AppEnvironment.IsDevelopment() is false
+            });
+        }
 
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
@@ -204,6 +221,14 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     {
         await storageService.RemoveItem("access_token");
         await storageService.RemoveItem("refresh_token");
+        await cookie.Remove(new ButilCookie()
+        {
+            Name = "access_token",
+            Path = "/",
+            Domain = absoluteServerAddress.GetAddress().Host,
+            SameSite = SameSite.Strict,
+            Secure = AppEnvironment.IsDevelopment() is false
+        });
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
 

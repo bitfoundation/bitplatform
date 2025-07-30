@@ -152,7 +152,8 @@ public partial class AppJwtSecureDataFormat
                     SameSite = SameSiteMode.Strict,
                     IsEssential = true,
                     Path = "/",
-                    MaxAge = appSettings.Identity.BearerTokenExpiration
+                    Domain = context.Request.GetBaseUrl().Host,
+                    Expires = data.Properties.ExpiresUtc!.Value.UtcDateTime
                 });
         }
 
