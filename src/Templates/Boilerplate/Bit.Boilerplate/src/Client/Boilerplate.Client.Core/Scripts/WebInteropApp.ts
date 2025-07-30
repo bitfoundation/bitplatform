@@ -64,7 +64,7 @@ class WebInteropApp {
             }
         } catch (e) {
             console.error("Invalid or malicious redirect URL detected:", e);
-            return
+            return;
         }
 
         if (!localHttpPort) {
