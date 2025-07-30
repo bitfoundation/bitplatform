@@ -11,13 +11,12 @@ public partial class RequestHeadersDelegatingHandler(ITelemetryContext telemetry
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        // In order to have access token as http only cookie to support pre-rendering scenarios,
-        // we need to set the request `credentials` to `include` in api calls that return access token in their responses.
-        // In other actions, `credentials include` only result into double sending the access token in the request headers unnecessarily. (Authorization and Cookie headers).
+        // Having `credentials` set to `Include` will double send access tokens in the request headers (Cookeies and Authorization header).
+        // But in order to make server's Set-Cookie work properly, we need to set `credentials` to `Include`.
         var responseType = request.Options.GetValueOrDefault(RequestOptionNames.ResponseType, null) as Type;
         var actionName = request.Options.GetValueOrDefault(RequestOptionNames.ActionName, null) as string;
-        var includeCredentials = responseType == typeof(SignInResponseDto) || responseType == typeof(TokenResponseDto) || actionName is nameof(IUserController.SignOut);
-        request.SetBrowserRequestCredentials(includeCredentials ? BrowserRequestCredentials.Include : BrowserRequestCredentials.Omit);
+        var actionHasSetCookieInServerSide = responseType == typeof(SignInResponseDto) || responseType == typeof(TokenResponseDto) || actionName is nameof(IUserController.SignOut);
+        request.SetBrowserRequestCredentials(actionHasSetCookieInServerSide ? BrowserRequestCredentials.Include : BrowserRequestCredentials.Omit);
 
         request.SetBrowserResponseStreamingEnabled(true);
 
