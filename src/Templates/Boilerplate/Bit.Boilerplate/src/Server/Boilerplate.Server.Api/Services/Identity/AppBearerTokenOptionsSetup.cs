@@ -35,6 +35,7 @@ public partial class AppJwtSecureDataFormat
     : ISecureDataFormat<AuthenticationTicket>
 {
     private readonly string tokenType;
+    private readonly IHostEnvironment env;
     private readonly ServerApiSettings appSettings;
     private readonly ILogger<AppJwtSecureDataFormat> logger;
     private readonly IHttpContextAccessor httpContextAccessor;
@@ -46,10 +47,11 @@ public partial class AppJwtSecureDataFormat
         IHttpContextAccessor httpContextAccessor,
         string tokenType)
     {
-        this.appSettings = appSettings;
+        this.env = env;
         this.logger = logger;
-        this.httpContextAccessor = httpContextAccessor;
         this.tokenType = tokenType;
+        this.appSettings = appSettings;
+        this.httpContextAccessor = httpContextAccessor;
 
         validationParameters = new()
         {
@@ -148,7 +150,7 @@ public partial class AppJwtSecureDataFormat
                 new()
                 {
                     HttpOnly = true,
-                    Secure = AppEnvironment.IsDevelopment() is false,
+                    Secure = env.IsDevelopment() is false,
                     SameSite = SameSiteMode.Strict,
                     IsEssential = true,
                     Path = "/",
