@@ -47,15 +47,13 @@
         <_PatchVersionString Condition="'$(_PatchVersionString)' == ''">0</_PatchVersionString>
         <PatchVersion>$([System.Int32]::Parse($(_PatchVersionString)))</PatchVersion>
 
-        <ApplicationVersion>
-            $([MSBuild]::Add(
-                $([MSBuild]::Add(
-                    $([MSBuild]::Multiply($(MajorVersion), 10000)),
-                    $([MSBuild]::Multiply($(MinorVersion), 100))
-                )),
-                $(PatchVersion)
-            ))
-        </ApplicationVersion>
+		<ApplicationVersion>$([MSBuild]::Add(
+			$([MSBuild]::Add(
+				$([MSBuild]::Multiply($(MajorVersion), 10000)),
+				$([MSBuild]::Multiply($(MinorVersion), 100))
+			)),
+			$(PatchVersion)
+		))</ApplicationVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Environment)' != 'Development'">
