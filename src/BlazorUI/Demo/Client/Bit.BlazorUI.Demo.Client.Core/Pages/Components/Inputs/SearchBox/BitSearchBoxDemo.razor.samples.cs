@@ -16,10 +16,10 @@ public partial class BitSearchBoxDemo
 <BitSearchBox Placeholder=""Disabled"" IsEnabled=""false"" NoBorder/>";
 
     private readonly string example4RazorCode = @"
-<BitSearchBox Placeholder=""Primary"" Accent=""BitColorKind.Primary"" NoBorder/>
-<BitSearchBox Placeholder=""Secondary"" Accent=""BitColorKind.Secondary"" NoBorder/>
-<BitSearchBox Placeholder=""Tertiary"" Accent=""BitColorKind.Tertiary"" NoBorder/>
-<BitSearchBox Placeholder=""Transparent"" Accent=""BitColorKind.Transparent"" NoBorder/>";
+<BitSearchBox Placeholder=""Primary"" Background=""BitColorKind.Primary"" NoBorder/>
+<BitSearchBox Placeholder=""Secondary"" Background=""BitColorKind.Secondary"" NoBorder/>
+<BitSearchBox Placeholder=""Tertiary"" Background=""BitColorKind.Tertiary"" NoBorder/>
+<BitSearchBox Placeholder=""Transparent"" Background=""BitColorKind.Transparent"" NoBorder/>";
 
     private readonly string example5RazorCode = @"
 <BitSearchBox Placeholder=""FixedIcon"" FixedIcon />
