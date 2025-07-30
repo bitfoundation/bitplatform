@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Server.Api.Services.Identity;
 
-public class AppBearerTokenOptionsSetup(IConfiguration configuration,
+public class AppBearerTokenOptionsConfigurator(IConfiguration configuration,
     IServiceProvider serviceProvider) : IPostConfigureOptions<BearerTokenOptions>
 {
     public void PostConfigure(string? name, BearerTokenOptions options)

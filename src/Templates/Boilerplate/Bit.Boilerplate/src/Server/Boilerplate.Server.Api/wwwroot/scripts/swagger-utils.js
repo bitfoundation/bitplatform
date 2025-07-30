@@ -253,7 +253,6 @@ function isAuthorized(swagger) {
 
 function setLocalStorage(name, value) {
     localStorage[name] = value;
-    const date = new Date();
 }
 
 function getLocalStorage(name) {
