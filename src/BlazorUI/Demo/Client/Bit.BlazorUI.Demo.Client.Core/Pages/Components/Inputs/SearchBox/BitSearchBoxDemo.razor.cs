@@ -8,10 +8,10 @@ public partial class BitSearchBoxDemo
     [
         new()
         {
-            Name = "Accent",
+            Name = "Background",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "The accent color kind of the search box.",
+            Description = "The background color kind of the search box.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum",
         },
@@ -20,7 +20,7 @@ public partial class BitSearchBoxDemo
             Name = "Classes",
             Type = "BitSearchBoxClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS classes for different parts of the BitSearchBox.",
+            Description = "Custom CSS classes for different parts of the search box.",
             LinkType = LinkType.Link,
             Href = "#searchbox-class-styles",
         },
@@ -45,7 +45,7 @@ public partial class BitSearchBoxDemo
             Name = "DefaultValue",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The default value of the text in the SearchBox, in the case of an uncontrolled component.",
+            Description = "The default value of the text in the search box, in the case of an uncontrolled component.",
         },
         new()
         {
@@ -73,7 +73,7 @@ public partial class BitSearchBoxDemo
             Name = "HideClearButton",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether to hide the clear button when the BitSearchBox has value.",
+            Description = "Whether to hide the clear button when the search box has value.",
         },
         new()
         {
@@ -149,14 +149,14 @@ public partial class BitSearchBoxDemo
             Name = "Prefix",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Prefix text displayed before the searchbox input. This is not included in the value.",
+            Description = "Prefix text displayed before the search box input. This is not included in the value.",
         },
         new()
         {
             Name = "PrefixTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom template for the prefix of the searchbox.",
+            Description = "The custom template for the prefix of the search box.",
         },
         new()
         {
@@ -186,21 +186,21 @@ public partial class BitSearchBoxDemo
             DefaultValue = "null",
             LinkType = LinkType.Link,
             Href = "#searchbox-class-styles",
-            Description = "Custom CSS styles for different parts of the BitSearchBox.",
+            Description = "Custom CSS styles for different parts of the search box.",
         },
         new()
         {
             Name = "Suffix",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Suffix text displayed after the searchbox input. This is not included in the value.",
+            Description = "Suffix text displayed after the search box input. This is not included in the value.",
         },
         new()
         {
             Name = "SuffixTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom template for the suffix of the searchbox.",
+            Description = "The custom template for the suffix of the search box.",
         },
         new()
         {
@@ -228,14 +228,14 @@ public partial class BitSearchBoxDemo
             Name = "SuggestItemTemplate",
             Type = "RenderFragment<string>?",
             DefaultValue = "null",
-            Description = "The custom template for rendering the suggest items of the BitSearchBox.",
+            Description = "The custom template for rendering the suggest items of the search box.",
         },
         new()
         {
             Name = "Underlined",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether or not the SearchBox is underlined.",
+            Description = "Whether or not the search box is underlined.",
         },
     ];
 
