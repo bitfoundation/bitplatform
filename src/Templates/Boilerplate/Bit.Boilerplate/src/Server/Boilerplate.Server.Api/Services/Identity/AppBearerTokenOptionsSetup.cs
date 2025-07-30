@@ -141,7 +141,7 @@ public partial class AppJwtSecureDataFormat
         {
             var context = httpContextAccessor?.HttpContext ?? throw new InvalidOperationException();
 
-            // Set access_token cookie for pre-rendering.
+            // Set access token cookie for pre-rendering.
             context.Response.Cookies.Append(
                 "access_token",
                 encodedJwt,
