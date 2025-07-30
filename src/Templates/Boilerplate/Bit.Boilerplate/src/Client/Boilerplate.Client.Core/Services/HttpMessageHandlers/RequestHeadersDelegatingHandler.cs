@@ -1,7 +1,5 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
-using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Shared.Controllers.Identity;
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
@@ -11,13 +9,7 @@ public partial class RequestHeadersDelegatingHandler(ITelemetryContext telemetry
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        // Having `credentials` set to `Include` will double send access tokens in the request headers (Cookies and Authorization header).
-        // But in order to make server's Set-Cookie work properly, we need to set `credentials` to `Include`.
-        var responseType = request.Options.GetValueOrDefault(RequestOptionNames.ResponseType, null) as Type;
-        var actionName = request.Options.GetValueOrDefault(RequestOptionNames.ActionName, null) as string;
-        var actionWithSetCookieInServerSide = responseType == typeof(SignInResponseDto) || responseType == typeof(TokenResponseDto) || actionName is nameof(IUserController.SignOut);
-        request.SetBrowserRequestCredentials(actionWithSetCookieInServerSide ? BrowserRequestCredentials.Include : BrowserRequestCredentials.Omit);
-
+        request.SetBrowserRequestCredentials(BrowserRequestCredentials.Omit);
         request.SetBrowserResponseStreamingEnabled(true);
 
         request.Version = HttpVersion.Version20;

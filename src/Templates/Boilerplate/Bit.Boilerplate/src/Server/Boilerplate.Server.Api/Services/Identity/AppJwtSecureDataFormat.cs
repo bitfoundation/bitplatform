@@ -12,23 +12,18 @@ public partial class AppJwtSecureDataFormat
     : ISecureDataFormat<AuthenticationTicket>
 {
     private readonly string tokenType;
-    private readonly IHostEnvironment env;
     private readonly ServerApiSettings appSettings;
     private readonly ILogger<AppJwtSecureDataFormat> logger;
-    private readonly IHttpContextAccessor httpContextAccessor;
     private readonly TokenValidationParameters validationParameters;
 
     public AppJwtSecureDataFormat(ServerApiSettings appSettings,
         IHostEnvironment env,
         ILogger<AppJwtSecureDataFormat> logger,
-        IHttpContextAccessor httpContextAccessor,
         string tokenType)
     {
-        this.env = env;
         this.logger = logger;
         this.tokenType = tokenType;
         this.appSettings = appSettings;
-        this.httpContextAccessor = httpContextAccessor;
 
         validationParameters = new()
         {
@@ -115,26 +110,6 @@ public partial class AppJwtSecureDataFormat
             });
 
         var encodedJwt = jwtSecurityTokenHandler.WriteToken(securityToken);
-
-        if (tokenType is "AccessToken")
-        {
-            var context = httpContextAccessor?.HttpContext ?? throw new InvalidOperationException("HttpContext is not available.");
-
-            // Set access token cookie for pre-rendering.
-            context.Response.Cookies.Append(
-                "access_token",
-                encodedJwt,
-                new()
-                {
-                    HttpOnly = true,
-                    Secure = env.IsDevelopment() is false,
-                    SameSite = SameSiteMode.Strict,
-                    IsEssential = true,
-                    Path = "/",
-                    Domain = context.Request.GetBaseUrl().Host,
-                    Expires = data.Properties.ExpiresUtc!.Value.UtcDateTime
-                });
-        }
 
         return encodedJwt;
     }

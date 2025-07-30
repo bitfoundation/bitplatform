@@ -53,11 +53,8 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         await storageService.SetItem("access_token", response!.AccessToken);
         await storageService.SetItem("refresh_token", response!.RefreshToken, rememberMe is true);
 
-        if (AppPlatform.IsBlazorHybridOrBrowser is false && jsRuntime.IsInitialized())
+        if (AppPlatform.IsBlazorHybrid is false && jsRuntime.IsInitialized())
         {
-            // Blazor WebAssembly stores http-only cookies using JavaScript's fetch API that is the underlying implementation of HttpClient.
-            // But Blazor Server doesn't support http-only cookies this way, so we need to set the cookie manually.
-            // Blazor Hybrid doesn't have pre-rendering, so setting cookie is not necessary.
             await cookie.Set(new()
             {
                 Name = "access_token",
