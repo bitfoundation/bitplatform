@@ -28,7 +28,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// The accent color kind of the search box.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public BitColorKind? Accent { get; set; }
+    public BitColorKind? Background { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the BitSearchBox.
@@ -240,13 +240,13 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         ClassBuilder.Register(() => NoBorder ? "bit-srb-nbr" : string.Empty);
 
-        ClassBuilder.Register(() => Accent switch
+        ClassBuilder.Register(() => Background switch
         {
-            BitColorKind.Primary => "bit-srb-apri",
-            BitColorKind.Secondary => "bit-srb-asec",
-            BitColorKind.Tertiary => "bit-srb-ater",
-            BitColorKind.Transparent => "bit-srb-atra",
-            _ => string.Empty
+            BitColorKind.Primary => "bit-srb-bpr",
+            BitColorKind.Secondary => "bit-srb-bse",
+            BitColorKind.Tertiary => "bit-srb-btr",
+            BitColorKind.Transparent => "bit-srb-btn",
+            _ => "bit-srb-bpr"
         });
 
         ClassBuilder.Register(() => Color switch

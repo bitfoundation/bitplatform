@@ -137,8 +137,8 @@
     flex-flow: row nowrap;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    background-color: $clr-bg-pri;
     border-radius: $shp-border-radius;
+    background-color: var(--bit-srb-clr-bg);
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
@@ -445,30 +445,6 @@
     }
 }
 
-.bit-srb-apri {
-    .bit-srb-cnt {
-        background-color: $clr-bg-pri;
-    }
-}
-
-.bit-srb-asec {
-    .bit-srb-cnt {
-        background-color: $clr-bg-sec;
-    }
-}
-
-.bit-srb-ater {
-    .bit-srb-cnt {
-        background-color: $clr-bg-ter;
-    }
-}
-
-.bit-srb-atra {
-    .bit-srb-cnt {
-        background-color: transparent;
-    }
-}
-
 .bit-srb-hic {
     .bit-srb-cnt {
         //padding: 0 spacing(1);
@@ -553,6 +529,23 @@
             background-color: $clr-bg-pri-hover;
         }
     }
+}
+
+
+.bit-srb-bpr {
+    --bit-srb-clr-bg: #{$clr-bg-pri};
+}
+
+.bit-srb-bse {
+    --bit-srb-clr-bg: #{$clr-bg-sec};
+}
+
+.bit-srb-btr {
+    --bit-srb-clr-bg: #{$clr-bg-ter};
+}
+
+.bit-srb-btn {
+    --bit-srb-clr-bg: transparent;
 }
 
 
