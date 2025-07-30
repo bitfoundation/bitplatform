@@ -10,7 +10,7 @@ namespace Boilerplate.Server.Api.Services.Identity;
 public partial class AppJwtSecureDataFormat(ServerApiSettings appSettings, TokenValidationParameters validationParameters)
     : ISecureDataFormat<AuthenticationTicket>
 {
-    public HttpContext HttpContextToSetAccessTokenCookie { get; set; } = default!;
+    public HttpContext? HttpContextToSetAccessTokenCookie { get; set; }
 
     public AuthenticationTicket? Unprotect(string? protectedText) => Unprotect(protectedText, null);
 
