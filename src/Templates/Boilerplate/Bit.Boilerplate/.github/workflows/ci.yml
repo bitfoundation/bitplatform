@@ -4,8 +4,7 @@ name: Boilerplate CI
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ "develop" ]
+  pull_request:
 
 jobs:
 
