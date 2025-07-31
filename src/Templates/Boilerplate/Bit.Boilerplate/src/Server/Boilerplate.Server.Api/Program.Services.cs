@@ -504,7 +504,7 @@ public static partial class Program
             options.DefaultChallengeScheme = IdentityConstants.BearerScheme;
             options.DefaultAuthenticateScheme = IdentityConstants.BearerScheme;
         })
-        .AddBearerToken(IdentityConstants.BearerScheme);
+        .AddBearerToken(IdentityConstants.BearerScheme /*Checkout AppBearerTokenOptionsConfigurator*/ );
 
         services.AddAuthorization();
 
