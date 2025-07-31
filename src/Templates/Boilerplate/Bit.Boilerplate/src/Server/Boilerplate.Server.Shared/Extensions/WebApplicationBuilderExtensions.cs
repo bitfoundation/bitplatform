@@ -179,7 +179,7 @@ public static class WebApplicationBuilderExtensions
         {
             builder.Services.AddOpenTelemetry().UseAzureMonitor(options =>
             {
-                options.ConnectionString = appInsightsConnectionString;
+                builder.Configuration.Bind("ApplicationInsights", options);
             });
         }
         //#endif

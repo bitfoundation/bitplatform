@@ -472,6 +472,7 @@ public static partial class Program
         builder.Services.AddHangfireServer(options =>
         {
             options.SchedulePollingInterval = TimeSpan.FromSeconds(5);
+            configuration.Bind("Hangfire", options);
         });
     }
 
