@@ -23,7 +23,7 @@
 - **Server.AppHost**: Aspire's appsettings and Program.cs
 - **Shared**: Dtos, Enums, custom exceptions, shared services, resx files.
 - **Tests**: UI and integration tests.
-- **Client.Core**: Components, Pages, Layout, Client services, app.ts (TypeScript), app.scss (SCSS), and appsettings.json for the client.
+- **Client.Core**: Components, Pages, Layout, Client services, App.ts (TypeScript), app.scss (SCSS), and appsettings.json for the client.
 - **Client.Web**: Blazor WebAssembly standalone project.
 - **Client.Maui**: .NET MAUI based Blazor Hybrid project.
 - **Client.Windows**: Windows forms based Blazor Hybrid project.

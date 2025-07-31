@@ -8,7 +8,7 @@
 	  "src\\Server\\Boilerplate.Server.AppHost\\Boilerplate.Server.AppHost.csproj",
 //#endif
       "src\\Server\\Boilerplate.Server.Api\\Boilerplate.Server.Api.csproj",
-	  "src\\Server\\Boilerplate.Server.Shared\\Boilerplate.Server.Shared.csproj",
+      "src\\Server\\Boilerplate.Server.Shared\\Boilerplate.Server.Shared.csproj",
       "src\\Server\\Boilerplate.Server.Web\\Boilerplate.Server.Web.csproj",
       "src\\Shared\\Boilerplate.Shared.csproj",
       "src\\Tests\\Boilerplate.Tests.csproj"

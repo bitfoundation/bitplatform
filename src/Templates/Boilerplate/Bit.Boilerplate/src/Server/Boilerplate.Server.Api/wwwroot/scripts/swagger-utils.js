@@ -5,7 +5,7 @@ based on: https://www.codedesigntips.com/2021/06/28/swagger-ui-with-login-form-a
     window.addEventListener('load', () => setTimeout(initSignInForm, 0), false);
 })();
 
-const ACCESS_TOKEN_COOKIE_NAME = 'access_token';
+const ACCESS_TOKEN_NAME = 'access_token';
 let accessTokenExpiresIn = 0;
 
 const initSignInForm = () => {
@@ -16,7 +16,7 @@ const initSignInForm = () => {
     }
 
     overrideSwaggerAuthorizeEvent(swagger);
-    overrideSwaggerLogoutEvent(swagger);
+    overrideSwaggerSignOutEvent(swagger);
     tryAuthorizeWithLocalData(swagger);
     showSignInUI(swagger);
 }
@@ -25,7 +25,7 @@ const tryAuthorizeWithLocalData = (swagger) => {
     if (isAuthorized(swagger))
         return;
 
-    const token = getCookie(ACCESS_TOKEN_COOKIE_NAME);
+    const token = getLocalStorage(ACCESS_TOKEN_NAME);
     if (!token)
         return;
 
@@ -38,31 +38,21 @@ const overrideSwaggerAuthorizeEvent = (swagger) => {
     swagger.authActions.authorize = async (args) => {
         originalAuthorize(args);
 
-        if (!getCookie(ACCESS_TOKEN_COOKIE_NAME)) {
+        if (!getLocalStorage(ACCESS_TOKEN_NAME)) {
             const accessToken = args.bearerAuth.value;
-            const jwt = parseJwt(accessToken);
-            setCookie(ACCESS_TOKEN_COOKIE_NAME, args.bearerAuth.value, parseInt(jwt.exp));
+            setLocalStorage(ACCESS_TOKEN_NAME, args.bearerAuth.value);
         }
 
         reloadPage(swagger);
     };
 }
 
-function parseJwt(token) {
-    var base64Url = token.split('.')[1];
-    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-
-    return JSON.parse(jsonPayload);
-}
-
-const overrideSwaggerLogoutEvent = (swagger) => {
-    const originalLogout = swagger.authActions.logout;
+const overrideSwaggerSignOutEvent = (swagger) => {
+    const originalSignOut = swagger.authActions.logout;
     swagger.authActions.logout = async (args) => {
-        const result = await originalLogout(args);
-        removeCookie(ACCESS_TOKEN_COOKIE_NAME);
+        const result = await originalSignOut(args);
+        await fetch('/api/User/SignOut', { method: 'POST' });
+        removeLocalStorage(ACCESS_TOKEN_NAME);
         reloadPage(swagger);
         return result;
     };
@@ -73,7 +63,7 @@ const showSignInUI = (swagger) => {
         const descriptionDiv = isSignInFormMustShow(swagger);
         if (descriptionDiv)
             createSignInUI(swagger, descriptionDiv);
-    }).observe(document, {childList: true, subtree: true});
+    }).observe(document, { childList: true, subtree: true });
 }
 
 const isSignInFormMustShow = (swagger) => {
@@ -261,26 +251,16 @@ function isAuthorized(swagger) {
     return auth && auth[1].size !== 0;
 }
 
-function setCookie(name, value, seconds) {
-    const date = new Date();
-    date.setSeconds(date.getSeconds() + seconds);
-    document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/;samesite=strict;`;
+function setLocalStorage(name, value) {
+    localStorage[name] = value;
 }
 
-function getCookie(name) {
-    const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].split('=');
-        if (trim(cookie[0]) === escape(name)) {
-            return unescape(trim(cookie[1]));
-        }
-    }
-    return null;
+function getLocalStorage(name) {
+    return localStorage[name] || null;
 }
 
-function removeCookie(name) {
-    const date = new Date();
-    document.cookie = `${name}=;expires=${date.toUTCString()};path=/`;
+function removeLocalStorage(name) {
+    localStorage.removeItem(name);
 }
 
 function trim(value) {

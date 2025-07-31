@@ -23,6 +23,11 @@
             }
         }
 
+        .bit-srb-pre,
+        .bit-srb-suf {
+            color: $clr-fg-dis;
+        }
+
         @media (hover: hover) {
             &:hover {
                 .bit-srb-cnt {
@@ -62,10 +67,8 @@
             border-color: $clr-err;
         }
 
-        .bit-srb-iwp {
-            i {
-                color: $clr-err;
-            }
+        .bit-srb-iwp i {
+            color: $clr-err;
         }
 
         @media (hover: hover) {
@@ -74,24 +77,20 @@
                     border-color: $clr-err;
                 }
 
-                .bit-srb-iwp {
-                    i {
-                        color: $clr-err;
-                    }
+                .bit-srb-iwp i {
+                    color: $clr-err;
                 }
             }
         }
 
-        &.bit-srb-und {
-            &.bit-srb-foc {
-                .bit-srb-cnt {
-                    border-color: $clr-err;
-                }
+        &.bit-srb-foc {
+            .bit-srb-cnt::after {
+                border-color: $clr-err;
+            }
 
-                @media (hover: hover) {
-                    &:hover {
-                        border-color: $clr-err;
-                    }
+            &.bit-srb-und {
+                .bit-srb-cnt::after {
+                    border-color: $clr-err;
                 }
             }
         }
@@ -102,27 +101,19 @@
             transform: scale(-1);
         }
     }
-}
-
-.bit-srb-cnt {
-    flex: 1;
-    margin: 0;
-    display: flex;
-    box-shadow: none;
-    color: $clr-fg-pri;
-    height: spacing(4);
-    align-items: stretch;
-    flex-flow: row nowrap;
-    box-sizing: border-box;
-    font-size: spacing(1.75);
-    padding: spacing(0.125) 0;
-    background-color: $clr-bg-pri;
-    border-radius: $shp-border-radius;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
 
     @media (hover: hover) {
         &:hover {
-            border-color: $clr-brd-pri-hover;
+            .bit-srb-cnt,
+            &.bit-srb-und .bit-srb-sbn {
+                border-color: $clr-brd-pri-hover;
+            }
+
+            &.bit-srb-foc {
+                .bit-srb-sbn {
+                    border-color: var(--bit-srb-clr);
+                }
+            }
 
             .bit-srb-iwp {
                 i {
@@ -133,41 +124,22 @@
     }
 }
 
-.bit-srb-apri {
-    .bit-srb-cnt {
-        background-color: $clr-bg-pri;
-    }
-}
-
-.bit-srb-asec {
-    .bit-srb-cnt {
-        background-color: $clr-bg-sec;
-    }
-}
-
-.bit-srb-ater {
-    .bit-srb-cnt {
-        background-color: $clr-bg-ter;
-    }
-}
-
-.bit-srb-atra {
-    .bit-srb-cnt {
-        background-color: transparent;
-    }
-}
-
-.bit-srb-hic {
-    .bit-srb-cnt {
-        padding: 0 spacing(1);
-    }
-}
-
-.bit-srb-ssb {
-    .bit-srb-cnt {
-        border-end-end-radius: 0;
-        border-start-end-radius: 0;
-    }
+.bit-srb-cnt {
+    flex: 1;
+    margin: 0;
+    display: flex;
+    max-width: 100%;
+    box-shadow: none;
+    color: $clr-fg-pri;
+    height: spacing(4);
+    position: relative;
+    align-items: stretch;
+    flex-flow: row nowrap;
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+    border-radius: $shp-border-radius;
+    background-color: var(--bit-srb-clr-bg);
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
 .bit-srb-iwp {
@@ -201,14 +173,32 @@
     outline: none;
     overflow: hidden;
     box-shadow: none;
+    color: $clr-fg-pri;
     font-size: inherit;
     font-weight: inherit;
     font-family: inherit;
+    padding: 0 spacing(1);
     box-sizing: border-box;
     text-overflow: ellipsis;
-    padding: 0 0 spacing(0.0625);
     background-color: transparent;
+}
+
+.bit-srb-pre,
+.bit-srb-suf {
+    height: 100%;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    white-space: nowrap;
+    padding: 0 spacing(1.25);
+    min-height: spacing(3.75);
     color: $clr-fg-pri;
+    background: $clr-bg-sec;
+
+    span {
+        font-size: spacing(1.75);
+        padding-bottom: spacing(0.125);
+    }
 }
 
 .bit-srb-cbt {
@@ -253,28 +243,29 @@
 }
 
 .bit-srb-sbn {
+    height: auto;
     display: flex;
     flex-shrink: 0;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: auto;
     cursor: pointer;
     font-weight: 400;
     width: spacing(4);
     user-select: none;
     position: relative;
     text-align: center;
+    align-items: center;
     outline: transparent;
+    font-size: spacing(2);
     text-decoration: none;
     box-sizing: border-box;
+    flex-direction: column;
+    justify-content: center;
     padding: 0 spacing(0.5);
-    font-size: spacing(2);
     font-family: $tg-font-family;
     background-color: var(--bit-srb-clr);
     border-end-end-radius: $shp-border-radius;
     border-start-end-radius: $shp-border-radius;
     border: $shp-border-width $shp-border-style var(--bit-srb-clr);
+    border-inline-start: none;
 
     @media (hover: hover) {
         &:hover {
@@ -300,59 +291,24 @@
     }
 }
 
-.bit-srb-foc {
-    .bit-srb-cnt,
-    .bit-srb-sbn {
-        border: spacing(0.25) $shp-border-style var(--bit-srb-clr);
-    }
-
-    .bit-srb-iwp {
-        width: spacing(0.5);
-
-        i {
-            opacity: 0;
-        }
-    }
-
-    @media (hover: hover) {
-        &:hover {
-            border-color: var(--bit-srb-clr-hover);
-        }
-    }
-}
-
 .bit-srb-und {
     .bit-srb-cnt {
         border-radius: 0;
         border-width: 0 0 spacing(0.125);
-        padding: spacing(0.125) spacing(1) 0;
 
         @media (hover: hover) {
             &:hover {
                 border-top-width: 0;
-                border-left-width: 0;
-                border-right-width: 0;
-            }
-        }
-    }
-
-    &.bit-srb-foc {
-        .bit-srb-cnt,
-        .bit-srb-sbn {
-            border-bottom: spacing(0.25) $shp-border-style var(--bit-srb-clr);
-        }
-
-        @media (hover: hover) {
-            &:hover {
-                border-bottom-color: var(--bit-srb-clr-hover);
+                border-inline-end-width: 0;
+                border-inline-start-width: 0;
             }
         }
     }
 
     .bit-srb-sbn {
         border-top-width: 0;
-        border-left-width: 0;
-        border-right-width: 0;
+        border-inline-end-width: 0;
+        border-inline-start-width: 0;
         border-color: $clr-brd-pri;
         background-color: transparent;
 
@@ -372,22 +328,50 @@
     }
 }
 
-.bit-srb-nbr {
-    .bit-srb-cnt {
-        border: none;
+.bit-srb-foc {
+    .bit-srb-iwp {
+        width: 0;
+
+        i {
+            opacity: 0;
+        }
     }
 
-    &.bit-srb-foc {
-        .bit-srb-cnt,
-        .bit-srb-sbn {
-            border: none;
-        }
+    .bit-srb-pre,
+    .bit-srb-suf {
+        color: var(--bit-srb-clr);
+    }
 
-        @media (hover: hover) {
-            &:hover {
-                border: none;
-            }
+    .bit-srb-sbn {
+        border-color: var(--bit-srb-clr);
+    }
+
+    .bit-srb-cnt::after {
+        content: "";
+        position: absolute;
+        pointer-events: none;
+        inset: spacing(-0.125);
+        border-radius: $shp-border-radius;
+        border: spacing(0.25) $shp-border-style var(--bit-srb-clr);
+    }
+
+    &.bit-srb-und {
+        .bit-srb-cnt::after,
+        .bit-srb-sbn::after {
+            content: "";
+            border: none;
+            position: absolute;
+            pointer-events: none;
+            inset: spacing(-0.125);
+            border-bottom: spacing(0.25) $shp-border-style var(--bit-srb-clr);
         }
+    }
+}
+
+.bit-srb-nbr {
+    .bit-srb-cnt,
+    .bit-srb-cnt::after {
+        border: none;
     }
 
     .bit-srb-sbn {
@@ -414,7 +398,7 @@
     @media (hover: hover) {
         &:hover {
             .bit-srb-iwp {
-                width: spacing(0.5);
+                width: 0;
 
                 i {
                     opacity: 0;
@@ -424,55 +408,27 @@
     }
 }
 
-.bit-srb-fic-hvl {
-    @media (hover: hover) {
-        &:hover {
-            .bit-srb-iwp {
-                width: spacing(4);
+.bit-srb-fic {
+    &.bit-srb-foc {
+        .bit-srb-iwp {
+            width: spacing(4);
 
-                i {
-                    opacity: 1;
-                    color: var(--bit-srb-clr-hover);
-                }
+            i {
+                opacity: 1;
             }
         }
     }
-}
 
-.bit-srb-fic-foc {
-    .bit-srb-cnt,
-    .bit-srb-sbn {
-        border: spacing(0.25) $shp-border-style var(--bit-srb-clr);
-    }
+    &.bit-srb-hvl {
+        @media (hover: hover) {
+            &:hover {
+                .bit-srb-iwp {
+                    width: spacing(4);
 
-    &.bit-srb-und {
-        .bit-srb-cnt,
-        .bit-srb-sbn {
-            border-top-width: 0;
-            border-left-width: 0;
-            border-right-width: 0;
-        }
-    }
-
-    .bit-srb-iwp {
-        width: spacing(4);
-
-        i {
-            opacity: 1;
-            color: var(--bit-srb-clr);
-        }
-    }
-
-    @media (hover: hover) {
-        &:hover {
-            border-color: var(--bit-srb-clr-hover);
-
-            .bit-srb-iwp {
-                width: spacing(4);
-
-                i {
-                    opacity: 1;
-                    color: var(--bit-srb-clr-hover);
+                    i {
+                        opacity: 1;
+                        color: var(--bit-srb-clr-hover);
+                    }
                 }
             }
         }
@@ -486,6 +442,19 @@
         i {
             transition: none;
         }
+    }
+}
+
+.bit-srb-hic {
+    .bit-srb-cnt {
+        //padding: 0 spacing(1);
+    }
+}
+
+.bit-srb-ssb {
+    .bit-srb-cnt {
+        border-end-end-radius: 0;
+        border-start-end-radius: 0;
     }
 }
 
@@ -560,6 +529,23 @@
             background-color: $clr-bg-pri-hover;
         }
     }
+}
+
+
+.bit-srb-bpr {
+    --bit-srb-clr-bg: #{$clr-bg-pri};
+}
+
+.bit-srb-bse {
+    --bit-srb-clr-bg: #{$clr-bg-sec};
+}
+
+.bit-srb-btr {
+    --bit-srb-clr-bg: #{$clr-bg-ter};
+}
+
+.bit-srb-btn {
+    --bit-srb-clr-bg: transparent;
 }
 
 

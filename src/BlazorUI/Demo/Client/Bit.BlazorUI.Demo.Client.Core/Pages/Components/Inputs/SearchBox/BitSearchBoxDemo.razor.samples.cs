@@ -16,10 +16,10 @@ public partial class BitSearchBoxDemo
 <BitSearchBox Placeholder=""Disabled"" IsEnabled=""false"" NoBorder/>";
 
     private readonly string example4RazorCode = @"
-<BitSearchBox Placeholder=""Primary"" Accent=""BitColorKind.Primary"" NoBorder/>
-<BitSearchBox Placeholder=""Secondary"" Accent=""BitColorKind.Secondary"" NoBorder/>
-<BitSearchBox Placeholder=""Tertiary"" Accent=""BitColorKind.Tertiary"" NoBorder/>
-<BitSearchBox Placeholder=""Transparent"" Accent=""BitColorKind.Transparent"" NoBorder/>";
+<BitSearchBox Placeholder=""Primary"" Background=""BitColorKind.Primary"" NoBorder/>
+<BitSearchBox Placeholder=""Secondary"" Background=""BitColorKind.Secondary"" NoBorder/>
+<BitSearchBox Placeholder=""Tertiary"" Background=""BitColorKind.Tertiary"" NoBorder/>
+<BitSearchBox Placeholder=""Transparent"" Background=""BitColorKind.Transparent"" NoBorder/>";
 
     private readonly string example5RazorCode = @"
 <BitSearchBox Placeholder=""FixedIcon"" FixedIcon />
@@ -42,13 +42,33 @@ public partial class BitSearchBoxDemo
     private readonly string example7RazorCode = @"
 <BitSearchBox Placeholder=""HideClearButton"" HideClearButton />
 
-<BitSearchBox Placeholder=""CleanButtonTemplate"">
-    <CleanButtonTemplate>
+<BitSearchBox Placeholder=""ClearButtonTemplate"">
+    <ClearButtonTemplate>
         <BitIcon IconName=""@BitIconName.RemoveFilter"" />
-    </CleanButtonTemplate>
+    </ClearButtonTemplate>
 </BitSearchBox>";
 
     private readonly string example8RazorCode = @"
+<BitSearchBox Placeholder=""Prefix"" Prefix=""https://"" HideIcon />
+
+<BitSearchBox Placeholder=""Suffix"" Suffix="".com"" HideIcon />
+
+<BitSearchBox Placeholder=""Prefix & Suffix + Icon"" Prefix=""https://"" Suffix="".com"" />
+
+<BitSearchBox Placeholder=""Templates"" HideIcon>
+    <PrefixTemplate>
+        <BitStack FitWidth Alignment=""BitAlignment.Center"" style=""background:gray;padding:0 0.5rem;"">
+            <BitIcon IconName=""@BitIconName.Calendar"" Color=""BitColor.PrimaryForeground"" />
+        </BitStack>
+    </PrefixTemplate>
+    <SuffixTemplate>
+        <BitStack FitWidth Alignment=""BitAlignment.Center"" style=""background:cadetblue;padding:0 0.5rem;"">
+            <BitIcon IconName=""@BitIconName.ArrowTallUpRight"" Color=""BitColor.PrimaryForeground"" />
+        </BitStack>
+    </SuffixTemplate>
+</BitSearchBox>";
+
+    private readonly string example9RazorCode = @"
 <BitSearchBox Placeholder=""Search"" @bind-Value=""twoWaySearchValue"" />
 <BitTextField Placeholder=""Search Value"" @bind-Value=""twoWaySearchValue"" />
 
@@ -67,12 +87,12 @@ public partial class BitSearchBoxDemo
               OnSearch=""s => onSearchValue = s""
               OnClear=""() => onSearchValue = string.Empty"" />
 <div>Search Value: @onSearchValue</div>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private string twoWaySearchValue;
 private string onChangeSearchValue;
 private string onSearchValue;";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitSearchBox @bind-Value=""@searchValue""
               Immediate
               Placeholder=""e.g. app""
@@ -120,7 +140,7 @@ private string onSearchValue;";
               DebounceTime=""300""
               Placeholder=""e.g. pro""
               SuggestItemsProvider=""LoadItems"" />";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private string searchValue;
 private string searchValueWithSuggestFilterFunction;
 private string searchValueWithSearchDelay;
@@ -175,7 +195,7 @@ private async ValueTask<IEnumerable<string>> LoadItems(BitSearchBoxSuggestItemsP
     }
 }";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <EditForm Model=""validationBoxModel"">
     <DataAnnotationsValidator />
     <BitSearchBox Placeholder=""Search"" Immediate
@@ -183,7 +203,7 @@ private async ValueTask<IEnumerable<string>> LoadItems(BitSearchBoxSuggestItemsP
                   @bind-Value=""validationBoxModel.Text"" />
     <ValidationMessage For=""() => validationBoxModel.Text"" />
 </EditForm>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 public class ValidationSearchBoxModel
 {
     [StringLength(6, MinimumLength = 2, ErrorMessage = ""Text must be between 2 and 6 chars."")]
@@ -192,11 +212,11 @@ public class ValidationSearchBoxModel
 
 private ValidationSearchBoxModel validationBoxModel = new();";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitSearchBox Placeholder=""Search"" />
 <BitSearchBox Placeholder=""Disabled"" IsEnabled=""false"" />";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -265,7 +285,7 @@ private ValidationSearchBoxModel validationBoxModel = new();";
                                  IconWrapper = ""custom-icon-wrapper"",
                                  InputContainer = ""custom-input-container"" })"" />";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitSearchBox Placeholder=""جستجو"" Dir=""BitDir.Rtl"" />
 <BitSearchBox Placeholder=""جستجو"" Dir=""BitDir.Rtl"" ShowSearchButton />
 <BitSearchBox Placeholder=""جستجو"" Dir=""BitDir.Rtl"" Underlined />";

@@ -25,20 +25,20 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
 
     /// <summary>
-    /// The accent color kind of the search box.
+    /// The background color kind of the search box.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public BitColorKind? Accent { get; set; }
+    public BitColorKind? Background { get; set; }
 
     /// <summary>
-    /// Custom CSS classes for different parts of the BitSearchBox.
+    /// Custom CSS classes for different parts of the search box.
     /// </summary>
     [Parameter] public BitSearchBoxClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The custom template for clear button icon.
     /// </summary>
-    [Parameter] public RenderFragment? CleanButtonTemplate { get; set; }
+    [Parameter] public RenderFragment? ClearButtonTemplate { get; set; }
 
     /// <summary>
     /// The general color of the search box, used for colored parts like icons.
@@ -47,7 +47,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     public BitColor? Color { get; set; }
 
     /// <summary>
-    /// The default value of the text in the SearchBox, in the case of an uncontrolled component.
+    /// The default value of the text in the search box, in the case of an uncontrolled component.
     /// </summary>
     [Parameter] public string? DefaultValue { get; set; }
 
@@ -70,7 +70,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     public bool HideIcon { get; set; }
 
     /// <summary>
-    /// Whether to hide the clear button when the BitSearchBox has value.
+    /// Whether to hide the clear button when the search box has value.
     /// </summary>
     [Parameter] public bool HideClearButton { get; set; }
 
@@ -128,6 +128,16 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     [Parameter] public string? Placeholder { get; set; }
 
     /// <summary>
+    /// Prefix text displayed before the search box input. This is not included in the value.
+    /// </summary>
+    [Parameter] public string? Prefix { get; set; }
+
+    /// <summary>
+    /// The custom template for the prefix of the search box.
+    /// </summary>
+    [Parameter] public RenderFragment? PrefixTemplate { get; set; }
+
+    /// <summary>
     /// Custom icon name for the search button.
     /// </summary>
     [Parameter] public string SearchButtonIconName { get; set; } = "ChromeBackMirrored";
@@ -144,9 +154,19 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     public bool ShowSearchButton { get; set; }
 
     /// <summary>
-    /// Custom CSS styles for different parts of the BitSearchBox.
+    /// Custom CSS styles for different parts of the search box.
     /// </summary>
     [Parameter] public BitSearchBoxClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// Suffix text displayed after the search box input. This is not included in the value. 
+    /// </summary>
+    [Parameter] public string? Suffix { get; set; }
+
+    /// <summary>
+    /// The custom template for the suffix of the search box.
+    /// </summary>
+    [Parameter] public RenderFragment? SuffixTemplate { get; set; }
 
     /// <summary>
     /// Custom search function to be used in place of the default search algorithm.
@@ -164,12 +184,12 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     [Parameter] public BitSearchBoxSuggestItemsProvider? SuggestItemsProvider { get; set; }
 
     /// <summary>
-    /// The custom template for rendering the suggest items of the BitSearchBox.
+    /// The custom template for rendering the suggest items of the search box.
     /// </summary>
     [Parameter] public RenderFragment<string>? SuggestItemTemplate { get; set; }
 
     /// <summary>
-    /// Whether or not the SearchBox is underlined.
+    /// Whether or not the search box is underlined.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Underlined { get; set; }
@@ -204,13 +224,15 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => CurrentValue.HasValue() ? $"bit-srb-{(FixedIcon ? "fic-" : string.Empty)}hvl" : string.Empty);
+        ClassBuilder.Register(() => FixedIcon ? "bit-srb-fic" : string.Empty);
+
+        ClassBuilder.Register(() => CurrentValue.HasValue() ? $"bit-srb-hvl" : string.Empty);
 
         ClassBuilder.Register(() => DisableAnimation ? "bit-srb-nan" : string.Empty);
 
         ClassBuilder.Register(() => Underlined ? "bit-srb-und" : string.Empty);
 
-        ClassBuilder.Register(() => _inputHasFocus ? $"bit-srb-{(FixedIcon ? "fic-" : string.Empty)}foc {Classes?.Focused}" : string.Empty);
+        ClassBuilder.Register(() => _inputHasFocus ? $"bit-srb-foc {Classes?.Focused}" : string.Empty);
 
         ClassBuilder.Register(() => ShowSearchButton ? "bit-srb-ssb" : string.Empty);
 
@@ -218,13 +240,13 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         ClassBuilder.Register(() => NoBorder ? "bit-srb-nbr" : string.Empty);
 
-        ClassBuilder.Register(() => Accent switch
+        ClassBuilder.Register(() => Background switch
         {
-            BitColorKind.Primary => "bit-srb-apri",
-            BitColorKind.Secondary => "bit-srb-asec",
-            BitColorKind.Tertiary => "bit-srb-ater",
-            BitColorKind.Transparent => "bit-srb-atra",
-            _ => string.Empty
+            BitColorKind.Primary => "bit-srb-bpr",
+            BitColorKind.Secondary => "bit-srb-bse",
+            BitColorKind.Tertiary => "bit-srb-btr",
+            BitColorKind.Transparent => "bit-srb-btn",
+            _ => "bit-srb-bpr"
         });
 
         ClassBuilder.Register(() => Color switch

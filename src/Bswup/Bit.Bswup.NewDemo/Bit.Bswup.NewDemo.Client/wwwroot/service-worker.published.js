@@ -1,4 +1,4 @@
-﻿// bit version: 9.11.1
+﻿// bit version: 9.11.2
 
 self.assetsInclude = [];
 self.assetsExclude = [

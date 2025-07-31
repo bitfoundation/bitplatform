@@ -50,7 +50,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     {
         rememberMe ??= await storageService.IsPersistent("refresh_token");
 
-        await storageService.SetItem("access_token", response!.AccessToken, rememberMe is true);
+        await storageService.SetItem("access_token", response!.AccessToken);
         await storageService.SetItem("refresh_token", response!.RefreshToken, rememberMe is true);
 
         if (AppPlatform.IsBlazorHybrid is false && jsRuntime.IsInitialized())
@@ -59,7 +59,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
             {
                 Name = "access_token",
                 Value = response.AccessToken,
-                MaxAge = rememberMe is true ? response.ExpiresIn : null, // to create a session cookie
+                MaxAge = response.ExpiresIn,
                 Path = "/",
                 Domain = absoluteServerAddress.GetAddress().Host,
                 SameSite = SameSite.Strict,
@@ -218,17 +218,14 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     {
         await storageService.RemoveItem("access_token");
         await storageService.RemoveItem("refresh_token");
-        if (AppPlatform.IsBlazorHybrid is false)
+        await cookie.Remove(new ButilCookie()
         {
-            await cookie.Remove(new ButilCookie()
-            {
-                Name = "access_token",
-                Path = "/",
-                Domain = absoluteServerAddress.GetAddress().Host,
-                SameSite = SameSite.Strict,
-                Secure = AppEnvironment.IsDevelopment() is false
-            });
-        }
+            Name = "access_token",
+            Path = "/",
+            Domain = absoluteServerAddress.GetAddress().Host,
+            SameSite = SameSite.Strict,
+            Secure = AppEnvironment.IsDevelopment() is false
+        });
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
 

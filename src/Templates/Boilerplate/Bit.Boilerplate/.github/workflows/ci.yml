@@ -4,8 +4,7 @@ name: Boilerplate CI
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ "develop" ]
+  pull_request:
 
 jobs:
 
@@ -27,8 +26,11 @@ jobs:
       with:
         node-version: 23
 
+    - name: Workload restore
+      run: dotnet workload restore
+
     - name: Build
-      run: dotnet build Boilerplate.slnx -c Release
+      run: dotnet build Boilerplate.slnx
 
     - name: Install Playwright
       run: pwsh src/Tests/bin/Debug/net9.0/playwright.ps1 install --with-deps

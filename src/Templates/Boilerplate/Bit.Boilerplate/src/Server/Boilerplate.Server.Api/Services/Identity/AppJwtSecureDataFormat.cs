@@ -1,4 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using System.Text;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication;
 
@@ -7,9 +8,44 @@ namespace Boilerplate.Server.Api.Services.Identity;
 /// <summary>
 /// Stores bearer token in jwt format
 /// </summary>
-public partial class AppJwtSecureDataFormat(ServerApiSettings appSettings, TokenValidationParameters validationParameters)
+public partial class AppJwtSecureDataFormat
     : ISecureDataFormat<AuthenticationTicket>
 {
+    private readonly string tokenType;
+    private readonly ServerApiSettings appSettings;
+    private readonly ILogger<AppJwtSecureDataFormat> logger;
+    private readonly TokenValidationParameters validationParameters;
+
+    public AppJwtSecureDataFormat(ServerApiSettings appSettings,
+        IHostEnvironment env,
+        ILogger<AppJwtSecureDataFormat> logger,
+        string tokenType)
+    {
+        this.logger = logger;
+        this.tokenType = tokenType;
+        this.appSettings = appSettings;
+
+        validationParameters = new()
+        {
+            ClockSkew = TimeSpan.Zero,
+            RequireSignedTokens = true,
+
+            ValidateIssuerSigningKey = env.IsDevelopment() is false,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(appSettings.Identity.JwtIssuerSigningKeySecret)),
+
+            RequireExpirationTime = true,
+            ValidateLifetime = tokenType is "AccessToken", /* IdentityController.Refresh will validate expiry itself while refreshing the token */
+
+            ValidateAudience = true,
+            ValidAudience = appSettings.Identity.Audience,
+
+            ValidateIssuer = true,
+            ValidIssuer = appSettings.Identity.Issuer,
+
+            AuthenticationType = IdentityConstants.BearerScheme
+        };
+    }
+
     public AuthenticationTicket? Unprotect(string? protectedText) => Unprotect(protectedText, null);
 
     public AuthenticationTicket? Unprotect(string? protectedText, string? purpose)
@@ -45,10 +81,7 @@ public partial class AppJwtSecureDataFormat(ServerApiSettings appSettings, Token
         }
         catch (Exception ex)
         {
-            if (AppEnvironment.IsDevelopment())
-            {
-                Console.WriteLine(ex); // since we do not have access to any logger at this point!
-            }
+            logger.LogWarning(ex, "Failed to unprotect the {TokenType}.", tokenType);
 
             return Anonymous();
         }
