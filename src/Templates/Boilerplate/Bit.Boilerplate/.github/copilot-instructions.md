@@ -19,13 +19,25 @@ You will be working with the following key technologies:
 *   **.NET MAUI Blazor Hybrid**: Cross-platform app development
 *   **ASP.NET Core Identity**: Authentication and authorization
 *   **Entity Framework Core**: Data access
+<!--#if (signalR == true)-->
 *   **SignalR**: Real-time communication
+<!--#endif-->
 *   **Hangfire**: Background job processing
 *   **OData**: Advanced querying capabilities
 *   **Bit.BlazorUI**: The primary UI component library
 *   **Microsoft.Extensions.AI**: AI integration
 *   **TypeScript**: Type-safe JavaScript development
 *   **SCSS**: Advanced CSS preprocessing
+*   **Mapperly**: High-performance object mapping
+<!--#if (database == "SqlServer")-->
+*   **SQL Server**: Primary database
+<!--#elif (database == "Sqlite")-->
+*   **SQLite**: Primary database
+<!--#elif (database == "PostgreSQL")-->
+*   **PostgreSQL**: Primary database
+<!--#elif (database == "MySql")-->
+    **MySQL**: Primary database
+<!--#endif-->
 
 ## 3. Project Structure
 
@@ -34,7 +46,9 @@ The solution is organized into the following projects. Understand their roles to
 *   **Boilerplate.Server.Api**: Houses API controllers, mappers, the `DbContext`, EF Core migrations, email templates, action filters, SignalR hubs, and server-specific configuration.
 *   **Boilerplate.Server.Web**: The application's default startup project and entry point. It hosts `App.razor` and configures Blazor Server and server-side rendering (SSR).
 *   **Boilerplate.Server.Shared**: (Also known as Aspire's ServiceDefaults) Contains common code shared between the `Server.Api` and `Server.Web` projects.
+<!--#if (aspire == true)-->
 *   **Boilerplate.Server.AppHost**: Manages the .NET Aspire configuration and orchestration.
+<!--#endif-->
 *   **Boilerplate.Shared**: Contains shared DTOs, enums, custom exceptions, shared services, and `.resx` resource files.
 *   **Boilerplate.Tests**: Contains all UI and integration tests.
 *   **Boilerplate.Client.Core**: The heart of the client application. Contains all shared Blazor components, pages, layouts, client-side services, and the primary `App.ts` and `App.scss` files.
@@ -44,7 +58,8 @@ The solution is organized into the following projects. Understand their roles to
 
 ## 4. Available Tooling
 
--   **DeepWiki**: Provides access to an extensive knowledge base for the `bitfoundation/bitplatform` repository. Use the `mcp_deepwiki_ask_question` tool to find the correct implementation and usage patterns for anything related to Bit.BlazorUI, `bit Bswup`, `bit Butil`, `bit Besql`, or the bit Boilerplate template.
+-   **DeepWiki**: Provides access to an extensive knowledge base for the `bitfoundation/bitplatform` repository. Use the `DeepWiki_ask_question` tool
+to find the correct implementation and usage patterns for anything related to Bit.BlazorUI, `bit Bswup`, `bit Butil`, `bit Besql`, or the bit Boilerplate template.
 -   **Website Fetcher**: Gathers information from URLs provided by the user. Prefer the built-in `fetch` tool if available; otherwise, use the `read-website-fast` tool.
 
 ## 5. Mandatory Workflow
@@ -82,11 +97,11 @@ After applying changes, you **MUST** verify the integrity of the application.
 
 ## 7. Critical Command Reference
 
--   **Build the project**: First change directory to src/Server/Boilerplate.Server.Web and run `dotnet build`
--   **Run the project**: First change directory to src/Server/Boilerplate.Server.Web and run `dotnet run`
--   **Run tests**: First change directory to src/Tests/Boilerplate.Tests and run `dotnet test`
--   **Add new migrations**: First change directory to src/Server/Boilerplate.Server.Api and run `dotnet ef migrations add <MigrationName> --verbose`
--   **Generate Resx C# code**: First change directory to src/Shared and run `dotnet build -t:PrepareResources`
+-   **Build the project**: Run `dotnet build` in Boilerplate.Server.Web project root directory.
+-   **Run the project**: Run `dotnet run` in Boilerplate.Server.Web project root directory.
+-   **Run tests**: Run `dotnet test` in Boilerplate.Tests project root directory.
+-   **Add new migrations**: Run `dotnet ef migrations add <MigrationName> --verbose` in Boilerplate.Server.Api project root directory.
+-   **Generate Resx C# code**: Run `dotnet build -t:PrepareResources` in Boilerplate.Shared project root directory.
 
 ## 8. Coding Conventions & Best Practices
 
@@ -104,3 +119,86 @@ After applying changes, you **MUST** verify the integrity of the application.
 12. **Style Bit.BlazorUI Components Correctly**: Use the `::deep` selector in your `.scss` files to style `Bit.BlazorUI` components.
 13. **Use Theme Colors**: You **MUST** use `BitColor` theme variables in C#, Razor, and SCSS files (`_bit-css-variables.scss`) to support dark/light modes. Do not use hardcoded colors.
 14. **Use Enhanced Lifecycle Methods**: In components inheriting from `AppComponentBase` or pages inheriting from `AppPageBase`, you **MUST** use `OnInitAsync`, `OnParamsSetAsync`, and `OnAfterFirstRenderAsync`.
+15. **WrapHandled**: Use `WrapHandled` for event handlers in razor files to prevent unhandled exceptions.
+Example 1: `OnClick="WrapHandled(MyMethod)"` instead of `OnClick="MyMethod"`.
+Example 2: `OnClick="WrapHandled(async () => await MyMethod())"` instead of `OnClick="async () => await MyMethod()"`.
+16. **Use OData Query Options**: Leverage `[EnableQuery]` and `ODataQueryOptions` for efficient data filtering and pagination.
+17. **Follow Mapperly Conventions**: Use partial classes and methods with Mapperly for high-performance object mapping.
+18. **Handle Concurrency**: Always use `ConcurrencyStamp` for optimistic concurrency control in update and delete operations.
+
+## Instructions for adding new model/entity to ef-core DbContext / Database
+Create the Entity Model
+- **Location**: `Boilerplate.Server.Api's Models folder`
+- **Requirements**:
+  - Include `Id`, `ConcurrencyStamp` properties
+  - Add appropriate navigation properties
+  - Use nullable reference types
+  - Add data annotations as needed
+
+Create the EntityTypeConfiguration
+- **Location**: `Boilerplate.Server.Api's Data/Configuration folder`
+  - Implement `IEntityTypeConfiguration<{EntityName}>`
+  - Configure unique indexes, relationships
+  - Seed initial data using `HasData` if needed
+  - Add `DbSet<{EntityName}>` to AppDbContext
+  - Add ef-core migration
+
+## Instructions for adding new DTO and Mapper
+Create the DTO
+- **Location**: `Boilerplate.Shared's Dtos folder`
+- **Requirements**:
+  - Use `[DtoResourceType(typeof(AppStrings))]` attribute
+  - Add validation attributes: `[Required]`, `[MaxLength]`, `[Display]`
+  - Use `nameof(AppStrings.PropertyName)` for error messages and display names
+  - Include `Id`, `ConcurrencyStamp` properties
+  - Add calculated properties if needed (e.g., `ProductsCount`)
+  - Add `[JsonSerializable(typeof({DtoName}))]` to AppJsonContext.cs
+
+Create the Mapper
+- **Location**: `Boilerplate.Server.Api's Mappers folders`
+- **Requirements**:
+  - Use `[Mapper]` attribute from Mapperly
+  - Create `static partial class {MapperName}Mapper`
+  - Add projection method: `public static partial IQueryable<{DtoName}> Project(this IQueryable<{EntityName}> query);`
+  - Add mapping methods: `Map()`, `Patch()` for CRUD operations
+  - Use `[MapProperty]` for complex mappings if needed
+  - **IMPORTANT**: Use the `DeepWiki_ask_question` tool with repository `riok/mapperly` to find correct implementation and usage patterns
+  for anything related to Mapperly mapping, projection methods, and complex property mapping scenarios.
+
+#### Instructions for creating Strongly Typed Http Client Wrapper to Call Backend API
+- **Location**: `Boilerplate.Shared project's Controllers folder`
+- **Requirements**:
+  - Inherit from `IAppController`
+  - Add `[Route("api/[controller]/[action]/")]` attribute
+  - Add `[AuthorizedApi]` if authentication required
+  - Define all CRUD operations with proper HTTP verbs
+  - Use `CancellationToken` parameters
+  - If Backend API's action accepts/returns types that are not available in the Shared project such as ODataQueryOptions, ActionResult etc, 
+  use default interface implementation to avoid build errors like this:
+  ```csharp
+  public interface IIdentityController : IAppController
+  {
+    [HttpPost]
+    Task<SignInResponseDto> SignIn(SignInRequestDto request, CancellationToken cancellationToken) => default!;
+  }
+
+  public partial class IdentityController : IIdentityController
+  {
+    [HttpPost, Produces<SignInResponseDto>()]
+    public async Task SignIn(SignInRequestDto request, CancellationToken cancellationToken)
+    {
+        /// Implementation here
+    }
+  }
+  ```
+
+#### Instructions to create Backend API Controllers
+- **Location**: `Boilerplate.Server.Api's Controllers folder`
+- **Requirements**:
+  - Inherit from `AppControllerBase`
+  - Implement the corresponding IAppController interface
+  - Add appropriate authorization attributes
+  - Use `[EnableQuery]` for GET endpoints with OData support
+  - Implement validation in private methods
+  - Use `Project()` for querying and mapping
+  - Handle resource not found scenarios using ResourceNotFoundException.
