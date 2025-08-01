@@ -162,7 +162,7 @@ Create the Mapper
   - Add projection method: `public static partial IQueryable<{DtoName}> Project(this IQueryable<{EntityName}> query);`
   - Add mapping methods: `Map()`, `Patch()` for CRUD operations
   - Use `[MapProperty]` for complex mappings if needed
-  - **IMPORTANT**: Use the `mcp_deepwiki_ask_question` tool with repository `riok/mapperly` to find correct implementation and usage patterns
+  - **IMPORTANT**: Use the `DeepWiki_ask_question` tool with repository `riok/mapperly` to find correct implementation and usage patterns
   for anything related to Mapperly mapping, projection methods, and complex property mapping scenarios.
 
 #### Instructions for creating Strongly Typed Http Client Wrapper to Call Backend API
