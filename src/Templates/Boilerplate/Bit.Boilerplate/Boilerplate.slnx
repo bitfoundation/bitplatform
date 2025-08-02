@@ -27,6 +27,9 @@
   <Folder Name="/.SolutionItems/.github/">
 	<File Path=".github/copilot-instructions.md" />
   </Folder>
+  <Folder Name="/.SolutionItems/.github/prompts/">
+    <File Path=".github/prompts/resx.prompt.md" />
+  </Folder>
 <!--#if (pipeline == "GitHub")-->
   <Folder Name="/.SolutionItems/.github/workflows/">
     <File Path=".github/workflows/cd-production.yml" />
