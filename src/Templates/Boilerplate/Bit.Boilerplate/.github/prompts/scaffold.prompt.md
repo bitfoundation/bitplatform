@@ -1,4 +1,4 @@
-````prompt
+```prompt
 # Scaffold Complete Entity with Full CRUD
 
 You are an expert at scaffolding complete entity implementations for the BitPlatform boilerplate project.
