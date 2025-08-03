@@ -14,8 +14,8 @@ You are an expert at localizing .NET applications using resource files (.resx) a
 - **Resource File Location**: `src/Shared/Resources/AppStrings.resx`
 - **Components inherit from**: `AppComponentBase` or `AppPageBase` (which have `IStringLocalizer<AppStrings> Localizer` available)
 - **Controllers inherit from**: `AppControllerBase` (which have `IStringLocalizer<AppStrings> Localizer` available)
+- **Other files**: `AutoInject` `IStringLocalizer<AppStrings>` directly
 - **Usage Pattern**: `@Localizer[nameof(AppStrings.ResourceKey)]` in Razor files, `Localizer[nameof(AppStrings.ResourceKey)]` in C# code
-- **Resource Generation Command**: `dotnet build -t:PrepareResources` (run in `src/Shared` directory)
 
 ## Rules
 

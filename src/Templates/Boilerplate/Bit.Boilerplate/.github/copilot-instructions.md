@@ -169,47 +169,11 @@ Create the Mapper
   - Inherit from `IAppController`
   - Add `[Route("api/[controller]/[action]/")]` attribute
   - Add `[AuthorizedApi]` if authentication required
-  - Define all CRUD operations with proper HTTP verbs
-  - Use `CancellationToken` parameters
-  - If Backend API's action accepts/returns types that are not available in the Shared project such as ODataQueryOptions, ActionResult etc, 
-  use default interface implementation to avoid build errors like this:
-
-  Shared project:
-```csharp
-  public interface IIdentityController : IAppController
-  {
-    [HttpPost]
-    Task<TokenResponseDto> Refresh(RefreshTokenRequestDto request, CancellationToken cancellationToken) => default!;
-  }
-
-  public interface ICategoryController : IAppController
-  {
-    [HttpGet]
-    Task<PagedResult<CategoryDto>> GetCategories(CancellationToken cancellationToken) => default!;
-  }
-```
-
-Server.Api project:
-
-```csharp
-  public interface CategoryController : AppControllerBase
-  {
-    [HttpGet]
-    public async Task<PagedResult<CategoryDto>> GetCategories(ODataQueryOptions<CategoryDto> odataQuery, CancellationToken cancellationToken)
-    {
-        /// Implementation here
-    }
-  }
-
-  public partial class IdentityController : IIdentityController
-  {
-    [HttpPost]
-    public async Task<ActionResult<TokenResponseDto>> Refresh(RefreshTokenRequestDto request, CancellationToken cancellationToken)
-    {
-        /// Implementation here
-    }
-  }
-```
+  - Always Use `CancellationToken` parameters
+  - The return type should be `Task<T>` or Task<T> where T is JSON Serializable type like DTO, int, or List<Dto>
+  - If Backend API's action returns `IQueryable<T>`, use `Task<List<T>>` as return type with `=> default!`
+  - If Backend API's action returns `IActionResult`, use `Produces<T>` attribute to specify the response type with `=> default!`
+  - If Backend API accepts ODataQueryOptions, simply ignore it
 
 #### Instructions to create Backend API Controllers
 - **Location**: `Boilerplate.Server.Api's Controllers folder`

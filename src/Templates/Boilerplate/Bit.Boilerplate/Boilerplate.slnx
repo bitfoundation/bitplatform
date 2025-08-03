@@ -29,6 +29,7 @@
   </Folder>
   <Folder Name="/.SolutionItems/.github/prompts/">
     <File Path=".github/prompts/resx.prompt.md" />
+    <File Path=".github/prompts/scaffold.prompt.md" />
   </Folder>
 <!--#if (pipeline == "GitHub")-->
   <Folder Name="/.SolutionItems/.github/workflows/">
