@@ -7,6 +7,12 @@ public partial class IconographyPage
     private List<string> allIcons = default!;
     private List<string> filteredIcons = default!;
 
+
+
+    [AutoInject] private IJSRuntime _js = default!;
+
+
+
     protected override void OnInitialized()
     {
         allIcons = typeof(BitIconName).GetFields(BindingFlags.Static | BindingFlags.Public)
@@ -15,6 +21,8 @@ public partial class IconographyPage
         HandleClear();
         base.OnInitialized();
     }
+
+
 
     private void HandleClear()
     {
@@ -27,5 +35,10 @@ public partial class IconographyPage
         if (string.IsNullOrEmpty(text)) return;
 
         filteredIcons = allIcons.FindAll(icon => string.IsNullOrEmpty(icon) is false && icon.Contains(text, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    private async Task CopyToClipboard(string iconName)
+    {
+        await _js.CopyToClipboard(iconName);
     }
 }
