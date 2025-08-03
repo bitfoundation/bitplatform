@@ -58,8 +58,7 @@ The solution is organized into the following projects. Understand their roles to
 
 ## 4. Available Tooling
 
--   **DeepWiki**: Provides access to an extensive knowledge base for the `bitfoundation/bitplatform` repository. Use the `DeepWiki_ask_question` tool
-to find the correct implementation and usage patterns for anything related to Bit.BlazorUI, `bit Bswup`, `bit Butil`, `bit Besql`, or the bit Boilerplate template.
+-   **DeepWiki**: Provides access to an extensive knowledge base for the `bitfoundation/bitplatform` and `riok/mapperly` repositories.
 -   **Website Fetcher**: Gathers information from URLs provided by the user. Prefer the built-in `fetch` tool if available; otherwise, use the `read-website-fast` tool.
 
 ## 5. Mandatory Workflow
@@ -74,6 +73,8 @@ Before writing code, investigate thoroughly.
 *   If the user provides a **URL**, you **MUST** use the `fetch` tool to retrieve its content.
 *   If the user provides a **git commit id/hash**, you **MUST** run the `git --no-pager show <commit-id>` command to retrieve its details.
 *   For UI-related tasks, you **MUST** first ask `DeepWiki`: *"What features does BitPlatform offer to help me complete this task? [USER'S ORIGINAL REQUEST]"*
+*   For anything related to `Bit.BlazorUI`, `bit Bswup`, `bit Butil`, `bit Besql`, or the bit project template, you **MUST** use the `DeepWiki_ask_question` tool with repository `bitfoundation/bitplatform` to find relevant information.
+*   For mapper/mapping entity/dto related tasks, you **MUST** use the `DeepWiki_ask_question` tool with repository `riok/mapperly` to find correct implementation and usage patterns focusing on its static classes and extension methods approach.
 
 ### Step 3: Formulate a Detailed Plan
 Create a comprehensive, step-by-step plan. This plan must outline:
@@ -123,7 +124,7 @@ After applying changes, you **MUST** verify the integrity of the application.
 Example 1: `OnClick="WrapHandled(MyMethod)"` instead of `OnClick="MyMethod"`.
 Example 2: `OnClick="WrapHandled(async () => await MyMethod())"` instead of `OnClick="async () => await MyMethod()"`.
 16. **Use OData Query Options**: Leverage `[EnableQuery]` and `ODataQueryOptions` for efficient data filtering and pagination.
-17. **Follow Mapperly Conventions**: Use partial classes and methods with Mapperly for high-performance object mapping.
+17. **Follow Mapperly Conventions**: Use partial static classes and extensions methods with Mapperly for high-performance object mapping.
 18. **Handle Concurrency**: Always use `ConcurrencyStamp` for optimistic concurrency control in update and delete operations.
 
 ## Instructions for adding new model/entity to ef-core DbContext / Database
@@ -139,7 +140,6 @@ Create the EntityTypeConfiguration
 - **Location**: `Boilerplate.Server.Api's Data/Configuration folder`
   - Implement `IEntityTypeConfiguration<{EntityName}>`
   - Configure unique indexes, relationships
-  - Seed initial data using `HasData` if needed
   - Add `DbSet<{EntityName}>` to AppDbContext
   - Add ef-core migration
 
@@ -162,8 +162,6 @@ Create the Mapper
   - Add projection method: `public static partial IQueryable<{DtoName}> Project(this IQueryable<{EntityName}> query);`
   - Add mapping methods: `Map()`, `Patch()` for CRUD operations
   - Use `[MapProperty]` for complex mappings if needed
-  - **IMPORTANT**: Use the `DeepWiki_ask_question` tool with repository `riok/mapperly` to find correct implementation and usage patterns
-  for anything related to Mapperly mapping, projection methods, and complex property mapping scenarios.
 
 #### Instructions for creating Strongly Typed Http Client Wrapper to Call Backend API
 - **Location**: `Boilerplate.Shared project's Controllers folder`
@@ -171,26 +169,11 @@ Create the Mapper
   - Inherit from `IAppController`
   - Add `[Route("api/[controller]/[action]/")]` attribute
   - Add `[AuthorizedApi]` if authentication required
-  - Define all CRUD operations with proper HTTP verbs
-  - Use `CancellationToken` parameters
-  - If Backend API's action accepts/returns types that are not available in the Shared project such as ODataQueryOptions, ActionResult etc, 
-  use default interface implementation to avoid build errors like this:
-  ```csharp
-  public interface IIdentityController : IAppController
-  {
-    [HttpPost]
-    Task<SignInResponseDto> SignIn(SignInRequestDto request, CancellationToken cancellationToken) => default!;
-  }
-
-  public partial class IdentityController : IIdentityController
-  {
-    [HttpPost, Produces<SignInResponseDto>()]
-    public async Task SignIn(SignInRequestDto request, CancellationToken cancellationToken)
-    {
-        /// Implementation here
-    }
-  }
-  ```
+  - Always Use `CancellationToken` parameters
+  - The return type should be `Task<T>` or Task<T> where T is JSON Serializable type like DTO, int, or List<Dto>
+  - If Backend API's action returns `IQueryable<T>`, use `Task<List<T>>` as return type with `=> default!`
+  - If Backend API's action returns `IActionResult`, use `Produces<T>` attribute to specify the response type with `=> default!`
+  - If Backend API accepts ODataQueryOptions, simply ignore it
 
 #### Instructions to create Backend API Controllers
 - **Location**: `Boilerplate.Server.Api's Controllers folder`
