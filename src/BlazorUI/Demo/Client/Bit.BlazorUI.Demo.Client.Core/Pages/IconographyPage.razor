@@ -25,6 +25,9 @@
                       Placeholder="Search icons"
                       IconName="@BitIconName.Search"
                       Class="iconography-search-box" />
+        <BitText Typography="BitTypography.Caption1" Gutter>
+            <b>Note</b>: click on an icon to copy its name to clipboard.
+        </BitText>
         <div class="icon-list">
             @if (filteredIcons.Count == 0)
             {
@@ -36,7 +39,7 @@
             {
                 foreach (var icon in filteredIcons)
                 {
-                    <div class="icon-box">
+                    <div class="icon-box" @onclick="async () => await CopyToClipboard(icon)">
                         <i class="bit-icon bit-icon--iconography bit-icon--@icon"></i>
                         <span class="icon-name">@icon</span>
                     </div>

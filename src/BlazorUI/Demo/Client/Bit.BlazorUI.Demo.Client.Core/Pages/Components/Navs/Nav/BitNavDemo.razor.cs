@@ -144,6 +144,15 @@ public partial class BitNavDemo
         },
         new()
         {
+            Name = "Match",
+            Type = "BitNavMatch?",
+            DefaultValue = "null",
+            Description = "Gets or sets a value representing the global URL matching behavior of the nav.",
+            LinkType = LinkType.Link,
+            Href = "#nav-match-enum",
+        },
+        new()
+        {
             Name = "Mode",
             Type = "BitNavMode",
             DefaultValue = "BitNavMode.Automatic",
@@ -922,6 +931,39 @@ public partial class BitNavDemo
                     Name= "TertiaryBorder",
                     Description="Tertiary border color.",
                     Value="16",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "nav-match-enum",
+            Name = "BitNavMatch",
+            Description = "Modifies the URL matching behavior for a BitNav<TItem>.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Exact",
+                    Description = "Specifies that the nav item should be active when it matches exactly the current URL.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Prefix",
+                    Description = "Specifies that the nav item should be active when it matches any prefix of the current URL.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Regex",
+                    Description = "Specifies that the nav item should be active when its provided regex matches the current URL.",
+                    Value = "2",
+                },
+                new()
+                {
+                    Name = "Wildcard",
+                    Description = "Specifies that the nav item should be active when its provided wildcard matches the current URL.",
+                    Value = "3",
                 }
             ]
         },

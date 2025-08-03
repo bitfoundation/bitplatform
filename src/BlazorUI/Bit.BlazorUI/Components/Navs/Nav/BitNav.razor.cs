@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Routing;
+﻿using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.BlazorUI;
 
@@ -116,6 +117,11 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     /// The render mode of the custom ItemTemplate.
     /// </summary>
     [Parameter] public BitNavItemTemplateRenderMode ItemTemplateRenderMode { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value representing the global URL matching behavior of the nav.
+    /// </summary>
+    [Parameter] public BitNavMatch? Match { get; set; }
 
     /// <summary>
     /// Determines how the navigation will be handled.
@@ -374,7 +380,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
         item.SetValueToProperty(NameSelectors.IsExpanded.Name, value);
     }
-    
+
     internal void SetItemExpanded(TItem item, bool value)
     {
         var isExpanded = GetIsExpanded(item);
@@ -908,13 +914,76 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         return GetKey(item) ?? $"{UniqueId}-{defaultKey}";
     }
 
+    internal BitNavMatch? GetMatch(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.Match;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.Match;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Match.Selector is not null)
+        {
+            return NameSelectors.Match.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<BitNavMatch?>(NameSelectors.Match.Name);
+    }
+
     internal void SetSelectedItemByCurrentUrl()
     {
-        var currentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
-        var currentItem = Flatten(_items).FirstOrDefault(item => GetUrl(item) == currentUrl
-                                                        || (GetAdditionalUrls(item)?.Contains(currentUrl) ?? false));
+        if (Mode is not BitNavMode.Automatic) return;
+
+        string currentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
+        var currentItem = Flatten(_items).FirstOrDefault(item =>
+        {
+            var match = GetMatch(item) ?? Match ?? BitNavMatch.Exact;
+
+            if (IsMatch(GetUrl(item), match)) return true;
+
+            return GetAdditionalUrls(item)?.Any(u => IsMatch(u, match)) is true;
+        });
 
         _ = SetSelectedItem(currentItem);
+
+        const string DOUBLE_STAR_PLACEHOLDER = "___BIT_NAV_DOUBLESTAR_PLACEHOLDER___";
+        bool IsMatch(string? itemUrl, BitNavMatch? match)
+        {
+            if (itemUrl is null) return false;
+
+            return match switch
+            {
+                BitNavMatch.Exact => itemUrl == currentUrl,
+                BitNavMatch.Prefix => currentUrl.StartsWith(itemUrl, StringComparison.Ordinal),
+                BitNavMatch.Regex => Regex.IsMatch(currentUrl, itemUrl),
+                BitNavMatch.Wildcard => IsWildcardMatch(currentUrl, itemUrl),
+                _ => itemUrl == currentUrl,
+            };
+
+            bool IsWildcardMatch(string input, string pattern)
+            {
+                string regexPattern = $"^{WildcardToRegex(pattern)}$";
+                return Regex.IsMatch(input, regexPattern);
+            }
+
+            string WildcardToRegex(string pattern)
+            {
+                pattern = Regex.Escape(pattern);
+
+                pattern = pattern.Replace(@"\*\*", DOUBLE_STAR_PLACEHOLDER);
+                pattern = pattern.Replace(@"\*", "[^/]*");
+                pattern = pattern.Replace(@"\?", "[^/]");
+                pattern = pattern.Replace(DOUBLE_STAR_PLACEHOLDER, ".*");
+
+                return pattern;
+            }
+        }
     }
 
 
