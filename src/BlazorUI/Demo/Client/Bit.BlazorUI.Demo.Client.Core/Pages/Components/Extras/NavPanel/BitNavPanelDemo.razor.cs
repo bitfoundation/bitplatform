@@ -192,7 +192,7 @@ public partial class BitNavPanelDemo
         new()
         {
             Name = "NavMatch",
-            Type = "BitNavMatch",
+            Type = "BitNavMatch?",
             DefaultValue = "null",
             Description = "Determines the global URL matching behavior of the nav.",
             LinkType = LinkType.Link,

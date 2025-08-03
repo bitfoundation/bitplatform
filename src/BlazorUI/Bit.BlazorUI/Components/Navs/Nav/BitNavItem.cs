@@ -75,7 +75,7 @@ public class BitNavItem
     /// <summary>
     /// Gets or sets a value representing the URL matching behavior of the nav item.
     /// </summary>
-    [Parameter] public BitNavMatch? Match { get; set; }
+    public BitNavMatch? Match { get; set; }
 
     /// <summary>
     /// Custom CSS style for the nav item.
