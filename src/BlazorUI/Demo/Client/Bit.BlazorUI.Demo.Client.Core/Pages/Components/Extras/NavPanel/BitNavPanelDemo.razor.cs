@@ -1,5 +1,4 @@
-﻿
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.NavPanel;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.NavPanel;
 
 public partial class BitNavPanelDemo
 {
@@ -189,6 +188,15 @@ public partial class BitNavPanelDemo
             Type = "BitNavClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS classes for different parts of the nav component of the nav panel.",
+        },
+        new()
+        {
+            Name = "NavMatch",
+            Type = "BitNavMatch?",
+            DefaultValue = "null",
+            Description = "Determines the global URL matching behavior of the nav.",
+            LinkType = LinkType.Link,
+            Href = "#nav-match-enum",
         },
         new()
         {
@@ -531,6 +539,39 @@ public partial class BitNavPanelDemo
                     Name= "TertiaryBorder",
                     Description="Tertiary border color.",
                     Value="16",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "nav-match-enum",
+            Name = "BitNavMatch",
+            Description = "Modifies the URL matching behavior for a BitNav<TItem>.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Exact",
+                    Description = "Specifies that the nav item should be active when it matches exactly the current URL.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Prefix",
+                    Description = "Specifies that the nav item should be active when it matches any prefix of the current URL.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Regex",
+                    Description = "Specifies that the nav item should be active when its provided regex matches the current URL.",
+                    Value = "2",
+                },
+                new()
+                {
+                    Name = "Wildcard",
+                    Description = "Specifies that the nav item should be active when its provided wildcard matches the current URL.",
+                    Value = "3",
                 }
             ]
         },

@@ -87,6 +87,11 @@ public partial class BitNavOption : ComponentBase, IDisposable
     [Parameter] public string? Key { get; set; }
 
     /// <summary>
+    /// Gets or sets a value representing the URL matching behavior of the nav option.
+    /// </summary>
+    [Parameter] public BitNavMatch? Match { get; set; }
+
+    /// <summary>
     /// Custom CSS style for the nav option.
     /// </summary>
     [Parameter] public string? Style { get; set; }

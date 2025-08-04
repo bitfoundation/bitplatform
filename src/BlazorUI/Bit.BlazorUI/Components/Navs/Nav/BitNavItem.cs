@@ -73,6 +73,11 @@ public class BitNavItem
     public string? Key { get; set; }
 
     /// <summary>
+    /// Gets or sets a value representing the URL matching behavior of the nav item.
+    /// </summary>
+    public BitNavMatch? Match { get; set; }
+
+    /// <summary>
     /// Custom CSS style for the nav item.
     /// </summary>
     public string? Style { get; set; }
