@@ -10,8 +10,8 @@ public partial class BitNavDemo
             Type = "BitColor?",
             DefaultValue = "null",
             Description = "The accent color of the nav.",
-            LinkType = LinkType.Link,
             Href = "#color-enum",
+            LinkType = LinkType.Link,
         },
         new()
         {
@@ -40,8 +40,8 @@ public partial class BitNavDemo
             Type = "BitNavClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS classes for different parts of the BitNav component.",
-            LinkType = LinkType.Link,
             Href = "#nav-class-styles",
+            LinkType = LinkType.Link,
         },
         new()
         {
@@ -86,8 +86,8 @@ public partial class BitNavDemo
             Type = "BitNavItemTemplateRenderMode",
             DefaultValue = "BitNavItemTemplateRenderMode.Normal",
             Description = "The render mode of the custom HeaderTemplate.",
-            LinkType = LinkType.Link,
             Href = "#nav-itemtemplate-rendermode",
+            LinkType = LinkType.Link,
         },
         new()
         {
@@ -123,8 +123,8 @@ public partial class BitNavDemo
             Type = "IList<TItem>",
             DefaultValue = "new List<TItem>()",
             Description = "A collection of item to display in the navigation bar.",
-            LinkType = LinkType.Link,
             Href="#nav-item",
+            LinkType = LinkType.Link,
         },
         new()
         {
@@ -139,8 +139,8 @@ public partial class BitNavDemo
             Type = "BitNavItemTemplateRenderMode",
             DefaultValue = "BitNavItemTemplateRenderMode.Normal",
             Description = "The render mode of the custom ItemTemplate.",
-            LinkType = LinkType.Link,
             Href = "#nav-itemtemplate-rendermode",
+            LinkType = LinkType.Link,
         },
         new()
         {
@@ -148,8 +148,8 @@ public partial class BitNavDemo
             Type = "BitNavMatch?",
             DefaultValue = "null",
             Description = "Gets or sets a value representing the global URL matching behavior of the nav.",
-            LinkType = LinkType.Link,
             Href = "#nav-match-enum",
+            LinkType = LinkType.Link,
         },
         new()
         {
@@ -157,8 +157,8 @@ public partial class BitNavDemo
             Type = "BitNavMode",
             DefaultValue = "BitNavMode.Automatic",
             Description = "Determines how the navigation will be handled.",
-            LinkType = LinkType.Link,
             Href = "#nav-mode-enum",
+            LinkType = LinkType.Link,
         },
         new()
         {
@@ -166,8 +166,8 @@ public partial class BitNavDemo
             Type = "BitNavNameSelectors<TItem>?",
             DefaultValue = "null",
             Description = "Names and selectors of the custom input type properties.",
-            LinkType = LinkType.Link,
             Href = "#name-selectors",
+            LinkType = LinkType.Link,
         },
         new()
         {
@@ -199,8 +199,8 @@ public partial class BitNavDemo
             Type = "BitNavRenderType",
             DefaultValue = "BitNavRenderType.Normal",
             Description = "The way to render nav items.",
-            LinkType = LinkType.Link,
             Href = "#nav-render-type-enum",
+            LinkType = LinkType.Link,
         },
         new()
         {
@@ -236,8 +236,8 @@ public partial class BitNavDemo
             Type = "BitNavClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS styles for different parts of the BitNav component.",
-            LinkType = LinkType.Link,
             Href = "#nav-class-styles",
+            LinkType = LinkType.Link,
         }
     ];
 
@@ -373,6 +373,15 @@ public partial class BitNavDemo
                },
                new()
                {
+                   Name = "Match",
+                   Type = "BitNavMatch?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets a value representing the URL matching behavior of the nav item.",
+                   Href = "#nav-match-enum",
+                   LinkType = LinkType.Link,
+               },
+               new()
+               {
                    Name = "Style",
                    Type = "string?",
                    DefaultValue = "null",
@@ -398,6 +407,8 @@ public partial class BitNavDemo
                    Type = "BitNavItemTemplateRenderMode",
                    DefaultValue = "BitNavItemTemplateRenderMode.Normal",
                    Description = "The render mode of the nav item's custom template.",
+                   Href = "#nav-itemtemplate-rendermode",
+                   LinkType = LinkType.Link,
                },
                new()
                {
@@ -537,6 +548,15 @@ public partial class BitNavDemo
                },
                new()
                {
+                   Name = "Match",
+                   Type = "BitNavMatch?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets a value representing the URL matching behavior of the nav option.",
+                   Href = "#nav-match-enum",
+                   LinkType = LinkType.Link,
+               },
+               new()
+               {
                    Name = "Style",
                    Type = "string?",
                    DefaultValue = "null",
@@ -562,6 +582,8 @@ public partial class BitNavDemo
                    Type = "BitNavItemTemplateRenderMode",
                    DefaultValue = "BitNavItemTemplateRenderMode.Normal",
                    Description = "The render mode of the nav option's custom template.",
+                   Href = "#nav-itemtemplate-rendermode",
+                   LinkType = LinkType.Link,
                },
                new()
                {
@@ -604,7 +626,9 @@ public partial class BitNavDemo
                    Name = "AriaCurrent",
                    Type = "BitNameSelectorPair<TItem, BitNavAriaCurrent?>",
                    DefaultValue = "new(nameof(BitNavItem.AriaCurrent))",
-                   Description = "The AriaCurrent field name and selector of the custom input class."
+                   Description = "The AriaCurrent field name and selector of the custom input class.",
+                   Href = "#nav-aria-current-enum",
+                   LinkType = LinkType.Link,
                },
                new()
                {
@@ -699,6 +723,15 @@ public partial class BitNavDemo
                },
                new()
                {
+                   Name = "Match",
+                   Type = "BitNameSelectorPair<TItem, BitNavMatch?>",
+                   DefaultValue = "new(nameof(BitNavItem.Match))",
+                   Description = "The Match field name and selector of the custom input class.",
+                   Href = "#nav-match-enum",
+                   LinkType = LinkType.Link,
+               },
+               new()
+               {
                    Name = "Style",
                    Type = "BitNameSelectorPair<TItem, string?>",
                    DefaultValue = "new(nameof(BitNavItem.Style))",
@@ -716,7 +749,9 @@ public partial class BitNavDemo
                    Name = "TemplateRenderMode",
                    Type = "BitNameSelectorPair<TItem, BitNavItemTemplateRenderMode?>",
                    DefaultValue = "new(nameof(BitNavItem.TemplateRenderMode))",
-                   Description = "The TemplateRenderMode field name and selector of the custom input class."
+                   Description = "The TemplateRenderMode field name and selector of the custom input class.",
+                   Href = "#nav-itemtemplate-rendermode",
+                   LinkType = LinkType.Link,
                },
                new()
                {
