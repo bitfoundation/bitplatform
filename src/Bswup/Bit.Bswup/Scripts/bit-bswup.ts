@@ -22,12 +22,18 @@ BitBswup.version = window['bit-bswup version'] = '9.11.3-pre-01';
         let blazorStartResolver: (value: unknown) => void;
 
         try {
-            navigator.serviceWorker.register(options.sw, { scope: options.scope, updateViaCache: 'none' }).then(prepareRegistration);
+            navigator.serviceWorker
+                .register(options.sw, { scope: options.scope, updateViaCache: 'none' })
+                .then(prepareRegistration)
+                .catch(() => {
+                    startBlazor(true);
+                    warn('serviceWorker register promise failed');
+                });
             navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
             navigator.serviceWorker.addEventListener('message', handleMessage);
         } catch (e) {
             startBlazor(true);
-            return warn('serviceWorker registration failed');
+            warn('serviceWorker registration failed');
         }
 
         function prepareRegistration(reg) {
