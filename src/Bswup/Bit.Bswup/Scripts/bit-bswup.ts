@@ -33,7 +33,7 @@ BitBswup.version = window['bit-bswup version'] = '9.11.3-pre-01';
             navigator.serviceWorker.addEventListener('message', handleMessage);
         } catch (e) {
             startBlazor(true);
-            warn('serviceWorker registeration failed');
+            warn('serviceWorker registration failed');
         }
 
         function prepareRegistration(reg) {
