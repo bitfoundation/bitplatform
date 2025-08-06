@@ -61,14 +61,16 @@
             "commandName": "IISExpress",
             "launchBrowser": true,
             "environmentVariables": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "IN_APP_SCSS_COMPILER_ENABLED": "true"
             }
         },
         "IIS": {
             "commandName": "IIS",
             "launchBrowser": true,
             "environmentVariables": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "IN_APP_SCSS_COMPILER_ENABLED": "true"
             }
         }
     },
