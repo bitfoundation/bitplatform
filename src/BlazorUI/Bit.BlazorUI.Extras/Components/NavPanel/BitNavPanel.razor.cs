@@ -146,6 +146,11 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public BitNavClassStyles? NavClasses { get; set; }
 
     /// <summary>
+    /// Determines the global URL matching behavior of the nav.
+    /// </summary>
+    [Parameter] public BitNavMatch? NavMatch { get; set; }
+
+    /// <summary>
     /// Determines how the navigation will be handled.
     /// </summary>
     [Parameter] public BitNavMode NavMode { get; set; }

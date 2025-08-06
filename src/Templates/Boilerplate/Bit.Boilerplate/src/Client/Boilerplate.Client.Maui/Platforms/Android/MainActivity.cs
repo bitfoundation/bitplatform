@@ -20,7 +20,8 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
                         DataPathPrefixes = [
                             "/en-US", "/en-GB", "/nl-NL", "/fa-IR", "sv-SE", "hi-IN", "zh-CN", "es-ES", "fr-FR", "ar-SA", "de-DE",
                             PageUrls.Confirm, PageUrls.ForgotPassword, PageUrls.Settings, PageUrls.ResetPassword, PageUrls.SignIn,
-                            PageUrls.SignUp, PageUrls.NotAuthorized, PageUrls.NotFound, PageUrls.Terms, PageUrls.About, PageUrls.Authorize, PageUrls.About,
+                            PageUrls.SignUp, PageUrls.NotAuthorized, PageUrls.NotFound, PageUrls.Terms, PageUrls.About, PageUrls.Authorize,
+                            PageUrls.Roles, PageUrls.Users,
                             //#if (module == "Admin")
                             PageUrls.AddOrEditProduct, PageUrls.Categories, PageUrls.Dashboard, PageUrls.Products,
                             //#endif
@@ -30,6 +31,9 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
                             //#if (sample == true)
                             PageUrls.Todo,
                             //#endif
+                            //#if (signalR == true)
+                            PageUrls.SystemPrompts,
+                            //#endif
                             //#if (offlineDb == true)
                             PageUrls.OfflineDatabaseDemo
                             //#endif
@@ -37,7 +41,7 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
                         AutoVerify = true,
                         Categories = [Intent.ActionView, Intent.CategoryDefault, Intent.CategoryBrowsable])]
 
-[Activity(Theme = "@style/Maui.SplashTheme", MainLauncher = true, LaunchMode = LaunchMode.SingleInstance,
+[Activity(Theme = "@style/Maui.SplashTheme", MainLauncher = true, LaunchMode = LaunchMode.SingleTask,
     ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize | ConfigChanges.Density)]
 public partial class MainActivity : MauiAppCompatActivity
     //#if (notification == true)

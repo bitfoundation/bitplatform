@@ -54,5 +54,5 @@ Explore `IMinimalApiController` for example of ASP.NET Core Minimal API that has
 
 Another advanced examples includes Direct GitHub API call at client-side in IStatisticsController's GetGitHubStats and IDiagnosticsController.
 
-**Note:** We supprt [RFC6570](https://datatracker.ietf.org/doc/html/rfc6570) for request url templates thanks to [DoLess.UriTemplates](https://github.com/letsar/DoLess.UriTemplates?tab=readme-ov-file#examples)!
+**Note:** We support [RFC6570](https://datatracker.ietf.org/doc/html/rfc6570) for request url templates thanks to [DoLess.UriTemplates](https://github.com/letsar/DoLess.UriTemplates?tab=readme-ov-file#examples)!
 

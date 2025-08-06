@@ -88,11 +88,11 @@ serverWebProject.WithReference(s3Storage, "S3ConnectionString").WaitFor(s3Storag
 
 //#endif
 
-if (builder.ExecutionContext.IsRunMode) // The following projects are only added for testing purposes.
-{
-    // Blazor WebAssembly Standalone project.
-    builder.AddProject<Boilerplate_Client_Web>("clientwebwasm"); // Replace . with _ if needed to ensure the project builds successfully.
+// Blazor WebAssembly Standalone project.
+builder.AddProject<Boilerplate_Client_Web>("clientwebwasm"); // Replace . with _ if needed to ensure the project builds successfully.
 
+if (builder.ExecutionContext.IsRunMode) // The following project is only added for testing purposes.
+{
     // Blazor Hybrid Windows project.
     builder.AddProject<Boilerplate_Client_Windows>("clientwindows") // Replace . with _ if needed to ensure the project builds successfully.
         .WithExplicitStart();

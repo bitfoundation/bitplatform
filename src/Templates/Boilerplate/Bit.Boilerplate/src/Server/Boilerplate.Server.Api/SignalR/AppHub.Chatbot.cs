@@ -12,9 +12,9 @@ namespace Boilerplate.Server.Api.SignalR;
 public partial class AppHub
 {
     public async IAsyncEnumerable<string> Chatbot(
-    StartChatbotRequest request,
-    IAsyncEnumerable<string> incomingMessages,
-    [EnumeratorCancellation] CancellationToken cancellationToken)
+        StartChatbotRequest request,
+        IAsyncEnumerable<string> incomingMessages,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         // Incoming user messages are received via `incomingMessages`.
         // We utilize `Channel` to read incoming messages and send responses using `ChatClient`.
@@ -114,7 +114,8 @@ public partial class AppHub
                                             p.PageUrl,
                                             Manufacturer = p.CategoryName,
                                             Price = p.FormattedPrice,
-                                            Description = p.DescriptionText
+                                            Description = p.DescriptionText,
+                                            PreviewImageUrl = p.GetPrimaryMediumImageUrl(request.ServerApiAddress!)
                                         })
                                         .ToArrayAsync(messageSpecificCancellationToken);
 
