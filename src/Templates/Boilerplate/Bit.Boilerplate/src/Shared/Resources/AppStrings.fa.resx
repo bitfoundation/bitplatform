@@ -1319,9 +1319,6 @@
     <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>شما نمیتوانید سشن جاری خود را حذف کنید</value>
   </data>
-    <data name="UserCantRemoveAllItsSessionsErrorMessage" xml:space="preserve">
-    <value>شما نمیتوانید تمامی سشن‌های خود را حذف کنید</value>
-  </data>
     <data name="SearchRolesPlaceholder" xml:space="preserve">
     <value>جستجوی گروه‌های کاربری</value>
   </data>
