@@ -1325,9 +1325,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>You can't remove your current session</value>
   </data>
-    <data name="UserCantRemoveAllItsSessionsErrorMessage" xml:space="preserve">
-    <value>You can't remove all of your own sessions</value>
-  </data>
     <data name="SearchRolesPlaceholder" xml:space="preserve">
     <value>Search user groups</value>
   </data>
