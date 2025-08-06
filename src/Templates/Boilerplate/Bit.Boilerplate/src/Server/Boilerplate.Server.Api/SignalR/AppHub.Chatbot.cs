@@ -114,7 +114,8 @@ public partial class AppHub
                                             p.PageUrl,
                                             Manufacturer = p.CategoryName,
                                             Price = p.FormattedPrice,
-                                            Description = p.DescriptionText
+                                            Description = p.DescriptionText,
+                                            PreviewImageUrl = p.GetPrimaryMediumImageUrl(request.ServerApiAddress!)
                                         })
                                         .ToArrayAsync(messageSpecificCancellationToken);
 
