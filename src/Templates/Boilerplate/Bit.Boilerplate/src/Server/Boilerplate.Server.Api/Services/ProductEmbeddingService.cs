@@ -60,7 +60,7 @@ public partial class ProductEmbeddingService
         await dbContext.Entry(product).Reference(p => p.Category).LoadAsync(cancellationToken);
 
         // TODO: Needs to be improved.
-        var embedding = await EmbedText($"Name: {product.Name}, Manufacture: {product.Category!.Name}, Description: {product.DescriptionText}, Price: {product.Price}", cancellationToken);
+        var embedding = await EmbedText($"Name: {product.Name}, Manufacture: {product.Category!.Name}, Description: {product.DescriptionText} {product.PrimaryImageAltText}, Price: {product.Price}", cancellationToken);
 
         if (embedding.HasValue)
         {
