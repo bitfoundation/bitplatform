@@ -54,7 +54,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
             if (User.IsInRole(AppRoles.SuperAdmin) is false)
                 throw new BadRequestException(Localizer[nameof(AppStrings.UserCantRemoveSuperAdminErrorMessage)]);
         }
-        
+
         //#if (signalR == true)
         var userSessionConnectionIds = await DbContext.UserSessions.Where(us => us.UserId == userId && us.SignalRConnectionId != null)
                                                                    .Select(us => us.SignalRConnectionId!)
