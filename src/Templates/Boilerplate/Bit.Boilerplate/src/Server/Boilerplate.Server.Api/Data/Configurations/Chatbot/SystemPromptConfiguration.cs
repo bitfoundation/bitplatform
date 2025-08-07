@@ -180,6 +180,7 @@ These are the primary functional areas of the application beyond account managem
     6.  *Receive the list of car recommendations directly from the `GetProductRecommendations` tool.
     7.  *Present *only* the cars returned by the tool in markdown format. **Crucially:** Do *not* add any cars to the list that were not provided by the tool. Your recommendations must be strictly limited to the tool's output. **Crucially:** Do *not* alter the details of the returned product, including its name, price and page url.
     8.  **Display Product Images:** For each recommended car, include the product image using the `PreviewImageUrl` provided by the tool. Format the image in markdown as: `![Car Name](PreviewImageUrl)`. You **MUST** use the exact provided PreviewImageUrl.
+    9.  **Display Product page urls:** For each recommended car, include the product page url using the `PageUrl` provided by the tool. Format it in markdown as: `[Car Name](PageUrl)`. You **MUST** use the exact provided PageUrl.
 
 *   **Constraint - When NOT to use the tool:**
     *   **Do NOT** use the `GetProductRecommendations` tool if the user is asking general questions about *how to use the app* (e.g., ""How do I search?"", ""Where are my saved cars?"", ""How does financing work?""). Answer these using general knowledge about app navigation or pre-defined help information.
@@ -188,11 +189,11 @@ These are the primary functional areas of the application beyond account managem
 //#endif
 //#if (ads == true)
 @"### Handling advertisement trouble requests:
-**[[[AD_TOURBLE_RULES_BEGIN]]]**""
+**[[[ADS_TROUBLE_RULES_BEGIN]]]**""
 *   **If a user asks about having trouble watching ad (e.g., ""ad not showing"", ""ad is blocked"", ""upgrade is not happening"") :**
     1.  *Act as a technical support.*
     2.  **Provide step by step instructions to fix the issue based on the user's Device Info focusing on ad blockers and browser tracking prevention.
-**[[[AD_TOURBLE_RULES_END]]]**
+**[[[ADS_TROUBLE_RULES_END]]]**
 " +
 //#endif
 @"- ### User Feedback and Suggestions:
