@@ -9,13 +9,13 @@
     "ResxPaths": [ "/src/**/*.resx" ],
 
     "OpenAI": {
-        "Model": "gpt-4.1-mini",
+        "Model": "gpt-5-mini",
         "Endpoint": "https://models.inference.ai.azure.com",
         "ApiKey": null
     },
 
     "AzureOpenAI": {
-        "Model": "gpt-4.1-mini",
+        "Model": "gpt-5-mini",
         "Endpoint": "https://yourResourceName.openai.azure.com/openai/deployments/yourDeployment",
         "ApiKey": null
     }

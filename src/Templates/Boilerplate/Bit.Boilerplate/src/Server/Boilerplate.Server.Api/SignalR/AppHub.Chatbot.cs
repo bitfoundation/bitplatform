@@ -84,7 +84,7 @@ public partial class AppHub
                             new (ChatRole.User, incomingMessage)
                         ], options: new()
                         {
-                            Temperature = 0,
+                            Temperature = 1,
                             Tools = [
                                 AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
                                 {

@@ -44,7 +44,7 @@ including their numbers, and are placed correctly in the translated sentence acc
 The translation should be accurate and suitable for a software application context.
 After translating, call the `SaveTranslatedValues` tool and pass an array of the translated strings in the same order as the source strings."), options: new()
                 {
-                    Temperature = 0,
+                    Temperature = 1,
                     Tools =
                     [
                         AIFunctionFactory.Create(() =>
