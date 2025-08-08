@@ -217,7 +217,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                         cancellationToken: cancellationToken,
                         options: new()
                         {
-                            Temperature = 0,
+                            Temperature = 1,
                             ResponseFormat = ChatResponseFormat.Json,
                             AdditionalProperties = new()
                             {

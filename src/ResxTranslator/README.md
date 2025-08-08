@@ -39,14 +39,14 @@ This JSON file defines the source and target languages, the location of your res
   "ResxPaths__Comment": "Required: An array of glob patterns to find your *base* .resx files",
 
   "OpenAI": {
-    "Model": "gpt-4.1-mini",
+    "Model": "gpt-5-mini",
     "Endpoint": "https://models.inference.ai.azure.com",
     "Endpoint__Comment": "Required if using OpenAI: API Key. Can be set here OR via Environment Variable [OpenAI__ApiKey]",
     "ApiKey": null
   },
 
   "AzureOpenAI": {
-    "Model": "gpt-4.1-mini",
+    "Model": "gpt-5-mini",
     "Endpoint": "https://yourResourceName.openai.azure.com/openai/deployments/yourDeployment",
     "Endpoint__Comment": "Required if using Azure: API Key. Can be set here OR via Environment Variable [AzureOpenAI__ApiKey]",
     "ApiKey": null,

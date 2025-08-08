@@ -1161,9 +1161,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>Write a message...</value>
   </data>
-    <data name="AiChatPanelCommunicatingPlaceholder" xml:space="preserve">
-    <value>Thinking...</value>
-  </data>
     <!--#endif -->
     <!--#if (ads == true) -->
     <data name="Upgrade" xml:space="preserve">

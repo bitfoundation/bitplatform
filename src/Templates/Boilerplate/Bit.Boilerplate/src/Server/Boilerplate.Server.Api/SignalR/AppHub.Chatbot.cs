@@ -84,7 +84,7 @@ public partial class AppHub
                             new (ChatRole.User, incomingMessage)
                         ], options: new()
                         {
-                            Temperature = 0,
+                            Temperature = 1,
                             Tools = [
                                 AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
                                 {
@@ -115,7 +115,7 @@ public partial class AppHub
                                             Manufacturer = p.CategoryName,
                                             Price = p.FormattedPrice,
                                             Description = p.DescriptionText,
-                                            PreviewImageUrl = p.GetPrimaryMediumImageUrl(request.ServerApiAddress!)
+                                            PreviewImageUrl = p.GetPrimaryMediumImageUrl(request.ServerApiAddress!) ?? "_content/Boilerplate.Client.Core/images/car_placeholder.png"
                                         })
                                         .ToArrayAsync(messageSpecificCancellationToken);
 
