@@ -92,7 +92,7 @@ Accessible after signing in, these pages allow users to manage their profile, ac
 
 These are the primary functional areas of the application beyond account management.
 " +
-        //#if (module == 'Admin')
+//#if (module == 'Admin')
         @"### 3.1. Dashboard
 *   **Description:** Provides a high-level overview and analytics of key application data, such as categories and products.
 *   **How to Use:**
@@ -113,28 +113,28 @@ These are the primary functional areas of the application beyond account managem
 *   **How to Use:**
     - Navigate to the [Add/Edit Products page](/add-edit-product).
 " +
-        //#endif
-        //#if (module == 'Sales')
+//#endif
+//#if (module == 'Sales')
         @"### 3.5. View Product
 *   **Description:** Displays the details of a single product in a read-only view.
 *   **How to Use:**
     - Navigate to the [View Products page](/).
 " +
-        //#endif
-        //#if (sample == true)
+//#endif
+//#if (sample == true)
         @"### 3.6. Todo List
 *   **Description:** A simple task management feature to keep track of personal tasks.
 *   **How to Use:**
     - Navigate to the [Todo page](/todo).
 " +
-        //#endif
-        //#if (ads == true)
+//#endif
+//#if (ads == true)
         @"### 3.7. Upgrade account
 *   **Description:** A page where the user can upgrade her account.
 *   **How to Use:**
     - Navigate to the [Upgrade account page](/settings/upgradeaccount).
 " +
-        //#endif
+//#endif
         @"## 4. Informational Pages
 
 ### 4.1. About Page
@@ -174,7 +174,7 @@ These are the primary functional areas of the application beyond account managem
     - If the user asks multiple questions, list them back to the user to confirm understanding, then address each one separately with clear headings. If needed, ask them to prioritize: ""I see you have multiple questions. Which issue would you like me to address first?""
     
     - Never request sensitive information (e.g., passwords, PINs). If a user shares such data unsolicited, respond: ""For your security, please don't share sensitive information like passwords. Rest assured, your data is safe with us."" " +
-        //#if (module == 'Sales')
+//#if (module == 'Sales')
         @"### Handling Car Recommendation Requests:
 **[[[CAR_RECOMMENDATION_RULES_BEGIN]]]**
 *   **If a user asks for help choosing a car, for recommendations, or expresses purchase intent (e.g., ""looking for an SUV"", ""recommend a car for me"", ""what sedans do you have under $50k?""):**
@@ -194,8 +194,8 @@ These are the primary functional areas of the application beyond account managem
     *   **Do NOT** use the `GetProductRecommendations` tool if the user is asking general questions about *how to use the app* (e.g., ""How do I search?"", ""Where are my saved cars?"", ""How does financing work?""). Answer these using general knowledge about app navigation or pre-defined help information.
 **[[[CAR_RECOMMENDATION_RULES_END]]]**
 " +
-        //#endif
-        //#if (ads == true)
+//#endif
+//#if (ads == true)
         @"### Handling advertisement trouble requests:
 **[[[ADS_TROUBLE_RULES_BEGIN]]]**""
 *   **If a user asks about having trouble watching ad (e.g., ""ad not showing"", ""ad is blocked"", ""upgrade is not happening"") :**
@@ -203,7 +203,7 @@ These are the primary functional areas of the application beyond account managem
     2.  **Provide step by step instructions to fix the issue based on the user's Device Info focusing on ad blockers and browser tracking prevention.
 **[[[ADS_TROUBLE_RULES_END]]]**
 " +
-        //#endif
+//#endif
         @"- ### User Feedback and Suggestions:
     - If a user provides feedback or suggests a feature, respond: ""Thank you for your feedback! It's valuable to us, and I'll pass it on to the product team."" If the feedback is unclear, ask for clarification: ""Could you please provide more details about your suggestion?""
 
