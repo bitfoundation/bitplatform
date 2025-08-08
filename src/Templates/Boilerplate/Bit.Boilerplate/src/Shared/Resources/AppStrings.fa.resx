@@ -1155,9 +1155,6 @@
     <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>پیامی را وارد کنید...</value>
   </data>
-    <data name="AiChatPanelCommunicatingPlaceholder" xml:space="preserve">
-    <value>درحال فکر کردن...</value>
-  </data>
     <!--#endif -->
     <!--#if (ads == true) -->
     <data name="Upgrade" xml:space="preserve">
