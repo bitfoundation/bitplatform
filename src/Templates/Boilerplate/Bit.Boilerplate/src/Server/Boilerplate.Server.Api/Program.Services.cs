@@ -247,7 +247,7 @@ public static partial class Program
             }
             options.UseSqlite(connectionStringBuilder.ConnectionString, dbOptions =>
             {
-
+                // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });
             //#endif
             //#if (IsInsideProjectTemplate == true)
@@ -260,6 +260,7 @@ public static partial class Program
                 {
                     dbOptions.UseVectorSearch();
                 }
+                // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });
             //#elif (database == "PostgreSQL")
             var dataSourceBuilder = new Npgsql.NpgsqlDataSourceBuilder(configuration.GetConnectionString("PostgreSQLConnectionString"));
@@ -267,11 +268,12 @@ public static partial class Program
             options.UseNpgsql(dataSourceBuilder.Build(), dbOptions =>
             {
                 dbOptions.UseVector();
+                // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });
             //#elif (database == "MySql")
             options.UseMySql(configuration.GetConnectionString("MySqlConnectionString"), ServerVersion.AutoDetect(configuration.GetConnectionString("MySqlConnectionString")), dbOptions =>
             {
-
+                // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });
             //#elif (database == "Other")
             throw new NotImplementedException("Install and configure any database supported by ef core (https://learn.microsoft.com/en-us/ef/core/providers)");
