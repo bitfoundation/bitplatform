@@ -2,6 +2,7 @@
 using System.Text;
 using System.ComponentModel;
 using System.Threading.Channels;
+using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.SignalR;
 using System.Runtime.CompilerServices;
 using Boilerplate.Shared.Dtos.Chatbot;
@@ -12,6 +13,9 @@ namespace Boilerplate.Server.Api.SignalR;
 public partial class AppHub
 {
     [AutoInject] private IConfiguration configuration = default!;
+
+    // For open telemetry metrics.
+    private static readonly UpDownCounter<long> ongoingConversationsCount = AppActivitySource.CurrentMeter.CreateUpDownCounter<long>("appHub.ongoing_conversations_count", "Number of ongoing conversations in the chatbot hub.");
 
     public async IAsyncEnumerable<string> Chatbot(
         StartChatbotRequest request,
@@ -164,8 +168,6 @@ public partial class AppHub
         }
 
         _ = ReadIncomingMessages();
-
-        var ongoingConversationsCount = AppActivitySource.CurrentMeter.CreateUpDownCounter<long>("appHub.ongoing_conversations_count", "Number of ongoing conversations in the chatbot hub.");
 
         try
         {

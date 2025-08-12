@@ -1,6 +1,7 @@
 ﻿//+:cnd:noEmit
 using ImageMagick;
 using FluentStorage.Blobs;
+using System.Diagnostics.Metrics;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.SignalR;
@@ -33,6 +34,9 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     //#endif
 
     [AutoInject] private IConfiguration configuration = default!;
+
+    // For open telemetry metrics
+    private static readonly Histogram<double> updateResizeDurationHistogram = AppActivitySource.CurrentMeter.CreateHistogram<double>("attachment.upload_resize_duration");
 
     [HttpPost]
     [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
@@ -195,8 +199,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
                 await blobStorage.WriteAsync(attachment.Path, imageBytes = sourceImage.ToByteArray(MagickFormat.WebP), cancellationToken: cancellationToken);
 
-                AppActivitySource.CurrentMeter.CreateHistogram<double>("attachment.upload_resize_duration")
-                    .Record(stopwatch.Elapsed.TotalMilliseconds, new KeyValuePair<string, object?>("kind", kind.ToString()));
+                updateResizeDurationHistogram.Record(stopwatch.Elapsed.TotalMilliseconds, new KeyValuePair<string, object?>("kind", kind.ToString()));
             }
             else
             {

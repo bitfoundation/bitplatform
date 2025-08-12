@@ -7,7 +7,7 @@ namespace Boilerplate.Shared.Services;
 /// </summary>
 public class AppActivitySource
 {
-    public static ActivitySource CurrentActivity = new("Boilerplate", typeof(AppActivitySource).Assembly.GetName().Version!.ToString());
+    public static readonly ActivitySource CurrentActivity = new("Boilerplate", typeof(AppActivitySource).Assembly.GetName().Version!.ToString());
 
-    public static Meter CurrentMeter = new("Boilerplate", typeof(AppActivitySource).Assembly.GetName().Version!.ToString());
+    public static readonly Meter CurrentMeter = new("Boilerplate", typeof(AppActivitySource).Assembly.GetName().Version!.ToString());
 }
