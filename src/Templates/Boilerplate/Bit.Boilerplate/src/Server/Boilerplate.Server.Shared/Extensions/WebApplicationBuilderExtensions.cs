@@ -124,6 +124,8 @@ public static class WebApplicationBuilderExtensions
                 metrics.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation();
+
+                metrics.AddMeter(AppActivitySource.CurrentMeter.Name);
             })
             .WithTracing(tracing =>
             {
@@ -144,6 +146,8 @@ public static class WebApplicationBuilderExtensions
                     .AddHttpClientInstrumentation()
                     .AddEntityFrameworkCoreInstrumentation(options => options.Filter = (providerName, command) => command?.CommandText?.Contains("Hangfire") is false /* Ignore Hangfire */)
                     .AddHangfireInstrumentation();
+
+                tracing.AddSource(AppActivitySource.CurrentActivity.Name);
             })
             .ConfigureResource(resource =>
             {

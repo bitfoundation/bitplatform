@@ -27,7 +27,7 @@
         <PackageVersion Include="Microsoft.Maui.Controls" Version="9.0.90" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.90" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="9.0.90" />
-        <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.3351.48" />
+        <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.3405.78" />
         <PackageVersion Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
         <PackageVersion Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.12.0-beta.2" />
         <PackageVersion Include="OpenTelemetry.Instrumentation.Hangfire" Version="1.12.0-beta.1" />
@@ -46,21 +46,21 @@
         <PackageVersion Include="Microsoft.Extensions.Logging.EventLog" Version="9.0.8" />
         <PackageVersion Include="Microsoft.Extensions.Logging.EventSource" Version="9.0.8" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.AppHost" Version="9.4.0" />
-        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Aspire.Hosting.SqlServer" Version="9.4.0" />
+        <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.AppHost" Version="9.4.1" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Aspire.Hosting.SqlServer" Version="9.4.1" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="CommunityToolkit.Aspire.Hosting.SqlServer.Extensions" Version="9.7.0" />
-        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Aspire.Hosting.PostgreSQL" Version="9.4.0" />
-        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'MySql' OR '$(database)' == '') " Include="Aspire.Hosting.MySql" Version="9.4.0" />
-        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '') " Include="Aspire.Hosting.Azure.Storage" Version="9.4.0" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Aspire.Hosting.PostgreSQL" Version="9.4.1" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'MySql' OR '$(database)' == '') " Include="Aspire.Hosting.MySql" Version="9.4.1" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '') " Include="Aspire.Hosting.Azure.Storage" Version="9.4.1" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(filesStorage)' == 'S3' OR '$(filesStorage)' == '') " Include="CommunityToolkit.Aspire.Hosting.Minio" Version="9.7.0" />
-        <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.7.0" />
-        <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="9.4.0" />
+        <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.8.0" />
+        <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="9.4.1" />
         <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.12.0" />
         <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />
         <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.12.0" />
         <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.12.0" />
         <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.12.0" />
-        <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.20" />
+        <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.21" />
         <PackageVersion Include="Hangfire.EntityFrameworkCore" Version="0.7.0" />
         <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" Version="5.13.0" />
         <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" Version="5.13.0" />
@@ -73,7 +73,7 @@
         <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="9.11.3" />
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.8" />
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Azure.SignalR" Version="1.31.0" />
-        <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI" Version="9.7.1" />
+        <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI" Version="9.8.0" />
         <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI.OpenAI" Version="9.7.1-preview.1.25365.4" />
         <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI.AzureAIInference" Version="9.7.1-preview.1.25365.4" />
         <PackageVersion Condition=" ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Pgvector.EntityFrameworkCore" Version="0.2.2" />
@@ -103,7 +103,7 @@
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.8" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.8" />
         <PackageVersion Include="Swashbuckle.AspNetCore" Version="9.0.3" />
-        <PackageVersion Include="Microsoft.Identity.Web" Version="3.12.0" />
+        <PackageVersion Include="Microsoft.Identity.Web" Version="3.13.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.8" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="9.0.8" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Facebook" Version="9.0.8" />
@@ -122,7 +122,7 @@
         <PackageVersion Include="FakeItEasy" Version="8.3.0" />
         <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
         <PackageVersion Include="Microsoft.Playwright.MSTest" Version="1.54.0" />
-        <PackageVersion Include="MSTest.TestAdapter" Version="3.10.0" />
-        <PackageVersion Include="MSTest.TestFramework" Version="3.10.0" />
+        <PackageVersion Include="MSTest.TestAdapter" Version="3.10.2" />
+        <PackageVersion Include="MSTest.TestFramework" Version="3.10.2" />
     </ItemGroup>
 </Project>

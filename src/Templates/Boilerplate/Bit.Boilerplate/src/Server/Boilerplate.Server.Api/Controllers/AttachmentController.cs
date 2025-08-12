@@ -185,6 +185,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
             if (imageResizeContext.NeedsResize)
             {
+                Stopwatch stopwatch = Stopwatch.StartNew();
                 using MagickImage sourceImage = new(file.OpenReadStream());
 
                 if (sourceImage.Width < imageResizeContext.Width || sourceImage.Height < imageResizeContext.Height)
@@ -193,6 +194,9 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                 sourceImage.Resize(new MagickGeometry(imageResizeContext.Width, imageResizeContext.Height));
 
                 await blobStorage.WriteAsync(attachment.Path, imageBytes = sourceImage.ToByteArray(MagickFormat.WebP), cancellationToken: cancellationToken);
+
+                AppActivitySource.CurrentMeter.CreateHistogram<double>("attachment.upload_resize_duration")
+                    .Record(stopwatch.Elapsed.TotalMilliseconds, new KeyValuePair<string, object?>("kind", kind.ToString()));
             }
             else
             {
