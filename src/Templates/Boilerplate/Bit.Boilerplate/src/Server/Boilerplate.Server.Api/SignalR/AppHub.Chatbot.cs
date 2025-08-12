@@ -11,6 +11,8 @@ namespace Boilerplate.Server.Api.SignalR;
 
 public partial class AppHub
 {
+    [AutoInject] private IConfiguration configuration = default!;
+
     public async IAsyncEnumerable<string> Chatbot(
         StartChatbotRequest request,
         IAsyncEnumerable<string> incomingMessages,
@@ -78,14 +80,9 @@ public partial class AppHub
                 {
                     chatMessages.Add(new(ChatRole.User, incomingMessage));
 
-                    await foreach (var response in chatClient.GetStreamingResponseAsync([
-                        new (ChatRole.System, supportSystemPrompt),
-                            .. chatMessages,
-                            new (ChatRole.User, incomingMessage)
-                        ], options: new()
-                        {
-                            Temperature = 1,
-                            Tools = [
+                    ChatOptions chatOptions = new()
+                    {
+                        Tools = [
                                 AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
                                 {
                                     await using var scope = serviceProvider.CreateAsyncScope();
@@ -128,7 +125,15 @@ public partial class AppHub
                                 }, name: "GetProductRecommendations", description: "This tool searches for and recommends products based on a detailed description of the user's needs and preferences and returns recommended products.")
                                 //#endif
                                 ]
-                        }, cancellationToken: messageSpecificCancellationToken))
+                    };
+
+                    configuration.GetRequiredSection("AI:ChatOptions").Bind(chatOptions);
+
+                    await foreach (var response in chatClient.GetStreamingResponseAsync([
+                        new (ChatRole.System, supportSystemPrompt),
+                            .. chatMessages,
+                            new (ChatRole.User, incomingMessage)
+                        ], options: chatOptions, cancellationToken: messageSpecificCancellationToken))
                     {
                         if (messageSpecificCancellationToken.IsCancellationRequested)
                             break;

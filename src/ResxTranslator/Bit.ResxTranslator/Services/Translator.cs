@@ -6,12 +6,14 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 
 using Bit.ResxTranslator.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace Bit.ResxTranslator.Services;
 
 public partial class Translator(ResxTranslatorSettings settings,
     ILogger<Translator> logger,
-    IChatClient chatClient)
+    IChatClient chatClient,
+    IConfiguration configuration)
 {
     public async Task UpdateResxTranslations()
     {
@@ -35,16 +37,8 @@ public partial class Translator(ResxTranslatorSettings settings,
 
                 logger.LogInformation("Translating from {ResxGroup} to {RelatedResx}...", resxGroup.CultureInfo.Name, relatedResx.CultureInfo.Name);
 
-                var _ = await chatClient.GetResponseAsync(new ChatMessage(ChatRole.System, @$"You act as a translator for software resource files.
-Your task is to retrieve the values that need translation by calling the `GetSourceValuesToBeTranslated` tool,
-which returns an array of strings in [{resxGroup.CultureInfo.NativeName} - {resxGroup.CultureInfo.EnglishName}] language.
-These strings are used in a software application and may contain placeholders such as {0}, {1}, etc.
-Translate each string to {relatedResx.CultureInfo.NativeName} language, ensuring that any placeholders are preserved exactly as they are,
-including their numbers, and are placed correctly in the translated sentence according to the target language's grammar and syntax.
-The translation should be accurate and suitable for a software application context.
-After translating, call the `SaveTranslatedValues` tool and pass an array of the translated strings in the same order as the source strings."), options: new()
+                ChatOptions chatOptions = new()
                 {
-                    Temperature = 1,
                     Tools =
                     [
                         AIFunctionFactory.Create(() =>
@@ -60,7 +54,18 @@ After translating, call the `SaveTranslatedValues` tool and pass an array of the
                             }
                         }, name: "SaveTranslatedValues", description: $"Saves [{relatedResx.CultureInfo.NativeName} - {relatedResx.CultureInfo.EnglishName}] values.")
                     ]
-                }, cancellationToken: cancellationToken);
+                };
+
+                configuration.GetRequiredSection("ChatOptions").Bind(chatOptions);
+
+                var _ = await chatClient.GetResponseAsync(new ChatMessage(ChatRole.System, @$"You act as a translator for software resource files.
+Your task is to retrieve the values that need translation by calling the `GetSourceValuesToBeTranslated` tool,
+which returns an array of strings in [{resxGroup.CultureInfo.NativeName} - {resxGroup.CultureInfo.EnglishName}] language.
+These strings are used in a software application and may contain placeholders such as {0}, {1}, etc.
+Translate each string to {relatedResx.CultureInfo.NativeName} language, ensuring that any placeholders are preserved exactly as they are,
+including their numbers, and are placed correctly in the translated sentence according to the target language's grammar and syntax.
+The translation should be accurate and suitable for a software application context.
+After translating, call the `SaveTranslatedValues` tool and pass an array of the translated strings in the same order as the source strings."), options: chatOptions, cancellationToken: cancellationToken);
 
                 var defaultFileContent = await File.ReadAllTextAsync(resxGroup.Path, cancellationToken);
                 var doc = XDocument.Parse(defaultFileContent);
