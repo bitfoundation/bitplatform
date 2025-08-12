@@ -32,6 +32,8 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     [AutoInject] private ResponseCacheService responseCacheService = default!;
     //#endif
 
+    [AutoInject] private IConfiguration configuration = default!;
+
     [HttpPost]
     [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
     public async Task<IActionResult> UploadUserProfilePicture(IFormFile? file, CancellationToken cancellationToken)
@@ -206,6 +208,17 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                 //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
                 if (serviceProvider.GetService<IChatClient>() is IChatClient chatClient)
                 {
+                    ChatOptions chatOptions = new()
+                    {
+                        ResponseFormat = ChatResponseFormat.Json,
+                        AdditionalProperties = new()
+                        {
+                            ["response_format"] = new { type = "json_object" }
+                        }
+                    };
+
+                    configuration.GetRequiredSection("AI:ChatOptions").Bind(chatOptions);
+
                     var response = await chatClient.GetResponseAsync<AIImageReviewResponse>(
                         messages: [
                             new ChatMessage(ChatRole.System, "Return a JSON object with two properties: 'isCar' (boolean, true if the image contains a car, false otherwise) and 'alt' (string, describing the image content). Do not include any other properties or text."),
@@ -215,15 +228,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                             }
                         ],
                         cancellationToken: cancellationToken,
-                        options: new()
-                        {
-                            Temperature = 1,
-                            ResponseFormat = ChatResponseFormat.Json,
-                            AdditionalProperties = new()
-                            {
-                                ["response_format"] = new { type = "json_object" }
-                            }
-                        });
+                        options: chatOptions);
 
                     if (response.Result.IsCar is false)
                     {

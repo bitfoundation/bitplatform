@@ -8,14 +8,18 @@
 
     "ResxPaths": [ "/src/**/*.resx" ],
 
+    "ChatOptions": {
+        "Temperature": "0"
+    },
+
     "OpenAI": {
-        "Model": "gpt-5-mini",
+        "Model": "gpt-4.1-mini",
         "Endpoint": "https://models.inference.ai.azure.com",
         "ApiKey": null
     },
 
     "AzureOpenAI": {
-        "Model": "gpt-5-mini",
+        "Model": "gpt-4.1-mini",
         "Endpoint": "https://yourResourceName.openai.azure.com/openai/deployments/yourDeployment",
         "ApiKey": null
     }
