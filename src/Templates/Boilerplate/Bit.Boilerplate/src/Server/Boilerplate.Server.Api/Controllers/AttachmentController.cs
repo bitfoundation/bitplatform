@@ -36,7 +36,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     [AutoInject] private IConfiguration configuration = default!;
 
     // For open telemetry metrics
-    private static readonly Histogram<double> updateResizeDurationHistogram = AppActivitySource.CurrentMeter.CreateHistogram<double>("attachment.resize_duration");
+    private static readonly Histogram<double> updateResizeDurationHistogram = AppActivitySource.CurrentMeter.CreateHistogram<double>("attachment.resize_duration", "ms", "Elapsed time to resize and persist an uploaded image");
 
     [HttpPost]
     [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
