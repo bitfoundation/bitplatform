@@ -2,6 +2,7 @@
 using System.Text;
 using System.ComponentModel;
 using System.Threading.Channels;
+using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.SignalR;
 using System.Runtime.CompilerServices;
 using Boilerplate.Shared.Dtos.Chatbot;
@@ -12,6 +13,9 @@ namespace Boilerplate.Server.Api.SignalR;
 public partial class AppHub
 {
     [AutoInject] private IConfiguration configuration = default!;
+
+    // For open telemetry metrics.
+    private static readonly UpDownCounter<long> ongoingConversationsCount = AppActivitySource.CurrentMeter.CreateUpDownCounter<long>("appHub.ongoing_conversations_count", "Number of ongoing conversations in the chatbot hub.");
 
     public async IAsyncEnumerable<string> Chatbot(
         StartChatbotRequest request,
@@ -71,6 +75,7 @@ public partial class AppHub
             finally
             {
                 messageSpecificCancellationTokenSrc?.Dispose();
+                channel.Writer.Complete();
             }
 
             async Task HandleIncomingMessage(string incomingMessage, CancellationToken messageSpecificCancellationToken)
@@ -85,11 +90,16 @@ public partial class AppHub
                         Tools = [
                                 AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
                                 {
+                                    if (messageSpecificCancellationToken.IsCancellationRequested)
+                                        return;
+
                                     await using var scope = serviceProvider.CreateAsyncScope();
+
                                     // Ideally, store these in a CRM or app database,
                                     // but for now, we'll log them!
                                     scope.ServiceProvider.GetRequiredService<ILogger<IChatClient>>()
                                         .LogError("Chat reported issue: User email: {emailAddress}, Conversation history: {conversationHistory}", emailAddress, conversationHistory);
+
                                 }, name: "SaveUserEmailAndConversationHistory", description: "Saves the user's email address and the conversation history for future reference. Use this tool when the user provides their email address during the conversation. Parameters: emailAddress (string), conversationHistory (string)"),
                                 //#if (module == "Sales")
                                 AIFunctionFactory.Create(async ([Description("Concise summary of these user requirements")] string userNeeds,
@@ -159,9 +169,18 @@ public partial class AppHub
 
         _ = ReadIncomingMessages();
 
-        await foreach (var str in channel.Reader.ReadAllAsync(cancellationToken).WithCancellation(cancellationToken))
+        try
         {
-            yield return str;
+            ongoingConversationsCount.Add(1);
+
+            await foreach (var str in channel.Reader.ReadAllAsync(cancellationToken).WithCancellation(cancellationToken))
+            {
+                yield return str;
+            }
+        }
+        finally
+        {
+            ongoingConversationsCount.Add(-1);
         }
     }
 
