@@ -5,6 +5,7 @@
 <HeadContent>
     <meta name="title" content="@Title - bit BlazorUI" />
     <meta name="description" content="@Description" />
+    <meta name="keywords" content="@Keywords" />
 
     <meta property="og:url" content="https://blazorui.bitplatform.dev/@Url" />
     <meta property="og:type" content="website" />
@@ -32,7 +33,8 @@
         }
     }
 
-    [Parameter] public string? Description { get; set; }
     [Parameter] public string? Url { get; set; }
+    [Parameter] public string? Keywords { get; set; }
+    [Parameter] public string? Description { get; set; }
     [Parameter] public string ImageUrl { get; set; } = "https://blazorui.bitplatform.dev/images/og-image.svg";
 }
