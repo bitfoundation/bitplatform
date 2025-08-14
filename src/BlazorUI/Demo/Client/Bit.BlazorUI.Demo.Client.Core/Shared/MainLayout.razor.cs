@@ -7,11 +7,9 @@ public partial class MainLayout : IDisposable
     private bool _isHomePage;
     private bool _isNavPanelOpen;
     private BitAppShell? _appShellRef;
-    private Action _unsubscribe = default!;
 
 
 
-    [AutoInject] private IPubSubService _pubSubService = default!;
     [AutoInject] private IExceptionHandler _exceptionHandler = default!;
     [AutoInject] private NavigationManager _navigationManager = default!;
     [AutoInject] private IPrerenderStateService _prerenderStateService = default!;
@@ -51,7 +49,6 @@ public partial class MainLayout : IDisposable
 
     public void Dispose()
     {
-        _unsubscribe.Invoke();
         _navigationManager.LocationChanged -= OnLocationChanged;
     }
 }
