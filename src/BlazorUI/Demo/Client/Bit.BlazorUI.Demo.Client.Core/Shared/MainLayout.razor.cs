@@ -5,7 +5,6 @@ namespace Bit.BlazorUI.Demo.Client.Core.Shared;
 public partial class MainLayout : IDisposable
 {
     private bool _isHomePage;
-    private string? _pageTitle;
     private bool _isNavPanelOpen;
     private BitAppShell? _appShellRef;
     private Action _unsubscribe = default!;
@@ -32,13 +31,6 @@ public partial class MainLayout : IDisposable
         {
             _exceptionHandler.Handle(exp);
         }
-
-        _unsubscribe = _pubSubService.Subscribe(PubSubMessages.PAGE_TITLE_CHANGED, async payload =>
-        {
-            _pageTitle = payload?.ToString();
-            await Task.Yield();
-            StateHasChanged();
-        });
     }
 
 

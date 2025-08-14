@@ -20,21 +20,10 @@
 </HeadContent>
 
 @code {
-    private string? title;
-
-    [Parameter]
-    public string? Title
-    {
-        get => title;
-        set
-        {
-            title = value;
-            PubSubService.Publish(PubSubMessages.PAGE_TITLE_CHANGED, title);
-        }
-    }
-
     [Parameter] public string? Url { get; set; }
+    [Parameter] public string? Title { get; set; }
     [Parameter] public string? Keywords { get; set; }
     [Parameter] public string? Description { get; set; }
+
     [Parameter] public string ImageUrl { get; set; } = "https://blazorui.bitplatform.dev/images/og-image.svg";
 }
