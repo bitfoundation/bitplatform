@@ -7,7 +7,7 @@ section {
 
 .grid-container {
     overflow: auto;
-    height: calc(#{$bit-env-height-available} - 14rem);
+    height: calc(#{$bit-env-height-available} - 12.1rem);
 
     @include lt-md {
         height: calc(#{$bit-env-height-available} - 17rem);
