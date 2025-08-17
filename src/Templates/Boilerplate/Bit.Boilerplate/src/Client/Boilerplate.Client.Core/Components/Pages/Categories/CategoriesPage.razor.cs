@@ -6,16 +6,19 @@ namespace Boilerplate.Client.Core.Components.Pages.Categories;
 
 public partial class CategoriesPage
 {
-    [AutoInject] ICategoryController categoryController = default!;
-
     private bool isLoading;
     private bool isDeleteDialogOpen;
     private CategoryDto? deletingCategory;
     private AddOrEditCategoryModal? modal;
-    private BitDataGrid<CategoryDto>? dataGrid;
     private string categoryNameFilter = string.Empty;
+
+    private BitDataGrid<CategoryDto>? dataGrid;
     private BitDataGridItemsProvider<CategoryDto> categoriesProvider = default!;
     private BitDataGridPaginationState pagination = new() { ItemsPerPage = 10 };
+
+
+    [AutoInject] ICategoryController categoryController = default!;
+
 
     private string CategoryNameFilter
     {
@@ -27,12 +30,14 @@ public partial class CategoriesPage
         }
     }
 
+
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();
 
         PrepareGridDataProvider();
     }
+
 
     private void PrepareGridDataProvider()
     {
@@ -43,7 +48,7 @@ public partial class CategoriesPage
 
             try
             {
-                var odataQ = new ODataQuery
+                var query = new ODataQuery
                 {
                     Top = req.Count ?? 10,
                     Skip = req.StartIndex,
@@ -52,11 +57,12 @@ public partial class CategoriesPage
 
                 if (string.IsNullOrEmpty(CategoryNameFilter) is false)
                 {
-                    odataQ.Filter = $"contains(tolower({nameof(CategoryDto.Name)}),'{CategoryNameFilter.ToLower()}')";
+                    query.Filter = $"contains(tolower({nameof(CategoryDto.Name)}),'{CategoryNameFilter.ToLower()}')";
                 }
-
-                var data = await categoryController.WithQuery(odataQ.ToString()).GetCategories(req.CancellationToken);
-
+                
+                var data = await categoryController.WithQuery(query.ToString())
+                                                   .GetCategories(req.CancellationToken);
+                
                 return BitDataGridItemsProviderResult.From(data!.Items!, (int)data!.TotalCount);
             }
             catch (Exception exp)
