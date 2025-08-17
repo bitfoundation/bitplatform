@@ -39,6 +39,7 @@ public partial class CategoriesPage
         categoriesProvider = async req =>
         {
             isLoading = true;
+            StateHasChanged();
 
             try
             {
@@ -66,7 +67,6 @@ public partial class CategoriesPage
             finally
             {
                 isLoading = false;
-
                 StateHasChanged();
             }
         };

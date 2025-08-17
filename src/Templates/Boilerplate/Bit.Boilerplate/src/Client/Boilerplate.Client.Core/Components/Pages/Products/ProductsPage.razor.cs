@@ -55,6 +55,7 @@ public partial class ProductsPage
         productsProvider = async req =>
         {
             isLoading = true;
+            StateHasChanged();
 
             try
             {
@@ -90,7 +91,6 @@ public partial class ProductsPage
             finally
             {
                 isLoading = false;
-
                 StateHasChanged();
             }
         };
