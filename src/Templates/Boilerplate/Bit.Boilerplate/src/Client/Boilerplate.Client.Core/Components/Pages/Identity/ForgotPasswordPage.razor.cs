@@ -45,7 +45,7 @@ public partial class ForgotPasswordPage
             {
                 await identityController.SendResetPasswordToken(model, CurrentCancellationToken);
             }
-            catch (TooManyRequestsExceptions e)
+            catch (TooManyRequestsException e)
             {
                 SnackBarService.Error(e.Message);
                 // Let's go to the reset password page anyway.

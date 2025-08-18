@@ -183,7 +183,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         {
             await userController.SendElevatedAccessToken(cancellationToken);
         }
-        catch (TooManyRequestsExceptions exp)
+        catch (TooManyRequestsException exp)
         {
             exceptionHandler.Handle(exp, displayKind: ExceptionDisplayKind.NonInterrupting); // Let's show prompt anyway.
         }
