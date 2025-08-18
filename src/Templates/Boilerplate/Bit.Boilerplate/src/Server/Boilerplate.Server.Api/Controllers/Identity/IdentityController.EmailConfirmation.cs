@@ -71,7 +71,7 @@ public partial class IdentityController
         var resendDelay = (DateTimeOffset.Now - user.EmailTokenRequestedOn) - AppSettings.Identity.EmailTokenLifetime;
 
         if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForEmailTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData("UserId", user.Id).WithExtensionData("TryAgainIn", resendDelay);
+            throw new TooManyRequestsException(Localizer[nameof(AppStrings.WaitForEmailTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData("UserId", user.Id).WithExtensionData("TryAgainIn", resendDelay);
 
         user.EmailTokenRequestedOn = DateTimeOffset.Now;
         var result = await userManager.UpdateAsync(user);
