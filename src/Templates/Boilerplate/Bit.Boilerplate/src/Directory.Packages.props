@@ -13,7 +13,7 @@
         <PackageVersion Include="Fido2.AspNet" Version="4.0.0-beta.17" />
         <PackageVersion Include="Fido2.Models" Version="4.0.0-beta.17" />
         <PackageVersion Include="HtmlSanitizer" Version="9.0.886" />
-        <PackageVersion Include="libphonenumber-csharp" Version="9.0.11" />
+        <PackageVersion Include="libphonenumber-csharp" Version="9.0.12" />
         <PackageVersion Include="Meziantou.Framework.Win32.Jobs" Version="3.4.3" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.8" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.8" />
@@ -24,9 +24,9 @@
         <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="9.0.8" />
         <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.8" />
         <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="9.0.8" />
-        <PackageVersion Include="Microsoft.Maui.Controls" Version="9.0.90" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.90" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="9.0.90" />
+        <PackageVersion Include="Microsoft.Maui.Controls" Version="9.0.100" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.100" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="9.0.100" />
         <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.3405.78" />
         <PackageVersion Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
         <PackageVersion Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.12.0-beta.2" />
@@ -65,17 +65,15 @@
         <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" Version="5.13.0" />
         <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" Version="5.13.0" />
         <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" Version="5.13.0" />
-        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" Version="125.0.0" />
-        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.SavedState" Version="1.3.1" />
-        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.SavedState.SavedState.Ktx" Version="1.3.1" />
+        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" Version="125.0.0.1" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Plugin.LocalNotification" Version="12.0.2" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="AdsPush" Version="2.0.0" />
         <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="9.11.3" />
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.8" />
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Azure.SignalR" Version="1.31.0" />
         <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI" Version="9.8.0" />
-        <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI.OpenAI" Version="9.7.1-preview.1.25365.4" />
-        <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI.AzureAIInference" Version="9.7.1-preview.1.25365.4" />
+        <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI.OpenAI" Version="9.8.0-preview.1.25412.6" />
+        <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI.AzureAIInference" Version="9.8.0-preview.1.25412.6" />
         <PackageVersion Condition=" ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Pgvector.EntityFrameworkCore" Version="0.2.2" />
         <PackageVersion Condition="'$(module)' == 'Admin' OR '$(module)' == ''" Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.23.0" />
@@ -83,7 +81,7 @@
         <PackageVersion Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="EFCore.SqlServer.VectorSearch" Version="9.0.0-preview.2" />
         <PackageVersion Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.8" />
         <PackageVersion Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
-        <PackageVersion Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0-preview.3.efcore.9.0.0" />
+        <PackageVersion Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0" />
         <PackageVersion Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="FluentStorage.Azure.Blobs" Version="5.3.0" />
         <PackageVersion Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="FluentStorage.AWS" Version="5.5.0" />
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.3.0" />
@@ -92,7 +90,7 @@
         <!--/-:msbuild-conditional:noEmit -->
         <PackageVersion Include="Humanizer" Version="2.14.1" />
         <PackageVersion Include="QRCoder" Version="1.6.0" />
-        <PackageVersion Include="Magick.NET-Q16-AnyCPU" Version="14.7.0" />
+        <PackageVersion Include="Magick.NET-Q16-AnyCPU" Version="14.8.0" />
         <PackageVersion Include="FluentEmail.Smtp" Version="3.0.2" />
         <PackageVersion Include="FluentStorage" Version="5.6.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.8" />
@@ -103,14 +101,14 @@
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.8" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.8" />
         <PackageVersion Include="Swashbuckle.AspNetCore" Version="9.0.3" />
-        <PackageVersion Include="Microsoft.Identity.Web" Version="3.13.0" />
+        <PackageVersion Include="Microsoft.Identity.Web" Version="3.13.1" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.8" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="9.0.8" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Facebook" Version="9.0.8" />
         <PackageVersion Include="AspNet.Security.OAuth.Apple" Version="9.4.0" />
         <PackageVersion Include="AspNet.Security.OAuth.GitHub" Version="9.4.0" />
         <PackageVersion Include="Riok.Mapperly" Version="4.2.1" />
-        <PackageVersion Include="Twilio" Version="7.12.0" />
+        <PackageVersion Include="Twilio" Version="7.12.1" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.8" />
         <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="9.0.8" />
         <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.8" />
