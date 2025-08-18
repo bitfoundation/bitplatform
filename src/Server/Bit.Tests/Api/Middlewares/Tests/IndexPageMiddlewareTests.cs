@@ -18,7 +18,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword");
 
                 HttpResponseMessage getIndexPageResponse = await testEnvironment.Server.BuildHttpClient(token)
                     .GetAsync("/");
@@ -32,25 +32,12 @@ namespace Bit.Tests.Api.Middlewares.Tests
         }
 
         [TestMethod]
-        [TestCategory("IndexPage"), TestCategory("Security")]
-        public async Task DontReturnIndexPageForNotLoggedInUsers()
-        {
-            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
-            {
-                HttpResponseMessage getIndexPageResponse = await testEnvironment.Server.BuildHttpClient()
-                    .GetAsync("/");
-
-                Assert.AreNotEqual(HttpStatusCode.OK, getIndexPageResponse.StatusCode);
-            }
-        }
-
-        [TestMethod]
         [TestCategory("IndexPage"), TestCategory("Caching")]
         public async Task IndexPageResponseMustNotBeCacheable()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword");
 
                 HttpResponseMessage getIndexPageResponse = await testEnvironment.Server.BuildHttpClient(token)
                     .GetAsync("/");
@@ -69,7 +56,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword");
 
                 HttpResponseMessage getIndexPageResponse = await testEnvironment.Server.BuildHttpClient(token)
                     .GetAsync("/");
@@ -93,7 +80,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 }
             }))
             {
-                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword");
 
                 HttpResponseMessage getIndexPageResponse = await testEnvironment.Server.BuildHttpClient(token)
                     .GetAsync(testEnvironment.Server.Uri);

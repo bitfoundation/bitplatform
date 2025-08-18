@@ -82,9 +82,7 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreReadAuthTokenFromCookieMiddlewareConfiguration>();
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreSingleSignOnClientMiddlewareConfiguration>();
             dependencyManager.RegisterAspNetCoreMiddleware<SignOutPageMiddlewareConfiguration>();
-            dependencyManager.RegisterOwinMiddleware<InvokeLogOutMiddlewareConfiguration>();
             dependencyManager.RegisterAspNetCoreMiddleware<SignInPageMiddlewareConfiguration>();
-            dependencyManager.RegisterOwinMiddleware<InvokeLoginMiddlewareConfiguration>();
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreLogUserInformationMiddlewareConfiguration>();
             dependencyManager.Register<IRandomStringProvider, DefaultRandomStringProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             dependencyManager.Register<IAppCertificatesProvider, DefaultAppCertificatesProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
@@ -216,18 +214,6 @@ namespace Bit.Core.Contracts
             dependencyManager.Register<IUrlStateProvider, DefaultUrlStateProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
             dependencyManager.Register<IScopeStatusManager, DefaultScopeStatusManager>(overwriteExisting: false);
-
-            return dependencyManager;
-        }
-
-        public static IDependencyManager RegisterSecureIndexPageMiddlewareUsingDefaultConfiguration(this IDependencyManager dependencyManager)
-        {
-            if (dependencyManager == null)
-                throw new ArgumentNullException(nameof(dependencyManager));
-
-            dependencyManager.RegisterOwinMiddleware<RedirectToSsoIfNotLoggedInMiddlewareConfiguration>();
-
-            dependencyManager.RegisterIndexPageMiddlewareUsingDefaultConfiguration();
 
             return dependencyManager;
         }

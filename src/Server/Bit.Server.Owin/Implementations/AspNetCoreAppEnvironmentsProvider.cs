@@ -75,18 +75,6 @@ namespace Bit.Owin.Implementations
             if (identityServer != null)
             {
                 TryReadConfig<string>(identityServer, AppEnvironment.KeyValues.IdentityServer.IdentityServerSiteName);
-                TryReadConfig<string>(identityServer, AppEnvironment.KeyValues.IdentityServer.ActiveDirectoryName);
-                TryReadConfig<string>(identityServer, AppEnvironment.KeyValues.IdentityServer.LoginPagePath);
-                TryReadConfig<string>(identityServer, AppEnvironment.KeyValues.IdentityServer.FacebookClientId);
-                TryReadConfig<string>(identityServer, AppEnvironment.KeyValues.IdentityServer.FacebookSecret);
-                TryReadConfig<string>(identityServer, AppEnvironment.KeyValues.IdentityServer.GoogleClientId);
-                TryReadConfig<string>(identityServer, AppEnvironment.KeyValues.IdentityServer.GoogleSecret);
-                TryReadConfig<string>(identityServer, AppEnvironment.KeyValues.IdentityServer.TwitterClientId);
-                TryReadConfig<string>(identityServer, AppEnvironment.KeyValues.IdentityServer.TwitterSecret);
-                TryReadConfig<string>(identityServer, AppEnvironment.KeyValues.IdentityServer.LinkedInClientId);
-                TryReadConfig<string>(identityServer, AppEnvironment.KeyValues.IdentityServer.LinkedInSecret);
-                TryReadConfig<string>(identityServer, AppEnvironment.KeyValues.IdentityServer.MicrosoftClientId);
-                TryReadConfig<string>(identityServer, AppEnvironment.KeyValues.IdentityServer.MicrosoftSecret);
             }
 
             IConfiguration? hangfire = Configuration.GetChildren().ExtendedSingleOrDefault("Finding hangfire config", c => c.Key == nameof(AppEnvironment.KeyValues.Hangfire));
@@ -118,9 +106,7 @@ namespace Bit.Owin.Implementations
 
             IConfiguration? security = Configuration.GetChildren().ExtendedSingleOrDefault("Finding security config", c => c.Key == nameof(AppEnvironment.Security));
 
-            _appEnvironment.Security.DefaultClientId = security?.GetValue<string?>(nameof(EnvironmentSecurity.DefaultClientId), defaultValue: null) ?? _appEnvironment.Security.DefaultClientId;
             _appEnvironment.Security.IssuerName = security?.GetValue<string?>(nameof(EnvironmentSecurity.IssuerName), defaultValue: null) ?? _appEnvironment.Security.IssuerName;
-            _appEnvironment.Security.Scopes = security?.GetValue<string[]?>(nameof(EnvironmentSecurity.Scopes), defaultValue: null) ?? _appEnvironment.Security.Scopes;
             _appEnvironment.Security.SsoServerUrl = security?.GetValue<string?>(nameof(EnvironmentSecurity.SsoServerUrl), defaultValue: null) ?? _appEnvironment.Security.SsoServerUrl;
         }
 

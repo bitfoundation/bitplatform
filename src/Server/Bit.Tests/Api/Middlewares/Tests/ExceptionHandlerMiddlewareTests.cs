@@ -21,7 +21,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword");
 
                 IScopeStatusManager scopeStatusManager = testEnvironment.GetObjects<IScopeStatusManager>()
                     .Last();
@@ -51,7 +51,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
             {
                 try
                 {
-                    Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                    Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword");
 
                     await testEnvironment.Server.BuildHttpClient(token)
                         .GetAsync("/Exception");
@@ -99,7 +99,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 }
             }))
             {
-                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword");
 
                 await testEnvironment.Server.BuildHttpClient(token)
                             .GetAsync("/InternalServerError");
@@ -130,7 +130,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword");
 
                 await testEnvironment.Server.BuildHttpClient(token)
                     .GetAsync("/odata/Test/XYZ");

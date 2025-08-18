@@ -18,7 +18,7 @@ namespace Bit.Tests.Api.ApiControllers.Tests
                 ActiveAppEnvironmentCustomizer = env => env.AddOrReplace("UseAutoMapperProfile", true)
             }))
             {
-                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword");
 
                 HttpResponseMessage response = await testEnvironment.Server.BuildHttpClient(token)
                     .GetAsync("api/mapper/some-api");
@@ -34,7 +34,7 @@ namespace Bit.Tests.Api.ApiControllers.Tests
                 ActiveAppEnvironmentCustomizer = env => env.AddOrReplace("UseAutoMapperProfile", true)
             }))
             {
-                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword");
 
                 HttpResponseMessage response = await testEnvironment.Server.BuildHttpClient(token)
                     .GetAsync("api/mapper/some-api");

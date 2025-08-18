@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Bit.Core;
 using Bit.Core.Contracts;
 using Bit.Core.Exceptions;
 using Bit.Core.Models;
@@ -16,7 +15,6 @@ using Bit.OData.ODataControllers;
 using Bit.Owin;
 using Bit.Owin.Implementations;
 using Bit.SampleServer;
-using IdentityServer3.Core.Models;
 using Microsoft.AspNet.OData.Builder;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -163,7 +161,7 @@ namespace Bit.SampleServer
             dependencyManager.RegisterMapperConfiguration<DefaultMapperConfiguration>();
             dependencyManager.RegisterMapperConfiguration<TestMapperConfiguration>();
 
-            dependencyManager.RegisterSingleSignOnServer<TestUserService, TestOAuthClientsProvider>();
+            dependencyManager.RegisterSingleSignOnServer<TestUserService>();
         }
     }
 
@@ -184,24 +182,6 @@ namespace Bit.SampleServer
             }
 
             throw new DomainLogicException("LoginFailed");
-        }
-    }
-
-    public class TestOAuthClientsProvider : OAuthClientsProvider
-    {
-        public override IEnumerable<Client> GetClients()
-        {
-            return new[]
-            {
-                GetResourceOwnerFlowClient(new BitResourceOwnerFlowClient
-                {
-                    ClientName = "TestResOwner",
-                    ClientId = "TestResOwner",
-                    Secret = "secret",
-                    TokensLifetime = TimeSpan.FromDays(7),
-                    Enabled = true
-                })
-            };
         }
     }
 

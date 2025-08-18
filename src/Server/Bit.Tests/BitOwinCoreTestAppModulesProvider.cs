@@ -141,11 +141,11 @@ namespace Bit.Tests
             dependencyManager.RegisterMapperConfiguration<TestMapperConfiguration>();
             dependencyManager.RegisterMapperConfiguration<AllMappingsConfiguration>();
 
-            dependencyManager.RegisterSingleSignOnServer<TestUserService, TestOAuthClientsProvider>();
+            dependencyManager.RegisterSingleSignOnServer<TestUserService>();
 
             _args?.AdditionalDependencies?.Invoke(dependencyManager, services);
 
-            dependencyManager.RegisterSecureIndexPageMiddlewareUsingDefaultConfiguration();
+            dependencyManager.RegisterIndexPageMiddlewareUsingDefaultConfiguration();
         }
 
         public virtual IEnumerable<IAppModule> GetAppModules()

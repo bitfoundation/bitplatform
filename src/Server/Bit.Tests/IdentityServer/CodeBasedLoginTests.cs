@@ -21,7 +21,7 @@ namespace Bit.Tests.IdentityServer
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = false }))
             {
-                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword");
 
                 Assert.AreEqual("test", await (await testEnvironment.Server.BuildHttpClient(token).GetAsync("api/customers/get-custom-data?api-version=1.0")).Content.ReadAsAsync<string>()); // see TestUserService
             }
@@ -35,7 +35,7 @@ namespace Bit.Tests.IdentityServer
             {
                 try
                 {
-                    await testEnvironment.Server.LoginWithCredentials("InValidUser", "InvalidPassword", "TestResOwner");
+                    await testEnvironment.Server.LoginWithCredentials("InValidUser", "InvalidPassword");
                     Assert.Fail();
                 }
                 catch (LoginFailureException exp) when (exp.Message == "LoginFailed") { }
@@ -50,7 +50,7 @@ namespace Bit.Tests.IdentityServer
             {
                 try
                 {
-                    await testEnvironment.Server.LoginWithCredentials("+9891255447788", "سلام به معنی Hello است", "TestResOwner", acr_values: new Dictionary<string, string>
+                    await testEnvironment.Server.LoginWithCredentials("+9891255447788", "سلام به معنی Hello است", new Dictionary<string, string>
                     {
                         { "x",  "1:11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111" },
                         { "y",  "test test:test" }

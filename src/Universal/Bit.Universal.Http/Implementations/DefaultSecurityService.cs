@@ -46,7 +46,7 @@ namespace Bit.Http.Implementations
             return (DateTimeProvider.GetCurrentUtcDateTime() - token.LoginDate) < TimeSpan.FromSeconds(token.ExpiresIn.Value);
         }
 
-        public virtual async Task<Token> LoginWithCredentials(string userName, string password, string client_id, string client_secret, string[]? scopes = null, IDictionary<string, string?>? acr_values = null, CancellationToken cancellationToken = default)
+        public virtual async Task<Token> LoginWithCredentials(string userName, string password, IDictionary<string, string?>? acr_values = null, CancellationToken cancellationToken = default)
         {
             if (userName == null)
             {
@@ -56,27 +56,14 @@ namespace Bit.Http.Implementations
             {
                 throw new ArgumentNullException(nameof(password));
             }
-            if (client_id == null)
-            {
-                throw new ArgumentNullException(nameof(client_id));
-            }
-            if (client_secret == null)
-            {
-                throw new ArgumentNullException(nameof(client_secret));
-            }
 
             HttpClient httpClient = ContainerProvider.Value.Resolve<HttpClient>();
 
-            scopes = scopes ?? new[] { "openid", "profile", "user_info" };
-
             Dictionary<string, string> loginData = new Dictionary<string, string>
             {
-                { "scope", string.Join(" ", scopes) },
                 { "grant_type", "password" },
                 { "username", userName },
-                { "password", password },
-                { "client_id", client_id },
-                { "client_secret", client_secret }
+                { "password", password }
             };
 
             if (acr_values != null)

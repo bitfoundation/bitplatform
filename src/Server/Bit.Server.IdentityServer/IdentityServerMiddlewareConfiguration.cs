@@ -1,18 +1,20 @@
-﻿using Bit.Core.Contracts;
+﻿using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
+using System.Text.Json;
+using System.Web;
+using Autofac;
+using Bit.Core.Contracts;
+using Bit.Core.Exceptions.Contracts;
 using Bit.Core.Models;
 using Bit.IdentityServer.Contracts;
 using Bit.IdentityServer.Implementations;
 using Bit.Owin.Contracts;
-using Bit.Owin.Implementations;
-using IdentityServer3.Core.Configuration;
-using IdentityServer3.Core.Logging;
-using IdentityServer3.Core.Services;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Owin;
+using Newtonsoft.Json;
 using Owin;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
 
 namespace Bit.IdentityServer
 {
@@ -20,132 +22,88 @@ namespace Bit.IdentityServer
     {
         public virtual AppEnvironment AppEnvironment { get; set; } = default!;
         public virtual IAppCertificatesProvider AppCertificatesProvider { get; set; } = default!;
-        public virtual IScopesProvider ScopesProvider { get; set; } = default!;
-        public virtual IRedirectUriValidator RedirectUriValidator { get; set; } = default!;
-        public virtual IEnumerable<IExternalIdentityProviderConfiguration> ExternalIdentityProviderConfigurations { get; set; } = default!;
-        public virtual IEnumerable<IIdentityServerOptionsCustomizer> Customizers { get; set; } = default!;
 
         public virtual void Configure(IAppBuilder owinApp)
         {
             if (owinApp == null)
                 throw new ArgumentNullException(nameof(owinApp));
 
-            owinApp.Map("/core", coreApp =>
+            string issuerName = AppEnvironment.GetSsoIssuerName();
+
+            X509SecurityKey issuerSigningKey = new X509SecurityKey(AppCertificatesProvider.GetSingleSignOnServerCertificate());
+
+            owinApp.Map("/core/connect/token", coreApp =>
             {
-                LogProvider.SetCurrentLogProvider(DefaultDependencyManager.Current.Resolve<ILogProvider>());
-
-                IdentityServerServiceFactory factory = new IdentityServerServiceFactory()
-                    .UseInMemoryClients(DefaultDependencyManager.Current.Resolve<IOAuthClientsProvider>().GetClients().ToArray())
-                    .UseInMemoryScopes(ScopesProvider.GetScopes());
-
-                IUserService ResolveUserService(IdentityServer3.Core.Services.IDependencyResolver resolver)
+                coreApp.Run(async context =>
                 {
-                    OwinEnvironmentService owinEnv = resolver.Resolve<OwinEnvironmentService>();
-                    IOwinContext owinContext = new OwinContext(owinEnv.Environment);
-                    IUserService userService = owinContext.GetDependencyResolver().Resolve<IUserService>();
-                    return userService;
-                }
-
-                factory.UserService = new Registration<IUserService>(ResolveUserService);
-
-                IEventService ResolveEventService(IdentityServer3.Core.Services.IDependencyResolver resolver)
-                {
-                    OwinEnvironmentService owinEnv = resolver.Resolve<OwinEnvironmentService>();
-                    IOwinContext owinContext = new OwinContext(owinEnv.Environment);
-                    if (owinContext.TryGetDependencyResolver(out Core.Contracts.IDependencyResolver? dependencyResolver))
+                    try
                     {
-                        IRequestInformationProvider requestInformationProvider = dependencyResolver.Resolve<IRequestInformationProvider>();
+                        using var streamReader = new System.IO.StreamReader(context.Request.Body);
+                        var requestBody = await streamReader.ReadToEndAsync(context.Request.CallCancelled);
+                        var parsedRequestBody = HttpUtility.ParseQueryString(requestBody);
+                        var dict = parsedRequestBody.AllKeys.ToDictionary(k => k, k => parsedRequestBody[k] as object);
+                        if (dict.TryGetValue("acr_values", out var acr_values) && string.IsNullOrEmpty(acr_values?.ToString()) is false)
+                        {
+                            dict["acr_values"] = acr_values.ToString()!.Split(' ')
+                                .ToDictionary(acr_value => acr_value.Split(':')[0], acr_value => HttpUtility.UrlDecode(acr_value.Split(':').ElementAtOrDefault(1) ?? ""));
+                        }
+                        string json = JsonConvert.SerializeObject(dict);
+                        var request = System.Text.Json.JsonSerializer.Deserialize<LocalAuthenticationContext>(json);
 
-                        if (IPAddress.TryParse(requestInformationProvider.ClientIp, out IPAddress _))
-                            owinContext.Request.RemoteIpAddress = requestInformationProvider.ClientIp;
-                        else
-                            owinContext.Request.RemoteIpAddress = "::1";
+                        var userService = context.GetDependencyResolver().Resolve<UserService>();
 
-                        return dependencyResolver.Resolve<IEventService>();
+                        var bitJwtToken = await userService.LocalLogin(request, context.Request.CallCancelled);
+
+                        ClaimsIdentity claimsIdentity = new([new("primary_sid", bitJwtToken.UserId), .. bitJwtToken.Claims.Select(c => new Claim(c.Key, c.Value ?? "NULL"))]);
+
+                        var jwt = GenerateJwtToken(claimsIdentity, issuerSigningKey, bitJwtToken.ExpiresIn);
+
+                        context.Response.ContentType = "application/json";
+
+                        context.Response.StatusCode = 200;
+
+                        await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new
+                        {
+                            access_token = jwt,
+                            token_type = "Bearer",
+                            expires_in = bitJwtToken.ExpiresIn.TotalSeconds
+                        }, JsonSerializerOptions.Web));
                     }
-                    else
+                    catch (Exception exp)
                     {
-                        return new FakeEventService { };
+                        var exceptionToHttpErrorMapper = context.GetDependencyResolver().Resolve<IExceptionToHttpErrorMapper>();
+                        context.Response.StatusCode = (int)exceptionToHttpErrorMapper.GetStatusCode(exp);
+                        context.Response.ContentType = "application/json";
+                        await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new
+                        {
+                            error = exp is IKnownException ? "invalid_grant" : "server_error",
+                            error_description = exceptionToHttpErrorMapper.GetMessage(exp),
+                        }, JsonSerializerOptions.Web));
                     }
-                }
-
-                factory.EventService = new Registration<IEventService>(ResolveEventService);
-
-                IViewService ResolveViewService(IdentityServer3.Core.Services.IDependencyResolver resolver)
-                {
-                    OwinEnvironmentService owinEnv = resolver.Resolve<OwinEnvironmentService>();
-                    IOwinContext owinContext = new OwinContext(owinEnv.Environment);
-                    return owinContext.GetDependencyResolver().Resolve<IViewService>();
-                }
-
-                factory.ViewService = new Registration<IViewService>(ResolveViewService);
-
-                factory.RedirectUriValidator = new Registration<IRedirectUriValidator>(RedirectUriValidator);
-
-                bool requireSslConfigValue = AppEnvironment.GetConfig(AppEnvironment.KeyValues.RequireSsl, defaultValueOnNotFound: AppEnvironment.KeyValues.RequireSslDefaultValue);
-
-                string identityServerSiteName = AppEnvironment.GetConfig(AppEnvironment.KeyValues.IdentityServer.IdentityServerSiteName, $"{AppEnvironment.AppInfo.Name} Identity Server")!;
-
-                IdentityServerOptions identityServerOptions = new IdentityServerOptions
-                {
-                    SiteName = identityServerSiteName,
-                    SigningCertificate = AppCertificatesProvider.GetSingleSignOnServerCertificate(),
-                    Factory = factory,
-                    RequireSsl = requireSslConfigValue,
-                    EnableWelcomePage = AppEnvironment.DebugMode == true,
-                    IssuerUri = AppEnvironment.GetSsoIssuerName(),
-                    CspOptions = new CspOptions
-                    {
-                        // Content security policy
-                        Enabled = false
-                    },
-                    Endpoints = new EndpointOptions
-                    {
-                        EnableAccessTokenValidationEndpoint = true,
-                        EnableAuthorizeEndpoint = true,
-                        EnableCheckSessionEndpoint = true,
-                        EnableClientPermissionsEndpoint = true,
-                        EnableCspReportEndpoint = true,
-                        EnableDiscoveryEndpoint = true,
-                        EnableEndSessionEndpoint = true,
-                        EnableIdentityTokenValidationEndpoint = true,
-                        EnableIntrospectionEndpoint = true,
-                        EnableTokenEndpoint = true,
-                        EnableTokenRevocationEndpoint = true,
-                        EnableUserInfoEndpoint = true
-                    },
-                    EventsOptions = new EventsOptions
-                    {
-                        RaiseErrorEvents = true,
-                        RaiseFailureEvents = true
-                    },
-                    AuthenticationOptions = new AuthenticationOptions
-                    {
-                        IdentityProviders = ConfigureIdentityProviders
-                    },
-                    InputLengthRestrictions = new InputLengthRestrictions
-                    {
-                        AcrValues = 32 * 1024
-                        // if we were using http headers instead of acr values, kestrel's default max http headers size would affect us which is 32 KB. IIS default max http headers size is 8 to 16 KB (Based on version). nginx default max http headers size is 8 KB.
-                        // Note that acr values are persisted in body, not headers.
-                    }
-                };
-
-                foreach (IIdentityServerOptionsCustomizer customizer in Customizers)
-                {
-                    customizer.Customize(identityServerOptions);
-                }
-
-                coreApp.UseIdentityServer(identityServerOptions);
+                });
             });
         }
 
-        protected virtual void ConfigureIdentityProviders(IAppBuilder owinApp, string signInAsType)
+        private string GenerateJwtToken(ClaimsIdentity identity, X509SecurityKey issuerSigningKey, TimeSpan lifetime)
         {
-            foreach (IExternalIdentityProviderConfiguration externalIdentityProviderConfiguration in ExternalIdentityProviderConfigurations)
-            {
-                externalIdentityProviderConfiguration.ConfigureExternalIdentityProvider(owinApp, signInAsType);
-            }
+            var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
+
+            var issuerName = AppEnvironment.GetSsoIssuerName();
+
+            var securityToken = jwtSecurityTokenHandler
+                .CreateJwtSecurityToken(new SecurityTokenDescriptor
+                {
+                    Issuer = issuerName,
+                    Audience = $"{issuerName}/resources",
+                    IssuedAt = DateTimeOffset.UtcNow.DateTime,
+                    Expires = DateTimeOffset.UtcNow.Add(lifetime).UtcDateTime,
+                    SigningCredentials = new(issuerSigningKey, SecurityAlgorithms.RsaSha256),
+                    Subject = new ClaimsIdentity(identity.Claims),
+                });
+
+            var encodedJwt = jwtSecurityTokenHandler.WriteToken(securityToken);
+
+            return encodedJwt;
         }
     }
 }

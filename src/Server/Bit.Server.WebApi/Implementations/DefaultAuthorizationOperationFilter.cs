@@ -63,7 +63,7 @@ namespace Bit.WebApi.Implementations
 
             Dictionary<string, IEnumerable<string>> oAuth2Requirements = new Dictionary<string, IEnumerable<string>>
             {
-                { "oauth2", AppEnvironment.Security.Scopes }
+                { "oauth2", [] }
             };
 
             operation.security.Add(oAuth2Requirements);

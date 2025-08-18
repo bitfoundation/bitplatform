@@ -14,44 +14,19 @@ namespace Bit.Core.Models
         {
             Claim? primary_sid = claims.SingleOrDefault(c => c.Type == "primary_sid");
 
-            if (primary_sid is not null)
+            return new BitJwtToken
             {
-                try
-                {
-                    JToken json = JToken.Parse(primary_sid.Value);
-                    return new BitJwtToken
-                    {
-                        UserId = (string)json["UserId"],
-                        Claims = json["CustomProps"].OfType<JProperty>().ToDictionary(prop => prop.Name, prop => (string)prop.Value)
-                    };
-                }
-                catch (JsonReaderException)
-                {
-                    return new BitJwtToken { UserId = primary_sid.Value };
-                }
-            }
-
-            BitJwtToken bitJwtToken = new BitJwtToken { };
-
-            foreach (var claim in claims)
-            {
-                if (!bitJwtToken.Claims.ContainsKey(claim.Type))
-                    bitJwtToken.Claims.Add(claim.Type, claim.Value);
-                else
-                    bitJwtToken.Claims[claim.Type] += $" {claim.Value}";
-                if (claim.Type == "sub")
-                    bitJwtToken.UserId = claim.Value;
-            }
-
-            return bitJwtToken;
-        }
-
-        public static implicit operator Claim[](BitJwtToken bitJwtToken)
-        {
-            return bitJwtToken.Claims.Select(c => new Claim(c.Key, c.Value ?? "NULL")).ToArray();
+                UserId = primary_sid?.Value ?? claims.SingleOrDefault(c => c.Type == "sub")?.Value ?? string.Empty,
+                Claims = claims
+                    .Where(c => c.Type != "primary_sid" && c.Type != "sub")
+                    .GroupBy(c => c.Type)
+                    .ToDictionary(g => g.Key, g => string.Join(" ", g.Select(c => c.Value)))
+            };
         }
 
         public virtual string UserId { get; set; } = default!;
+
+        public virtual TimeSpan ExpiresIn { get; set; } = TimeSpan.FromDays(1);
 
         public virtual Dictionary<string, string?> Claims { get; set; } = new Dictionary<string, string?> { };
 

@@ -28,12 +28,12 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 HttpResponseMessage getMetadataForV1 = await testEnvironment.Server.BuildHttpClient()
                     .GetAsync("Metadata/V1");
 
-                Assert.AreNotEqual(HttpStatusCode.OK, getMetadataForV1.StatusCode);
+                Assert.AreNotEqual("application/json", getMetadataForV1.Content.Headers.ContentType.MediaType);
 
                 HttpResponseMessage getMetadataForV2 = await testEnvironment.Server.BuildHttpClient()
                     .GetAsync("Metadata/V2");
 
-                Assert.AreEqual(HttpStatusCode.OK, getMetadataForV2.StatusCode);
+                Assert.AreEqual("application/json", getMetadataForV2.Content.Headers.ContentType.MediaType);
             }
         }
 

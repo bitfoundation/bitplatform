@@ -15,9 +15,9 @@
 		<PackageReference Include="Newtonsoft.Json">
 			<Version>13.0.3</Version>
 		</PackageReference>
-		<PackageReference Include="System.CodeDom" Version="9.0.1" />
+		<PackageReference Include="System.CodeDom" Version="9.0.8" />
 		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.3.1" />
-		<PackageReference Include="Microsoft.Build.Locator" Version="1.7.8" />
+		<PackageReference Include="Microsoft.Build.Locator" Version="1.9.1" />
 	</ItemGroup>
 
 	<ItemGroup>

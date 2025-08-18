@@ -38,17 +38,7 @@ namespace Swashbuckle.Application
 
             doc.OAuth2("oauth2")
                 .Flow("password")
-                .TokenUrl($"{appEnv.GetSsoUrl()}/connect/token")
-                .Scopes(scopes =>
-                 {
-                     if (!appEnv.Security.Scopes.SequenceEqual(new[] { "openid", "profile", "user_info" }))
-                     {
-                         foreach (string scope in appEnv.Security.Scopes)
-                         {
-                             scopes.Add(scope, scope);
-                         }
-                     }
-                 });
+                .TokenUrl($"{appEnv.GetSsoUrl()}/connect/token");
 
             return doc;
         }

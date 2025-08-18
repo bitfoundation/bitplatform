@@ -19,9 +19,7 @@ namespace Bit.Test.Server
 
     public interface ITestServer : IDisposable
     {
-        Task<Token> LoginWithCredentials(string userName, string password, string clientId, string secret = "secret", string[]? scopes = null, IDictionary<string, string?>? acr_values = null);
-
-        string GetLoginUrl(string? client_id = null, Uri? redirect_uri = null, object? state = null, IDictionary<string, string?>? acr_values = null);
+        Task<Token> LoginWithCredentials(string userName, string password, IDictionary<string, string?>? acr_values = null);
 
         IODataClient BuildODataClient(Token? token = null, string odataRouteName = "Test", ODataClientSettings? odataClientSettings = null);
 

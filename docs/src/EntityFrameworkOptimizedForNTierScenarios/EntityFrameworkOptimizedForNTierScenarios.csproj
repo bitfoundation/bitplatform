@@ -6,9 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
-    <PackageReference Include="Bit.Server.Data.EntityFramework" Version="18.0.0" />
-    <PackageReference Include="Bit.Server.WebApi" Version="18.0.0" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.15.2" />
+    <PackageReference Include="Bit.Server.Data.EntityFramework" Version="19.0.0" />
+    <PackageReference Include="Bit.Server.WebApi" Version="19.0.0" />
     <PackageReference Include="Bit.System.Diagnostics.CodeAnalysis" Version="1.0.0" />
     <PackageReference Include="SharpRepository.EfRepository" Version="2.1.3" />
   </ItemGroup>

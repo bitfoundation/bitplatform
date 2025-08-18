@@ -9,7 +9,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-        <PackageReference Include="AutoMapper" Version="13.0.1" />
+        <PackageReference Include="AutoMapper" Version="15.0.1" />
 	  <ProjectReference Include="..\Bit.Universal.Model\Bit.Universal.Model.csproj" />
 	</ItemGroup>
 

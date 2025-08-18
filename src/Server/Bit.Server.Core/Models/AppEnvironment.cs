@@ -51,26 +51,6 @@ namespace Bit.Core.Models
             public class IdentityServer
             {
                 public static readonly string IdentityServerSiteName = nameof(IdentityServerSiteName);
-
-                public static readonly string ActiveDirectoryName = nameof(ActiveDirectoryName);
-
-                public static readonly string LoginPagePath = nameof(LoginPagePath);
-                public static readonly string LoginPagePathDefaultValue = "loginPage.html";
-
-                public static readonly string FacebookClientId = nameof(FacebookClientId);
-                public static readonly string FacebookSecret = nameof(FacebookSecret);
-
-                public static readonly string GoogleClientId = nameof(GoogleClientId);
-                public static readonly string GoogleSecret = nameof(GoogleSecret);
-
-                public static readonly string TwitterClientId = nameof(TwitterClientId);
-                public static readonly string TwitterSecret = nameof(TwitterSecret);
-
-                public static readonly string LinkedInClientId = nameof(LinkedInClientId);
-                public static readonly string LinkedInSecret = nameof(LinkedInSecret);
-
-                public static readonly string MicrosoftClientId = nameof(MicrosoftClientId);
-                public static readonly string MicrosoftSecret = nameof(MicrosoftSecret);
             }
 
             public class Hangfire
@@ -89,7 +69,6 @@ namespace Bit.Core.Models
 
         public virtual EnvironmentSecurity Security { get; set; } = new EnvironmentSecurity
         {
-            Scopes = new[] { "openid", "profile", "user_info" }
         };
 
         public virtual EnvironmentCulture[] Cultures { get; set; } = Array.Empty<EnvironmentCulture>();
@@ -166,11 +145,6 @@ namespace Bit.Core.Models
             return Security?.IssuerName ?? AppInfo.Name;
         }
 
-        public virtual string GetSsoDefaultClientId()
-        {
-            return Security?.DefaultClientId ?? AppInfo.Name;
-        }
-
         public virtual bool HasConfig(string configKey)
         {
             if (configKey == null)
@@ -228,16 +202,9 @@ namespace Bit.Core.Models
 
         public virtual string? IssuerName { get; set; }
 
-        public virtual string[] Scopes { get; set; } = Array.Empty<string>();
-
-        /// <summary>
-        /// It's used in redirects of InvokeLogin and RedirectToSsoIfNotLoggedIn middlewares to sso
-        /// </summary>
-        public virtual string? DefaultClientId { get; set; }
-
         public override string ToString()
         {
-            return $"{nameof(IssuerName)}: {IssuerName}, {nameof(DefaultClientId)}: {DefaultClientId}, {nameof(Scopes)}: {Scopes}";
+            return $"{nameof(IssuerName)}: {IssuerName}";
         }
     }
 

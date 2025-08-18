@@ -7,9 +7,9 @@
 
     <ItemGroup>
         <PackageReference Include="Bit.Client.Xamarin.Prism" Version="13.6.0" />
-        <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="18.0.0" />
-        <PackageReference Include="Microsoft.AppCenter.Analytics" Version="5.0.6" />
-        <PackageReference Include="Microsoft.AppCenter.Crashes" Version="5.0.6" />
+        <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="19.0.0" />
+        <PackageReference Include="Microsoft.AppCenter.Analytics" Version="5.0.7" />
+        <PackageReference Include="Microsoft.AppCenter.Crashes" Version="5.0.7" />
     </ItemGroup>
 
 </Project>

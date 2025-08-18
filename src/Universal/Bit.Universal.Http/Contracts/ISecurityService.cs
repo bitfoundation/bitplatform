@@ -69,7 +69,7 @@ namespace Bit.Http.Contracts
 
     public interface ISecurityService : ISecurityServiceBase
     {
-        Task<Token> LoginWithCredentials(string userName, string password, string client_id, string client_secret, string[]? scopes = null, IDictionary<string, string?>? acr_values = null, CancellationToken cancellationToken = default);
+        Task<Token> LoginWithCredentials(string userName, string password, IDictionary<string, string?>? acr_values = null, CancellationToken cancellationToken = default);
 
         Task<Token> Login(object? state = null, string? client_id = null, IDictionary<string, string?>? acr_values = null, CancellationToken cancellationToken = default);
 

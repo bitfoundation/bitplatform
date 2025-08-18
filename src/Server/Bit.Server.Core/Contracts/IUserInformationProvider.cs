@@ -12,8 +12,6 @@ namespace Bit.Core.Contracts
 
         string GetAuthenticationType();
 
-        string GetClientId();
-
         IEnumerable<Claim> GetClaims();
 
         ClaimsIdentity? GetIdentity();

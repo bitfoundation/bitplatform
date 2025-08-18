@@ -15,8 +15,8 @@
   
   <ItemGroup>
     <PackageReference Include="EasyCaching.HybridCache" Version="1.9.2" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="9.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="9.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.8" />
   </ItemGroup>
 
 </Project>

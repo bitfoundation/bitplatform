@@ -53,13 +53,6 @@ namespace Bit.Owin.Implementations
             return RequestInformationProvider.Identity;
         }
 
-        public virtual string GetClientId()
-        {
-            return GetClaims()
-                .ExtendedSingle("Finding client_id in claims", claim => string.Equals(claim.Type, "client_id", StringComparison.InvariantCultureIgnoreCase))
-                .Value;
-        }
-
         public virtual BitJwtToken GetBitJwtToken()
         {
             Claim[] claims = GetClaims().ToArray();

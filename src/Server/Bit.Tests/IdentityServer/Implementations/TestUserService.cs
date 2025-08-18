@@ -1,14 +1,9 @@
-﻿using Bit.Core.Contracts;
-using Bit.Core.Exceptions;
+﻿using Bit.Core.Exceptions;
 using Bit.Core.Models;
-using Bit.Http.Implementations;
+using Bit.IdentityServer.Contracts;
 using Bit.IdentityServer.Implementations;
-using IdentityServer3.Core.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,10 +26,10 @@ namespace Bit.Tests.IdentityServer.Implementations
 
         public async override Task<BitJwtToken> LocalLogin(LocalAuthenticationContext context, CancellationToken cancellationToken)
         {
-            if (context.SignInMessage.TryGetValueFromAcr("x", out string x))
+            if (context.AcrValues.TryGetValue("x", out string x))
                 Logger.AddLogData("x", x);
 
-            if (context.SignInMessage.TryGetValueFromAcr("y", out string y))
+            if (context.AcrValues.TryGetValue("y", out string y))
                 Logger.AddLogData("y", y);
 
             Logger.AddLogData("username", context.UserName);
@@ -54,29 +49,6 @@ namespace Bit.Tests.IdentityServer.Implementations
                 }
             };
             return jwtToken;
-        }
-
-        public override async Task<bool> UserIsActiveAsync(IsActiveContext context, BitJwtToken bitJwtToken, CancellationToken cancellationToken)
-        {
-            return _localUsers.Any(u => u.UserId == bitJwtToken.UserId);
-        }
-
-        protected override async Task<BitJwtToken> ExternalLogin(ExternalAuthenticationContext context, CancellationToken cancellationToken)
-        {
-            string nameIdentifier = context.ExternalIdentity.Claims.GetClaimValue(ClaimTypes.NameIdentifier);
-
-            if (nameIdentifier == null)
-                throw new InvalidOperationException($"{nameof(nameIdentifier)} is null");
-
-            LocalUser user = _localUsers.FirstOrDefault(u => u.UserId == nameIdentifier);
-
-            if (user == null)
-            {
-                user = new LocalUser { UserId = nameIdentifier, Password = null };
-                _localUsers.Add(user);
-            }
-
-            return new BitJwtToken { UserId = user.UserId };
         }
     }
 }
