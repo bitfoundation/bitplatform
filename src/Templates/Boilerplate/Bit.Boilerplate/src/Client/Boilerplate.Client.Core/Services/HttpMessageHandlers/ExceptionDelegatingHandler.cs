@@ -86,8 +86,10 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
         return (exp is TimeoutException)
              || (exp is WebException webExp && webExp.WithData("Status", webExp.Status).Status is WebExceptionStatus.ConnectFailure)
              || (exp.InnerException is not null && IsServerConnectionException(exp.InnerException))
+             || (exp is HttpIOException httpIOExp && httpIOExp.WithData("HttpRequestError", httpIOExp.HttpRequestError).HttpRequestError is not HttpRequestError.UserAuthenticationError)
              || (exp is AggregateException aggExp && aggExp.InnerExceptions.Any(IsServerConnectionException))
              || (exp is SocketException sockExp && sockExp.WithData("SocketErrorCode", sockExp.SocketErrorCode).SocketErrorCode is SocketError.HostNotFound or SocketError.HostUnreachable or SocketError.HostDown or SocketError.TimedOut)
-             || (exp is HttpRequestException reqExp && reqExp.WithData("StatusCode", reqExp.StatusCode).StatusCode is HttpStatusCode.BadGateway or HttpStatusCode.GatewayTimeout or HttpStatusCode.ServiceUnavailable or HttpStatusCode.RequestTimeout);
+             || (exp is HttpRequestException reqExp && reqExp.WithData("StatusCode", reqExp.StatusCode).StatusCode is HttpStatusCode.BadGateway or HttpStatusCode.GatewayTimeout or HttpStatusCode.ServiceUnavailable or HttpStatusCode.RequestTimeout)
+             || (exp is HttpProtocolException proExp && proExp.WithData("HttpRequestError", proExp.HttpRequestError).WithData("ErrorCode", proExp.ErrorCode).HttpRequestError is not HttpRequestError.UserAuthenticationError);
     }
 }
