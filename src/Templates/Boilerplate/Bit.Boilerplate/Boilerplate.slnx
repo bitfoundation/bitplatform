@@ -10,6 +10,7 @@
     <File Path=".vsconfig" />
     <File Path="Clean.bat" />
     <File Path="global.json" />
+	<File Path="vs-spell.dic" />
 	<File Path=".vscode/mcp.json" />
     <File Path="README.md" />
 	<File Path="settings.VisualStudio.json" />

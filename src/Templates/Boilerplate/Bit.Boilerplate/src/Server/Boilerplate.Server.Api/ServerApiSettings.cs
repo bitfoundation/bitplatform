@@ -92,7 +92,7 @@ public partial class ServerApiSettings : ServerSharedSettings
 
         if (AppEnvironment.IsDevelopment() is false)
         {
-            if (Identity.JwtIssuerSigningKeySecret is "VeryLongJWTIssuerSiginingKeySecretThatIsMoreThan64BytesToEnsureCompatibilityWithHS512Algorithm")
+            if (Identity.JwtIssuerSigningKeySecret is "VeryLongJWTIssuerSigningKeySecretThatIsMoreThan64BytesToEnsureCompatibilityWithHS512Algorithm")
             {
                 throw new InvalidOperationException(@"Please replace JwtIssuerSigningKeySecret with a new one.");
             }
