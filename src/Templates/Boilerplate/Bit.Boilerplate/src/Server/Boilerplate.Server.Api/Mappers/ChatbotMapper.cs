@@ -14,5 +14,5 @@ public static partial class ChatbotMapper
 
     public static partial SystemPromptDto Map(this SystemPrompt source);
     public static partial SystemPrompt Map(this SystemPromptDto source);
-    public static partial void Patch(this SystemPromptDto source, SystemPrompt dest);
+    public static partial void Patch(this SystemPromptDto source, SystemPrompt destination);
 }

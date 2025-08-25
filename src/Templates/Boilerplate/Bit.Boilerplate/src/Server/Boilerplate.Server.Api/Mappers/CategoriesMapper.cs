@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Riok.Mapperly.Abstractions;
 using Boilerplate.Shared.Dtos.Categories;
 using Boilerplate.Server.Api.Models.Categories;
@@ -22,6 +22,6 @@ public static partial class CategoriesMapper
     public static partial CategoryDto Map(this Category source);
     //#if(module == "Admin")
     public static partial Category Map(this CategoryDto source);
-    public static partial void Patch(this CategoryDto source, Category dest);
+    public static partial void Patch(this CategoryDto source, Category destination);
     //#endif
 }
