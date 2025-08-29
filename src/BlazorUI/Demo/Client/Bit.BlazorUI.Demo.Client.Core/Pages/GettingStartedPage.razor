@@ -72,8 +72,9 @@
 
     <section class="page-section">
         <BitText Typography="BitTypography.H4" Class="subtitle">2. Namespace</BitText>
-        <div class="section-desc">Open the <BitTag Color="BitColor.TertiaryBackground">_Imports.razor</BitTag> 
-            file of your Blazor application and add this line:</div>
+        <BitText Typography="BitTypography.Body1">
+            Open the <BitTag Color="BitColor.TertiaryBackground">_Imports.razor</BitTag> file of your Blazor application and add this line:
+        </BitText>
         <CodeBox>&#64;using Bit.BlazorUI</CodeBox>
     </section>
 
@@ -81,7 +82,7 @@
         <BitText Typography="BitTypography.H4" Class="subtitle">3. Styles and Scripts</BitText>
 
         <BitText Typography="BitTypography.Body1">
-            Open <BitTag Color="BitColor.TertiaryBackground">App.razor</BitTag> or 
+            Open <BitTag Color="BitColor.TertiaryBackground">App.razor</BitTag> or
             <BitTag Color="BitColor.TertiaryBackground">index.html</BitTag> file and add the CSS file reference:
         </BitText>
         <CodeBox>&lt;link href="_content/Bit.BlazorUI/styles/bit.blazorui.css" rel="stylesheet" /></CodeBox>
@@ -115,6 +116,21 @@
             </BitText>
             <CodeBox>&lt;link href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" rel="stylesheet" /></CodeBox>
         </BitAccordion>
+    </section>
+
+    <section class="page-section">
+        <BitText Typography="BitTypography.H4" Class="subtitle">4. Cache busting</BitText>
+        <BitText Typography="BitTypography.Body1" Gutter>
+            You need to make sure you've implemented a proper <b>cache busting strategy</b> for all resources mentioned above.
+            Otherwise users will encounter issues related to cached versions of resources after you update the bit BlazorUI in your project.
+            <br /><br />
+            On .NET 9 or later you can simply use the new <BitTag Color="BitColor.TertiaryBackground">@@Assets[""]</BitTag> feature to
+            fingerprint the resource files automatically.
+            <br /><br />
+            Also, bit BlazorUI has a built-in feature in order to resolve the cache issues easily. using this feature you can simply add
+            a version query string to the url of the above resources like this:
+            <CodeBox>&lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js?v=@@Bit.BlazorUI.Info.Version">&lt;/script></CodeBox>
+        </BitText>
     </section>
 
     <FeedbackSection Url="GettingStartedPage.razor" />
