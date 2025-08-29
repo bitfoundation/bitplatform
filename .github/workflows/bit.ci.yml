@@ -1,9 +1,14 @@
 name: bit platform CI
+
 on:
   workflow_dispatch:
   pull_request:
     paths:
     - 'src/**'
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
 jobs:
   build-release:
     if: startsWith(github.event.pull_request.title, 'Prerelease') || startsWith(github.event.pull_request.title, 'Release') || startsWith(github.event.pull_request.title, 'Version')
