@@ -23,7 +23,7 @@ public static class ILoggingBuilderExtensions
 
         if (!AppPlatform.IsBrowser) // Browser has its own WebAssemblyConsoleLoggerProvider.
         {
-            loggingBuilder.AddSimpleConsole(options => configuration.GetRequiredSection("Logging:SimpleConsole").Bind(options)); // Device Log / logcat
+            loggingBuilder.AddConsole(options => configuration.GetRequiredSection("Logging:Console").Bind(options)); // Device Log / logcat
         }
 
         loggingBuilder.AddDiagnosticLogger();

@@ -6,6 +6,9 @@ on:
   workflow_dispatch:
   pull_request:
 
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
 jobs:
 
   build_blazor_server:

@@ -7,6 +7,9 @@ on:
         required: true
         type: string
 
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
 permissions:
   contents: read
 
