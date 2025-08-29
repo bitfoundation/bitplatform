@@ -130,6 +130,9 @@
             Also, bit BlazorUI has a built-in feature in order to resolve the cache issues easily. using this feature you can simply add
             a version query string to the url of the above resources like this:
             <CodeBox>&lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js?v=@@Bit.BlazorUI.Info.Version">&lt;/script></CodeBox>
+            <b>Note</b>: You can only use this feature in the <BitTag Color="BitColor.TertiaryBackground">App.razor</BitTag> file, 
+            for other root files (like index.html in a WASM standalone project) you have to apply another solution, 
+            for example manually adding the version query string to the resrouce URLs.
         </BitText>
     </section>
 
