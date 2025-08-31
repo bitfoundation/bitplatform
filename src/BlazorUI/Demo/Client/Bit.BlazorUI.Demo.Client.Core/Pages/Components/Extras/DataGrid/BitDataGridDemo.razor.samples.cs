@@ -763,7 +763,7 @@ protected override async Task OnInitializedAsync()
         </LoadingTemplate>
     </BitDataGrid>
 </div>
-<BitDataGridPaginator Value=""@pagination"" SummaryFormat=""@(v => $""Total: {v.TotalItemCount}"")"">
+<BitDataGridPaginator Value=""@pagination"" SummaryFormat=""@(v => $""Total: {v.TotalItemCount?.ToString(""N0"")}"")"">
     <TextTemplate Context=""state"">@(state.CurrentPageIndex + 1) / @(state.LastPageIndex + 1)</TextTemplate>
 </BitDataGridPaginator>";
     private readonly string example5CsharpCode = @"
