@@ -7,7 +7,7 @@ namespace Boilerplate.Shared.Controllers.Chatbot;
 public interface IChatbotController : IAppController
 {
     [HttpGet("{kind}")]
-    Task<SystemPromptDto> GetSystemPrompt(PromptKind kind, CancellationToken cancellationToken);
+    Task<List<SystemPromptDto>> GetSystemPrompts(CancellationToken cancellationToken) => default!;
 
     [HttpPost]
     Task<SystemPromptDto> UpdateSystemPrompt(SystemPromptDto dto, CancellationToken cancellationToken);
