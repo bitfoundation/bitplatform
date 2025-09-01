@@ -3,7 +3,10 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Boilerplate.Server.Api.Services;
 
-public partial class FluentStorageHealthCheck : IHealthCheck
+/// <summary>
+/// Checks underlying S3, Azure blob storage, or local file system storage is healthy.
+/// </summary>
+public partial class AppStorageHealthCheck : IHealthCheck
 {
     [AutoInject] private IBlobStorage blobStorage = default!;
     [AutoInject] private ServerApiSettings settings = default!;
@@ -12,10 +15,7 @@ public partial class FluentStorageHealthCheck : IHealthCheck
     {
         try
         {
-            if (await blobStorage.ExistsAsync(settings.UserProfileImagesDir, cancellationToken) is false)
-            {
-                await blobStorage.CreateFolderAsync(settings.UserProfileImagesDir, cancellationToken: cancellationToken);
-            }
+            _ = await blobStorage.ExistsAsync(settings.UserProfileImagesDir, cancellationToken);
 
             return HealthCheckResult.Healthy("Storage is healthy");
         }
