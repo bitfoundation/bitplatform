@@ -114,5 +114,27 @@
                               Placeholder="Search on Name" />
             </div>
         </DemoExample>
+
+        <DemoExample Title="LoadingTemplate" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div class="grid3">
+                <BitDataGrid ItemKey="(p => p.Id)" ItemsProvider="@productsItemsProvider" TGridItem="ProductDto" Pagination="pagination3" @ref="productsDataGrid">
+                    <Columns>
+                        <BitDataGridPropertyColumn Property="@(p => p.Id)" Sortable="true" IsDefaultSort="BitDataGridSortDirection.Ascending" />
+                        <BitDataGridPropertyColumn Property="@(p => p.Name)" Sortable="true" />
+                        <BitDataGridPropertyColumn Property="@(p => p.Price)" Sortable="true" />
+                    </Columns>
+                    <LoadingTemplate>
+                        <BitStack Alignment="BitAlignment.Center" Style="height:185px">
+                            <b>Loading items...</b>
+                            <BitOrbitingDotsLoading Size="BitSize.Large" />
+                        </BitStack>
+                    </LoadingTemplate>
+                </BitDataGrid>
+            </div>
+            <BitDataGridPaginator Value="@pagination3" SummaryFormat="@(v => $"Total: {v.TotalItemCount?.ToString("N0")}")">
+                <TextTemplate Context="state">@(state.CurrentPageIndex + 1) / @(state.LastPageIndex + 1)</TextTemplate>
+            </BitDataGridPaginator>
+        </DemoExample>
+
     </Examples>
 </DemoPage>
