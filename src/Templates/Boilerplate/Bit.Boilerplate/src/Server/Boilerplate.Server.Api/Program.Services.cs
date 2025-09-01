@@ -38,6 +38,7 @@ using Boilerplate.Server.Shared.Services;
 using Boilerplate.Server.Api.Services.Jobs;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Services.Identity;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Boilerplate.Server.Api;
 
@@ -51,6 +52,12 @@ public static partial class Program
         var configuration = builder.Configuration;
 
         builder.AddServerSharedServices();
+
+        builder.AddDefaultHealthChecks()
+            .AddDbContextCheck<AppDbContext>(tags: ["live"])
+            .AddHangfire(setup => setup.MinimumAvailableServers = 1, tags: ["live"])
+            .AddCheck<FluentStorageHealthCheck>("storage", tags: ["live"]);
+        // TODO: Sms, Email, Push notification, AI, Google reCaptcha, Cloudflare
 
         ServerApiSettings appSettings = new();
         configuration.Bind(appSettings);
