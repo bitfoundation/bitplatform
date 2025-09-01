@@ -33,6 +33,7 @@ public static partial class Program
         /*
         //#endif
         builder.AddServerSharedServices();
+        builder.AddDefaultHealthChecks();
         services.AddAuthentication(options =>
         {
             options.DefaultScheme = Microsoft.AspNetCore.Identity.IdentityConstants.BearerScheme;
