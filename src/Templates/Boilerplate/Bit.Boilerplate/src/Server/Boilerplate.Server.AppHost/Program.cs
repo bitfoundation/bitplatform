@@ -2,6 +2,7 @@
 using Projects;
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
+using Microsoft.Extensions.Hosting;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -9,7 +10,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 //#if (database == "SqlServer")
 var sqlServerPassword = builder.AddParameter("SqlServerPassword", secret: true);
-var sqlDatabase = builder.AddSqlServer("sqlserver", password: sqlServerPassword)
+var sqlDatabase = builder.AddSqlServer("sqlserver", password: sqlServerPassword, port: 1433)
         .WithDbGate(config => config.WithLifetime(ContainerLifetime.Persistent).WithDataVolume())
         .WithLifetime(ContainerLifetime.Persistent)
         .WithDataVolume()
@@ -18,7 +19,7 @@ var sqlDatabase = builder.AddSqlServer("sqlserver", password: sqlServerPassword)
 
 //#elif (database == "PostgreSql")
 var postgresPassword = builder.AddParameter("PostgresPassword", secret: true);
-var postgresDatabase = builder.AddPostgres("postgresserver", password: postgresPassword)
+var postgresDatabase = builder.AddPostgres("postgresserver", password: postgresPassword, port: 5432)
         .WithPgAdmin(config => config.WithLifetime(ContainerLifetime.Persistent).WithVolume("/var/lib/pgadmin/Boilerplate/data"))
         .WithLifetime(ContainerLifetime.Persistent)
         .WithDataVolume()
@@ -27,7 +28,7 @@ var postgresDatabase = builder.AddPostgres("postgresserver", password: postgresP
 
 //#elif (database == "MySql")
 var mySqlPassword = builder.AddParameter("MySqlPassword", secret: true);
-var mySqlDatabase = builder.AddMySql("mysqlserver", password: mySqlPassword)
+var mySqlDatabase = builder.AddMySql("mysqlserver", password: mySqlPassword, port: 3306)
         .WithPhpMyAdmin(config => config.WithLifetime(ContainerLifetime.Persistent).WithVolume("/var/lib/phpMyAdmin/Boilerplate/data"))
         .WithLifetime(ContainerLifetime.Persistent)
         .WithDataVolume()
@@ -40,6 +41,9 @@ var azureBlobStorage = builder.AddAzureStorage("storage")
         {
             azurite
                 .WithLifetime(ContainerLifetime.Persistent)
+                .WithBlobPort(10000)
+                .WithQueuePort(10001)
+                .WithTablePort(10002)
                 .WithDataVolume();
         })
         .AddBlobs("blobs");
@@ -53,9 +57,23 @@ var s3Storage = builder.AddMinioContainer("minio", rootUser: minioUsername, root
 var serverWebProject = builder.AddProject<Boilerplate_Server_Web>("serverweb") // Replace . with _ if needed to ensure the project builds successfully.
     .WithExternalHttpEndpoints();
 
+// Adding health checks endpoints to applications in non-development environments has security implications.
+// See https://aka.ms/dotnet/aspire/healthchecks for details before enabling these endpoints in non-development environments.
+if (builder.Environment.IsDevelopment())
+{
+    serverWebProject.WithHttpHealthCheck("/alive");
+}
+
 //#if (api == "Standalone")
 var serverApiProject = builder.AddProject<Boilerplate_Server_Api>("serverapi") // Replace . with _ if needed to ensure the project builds successfully.
     .WithExternalHttpEndpoints();
+
+// Adding health checks endpoints to applications in non-development environments has security implications.
+// See https://aka.ms/dotnet/aspire/healthchecks for details before enabling these endpoints in non-development environments.
+if (builder.Environment.IsDevelopment())
+{
+    serverApiProject.WithHttpHealthCheck("/alive");
+}
 
 serverWebProject.WithReference(serverApiProject).WaitFor(serverApiProject);
 //#if (database == "SqlServer")

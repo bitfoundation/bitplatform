@@ -1,4 +1,5 @@
 ﻿//+:cnd:noEmit
+using HealthChecks.UI.Client;
 using Boilerplate.Server.Shared;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Localization.Routing;
@@ -8,19 +9,32 @@ namespace Microsoft.AspNetCore.Builder;
 
 public static class WebApplicationExtensions
 {
-    public static WebApplication MappAppHealthChecks(this WebApplication app)
+    public static WebApplication MapAppHealthChecks(this WebApplication app)
     {
         // Adding health checks endpoints to applications in non-development environments has security implications.
         // See https://aka.ms/dotnet/aspire/healthchecks for details before enabling these endpoints in non-development environments.
         if (app.Environment.IsDevelopment())
         {
-            // All health checks must pass for app to be considered ready to accept traffic after starting
-            app.MapHealthChecks("/health");
+            var healthChecks = app.MapGroup("");
 
-            // Only health checks tagged with the "live" tag must pass for app to be considered alive
-            app.MapHealthChecks("/alive", new HealthCheckOptions
+            healthChecks
+                .CacheOutput("HealthChecks");
+
+            // All health checks must pass for app to be
+            // considered ready to accept traffic after starting
+            healthChecks.MapHealthChecks("/health");
+
+            // Only health checks tagged with the "live" tag
+            // must pass for app to be considered alive
+            healthChecks.MapHealthChecks("/alive", new()
             {
-                Predicate = r => r.Tags.Contains("live")
+                Predicate = static r => r.Tags.Contains("live")
+            });
+
+            healthChecks.MapHealthChecks("/healthz", new HealthCheckOptions
+            {
+                Predicate = _ => true,
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
             });
         }
 

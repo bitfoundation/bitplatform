@@ -95,6 +95,8 @@ self.serverHandledUrls = [
     /\/hangfire/,
     /\/healthchecks-ui/,
     /\/healthz/,
+    /\/health/,
+    /\/alive/,
     /\/swagger/,
     /\/signin-/,
     /\/.well-known/,
