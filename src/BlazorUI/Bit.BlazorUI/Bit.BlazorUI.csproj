@@ -21,7 +21,6 @@
         <InternalsVisibleTo Include="Bit.BlazorUI.Extras, PublicKey=002400000480000094000000060200000024000052534131000400000100010081a58360c43da697fbbc3b729e3565c1e4ef444878d7764f2e187ff0ca054413b6ad2b2eba16f4f1ad6da8e8be445bb410c43930195696e7f2317dd80164fed318366a83af39ab4c135349f75b3f2b9ad5875fad68025c9e1c4e8d16469addd506f3e1ed13461dd17a8f23f3faeb2cbd933cef6ebead4e50197943798f638aa9" />
     </ItemGroup>
 
-
     <ItemGroup>
         <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
         <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0" />

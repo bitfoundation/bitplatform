@@ -1,11 +1,8 @@
 ﻿using System.IO.Compression;
-using System.Net;
-using System.Net.Mail;
-using Bit.BlazorUI.Demo.Server.Services;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OData;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.ResponseCompression;
+using Bit.BlazorUI.Demo.Server.Services;
 
 namespace Bit.BlazorUI.Demo.Server.Startup;
 
@@ -22,8 +19,8 @@ public static class Services
         services.AddBlazor(configuration);
 
         services.AddClientSharedServices();
+        services.AddBitBlazorUIAssetsServices(env.WebRootFileProvider);
 
-        
         services.AddCors();
 
         services

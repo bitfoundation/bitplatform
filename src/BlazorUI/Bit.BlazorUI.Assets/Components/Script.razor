@@ -1,0 +1,12 @@
+@namespace Bit.BlazorUI
+
+@if (src is not null)
+{
+    <script src="@src" @attributes="AdditionalAttributes"></script>
+}
+else
+{
+    <script @attributes="AdditionalAttributes">
+        @ChildContent
+    </script>
+}
