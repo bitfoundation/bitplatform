@@ -27,7 +27,7 @@ public partial class Script
         base.OnInitialized();
 
         src = (Src is not null && AppendVersion)
-                ? bitFileVersionProvider.AppendFileVersion(httpContextAccessor.HttpContext!.Request.PathBase, Src) 
+                ? bitFileVersionProvider.AppendFileVersion(httpContextAccessor?.HttpContext?.Request.PathBase ?? PathString.Empty, Src) 
                 : Src;
     }
 }

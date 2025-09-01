@@ -7,8 +7,8 @@ public partial class Link
     [Parameter(CaptureUnmatchedValues = true)] 
     public Dictionary<string, object> AdditionalAttributes { get; set; } = default!;
 
+    [Parameter] public string Href { get; set; } = "";
     [Parameter] public bool AppendVersion { get; set; } = true;
-    [Parameter] public required string Href { get; set; } = "";
 
 
 
@@ -25,7 +25,7 @@ public partial class Link
     {
         base.OnInitialized();
         href = (Href is not null && AppendVersion) 
-                ? bitFileVersionProvider.AppendFileVersion(httpContextAccessor.HttpContext!.Request.PathBase, Href) 
+                ? bitFileVersionProvider.AppendFileVersion(httpContextAccessor?.HttpContext?.Request.PathBase ?? PathString.Empty, Href) 
                 : Href;
     }
 }
