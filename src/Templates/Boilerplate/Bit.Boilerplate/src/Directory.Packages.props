@@ -11,7 +11,7 @@
         <PackageVersion Include="Bit.CodeAnalyzers" Version="9.11.4-pre-02" />
         <PackageVersion Include="Bit.SourceGenerators" Version="9.11.4-pre-02" />
         <PackageVersion Include="Fido2.AspNet" Version="4.0.0" />
-        <PackageVersion Include="Fido2.Models" Version="4.0.0-beta.17" />
+        <PackageVersion Include="Fido2.Models" Version="4.0.0" />
         <PackageVersion Include="HtmlSanitizer" Version="9.0.886" />
         <PackageVersion Include="libphonenumber-csharp" Version="9.0.13" />
         <PackageVersion Include="Meziantou.Framework.Win32.Jobs" Version="3.4.3" />

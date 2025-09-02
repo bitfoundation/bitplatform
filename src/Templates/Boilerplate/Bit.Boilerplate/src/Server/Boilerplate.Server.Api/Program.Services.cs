@@ -179,7 +179,7 @@ public static partial class Program
                       .AllowAnyHeader()
                       .AllowAnyMethod()
                       .WithExposedHeaders(HeaderNames.RequestId, 
-                            "Age", "App-Cache-Response", "X-App-Platform", "X-App-Version", "X-Origin");
+                            HeaderNames.Age, "App-Cache-Response", "X-App-Platform", "X-App-Version", "X-Origin");
             });
         });
 
