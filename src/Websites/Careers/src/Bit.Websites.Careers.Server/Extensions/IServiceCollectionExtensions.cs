@@ -27,8 +27,6 @@ public static class IServiceCollectionExtensions
         services.AddRazorComponents()
             .AddInteractiveServerComponents()
             .AddInteractiveWebAssemblyComponents();
-
-        services.AddMvc();
     }
 
     public static void AddSwaggerGen(this IServiceCollection services)

@@ -178,7 +178,8 @@ public static partial class Program
                 policy.SetIsOriginAllowed(origin => Uri.TryCreate(origin, UriKind.Absolute, out var uri) && settings.IsTrustedOrigin(uri))
                       .AllowAnyHeader()
                       .AllowAnyMethod()
-                      .WithExposedHeaders(HeaderNames.RequestId, "Age", "App-Cache-Response");
+                      .WithExposedHeaders(HeaderNames.RequestId, 
+                            HeaderNames.Age, "App-Cache-Response", "X-App-Platform", "X-App-Version", "X-Origin");
             });
         });
 

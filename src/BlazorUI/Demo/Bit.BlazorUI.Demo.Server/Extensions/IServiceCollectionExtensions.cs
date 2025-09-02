@@ -27,8 +27,6 @@ public static class IServiceCollectionExtensions
             .AddInteractiveServerComponents()
             .AddInteractiveWebAssemblyComponents();
 
-        services.AddMvc();
-
         services.AddClientWebServices();
     }
 

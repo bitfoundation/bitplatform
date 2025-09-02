@@ -10,10 +10,10 @@
         <PackageVersion Include="Bit.Bswup" Version="9.11.4-pre-02" />
         <PackageVersion Include="Bit.CodeAnalyzers" Version="9.11.4-pre-02" />
         <PackageVersion Include="Bit.SourceGenerators" Version="9.11.4-pre-02" />
-        <PackageVersion Include="Fido2.AspNet" Version="4.0.0-beta.17" />
-        <PackageVersion Include="Fido2.Models" Version="4.0.0-beta.17" />
+        <PackageVersion Include="Fido2.AspNet" Version="4.0.0" />
+        <PackageVersion Include="Fido2.Models" Version="4.0.0" />
         <PackageVersion Include="HtmlSanitizer" Version="9.0.886" />
-        <PackageVersion Include="libphonenumber-csharp" Version="9.0.12" />
+        <PackageVersion Include="libphonenumber-csharp" Version="9.0.13" />
         <PackageVersion Include="Meziantou.Framework.Win32.Jobs" Version="3.4.3" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.8" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.8" />
@@ -52,11 +52,11 @@
         <!--/+:msbuild-conditional:noEmit -->
         <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.AppHost" Version="9.4.1" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Aspire.Hosting.SqlServer" Version="9.4.1" />
-        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="CommunityToolkit.Aspire.Hosting.SqlServer.Extensions" Version="9.7.1" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="CommunityToolkit.Aspire.Hosting.SqlServer.Extensions" Version="9.7.2" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Aspire.Hosting.PostgreSQL" Version="9.4.1" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'MySql' OR '$(database)' == '') " Include="Aspire.Hosting.MySql" Version="9.4.1" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '') " Include="Aspire.Hosting.Azure.Storage" Version="9.4.1" />
-        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(filesStorage)' == 'S3' OR '$(filesStorage)' == '') " Include="CommunityToolkit.Aspire.Hosting.Minio" Version="9.7.1" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(filesStorage)' == 'S3' OR '$(filesStorage)' == '') " Include="CommunityToolkit.Aspire.Hosting.Minio" Version="9.7.2" />
         <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.8.0" />
         <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="9.4.1" />
         <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.12.0" />
@@ -96,7 +96,7 @@
         <!--/-:msbuild-conditional:noEmit -->
         <PackageVersion Include="Humanizer" Version="2.14.1" />
         <PackageVersion Include="QRCoder" Version="1.6.0" />
-        <PackageVersion Include="Magick.NET-Q16-AnyCPU" Version="14.8.1" />
+        <PackageVersion Include="Magick.NET-Q16-AnyCPU" Version="14.8.2" />
         <PackageVersion Include="FluentEmail.Smtp" Version="3.0.2" />
         <PackageVersion Include="FluentStorage" Version="5.6.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.8" />
@@ -107,14 +107,14 @@
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.8" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.8" />
         <PackageVersion Include="Swashbuckle.AspNetCore" Version="9.0.4" />
-        <PackageVersion Include="Microsoft.Identity.Web" Version="3.13.2" />
+        <PackageVersion Include="Microsoft.Identity.Web" Version="3.14.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.8" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="9.0.8" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Facebook" Version="9.0.8" />
         <PackageVersion Include="AspNet.Security.OAuth.Apple" Version="9.4.0" />
         <PackageVersion Include="AspNet.Security.OAuth.GitHub" Version="9.4.0" />
         <PackageVersion Include="Riok.Mapperly" Version="4.2.1" />
-        <PackageVersion Include="Twilio" Version="7.12.1" />
+        <PackageVersion Include="Twilio" Version="7.12.2" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.8" />
         <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="9.0.8" />
         <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.8" />
