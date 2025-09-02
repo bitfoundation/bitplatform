@@ -10,7 +10,7 @@ public partial class ChatbotController : AppControllerBase, IChatbotController
 {
     [HttpGet]
     [EnableQuery]
-    public IQueryable<SystemPromptDto> GetSystemPrompts(CancellationToken cancellationToken)
+    public IQueryable<SystemPromptDto> GetSystemPrompts()
     {
         return DbContext.SystemPrompts
             .Project();
