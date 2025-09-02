@@ -25,6 +25,9 @@
     <HeadOutlet @rendermode=renderMode />
     <Link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
     <Link rel="manifest" href="manifest.json" />
+
+    <Preload Href="_framework/dotnet.js" As="script" Type="text/javascript" />
+    <Preload Href="_framework/blazor.boot.json" As="fetch" Type="application/json" />
 </head>
 
 <body class="@BitCss.Class.Color.Background.Primary @BitCss.Class.Color.Foreground.Primary bit-blazor-web">
