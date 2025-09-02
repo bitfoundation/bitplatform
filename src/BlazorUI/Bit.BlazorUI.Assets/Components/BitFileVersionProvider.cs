@@ -8,7 +8,7 @@ namespace Bit.BlazorUI;
 
 public static class BitFileVersionProvider
 {
-    private static readonly ConcurrentDictionary<string, string> _pathsCache = new();
+    private static readonly ConcurrentDictionary<string, string> PathCache = new();
 
 
 
@@ -31,7 +31,7 @@ public static class BitFileVersionProvider
             return path;
         }
 
-        return _pathsCache.GetOrAdd(path, _ => GenerateVersionedPath(fileProvider, requestPathBase, path, versionKey, resolvedPath));
+        return PathCache.GetOrAdd(path, _ => GenerateVersionedPath(fileProvider, requestPathBase, path, versionKey, resolvedPath));
     }
 
 
