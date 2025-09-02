@@ -380,13 +380,23 @@ function createCacheUrl(asset: any) {
     return asset.hash ? `${asset.url}.${asset.hash}` : asset.url;
 }
 
-function createNewAssetRequest(asset) {
-    let assetUrl;
+function createNewAssetRequest(asset: any) {
+    const version = ((asset.hash || self.assetsManifest.version) as string).replaceAll('+', '-').replaceAll('/', '_');
+    const trimmedVersion = encodeURIComponent(trimEnd(version, '='));
+
+    //let assetUrl = `${asset.url}?v=${trimmedVersion}`;
+    //if (asset.url === DEFAULT_URL && self.noPrerenderQuery) {
+    //    assetUrl += `&${self.noPrerenderQuery}`;
+    //}
+
+    const url = new URL(asset.url, self.location.origin);
+    url.searchParams.set('v', trimmedVersion);
     if (asset.url === DEFAULT_URL && self.noPrerenderQuery) {
-        assetUrl = `${asset.url}?v=${asset.hash || self.assetsManifest.version}&${self.noPrerenderQuery}`;
-    } else {
-        assetUrl = `${asset.url}?v=${asset.hash || self.assetsManifest.version}`;
+        new URLSearchParams(String(self.noPrerenderQuery)).forEach((value, key) => url.searchParams.set(key, value));
     }
+
+    const assetUrl = url.toString();
+
     const requestInit: RequestInit = asset.hash && asset.hash.startsWith('sha') && self.enableIntegrityCheck
         ? { cache: 'no-store', integrity: asset.hash, headers: [['cache-control', 'public, max-age=3153600']] }
         : { cache: 'no-store', headers: [['cache-control', 'public, max-age=3153600']] };
@@ -438,6 +448,11 @@ function prepareExternalAssetsArray(value) {
 
 function prepareRegExpArray(value) {
     return value ? (value instanceof Array ? value : [value]).filter(p => p instanceof RegExp) : [];
+}
+
+function trimEnd(str: string, char: string) {
+    const escaped = char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // escape regex special chars
+    return str.replace(new RegExp(`${escaped}+$`), "");
 }
 
 function diagGroup(label: string) {
