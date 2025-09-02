@@ -87,13 +87,15 @@ public class BitMarkdownService(IJSRuntime js, IServiceProvider serviceProvider)
 
             var fileInfo = env.WebRootFileProvider.GetFileInfo(MARKED_FILE);
 
-            if (File.Exists(fileInfo.PhysicalPath) is false)
+            if (fileInfo.Exists is false)
             {
                 Console.Error.WriteLine("Could not find the marked js script file.");
                 return _markedScriptContent = string.Empty;
             }
 
-            return _markedScriptContent = await File.ReadAllTextAsync(fileInfo.PhysicalPath, cancellationToken);
+            using var stream = fileInfo.CreateReadStream();
+            using var reader = new StreamReader(stream, detectEncodingFromByteOrderMarks: true);
+            return _markedScriptContent = await reader.ReadToEndAsync(cancellationToken);
         }
         finally
         {
