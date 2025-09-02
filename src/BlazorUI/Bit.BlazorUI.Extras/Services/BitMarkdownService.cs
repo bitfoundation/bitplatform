@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using Microsoft.Extensions.DependencyInjection;
 using Jint;
 
 namespace Bit.BlazorUI;
@@ -6,14 +7,14 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// A utility service to parse Markdown texts into html strings. Works smoothly in both server and client.
 /// </summary>
-public class BitMarkdownService(IJSRuntime js)
+public class BitMarkdownService(IJSRuntime js, IServiceProvider serviceProvider)
 {
-    private const string MARKED_FILE = "marked/marked-15.0.7.js";
+    private const string MARKED_FILE = "_content/Bit.BlazorUI.Extras/marked/marked-15.0.7.js";
 
 
 
-    private static string? _markedScriptText;
-    private static readonly SemaphoreSlim _markedScriptReadTextSemaphore = new(1, 1);
+    private static string? _markedScriptContent;
+    private static readonly SemaphoreSlim _markedScriptReadSemaphore = new(1, 1);
 
 
 
@@ -27,11 +28,11 @@ public class BitMarkdownService(IJSRuntime js)
         {
             try
             {
-                html = await Task.Run(async () => await RuntJint(markdown, cancellationToken), cancellationToken);
+                html = await Task.Run(async () => await RunJint(markdown, cancellationToken), cancellationToken);
             }
             catch (FileNotFoundException ex) when (ex.FileName?.StartsWith("Jint") is true)
             {
-                Console.Error.WriteLine("Please install `Jint` nuget package on the server project.");
+                Console.Error.WriteLine("Please install `Jint` NuGet package on the server project.");
             }
             catch (Exception ex)
             {
@@ -40,10 +41,9 @@ public class BitMarkdownService(IJSRuntime js)
         }
         else // client
         {
-            var scriptPath = "_content/Bit.BlazorUI.Extras/marked/marked-15.0.7.js";
-            if ((await js.BitMarkdownViewerCheckScriptLoaded(scriptPath)) is false)
+            if ((await js.BitMarkdownViewerCheckScriptLoaded(MARKED_FILE)) is false)
             {
-                await js.BitExtrasInitScripts([scriptPath]);
+                await js.BitExtrasInitScripts([MARKED_FILE]);
             }
 
             html = await js.BitMarkdownViewerParse(markdown!);
@@ -54,53 +54,50 @@ public class BitMarkdownService(IJSRuntime js)
 
 
 
-    private static async Task<string> RuntJint(string? markdown, CancellationToken cancellationToken)
+    private async Task<string> RunJint(string? markdown, CancellationToken cancellationToken)
     {
         if (markdown.HasNoValue()) return string.Empty;
 
-        await ReadMarkedScriptText(cancellationToken);
-        if (_markedScriptText.HasNoValue()) return string.Empty;
+        await ReadMarkedScriptContent(cancellationToken);
+        if (_markedScriptContent.HasNoValue()) return string.Empty;
 
         using var engine = new Engine(options =>
         {
             options.Strict();
             options.CancellationToken(cancellationToken);
             options.Culture(CultureInfo.CurrentUICulture);
-        }).Execute(_markedScriptText!);
+        }).Execute(_markedScriptContent!);
 
         var fn = engine.Evaluate("marked.parse").AsFunctionInstance();
 
         return fn.Call(markdown).AsString();
     }
 
-    private static async Task<string> ReadMarkedScriptText(CancellationToken cancellationToken)
+    private async Task<string> ReadMarkedScriptContent(CancellationToken cancellationToken)
     {
-        if (_markedScriptText is not null) return _markedScriptText;
+        if (_markedScriptContent is not null) return _markedScriptContent;
 
         try
         {
-            await _markedScriptReadTextSemaphore.WaitAsync(cancellationToken);
-            if (_markedScriptText is not null) return _markedScriptText;
+            await _markedScriptReadSemaphore.WaitAsync(cancellationToken);
 
-            //TODO: this script path discovery needs improvement!
-            var scriptPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "_content", "Bit.BlazorUI.Extras", MARKED_FILE);
+            if (_markedScriptContent is not null) return _markedScriptContent;
 
-            if (File.Exists(scriptPath) is false)
+            var env = serviceProvider.GetRequiredService<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>();
+
+            var fileInfo = env.WebRootFileProvider.GetFileInfo(MARKED_FILE);
+
+            if (File.Exists(fileInfo.PhysicalPath) is false)
             {
-                scriptPath = Path.Combine(AppContext.BaseDirectory, "wwwroot", MARKED_FILE);
+                Console.Error.WriteLine("Could not find the marked js script file.");
+                return _markedScriptContent = string.Empty;
             }
 
-            if (File.Exists(scriptPath) is false)
-            {
-                Console.Error.WriteLine("Could not find the marked js script file!");
-                return _markedScriptText = string.Empty;
-            }
-
-            return _markedScriptText = await File.ReadAllTextAsync(scriptPath, cancellationToken);
+            return _markedScriptContent = await File.ReadAllTextAsync(fileInfo.PhysicalPath, cancellationToken);
         }
         finally
         {
-            _markedScriptReadTextSemaphore.Release();
+            _markedScriptReadSemaphore.Release();
         }
     }
 }
