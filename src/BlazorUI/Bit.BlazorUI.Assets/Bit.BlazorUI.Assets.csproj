@@ -22,9 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" PrivateAssets="all" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.Extensions.FileProviders.Abstractions" Version="8.0.0" PrivateAssets="all" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.Extensions.FileProviders.Abstractions" Version="9.0.0" PrivateAssets="all" />
+        <FrameworkReference Include="Microsoft.AspNetCore.App" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>

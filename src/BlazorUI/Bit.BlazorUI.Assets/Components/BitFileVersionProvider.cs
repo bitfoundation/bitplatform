@@ -1,13 +1,18 @@
 ﻿using System.Text;
 using System.Security.Cryptography;
+using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
 
 namespace Bit.BlazorUI;
 
-public class BitFileVersionProvider(IFileProvider fileProvider)
+public static class BitFileVersionProvider
 {
-    public string AppendFileVersion(PathString requestPathBase, string path, string versionKey = "v")
+    private static readonly ConcurrentDictionary<string, string> _versionCache = new();
+
+
+
+    public static string AppendFileVersion(IFileProvider fileProvider, PathString requestPathBase, string path, string versionKey = "v")
     {
         if (string.IsNullOrEmpty(path))
             throw new ArgumentNullException(nameof(path));
@@ -26,23 +31,27 @@ public class BitFileVersionProvider(IFileProvider fileProvider)
             return path;
         }
 
-
-        var fileInfo = fileProvider.GetFileInfo(resolvedPath);
-
-        if (fileInfo.Exists is false &&
-            requestPathBase.HasValue &&
-            resolvedPath.StartsWith(requestPathBase.Value, StringComparison.OrdinalIgnoreCase))
+        return _versionCache.GetOrAdd(path, _ =>
         {
-            var requestPathBaseRelativePath = resolvedPath[requestPathBase.Value.Length..];
-            fileInfo = fileProvider.GetFileInfo(requestPathBaseRelativePath);
-        }
+            var fileInfo = fileProvider.GetFileInfo(resolvedPath);
 
-        if (fileInfo.Exists is false) return path;
+            if (fileInfo.Exists is false &&
+                requestPathBase.HasValue &&
+                resolvedPath.StartsWith(requestPathBase.Value, StringComparison.OrdinalIgnoreCase))
+            {
+                var requestPathBaseRelativePath = resolvedPath[requestPathBase.Value.Length..];
+                fileInfo = fileProvider.GetFileInfo(requestPathBaseRelativePath);
+            }
 
-        var hash = GetFileHash(fileInfo);
+            if (fileInfo.Exists is false) return path;
 
-        return AddQueryString(path, versionKey, Uri.EscapeDataString(hash));
+            var hash = GetFileHash(fileInfo);
+
+            return AddQueryString(path, versionKey, Uri.EscapeDataString(hash));
+        });
     }
+
+
 
     private static string GetFileHash(IFileInfo fileInfo)
     {
@@ -50,10 +59,7 @@ public class BitFileVersionProvider(IFileProvider fileProvider)
 
         var bytes = SHA256.HashData(readStream);
 
-        return Convert.ToBase64String(bytes)
-                      .TrimEnd('=')
-                      .Replace('+', '-')
-                      .Replace('/', '_');
+        return $"sha256-{Convert.ToBase64String(bytes)}";
     }
 
     private static string AddQueryString(string uri, string key, string value)

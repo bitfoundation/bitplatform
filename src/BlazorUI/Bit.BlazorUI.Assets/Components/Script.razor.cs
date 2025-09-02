@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Bit.BlazorUI;
 
@@ -13,8 +14,8 @@ public partial class Script
 
 
 
+    [Inject] private IWebHostEnvironment webHost { get; set; } = default!;
     [Inject] private IHttpContextAccessor httpContextAccessor { get; set; } = default!;
-    [Inject] private BitFileVersionProvider bitFileVersionProvider { get; set; } = default!;
 
 
 
@@ -27,7 +28,7 @@ public partial class Script
         base.OnInitialized();
 
         src = (Src is not null && AppendVersion)
-                ? bitFileVersionProvider.AppendFileVersion(httpContextAccessor?.HttpContext?.Request.PathBase ?? PathString.Empty, Src) 
+                ? BitFileVersionProvider.AppendFileVersion(webHost.WebRootFileProvider, httpContextAccessor?.HttpContext?.Request.PathBase ?? PathString.Empty, Src) 
                 : Src;
     }
 }

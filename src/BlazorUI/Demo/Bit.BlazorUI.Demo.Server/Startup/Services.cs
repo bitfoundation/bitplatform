@@ -19,7 +19,6 @@ public static class Services
         services.AddBlazor(configuration);
 
         services.AddClientSharedServices();
-        services.AddBitBlazorUIAssetsServices(env.WebRootFileProvider);
 
         services.AddCors();
 
