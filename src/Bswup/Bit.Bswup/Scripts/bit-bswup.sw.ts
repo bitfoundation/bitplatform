@@ -131,8 +131,8 @@ diag('ASSETS_INCLUDE:', ASSETS_INCLUDE);
 diag('ASSETS_EXCLUDE:', ASSETS_EXCLUDE);
 
 const ALL_ASSETS = self.assetsManifest.assets
-    .filter(asset => ASSETS_INCLUDE.some(pattern => pattern.test(asset.url)))
-    .filter(asset => !ASSETS_EXCLUDE.some(pattern => pattern.test(asset.url)))
+    .filter((asset: any) => ASSETS_INCLUDE.some(pattern => pattern.test(asset.url)))
+    .filter((asset: any) => !ASSETS_EXCLUDE.some(pattern => pattern.test(asset.url)))
     .concat(EXTERNAL_ASSETS);
 
 diag('ALL_ASSETS:', ALL_ASSETS);
@@ -212,7 +212,7 @@ async function handleFetch(e: any) {
     return response;
 }
 
-function handleMessage(e: MessageEvent<any>) {
+function handleMessage(e: MessageEvent<string>) {
     diag('handleMessage:', e);
 
     if (e.data === 'SKIP_WAITING') {
