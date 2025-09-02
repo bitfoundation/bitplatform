@@ -25,8 +25,16 @@ public partial class RequestHeadersDelegatingHandler(ITelemetryContext telemetry
             request.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(CultureInfo.CurrentUICulture.Name));
         }
 
-        request.Headers.Add("X-App-Version", telemetryContext.AppVersion);
-        request.Headers.Add("X-App-Platform", AppPlatform.Type.ToString());
+        var isInternalRequest = request.HasExternalApiAttribute() is false;
+        if (isInternalRequest)
+        {
+            request.Headers.Add("X-App-Version", telemetryContext.AppVersion);
+            request.Headers.Add("X-App-Platform", AppPlatform.Type.ToString());
+        }
+        else
+        {
+            request.Headers.Remove("X-Origin"); // It gets added by default in Program.Services.cs of Client projects and it might be prompted by some external APIs due CORS limitations.
+        }
 
         return await base.SendAsync(request, cancellationToken);
     }

@@ -139,7 +139,5 @@ public static partial class Program
         services.AddRazorComponents()
             .AddInteractiveServerComponents()
             .AddInteractiveWebAssemblyComponents();
-
-        services.AddMvc();
     }
 }
