@@ -11,19 +11,28 @@
     {
         <BitEllipsisLoading CustomSize="32" />
     }
-    else if (systemPrompt is not null)
+    else if (systemPrompts is not null)
     {
-        <BitSticky Top="5rem" Style="margin-bottom:8px">
-            <BitButton IconName="@BitIconName.Save" OnClick="WrapHandled(SaveChanges)" AutoLoading>
-            @Localizer[nameof(AppStrings.Save)]
-            </BitButton>
-        </BitSticky>
+        <BitPivot>
 
-        <BitStack VerticalAlign="BitAlignment.Stretch" Horizontal>
-            <AuthorizeView Policy="@AppFeatures.Management.ManageAiPrompt">
-                <BitMarkdownEditor @bind-Value="systemPrompt.Markdown" Class="md-editor" />
-            </AuthorizeView>
-            <BitMarkdownViewer Markdown="@systemPrompt.Markdown" Class="md-viewer" />
-        </BitStack>
+            @foreach (var systemPrompt in systemPrompts)
+            {
+                <BitPivotItem HeaderText="@systemPrompt.PromptKind.ToString()">
+                    <BitSticky Top="5rem" Style="margin-bottom:8px">
+                        <BitButton IconName="@BitIconName.Save" OnClick="WrapHandled(() => SaveChanges(systemPrompt))" AutoLoading>
+                            @Localizer[nameof(AppStrings.Save)]
+                        </BitButton>
+                    </BitSticky>
+
+                    <BitStack VerticalAlign="BitAlignment.Stretch" Horizontal>
+                        <AuthorizeView Policy="@AppFeatures.Management.ManageAiPrompt">
+                            <BitMarkdownEditor @bind-Value="systemPrompt.Markdown" Class="md-editor" />
+                        </AuthorizeView>
+                        <BitMarkdownViewer Markdown="@systemPrompt.Markdown" Class="md-viewer" />
+                    </BitStack>
+                </BitPivotItem>
+            }
+
+        </BitPivot>
     }
 </section>
