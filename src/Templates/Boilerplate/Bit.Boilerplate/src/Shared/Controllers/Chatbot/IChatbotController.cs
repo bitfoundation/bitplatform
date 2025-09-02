@@ -6,7 +6,7 @@ namespace Boilerplate.Shared.Controllers.Chatbot;
 [Route("api/[controller]/[action]/")]
 public interface IChatbotController : IAppController
 {
-    [HttpGet("{kind}")]
+    [HttpGet]
     Task<List<SystemPromptDto>> GetSystemPrompts(CancellationToken cancellationToken) => default!;
 
     [HttpPost]
