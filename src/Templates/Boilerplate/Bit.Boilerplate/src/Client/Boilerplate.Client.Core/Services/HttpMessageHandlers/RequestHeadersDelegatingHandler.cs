@@ -33,7 +33,7 @@ public partial class RequestHeadersDelegatingHandler(ITelemetryContext telemetry
         }
         else
         {
-            request.Headers.Remove("X-Origin"); // It gets added by default in Program.Services.cs of Client projects and it might be prompted by some external APIs due CORS limitations.
+            request.Headers.Remove("X-Origin"); // It gets added by default in Program.Services.cs of Client projects and it might be rejected by some external APIs due to CORS limitations.
         }
 
         return await base.SendAsync(request, cancellationToken);
