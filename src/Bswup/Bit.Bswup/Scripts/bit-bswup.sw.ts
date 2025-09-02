@@ -384,11 +384,18 @@ function createNewAssetRequest(asset: any) {
     const version = ((asset.hash || self.assetsManifest.version) as string).replaceAll('+', '-').replaceAll('/', '_');
     const trimmedVersion = encodeURIComponent(trimEnd(version, '='));
 
-    let assetUrl = `${asset.url}?v=${trimmedVersion}`;
+    //let assetUrl = `${asset.url}?v=${trimmedVersion}`;
+    //if (asset.url === DEFAULT_URL && self.noPrerenderQuery) {
+    //    assetUrl += `&${self.noPrerenderQuery}`;
+    //}
 
+    const url = new URL(asset.url, self.location.origin);
+    url.searchParams.set('v', trimmedVersion);
     if (asset.url === DEFAULT_URL && self.noPrerenderQuery) {
-        assetUrl += `&${self.noPrerenderQuery}`;
+        new URLSearchParams(String(self.noPrerenderQuery)).forEach((value, key) => url.searchParams.set(key, value));
     }
+
+    const assetUrl = url.toString();
 
     const requestInit: RequestInit = asset.hash && asset.hash.startsWith('sha') && self.enableIntegrityCheck
         ? { cache: 'no-store', integrity: asset.hash, headers: [['cache-control', 'public, max-age=3153600']] }
