@@ -26,6 +26,7 @@ interface Window {
     enableFetchDiagnostics: any
     disableHashlessAssetsUpdate: any
     forcePrerender: any
+    enableCacheControl: any
 
     prerenderMode: any
 }
@@ -397,9 +398,14 @@ function createNewAssetRequest(asset: any) {
 
     const assetUrl = url.toString();
 
-    const requestInit: RequestInit = asset.hash && asset.hash.startsWith('sha') && self.enableIntegrityCheck
-        ? { cache: 'no-store', integrity: asset.hash, headers: [['cache-control', 'public, max-age=3153600']] }
-        : { cache: 'no-store', headers: [['cache-control', 'public, max-age=3153600']] };
+    const requestInit: RequestInit = {};
+    if (asset.hash?.startsWith('sha') && self.enableIntegrityCheck) {
+        requestInit.integrity = asset.hash;
+    }
+    if (self.enableCacheControl) {
+        requestInit.cache = 'no-store';
+        requestInit.headers = [['cache-control', 'public, max-age=3153600']];
+    }
 
     return new Request(assetUrl, requestInit);
 }
