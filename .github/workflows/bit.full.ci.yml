@@ -16,15 +16,15 @@ jobs:
     steps:
 
     - name: Checkout source code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
         global-json-file: src/global.json
 
     - name: Setup .NET 8
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: |
           8.0.x
@@ -58,7 +58,7 @@ jobs:
         dotnet new bit-bp --name SimpleTest --database Sqlite
         cd SimpleTest/src/Server/SimpleTest.Server.Api/
         dotnet tool restore
-        dotnet ef migrations add InitialMigration --verbose
+        dotnet ef migrations add Initial --verbose
         dotnet ef database update
         cd ../../Tests
         dotnet build
@@ -79,7 +79,7 @@ jobs:
         dotnet new bit-bp --name TestSqlServer --database SqlServer
         cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
         dotnet tool restore
-        dotnet ef migrations add InitialMigration --verbose
+        dotnet ef migrations add Initial --verbose
         dotnet ef database update
         cd ../../Tests
         dotnet build
