@@ -21,6 +21,7 @@ self.serverHandledUrls = [
 ];
 
 self.prerenderMode = 'always';
+self.enableCacheControl = false;
 self.enableIntegrityCheck = false;
 
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');

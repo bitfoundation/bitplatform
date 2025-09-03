@@ -7,15 +7,18 @@
     <meta name="theme-color">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="The Bit.Websites.Careers is built with ASP.NET Core, Identity, Web API, and EF Core for the server-side, and Blazor for the client-side. It allows you to build a multi-mode Web applications from a single codebase." />
-    <Link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <Link rel="icon" Href="/favicon.ico" type="image/x-icon" />
     <HeadOutlet @rendermode=RenderModeProvider.Current />
-    <Link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
-    <Link rel="manifest" href="manifest.json" />
-    <Link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
-    <Link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
-    <Link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
-    <Link rel="stylesheet" href="styles/app.css" />
-    <Link rel="stylesheet" href="Bit.Websites.Careers.Client.bundle.scp.css" />
+    <Link rel="apple-touch-icon" sizes="512x512" Href="images/icons/bit-icon-512.png" />
+    <Link rel="manifest" Href="manifest.json" />
+    <Link rel="stylesheet" Href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
+    <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
+    <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
+    <Link rel="stylesheet" Href="styles/app.css" />
+    <Link rel="stylesheet" Href="Bit.Websites.Careers.Client.bundle.scp.css" />
+
+    <Link rel="preload" Href="_framework/dotnet.js" as="script" type="text/javascript" />
+    <Link rel="preload" Href="_framework/blazor.boot.json" as="fetch" type="application/json" />
 </head>
 
 <body class="bit-blazor-web">
@@ -26,10 +29,10 @@
     {
         <Script Src="_content/Bit.BlazorES2019/blazor.web.js" autostart="false"></Script>
         <Script Src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_content/Bit.BlazorES2019/blazor.web.js"></Script>
-        <Script src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
+        <Script Src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
         <AppBswupProgressBar />
-        <Script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
-        <Script src="scripts/app.js"></Script>
+        <Script Src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
+        <Script Src="scripts/app.js"></Script>
     }
 </body>
 
