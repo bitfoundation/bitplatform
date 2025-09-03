@@ -20,6 +20,8 @@ self.serverHandledUrls = [
     /\/api.fda.gov/
 ];
 
+self.enableCacheControl = false;
+
 self.prerenderMode = 'always';
 self.enableIntegrityCheck = false;
 
