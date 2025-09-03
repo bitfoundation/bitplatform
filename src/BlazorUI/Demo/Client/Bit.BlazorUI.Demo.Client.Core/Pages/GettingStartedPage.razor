@@ -132,8 +132,54 @@
             <CodeBox>&lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js?v=@@Bit.BlazorUI.Info.Version">&lt;/script></CodeBox>
             <b>Note</b>: You can only use this feature in the <BitTag Color="BitColor.TertiaryBackground">App.razor</BitTag> file, 
             for other root files (like index.html in a WASM standalone project) you have to apply another solution, 
-            for example manually adding the version query string to the resrouce URLs.
+            for example manually adding the version query string to the resource URLs.
         </BitText>
+
+        <br />
+
+        <BitAccordion Title="Optional components">
+            <BitText Typography="BitTypography.Body1">
+                <b>Automatic Resource Fingerprinting</b>
+                <br/>
+                The <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Assets/" Target="_blank">Bit.BlazorUI.Assets</BitLink> package provides two 
+                standalone components designed for automatic resource fingerprinting in the <BitTag Color="BitColor.TertiaryBackground">App.razor</BitTag> file:
+            </BitText>
+
+            <br /><br />
+
+            <BitText Typography="BitTypography.Body1">
+                <b>Script</b>: A drop-in replacement for the standard HTML <BitTag Color="BitColor.TertiaryBackground">&lt;script></BitTag> tag.
+                It automatically fingerprints the resource URL (<BitTag Color="BitColor.TertiaryBackground">src</BitTag> attribute) by 
+                calculating a hash from the actual file content, ensuring reliable cache busting and versioning.
+            </BitText>
+            <CodeBox>&lt;Script Src="_content/Bit.BlazorUI/scripts/bit.blazorui.js">&lt;/Script></CodeBox>
+            <BitText Typography="BitTypography.Body1">
+                The result would be something like this:
+            </BitText>
+            <CodeBox>&lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js?v=sha256-Z5yBv0K89OBRVurhAVzatpp3aGXsNn00e3GzQiTq_Z4">&lt;/script></CodeBox>
+
+            <br /><br />
+
+            <BitText Typography="BitTypography.Body1">
+                <b>Link</b>: A direct replacement for the standard HTML <BitTag Color="BitColor.TertiaryBackground">&lt;Link></BitTag> tag.
+                It automatically fingerprints the resource URL (<BitTag Color="BitColor.TertiaryBackground">href</BitTag> attribute) by 
+                generating a hash from the actual file content, providing consistent cache busting and version management.
+            </BitText>
+            <CodeBox>&lt;Link Href="_content/Bit.BlazorUI/styles/bit.blazorui.css" rel="stylesheet" /></CodeBox>
+            <BitText Typography="BitTypography.Body1">
+                The result would be something like this:
+            </BitText>
+            <CodeBox>&ltlink href="_content/Bit.BlazorUI/styles/bit.blazorui.css?v=sha256-VI6BIGZLTtmyhn3V-4RH-Yyi0Ud3p0g5dHvByeaoZ9Y" rel="stylesheet"></CodeBox>
+            
+            <br /><br />
+            <BitText Typography="BitTypography.Body1">
+                <b>Note</b>: You can checkout the usages of these two components in our demo website project
+                <BitLink Target="_blank"
+                         Href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Components/App.razor">
+                    here
+                </BitLink>.
+            </BitText>
+        </BitAccordion>
     </section>
 
     <FeedbackSection Url="GettingStartedPage.razor" />
