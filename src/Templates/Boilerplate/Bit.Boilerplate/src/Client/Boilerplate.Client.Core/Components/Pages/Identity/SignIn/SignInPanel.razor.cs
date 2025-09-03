@@ -325,7 +325,7 @@ public partial class SignInPanel
 
             isOtpSent = true;
         }
-        catch (TooManyRequestsExceptions e)
+        catch (TooManyRequestsException e)
         {
             isOtpSent = true;
             SnackBarService.Error(e.Message);

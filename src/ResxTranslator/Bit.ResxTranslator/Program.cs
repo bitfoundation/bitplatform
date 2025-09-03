@@ -7,7 +7,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using System.Net;
-using System.Xml.Linq;
 using System.ClientModel.Primitives;
 
 using Azure.AI.Inference;
@@ -78,6 +77,8 @@ else
 {
     throw new InvalidOperationException("No OpenAI or Azure OpenAI API key provided.");
 }
+
+services.AddSingleton<IConfiguration>(configuration);
 
 await using var serviceProvider = services.BuildServiceProvider();
 

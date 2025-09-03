@@ -75,8 +75,6 @@ public static class WebApplicationBuilderExtensions
     {
         builder.ConfigureOpenTelemetry();
 
-        builder.AddDefaultHealthChecks();
-
         builder.Services.AddServiceDiscovery();
 
         builder.Services.ConfigureHttpClientDefaults(http =>
@@ -124,6 +122,8 @@ public static class WebApplicationBuilderExtensions
                 metrics.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation();
+
+                metrics.AddMeter(AppActivitySource.CurrentMeter.Name);
             })
             .WithTracing(tracing =>
             {
@@ -144,6 +144,8 @@ public static class WebApplicationBuilderExtensions
                     .AddHttpClientInstrumentation()
                     .AddEntityFrameworkCoreInstrumentation(options => options.Filter = (providerName, command) => command?.CommandText?.Contains("Hangfire") is false /* Ignore Hangfire */)
                     .AddHangfireInstrumentation();
+
+                tracing.AddSource(AppActivitySource.CurrentActivity.Name);
             })
             .ConfigureResource(resource =>
             {
@@ -187,13 +189,14 @@ public static class WebApplicationBuilderExtensions
         return builder;
     }
 
-    private static TBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder)
+    public static IHealthChecksBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder)
         where TBuilder : IHostApplicationBuilder
     {
-        builder.Services.AddHealthChecks()
-            // Add a default liveness check to ensure app is responsive
-            .AddCheck("self", () => HealthCheckResult.Healthy(), ["live"]);
+        builder.Services.AddOutputCache(configureOptions: static caching =>
+            caching.AddPolicy("HealthChecks",
+            build: static policy => policy.Expire(TimeSpan.FromSeconds(10))));
 
-        return builder;
+        return builder.Services.AddHealthChecks()
+            .AddDiskStorageHealthCheck(opt => opt.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory())!, minimumFreeMegabytes: 5 * 1024), tags: ["live"]);
     }
 }

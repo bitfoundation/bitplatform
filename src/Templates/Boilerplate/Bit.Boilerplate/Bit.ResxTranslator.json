@@ -8,6 +8,10 @@
 
     "ResxPaths": [ "/src/**/*.resx" ],
 
+    "ChatOptions": {
+        "Temperature": "0"
+    },
+
     "OpenAI": {
         "Model": "gpt-4.1-mini",
         "Endpoint": "https://models.inference.ai.azure.com",

@@ -1,6 +1,7 @@
 ﻿//+:cnd:noEmit
 using ImageMagick;
 using FluentStorage.Blobs;
+using System.Diagnostics.Metrics;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.SignalR;
@@ -31,6 +32,11 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     //#if (module == "Sales" || module == "Admin")
     [AutoInject] private ResponseCacheService responseCacheService = default!;
     //#endif
+
+    [AutoInject] private IConfiguration configuration = default!;
+
+    // For open telemetry metrics
+    private static readonly Histogram<double> updateResizeDurationHistogram = AppActivitySource.CurrentMeter.CreateHistogram<double>("attachment.resize_duration", "ms", "Elapsed time to resize and persist an uploaded image");
 
     [HttpPost]
     [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
@@ -183,6 +189,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
             if (imageResizeContext.NeedsResize)
             {
+                Stopwatch stopwatch = Stopwatch.StartNew();
                 using MagickImage sourceImage = new(file.OpenReadStream());
 
                 if (sourceImage.Width < imageResizeContext.Width || sourceImage.Height < imageResizeContext.Height)
@@ -191,6 +198,8 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                 sourceImage.Resize(new MagickGeometry(imageResizeContext.Width, imageResizeContext.Height));
 
                 await blobStorage.WriteAsync(attachment.Path, imageBytes = sourceImage.ToByteArray(MagickFormat.WebP), cancellationToken: cancellationToken);
+
+                updateResizeDurationHistogram.Record(stopwatch.Elapsed.TotalMilliseconds, new KeyValuePair<string, object?>("kind", kind.ToString()));
             }
             else
             {
@@ -206,6 +215,17 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                 //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
                 if (serviceProvider.GetService<IChatClient>() is IChatClient chatClient)
                 {
+                    ChatOptions chatOptions = new()
+                    {
+                        ResponseFormat = ChatResponseFormat.Json,
+                        AdditionalProperties = new()
+                        {
+                            ["response_format"] = new { type = "json_object" }
+                        }
+                    };
+
+                    configuration.GetRequiredSection("AI:ChatOptions").Bind(chatOptions);
+
                     var response = await chatClient.GetResponseAsync<AIImageReviewResponse>(
                         messages: [
                             new ChatMessage(ChatRole.System, "Return a JSON object with two properties: 'isCar' (boolean, true if the image contains a car, false otherwise) and 'alt' (string, describing the image content). Do not include any other properties or text."),
@@ -215,15 +235,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                             }
                         ],
                         cancellationToken: cancellationToken,
-                        options: new()
-                        {
-                            Temperature = 0,
-                            ResponseFormat = ChatResponseFormat.Json,
-                            AdditionalProperties = new()
-                            {
-                                ["response_format"] = new { type = "json_object" }
-                            }
-                        });
+                        options: chatOptions);
 
                     if (response.Result.IsCar is false)
                     {

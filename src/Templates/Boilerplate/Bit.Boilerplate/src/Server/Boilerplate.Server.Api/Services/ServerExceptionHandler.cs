@@ -51,7 +51,7 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
             { "ActivityId", Activity.Current?.Id },
             { "ParentActivityId", Activity.Current?.ParentId },
             { "ServerAppSessionId", appSessionId },
-            { "AppVersion", typeof(ServerExceptionHandler).Assembly.GetName().Version },
+            { "ServerAppVersion", typeof(ServerExceptionHandler).Assembly.GetName().Version },
             { "Culture", CultureInfo.CurrentUICulture.Name },
             { "Environment", env.EnvironmentName },
             { "ServerDateTime", DateTimeOffset.UtcNow.ToString("u") },
@@ -66,6 +66,16 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
             {
                 traceIdentifier = httpContext.TraceIdentifier;
                 instance = $"{httpContext.Request.Method} {httpContext.Request.GetUri().PathAndQuery}";
+
+                if (httpContext.Request.Headers.TryGetValue("X-App-Version", out var appVersionHeaderValue) && appVersionHeaderValue.Any())
+                {
+                    data["ClientAppVersion"] = appVersionHeaderValue.Single();
+                }
+
+                if (httpContext.Request.Headers.TryGetValue("X-App-Platform", out var appPlatformHeaderValues) && appPlatformHeaderValues.Any())
+                {
+                    data["ClientAppPlatform"] = appPlatformHeaderValues.Single();
+                }
 
                 data["Instance"] = instance;
                 data["RequestId"] = httpContext.TraceIdentifier;

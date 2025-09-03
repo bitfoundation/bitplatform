@@ -9,10 +9,17 @@
 
 <section>
     <BitStack>
-        <BitButton IconName="@BitIconName.Add" ReversedIcon
-                   OnClick="CreateCategory">
-            @Localizer[nameof(AppStrings.AddCategory)]
-        </BitButton>
+        <BitStack Horizontal FitHeight>
+            <BitButton ReversedIcon
+                       OnClick="CreateCategory"
+                       IconName="@BitIconName.Add">
+                @Localizer[nameof(AppStrings.AddCategory)]
+            </BitButton>
+            @if (isLoading)
+            {
+                <BitSlickBarsLoading CustomSize="32" />
+            }
+        </BitStack>
         <BitStack Gap="0" FillContent>
             <div class="grid-container">
                 <BitDataGrid @ref="dataGrid"

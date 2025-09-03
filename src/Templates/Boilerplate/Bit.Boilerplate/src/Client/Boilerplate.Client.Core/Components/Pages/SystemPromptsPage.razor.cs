@@ -8,7 +8,7 @@ public partial class SystemPromptsPage
 {
     [AutoInject] private IChatbotController chatbotController = default!;
 
-    private SystemPromptDto? systemPrompt;
+    private List<SystemPromptDto>? systemPrompts;
 
     private bool isLoading = true;
 
@@ -18,7 +18,7 @@ public partial class SystemPromptsPage
 
         try
         {
-            systemPrompt = await chatbotController.GetSystemPrompt(PromptKind.Support, CurrentCancellationToken);
+            systemPrompts = await chatbotController.GetSystemPrompts(CurrentCancellationToken);
         }
         finally
         {
@@ -27,7 +27,7 @@ public partial class SystemPromptsPage
         }
     }
 
-    private async Task SaveChanges()
+    private async Task SaveChanges(SystemPromptDto systemPrompt)
     {
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken))
         {

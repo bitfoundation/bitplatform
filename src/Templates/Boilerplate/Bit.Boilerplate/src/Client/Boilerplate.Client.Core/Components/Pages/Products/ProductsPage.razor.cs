@@ -50,15 +50,17 @@ public partial class ProductsPage
         PrepareGridDataProvider();
     }
 
+
     private void PrepareGridDataProvider()
     {
         productsProvider = async req =>
         {
             isLoading = true;
+            StateHasChanged();
 
             try
             {
-                var odataQ = new ODataQuery
+                var query = new ODataQuery
                 {
                     Top = req.Count ?? 10,
                     Skip = req.StartIndex,
@@ -67,18 +69,18 @@ public partial class ProductsPage
 
                 if (string.IsNullOrEmpty(ProductNameFilter) is false)
                 {
-                    odataQ.Filter = $"contains(tolower({nameof(ProductDto.Name)}),'{ProductNameFilter.ToLower()}')";
+                    query.Filter = $"contains(tolower({nameof(ProductDto.Name)}),'{ProductNameFilter.ToLower()}')";
                 }
 
                 if (string.IsNullOrEmpty(CategoryNameFilter) is false)
                 {
-                    odataQ.AndFilter = $"contains(tolower({nameof(ProductDto.CategoryName)}),'{CategoryNameFilter.ToLower()}')";
+                    query.AndFilter = $"contains(tolower({nameof(ProductDto.CategoryName)}),'{CategoryNameFilter.ToLower()}')";
                 }
 
-                var queriedRequest = productController.WithQuery(odataQ.ToString());
+                var queriedRequest = productController.WithQuery(query.ToString());
                 var data = await (string.IsNullOrWhiteSpace(searchQuery)
-                                    ? queriedRequest.GetProducts(req.CancellationToken)
-                                    : queriedRequest.GetProductsBySearchQuery(searchQuery, req.CancellationToken));
+                            ? queriedRequest.GetProducts(req.CancellationToken)
+                            : queriedRequest.GetProductsBySearchQuery(searchQuery, req.CancellationToken));
 
                 return BitDataGridItemsProviderResult.From(data!.Items!, (int)data!.TotalCount);
             }
@@ -90,7 +92,6 @@ public partial class ProductsPage
             finally
             {
                 isLoading = false;
-
                 StateHasChanged();
             }
         };

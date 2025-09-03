@@ -50,7 +50,7 @@ public static partial class Program
 
         app.UseAntiforgery();
 
-        app.MappAppHealthChecks();
+        app.MapAppHealthChecks();
 
         app.UseSwagger();
 

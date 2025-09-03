@@ -152,8 +152,8 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             }))
             .OnAny(async ctx =>
             {
-                var ctxImpl = (IHttpContextImpl)ctx;
-                var requestFilePath = ctxImpl.Request.Url.LocalPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+                var ctxImplementation = (IHttpContextImpl)ctx;
+                var requestFilePath = ctxImplementation.Request.Url.LocalPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
                 Stream? staticFileStream = null;
                 if (staticFiles.FirstOrDefault(f => f.EndsWith(requestFilePath, StringComparison.OrdinalIgnoreCase)) is string staticFilePath)
                 {

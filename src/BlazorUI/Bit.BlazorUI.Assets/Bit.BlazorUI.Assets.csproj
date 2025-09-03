@@ -4,8 +4,8 @@
 
     <PropertyGroup>
         <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
-        <RootNamespace>Bit.BlazorUI</RootNamespace>
-        <WarningLevel>0</WarningLevel>
+        <IsTrimmable>true</IsTrimmable>
+        <ImplicitUsings>enable</ImplicitUsings>
         <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net9.0'">
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
@@ -17,13 +17,26 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Microsoft.AspNetCore.Components" />
+    </ItemGroup>
+
+    <ItemGroup>
         <Watch Remove="*.scss" />
         <ScssFiles Include="**\*.scss" />
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net9.0'">
-        <CallTarget Targets="InstallNodejsDependencies"/>
-        <CallTarget Targets="BuildCss"/>
+        <CallTarget Targets="InstallNodejsDependencies" />
+        <CallTarget Targets="BuildCss" />
     </Target>
 
     <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">

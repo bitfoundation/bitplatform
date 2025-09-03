@@ -110,7 +110,7 @@
                                   @bind-Value="@userInput"
                                   OnEnter="WrapHandled((KeyboardEventArgs e) => HandleOnUserInputEnter(e))"
                                   Styles="@(new() { FieldGroup = "padding:0.5rem; padding-inline-end:2.5rem", Input = "min-height:unset" })"
-                                  Placeholder="@(Localizer[isLoading ? nameof(AppStrings.AiChatPanelCommunicatingPlaceholder) : nameof(AppStrings.AiChatPanelPlaceholder)])" />
+                                  Placeholder="@(Localizer[nameof(AppStrings.AiChatPanelPlaceholder)])" />
 
                     <BitButton Float
                                AutoLoading

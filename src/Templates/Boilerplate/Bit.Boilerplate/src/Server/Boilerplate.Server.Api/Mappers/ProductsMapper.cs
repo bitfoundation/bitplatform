@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Riok.Mapperly.Abstractions;
 using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Server.Api.Models.Products;
@@ -26,6 +26,6 @@ public static partial class ProductsMapper
     public static partial Product Map(this ProductDto source);
 
     [MapperIgnoreSource(nameof(Product.ShortId))]
-    public static partial void Patch(this ProductDto source, Product dest);
+    public static partial void Patch(this ProductDto source, Product destination);
     //#endif
 }

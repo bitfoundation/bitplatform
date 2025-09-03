@@ -1,4 +1,4 @@
-// bit version: 9.11.3
+// bit version: 9.11.4
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 self.assetsInclude = [];
@@ -19,6 +19,8 @@ self.serverHandledUrls = [
     /\/swagger/,
     /\/api.fda.gov/
 ];
+
+self.enableCacheControl = false;
 
 self.prerenderMode = 'always';
 self.enableIntegrityCheck = false;

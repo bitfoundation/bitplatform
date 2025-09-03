@@ -171,7 +171,7 @@
     <data name="ResourceNotFoundException" xml:space="preserve">
     <value>منبع یافت نشد</value>
   </data>
-    <data name="TooManyRequestsExceptions" xml:space="preserve">
+    <data name="TooManyRequestExceptions" xml:space="preserve">
     <value>درخواست های بیش از حد</value>
   </data>
     <data name="ServerConnectionException" xml:space="preserve">
@@ -1154,9 +1154,6 @@
     <!--#endif -->
     <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>پیامی را وارد کنید...</value>
-  </data>
-    <data name="AiChatPanelCommunicatingPlaceholder" xml:space="preserve">
-    <value>درحال فکر کردن...</value>
   </data>
     <!--#endif -->
     <!--#if (ads == true) -->

@@ -1,5 +1,5 @@
 //+:cnd:noEmit
-// bit version: 9.11.3
+// bit version: 9.11.4
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 //#if (notification == true)
@@ -95,6 +95,8 @@ self.serverHandledUrls = [
     /\/hangfire/,
     /\/healthchecks-ui/,
     /\/healthz/,
+    /\/health/,
+    /\/alive/,
     /\/swagger/,
     /\/signin-/,
     /\/.well-known/,
@@ -111,5 +113,7 @@ self.prerenderMode = 'none'; // Demo: https://adminpanel.bitplatform.dev/ (No-Pr
 // On apps with Prerendering enabled, to have the best experience for the end user un-comment one of the following lines:
 // self.prerenderMode = 'always'; // Demo: https://sales.bitplatform.dev/ (Always show pre-render without offline support)
 // self.prerenderMode = 'initial'; // Demo: https://todo.bitplatform.dev/ (Pre-Render on first site visit + Offline support)
+
+self.enableCacheControl = false; // false means origin's cache headers are respected, true means service worker would manage the cache headers.
 
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');

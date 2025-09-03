@@ -2,6 +2,7 @@
 using System.Text;
 using System.ComponentModel;
 using System.Threading.Channels;
+using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.SignalR;
 using System.Runtime.CompilerServices;
 using Boilerplate.Shared.Dtos.Chatbot;
@@ -11,6 +12,11 @@ namespace Boilerplate.Server.Api.SignalR;
 
 public partial class AppHub
 {
+    [AutoInject] private IConfiguration configuration = default!;
+
+    // For open telemetry metrics.
+    private static readonly UpDownCounter<long> ongoingConversationsCount = AppActivitySource.CurrentMeter.CreateUpDownCounter<long>("appHub.ongoing_conversations_count", "Number of ongoing conversations in the chatbot hub.");
+
     public async IAsyncEnumerable<string> Chatbot(
         StartChatbotRequest request,
         IAsyncEnumerable<string> incomingMessages,
@@ -69,6 +75,7 @@ public partial class AppHub
             finally
             {
                 messageSpecificCancellationTokenSrc?.Dispose();
+                channel.Writer.Complete();
             }
 
             async Task HandleIncomingMessage(string incomingMessage, CancellationToken messageSpecificCancellationToken)
@@ -78,24 +85,27 @@ public partial class AppHub
                 {
                     chatMessages.Add(new(ChatRole.User, incomingMessage));
 
-                    await foreach (var response in chatClient.GetStreamingResponseAsync([
-                        new (ChatRole.System, supportSystemPrompt),
-                            .. chatMessages,
-                            new (ChatRole.User, incomingMessage)
-                        ], options: new()
-                        {
-                            Temperature = 0,
-                            Tools = [
+                    ChatOptions chatOptions = new()
+                    {
+                        Tools = [
                                 AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
                                 {
+                                    if (messageSpecificCancellationToken.IsCancellationRequested)
+                                        return;
+
                                     await using var scope = serviceProvider.CreateAsyncScope();
+
                                     // Ideally, store these in a CRM or app database,
                                     // but for now, we'll log them!
                                     scope.ServiceProvider.GetRequiredService<ILogger<IChatClient>>()
                                         .LogError("Chat reported issue: User email: {emailAddress}, Conversation history: {conversationHistory}", emailAddress, conversationHistory);
+
                                 }, name: "SaveUserEmailAndConversationHistory", description: "Saves the user's email address and the conversation history for future reference. Use this tool when the user provides their email address during the conversation. Parameters: emailAddress (string), conversationHistory (string)"),
                                 //#if (module == "Sales")
-                                AIFunctionFactory.Create(async ([Description("Concise summary of these user requirements in English Language")] string userNeeds, [Description("Car manufacturer's English name (Optional)")] string? manufacturer) =>
+                                AIFunctionFactory.Create(async ([Description("Concise summary of these user requirements")] string userNeeds,
+                                    [Description("Car manufacturer's name (Optional)")] string? manufacturer,
+                                    [Description("Car price below this value (Optional)")] decimal? maxPrice,
+                                    [Description("Car price above this value (Optional)")] decimal? minPrice) =>
                                 {
                                     if (messageSpecificCancellationToken.IsCancellationRequested)
                                         return null;
@@ -104,8 +114,10 @@ public partial class AppHub
                                     var productEmbeddingService = scope.ServiceProvider.GetRequiredService<ProductEmbeddingService>();
                                     var searchQuery = string.IsNullOrWhiteSpace(manufacturer)
                                         ? userNeeds
-                                        : $"{userNeeds}, Manufacturer: {manufacturer}";
+                                        : $"**{manufacturer}** {userNeeds}";
                                     var recommendedProducts = await (await productEmbeddingService.GetProductsBySearchQuery(searchQuery, messageSpecificCancellationToken))
+                                        .WhereIf(maxPrice.HasValue, p => p.Price <= maxPrice!.Value)
+                                        .WhereIf(minPrice.HasValue, p => p.Price >= minPrice!.Value)
                                         .Take(10)
                                         .Project()
                                         .Select(p => new
@@ -115,7 +127,7 @@ public partial class AppHub
                                             Manufacturer = p.CategoryName,
                                             Price = p.FormattedPrice,
                                             Description = p.DescriptionText,
-                                            PreviewImageUrl = p.GetPrimaryMediumImageUrl(request.ServerApiAddress!)
+                                            PreviewImageUrl = p.GetPrimaryMediumImageUrl(request.ServerApiAddress!) ?? "_content/Boilerplate.Client.Core/images/car_placeholder.png"
                                         })
                                         .ToArrayAsync(messageSpecificCancellationToken);
 
@@ -123,7 +135,15 @@ public partial class AppHub
                                 }, name: "GetProductRecommendations", description: "This tool searches for and recommends products based on a detailed description of the user's needs and preferences and returns recommended products.")
                                 //#endif
                                 ]
-                        }, cancellationToken: messageSpecificCancellationToken))
+                    };
+
+                    configuration.GetRequiredSection("AI:ChatOptions").Bind(chatOptions);
+
+                    await foreach (var response in chatClient.GetStreamingResponseAsync([
+                        new (ChatRole.System, supportSystemPrompt),
+                            .. chatMessages,
+                            new (ChatRole.User, incomingMessage)
+                        ], options: chatOptions, cancellationToken: messageSpecificCancellationToken))
                     {
                         if (messageSpecificCancellationToken.IsCancellationRequested)
                             break;
@@ -149,9 +169,18 @@ public partial class AppHub
 
         _ = ReadIncomingMessages();
 
-        await foreach (var str in channel.Reader.ReadAllAsync(cancellationToken).WithCancellation(cancellationToken))
+        try
         {
-            yield return str;
+            ongoingConversationsCount.Add(1);
+
+            await foreach (var str in channel.Reader.ReadAllAsync(cancellationToken).WithCancellation(cancellationToken))
+            {
+                yield return str;
+            }
+        }
+        finally
+        {
+            ongoingConversationsCount.Add(-1);
         }
     }
 

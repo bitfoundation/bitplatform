@@ -1,3 +1,7 @@
 {
-  "appHostPath": "../Boilerplate.Server.AppHost.csproj"
+    "appHostPath": "../Boilerplate.Server.AppHost.csproj",
+    "features": {
+        "deployCommandEnabled": "true",
+        "execCommandEnabled": "true"
+    }
 }

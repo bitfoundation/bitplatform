@@ -10,11 +10,11 @@ public partial class Templates05CreateProjectPage
     private Parameter<bool> sample = new() { Value = false, Default = false };
     private Parameter<bool> sentry = new() { Value = false, Default = false };
     private Parameter<bool> offlineDb = new() { Value = false, Default = false };
-    private Parameter<bool> notification = new() { Value = false, Default = false };
+    private Parameter<bool> notification = new() { Value = true, Default = true };
     private Parameter<bool> appInsight = new() { Value = false, Default = false };
     private Parameter<bool> signalR = new() { Value = false, Default = false };
     private Parameter<bool> googleAds = new() { Value = false, Default = false };
-    private Parameter<bool> aspire = new() { Value = false, Default = false };
+    private Parameter<bool> aspire = new() { Value = true, Default = true };
 
     private Parameter<string> captcha = new()
     {

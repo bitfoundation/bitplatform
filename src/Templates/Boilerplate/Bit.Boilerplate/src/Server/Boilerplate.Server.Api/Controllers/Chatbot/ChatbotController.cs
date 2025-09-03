@@ -8,13 +8,12 @@ namespace Boilerplate.Server.Api.Controllers.Chatbot;
     Authorize(Policy = AppFeatures.Management.ManageAiPrompt)]
 public partial class ChatbotController : AppControllerBase, IChatbotController
 {
-    [HttpGet("{kind}")]
-    public async Task<SystemPromptDto> GetSystemPrompt(PromptKind kind, CancellationToken cancellationToken)
+    [HttpGet]
+    [EnableQuery]
+    public IQueryable<SystemPromptDto> GetSystemPrompts()
     {
-        return await DbContext.SystemPrompts
-            .Where(p => p.PromptKind == kind)
-            .Project()
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new ResourceNotFoundException();
+        return DbContext.SystemPrompts
+            .Project();
     }
 
     [HttpPost, Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]

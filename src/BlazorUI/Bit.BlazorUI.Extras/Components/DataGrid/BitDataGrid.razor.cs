@@ -76,6 +76,8 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
         columnsFirstCollectedSubscriber.SubscribeOrMove(_internalGridContext.ColumnsFirstCollected);
     }
 
+    private bool IsLoading => _pendingDataLoadCancellationTokenSource is not null;
+
 
 
     /// <summary>
@@ -90,15 +92,9 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     [Parameter] public string? Class { get; set; }
 
     /// <summary>
-    /// A queryable source of data for the grid.
-    ///
-    /// This could be in-memory data converted to queryable using the
-    /// <see cref="System.Linq.Queryable.AsQueryable(System.Collections.IEnumerable)"/> extension method,
-    /// or an EntityFramework DataSet or an <see cref="IQueryable"/> derived from it.
-    ///
-    /// You should supply either <see cref="Items"/> or <see cref="ItemsProvider"/>, but not both.
+    /// Alias of the ChildContent parameter.
     /// </summary>
-    [Parameter] public IQueryable<TGridItem>? Items { get; set; }
+    [Parameter] public RenderFragment? Columns { get; set; }
 
     /// <summary>
     /// Optionally defines a value for @key on each rendered row. Typically this should be used to specify a
@@ -113,11 +109,15 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     [Parameter] public Func<TGridItem, object> ItemKey { get; set; } = x => x!;
 
     /// <summary>
-    /// A callback that supplies data for the rid.
+    /// A queryable source of data for the grid.
+    ///
+    /// This could be in-memory data converted to queryable using the
+    /// <see cref="System.Linq.Queryable.AsQueryable(System.Collections.IEnumerable)"/> extension method,
+    /// or an EntityFramework DataSet or an <see cref="IQueryable"/> derived from it.
     ///
     /// You should supply either <see cref="Items"/> or <see cref="ItemsProvider"/>, but not both.
     /// </summary>
-    [Parameter] public BitDataGridItemsProvider<TGridItem>? ItemsProvider { get; set; }
+    [Parameter] public IQueryable<TGridItem>? Items { get; set; }
 
     /// <summary>
     /// This is applicable only when using <see cref="Virtualize"/>. It defines an expected height in pixels for
@@ -125,6 +125,18 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     /// size and to ensure accurate scrolling.
     /// </summary>
     [Parameter] public float ItemSize { get; set; } = 50;
+
+    /// <summary>
+    /// A callback that supplies data for the rid.
+    ///
+    /// You should supply either <see cref="Items"/> or <see cref="ItemsProvider"/>, but not both.
+    /// </summary>
+    [Parameter] public BitDataGridItemsProvider<TGridItem>? ItemsProvider { get; set; }
+
+    /// <summary>
+    /// The custom template to render while loading the new items.
+    /// </summary>
+    [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
     /// <summary>
     /// Optionally links this <see cref="BitDataGrid{TGridItem}"/> instance with a <see cref="BitDataGridPaginationState"/> model,
@@ -419,7 +431,7 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
         : ColumnClass(column);
 
     private string GridClass()
-        => $"bitdatagrid {Class} {(_pendingDataLoadCancellationTokenSource is null ? null : "loading")}";
+        => $"bitdatagrid {Class} {((IsLoading && LoadingTemplate is null) ? "loading" : null)}".Trim();
 
     private void CloseColumnOptions()
     {
