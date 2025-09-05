@@ -1,7 +1,8 @@
-﻿using System.Globalization;
-using System.Threading.Channels;
+﻿using System.Threading.Channels;
 using Bit.Websites.Platform.Shared.Dtos.AiChat;
+using Bit.Websites.Platform.Shared.Services;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.SignalR.Client;
 
 namespace Bit.Websites.Platform.Client.Shared;
 
@@ -9,7 +10,7 @@ public partial class AppAiChatPanel
 {
     [CascadingParameter] public BitDir? CurrentDir { get; set; }
 
-    //[AutoInject] private HubConnection hubConnection = default!;
+    [AutoInject] private HubConnection hubConnection = default!;
 
 
     private bool isOpen;
@@ -21,17 +22,16 @@ public partial class AppAiChatPanel
     private AiChatMessage? lastAssistantMessage;
     private List<AiChatMessage> chatMessages = []; // TODO: Persist these values in client-side storage to retain them across app restarts.
 
-
-    private string AiChatPanelPrompt1 = "";
-    private string AiChatPanelPrompt2 = "";
-    private string AiChatPanelPrompt3 = "";
+    private string AiChatPanelPrompt1 = "Are bit platform products truly free for commercial projects?";
+    private string AiChatPanelPrompt2 = "What are the benefits of dedicated support?";
+    private string AiChatPanelPrompt3 = "What dependencies does the bit Boilerplate project template have on Linux?";
 
 
     protected override async Task OnAfterFirstRenderAsync()
     {
         SetDefaultValues();
         StateHasChanged();
-        //hubConnection.Reconnected += HubConnection_Reconnected;
+        hubConnection.Reconnected += HubConnection_Reconnected;
 
         await base.OnAfterFirstRenderAsync();
     }
@@ -52,6 +52,11 @@ public partial class AppAiChatPanel
 
     private async Task SendMessage()
     {
+        if (hubConnection.State is not HubConnectionState.Connected)
+        {
+            await hubConnection.StartAsync(CurrentCancellationToken);
+        }
+
         if (channel is null)
         {
             _ = StartChannel();
@@ -108,43 +113,40 @@ public partial class AppAiChatPanel
     {
         channel = Channel.CreateUnbounded<string>(new() { SingleReader = true, SingleWriter = true });
 
-        //await foreach (var response in hubConnection.StreamAsync<string>("Chatbot",
-        //                                                                 new StartChatbotRequest()
-        //                                                                 {
-        //                                                                     CultureId = CultureInfo.CurrentCulture.LCID,
-        //                                                                     DeviceInfo = TelemetryContext.Platform,
-        //                                                                     ChatMessagesHistory = chatMessages,
-        //                                                                     ServerApiAddress = AbsoluteServerAddress.GetAddress()
-        //                                                                 },
-        //                                                                 channel.Reader.ReadAllAsync(CurrentCancellationToken),
-        //                                                                 cancellationToken: CurrentCancellationToken))
-        //{
-        //    int expectedResponsesCount = chatMessages.Count(c => c.Role is AiChatMessageRole.User);
+        await foreach (var response in hubConnection.StreamAsync<string>("Chatbot",
+                                                                         new StartChatbotRequest()
+                                                                         {
+                                                                             ChatMessagesHistory = chatMessages
+                                                                         },
+                                                                         channel.Reader.ReadAllAsync(CurrentCancellationToken),
+                                                                         cancellationToken: CurrentCancellationToken))
+        {
+            int expectedResponsesCount = chatMessages.Count(c => c.Role is AiChatMessageRole.User);
 
-        //    if (response is SharedChatProcessMessages.MESSAGE_RPOCESS_SUCESS)
-        //    {
-        //        responseCounter++;
-        //        isLoading = false;
-        //    }
-        //    else if (response is SharedChatProcessMessages.MESSAGE_RPOCESS_ERROR)
-        //    {
-        //        responseCounter++;
-        //        if (responseCounter == expectedResponsesCount)
-        //        {
-        //            isLoading = false; // Hide loading only if this is an error for the last user's message.
-        //        }
-        //        chatMessages[responseCounter * 2].Successful = false;
-        //    }
-        //    else
-        //    {
-        //        if ((responseCounter + 1) == expectedResponsesCount)
-        //        {
-        //            lastAssistantMessage!.Content += response;
-        //        }
-        //    }
+            if (response is SharedChatProcessMessages.MESSAGE_RPOCESS_SUCESS)
+            {
+                responseCounter++;
+                isLoading = false;
+            }
+            else if (response is SharedChatProcessMessages.MESSAGE_RPOCESS_ERROR)
+            {
+                responseCounter++;
+                if (responseCounter == expectedResponsesCount)
+                {
+                    isLoading = false; // Hide loading only if this is an error for the last user's message.
+                }
+                chatMessages[responseCounter * 2].Successful = false;
+            }
+            else
+            {
+                if ((responseCounter + 1) == expectedResponsesCount)
+                {
+                    lastAssistantMessage!.Content += response;
+                }
+            }
 
-        //    StateHasChanged();
-        //}
+            StateHasChanged();
+        }
     }
 
     private async Task StopChannel()
@@ -161,10 +163,9 @@ public partial class AppAiChatPanel
         await StartChannel();
     }
 
-
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        //hubConnection.Reconnected -= HubConnection_Reconnected;
+        hubConnection.Reconnected -= HubConnection_Reconnected;
 
         await StopChannel();
 

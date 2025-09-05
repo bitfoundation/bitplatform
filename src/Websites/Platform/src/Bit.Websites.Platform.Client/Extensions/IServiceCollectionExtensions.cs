@@ -1,4 +1,6 @@
 ﻿using Bit.Butil;
+using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.Http.Connections;
 using Bit.Websites.Platform.Client.Services.HttpMessageHandlers;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -25,6 +27,22 @@ public static class IServiceCollectionExtensions
         services.AddTransient<MessageBoxService>();
 
         services.AddBitBlazorUIExtrasServices();
+
+        services.AddScoped(sp =>
+        {
+            var baseAddress = sp.GetRequiredService<HttpClient>().BaseAddress!;
+
+            var hubConnection = new HubConnectionBuilder()
+                .WithStatefulReconnect()
+                .WithAutomaticReconnect()
+                .WithUrl(new Uri("http://localhost:5055/app-hub"), options =>
+                {
+                    options.SkipNegotiation = true;
+                    options.Transports = HttpTransportType.WebSockets;
+                })
+                .Build();
+            return hubConnection;
+        });
 
         return services;
     }

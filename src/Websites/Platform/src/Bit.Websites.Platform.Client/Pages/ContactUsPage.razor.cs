@@ -16,7 +16,7 @@ public partial class ContactUsPage
 
         try
         {
-            await HttpClient.PostAsJsonAsync("ContactUs/SendMessage", contactUsModel, AppJsonContext.Default.ContactUsDto);
+            await HttpClient.PostAsJsonAsync("api/ContactUs/SendMessage", contactUsModel, AppJsonContext.Default.ContactUsDto);
             contactUsModel.Email = "";
             contactUsModel.Message = "";
         }
