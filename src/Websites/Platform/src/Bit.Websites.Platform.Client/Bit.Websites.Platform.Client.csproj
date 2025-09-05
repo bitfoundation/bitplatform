@@ -36,6 +36,7 @@
         <PackageReference Include="Bit.Bswup" Version="9.11.4" />
         <PackageReference Include="Bit.Butil" Version="9.11.4" />
         <PackageReference Include="Bit.BlazorUI" Version="9.11.4" />
+        <PackageReference Include="Bit.BlazorUI.Extras" Version="9.11.4" />
         <PackageReference Include="Bit.BlazorES2019" Version="9.11.4" />
         <PackageReference Include="Bit.BlazorUI.Assets" Version="9.11.4" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="9.11.4">
@@ -99,7 +100,7 @@
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <Target Name="BuildIsolatedScssFiles" Inputs="@(IsolatedScssFiles)" Outputs="@(IsolatedScssFiles->Replace('.scss', '.css'))">
+    <Target Name="BuildIsolatedScssFiles" Inputs="@(IsolatedScssFiles)" Outputs="@(IsolatedScssFiles-&gt;Replace('.scss', '.css'))">
         <Exec Command="node_modules/.bin/sass .:. --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 

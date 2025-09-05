@@ -24,6 +24,8 @@ public static class IServiceCollectionExtensions
 
         services.AddTransient<MessageBoxService>();
 
+        services.AddBitBlazorUIExtrasServices();
+
         return services;
     }
 }
