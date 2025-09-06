@@ -36,6 +36,7 @@
         <PackageReference Include="Bit.Bswup" Version="9.11.4" />
         <PackageReference Include="Bit.Butil" Version="9.11.4" />
         <PackageReference Include="Bit.BlazorUI" Version="9.11.4" />
+        <PackageReference Include="Bit.BlazorUI.Extras" Version="9.11.4" />
         <PackageReference Include="Bit.BlazorES2019" Version="9.11.4" />
         <PackageReference Include="Bit.BlazorUI.Assets" Version="9.11.4" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="9.11.4">
@@ -47,6 +48,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.8" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.8" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
