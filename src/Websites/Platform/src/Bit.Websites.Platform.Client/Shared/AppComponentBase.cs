@@ -1,6 +1,6 @@
 ﻿namespace Bit.Websites.Platform.Client.Shared;
 
-public partial class AppComponentBase : ComponentBase
+public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 {
     [AutoInject] protected IJSRuntime JSRuntime = default!;
 
@@ -186,6 +186,20 @@ public partial class AppComponentBase : ComponentBase
     }
 
 
+
+    public async ValueTask DisposeAsync()
+    {
+        if (cts != null)
+        {
+            using var currentCts = cts;
+            cts = null;
+            await currentCts.CancelAsync();
+        }
+
+        await DisposeAsync(true);
+
+        GC.SuppressFinalize(this);
+    }
 
     protected virtual ValueTask DisposeAsync(bool disposing)
     {

@@ -52,6 +52,8 @@ public partial class AppAiChatPanel
 
     private async Task SendMessage()
     {
+        if (string.IsNullOrWhiteSpace(userInput)) return;
+
         if (hubConnection.State is not HubConnectionState.Connected)
         {
             await hubConnection.StartAsync(CurrentCancellationToken);
