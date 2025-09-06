@@ -22,6 +22,23 @@ public partial class AppComponentBase : ComponentBase
 
     [AutoInject] protected IExceptionHandler ExceptionHandler = default!;
 
+
+
+    private CancellationTokenSource? cts = new();
+    protected CancellationToken CurrentCancellationToken
+    {
+        get
+        {
+            if (cts == null)
+                throw new OperationCanceledException(); // Component already disposed.
+
+            cts.Token.ThrowIfCancellationRequested();
+            return cts.Token;
+        }
+    }
+
+
+
     protected sealed override async Task OnInitializedAsync()
     {
         try
@@ -94,6 +111,8 @@ public partial class AppComponentBase : ComponentBase
         return Task.CompletedTask;
     }
 
+
+
     /// <summary>
     /// Executes passed action while catching all possible exceptions to prevent app crash.
     /// </summary>
@@ -164,5 +183,12 @@ public partial class AppComponentBase : ComponentBase
                 ExceptionHandler.Handle(exp);
             }
         };
+    }
+
+
+
+    protected virtual ValueTask DisposeAsync(bool disposing)
+    {
+        return ValueTask.CompletedTask;
     }
 }

@@ -57,6 +57,8 @@ public class Middlewares
 
         app.UseSwaggerUI();
 
+        app.MapHub<SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
+
         app.MapControllers();
 
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
