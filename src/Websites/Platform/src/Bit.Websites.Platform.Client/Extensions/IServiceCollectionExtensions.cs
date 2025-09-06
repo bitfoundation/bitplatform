@@ -35,7 +35,7 @@ public static class IServiceCollectionExtensions
             var hubConnection = new HubConnectionBuilder()
                 .WithStatefulReconnect()
                 .WithAutomaticReconnect()
-                .WithUrl(new Uri("http://localhost:5055/app-hub"), options =>
+                .WithUrl(new Uri(baseAddress, "/app-hub"), options =>
                 {
                     options.SkipNegotiation = true;
                     options.Transports = HttpTransportType.WebSockets;
