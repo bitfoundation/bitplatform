@@ -51,8 +51,11 @@ public static class Services
                     Transport = new Azure.Core.Pipeline.HttpClientTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
                 }).AsIChatClient(appSettings.AzureOpenAI.ChatModel))
             .UseLogging()
-            .UseFunctionInvocation();
+            .UseFunctionInvocation()
+            .UseDistributedCache();
         }
+
+        services.AddDistributedMemoryCache();
 
         services.AddResponseCaching();
 

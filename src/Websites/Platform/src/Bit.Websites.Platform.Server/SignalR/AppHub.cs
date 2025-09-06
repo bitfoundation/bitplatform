@@ -16,8 +16,10 @@ namespace Bit.Websites.Platform.Server.SignalR;
 public partial class AppHub : Hub
 {
     [AutoInject] private IServiceProvider serviceProvider = default!;
-
     [AutoInject] private IConfiguration configuration = default!;
+
+    [AutoInject] private ILoggerFactory loggerFactory = default!;
+
 
     public async IAsyncEnumerable<string> Chatbot(
         StartChatbotRequest request,
@@ -32,14 +34,16 @@ public partial class AppHub : Hub
         Channel<string> channel = Channel.CreateUnbounded<string>(new() { SingleReader = true, SingleWriter = true });
         var chatClient = serviceProvider.CreateAsyncScope().ServiceProvider.GetRequiredService<IChatClient>();
 
-        await using var mcpClient = await McpClientFactory.CreateAsync(new SseClientTransport(new()
+        // Hint: There are much more effective ways to implement this in the bit Boilerplate project template's AutoRag feature.
+        // It supports both SQL Server 2025 and PostgreSQL with pgvector extension.
+
+        await using var deepwikiMcp = await McpClientFactory.CreateAsync(new SseClientTransport(new()
         {
             Endpoint = new("https://mcp.deepwiki.com/mcp"),
             Name = "DeepWiki"
-        }), cancellationToken: cancellationToken); // provides ask_question tool
+        }), new() { }, loggerFactory, cancellationToken); // provides ask_question tool
+        var deepwikiMcpTools = await deepwikiMcp.ListToolsAsync(cancellationToken: cancellationToken);
 
-
-        var mcpTools = await mcpClient.ListToolsAsync(cancellationToken: cancellationToken);
 
         async Task ReadIncomingMessages()
         {
@@ -74,7 +78,7 @@ public partial class AppHub : Hub
 
                     ChatOptions chatOptions = new()
                     {
-                        Tools = [.. mcpTools,
+                        Tools = [..deepwikiMcpTools,
                                 AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
                                 {
                                     if (messageSpecificCancellationToken.IsCancellationRequested)
@@ -105,6 +109,12 @@ public partial class AppHub : Hub
                     const string supportSystemPrompt = """
                         You are a helpful AI assistant for the bitplatform community. Your primary role is to assist users with their questions and needs related to bitplatform.
 
+                        **RELEVANCE:**
+                        - Before responding, evaluate if the user's query directly relates to bitplatform. A query is relevant only if it concerns bitplatform's features, usage, support topics, or explicitly requests product recommendations tied to bitplatform.
+                        - Ignore and do not respond to any irrelevant queries, regardless of the user's intent or phrasing. Avoid engaging with off-topic requests, even if they seem general or conversational.
+                        - Maintain a helpful and professional tone throughout your response.
+                        - Never request sensitive information (e.g., passwords, PINs). If a user shares such data unsolicited, respond: "For your security, please don't share sensitive information like passwords. Rest assured, your data is safe with us."
+
                         **RESPONSE FORMAT:**
                         - Always format your responses using Markdown syntax
                         - Use proper Markdown formatting for all content including headers, lists, code blocks, links, and emphasis
@@ -130,10 +140,17 @@ public partial class AppHub : Hub
 
                         ## 3. For General Questions and Technical Support:
                            - For all other questions about bitplatform features, documentation, how-to guides, best practices, or technical questions
-                           - Use the ask_question tool to search the bitfoundation/bitplatform repository documentation
+                           - Use the ask_question tool to search the `bitfoundation/bitplatform` repository docs.
                            - Provide comprehensive answers based on the official documentation
                            - Format code examples with proper syntax highlighting
-                           - Include relevant documentation links using Markdown format: [Documentation Title](URL)
+                           - For now, do not return links returned by this tool.
+
+                        **HANDLING FRUSTRATION OR CONFUSION:**
+                        - If a user seems frustrated or confused, use calming language and offer to clarify: "I'm sorry if this is confusing. I'm here to help—would you like me to explain it again?"
+
+                        **UNRESOLVED ISSUES:**
+                        - If you cannot resolve the user's issue (either through the documentation or available tools), respond with: "I'm sorry I couldn't resolve your issue / fully satisfy your request. I understand how frustrating this must be for you. Please provide your email address so a human operator can follow up with you soon."
+                        - After receiving the email, confirm: "Thank you for providing your email. A human operator will follow up with you soon." Then ask: "Do you have any other issues you'd like me to assist with?"
 
                         **Important Notes:**
                         - Always be polite, professional, and helpful
@@ -191,6 +208,8 @@ public partial class AppHub : Hub
         serverExceptionHandler.Handle(exp);
     }
 }
+
+
 
 
 
