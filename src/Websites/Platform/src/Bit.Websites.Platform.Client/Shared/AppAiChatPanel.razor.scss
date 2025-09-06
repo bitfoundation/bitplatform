@@ -1,12 +1,27 @@
 ﻿@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_bit-css-variables.scss';
 
 ::deep {
     .scr-container {
-        padding: 0.5rem;
+        padding-inline-end: 0.5rem;
 
         img {
             padding: 0.5rem;
             max-width: 256px;
+        }
+
+        pre {
+            margin: 0;
+            overflow: auto;
+            scrollbar-width: thin;
+
+            code {
+                display: block;
+                width: fit-content;
+                padding: 0.5rem 1rem;
+                border-radius: 0.25rem;
+                background: $bit-color-background-secondary;
+            }
         }
     }
 
@@ -30,6 +45,11 @@
             height: 3rem;
             pointer-events: none;
         }
+    }
+
+    .body {
+        width: 600px;
+        max-width: 100%;
     }
 
     .body {
