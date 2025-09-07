@@ -2,6 +2,33 @@
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
 ::deep {
+    .open-panel-button {
+        padding: 0;
+        left: unset;
+        right: unset;
+        inset-inline-end: 2rem;
+
+        &:hover, &:active {
+            background-color: transparent;
+        }
+
+        @include lt-md {
+            bottom: 4rem;
+            inset-inline-end: 1rem;
+        }
+
+        img {
+            width: 2.5rem;
+            height: 2.5rem;
+            pointer-events: none;
+        }
+    }
+
+    .panel-cnt {
+        top: $bit-env-inset-top;
+        bottom: $bit-env-inset-bottom;
+        height: $bit-env-height-available;
+    }
 
     .scr-container {
         padding-inline-end: 0.5rem;
@@ -23,28 +50,6 @@
                 border-radius: 0.25rem;
                 background: $bit-color-background-secondary;
             }
-        }
-    }
-
-    .open-panel-button {
-        padding: 0;
-        left: unset;
-        right: unset;
-        inset-inline-end: 2rem;
-
-        &:hover, &:active {
-            background-color: transparent;
-        }
-
-        @include lt-md {
-            bottom: 4rem;
-            inset-inline-end: 1rem;
-        }
-
-        img {
-            width: 2.5rem;
-            height: 2.5rem;
-            pointer-events: none;
         }
     }
 

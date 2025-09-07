@@ -18,7 +18,8 @@
                  @bind-IsOpen="isOpen"
                  ModeFull="isSmallScreen is true"
                  Modeless="isSmallScreen is false"
-                 OnDismiss="WrapHandled(HandleOnDismissPanel)">
+                 OnDismiss="WrapHandled(HandleOnDismissPanel)"
+                 Classes="@(new() { Container = "panel-cnt" })">
         <Header>
             <BitStack Horizontal Alignment="BitAlignment.Center">
                 <BitText Typography="BitTypography.H5">@Localizer[nameof(AppStrings.AiChatPanelTitle)]</BitText>
