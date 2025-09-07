@@ -7,19 +7,19 @@
     <BitButton Float
                Draggable
                FloatOffset="2rem"
-               Size="BitSize.Large"
                Class="open-panel-button"
-               Color="BitColor.Secondary"
                Variant="BitVariant.Outline"
                OnClick="() => isOpen = true"
+               Color="BitColor.PrimaryBackground"
                FloatPosition="BitPosition.BottomRight"
-               IconUrl="@(CurrentTheme.HasValue ? $"_content/Boilerplate.Client.Core/images/icons/ai-icon-{CurrentTheme?.ToString().ToLowerInvariant()}.png" : null)" />
+               IconUrl="_content/Boilerplate.Client.Core/images/icons/ai-chat-icon-64.webp" />
 
     <BitProPanel ShowCloseButton
                  @bind-IsOpen="isOpen"
                  ModeFull="isSmallScreen is true"
                  Modeless="isSmallScreen is false"
-                 OnDismiss="WrapHandled(HandleOnDismissPanel)">
+                 OnDismiss="WrapHandled(HandleOnDismissPanel)"
+                 Classes="@(new() { Container = "panel-cnt" })">
         <Header>
             <BitStack Horizontal Alignment="BitAlignment.Center">
                 <BitText Typography="BitTypography.H5">@Localizer[nameof(AppStrings.AiChatPanelTitle)]</BitText>
