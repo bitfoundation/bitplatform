@@ -4,18 +4,37 @@
 ::deep {
 
     .scr-container {
-        padding: 0.5rem;
+        padding-inline-end: 0.5rem;
 
         img {
             padding: 0.5rem;
             max-width: 256px;
         }
+
+        pre {
+            margin: 0;
+            overflow: auto;
+            scrollbar-width: thin;
+
+            code {
+                display: block;
+                width: fit-content;
+                padding: 0.5rem 1rem;
+                border-radius: 0.25rem;
+                background: $bit-color-background-secondary;
+            }
+        }
     }
 
     .open-panel-button {
+        padding: 0;
         left: unset;
         right: unset;
         inset-inline-end: 2rem;
+
+        &:hover, &:active {
+            background-color: transparent;
+        }
 
         @include lt-md {
             bottom: 4rem;
@@ -23,6 +42,8 @@
         }
 
         img {
+            width: 2.5rem;
+            height: 2.5rem;
             pointer-events: none;
         }
     }
