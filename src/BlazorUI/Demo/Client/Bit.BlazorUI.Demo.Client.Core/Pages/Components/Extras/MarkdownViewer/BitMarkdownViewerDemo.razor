@@ -25,5 +25,16 @@
                 <BitMarkdownViewer Markdown="@advancedMarkdown" Class="advanced" />
             </div>
         </DemoExample>
+
+        <DemoExample Title="Events" RazorCode="@example3RazorCode" CsharpCode="example3CsharpCode" Id="example3">
+            <BitMarkdownViewer Markdown="@("# Events of the BitMarkdownViewer\n\nRendered by **marked**.")"
+                               OnParsing="OnParsing"
+                               OnParsed="OnParsed"
+                               OnRendered="OnRendered" />
+            <hr />
+            <div>Parsing at [@parsingDateTime?.ToString("o")]</div>
+            <div>Parsed at [@parsedDateTime?.ToString("o")]</div>
+            <div>Rendered at [@renderedDateTime?.ToString("o")]</div>
+        </DemoExample>
     </Examples>
 </DemoPage>

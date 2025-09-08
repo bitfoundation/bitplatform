@@ -7,6 +7,7 @@
 public partial class BitMarkdownViewer : BitComponentBase
 {
     private string? _html;
+    private bool _isRenderingParsedHtml;
     private readonly CancellationTokenSource _cts = new();
 
 
@@ -22,6 +23,21 @@ public partial class BitMarkdownViewer : BitComponentBase
     [Parameter, CallOnSet(nameof(OnMarkdownSet))]
     public string? Markdown { get; set; }
 
+    /// <summary>
+    /// A callback that is called before starting to parse the markdown.
+    /// </summary>
+    [Parameter] public EventCallback<string?> OnParsing { get; set; }
+
+    /// <summary>
+    /// A callback that is called after starting to parse the markdown.
+    /// </summary>
+    [Parameter] public EventCallback<string?> OnParsed { get; set; }
+
+    /// <summary>
+    /// A callback that is called after rendering the parsed markdown.
+    /// </summary>
+    [Parameter] public EventCallback<string?> OnRendered { get; set; }
+
 
 
     protected override string RootElementClass => "bit-mdv";
@@ -31,6 +47,18 @@ public partial class BitMarkdownViewer : BitComponentBase
         await ParseAndRender();
 
         await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (_isRenderingParsedHtml)
+        {
+            _isRenderingParsedHtml = false;
+
+            _ = OnRendered.InvokeAsync(_html);
+        }
     }
 
 
@@ -44,6 +72,8 @@ public partial class BitMarkdownViewer : BitComponentBase
 
     private async Task ParseAndRender()
     {
+        _ = OnParsing.InvokeAsync(Markdown);
+
         try
         {
             _html = await _markdownService.Parse(Markdown, _cts.Token);
@@ -52,6 +82,10 @@ public partial class BitMarkdownViewer : BitComponentBase
         {
             _html = "<b>The BitMarkdownViewer failed to parse the markdown!</b>";
         }
+
+        _ = OnParsed.InvokeAsync(_html);
+
+        _isRenderingParsedHtml = true;
 
         StateHasChanged();
     }
