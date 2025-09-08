@@ -80,10 +80,7 @@ public partial class AppAiChatPanel
     {
         SetDefaultValues();
 
-        if (chatMessages.Count > 1)
-        {
-            await RestartChannel();
-        }
+        await RestartChannel();
     }
 
     private void SetDefaultValues()
