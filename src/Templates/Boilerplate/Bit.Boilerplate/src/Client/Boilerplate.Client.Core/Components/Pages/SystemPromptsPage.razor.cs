@@ -18,7 +18,9 @@ public partial class SystemPromptsPage
 
         try
         {
-            systemPrompts = await chatbotController.GetSystemPrompts(CurrentCancellationToken);
+            systemPrompts = await chatbotController
+                .WithQuery($"$orderby={nameof(SystemPromptDto.PromptKind)}")
+                .GetSystemPrompts(CurrentCancellationToken);
         }
         finally
         {
