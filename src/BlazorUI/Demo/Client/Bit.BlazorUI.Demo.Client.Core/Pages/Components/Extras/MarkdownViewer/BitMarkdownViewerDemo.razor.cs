@@ -14,21 +14,21 @@ public partial class BitMarkdownViewerDemo
         new()
         {
            Name = "OnParsing",
-           Type = "string?",
+           Type = "EventCallback<string?>",
            DefaultValue = "null",
            Description = "A callback that is called before starting to parse the markdown.",
         },
         new()
         {
            Name = "OnParsed",
-           Type = "string?",
+           Type = "EventCallback<string?>",
            DefaultValue = "null",
-           Description = "A callback that is called after starting to parse the markdown.",
+           Description = "A callback that is called after parsing the markdown.",
         },
         new()
         {
-           Name = "OnParsing",
-           Type = "string?",
+           Name = "OnRendered",
+           Type = "EventCallback<string?>",
            DefaultValue = "null",
            Description = "A callback that is called after rendering the parsed markdown.",
         },
@@ -115,17 +115,17 @@ We welcome contributions! Many people all over the world have helped make this p
     private DateTimeOffset? parsedDateTime;
     private DateTimeOffset? renderedDateTime;
 
-    private async Task OnParsing(string? markdown)
+    private void OnParsing(string? markdown)
     {
         parsingDateTime = DateTimeOffset.Now;
     }
 
-    private async Task OnParsed(string? html)
+    private void OnParsed(string? html)
     {
         parsedDateTime = DateTimeOffset.Now;
     }
 
-    private async Task OnRendered(string? html)
+    private void OnRendered(string? html)
     {
         renderedDateTime = DateTimeOffset.Now;
     }
@@ -133,7 +133,7 @@ We welcome contributions! Many people all over the world have helped make this p
 
 
     private readonly string example1RazorCode = @"
-<BitMarkdownViewer Markdown=""@(""# Marked in the browser\n\nRendered by **marked**."")"" />";
+<BitMarkdownViewer Markdown=""@(""# Marked in the browser\n\nRendered by [**marked**](https://marked.js.org)."")"" />";
 
     private readonly string example2RazorCode = @"
 <style>
@@ -221,7 +221,7 @@ We welcome contributions! Many people all over the world have helped make this p
 ![Alt](https://repobeats.axiom.co/api/embed/66dc1fc04ed967094b98ac118e8f18fa38b19f6a.svg """"bit platform open source contributions report"""")"";";
 
     private readonly string example3RazorCode = @"
-<BitMarkdownViewer Markdown=""@(""# Events of the BitMarkdownViewer\n\nRendered by **marked**."")""
+<BitMarkdownViewer Markdown=""@(""# Events of the BitMarkdownViewer:\n\n- OnParsing\n- OnParsed\n- OnRendered"")""
                    Id=""test-mdv""
                    OnParsing=""OnParsing""
                    OnParsed=""OnParsed""
@@ -235,17 +235,17 @@ private DateTimeOffset? parsingDateTime;
 private DateTimeOffset? parsedDateTime;
 private DateTimeOffset? renderedDateTime;
 
-private async Task OnParsing(string? markdown)
+private void OnParsing(string? markdown)
 {
     parsingDateTime = DateTimeOffset.Now;
 }
 
-private async Task OnParsed(string? html)
+private void OnParsed(string? html)
 {
     parsedDateTime = DateTimeOffset.Now;
 }
 
-private async Task OnRendered(string? html)
+private void OnRendered(string? html)
 {
     renderedDateTime = DateTimeOffset.Now;
 }";

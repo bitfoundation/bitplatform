@@ -29,7 +29,7 @@ public partial class BitMarkdownViewer : BitComponentBase
     [Parameter] public EventCallback<string?> OnParsing { get; set; }
 
     /// <summary>
-    /// A callback that is called after starting to parse the markdown.
+    /// A callback that is called after parsing the markdown.
     /// </summary>
     [Parameter] public EventCallback<string?> OnParsed { get; set; }
 
