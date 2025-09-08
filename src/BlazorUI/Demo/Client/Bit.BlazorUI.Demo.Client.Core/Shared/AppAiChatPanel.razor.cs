@@ -18,9 +18,9 @@ public partial class AppAiChatPanel
     private bool _isSmallScreen;
     private int _responseCounter;
     private Channel<string>? _channel;
+    private BitDebouncer _debouncer = new();
     private AiChatMessage? _lastAssistantMessage;
     private List<AiChatMessage> _chatMessages = []; // TODO: Persist these values in client-side storage to retain them across app restarts.
-    private BitDebouncer _debouncer = new();
 
     private string AiChatPanelPrompt1 = "How can I start developing using bit BlazorUI packages?";
     private string AiChatPanelPrompt2 = "How can I benefit from the theme implementation in bit BlazorUI?";
@@ -150,11 +150,6 @@ public partial class AppAiChatPanel
                         {
                             JSRuntime.InvokeVoid("highlightSnippet", "chat-messages-stack");
                         }));
-
-                        //_ = Task.Delay(100).ContinueWith(_ =>
-                        //{
-                        //    JSRuntime.InvokeVoid("highlightSnippet", "chat-messages-stack");
-                        //});
                     }
                 }
             }
