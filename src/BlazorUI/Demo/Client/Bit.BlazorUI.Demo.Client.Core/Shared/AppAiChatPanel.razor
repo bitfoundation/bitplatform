@@ -1,7 +1,7 @@
 @using Bit.BlazorUI.Demo.Shared.Dtos.AiChat
 @inherits AppComponentBase
 
-<BitMediaQuery ScreenQuery="BitScreenQuery.LtSm" OnChange="isMatched => isSmallScreen = isMatched" />
+<BitMediaQuery ScreenQuery="BitScreenQuery.LtSm" OnChange="isMatched => _isSmallScreen = isMatched" />
 
 <section>
     <BitButton Float
@@ -9,20 +9,20 @@
                FloatOffset="1rem"
                Class="open-panel-button"
                Variant="BitVariant.Text"
-               OnClick="() => isOpen = true"
+               OnClick="() => _isOpen = true"
                Color="BitColor.PrimaryBackground"
                IconUrl="_content/Bit.BlazorUI.Demo.Client.Core/images/icon/ai-chat-icon-64.webp"
                FloatPosition="BitPosition.BottomRight" />
 
     <BitProPanel ShowCloseButton
-                 @bind-IsOpen="isOpen"
-                 ModeFull="isSmallScreen is true"
-                 Modeless="isSmallScreen is false"
+                 @bind-IsOpen="_isOpen"
+                 ModeFull="_isSmallScreen is true"
+                 Modeless="_isSmallScreen is false"
                  OnDismiss="WrapHandled(HandleOnDismissPanel)">
         <Header>
             <BitStack Horizontal Alignment="BitAlignment.Center">
                 <BitText Typography="BitTypography.H5">AI chat panel</BitText>
-                @if (isLoading)
+                @if (_isLoading)
                 {
                     <BitRollingSquareLoading Size="BitSize.Small" />
                 }
@@ -43,8 +43,8 @@
                                    AutoScroll
                                    Class="scr-container"
                                    ScrollbarWidth="BitScrollbarWidth.Thin">
-                    <BitStack>
-                        @foreach (var message in chatMessages)
+                    <BitStack Id="chat-messages-stack">
+                        @foreach (var message in _chatMessages)
                         {
                             if (message.Role is AiChatMessageRole.User)
                             {
@@ -62,23 +62,23 @@
                             }
                         }
 
-                        @if (isLoading && string.IsNullOrWhiteSpace(lastAssistantMessage?.Content))
+                        @if (_isLoading && string.IsNullOrWhiteSpace(_lastAssistantMessage?.Content))
                         {
                             <BitEllipsisLoading Size="BitSize.Small" />
                         }
                     </BitStack>
                 </BitScrollablePane>
 
-                @if (chatMessages.Count == 1)
+                @if (_chatMessages.Count == 1)
                 {
                     <BitStack Alignment=" BitAlignment.Center" FitHeight FillContent Class="default-prompt-container">
-                        <BitButton FixedColor
+                        @* <BitButton FixedColor
                                    Variant="BitVariant.Outline"
                                    Class="default-prompt-button"
                                    Color="BitColor.SecondaryBackground"
                                    OnClick="() => SendPromptMessage(AiChatPanelPrompt1)">
                             @AiChatPanelPrompt1
-                        </BitButton>
+                        </BitButton> *@
 
                         <BitButton FixedColor
                                    Variant="BitVariant.Outline"
@@ -106,7 +106,7 @@
                                   PreventEnter
                                   MaxLength="1024"
                                   Style="width:100%"
-                                  @bind-Value="@userInput"
+                                  @bind-Value="@_userInput"
                                   Placeholder="Write a message...."
                                   OnEnter="WrapHandled((KeyboardEventArgs e) => HandleOnUserInputEnter(e))"
                                   Styles="@(new() { FieldGroup = "padding:0.5rem; padding-inline-end:2.5rem", Input = "min-height:unset" })" />
@@ -119,7 +119,7 @@
                                FloatOffset="0.5rem"
                                Class="send-message-button"
                                OnClick="WrapHandled(SendMessage)"
-                               IsEnabled=@(string.IsNullOrEmpty(userInput) is false) />
+                               IsEnabled=@(string.IsNullOrEmpty(_userInput) is false) />
                 </BitStack>
             </BitStack>
         </Body>

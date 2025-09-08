@@ -8,23 +8,23 @@ namespace Bit.BlazorUI.Demo.Client.Core.Shared;
 
 public partial class AppAiChatPanel
 {
-    [CascadingParameter] public BitDir? CurrentDir { get; set; }
-
     [AutoInject] private HubConnection hubConnection = default!;
 
 
-    private bool isOpen;
-    private bool isLoading;
-    private string? userInput;
-    private bool isSmallScreen;
-    private int responseCounter;
-    private Channel<string>? channel;
-    private AiChatMessage? lastAssistantMessage;
-    private List<AiChatMessage> chatMessages = []; // TODO: Persist these values in client-side storage to retain them across app restarts.
 
-    private string AiChatPanelPrompt1 = "What are the different projects in bit BlazorUI and what do they do?";
-    private string AiChatPanelPrompt2 = "How can I start developing using bit BlazorUI packages?";
-    private string AiChatPanelPrompt3 = "How can I benefit from the theme implementation in bit BlazorUI?";
+    private bool _isOpen;
+    private bool _isLoading;
+    private string? _userInput;
+    private bool _isSmallScreen;
+    private int _responseCounter;
+    private Channel<string>? _channel;
+    private AiChatMessage? _lastAssistantMessage;
+    private List<AiChatMessage> _chatMessages = []; // TODO: Persist these values in client-side storage to retain them across app restarts.
+    private BitDebouncer _debouncer = new();
+
+    private string AiChatPanelPrompt1 = "How can I start developing using bit BlazorUI packages?";
+    private string AiChatPanelPrompt2 = "How can I benefit from the theme implementation in bit BlazorUI?";
+    private string AiChatPanelPrompt3 = "Explain BitGrid and BitStack for a developer familiar with Bootstrap's grid system?";
 
 
     protected override async Task OnAfterFirstRenderAsync()
@@ -39,43 +39,43 @@ public partial class AppAiChatPanel
 
     private async Task HubConnection_Reconnected(string? _)
     {
-        if (channel is null) return;
+        if (_channel is null) return;
 
         await RestartChannel();
     }
 
     private async Task SendPromptMessage(string message)
     {
-        userInput = message;
+        _userInput = message;
         await SendMessage();
     }
 
     private async Task SendMessage()
     {
-        if (string.IsNullOrWhiteSpace(userInput)) return;
+        if (string.IsNullOrWhiteSpace(_userInput)) return;
 
         if (hubConnection.State is not HubConnectionState.Connected)
         {
             await hubConnection.StartAsync(CurrentCancellationToken);
         }
 
-        if (channel is null)
+        if (_channel is null)
         {
             _ = StartChannel();
         }
 
-        isLoading = true;
+        _isLoading = true;
 
-        var input = userInput;
-        userInput = string.Empty;
+        var input = _userInput;
+        _userInput = string.Empty;
 
-        chatMessages.Add(new() { Content = input, Role = AiChatMessageRole.User });
-        lastAssistantMessage = new() { Role = AiChatMessageRole.Assistant };
-        chatMessages.Add(lastAssistantMessage);
+        _chatMessages.Add(new() { Content = input, Role = AiChatMessageRole.User });
+        _lastAssistantMessage = new() { Role = AiChatMessageRole.Assistant };
+        _chatMessages.Add(_lastAssistantMessage);
 
         StateHasChanged();
 
-        await channel!.Writer.WriteAsync(input!, CurrentCancellationToken);
+        await _channel!.Writer.WriteAsync(input!, CurrentCancellationToken);
     }
 
     private async Task ClearChat()
@@ -87,10 +87,10 @@ public partial class AppAiChatPanel
 
     private void SetDefaultValues()
     {
-        isLoading = false;
-        responseCounter = 0;
-        lastAssistantMessage = new() { Role = AiChatMessageRole.Assistant };
-        chatMessages = [
+        _isLoading = false;
+        _responseCounter = 0;
+        _lastAssistantMessage = new() { Role = AiChatMessageRole.Assistant };
+        _chatMessages = [
             new()
             {
                 Role = AiChatMessageRole.Assistant,
@@ -113,37 +113,49 @@ public partial class AppAiChatPanel
 
     private async Task StartChannel()
     {
-        channel = Channel.CreateUnbounded<string>(new() { SingleReader = true, SingleWriter = true });
+        _channel = Channel.CreateUnbounded<string>(new() { SingleReader = true, SingleWriter = true });
 
         await foreach (var response in hubConnection.StreamAsync<string>("Chatbot",
                                                                          new StartChatbotRequest()
                                                                          {
-                                                                             ChatMessagesHistory = chatMessages
+                                                                             ChatMessagesHistory = _chatMessages
                                                                          },
-                                                                         channel.Reader.ReadAllAsync(CurrentCancellationToken),
+                                                                         _channel.Reader.ReadAllAsync(CurrentCancellationToken),
                                                                          cancellationToken: CurrentCancellationToken))
         {
-            int expectedResponsesCount = chatMessages.Count(c => c.Role is AiChatMessageRole.User);
+            int expectedResponsesCount = _chatMessages.Count(c => c.Role is AiChatMessageRole.User);
 
             if (response is SharedChatProcessMessages.MESSAGE_RPOCESS_SUCESS)
             {
-                responseCounter++;
-                isLoading = false;
+                _responseCounter++;
+                _isLoading = false;
             }
             else if (response is SharedChatProcessMessages.MESSAGE_RPOCESS_ERROR)
             {
-                responseCounter++;
-                if (responseCounter == expectedResponsesCount)
+                _responseCounter++;
+                if (_responseCounter == expectedResponsesCount)
                 {
-                    isLoading = false; // Hide loading only if this is an error for the last user's message.
+                    _isLoading = false; // Hide loading only if this is an error for the last user's message.
                 }
-                chatMessages[responseCounter * 2].Successful = false;
+                _chatMessages[_responseCounter * 2].Successful = false;
             }
             else
             {
-                if ((responseCounter + 1) == expectedResponsesCount)
+                if ((_responseCounter + 1) == expectedResponsesCount)
                 {
-                    lastAssistantMessage!.Content += response;
+                    _lastAssistantMessage!.Content += response;
+                    if (response.HasValue())
+                    {
+                        _ = _debouncer.Do(100, () => Task.Delay(100).ContinueWith(_ =>
+                        {
+                            JSRuntime.InvokeVoid("highlightSnippet", "chat-messages-stack");
+                        }));
+
+                        //_ = Task.Delay(100).ContinueWith(_ =>
+                        //{
+                        //    JSRuntime.InvokeVoid("highlightSnippet", "chat-messages-stack");
+                        //});
+                    }
                 }
             }
 
@@ -153,10 +165,10 @@ public partial class AppAiChatPanel
 
     private async Task StopChannel()
     {
-        if (channel is null) return;
+        if (_channel is null) return;
 
-        channel.Writer.Complete();
-        channel = null;
+        _channel.Writer.Complete();
+        _channel = null;
     }
 
     private async Task RestartChannel()
