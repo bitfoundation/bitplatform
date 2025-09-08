@@ -650,7 +650,7 @@ private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem<string>>>
             query.Add(""$filter"", $""contains(Name,'{request.Search}')"");
         }
 
-        var url = NavManager.GetUriWithQueryParameters(""Products/GetProducts"", query);
+        var url = NavManager.GetUriWithQueryParameters(""api/Products/GetProducts"", query);
 
         var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
 

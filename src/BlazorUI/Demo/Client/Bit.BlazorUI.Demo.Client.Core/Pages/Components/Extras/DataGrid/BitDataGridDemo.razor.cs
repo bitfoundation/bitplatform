@@ -613,7 +613,7 @@ public partial class BitDataGridDemo : AppComponentBase
                     query.Add("$orderby", string.Join(", ", req.GetSortByProperties().Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}")));
                 }
 
-                var url = NavigationManager.GetUriWithQueryParameters("Products/GetProducts", query);
+                var url = NavigationManager.GetUriWithQueryParameters("api/Products/GetProducts", query);
 
                 var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
 
