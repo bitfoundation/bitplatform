@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Bit.BlazorUI;
 
-public static class IServiceCollectionExtensions
+public static class IBlazorUIExtrasServiceCollectionExtensions
 {
     /// <summary>
     /// Registers required services of the Extras package of the BitBlazorUI components.

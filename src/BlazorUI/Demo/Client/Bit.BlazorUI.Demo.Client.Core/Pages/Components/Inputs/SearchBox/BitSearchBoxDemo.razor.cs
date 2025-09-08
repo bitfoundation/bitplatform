@@ -669,7 +669,7 @@ public partial class BitSearchBoxDemo
                 query.Add("$filter", $"contains(toupper(Name),'{request.SearchTerm.ToUpper()}')");
             }
 
-            var url = NavManager.GetUriWithQueryParameters("Products/GetProducts", query);
+            var url = NavManager.GetUriWithQueryParameters("api/Products/GetProducts", query);
 
             var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto, request.CancellationToken);
 

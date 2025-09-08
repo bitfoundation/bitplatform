@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Components;
 
-public partial class AppComponentBase : ComponentBase, IDisposable
+public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 {
     protected bool ShowAllCodes { get; private set; }
 
@@ -26,10 +26,24 @@ public partial class AppComponentBase : ComponentBase, IDisposable
 
     [AutoInject] protected IExceptionHandler ExceptionHandler = default!;
 
-    private readonly CancellationTokenSource cts = new();
-    protected CancellationToken CurrentCancellationToken => cts.Token;
+
+
+    private CancellationTokenSource? cts = new();
+    protected CancellationToken CurrentCancellationToken
+    {
+        get
+        {
+            if (cts == null)
+                throw new OperationCanceledException(); // Component already disposed.
+
+            cts.Token.ThrowIfCancellationRequested();
+            return cts.Token;
+        }
+    }
 
     protected bool InPrerenderSession => AppRenderMode.IsBlazorHybrid is false && RendererInfo.IsInteractive is false;
+
+
 
     protected sealed override async Task OnInitializedAsync()
     {
@@ -105,6 +119,8 @@ public partial class AppComponentBase : ComponentBase, IDisposable
         return Task.CompletedTask;
     }
 
+
+
     /// <summary>
     /// Executes passed action while catching all possible exceptions to prevent app crash.
     /// </summary>
@@ -177,9 +193,23 @@ public partial class AppComponentBase : ComponentBase, IDisposable
         };
     }
 
-    public virtual void Dispose()
+
+    public async ValueTask DisposeAsync()
     {
-        cts.Cancel();
-        cts.Dispose();
+        if (cts != null)
+        {
+            using var currentCts = cts;
+            cts = null;
+            await currentCts.CancelAsync();
+        }
+
+        await DisposeAsync(true);
+
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual ValueTask DisposeAsync(bool disposing)
+    {
+        return ValueTask.CompletedTask;
     }
 }

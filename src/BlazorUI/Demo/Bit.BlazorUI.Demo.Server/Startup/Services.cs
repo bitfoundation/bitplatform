@@ -1,8 +1,9 @@
 ﻿using System.IO.Compression;
-using Microsoft.AspNetCore.OData;
-using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.ResponseCompression;
 using Bit.BlazorUI.Demo.Server.Services;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.OData;
+using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.Extensions.AI;
 
 namespace Bit.BlazorUI.Demo.Server.Startup;
 
@@ -12,7 +13,12 @@ public static class Services
     {
         // Services being registered here can get injected into controllers and services in Server project.
 
-        var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
+        AppSettings appSettings = new();
+
+        configuration.GetSection(nameof(AppSettings)).Bind(appSettings);
+
+        services.AddHttpClient<TelegramBotApiClient>();
+        services.AddScoped<TelegramBotService>();
 
         services.AddExceptionHandler<ServerExceptionHandler>();
 
@@ -33,11 +39,32 @@ public static class Services
                 };
             });
 
+        services.AddSignalR(options =>
+        {
+            options.EnableDetailedErrors = env.IsDevelopment();
+        });
+
         services.Configure<ForwardedHeadersOptions>(options =>
         {
             options.ForwardedHeaders = ForwardedHeaders.All;
             options.ForwardedHostHeaderName = "X-Host";
         });
+
+        if (string.IsNullOrEmpty(appSettings?.AzureOpenAI?.ChatApiKey) is false)
+        {
+            // https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.AI.AzureAIInference#microsoftextensionsaiazureaiinference
+            services.AddChatClient(sp => new Azure.AI.Inference.ChatCompletionsClient(endpoint: appSettings.AzureOpenAI.ChatEndpoint,
+                credential: new Azure.AzureKeyCredential(appSettings.AzureOpenAI.ChatApiKey),
+                options: new()
+                {
+                    Transport = new Azure.Core.Pipeline.HttpClientTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
+                }).AsIChatClient(appSettings.AzureOpenAI.ChatModel))
+            .UseLogging()
+            .UseFunctionInvocation()
+            .UseDistributedCache();
+        }
+
+        services.AddDistributedMemoryCache();
 
         services.AddResponseCaching();
 
