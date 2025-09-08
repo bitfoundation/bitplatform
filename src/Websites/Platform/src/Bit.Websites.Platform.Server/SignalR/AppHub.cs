@@ -138,7 +138,7 @@ public partial class AppHub : Hub
                            - Once you have their email, call the AskForSales tool with their email and the conversation history
                            - Be helpful and professional about their business needs
 
-                        ## 3. For General Questions and Technical Support:
+                        ## 3. For all other questions:
                            - For all other questions about bitplatform features, documentation, how-to guides, best practices, or technical questions
                            - Use the ask_question tool to search the `bitfoundation/bitplatform` repository docs.
                            - Provide comprehensive answers based on the official documentation
