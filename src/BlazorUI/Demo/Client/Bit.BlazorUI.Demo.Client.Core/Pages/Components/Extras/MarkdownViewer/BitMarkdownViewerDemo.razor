@@ -17,13 +17,24 @@
 
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-            <BitMarkdownViewer Markdown="@("# Marked in the browser\n\nRendered by **marked**.")" />
+            <BitMarkdownViewer Markdown="@("# Marked in the browser\n\nRendered by [**marked**](https://marked.js.org).")" />
         </DemoExample>
 
         <DemoExample Title="Advanced" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div>
                 <BitMarkdownViewer Markdown="@advancedMarkdown" Class="advanced" />
             </div>
+        </DemoExample>
+
+        <DemoExample Title="Events" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <BitMarkdownViewer Markdown="@("# Events of the BitMarkdownViewer:\n\n- OnParsing\n- OnParsed\n- OnRendered")"
+                               OnParsing="OnParsing"
+                               OnParsed="OnParsed"
+                               OnRendered="OnRendered" />
+            <hr />
+            <div>Parsing at [@parsingDateTime?.ToString("o")]</div>
+            <div>Parsed at [@parsedDateTime?.ToString("o")]</div>
+            <div>Rendered at [@renderedDateTime?.ToString("o")]</div>
         </DemoExample>
     </Examples>
 </DemoPage>
