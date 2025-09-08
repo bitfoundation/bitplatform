@@ -8,8 +8,6 @@ namespace Bit.Websites.Platform.Client.Shared;
 
 public partial class AppAiChatPanel
 {
-    [CascadingParameter] public BitDir? CurrentDir { get; set; }
-
     [AutoInject] private HubConnection hubConnection = default!;
 
 
@@ -82,7 +80,10 @@ public partial class AppAiChatPanel
     {
         SetDefaultValues();
 
-        await RestartChannel();
+        if (chatMessages.Count > 1)
+        {
+            await RestartChannel();
+        }
     }
 
     private void SetDefaultValues()

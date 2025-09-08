@@ -27,17 +27,10 @@
 
     .open-panel-button {
         padding: 0;
-        left: unset;
-        right: unset;
-        inset-inline-end: 2rem;
+        inset-inline-end: 1rem;
 
         &:hover, &:active {
             background-color: transparent;
-        }
-
-        @include lt-md {
-            bottom: 4rem;
-            inset-inline-end: 1rem;
         }
 
         img {
