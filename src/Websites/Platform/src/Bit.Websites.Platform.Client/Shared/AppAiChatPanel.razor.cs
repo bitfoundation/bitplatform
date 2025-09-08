@@ -8,8 +8,6 @@ namespace Bit.Websites.Platform.Client.Shared;
 
 public partial class AppAiChatPanel
 {
-    [CascadingParameter] public BitDir? CurrentDir { get; set; }
-
     [AutoInject] private HubConnection hubConnection = default!;
 
 
