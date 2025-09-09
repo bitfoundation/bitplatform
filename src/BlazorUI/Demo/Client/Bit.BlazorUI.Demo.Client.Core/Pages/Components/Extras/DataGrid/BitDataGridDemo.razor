@@ -23,39 +23,35 @@
                         Color="BitColor.SecondaryBackground"
                         IconName="@BitIconName.NavigateExternalInline" />
             </BitLink>
-            nuget package, as described in the Optional steps of the
+            NuGet package, as described in the Optional steps of the
             <BitLink Href="/getting-started">Getting started</BitLink> page.
         </BitText>
     </NotesTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-            <div class="grid1">
-                <div class="grid1-container">
-                    <BitDataGrid Items="@FilteredItems1" ResizableColumns="true" Pagination="@pagination1">
-                        <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true" IsDefaultSort="BitDataGridSortDirection.Ascending">
-                            <ColumnOptions>
-                                <BitSearchBox @bind-Value="typicalSampleNameFilter1"
-                                              FixedIcon
-                                              Immediate DebounceTime="300"
-                                              Placeholder="Search on Name"
-                                              InputHtmlAttributes="@(new Dictionary<string, object> { { "autofocus", true } })" />
-                            </ColumnOptions>
-                        </BitDataGridPropertyColumn>
-                        <BitDataGridPropertyColumn Property="@(c => c.Medals.Gold)" Sortable="true" />
-                        <BitDataGridPropertyColumn Property="@(c => c.Medals.Silver)" Sortable="true" />
-                        <BitDataGridPropertyColumn Property="@(c => c.Medals.Bronze)" Sortable="true" />
-                        <BitDataGridPropertyColumn Property="@(c => c.Medals.Total)" Sortable="true" />
-                    </BitDataGrid>
-                </div>
-                <BitDataGridPaginator Value="@pagination1" />
-            </div>
+            <BitDataGrid Items="@FilteredItems1" Pagination="@pagination1" ResizableColumns>
+                <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true" IsDefaultSort="BitDataGridSortDirection.Ascending">
+                    <ColumnOptions>
+                        <BitSearchBox @bind-Value="typicalSampleNameFilter1"
+                                      FixedIcon
+                                      Immediate DebounceTime="300"
+                                      Placeholder="Search..."
+                                      InputHtmlAttributes="@(new Dictionary<string, object> { { "autofocus", true } })" />
+                    </ColumnOptions>
+                </BitDataGridPropertyColumn>
+                <BitDataGridPropertyColumn Property="@(c => c.Medals.Gold)" Sortable="true" />
+                <BitDataGridPropertyColumn Property="@(c => c.Medals.Silver)" Sortable="true" />
+                <BitDataGridPropertyColumn Property="@(c => c.Medals.Bronze)" Sortable="true" />
+                <BitDataGridPropertyColumn Property="@(c => c.Medals.Total)" Sortable="true" />
+            </BitDataGrid>
+            <BitDataGridPaginator Value="@pagination1" />
         </DemoExample>
 
         <DemoExample Title="Customized" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-            <div class="grid2">
-                <div class="grid2-container">
-                    <BitDataGrid Items="@FilteredItems2" ResizableColumns="true" Pagination="@pagination2">
-                        <BitDataGridPropertyColumn Class="column--large" Property="@(c => c.Name)" Sortable="true" IsDefaultSort="BitDataGridSortDirection.Ascending">
+            <div class="custom-grid">
+                <div class="container">
+                    <BitDataGrid Items="@FilteredItems2" Pagination="@pagination2" ResizableColumns>
+                        <BitDataGridPropertyColumn Property="@(c => c.Name)" IsDefaultSort="BitDataGridSortDirection.Ascending" Sortable="true" Class="wide">
                             <ColumnOptions>
                                 <BitSearchBox @bind-Value="typicalSampleNameFilter2"
                                               FixedIcon
@@ -82,27 +78,27 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Virtualizing" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-            <div class="grid3">
-                <BitDataGrid ItemsProvider="@foodRecallProvider" TGridItem="FoodRecall" Virtualize="true" @ref="dataGrid">
+        <DemoExample Title="Virtualize" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div class="grid">
+                <BitDataGrid @ref="dataGrid" ItemsProvider="@foodRecallProvider" TGridItem="FoodRecall" Virtualize>
                     <BitDataGridPropertyColumn Property="@(c => c.EventId)" />
                     <BitDataGridPropertyColumn Property="@(c => c.State)" />
                     <BitDataGridPropertyColumn Property="@(c => c.City)" />
                     <BitDataGridPropertyColumn Property="@(c => c.RecallingFirm)" Title="Company" />
                     <BitDataGridPropertyColumn Property="@(c => c.Status)" />
-                    <BitDataGridPropertyColumn Sortable="true" Property="@(c => c.ReportDate)" Title="Report Date" />
+                    <BitDataGridPropertyColumn Property="@(c => c.ReportDate)" Title="Report Date" Sortable="true" />
                 </BitDataGrid>
             </div>
             <div class="search-panel">
                 <BitSearchBox @bind-Value="VirtualSampleNameFilter"
                               Immediate DebounceTime="300"
-                              Placeholder="Search on Company" />
+                              Placeholder="Search..." />
             </div>
         </DemoExample>
 
         <DemoExample Title="OData" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-            <div class="grid3">
-                <BitDataGrid ItemKey="(p => p.Id)" ItemsProvider="@productsItemsProvider" TGridItem="ProductDto" Virtualize="true" @ref="productsDataGrid">
+            <div class="grid">
+                <BitDataGrid @ref="productsDataGrid" ItemsProvider="@productsItemsProvider" ItemKey="(p => p.Id)" TGridItem="ProductDto" Virtualize>
                     <BitDataGridPropertyColumn Property="@(p => p.Id)" Sortable="true" IsDefaultSort="BitDataGridSortDirection.Ascending" />
                     <BitDataGridPropertyColumn Property="@(p => p.Name)" Sortable="true" />
                     <BitDataGridPropertyColumn Property="@(p => p.Price)" Sortable="true" />
@@ -116,8 +112,8 @@
         </DemoExample>
 
         <DemoExample Title="LoadingTemplate" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-            <div class="grid3">
-                <BitDataGrid ItemKey="(p => p.Id)" ItemsProvider="@productsItemsProvider" TGridItem="ProductDto" Pagination="pagination3" @ref="productsDataGrid">
+            <div class="grid">
+                <BitDataGrid @ref="productsDataGrid" ItemsProvider="@productsItemsProvider" ItemKey="(p => p.Id)" TGridItem="ProductDto" Pagination="pagination3">
                     <Columns>
                         <BitDataGridPropertyColumn Property="@(p => p.Id)" Sortable="true" IsDefaultSort="BitDataGridSortDirection.Ascending" />
                         <BitDataGridPropertyColumn Property="@(p => p.Name)" Sortable="true" />
@@ -134,6 +130,23 @@
             <BitDataGridPaginator Value="@pagination3" SummaryFormat="@(v => $"Total: {v.TotalItemCount?.ToString("N0")}")">
                 <TextTemplate Context="state">@(state.CurrentPageIndex + 1) / @(state.LastPageIndex + 1)</TextTemplate>
             </BitDataGridPaginator>
+        </DemoExample>
+
+        <DemoExample Title="Responsive" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example5">
+            <div>
+                The BitDataGrid does not have the Responsive feature built-in, 
+                but you can achieve some level of responsiveness like what we did in this sample:</div>
+            <br />
+            <div class="responsive-grid">
+                <BitDataGrid Items="@allCountries" Pagination="@pagination6">
+                    <BitDataGridPropertyColumn Property="@(c => c.Name)" />
+                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Gold)" />
+                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Silver)" />
+                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Bronze)" />
+                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Total)" />
+                </BitDataGrid>
+                <BitDataGridPaginator Value="@pagination6" />
+            </div>
         </DemoExample>
 
     </Examples>

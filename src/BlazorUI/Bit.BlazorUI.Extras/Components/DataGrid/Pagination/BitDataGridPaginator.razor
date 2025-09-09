@@ -1,6 +1,6 @@
 @namespace Bit.BlazorUI
 
-<div class="bitdatagrid-paginator">
+<div class="bit-dgp">
     @if (Value.TotalItemCount.HasValue)
     {
         <div class="summary">
@@ -17,20 +17,20 @@
                 <text><strong>@Value.TotalItemCount</strong> items</text>
             }
         </div>
-        <nav role="navigation">
+        <nav class="bit-dgp-nav" role="navigation">
             <button type="button"
-                    class="go-first"
+                    class="bit-dgp-fst"
                     @onclick="GoFirstAsync"
                     disabled="@(!CanGoBack)"
                     title="@GoToFirstButtonTitle"
                     aria-title="@GoToFirstButtonTitle" />
             <button type="button"
-                    class="go-previous"
+                    class="bit-dgp-prv"
                     @onclick="GoPreviousAsync"
                     disabled="@(!CanGoBack)"
                     title="@GoToPrevButtonTitle"
                     aria-title="@GoToPrevButtonTitle" />
-            <div class="pagination-text">
+            <div class="bit-dgp-txt">
                 @if (TextTemplate is not null)
                 {
                     @TextTemplate(Value)
@@ -45,13 +45,13 @@
                 }
             </div>
             <button type="button"
-                    class="go-next"
+                    class="bit-dgp-nex"
                     @onclick="GoNextAsync"
                     disabled="@(!CanGoForwards)"
                     title="@GoToNextButtonTitle"
                     aria-title="@GoToNextButtonTitle" />
             <button type="button"
-                    class="go-last"
+                    class="bit-dgp-lst"
                     @onclick="GoLastAsync"
                     disabled="@(!CanGoForwards)"
                     title="@GoToLastButtonTitle"

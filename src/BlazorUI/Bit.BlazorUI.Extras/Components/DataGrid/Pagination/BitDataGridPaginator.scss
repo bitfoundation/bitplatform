@@ -1,71 +1,71 @@
-.bitdatagrid-paginator {
+.bit-dgp {
     display: flex;
     flex-wrap: wrap;
     padding: 0.25rem;
     align-items: center;
 
-    .pagination-text {
-        margin: 0 0.5rem;
-        text-align: center;
-    }
+    &[dir=rtl] {
+        .bit-dgp-nex,
+        .bit-dgp-lst {
+            transform: scaleX(1);
+        }
 
-    nav {
-        gap: 0.5rem;
-        display: flex;
-        align-items: center;
-        margin-inline-start: auto;
+        .bit-dgp-prv,
+        .bit-dgp-fst {
+            transform: scaleX(-1);
+        }
     }
+}
 
-    nav button {
+.bit-dgp-txt {
+    margin: 0 0.5rem;
+    text-align: center;
+}
+
+.bit-dgp-nav {
+    gap: 0.5rem;
+    display: flex;
+    align-items: center;
+    margin-inline-start: auto;
+
+    button {
         border: 0;
         width: 2rem;
         height: 2rem;
         background: none center center / 1rem no-repeat;
-    }
 
-    nav button[disabled] {
-        opacity: 0.4;
-    }
+        &[disabled] {
+            opacity: 0.4;
+        }
 
-    nav button:not([disabled]):hover {
-        background-color: var(--bit-clr-bg-pri-hover);
-    }
+        &:not([disabled]):hover {
+            background-color: var(--bit-clr-bg-pri-hover);
+        }
 
-    nav button:not([disabled]):active {
-        background-color: var(--bit-clr-bg-pri-active);
-    }
-
-    .go-first:before,
-    .go-last:before {
-        content: "\F371";
-        font-style: normal;
-        font-weight: normal;
-        display: inline-block;
-        font-family: 'Fabric MDL2 bit BlazorUI Extras';
-    }
-
-    .go-previous:before,
-    .go-next:before {
-        content: "\E96F";
-        font-style: normal;
-        font-weight: normal;
-        display: inline-block;
-        font-family: 'Fabric MDL2 bit BlazorUI Extras';
-    }
-
-    .go-next, .go-last {
-        transform: scaleX(-1);
+        &:not([disabled]):active {
+            background-color: var(--bit-clr-bg-pri-active);
+        }
     }
 }
 
-[dir=rtl] {
-    .bitdatagrid-paginator {
-        .go-next, .go-last {
-            transform: scaleX(1);
-        }
+.bit-dgp-fst:before,
+.bit-dgp-lst:before {
+    content: "\F371";
+    font-style: normal;
+    font-weight: normal;
+    display: inline-block;
+    font-family: 'Fabric MDL2 bit BlazorUI Extras';
+}
 
-        .go-previous, .go-first {
-            transform: scaleX(-1);
-        }
-    }
+.bit-dgp-prv:before,
+.bit-dgp-nex:before {
+    content: "\E96F";
+    font-style: normal;
+    font-weight: normal;
+    display: inline-block;
+    font-family: 'Fabric MDL2 bit BlazorUI Extras';
+}
+
+.bit-dgp-nex, .bit-dgp-lst {
+    transform: scaleX(-1);
 }

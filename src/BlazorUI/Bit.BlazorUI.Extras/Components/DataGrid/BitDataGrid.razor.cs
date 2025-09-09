@@ -427,11 +427,11 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
 
     private string? ColumnHeaderClass(BitDataGridColumnBase<TGridItem> column)
         => _sortByColumn == column
-        ? $"{ColumnClass(column)} {(_sortByAscending ? "col-sort-asc" : "col-sort-desc")}"
+        ? $"{ColumnClass(column)} {(_sortByAscending ? "bit-dtg-csa" : "bit-dtg-csd")}"
         : ColumnClass(column);
 
     private string GridClass()
-        => $"bitdatagrid {Class} {((IsLoading && LoadingTemplate is null) ? "loading" : null)}".Trim();
+        => $"bit-dtg {Class} {((IsLoading && LoadingTemplate is null) ? "loading" : null)}".Trim();
 
     private void CloseColumnOptions()
     {
@@ -476,8 +476,8 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
 
     private static string? ColumnClass(BitDataGridColumnBase<TGridItem> column) => column.Align switch
     {
-        BitDataGridAlign.Center => $"col-justify-center {column.Class}",
-        BitDataGridAlign.Right => $"col-justify-end {column.Class}",
+        BitDataGridAlign.Center => $"bit-dtg-cjc {column.Class}",
+        BitDataGridAlign.Right => $"bit-dtg-cje {column.Class}",
         _ => column.Class,
     };
 
