@@ -27,6 +27,7 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
                 if (response.Headers.TryGetValues("Request-Id", out var requestId))
                 {
                     requestIdValue = requestId.First();
+                    logScopeData["RequestId"] = requestIdValue;
                 }
 
                 serverCommunicationSuccess = true;

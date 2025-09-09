@@ -88,7 +88,7 @@ public partial class AppHub
                     ChatOptions chatOptions = new()
                     {
                         Tools = [
-                                AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
+                                AIFunctionFactory.Create(async ([Required] string emailAddress, string conversationHistory) =>
                                 {
                                     if (messageSpecificCancellationToken.IsCancellationRequested)
                                         return;
@@ -102,7 +102,7 @@ public partial class AppHub
 
                                 }, name: "SaveUserEmailAndConversationHistory", description: "Saves the user's email address and the conversation history for future reference. Use this tool when the user provides their email address during the conversation. Parameters: emailAddress (string), conversationHistory (string)"),
                                 //#if (module == "Sales")
-                                AIFunctionFactory.Create(async ([Description("Concise summary of these user requirements")] string userNeeds,
+                                AIFunctionFactory.Create(async ([Required, Description("Concise summary of these user requirements")] string userNeeds,
                                     [Description("Car manufacturer's name (Optional)")] string? manufacturer,
                                     [Description("Car price below this value (Optional)")] decimal? maxPrice,
                                     [Description("Car price above this value (Optional)")] decimal? minPrice) =>
@@ -154,6 +154,17 @@ public partial class AppHub
                     }
 
                     await channel.Writer.WriteAsync(SharedChatProcessMessages.MESSAGE_RPOCESS_SUCESS, cancellationToken);
+
+                    chatOptions.ResponseFormat = ChatResponseFormat.Json;
+                    chatOptions.AdditionalProperties = new() { ["response_format"] = new { type = "json_object" } };
+                    var followUpItems = await chatClient.GetResponseAsync<AiChatFollowUpList>([
+                        new(ChatRole.System, supportSystemPrompt),
+                        new(ChatRole.User, incomingMessage), 
+                        new(ChatRole.Assistant, assistantResponse.ToString()),
+                        new(ChatRole.System, @"Return up to 3 relevant follow-up suggestions that help users discover related topics and continue the conversation naturally in JSON object containing string[] named FollowUpSuggestions."),], 
+                        chatOptions, cancellationToken: messageSpecificCancellationToken);
+
+                    await channel.Writer.WriteAsync(JsonSerializer.Serialize(followUpItems.Result), messageSpecificCancellationToken);
                 }
                 catch (Exception exp)
                 {

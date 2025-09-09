@@ -39,9 +39,9 @@
         <Body>
             <BitStack Class="body">
                 <BitScrollablePane FullSize
-                                   AutoScroll
                                    Class="scr-container"
-                                   ScrollbarWidth="BitScrollbarWidth.Thin">
+                                   ScrollbarWidth="BitScrollbarWidth.Thin"
+                                   AutoScroll="@string.IsNullOrEmpty(userInput)">
                     <BitStack>
                         @foreach (var message in chatMessages)
                         {
@@ -96,6 +96,24 @@
                                    OnClick="() => SendPromptMessage(Localizer[nameof(AppStrings.AiChatPanelPrompt3)])">
                             @Localizer[nameof(AppStrings.AiChatPanelPrompt3)]
                         </BitButton>
+                    </BitStack>
+                }
+
+                @if (followUpSuggestions.Any())
+                {
+                    <BitStack Alignment=" BitAlignment.Center" FitHeight FillContent Class="default-prompt-container">
+
+                        @foreach (var suggestion in followUpSuggestions)
+                        {
+                            <BitButton FixedColor
+                                       Variant="BitVariant.Outline"
+                                       Class="default-prompt-button"
+                                       Color="BitColor.SecondaryBackground"
+                                       OnClick="() => SendPromptMessage(suggestion)">
+                                @suggestion
+                            </BitButton>
+                        }
+
                     </BitStack>
                 }
 
