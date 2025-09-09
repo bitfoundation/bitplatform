@@ -166,9 +166,9 @@ public partial class AppHub
                         new(ChatRole.User, incomingMessage),
                         new(ChatRole.Assistant, assistantResponse.ToString()),
                         new(ChatRole.User, @"Return up to 3 relevant follow-up suggestions that help users discover related topics and continue the conversation naturally based on user's query in JSON object containing string[] named FollowUpSuggestions."),],
-                        chatOptions, cancellationToken: messageSpecificCancellationToken);
+                        chatOptions, cancellationToken: cancellationToken);
 
-                    await channel.Writer.WriteAsync(JsonSerializer.Serialize(followUpItems.Result), messageSpecificCancellationToken);
+                    await channel.Writer.WriteAsync(JsonSerializer.Serialize(followUpItems.Result), cancellationToken);
                 }
                 catch (Exception exp)
                 {
