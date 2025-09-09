@@ -23,13 +23,13 @@
                     @onclick="GoFirstAsync"
                     disabled="@(!CanGoBack)"
                     title="@GoToFirstButtonTitle"
-                    aria-title="@GoToFirstButtonTitle" />
+                    aria-label="@GoToFirstButtonTitle" />
             <button type="button"
                     class="bit-dgp-prv"
                     @onclick="GoPreviousAsync"
                     disabled="@(!CanGoBack)"
                     title="@GoToPrevButtonTitle"
-                    aria-title="@GoToPrevButtonTitle" />
+                    aria-label="@GoToPrevButtonTitle" />
             <div class="bit-dgp-txt">
                 @if (TextTemplate is not null)
                 {
@@ -49,13 +49,13 @@
                     @onclick="GoNextAsync"
                     disabled="@(!CanGoForwards)"
                     title="@GoToNextButtonTitle"
-                    aria-title="@GoToNextButtonTitle" />
+                    aria-label="@GoToNextButtonTitle" />
             <button type="button"
                     class="bit-dgp-lst"
                     @onclick="GoLastAsync"
                     disabled="@(!CanGoForwards)"
                     title="@GoToLastButtonTitle"
-                    aria-title="@GoToLastButtonTitle" />
+                    aria-label="@GoToLastButtonTitle" />
         </nav>
     }
 </div>

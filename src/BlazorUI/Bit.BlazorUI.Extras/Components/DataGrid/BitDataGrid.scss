@@ -26,7 +26,7 @@
     display: flex;
     position: relative;
     align-items: center;
-    padding-right: var(--bit-dtg-col-gap);
+    padding-inline-end: var(--bit-dtg-col-gap);
 }
 
 .bit-dtg-cop {
@@ -39,23 +39,35 @@
     background-color: var(--bit-clr-bg-sec);
 }
 
+.bit-dtg-cob {
+    width: 1.5rem;
+    background: unset;
+
+    &::before {
+        content: "\E712";
+        font-style: normal;
+        font-weight: normal;
+        display: inline-block;
+        font-family: 'Fabric MDL2 bit BlazorUI Extras';
+    }
+}
+
 .bit-dtg-drg {
     width: 1rem;
     cursor: ew-resize;
     position: absolute;
     inset-block-end: 0;
-    inset-inline-end: 0;
     inset-block-start: 0;
-    right: calc(var(--bit-dtg-col-gap)/2 - 0.5rem);
+    inset-inline-end: calc(var(--bit-dtg-col-gap)/2 - 0.5rem);
 
-    &:after {
+    &::after {
         content: ' ';
         position: absolute;
         inset-block-end: 5px;
         inset-block-start: 5px;
         inset-inline-start: 0.5rem;
-        border-left: 1px solid black;
         border-color: var(--bit-clr-brd-pri);
+        border-inline-start: 1px solid black;
     }
 }
 
@@ -67,8 +79,8 @@
     text-align: center;
 }
 
-.bit-dtg-csa .bit-dtg-srt:before,
-.bit-dtg-csd .bit-dtg-srt:before {
+.bit-dtg-csa .bit-dtg-srt::before,
+.bit-dtg-csd .bit-dtg-srt::before {
     content: "\E96F";
     font-style: normal;
     font-weight: normal;
@@ -79,19 +91,6 @@
 
 .bit-dtg-csd .bit-dtg-srt {
     transform: scaleY(-1) translateY(-2px);
-}
-
-.bit-dtg-cob {
-    width: 1.5rem;
-    background: unset;
-
-    &:before {
-        content: "\E712";
-        font-style: normal;
-        font-weight: normal;
-        display: inline-block;
-        font-family: 'Fabric MDL2 bit BlazorUI Extras';
-    }
 }
 
 .bit-dtg-ctl {
@@ -127,35 +126,14 @@ button.bit-dtg-ctl {
 }
 
 .bit-dtg-cje {
-    text-align: right;
+    text-align: end;
 
     .bit-dtg-ctl {
         flex-direction: row-reverse;
     }
-
-    .bit-dtg-cop {
-        inset-inline-end: 0;
-        inset-inline-start: unset;
-    }
 }
 
-.bit-dtg-plh:after {
+.bit-dtg-plh::after {
     opacity: 0.75;
     content: '\2026';
 }
-
-
-/* Unfortunately we can't use the :dir pseudoselector due to lack of browser support. Instead we have to rely on
-    the developer setting <html dir="rtl"> to detect if we're in RTL mode. */
-
-//html[dir=rtl] bit-dtg-cje {
-//    text-align: left;
-//}
-//html[dir=rtl] .bit-dtg-cop {
-//    left: unset;
-//    right: 0;
-//}
-//html[dir=rtl] .bit-dtg-cje .bit-dtg-cop {
-//    right: unset;
-//    left: 0;
-//}

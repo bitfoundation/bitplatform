@@ -3,18 +3,6 @@
     flex-wrap: wrap;
     padding: 0.25rem;
     align-items: center;
-
-    &[dir=rtl] {
-        .bit-dgp-nex,
-        .bit-dgp-lst {
-            transform: scaleX(1);
-        }
-
-        .bit-dgp-prv,
-        .bit-dgp-fst {
-            transform: scaleX(-1);
-        }
-    }
 }
 
 .bit-dgp-txt {

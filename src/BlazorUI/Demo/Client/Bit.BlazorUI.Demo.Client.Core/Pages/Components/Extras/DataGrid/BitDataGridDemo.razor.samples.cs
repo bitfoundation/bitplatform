@@ -123,7 +123,7 @@ public class CountryModel
 {
     public string Code { get; set; }
     public string Name { get; set; }
-    public MedalsModel MedalsModel { get; set; }
+    public MedalsModel Medals { get; set; }
 }
 
 public class MedalsModel
@@ -323,7 +323,7 @@ public class CountryModel
 {
     public string Code { get; set; }
     public string Name { get; set; }
-    public MedalsModel MedalsModel { get; set; }
+    public MedalsModel Medals { get; set; }
 }
 
 public class MedalsModel
@@ -1063,7 +1063,7 @@ public class CountryModel
 {
     public string Code { get; set; }
     public string Name { get; set; }
-    public MedalsModel MedalsModel { get; set; }
+    public MedalsModel Medals { get; set; }
 }
 
 public class MedalsModel
