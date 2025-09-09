@@ -27,12 +27,15 @@ public partial class AppHub
         // While processing a user message, a new message may arrive.
         // To handle this, we cancel the ongoing message processing using `messageSpecificCancellationTokenSrc` and start processing the new message.
 
-        CultureInfo? culture;
+        CultureInfo? culture = null;
         string? supportSystemPrompt;
 
         try
         {
-            culture = CultureInfo.GetCultureInfo(request.CultureId);
+            if (CultureInfoManager.InvariantGlobalization is false)
+            {
+                culture = CultureInfo.GetCultureInfo(request.CultureId);
+            }
 
             await using var scope = serviceProvider.CreateAsyncScope();
 
@@ -42,7 +45,7 @@ public partial class AppHub
                     .SystemPrompts.FirstOrDefaultAsync(p => p.PromptKind == PromptKind.Support, cancellationToken))?.Markdown ?? throw new ResourceNotFoundException();
 
             supportSystemPrompt = supportSystemPrompt
-                .Replace("{{UserCulture}}", culture.NativeName)
+                .Replace("{{UserCulture}}", culture?.NativeName ?? "")
                 .Replace("{{DeviceInfo}}", request.DeviceInfo);
         }
         catch (Exception exp)

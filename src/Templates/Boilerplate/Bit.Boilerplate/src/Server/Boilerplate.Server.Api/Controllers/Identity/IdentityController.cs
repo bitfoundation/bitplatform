@@ -194,9 +194,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             UserId = userId,
             StartedOn = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
             IP = HttpContext.Connection.RemoteIpAddress?.ToString(),
+            //#if (cloudflare == true)
             // Relying on Cloudflare cdn to retrieve address.
             // https://developers.cloudflare.com/rules/transform/managed-transforms/reference/#add-visitor-location-headers
             Address = $"{Request.Headers["cf-ipcountry"]}, {Request.Headers["cf-ipcity"]}"
+            //#endif
         };
 
         await UpdateUserSessionPrivilegeStatus(userSession, cancellationToken);
