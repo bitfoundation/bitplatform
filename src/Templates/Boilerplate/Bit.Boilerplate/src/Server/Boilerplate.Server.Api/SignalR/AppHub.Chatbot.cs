@@ -155,13 +155,17 @@ public partial class AppHub
 
                     await channel.Writer.WriteAsync(SharedChatProcessMessages.MESSAGE_RPOCESS_SUCESS, cancellationToken);
 
+                    // This would generate a list of follow-up questions/suggestions to keep the conversation going.
+                    // You could instead generate that list in previous chat completion call:
+                    // 1: Using "tools" or "functions" feature of the model, that would not consider the latest assistant response.
+                    // 2: Returning a json object containing the response and follow-up suggestions all together, losing IAsyncEnumerable streaming capability.  
                     chatOptions.ResponseFormat = ChatResponseFormat.Json;
                     chatOptions.AdditionalProperties = new() { ["response_format"] = new { type = "json_object" } };
                     var followUpItems = await chatClient.GetResponseAsync<AiChatFollowUpList>([
                         new(ChatRole.System, supportSystemPrompt),
-                        new(ChatRole.User, incomingMessage), 
+                        new(ChatRole.User, incomingMessage),
                         new(ChatRole.Assistant, assistantResponse.ToString()),
-                        new(ChatRole.System, @"Return up to 3 relevant follow-up suggestions that help users discover related topics and continue the conversation naturally in JSON object containing string[] named FollowUpSuggestions."),], 
+                        new(ChatRole.User, @"Return up to 3 relevant follow-up suggestions that help users discover related topics and continue the conversation naturally based on user's query in JSON object containing string[] named FollowUpSuggestions."),],
                         chatOptions, cancellationToken: messageSpecificCancellationToken);
 
                     await channel.Writer.WriteAsync(JsonSerializer.Serialize(followUpItems.Result), messageSpecificCancellationToken);
