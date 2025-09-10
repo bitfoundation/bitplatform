@@ -150,6 +150,11 @@ jobs:
         
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools
+
+    - name: Enable WebInteropApp route
+      run: |
+          # Uncomment the Route attribute for WebInteropApp component as noted in the WebInteropApp.razor's comments
+          sed -i 's/@\* @attribute \[Route("web-interop-app")\] \*@/@attribute [Route("web-interop-app")]/' TodoSample/src/Client/TodoSample.Client.Core/Components/WebInteropApp.razor
       
     - name: Generate CSS/JS files
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
@@ -197,6 +202,11 @@ jobs:
         
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools
+
+    - name: Enable WebInteropApp route
+      run: |
+          # Uncomment the Route attribute for WebInteropApp component as noted in the WebInteropApp.razor's comments
+          sed -i 's/@\* @attribute \[Route("web-interop-app")\] \*@/@attribute [Route("web-interop-app")]/' TodoSample/src/Client/TodoSample.Client.Core/Components/WebInteropApp.razor
       
     - name: Generate CSS/JS files
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true --no-restore -c Release
@@ -244,6 +254,11 @@ jobs:
         
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools
+
+    - name: Enable WebInteropApp route
+      run: |
+          # Uncomment the Route attribute for WebInteropApp component as noted in the WebInteropApp.razor's comments
+          sed -i 's/@\* @attribute \[Route("web-interop-app")\] \*@/@attribute [Route("web-interop-app")]/' TodoSample/src/Client/TodoSample.Client.Core/Components/WebInteropApp.razor
       
     - name: Generate CSS/JS files
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
