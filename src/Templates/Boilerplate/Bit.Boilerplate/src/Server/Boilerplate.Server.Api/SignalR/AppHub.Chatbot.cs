@@ -168,7 +168,10 @@ public partial class AppHub
                         new(ChatRole.System, supportSystemPrompt),
                         new(ChatRole.User, incomingMessage),
                         new(ChatRole.Assistant, assistantResponse.ToString()),
-                        new(ChatRole.User, @"Return up to 3 relevant follow-up suggestions that help users discover related topics and continue the conversation naturally based on user's query in JSON object containing string[] named FollowUpSuggestions."),],
+                        new(ChatRole.User, @"Return up to 3 relevant follow-up suggestions that help users discover related topics and continue the conversation naturally based on user's query in JSON object containing string[] named FollowUpSuggestions.
+Only suggest follow-up questions that are within the assistant's scope and knowledge.
+Do not suggest questions that require access to data or functionality that is unavailable or out of scope for this assistant.
+Avoid suggesting questions that the assistant would not be able to answer."),],
                         chatOptions, cancellationToken: cancellationToken);
 
                     await channel.Writer.WriteAsync(JsonSerializer.Serialize(followUpItems.Result), cancellationToken);
