@@ -228,7 +228,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
                     var response = await chatClient.GetResponseAsync<AIImageReviewResponse>(
                         messages: [
-                            new ChatMessage(ChatRole.System, "Return a JSON object with two properties: 'isCar' (boolean, true if the image contains a car, false otherwise) and 'alt' (string, describing the image content). Do not include any other properties or text."),
+                            new ChatMessage(ChatRole.System, "Return a JSON object with two properties: 'isCar' (boolean, true if the image contains a car, false otherwise) and 'alt' (string, describing the image content, focusing on the car). Do not include any other properties or text."),
                             new ChatMessage(ChatRole.User, "Analyze this image.")
                             {
                                 Contents = [new DataContent(imageBytes, "image/webp")]
