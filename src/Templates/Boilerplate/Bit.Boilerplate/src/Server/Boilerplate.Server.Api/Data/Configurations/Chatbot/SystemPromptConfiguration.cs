@@ -134,7 +134,7 @@ These are the primary functional areas of the application beyond account managem
 *   **How to Use:**
     - Navigate to the [Upgrade account page](/settings/upgradeaccount).
 " +
-//#endif
+        //#endif
         @"## 4. Informational Pages
 
 ### 4.1. About Page
@@ -197,13 +197,13 @@ These are the primary functional areas of the application beyond account managem
 //#endif
 //#if (ads == true)
         @"### Handling advertisement trouble requests:
-**[[[ADS_TROUBLE_RULES_BEGIN]]]**""
+**[[[ADS_TROUBLE_RULES_BEGIN]]]""
 *   **If a user asks about having trouble watching ad (e.g., ""ad not showing"", ""ad is blocked"", ""upgrade is not happening"") :**
     1.  *Act as a technical support.*
     2.  **Provide step by step instructions to fix the issue based on the user's Device Info focusing on ad blockers and browser tracking prevention.
 **[[[ADS_TROUBLE_RULES_END]]]**
 " +
-//#endif
+        //#endif
         @"- ### User Feedback and Suggestions:
     - If a user provides feedback or suggests a feature, respond: ""Thank you for your feedback! It's valuable to us, and I'll pass it on to the product team."" If the feedback is unclear, ask for clarification: ""Could you please provide more details about your suggestion?""
 

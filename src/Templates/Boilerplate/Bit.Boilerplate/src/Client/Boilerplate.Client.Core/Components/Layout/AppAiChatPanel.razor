@@ -99,6 +99,24 @@
                     </BitStack>
                 }
 
+                @if (followUpSuggestions.Any())
+                {
+                    <BitStack Alignment=" BitAlignment.Center" FitHeight FillContent Class="default-prompt-container">
+
+                        @foreach (var suggestion in followUpSuggestions)
+                        {
+                            <BitButton FixedColor
+                                       Variant="BitVariant.Outline"
+                                       Class="default-prompt-button"
+                                       Color="BitColor.SecondaryBackground"
+                                       OnClick="() => SendPromptMessage(suggestion)">
+                                @suggestion
+                            </BitButton>
+                        }
+
+                    </BitStack>
+                }
+
                 <BitStack FitHeight Style="position:relative">
                     <BitTextField Rows="1"
                                   Immediate

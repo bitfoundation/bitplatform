@@ -91,7 +91,7 @@ public partial class AppHub
                     ChatOptions chatOptions = new()
                     {
                         Tools = [
-                                AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
+                                AIFunctionFactory.Create(async ([Required] string emailAddress, string conversationHistory) =>
                                 {
                                     if (messageSpecificCancellationToken.IsCancellationRequested)
                                         return;
@@ -105,7 +105,7 @@ public partial class AppHub
 
                                 }, name: "SaveUserEmailAndConversationHistory", description: "Saves the user's email address and the conversation history for future reference. Use this tool when the user provides their email address during the conversation. Parameters: emailAddress (string), conversationHistory (string)"),
                                 //#if (module == "Sales")
-                                AIFunctionFactory.Create(async ([Description("Concise summary of these user requirements")] string userNeeds,
+                                AIFunctionFactory.Create(async ([Required, Description("Concise summary of these user requirements")] string userNeeds,
                                     [Description("Car manufacturer's name (Optional)")] string? manufacturer,
                                     [Description("Car price below this value (Optional)")] decimal? maxPrice,
                                     [Description("Car price above this value (Optional)")] decimal? minPrice) =>
@@ -157,6 +157,21 @@ public partial class AppHub
                     }
 
                     await channel.Writer.WriteAsync(SharedChatProcessMessages.MESSAGE_RPOCESS_SUCESS, cancellationToken);
+
+                    // This would generate a list of follow-up questions/suggestions to keep the conversation going.
+                    // You could instead generate that list in previous chat completion call:
+                    // 1: Using "tools" or "functions" feature of the model, that would not consider the latest assistant response.
+                    // 2: Returning a json object containing the response and follow-up suggestions all together, losing IAsyncEnumerable streaming capability.  
+                    chatOptions.ResponseFormat = ChatResponseFormat.Json;
+                    chatOptions.AdditionalProperties = new() { ["response_format"] = new { type = "json_object" } };
+                    var followUpItems = await chatClient.GetResponseAsync<AiChatFollowUpList>([
+                        new(ChatRole.System, supportSystemPrompt),
+                        new(ChatRole.User, incomingMessage),
+                        new(ChatRole.Assistant, assistantResponse.ToString()),
+                        new(ChatRole.User, @"Return up to 3 relevant follow-up suggestions that help users discover related topics and continue the conversation naturally based on user's query in JSON object containing string[] named FollowUpSuggestions."),],
+                        chatOptions, cancellationToken: cancellationToken);
+
+                    await channel.Writer.WriteAsync(JsonSerializer.Serialize(followUpItems.Result), cancellationToken);
                 }
                 catch (Exception exp)
                 {
