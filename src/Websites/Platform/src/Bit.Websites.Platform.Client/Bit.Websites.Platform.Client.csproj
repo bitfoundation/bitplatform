@@ -11,11 +11,10 @@
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
-        
+
         <WasmFingerprintAssets>false</WasmFingerprintAssets>
         <StaticWebAssetsFingerprintContent>false</StaticWebAssetsFingerprintContent>
         <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
-        <WasmEnableSIMD>false</WasmEnableSIMD>
     </PropertyGroup>
 
     <ItemGroup>
