@@ -12,9 +12,9 @@
     <ItemGroup>
         <ProjectReference Include="..\Bit.Websites.Platform.Shared\Bit.Websites.Platform.Shared.csproj" />
         <ProjectReference Include="..\Bit.Websites.Platform.Client\Bit.Websites.Platform.Client.csproj" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.8" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.8" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.8" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.9" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.9" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.9" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="9.11.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -23,7 +23,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.AI" Version="9.8.0" />
+        <PackageReference Include="Microsoft.Extensions.AI" Version="9.9.0" />
         <PackageReference Include="Microsoft.Extensions.AI.AzureAIInference" Version="9.8.0-preview.1.25412.6" />
         <PackageReference Include="ModelContextProtocol" Version="0.3.0-preview.4" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.4" />

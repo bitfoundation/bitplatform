@@ -30,3 +30,8 @@ public class AiChatMessage
     [JsonIgnore]
     public bool Successful { get; set; } = true;
 }
+
+public class AiChatFollowUpList
+{
+    public List<string> FollowUpSuggestions { get; set; } = [];
+}

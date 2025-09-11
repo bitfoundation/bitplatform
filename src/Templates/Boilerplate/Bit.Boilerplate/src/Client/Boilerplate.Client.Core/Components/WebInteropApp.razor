@@ -11,7 +11,11 @@ Additionally, in a Web Browser, if Social Sign-in is performed in a Popup or a n
 state and avoid restarting Blazor upon returning from Social Sign-in, the Popup should redirect back to WebInteropApp
 after authentication. Using app.js, it can notify the main Window via window.opener.postMessage({ key: 'PUBLISH_MESSAGE', ... }),
 allowing the main Window to resume its operations.
+
+When publishing Client.Web (BlazorWebAssembly Standalone) and Server.Api, there won't be any WebInteropAppEndpoint,
+in this case, uncomment the Route attribute below to make this component accessible via /web-interop-app route.
 *@
+@* @attribute [Route("web-interop-app")] *@
 
 @code {
     [Inject] public IStringLocalizer<AppStrings> Localizer { get; set; } = default!;
