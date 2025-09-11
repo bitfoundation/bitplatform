@@ -509,19 +509,18 @@ public partial class BitDataGridDemo : AppComponentBase
 
 
 
-    IQueryable<CountryModel> allCountries = default!;
-    BitDataGrid<FoodRecall> dataGrid = default!;
-    BitDataGrid<ProductDto> productsDataGrid = default!;
-    BitDataGridItemsProvider<FoodRecall> foodRecallProvider = default!;
-    BitDataGridItemsProvider<ProductDto> productsItemsProvider = default!;
-    BitDataGridPaginationState pagination1 = new() { ItemsPerPage = 7 };
-    BitDataGridPaginationState pagination2 = new() { ItemsPerPage = 7 };
-    BitDataGridPaginationState pagination3 = new() { ItemsPerPage = 7 };
+    private IQueryable<CountryModel> allCountries = default!;
+    private BitDataGrid<FoodRecall> dataGrid = default!;
+    private BitDataGrid<ProductDto> productsDataGrid = default!;
+    private BitDataGridItemsProvider<FoodRecall> foodRecallProvider = default!;
+    private BitDataGridItemsProvider<ProductDto> productsItemsProvider = default!;
+    private BitDataGridPaginationState pagination1 = new() { ItemsPerPage = 7 };
+    private BitDataGridPaginationState pagination2 = new() { ItemsPerPage = 7 };
+    private BitDataGridPaginationState pagination3 = new() { ItemsPerPage = 7 };
+    private BitDataGridPaginationState pagination6 = new() { ItemsPerPage = 7 };
 
-    IQueryable<CountryModel>? FilteredItems1 =>
-        allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter1 ?? string.Empty, StringComparison.CurrentCultureIgnoreCase));
-    IQueryable<CountryModel>? FilteredItems2 =>
-        allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter2 ?? string.Empty, StringComparison.CurrentCultureIgnoreCase));
+    private IQueryable<CountryModel>? FilteredItems1 => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter1 ?? string.Empty, StringComparison.CurrentCultureIgnoreCase));
+    private IQueryable<CountryModel>? FilteredItems2 => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter2 ?? string.Empty, StringComparison.CurrentCultureIgnoreCase));
 
     string typicalSampleNameFilter1 = string.Empty;
     string typicalSampleNameFilter2 = string.Empty;

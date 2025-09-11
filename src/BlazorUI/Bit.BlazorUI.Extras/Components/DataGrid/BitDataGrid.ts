@@ -4,13 +4,13 @@ namespace BitBlazorUI {
             DataGrid.enableColumnResizing(tableElement);
 
             const bodyClickHandler = (event: any) => {
-                const columnOptionsElement = tableElement.tHead.querySelector('.col-options');
+                const columnOptionsElement = tableElement.tHead.querySelector('.bit-dtg-cop');
                 if (columnOptionsElement && event.composedPath().indexOf(columnOptionsElement) < 0) {
                     tableElement.dispatchEvent(new CustomEvent('closecolumnoptions', { bubbles: true }));
                 }
             };
             const keyDownHandler = (event: any) => {
-                const columnOptionsElement = tableElement.tHead.querySelector('.col-options');
+                const columnOptionsElement = tableElement.tHead.querySelector('.bit-dtg-cop');
                 if (columnOptionsElement && event.key === "Escape") {
                     tableElement.dispatchEvent(new CustomEvent('closecolumnoptions', { bubbles: true }));
                 }
@@ -30,7 +30,7 @@ namespace BitBlazorUI {
         }
 
         public static checkColumnOptionsPosition(tableElement: any) {
-            const colOptions = tableElement.tHead && tableElement.tHead.querySelector('.col-options'); // Only match within *our* thead, not nested tables
+            const colOptions = tableElement.tHead && tableElement.tHead.querySelector('.bit-dtg-cop'); // Only match within *our* thead, not nested tables
             if (colOptions) {
                 // We want the options popup to be positioned over the grid, not overflowing on either side, because it's possible that
                 // beyond either side is off-screen or outside the scroll range of an ancestor
@@ -54,7 +54,7 @@ namespace BitBlazorUI {
         }
 
         private static enableColumnResizing(tableElement: any) {
-            tableElement.tHead.querySelectorAll('.col-width-draghandle').forEach((handle: any) => {
+            tableElement.tHead.querySelectorAll('.bit-dtg-drg').forEach((handle: any) => {
                 handle.addEventListener('mousedown', handleMouseDown);
                 if ('ontouchstart' in window) {
                     handle.addEventListener('touchstart', handleMouseDown);
