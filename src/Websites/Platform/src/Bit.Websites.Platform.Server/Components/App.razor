@@ -3,20 +3,20 @@
 
 <head>
     <base href="/" />
+	<ResourcePreloader />
     <meta charset="utf-8" />
     <meta name="theme-color">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <Link rel="icon" Href="/favicon.ico" type="image/x-icon" />
-    <HeadOutlet @rendermode=RenderModeProvider.Current />
-    <Link rel="apple-touch-icon" sizes="512x512" Href="@Assets["images/bit-icon-512.png"]" />
-    <Link rel="stylesheet" Href="@Assets["_content/Bit.BlazorUI/styles/bit.blazorui.css"]" />
-    <Link rel="stylesheet" Href="@Assets["_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css"]" />
-    <Link rel="stylesheet" Href="@Assets["_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css"]" />
-    <Link rel="stylesheet" Href="@Assets["styles/app.css"]" />
-    <Link rel="stylesheet" Href="@Assets["Bit.Websites.Platform.Client.bundle.scp.css"]" />
-    <Link rel="manifest" Href="@Assets["manifest.json"]" />
+    <Link rel="apple-touch-icon" sizes="512x512" Href="images/bit-icon-512.png" />
+	<Link rel="stylesheet" Href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
+	<Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
+	<Link rel="stylesheet" Href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
+	<Link rel="stylesheet" Href="styles/app.css" />
+    <Link rel="stylesheet" Href="Bit.Websites.Platform.Client.bundle.scp.css" />
+    <Link rel="manifest" Href="manifest.json" />
 
-    <Link rel="preload" Href="_framework/dotnet.js" as="script" type="text/javascript" />
+    <HeadOutlet @rendermode=RenderModeProvider.Current />
 </head>
 
 <body class="@BitCss.Class.Color.Background.Primary @BitCss.Class.Color.Foreground.Primary bit-blazor-web">
@@ -25,14 +25,14 @@
 
     @if (HttpContext.Request.IsLightHouseRequest() is false)
     {
-		<Script Src="@Assets["_framework/blazor.web.js"]" autostart="false"></Script>
-		<Script Src="@Assets["_content/Bit.Bswup/bit-bswup.js"]" blazorScript="@Assets["_framework/blazor.web.js"]"></Script>
-        <Script Src="@Assets["_content/Bit.Bswup/bit-bswup.progress.js"]"></Script>
+		<Script Src="_framework/blazor.web.js" autostart="false"></Script>
+		<Script Src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_framework/blazor.web.js"></Script>
+        <Script Src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
         <AppBswupProgressBar />
-        <Script Src="@Assets["_content/Bit.Butil/bit-butil.js"]"></Script>
-        <Script Src="@Assets["_content/Bit.BlazorUI/scripts/bit.blazorui.js"]"></Script>
-        <Script Src="@Assets["_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"]"></Script>
-        <Script Src="@Assets["scripts/app.js"]"></Script>
+        <Script Src="_content/Bit.Butil/bit-butil.js"></Script>
+        <Script Src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
+        <Script Src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></Script>
+        <Script Src="scripts/app.js"></Script>
     }
 </body>
 
