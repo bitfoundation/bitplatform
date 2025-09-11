@@ -15,7 +15,6 @@
         <WasmFingerprintAssets>false</WasmFingerprintAssets>
         <StaticWebAssetsFingerprintContent>false</StaticWebAssetsFingerprintContent>
         <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
-        <WasmEnableSIMD>false</WasmEnableSIMD>
     </PropertyGroup>
 
     <ItemGroup>
@@ -31,7 +30,6 @@
         <EmbeddedResource Include="appsettings.json" />
         <PackageReference Include="Bit.Bswup" Version="9.11.4" />
         <PackageReference Include="Bit.BlazorUI" Version="9.11.4" />
-        <PackageReference Include="Bit.BlazorES2019" Version="9.11.4" />
         <PackageReference Include="Bit.BlazorUI.Icons" Version="9.11.4" />
         <PackageReference Include="Bit.BlazorUI.Assets" Version="9.11.4" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="9.11.4">
