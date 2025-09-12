@@ -275,10 +275,10 @@ public static partial class Program
                 // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });
             //#elif (database == "MySql")
-            //options.UseMySql(configuration.GetConnectionString("MySqlConnectionString"), ServerVersion.AutoDetect(configuration.GetConnectionString("MySqlConnectionString")), dbOptions =>
-            //{
-            //    // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-            //});
+            options.UseMySql(configuration.GetConnectionString("MySqlConnectionString"), ServerVersion.AutoDetect(configuration.GetConnectionString("MySqlConnectionString")), dbOptions =>
+            {
+                dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+            });
             //#elif (database == "Other")
             throw new NotImplementedException("Install and configure any database supported by ef core (https://learn.microsoft.com/en-us/ef/core/providers)");
             //#endif
