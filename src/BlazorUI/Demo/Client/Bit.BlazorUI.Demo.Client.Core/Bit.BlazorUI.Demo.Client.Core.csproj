@@ -15,7 +15,6 @@
         <None Include="compilerconfig.json" />
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
-        <PackageReference Include="Bit.BlazorES2019" Version="9.11.4" />
 
         <PackageReference Include="Bit.CodeAnalyzers" Version="9.11.4">
             <PrivateAssets>all</PrivateAssets>
