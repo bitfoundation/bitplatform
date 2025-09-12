@@ -77,7 +77,6 @@ public class Middlewares
 
         UseSiteMap(app);
 
-        //app.MapStaticAssets();
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
