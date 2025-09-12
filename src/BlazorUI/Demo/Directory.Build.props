@@ -23,6 +23,8 @@
         <DefineConstants Condition="  $(TargetFramework.Contains('-ios')) ">$(DefineConstants);iOS</DefineConstants>
         <DefineConstants Condition="  $(TargetFramework.Contains('-windows')) ">$(DefineConstants);Windows</DefineConstants>
         <DefineConstants Condition="  $(TargetFramework.Contains('-mac')) ">$(DefineConstants);Mac</DefineConstants>
+
+        <HotReloadAutoRestart>true</HotReloadAutoRestart>
     </PropertyGroup>
 
     <ItemGroup>

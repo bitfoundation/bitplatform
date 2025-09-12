@@ -10,6 +10,7 @@
 <html bit-theme="dark">
 
 <head>
+	<ResourcePreloader />
     <base href="/" />
     <meta charset="utf-8" />
     <meta name="theme-color">
@@ -26,8 +27,6 @@
     <Link rel="manifest" Href="manifest.json" />
     <Link rel="icon" Href="favicon.ico" type="image/x-icon" />
     <Link rel="apple-touch-icon" sizes="512x512" Href="images/icons/bit-icon-512.png" />
-
-    <Link rel="preload" Href="_framework/dotnet.js" as="script" type="text/javascript" />
 </head>
 
 <body class="@BitCss.Class.Color.Background.Primary @BitCss.Class.Color.Foreground.Primary bit-blazor-web">
@@ -52,8 +51,8 @@
         {
             <Script Src="_content/Bit.BlazorUI.Extras/marked/marked-15.0.7.js" AppendVersion="false"></Script>
         }
-        <Script Src="_content/Bit.BlazorES2019/blazor.web.js" autostart="false"></Script>
-        <Script Src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_content/Bit.BlazorES2019/blazor.web.js"></Script>
+		<Script Src="_framework/blazor.web.es2019.js" autostart="false"></Script>
+		<Script Src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_framework/blazor.web.es2019.js"></Script>
         <Script Src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
         <AppBswupProgressBar />
         <Script Src="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism.js"></Script>

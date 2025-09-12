@@ -29,6 +29,7 @@
 
     <ItemGroup>
         <PackageReference Include="Bit.Bswup" Version="9.11.4" />
+        <PackageReference Include="Bit.BlazorES2019" Version="0.0.0" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="9.11.4">
             <PrivateAssets>all</PrivateAssets>
