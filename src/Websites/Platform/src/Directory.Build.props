@@ -8,6 +8,8 @@
         <WarningsAsErrors>$(WarningsAsErrors);CS0114;RZ10012</WarningsAsErrors>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <NeutralLanguage>en</NeutralLanguage>
+
+        <HotReloadAutoRestart>true</HotReloadAutoRestart>
     </PropertyGroup>
 
     <ItemGroup>
