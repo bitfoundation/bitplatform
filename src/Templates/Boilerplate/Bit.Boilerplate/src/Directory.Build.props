@@ -51,7 +51,6 @@
     <ItemGroup>
         <PackageReference Include="Bit.CodeAnalyzers" PrivateAssets="all" />
         <PackageReference Include="Bit.SourceGenerators" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     </ItemGroup>
 
     <ItemGroup>
