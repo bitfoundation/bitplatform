@@ -1,4 +1,4 @@
-﻿﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <Import Project="../../Bit.Build.props" />
 
@@ -6,7 +6,7 @@
         <TargetFrameworks>net10.0;net9.0</TargetFrameworks>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <IsPackable>true</IsPackable>
+		<IsPackable>true</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>
@@ -24,7 +24,7 @@
             <PackagePath>contentFiles\any\net10.0\wwwroot\_framework\%(Filename).es2019%(Extension)</PackagePath>
         </Content>
     </ItemGroup>
-
+	
     <ItemGroup>
         <Content Include="..\README.md">
             <Pack>true</Pack>
