@@ -31,6 +31,7 @@
         <EmbeddedResource Include="appsettings.json" />
         <PackageReference Include="Bit.Bswup" Version="9.11.4" />
         <PackageReference Include="Bit.BlazorUI" Version="9.11.4" />
+        <PackageReference Include="Bit.BlazorES2019" Version="0.0.0" />
         <PackageReference Include="Bit.BlazorUI.Icons" Version="9.11.4" />
         <PackageReference Include="Bit.BlazorUI.Assets" Version="9.11.4" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="9.11.4">
@@ -41,7 +42,6 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.BlazorES2019" Version="0.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.0-rc.1.25451.107" />
 
         <Using Include="System.Net.Http.Json" />
