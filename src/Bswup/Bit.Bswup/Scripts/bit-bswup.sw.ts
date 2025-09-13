@@ -27,7 +27,7 @@ interface Window {
     forcePrerender: any
     enableCacheControl: any
 
-    prerenderMode: any
+    mode: any
 }
 
 interface Event {
@@ -47,27 +47,35 @@ const VERSION = self.assetsManifest.version;
 const CACHE_NAME_PREFIX = 'bit-bswup';
 const CACHE_NAME = `${CACHE_NAME_PREFIX} - ${VERSION}`;
 
-switch (self.prerenderMode) {
-    case 'none': // like adminpanel
+switch (self.mode) {
+    case 'NoPrerender': // like adminpanel
+        self.isPassive = true;
         self.defaultUrl ||= "/";
-        self.isPassive ||= true;
         self.forcePrerender ||= false;
         self.errorTolerance ||= 'lax';
         self.caseInsensitiveUrl ||= true;
         self.noPrerenderQuery ||= 'no-prerender=true';
         break;
-    case 'initial': // like todo
+    case 'InitialPrerender': // like todo
+        self.isPassive = true;
         self.defaultUrl ||= "/";
-        self.isPassive ||= true;
         self.forcePrerender ||= false;
         self.errorTolerance ||= 'lax';
         self.caseInsensitiveUrl ||= true;
         self.noPrerenderQuery ||= 'no-prerender=true';
         break;
-    case 'always': // like sales
+    case 'AlwaysPrerender': // like sales
+        self.isPassive = true;
         self.defaultUrl ||= "/";
-        self.isPassive ||= true;
         self.forcePrerender ||= true;
+        self.errorTolerance ||= 'lax';
+        self.caseInsensitiveUrl ||= true;
+        self.noPrerenderQuery ||= '';
+        break;
+    case 'FullOffline': // like todo-offline
+        self.isPassive = false;
+        self.defaultUrl ||= "/";
+        self.forcePrerender ||= false;
         self.errorTolerance ||= 'lax';
         self.caseInsensitiveUrl ||= true;
         self.noPrerenderQuery ||= '';
