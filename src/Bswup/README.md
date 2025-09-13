@@ -160,3 +160,10 @@ The other settings are:
 - `enableDiagnostics`: Enables diagnostics by pushing service-worker logs to the browser console.
 - `enableFetchDiagnostics`: Enables fetch event diagnostics by pushing service-worker fetch event logs to the browser console.
 - `disableHashlessAssetsUpdate`: Disables the update of the hash-less assets. By default, the Bswup tries to automatically update all of the hash-less assets (e.g. the external assets) every time an update found for the app.
+- `forcePrerender`: Forces the prerendering of the default document for every navigation request to ensure that the server always has the latest version of the app. This is useful when you have a server-rendered app and you want to make sure that the client always has the latest version of the app.
+- `enableCacheControl`: Enables the cache-control mechanism by providing cache busting setting and header to each request (`cache:no-store` settings and `cache-control:no-cache` header).
+- `mode`: Determines the mode of the Bswup. Possible values are:
+    - `NoPrerender`: Disables the prerendering of the default document for every navigation request.
+    - `InitialPrerender`: Enables the prerendering of the default document only for the initial navigation request.
+    - `AlwaysPrerender`: Enables the prerendering of the default document for every navigation request.
+    - `FullOffline`: Enables the full offline mode where all assets are cached and served from the cache from first time the app is loaded.
