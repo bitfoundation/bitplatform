@@ -120,7 +120,6 @@ self.caseInsensitiveUrl = true;
 self.ignoreDefaultInclude = true;
 self.ignoreDefaultExclude = true;
 self.isPassive = true;
-self.disablePassiveFirstBoot = true;
 self.enableIntegrityCheck = true;
 self.enableDiagnostics = true;
 self.enableFetchDiagnostics = true;
@@ -156,7 +155,6 @@ The other settings are:
     ```
     #### Keep in mind that caching service-worker related files will corrupt the update cycle of the service-worker. Only the browser should handle these files. 
 - `isPassive`: Enables the Bswup's passive mode. In this mode, the assets won't be cached in advance but rather upon initial request.
-- `disablePassiveFirstBoot`: Disables downloading the Blazor's boot files in first time of Passive mode.
 - `enableIntegrityCheck`: Enables the default integrity check available in browsers by setting the `integrity` attribute of the request object created in the service-worker to fetch the assets.
 - `errorTolerance`: Determines how the Bswup should handle the errors while downloading assets. Possible values are: `strict`, `lax`, `config`.
 - `enableDiagnostics`: Enables diagnostics by pushing service-worker logs to the browser console.
