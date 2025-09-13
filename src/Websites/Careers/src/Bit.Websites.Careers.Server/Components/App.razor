@@ -2,6 +2,7 @@
 <html bit-theme="light">
 
 <head>
+	<ResourcePreloader />
     <base href="/" />
     <meta charset="utf-8" />
     <meta name="theme-color">
@@ -16,9 +17,6 @@
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
     <Link rel="stylesheet" Href="styles/app.css" />
     <Link rel="stylesheet" Href="Bit.Websites.Careers.Client.bundle.scp.css" />
-
-    <Link rel="preload" Href="_framework/dotnet.js" as="script" type="text/javascript" />
-    <Link rel="preload" Href="_framework/blazor.boot.json" as="fetch" type="application/json" />
 </head>
 
 <body class="bit-blazor-web">
@@ -27,8 +25,8 @@
 
     @if (HttpContext.Request.IsLightHouseRequest() is false)
     {
-        <Script Src="_content/Bit.BlazorES2019/blazor.web.js" autostart="false"></Script>
-        <Script Src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_content/Bit.BlazorES2019/blazor.web.js"></Script>
+		<Script Src="_framework/blazor.web.es2019.js" autostart="false"></Script>
+		<Script Src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_framework/blazor.web.es2019.js"></Script>
         <Script Src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
         <AppBswupProgressBar />
         <Script Src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>

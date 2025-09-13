@@ -1,6 +1,6 @@
 # bit BlazorES2019
 
-While .NET 9 can run on the followings:
+While .NET can run on the followings:
 
 **Browsers**:
 - Safari 15+
@@ -14,7 +14,7 @@ While .NET 9 can run on the followings:
 - macOS (Monterey) 12+
 - Android 8+ & [WebView](https://play.google.com/store/apps/details?id=com.google.android.webview) 84+
 
-The TypeScript project responsible for generating `blazor.web.js`, `blazor.webassembly.js`, `blazor.webview.js`, and `blazor.server.js` targets `ES2022`, leading to the following updates in the compatibility table.
+The TypeScript project responsible for generating `blazor.web.js`, `blazor.webassembly.js`, `blazor.webview.js`, and `blazor.server.js` targets `ES2022+`, leading to the following updates in the compatibility table.
 
 **Browsers**:
 - Safari 16.4+
@@ -27,17 +27,31 @@ The TypeScript project responsible for generating `blazor.web.js`, `blazor.webas
 
 Therefore, we decided to generate an `ES2019`-based output from the `aspnetcore` repository using the following script:
 
+.NET 9
 ```shell
 git clone https://github.com/dotnet/aspnetcore.git
 cd aspnetcore
 git switch release/9.0
 git submodule update --init --recursive
-sed -i 's/ES2022/ES2019/g' src/Components/Shared.JS/tsconfig.json
-./restore.sh
+sed -i 's/"target": "ES2022"/"target": "ES2019"/' src/Components/Shared.JS/tsconfig.json
+npm install
 npm run-script build
-cd src/Components/
-./build.sh
-cd Web.JS
+cd src/Components/Web.JS
+npm install
+npm run-script build:production
+```
+
+.NET 10
+```shell
+git clone https://github.com/dotnet/aspnetcore.git
+cd aspnetcore
+git switch release/10.0
+git submodule update --init --recursive
+sed -i 's/"target": "ES2024"/"target": "ES2019"/' src/Components/Shared.JS/tsconfig.json
+npm install
+npm run-script build
+cd src/Components/Web.JS
+npm install
 npm run-script build:production
 ```
 

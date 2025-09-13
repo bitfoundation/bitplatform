@@ -42,7 +42,7 @@ public partial class ProductEmbeddingService
         //#if (IsInsideProjectTemplate == true)
         /*
         //#endif
-        var value = embeddedUserQuery.Value.ToArray();
+        var value = new Microsoft.Data.SqlTypes.SqlVector<float>(embeddedUserQuery.Value);
         //#if (IsInsideProjectTemplate == true)
         */
         //#endif
@@ -54,7 +54,7 @@ public partial class ProductEmbeddingService
         //#if (IsInsideProjectTemplate == true)
         /*
         //#endif
-            .Where(p => p.Embedding != null && EF.Functions.VectorDistance("cosine", p.Embedding, value!) < SIMILARITY_THRESHOLD).OrderBy(p => EF.Functions.VectorDistance("cosine", p.Embedding!, value!));
+            .Where(p => p.Embedding.HasValue && EF.Functions.VectorDistance("cosine", p.Embedding.Value, value) < SIMILARITY_THRESHOLD).OrderBy(p => EF.Functions.VectorDistance("cosine", p.Embedding!.Value, value!));
         //#if (IsInsideProjectTemplate == true)
         */
         //#endif
@@ -65,7 +65,7 @@ public partial class ProductEmbeddingService
     public async Task Embed(Product product, CancellationToken cancellationToken)
     {
         //#if (database != "PostgreSQL" && database != "SqlServer")
-        return;
+        return; // The RAG has been implemented for PostgreSQL / SQL Server only.
         //#else
         await dbContext.Entry(product).Reference(p => p.Category).LoadAsync(cancellationToken);
 
@@ -78,17 +78,7 @@ Appearance: {product.PrimaryImageAltText}", cancellationToken);
 
         if (embedding.HasValue)
         {
-            //#if (database == "PostgreSQL")
             product.Embedding = new(embedding.Value);
-            //#elif (database == "SqlServer")
-            //#if (IsInsideProjectTemplate == true)
-            /*
-            //#endif
-            product.Embedding = embedding.Value.ToArray();
-            //#if (IsInsideProjectTemplate == true)
-            */
-            //#endif
-            //#endif
         }
         //#endif
     }
@@ -96,7 +86,7 @@ Appearance: {product.PrimaryImageAltText}", cancellationToken);
     private async Task<ReadOnlyMemory<float>?> EmbedText(string input, CancellationToken cancellationToken)
     {
         //#if (database != "PostgreSQL" && database != "SqlServer")
-        return null;
+        return null; // The RAG has been implemented for PostgreSQL / SQL Server only.
         //#else
         if (AppDbContext.IsEmbeddingEnabled is false)
             return null;

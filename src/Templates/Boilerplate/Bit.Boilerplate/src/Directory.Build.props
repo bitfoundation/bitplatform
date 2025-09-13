@@ -7,7 +7,6 @@
         <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
         <NoWarn>$(NoWarn);CS1998;CS1591</NoWarn>
         <WarningsAsErrors>$(WarningsAsErrors);CS0114;CS8785;RZ10012</WarningsAsErrors>
-        <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
 
         <Version>1.0.0</Version>
         <ApplicationDisplayVersion>$(Version)</ApplicationDisplayVersion>
@@ -52,7 +51,6 @@
     <ItemGroup>
         <PackageReference Include="Bit.CodeAnalyzers" PrivateAssets="all" />
         <PackageReference Include="Bit.SourceGenerators" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     </ItemGroup>
 
     <ItemGroup>

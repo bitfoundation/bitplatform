@@ -264,10 +264,6 @@ public static partial class Program
             //#if (database == "SqlServer")
             options.UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), dbOptions =>
             {
-                if (AppDbContext.IsEmbeddingEnabled)
-                {
-                    dbOptions.UseVectorSearch();
-                }
                 // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });
             //#elif (database == "PostgreSQL")
@@ -281,7 +277,7 @@ public static partial class Program
             //#elif (database == "MySql")
             options.UseMySql(configuration.GetConnectionString("MySqlConnectionString"), ServerVersion.AutoDetect(configuration.GetConnectionString("MySqlConnectionString")), dbOptions =>
             {
-                // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });
             //#elif (database == "Other")
             throw new NotImplementedException("Install and configure any database supported by ef core (https://learn.microsoft.com/en-us/ef/core/providers)");
