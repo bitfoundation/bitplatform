@@ -56,8 +56,8 @@ jobs:
         npm install
         npm run-script build:production
         cd ../../../../
-        mkdir -p src/BlazorES2019/Bit.BlazorES2019/net9/
-        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/BlazorES2019/Bit.BlazorES2019/net9/
+        mkdir -p src/BlazorES2019/Bit.BlazorES2019/net9.0/
+        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/BlazorES2019/Bit.BlazorES2019/net9.0/
         rm -rf aspnetcore
 
     - name: dotnet pack BlazorES2019
