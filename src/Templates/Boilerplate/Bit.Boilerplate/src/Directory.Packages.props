@@ -3,7 +3,7 @@
         <!-- https://learn.microsoft.com/en-us/nuget/consume-packages/central-package-management -->
         <PackageVersion Include="Bit.Butil" Version="9.11.4" />
         <PackageVersion Include="Bit.BlazorUI" Version="9.11.4" />
-        <PackageVersion Include="Bit.BlazorES2019" Version="0.0.1" />
+        <PackageVersion Include="Bit.BlazorES2019" Version="9.11.4" />
         <PackageVersion Include="Bit.BlazorUI.Icons" Version="9.11.4" />
         <PackageVersion Include="Bit.BlazorUI.Assets" Version="9.11.4" />
         <PackageVersion Include="Bit.BlazorUI.Extras" Version="9.11.4" />

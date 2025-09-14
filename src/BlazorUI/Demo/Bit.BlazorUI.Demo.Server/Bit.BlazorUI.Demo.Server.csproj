@@ -18,7 +18,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.BlazorES2019" PrivateAssets="all" GeneratePathProperty="True" Version="0.0.1" />
+        <PackageReference Include="Bit.BlazorES2019" PrivateAssets="all" GeneratePathProperty="True" Version="9.11.4" />
         <PackageReference Include="Jint" Version="4.4.1" />
         <PackageReference Include="Microsoft.AspNetCore.OData" Version="9.4.0" />
         <PackageReference Include="MimeTypeMapOfficial" Version="1.0.17" />
