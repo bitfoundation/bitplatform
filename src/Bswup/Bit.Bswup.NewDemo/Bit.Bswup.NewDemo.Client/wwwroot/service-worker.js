@@ -42,7 +42,6 @@ self.serverRenderedUrls = [/\/privacy$/];
 self.noPrerenderQuery = 'no-prerender=true';
 
 self.isPassive = true;
-self.disablePassiveFirstBoot = true;
 
 //self.enableDiagnostics = true;
 //self.enableFetchDiagnostics = true;
