@@ -9,12 +9,12 @@
     </PropertyGroup>
 
 	<ItemGroup>
-		<None Include="net10.0\**\*.js">
+		<None Include="net10\**\*.js">
 			<Pack>true</Pack>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <PackagePath>files\net10.0\wwwroot\_framework\%(Filename).es2019%(Extension)</PackagePath>
 		</None>
-		<None Include="net9.0\**\*.js">
+		<None Include="net9\**\*.js">
 			<Pack>true</Pack>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <PackagePath>files\net9.0\wwwroot\_framework\%(Filename).es2019%(Extension)</PackagePath>
