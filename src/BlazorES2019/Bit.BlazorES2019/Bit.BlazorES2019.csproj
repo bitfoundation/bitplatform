@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <Import Project="../../Bit.Build.props" />
 
@@ -7,10 +7,18 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
-	
+
     <ItemGroup>
-        <Content Remove="wwwroot/.gitkeep" />
-        <None Include="wwwroot/.gitkeep" />
+        <Content Include="..\wwwroot\**\*.js">
+            <Pack>true</Pack>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <PackagePath>contentFiles\any\net9.0\wwwroot\_framework\%(Filename).es2019%(Extension)</PackagePath>
+        </Content>
+        <Content Include="buildTransitive\Bit.BlazorES2019.targets" Pack="true" PackagePath="buildTransitive\" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="buildTransitive\Bit.BlazorES2019.targets" Link="buildTransitive\%(Filename)%(Extension)" />
     </ItemGroup>
 
 </Project>

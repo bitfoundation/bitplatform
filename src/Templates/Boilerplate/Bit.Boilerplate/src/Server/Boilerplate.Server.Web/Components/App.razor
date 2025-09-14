@@ -89,8 +89,8 @@
     @if (HttpContext.Request.IsLightHouseRequest() is false)
     {
         <!-- If you don't plan to older browsers and prefer to use the original `blazor.web.js`, follow the instructions in this link: https://github.com/orgs/bitfoundation/discussions/10238#discussioncomment-12493737 -->
-        <Script Src="_content/Bit.BlazorES2019/blazor.web.js" autostart="false"></Script>
-        <Script Src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_content/Bit.BlazorES2019/blazor.web.js"></Script>
+        <Script Src="_framework/blazor.web.es2019.js" autostart="false"></Script>
+		<Script Src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_framework/blazor.web.es2019.js"></Script>
         <Script Src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
         <AppBswupProgressBar />
         <Script Src="_content/Bit.Butil/bit-butil.js"></Script>
