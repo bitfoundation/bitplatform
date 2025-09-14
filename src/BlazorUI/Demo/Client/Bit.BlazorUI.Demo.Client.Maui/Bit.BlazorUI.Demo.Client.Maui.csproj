@@ -111,7 +111,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.BlazorES2019" PrivateAssets="all" GeneratePathProperty="True" Version="9.11.4" />
+        <PackageReference Include="Bit.BlazorES2019" PrivateAssets="all" GeneratePathProperty="True" Version="0.0.1" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         <Content Remove="Properties\launchSettings.json" />
     </ItemGroup>
