@@ -13,6 +13,9 @@ self.externalAssets = [
     },
     {
         "url": "Bit.Websites.Platform.Client.bundle.scp.css"
+    },
+    {
+        url: "_framework/blazor.web.es2019.js"
     }
 ];
 

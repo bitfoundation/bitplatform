@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
@@ -36,7 +36,7 @@
         <Using Include="Boilerplate.Shared" />
 
         <PackageReference Include="EmbedIO" />
-        <PackageReference Include="Bit.BlazorES2019" />
+        <PackageReference Include="Bit.BlazorES2019" PrivateAssets="all" GeneratePathProperty="True" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventLog" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventSource" />
@@ -83,5 +83,13 @@
         </ItemGroup>
         <Delete Files="@(FilesToDelete)" />
     </Target>
+
+    <ItemGroup>
+        <Content Include="$(PkgBit_BlazorES2019)\files\net9.0\wwwroot\_framework\blazor.webview.es2019.js">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+            <Link>wwwroot\_framework\blazor.webview.es2019.js</Link>
+        </Content>
+    </ItemGroup>
 
 </Project>

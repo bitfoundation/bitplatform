@@ -18,6 +18,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <PackageReference Include="Bit.BlazorES2019" PrivateAssets="all" GeneratePathProperty="True" Version="9.11.4" />
         <PackageReference Include="Jint" Version="4.4.1" />
         <PackageReference Include="Microsoft.AspNetCore.OData" Version="9.4.0" />
         <PackageReference Include="MimeTypeMapOfficial" Version="1.0.17" />
@@ -62,6 +63,14 @@
         <None Include="..\..\Bit.BlazorUI.Extras\wwwroot\marked\marked-15.0.7.js" Link="wwwroot\marked\marked-15.0.7.js">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="$(PkgBit_BlazorES2019)\files\net9.0\wwwroot\_framework\blazor.web.es2019.js">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+            <Link>wwwroot\_framework\blazor.web.es2019.js</Link>
+        </Content>
     </ItemGroup>
 
 </Project>
