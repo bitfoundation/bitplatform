@@ -9,10 +9,10 @@ self.assetsExclude = [
 ];
 self.externalAssets = [
     {
-        "url": "Bit.Websites.Carrers.Server.styles.css"
+        "url": "Bit.Websites.Careers.Server.styles.css"
     },
     {
-        "url": "Bit.Websites.Carrers.Client.bundle.scp.css"
+        "url": "Bit.Websites.Careers.Client.bundle.scp.css"
     },
     {
         url: "_framework/blazor.web.es2019.js"
