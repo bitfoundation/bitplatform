@@ -62,8 +62,8 @@ jobs:
 
     - name: dotnet pack BlazorES2019
       run: |
-          dotnet build src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-          dotnet pack src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj --output . --configuration Release
+          dotnet build src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false -p:ReleaseVersion=0.0.1 -p:PackageVersion=0.0.1
+          dotnet pack src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj --output . --configuration Release -p:ReleaseVersion=0.0.1 -p:PackageVersion=0.0.1
 
     - name: Generate CSS/JS files BlazorUI
       run: dotnet build src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release

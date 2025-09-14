@@ -37,7 +37,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.BlazorES2019" PrivateAssets="all" GeneratePathProperty="True" Version="9.11.4" />
+        <PackageReference Include="Bit.BlazorES2019" PrivateAssets="all" GeneratePathProperty="True" Version="0.0.1" />
 
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.9" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="9.0.110" />
