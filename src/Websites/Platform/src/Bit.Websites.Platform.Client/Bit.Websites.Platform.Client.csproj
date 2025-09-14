@@ -37,7 +37,6 @@
         <PackageReference Include="Bit.Butil" Version="9.11.4" />
         <PackageReference Include="Bit.BlazorUI" Version="9.11.4" />
         <PackageReference Include="Bit.BlazorUI.Extras" Version="9.11.4" />
-        <PackageReference Include="Bit.BlazorES2019" Version="9.11.4" />
         <PackageReference Include="Bit.BlazorUI.Assets" Version="9.11.4" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="9.11.4">
             <PrivateAssets>all</PrivateAssets>

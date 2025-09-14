@@ -16,6 +16,7 @@
         <PackageReference Include="NWebsec.AspNetCore.Middleware" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
+        <PackageReference Include="Bit.BlazorES2019" PrivateAssets="all" GeneratePathProperty="True" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Tools" PrivateAssets="all" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
         <PackageReference Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" />
@@ -54,5 +55,13 @@
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <EnableSdkContainerDebugging Condition="'$(Environment)' == 'Development'">True</EnableSdkContainerDebugging>
     </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include="$(PkgBit_BlazorES2019)\files\net9.0\wwwroot\_framework\blazor.web.es2019.js">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+            <Link>wwwroot\_framework\blazor.web.es2019.js</Link>
+        </Content>
+    </ItemGroup>
 
 </Project>

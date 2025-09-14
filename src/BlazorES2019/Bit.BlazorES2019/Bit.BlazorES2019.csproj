@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <Import Project="../../Bit.Build.props" />
 
@@ -7,10 +7,13 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
-	
-    <ItemGroup>
-        <Content Remove="wwwroot/.gitkeep" />
-        <None Include="wwwroot/.gitkeep" />
-    </ItemGroup>
+
+	<ItemGroup>
+		<None Include="net9.0\**\*.js">
+			<Pack>true</Pack>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <PackagePath>files\net9.0\wwwroot\_framework\%(Filename).es2019%(Extension)</PackagePath>
+		</None>
+	</ItemGroup>
 
 </Project>

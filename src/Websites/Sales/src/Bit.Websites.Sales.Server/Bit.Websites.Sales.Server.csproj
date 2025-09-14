@@ -22,6 +22,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <PackageReference Include="Bit.BlazorES2019" Version="0.0.1" PrivateAssets="all" GeneratePathProperty="True" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.4" />
         <PackageReference Include="AspNetCore.HealthChecks.System" Version="9.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI" Version="9.0.0" />
@@ -45,6 +46,14 @@
             <Generator>PublicResXFileCodeGenerator</Generator>
             <LastGenOutput>%(Filename).Designer.cs</LastGenOutput>
         </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="$(PkgBit_BlazorES2019)\files\net9.0\wwwroot\_framework\blazor.web.es2019.js">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+            <Link>wwwroot\_framework\blazor.web.es2019.js</Link>
+        </Content>
     </ItemGroup>
 
 </Project>

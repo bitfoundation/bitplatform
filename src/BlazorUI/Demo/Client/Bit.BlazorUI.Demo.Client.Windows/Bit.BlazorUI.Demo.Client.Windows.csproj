@@ -37,6 +37,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <PackageReference Include="Bit.BlazorES2019" PrivateAssets="all" GeneratePathProperty="True" Version="0.0.1" />
 
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.9" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="9.0.110" />
@@ -65,5 +66,13 @@
         </ItemGroup>
         <Delete Files="@(FilesToDelete)" />
     </Target>
+
+    <ItemGroup>
+        <Content Include="$(PkgBit_BlazorES2019)\files\net9.0\wwwroot\_framework\blazor.webview.es2019.js">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+            <Link>wwwroot\_framework\blazor.webview.es2019.js</Link>
+        </Content>
+    </ItemGroup>
 
 </Project>
