@@ -1,6 +1,6 @@
 <Project>
     <ItemGroup>
-        <Content Update="$(NuGetPackageRoot)\bit.blazores2019\9.12.0-pre-02\contentFiles\any\net9.0\wwwroot\_framework\*.js">
+        <Content Update="$(NuGetPackageRoot)\bit.blazores2019\9.12.0\contentFiles\any\net9.0\wwwroot\_framework\*.js">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
             <Link>wwwroot\_framework\%(Filename)%(Extension)</Link>
