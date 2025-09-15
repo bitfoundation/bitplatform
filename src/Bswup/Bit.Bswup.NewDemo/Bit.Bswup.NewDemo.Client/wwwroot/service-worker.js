@@ -1,4 +1,4 @@
-// bit version: 9.11.4
+// bit version: 9.12.0
 
 // In development, always fetch from the network and do not enable offline support.
 // This is because caching would make development more difficult (changes would not
@@ -42,7 +42,6 @@ self.serverRenderedUrls = [/\/privacy$/];
 self.noPrerenderQuery = 'no-prerender=true';
 
 self.isPassive = true;
-self.disablePassiveFirstBoot = true;
 
 //self.enableDiagnostics = true;
 //self.enableFetchDiagnostics = true;

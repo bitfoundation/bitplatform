@@ -183,7 +183,7 @@ private async ValueTask<IEnumerable<string>> LoadItems(BitSearchBoxSuggestItemsP
             query.Add(""$filter"", $""contains(toupper(Name),'{request.SearchTerm.ToUpper()}')"");
         }
 
-        var url = NavManager.GetUriWithQueryParameters(""Products/GetProducts"", query);
+        var url = NavManager.GetUriWithQueryParameters(""api/Products/GetProducts"", query);
 
         var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto, request.CancellationToken);
 

@@ -120,7 +120,6 @@ self.caseInsensitiveUrl = true;
 self.ignoreDefaultInclude = true;
 self.ignoreDefaultExclude = true;
 self.isPassive = true;
-self.disablePassiveFirstBoot = true;
 self.enableIntegrityCheck = true;
 self.enableDiagnostics = true;
 self.enableFetchDiagnostics = true;
@@ -156,9 +155,15 @@ The other settings are:
     ```
     #### Keep in mind that caching service-worker related files will corrupt the update cycle of the service-worker. Only the browser should handle these files. 
 - `isPassive`: Enables the Bswup's passive mode. In this mode, the assets won't be cached in advance but rather upon initial request.
-- `disablePassiveFirstBoot`: Disables downloading the Blazor's boot files in first time of Passive mode.
 - `enableIntegrityCheck`: Enables the default integrity check available in browsers by setting the `integrity` attribute of the request object created in the service-worker to fetch the assets.
 - `errorTolerance`: Determines how the Bswup should handle the errors while downloading assets. Possible values are: `strict`, `lax`, `config`.
 - `enableDiagnostics`: Enables diagnostics by pushing service-worker logs to the browser console.
 - `enableFetchDiagnostics`: Enables fetch event diagnostics by pushing service-worker fetch event logs to the browser console.
 - `disableHashlessAssetsUpdate`: Disables the update of the hash-less assets. By default, the Bswup tries to automatically update all of the hash-less assets (e.g. the external assets) every time an update found for the app.
+- `forcePrerender`: Forces the prerendering of the default document for every navigation request to ensure that the server always has the latest version of the app. This is useful when you have a server-rendered app and you want to make sure that the client always has the latest version of the app.
+- `enableCacheControl`: Enables the cache-control mechanism by providing cache busting setting and header to each request (`cache:no-store` settings and `cache-control:no-cache` header).
+- `mode`: Determines the mode of the Bswup. Possible values are:
+    - `NoPrerender`: Disables the prerendering of the default document for every navigation request.
+    - `InitialPrerender`: Enables the prerendering of the default document only for the initial navigation request.
+    - `AlwaysPrerender`: Enables the prerendering of the default document for every navigation request.
+    - `FullOffline`: Enables the full offline mode where all assets are cached and served from the cache from first time the app is loaded.

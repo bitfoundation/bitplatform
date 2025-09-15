@@ -1,4 +1,4 @@
-// bit version: 9.11.4
+// bit version: 9.12.0
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 self.assetsInclude = [];
@@ -11,6 +11,9 @@ self.assetsExclude = [
 self.externalAssets = [
     {
         "url": "Bit.BlazorUI.Demo.Server.styles.css"
+    },
+    {
+        url: "_framework/bit.blazor.web.es2019.js"
     }
 ];
 
@@ -22,7 +25,7 @@ self.serverHandledUrls = [
 
 self.enableCacheControl = false;
 
-self.prerenderMode = 'always';
+self.mode = 'AlwaysPrerender';
 self.enableIntegrityCheck = false;
 
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');

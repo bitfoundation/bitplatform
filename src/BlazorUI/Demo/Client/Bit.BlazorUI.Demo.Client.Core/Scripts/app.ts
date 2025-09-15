@@ -23,8 +23,10 @@ function copyToClipboard(codeSampleContentForCopy: string) {
     navigator.clipboard.writeText(codeSampleContentForCopy);
 }
 
-function highlightSnippet() {
-    document.querySelectorAll('pre code').forEach((el) => {
+function highlightSnippet(id: string | undefined) {
+    const el = (id && document.getElementById(id)) || document;
+
+    el.querySelectorAll('pre code').forEach((el) => {
         Prism.highlightElement(el);
     });
 }

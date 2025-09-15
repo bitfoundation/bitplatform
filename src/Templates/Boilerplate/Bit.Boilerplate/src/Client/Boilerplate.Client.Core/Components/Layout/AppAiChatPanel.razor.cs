@@ -24,6 +24,7 @@ public partial class AppAiChatPanel
     private Channel<string>? channel;
     private AiChatMessage? lastAssistantMessage;
     private List<AiChatMessage> chatMessages = []; // TODO: Persist these values in client-side storage to retain them across app restarts.
+    private List<string> followUpSuggestions = [];
     //#if(module == "Sales")
     private Action unsubSearchProducts = default!;
     //#endif
@@ -92,7 +93,9 @@ public partial class AppAiChatPanel
 
     private async Task SendPromptMessage(string message)
     {
+        followUpSuggestions = [];
         userInput = message;
+        StateHasChanged();
         await SendMessage();
     }
 
@@ -128,6 +131,7 @@ public partial class AppAiChatPanel
     {
         isLoading = false;
         responseCounter = 0;
+        followUpSuggestions = [];
         lastAssistantMessage = new() { Role = AiChatMessageRole.Assistant };
         chatMessages = [
             new()
@@ -167,25 +171,32 @@ public partial class AppAiChatPanel
         {
             int expectedResponsesCount = chatMessages.Count(c => c.Role is AiChatMessageRole.User);
 
-            if (response is SharedChatProcessMessages.MESSAGE_RPOCESS_SUCESS)
+            if (response.Contains(nameof(AiChatFollowUpList.FollowUpSuggestions)))
             {
-                responseCounter++;
-                isLoading = false;
-            }
-            else if (response is SharedChatProcessMessages.MESSAGE_RPOCESS_ERROR)
-            {
-                responseCounter++;
-                if (responseCounter == expectedResponsesCount)
-                {
-                    isLoading = false; // Hide loading only if this is an error for the last user's message.
-                }
-                chatMessages[responseCounter * 2].Successful = false;
+                followUpSuggestions = JsonSerializer.Deserialize<AiChatFollowUpList>(response)?.FollowUpSuggestions ?? [];
             }
             else
             {
-                if ((responseCounter + 1) == expectedResponsesCount)
+                if (response is SharedChatProcessMessages.MESSAGE_RPOCESS_SUCESS)
                 {
-                    lastAssistantMessage!.Content += response;
+                    responseCounter++;
+                    isLoading = false;
+                }
+                else if (response is SharedChatProcessMessages.MESSAGE_RPOCESS_ERROR)
+                {
+                    responseCounter++;
+                    if (responseCounter == expectedResponsesCount)
+                    {
+                        isLoading = false; // Hide loading only if this is an error for the last user's message.
+                    }
+                    chatMessages[responseCounter * 2].Successful = false;
+                }
+                else
+                {
+                    if ((responseCounter + 1) == expectedResponsesCount)
+                    {
+                        lastAssistantMessage!.Content += response;
+                    }
                 }
             }
 

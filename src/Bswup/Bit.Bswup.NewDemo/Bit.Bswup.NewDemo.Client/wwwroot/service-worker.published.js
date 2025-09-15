@@ -1,4 +1,4 @@
-﻿// bit version: 9.11.4
+﻿// bit version: 9.12.0
 
 self.assetsInclude = [];
 self.assetsExclude = [
@@ -34,7 +34,6 @@ self.serverRenderedUrls = [/\/privacy$/];
 self.noPrerenderQuery = 'no-prerender=true';
 
 self.isPassive = true;
-self.disablePassiveFirstBoot = true;
 
 //self.enableDiagnostics = true;
 //self.enableFetchDiagnostics = true;

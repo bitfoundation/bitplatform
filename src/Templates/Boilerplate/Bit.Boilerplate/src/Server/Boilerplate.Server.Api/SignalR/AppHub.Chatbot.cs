@@ -27,12 +27,15 @@ public partial class AppHub
         // While processing a user message, a new message may arrive.
         // To handle this, we cancel the ongoing message processing using `messageSpecificCancellationTokenSrc` and start processing the new message.
 
-        CultureInfo? culture;
+        CultureInfo? culture = null;
         string? supportSystemPrompt;
 
         try
         {
-            culture = CultureInfo.GetCultureInfo(request.CultureId);
+            if (CultureInfoManager.InvariantGlobalization is false)
+            {
+                culture = CultureInfo.GetCultureInfo(request.CultureId);
+            }
 
             await using var scope = serviceProvider.CreateAsyncScope();
 
@@ -42,7 +45,7 @@ public partial class AppHub
                     .SystemPrompts.FirstOrDefaultAsync(p => p.PromptKind == PromptKind.Support, cancellationToken))?.Markdown ?? throw new ResourceNotFoundException();
 
             supportSystemPrompt = supportSystemPrompt
-                .Replace("{{UserCulture}}", culture.NativeName)
+                .Replace("{{UserCulture}}", culture?.NativeName ?? "")
                 .Replace("{{DeviceInfo}}", request.DeviceInfo);
         }
         catch (Exception exp)
@@ -88,7 +91,7 @@ public partial class AppHub
                     ChatOptions chatOptions = new()
                     {
                         Tools = [
-                                AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
+                                AIFunctionFactory.Create(async ([Required] string emailAddress, string conversationHistory) =>
                                 {
                                     if (messageSpecificCancellationToken.IsCancellationRequested)
                                         return;
@@ -102,7 +105,7 @@ public partial class AppHub
 
                                 }, name: "SaveUserEmailAndConversationHistory", description: "Saves the user's email address and the conversation history for future reference. Use this tool when the user provides their email address during the conversation. Parameters: emailAddress (string), conversationHistory (string)"),
                                 //#if (module == "Sales")
-                                AIFunctionFactory.Create(async ([Description("Concise summary of these user requirements")] string userNeeds,
+                                AIFunctionFactory.Create(async ([Required, Description("Concise summary of these user requirements")] string userNeeds,
                                     [Description("Car manufacturer's name (Optional)")] string? manufacturer,
                                     [Description("Car price below this value (Optional)")] decimal? maxPrice,
                                     [Description("Car price above this value (Optional)")] decimal? minPrice) =>
@@ -154,6 +157,24 @@ public partial class AppHub
                     }
 
                     await channel.Writer.WriteAsync(SharedChatProcessMessages.MESSAGE_RPOCESS_SUCESS, cancellationToken);
+
+                    // This would generate a list of follow-up questions/suggestions to keep the conversation going.
+                    // You could instead generate that list in previous chat completion call:
+                    // 1: Using "tools" or "functions" feature of the model, that would not consider the latest assistant response.
+                    // 2: Returning a json object containing the response and follow-up suggestions all together, losing IAsyncEnumerable streaming capability.  
+                    chatOptions.ResponseFormat = ChatResponseFormat.Json;
+                    chatOptions.AdditionalProperties = new() { ["response_format"] = new { type = "json_object" } };
+                    var followUpItems = await chatClient.GetResponseAsync<AiChatFollowUpList>([
+                        new(ChatRole.System, supportSystemPrompt),
+                        new(ChatRole.User, incomingMessage),
+                        new(ChatRole.Assistant, assistantResponse.ToString()),
+                        new(ChatRole.User, @"Return up to 3 relevant follow-up suggestions that help users discover related topics and continue the conversation naturally based on user's query in JSON object containing string[] named FollowUpSuggestions.
+Only suggest follow-up questions that are within the assistant's scope and knowledge.
+Do not suggest questions that require access to data or functionality that is unavailable or out of scope for this assistant.
+Avoid suggesting questions that the assistant would not be able to answer."),],
+                        chatOptions, cancellationToken: cancellationToken);
+
+                    await channel.Writer.WriteAsync(JsonSerializer.Serialize(followUpItems.Result), cancellationToken);
                 }
                 catch (Exception exp)
                 {

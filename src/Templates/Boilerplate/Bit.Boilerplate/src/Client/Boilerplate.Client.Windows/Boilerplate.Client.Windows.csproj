@@ -36,7 +36,7 @@
         <Using Include="Boilerplate.Shared" />
 
         <PackageReference Include="EmbedIO" />
-
+        <PackageReference Include="Bit.BlazorES2019" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventLog" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventSource" />

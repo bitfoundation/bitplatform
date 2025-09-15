@@ -1,4 +1,4 @@
-﻿self['bit-bswup.sw version'] = '9.11.4';
+﻿self['bit-bswup.sw version'] = '9.12.0';
 
 interface Window {
     clients: any
@@ -19,7 +19,6 @@ interface Window {
     ignoreDefaultInclude: any
     ignoreDefaultExclude: any
     isPassive: any
-    disablePassiveFirstBoot: any
     enableIntegrityCheck: any
     errorTolerance: any
     enableDiagnostics: any
@@ -28,7 +27,7 @@ interface Window {
     forcePrerender: any
     enableCacheControl: any
 
-    prerenderMode: any
+    mode: any
 }
 
 interface Event {
@@ -48,32 +47,37 @@ const VERSION = self.assetsManifest.version;
 const CACHE_NAME_PREFIX = 'bit-bswup';
 const CACHE_NAME = `${CACHE_NAME_PREFIX} - ${VERSION}`;
 
-switch (self.prerenderMode) {
-    case 'none': // like adminpanel
+switch (self.mode) {
+    case 'NoPrerender': // like adminpanel
+        self.isPassive = true;
         self.defaultUrl ||= "/";
-        self.isPassive ||= true;
         self.forcePrerender ||= false;
         self.errorTolerance ||= 'lax';
         self.caseInsensitiveUrl ||= true;
-        self.disablePassiveFirstBoot ||= false;
         self.noPrerenderQuery ||= 'no-prerender=true';
         break;
-    case 'initial': // like todo
+    case 'InitialPrerender': // like todo
+        self.isPassive = true;
         self.defaultUrl ||= "/";
-        self.isPassive ||= true;
         self.forcePrerender ||= false;
         self.errorTolerance ||= 'lax';
         self.caseInsensitiveUrl ||= true;
-        self.disablePassiveFirstBoot ||= true;
         self.noPrerenderQuery ||= 'no-prerender=true';
         break;
-    case 'always': // like sales
+    case 'AlwaysPrerender': // like sales
+        self.isPassive = true;
         self.defaultUrl ||= "/";
-        self.isPassive ||= true;
         self.forcePrerender ||= true;
         self.errorTolerance ||= 'lax';
         self.caseInsensitiveUrl ||= true;
-        self.disablePassiveFirstBoot ||= true;
+        self.noPrerenderQuery ||= '';
+        break;
+    case 'FullOffline': // like todo-offline
+        self.isPassive = false;
+        self.defaultUrl ||= "/";
+        self.forcePrerender ||= false;
+        self.errorTolerance ||= 'lax';
+        self.caseInsensitiveUrl ||= true;
         self.noPrerenderQuery ||= '';
         break;
 }
@@ -257,7 +261,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
     let newCacheKeys = await newCache.keys();
     const firstTime = newCacheKeys.length === 0;
     const passiveFirstTime = self.isPassive && firstTime
-    if (passiveFirstTime && self.disablePassiveFirstBoot) {
+    if (passiveFirstTime) {
         if (!ignoreProgressReport) {
             sendMessage({ type: 'bypass', data: { firstTime: true } });
         }
@@ -268,33 +272,6 @@ async function createAssetsCache(ignoreProgressReport = false) {
 
     let current = 0;
     let total = UNIQUE_ASSETS.length;
-
-    if (passiveFirstTime) {
-        const blazorBootAsset = UNIQUE_ASSETS.find(a => a.url.includes('blazor.boot.json'));
-        const blazorBootJson = await (await addCache(false, blazorBootAsset)).json();
-        const blazorResources = Object.keys(blazorBootJson.resources.assembly)
-            .concat(Object.keys(blazorBootJson.resources.runtime || {})) // before .NET 8
-            .concat(Object.keys(blazorBootJson.resources.jsModuleNative || {})) // after .NET 8
-            .concat(Object.keys(blazorBootJson.resources.jsModuleRuntime || {}))
-            .concat(Object.keys(blazorBootJson.resources.wasmNative || {}))
-            .concat(Object.keys(blazorBootJson.resources.coreAssembly || {})) // after .NET 9
-            .concat(Object.keys(blazorBootJson.resources.icu || {}))
-            .concat(Object.keys(blazorBootJson.resources.jsModuleGlobalization || {}));
-        const blazorAssets = blazorResources.map(r => UNIQUE_ASSETS.find(a => a.url.endsWith(`/${r}`))).filter(a => !!a);
-
-        diag('blazorBootAsset:', blazorBootAsset);
-        diag('blazorBootJson:', blazorBootJson);
-        diag('blazorResources:', blazorResources);
-        diag('blazorAssets:', blazorAssets);
-
-        total = blazorAssets.length;
-        const promises = blazorAssets.map(addCache.bind(null, true));
-
-        diag('createAssetsCache ended - passive firstTime');
-        diagGroupEnd();
-
-        return;
-    }
 
     const oldUrls = [];
     const updatedAssets = [];

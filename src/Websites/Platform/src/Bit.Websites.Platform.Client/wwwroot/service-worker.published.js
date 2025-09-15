@@ -1,4 +1,4 @@
-// bit version: 9.11.4
+// bit version: 9.12.0
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 self.assetsInclude = [];
@@ -13,6 +13,9 @@ self.externalAssets = [
     },
     {
         "url": "Bit.Websites.Platform.Client.bundle.scp.css"
+    },
+    {
+        url: "_framework/bit.blazor.web.es2019.js"
     }
 ];
 
@@ -20,7 +23,7 @@ self.serverHandledUrls = [
     /\/api\//
 ];
 
-self.prerenderMode = 'always';
+self.mode = 'AlwaysPrerender';
 self.enableCacheControl = false;
 self.enableIntegrityCheck = false;
 

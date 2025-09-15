@@ -49,44 +49,50 @@ $screen-xs-max: rem2(400px);
 
 // media lt queries
 @mixin lt-xl {
-    @media screen and (max-width: #{$screen-xl-min}) {
+    @media screen and (max-width: #{$screen-lg-max}) {
         @content;
     }
 }
 
 @mixin lt-lg {
-    @media screen and (max-width: #{$screen-lg-min}) {
+    @media screen and (max-width: #{$screen-md-max}) {
         @content;
     }
 }
 
 @mixin lt-md {
-    @media screen and (max-width: #{$screen-md-min}) {
+    @media screen and (max-width: #{$screen-sm-max}) {
         @content;
     }
 }
 
 @mixin lt-sm {
-    @media screen and (max-width: #{$screen-sm-min}) {
+    @media screen and (max-width: #{$screen-xs-max}) {
         @content;
     }
 }
 
 // media gt queries
 @mixin gt-lg {
-    @media screen and (min-width: #{$screen-lg-max}) {
+    @media screen and (min-width: #{$screen-xl-min}) {
         @content;
     }
 }
 
 @mixin gt-md {
-    @media screen and (min-width: #{$screen-md-max}) {
+    @media screen and (min-width: #{$screen-lg-min}) {
         @content;
     }
 }
 
 @mixin gt-sm {
-    @media screen and (min-width: #{$screen-sm-max}) {
+    @media screen and (min-width: #{$screen-md-min}) {
+        @content;
+    }
+}
+
+@mixin gt-xs {
+    @media screen and (min-width: #{$screen-sm-min}) {
         @content;
     }
 }

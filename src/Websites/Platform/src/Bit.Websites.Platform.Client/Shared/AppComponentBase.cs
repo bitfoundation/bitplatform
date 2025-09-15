@@ -1,6 +1,6 @@
 ﻿namespace Bit.Websites.Platform.Client.Shared;
 
-public partial class AppComponentBase : ComponentBase
+public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 {
     [AutoInject] protected IJSRuntime JSRuntime = default!;
 
@@ -21,6 +21,23 @@ public partial class AppComponentBase : ComponentBase
     [AutoInject] protected NavigationManager NavigationManager = default!;
 
     [AutoInject] protected IExceptionHandler ExceptionHandler = default!;
+
+
+
+    private CancellationTokenSource? cts = new();
+    protected CancellationToken CurrentCancellationToken
+    {
+        get
+        {
+            if (cts == null)
+                throw new OperationCanceledException(); // Component already disposed.
+
+            cts.Token.ThrowIfCancellationRequested();
+            return cts.Token;
+        }
+    }
+
+
 
     protected sealed override async Task OnInitializedAsync()
     {
@@ -94,6 +111,8 @@ public partial class AppComponentBase : ComponentBase
         return Task.CompletedTask;
     }
 
+
+
     /// <summary>
     /// Executes passed action while catching all possible exceptions to prevent app crash.
     /// </summary>
@@ -164,5 +183,26 @@ public partial class AppComponentBase : ComponentBase
                 ExceptionHandler.Handle(exp);
             }
         };
+    }
+
+
+
+    public async ValueTask DisposeAsync()
+    {
+        if (cts != null)
+        {
+            using var currentCts = cts;
+            cts = null;
+            await currentCts.CancelAsync();
+        }
+
+        await DisposeAsync(true);
+
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual ValueTask DisposeAsync(bool disposing)
+    {
+        return ValueTask.CompletedTask;
     }
 }

@@ -107,26 +107,26 @@
         {
             @if (ColumnOptions is not null && Align != BitDataGridAlign.Right)
             {
-                <button type="button" class="col-options-button" @onclick="@(() => Grid.ShowColumnOptions(this))"></button>
+                <button type="button" class="bit-dtg-cob" @onclick="@(() => Grid.ShowColumnOptions(this))"></button>
             }
 
             if (Sortable.HasValue ? Sortable.Value : IsSortableByDefault())
             {
-                <button type="button" class="col-title" @onclick="@(() => Grid.SortByColumnAsync(this))">
-                    <div class="col-title-text">@Title</div>
-                    <div class="sort-indicator" aria-hidden="true"></div>
+                <button type="button" class="bit-dtg-ctl" @onclick="@(() => Grid.SortByColumnAsync(this))">
+                    <div class="bit-dtg-ctt">@Title</div>
+                    <div class="bit-dtg-srt" aria-hidden="true"></div>
                 </button>
             }
             else
             {
-                <div class="col-title">
-                    <div class="col-title-text">@Title</div>
+                <div class="bit-dtg-ctl">
+                    <div class="bit-dtg-ctt">@Title</div>
                 </div>
             }
 
             @if (ColumnOptions is not null && Align == BitDataGridAlign.Right)
             {
-                <button type="button" class="col-options-button" @onclick="@(() => Grid.ShowColumnOptions(this))"></button>
+                <button type="button" class="bit-dtg-cob" @onclick="@(() => Grid.ShowColumnOptions(this))"></button>
             }
         }
     }
