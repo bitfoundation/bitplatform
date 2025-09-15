@@ -1,14 +1,14 @@
 /* Visual Studio Settings File */
 {
-  "languages.defaults.tabs.tabSize": 4,
-  "languages.defaults.general.lineNumbers": true,
-  "environment.documents.saveWithSpecificEncoding": true,
-  "environment.documents.saveEncoding": "utf-8-nobom;65001",
-  "debugging.hotReload.enableHotReload": true,
-  "debugging.hotReload.applyOnFileSave": true,
-  "debugging.general.disableJITOptimization": true,
-  "debugging.hotReload.enableForNoDebugLaunch": true,
-  "projectsAndSolutions.aspNetCore.general.hotReloadCssChanges": true,
-  "copilot.general.completions.enableNextEditSuggestions": true,
-  "copilot.general.editor.enableAdaptivePaste": true
+    "languages.defaults.tabs.tabSize": 4,
+    "languages.defaults.general.lineNumbers": true,
+    "environment.documents.saveWithSpecificEncoding": true,
+    "environment.documents.saveEncoding": "utf-8-nobom;65001",
+    "debugging.hotReload.enableHotReload": true,
+    "debugging.hotReload.applyOnFileSave": true,
+    "debugging.general.disableJITOptimization": true,
+    "debugging.hotReload.enableForNoDebugLaunch": true,
+    "projectsAndSolutions.aspNetCore.general.hotReloadCssChanges": true,
+    "copilot.general.completions.enableNextEditSuggestions": true,
+    "copilot.general.editor.enableAdaptivePaste": true
 }
