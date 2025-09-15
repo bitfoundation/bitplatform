@@ -47,7 +47,7 @@ public partial class Product
     //#if (IsInsideProjectTemplate == true)
     /*
     //#endif
-    public float[]? Embedding { get; set; }
+    public Microsoft.Data.SqlTypes.SqlVector<float>? Embedding { get; set; }
     //#if (IsInsideProjectTemplate == true)
     */
     //#endif

@@ -10,6 +10,7 @@
 <html bit-theme="dark">
 
 <head>
+    <ResourcePreloader />
     <base href="/" />
     <meta charset="utf-8" />
     <meta name="theme-color">
@@ -26,9 +27,6 @@
     <Link rel="manifest" Href="manifest.json" />
     <Link rel="icon" Href="favicon.ico" type="image/x-icon" />
     <Link rel="apple-touch-icon" sizes="512x512" Href="images/icons/bit-icon-512.png" />
-
-    <Link rel="preload" Href="_framework/dotnet.js" as="script" type="text/javascript" />
-    <Link rel="preload" Href="_framework/blazor.boot.json" as="fetch" type="application/json" />
 </head>
 
 <body class="@BitCss.Class.Color.Background.Primary @BitCss.Class.Color.Foreground.Primary bit-blazor-web">

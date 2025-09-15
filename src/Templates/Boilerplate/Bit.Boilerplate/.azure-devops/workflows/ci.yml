@@ -38,7 +38,7 @@ jobs:
     displayName: 'Install Playwright'
     inputs:
       targetType: 'inline'
-      script: 'pwsh src/Tests/bin/Debug/net9.0/playwright.ps1 install --with-deps'
+      script: 'pwsh src/Tests/bin/Debug/net10.0/playwright.ps1 install --with-deps'
 
   - task: Bash@3
     name: test

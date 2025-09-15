@@ -3,16 +3,21 @@
     <Import Project="../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFrameworks>net10.0;net9.0</TargetFrameworks>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Include="..\wwwroot\**\*.js">
+        <Content Include="..\wwwroot.net9\**\*.js">
             <Pack>true</Pack>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <PackagePath>contentFiles\any\net9.0\wwwroot\_framework\bit.%(Filename).es2019%(Extension)</PackagePath>
+        </Content>
+        <Content Include="..\wwwroot.net10\**\*.js">
+            <Pack>true</Pack>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <PackagePath>contentFiles\any\net10.0\wwwroot\_framework\bit.%(Filename).es2019%(Extension)</PackagePath>
         </Content>
         <Content Include="buildTransitive\Bit.BlazorES2019.targets" Pack="true" PackagePath="buildTransitive\" />
     </ItemGroup>
