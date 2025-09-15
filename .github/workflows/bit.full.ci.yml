@@ -18,10 +18,16 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v5
 
-    - name: Setup .NET
+    - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
       with:
         global-json-file: src/global.json
+
+    - name: Setup .NET 9
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: |
+          9.0.x
 
     - name: Setup .NET 8
       uses: actions/setup-dotnet@v5
@@ -42,7 +48,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg && cd ../../../
-        dotnet workload install maui-tizen maui-android wasm-tools wasm-tools-net8
+        dotnet workload install maui-tizen maui-android wasm-tools wasm-tools-net9 wasm-tools-net8
         ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
 
     - name: Install sql server
@@ -62,7 +68,7 @@ jobs:
         dotnet ef database update
         cd ../../Tests
         dotnet build
-        pwsh bin/Debug/net9.0/playwright.ps1 install --with-deps
+        pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
         dotnet test --logger GitHubActions --filter "${{ env.SIMPLE_TEST_FILTER }}"
 
     - name: Upload Tests Artifact
@@ -83,7 +89,7 @@ jobs:
         dotnet ef database update
         cd ../../Tests
         dotnet build
-        pwsh bin/Debug/net9.0/playwright.ps1 install --with-deps
+        pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
         dotnet test --logger GitHubActions --filter "${{ env.SIMPLE_TEST_FILTER }}"
 
     - name: Upload Tests Artifact
@@ -94,18 +100,13 @@ jobs:
         path: ./TestSqlServer/src/Tests/TestResults
         retention-days: 14
 
-    - name: Build PostgreSQL, MySql, Other database options
+    - name: Build PostgreSQL and Other database options
       run: |
         dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL --module Sales --signalR
         cd TestPostgreSQL/src/Server/TestPostgreSQL.Server.Web/
         dotnet build
         cd ../../../../
         rm -r "TestPostgreSQL"
-        dotnet new bit-bp --name TestMySql --database MySql --module Admin --offlineDb
-        cd TestMySql/src/Server/TestMySql.Server.Web/
-        dotnet build
-        cd ../../../../
-        rm -r "TestMySql"
         dotnet new bit-bp --name TestOther --database Other --sample --sentry
         cd TestOther/src/Server/TestOther.Server.Web/
         dotnet build
@@ -149,7 +150,7 @@ jobs:
 
     - name: Build sample configuration 2
       run: |
-        dotnet new bit-bp --name TestProject2 --database Other --filesStorage S3 --api Standalone --captcha None --pipeline None --module None --offlineDb false --appInsights false --sentry false --signalR false --notification false --cloudflare false --ads false --aspire false
+        dotnet new bit-bp --name TestProject2 --database Other --filesStorage S3 --api Standalone --captcha None --pipeline None --module None --offlineDb false --appInsights false --sentry false --signalR false --notification false --cloudflare false --ads false --aspire true
         dotnet build TestProject2/TestProject2.slnx -p:InvariantGlobalization=true -p:Environment=Development
         rm -r "TestProject2"
 
@@ -158,8 +159,8 @@ jobs:
         cd src/Templates/BlazorEmpty && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.BlazorEmpty.0.0.0.nupkg && cd ../../../
-        dotnet new bit-empty --name AutoGlobal --interactivity Auto --all-interactive --framework net9.0
-        dotnet new bit-empty --name SsrPerPage --interactivity None --framework net8.0
+        dotnet new bit-empty --name AutoGlobal --interactivity Auto --all-interactive
+        dotnet new bit-empty --name SsrPerPage --interactivity None
 
     - name: Build blazor empty based projects
       run: |

@@ -14,7 +14,7 @@
     },
     "ghcr.io/devcontainers/features/node:1": { "version": "23" }
   },
-  "image": "mcr.microsoft.com/devcontainers/dotnet:dev-9.0-bookworm",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:dev-10.0-bookworm",
   "postStartCommand": "dotnet workload install wasm-tools && dotnet dev-certs https --trust",
   "waitFor": "onCreateCommand",
   "customizations": {

@@ -264,10 +264,6 @@ public static partial class Program
             //#if (database == "SqlServer")
             options.UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), dbOptions =>
             {
-                if (AppDbContext.IsEmbeddingEnabled)
-                {
-                    dbOptions.UseVectorSearch();
-                }
                 // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });
             //#elif (database == "PostgreSQL")

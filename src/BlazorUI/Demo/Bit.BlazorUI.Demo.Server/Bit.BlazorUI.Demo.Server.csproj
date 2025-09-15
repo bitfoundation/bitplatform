@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
 
         <SelfContained>true</SelfContained>
         <PublishReadyToRun>true</PublishReadyToRun>
@@ -28,7 +28,7 @@
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="9.0.0" />
         <PackageReference Include="Riok.Mapperly" Version="4.2.1" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.9" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.0-rc.1.25451.107" />
         <PackageReference Include="Microsoft.Extensions.AI" Version="9.9.0" />
         <PackageReference Include="Microsoft.Extensions.AI.AzureAIInference" Version="9.8.0-preview.1.25412.6" />
         <PackageReference Include="ModelContextProtocol" Version="0.3.0-preview.4" />

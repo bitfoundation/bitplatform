@@ -34,7 +34,7 @@ jobs:
           fileName: 'AssemblyOriginatorKeyFile.snk'
           encodedString: ${{ secrets.STRONG_SIGN_CERTIFICATE_BASE64 }}
 
-    - name: Generate ES2019 based blazor.*.js files
+    - name: Generate ES2019 based blazor.*.js files for .NET 9
       run: |
         git clone https://github.com/dotnet/aspnetcore.git
         cd aspnetcore
@@ -47,8 +47,25 @@ jobs:
         npm install
         npm run-script build:production
         cd ../../../../
-        mkdir -p src/BlazorES2019/wwwroot/
-        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/BlazorES2019/wwwroot/
+        mkdir -p src/BlazorES2019/wwwroot.net9/
+        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/BlazorES2019/wwwroot.net9/
+        rm -rf aspnetcore
+
+    - name: Generate ES2019 based blazor.*.js files for .NET 10
+      run: |
+        git clone https://github.com/dotnet/aspnetcore.git
+        cd aspnetcore
+        git switch release/10.0
+        git submodule update --init --recursive
+        sed -i 's/"target": "ES2024"/"target": "ES2019"/' src/Components/Shared.JS/tsconfig.json
+        npm install
+        npm run-script build
+        cd src/Components/Web.JS
+        npm install
+        npm run-script build:production
+        cd ../../../../
+        mkdir -p src/BlazorES2019/wwwroot.net10/
+        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/BlazorES2019/wwwroot.net10/
         rm -rf aspnetcore
 
     - name: dotnet pack BlazorES2019
@@ -57,42 +74,42 @@ jobs:
           dotnet pack src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj --output . --configuration Release
 
     - name: Generate CSS/JS files BlazorUI
-      run: dotnet build src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj -t:BeforeBuildTasks --no-restore -f:net9.0 -c Release
+      run: dotnet build src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
     - name: dotnet build BlazorUI
       run: dotnet build src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack BlazorUI
       run: dotnet pack src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj --output . --configuration Release
 
     - name: Generate CSS/JS files BlazorUI.Extras
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj -t:BeforeBuildTasks --no-restore -f:net9.0 -c Release
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
     - name: dotnet build BlazorUI.Extras
       run: dotnet build src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack BlazorUI.Extras
       run: dotnet pack src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj --output . --configuration Release
 
     - name: Generate CSS/JS files BlazorUI.Assets
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -t:BeforeBuildTasks --no-restore -f:net9.0 -c Release
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
     - name: dotnet build BlazorUI.Assets
       run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack BlazorUI.Assets
       run: dotnet pack src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj --output . --configuration Release
 
     - name: Generate CSS/JS files BlazorUI.Icons
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj -t:BeforeBuildTasks --no-restore -f:net9.0 -c Release
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
     - name: dotnet build BlazorUI.Icons
       run: dotnet build src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack BlazorUI.Icons
       run: dotnet pack src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj --output . --configuration Release
       
     - name: Generate CSS/JS files Bswup
-      run: dotnet build src/Bswup/Bit.Bswup/Bit.Bswup.csproj -t:BeforeBuildTasks --no-restore -f:net9.0 -c Release
+      run: dotnet build src/Bswup/Bit.Bswup/Bit.Bswup.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
     - name: dotnet build Bswup
       run: dotnet build src/Bswup/Bit.Bswup/Bit.Bswup.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bswup
       run: dotnet pack src/Bswup/Bit.Bswup/Bit.Bswup.csproj --output . --configuration Release
 
     - name: Generate CSS/JS files Butil
-      run: dotnet build src/Butil/Bit.Butil/Bit.Butil.csproj -t:BeforeBuildTasks --no-restore -f:net9.0 -c Release
+      run: dotnet build src/Butil/Bit.Butil/Bit.Butil.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
     - name: dotnet build Butil
       run: dotnet build src/Butil/Bit.Butil/Bit.Butil.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Butil
