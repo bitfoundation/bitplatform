@@ -51,18 +51,12 @@ jobs:
         dotnet workload install maui-tizen maui-android wasm-tools wasm-tools-net9 wasm-tools-net8
         ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
 
-    - name: Install sql server
-      uses: potatoqualitee/mssqlsuite@v1.7
-      with:
-        install: sqlengine
-        sa-password: P@ssw0rdP@ssw0rd
-        show-log: true
-
     - name: Run tests usign Sqlite
       id: run-test-sqlite
       run: |
         dotnet new bit-bp --name SimpleTest --database Sqlite
         cd SimpleTest/src/Server/SimpleTest.Server.Api/
+        dotnet build
         dotnet tool restore
         dotnet ef migrations add Initial --verbose
         dotnet ef database update
@@ -79,11 +73,19 @@ jobs:
         path: ./SimpleTest/src/Tests/TestResults
         retention-days: 14
 
+    - name: Install sql server
+      uses: potatoqualitee/mssqlsuite@v1.7
+      with:
+        install: sqlengine
+        sa-password: P@ssw0rdP@ssw0rd
+        show-log: true
+
     - name: Run tests usign SQL Server
       id: run-test-sqlserver
       run: |
         dotnet new bit-bp --name TestSqlServer --database SqlServer
         cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
+        dotnet build
         dotnet tool restore
         dotnet ef migrations add Initial --verbose
         dotnet ef database update
