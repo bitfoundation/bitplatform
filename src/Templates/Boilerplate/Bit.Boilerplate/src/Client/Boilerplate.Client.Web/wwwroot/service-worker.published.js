@@ -63,23 +63,15 @@ self.assetsExclude = [
     //#endif
 
     // country flags
-    /_content\/Bit\.BlazorUI\.Extras\/flags/,
-
-    // https://github.com/orgs/bitfoundation/discussions/10238#discussioncomment-12493737
-    /_content\/Bit\.BlazorES2019\/blazor\.server\.js$/,
-    /_content\/Bit\.BlazorES2019\/blazor\.webview\.js$/,
-    /_framework\/blazor\.web\.js$/,
-    /_framework\/blazor\.webassembly\.js$/
+    /_content\/Bit\.BlazorUI\.Extras\/flags/
 ];
 self.externalAssets = [
     {
         "url": "/"
     },
-    /* If you don't plan to support older browsers and prefer to use the original `blazor.web.js`, follow the instructions in this link: https://github.com/orgs/bitfoundation/discussions/10238#discussioncomment-12493737
     {
-        url: "_framework/blazor.web.js"
+        url: "_framework/bit.blazor.web.es2019.js"
     },
-    */
     {
         "url": "Boilerplate.Server.Web.styles.css"
     },
