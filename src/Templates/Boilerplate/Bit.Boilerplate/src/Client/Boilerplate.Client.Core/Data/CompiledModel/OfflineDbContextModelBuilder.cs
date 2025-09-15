@@ -11,7 +11,7 @@ namespace Boilerplate.Client.Core.Data
     public partial class OfflineDbContextModel
     {
         private OfflineDbContextModel()
-            : base(skipDetectChanges: false, modelId: new Guid("dda88df5-4a23-40d9-beab-d332a4019767"), entityTypeCount: 1)
+            : base(skipDetectChanges: false, modelId: new Guid("de8f2fc8-013e-4376-8065-9a324ab466df"), entityTypeCount: 1)
         {
         }
 
@@ -21,7 +21,7 @@ namespace Boilerplate.Client.Core.Data
 
             UserDtoEntityType.CreateAnnotations(userDto);
 
-            AddAnnotation("ProductVersion", "9.0.4");
+            AddAnnotation("ProductVersion", "10.0.0-rc.1.25451.107");
         }
     }
 }
