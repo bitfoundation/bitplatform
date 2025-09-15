@@ -1,4 +1,5 @@
 ﻿//+:cnd:noEmit
+using Hangfire;
 using Boilerplate.Server.Web;
 using Boilerplate.Tests.Services;
 using Boilerplate.Server.Api.Services;
@@ -11,6 +12,8 @@ public static partial class WebApplicationBuilderExtensions
     public static void AddTestProjectServices(this WebApplicationBuilder builder)
     {
         var services = builder.Services;
+
+        services.AddHangfire(configuration => configuration.UseColouredConsoleLogProvider());
 
         builder.AddServerWebProjectServices();
 

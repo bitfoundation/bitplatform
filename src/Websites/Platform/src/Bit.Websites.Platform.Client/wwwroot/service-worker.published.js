@@ -23,7 +23,7 @@ self.serverHandledUrls = [
     /\/api\//
 ];
 
-self.prerenderMode = 'always';
+self.mode = 'AlwaysPrerender';
 self.enableCacheControl = false;
 self.enableIntegrityCheck = false;
 
