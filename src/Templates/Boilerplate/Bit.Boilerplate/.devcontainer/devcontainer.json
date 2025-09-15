@@ -1,6 +1,6 @@
 {
     "name": "Boilerplate",
-    "image": "mcr.microsoft.com/devcontainers/dotnet:dev-10.0-preview-noble",
+    "image": "mcr.microsoft.com/dotnet/nightly/sdk:10.0.100-rc.1",
     "hostRequirements": {
         "cpus": 8
     },
