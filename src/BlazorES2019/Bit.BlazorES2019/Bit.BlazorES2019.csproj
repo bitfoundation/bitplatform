@@ -12,7 +12,7 @@
         <Content Include="..\wwwroot\**\*.js">
             <Pack>true</Pack>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <PackagePath>contentFiles\any\net9.0\wwwroot\_framework\bit.es2019.%(Filename)%(Extension)</PackagePath>
+            <PackagePath>contentFiles\any\net9.0\wwwroot\_framework\bit.%(Filename).es2019%(Extension)</PackagePath>
         </Content>
         <Content Include="buildTransitive\Bit.BlazorES2019.targets" Pack="true" PackagePath="buildTransitive\" />
     </ItemGroup>
