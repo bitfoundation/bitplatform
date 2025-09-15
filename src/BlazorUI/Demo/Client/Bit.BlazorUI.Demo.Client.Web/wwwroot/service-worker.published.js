@@ -13,7 +13,7 @@ self.externalAssets = [
         "url": "Bit.BlazorUI.Demo.Server.styles.css"
     },
     {
-        url: "_framework/blazor.web.es2019.js"
+        url: "_framework/bit.es2019.blazor.web.js"
     }
 ];
 

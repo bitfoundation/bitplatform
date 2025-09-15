@@ -70,7 +70,7 @@ self.externalAssets = [
         "url": "/"
     },
     {
-        url: "_framework/blazor.web.es2019.js"
+        url: "_framework/bit.es2019.blazor.web.js"
     },
     {
         "url": "Boilerplate.Server.Web.styles.css"
