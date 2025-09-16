@@ -67,6 +67,9 @@
         <AndroidEnableProfiledAot>true</AndroidEnableProfiledAot>
         <MauiUseDefaultAotProfile Condition="Exists('custom.aprof')">false</MauiUseDefaultAotProfile>
         <RuntimeIdentifiers Condition="'$(AndroidPackageFormat)' == 'apk'">android-arm64</RuntimeIdentifiers>
+
+        <EnableLLVM>false</EnableLLVM>
+        <!-- https://github.com/dotnet/runtime/issues/95406#issuecomment-1983736335 -->
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Environment)' == 'Development'">
