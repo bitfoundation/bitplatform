@@ -46,13 +46,11 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
-        <EnableLLVM>true</EnableLLVM>
         <AndroidLinkTool>r8</AndroidLinkTool>
         <AndroidUseAapt2>True</AndroidUseAapt2>
         <RunAOTCompilation>True</RunAOTCompilation>
         <AndroidStripILAfterAOT>true</AndroidStripILAfterAOT>
-        <!-- https://github.com/dotnet/runtime/issues/95406#issuecomment-1983736335 -->
-        <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+        <AndroidEnableProfiledAot>true</AndroidEnableProfiledAot>
         <RuntimeIdentifiers Condition="'$(AndroidPackageFormat)' == 'apk'">android-arm64</RuntimeIdentifiers>
     </PropertyGroup>
 

@@ -60,13 +60,12 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Environment)' != 'Development'">
-        <EnableLLVM>true</EnableLLVM>
         <AndroidLinkTool>r8</AndroidLinkTool>
         <AndroidUseAapt2>True</AndroidUseAapt2>
         <RunAOTCompilation>True</RunAOTCompilation>
         <AndroidStripILAfterAOT>true</AndroidStripILAfterAOT>
-        <!-- https://github.com/dotnet/runtime/issues/95406#issuecomment-1983736335 -->
-        <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+        <AndroidEnableProfiledAot>true</AndroidEnableProfiledAot>
+        <MauiUseDefaultAotProfile Condition="Exists('custom.aprof')">false</MauiUseDefaultAotProfile>
         <RuntimeIdentifiers Condition="'$(AndroidPackageFormat)' == 'apk'">android-arm64</RuntimeIdentifiers>
     </PropertyGroup>
 
@@ -98,11 +97,17 @@
     <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
         <AndroidResource Include="Platforms\Android\Resources\**\styles.xml" />
         <GoogleServicesJson Condition="Exists('Platforms\Android\google-services.json')" Include="Platforms\Android\google-services.json" />
+        <AndroidAotProfile Condition="Exists('custom.aprof')" Include="custom.aprof" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" />
         <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.SavedState" />
         <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.SavedState.SavedState.Ktx" />
         <!--/-:msbuild-conditional:noEmit -->
+        <!-- Run the following commands to create custom.aprof file which improves the Android app performance -->
+        <!-- dotnet add package Mono.AotProfiler.Android -->
+        <!-- dotnet build -t:BuildAndStartAotProfiling -f net10.0-android -p:UseInterpreter=false -->
+        <!-- dotnet build -t:FinishAotProfiling -f net10.0-android -->
+        <!-- dotnet remove package Mono.AotProfiler.Android -->
     </ItemGroup>
 
     <ItemGroup Condition="$(TargetFramework.Contains('-ios'))">
