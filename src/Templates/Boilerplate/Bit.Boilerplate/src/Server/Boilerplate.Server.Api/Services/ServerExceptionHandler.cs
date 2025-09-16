@@ -44,7 +44,7 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
         Dictionary<string, object?>? parameters,
         HttpContext? httpContext,
         out int statusCode,
-        out ProblemDetails? problemDetails)
+        out AppProblemDetails? problemDetails)
     {
         var data = new Dictionary<string, object?>()
         {
@@ -143,7 +143,7 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
             message = Localizer[message];
         }
 
-        problemDetails = new ProblemDetails
+        problemDetails = new AppProblemDetails
         {
             Title = message,
             Status = statusCode,
@@ -170,7 +170,7 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
         }
     }
 
-    public ProblemDetails? Handle(Exception exp,
+    public AppProblemDetails? Handle(Exception exp,
         Dictionary<string, object?>? parameters = null)
     {
         Handle(UnWrapException(exp), parameters, httpContextAccessor.HttpContext, out var _, out var problemDetails);

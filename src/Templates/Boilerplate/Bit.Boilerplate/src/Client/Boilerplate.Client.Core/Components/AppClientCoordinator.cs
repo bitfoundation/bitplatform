@@ -177,7 +177,7 @@ public partial class AppClientCoordinator : AppComponentBase
     //#if (signalR == true)
     private void SubscribeToSignalREventsMessages()
     {
-        signalROnDisposables.Add(hubConnection.On<string, object, bool>(SignalREvents.SHOW_MESSAGE, async (message, data) =>
+        signalROnDisposables.Add(hubConnection.On<string, Dictionary<string, string?>?, bool>(SignalREvents.SHOW_MESSAGE, async (message, data) =>
         {
             logger.LogInformation("SignalR Message {Message} received from server to show.", message);
             if (await notification.IsNotificationAvailable())

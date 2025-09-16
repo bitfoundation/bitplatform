@@ -178,7 +178,7 @@ public static partial class Program
                 policy.SetIsOriginAllowed(origin => Uri.TryCreate(origin, UriKind.Absolute, out var uri) && settings.IsTrustedOrigin(uri))
                       .AllowAnyHeader()
                       .AllowAnyMethod()
-                      .WithExposedHeaders(HeaderNames.RequestId, 
+                      .WithExposedHeaders(HeaderNames.RequestId,
                             HeaderNames.Age, "App-Cache-Response", "X-App-Platform", "X-App-Version", "X-Origin");
             });
         });
@@ -228,6 +228,16 @@ public static partial class Program
         var signalRBuilder = services.AddSignalR(options =>
         {
             options.EnableDetailedErrors = env.IsDevelopment();
+        }).AddJsonProtocol(options =>
+        {
+            JsonSerializerOptions jsonOptions = new JsonSerializerOptions(AppJsonContext.Default.Options);
+            jsonOptions.TypeInfoResolverChain.Add(IdentityJsonContext.Default);
+            jsonOptions.TypeInfoResolverChain.Add(ServerJsonContext.Default);
+
+            foreach (var chain in jsonOptions.TypeInfoResolverChain)
+            {
+                options.PayloadSerializerOptions.TypeInfoResolverChain.Add(chain);
+            }
         });
         if (string.IsNullOrEmpty(configuration["Azure:SignalR:ConnectionString"]) is false)
         {
