@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
         <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
@@ -61,28 +61,25 @@
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Environment)' != 'Development'">
         <EnableLLVM>true</EnableLLVM>
+        <AndroidLinkTool>r8</AndroidLinkTool>
+        <AndroidUseAapt2>True</AndroidUseAapt2>
+        <RunAOTCompilation>True</RunAOTCompilation>
+        <AndroidStripILAfterAOT>true</AndroidStripILAfterAOT>
+        <!-- https://github.com/dotnet/runtime/issues/95406#issuecomment-1983736335 -->
+        <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
         <RuntimeIdentifiers Condition="'$(AndroidPackageFormat)' == 'apk'">android-arm64</RuntimeIdentifiers>
-        <MauiUseDefaultAotProfile Condition="Exists('custom.aprof')">false</MauiUseDefaultAotProfile>
-        <!--/+:msbuild-conditional:noEmit -->
-        <AndroidStripILAfterAOT Condition=" '$(offlineDb)' == 'false'">true</AndroidStripILAfterAOT>
-        <RunAOTCompilation Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">false</RunAOTCompilation>
-        <!--/-:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Environment)' == 'Development'">
-        <CodesignEntitlements>Platforms/iOS/Entitlements.Development.plist</CodesignEntitlements>
         <EnableSGenConc>True</EnableSGenConc>
+        <CodesignEntitlements>Platforms/iOS/Entitlements.Development.plist</CodesignEntitlements>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Environment)' != 'Development'">
-        <CodesignEntitlements>Platforms/iOS/Entitlements.Production.plist</CodesignEntitlements>
         <EnableSGenConc>True</EnableSGenConc>
-        <!--/+:msbuild-conditional:noEmit -->
         <!-- https://learn.microsoft.com/en-us/dotnet/maui/macios/interpreter -->
-        <MtouchInterpreter Condition=" '$(offlineDb)' == 'false'">-all</MtouchInterpreter>
-        <UseInterpreter Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">True</UseInterpreter>
-        <PublishAot Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">false</PublishAot>
-        <!--/-:msbuild-conditional:noEmit -->
+        <MtouchInterpreter>-all</MtouchInterpreter>
+        <CodesignEntitlements>Platforms/iOS/Entitlements.Production.plist</CodesignEntitlements>
     </PropertyGroup>
 
     <!-- Build Properties must be defined within these property groups to ensure successful publishing
@@ -94,27 +91,18 @@
     <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Environment)' != 'Development'">
         <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Production.plist</CodesignEntitlements>
         <UseHardenedRuntime>true</UseHardenedRuntime>
-        <!--/+:msbuild-conditional:noEmit -->
-        <MtouchInterpreter Condition=" '$(offlineDb)' == 'false'">-all</MtouchInterpreter>
-        <UseInterpreter Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">True</UseInterpreter>
-        <PublishAot Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">false</PublishAot>
-        <!--/-:msbuild-conditional:noEmit -->
+        <!-- https://learn.microsoft.com/en-us/dotnet/maui/macios/interpreter -->
+        <MtouchInterpreter>-all</MtouchInterpreter>
     </PropertyGroup>
 
     <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
         <AndroidResource Include="Platforms\Android\Resources\**\styles.xml" />
         <GoogleServicesJson Condition="Exists('Platforms\Android\google-services.json')" Include="Platforms\Android\google-services.json" />
-        <AndroidAotProfile Condition="Exists('custom.aprof')" Include="custom.aprof" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" />
         <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.SavedState" />
         <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.SavedState.SavedState.Ktx" />
         <!--/-:msbuild-conditional:noEmit -->
-        <!-- Run the following commands to create custom.aprof file which improves the Android app performance -->
-        <!-- dotnet add package Mono.AotProfiler.Android -->
-        <!-- dotnet build -t:BuildAndStartAotProfiling -f net10.0-android -p:UseInterpreter=false -->
-        <!-- dotnet build -t:FinishAotProfiling -f net10.0-android -->
-        <!-- dotnet remove package Mono.AotProfiler.Android -->
     </ItemGroup>
 
     <ItemGroup Condition="$(TargetFramework.Contains('-ios'))">
