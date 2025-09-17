@@ -24,7 +24,7 @@
 
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" PrivateAssets="all" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" PrivateAssets="all" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.4" PrivateAssets="all" />
         <PackageReference Include="Jint" Version="4.4.1" PrivateAssets="all" />
     </ItemGroup>
 
