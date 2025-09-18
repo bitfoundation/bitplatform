@@ -2,6 +2,7 @@
 using System.IO.Compression;
 using System.Net;
 //#if (appInsights == true)
+using Azure.Monitor.OpenTelemetry.Profiler;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 //#endif
 using Boilerplate.Server.Shared;
@@ -182,7 +183,7 @@ public static class WebApplicationBuilderExtensions
             builder.Services.AddOpenTelemetry().UseAzureMonitor(options =>
             {
                 builder.Configuration.Bind("ApplicationInsights", options);
-            });
+            }).AddAzureMonitorProfiler();
         }
         //#endif
 
