@@ -116,8 +116,6 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
         .WithExplicitStart();
 }
 
-builder.AddAspireDashboard();
-
 await builder
     .Build()
     .RunAsync();
