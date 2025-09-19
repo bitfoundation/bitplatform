@@ -6,6 +6,7 @@
 public partial class BitMessage : BitComponentBase
 {
     private bool _isExpanded;
+    private CancellationTokenSource? _autoDismissCts;
 
 
 
@@ -187,31 +188,47 @@ public partial class BitMessage : BitComponentBase
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (firstRender is false || AutoDismissTime is null || OnDismiss.HasDelegate is false) return;
+        if (firstRender is false) return;
+        if (OnDismiss.HasDelegate is false) return;
+        if (AutoDismissTime is not { } delay || delay <= TimeSpan.Zero) return;
 
-        await Task.Run(async () =>
-        {
-            await Task.Delay(AutoDismissTime.Value);
-
-            await InvokeAsync(async () =>
-            {
-                if (OnDismiss.HasDelegate)
-                {
-                    await OnDismiss.InvokeAsync();
-
-                    StateHasChanged();
-                }
-            });
-        });
+        _autoDismissCts?.Cancel();
+        _autoDismissCts = new CancellationTokenSource();
+        _ =  AutoDismissAsync(delay, _autoDismissCts.Token);
     }
 
 
+
+    private async Task AutoDismissAsync(TimeSpan delay, CancellationToken ct)
+    {
+        try
+        {
+            await Task.Delay(delay, ct);
+
+            if (ct.IsCancellationRequested || OnDismiss.HasDelegate is false) return;
+
+            await InvokeAsync(OnDismiss.InvokeAsync);
+        }
+        catch (TaskCanceledException) { }
+    }
 
     private void ToggleExpand() => _isExpanded = _isExpanded is false;
 
     private string GetTextRole() => Role ?? (Color is BitColor.Success or BitColor.Info ? "status" : "alert");
 
     private string GetIconName() => IconName ?? _IconMap[Color ?? BitColor.Info];
+
+
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return;
+
+        _autoDismissCts?.Cancel();
+        _autoDismissCts?.Dispose();
+
+        await base.DisposeAsync(disposing);
+    }
 
 
 
