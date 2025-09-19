@@ -3,22 +3,22 @@
 public enum BitPivotPosition
 {
     /// <summary>
-    /// Display header at the top
+    /// Display header at the top.
     /// </summary>
     Top,
 
     /// <summary>
-    /// Display header at the bottom
+    /// Display header at the bottom.
     /// </summary>
     Bottom,
 
     /// <summary>
-    /// Display header at the Left
+    /// Display header at the start (Left for LTR and Right for RTL).
     /// </summary>
-    Left,
+    Start,
 
     /// <summary>
-    /// Display header at the right
+    /// Display header at the end (Right for LTR and Left for RTL).
     /// </summary>
-    Right,
+    End,
 }

@@ -53,16 +53,16 @@
     flex-flow: column-reverse;
 }
 
-.bit-pvt-lft {
+.bit-pvt-sta {
     flex-flow: row;
 }
 
-.bit-pvt-rgt {
+.bit-pvt-end {
     flex-flow: row-reverse;
 }
 
-.bit-pvt-left,
-.bit-pvt-right {
+.bit-pvt-sta,
+.bit-pvt-end {
     .bit-pvt-hct {
         height: unset;
         flex-flow: column;
@@ -88,8 +88,7 @@
         @media(hover:hover) {
             &:hover {
                 &::before {
-                    left: 0;
-                    right: 0;
+                    inset-inline: 0;
                 }
             }
         }
@@ -195,6 +194,7 @@
     font-weight: 600;
     border-radius: 0;
     user-select: none;
+    color: $clr-fg-pri;
     position: relative;
     text-align: center;
     height: spacing(5.5);
@@ -206,29 +206,41 @@
     margin-right: spacing(1);
     line-height: spacing(5.5);
     background-color: transparent;
-    color: $clr-fg-pri;
 
     &:before {
         bottom: 0;
         content: "";
-        left: spacing(1);
-        right: spacing(1);
         position: absolute;
         height: spacing(0.25);
+        inset-inline-end: spacing(1);
         background-color: transparent;
-        transition: left 0.267s cubic-bezier(0.1, 0.25, 0.75, 0.9) 0s, right 0.267s cubic-bezier(0.1, 0.25, 0.75, 0.9) 0s;
-    }
-
-    &:after {
-        display: block;
-        overflow: hidden;
-        font-weight: 700;
-        color: transparent;
-        visibility: hidden;
-        height: spacing(0.125);
+        inset-inline-start: spacing(1);
+        transition: inset-inline-start 0.267s cubic-bezier(0.1, 0.25, 0.75, 0.9) 0s, inset-inline-end 0.267s cubic-bezier(0.1, 0.25, 0.75, 0.9) 0s;
     }
 
     span {
         font-size: spacing(2);
+    }
+}
+
+.bit-pvt-sta,
+.bit-pvt-end {
+    .bit-pvti-sel {
+        &:before {
+            top: spacing(1);
+            width: spacing(0.25);
+            inset-inline-start: 0;
+            height: calc(100% - spacing(2));
+            transition: top 0.267s cubic-bezier(0.1, 0.25, 0.75, 0.9) 0s, height 0.267s cubic-bezier(0.1, 0.25, 0.75, 0.9) 0s;
+        }
+
+        @media(hover:hover) {
+            &:hover {
+                &::before {
+                    top: 0;
+                    height: 100%;
+                }
+            }
+        }
     }
 }
