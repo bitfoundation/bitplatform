@@ -22,6 +22,13 @@ public partial class BitMessageDemo
         },
         new()
         {
+            Name = "AutoDismissTime",
+            Type = "TimeSpan?",
+            DefaultValue = "null",
+            Description = "Enables the auto-dismiss feature and sets the time to automatically call the OnDismiss callback.",
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -474,6 +481,8 @@ public partial class BitMessageDemo
 
 
     private bool isDismissed;
+    private bool isAutoDismissed;
+
     private double elevation = 7;
     private bool isErrorDismissed;
     private bool isWarningDismissed;

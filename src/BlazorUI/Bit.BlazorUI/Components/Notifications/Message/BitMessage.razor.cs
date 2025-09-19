@@ -21,6 +21,11 @@ public partial class BitMessage : BitComponentBase
     public BitAlignment? Alignment { get; set; }
 
     /// <summary>
+    /// Enables the auto-dismiss feature and sets the time to automatically call the OnDismiss callback.
+    /// </summary>
+    [Parameter] public TimeSpan? AutoDismissTime { get; set; }
+
+    /// <summary>
     /// The content of message.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -175,6 +180,28 @@ public partial class BitMessage : BitComponentBase
             BitSize.Medium => "bit-msg-md",
             BitSize.Large => "bit-msg-lg",
             _ => "bit-msg-md"
+        });
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender is false || AutoDismissTime is null || OnDismiss.HasDelegate is false) return;
+
+        await Task.Run(async () =>
+        {
+            await Task.Delay(AutoDismissTime.Value);
+
+            await InvokeAsync(async () =>
+            {
+                if (OnDismiss.HasDelegate)
+                {
+                    await OnDismiss.InvokeAsync();
+
+                    StateHasChanged();
+                }
+            });
         });
     }
 
