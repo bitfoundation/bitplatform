@@ -85,8 +85,8 @@ public class BitPivotTests : BunitTestContext
         {
             BitPivotPosition.Top => "bit-pvt-top",
             BitPivotPosition.Bottom => "bit-pvt-btm",
-            BitPivotPosition.Start => "bit-pvt-lft",
-            BitPivotPosition.End => "bit-pvt-rgt",
+            BitPivotPosition.Start => "bit-pvt-sta",
+            BitPivotPosition.End => "bit-pvt-end",
             _ => string.Empty
         };
 
