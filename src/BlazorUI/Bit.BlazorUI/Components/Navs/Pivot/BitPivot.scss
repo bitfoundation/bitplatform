@@ -227,6 +227,7 @@
 .bit-pvt-end {
     .bit-pvti-sel {
         &:before {
+            bottom: auto;
             top: spacing(1);
             width: spacing(0.25);
             inset-inline-start: 0;

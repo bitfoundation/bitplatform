@@ -878,7 +878,7 @@ private BitPivotItem selectedPivotItem;";
     </BitPivotItem>
 </BitPivot>
 
-<BitPivot Position=""BitPivotPosition.Left"">
+<BitPivot Position=""BitPivotPosition.Start"">
     <BitPivotItem HeaderText=""File"">
         <h1>Pivot #1: File</h1>
         <div>
@@ -912,7 +912,7 @@ private BitPivotItem selectedPivotItem;";
     </BitPivotItem>
 </BitPivot>
 
-<BitPivot Position=""BitPivotPosition.Right"">
+<BitPivot Position=""BitPivotPosition.End"">
     <BitPivotItem HeaderText=""File"">
         <h1>Pivot #1: File</h1>
         <div>
