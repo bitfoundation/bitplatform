@@ -426,7 +426,7 @@ public partial class BitPivotDemo
                 },
                 new()
                 {
-                    Name= "Right",
+                    Name= "End",
                     Description="Display header at the end (Right for LTR and Left for RTL).",
                     Value="3",
                 },
