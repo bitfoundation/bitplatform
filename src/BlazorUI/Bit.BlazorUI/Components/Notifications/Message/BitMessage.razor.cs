@@ -6,6 +6,7 @@
 public partial class BitMessage : BitComponentBase
 {
     private bool _isExpanded;
+    private CancellationTokenSource? _autoDismissCts;
 
 
 
@@ -19,6 +20,11 @@ public partial class BitMessage : BitComponentBase
     /// </summary>
     [Parameter, ResetStyleBuilder]
     public BitAlignment? Alignment { get; set; }
+
+    /// <summary>
+    /// Enables the auto-dismiss feature and sets the time to automatically call the OnDismiss callback.
+    /// </summary>
+    [Parameter] public TimeSpan? AutoDismissTime { get; set; }
 
     /// <summary>
     /// The content of message.
@@ -178,13 +184,51 @@ public partial class BitMessage : BitComponentBase
         });
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
 
+        if (firstRender is false) return;
+        if (OnDismiss.HasDelegate is false) return;
+        if (AutoDismissTime is not { } delay || delay <= TimeSpan.Zero) return;
+
+        _autoDismissCts?.Cancel();
+        _autoDismissCts = new CancellationTokenSource();
+        _ =  AutoDismissAsync(delay, _autoDismissCts.Token);
+    }
+
+
+
+    private async Task AutoDismissAsync(TimeSpan delay, CancellationToken ct)
+    {
+        try
+        {
+            await Task.Delay(delay, ct);
+
+            if (ct.IsCancellationRequested || OnDismiss.HasDelegate is false) return;
+
+            await InvokeAsync(OnDismiss.InvokeAsync);
+        }
+        catch (TaskCanceledException) { }
+    }
 
     private void ToggleExpand() => _isExpanded = _isExpanded is false;
 
     private string GetTextRole() => Role ?? (Color is BitColor.Success or BitColor.Info ? "status" : "alert");
 
     private string GetIconName() => IconName ?? _IconMap[Color ?? BitColor.Info];
+
+
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return;
+
+        _autoDismissCts?.Cancel();
+        _autoDismissCts?.Dispose();
+
+        await base.DisposeAsync(disposing);
+    }
 
 
 

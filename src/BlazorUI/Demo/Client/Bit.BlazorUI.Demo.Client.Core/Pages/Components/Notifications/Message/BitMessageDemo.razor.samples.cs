@@ -106,9 +106,21 @@ private double elevation = 7;";
 else
 {
     <BitButton OnClick=""() => isDismissed = false"">Dismissed, click to reset</BitButton>
+}
+
+@if (isAutoDismissed is false)
+{
+    <BitMessage AutoDismissTime=""TimeSpan.FromSeconds(5)"" OnDismiss=""() => isAutoDismissed = true"">
+        Auto-Dismiss option enabled by adding <strong>AutoDismissTime</strong> parameter alongside of OnDismiss.
+    </BitMessage>
+}
+else
+{
+    <BitButton OnClick=""() => isAutoDismissed = false"">Auto-Dismissed, click to reset</BitButton>
 }";
     private readonly string example8CsharpCode = @"
-private bool isDismissed;";
+private bool isDismissed;
+private bool isAutoDismissed;";
 
     private readonly string example9RazorCode = @"
 <BitMessage>
