@@ -81,7 +81,7 @@
     }
 
     .bit-pvti-sel {
-        &:before {
+        &::before {
             background-color: $clr-pri;
         }
 
@@ -207,7 +207,7 @@
     line-height: spacing(5.5);
     background-color: transparent;
 
-    &:before {
+    &::before {
         bottom: 0;
         content: "";
         position: absolute;
@@ -226,7 +226,7 @@
 .bit-pvt-sta,
 .bit-pvt-end {
     .bit-pvti-sel {
-        &:before {
+        &::before {
             bottom: auto;
             top: spacing(1);
             width: spacing(0.25);

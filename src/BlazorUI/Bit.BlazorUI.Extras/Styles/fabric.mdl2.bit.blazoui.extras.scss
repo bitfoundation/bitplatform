@@ -13,7 +13,7 @@
     font-family: 'Fabric MDL2 bit BlazorUI Extras' !important;
 }
 
-.bit-icon-ex--ChevronLeftEnd6:before { content: "\F371"; }
-.bit-icon-ex--ChevronLeftSmall:before { content: "\E96F"; }
-.bit-icon-ex--More:before { content: "\E712"; }
-.bit-icon-ex--ColumnRightTwoThirds:before { content: "\F1D7"; }
+.bit-icon-ex--ChevronLeftEnd6::before { content: "\F371"; }
+.bit-icon-ex--ChevronLeftSmall::before { content: "\E96F"; }
+.bit-icon-ex--More::before { content: "\E712"; }
+.bit-icon-ex--ColumnRightTwoThirds::before { content: "\F1D7"; }
