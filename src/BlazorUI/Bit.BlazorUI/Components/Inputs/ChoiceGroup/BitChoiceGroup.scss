@@ -28,11 +28,11 @@
             color: $clr-err;
             border-color: $clr-err;
 
-            &:before {
+            &::before {
                 border-color: $clr-err;
             }
 
-            &:after {
+            &::after {
                 border-color: $clr-err;
                 background-color: $clr-err;
             }

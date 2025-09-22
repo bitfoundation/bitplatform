@@ -146,7 +146,7 @@
         height: var(--bit-ch-ind-size);
         border-radius: $shp-border-radius;
 
-        &:before {
+        &::before {
             content: '';
         }
     }

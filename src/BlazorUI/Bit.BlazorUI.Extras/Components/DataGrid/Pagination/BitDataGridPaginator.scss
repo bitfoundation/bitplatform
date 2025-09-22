@@ -36,8 +36,8 @@
     }
 }
 
-.bit-dgp-fst:before,
-.bit-dgp-lst:before {
+.bit-dgp-fst::before,
+.bit-dgp-lst::before {
     content: "\F371";
     font-style: normal;
     font-weight: normal;
@@ -45,8 +45,8 @@
     font-family: 'Fabric MDL2 bit BlazorUI Extras';
 }
 
-.bit-dgp-prv:before,
-.bit-dgp-nex:before {
+.bit-dgp-prv::before,
+.bit-dgp-nex::before {
     content: "\E96F";
     font-style: normal;
     font-weight: normal;

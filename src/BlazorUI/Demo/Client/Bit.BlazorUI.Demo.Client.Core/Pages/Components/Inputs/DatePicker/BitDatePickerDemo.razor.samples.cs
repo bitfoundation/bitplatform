@@ -210,7 +210,7 @@ private void HandleInvalidSubmit() { }";
         border: 2px solid tomato;
     }
 
-    .custom-class *, .custom-class *:after {
+    .custom-class *, .custom-class *::after {
         border: none;
     }
 

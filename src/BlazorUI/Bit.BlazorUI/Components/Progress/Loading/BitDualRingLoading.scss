@@ -7,7 +7,7 @@
     height: var(--bit-ldn-size);
 }
 
-.bit-ldn-dur-ccn:after {
+.bit-ldn-dur-ccn::after {
     content: " ";
     display: block;
     border-radius: 50%;

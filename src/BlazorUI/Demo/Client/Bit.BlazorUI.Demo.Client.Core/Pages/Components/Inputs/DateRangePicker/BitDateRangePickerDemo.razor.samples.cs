@@ -157,7 +157,7 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
         border: 2px solid tomato;
     }
 
-    .custom-class *, .custom-class *:after {
+    .custom-class *, .custom-class *::after {
         border: none;
     }
 
