@@ -25,7 +25,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.Extensions.AI" Version="9.9.0" />
-        <PackageReference Include="Microsoft.Extensions.AI.AzureAIInference" Version="9.8.0-preview.1.25412.6" />
+        <PackageReference Include="Microsoft.Extensions.AI.AzureAIInference" Version="9.9.0-preview.1.25458.4" />
         <PackageReference Include="ModelContextProtocol" Version="0.3.0-preview.4" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.4" />
         <PackageReference Include="AspNetCore.HealthChecks.System" Version="9.0.0" />

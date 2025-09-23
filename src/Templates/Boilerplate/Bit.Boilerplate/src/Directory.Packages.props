@@ -66,9 +66,9 @@
         <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.12.0" />
         <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.21" />
         <PackageVersion Include="Hangfire.EntityFrameworkCore" Version="0.7.0" />
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" Version="5.15.0" />
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" Version="5.15.0" />
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" Version="5.15.0" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" Version="5.15.1" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" Version="5.15.1" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" Version="5.15.1" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" Version="125.0.0.1" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.SavedState" Version="1.3.1.1" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.SavedState.SavedState.Ktx" Version="1.3.1.1" />
@@ -114,7 +114,7 @@
         <PackageVersion Include="AspNet.Security.OAuth.Apple" Version="9.4.0" />
         <PackageVersion Include="AspNet.Security.OAuth.GitHub" Version="9.4.0" />
         <PackageVersion Include="Riok.Mapperly" Version="4.2.1" />
-        <PackageVersion Include="Twilio" Version="7.13.0" />
+        <PackageVersion Include="Twilio" Version="7.13.1" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.0-rc.1.25451.107" />
         <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="10.0.0-rc.1.25451.107" />
         <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0-rc.1.25451.107" />
