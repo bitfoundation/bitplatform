@@ -54,7 +54,7 @@ public static partial class Program
             app.UseXfo(options => options.SameOrigin());
         }
 
-        Configure_401_403_404_Pages(app);
+        app.Handle40XStatusCodes();
 
         if (env.IsDevelopment())
         {
@@ -178,7 +178,7 @@ public static partial class Program
     /// To mitigate the challenges posed by this situation, our only recourse is to repurpose the 401, 403, and 404 status codes for
     /// not-found and not-authorized responses, at the very least.
     /// </summary>
-    private static void Configure_401_403_404_Pages(WebApplication app)
+    private static void Handle40XStatusCodes(this WebApplication app)
     {
         app.Use(async (context, next) =>
         {
@@ -217,10 +217,6 @@ public static partial class Program
                     httpContext.GetEndpoint() is null /* Please be aware that certain endpoints, particularly those associated with web API actions, may intentionally return a 404 error. */)
                 {
                     httpContext.Response.Redirect($"{PageUrls.NotFound}?url={httpContext.Request.GetEncodedPathAndQuery()}");
-                }
-                else
-                {
-                    await statusCodeContext.Next.Invoke(statusCodeContext.HttpContext);
                 }
             }
         });
