@@ -6,7 +6,7 @@
         <InvariantTimezone>false</InvariantTimezone>
         <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
         <!-- To change InvariantGlobalization's value, Check out Directory.Build.props -->
-        <HybridGlobalization Condition="'$(InvariantGlobalization)' == 'false'">true</HybridGlobalization>
+        <BlazorWebAssemblyLoadAllGlobalizationData Condition="'$(InvariantGlobalization)' == 'false'">true</BlazorWebAssemblyLoadAllGlobalizationData>
         <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
         <!--/+:msbuild-conditional:noEmit -->
