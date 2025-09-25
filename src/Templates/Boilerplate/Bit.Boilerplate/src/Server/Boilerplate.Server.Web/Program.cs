@@ -16,9 +16,7 @@ public static partial class Program
         var builder = WebApplication.CreateBuilder(options: new()
         {
             Args = args,
-            //#if (api == "Integrated")
             ContentRootPath = AppContext.BaseDirectory
-            //#endif
         });
 
         AppEnvironment.Set(builder.Environment.EnvironmentName);
