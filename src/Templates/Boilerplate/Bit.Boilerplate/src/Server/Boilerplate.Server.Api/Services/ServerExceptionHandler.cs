@@ -37,7 +37,7 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
             return;
         }
 
-        await httpContext.Response.WriteAsJsonAsync(problemDetail!, jsonSerializerOptions.GetTypeInfo<ProblemDetails>(), cancellationToken: httpContext.RequestAborted);
+        await httpContext.Response.WriteAsJsonAsync(problemDetail!, jsonSerializerOptions.GetTypeInfo<AppProblemDetails>(), cancellationToken: httpContext.RequestAborted);
     }
 
     private void Handle(Exception exception,
