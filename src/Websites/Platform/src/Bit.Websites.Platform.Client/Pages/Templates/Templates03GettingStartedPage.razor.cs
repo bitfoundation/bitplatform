@@ -21,6 +21,9 @@ public partial class Templates03GettingStartedPage
             (text:"echo 'Set execution policy';",
             command:"Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force;"),
 
+            (text:"echo 'Install/Update Windows Package Manager (winget) https://learn.microsoft.com/en-us/windows/package-manager/winget/#install-winget-on-windows-sandbox';",
+            command:"$progressPreference = 'silentlyContinue'; Install-PackageProvider -Name NuGet -Force | Out-Null; Install-Module -Name Microsoft.WinGet.Client -Force -Repository PSGallery | Out-Null; Repair-WinGetPackageManager -AllUsers;"),
+
             (text:@"echo 'Install .NET SDK https://dotnet.microsoft.com/en-us/download';",
             command: $"winget install Microsoft.DotNet.SDK.9 --accept-source-agreements --accept-package-agreements;"),
 
