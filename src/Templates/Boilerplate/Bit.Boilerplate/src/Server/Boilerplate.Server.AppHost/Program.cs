@@ -23,7 +23,7 @@ var postgresDatabase = builder.AddPostgres("postgresserver", password: postgresP
         .WithPgAdmin(config => config.WithLifetime(ContainerLifetime.Persistent).WithVolume("/var/lib/pgadmin/Boilerplate/data"))
         .WithLifetime(ContainerLifetime.Persistent)
         .WithDataVolume()
-        .WithImage("pgvector/pgvector", "pg17") // pgvector supports embedded vector search.
+        .WithImage("pgvector/pgvector", "pg18") // pgvector supports embedded vector search.
         .AddDatabase("postgresdb");
 
 //#elif (database == "MySql")
@@ -114,6 +114,16 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
     // Blazor Hybrid Windows project.
     builder.AddProject<Boilerplate_Client_Windows>("clientwindows") // Replace . with _ if needed to ensure the project builds successfully.
         .WithExplicitStart();
+
+    //#if (api == "Standalone")
+    builder.AddDevTunnel("api-dev-tunnel")
+        .WithAnonymousAccess()
+        .WithReference(serverApiProject.WithHttpEndpoint(name: "devTunnel").GetEndpoint("devTunnel"));
+    //#endif
+
+    var tunnel = builder.AddDevTunnel("web-dev-tunnel")
+        .WithAnonymousAccess()
+        .WithReference(serverWebProject.WithHttpEndpoint(name: "devTunnel").GetEndpoint("devTunnel"));
 }
 
 await builder
