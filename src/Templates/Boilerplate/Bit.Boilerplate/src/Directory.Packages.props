@@ -3,6 +3,7 @@
         <!-- https://learn.microsoft.com/en-us/nuget/consume-packages/central-package-management -->
         <GlobalPackageReference Include="Bit.CodeAnalyzers" Version="10.0.0-pre-02" />
         <GlobalPackageReference Include="Bit.SourceGenerators" Version="10.0.0-pre-02" />
+        <PackageVersion Include="Aspire.Hosting.DevTunnels" Version="9.5.0-preview.1.25474.7" />
         <PackageVersion Include="Bit.Butil" Version="10.0.0-pre-02" />
         <PackageVersion Include="Bit.BlazorUI" Version="10.0.0-pre-02" />
         <PackageVersion Include="Bit.BlazorES2019" Version="10.0.0-pre-02" />
@@ -50,15 +51,15 @@
         <PackageVersion Include="Microsoft.Extensions.Logging.EventLog" Version="10.0.0-rc.1.25451.107" />
         <PackageVersion Include="Microsoft.Extensions.Logging.EventSource" Version="10.0.0-rc.1.25451.107" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.AppHost" Version="9.4.2" />
-        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Aspire.Hosting.SqlServer" Version="9.4.2" />
+        <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.AppHost" Version="9.5.0" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Aspire.Hosting.SqlServer" Version="9.5.0" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="CommunityToolkit.Aspire.Hosting.SqlServer.Extensions" Version="9.7.2" />
-        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Aspire.Hosting.PostgreSQL" Version="9.4.2" />
-        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'MySql' OR '$(database)' == '') " Include="Aspire.Hosting.MySql" Version="9.4.2" />
-        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '') " Include="Aspire.Hosting.Azure.Storage" Version="9.4.2" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Aspire.Hosting.PostgreSQL" Version="9.5.0" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'MySql' OR '$(database)' == '') " Include="Aspire.Hosting.MySql" Version="9.5.0" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '') " Include="Aspire.Hosting.Azure.Storage" Version="9.5.0" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(filesStorage)' == 'S3' OR '$(filesStorage)' == '') " Include="CommunityToolkit.Aspire.Hosting.Minio" Version="9.7.2" />
         <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.9.0" />
-        <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="9.4.2" />
+        <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="9.5.0" />
         <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.12.0" />
         <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />
         <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.12.0" />

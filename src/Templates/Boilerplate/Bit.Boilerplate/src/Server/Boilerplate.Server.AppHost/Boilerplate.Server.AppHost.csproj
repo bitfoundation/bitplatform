@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
-    <Sdk Name="Aspire.AppHost.Sdk" Version="9.4.2" />
+    <Sdk Name="Aspire.AppHost.Sdk" Version="9.5.0" />
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
@@ -12,6 +12,7 @@
     <ItemGroup>
         <Content Include=".config\dotnet-tools.json" />
         <PackageReference Include="Aspire.Hosting.AppHost" />
+        <PackageReference Include="Aspire.Hosting.DevTunnels" />
         <PackageReference Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Aspire.Hosting.MySql" />
         <PackageReference Condition=" '$(database)' == 'SqlServer' OR '$(database)' == ''" Include="Aspire.Hosting.SqlServer" />
         <PackageReference Condition=" '$(database)' == 'SqlServer' OR '$(database)' == ''" Include="CommunityToolkit.Aspire.Hosting.SqlServer.Extensions" />
