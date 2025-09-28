@@ -21,12 +21,13 @@ public partial class ProductEmbeddingService
     [AutoInject] private AppDbContext dbContext = default!;
     [AutoInject] private IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = default!;
 
-    public async Task<IQueryable<Product>> GetProductsBySearchQuery(string searchQuery, CancellationToken cancellationToken)
+    public async Task<IQueryable<Product>> SearchProducts(string searchQuery, CancellationToken cancellationToken)
     {
         if (AppDbContext.IsEmbeddingEnabled is false)
             throw new InvalidOperationException("Embeddings are not enabled. Please enable them to use this feature.");
 
         // It would be a good idea to try finding products using full-text search first, and if not enough results are found, then use the vector-based search.
+        // Note that test products data that have been seeded do not have embeddings, so searching for them will not return any results.
 
         var embeddedSearchQuery = await embeddingGenerator.GenerateAsync(searchQuery, cancellationToken: cancellationToken);
 
@@ -97,6 +98,16 @@ public partial class ProductEmbeddingService
             for (int j = 0; j < vectors.Length; j++)
             {
                 embedding[i] += weights[j] * vectors[j][i];
+            }
+        }
+
+        // L2 normalize the embedding for cosine distance stability
+        float norm = (float)Math.Sqrt(embedding.Sum(v => v * v));
+        if (norm > 0)
+        {
+            for (int i = 0; i < embedding.Length; i++)
+            {
+                embedding[i] /= norm;
             }
         }
 

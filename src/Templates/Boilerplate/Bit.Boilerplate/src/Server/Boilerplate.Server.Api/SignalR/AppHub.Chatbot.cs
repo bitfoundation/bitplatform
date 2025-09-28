@@ -118,7 +118,7 @@ public partial class AppHub
                                     var searchQuery = string.IsNullOrWhiteSpace(manufacturer)
                                         ? userNeeds
                                         : $"**{manufacturer}** {userNeeds}";
-                                    var recommendedProducts = await (await productEmbeddingService.GetProductsBySearchQuery(searchQuery, messageSpecificCancellationToken))
+                                    var recommendedProducts = await (await productEmbeddingService.SearchProducts(searchQuery, messageSpecificCancellationToken))
                                         .WhereIf(maxPrice.HasValue, p => p.Price <= maxPrice!.Value)
                                         .WhereIf(minPrice.HasValue, p => p.Price >= minPrice!.Value)
                                         .Take(10)
