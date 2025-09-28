@@ -104,7 +104,7 @@ public partial class AppHub
                                         .LogError("Chat reported issue: User email: {emailAddress}, Conversation history: {conversationHistory}", emailAddress, conversationHistory);
 
                                 }, name: "SaveUserEmailAndConversationHistory", description: "Saves the user's email address and the conversation history for future reference. Use this tool when the user provides their email address during the conversation. Parameters: emailAddress (string), conversationHistory (string)"),
-                                //#if (module == "Sales")
+                                //#if (module == "Sales" && (database == "PostgreSQL" || database == "SqlServer"))
                                 AIFunctionFactory.Create(async ([Required, Description("Concise summary of these user requirements")] string userNeeds,
                                     [Description("Car manufacturer's name (Optional)")] string? manufacturer,
                                     [Description("Car price below this value (Optional)")] decimal? maxPrice,

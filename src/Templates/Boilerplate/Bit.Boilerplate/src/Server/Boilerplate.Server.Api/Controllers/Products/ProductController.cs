@@ -21,7 +21,7 @@ public partial class ProductController : AppControllerBase, IProductController
     //#if (signalR == true)
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
-    //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
+    //#if (database == "PostgreSQL" || database == "SqlServer")
     [AutoInject] private ProductEmbeddingService productEmbeddingService = default!;
     //#endif
     [AutoInject] private ResponseCacheService responseCacheService = default!;
@@ -47,7 +47,7 @@ public partial class ProductController : AppControllerBase, IProductController
     }
 
     [HttpGet("{searchQuery}")]
-    public async Task<PagedResult<ProductDto>> GetProductsBySearchQuery(string searchQuery, ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
+    public async Task<PagedResult<ProductDto>> SearchProducts(string searchQuery, ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
     {
         //#if (database == "PostgreSQL" || database == "SqlServer")
         var query = (IQueryable<ProductDto>)odataQuery.ApplyTo((await (productEmbeddingService.GetProductsBySearchQuery(searchQuery, cancellationToken))).Project(),
@@ -59,9 +59,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         return new PagedResult<ProductDto>(await query.ToArrayAsync(cancellationToken), totalCount);
         //#else
-        // Embedding based search is only implemented for PostgreSQL.
-        // Simply return whole products list.
-        return await GetProducts(odataQuery, cancellationToken);
+        throw new NotImplementedException(); // Embedding based search is only implemented for PostgreSQL and SQL Server only.
         //#endif
     }
 

@@ -4,6 +4,8 @@ using System.Net.Mail;
 using System.IO.Compression;
 //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
 using System.ClientModel.Primitives;
+using Microsoft.SemanticKernel.Embeddings;
+using SmartComponents.LocalEmbeddings.SemanticKernel;
 //#endif
 //#if (database == "Sqlite")
 using Microsoft.Data.Sqlite;
@@ -67,7 +69,7 @@ public static partial class Program
         services.AddScoped<PhoneService>();
         services.AddScoped<PhoneServiceJobsRunner>();
         //#if (module == "Sales" || module == "Admin")
-        //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
+        //#if (database == "PostgreSQL" || database == "SqlServer")
         services.AddScoped<ProductEmbeddingService>();
         //#endif
         //#endif
@@ -434,6 +436,10 @@ public static partial class Program
                 Endpoint = appSettings.AI.OpenAI.EmbeddingEndpoint,
                 Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
             }).AsIEmbeddingGenerator())
+            .ConfigureOptions(options =>
+            {
+                configuration.GetRequiredSection("AI:EmbeddingOptions").Bind(options);
+            })
             .UseLogging()
             .UseOpenTelemetry();
             // .UseDistributedCache()
@@ -446,9 +452,25 @@ public static partial class Program
                 {
                     Transport = new Azure.Core.Pipeline.HttpClientTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
                 }).AsIEmbeddingGenerator(appSettings.AI.AzureOpenAI.EmbeddingModel))
+            .ConfigureOptions(options =>
+            {
+                configuration.GetRequiredSection("AI:EmbeddingOptions").Bind(options);
+            })
             .UseLogging()
             .UseOpenTelemetry();
             // .UseDistributedCache()
+        }
+        else
+        {
+            services.AddEmbeddingGenerator(sp => new LocalTextEmbeddingGenerationService()
+                .AsEmbeddingGenerator())
+                .ConfigureOptions(options =>
+                {
+                    configuration.GetRequiredSection("AI:EmbeddingOptions").Bind(options);
+                })
+                .UseLogging()
+                .UseOpenTelemetry();
+                // .UseDistributedCache()
         }
         //#endif
 

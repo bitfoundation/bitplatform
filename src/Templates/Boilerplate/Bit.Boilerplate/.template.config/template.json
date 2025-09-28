@@ -526,7 +526,7 @@
                     ]
                 },
                 {
-                    "condition": "(signalR != true && database != PostgreSQL && database != SqlServer)",
+                    "condition": "(database != PostgreSQL && database != SqlServer)",
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Services/ProductEmbeddingService.cs"
                     ]
