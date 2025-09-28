@@ -1,6 +1,4 @@
-﻿using System.Dynamic;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitRichTextEditor is a WYSIWYG text editor, utilizing the famous Quill js library (<see href="https://quilljs.com/"/>).
@@ -160,11 +158,11 @@ public partial class BitRichTextEditor : BitComponentBase
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (!firstRender) return;
+        if (firstRender is false) return;
 
         await _js.BitExtrasInitScripts(["_content/Bit.BlazorUI.Extras/quilljs/quill-2.0.3.js"]);
 
-        await OnQuillReady.InvokeAsync();
+        _ = OnQuillReady.InvokeAsync();
 
         var theme = (Theme ?? BitRichTextEditorTheme.Snow).ToString().ToLower();
         await _js.BitExtrasInitStylesheets([$"_content/Bit.BlazorUI.Extras/quilljs/quill.{theme}-2.0.3.css"]);
@@ -184,7 +182,7 @@ public partial class BitRichTextEditor : BitComponentBase
             {
                 await _js.BitExtrasInitScripts(quillModuleScripts);
 
-                await OnQuillModulesReady.InvokeAsync();
+                _ = OnQuillModulesReady.InvokeAsync();
             }
             catch
             {

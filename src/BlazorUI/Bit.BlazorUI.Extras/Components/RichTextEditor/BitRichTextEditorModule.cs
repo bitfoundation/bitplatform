@@ -11,7 +11,7 @@ public class BitRichTextEditorModule
     public required string Name { get; set; }
 
     /// <summary>
-    /// The script src of the Quill custom module to load at firt render.
+    /// The script src of the Quill custom module to load at first render.
     /// </summary>
     public required string Src { get; set; }
 

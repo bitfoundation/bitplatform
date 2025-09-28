@@ -200,7 +200,7 @@ public partial class BitRichTextEditorDemo
                 new()
                 {
                     Name = "Config",
-                    Type = "string",
+                    Type = "object",
                     DefaultValue = "",
                     Description = "The configuration object that applies the settings of the Quill custom module.",
                 },
