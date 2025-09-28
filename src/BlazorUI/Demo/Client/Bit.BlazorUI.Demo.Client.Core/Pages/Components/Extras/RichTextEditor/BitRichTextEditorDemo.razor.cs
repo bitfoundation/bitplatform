@@ -22,6 +22,22 @@ public partial class BitRichTextEditorDemo
         },
         new()
         {
+            Name = "FullToolbar",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the full toolbar with all of the available features."
+        },
+        new()
+        {
+            Name = "Modules",
+            Type = "IEnumerable<BitRichTextEditorModule>?",
+            DefaultValue = "null",
+            Description = "Custom Quill modules to be registered at first render (<see href=\"https://quilljs.com/docs/guides/building-a-custom-module\"/>).",
+            LinkType = LinkType.Link,
+            Href = "#rich-text-editor-module"
+        },
+        new()
+        {
             Name = "OnEditorReady",
             Type = "EventCallback<string>",
             DefaultValue = "",
@@ -33,6 +49,13 @@ public partial class BitRichTextEditorDemo
             Type = "EventCallback",
             DefaultValue = "",
             Description = "Callback for when the Quill scripts is loaded and the Quill api is ready to use. It allows for custom actions to be performed at that moment."
+        },
+        new()
+        {
+            Name = "OnQuillModulesReady",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "Callback for when the scripts of the provided Quill Modules are loaded and their api are ready to use."
         },
         new()
         {
@@ -70,8 +93,8 @@ public partial class BitRichTextEditorDemo
             Type = "BitRichTextEditorTheme?",
             DefaultValue = "null",
             Description = "The theme of the editor.",
-            Href = "#rich-text-editor-theme",
             LinkType = LinkType.Link,
+            Href = "#rich-text-editor-theme",
         },
         new()
         {
@@ -152,6 +175,36 @@ public partial class BitRichTextEditorDemo
                     Description = "Custom CSS classes/styles for the editor container of the BitRichTextEditor.",
                 },
             ]
+        },
+        new()
+        {
+            Id = "rich-text-editor-module",
+            Title = "BitRichTextEditorModule",
+            Description = "Represents a Quill custom module specifications.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Name",
+                    Type = "string",
+                    DefaultValue = "",
+                    Description = "The name of the Quill custom module.",
+                },
+                new()
+                {
+                    Name = "Src",
+                    Type = "string",
+                    DefaultValue = "",
+                    Description = "The script src of the Quill custom module to load at firt render.",
+                },
+                new()
+                {
+                    Name = "Config",
+                    Type = "string",
+                    DefaultValue = "",
+                    Description = "The configuration object that applies the settings of the Quill custom module.",
+                },
+            ]
         }
     ];
 
@@ -169,6 +222,7 @@ public partial class BitRichTextEditorDemo
             ]
         }
     ];
+
 
 
     private BitRichTextEditor getEditorRef = default!;
@@ -205,6 +259,15 @@ public partial class BitRichTextEditorDemo
     {
         await JSRuntime.InvokeVoidAsync("registerQuillCustomFonts");
     }
+
+    private List<BitRichTextEditorModule> modules = [
+        new()
+        {
+            Name = "imageResize",
+            Src = "_content/Bit.BlazorUI.Demo.Client.Core/scripts/quill-image-resize-module.js",
+            Config = new { displaySize = true }
+        }
+    ];
 
 
 
@@ -392,4 +455,16 @@ private async Task HandleOnQuillReady()
 {
     await JSRuntime.InvokeVoidAsync(""registerQuillCustomFonts"");
 }";
+
+    private readonly string example11RazorCode = @"
+<BitRichTextEditor FullToolbar Modules=""@modules"" />";
+    private readonly string example11CsharpCode = @"
+private List<BitRichTextEditorModule> modules = [
+    new()
+    {
+        Name = ""imageResize"",
+        Src = ""/scripts/quill-image-resize-module.js"",
+        Config = new { displaySize = true }
+    }
+];";
 }
