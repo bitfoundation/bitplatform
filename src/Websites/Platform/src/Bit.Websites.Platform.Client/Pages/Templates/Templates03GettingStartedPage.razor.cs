@@ -26,6 +26,9 @@ public partial class Templates03GettingStartedPage
 
             (text:@"echo 'Install .NET SDK https://dotnet.microsoft.com/en-us/download';",
             command: $"winget install Microsoft.DotNet.SDK.9 --accept-source-agreements --accept-package-agreements;"),
+            
+            (text:@"echo 'Install Microsoft DevTunnels https://learn.microsoft.com/en-us/azure/developer/dev-tunnels/get-started?tabs=windows#install';",
+            command: $"winget install Microsoft.devtunnel --accept-source-agreements --accept-package-agreements;"),
 
             (text:@"echo 'Discover installed .NET SDK';",
             command:"$env:Path = [System.Environment]::GetEnvironmentVariable(\"Path\",\"Machine\") + \";\" + [System.Environment]::GetEnvironmentVariable(\"Path\",\"User\");"),
