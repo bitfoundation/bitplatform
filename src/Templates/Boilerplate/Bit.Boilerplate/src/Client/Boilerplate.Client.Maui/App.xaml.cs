@@ -81,7 +81,7 @@ public partial class App
             {
                 var webViewName = Android.Webkit.WebView.CurrentWebViewPackage.PackageName;
                 logger.LogWarning("{webViewName} version {version} is not supported.", webViewName, webViewVersion);
-                await App.Current!.Windows[0].Page!.DisplayAlert("Boilerplate", localizer[nameof(AppStrings.UpdateWebViewThroughGooglePlay)], localizer[nameof(AppStrings.Ok)]);
+                await App.Current!.Windows[0].Page!.DisplayAlertAsync("Boilerplate", localizer[nameof(AppStrings.UpdateWebViewThroughGooglePlay)], localizer[nameof(AppStrings.Ok)]);
                 await Launcher.OpenAsync($"https://play.google.com/store/apps/details?id={webViewName}");
             }
 #endif
