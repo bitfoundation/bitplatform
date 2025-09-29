@@ -104,7 +104,8 @@ public partial class AppHub
                                         .LogError("Chat reported issue: User email: {emailAddress}, Conversation history: {conversationHistory}", emailAddress, conversationHistory);
 
                                 }, name: "SaveUserEmailAndConversationHistory", description: "Saves the user's email address and the conversation history for future reference. Use this tool when the user provides their email address during the conversation. Parameters: emailAddress (string), conversationHistory (string)"),
-                                //#if (module == "Sales" && (database == "PostgreSQL" || database == "SqlServer"))
+                                //#if (module == "Sales")
+                                //#if (database == "PostgreSQL" || database == "SqlServer")
                                 AIFunctionFactory.Create(async ([Required, Description("Concise summary of these user requirements")] string userNeeds,
                                     [Description("Car manufacturer's name (Optional)")] string? manufacturer,
                                     [Description("Car price below this value (Optional)")] decimal? maxPrice,
@@ -136,6 +137,7 @@ public partial class AppHub
 
                                     return recommendedProducts;
                                 }, name: "GetProductRecommendations", description: "This tool searches for and recommends products based on a detailed description of the user's needs and preferences and returns recommended products.")
+                                //#endif
                                 //#endif
                                 ]
                     };
