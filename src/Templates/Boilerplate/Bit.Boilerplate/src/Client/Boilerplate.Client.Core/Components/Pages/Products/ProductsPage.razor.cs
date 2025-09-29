@@ -80,7 +80,7 @@ public partial class ProductsPage
                 var queriedRequest = productController.WithQuery(query.ToString());
                 var data = await (string.IsNullOrWhiteSpace(searchQuery)
                             ? queriedRequest.GetProducts(req.CancellationToken)
-                            : queriedRequest.GetProductsBySearchQuery(searchQuery, req.CancellationToken));
+                            : queriedRequest.SearchProducts(searchQuery, req.CancellationToken));
 
                 return BitDataGridItemsProviderResult.From(data!.Items!, (int)data!.TotalCount);
             }

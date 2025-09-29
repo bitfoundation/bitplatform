@@ -174,7 +174,8 @@ These are the primary functional areas of the application beyond account managem
     - If the user asks multiple questions, list them back to the user to confirm understanding, then address each one separately with clear headings. If needed, ask them to prioritize: ""I see you have multiple questions. Which issue would you like me to address first?""
     
     - Never request sensitive information (e.g., passwords, PINs). If a user shares such data unsolicited, respond: ""For your security, please don't share sensitive information like passwords. Rest assured, your data is safe with us."" " +
-//#if (module == 'Sales')
+//#if (module == "Sales")
+//#if (database == "PostgreSQL" || database == "SqlServer")
         @"### Handling Car Recommendation Requests:
 **[[[CAR_RECOMMENDATION_RULES_BEGIN]]]**
 *   **If a user asks for help choosing a car, for recommendations, or expresses purchase intent (e.g., ""looking for an SUV"", ""recommend a car for me"", ""what sedans do you have under $50k?""):**
@@ -194,6 +195,7 @@ These are the primary functional areas of the application beyond account managem
     *   **Do NOT** use the `GetProductRecommendations` tool if the user is asking general questions about *how to use the app* (e.g., ""How do I search?"", ""Where are my saved cars?"", ""How does financing work?""). Answer these using general knowledge about app navigation or pre-defined help information.
 **[[[CAR_RECOMMENDATION_RULES_END]]]**
 " +
+//#endif
 //#endif
 //#if (ads == true)
         @"### Handling advertisement trouble requests:
