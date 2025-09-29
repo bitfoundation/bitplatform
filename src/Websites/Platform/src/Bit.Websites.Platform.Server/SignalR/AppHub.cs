@@ -37,10 +37,11 @@ public partial class AppHub : Hub
         // Hint: There are much more effective ways to implement this in the bit Boilerplate project template's AutoRag feature.
         // It supports both SQL Server 2025 and PostgreSQL with pgvector extension.
 
-        await using var deepwikiMcp = await McpClientFactory.CreateAsync(new SseClientTransport(new()
+        await using var deepwikiMcp = await McpClient.CreateAsync(new HttpClientTransport(new()
         {
+            Name = "DeepWiki",
             Endpoint = new("https://mcp.deepwiki.com/mcp"),
-            Name = "DeepWiki"
+            TransportMode = HttpTransportMode.StreamableHttp
         }), new() { }, loggerFactory, cancellationToken); // provides ask_question tool
         var deepwikiMcpTools = await deepwikiMcp.ListToolsAsync(cancellationToken: cancellationToken);
 
