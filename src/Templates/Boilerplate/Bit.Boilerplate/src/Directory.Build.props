@@ -70,6 +70,9 @@
         <Using Include="Boilerplate.Shared.Services.Contracts" />
         <Using Include="System.Diagnostics" />
 
+        <PackageReference Include="Bit.CodeAnalyzers" />
+        <PackageReference Include="Bit.SourceGenerators" />
+
         <Watch Remove="*.scss" />
     </ItemGroup>
 

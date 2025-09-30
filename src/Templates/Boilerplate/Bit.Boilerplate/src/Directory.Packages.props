@@ -1,8 +1,6 @@
 <Project>
     <ItemGroup>
         <!-- https://learn.microsoft.com/en-us/nuget/consume-packages/central-package-management -->
-        <GlobalPackageReference Include="Bit.CodeAnalyzers" Version="10.0.0-pre-02" />
-        <GlobalPackageReference Include="Bit.SourceGenerators" Version="10.0.0-pre-02" />
         <PackageVersion Include="Aspire.Hosting.DevTunnels" Version="9.5.0-preview.1.25474.7" />
         <PackageVersion Include="Bit.Butil" Version="10.0.0-pre-02" />
         <PackageVersion Include="Bit.BlazorUI" Version="10.0.0-pre-02" />
@@ -11,6 +9,8 @@
         <PackageVersion Include="Bit.BlazorUI.Assets" Version="10.0.0-pre-02" />
         <PackageVersion Include="Bit.BlazorUI.Extras" Version="10.0.0-pre-02" />
         <PackageVersion Include="Bit.Bswup" Version="10.0.0-pre-02" />
+        <PackageVersion Include="Bit.CodeAnalyzers" Version="10.0.0-pre-02" />
+        <PackageVersion Include="Bit.SourceGenerators" Version="10.0.0-pre-02" />
         <PackageVersion Include="Fido2.AspNet" Version="4.0.0" />
         <PackageVersion Include="Fido2.Models" Version="4.0.0" />
         <PackageVersion Include="HtmlSanitizer" Version="9.0.886" />
