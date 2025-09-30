@@ -1,9 +1,7 @@
-﻿// This component is using the quilljs project as its editor: https://quilljs.com/
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
-/// BitMarkdownEditor is a simple editor like GitHub md editor.
+/// BitRichTextEditor is a WYSIWYG text editor, utilizing the famous Quill js library (<see href="https://quilljs.com/"/>).
 /// </summary>
 public partial class BitRichTextEditor : BitComponentBase
 {
@@ -34,6 +32,11 @@ public partial class BitRichTextEditor : BitComponentBase
     [Parameter] public bool FullToolbar { get; set; }
 
     /// <summary>
+    /// Custom Quill modules to be registered at first render (<see href="https://quilljs.com/docs/guides/building-a-custom-module"/>).
+    /// </summary>
+    [Parameter] public IEnumerable<BitRichTextEditorModule>? Modules { get; set; }
+
+    /// <summary>
     /// Callback for when the editor instance is created and ready to use.
     /// </summary>
     [Parameter] public EventCallback<string> OnEditorReady { get; set; }
@@ -42,6 +45,11 @@ public partial class BitRichTextEditor : BitComponentBase
     /// Callback for when the Quill scripts is loaded and the Quill api is ready to use. It allows for custom actions to be performed at that moment.
     /// </summary>
     [Parameter] public EventCallback OnQuillReady { get; set; }
+
+    /// <summary>
+    /// Callback for when the scripts of the provided Quill Modules are loaded and their api are ready to use.
+    /// </summary>
+    [Parameter] public EventCallback OnQuillModulesReady { get; set; }
 
     /// <summary>
     /// The placeholder value of the editor.
@@ -150,22 +158,45 @@ public partial class BitRichTextEditor : BitComponentBase
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (firstRender)
+        if (firstRender is false) return;
+
+        await _js.BitExtrasInitScripts(["_content/Bit.BlazorUI.Extras/quilljs/quill-2.0.3.js"]);
+
+        _ = OnQuillReady.InvokeAsync();
+
+        var theme = (Theme ?? BitRichTextEditorTheme.Snow).ToString().ToLower();
+        await _js.BitExtrasInitStylesheets([$"_content/Bit.BlazorUI.Extras/quilljs/quill.{theme}-2.0.3.css"]);
+
+        List<QuillModule> quillModules = [];
+
+        if (Modules is not null)
         {
-            await _js.BitExtrasInitScripts(["_content/Bit.BlazorUI.Extras/quilljs/quill-2.0.3.js"]);
+            List<string> quillModuleScripts = [];
+            foreach (var module in Modules)
+            {
+                quillModuleScripts.Add(module.Src);
+                quillModules.Add(new() { Name = module.Name, Config = module.Config });
+            }
 
-            await OnQuillReady.InvokeAsync();
+            try
+            {
+                await _js.BitExtrasInitScripts(quillModuleScripts);
 
-            var theme = (Theme ?? BitRichTextEditorTheme.Snow).ToString().ToLower();
-            await _js.BitExtrasInitStylesheets([$"_content/Bit.BlazorUI.Extras/quilljs/quill.{theme}-2.0.3.css"]);
-
-            _dotnetObj = DotNetObjectReference.Create(this);
-            ElementReference? toolbarRef = ToolbarTemplate is null ? null : _toolbarRef;
-            await _js.BitRichTextEditorSetup(_Id, _dotnetObj, _editorRef, toolbarRef, theme, Placeholder, ReadOnly, FullToolbar, Styles?.Toolbar, Classes?.Toolbar);
-            _readyTcs.SetResult();
-
-            await OnEditorReady.InvokeAsync(_Id);
+                _ = OnQuillModulesReady.InvokeAsync();
+            }
+            catch
+            {
+                // we need to ignore script load exceptions here, since we can't safely recover from such errors in this state!
+                // so the developers should make sure the scripts they are providing is correct and has no issue to load.
+            }
         }
+
+        _dotnetObj = DotNetObjectReference.Create(this);
+        ElementReference? toolbarRef = ToolbarTemplate is null ? null : _toolbarRef;
+        await _js.BitRichTextEditorSetup(_Id, _dotnetObj, _editorRef, toolbarRef, theme, Placeholder, ReadOnly, FullToolbar, Styles?.Toolbar, Classes?.Toolbar, quillModules);
+        _readyTcs.SetResult();
+
+        await OnEditorReady.InvokeAsync(_Id);
     }
 
 

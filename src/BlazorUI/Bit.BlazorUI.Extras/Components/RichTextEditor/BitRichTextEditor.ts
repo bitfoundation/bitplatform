@@ -43,14 +43,18 @@ namespace BitBlazorUI {
             readOnly: boolean,
             fullToolbar: boolean,
             toolbarStyle: string,
-            toolbarClass: string) {
+            toolbarClass: string,
+            quillModules: QuillModule[]) {
 
             if (!editorContainer) return;
 
+            const modules: Record<string, unknown> = {};
+
+            modules.toolbar = toolbarContainer || (fullToolbar ? RichTextEditor._toolbarFullOptions : RichTextEditor._toolbarMinOptions);
+            (quillModules || []).forEach(qm => modules[qm.name] = qm.config);
+
             const quill = new Quill(editorContainer, {
-                modules: {
-                    toolbar: toolbarContainer || (fullToolbar ? RichTextEditor._toolbarFullOptions : RichTextEditor._toolbarMinOptions)
-                },
+                modules,
                 theme,
                 placeholder,
                 readOnly
@@ -122,5 +126,10 @@ namespace BitBlazorUI {
         id: string;
         quill: Quill;
         dotnetObj: DotNetObject;
+    }
+
+    interface QuillModule {
+        name: string;
+        config: unknown;
     }
 }

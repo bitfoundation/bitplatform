@@ -141,6 +141,15 @@
                     </EditorTemplate>
                 </BitRichTextEditor>
             </DemoExample>
+
+            <DemoExample Title="Quill custom modules" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+                <div>Using Quill custom modules are as easy as providing a new configuration that provides the name, config, and script src of the module.</div><br />
+                <div>
+                    The following sample shows how to use the "imageResize" custom module
+                    (<a href="https://github.com/bitignite/quill-image-resize-module">https://github.com/bitignite/quill-image-resize-module</a>).
+                </div><br />
+                <BitRichTextEditor FullToolbar Modules="@modules" />
+            </DemoExample>
         </Examples>
     </DemoPage>
 </div>
