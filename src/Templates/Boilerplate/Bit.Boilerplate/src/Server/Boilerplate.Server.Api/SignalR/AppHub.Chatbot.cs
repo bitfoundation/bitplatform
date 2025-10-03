@@ -20,7 +20,9 @@ public partial class AppHub
     public async IAsyncEnumerable<string> Chatbot(
         StartChatbotRequest request,
         IAsyncEnumerable<string> incomingMessages,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
+        [EnumeratorCancellation] CancellationToken cancellationToken,
+        [FromServices] AppDbContext dbContext,
+        [FromServices] IChatClient chatClient)
     {
         // Incoming user messages are received via `incomingMessages`.
         // We utilize `Channel` to read incoming messages and send responses using `ChatClient`.
@@ -37,10 +39,6 @@ public partial class AppHub
                 culture = CultureInfo.GetCultureInfo(request.CultureId);
             }
 
-            await using var scope = serviceProvider.CreateAsyncScope();
-
-            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
             supportSystemPrompt = (await dbContext
                     .SystemPrompts.FirstOrDefaultAsync(p => p.PromptKind == PromptKind.Support, cancellationToken))?.Markdown ?? throw new ResourceNotFoundException();
 
@@ -55,7 +53,6 @@ public partial class AppHub
         }
 
         Channel<string> channel = Channel.CreateUnbounded<string>(new() { SingleReader = true, SingleWriter = true });
-        var chatClient = serviceProvider.CreateAsyncScope().ServiceProvider.GetRequiredService<IChatClient>();
 
         async Task ReadIncomingMessages()
         {
