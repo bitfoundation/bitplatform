@@ -48,6 +48,7 @@ public partial class AppHub : Hub
     /// <summary>
     /// While SignalR client is connected, the user might sign-in or sign-out.
     /// In this case, we need to update the authentication state of the SignalR connection.
+    /// This method is called by AppClientCoordinator.cs
     /// </summary>
     public Task ChangeAuthenticationState(string? accessToken)
     {
@@ -67,11 +68,8 @@ public partial class AppHub : Hub
     /// <inheritdoc cref="SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE"/>
     /// </summary>
     [Authorize(Policy = AppFeatures.System.ManageLogs)]
-    public async Task<DiagnosticLogDto[]> GetUserSessionLogs(Guid userSessionId)
+    public async Task<DiagnosticLogDto[]> GetUserSessionLogs(Guid userSessionId, [FromServices] AppDbContext dbContext)
     {
-        await using var scope = serviceProvider.CreateAsyncScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
         var userSessionSignalRConnectionId = await dbContext.UserSessions
             .Where(us => us.Id == userSessionId)
             .Select(us => us.SignalRConnectionId)
