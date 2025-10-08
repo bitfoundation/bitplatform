@@ -36,7 +36,7 @@ public class ClientWebSettings : ClientCoreSettings
 public class AdsPushVapidOptions
 {
     /// <summary>
-    /// Web push's vapid. More info at https://tools.reactpwa.com/vapid
+    /// Web push's vapid. More info at https://d3v.one/vapid-key-generator/
     /// </summary>
     [Required]
     public string PublicKey { get; set; } = default!;

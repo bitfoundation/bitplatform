@@ -1,16 +1,12 @@
 ﻿//+:cnd:noEmit
-using Projects;
-using Aspire.Hosting;
-using Aspire.Hosting.ApplicationModel;
 using Microsoft.Extensions.Hosting;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-// Check out appsettings.json for credential settings.
+// Check out appsettings.json for credentials/passwords settings.
 
 //#if (database == "SqlServer")
-var sqlServerPassword = builder.AddParameter("SqlServerPassword", secret: true);
-var sqlDatabase = builder.AddSqlServer("sqlserver", password: sqlServerPassword, port: 1433)
+var sqlDatabase = builder.AddSqlServer("sqlserver")
         .WithDbGate(config => config.WithLifetime(ContainerLifetime.Persistent).WithDataVolume())
         .WithLifetime(ContainerLifetime.Persistent)
         .WithDataVolume()
@@ -18,8 +14,7 @@ var sqlDatabase = builder.AddSqlServer("sqlserver", password: sqlServerPassword,
         .AddDatabase("sqldb"); // Sql server 2025 supports embedded vector search.
 
 //#elif (database == "PostgreSql")
-var postgresPassword = builder.AddParameter("PostgresPassword", secret: true);
-var postgresDatabase = builder.AddPostgres("postgresserver", password: postgresPassword, port: 5432)
+var postgresDatabase = builder.AddPostgres("postgresserver")
         .WithPgAdmin(config => config.WithLifetime(ContainerLifetime.Persistent).WithVolume("/var/lib/pgadmin/Boilerplate/data"))
         .WithLifetime(ContainerLifetime.Persistent)
         .WithDataVolume()
@@ -27,13 +22,14 @@ var postgresDatabase = builder.AddPostgres("postgresserver", password: postgresP
         .AddDatabase("postgresdb");
 
 //#elif (database == "MySql")
-var mySqlPassword = builder.AddParameter("MySqlPassword", secret: true);
-var mySqlDatabase = builder.AddMySql("mysqlserver", password: mySqlPassword, port: 3306)
+var mySqlDatabase = builder.AddMySql("mysqlserver")
         .WithPhpMyAdmin(config => config.WithLifetime(ContainerLifetime.Persistent).WithVolume("/var/lib/phpMyAdmin/Boilerplate/data"))
         .WithLifetime(ContainerLifetime.Persistent)
         .WithDataVolume()
         .AddDatabase("mysqldb");
-
+//#elif (database == "Sqlite")
+var sqlite = builder.AddSqlite("sqlite")
+    .WithSqliteWeb(config => config.WithLifetime(ContainerLifetime.Persistent).WithVolume("/var/lib/sqliteweb/Boilerplate/data"));
 //#endif
 //#if (filesStorage == "AzureBlobStorage")
 var azureBlobStorage = builder.AddAzureStorage("storage")
@@ -41,20 +37,30 @@ var azureBlobStorage = builder.AddAzureStorage("storage")
         {
             azurite
                 .WithLifetime(ContainerLifetime.Persistent)
-                .WithBlobPort(10000)
-                .WithQueuePort(10001)
-                .WithTablePort(10002)
                 .WithDataVolume();
         })
         .AddBlobs("blobs");
 
 //#elif (filesStorage == "S3")
-var minioUsername = builder.AddParameter("MinIOUser");
-var minioPassword = builder.AddParameter("MinIOPassword", secret: true);
-var s3Storage = builder.AddMinioContainer("minio", rootUser: minioUsername, rootPassword: minioPassword);
+var s3Storage = builder.AddMinioContainer("minio")
+    .WithLifetime(ContainerLifetime.Persistent)
+    .WithDataVolume();
 //#endif
 
-var serverWebProject = builder.AddProject<Boilerplate_Server_Web>("serverweb") // Replace . with _ if needed to ensure the project builds successfully.
+builder.AddKeycloak("keycloak")
+    .WithLifetime(ContainerLifetime.Persistent)
+    .WithDataVolume();
+
+builder.AddMailPit("mailpit") // For testing purposes only, in production, you would use a real SMTP server.
+    .WithLifetime(ContainerLifetime.Persistent)
+    .WithDataVolume("mailpit");
+
+//#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
+builder.AddGitHubModel("llm", "openai/gpt-4o-mini"); // You can either replace `Aspire.Hosting.GitHub.Models` nuget package with `Aspire.Hosting.Azure.AIFoundry`
+// OR you can remove `Aspire.Hosting.GitHub.Models` nuget package and simply set any OpenAI compatible endpoint in your Server.Api's app settings.
+//#endif
+
+var serverWebProject = builder.AddProject<Projects.Boilerplate_Server_Web>("serverweb") // Replace . with _ if needed to ensure the project builds successfully.
     .WithExternalHttpEndpoints();
 
 // Adding health checks endpoints to applications in non-development environments has security implications.
@@ -65,7 +71,7 @@ if (builder.Environment.IsDevelopment())
 }
 
 //#if (api == "Standalone")
-var serverApiProject = builder.AddProject<Boilerplate_Server_Api>("serverapi") // Replace . with _ if needed to ensure the project builds successfully.
+var serverApiProject = builder.AddProject<Projects.Boilerplate_Server_Api>("serverapi") // Replace . with _ if needed to ensure the project builds successfully.
     .WithExternalHttpEndpoints();
 
 // Adding health checks endpoints to applications in non-development environments has security implications.
@@ -107,12 +113,12 @@ serverWebProject.WithReference(s3Storage, "S3ConnectionString").WaitFor(s3Storag
 //#endif
 
 // Blazor WebAssembly Standalone project.
-builder.AddProject<Boilerplate_Client_Web>("clientwebwasm"); // Replace . with _ if needed to ensure the project builds successfully.
+builder.AddProject<Projects.Boilerplate_Client_Web>("clientwebwasm"); // Replace . with _ if needed to ensure the project builds successfully.
 
 if (builder.ExecutionContext.IsRunMode) // The following project is only added for testing purposes.
 {
     // Blazor Hybrid Windows project.
-    builder.AddProject<Boilerplate_Client_Windows>("clientwindows") // Replace . with _ if needed to ensure the project builds successfully.
+    builder.AddProject<Projects.Boilerplate_Client_Windows>("clientwindows") // Replace . with _ if needed to ensure the project builds successfully.
         .WithExplicitStart();
 
     //#if (api == "Standalone")
