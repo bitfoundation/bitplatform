@@ -3,7 +3,7 @@ using Microsoft.Extensions.Hosting;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-// Check out appsettings.json for credentials/passwords settings.
+// Check out appsettings.Development.json for credentials/passwords settings.
 
 //#if (database == "SqlServer")
 var sqlDatabase = builder.AddSqlServer("sqlserver")
