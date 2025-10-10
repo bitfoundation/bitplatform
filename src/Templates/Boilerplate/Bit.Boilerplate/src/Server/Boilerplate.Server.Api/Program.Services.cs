@@ -259,7 +259,7 @@ public static partial class Program
                 .EnableDetailedErrors(env.IsDevelopment());
 
             //#if (database == "Sqlite")
-            var connectionStringBuilder = new SqliteConnectionStringBuilder(configuration.GetConnectionString("SqliteConnectionString"));
+            var connectionStringBuilder = new SqliteConnectionStringBuilder(configuration.GetConnectionString("sqlite"));
             connectionStringBuilder.DataSource = Environment.ExpandEnvironmentVariables(connectionStringBuilder.DataSource);
             if (connectionStringBuilder.Mode is not SqliteOpenMode.Memory)
             {
@@ -274,12 +274,12 @@ public static partial class Program
             return;
             //#endif
             //#if (database == "SqlServer")
-            options.UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), dbOptions =>
+            options.UseSqlServer(configuration.GetConnectionString("sqldb"), dbOptions =>
             {
                 // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });
             //#elif (database == "PostgreSQL")
-            var dataSourceBuilder = new Npgsql.NpgsqlDataSourceBuilder(configuration.GetConnectionString("PostgreSQLConnectionString"));
+            var dataSourceBuilder = new Npgsql.NpgsqlDataSourceBuilder(configuration.GetConnectionString("postgresdb"));
             dataSourceBuilder.EnableDynamicJson();
             options.UseNpgsql(dataSourceBuilder.Build(), dbOptions =>
             {
@@ -287,7 +287,7 @@ public static partial class Program
                 // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });
             //#elif (database == "MySql")
-            options.UseMySql(configuration.GetConnectionString("MySqlConnectionString"), ServerVersion.AutoDetect(configuration.GetConnectionString("MySqlConnectionString")), dbOptions =>
+            options.UseMySql(configuration.GetConnectionString("mysqldb"), ServerVersion.AutoDetect(configuration.GetConnectionString("mysqldb")), dbOptions =>
             {
                 // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });

@@ -28,7 +28,7 @@ var mySqlDatabase = builder.AddMySql("mysqlserver")
         .WithDataVolume()
         .AddDatabase("mysqldb");
 //#elif (database == "Sqlite")
-var sqlite = builder.AddSqlite("sqlite")
+var sqlite = builder.AddSqlite("sqlite", databaseFileName: "BoilerplateDb.db")
     .WithSqliteWeb(config => config.WithLifetime(ContainerLifetime.Persistent).WithVolume("/var/lib/sqliteweb/Boilerplate/data"));
 //#endif
 //#if (filesStorage == "AzureBlobStorage")
@@ -83,11 +83,13 @@ if (builder.Environment.IsDevelopment())
 
 serverWebProject.WithReference(serverApiProject).WaitFor(serverApiProject);
 //#if (database == "SqlServer")
-serverApiProject.WithReference(sqlDatabase, "SqlServerConnectionString").WaitFor(sqlDatabase);
+serverApiProject.WithReference(sqlDatabase).WaitFor(sqlDatabase);
 //#elif (database == "PostgreSql")
-serverApiProject.WithReference(postgresDatabase, "PostgreSQLConnectionString").WaitFor(postgresDatabase);
+serverApiProject.WithReference(postgresDatabase).WaitFor(postgresDatabase);
 //#elif (database == "MySql")
-serverApiProject.WithReference(mySqlDatabase, "MySqlConnectionString").WaitFor(mySqlDatabase);
+serverApiProject.WithReference(mySqlDatabase).WaitFor(mySqlDatabase);
+//#elif (database == "Sqlite")
+serverApiProject.WithReference(sqlite).WaitFor(sqlite);
 //#endif
 //#if (filesStorage == "AzureBlobStorage")
 serverApiProject.WithReference(azureBlobStorage, "AzureBlobStorageConnectionString").WaitFor(azureBlobStorage);
@@ -98,11 +100,13 @@ serverApiProject.WithReference(s3Storage, "S3ConnectionString").WaitFor(s3Storag
 //#else
 
 //#if (database == "SqlServer")
-serverWebProject.WithReference(sqlDatabase, "SqlServerConnectionString").WaitFor(sqlDatabase);
+serverWebProject.WithReference(sqlDatabase).WaitFor(sqlDatabase);
 //#elif (database == "PostgreSql")
-serverWebProject.WithReference(postgresDatabase, "PostgreSQLConnectionString").WaitFor(postgresDatabase);
+serverWebProject.WithReference(postgresDatabase).WaitFor(postgresDatabase);
 //#elif (database == "MySql")
-serverWebProject.WithReference(mySqlDatabase, "MySqlConnectionString").WaitFor(mySqlDatabase);
+serverWebProject.WithReference(mySqlDatabase).WaitFor(mySqlDatabase);
+//#elif (database == "Sqlite")
+serverWebProject.WithReference(sqlite).WaitFor(sqlite);
 //#endif
 //#if (filesStorage == "AzureBlobStorage")
 serverWebProject.WithReference(azureBlobStorage, "AzureBlobStorageConnectionString").WaitFor(azureBlobStorage);

@@ -24,7 +24,7 @@
             <!--<PWDEBUG>1</PWDEBUG>-->
 
             <!-- You can override the configuration from appsettings.json for tests here. -->
-            <ConnectionStrings__SqliteConnectionString>Data Source=BoilerplateDb.db;Mode=Memory;Cache=Shared;</ConnectionStrings__SqliteConnectionString>
+            <ConnectionStrings__sqlite>Data Source=BoilerplateDb.db;Mode=Memory;Cache=Shared;</ConnectionStrings__sqlite>
         </EnvironmentVariables>
     </RunConfiguration>
 
