@@ -13,8 +13,6 @@
         <Content Include=".config\dotnet-tools.json" />
         <PackageReference Include="Aspire.Hosting.AppHost" />
         <PackageReference Include="Aspire.Hosting.DevTunnels" />
-        <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Aspire.Hosting.GitHub.Models" />
-        <PackageReference Include="Aspire.Hosting.Keycloak" />
         <PackageReference Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Aspire.Hosting.MySql" />
         <PackageReference Include="CommunityToolkit.Aspire.Hosting.MailPit" />
         <PackageReference Condition=" '$(database)' == 'Sqlite' OR '$(database)' == '' " Include="CommunityToolkit.Aspire.Hosting.Sqlite" />

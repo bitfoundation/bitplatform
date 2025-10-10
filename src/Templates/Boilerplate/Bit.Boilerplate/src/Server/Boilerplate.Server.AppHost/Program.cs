@@ -47,18 +47,9 @@ var s3Storage = builder.AddMinioContainer("minio")
     .WithDataVolume();
 //#endif
 
-var keycloak = builder.AddKeycloak("keycloak")
-    .WithLifetime(ContainerLifetime.Persistent)
-    .WithDataVolume();
-
 var mailpit = builder.AddMailPit("mailpit") // For testing purposes only, in production, you would use a real SMTP server.
     .WithLifetime(ContainerLifetime.Persistent)
     .WithDataVolume("mailpit");
-
-//#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
-builder.AddGitHubModel("llm", "openai/gpt-4o-mini"); // You can either replace `Aspire.Hosting.GitHub.Models` nuget package with `Aspire.Hosting.Azure.AIFoundry`
-// OR you can remove `Aspire.Hosting.GitHub.Models` nuget package and simply set any OpenAI compatible endpoint in your Server.Api's app settings.
-//#endif
 
 var serverWebProject = builder.AddProject<Projects.Boilerplate_Server_Web>("serverweb") // Replace . with _ if needed to ensure the project builds successfully.
     .WithExternalHttpEndpoints();
@@ -97,7 +88,6 @@ serverApiProject.WithReference(azureBlobStorage, "azureblobstorage");
 serverApiProject.WithReference(s3Storage, "s3");
 //#endif
 serverApiProject.WithReference(mailpit, "smtp");
-serverApiProject.WithReference(keycloak);
 //#else
 
 //#if (database == "SqlServer")
@@ -115,7 +105,6 @@ serverWebProject.WithReference(azureBlobStorage, "azureblobstorage");
 serverWebProject.WithReference(s3Storage, "s3");
 //#endif
 serverWebProject.WithReference(mailpit, "smtp");
-serverWebProject.WithReference(keycloak);
 //#endif
 
 // Blazor WebAssembly Standalone project.

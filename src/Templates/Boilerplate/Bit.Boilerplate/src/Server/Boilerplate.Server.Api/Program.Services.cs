@@ -622,6 +622,11 @@ public static partial class Program
                 options.DisableTelemetry = true;
 
                 options.Prompt = "login"; // Force login every time
+
+                if (env.IsDevelopment())
+                {
+                    options.RequireHttpsMetadata = false;
+                }
             });
         }
     }
