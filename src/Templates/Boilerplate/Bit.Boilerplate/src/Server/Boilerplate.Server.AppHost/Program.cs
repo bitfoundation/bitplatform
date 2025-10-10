@@ -47,11 +47,11 @@ var s3Storage = builder.AddMinioContainer("minio")
     .WithDataVolume();
 //#endif
 
-builder.AddKeycloak("keycloak")
+var keycloak = builder.AddKeycloak("keycloak")
     .WithLifetime(ContainerLifetime.Persistent)
     .WithDataVolume();
 
-builder.AddMailPit("mailpit") // For testing purposes only, in production, you would use a real SMTP server.
+var mailpit = builder.AddMailPit("mailpit") // For testing purposes only, in production, you would use a real SMTP server.
     .WithLifetime(ContainerLifetime.Persistent)
     .WithDataVolume("mailpit");
 
@@ -81,7 +81,7 @@ if (builder.Environment.IsDevelopment())
     serverApiProject.WithHttpHealthCheck("/alive");
 }
 
-serverWebProject.WithReference(serverApiProject).WaitFor(serverApiProject);
+serverWebProject.WithReference(serverApiProject);
 //#if (database == "SqlServer")
 serverApiProject.WithReference(sqlDatabase).WaitFor(sqlDatabase);
 //#elif (database == "PostgreSql")
@@ -92,11 +92,12 @@ serverApiProject.WithReference(mySqlDatabase).WaitFor(mySqlDatabase);
 serverApiProject.WithReference(sqlite).WaitFor(sqlite);
 //#endif
 //#if (filesStorage == "AzureBlobStorage")
-serverApiProject.WithReference(azureBlobStorage, "AzureBlobStorageConnectionString").WaitFor(azureBlobStorage);
+serverApiProject.WithReference(azureBlobStorage, "azureblobstorage");
 //#elif (filesStorage == "S3")
-serverApiProject.WithReference(s3Storage, "S3ConnectionString").WaitFor(s3Storage);
+serverApiProject.WithReference(s3Storage, "s3");
 //#endif
-
+serverApiProject.WithReference(mailpit, "smtp");
+serverApiProject.WithReference(keycloak);
 //#else
 
 //#if (database == "SqlServer")
@@ -109,11 +110,12 @@ serverWebProject.WithReference(mySqlDatabase).WaitFor(mySqlDatabase);
 serverWebProject.WithReference(sqlite).WaitFor(sqlite);
 //#endif
 //#if (filesStorage == "AzureBlobStorage")
-serverWebProject.WithReference(azureBlobStorage, "AzureBlobStorageConnectionString").WaitFor(azureBlobStorage);
+serverWebProject.WithReference(azureBlobStorage, "azureblobstorage");
 //#elif (filesStorage == "S3")
-serverWebProject.WithReference(s3Storage, "S3ConnectionString").WaitFor(s3Storage);
+serverWebProject.WithReference(s3Storage, "s3");
 //#endif
-
+serverWebProject.WithReference(mailpit, "smtp");
+serverWebProject.WithReference(keycloak);
 //#endif
 
 // Blazor WebAssembly Standalone project.

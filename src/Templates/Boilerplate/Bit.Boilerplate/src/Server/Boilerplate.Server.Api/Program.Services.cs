@@ -81,19 +81,6 @@ public static partial class Program
         services.AddSingleton(_ => PhoneNumberUtil.GetInstance());
         services.AddSingleton<IBlobStorage>(sp =>
         {
-            //#if (filesStorage == "AzureBlobStorage" || filesStorage == "S3")
-            string GetValue(string connectionString, string key, string? defaultValue = null)
-            {
-                var parts = connectionString.Split(';');
-                foreach (var part in parts)
-                {
-                    if (part.StartsWith($"{key}="))
-                        return part[$"{key}=".Length..];
-                }
-                return defaultValue ?? throw new ArgumentException($"Invalid connection string: '{key}' not found.");
-            }
-            //#endif
-
             //#if (filesStorage == "Local")
             var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
             var appDataDirPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
@@ -104,7 +91,7 @@ public static partial class Program
             var blobServiceClient = new BlobServiceClient(azureBlobStorageConnectionString);
             string accountName = blobServiceClient.AccountName;
             string accountKey = azureBlobStorageConnectionString is "UseDevelopmentStorage=true" ? "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==" // https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio%2Cblob-storage#well-known-storage-account-and-key
-                : GetValue(azureBlobStorageConnectionString, "AccountKey");
+                : GetConnectionStringValue(azureBlobStorageConnectionString, "AccountKey");
             return StorageFactory.Blobs.AzureBlobStorageWithSharedKey(accountName, accountKey, blobServiceClient.Uri);
             //#elif (filesStorage == "S3")
             // Run through docker using `docker run -d -p 9000:9000 -p 9001:9001 -e "MINIO_ROOT_USER=minioadmin" -e "MINIO_ROOT_PASSWORD=minioadmin" quay.io/minio/minio server /data --console-address ":9001"`
@@ -112,15 +99,15 @@ public static partial class Program
             var s3ConnectionString = configuration.GetConnectionString("S3ConnectionString")!;
             var clientConfig = new Amazon.S3.AmazonS3Config
             {
-                AuthenticationRegion = GetValue(s3ConnectionString, "Region", defaultValue: "us-east-1"),
-                ServiceURL = GetValue(s3ConnectionString, "Endpoint"),
+                AuthenticationRegion = GetConnectionStringValue(s3ConnectionString, "Region", defaultValue: "us-east-1"),
+                ServiceURL = GetConnectionStringValue(s3ConnectionString, "Endpoint"),
                 ForcePathStyle = true,
                 HttpClientFactory = sp.GetRequiredService<S3HttpClientFactory>()
             };
-            return StorageFactory.Blobs.AwsS3(accessKeyId: GetValue(s3ConnectionString, "AccessKey"),
-                secretAccessKey: GetValue(s3ConnectionString, "SecretKey"),
+            return StorageFactory.Blobs.AwsS3(accessKeyId: GetConnectionStringValue(s3ConnectionString, "AccessKey"),
+                secretAccessKey: GetConnectionStringValue(s3ConnectionString, "SecretKey"),
                 sessionToken: null!,
-                bucketName: GetValue(s3ConnectionString, "BucketName", defaultValue: "files"),
+                bucketName: GetConnectionStringValue(s3ConnectionString, "BucketName", defaultValue: "files"),
                 clientConfig);
             //#else
             throw new NotImplementedException("Install and configure any storage supported by fluent storage (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)");
@@ -324,33 +311,25 @@ public static partial class Program
 
         var emailSettings = appSettings.Email ?? throw new InvalidOperationException("Email settings are required.");
         var fluentEmailServiceBuilder = services.AddFluentEmail(emailSettings.DefaultFromEmail);
-
         fluentEmailServiceBuilder.AddSmtpSender(() =>
         {
-            if (emailSettings.UseLocalFolderForEmails)
+            var smtpConnectionString = configuration.GetConnectionString("smtp")!;
+            var endpoint = new Uri(GetConnectionStringValue(smtpConnectionString, "Endpoint", "localhost"));
+            var host = endpoint.Host;
+            var port = endpoint.Port is -1 ? 25 : endpoint.Port;
+            var userName = GetConnectionStringValue(smtpConnectionString, "UserName", string.Empty);
+            var password = GetConnectionStringValue(smtpConnectionString, "Password", string.Empty);
+
+            SmtpClient smtpClient = new(host, port);
+
+            if (string.IsNullOrEmpty(userName) is false
+                && string.IsNullOrEmpty(password) is false)
             {
-                var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
-                var sentEmailsFolderPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data", "sent-emails");
-
-                Directory.CreateDirectory(sentEmailsFolderPath);
-
-                return new SmtpClient
-                {
-                    DeliveryMethod = SmtpDeliveryMethod.SpecifiedPickupDirectory,
-                    PickupDirectoryLocation = sentEmailsFolderPath
-                };
+                smtpClient.EnableSsl = true;
+                smtpClient.Credentials = new NetworkCredential(userName.ToString(), password.ToString());
             }
 
-            if (emailSettings.HasCredential)
-            {
-                return new(emailSettings.Host, emailSettings.Port)
-                {
-                    Credentials = new NetworkCredential(emailSettings.UserName, emailSettings.Password),
-                    EnableSsl = true
-                };
-            }
-
-            return new(emailSettings.Host, emailSettings.Port);
+            return smtpClient;
         });
 
         //#if (captcha == "reCaptcha")
@@ -470,7 +449,7 @@ public static partial class Program
                 })
                 .UseLogging()
                 .UseOpenTelemetry();
-                // .UseDistributedCache()
+            // .UseDistributedCache()
         }
         //#endif
 
@@ -684,5 +663,16 @@ public static partial class Program
                 }
             });
         });
+    }
+
+    private static string GetConnectionStringValue(string connectionString, string key, string? defaultValue = null)
+    {
+        var parts = connectionString.Split(';');
+        foreach (var part in parts)
+        {
+            if (part.StartsWith($"{key}="))
+                return part[$"{key}=".Length..];
+        }
+        return defaultValue ?? throw new ArgumentException($"Invalid connection string: '{key}' not found.");
     }
 }

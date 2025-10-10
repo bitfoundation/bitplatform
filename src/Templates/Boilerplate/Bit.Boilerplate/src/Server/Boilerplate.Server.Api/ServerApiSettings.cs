@@ -189,20 +189,7 @@ public class AzureOpenAIOptions
 public partial class EmailOptions
 {
     [Required]
-    public string Host { get; set; } = default!;
-    /// <summary>
-    /// If true, the web app tries to store emails as .eml file in the App_Data/sent-emails folder instead of sending them using smtp server (recommended for testing purposes only).
-    /// </summary>
-    public bool UseLocalFolderForEmails => Host is "LocalFolder";
-
-    [Range(1, 65535)]
-    public int Port { get; set; }
-    public string? UserName { get; set; }
-    public string? Password { get; set; }
-
-    [Required]
     public string DefaultFromEmail { get; set; } = default!;
-    public bool HasCredential => (string.IsNullOrEmpty(UserName) is false) && (string.IsNullOrEmpty(Password) is false);
 }
 
 //#if (cloudflare == true)
