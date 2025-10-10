@@ -7,7 +7,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 //#if (database == "SqlServer")
 var sqlDatabase = builder.AddSqlServer("sqlserver")
-        .WithDbGate(config => config.WithLifetime(ContainerLifetime.Persistent).WithDataVolume())
+        .WithDbGate(config => config.WithDataVolume())
         .WithLifetime(ContainerLifetime.Persistent)
         .WithDataVolume()
         .WithImage("mssql/server", "2025-latest")
@@ -15,7 +15,7 @@ var sqlDatabase = builder.AddSqlServer("sqlserver")
 
 //#elif (database == "PostgreSql")
 var postgresDatabase = builder.AddPostgres("postgresserver")
-        .WithPgAdmin(config => config.WithLifetime(ContainerLifetime.Persistent).WithVolume("/var/lib/pgadmin/Boilerplate/data"))
+        .WithPgAdmin(config => config.WithVolume("/var/lib/pgadmin/Boilerplate/data"))
         .WithLifetime(ContainerLifetime.Persistent)
         .WithDataVolume()
         .WithImage("pgvector/pgvector", "pg18") // pgvector supports embedded vector search.
@@ -23,13 +23,13 @@ var postgresDatabase = builder.AddPostgres("postgresserver")
 
 //#elif (database == "MySql")
 var mySqlDatabase = builder.AddMySql("mysqlserver")
-        .WithPhpMyAdmin(config => config.WithLifetime(ContainerLifetime.Persistent).WithVolume("/var/lib/phpMyAdmin/Boilerplate/data"))
+        .WithPhpMyAdmin(config => config.WithVolume("/var/lib/phpMyAdmin/Boilerplate/data"))
         .WithLifetime(ContainerLifetime.Persistent)
         .WithDataVolume()
         .AddDatabase("mysqldb");
 //#elif (database == "Sqlite")
 var sqlite = builder.AddSqlite("sqlite", databaseFileName: "BoilerplateDb.db")
-    .WithSqliteWeb(config => config.WithLifetime(ContainerLifetime.Persistent).WithVolume("/var/lib/sqliteweb/Boilerplate/data"));
+    .WithSqliteWeb(config => config.WithVolume("/var/lib/sqliteweb/Boilerplate/data"));
 //#endif
 //#if (filesStorage == "AzureBlobStorage")
 var azureBlobStorage = builder.AddAzureStorage("storage")
@@ -46,10 +46,6 @@ var s3Storage = builder.AddMinioContainer("minio")
     .WithLifetime(ContainerLifetime.Persistent)
     .WithDataVolume();
 //#endif
-
-var mailpit = builder.AddMailPit("mailpit") // For testing purposes only, in production, you would use a real SMTP server.
-    .WithLifetime(ContainerLifetime.Persistent)
-    .WithDataVolume("mailpit");
 
 var serverWebProject = builder.AddProject<Projects.Boilerplate_Server_Web>("serverweb") // Replace . with _ if needed to ensure the project builds successfully.
     .WithExternalHttpEndpoints();
@@ -87,7 +83,6 @@ serverApiProject.WithReference(azureBlobStorage, "azureblobstorage");
 //#elif (filesStorage == "S3")
 serverApiProject.WithReference(s3Storage, "s3");
 //#endif
-serverApiProject.WithReference(mailpit, "smtp");
 //#else
 
 //#if (database == "SqlServer")
@@ -104,7 +99,6 @@ serverWebProject.WithReference(azureBlobStorage, "azureblobstorage");
 //#elif (filesStorage == "S3")
 serverWebProject.WithReference(s3Storage, "s3");
 //#endif
-serverWebProject.WithReference(mailpit, "smtp");
 //#endif
 
 // Blazor WebAssembly Standalone project.
@@ -112,6 +106,15 @@ builder.AddProject<Projects.Boilerplate_Client_Web>("clientwebwasm"); // Replace
 
 if (builder.ExecutionContext.IsRunMode) // The following project is only added for testing purposes.
 {
+    var mailpit = builder.AddMailPit("mailpit") // For testing purposes only, in production, you would use a real SMTP server.
+        .WithDataVolume("mailpit");
+
+    //#if (api == "Standalone")
+    serverApiProject.WithReference(mailpit, "smtp");
+    //#else
+    serverWebProject.WithReference(mailpit, "smtp");
+    //#endif
+
     // Blazor Hybrid Windows project.
     builder.AddProject<Projects.Boilerplate_Client_Windows>("clientwindows") // Replace . with _ if needed to ensure the project builds successfully.
         .WithExplicitStart();
