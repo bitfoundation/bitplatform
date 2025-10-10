@@ -87,7 +87,7 @@ public static partial class Program
             Directory.CreateDirectory(appDataDirPath);
             return StorageFactory.Blobs.DirectoryFiles(appDataDirPath);
             //#elif (filesStorage == "AzureBlobStorage")
-            var azureBlobStorageConnectionString = configuration.GetConnectionString("AzureBlobStorageConnectionString")!;
+            var azureBlobStorageConnectionString = configuration.GetRequiredConnectionString("azureblobstorage")!;
             var blobServiceClient = new BlobServiceClient(azureBlobStorageConnectionString);
             string accountName = blobServiceClient.AccountName;
             string accountKey = azureBlobStorageConnectionString is "UseDevelopmentStorage=true" ? "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==" // https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio%2Cblob-storage#well-known-storage-account-and-key
@@ -96,7 +96,7 @@ public static partial class Program
             //#elif (filesStorage == "S3")
             // Run through docker using `docker run -d -p 9000:9000 -p 9001:9001 -e "MINIO_ROOT_USER=minioadmin" -e "MINIO_ROOT_PASSWORD=minioadmin" quay.io/minio/minio server /data --console-address ":9001"`
             // Open MinIO console at http://127.0.0.1:9001/browser
-            var s3ConnectionString = configuration.GetConnectionString("S3ConnectionString")!;
+            var s3ConnectionString = configuration.GetRequiredConnectionString("s3")!;
             var clientConfig = new Amazon.S3.AmazonS3Config
             {
                 AuthenticationRegion = GetConnectionStringValue(s3ConnectionString, "Region", defaultValue: "us-east-1"),
@@ -246,7 +246,7 @@ public static partial class Program
                 .EnableDetailedErrors(env.IsDevelopment());
 
             //#if (database == "Sqlite")
-            var connectionStringBuilder = new SqliteConnectionStringBuilder(configuration.GetConnectionString("sqlite"));
+            var connectionStringBuilder = new SqliteConnectionStringBuilder(configuration.GetRequiredConnectionString("sqlite"));
             connectionStringBuilder.DataSource = Environment.ExpandEnvironmentVariables(connectionStringBuilder.DataSource);
             if (connectionStringBuilder.Mode is not SqliteOpenMode.Memory)
             {
@@ -261,12 +261,12 @@ public static partial class Program
             return;
             //#endif
             //#if (database == "SqlServer")
-            options.UseSqlServer(configuration.GetConnectionString("sqldb"), dbOptions =>
+            options.UseSqlServer(configuration.GetRequiredConnectionString("sqldb"), dbOptions =>
             {
                 // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });
             //#elif (database == "PostgreSQL")
-            var dataSourceBuilder = new Npgsql.NpgsqlDataSourceBuilder(configuration.GetConnectionString("postgresdb"));
+            var dataSourceBuilder = new Npgsql.NpgsqlDataSourceBuilder(configuration.GetRequiredConnectionString("postgresdb"));
             dataSourceBuilder.EnableDynamicJson();
             options.UseNpgsql(dataSourceBuilder.Build(), dbOptions =>
             {
@@ -274,7 +274,7 @@ public static partial class Program
                 // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });
             //#elif (database == "MySql")
-            options.UseMySql(configuration.GetConnectionString("mysqldb"), ServerVersion.AutoDetect(configuration.GetConnectionString("mysqldb")), dbOptions =>
+            options.UseMySql(configuration.GetRequiredConnectionString("mysqldb"), ServerVersion.AutoDetect(configuration.GetRequiredConnectionString("mysqldb")), dbOptions =>
             {
                 // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });
@@ -313,7 +313,7 @@ public static partial class Program
         var fluentEmailServiceBuilder = services.AddFluentEmail(emailSettings.DefaultFromEmail);
         fluentEmailServiceBuilder.AddSmtpSender(() =>
         {
-            var smtpConnectionString = configuration.GetConnectionString("smtp")!;
+            var smtpConnectionString = configuration.GetRequiredConnectionString("smtp")!;
             var endpoint = new Uri(GetConnectionStringValue(smtpConnectionString, "Endpoint", "localhost"));
             var host = endpoint.Host;
             var port = endpoint.Port is -1 ? 25 : endpoint.Port;
