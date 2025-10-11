@@ -52,7 +52,7 @@ public partial class IdentityApiTests
 
         var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
 
-        await Assert.ThrowsExceptionAsync<UnauthorizedException>(() => userController.GetCurrentUser(TestContext.CancellationTokenSource.Token));
+        await Assert.ThrowsExactlyAsync<UnauthorizedException>(() => userController.GetCurrentUser(TestContext.CancellationTokenSource.Token));
     }
 
     public TestContext TestContext { get; set; } = default!;

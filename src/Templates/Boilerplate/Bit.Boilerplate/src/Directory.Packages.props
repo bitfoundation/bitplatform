@@ -129,6 +129,6 @@
         <PackageVersion Include="System.Text.Json" Version="10.0.0-rc.1.25451.107" />
         <PackageVersion Include="coverlet.collector" Version="6.0.4" />
         <PackageVersion Include="FakeItEasy" Version="8.3.0" />
-        <PackageVersion Include="Microsoft.Playwright.MSTest" Version="1.55.0" />
+        <PackageVersion Include="Microsoft.Playwright.MSTest.v4" Version="1.55.0" />
     </ItemGroup>
 </Project>
