@@ -63,7 +63,7 @@ jobs:
         cd ../../Tests
         dotnet build
         npx --yes playwright install --with-deps
-        dotnet test --logger GitHubActions --filter "${{ env.SIMPLE_TEST_FILTER }}"
+        dotnet test --filter "${{ env.SIMPLE_TEST_FILTER }}"
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
@@ -91,7 +91,7 @@ jobs:
         dotnet ef database update
         cd ../../Tests
         dotnet build
-        dotnet test --logger GitHubActions --filter "${{ env.SIMPLE_TEST_FILTER }}"
+        dotnet test --filter "${{ env.SIMPLE_TEST_FILTER }}"
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
