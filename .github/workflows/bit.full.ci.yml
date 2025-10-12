@@ -63,7 +63,7 @@ jobs:
         cd ../../Tests
         dotnet build
         pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
-        dotnet test --filter "${{ env.SIMPLE_TEST_FILTER }}"
+        dotnet test
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
@@ -92,7 +92,7 @@ jobs:
         cd ../../Tests
         dotnet build
         pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
-        dotnet test --filter "${{ env.SIMPLE_TEST_FILTER }}"
+        dotnet test
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
