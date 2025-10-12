@@ -47,7 +47,7 @@ public class BitLinkTests : BunitTestContext
         {
             component.MarkupMatches(@$"<a href=""{href}"" class=""bit-lnk bit-lnk-pri"" id:ignore></a>");
 
-            Assert.ThrowsException<MissingEventHandlerException>(() => component.Find(".bit-lnk").Click());
+            Assert.Throws<MissingEventHandlerException>(() => component.Find(".bit-lnk").Click());
         }
     }
 

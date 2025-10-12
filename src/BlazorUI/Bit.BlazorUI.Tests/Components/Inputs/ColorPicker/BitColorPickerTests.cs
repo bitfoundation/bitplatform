@@ -36,8 +36,8 @@ public class BitColorPickerTests : BunitTestContext
         }
         else
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => com.Find(".bit-clp-asd"));
-            Assert.ThrowsException<ElementNotFoundException>(() => com.Find(".bit-clp-pre"));
+            Assert.Throws<ElementNotFoundException>(() => com.Find(".bit-clp-asd"));
+            Assert.Throws<ElementNotFoundException>(() => com.Find(".bit-clp-pre"));
         }
     }
 

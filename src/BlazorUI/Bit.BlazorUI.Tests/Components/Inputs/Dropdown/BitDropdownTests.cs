@@ -64,7 +64,7 @@ public class BitDropdownTests : BunitTestContext
         //}
         //else
         //{
-        //    Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-drp-rlc"));
+        //    Assert.Throws<ElementNotFoundException>(() => component.Find(".bit-drp-rlc"));
         //}
     }
 
@@ -84,7 +84,7 @@ public class BitDropdownTests : BunitTestContext
 
         if (string.IsNullOrEmpty(labelFragment))
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-drp-rlc > label"));
+            Assert.Throws<ElementNotFoundException>(() => component.Find(".bit-drp-rlc > label"));
         }
         else
         {
@@ -112,7 +112,7 @@ public class BitDropdownTests : BunitTestContext
 
         if (string.IsNullOrEmpty(labelFragment))
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-drp-rlc > label"));
+            Assert.Throws<ElementNotFoundException>(() => component.Find(".bit-drp-rlc > label"));
         }
         else
         {
@@ -166,7 +166,7 @@ public class BitDropdownTests : BunitTestContext
         }
         else
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-drp-iwr"));
+            Assert.Throws<ElementNotFoundException>(() => component.Find(".bit-drp-iwr"));
         }
     }
 
@@ -389,7 +389,7 @@ public class BitDropdownTests : BunitTestContext
         }
         else
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find("label"));
+            Assert.Throws<ElementNotFoundException>(() => component.Find("label"));
         }
     }
 
