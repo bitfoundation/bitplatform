@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
-        <RunSettingsFilePath>.runsettings</RunSettingsFilePath>
+        <RunSettingsFilePath>$(MSBuildProjectDirectory)\.runsettings</RunSettingsFilePath>
         <TestingPlatformCommandLineArguments>--settings ./.runsettings</TestingPlatformCommandLineArguments>
     </PropertyGroup>
 
