@@ -319,13 +319,16 @@ public static partial class Program
             var port = endpoint.Port is -1 ? 25 : endpoint.Port;
             var userName = GetConnectionStringValue(smtpConnectionString, "UserName", string.Empty);
             var password = GetConnectionStringValue(smtpConnectionString, "Password", string.Empty);
+            var enableSsl = GetConnectionStringValue(smtpConnectionString, "EnableSsl", port == 465 || port == 587 ? "true" : "false") is not "false";
 
-            SmtpClient smtpClient = new(host, port);
+            SmtpClient smtpClient = new(host, port)
+            {
+                EnableSsl = enableSsl
+            };
 
             if (string.IsNullOrEmpty(userName) is false
                 && string.IsNullOrEmpty(password) is false)
             {
-                smtpClient.EnableSsl = true;
                 smtpClient.Credentials = new NetworkCredential(userName.ToString(), password.ToString());
             }
 
