@@ -102,6 +102,11 @@ jobs:
         path: ./TestSqlServer/src/Tests/TestResults
         retention-days: 14
 
+    - name: Cleanup test projects to free disk space
+      run: |
+        rm -rf SimpleTest
+        rm -rf TestSqlServer
+
     - name: Build PostgreSQL and Other database options
       run: |
         dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL --module Sales --signalR
