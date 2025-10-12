@@ -52,7 +52,7 @@ jobs:
       run: dotnet build src/Bit-CI-release.slnx
 
     - name: Test
-      run: dotnet test --no-build --verbosity normal src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj
+      run: dotnet test --no-build --verbosity normal --project src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj
 
   build:
     if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
@@ -99,4 +99,4 @@ jobs:
       run: dotnet build src/Bit-CI.slnx -p:WarningLevel=0 -p:RunCodeAnalysis=false
       
     - name: Test
-      run: dotnet test --no-build --verbosity normal src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj
+      run: dotnet test --no-build --verbosity normal --project src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj

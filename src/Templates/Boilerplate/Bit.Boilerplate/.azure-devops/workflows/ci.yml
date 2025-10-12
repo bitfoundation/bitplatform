@@ -45,7 +45,7 @@ jobs:
     displayName: 'Test'
     inputs:
       targetType: 'inline'
-      script: 'dotnet test src/Tests/Boilerplate.Tests.csproj'
+      script: 'dotnet test --project src/Tests/Boilerplate.Tests.csproj'
 
   - task: PublishPipelineArtifact@1
     displayName: 'Upload Tests Artifact'
