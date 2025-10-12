@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 env:
-  ConnectionStrings__SqlServerConnectionString: 'Data Source=localhost; Initial Catalog=BoilerplateTestDb;Application Name=Boilerplate;TrustServerCertificate=True;User Id=sa;Password=P@ssw0rdP@ssw0rd;'
+  ConnectionStrings__sqldb: 'Data Source=localhost; Initial Catalog=BoilerplateTestDb;Application Name=Boilerplate;TrustServerCertificate=True;User Id=sa;Password=P@ssw0rdP@ssw0rd;'
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
 
 jobs:
@@ -63,7 +63,7 @@ jobs:
         cd ../../Tests
         dotnet build
         pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
-        dotnet test --logger GitHubActions --filter "${{ env.SIMPLE_TEST_FILTER }}"
+        dotnet test
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
@@ -92,7 +92,7 @@ jobs:
         cd ../../Tests
         dotnet build
         pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
-        dotnet test --logger GitHubActions --filter "${{ env.SIMPLE_TEST_FILTER }}"
+        dotnet test
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
@@ -101,6 +101,11 @@ jobs:
         name: tests-artifact
         path: ./TestSqlServer/src/Tests/TestResults
         retention-days: 14
+
+    - name: Cleanup test projects to free disk space
+      run: |
+        rm -rf SimpleTest
+        rm -rf TestSqlServer
 
     - name: Build PostgreSQL and Other database options
       run: |
