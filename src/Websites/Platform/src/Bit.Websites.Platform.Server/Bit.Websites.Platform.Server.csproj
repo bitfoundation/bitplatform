@@ -26,7 +26,7 @@
         </PackageReference>
         <PackageReference Include="Microsoft.Extensions.AI" Version="9.9.1" />
         <PackageReference Include="Microsoft.Extensions.AI.AzureAIInference" Version="9.9.1-preview.1.25474.6" />
-        <PackageReference Include="ModelContextProtocol" Version="0.4.0-preview.1" />
+        <PackageReference Include="ModelContextProtocol" Version="0.4.0-preview.2" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
         <PackageReference Include="AspNetCore.HealthChecks.System" Version="9.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI" Version="9.0.0" />

@@ -25,7 +25,7 @@ public partial class Templates03GettingStartedPage
             command:"$progressPreference = 'silentlyContinue'; Install-PackageProvider -Name NuGet -Force | Out-Null; Install-Module -Name Microsoft.WinGet.Client -Force -Repository PSGallery | Out-Null; Repair-WinGetPackageManager -AllUsers;"),
 
             (text:@"echo 'Install .NET SDK https://dotnet.microsoft.com/en-us/download';",
-            command: $"winget install Microsoft.DotNet.SDK.9 --accept-source-agreements --accept-package-agreements;"),
+            command: $"winget install Microsoft.DotNet.SDK.Preview --accept-source-agreements --accept-package-agreements;"),
             
             (text:@"echo 'Install Microsoft DevTunnels https://learn.microsoft.com/en-us/azure/developer/dev-tunnels/get-started?tabs=windows#install';",
             command: $"winget install Microsoft.devtunnel --accept-source-agreements --accept-package-agreements;"),
@@ -40,7 +40,7 @@ public partial class Templates03GettingStartedPage
             command:"dotnet nuget add source \"https://api.nuget.org/v3/index.json\" --name \"nuget.org\"; dotnet workload install wasm-tools;"),
 
             (text:@"echo 'Install the Bit.Boilerplate project template https://www.nuget.org/packages/Boilerplate.Templates';",
-            command:"dotnet new install Bit.Boilerplate;")
+            command:"dotnet new install Bit.Boilerplate::10.0.0-pre-02;")
         ];
 
         if (enableVirtualization)
@@ -104,9 +104,6 @@ public partial class Templates03GettingStartedPage
                 (text: @"echo 'Install the Docker extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker';",
                 command: "code --install-extension ms-azuretools.vscode-docker;"),
 
-                (text: @"echo 'Install the RESX Editor extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=DominicVonk.vscode-resx-editor';",
-                command: "code --install-extension DominicVonk.vscode-resx-editor;"),
-
                 (text: @"echo 'Install Dev Containers extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers';",
                 command: "code --install-extension ms-vscode-remote.remote-containers;"),
 
@@ -120,8 +117,8 @@ public partial class Templates03GettingStartedPage
 
         if (installVs)
         {
-            result.Add((text: @"echo 'Install Visual Studio 2022 Community Edition https://visualstudio.microsoft.com/downloads/';",
-                command: $"winget install --id Microsoft.VisualStudio.2022.Community --exact --silent --custom \"--add Microsoft.VisualStudio.Workload.NetWeb{(enableCrossPlatform ? " --add Microsoft.VisualStudio.Workload.NetCrossPlat --add Component.Android.SDK.MAUI" : "")}\" --accept-source-agreements --accept-package-agreements --disable-interactivity;"));
+            result.Add((text: @"echo 'Install Visual Studio 2026 Community Edition https://visualstudio.microsoft.com/downloads/';",
+                command: $"winget install --id Microsoft.VisualStudio.Community.Insiders --exact --silent --custom \"--add Microsoft.VisualStudio.Workload.NetWeb{(enableCrossPlatform ? " --add Microsoft.VisualStudio.Workload.NetCrossPlat --add Component.Android.SDK.MAUI" : "")}\" --accept-source-agreements --accept-package-agreements --disable-interactivity;"));
         }
 
         return result;
