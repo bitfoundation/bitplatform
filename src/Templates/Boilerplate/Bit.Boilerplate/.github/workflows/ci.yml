@@ -36,11 +36,11 @@ jobs:
       run: dotnet build Boilerplate.slnx
 
     - name: Install Playwright
-      run: npx --yes playwright install --with-deps
+      run: pwsh src/Tests/bin/Debug/net10.0/playwright.ps1 install --with-deps
 
     - name: Test
       id: test
-      run: dotnet test src/Tests/Boilerplate.Tests.csproj
+      run: dotnet test src/Tests/Boilerplate.Tests.csproj --logger GitHubActions
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1

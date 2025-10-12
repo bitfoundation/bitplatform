@@ -13,7 +13,7 @@
         <PackageVersion Include="Fido2.AspNet" Version="4.0.0" />
         <PackageVersion Include="Fido2.Models" Version="4.0.0" />
         <PackageVersion Include="HtmlSanitizer" Version="9.0.886" />
-        <PackageVersion Include="libphonenumber-csharp" Version="9.0.15" />
+        <PackageVersion Include="libphonenumber-csharp" Version="9.0.16" />
         <PackageVersion Include="Meziantou.Framework.Win32.Jobs" Version="3.4.5" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.0-rc.1.25451.107" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0-rc.1.25451.107" />

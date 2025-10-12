@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
+    <Sdk Name="MSTest.Sdk" Version="4.0.0" />
+    
 	<PropertyGroup>
 		<TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
 		<IsPackable>false</IsPackable>
@@ -15,13 +17,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="bunit.web" Version="1.40.0" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
-		<PackageReference Include="MSTest.TestAdapter" Version="3.11.0" />
-		<PackageReference Include="MSTest.TestFramework" Version="3.11.0" />
-		<PackageReference Include="coverlet.collector" Version="6.0.4">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
 	</ItemGroup>
 
 	<ItemGroup>
