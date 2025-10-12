@@ -40,7 +40,7 @@ jobs:
 
     - name: Test
       id: test
-      run: dotnet test src/Tests/Boilerplate.Tests.csproj --logger GitHubActions
+      run: dotnet test --project src/Tests/Boilerplate.Tests.csproj
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
