@@ -59,17 +59,23 @@ public partial class TestsInitializer
 
         //#if (database == "SqlServer")
         Environment.SetEnvironmentVariable("ConnectionStrings__sqldb", await aspireApp.GetConnectionStringAsync("sqldb", testContext.CancellationToken));
+        await aspireApp.ResourceNotifications.WaitForResourceAsync("sqldb", KnownResourceStates.Running, testContext.CancellationToken);
         //#elif (database == "PostgreSql")
         Environment.SetEnvironmentVariable("ConnectionStrings__postgresdb", await aspireApp.GetConnectionStringAsync("postgresdb", testContext.CancellationToken));
+        await aspireApp.ResourceNotifications.WaitForResourceAsync("postgresdb", KnownResourceStates.Running, testContext.CancellationToken);
         //#elif (database == "MySql")
         Environment.SetEnvironmentVariable("ConnectionStrings__mysqldb", await aspireApp.GetConnectionStringAsync("mysqldb", testContext.CancellationToken));
+        await aspireApp.ResourceNotifications.WaitForResourceAsync("mysqldb", KnownResourceStates.Running, testContext.CancellationToken);
         //#endif
         //#if (filesStorage == "AzureBlobStorage")
         Environment.SetEnvironmentVariable("ConnectionStrings__azureblobstorage", await aspireApp.GetConnectionStringAsync("azureblobstorage", testContext.CancellationToken));
+        await aspireApp.ResourceNotifications.WaitForResourceAsync("azureblobstorage", KnownResourceStates.Running, testContext.CancellationToken);
         //#elif (filesStorage == "S3")
         Environment.SetEnvironmentVariable("ConnectionStrings__s3", await aspireApp.GetConnectionStringAsync("s3", testContext.CancellationToken));
+        await aspireApp.ResourceNotifications.WaitForResourceAsync("s3", KnownResourceStates.Running, testContext.CancellationToken);
         //#endif
         Environment.SetEnvironmentVariable("ConnectionStrings__smtp", await aspireApp.GetConnectionStringAsync("smtp", testContext.CancellationToken));
+        await aspireApp.ResourceNotifications.WaitForResourceAsync("smtp", KnownResourceStates.Running, testContext.CancellationToken);
     }
     //#endif
 
