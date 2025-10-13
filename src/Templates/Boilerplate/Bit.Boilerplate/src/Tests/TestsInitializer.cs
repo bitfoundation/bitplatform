@@ -32,7 +32,6 @@ public partial class TestsInitializer
         await testServer.Build().Start(testContext.CancellationToken);
 
         await InitializeDatabase(testServer);
-
     }
 
     //#if (aspire == true)

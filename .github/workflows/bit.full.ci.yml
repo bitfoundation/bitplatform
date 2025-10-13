@@ -50,7 +50,7 @@ jobs:
         dotnet workload install maui-tizen maui-android wasm-tools wasm-tools-net9 wasm-tools-net8
         ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
 
-    - name: Run tests usign SQL Server
+    - name: Run tests using SQL Server
       id: run-test-sqlserver
       run: |
         dotnet new bit-bp --name TestSqlServer --database SqlServer --module Sales --signalR --aspire
@@ -58,7 +58,6 @@ jobs:
         dotnet build
         dotnet tool restore
         dotnet ef migrations add Initial --verbose
-        dotnet ef database update
         cd ../../Tests
         dotnet build
         pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
@@ -72,7 +71,7 @@ jobs:
         path: ./TestSqlServer/src/Tests/TestResults
         retention-days: 14
 
-    - name: Run tests usign Sqlite
+    - name: Run tests using Sqlite
       id: run-test-sqlite
       run: |
         dotnet new bit-bp --name SimpleTest --database Sqlite
