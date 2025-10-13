@@ -40,10 +40,10 @@ var azureBlobStorage = builder.AddAzureStorage("storage")
                 .WithLifetime(ContainerLifetime.Persistent)
                 .WithDataVolume();
         })
-        .AddBlobs("blobs");
+        .AddBlobs("azureblobstorage");
 
 //#elif (filesStorage == "S3")
-var s3Storage = builder.AddMinioContainer("minio")
+var s3Storage = builder.AddMinioContainer("s3")
     .WithLifetime(ContainerLifetime.Persistent)
     .WithDataVolume();
 //#endif
@@ -80,9 +80,9 @@ serverApiProject.WithReference(mySqlDatabase).WaitFor(mySqlDatabase);
 serverApiProject.WithReference(sqlite).WaitFor(sqlite);
 //#endif
 //#if (filesStorage == "AzureBlobStorage")
-serverApiProject.WithReference(azureBlobStorage, "azureblobstorage");
+serverApiProject.WithReference(azureBlobStorage);
 //#elif (filesStorage == "S3")
-serverApiProject.WithReference(s3Storage, "s3");
+serverApiProject.WithReference(s3Storage);
 //#endif
 //#else
 
@@ -96,9 +96,9 @@ serverWebProject.WithReference(mySqlDatabase).WaitFor(mySqlDatabase);
 serverWebProject.WithReference(sqlite).WaitFor(sqlite);
 //#endif
 //#if (filesStorage == "AzureBlobStorage")
-serverWebProject.WithReference(azureBlobStorage, "azureblobstorage");
+serverWebProject.WithReference(azureBlobStorage);
 //#elif (filesStorage == "S3")
-serverWebProject.WithReference(s3Storage, "s3");
+serverWebProject.WithReference(s3Storage);
 //#endif
 //#endif
 
@@ -107,13 +107,13 @@ builder.AddProject<Boilerplate_Client_Web>("clientwebwasm"); // Replace . with _
 
 if (builder.ExecutionContext.IsRunMode) // The following project is only added for testing purposes.
 {
-    var mailpit = builder.AddMailPit("mailpit") // For testing purposes only, in production, you would use a real SMTP server.
+    var mailpit = builder.AddMailPit("smtp") // For testing purposes only, in production, you would use a real SMTP server.
         .WithDataVolume("mailpit");
 
     //#if (api == "Standalone")
-    serverApiProject.WithReference(mailpit, "smtp");
+    serverApiProject.WithReference(mailpit);
     //#else
-    serverWebProject.WithReference(mailpit, "smtp");
+    serverWebProject.WithReference(mailpit);
     //#endif
 
     // Blazor Hybrid Windows project.

@@ -4,7 +4,6 @@ on:
   workflow_dispatch:
 
 env:
-  ConnectionStrings__sqldb: 'Data Source=localhost; Initial Catalog=BoilerplateTestDb;Application Name=Boilerplate;TrustServerCertificate=True;User Id=sa;Password=P@ssw0rdP@ssw0rd;'
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
 
 jobs:
@@ -51,6 +50,28 @@ jobs:
         dotnet workload install maui-tizen maui-android wasm-tools wasm-tools-net9 wasm-tools-net8
         ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
 
+    - name: Run tests usign SQL Server
+      id: run-test-sqlserver
+      run: |
+        dotnet new bit-bp --name TestSqlServer --database SqlServer --module Sales --signalR --aspire
+        cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
+        dotnet build
+        dotnet tool restore
+        dotnet ef migrations add Initial --verbose
+        dotnet ef database update
+        cd ../../Tests
+        dotnet build
+        pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
+        dotnet test
+
+    - name: Upload Tests Artifact
+      uses: actions/upload-artifact@v4.4.1
+      if: ${{ !env.ACT && failure() && steps.run-test-sqlserver.conclusion == 'failure' }}
+      with:
+        name: tests-artifact
+        path: ./TestSqlServer/src/Tests/TestResults
+        retention-days: 14
+
     - name: Run tests usign Sqlite
       id: run-test-sqlite
       run: |
@@ -71,35 +92,6 @@ jobs:
       with:
         name: tests-artifact
         path: ./SimpleTest/src/Tests/TestResults
-        retention-days: 14
-
-    - name: Install sql server
-      uses: potatoqualitee/mssqlsuite@v1.7
-      with:
-        install: sqlengine
-        sa-password: P@ssw0rdP@ssw0rd
-        show-log: true
-
-    - name: Run tests usign SQL Server
-      id: run-test-sqlserver
-      run: |
-        dotnet new bit-bp --name TestSqlServer --database SqlServer --module Sales --signalR
-        cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
-        dotnet build
-        dotnet tool restore
-        dotnet ef migrations add Initial --verbose
-        dotnet ef database update
-        cd ../../Tests
-        dotnet build
-        pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
-        dotnet test
-
-    - name: Upload Tests Artifact
-      uses: actions/upload-artifact@v4.4.1
-      if: ${{ !env.ACT && failure() && steps.run-test-sqlserver.conclusion == 'failure' }}
-      with:
-        name: tests-artifact
-        path: ./TestSqlServer/src/Tests/TestResults
         retention-days: 14
 
     - name: Cleanup test projects to free disk space
