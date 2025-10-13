@@ -107,15 +107,15 @@ public partial class TestsInitializer
         }
     }
 
+    //#if (aspire == true)
     [AssemblyCleanup]
     public static async Task Cleanup()
     {
-        //#if (aspire == true)
         if (aspireApp is not null)
         {
             await aspireApp.StopAsync();
             await aspireApp.DisposeAsync();
         }
-        //#endif
     }
+    //#endif
 }
