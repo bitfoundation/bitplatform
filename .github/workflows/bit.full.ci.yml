@@ -50,11 +50,11 @@ jobs:
         dotnet workload install maui-tizen maui-android wasm-tools wasm-tools-net9 wasm-tools-net8
         ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
 
-    - name: Run tests using SQL Server
-      id: run-test-sqlserver
+    - name: Run tests using PostgreSQL
+      id: run-test-postgresql
       run: |
-        dotnet new bit-bp --name TestSqlServer --database SqlServer --module Sales --signalR --aspire
-        cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
+        dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL --module Sales --signalR --aspire
+        cd TestPostgreSQL/src/Server/TestPostgreSQL.Server.Api/
         dotnet build
         dotnet tool restore
         dotnet ef migrations add Initial --verbose
@@ -65,10 +65,10 @@ jobs:
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
-      if: ${{ !env.ACT && failure() && steps.run-test-sqlserver.conclusion == 'failure' }}
+      if: ${{ !env.ACT && failure() && steps.run-test-postgresql.conclusion == 'failure' }}
       with:
         name: tests-artifact
-        path: ./TestSqlServer/src/Tests/TestResults
+        path: ./TestPostgreSQL/src/Tests/TestResults
         retention-days: 14
 
     - name: Run tests using Sqlite
@@ -96,15 +96,15 @@ jobs:
     - name: Cleanup test projects to free disk space
       run: |
         rm -rf SimpleTest
-        rm -rf TestSqlServer
+        rm -rf TestPostgreSQL
 
-    - name: Build PostgreSQL and Other database options
+    - name: Build SQLServer and Other database options
       run: |
-        dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL --module Sales --signalR
-        cd TestPostgreSQL/src/Server/TestPostgreSQL.Server.Web/
+        dotnet new bit-bp --name SQLServer --database SQLServer --module Sales --signalR
+        cd SQLServer/src/Server/SQLServer.Server.Web/
         dotnet build
         cd ../../../../
-        rm -r "TestPostgreSQL"
+        rm -r "SQLServer"
         dotnet new bit-bp --name TestOther --database Other --sample --sentry
         cd TestOther/src/Server/TestOther.Server.Web/
         dotnet build

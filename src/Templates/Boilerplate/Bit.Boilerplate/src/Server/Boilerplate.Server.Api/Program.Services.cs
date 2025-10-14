@@ -261,12 +261,7 @@ public static partial class Program
             return;
             //#endif
             //#if (database == "SqlServer")
-            var mssqlConnectionStringBuilder = new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(configuration.GetRequiredConnectionString("mssqldb"));
-            if (env.IsDevelopment())
-            {
-                mssqlConnectionStringBuilder.TrustServerCertificate = true;
-            }
-            options.UseSqlServer(mssqlConnectionStringBuilder.ConnectionString, dbOptions =>
+            options.UseSqlServer(configuration.GetRequiredConnectionString("sqldb"), dbOptions =>
             {
                 // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });
