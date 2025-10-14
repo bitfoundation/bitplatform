@@ -93,35 +93,18 @@ jobs:
         path: ./SimpleTest/src/Tests/TestResults
         retention-days: 14
 
-    - name: Run tests using SQLServer
-      id: run-test-sqlserver
-      run: |
-        dotnet new bit-bp --name TestSQLServer --database SQLServer --module Admin --signalR --aspire
-        cd TestSQLServer/src/Server/TestSQLServer.Server.Api/
-        dotnet build
-        dotnet tool restore
-        dotnet ef migrations add Initial --verbose
-        cd ../../Tests
-        dotnet build
-        pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
-        dotnet test
-
-    - name: Upload Tests Artifact
-      uses: actions/upload-artifact@v4.4.1
-      if: ${{ !env.ACT && failure() && steps.run-test-sqlserver.conclusion == 'failure' }}
-      with:
-        name: tests-artifact
-        path: ./TestSQLServer/src/Tests/TestResults
-        retention-days: 14
-
     - name: Cleanup test projects to free disk space
       run: |
         rm -rf SimpleTest
         rm -rf TestPostgreSQL
-        rm -rf TestSQLServer
 
-    - name: Build Other database option
+    - name: Build SQLServer and Other database options
       run: |
+        dotnet new bit-bp --name SQLServer --database SQLServer --module Sales --signalR
+        cd SQLServer/src/Server/SQLServer.Server.Web/
+        dotnet build
+        cd ../../../../
+        rm -r "SQLServer"
         dotnet new bit-bp --name TestOther --database Other --sample --sentry
         cd TestOther/src/Server/TestOther.Server.Web/
         dotnet build
@@ -157,13 +140,13 @@ jobs:
         cd ../../../../
         rm -r "TestIntegrated"
 
-    - name: Build full featured configuration
+    - name: Build sample configuration 1
       run: |
         dotnet new bit-bp --name TestProject --database SqlServer --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --module Admin --offlineDb --appInsights --sentry --signalR --notification --cloudflare --ads --aspire
         dotnet build TestProject/TestProject.sln -p:InvariantGlobalization=false -p:Environment=Staging
         rm -r "TestProject"
 
-    - name: Build minimal configuration
+    - name: Build sample configuration 2
       run: |
         dotnet new bit-bp --name TestProject2 --database Other --filesStorage S3 --api Standalone --captcha None --pipeline None --module None --offlineDb false --appInsights false --sentry false --signalR false --notification false --cloudflare false --ads false --aspire true
         dotnet build TestProject2/TestProject2.slnx -p:InvariantGlobalization=true -p:Environment=Development
