@@ -58,8 +58,8 @@ public partial class TestsInitializer
         await aspireApp.StartAsync(testContext.CancellationToken);
 
         //#if (database == "SqlServer")
-        Environment.SetEnvironmentVariable("ConnectionStrings__sqldb", await aspireApp.GetConnectionStringAsync("sqldb", testContext.CancellationToken));
-        await aspireApp.ResourceNotifications.WaitForResourceAsync("sqldb", KnownResourceStates.Running, testContext.CancellationToken);
+        Environment.SetEnvironmentVariable("ConnectionStrings__sqldb", await aspireApp.GetConnectionStringAsync("mssqldb", testContext.CancellationToken));
+        await aspireApp.ResourceNotifications.WaitForResourceAsync("mssqldb", KnownResourceStates.Running, testContext.CancellationToken);
         //#elif (database == "PostgreSql")
         Environment.SetEnvironmentVariable("ConnectionStrings__postgresdb", await aspireApp.GetConnectionStringAsync("postgresdb", testContext.CancellationToken));
         await aspireApp.ResourceNotifications.WaitForResourceAsync("postgresdb", KnownResourceStates.Running, testContext.CancellationToken);

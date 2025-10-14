@@ -261,7 +261,12 @@ public static partial class Program
             return;
             //#endif
             //#if (database == "SqlServer")
-            options.UseSqlServer(configuration.GetRequiredConnectionString("sqldb"), dbOptions =>
+            var mssqlConnectionStringBuilder = new SqliteConnectionStringBuilder(configuration.GetRequiredConnectionString("mssqldb"));
+            if (env.IsDevelopment())
+            {
+                mssqlConnectionStringBuilder["TrustServerCertificate"] = true;
+            }
+            options.UseSqlServer(mssqlConnectionStringBuilder.ConnectionString, dbOptions =>
             {
                 // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });

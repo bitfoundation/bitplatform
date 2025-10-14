@@ -111,7 +111,7 @@
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.0-rc.1.25451.107" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0-rc.1.25451.107" />
         <PackageVersion Include="Swashbuckle.AspNetCore" Version="9.0.6" />
-        <PackageVersion Include="Microsoft.Identity.Web" Version="3.14.1" />
+        <PackageVersion Include="Microsoft.Identity.Web" Version="4.0.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="10.0.0-rc.1.25451.107" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="10.0.0-rc.1.25451.107" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Facebook" Version="10.0.0-rc.1.25451.107" />

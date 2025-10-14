@@ -37,7 +37,7 @@ jobs:
         dotnet-version: |
           8.0.x
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
         node-version: 23
       
@@ -81,7 +81,7 @@ jobs:
         dotnet-version: |
           8.0.x
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
         node-version: 23
 

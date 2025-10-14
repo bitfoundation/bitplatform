@@ -12,7 +12,7 @@ var sqlDatabase = builder.AddSqlServer("sqlserver")
         .WithLifetime(ContainerLifetime.Persistent)
         .WithDataVolume()
         .WithImage("mssql/server", "2025-latest")
-        .AddDatabase("sqldb"); // Sql server 2025 supports embedded vector search.
+        .AddDatabase("mssqldb"); // Sql server 2025 supports embedded vector search.
 
 //#elif (database == "PostgreSql")
 var postgresDatabase = builder.AddPostgres("postgresserver")
