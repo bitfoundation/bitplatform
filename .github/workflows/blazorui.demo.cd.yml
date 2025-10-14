@@ -35,7 +35,7 @@ jobs:
       env:
         ApiServerAddress: ${{ env.SERVER_ADDRESS }}
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
         node-version: 23
         
@@ -102,7 +102,7 @@ jobs:
       with:
         global-json-file: src\global.json
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
         node-version: 23
   
@@ -144,7 +144,7 @@ jobs:
       with:
         global-json-file: src/global.json
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
         node-version: 23
   
@@ -198,7 +198,7 @@ jobs:
       with:
         xcode-version: '16.4'
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
         node-version: 23
   

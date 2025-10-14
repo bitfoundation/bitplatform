@@ -31,7 +31,7 @@ jobs:
       with:
         global-json-file: src/global.json
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
         node-version: 23
 
@@ -144,7 +144,7 @@ jobs:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
         node-version: 23
         
@@ -196,7 +196,7 @@ jobs:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
         node-version: 23
         
@@ -252,7 +252,7 @@ jobs:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
         node-version: 23
         
@@ -289,7 +289,7 @@ jobs:
       with:
         global-json-file: src/global.json
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
         node-version: 23
 
@@ -347,7 +347,7 @@ jobs:
       with:
         global-json-file: src/global.json
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
         node-version: 23
 
@@ -442,7 +442,7 @@ jobs:
       with:
         global-json-file: src/global.json
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
         node-version: 23
 

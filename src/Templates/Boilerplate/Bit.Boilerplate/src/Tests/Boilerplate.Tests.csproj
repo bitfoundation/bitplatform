@@ -1,4 +1,4 @@
-﻿<Project Sdk="MSTest.Sdk/4.0.0">
+﻿<Project Sdk="MSTest.Sdk/4.0.1">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.Testing" />
         <PackageReference Include="Bit.BlazorES2019" />
         <PackageReference Include="coverlet.collector">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -20,6 +21,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Server\Boilerplate.Server.Web\Boilerplate.Server.Web.csproj" />
         <ProjectReference Include="..\Server\Boilerplate.Server.Api\Boilerplate.Server.Api.csproj" />
+        <ProjectReference Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="..\Server\Boilerplate.Server.AppHost\Boilerplate.Server.AppHost.csproj" />
     </ItemGroup>
 
     <ItemGroup>

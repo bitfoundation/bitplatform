@@ -50,6 +50,7 @@
         <PackageVersion Include="Microsoft.Extensions.Logging.EventLog" Version="10.0.0-rc.1.25451.107" />
         <PackageVersion Include="Microsoft.Extensions.Logging.EventSource" Version="10.0.0-rc.1.25451.107" />
         <!--/+:msbuild-conditional:noEmit -->
+        <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.Testing" Version="9.5.1" />
         <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="CommunityToolkit.Aspire.Hosting.MailPit" Version="9.8.0" />
         <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.DevTunnels" Version="9.5.1-preview.1.25502.11" />
         <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.AppHost" Version="9.5.1" />
@@ -110,14 +111,14 @@
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.0-rc.1.25451.107" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0-rc.1.25451.107" />
         <PackageVersion Include="Swashbuckle.AspNetCore" Version="9.0.6" />
-        <PackageVersion Include="Microsoft.Identity.Web" Version="3.14.1" />
+        <PackageVersion Include="Microsoft.Identity.Web" Version="4.0.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="10.0.0-rc.1.25451.107" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="10.0.0-rc.1.25451.107" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Facebook" Version="10.0.0-rc.1.25451.107" />
         <PackageVersion Include="AspNet.Security.OAuth.Apple" Version="9.4.1" />
         <PackageVersion Include="AspNet.Security.OAuth.GitHub" Version="9.4.1" />
         <PackageVersion Include="Riok.Mapperly" Version="4.2.1" />
-        <PackageVersion Include="Twilio" Version="7.13.3" />
+        <PackageVersion Include="Twilio" Version="7.13.4" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.0-rc.1.25451.107" />
         <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="10.0.0-rc.1.25451.107" />
         <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0-rc.1.25451.107" />

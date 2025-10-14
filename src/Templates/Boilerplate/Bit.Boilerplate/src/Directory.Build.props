@@ -32,7 +32,7 @@
         <DefineConstants Condition=" '$(InvariantGlobalization)' == 'true' ">$(DefineConstants);InvariantGlobalization</DefineConstants>
         <DefineConstants>$(DefineConstants);$(Environment);$(Configuration)</DefineConstants>
         <DefineConstants Condition="$(Configuration.Contains('Debug'))">$(DefineConstants);DEBUG</DefineConstants>
-
+        
         <HotReloadAutoRestart>true</HotReloadAutoRestart>
         <CompressionEnabled Condition="'$(Environment)' == 'Development'">false</CompressionEnabled>
     </PropertyGroup>
