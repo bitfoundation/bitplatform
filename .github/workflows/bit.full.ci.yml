@@ -96,7 +96,7 @@ jobs:
     - name: Run tests using SQLServer
       id: run-test-sqlserver
       run: |
-        dotnet new bit-bp --name TestSQLServer --database SQLServer --module Sales --signalR --aspire
+        dotnet new bit-bp --name TestSQLServer --database SQLServer --module Admin --signalR --aspire
         cd TestSQLServer/src/Server/TestSQLServer.Server.Api/
         dotnet build
         dotnet tool restore
@@ -157,13 +157,13 @@ jobs:
         cd ../../../../
         rm -r "TestIntegrated"
 
-    - name: Build sample configuration 1
+    - name: Build full featured configuration
       run: |
         dotnet new bit-bp --name TestProject --database SqlServer --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --module Admin --offlineDb --appInsights --sentry --signalR --notification --cloudflare --ads --aspire
         dotnet build TestProject/TestProject.sln -p:InvariantGlobalization=false -p:Environment=Staging
         rm -r "TestProject"
 
-    - name: Build sample configuration 2
+    - name: Build minimal configuration
       run: |
         dotnet new bit-bp --name TestProject2 --database Other --filesStorage S3 --api Standalone --captcha None --pipeline None --module None --offlineDb false --appInsights false --sentry false --signalR false --notification false --cloudflare false --ads false --aspire true
         dotnet build TestProject2/TestProject2.slnx -p:InvariantGlobalization=true -p:Environment=Development
