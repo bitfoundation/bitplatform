@@ -93,18 +93,35 @@ jobs:
         path: ./SimpleTest/src/Tests/TestResults
         retention-days: 14
 
+    - name: Run tests using SQLServer
+      id: run-test-sqlserver
+      run: |
+        dotnet new bit-bp --name TestSQLServer --database SQLServer --module Sales --signalR --aspire
+        cd TestSQLServer/src/Server/TestSQLServer.Server.Api/
+        dotnet build
+        dotnet tool restore
+        dotnet ef migrations add Initial --verbose
+        cd ../../Tests
+        dotnet build
+        pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
+        dotnet test
+
+    - name: Upload Tests Artifact
+      uses: actions/upload-artifact@v4.4.1
+      if: ${{ !env.ACT && failure() && steps.run-test-sqlserver.conclusion == 'failure' }}
+      with:
+        name: tests-artifact
+        path: ./TestSQLServer/src/Tests/TestResults
+        retention-days: 14
+
     - name: Cleanup test projects to free disk space
       run: |
         rm -rf SimpleTest
         rm -rf TestPostgreSQL
+        rm -rf TestSQLServer
 
-    - name: Build SQLServer and Other database options
+    - name: Build Other database option
       run: |
-        dotnet new bit-bp --name SQLServer --database SQLServer --module Sales --signalR
-        cd SQLServer/src/Server/SQLServer.Server.Web/
-        dotnet build
-        cd ../../../../
-        rm -r "SQLServer"
         dotnet new bit-bp --name TestOther --database Other --sample --sentry
         cd TestOther/src/Server/TestOther.Server.Web/
         dotnet build
