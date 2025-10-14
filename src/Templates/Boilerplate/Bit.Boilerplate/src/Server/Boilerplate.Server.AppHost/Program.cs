@@ -9,7 +9,6 @@ var builder = DistributedApplication.CreateBuilder(args);
 //#if (database == "SqlServer")
 var sqlDatabase = builder.AddSqlServer("sqlserver")
         .WithDbGate(config => config.WithDataVolume())
-        .WithLifetime(ContainerLifetime.Persistent)
         .WithDataVolume()
         .WithImage("mssql/server", "2025-latest")
         .AddDatabase("mssqldb"); // Sql server 2025 supports embedded vector search.
@@ -17,7 +16,6 @@ var sqlDatabase = builder.AddSqlServer("sqlserver")
 //#elif (database == "PostgreSql")
 var postgresDatabase = builder.AddPostgres("postgresserver")
         .WithPgAdmin(config => config.WithVolume("/var/lib/pgadmin/Boilerplate/data"))
-        .WithLifetime(ContainerLifetime.Persistent)
         .WithDataVolume()
         .WithImage("pgvector/pgvector", "pg18") // pgvector supports embedded vector search.
         .AddDatabase("postgresdb");
@@ -25,7 +23,6 @@ var postgresDatabase = builder.AddPostgres("postgresserver")
 //#elif (database == "MySql")
 var mySqlDatabase = builder.AddMySql("mysqlserver")
         .WithPhpMyAdmin(config => config.WithVolume("/var/lib/phpMyAdmin/Boilerplate/data"))
-        .WithLifetime(ContainerLifetime.Persistent)
         .WithDataVolume()
         .AddDatabase("mysqldb");
 //#elif (database == "Sqlite")
@@ -37,14 +34,12 @@ var azureBlobStorage = builder.AddAzureStorage("storage")
         .RunAsEmulator(azurite =>
         {
             azurite
-                .WithLifetime(ContainerLifetime.Persistent)
                 .WithDataVolume();
         })
         .AddBlobs("azureblobstorage");
 
 //#elif (filesStorage == "S3")
 var s3Storage = builder.AddMinioContainer("s3")
-    .WithLifetime(ContainerLifetime.Persistent)
     .WithDataVolume();
 //#endif
 

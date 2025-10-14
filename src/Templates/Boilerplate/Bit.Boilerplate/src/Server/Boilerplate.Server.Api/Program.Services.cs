@@ -261,7 +261,7 @@ public static partial class Program
             return;
             //#endif
             //#if (database == "SqlServer")
-            options.UseSqlServer(configuration.GetRequiredConnectionString("sqldb"), dbOptions =>
+            options.UseSqlServer(configuration.GetRequiredConnectionString("mssqldb"), dbOptions =>
             {
                 // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });
