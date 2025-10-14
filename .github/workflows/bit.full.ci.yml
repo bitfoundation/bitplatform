@@ -74,7 +74,7 @@ jobs:
     - name: Run tests using Sqlite
       id: run-test-sqlite
       run: |
-        dotnet new bit-bp --name SimpleTest --database Sqlite
+        dotnet new bit-bp --name SimpleTest --database Sqlite --aspire false
         cd SimpleTest/src/Server/SimpleTest.Server.Api/
         dotnet build
         dotnet tool restore
