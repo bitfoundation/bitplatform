@@ -32,6 +32,7 @@
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.0-rc.2.25504.7" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="10.0.0-rc.2.25504.7" />
         <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.3537.50" />
+        <PackageVersion Include="MSTest" Version="4.0.1" />
         <PackageVersion Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
         <PackageVersion Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.12.0-beta.2" />
         <PackageVersion Include="OpenTelemetry.Instrumentation.Hangfire" Version="1.12.0-beta.1" />
@@ -126,7 +127,6 @@
         <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0-rc.2.25502.107" />
         <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0-rc.2.25502.107" />
         <PackageVersion Include="System.Text.Json" Version="10.0.0-rc.2.25502.107" />
-        <PackageVersion Include="coverlet.collector" Version="6.0.4" />
         <PackageVersion Include="FakeItEasy" Version="8.3.0" />
         <PackageVersion Include="Microsoft.Playwright.MSTest.v4" Version="1.55.0" />
     </ItemGroup>
