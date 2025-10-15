@@ -10,17 +10,15 @@
         <PackAsTool>true</PackAsTool>
         <ToolCommandName>bit-resx-translate</ToolCommandName>
         <UserSecretsId>a7e11fa7-16df-4c99-b309-1616a8db9c37</UserSecretsId>
-        <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
 		<RollForward>Major</RollForward>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.AI" Version="9.9.1" />
-        <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.9.1-preview.1.25474.6" />
-        <PackageReference Include="Microsoft.Extensions.AI.AzureAIInference" Version="9.9.1-preview.1.25474.6" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.9" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.9" />
-        <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.9" />
+        <PackageReference Include="Microsoft.Extensions.AI" Version="9.10.0" />
+        <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.10.0-preview.1.25513.3" />
+        <PackageReference Include="Microsoft.Extensions.AI.AzureAIInference" Version="9.10.0-preview.1.25513.3" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.10" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.10" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.9" />
         <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="9.0.9" />
     </ItemGroup>
