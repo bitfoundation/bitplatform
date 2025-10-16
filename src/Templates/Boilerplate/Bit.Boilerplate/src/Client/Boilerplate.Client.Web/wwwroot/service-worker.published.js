@@ -97,7 +97,7 @@ self.serverHandledUrls = [
     /\/products.xml/,
     //#endif
     /\/sitemap_index.xml/,
-    /\/web-interop-app/
+    /\/web-interop-app.html/
 ];
 
 // self.mode = 'FullOffline'; // Traditional PWA app that **first** downloads all assets and **then** runs the app.

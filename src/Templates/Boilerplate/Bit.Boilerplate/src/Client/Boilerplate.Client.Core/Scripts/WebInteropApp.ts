@@ -1,4 +1,4 @@
-// Read Components/WebInteropApp.razor comments.
+// Read Client.web/wwwroot/web-interop-app.html comments.
 
 declare class BitButil {
     static webAuthn: {

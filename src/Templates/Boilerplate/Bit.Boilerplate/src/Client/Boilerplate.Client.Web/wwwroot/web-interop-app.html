@@ -1,6 +1,4 @@
-@*+:cnd:noEmit*@
-@*
-Most web features like animations, videos, or Google reCAPTCHA work fine in Blazor Hybrid.
+<!-- Most web features like animations, videos, or Google reCAPTCHA work fine in Blazor Hybrid.
 However, since Blazor Hybrid uses Web View with an IP-based Origin (http://0.0.0.1)
 more sensitive features like Social Sign-in and Face-ID/Fingerprint Sign-in using WebAuthn do not function properly in Web View.
 To address this, within a Blazor Hybrid App, you can use a Local HTTP Server to load a lightweight WebInteropApp component that
@@ -13,17 +11,11 @@ after authentication. Using app.js, it can notify the main Window via window.ope
 allowing the main Window to resume its operations.
 
 When publishing Client.Web (BlazorWebAssembly Standalone) and Server.Api, there won't be any WebInteropAppEndpoint,
-in this case, uncomment the Route attribute below to make this component accessible via /web-interop-app route.
-*@
-@* @attribute [Route("web-interop-app")] *@
-
-@code {
-    [Inject] public IStringLocalizer<AppStrings> Localizer { get; set; } = default!;
-}
+in this case, uncomment the Route attribute below to make this component accessible via /web-interop-app route. -->
 
 <html>
 <head>
-    <base href="/" />
+    <base href="/">
     <title>Boilerplate</title>
     <link rel="icon" href="data:image/png;base64,iVBORw0KGgo=">
     <style>
@@ -86,7 +78,7 @@ in this case, uncomment the Route attribute below to make this component accessi
                 animation: rotate-three 1s linear infinite;
             }
 
-        @@keyframes rotate-one {
+        @keyframes rotate-one {
             0% {
                 transform: rotateX(35deg) rotateY(-45deg) rotateZ(0deg);
             }
@@ -96,7 +88,7 @@ in this case, uncomment the Route attribute below to make this component accessi
             }
         }
 
-        @@keyframes rotate-two {
+        @keyframes rotate-two {
             0% {
                 transform: rotateX(50deg) rotateY(10deg) rotateZ(0deg);
             }
@@ -106,7 +98,7 @@ in this case, uncomment the Route attribute below to make this component accessi
             }
         }
 
-        @@keyframes rotate-three {
+        @keyframes rotate-three {
             0% {
                 transform: rotateX(35deg) rotateY(55deg) rotateZ(0deg);
             }
@@ -116,15 +108,10 @@ in this case, uncomment the Route attribute below to make this component accessi
             }
         }
     </style>
-
-    @*#if (appInsights == true)*@
-    <link rel="preconnect" href="https://js.monitor.azure.com" crossorigin />
-    <!-- Perform the initial static render of ApplicationInsightsInit to start App Insights ASAP. -->
-    <BlazorApplicationInsights.ApplicationInsightsInit />
-    @*#endif*@
 </head>
 <body>
-    <div class="title">@Localizer[nameof(AppStrings.PleaseWait)]</div>
+    <div class="title">Please wait</div>
+
     <div class="loader">
         <div class="inner one"></div>
         <div class="inner two"></div>

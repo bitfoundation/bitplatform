@@ -44,4 +44,6 @@ public static partial class PageUrls
     //#if (offlineDb == true)
     public const string OfflineDatabaseDemo = "/offline-database-demo";
     //#endif
+
+    public const string WebInteropApp = "/web-interop-app.html";
 }

@@ -119,6 +119,10 @@
 
     <ItemGroup>
 
+        <Content Include="..\Boilerplate.Client.Web\wwwroot\web-interop-app.html" Link="wwwroot\web-interop-app.html">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        
         <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
         <Using Include="Boilerplate.Client.Core.Components.Layout" />
         <Using Include="Boilerplate.Client.Core.Components.Pages" />
