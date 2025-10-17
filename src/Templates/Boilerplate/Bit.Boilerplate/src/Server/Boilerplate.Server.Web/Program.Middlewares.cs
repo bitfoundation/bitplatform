@@ -14,7 +14,6 @@ using Boilerplate.Server.Api;
 using Boilerplate.Server.Api.Filters;
 using Boilerplate.Server.Api.Services;
 //#endif
-using Boilerplate.Server.Web.Endpoints;
 
 namespace Boilerplate.Server.Web;
 
@@ -155,7 +154,6 @@ public static partial class Program
         //#endif
 
         app.UseSiteMap();
-        app.UseWebInteropApp();
 
         // Handle the rest of requests with blazor
         var blazorApp = app.MapRazorComponents<Components.App>()

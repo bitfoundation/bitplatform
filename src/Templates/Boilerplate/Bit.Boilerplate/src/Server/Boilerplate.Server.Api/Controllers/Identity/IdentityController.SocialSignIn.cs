@@ -99,10 +99,10 @@ public partial class IdentityController
             await Request.HttpContext.SignOutAsync(IdentityConstants.ExternalScheme); // We'll handle sign-in with the following redirects, so no external identity cookie is needed.
         }
 
-        var redirectRelativeUrl = $"web-interop-app?actionName=SocialSignInCallback&url={Uri.EscapeDataString(signInPageUri!)}&localHttpPort={localHttpPort}";
+        var redirectRelativeUrl = $"{PageUrls.WebInteropApp}?actionName=SocialSignInCallback&url={Uri.EscapeDataString(signInPageUri!)}&localHttpPort={localHttpPort}";
 
         if (localHttpPort is not null) 
-            return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}"), redirectRelativeUrl).ToString()); // Check out WebInteropApp.razor's comments.
+            return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}"), redirectRelativeUrl).ToString()); // Check out Client.web/wwwroot/web-interop-app.html's comments.
 
         return Redirect(new Uri(Request.HttpContext.Request.GetWebAppUrl(), redirectRelativeUrl).ToString());
     }
