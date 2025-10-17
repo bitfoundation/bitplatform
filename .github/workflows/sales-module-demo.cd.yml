@@ -6,6 +6,10 @@ env:
   SERVER_ADDRESS: 'https://sales.bitplatform.dev'
   AzureOpenAI__ApiKey: ${{ secrets.AzureOpenAI__ApiKey }}
   AzureOpenAI__Endpoint: ${{ secrets.AzureOpenAI__Endpoint }}
+  AZUREOPENAI__MODEL: ${{ secrets.AZUREOPENAI__MODEL }}
+  OpenAI__ApiKey: ${{ secrets.OpenAI__ApiKey }}
+  OpenAI__Endpoint: ${{ secrets.OpenAI__Endpoint }}
+  OPENAI__MODEL: ${{ secrets.OPENAI__MODEL }}
 
 on:
   workflow_dispatch:
