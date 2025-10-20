@@ -19,12 +19,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
         //#if (database == "PostgreSQL" || database == "SqlServer")
         if (AppDbContext.IsEmbeddingEnabled)
         {
-            builder.Property(p => p.Embedding).HasColumnType("vector(384)"); // Checkout appsettings.json's AI:EmbeddingOptions:Dimensions
-            //#if (database == "PostgreSQL")
-            builder.HasIndex(m => m.Embedding)
-                .HasMethod("hnsw") // ivfflat
-                .HasOperators("vector_cosine_ops");
-            //#endif
+            builder.Property(p => p.Embedding).HasColumnType("vector(768)"); // Checkout appsettings.json's AI:EmbeddingOptions:Dimensions
         }
         else
         {

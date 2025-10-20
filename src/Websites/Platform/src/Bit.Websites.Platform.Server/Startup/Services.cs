@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Bit.Websites.Platform.Server.Services;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.Extensions.AI;
+using System.ClientModel.Primitives;
 
 namespace Bit.Websites.Platform.Server.Startup;
 
@@ -50,6 +51,18 @@ public static class Services
                 {
                     Transport = new Azure.Core.Pipeline.HttpClientTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
                 }).AsIChatClient(appSettings.AzureOpenAI.ChatModel))
+            .UseLogging()
+            .UseFunctionInvocation()
+            .UseDistributedCache();
+        }
+        else if (string.IsNullOrEmpty(appSettings?.OpenAI?.ChatApiKey) is false)
+        {
+            // https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.AI.OpenAI#microsoftextensionsaiopenai
+            services.AddChatClient(sp => new OpenAI.Chat.ChatClient(model: appSettings.OpenAI.ChatModel, credential: new(appSettings.OpenAI.ChatApiKey), options: new()
+            {
+                Endpoint = appSettings.OpenAI.ChatEndpoint,
+                Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
+            }).AsIChatClient())
             .UseLogging()
             .UseFunctionInvocation()
             .UseDistributedCache();

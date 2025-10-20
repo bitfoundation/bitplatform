@@ -442,6 +442,20 @@ public static partial class Program
             .UseOpenTelemetry();
             // .UseDistributedCache()
         }
+        else if (string.IsNullOrEmpty(appSettings.AI?.HuggingFace?.EmbeddingEndpoint) is false)
+        {
+            services.AddEmbeddingGenerator(sp => new Microsoft.SemanticKernel.Connectors.HuggingFace.HuggingFaceEmbeddingGenerator(
+                  new Uri(appSettings.AI.HuggingFace.EmbeddingEndpoint),
+                  apiKey: appSettings.AI.HuggingFace.EmbeddingApiKey,
+                  httpClient: sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"), loggerFactory: sp.GetRequiredService<ILoggerFactory>()))
+            .ConfigureOptions(options =>
+            {
+                configuration.GetRequiredSection("AI:EmbeddingOptions").Bind(options);
+            })
+            .UseLogging()
+            .UseOpenTelemetry();
+            // .UseDistributedCache()
+        }
         else
         {
             services.AddEmbeddingGenerator(sp => new LocalTextEmbeddingGenerationService()

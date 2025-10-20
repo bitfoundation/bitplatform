@@ -9,6 +9,8 @@ public class AppSettings
     public TelegramBotSettings TelegramBotSettings { get; set; } = default!;
 
     public AzureOpenAIOptions AzureOpenAI { get; set; } = default!;
+    
+    public OpenAIOptions OpenAI { get; set; } = default!;
 }
 
 public class HealthCheckSettings
@@ -23,6 +25,13 @@ public class TelegramBotSettings
 }
 
 public class AzureOpenAIOptions
+{
+    public string? ChatModel { get; set; }
+    public Uri? ChatEndpoint { get; set; }
+    public string? ChatApiKey { get; set; }
+}
+
+public class OpenAIOptions
 {
     public string? ChatModel { get; set; }
     public Uri? ChatEndpoint { get; set; }

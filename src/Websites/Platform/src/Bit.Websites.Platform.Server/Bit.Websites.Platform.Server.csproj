@@ -10,6 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.10.0-preview.1.25513.3" />
         <ProjectReference Include="..\Bit.Websites.Platform.Shared\Bit.Websites.Platform.Shared.csproj" />
         <ProjectReference Include="..\Bit.Websites.Platform.Client\Bit.Websites.Platform.Client.csproj" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.0-rc.2.25502.107" />
