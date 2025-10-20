@@ -100,7 +100,7 @@ jobs:
 
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
-    runs-on: windows-2022
+    runs-on: windows-2025
     environment: ${{ inputs.ENV_NAME }}
     steps:
 
