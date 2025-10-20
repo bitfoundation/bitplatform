@@ -21,6 +21,7 @@
         </PackageReference>
         <PackageReference Include="Jint" Version="4.4.1" />
         <PackageReference Include="Microsoft.AspNetCore.OData" Version="9.4.0" />
+        <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.10.0-preview.1.25513.3" />
         <PackageReference Include="MimeTypeMapOfficial" Version="1.0.17" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
         <PackageReference Include="AspNetCore.HealthChecks.System" Version="9.0.0" />

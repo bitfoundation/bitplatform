@@ -49,7 +49,7 @@ jobs:
       run: dotnet build src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj -p:Version="${{ vars.APP_VERSION}}" -c Release
 
     - name: Publish
-      run: dotnet publish src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj -c Release -p:Version="${{ vars.APP_VERSION}}" --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server
+      run: dotnet publish src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj -c Release -p:Version="${{ vars.APP_VERSION}}" -o ${{env.DOTNET_ROOT}}/server
 
     - name: Upload server artifact
       uses: actions/upload-artifact@v4
