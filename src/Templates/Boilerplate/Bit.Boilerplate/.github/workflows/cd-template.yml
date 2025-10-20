@@ -58,12 +58,12 @@ jobs:
           dotnet build src/Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="${{ vars.APP_VERSION }}"
 
       - name: Publish
-        run: dotnet publish src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj -c Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }}
+        run: dotnet publish src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj -c Release --self-contained -r linux-x64 -o server -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }}
       - name: Upload server artifact
         uses: actions/upload-artifact@v4
         with:
           name: server-bundle
-          path: ${{env.DOTNET_ROOT}}/server
+          path: server
           include-hidden-files: true # Required for wwwroot/.well-known folder
 
   deploy_api_blazor:

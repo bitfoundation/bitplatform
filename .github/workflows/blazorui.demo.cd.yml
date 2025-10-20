@@ -49,13 +49,13 @@ jobs:
       run: dotnet build src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj -p:Version="${{ vars.APP_VERSION}}" -c Release
 
     - name: Publish
-      run: dotnet publish src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj -c Release -p:Version="${{ vars.APP_VERSION}}" -o ${{env.DOTNET_ROOT}}/server
+      run: dotnet publish src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj -c Release -p:Version="${{ vars.APP_VERSION}}" -o server
 
     - name: Upload server artifact
       uses: actions/upload-artifact@v4
       with:
         name: server-bundle
-        path: ${{env.DOTNET_ROOT}}/server
+        path: server
         include-hidden-files: true # Required for wwwroot/.well-known folder
 
   deploy_api_blazor:

@@ -75,13 +75,13 @@ jobs:
           dotnet build SalesModule/src/Client/SalesModule.Client.Web/SalesModule.Client.Web.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true --no-restore -c Release
 
     - name: Publish
-      run: dotnet publish SalesModule/src/Server/SalesModule.Server.Web/SalesModule.Server.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APP_VERSION}}"  -p:InvariantGlobalization=true
+      run: dotnet publish SalesModule/src/Server/SalesModule.Server.Web/SalesModule.Server.Web.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}"  -p:InvariantGlobalization=true
 
     - name: Upload server artifact
       uses: actions/upload-artifact@v4
       with:
         name: server-bundle
-        path: ${{env.DOTNET_ROOT}}/server
+        path: server
         include-hidden-files: true # Required for wwwroot/.well-known folder
 
   deploy_api_blazor:
