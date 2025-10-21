@@ -11,7 +11,7 @@ using Boilerplate.Shared.Attributes;
 //#if (api == "Integrated")
 using Hangfire;
 using Boilerplate.Server.Api;
-using Boilerplate.Server.Api.Filters;
+using Boilerplate.Server.Api.RequestPipeline;
 using Boilerplate.Server.Api.Services;
 //#endif
 
@@ -29,6 +29,8 @@ public static partial class Program
 
         ServerWebSettings settings = new();
         configuration.Bind(settings);
+        ServerApiSettings apiSettings = new();
+        configuration.Bind(apiSettings);
 
         app.UseAppForwardedHeaders();
 
@@ -101,6 +103,10 @@ public static partial class Program
         app.UseCors();
         //#endif
 
+        if (apiSettings.SupportedAppVersions is not null)
+        {
+            app.UseMiddleware<ForceUpdateMiddleware>();
+        }
         app.UseAuthentication();
         app.UseAuthorization();
 

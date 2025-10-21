@@ -1,7 +1,7 @@
 ﻿using Hangfire.Dashboard;
 using Hangfire.Annotations;
 
-namespace Boilerplate.Server.Api.Filters;
+namespace Boilerplate.Server.Api.RequestPipeline;
 
 public class HangfireDashboardAuthorizationFilter : IDashboardAuthorizationFilter
 {
