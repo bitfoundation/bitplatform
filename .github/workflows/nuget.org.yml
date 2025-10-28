@@ -149,7 +149,7 @@ jobs:
       run: dotnet pack src/Templates/BlazorEmpty/Bit.BlazorEmpty.ProjectTemplate.csproj --output . --configuration Release
     
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: nupkg-files
         path: ./*.nupkg

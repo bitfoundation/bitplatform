@@ -78,7 +78,7 @@ jobs:
       run: dotnet publish SalesModule/src/Server/SalesModule.Server.Web/SalesModule.Server.Web.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}"  -p:InvariantGlobalization=true
 
     - name: Upload server artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: server-bundle
         path: server
@@ -170,7 +170,7 @@ jobs:
           dotnet vpk pack -u SalesModule.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e SalesModule.Client.Windows.exe -r win-x64 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'SalesModule'
   
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: win-exe-bundle
         path: SalesModule\src\Client\SalesModule.Client.Windows\Releases
