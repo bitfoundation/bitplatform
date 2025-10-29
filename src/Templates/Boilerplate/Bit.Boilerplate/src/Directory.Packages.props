@@ -51,7 +51,7 @@
         <PackageVersion Include="Microsoft.Extensions.Logging.EventLog" Version="10.0.0-rc.2.25502.107" />
         <PackageVersion Include="Microsoft.Extensions.Logging.EventSource" Version="10.0.0-rc.2.25502.107" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.Testing" Version="9.5.1" />
+        <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.Testing" Version="9.5.2" />
         <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="CommunityToolkit.Aspire.Hosting.MailPit" Version="9.8.0" />
         <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.DevTunnels" Version="9.5.2-preview.1.25522.3" />
         <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.AppHost" Version="9.5.2" />
