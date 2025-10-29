@@ -1,5 +1,4 @@
 ﻿//+:cnd:noEmit
-using Projects;
 using Microsoft.Extensions.Hosting;
 
 var builder = DistributedApplication.CreateBuilder(args);
