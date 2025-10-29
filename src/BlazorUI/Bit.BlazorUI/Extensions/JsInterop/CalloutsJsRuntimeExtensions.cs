@@ -20,7 +20,8 @@ internal static class CalloutsJsRuntimeExtensions
         string headerId,
         string footerId,
         bool setCalloutWidth,
-        int maxWindowWidth = 0) where T : class
+        bool preserveCalloutWidth,
+        int maxWindowWidth) where T : class
     {
         return jsRuntime.Invoke<bool>("BitBlazorUI.Callouts.toggle",
                                       dotnetObj,

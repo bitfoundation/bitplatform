@@ -520,20 +520,23 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     {
         if (IsEnabled is false || IsDisposed) return;
 
-        await _js.BitCalloutToggleCallout(_dotnetObj,
-                                          _Id,
-                                          null,
-                                          _calloutId,
-                                          null,
-                                          _isOpen,
-                                          BitResponsiveMode.None,
-                                          BitDropDirection.TopAndBottom,
-                                          Dir is BitDir.Rtl,
-                                          _scrollContainerId,
-                                          0,
-                                          string.Empty,
-                                          string.Empty,
-                                          true);
+        await _js.BitCalloutToggleCallout(
+            dotnetObj: _dotnetObj,
+            componentId: _Id,
+            component: null,
+            calloutId: _calloutId,
+            callout: null,
+            isCalloutOpen: _isOpen,
+            responsiveMode: BitResponsiveMode.None,
+            dropDirection: BitDropDirection.TopAndBottom,
+            isRtl: Dir is BitDir.Rtl,
+            scrollContainerId: _scrollContainerId,
+            scrollOffset: 0,
+            headerId: string.Empty,
+            footerId: string.Empty,
+            setCalloutWidth: false,
+            preserveCalloutWidth: false,
+            maxWindowWidth: 0);
     }
 
     private async Task ChangeSelectedItem(bool isArrowUp)

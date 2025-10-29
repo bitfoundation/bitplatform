@@ -850,7 +850,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender is false) return;
-        
+
         _dotnetObj = DotNetObjectReference.Create(this);
 
         if (Responsive is false) return;
@@ -1172,20 +1172,23 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         if (IsEnabled is false || IsDisposed) return;
 
-        _isResponsiveMode = await _js.BitCalloutToggleCallout(_dotnetObj,
-                                                    _dropdownId,
-                                                    null,
-                                                    _calloutId,
-                                                    null,
-                                                    IsOpen,
-                                                    Responsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
-                                                    DropDirection,
-                                                    Dir is BitDir.Rtl,
-                                                    _scrollContainerId,
-                                                    ShowSearchBox && Combo is false ? 32 : 0,
-                                                    CalloutHeaderTemplate is not null ? _headerId : "",
-                                                    CalloutFooterTemplate is not null ? _footerId : "",
-                                                    PreserveCalloutWidth is false);
+        _isResponsiveMode = await _js.BitCalloutToggleCallout(
+            dotnetObj: _dotnetObj,
+            componentId: _dropdownId,
+            component: null,
+            calloutId: _calloutId,
+            callout: null,
+            isCalloutOpen: IsOpen,
+            responsiveMode: Responsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
+            dropDirection: DropDirection,
+            isRtl: Dir is BitDir.Rtl,
+            scrollContainerId: _scrollContainerId,
+            scrollOffset: ShowSearchBox && Combo is false ? 32 : 0,
+            headerId: CalloutHeaderTemplate is not null ? _headerId : "",
+            footerId: CalloutFooterTemplate is not null ? _footerId : "",
+            setCalloutWidth: PreserveCalloutWidth is false,
+            preserveCalloutWidth: false,
+            maxWindowWidth: 0);
     }
 
     private async ValueTask<ItemsProviderResult<TItem>> InternalItemsProvider(ItemsProviderRequest request)
