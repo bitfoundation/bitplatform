@@ -218,6 +218,7 @@ public partial class BitDropMenu : BitComponentBase
             headerId: "",
             footerId: "",
             setCalloutWidth: false,
+            preserveCalloutWidth: false,
             maxWindowWidth: 0);
     }
 

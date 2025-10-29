@@ -94,10 +94,17 @@ public partial class BitCalloutDemo
         },
         new()
         {
+            Name = "PreserveCalloutWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Forces the callout to preserve its component's original width."
+        },
+        new()
+        {
             Name = "SetCalloutWidth",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Force the callout to set its content container width while openning it based on the available space and actual content."
+            Description = "Forces the callout to set its content container width while openning based on the available space and actual content."
         },
         new()
         {

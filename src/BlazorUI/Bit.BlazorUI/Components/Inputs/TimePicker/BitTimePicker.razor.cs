@@ -349,7 +349,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         if (firstRender is false) return;
 
         _dotnetObj = DotNetObjectReference.Create(this);
-        
+
         if (Responsive is false) return;
 
         await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, BitSwipeOrientation.Vertical, _dotnetObj);
@@ -432,20 +432,23 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         if (Standalone) return;
         if (IsEnabled is false || IsDisposed) return;
 
-        await _js.BitCalloutToggleCallout(_dotnetObj,
-                                _timePickerId,
-                                null,
-                                _calloutId,
-                                null,
-                                IsOpen,
-                                Responsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
-                                DropDirection,
-                                Dir is BitDir.Rtl,
-                                string.Empty,
-                                0,
-                                string.Empty,
-                                string.Empty,
-                                true);
+        await _js.BitCalloutToggleCallout(
+            dotnetObj: _dotnetObj,
+            componentId: _timePickerId,
+            component: null,
+            calloutId: _calloutId,
+            callout: null,
+            isCalloutOpen: IsOpen,
+            responsiveMode: Responsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
+            dropDirection: DropDirection,
+            isRtl: Dir is BitDir.Rtl,
+            scrollContainerId: string.Empty,
+            scrollOffset: 0,
+            headerId: string.Empty,
+            footerId: string.Empty,
+            setCalloutWidth: true,
+            preserveCalloutWidth: false,
+            maxWindowWidth: 0);
     }
 
     private async Task HandleOnChange(ChangeEventArgs e)
