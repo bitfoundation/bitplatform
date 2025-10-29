@@ -38,6 +38,7 @@ internal static class CalloutsJsRuntimeExtensions
                                       headerId,
                                       footerId,
                                       setCalloutWidth,
+                                      preserveCalloutWidth,
                                       maxWindowWidth);
     }
 
