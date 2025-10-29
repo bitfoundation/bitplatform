@@ -78,7 +78,7 @@ jobs:
       run: dotnet publish SalesModule/src/Server/SalesModule.Server.Web/SalesModule.Server.Web.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}"  -p:InvariantGlobalization=true
 
     - name: Retrieve AppleAuthKey.p8
-      run: echo "${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY_SALES }}" > server-bundle/AppleAuthKey.p8
+      run: echo "${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY_SALES }}" > server/AppleAuthKey.p8
 
     - name: Upload server artifact
       uses: actions/upload-artifact@v5
