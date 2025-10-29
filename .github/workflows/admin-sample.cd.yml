@@ -83,6 +83,9 @@ jobs:
     - name: Publish Server API
       run: dotnet publish AdminPanel/src/Server/AdminPanel.Server.Api/AdminPanel.Server.Api.csproj -c Release -o server-api -p:Version="${{ vars.APP_VERSION}}"
 
+    - name: Retrieve AppleAuthKey.p8
+    run: echo "${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY_ADMIN }}" > server-api-bundle/AppleAuthKey.p8
+
     - name: Upload server web artifact
       uses: actions/upload-artifact@v5
       with:
