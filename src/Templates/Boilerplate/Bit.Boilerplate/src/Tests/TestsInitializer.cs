@@ -46,7 +46,7 @@ public partial class TestsInitializer
     private static async Task RunAspireHost(TestContext testContext)
     {
         var aspireBuilder = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.Boilerplate_Server_AppHost>(testContext.CancellationToken);
+            .CreateAsync<Program>(testContext.CancellationToken);
 
         foreach (var res in aspireBuilder.Resources.OfType<ProjectResource>().ToList())
             aspireBuilder.Resources.Remove(res);

@@ -1,5 +1,4 @@
 ﻿//+:cnd:noEmit
-using Projects;
 using Microsoft.Extensions.Hosting;
 
 var builder = DistributedApplication.CreateBuilder(args);
@@ -43,7 +42,7 @@ var s3Storage = builder.AddMinioContainer("s3")
     .WithDataVolume();
 //#endif
 
-var serverWebProject = builder.AddProject<Boilerplate_Server_Web>("serverweb") // Replace . with _ if needed to ensure the project builds successfully.
+var serverWebProject = builder.AddProject("serverweb", "../Boilerplate.Server.Web/Boilerplate.Server.Web.csproj")
     .WithExternalHttpEndpoints();
 
 // Adding health checks endpoints to applications in non-development environments has security implications.
@@ -54,7 +53,7 @@ if (builder.Environment.IsDevelopment())
 }
 
 //#if (api == "Standalone")
-var serverApiProject = builder.AddProject<Boilerplate_Server_Api>("serverapi") // Replace . with _ if needed to ensure the project builds successfully.
+var serverApiProject = builder.AddProject("serverapi", "../Boilerplate.Server.Api/Boilerplate.Server.Api.csproj")
     .WithExternalHttpEndpoints();
 
 // Adding health checks endpoints to applications in non-development environments has security implications.
@@ -98,7 +97,7 @@ serverWebProject.WithReference(s3Storage);
 //#endif
 
 // Blazor WebAssembly Standalone project.
-builder.AddProject<Boilerplate_Client_Web>("clientwebwasm"); // Replace . with _ if needed to ensure the project builds successfully.
+builder.AddProject("clientwebwasm", "../../Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj");
 
 if (builder.ExecutionContext.IsRunMode) // The following project is only added for testing purposes.
 {
@@ -112,7 +111,7 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
     //#endif
 
     // Blazor Hybrid Windows project.
-    builder.AddProject<Boilerplate_Client_Windows>("clientwindows") // Replace . with _ if needed to ensure the project builds successfully.
+    builder.AddProject("clientwindows", "../../Client/Boilerplate.Client.Windows/Boilerplate.Client.Windows.csproj")
         .WithExplicitStart();
 
     //#if (api == "Standalone")
