@@ -79,9 +79,6 @@ jobs:
     - name: Publish
       run: dotnet publish TodoSample/src/Server/TodoSample.Server.Web/TodoSample.Server.Web.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}"
 
-    - name: Retrieve AppleAuthKey.p8
-      run: echo "${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY_TODO }}" > server/AppleAuthKey.p8
-
     - name: Upload server artifact
       uses: actions/upload-artifact@v5
       with:
