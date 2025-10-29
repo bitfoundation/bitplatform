@@ -11,7 +11,7 @@ using Boilerplate.Shared.Attributes;
 //#if (api == "Integrated")
 using Hangfire;
 using Boilerplate.Server.Api;
-using Boilerplate.Server.Api.Filters;
+using Boilerplate.Server.Api.RequestPipeline;
 using Boilerplate.Server.Api.Services;
 //#endif
 
@@ -99,6 +99,8 @@ public static partial class Program
 
         //#if (api == "Integrated")
         app.UseCors();
+
+        app.UseMiddleware<ForceUpdateMiddleware>();
         //#endif
 
         app.UseAuthentication();

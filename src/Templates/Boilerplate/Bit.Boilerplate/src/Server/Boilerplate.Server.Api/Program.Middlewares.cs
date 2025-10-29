@@ -43,6 +43,8 @@ public static partial class Program
 
         app.UseCors();
 
+        app.UseMiddleware<ForceUpdateMiddleware>();
+
         app.UseAuthentication();
         app.UseAuthorization();
 
