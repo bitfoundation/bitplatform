@@ -43,10 +43,8 @@ public static partial class Program
 
         app.UseCors();
 
-        if (settings.SupportedAppVersions is not null)
-        {
-            app.UseMiddleware<ForceUpdateMiddleware>();
-        }
+        app.UseMiddleware<ForceUpdateMiddleware>();
+
         app.UseAuthentication();
         app.UseAuthorization();
 

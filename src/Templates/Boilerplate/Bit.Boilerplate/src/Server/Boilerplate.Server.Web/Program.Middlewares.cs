@@ -29,8 +29,6 @@ public static partial class Program
 
         ServerWebSettings settings = new();
         configuration.Bind(settings);
-        ServerApiSettings apiSettings = new();
-        configuration.Bind(apiSettings);
 
         app.UseAppForwardedHeaders();
 
@@ -101,12 +99,10 @@ public static partial class Program
 
         //#if (api == "Integrated")
         app.UseCors();
+
+        app.UseMiddleware<ForceUpdateMiddleware>();
         //#endif
 
-        if (apiSettings.SupportedAppVersions is not null)
-        {
-            app.UseMiddleware<ForceUpdateMiddleware>();
-        }
         app.UseAuthentication();
         app.UseAuthorization();
 
