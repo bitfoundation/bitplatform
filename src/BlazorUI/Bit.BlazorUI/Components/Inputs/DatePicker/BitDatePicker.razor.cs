@@ -1416,7 +1416,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             headerId: "",
             footerId: "",
             setCalloutWidth: false,
-            preserveCalloutWidth: false,
+            fixedCalloutWidth: false,
             maxWindowWidth: MAX_WIDTH);
     }
 

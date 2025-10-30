@@ -1939,7 +1939,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             headerId: "",
             footerId: "",
             setCalloutWidth: false,
-            preserveCalloutWidth: false,
+            fixedCalloutWidth: false,
             maxWindowWidth: MAX_WIDTH);
     }
 

@@ -447,7 +447,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             headerId: string.Empty,
             footerId: string.Empty,
             setCalloutWidth: true,
-            preserveCalloutWidth: false,
+            fixedCalloutWidth: false,
             maxWindowWidth: 0);
     }
 
