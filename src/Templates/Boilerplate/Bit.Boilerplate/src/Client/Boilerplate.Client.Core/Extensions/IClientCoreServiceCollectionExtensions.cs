@@ -167,11 +167,6 @@ public static partial class IClientCoreServiceCollectionExtensions
                 .WithAutomaticReconnect(sp.GetRequiredService<IRetryPolicy>())
                 .WithUrl(new Uri(absoluteServerAddressProvider.GetAddress(), "app-hub"), options =>
                 {
-                    var telemetryContext = sp.GetRequiredService<ITelemetryContext>();
-
-                    options.Headers.Add("X-App-Version", telemetryContext.AppVersion!);
-                    options.Headers.Add("X-App-Platform", AppPlatform.Type.ToString());
-
                     options.SkipNegotiation = false; // Required for Azure SignalR.
                     options.Transports = HttpTransportType.WebSockets;
                     // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.
