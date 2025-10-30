@@ -96,11 +96,12 @@ serverWebProject.WithReference(s3Storage);
 //#endif
 //#endif
 
-// Blazor WebAssembly Standalone project.
-builder.AddProject("clientwebwasm", "../../Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj");
-
 if (builder.ExecutionContext.IsRunMode) // The following project is only added for testing purposes.
 {
+    // Blazor WebAssembly Standalone project.
+    builder.AddProject("clientwebwasm", "../../Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj")
+        .WithExplicitStart();
+
     var mailpit = builder.AddMailPit("smtp") // For testing purposes only, in production, you would use a real SMTP server.
         .WithDataVolume("mailpit");
 
