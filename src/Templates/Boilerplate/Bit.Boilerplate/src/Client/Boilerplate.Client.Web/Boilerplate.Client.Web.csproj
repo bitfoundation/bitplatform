@@ -9,8 +9,8 @@
         <BlazorWebAssemblyLoadAllGlobalizationData Condition="'$(InvariantGlobalization)' == 'false'">true</BlazorWebAssemblyLoadAllGlobalizationData>
         <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+        <WasmEnableSIMD Condition="'$(Environment)' != 'Development'">true</WasmEnableSIMD>
         <!--/+:msbuild-conditional:noEmit -->
-        <WasmEnableSIMD>false</WasmEnableSIMD>
         <WasmStripILAfterAOT Condition=" '$(offlineDb)' == 'false'">true</WasmStripILAfterAOT>
         <WasmBuildNative Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">true</WasmBuildNative>
         <!--/-:msbuild-conditional:noEmit -->
