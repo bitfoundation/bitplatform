@@ -412,10 +412,6 @@ public static partial class Program
                 Endpoint = appSettings.AI.OpenAI.EmbeddingEndpoint,
                 Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
             }).AsIEmbeddingGenerator())
-            .ConfigureOptions(options =>
-            {
-                configuration.GetRequiredSection("AI:EmbeddingOptions").Bind(options);
-            })
             .UseLogging()
             .UseOpenTelemetry();
             // .UseDistributedCache()
@@ -428,10 +424,6 @@ public static partial class Program
                 {
                     Transport = new Azure.Core.Pipeline.HttpClientTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
                 }).AsIEmbeddingGenerator(appSettings.AI.AzureOpenAI.EmbeddingModel))
-            .ConfigureOptions(options =>
-            {
-                configuration.GetRequiredSection("AI:EmbeddingOptions").Bind(options);
-            })
             .UseLogging()
             .UseOpenTelemetry();
             // .UseDistributedCache()
@@ -442,10 +434,6 @@ public static partial class Program
                   new Uri(appSettings.AI.HuggingFace.EmbeddingEndpoint),
                   apiKey: appSettings.AI.HuggingFace.EmbeddingApiKey,
                   httpClient: sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"), loggerFactory: sp.GetRequiredService<ILoggerFactory>()))
-            .ConfigureOptions(options =>
-            {
-                configuration.GetRequiredSection("AI:EmbeddingOptions").Bind(options);
-            })
             .UseLogging()
             .UseOpenTelemetry();
             // .UseDistributedCache()
@@ -454,10 +442,6 @@ public static partial class Program
         {
             services.AddEmbeddingGenerator(sp => new LocalTextEmbeddingGenerationService()
                 .AsEmbeddingGenerator())
-                .ConfigureOptions(options =>
-                {
-                    configuration.GetRequiredSection("AI:EmbeddingOptions").Bind(options);
-                })
                 .UseLogging()
                 .UseOpenTelemetry();
             // .UseDistributedCache()
