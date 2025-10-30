@@ -535,7 +535,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
             headerId: string.Empty,
             footerId: string.Empty,
             setCalloutWidth: false,
-            preserveCalloutWidth: false,
+            fixedCalloutWidth: false,
             maxWindowWidth: 0);
     }
 
