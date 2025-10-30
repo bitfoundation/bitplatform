@@ -97,6 +97,7 @@ private string onSearchValue;";
               Immediate
               Placeholder=""e.g. app""
               SuggestItems=""GetSuggestedItems()"" />
+<div>SearchValue: @searchValue</div>
 
 
 <BitSearchBox @bind-Value=""@searchValueWithSuggestFilterFunction""
@@ -104,6 +105,7 @@ private string onSearchValue;";
               Placeholder=""e.g. app""
               SuggestItems=""GetSuggestedItems()""
               SuggestFilterFunction=""@SearchFunc"" />
+<div>SearchValue: @searchValueWithSuggestFilterFunction</div>
 
 
 <BitSearchBox @bind-Value=""@searchValueWithMinSearchLength""
@@ -111,6 +113,7 @@ private string onSearchValue;";
               Placeholder=""e.g. app""
               MinSuggestTriggerChars=""1""
               SuggestItems=""GetSuggestedItems()"" />
+<div>SearchValue: @searchValueWithMinSearchLength</div>
 
 
 <BitSearchBox @bind-Value=""@searchValueWithMaxSuggestedItems""
@@ -118,6 +121,7 @@ private string onSearchValue;";
               Placeholder=""e.g. app""
               MaxSuggestCount=""2""
               SuggestItems=""GetSuggestedItems()"" />
+<div>SearchValue: @searchValueWithMaxSuggestedItems</div>
 
 
 <BitSearchBox @bind-Value=""@searchValueWithSearchDelay""
@@ -125,6 +129,7 @@ private string onSearchValue;";
               DebounceTime=""2000""
               Placeholder=""e.g. app""
               SuggestItems=""GetSuggestedItems()"" />
+<div>SearchValue: @searchValueWithSearchDelay</div>
 
 
 <BitSearchBox @bind-Value=""@searchValueWithItemsProvider""
@@ -139,7 +144,13 @@ private string onSearchValue;";
               Immediate
               DebounceTime=""300""
               Placeholder=""e.g. pro""
-              SuggestItemsProvider=""LoadItems"" />";
+              SuggestItemsProvider=""LoadItems"" />
+
+
+<BitSearchBox Immediate
+              FixedCalloutWidth
+              Placeholder=""e.g. app""
+              SuggestItems=""GetLongSuggestedItems()"" />";
     private readonly string example10CsharpCode = @"
 private string searchValue;
 private string searchValueWithSuggestFilterFunction;
@@ -150,16 +161,30 @@ private string searchValueWithItemsProvider;
 
 private List<string> GetSuggestedItems() =>
 [
-        ""Apple"",
-        ""Red Apple"",
-        ""Blue Apple"",
-        ""Green Apple"",
-        ""Banana"",
-        ""Orange"",
-        ""Grape"",
-        ""Broccoli"",
-        ""Carrot"",
-        ""Lettuce""
+    ""Apple"",
+    ""Red Apple"",
+    ""Blue Apple"",
+    ""Green Apple"",
+    ""Banana"",
+    ""Orange"",
+    ""Grape"",
+    ""Broccoli"",
+    ""Carrot"",
+    ""Lettuce""
+];
+
+private List<string> GetLongSuggestedItems() =>
+[
+    ""Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple"",
+    ""Red Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple"",
+    ""Blue Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple"",
+    ""Green Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple"",
+    ""Banana Banana Banana Banana Banana Banana Banana Banana Banana Banana Banana Banana Banana Banana Banana"",
+    ""Orange Orange Orange Orange Orange Orange Orange Orange Orange Orange Orange Orange Orange Orange Orange"",
+    ""Grape Grape Grape Grape Grape Grape Grape Grape Grape Grape Grape Grape Grape Grape Grape Grape Grape Grape"",
+    ""Broccoli Broccoli Broccoli Broccoli Broccoli Broccoli Broccoli Broccoli Broccoli Broccoli Broccoli Broccoli"",
+    ""Carrot Carrot Carrot Carrot Carrot Carrot Carrot Carrot Carrot Carrot Carrot Carrot Carrot Carrot Carrot Carrot"",
+    ""Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce""
 ];
 
 private Func<string, string, bool> SearchFunc = (string searchText, string itemText) =>
