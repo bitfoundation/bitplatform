@@ -101,14 +101,7 @@ public partial class TestsInitializer
             }
             //#endif
             //#endif
-            if ((await dbContext.Database.GetPendingMigrationsAsync()).Any())
-            {
-                await dbContext.Database.MigrateAsync();
-            }
-            else if ((await dbContext.Database.GetAppliedMigrationsAsync()).Any() is false)
-            {
-                throw new InvalidOperationException("No migrations have been added. Please ensure that migrations are added before running tests.");
-            }
+            await dbContext.Database.EnsureCreatedAsync(); // It's recommended to start using ef-core migrations.
         }
     }
 
