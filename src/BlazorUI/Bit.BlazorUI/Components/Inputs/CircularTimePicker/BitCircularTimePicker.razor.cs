@@ -551,7 +551,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             headerId: "",
             footerId: "",
             setCalloutWidth: false,
-            preserveCalloutWidth: false,
+            fixedCalloutWidth: false,
             maxWindowWidth: 0);
     }
 

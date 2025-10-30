@@ -622,7 +622,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
             headerId: "",
             footerId: "",
             setCalloutWidth: false,
-            preserveCalloutWidth: false,
+            fixedCalloutWidth: false,
             maxWindowWidth: 0);
     }
 
