@@ -56,6 +56,13 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "FixedCalloutWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Forces the suggest callout width to be always fixed at the component's width.",
+        },
+        new()
+        {
             Name = "FixedIcon",
             Type = "bool",
             DefaultValue = "false",
@@ -644,6 +651,20 @@ public partial class BitSearchBoxDemo
          "Broccoli",
          "Carrot",
          "Lettuce"
+    ];
+
+    private List<string> GetLongSuggestedItems() =>
+    [
+        "Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple",
+        "Red Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple",
+        "Blue Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple",
+        "Green Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple Apple",
+        "Banana Banana Banana Banana Banana Banana Banana Banana Banana Banana Banana Banana Banana Banana Banana",
+        "Orange Orange Orange Orange Orange Orange Orange Orange Orange Orange Orange Orange Orange Orange Orange",
+        "Grape Grape Grape Grape Grape Grape Grape Grape Grape Grape Grape Grape Grape Grape Grape Grape Grape Grape",
+        "Broccoli Broccoli Broccoli Broccoli Broccoli Broccoli Broccoli Broccoli Broccoli Broccoli Broccoli Broccoli",
+        "Carrot Carrot Carrot Carrot Carrot Carrot Carrot Carrot Carrot Carrot Carrot Carrot Carrot Carrot Carrot Carrot",
+        "Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce"
     ];
 
     private Func<string, string, bool> SearchFunc = (string searchText, string itemText) =>

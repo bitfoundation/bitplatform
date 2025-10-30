@@ -58,6 +58,11 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     public bool DisableAnimation { get; set; }
 
     /// <summary>
+    /// Forces the suggest callout width to be always fixed at the component's width.
+    /// </summary>
+    [Parameter] public bool FixedCalloutWidth { get; set; }
+
+    /// <summary>
     /// Whether or not to make the icon be always visible (it hides by default when the search box is focused).
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -535,7 +540,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
             headerId: string.Empty,
             footerId: string.Empty,
             setCalloutWidth: false,
-            fixedCalloutWidth: false,
+            fixedCalloutWidth: FixedCalloutWidth,
             maxWindowWidth: 0);
     }
 
