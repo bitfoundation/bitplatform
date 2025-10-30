@@ -177,6 +177,7 @@ public partial class AppClientCoordinator : AppComponentBase
     //#if (signalR == true)
     private void SubscribeToSignalREventsMessages()
     {
+        hubConnection.Remove(SignalREvents.SHOW_MESSAGE);
         signalROnDisposables.Add(hubConnection.On<string, Dictionary<string, string?>?, bool>(SignalREvents.SHOW_MESSAGE, async (message, data) =>
         {
             logger.LogInformation("SignalR Message {Message} received from server to show.", message);
@@ -209,17 +210,20 @@ public partial class AppClientCoordinator : AppComponentBase
             // You can also leverage IPubSubService to notify other components in the application.
         }));
 
+        hubConnection.Remove(SignalREvents.PUBLISH_MESSAGE);
         signalROnDisposables.Add(hubConnection.On<string, object?>(SignalREvents.PUBLISH_MESSAGE, async (message, payload) =>
         {
             logger.LogInformation("SignalR Message {Message} received from server to publish.", message);
             PubSubService.Publish(message, payload);
         }));
 
+        hubConnection.Remove(SignalREvents.EXCEPTION_THROWN);
         signalROnDisposables.Add(hubConnection.On<AppProblemDetails>(SignalREvents.EXCEPTION_THROWN, async (appProblemDetails) =>
         {
             ExceptionHandler.Handle(appProblemDetails, displayKind: ExceptionDisplayKind.NonInterrupting);
         }));
 
+        hubConnection.Remove(SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE);
         signalROnDisposables.Add(hubConnection.On(SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE, async () =>
         {
             return DiagnosticLogger.Store.ToArray();
@@ -308,8 +312,6 @@ public partial class AppClientCoordinator : AppComponentBase
     private List<IDisposable> signalROnDisposables = [];
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await base.DisposeAsync(disposing);
-
         unsubscribe?.Invoke();
 
         NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
@@ -320,6 +322,9 @@ public partial class AppClientCoordinator : AppComponentBase
         hubConnection.Reconnected -= HubConnectionConnected;
         hubConnection.Reconnecting -= HubConnectionStateChange;
         signalROnDisposables.ForEach(d => d.Dispose());
+        signalROnDisposables = [];
         //#endif
+
+        await base.DisposeAsync(disposing);
     }
 }
