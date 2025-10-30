@@ -1187,7 +1187,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             headerId: CalloutHeaderTemplate is not null ? _headerId : "",
             footerId: CalloutFooterTemplate is not null ? _footerId : "",
             setCalloutWidth: PreserveCalloutWidth is false,
-            preserveCalloutWidth: false,
+            fixedCalloutWidth: false,
             maxWindowWidth: 0);
     }
 

@@ -19,7 +19,7 @@ namespace BitBlazorUI {
             headerId: string,
             footerId: string,
             setCalloutWidth: boolean,
-            preserveCalloutWidth: boolean,
+            fixedCalloutWidth: boolean,
             maxWindowWidth: number,
         ) {
             component ??= document.getElementById(componentId);
@@ -95,7 +95,7 @@ namespace BitBlazorUI {
                 callout.style.width = width + 'px';
                 calloutWidth = width;
             }
-            if (preserveCalloutWidth) {
+            if (fixedCalloutWidth) {
                 let width = Math.min(componentWidth, calloutWidth);
                 callout.style.width = width + 'px';
                 calloutWidth = width;

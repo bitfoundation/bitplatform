@@ -593,7 +593,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             headerId: "",
             footerId: "",
             setCalloutWidth: true,
-            preserveCalloutWidth: false,
+            fixedCalloutWidth: false,
             maxWindowWidth: 0);
     }
 
