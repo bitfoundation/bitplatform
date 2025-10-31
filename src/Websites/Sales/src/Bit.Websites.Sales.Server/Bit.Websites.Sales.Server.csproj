@@ -14,12 +14,12 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.0-rc.2.25502.107" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.0-rc.2.25502.107" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0-rc.2.25502.107" />
-        <PackageReference Include="Bit.BlazorES2019" Version="10.0.0-pre-05" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="10.0.0-pre-05">
+        <PackageReference Include="Bit.BlazorES2019" Version="10.0.0-pre-06" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="10.0.0-pre-06">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="10.0.0-pre-05">
+        <PackageReference Include="Bit.SourceGenerators" Version="10.0.0-pre-06">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
