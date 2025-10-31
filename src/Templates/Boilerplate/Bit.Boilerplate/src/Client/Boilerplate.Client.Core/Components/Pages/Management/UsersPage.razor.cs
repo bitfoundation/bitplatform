@@ -191,10 +191,12 @@ public partial class UsersPage
     /// </summary>
     private async Task ReadUserSessionLogs(Guid userSessionId)
     {
-        var logs = await hubConnection.InvokeAsync<DiagnosticLogDto[]>("GetUserSessionLogs", userSessionId);
-
         DiagnosticLogger.Store.Clear();
-        foreach (var log in logs)
+
+        await foreach (var log in hubConnection.StreamAsync<DiagnosticLogDto>(
+            "GetUserSessionLogs",
+            userSessionId,
+            cancellationToken: CurrentCancellationToken))
         {
             DiagnosticLogger.Store.Enqueue(log);
         }
