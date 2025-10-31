@@ -1,4 +1,4 @@
-// bit version: 10.0.0-pre-05
+// bit version: 10.0.0-pre-06
 
 self.assetsExclude = [/\.scp\.css$/, /weather\.json$/];
 self.caseInsensitiveUrl = true;
