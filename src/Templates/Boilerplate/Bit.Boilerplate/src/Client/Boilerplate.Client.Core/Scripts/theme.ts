@@ -3,7 +3,8 @@
 // The following code gives you ideas on how to handle bit theme changes in your application.
 
 (function () {
-    BitTheme?.init({
+    if (typeof BitTheme === 'undefined') return;
+    BitTheme.init({
         system: true,
         persist: true,
         onChange: (newTheme: string, oldTheme: string) => {
