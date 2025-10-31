@@ -1,5 +1,7 @@
 //+:cnd:noEmit
 
+import { App } from './App';
+
 (function () {
     window.addEventListener('load', handleLoad);
     window.addEventListener('message', handleMessage);

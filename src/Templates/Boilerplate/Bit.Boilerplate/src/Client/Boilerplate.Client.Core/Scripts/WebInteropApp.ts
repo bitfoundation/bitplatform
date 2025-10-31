@@ -1,13 +1,7 @@
+//+:cnd:noEmit
 // Read Client.web/wwwroot/web-interop-app.html comments.
 
-declare class BitButil {
-    static webAuthn: {
-        getCredential: (options: unknown) => Promise<unknown>,
-        createCredential: (options: unknown) => Promise<unknown>
-    }
-};
-
-class WebInteropApp {
+export class WebInteropApp {
     private static autoClose = true;
 
     public static async run() {
@@ -117,5 +111,3 @@ class WebInteropApp {
         });
     }
 }
-
-(window as any).WebInteropApp = WebInteropApp;

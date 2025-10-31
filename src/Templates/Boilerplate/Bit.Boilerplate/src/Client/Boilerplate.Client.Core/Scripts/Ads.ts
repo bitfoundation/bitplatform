@@ -1,6 +1,7 @@
+//+:cnd:noEmit
 const gtag = (window as any).googletag = (window as any).googletag || { cmd: [] };
 
-class Ads {
+export class Ads {
     private static rewardedSlot: any;
     private static rewardPayload: any;
     private static slotReadyEvent: any;
@@ -102,5 +103,3 @@ class Ads {
         }
     }
 }
-
-(window as any).Ads = Ads;

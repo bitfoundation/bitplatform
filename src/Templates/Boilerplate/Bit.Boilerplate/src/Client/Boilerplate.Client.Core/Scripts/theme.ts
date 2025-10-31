@@ -1,18 +1,6 @@
 //+:cnd:noEmit
 
-declare class BitTheme { static init(options: BitThemeOptions): void; };
-
-interface BitThemeOptions {
-    system?: boolean;
-    persist?: boolean;
-    theme?: string | null;
-    default?: string | null;
-    darkTheme?: string | null;
-    lightTheme?: string | null;
-    onChange?: onThemeChangeType;
-}
-
-type onThemeChangeType = (newThemeName: string, oldThemeName: string) => void;
+// The following code gives you ideas on how to handle bit theme changes in your application.
 
 (function () {
     BitTheme?.init({

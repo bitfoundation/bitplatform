@@ -3,8 +3,9 @@
     "compilerOptions": {
         "strict": true,
         "target": "ES2019",
+        "module": "es2015",
         "noImplicitAny": true,
         "lib": [ "DOM", "ESNext" ],
-        "outFile": "wwwroot/scripts/app.js"
+        "moduleResolution": "node"
     }
 }
