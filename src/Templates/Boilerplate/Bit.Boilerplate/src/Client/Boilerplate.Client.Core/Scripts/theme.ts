@@ -8,7 +8,7 @@
     BitTheme.init({
         system: true,
         persist: true,
-        onChange: (newTheme: string, oldTheme: string) => {
+        onChange: (newTheme, oldTheme) => {
             document.body.classList.add('theme-' + newTheme);
             document.body.classList.remove('theme-' + oldTheme);
 

@@ -23,7 +23,5 @@ declare interface BitThemeOptions {
     default?: string | null;
     darkTheme?: string | null;
     lightTheme?: string | null;
-    onChange?: onThemeChangeType;
+    onChange?: (newThemeName: string, oldThemeName: string) => void;
 }
-
-declare type onThemeChangeType = (newThemeName: string, oldThemeName: string) => void;
