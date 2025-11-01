@@ -1,0 +1,51 @@
+@page "/templates/wiki"
+@page "/boilerplate/wiki"
+@inherits AppComponentBase
+
+<PageOutlet Url="templates/wiki"
+			Title="Interactive Wiki - Templates"
+			Description="Learn about how to learn more about bit Boilerplate using our AI powered interactive Wiki" />
+
+<div class="page-container">
+	<BitText Typography="BitTypography.H3" Gutter>Interactive Wiki</BitText>
+
+	<section class="section-card">
+		<BitText Typography="BitTypography.H5" Gutter>GitHub Copilot Chat Interactive Learning</BitText>
+		<div class="section-card-txt">
+			After creating your project from bit Boilerplate, we highly recommend using the built-in <span class="bold-txt">#getting-started</span> to interactively learn about your project architecture directly in your IDE.
+			<br /><br />
+			This interactive guide is available in <span class="bold-txt">GitHub Copilot Chat</span> within <span class="bold-txt">Visual Studio</span> or <span class="bold-txt">Visual Studio Code</span>. Simply type <code>#getting-started</code> in the chat and choose the getting started prompt to begin your onboarding journey.
+			<br /><br />
+			The guide walks you through the project in multiple stages, using <span class="bold-txt">real examples from your actual codebase</span>:
+			This is the <span class="bold-txt">recommended next step</span> for developers after creating their project, providing a hands-on, context-aware learning experience tailored to your specific codebase.
+		</div>
+	</section>
+
+	<section class="section-card" id="ai-powered-wiki">
+		<BitText Typography="BitTypography.H5" Gutter>AI-Powered Wiki</BitText>
+		<div class="section-card-txt">
+			You can also visit <a href="https://wiki.bitplatform.dev" target="_blank">wiki.bitplatform.dev</a> anytime to ask questions about bit Boilerplate and the entire bitplatform ecosystem.
+			<br /><br />
+			To enhance the understanding of our Open Source Project Repository, all documentation is maintained within a single mono repo. This approach ensures that the AI Wiki can cohesively analyze the entire set of documents, README files, in-code comments, and source code to provide comprehensive insights when queried.
+			<br /><br />
+			Here are some example questions that can be answered by <a href="https://wiki.bitplatform.dev" target="_blank">wiki.bitplatform.dev</a>:
+			<ul>
+				<li>What is the optimal way to load page data using <b>StateHasChanged</b> in conjunction with a <b>Skeleton UI</b> or <b>Shimmer</b>? <a title="What is the optimal way to load page data using StateHasChanged in conjunction with a Skeleton UI or Shimmer?" href="https://wiki.bitplatform.dev/search/explain-how-skeletonui-shimmer_aefa5fb9-a326-4685-aa2d-28036661d5d5" target="_blank">Link</a></li>
+				<br />
+				<li>How can I <b>remove google reCAPTCHA</b> from a project I created from bit Boilerplate? <a title="How can I remove google reCAPTCHA from a project I created from bit Boilerplate?" href="https://wiki.bitplatform.dev/search/how-can-i-remove-google-recapt_d3000cc1-b8da-4c18-9907-9030b81b0e01" target="_blank">Link</a></li>
+				<br />
+				<li>What is the <b>difference between Patch and Map</b>, and what is their relationship with Entity Framework Core and Blazor change tracking? <a title="What is the difference between Patch and Map, and what is their relationship with Entity Framework Core and Blazor change tracking?" href="https://wiki.bitplatform.dev/search/describe-whats-the-difference_1cd6804f-94ca-4e2c-abc4-376b6a96a69e" target="_blank">Link</a></li>
+				<br />
+				<li>How can I implement a <b>Grid System</b> and layout using <b>BitGrid</b> and <b>BitStack</b> components, especially if I'm familiar with the Bootstrap grid system? <a title="How can I implement a Grid System and layout using BitGrid and BitStack components, especially if I'm familiar with the Bootstrap grid system?" href="https://wiki.bitplatform.dev/search/how-can-i-implement-a-grid-sys_41f89d5c-c284-442a-9d8f-0314d1a10b2e" target="_blank">Link</a></li>
+				<br />
+				<li>How does a <b>refresh token</b> function in a Boilerplate project template? <a title="How does a refresh token function in a Boilerplate project template?" href="https://wiki.bitplatform.dev/search/how-does-a-refresh-token-funct_5d74ff31-5571-4c92-bc66-d9b2a139dcab" target="_blank">Link</a></li>
+				<br />
+				<li>How does <b>passwordless authentication</b> work in Boilerplate, particularly in Blazor Hybrid versions of the app, given that this feature is browser-only? <a title="How does passwordless authentication work in Boilerplate, particularly in Blazor Hybrid versions of the app, given that this feature is browser-only?" href="https://wiki.bitplatform.dev/search/how-does-passwordless-authenti_3ca35e20-979a-4a1b-a49d-b1091e23720d" target="_blank">Link</a></li>
+				<br />
+				<li>How does using <b>embeddings</b> with the PostgreSQL <b>vector</b> extension enable product search functionality via LINQ and Entity Framework Core? <a title="How does using embeddings with the PostgreSQL vector extension enable product search functionality via LINQ and Entity Framework Core?" href="https://wiki.bitplatform.dev/search/describe-how-product-embedding_8f6373c9-aa52-4031-94c1-d644aa2f7a53" target="_blank">Link</a></li>
+			</ul>
+		</div>
+	</section>
+</div>
+
+<NavigationButtons Prev="Run project" PrevUrl="/templates/run-project" />

@@ -83,7 +83,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await Validate(entityToAdd, cancellationToken);
 
-        //#if (database == "PostgreSQL" || database == "SqlServer" || signalR == true)
+        //#if (database == "PostgreSQL" || database == "SqlServer")
         //#if (IsInsideProjectTemplate == true)
         if (DbContext.Database.ProviderName!.EndsWith("PostgreSQL", StringComparison.InvariantCulture) ||
             DbContext.Database.ProviderName!.EndsWith("SqlServer", StringComparison.InvariantCulture))
@@ -116,7 +116,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await Validate(entityToUpdate, cancellationToken);
 
-        //#if (database == "PostgreSQL" || database == "SqlServer" || signalR == true)
+        //#if (database == "PostgreSQL" || database == "SqlServer")
         //#if (IsInsideProjectTemplate == true)
         if (DbContext.Database.ProviderName!.EndsWith("PostgreSQL", StringComparison.InvariantCulture) ||
             DbContext.Database.ProviderName!.EndsWith("SqlServer", StringComparison.InvariantCulture))
