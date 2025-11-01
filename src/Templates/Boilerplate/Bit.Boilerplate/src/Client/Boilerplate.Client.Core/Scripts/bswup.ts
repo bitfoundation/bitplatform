@@ -1,5 +1,7 @@
 //+:cnd:noEmit
 
+import { App } from './App';
+
 (function () {
     const bswup = (window as any).BitBswup; // https://bitplatform.dev/bswup
     if (!bswup) return;
