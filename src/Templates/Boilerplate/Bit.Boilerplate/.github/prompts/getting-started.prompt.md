@@ -28,10 +28,13 @@ List the available stages:
 6. **Stage 6**: ASP.NET Core Identity and Authentication
 7. **Stage 7**: Blazor Pages, Components, Styling & Navigation
 8. **Stage 8**: Dependency Injection & Service Registration
-9. **Stage 9**: TypeScript, Build Process & JavaScript Interop
-10. **Stage 10**: Force Update System
-11. **Stage 11**: Other Available Prompt Templates
-12. **Stage 12**: Project miscellaneous files
+9. **Stage 9**: Configuration (appsettings.json)
+10. **Stage 10**: TypeScript, Build Process & JavaScript Interop
+11. **Stage 11**: Force Update System
+12. **Stage 12**: Response Caching System
+13. **Stage 13**: Logging and OpenTelemetry
+14. **Stage 14**: Other Available Prompt Templates
+15. **Stage 15**: Project miscellaneous files
 
 **Default: Stage 1**
 
@@ -53,9 +56,7 @@ The developer can specify both their starting stage and preferred language at th
 
 If no language is specified, use English as the default.
 
-**Important**: If the selected language is a Right-to-Left (RTL) language (e.g., فارسی, العربية, עברית), you **MUST** prepend the Unicode character U+202B (‫) at the beginning of **every line** in your responses to ensure proper text readability and display.
-This applies to all explanatory text, bullet points, and paragraphs.
-**Exception**: Do NOT use U+202B character inside code blocks, code examples, file paths, or any technical content that should remain in LTR format.
+**Important**: If the selected language is a Right-to-Left (RTL) language (e.g., فارسی, العربية, עברית), you **MUST** prepend the Unicode character U+202B (‫) at the beginning of **text, bullet points, and paragraphs**, except inside code blocks, code examples, file paths, or any technical content that should remain in LTR format.
 
 ---
 
@@ -527,7 +528,25 @@ At the end of Stage 8, ask: **"Do you have any questions about Stage 8 or the de
 
 ---
 
-## Stage 9: TypeScript, Build Process & JavaScript Interop
+## Stage 9: Configuration (appsettings.json)
+
+### Instructions
+1. Explain that each project has its own `appsettings.json` and `appsettings.{environment}.json` files
+2. Show the configuration priority/hierarchy from `IConfigurationBuilderExtensions.cs` in `Client.Core`.
+
+3. Create a simple matrix showing configuration priority:
+```
+Priority (Low → High):
+```
+For example, explain: If you add a setting in `src/Shared/appsettings.json`, it applies to all platforms unless explicitly overridden in platform-specific appsettings.json files
+
+---
+
+At the end of Stage 9, ask: **"Do you have any questions about the configuration system?"**
+
+---
+
+## Stage 10: TypeScript, Build Process & JavaScript Interop
 
 ### Instructions
 1. Show `tsconfig.json` and `package.json` from `src/Client/Boilerplate.Client.Core/`
@@ -537,11 +556,11 @@ At the end of Stage 8, ask: **"Do you have any questions about Stage 8 or the de
 
 ---
 
-At the end of Stage 9, ask: **"Do you have any questions about TypeScript, the build process, or JavaScript interop? Would you like to see another example of adding a different package?"**
+At the end of Stage 10, ask: **"Do you have any questions about TypeScript, the build process, or JavaScript interop? Would you like to see another example of adding a different package?"**
 
 ---
 
-## Stage 10: Force Update System
+## Stage 11: Force Update System
 
 ### Instructions
 1. Search for `ForceUpdateMiddleware` and `IAppUpdateService` in the codebase
@@ -552,11 +571,96 @@ At the end of Stage 9, ask: **"Do you have any questions about TypeScript, the b
 
 ---
 
-At the end of Stage 10, ask: **"Do you have any questions about the Force Update system?"**
+At the end of Stage 11, ask: **"Do you have any questions about the Force Update system?"**
 
 ---
 
-## Stage 11: Other Available Prompt Templates
+## Stage 12: Response Caching System
+
+In this stage, you will explain the comprehensive response caching system built into the project.
+
+### Instructions
+
+1. **Find and show the key caching components**:
+   - `src/Shared/Attributes/AppResponseCacheAttribute.cs`
+   - `src/Server/Boilerplate.Server.Shared/Services/AppResponseCachePolicy.cs`
+   - `src/Server/Boilerplate.Server.Api/Services/ResponseCacheService.cs`
+   - `src/Client/Boilerplate.Client.Core/Services/HttpMessageHandlers/CacheDelegatingHandler.cs`
+
+2. **Explain the AppResponseCache attribute and AppResponseCachePolicy**:
+   - The `AppResponseCache` attribute can be applied to:
+     - Minimal API endpoints
+     - Razor pages
+     - Web API controllers
+   - It caches HTML, JSON, XML, and other response types on:
+     - **CDN Edge servers** (e.g., Cloudflare CDN)
+     - **ASP.NET Core Output Cache** (can be configured to use Memory or Redis)
+   - Show actual examples from the project where `AppResponseCache` is used (e.g., `AboutPage.razor`, `SiteMapsEndpoint.cs`, minimal API examples)
+
+3. **Explain ResponseCacheService for cache purging**:
+   - **Purpose**: Used to purge/invalidate cached responses when data changes
+   - **Real-world example**:
+     - A product page like https://sales.bitplatform.dev/product/10036 is cached on Cloudflare
+     - When the product is updated in the admin panel at https://adminpanel.bitplatform.dev/add-edit-product/e7f8a9b0-c1d2-e3f4-5678-9012a3b4c5d6
+     - The server sends a request to Cloudflare to purge/remove that page from the Edge Cache on Cloudflare servers
+   - Show actual usage where `responseCacheService.PurgeProductCache` is called after update/delete operations
+
+4. **Explain the key benefit**:
+   - Every page refresh on the Sales products pages adds **zero overhead** to the server
+   - The complete response is served directly from Cloudflare's edge servers (CDN)
+   - **Important note**: This only applies to responses where `UserAgnostic` is not false
+   - Responses for authenticated/logged-in users are **not cached** on CDN or output cache (for security/privacy reasons)
+
+5. **Explain the multi-layer caching architecture**:
+   - In addition to CDN and output cache, there are also:
+     - **Browser HTTP cache**: Standard browser caching based on HTTP headers
+     - **Client-side memory cache**: Managed in `CacheDelegatingHandler`
+   - All of these caching layers are based on and controlled by the `AppResponseCache` attribute
+   - Show how `CacheDelegatingHandler` implements client-side memory caching
+
+---
+
+At the end of Stage 12, ask: **"Do you have any questions about the Response Caching system?"**
+
+---
+
+## Stage 13: Logging and OpenTelemetry
+
+### Instructions
+
+1. **Explain ILogger for errors, warnings, and general information**:
+
+2. **Explain Activity and AppActivitySource for tracking operations (count/duration)**:
+   - Show `src/Shared/Services/AppActivitySource.cs` file
+   - Find and demonstrate example using `AppActivitySource`
+
+3. **Logging configuration in `src/Shared/appsettings.json`**:
+   - Show the `Logging` section with different providers
+
+4. **In-app Diagnostic Logger - extremely useful in Production for client-side troubleshooting**:
+   - Opens with **Ctrl + Shift + X** or clicking 7 times on header spacer
+   - Located in `AppDiagnosticModal.razor.cs`
+   - Support staff can view user session logs in real-time via SignalR (`UPLOAD_DIAGNOSTIC_LOGGER_STORE` method)
+
+5. **Easy integration with Sentry and Azure App Insights**:
+   - Just set `Dsn` in `appsettings.json` for Sentry
+   - Just set `ConnectionString` for Application Insights
+   - All logs automatically flow to these services on all platforms.
+
+6. **Aspire Dashboard displays all logs and metrics**:
+
+7. **⚠️ CRITICAL WARNING**:
+   - If you're adding Serilog, using App Insights direct methods, or anything other than `ILogger` and `AppActivitySource`, you probably don't understand OpenTelemetry or Microsoft.Extensions.Logging
+   - Everything is already optimally configured
+   - OpenTelemetry is vendor-agnostic - switch from Sentry to App Insights without code changes
+
+---
+
+At the end of Stage 13, ask: **"Do you have any questions about the Logging and OpenTelemetry system?"**
+
+---
+
+## Stage 14: Other Available Prompt Templates
 
 ### Instructions
 1. **Search for prompt files**: Look for all `.prompt.md` files in `.github/prompts/` directory (excluding `getting-started.prompt.md`)
@@ -572,11 +676,11 @@ At the end of Stage 10, ask: **"Do you have any questions about the Force Update
 
 ---
 
-At the end of Stage 11, ask: **"Do you have any questions about these specialized prompts, or would you like to see examples of using any of them?"**
+At the end of Stage 14, ask: **"Do you have any questions about these specialized prompts, or would you like to see examples of using any of them?\"**
 
 ---
 
-## Stage 12: Project miscellaneous files
+## Stage 15: Project miscellaneous files
 
 ### Instructions
 1. **Search for configuration files**: Look for the following files in the workspace root:
@@ -596,7 +700,7 @@ At the end of Stage 11, ask: **"Do you have any questions about these specialize
 
 ---
 
-At the end of Stage 12, ask: **"Do you have any questions about these configuration files and development tools, or would you like to explore any of them in more detail?"**
+At the end of Stage 15, ask: **"Do you have any questions about these configuration files and development tools, or would you like to explore any of them in more detail?"**
 
 ---
 
