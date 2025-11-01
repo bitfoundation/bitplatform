@@ -30,11 +30,15 @@ List the available stages:
 8. **Stage 8**: Dependency Injection & Service Registration
 9. **Stage 9**: Configuration (appsettings.json)
 10. **Stage 10**: TypeScript, Build Process & JavaScript Interop
-11. **Stage 11**: Force Update System
-12. **Stage 12**: Response Caching System
-13. **Stage 13**: Logging and OpenTelemetry
-14. **Stage 14**: Other Available Prompt Templates
-15. **Stage 15**: Project miscellaneous files
+11. **Stage 11**: Blazor Modes, PreRendering & PWA
+12. **Stage 12**: Force Update System
+13. **Stage 13**: Response Caching System
+14. **Stage 14**: Logging and OpenTelemetry
+15. **Stage 15**: CI/CD Pipeline and Environments
+16. **Stage 16**: Automated Testing (Unitigration Tests)
+17. **Stage 17**: Other Available Prompt Templates
+18. **Stage 18**: Project miscellaneous files
+19. **Stage 19**: WebAuthn and Passwordless Authentication (Advanced)
 
 **Default: Stage 1**
 
@@ -560,7 +564,50 @@ At the end of Stage 10, ask: **"Do you have any questions about TypeScript, the 
 
 ---
 
-## Stage 11: Force Update System
+# Stage 11: Blazor Modes, PreRendering & PWA
+
+In this stage, you will explain Blazor rendering modes, pre-rendering, and PWA features.
+
+## Topics to Cover:
+
+### App.razor and index.html Files
+1. **Find and show these files**:
+   - `Server.Web/Components/App.razor`: For Blazor Server, Auto, and WebAssembly with pre-rendering
+   - `Client.Web/wwwroot/index.html`: For standalone Blazor WebAssembly
+   - `Client.Maui/wwwroot/index.html`: For Blazor Hybrid (also used by Client.Windows)
+
+2. **Important**: Changes to `App.razor` usually need similar changes in both `index.html` files
+
+### Blazor Mode & PreRendering Configuration
+- **Location**: `Server.Api/appsettings.json` under `WebAppRender` section
+- **Settings**:
+  - `BlazorMode`: "BlazorServer" | "BlazorWebAssembly" | "BlazorAuto"
+  - `PrerenderEnabled`: `true` for faster perceived load and SEO, `false` for loading screen
+- **If you enable PreRendering**, update `Client.Web/wwwroot/service-worker.published.js` accordingly
+
+### PWA & Service Workers
+- **All modes are PWAs**: Server, WebAssembly, Auto, and Hybrid all support offline mode, installation, and push notifications
+- **Service worker files**:
+  - `service-worker.js`: Development
+  - `service-worker.published.js`: Production/Staging
+- Show `service-worker.published.js` and explain it to the developer
+
+### IPrerenderStateService
+- **When needed**: Only if you use direct `HttpClient` calls (not `IAppController`)
+- **IAppController interfaces**: Pre-render state is handled automatically
+- **Purpose**: Prevents duplicate API calls during pre-rendering by persisting server-fetched data
+- **Example**:
+```csharp
+var products = await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync<ProductDto[]>("api/products/"));
+```
+
+---
+
+At the end of Stage 11, ask: **"Do you have any questions about Blazor Modes, Pre-Rendering, or PWA features?"**
+
+---
+
+## Stage 12: Force Update System
 
 ### Instructions
 1. Search for `ForceUpdateMiddleware` and `IAppUpdateService` in the codebase
@@ -571,11 +618,11 @@ At the end of Stage 10, ask: **"Do you have any questions about TypeScript, the 
 
 ---
 
-At the end of Stage 11, ask: **"Do you have any questions about the Force Update system?"**
+At the end of Stage 12, ask: **"Do you have any questions about the Force Update system?"**
 
 ---
 
-## Stage 12: Response Caching System
+## Stage 13: Response Caching System
 
 In this stage, you will explain the comprehensive response caching system built into the project.
 
@@ -620,11 +667,11 @@ In this stage, you will explain the comprehensive response caching system built 
 
 ---
 
-At the end of Stage 12, ask: **"Do you have any questions about the Response Caching system?"**
+At the end of Stage 13, ask: **"Do you have any questions about the Response Caching system?"**
 
 ---
 
-## Stage 13: Logging and OpenTelemetry
+## Stage 14: Logging and OpenTelemetry
 
 ### Instructions
 
@@ -656,11 +703,43 @@ At the end of Stage 12, ask: **"Do you have any questions about the Response Cac
 
 ---
 
-At the end of Stage 13, ask: **"Do you have any questions about the Logging and OpenTelemetry system?"**
+At the end of Stage 14, ask: **"Do you have any questions about the Logging and OpenTelemetry system?"**
 
 ---
 
-## Stage 14: Other Available Prompt Templates
+## Stage 15: CI/CD Pipeline and Environments
+
+### Instructions
+1. **Search for workflow files**: Find and review `*.yml` files.
+
+2. **Explain environments**: Read `Directory.Build.props` and `AppEnvironment.cs` to understand how environments (Development, Staging, Production) are configured and used throughout the project.
+
+3. **Explain the CI/CD setup**: Based on the workflow files, explain the build, test, and deployment pipelines to the developer.
+
+4. **Important Note**: Currently, the CI/CD workflows are configured for client platforms (Android, iOS, Windows, macOS) but are not yet Aspire-friendly for backend deployment. Backend CI/CD may need additional configuration.
+
+---
+
+At the end of Stage 15, ask: **"Do you have any questions about CI/CD or environment configuration?"**
+
+---
+
+## Stage 16: Automated Testing (Unitigration Tests)
+
+### Instructions
+1. **Explain Unitigration Test concept**: Tests written as Integration Tests with full real server behavior (both UI tests and HTTP client based tests), but with the flexibility to fake specific parts of the server when needed - similar to Unit Tests - making test writing much simpler.
+
+2. **Read test files**: Read all files in the `src/Tests` project.
+
+3. **Explain to developer**: Based on your understanding of the test files, explain the testing architecture and approach to the developer.
+
+---
+
+At the end of Stage 16, ask: **"Do you have any questions about the testing approach or writing tests?"**
+
+---
+
+## Stage 17: Other Available Prompt Templates
 
 ### Instructions
 1. **Search for prompt files**: Look for all `.prompt.md` files in `.github/prompts/` directory (excluding `getting-started.prompt.md`)
@@ -676,11 +755,11 @@ At the end of Stage 13, ask: **"Do you have any questions about the Logging and 
 
 ---
 
-At the end of Stage 14, ask: **"Do you have any questions about these specialized prompts, or would you like to see examples of using any of them?\"**
+At the end of Stage 17, ask: **"Do you have any questions about these specialized prompts, or would you like to see examples of using any of them?\"**
 
 ---
 
-## Stage 15: Project miscellaneous files
+## Stage 18: Project miscellaneous files
 
 ### Instructions
 1. **Search for configuration files**: Look for the following files in the workspace root:
@@ -700,7 +779,22 @@ At the end of Stage 14, ask: **"Do you have any questions about these specialize
 
 ---
 
-At the end of Stage 15, ask: **"Do you have any questions about these configuration files and development tools, or would you like to explore any of them in more detail?"**
+At the end of Stage 18, ask: **"Do you have any questions about these configuration files and development tools, or would you like to explore any of them in more detail?"**
+
+---
+
+## Stage 19: WebAuthn and Passwordless Authentication (Advanced)
+
+### Instructions
+1. **Explain WebAuthn Overview**: Sign-in with fingerprint, Face ID, and PIN that is more secure than native biometric authentication. The bit implementation works across all platforms, although Face ID is not yet supported on Android.
+
+2. **Search and explain the architecture**: Search for webAuthn, web-interop-app.html, ILocalHttpServer, and IExternalNavigationService. Based on your understanding of these components, explain how this feature works.
+
+3. **Show the flow**: Demonstrate how in Blazor Hybrid, due to WebView limitations with IP-based origins, a Local HTTP Server and In-App Browser are used to make WebAuthn work.
+
+---
+
+At the end of Stage 19, ask: **"Do you have any questions about WebAuthn implementation?"**
 
 ---
 
