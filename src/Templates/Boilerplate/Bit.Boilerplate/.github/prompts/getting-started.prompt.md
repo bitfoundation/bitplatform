@@ -210,6 +210,8 @@ In this stage, you will explain the following topics:
   - Show examples of the default language files (`.resx`) and translated files (e.g., `.fa.resx`, `.sv.resx`)
 - **DtoResourceType**: Explain how DTOs use the `[DtoResourceType(typeof(AppStrings))]` attribute to connect validation messages and display names to resource files
   - Show examples from actual DTOs in the project
+- **AppDataAnnotationsValidator**: Explain that this custom validator must be used in Blazor EdtitForms to make `DtoResourceType` work
+  - Show examples from the project where `AppDataAnnotationsValidator` is used in forms
 - **IStringLocalizer Usage**: Demonstrate how to use `IStringLocalizer<T>` in:
   - Controllers (inherited from `AppControllerBase`)
   - Components and Pages (inherited from `AppComponentBase` or `AppPageBase`)
@@ -536,13 +538,13 @@ At the end of Stage 8, ask: **"Do you have any questions about Stage 8 or the de
 
 ### Instructions
 1. Explain that each project has its own `appsettings.json` and `appsettings.{environment}.json` files
-2. Show the configuration priority/hierarchy from `IConfigurationBuilderExtensions.cs` in `Client.Core`.
-
+2. Understand the configuration priority/hierarchy from `IConfigurationBuilderExtensions.cs` in `Client.Core`.
 3. Create a simple matrix showing configuration priority:
 ```
 Priority (Low → High):
 ```
 For example, explain: If you add a setting in `src/Shared/appsettings.json`, it applies to all platforms unless explicitly overridden in platform-specific appsettings.json files
+4. Tell how `*__Comment` works in appsettings.json files, because json doesn't support comments natively.
 
 ---
 
@@ -556,7 +558,7 @@ At the end of Stage 9, ask: **"Do you have any questions about the configuration
 1. Show `tsconfig.json` and `package.json` from `src/Client/Boilerplate.Client.Core/`
 2. Explain MSBuild targets in `Boilerplate.Client.Core.csproj`: `BeforeBuildTasks` → `InstallNodejsDependencies` → `BuildJavaScript`
 3. Show `Scripts/App.ts` and `Extensions/IJSRuntimeExtensions.cs` - explain how C# calls JS via `jsRuntime.InvokeAsync<T>("App.methodName")` focusing on `getTimeZone` method.
-4. **Demo**: Show how to add uuid package - how to modify `package.json` using corresponding `npm install` command, import it in `App.ts`, add method, call from C# extension, build and demonstrate usage in component
+4. **Demo**: Show instructions on how to add uuid package - how to modify `package.json` using corresponding `npm install` command, import it in `App.ts`, add method, call from C# extension, build and demonstrate usage in component
 
 ---
 
@@ -582,6 +584,8 @@ In this stage, you will explain Blazor rendering modes, pre-rendering, and PWA f
 - **Location**: `Server.Api/appsettings.json` under `WebAppRender` section
 - **Settings**:
   - `BlazorMode`: "BlazorServer" | "BlazorWebAssembly" | "BlazorAuto"
+  Basicly we'd recommend using `BlazorServer` for development and `BlazorWebAssembly` for production deployment.
+  More information about these can be found at https://www.reddit.com/r/Blazor/comments/1kq5eyu/this_is_not_yet_just_another_incorrect_comparison/
   - `PrerenderEnabled`: `true` for faster perceived load and SEO, `false` for loading screen
 - **If you enable PreRendering**, update `Client.Web/wwwroot/service-worker.published.js` accordingly
 
