@@ -29,7 +29,9 @@ List the available stages:
 7. **Stage 7**: Blazor Pages, Components, Styling & Navigation
 8. **Stage 8**: Dependency Injection & Service Registration
 9. **Stage 9**: TypeScript, Build Process & JavaScript Interop
-10. **Stage 10**: Other Available Prompt Templates
+10. **Stage 10**: Force Update System
+11. **Stage 11**: Other Available Prompt Templates
+12. **Stage 12**: Project miscellaneous files
 
 **Default: Stage 1**
 
@@ -433,6 +435,8 @@ In this stage, you will explain the Blazor UI architecture, component structure,
    - Point out how the `.razor` file defines the UI structure
    - Show how the `.razor.cs` inherits from `AppComponentBase` or `AppPageBase`
    - Demonstrate the `.razor.scss` scoped styles
+   - How the page has been added to `NavBar.razor` and `MainLayout.items.razor.cs` for navigation.
+   - How `AboutPage.razor` has been added to `Boilerplate.Client.Maui`, `Boilerplate.Client.Windows` and `Boilerplate.Client.Web` projects for to have access to native platform features without using interface and dependency injection.
 
 ### SCSS Styling Architecture
 
@@ -537,7 +541,22 @@ At the end of Stage 9, ask: **"Do you have any questions about TypeScript, the b
 
 ---
 
-## Stage 10: Other Available Prompt Templates
+## Stage 10: Force Update System
+
+### Instructions
+1. Search for `ForceUpdateMiddleware` and `IAppUpdateService` in the codebase
+2. Explain how client sends `X-App-Version` header with HttpClient/SignalR requests
+3. Show how server validates version via middleware against `SupportedAppVersions` in `Server.Api/appsettings.json`
+4. Explain platform-specific update behavior: Web/Windows auto-updates, Android/iOS/macOS opens store
+5. Key difference: Version checked on **every request**, not just at startup - forces even active users to update
+
+---
+
+At the end of Stage 10, ask: **"Do you have any questions about the Force Update system?"**
+
+---
+
+## Stage 11: Other Available Prompt Templates
 
 ### Instructions
 1. **Search for prompt files**: Look for all `.prompt.md` files in `.github/prompts/` directory (excluding `getting-started.prompt.md`)
@@ -553,7 +572,31 @@ At the end of Stage 9, ask: **"Do you have any questions about TypeScript, the b
 
 ---
 
-At the end of Stage 10, ask: **"Do you have any questions about these specialized prompts, or would you like to see examples of using any of them?"**
+At the end of Stage 11, ask: **"Do you have any questions about these specialized prompts, or would you like to see examples of using any of them?"**
+
+---
+
+## Stage 12: Project miscellaneous files
+
+### Instructions
+1. **Search for configuration files**: Look for the following files in the workspace root:
+   - `Clean.bat` and `Clean.sh`
+   - `global.json`
+   - `vs-spell.dic`
+   - `settings.VisualStudio.json`
+   - `mcp.json`
+   - `Directory.Build.props`
+   - `.vsconfig`
+
+2. **Read and explain each file**: For each file found, provide:
+   - The file name and location
+   - Its purpose and what it configures
+   - When and why a developer should care about it
+   - Key configuration options or usage instructions
+
+---
+
+At the end of Stage 12, ask: **"Do you have any questions about these configuration files and development tools, or would you like to explore any of them in more detail?"**
 
 ---
 
