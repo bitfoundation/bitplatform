@@ -25,6 +25,11 @@ List the available stages:
 3. **Stage 3**: API Controllers and OData Query Support
 4. **Stage 4**: Localization and Multi-language Support
 5. **Stage 5**: Exception Handling and Error Management
+6. **Stage 6**: ASP.NET Core Identity and Authentication
+7. **Stage 7**: Blazor Pages, Components, Styling & Navigation
+8. **Stage 8**: Dependency Injection & Service Registration
+9. **Stage 9**: TypeScript, Build Process & JavaScript Interop
+10. **Stage 10**: Other Available Prompt Templates
 
 **Default: Stage 1**
 
@@ -179,6 +184,7 @@ In this stage, you will explain the following topics:
 - There is no "one-size-fits-all" architecture that works for every project. Different projects have different needs.
 - Most experienced C# .NET developers already have their own preferences and opinions about backend architecture.
 - **The real architecture value of this template is in the frontend**: A complete, production-ready architecture for cross platform Blazor applications. This is where the template provides the most value, as dotnet frontend architecture patterns are less established in the .NET ecosystem.
+While backend architecture is simple, it provides lots of features, including but not limited to full featured identity solution, AI integration, super optimized response caching solution etc. In upcoming stages, you will learn about many of these advanced features.
 
 ---
 
@@ -268,6 +274,9 @@ In this stage, you will explain the following topics:
   - The error message is automatically localized based on the user's selected language
   - Show where this error handling UI is configured in the project
 
+### Exception handlers in project
+- Tell the developer about ServerExceptionHandler, SharedExceptionHandler, ClientExceptionHandler, MauiExceptionHandler, WindowsExceptionHandler, WebClientExceptionHandler and how they work in different platforms.
+
 ### Best Practices Summary
 1. Use `KnownException`-derived exceptions when you want to show a specific message to users
 2. Use `WithData()` to add debugging context to exceptions
@@ -277,7 +286,274 @@ In this stage, you will explain the following topics:
 
 ---
 
-At the end of Stage 5, ask: **"Do you have any questions about Stage 5, or would you like to explore any specific topic in more depth?"**
+At the end of Stage 5, ask: **"Do you have any questions about Stage 5, or shall we proceed to Stage 6?"**
+
+---
+
+# Stage 6: ASP.NET Core Identity and Authentication
+
+In this stage, you will explain the comprehensive authentication and authorization system built into the project.
+
+## Topics to Cover:
+
+### Overview of Identity Features
+- **Complete Identity Solution**: The project includes a production-ready ASP.NET Core Identity implementation that works seamlessly across **all platforms** (Web, MAUI, Windows) with the best possible user experience
+- **Built-in Features**:
+  - Sign-in and Sign-up flows
+  - Two-Factor Authentication (2FA) with authenticator apps
+  - Biometric-based authentication (fingerprint, face recognition on supported devices)
+  - Email confirmation
+  - Password reset
+  - Profile management
+  - Session management
+  - User and Role management
+  - Permission-based authorization
+
+### Authentication Architecture
+
+#### JWT Token-Based Authentication
+- **JWT Tokens**: The project uses JWT (JSON Web Tokens) for authentication
+  - **Access Token**: Short-lived token for API requests (default expiration configured in `IdentitySettings`)
+  - **Refresh Token**: Long-lived token to obtain new access tokens without re-login
+  - Show where tokens are managed in the codebase
+
+#### Session Management
+- **Server-Side Session Storage**: User sessions are persisted in the database
+  - Sessions are tracked in the `UserSessions` table
+  - Allows administrators to view and revoke active sessions
+  - Show examples from the session management UI in the project
+
+### Single Sign-On (SSO) Support
+- **External Identity Providers**: The project supports integration with external authentication providers
+- **Duende Identity Server Demo**: By default, the project is configured to connect to a demo Duende Identity Server 8 instance
+  - When you run the project and click the **bit logo** at the beginning, you can log in using the SSO demo
+  - This demonstrates how to integrate external identity providers
+- **Supported Providers**: You can easily configure SSO with:
+  - **Keycloak** (open-source alternative to Duende)
+  - **Google**
+  - **Apple**
+  - **X (Twitter)**
+  - **GitHub**
+  - **Azure Entra ID (formerly Azure AD)**
+  - And many other OAuth/OpenID Connect providers
+- **Configuration**: Show where external provider settings are configured in the project
+
+### Authorization and Access Control
+
+#### Role-Based and Permission-Based Authorization
+- **Users and Roles**: The project includes complete user and role management
+  - Administrators can create roles and assign users to them
+  - Show the role management UI in the project
+  
+- **Permissions**: Fine-grained permission system
+  - Each role can have specific permissions
+  - Permissions control access to different features of the application
+  - Show examples of permission checks in controllers
+
+#### Policy-Based Authorization
+- **Custom Policies**: You can define authorization policies in `Shared` project's `AddAuthorizationCore` method
+  - **Example**: `TFA_ENABLED` policy that requires users to have two-factor authentication enabled
+  - Show the actual policy definition in the code
+  - **Usage**: Policies can be checked both on the **server** (in controllers with `[Authorize(Policy = "PolicyName")]`) and on the **client** (in Blazor components with `AuthorizeView` or programmatically)
+  
+- **Policy Examples from Project**:
+  - Show how to define a policy
+  - Show how to apply it to a controller or action
+  - Show how to check it in a Blazor component
+  - Demonstrate both server-side and client-side policy enforcement
+
+### Identity Configuration
+
+#### IdentitySettings in appsettings.json
+- **Location**: `src/Server/Boilerplate.Server.Api/appsettings.json`
+- **Configuration Options**: Explain key identity settings that can be customized:
+  - Token expiration times (access token, refresh token)
+  - Password requirements (length, complexity)
+  - Account lockout settings
+  - Two-factor authentication settings
+  - Email confirmation requirements
+  - Show the actual `IdentitySettings` section in the file
+
+### Video Tutorial
+- **Highly Recommended**: To fully understand the identity features and see them in action, developers should watch this **15-minute video tutorial**:
+  - **URL**: https://www.youtube.com/watch?v=79ssLqSInxc&t=53s
+  - The video demonstrates:
+    - Sign-in/Sign-up flows on different platforms
+    - Two-factor authentication setup
+    - Biometric authentication in action
+    - Session management
+    - User and role administration
+    - And much more
+
+### Hands-On Exploration
+- **Run the Project**: Encourage the developer to run the project and explore:
+  - Sign up for a new account
+  - Enable 2FA
+  - Try biometric login (if on a supported device)
+  - Log in with the demo SSO (click the bit logo)
+  - Check the admin panel for user and role management
+  - View active sessions
+
+### Security Best Practices
+- **Built-in Security**: The identity system follows security best practices:
+  - Passwords are hashed using ASP.NET Core Identity's secure hashing
+  - JWT tokens are signed and validated
+  - Refresh token rotation prevents token theft
+  - Session tracking enables quick revocation
+  - CSRF protection is built-in
+  - Rate limiting on authentication endpoints
+
+### Code Examples
+- Show actual controller methods from `IdentityController.cs`
+- Demonstrate how authentication is applied to pages and components
+- Show examples of `[Authorize]` attribute usage with roles and policies
+
+### One-Time Tokens
+- Checkout references of `EmailTokenRequestedOn` and tell the developer how the app creates one-time tokens that have expiration, and only the last requested token is valid.
+
+---
+
+At the end of Stage 6, ask: **"Do you have any questions about Stage 6, or would you like to explore any specific topic in more depth?"**
+
+---
+
+# Stage 7: Blazor Pages, Components, Styling & Navigation
+
+In this stage, you will explain the Blazor UI architecture, component structure, styling system, and navigation in the project.
+
+## Topics to Cover:
+
+### Component Structure (Razor, Code-Behind, SCSS)
+1. **Find an example page** from the project (e.g., a page from `src/Client/Boilerplate.Client.Core/Components/Pages/`)
+2. **Explain the three-file structure**:
+   - **`.razor` file**: Contains the HTML/Razor markup and component structure
+   - **`.razor.cs` file**: Contains the C# code-behind with component logic, event handlers, and lifecycle methods
+   - **`.razor.scss` file**: Contains isolated, component-specific styles
+3. **Show actual examples** from the chosen page:
+   - Point out how the `.razor` file defines the UI structure
+   - Show how the `.razor.cs` inherits from `AppComponentBase` or `AppPageBase`
+   - Demonstrate the `.razor.scss` scoped styles
+
+### SCSS Styling Architecture
+
+#### Isolated Component Styles
+- **Scoped SCSS**: Explain that `.razor.scss` files create **isolated styles** that only apply to that specific component
+  - These styles are automatically scoped by Blazor and won't leak to other components
+  - Similar to CSS Modules in React or scoped styles in Vue
+  - Show examples from actual component `.razor.scss` files
+
+#### Global Styles
+- **App.scss**: The main global stylesheet located in `src/Client/Boilerplate.Client.Core/Styles/App.scss`
+  - Contains global styles, resets, and shared CSS
+  - Imports other global SCSS files
+  - Show the structure of `App.scss` and what it includes
+
+#### Theme Color Variables
+- **_bit-css-variables.scss**: Tell the developer about it and show examples from the project where these variables are used in SCSS files
+
+#### The ::deep Selector
+- **Purpose**: The `::deep` selector allows you to style **child components** from a parent component's scoped stylesheet
+  - Similar to React's `:global` or Vue's `:deep`
+  - Find and show a **real example** from the project where `::deep` is used to style a Bit.BlazorUI component
+  - Mention that each bit BlazorUI component has its own css variables for styling in addition to the `Styles` and `Classes` parameters which allows styling nested child elements directly without needing `::deep` in most cases.
+  Find and show one real example of using `Styles` and `Classes` parameters from the project applied on any <Bit*> component.
+
+### Bit.BlazorUI Documentation & DeepWiki
+- **Comprehensive Documentation**: Explain that `Bit.BlazorUI` has extensive documentation at **blazorui.bitplatform.dev**
+  - Every component has detailed docs with:
+    - Live demos and examples
+    - API reference (all parameters and properties)
+    - Usage guidelines
+    - Code samples
+- **Automatic DeepWiki Integration**: When the developer asks questions in GitHub Copilot Chat or gives commands related to UI components:
+  - The `DeepWiki_ask_question` tool is available to query the `bitfoundation/bitplatform` repository
+  - This provides access to the full Bit.BlazorUI documentation
+  - Developers don't need to manually search the docs - just ask naturally
+- **Example Questions**:
+  - "How can I implement a Grid System and layout using BitGrid and BitStack components, especially if I'm familiar with the Bootstrap grid system?"
+
+### Navigation with PageUrls
+- **PageUrls Class**: Located in `src/Shared/PageUrls.cs` and related partial files
+  - Contains **strongly-typed constants** for all page routes in the application
+  // In a Razor file
+  <BitLink Href="@PageUrls.Dashboard">Go to Dashboard</BitLink>
+  ```
+
+### Component Base Classes
+- **AppComponentBase**: Base class for components (inherited by most `.razor.cs` files)
+  - Provides access to common services (NavigationManager, IStringLocalizer, etc.)
+  - Enhanced lifecycle methods (`OnInitAsync`, `OnParamsSetAsync`, etc.)
+  - Automatic exception handling
+- **AppPageBase**: Base class for pages (extends AppComponentBase with page-specific features)
+  - Additional page lifecycle hooks
+  - Page-level metadata and configuration
+- **Show examples** from actual component/page code-behind files
+
+### Best Practices Summary
+1. **Separation of Concerns**: Keep controls and layout in `.razor` using `BitGrid` and `BitStack`, logic in `.razor.cs`, style details in `.razor.scss`
+2. **Use Theme Variables**: Always use `--bit-clr-*` variables for colors to support theming
+4. **Strongly-Typed Navigation**: Use `PageUrls` constants instead of hardcoded route strings
+5. **Inherit from Base Classes**: Use `AppComponentBase` or `AppPageBase` for components and pages
+6. **Leverage DeepWiki**: Ask questions about Bit.BlazorUI components naturally in Copilot Chat
+
+---
+
+At the end of Stage 7, ask: **"Do you have any questions about Stage 7, or shall we proceed to Stage 8?"**
+
+---
+
+## Stage 8: Dependency Injection & Service Registration
+
+### Instructions
+1. Search for `*ServiceCollectionExtensions.cs`, `*.Services.cs` and `WebApplicationBuilderExtensions` files
+2. Explain the DI architecture with these key points.
+3. Find and explain the `AddSessioned` method in `IClientCoreServiceCollectionExtensions.cs`:
+Tell the developer about it and how it works.
+
+4. Create a simple availability matrix showing where each registration location works
+
+5. Explain key rules:
+   - Services in Shared work everywhere but can't access platform APIs
+   - Platform-specific registrations give access to native features
+   - Use appropriate lifetimes (Singleton, Scoped, Transient, Sessioned)
+
+---
+
+At the end of Stage 8, ask: **"Do you have any questions about Stage 8 or the dependency injection system? Would you like to see examples of adding a new service?"**
+
+---
+
+## Stage 9: TypeScript, Build Process & JavaScript Interop
+
+### Instructions
+1. Show `tsconfig.json` and `package.json` from `src/Client/Boilerplate.Client.Core/`
+2. Explain MSBuild targets in `Boilerplate.Client.Core.csproj`: `BeforeBuildTasks` → `InstallNodejsDependencies` → `BuildJavaScript`
+3. Show `Scripts/App.ts` and `Extensions/IJSRuntimeExtensions.cs` - explain how C# calls JS via `jsRuntime.InvokeAsync<T>("App.methodName")` focusing on `getTimeZone` method.
+4. **Demo**: Show how to add uuid package - how to modify `package.json` using corresponding `npm install` command, import it in `App.ts`, add method, call from C# extension, build and demonstrate usage in component
+
+---
+
+At the end of Stage 9, ask: **"Do you have any questions about TypeScript, the build process, or JavaScript interop? Would you like to see another example of adding a different package?"**
+
+---
+
+## Stage 10: Other Available Prompt Templates
+
+### Instructions
+1. **Search for prompt files**: Look for all `.prompt.md` files in `.github/prompts/` directory (excluding `getting-started.prompt.md`)
+2. **Read and analyze each prompt**: Read the content of each found prompt file
+3. **Explain each prompt**: For each prompt file found, provide:
+   - The prompt file name
+   - A clear description of what the prompt does
+   - When and why a developer should use it
+   - Key features or capabilities it provides
+
+### Present the information in a clear format:
+... (continue for each prompt found)
+
+---
+
+At the end of Stage 10, ask: **"Do you have any questions about these specialized prompts, or would you like to see examples of using any of them?"**
 
 ---
 
