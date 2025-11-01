@@ -691,7 +691,7 @@ At the end of Stage 13, ask: **"Do you have any questions about the Response Cac
 4. **In-app Diagnostic Logger - extremely useful in Production for client-side troubleshooting**:
    - Opens with **Ctrl + Shift + X** or clicking 7 times on header spacer
    - Located in `AppDiagnosticModal.razor.cs`
-   - Support staff can view user session logs in real-time via SignalR (`UPLOAD_DIAGNOSTIC_LOGGER_STORE` method)
+   - Support staff can view user session logs in real-time via SignalR (`UPLOAD_DIAGNOSTIC_LOGGER_STORE` method) automatically
 
 5. **Easy integration with Sentry and Azure App Insights**:
    - Just set `Dsn` in `appsettings.json` for Sentry
@@ -717,10 +717,11 @@ At the end of Stage 14, ask: **"Do you have any questions about the Logging and 
 1. **Search for workflow files**: Find and review `*.yml` files.
 
 2. **Explain environments**: Read `Directory.Build.props` and `AppEnvironment.cs` to understand how environments (Development, Staging, Production) are configured and used throughout the project.
+- Note: This system gives you access to environment information in both C# (Both server and all clients) and msbuild, so you can have environment-specific code everywhere.
 
 3. **Explain the CI/CD setup**: Based on the workflow files, explain the build, test, and deployment pipelines to the developer.
 
-4. **Important Note**: Currently, the CI/CD workflows are configured for client platforms (Android, iOS, Windows, macOS) but are not yet Aspire-friendly for backend deployment. Backend CI/CD may need additional configuration.
+4. **Important Note**: Currently, the CI/CD workflows are configured for client platforms (Android, iOS, Windows, macOS) but are not yet Aspire-friendly for backend deployment. Backend CI/CD may need additional configuration and the current Azure usage is completely optional.
 
 ---
 
@@ -732,6 +733,7 @@ At the end of Stage 15, ask: **"Do you have any questions about CI/CD or environ
 
 ### Instructions
 1. **Explain Unitigration Test concept**: Tests written as Integration Tests with full real server behavior (both UI tests and HTTP client based tests), but with the flexibility to fake specific parts of the server when needed - similar to Unit Tests - making test writing much simpler.
+- Note: Developers are welcome to write pure Unit Tests or pure Integration Tests if they prefer, but Unitigration Tests are recommended for most scenarios.
 
 2. **Read test files**: Read all files in the `src/Tests` project.
 
