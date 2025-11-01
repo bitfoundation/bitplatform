@@ -558,7 +558,7 @@ At the end of Stage 9, ask: **"Do you have any questions about the configuration
 1. Show `tsconfig.json` and `package.json` from `src/Client/Boilerplate.Client.Core/`
 2. Explain MSBuild targets in `Boilerplate.Client.Core.csproj`: `BeforeBuildTasks` → `InstallNodejsDependencies` → `BuildJavaScript`
 3. Show `Scripts/App.ts` and `Extensions/IJSRuntimeExtensions.cs` - explain how C# calls JS via `jsRuntime.InvokeAsync<T>("App.methodName")` focusing on `getTimeZone` method.
-4. **Demo**: Show instructions on how to add `uuid` & `@types/uuid` packages - how to modify `package.json` using corresponding `npm install` command, import it in `App.ts`, add method, call from C# extension, build and demonstrate usage in component
+4. **Demo**: Show instructions on how to add `uuid` & `@types/uuid` packages - how to modify `package.json` using corresponding `npm install` command, import it in `App.ts`, add method, call from C# extension and demonstrate usage in component
 
 ---
 
