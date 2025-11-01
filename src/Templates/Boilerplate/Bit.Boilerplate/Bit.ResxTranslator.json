@@ -4,7 +4,8 @@
     "DefaultLanguage": "en",
 
     "SupportedLanguages": [ "nl", "fa", "sv", "hi", "zh", "es", "fr", "ar", "de" ],
-    "SupportedLanguages__Comment": "Update MainActivity's DataPathPrefixes and CultureInfoManager's SupportedCultures as required.",
+    "SupportedLanguages__Comment__1": "Add or remove languages as needed. Use ISO language codes (e.g., 'es' for Spanish, 'fr' for French).",
+    "SupportedLanguages__Comment__2": "Update MainActivity's DataPathPrefixes and CultureInfoManager's SupportedCultures as required.",
 
     "ResxPaths": [ "/src/**/*.resx" ],
 

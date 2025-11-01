@@ -96,6 +96,7 @@ After applying changes, you **MUST** verify the integrity of the application.
 
 *   **Be Decisive**: Do not ask for permission to proceed or for a review of your plan. Directly state your plan and proceed with the implementation.
 *   **Execute Commands Individually**: **Never** chain CLI commands with `&&`. Execute each command in a separate step.
+*   **Getting started**: When a developer first interacts with you with a message like `Run getting started`, you **MUST** proactively follow `.github/prompts/getting-started.prompt.md`.
 
 ## 7. Critical Command Reference
 
@@ -103,7 +104,7 @@ After applying changes, you **MUST** verify the integrity of the application.
 -   **Run the project**: Run `dotnet run` in Boilerplate.Server.Web project root directory.
 -   **Run tests**: Run `dotnet test` in Boilerplate.Tests project root directory.
 -   **Add new migrations**: Run `dotnet ef migrations add <MigrationName> --verbose` in Boilerplate.Server.Api project root directory.
--   **Generate Resx C# code**: Run `dotnet build -t:PrepareResources` in Boilerplate.Shared project root directory.
+-   **Generate Resx C# code**: Run `dotnet build -t:PrepareResources` in Boilerplate.Shared project root directory (It's automatically done during build).
 
 ## 8. Coding Conventions & Best Practices
 

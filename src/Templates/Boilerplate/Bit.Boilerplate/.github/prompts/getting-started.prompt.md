@@ -2,6 +2,9 @@
 
 Welcome! This interactive guide will walk you through the key architectural components of the project in multiple stages.
 
+**Important**: If you are not Claude Sonnet 4.5+ model, you **MUST** warn the user immediately with the following message before proceeding:
+*"⚠️ WARNING: For the best results with this project, it is strongly recommended to use **Claude Sonnet 4.5+**. The current model may not provide optimal performance, accuracy, or adherence to the complex workflows and conventions required by this prompt."*
+
 **Important**: All stages will be explained with **real examples from the actual project codebase**. You will use concrete files and code from this workspace to demonstrate each concept.
 
 ## Prerequisites
@@ -45,6 +48,7 @@ If no language is specified, use English as the default.
 
 **Important**: If the selected language is a Right-to-Left (RTL) language (e.g., فارسی, العربية, עברית), you **MUST** prepend the Unicode character U+202B (‫) at the beginning of **every line** in your responses to ensure proper text readability and display.
 This applies to all explanatory text, bullet points, and paragraphs.
+**Exception**: Do NOT use U+202B character inside code blocks, code examples, file paths, or any technical content that should remain in LTR format.
 
 ---
 
@@ -65,11 +69,35 @@ In this stage, you will explain the following topics:
   - By default, the project uses `Database.EnsureCreatedAsync()` which automatically creates the database schema based on your entities without requiring migrations. This is simpler for getting started.
   - **When to Use Migrations**: For production environments or when you need to track schema changes over time, you should use migrations.
   - **How to Switch to Migrations**:
-    1. Change `Database.EnsureCreatedAsync()` to `Database.MigrateAsync()` in the project
+    1. Change `Database.EnsureCreatedAsync()` to `Database.MigrateAsync()` in the following files:
+       - `src/Server/Boilerplate.Server.Api/Program.cs`
+       - `src/Server/Boilerplate.Server.Web/Program.cs`
+       - `src/Tests/TestsInitializer.cs`
     2. If the project has already been run and the database exists, **delete the existing database** before running with migrations (since `EnsureCreated` and `Migrate` cannot be mixed)
     3. Create your first migration using: `dotnet ef migrations add InitialCreate --verbose` (from the `Server.Api` project directory)
-    4. The - `MigrateAsync()` method call will apply the migration and create the database
+    4. The `MigrateAsync()` method call will apply the migration and create the database
   - **Adding New Migrations**: After making changes to entities, create a new migration with: `dotnet ef migrations add <MigrationName> --verbose`
+
+<!--#if (offlineDb == true)-->
+## Client-Side Offline Database (Details in src/Client/Boilerplate.Client.Core/Data/Readme.md)
+
+This project also includes a **client-side offline database** that allows the application to work without an internet connection.
+
+### Key Characteristics:
+- **Per-Client Database**: Each client (web browser, mobile app, desktop app) has its own local database
+- **Manual Management Not Feasible**: Since there will be as many databases as there are clients, manually managing them is impossible
+- **Migration-Only Approach**: For client-side databases, only EF Core migrations are used (NOT `EnsureCreatedAsync()`)
+  - Migrations are the ONLY way to manage the client-side database schema
+  - This ensures that when users update the app, their local database schema is automatically updated to match the new version
+  - Without migrations, there would be no reliable way to update thousands/millions of client databases
+
+### Creating Client-Side Migrations:
+
+Instruct the developer to follow the required steps to create client-side migrations.
+
+- Client-side migrations are automatically applied when the application starts on the client device
+
+<!--#endif-->
 
 ---
 
@@ -81,11 +109,11 @@ At the end of Stage 1, ask: **"Do you have any questions about Stage 1, or shall
 
 In this stage, you will explain the following topics:
 
-## Topics to Cover:
+## Topics to Cover (Details in src/Boilerplate.Server.Api/Mappers/Readme.md):
 - **DTOs (Data Transfer Objects)**: Show DTO examples from the project (e.g., `CategoryDto`, `UserDto` etc)
 - **AppJsonContext**: What it is and its purpose
 - **Mapper Files**: How they're written in the `Server.Api` project using Mapperly (e.g., `CategoriesMapper`, `IdentityMapper` etc)
-- **Project vs Map**: Explain the difference between `Project()` for reading queries and `Map()` for other operations, with usage examples from controllers
+- **Project vs Map**: Explain the difference between `Project()` for reading queries and `Map()` for reading and why project is more efficient for read scenarios.
 - **Manual Projection Alternative**: Explain that using Mapperly's `Project()` is **not mandatory**. Developers can perform projection manually using LINQ's `Select()` method. 
   Both approaches produce the same SQL query, but Mapperly's `Project()` reduces repetitive code and is automatically updated when entity properties added/removed.
 
@@ -141,7 +169,7 @@ In this stage, you will explain the following topics:
 - **Real Usage**: Show actual controller methods from the project that demonstrate these patterns
   - Explain that all controllers inherit from `AppControllerBase` which provides common functionality like access to `DbContext`, `Mapper`, `IStringLocalizer`, and other shared services
   - Show examples of how controllers use these inherited services without needing to inject them manually
-- **Proxy Interface**: Explain how interfaces are defined in `Shared/Controllers` and implemented in `Server.Api/Controllers`
+- **Proxy Interface**: Explain how interfaces are defined in `Shared/Controllers` and implemented in `Server.Api/Controllers` using provided information in src/Shared/Controllers/Readme.md
 
 ## Architectural Philosophy
 
@@ -173,12 +201,7 @@ In this stage, you will explain the following topics:
   - Controllers (inherited from `AppControllerBase`)
   - Components and Pages (inherited from `AppComponentBase` or `AppPageBase`)
   - Show concrete code examples from the project
-- **bit-resx Tool**: Explain the automated translation tool:
-  - **Configuration**: The `Bit.ResxTranslator.json` file at the project root
-  - **Supported Languages**: Defined in the config file
-  - **Development Mode**: How to use it during development to translate new strings
-  - **Publish Mode**: How it automatically translates all languages during publish in cd yaml files.
-  - **AI-Powered**: Uses OpenAI/Azure OpenAI for automatic translations.
+- **bit-resx Tool**: Use the `DeepWiki_ask_question` tool to query the `bitfoundation/bitplatform` about `bit-resx` tool and explain it to the developer.
 
 ---
 
