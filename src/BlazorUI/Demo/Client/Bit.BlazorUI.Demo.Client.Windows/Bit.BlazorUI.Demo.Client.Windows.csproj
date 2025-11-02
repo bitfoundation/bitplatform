@@ -29,12 +29,12 @@
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services" />
         <Using Include="Bit.BlazorUI.Demo.Shared" />
         <Watch Remove="*.scss" />
-        <PackageReference Include="Bit.BlazorES2019" Version="10.0.0-pre-06" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="10.0.0-pre-06">
+        <PackageReference Include="Bit.BlazorES2019" Version="10.0.0-pre-07" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="10.0.0-pre-07">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="10.0.0-pre-06">
+        <PackageReference Include="Bit.SourceGenerators" Version="10.0.0-pre-07">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
