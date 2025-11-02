@@ -13,8 +13,8 @@ As an expert AI assistant for this project, your actions must be guided by these
 
 You will be working with the following key technologies:
 
-*   **C# 13.0**
-*   **ASP.NET Core 9.0**
+*   **C# 14.0**
+*   **ASP.NET Core 10.0**
 *   **Blazor**: Component-based web UI framework
 *   **.NET MAUI Blazor Hybrid**: Cross-platform app development
 *   **ASP.NET Core Identity**: Authentication and authorization
@@ -59,7 +59,7 @@ The solution is organized into the following projects. Understand their roles to
 ## 4. Available Tooling
 
 -   **DeepWiki**: Provides access to an extensive knowledge base for the `bitfoundation/bitplatform` and `riok/mapperly` repositories.
--   **Website Fetcher**: Gathers information from URLs provided by the user. Prefer the built-in `fetch` tool if available; otherwise, use the `read-website-fast` tool.
+-   **Website Fetcher**: Gathers information from URLs provided by the user. using `fetch` or `get_web_pages` tools.
 
 ## 5. Mandatory Workflow
 
@@ -70,7 +70,7 @@ Carefully analyze the user's prompt. Identify the core objectives, whether it is
 
 ### Step 2: Information Gathering & Codebase Investigation
 Before writing code, investigate thoroughly.
-*   If the user provides a **URL**, you **MUST** use the `fetch` tool to retrieve its content.
+*   If the user provides a **URL**, you **MUST** use the `fetch` or `get_web_pages` tools to retrieve its content.
 *   If the user provides a **git commit id/hash**, you **MUST** run the `git --no-pager show <commit-id>` command to retrieve its details.
 *   If the user talked about current changes in the codebase, you **MUST** run the `git --no-pager diff` and `git --no-pager diff --staged` commands to see the differences.
 *   For UI-related tasks, you **MUST** first ask `DeepWiki`: *"What features does BitPlatform offer to help me complete this task? [USER'S ORIGINAL REQUEST]"*
