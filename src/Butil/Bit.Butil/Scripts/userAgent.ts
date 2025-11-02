@@ -5,9 +5,9 @@ var BitButil = BitButil || {};
         extract,
     };
 
-    function extract() {
+    function extract(userAgentString?: string) {
         var nav = window.navigator;
-        var ua = nav.userAgent || '';
+        var ua = userAgentString || nav.userAgent || '';
 
         var opera = (window as any).operamini || (window as any).opera;
         var brave = (nav as any).brave;
@@ -423,7 +423,7 @@ var BitButil = BitButil || {};
         if (description.length) {
             userAgentProps.description = description.join(' ');
         }
-        
+
         return userAgentProps;
 
         function getLayout(guesses) {
