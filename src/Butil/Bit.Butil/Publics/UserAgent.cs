@@ -13,7 +13,7 @@ public class UserAgent(IJSRuntime js)
     /// Extracts the user agent properties from the browser or web-view.
     /// </summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UserAgentProperties))]
-    public async ValueTask<UserAgentProperties> Extract(string? userAgentString)
+    public async ValueTask<UserAgentProperties> Extract(string? userAgentString = null)
     {
         return await js.Invoke<UserAgentProperties>("BitButil.userAgent.extract", userAgentString);
     }
