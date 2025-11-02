@@ -43,7 +43,7 @@ public partial class Templates03GettingStartedPage
             command:"dotnet tool install -g Aspire.Cli"),
 
             (text:@"echo 'Install the Bit.Boilerplate project template https://www.nuget.org/packages/Boilerplate.Templates';",
-            command:"dotnet new install Bit.Boilerplate::10.0.0-pre-06;")
+            command:"dotnet new install Bit.Boilerplate::10.0.0-pre-07;")
         ];
 
         if (enableVirtualization)
