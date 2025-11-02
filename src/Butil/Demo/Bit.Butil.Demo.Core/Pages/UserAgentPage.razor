@@ -24,15 +24,18 @@
 <hr />
 <br />
 
+<input @bind="userAgentString" />
 <button @onclick="Extract">Extract</button>
 
 <br />
 <br />
 
 @code {
-    private async Task Extract()
+	private string? userAgentString;
+
+	private async Task Extract()
     {
-        var userAgentProps = await userAgent.Extract();
+        var userAgentProps = await userAgent.Extract(userAgentString);
         await console.Log("UserAgent properties:", userAgentProps);
     }
 }
