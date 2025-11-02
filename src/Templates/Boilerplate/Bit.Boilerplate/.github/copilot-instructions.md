@@ -59,7 +59,7 @@ The solution is organized into the following projects. Understand their roles to
 ## 4. Available Tooling
 
 -   **DeepWiki**: Provides access to an extensive knowledge base for the `bitfoundation/bitplatform` and `riok/mapperly` repositories.
--   **Website Fetcher**: Gathers information from URLs provided by the user. using `fetch` or `get_web_pages` tools.
+-   **Website Fetcher**: Gathers information from URLs provided by the user, using `fetch` or `get_web_pages` tools.
 
 ## 5. Mandatory Workflow
 
