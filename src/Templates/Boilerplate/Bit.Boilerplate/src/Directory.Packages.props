@@ -14,7 +14,7 @@
         <PackageVersion Include="Fido2.Models" Version="4.0.0" />
         <PackageVersion Include="HtmlSanitizer" Version="9.0.886" />
         <PackageVersion Include="libphonenumber-csharp" Version="9.0.17" />
-        <PackageVersion Include="Meziantou.Framework.Win32.Jobs" Version="3.4.7" />
+        <PackageVersion Include="Meziantou.Framework.Win32.Jobs" Version="3.4.8" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.0-rc.2.25502.107" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0-rc.2.25502.107" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="10.0.0-rc.2.25502.107" />
@@ -71,9 +71,9 @@
         <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.13.0" />
         <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.21" />
         <PackageVersion Include="Hangfire.EntityFrameworkCore" Version="0.7.0" />
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" Version="6.0.0-preview.1-prerelease" />
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" Version="6.0.0-preview.1-prerelease" />
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" Version="6.0.0-preview.1-prerelease" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" Version="6.0.0-preview.2-prerelease" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" Version="6.0.0-preview.2-prerelease" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" Version="6.0.0-preview.2-prerelease" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" Version="125.0.0.1" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Plugin.LocalNotification" Version="12.0.2" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="AdsPush" Version="2.0.0" />
@@ -100,7 +100,7 @@
         <!--/-:msbuild-conditional:noEmit -->
         <PackageVersion Include="Humanizer" Version="2.14.1" />
         <PackageVersion Include="QRCoder" Version="1.7.0" />
-        <PackageVersion Include="Magick.NET-Q16-AnyCPU" Version="14.9.0" />
+        <PackageVersion Include="Magick.NET-Q16-AnyCPU" Version="14.9.1" />
         <PackageVersion Include="FluentEmail.Smtp" Version="3.0.2" />
         <PackageVersion Include="FluentStorage" Version="6.0.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0-rc.2.25502.107" />
