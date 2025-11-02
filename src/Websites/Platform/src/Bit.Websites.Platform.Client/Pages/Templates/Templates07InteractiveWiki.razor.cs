@@ -1,5 +1,5 @@
 ﻿namespace Bit.Websites.Platform.Client.Pages.Templates;
 
-public partial class Templates08NextStep
+public partial class Templates07InteractiveWiki
 {
 }
