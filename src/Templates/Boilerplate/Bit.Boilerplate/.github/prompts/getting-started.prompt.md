@@ -983,7 +983,7 @@ At the end of Stage 21, ask: **"Do you have any questions or shall we proceed to
 
 ---
 
-## Stage 21: Diagnostic Modal
+## Stage 22: Diagnostic Modal
 
 ### Instructions
 
