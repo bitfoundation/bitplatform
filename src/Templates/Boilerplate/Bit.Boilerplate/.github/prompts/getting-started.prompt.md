@@ -842,7 +842,8 @@ At the end of Stage 18, ask: **"Do you have any questions about these configurat
    - **For Performance**: Aspire does NOT run the `Server.Api` and `Server.Web` projects on Docker (they run natively for faster development)
    - **Testing Linux Behavior on Windows**: If you want to test server behavior in Linux while **still using Aspire** on Windows, follow these instructions:
      - Open the project in Visual Studio Code
-     - Use Visual Studio Dev Container feature
+     - Use Visual Studio Code Dev Containers feature
+     - Run `chmod +x ./Clean.sh && ./Clean.sh` to clean previous windows build files.
      - Then run the `Boilerplate.Server.AppHost` project
      - This way you can test behavior on Linux while still benefiting from Aspire's features
 
@@ -852,8 +853,6 @@ At the end of Stage 18, ask: **"Do you have any questions about these configurat
  - Demonstrate the `WithLifetime` and `WithEndpointProxySupport` should be added right after `AddSqlServer`, `AddMySql` or `AddPostgres` methods.
 
 ---
-
-
 
 <!--#else-->
 
