@@ -10,6 +10,7 @@ using BlazorApplicationInsights.Interfaces;
 using Microsoft.AspNetCore.Components.Routing;
 using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Client.Core.Services.DiagnosticLog;
+using Boilerplate.Shared.Dtos.Diagnostic;
 
 namespace Boilerplate.Client.Core.Components;
 
@@ -220,9 +221,24 @@ public partial class AppClientCoordinator : AppComponentBase
             ExceptionHandler.Handle(appProblemDetails, displayKind: ExceptionDisplayKind.NonInterrupting);
         }));
 
-        signalROnDisposables.Add(hubConnection.On(SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE, async () =>
+        signalROnDisposables.Add(hubConnection.On<string>(SignalRMethods.REQUEST_UPLOAD_DIAGNOSTIC_LOGGER_BATCH, async correlationId =>
         {
-            return DiagnosticLogger.Store.ToArray();
+            async IAsyncEnumerable<DiagnosticLogDto> EnumerateLogs(CancellationToken ct)
+            {
+                var logs = DiagnosticLogger.Store.ToArray();
+                foreach (var log in logs)
+                {
+                    if (ct.IsCancellationRequested) yield break;
+                    yield return log;
+                    await Task.Yield(); // keep UI responsive
+                }
+            }
+
+            await hubConnection.SendAsync(
+                SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STREAM,
+                correlationId,
+                EnumerateLogs(CurrentCancellationToken),
+                CurrentCancellationToken);
         }));
 
         hubConnection.Closed += HubConnectionStateChange;

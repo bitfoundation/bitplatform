@@ -1,5 +1,7 @@
 ﻿//+:cnd:noEmit
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
+using System.Threading.Channels;
 using Boilerplate.Server.Api.Controllers.Identity;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Dtos.Diagnostic;
@@ -61,36 +63,6 @@ public partial class AppHub : Hub
         }
 
         return ChangeAuthenticationStateImplementation(user);
-    }
-
-    /// <summary>
-    /// <inheritdoc cref="SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE"/>
-    /// </summary>
-    [Authorize(Policy = AppFeatures.System.ManageLogs)]
-    public async IAsyncEnumerable<DiagnosticLogDto> GetUserSessionLogs(
-        Guid userSessionId,
-        [EnumeratorCancellation] CancellationToken cancellationToken,
-        [FromServices] AppDbContext dbContext)
-    {
-        var userSessionSignalRConnectionId = await dbContext.UserSessions
-            .Where(us => us.Id == userSessionId)
-            .Select(us => us.SignalRConnectionId)
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (string.IsNullOrEmpty(userSessionSignalRConnectionId))
-            yield break;
-
-        var logs = await Clients.Client(userSessionSignalRConnectionId)
-            .InvokeAsync<DiagnosticLogDto[]>(SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE, cancellationToken);
-
-        if (logs is null || logs.Length is 0)
-            yield break;
-
-        foreach (var log in logs)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            yield return log;
-        }
     }
 
     private async Task ChangeAuthenticationStateImplementation(ClaimsPrincipal? user)

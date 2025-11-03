@@ -193,12 +193,46 @@ public partial class UsersPage
     {
         DiagnosticLogger.Store.Clear();
 
-        await foreach (var log in hubConnection.StreamAsync<DiagnosticLogDto>(
-            "GetUserSessionLogs",
-            userSessionId,
-            cancellationToken: CurrentCancellationToken))
+        var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        // Receive per-log events
+        var d1 = hubConnection.On<DiagnosticLogDto>(SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE, log =>
         {
             DiagnosticLogger.Store.Enqueue(log);
+        });
+
+        // Lifecycle events
+        var d2 = hubConnection.On<string>(SignalRMethods.DIAGNOSTIC_LOGS_COMPLETE, _ => completed.TrySetResult());
+        var d3 = hubConnection.On<string>(SignalRMethods.DIAGNOSTIC_LOGS_ABORTED, _ => completed.TrySetResult());
+        var d4 = hubConnection.On<string>(SignalRMethods.DIAGNOSTIC_LOGS_ERROR, _ => completed.TrySetResult());
+
+        // Join temp group and trigger the target to stream
+        var correlationId = await hubConnection.InvokeAsync<string?>(
+            "BeginUserSessionLogs", 
+            userSessionId, 
+            cancellationToken: CurrentCancellationToken);
+        if (string.IsNullOrEmpty(correlationId))
+        {
+            d1.Dispose(); d2.Dispose(); d3.Dispose(); d4.Dispose();
+            return;
+        }
+
+        try
+        {
+            // Optional safety timeout for first item or completion
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(CurrentCancellationToken);
+            timeoutCts.CancelAfter(TimeSpan.FromSeconds(15));
+
+            await completed.Task.WaitAsync(timeoutCts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            // ignore, just end gracefully
+        }
+        finally
+        {
+            d1.Dispose(); d2.Dispose(); d3.Dispose(); d4.Dispose();
+            await hubConnection.InvokeAsync("EndUserSessionLogs", correlationId);
         }
 
         PubSubService.Publish(ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL);

@@ -44,5 +44,21 @@ public static partial class SignalRMethods
     /// Uploading these logs for display in the support staff's diagnostic modal log viewer aids in pinpointing the root cause of user issues during live troubleshooting.
     /// Another benefit of having this feature is in dev environment when you wanna see your Android, iOS logs on your desktop wide screen.
     /// </summary>
+    public const string REQUEST_UPLOAD_DIAGNOSTIC_LOGGER_BATCH = nameof(REQUEST_UPLOAD_DIAGNOSTIC_LOGGER_BATCH);
+
+    /// <summary>
+    /// Client > Server: uploads a batch of diagnostic logs (use with a small, safe batch size).
+    /// </summary>
+    public const string UPLOAD_DIAGNOSTIC_LOGGER_BATCH = nameof(UPLOAD_DIAGNOSTIC_LOGGER_BATCH);
+
+    // Target client -> Hub: stream logs
+    public const string UPLOAD_DIAGNOSTIC_LOGGER_STREAM = nameof(UPLOAD_DIAGNOSTIC_LOGGER_STREAM);
+
+    // Hub -> Admin: deliver each log item
     public const string UPLOAD_DIAGNOSTIC_LOGGER_STORE = nameof(UPLOAD_DIAGNOSTIC_LOGGER_STORE);
+
+    // Hub -> Admin: lifecycle events
+    public const string DIAGNOSTIC_LOGS_COMPLETE = nameof(DIAGNOSTIC_LOGS_COMPLETE);
+    public const string DIAGNOSTIC_LOGS_ABORTED = nameof(DIAGNOSTIC_LOGS_ABORTED);
+    public const string DIAGNOSTIC_LOGS_ERROR = nameof(DIAGNOSTIC_LOGS_ERROR);
 }
