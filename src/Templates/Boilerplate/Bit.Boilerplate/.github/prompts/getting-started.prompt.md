@@ -849,7 +849,7 @@ At the end of Stage 18, ask: **"Do you have any questions about these configurat
 5. **Search and Demonstrate**:
    - Find and show the `Boilerplate.Server.AppHost/Program.cs` file
    - Show where database configuration is done
- - Demonstrate the `WithLifetime` and `WithEndpointProxySupport` should be added right after `AddSqlServer`, `AddMySql` or `AddPostgreSql` methods.
+ - Demonstrate the `WithLifetime` and `WithEndpointProxySupport` should be added right after `AddSqlServer`, `AddMySql` or `AddPostgres` methods.
 
 ---
 
