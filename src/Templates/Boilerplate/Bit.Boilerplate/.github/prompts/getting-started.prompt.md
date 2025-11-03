@@ -1042,11 +1042,11 @@ At the end of Stage 22, ask: **"Do you have any questions or shall we proceed to
 
 1. **Read diagnostic modal files**: Search for and read `AppDiagnosticModal*.cs` files and `DiagnosticsController.cs` in the codebase
 
-2. **Explain high-level capabilities**: Based on your understanding of these files, explain the key features and capabilities that the Diagnostic Modal provides for developers
+2. **Explain high-level capabilities**: Based on your understanding of these files, explain the key features and capabilities that the Diagnostic Modal provides for developers. Explain only HIGH-LEVEL, not detailed code.
 
-3. **Important Layout Warning**: Emphasize that developers should be very careful not to break the Layout structure in a way that prevents the Diagnostic Modal from being opened
-   - **Opening Mechanism**: The modal is opened by clicking 7 times on the Header
-   - **Responsible Component**: `DiagnosticSpacer` component is responsible for handling the clicks and opening the modal
+3. **Important**: Note that `App.openDevTools()` opens an **in-app** browser DevTools that works even on mobile devices.
+
+4. **Hands-On Recommendation**: STRONGLY recommend visiting https://bitplatform.dev/demos, opening any published app, and testing the Diagnostic Modal (7 clicks on header or Ctrl + Shift + X) to see all features in action.
 
 ---
 
