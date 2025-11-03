@@ -34,7 +34,7 @@ List the available stages:
 12. **Stage 12**: Blazor Modes, PreRendering & PWA
 13. **Stage 13**: Force Update System
 14. **Stage 14**: Response Caching System
-15. **Stage 15**: Logging and OpenTelemetry
+15. **Stage 15**: Logging, OpenTelemetry and Health Checks
 16. **Stage 16**: CI/CD Pipeline and Environments
 17. **Stage 17**: Automated Testing (Unitigration Tests)
 18. **Stage 18**: Other Available Prompt Templates
@@ -44,6 +44,9 @@ List the available stages:
 22. **Stage 22**: Messaging
 23. **Stage 23**: Diagnostic Modal
 24. **Stage 24**: WebAuthn and Passwordless Authentication (Advanced)
+<!--#if (database == "PostgreSQL" || database == "SqlServer")-->
+25. **Stage 25**: RAG / Semantic Search with Vector Embeddings (Advanced)
+<!--#endif-->
 
 **Default: Stage 1**
 
@@ -724,11 +727,11 @@ In this stage, you will explain the comprehensive response caching system built 
 
 ---
 
-At the end of Stage 14, ask: **"Do you have any questions about the Response Caching system, or shall we proceed to Stage 15 (Logging and OpenTelemetry)?"**
+At the end of Stage 14, ask: **"Do you have any questions about the Response Caching system, or shall we proceed to Stage 15 (Logging, OpenTelemetry and Health Checks)?"**
 
 ---
 
-## Stage 15: Logging and OpenTelemetry
+## Stage 15: Logging, OpenTelemetry and Health Checks
 
 ### Instructions
 
@@ -757,6 +760,10 @@ At the end of Stage 14, ask: **"Do you have any questions about the Response Cac
    - If you're adding Serilog, using App Insights direct methods, or anything other than `ILogger` and `AppActivitySource`, you probably don't understand OpenTelemetry or Microsoft.Extensions.Logging
    - Everything is already optimally configured
    - OpenTelemetry is vendor-agnostic - switch from Sentry to App Insights without code changes
+
+8. **Health Checks**:
+   - Explain this project has built-in health checks for whatever has been configured in `AddServerApiProjectServices` method.
+   But this is only enabled in Development environment by default, so in Production/Staging you need to explicitly enable it inside `MapAppHealthChecks` method.
 
 ---
 
@@ -1061,6 +1068,58 @@ At the end of Stage 23, ask: **"Do you have any questions about the Diagnostic M
 At the end of Stage 24, ask: **"Do you have any questions about WebAuthn implementation?"**
 
 ---
+
+<!--#if (database == "PostgreSQL" || database == "SqlServer")-->
+
+## Stage 25: RAG / Semantic Search with Vector Embeddings (Advanced)
+
+In this stage, you will explain the advanced semantic search capabilities using vector embeddings for database queries.
+
+### Instructions
+
+1. **Explain the Different Search Approaches**:
+   - **Simple String Matching**: Basic `Contains()` method for searching text
+   - **Full-Text Search**: Database-native full-text search capabilities (e.g., PostgreSQL's full-text search)
+   - **Vector-Based Semantic Search**: Using text-embedding models to enable meaning-based searches
+   - **Hybrid Approach**: Combining full-text search with vector-based search for optimal results
+
+2. **Explain Vector Embeddings**:
+   - **What are Embeddings**: Vectors are numerical representations of text that capture semantic meaning
+   - **Semantic Search Capability**: With vectors, you can perform searches that understand meaning, not just keywords
+   - **Cross-Language Search**: A user can search in one language and find results in another language because embeddings capture semantic meaning
+   - **Example**: Searching for "laptop computer" might also find results containing "notebook PC" or even results in other languages with similar meaning
+
+3. **Explain Embedding Models**:
+   - **Default: LocalTextEmbeddingGenerationService**: 
+     - A local model included in the project by default
+     - Good for testing and development only
+     - **Not recommended for production** due to limited accuracy
+   - **Recommended Production Models**:
+     - **OpenAI text-embedding-3-small**: High-quality embeddings from OpenAI
+     - **Azure OpenAI Embeddings**: Enterprise-grade embedding service
+     - **Hugging Face Models**: Open-source embedding models
+   - **Configuration**: These models are configured in `appsettings.json` under the `AI` section in `Boilerplate.Server.Api` project
+
+4. **Enable Embeddings in the Project**:
+   - **Step 1**: Open `AppDbContext.cs` in `Boilerplate.Server.Api/Data` folder
+   - **Step 2**: Find the `IsEmbeddingEnabled` static property and change it from `false` to `true`:
+     ```csharp
+     public static readonly bool IsEmbeddingEnabled = true;
+
+<!--#if (module != "Admin" && module != "Sales")-->
+5. **Find and Show Implementation**:
+   - Search for and explain `ProductEmbeddingService.cs` in the `Boilerplate.Server.Api/Services` folder
+   - Show the `SearchProducts` method that performs vector-based similarity search
+   - Show the `Embed` method that generates embeddings for products
+   - Explain how weighted embeddings work (combining product name, description, category with different importance weights)
+<!--#endif-->
+---
+
+At the end of Stage 25, ask: **"Do you have any questions about vector embeddings, semantic search, or RAG (Retrieval-Augmented Generation) capabilities?"**
+
+---
+
+<!--#endif-->
 
 ## Final Message
 
