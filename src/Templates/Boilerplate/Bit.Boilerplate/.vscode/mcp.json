@@ -3,17 +3,6 @@
         "DeepWiki": {
             "type": "sse",
             "url": "https://mcp.deepwiki.com/mcp"
-        },
-        "read-website-fast": {
-            "type": "stdio",
-            "command": "docker",
-            "args": [
-                "run",
-                "-i",
-                "--rm",
-                "mcp/fetch"
-            ],
-            "comment": "vscode has built-in fetch, but visual studio does not."
         }
     }
 }
