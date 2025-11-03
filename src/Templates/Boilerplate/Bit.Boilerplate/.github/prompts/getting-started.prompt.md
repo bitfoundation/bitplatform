@@ -23,26 +23,27 @@ List the available stages:
 1. **Stage 1**: Entity Framework Core (DbContext, Entities, Migrations)
 2. **Stage 2**: DTOs, Mappers, and Object Mapping with Mapperly
 3. **Stage 3**: API Controllers and OData Query Support
-4. **Stage 4**: Localization and Multi-language Support
-5. **Stage 5**: Exception Handling and Error Management
-6. **Stage 6**: ASP.NET Core Identity and Authentication
-7. **Stage 7**: Blazor Pages, Components, Styling & Navigation
-8. **Stage 8**: Dependency Injection & Service Registration
-9. **Stage 9**: Configuration (appsettings.json)
-10. **Stage 10**: TypeScript, Build Process & JavaScript Interop
-11. **Stage 11**: Blazor Modes, PreRendering & PWA
-12. **Stage 12**: Force Update System
-13. **Stage 13**: Response Caching System
-14. **Stage 14**: Logging and OpenTelemetry
-15. **Stage 15**: CI/CD Pipeline and Environments
-16. **Stage 16**: Automated Testing (Unitigration Tests)
-17. **Stage 17**: Other Available Prompt Templates
-18. **Stage 18**: Project miscellaneous files
-19. **Stage 19**: .NET Aspire
-20. **Stage 20**: .NET MAUI / Blazor Hybrid
-21. **Stage 21**: Messaging
-22. **Stage 22**: Diagnostic Modal
-23. **Stage 23**: WebAuthn and Passwordless Authentication (Advanced)
+4. **Stage 4**: Background Jobs and CancellationToken Management
+5. **Stage 5**: Localization and Multi-language Support
+6. **Stage 6**: Exception Handling and Error Management
+7. **Stage 7**: ASP.NET Core Identity and Authentication
+8. **Stage 8**: Blazor Pages, Components, Styling & Navigation
+9. **Stage 9**: Dependency Injection & Service Registration
+10. **Stage 10**: Configuration (appsettings.json)
+11. **Stage 11**: TypeScript, Build Process & JavaScript Interop
+12. **Stage 12**: Blazor Modes, PreRendering & PWA
+13. **Stage 13**: Force Update System
+14. **Stage 14**: Response Caching System
+15. **Stage 15**: Logging and OpenTelemetry
+16. **Stage 16**: CI/CD Pipeline and Environments
+17. **Stage 17**: Automated Testing (Unitigration Tests)
+18. **Stage 18**: Other Available Prompt Templates
+19. **Stage 19**: Project miscellaneous files
+20. **Stage 20**: .NET Aspire
+21. **Stage 21**: .NET MAUI / Blazor Hybrid
+22. **Stage 22**: Messaging
+23. **Stage 23**: Diagnostic Modal
+24. **Stage 24**: WebAuthn and Passwordless Authentication (Advanced)
 
 **Default: Stage 1**
 
@@ -200,11 +201,71 @@ While backend architecture is simple, it provides lots of features, including bu
 
 ---
 
-At the end of Stage 3, ask: **"Do you have any questions about Stage 3, or shall we proceed to Stage 4 (Localization and Multi-language Support)?"**
+At the end of Stage 3, ask: **"Do you have any questions about Stage 3, or shall we proceed to Stage 4 (Background Jobs and CancellationToken Management)?"**
 
 ---
 
-# Stage 4: Localization and Multi-language Support
+# Stage 4: Background Jobs and CancellationToken Management
+
+In this stage, you will explain how the project handles cancellation tokens for request cancellation and background job processing.
+
+## Topics to Cover:
+
+### CancellationToken in API Requests
+
+#### Automatic Request Cancellation
+- **How it works**: All API methods receive a `CancellationToken` parameter that automatically cancels operations when:
+  - The user navigates away from a page
+  - The browser/app is closed
+  - A new request supersedes a previous one (e.g., navigating to page 2 of a data grid while page 1 is still loading)
+  - For API methods that return `IQueryable`, cancellation happens **implicitly** - you don't need to manually pass the token to EF Core queries
+
+#### Client-Side Integration
+- **Implementation**: This works through a combination of:
+  - Server-side: API methods accept `CancellationToken cancellationToken` parameter
+- Client-side: HTTP client passes `CurrentCancellationToken` (inherited from `AppComponentBase`) when making API calls
+  - Show examples from the codebase where `CurrentCancellationToken` is used in client components
+
+#### User Abandonment Scenarios
+- **Logical Cancellation**: If a user clicks "Save" to update a Product and then immediately:
+  - Navigates away from the page
+  - Closes the browser/app
+  - The save operation is **automatically canceled**
+- **Why this is Ok?**: The user didn't wait for the result which can be an error (e.g., duplicate product name)
+- Since they didn't wait, canceling the operation is the logical behavior
+
+### Navigation Lock for Critical Operations
+- **Purpose**: For operations where you want to **prevent** automatic cancellation, use `NavigationLock`
+  - Prompts the user to wait before navigating away
+  - Useful for short critical operations
+
+### When to Use Background Jobs
+- **Problem**: What if the operation is time-consuming (e.g., sending SMS)?
+  - Users shouldn't have to wait and keep the page open
+- Navigation Lock is not appropriate for long-running tasks
+  
+- **Solution**: Use Background Jobs with `Hangfire`
+  - Operations are queued and processed asynchronously
+  - Server restarts or crashes don't lose the job
+  - Jobs are persisted in the database and automatically resume
+
+### Background Job Implementation with Hangfire
+
+#### Find and Explain PhoneServiceJobsRunner
+- **Search**: Locate `PhoneServiceJobsRunner.cs` in the `Boilerplate.Server.Api` project and its usages and explain it to the developer.
+
+#### Key Benefits of Hangfire Integration
+- **Persistence**: Jobs are stored in the database
+- **Reliability**: No jobs are lost even in failure scenarios
+- **Scalability**: Jobs can be processed on different servers
+
+---
+
+At the end of Stage 4, ask: **"Do you have any questions about Stage 4, or shall we proceed to Stage 5 (Localization and Multi-language Support)?"**
+
+---
+
+# Stage 5: Localization and Multi-language Support
 
 In this stage, you will explain the following topics:
 
@@ -225,11 +286,11 @@ In this stage, you will explain the following topics:
 
 ---
 
-At the end of Stage 4, ask: **"Do you have any questions about Stage 4, or shall we proceed to Stage 5 (Exception Handling and Error Management)?"**
+At the end of Stage 5, ask: **"Do you have any questions about Stage 5, or shall we proceed to Stage 6 (Exception Handling and Error Management)?"**
 
 ---
 
-# Stage 5: Exception Handling and Error Management
+# Stage 6: Exception Handling and Error Management
 
 In this stage, you will explain the following topics:
 
@@ -291,20 +352,13 @@ In this stage, you will explain the following topics:
 ### Exception handlers in project
 - Tell the developer about ServerExceptionHandler, SharedExceptionHandler, ClientExceptionHandler, MauiExceptionHandler, WindowsExceptionHandler, WebClientExceptionHandler and how they work in different platforms.
 
-### Best Practices Summary
-1. Use `KnownException`-derived exceptions when you want to show a specific message to users
-2. Use `WithData()` to add debugging context to exceptions
-3. Inherit from `AppComponentBase` or `AppPageBase` to get automatic exception handling
-4. Use `WrapHandled()` for event handlers in Razor files
-5. Don't be afraid to throw exceptions - the framework handles them gracefully
+---
+
+At the end of Stage 6, ask: **"Do you have any questions about Stage 6, or would you like to explore any specific topic in more depth? Or shall we proceed to Stage 7 (ASP.NET Core Identity and Authentication)?"**
 
 ---
 
-At the end of Stage 5, ask: **"Do you have any questions about Stage 5, or shall we proceed to Stage 6 (ASP.NET Core Identity and Authentication)?"**
-
----
-
-# Stage 6: ASP.NET Core Identity and Authentication
+# Stage 7: ASP.NET Core Identity and Authentication
 
 In this stage, you will explain the comprehensive authentication and authorization system built into the project.
 
@@ -427,11 +481,11 @@ In this stage, you will explain the comprehensive authentication and authorizati
 
 ---
 
-At the end of Stage 6, ask: **"Do you have any questions about Stage 6, or would you like to explore any specific topic in more depth?"**
+At the end of Stage 7, ask: **"Do you have any questions about Stage 7, or would you like to explore any specific topic in more depth?"**
 
 ---
 
-# Stage 7: Blazor Pages, Components, Styling & Navigation
+# Stage 8: Blazor Pages, Components, Styling & Navigation
 
 In this stage, you will explain the Blazor UI architecture, component structure, styling system, and navigation in the project.
 
@@ -506,20 +560,13 @@ In this stage, you will explain the Blazor UI architecture, component structure,
   - Page-level metadata and configuration
 - **Show examples** from actual component/page code-behind files
 
-### Best Practices Summary
-1. **Separation of Concerns**: Keep controls and layout in `.razor` using `BitGrid` and `BitStack`, logic in `.razor.cs`, style details in `.razor.scss`
-2. **Use Theme Variables**: Always use `--bit-clr-*` variables for colors to support theming
-4. **Strongly-Typed Navigation**: Use `PageUrls` constants instead of hardcoded route strings
-5. **Inherit from Base Classes**: Use `AppComponentBase` or `AppPageBase` for components and pages
-6. **Leverage DeepWiki**: Ask questions about Bit.BlazorUI components naturally in Copilot Chat
+---
+
+At the end of Stage 8, ask: **"Do you have any questions about Stage 8, or shall we proceed to Stage 9 (Dependency Injection & Service Registration)?"**
 
 ---
 
-At the end of Stage 7, ask: **"Do you have any questions about Stage 7, or shall we proceed to Stage 8 (Dependency Injection & Service Registration)?"**
-
----
-
-## Stage 8: Dependency Injection & Service Registration
+## Stage 9: Dependency Injection & Service Registration
 
 ### Instructions
 1. Search for `*ServiceCollectionExtensions.cs`, `*.Services.cs` and `WebApplicationBuilderExtensions` files
@@ -536,11 +583,11 @@ Tell the developer about it and how it works.
 
 ---
 
-At the end of Stage 8, ask: **"Do you have any questions about Stage 8 or the dependency injection system? Would you like to see examples of adding a new service, or shall we proceed to Stage 9 (Configuration - appsettings.json)?"**
+At the end of Stage 9, ask: **"Do you have any questions about Stage 9 or the dependency injection system? Would you like to see examples of adding a new service, or shall we proceed to Stage 10 (Configuration - appsettings.json)?"**
 
 ---
 
-## Stage 9: Configuration (appsettings.json)
+## Stage 10: Configuration (appsettings.json)
 
 ### Instructions
 1. Explain that each project has its own `appsettings.json` and `appsettings.{environment}.json` files
@@ -554,11 +601,11 @@ For example, explain: If you add a setting in `src/Shared/appsettings.json`, it 
 
 ---
 
-At the end of Stage 9, ask: **"Do you have any questions about the configuration system, or shall we proceed to Stage 10 (TypeScript, Build Process & JavaScript Interop)?"**
+At the end of Stage 10, ask: **"Do you have any questions about the configuration system, or shall we proceed to Stage 11 (TypeScript, Build Process & JavaScript Interop)?"**
 
 ---
 
-## Stage 10: TypeScript, Build Process & JavaScript Interop
+## Stage 11: TypeScript, Build Process & JavaScript Interop
 
 ### Instructions
 1. Show `tsconfig.json` and `package.json` from `src/Client/Boilerplate.Client.Core/`
@@ -568,11 +615,11 @@ At the end of Stage 9, ask: **"Do you have any questions about the configuration
 
 ---
 
-At the end of Stage 10, ask: **"Do you have any questions about TypeScript, the build process, or JavaScript interop? Would you like to see another example of adding a different package, or shall we proceed to Stage 11 (Blazor Modes, PreRendering & PWA)?"**
+At the end of Stage 11, ask: **"Do you have any questions about TypeScript, the build process, or JavaScript interop? Would you like to see another example of adding a different package, or shall we proceed to Stage 12 (Blazor Modes, PreRendering & PWA)?"**
 
 ---
 
-# Stage 11: Blazor Modes, PreRendering & PWA
+# Stage 12: Blazor Modes, PreRendering & PWA
 
 In this stage, you will explain Blazor rendering modes, pre-rendering, and PWA features.
 
@@ -613,11 +660,11 @@ var products = await PrerenderStateService.GetValue(() => HttpClient.GetFromJson
 
 ---
 
-At the end of Stage 11, ask: **"Do you have any questions about Blazor Modes, Pre-Rendering, or PWA features, or shall we proceed to Stage 12 (Force Update System)?"**
+At the end of Stage 12, ask: **"Do you have any questions about Blazor Modes, Pre-Rendering, or PWA features, or shall we proceed to Stage 13 (Force Update System)?"**
 
 ---
 
-## Stage 12: Force Update System
+## Stage 13: Force Update System
 
 ### Instructions
 1. Search for `ForceUpdateMiddleware` and `IAppUpdateService` in the codebase
@@ -628,11 +675,11 @@ At the end of Stage 11, ask: **"Do you have any questions about Blazor Modes, Pr
 
 ---
 
-At the end of Stage 12, ask: **"Do you have any questions about the Force Update system, or shall we proceed to Stage 13 (Response Caching System)?"**
+At the end of Stage 13, ask: **"Do you have any questions about the Force Update system, or shall we proceed to Stage 14 (Response Caching System)?"**
 
 ---
 
-## Stage 13: Response Caching System
+## Stage 14: Response Caching System
 
 In this stage, you will explain the comprehensive response caching system built into the project.
 
@@ -677,11 +724,11 @@ In this stage, you will explain the comprehensive response caching system built 
 
 ---
 
-At the end of Stage 13, ask: **"Do you have any questions about the Response Caching system, or shall we proceed to Stage 14 (Logging and OpenTelemetry)?"**
+At the end of Stage 14, ask: **"Do you have any questions about the Response Caching system, or shall we proceed to Stage 15 (Logging and OpenTelemetry)?"**
 
 ---
 
-## Stage 14: Logging and OpenTelemetry
+## Stage 15: Logging and OpenTelemetry
 
 ### Instructions
 
@@ -713,11 +760,11 @@ At the end of Stage 13, ask: **"Do you have any questions about the Response Cac
 
 ---
 
-At the end of Stage 14, ask: **"Do you have any questions about the Logging and OpenTelemetry system, or shall we proceed to Stage 15 (CI/CD Pipeline and Environments)?"**
+At the end of Stage 15, ask: **"Do you have any questions about the Logging and OpenTelemetry system, or shall we proceed to Stage 16 (CI/CD Pipeline and Environments)?"**
 
 ---
 
-## Stage 15: CI/CD Pipeline and Environments
+## Stage 16: CI/CD Pipeline and Environments
 
 ### Instructions
 1. **Search for workflow files**: Find and review `*.yml` files.
@@ -735,11 +782,11 @@ The reason for this is you can use different runners for build and deployment, s
 
 ---
 
-At the end of Stage 15, ask: **"Do you have any questions about CI/CD or environment configuration, or shall we proceed to Stage 16 (Automated Testing - Unitigration Tests)?"**
+At the end of Stage 16, ask: **"Do you have any questions about CI/CD or environment configuration, or shall we proceed to Stage 17 (Automated Testing - Unitigration Tests)?"**
 
 ---
 
-## Stage 16: Automated Testing (Unitigration Tests)
+## Stage 17: Automated Testing (Unitigration Tests)
 
 ### Instructions
 1. **Explain Unitigration Test concept**: Tests written as Integration Tests with full real server behavior (both UI tests and HTTP client based tests), but with the flexibility to fake specific parts of the server when needed - similar to Unit Tests - making test writing much simpler.
@@ -751,11 +798,11 @@ At the end of Stage 15, ask: **"Do you have any questions about CI/CD or environ
 
 ---
 
-At the end of Stage 16, ask: **"Do you have any questions about the testing approach or writing tests, or shall we proceed to Stage 17 (Other Available Prompt Templates)?"**
+At the end of Stage 17, ask: **"Do you have any questions about the testing approach or writing tests, or shall we proceed to Stage 18 (Other Available Prompt Templates)?"**
 
 ---
 
-## Stage 17: Other Available Prompt Templates
+## Stage 18: Other Available Prompt Templates
 
 ### Instructions
 1. **Search for prompt files**: Look for all `.prompt.md` files in `.github/prompts/` directory (excluding `getting-started.prompt.md`)
@@ -771,11 +818,11 @@ At the end of Stage 16, ask: **"Do you have any questions about the testing appr
 
 ---
 
-At the end of Stage 17, ask: **"Do you have any questions about these specialized prompts, or would you like to see examples of using any of them? Or shall we proceed to Stage 18 (Project miscellaneous files)?"**
+At the end of Stage 18, ask: **"Do you have any questions about these specialized prompts, or would you like to see examples of using any of them? Or shall we proceed to Stage 19 (Project miscellaneous files)?"**
 
 ---
 
-## Stage 18: Project miscellaneous files
+## Stage 19: Project miscellaneous files
 
 ### Instructions
 1. **Search for configuration files**: Look for the following files in the workspace root:
@@ -796,11 +843,11 @@ At the end of Stage 17, ask: **"Do you have any questions about these specialize
 
 ---
 
-At the end of Stage 18, ask: **"Do you have any questions about these configuration files and development tools, or would you like to explore any of them in more detail? Or shall we proceed to Stage 19 (.NET Aspire)?"**
+At the end of Stage 19, ask: **"Do you have any questions about these configuration files and development tools, or would you like to explore any of them in more detail? Or shall we proceed to Stage 20 (.NET Aspire)?"**
 
 ---
 
-## Stage 19: .NET Aspire
+## Stage 20: .NET Aspire
 
 <!--#if (aspire == true)-->
 
@@ -874,11 +921,11 @@ At the end of Stage 18, ask: **"Do you have any questions about these configurat
 
 
 <!--#endif-->
-At the end of Stage 19 (with Aspire), ask: **"Do you have any questions about .NET Aspire, its dashboard, deployment capabilities, or database management? Or shall we proceed to Stage 20 (.NET MAUI / Blazor Hybrid)?"**
+At the end of Stage 20 (with Aspire), ask: **"Do you have any questions about .NET Aspire, its dashboard, deployment capabilities, or database management? Or shall we proceed to Stage 21 (.NET MAUI / Blazor Hybrid)?"**
 
 ---
 
-## Stage 20: .NET MAUI / Blazor Hybrid
+## Stage 21: .NET MAUI / Blazor Hybrid
 
 ### Instructions
 
@@ -930,11 +977,11 @@ At the end of Stage 19 (with Aspire), ask: **"Do you have any questions about .N
 
 ---
 
-At the end of Stage 20, ask: **"Do you have any questions about .NET MAUI, native platform features, or cross-platform development? Or shall we proceed to Stage 21 (Messaging)?"**
+At the end of Stage 21, ask: **"Do you have any questions about .NET MAUI, native platform features, or cross-platform development? Or shall we proceed to Stage 22 (Messaging)?"**
 
 ---
 
-## Stage 21: Messaging
+## Stage 22: Messaging
 
 ### Instructions
 
@@ -978,11 +1025,11 @@ At the end of Stage 20, ask: **"Do you have any questions about .NET MAUI, nativ
 
 ---
 
-At the end of Stage 21, ask: **"Do you have any questions or shall we proceed to Stage 22 (Diagnostic Modal)?"**
+At the end of Stage 22, ask: **"Do you have any questions or shall we proceed to Stage 23 (Diagnostic Modal)?"**
 
 ---
 
-## Stage 22: Diagnostic Modal
+## Stage 23: Diagnostic Modal
 
 ### Instructions
 
@@ -996,11 +1043,11 @@ At the end of Stage 21, ask: **"Do you have any questions or shall we proceed to
 
 ---
 
-At the end of Stage 22, ask: **"Do you have any questions about the Diagnostic Modal system? Or shall we proceed to Stage 23 (WebAuthn and Passwordless Authentication)?"**
+At the end of Stage 23, ask: **"Do you have any questions about the Diagnostic Modal system? Or shall we proceed to Stage 24 (WebAuthn and Passwordless Authentication)?"**
 
 ---
 
-## Stage 23: WebAuthn and Passwordless Authentication (Advanced)
+## Stage 24: WebAuthn and Passwordless Authentication (Advanced)
 
 ### Instructions
 1. **Explain WebAuthn Overview**: Sign-in with fingerprint, Face ID, and PIN that is more secure than native biometric authentication. The bit implementation works across all platforms, although Face ID is not yet supported on Android.
@@ -1011,7 +1058,7 @@ At the end of Stage 22, ask: **"Do you have any questions about the Diagnostic M
 
 ---
 
-At the end of Stage 23, ask: **"Do you have any questions about WebAuthn implementation?"**
+At the end of Stage 24, ask: **"Do you have any questions about WebAuthn implementation?"**
 
 ---
 
