@@ -5,6 +5,9 @@ Welcome! This interactive guide will walk you through the key architectural comp
 **Important**: If you are not Claude Sonnet 4.5+ model, you **MUST** warn the user immediately with the following message before proceeding:
 *"⚠️ WARNING: For the best results with this project, it is strongly recommended to use **Claude Sonnet 4.5+**. The current model may not provide optimal performance, accuracy, or adherence to the complex workflows and conventions required by this prompt."*
 
+**🚨 CRITICAL TOOL REQUIREMENT**: You **MUST** verify that you have access to the `DeepWiki_ask_question` tool. If this tool is NOT available in your function list, you **MUST** immediately display the following error message:
+**❌ CRITICAL ERROR: DeepWiki_ask_question Tool Not Available**
+
 **Important**: All stages will be explained with **real examples from the actual project codebase**. You will use concrete files and code from this workspace to demonstrate each concept.
 
 ## Prerequisites
@@ -133,7 +136,7 @@ In this stage, you will explain the following topics:
 - **DTOs (Data Transfer Objects)**: Show DTO examples from the project (e.g., `CategoryDto`, `UserDto` etc)
 - **AppJsonContext**: What it is and its purpose
 - **Mapper Files**: How they're written in the `Server.Api` project using Mapperly (e.g., `CategoriesMapper`, `IdentityMapper` etc)
-- **Project vs Map**: Explain the difference between `Project()` for reading queries and `Map()` for reading and why project is more efficient for read scenarios.
+- **Project vs Map**: Explain the difference between `Project()` and `Map()` for reading data and why project is more efficient for read scenarios.
 - **Manual Projection Alternative**: Explain that using Mapperly's `Project()` is **not mandatory**. Developers can perform projection manually using LINQ's `Select()` method. 
   Both approaches produce the same SQL query, but Mapperly's `Project()` reduces repetitive code and is automatically updated when entity properties added/removed.
 - Mapperly usage in Client.Core: Try finding `.Patch` usages in `Boilerplate.Client.Core` project and explain the way mapperly is used for patching dto objects returned from server to update existing dto objects in client memory without replacing the whole object reference.
@@ -152,7 +155,7 @@ In this stage, you will explain the following topics:
 
 ## Topics to Cover:
 - **Controllers**: How they work in the project
-- **Dependency Injection with [AutoInject]**: Explain how the `[AutoInject]` attribute is used in controllers and components to automatically inject dependencies. Show examples from the project of controllers using this attribute instead of manual constructor injection. This simplifies code and reduces repetitive.
+- **Dependency Injection with [AutoInject]**: Explain how the `[AutoInject]` attribute is used in controllers and components to automatically inject dependencies. Show examples from the project of controllers using this attribute instead of constructor injection. This simplifies code and reduces repetitive code. The key difference between `[AutoInject]` and Primary Constructor is that dependencies already injected in base classes like `AppComponentBase` or `AppControllerBase` (such as `DbContext`, `Localizer`, `NavigationManager`, etc.) don't need to be repeated in each derived class. Child classes automatically inherit access to these injected dependencies without redeclaring them.
 - **Reading Data**: The recommendation is to return `IQueryable` of DTOs so that with `[EnableQuery]` attribute, the client can have Paging, Filtering, and Sorting capabilities using OData query options like `$top`, `$skip`, `$filter`, `$orderby`, etc.
 - **OData Query Options Support**: Explain that the project supports most OData query options:
   - ✅ **Supported**: `$filter`, `$top`, `$skip`, `$orderby`, `$select`
@@ -285,7 +288,7 @@ In this stage, you will explain the following topics:
   - Controllers (inherited from `AppControllerBase`)
   - Components and Pages (inherited from `AppComponentBase` or `AppPageBase`)
   - Show concrete code examples from the project
-- **bit-resx Tool**: Use the `DeepWiki_ask_question` tool to query the `bitfoundation/bitplatform` about `bit-resx` tool and explain it to the developer.
+- **bit-resx Tool**: Use the `DeepWiki_ask_question` tool to query the `bitfoundation/bitplatform` about `bit-resx` tool OR fetch https://github.com/bitfoundation/bitplatform/tree/develop/src/ResxTranslator and explain it to the developer.
 
 ---
 
@@ -329,6 +332,11 @@ In this stage, you will explain the following topics:
     ```
   - Show actual examples from the project where `WithData()` is used
 
+### Sending additional data to the client using WithExtensionData()
+- Sending additional data to the client is possible because this project is sending RFC 7807-compliant payload to the client.
+- Use the `WithExtensionData(key, value)` extension method to add contextual information that will be sent to the client along with the error response.
+- Explain `KnownException.TryGetExtensionDataValue` which can be used in client side to read the extension data sent from the server.
+
 ### Automatic Exception Handling in Blazor
 - **Component Lifecycle**: The project uses enhanced lifecycle methods that automatically handle exceptions:
   - `OnInitAsync()` instead of `OnInitializedAsync()`
@@ -366,19 +374,6 @@ At the end of Stage 6, ask: **"Do you have any questions about Stage 6, or would
 In this stage, you will explain the comprehensive authentication and authorization system built into the project.
 
 ## Topics to Cover:
-
-### Overview of Identity Features
-- **Complete Identity Solution**: The project includes a production-ready ASP.NET Core Identity implementation that works seamlessly across **all platforms** (Web, MAUI, Windows) with the best possible user experience
-- **Built-in Features**:
-  - Sign-in and Sign-up flows
-  - Two-Factor Authentication (2FA) with authenticator apps
-  - Biometric-based authentication (fingerprint, face recognition on supported devices)
-  - Email confirmation
-  - Password reset
-  - Profile management
-  - Session management
-  - User and Role management
-  - Permission-based authorization
 
 ### Authentication Architecture
 
@@ -718,12 +713,16 @@ In this stage, you will explain the comprehensive response caching system built 
    - **Important note**: This only applies to responses where `UserAgnostic` is not false
    - Responses for authenticated/logged-in users are **not cached** on CDN or output cache (for security/privacy reasons)
 
-5. **Explain the multi-layer caching architecture**:
-   - In addition to CDN and output cache, there are also:
-     - **Browser HTTP cache**: Standard browser caching based on HTTP headers
-     - **Client-side memory cache**: Managed in `CacheDelegatingHandler`
+**Explain the multi-layer caching architecture**:
+   - User's request will first handled using **Client-side memory cache** in `CacheDelegatingHandler`
+   - If found is memory, the result is returned `sync` rahter than `async` which prevents loadings, spinners and shimmer (skeleton ui) from being rendered.
+   - That's the reason if you navigate between products in https://sales.bitplatform.dev, the time that you naviagate back to a product you've already visited, it loads instantly without any loading indication.
+   - The **Client-side memory cache** works on all platforms.
+   - If not found in client-side memory cache, then it tries to get the response from **Browser's Http cache** (Only on browser)
+   - Even though browser's http cache is pretty fast, but it's considered async, so loadins will be rendered even for a few miliseconds.
+   - But the benefit of browser's http cache is, that is works the next time you open the app, but client-side memory cache is cleared when the app is closed.
+   - If not found in browser's http cache, then it tries to get the response from **CDN Edge Cache** (e.g., Cloudflare) or server's cache (ASP.NET Core Output Cache)
    - All of these caching layers are based on and controlled by the `AppResponseCache` attribute
-   - Show how `CacheDelegatingHandler` implements client-side memory caching
 
 ---
 
@@ -744,10 +743,13 @@ At the end of Stage 14, ask: **"Do you have any questions about the Response Cac
 3. **Logging configuration in `src/Shared/appsettings.json`**:
    - Show the `Logging` section with different providers
 
-4. **In-app Diagnostic Logger - extremely useful in Production for client-side troubleshooting**:
+4. **In-app Diagnostic Logger - extremely useful troubleshooting**:
    - Opens with **Ctrl + Shift + X** or clicking 7 times on header spacer
    - Located in `AppDiagnosticModal.razor.cs`
    - Support staff can view user session logs in real-time via SignalR (`UPLOAD_DIAGNOSTIC_LOGGER_STORE` method) automatically
+   - It's also useful for support stafs that have remote access to the user's machine/device
+   - Diagnostic modal shows logs for both server and client side during development for better developer experience,
+   but in production/staging, only client logs are shown for security reasons.
 
 5. **Easy integration with Sentry and Azure App Insights**:
    - Just set `Dsn` in `appsettings.json` for Sentry
@@ -943,6 +945,7 @@ At the end of Stage 20 (with Aspire), ask: **"Do you have any questions about .N
      - Access to more users through Google Play, Apple Store, and Microsoft Store
      - Full native capabilities (Access to local devices through TCP etc)
    - **Code Compatibility**: Code that works in the web version will most likely work in these projects too, but there are important platform-specific considerations to be aware of
+   - **Supported Platforms & Browsers**: For details on which browsers, operating systems, and platform versions are supported, refer to https://bitplatform.dev/templates
 
 2. **Explain Deep Links (Android) and Universal Links (iOS)**:
    - **Purpose**: When a user clicks on a web app link but has the Android or iOS app installed on their device, the app opens on that specific page instead of the browser
@@ -969,8 +972,8 @@ At the end of Stage 20 (with Aspire), ask: **"Do you have any questions about .N
    - **Auto-Update**: Includes automatic update functionality
 
 5. **Explain app size best practices**:
-   - **Recommendation**: Compare your published app size with the published apps linked at https://bitplatform.dev/demos
-   - **Warning**: If your app size is significantly larger, something might be misconfigured
+   - **Recommendation**: Developers should compare their published app size with the published apps available at https://bitplatform.dev/demos
+   - **Warning**: If your app size is significantly larger than the reference apps, something might be misconfigured
    - This helps ensure optimal app performance and download experience for users
 
 6. **Explain WebView version importance**:
@@ -1102,9 +1105,7 @@ In this stage, you will explain the advanced semantic search capabilities using 
 
 4. **Enable Embeddings in the Project**:
    - **Step 1**: Open `AppDbContext.cs` in `Boilerplate.Server.Api/Data` folder
-   - **Step 2**: Find the `IsEmbeddingEnabled` static property and change it from `false` to `true`:
-     ```csharp
-     public static readonly bool IsEmbeddingEnabled = true;
+   - **Step 2**: Find the `IsEmbeddingEnabled` static property and change it from `false` to `true`.
 
 <!--#if (module != "Admin" && module != "Sales")-->
 5. **Find and Show Implementation**:
