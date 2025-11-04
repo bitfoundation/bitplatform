@@ -23,22 +23,30 @@ List the available stages:
 1. **Stage 1**: Entity Framework Core (DbContext, Entities, Migrations)
 2. **Stage 2**: DTOs, Mappers, and Object Mapping with Mapperly
 3. **Stage 3**: API Controllers and OData Query Support
-4. **Stage 4**: Localization and Multi-language Support
-5. **Stage 5**: Exception Handling and Error Management
-6. **Stage 6**: ASP.NET Core Identity and Authentication
-7. **Stage 7**: Blazor Pages, Components, Styling & Navigation
-8. **Stage 8**: Dependency Injection & Service Registration
-9. **Stage 9**: Configuration (appsettings.json)
-10. **Stage 10**: TypeScript, Build Process & JavaScript Interop
-11. **Stage 11**: Blazor Modes, PreRendering & PWA
-12. **Stage 12**: Force Update System
-13. **Stage 13**: Response Caching System
-14. **Stage 14**: Logging and OpenTelemetry
-15. **Stage 15**: CI/CD Pipeline and Environments
-16. **Stage 16**: Automated Testing (Unitigration Tests)
-17. **Stage 17**: Other Available Prompt Templates
-18. **Stage 18**: Project miscellaneous files
-19. **Stage 19**: WebAuthn and Passwordless Authentication (Advanced)
+4. **Stage 4**: Background Jobs and CancellationToken Management
+5. **Stage 5**: Localization and Multi-language Support
+6. **Stage 6**: Exception Handling and Error Management
+7. **Stage 7**: ASP.NET Core Identity and Authentication
+8. **Stage 8**: Blazor Pages, Components, Styling & Navigation
+9. **Stage 9**: Dependency Injection & Service Registration
+10. **Stage 10**: Configuration (appsettings.json)
+11. **Stage 11**: TypeScript, Build Process & JavaScript Interop
+12. **Stage 12**: Blazor Modes, PreRendering & PWA
+13. **Stage 13**: Force Update System
+14. **Stage 14**: Response Caching System
+15. **Stage 15**: Logging, OpenTelemetry and Health Checks
+16. **Stage 16**: CI/CD Pipeline and Environments
+17. **Stage 17**: Automated Testing (Unitigration Tests)
+18. **Stage 18**: Other Available Prompt Templates
+19. **Stage 19**: Project miscellaneous files
+20. **Stage 20**: .NET Aspire
+21. **Stage 21**: .NET MAUI / Blazor Hybrid
+22. **Stage 22**: Messaging
+23. **Stage 23**: Diagnostic Modal
+24. **Stage 24**: WebAuthn and Passwordless Authentication (Advanced)
+<!--#if (database == "PostgreSQL" || database == "SqlServer")-->
+25. **Stage 25**: RAG / Semantic Search with Vector Embeddings (Advanced)
+<!--#endif-->
 
 **Default: Stage 1**
 
@@ -113,7 +121,7 @@ Instruct the developer to follow the required steps to create client-side migrat
 
 ---
 
-At the end of Stage 1, ask: **"Do you have any questions about Stage 1, or shall we proceed to Stage 2?"**
+At the end of Stage 1, ask: **"Do you have any questions about Stage 1, or shall we proceed to Stage 2 (DTOs, Mappers, and Mapperly)?"**
 
 ---
 
@@ -128,12 +136,13 @@ In this stage, you will explain the following topics:
 - **Project vs Map**: Explain the difference between `Project()` for reading queries and `Map()` for reading and why project is more efficient for read scenarios.
 - **Manual Projection Alternative**: Explain that using Mapperly's `Project()` is **not mandatory**. Developers can perform projection manually using LINQ's `Select()` method. 
   Both approaches produce the same SQL query, but Mapperly's `Project()` reduces repetitive code and is automatically updated when entity properties added/removed.
+- Mapperly usage in Client.Core: Try finding `.Patch` usages in `Boilerplate.Client.Core` project and explain the way mapperly is used for patching dto objects returned from server to update existing dto objects in client memory without replacing the whole object reference.
 
 If the developer has questions about Mapperly, you can use the `DeepWiki_ask_question` tool to query the `riok/mapperly` repository for additional information.
 
 ---
 
-At the end of Stage 2, ask: **"Do you have any questions about Stage 2, or shall we proceed to Stage 3?"**
+At the end of Stage 2, ask: **"Do you have any questions about Stage 2, or shall we proceed to Stage 3 (API Controllers and OData)?"**
 
 ---
 
@@ -195,11 +204,71 @@ While backend architecture is simple, it provides lots of features, including bu
 
 ---
 
-At the end of Stage 3, ask: **"Do you have any questions about Stage 3, or shall we proceed to Stage 4?"**
+At the end of Stage 3, ask: **"Do you have any questions about Stage 3, or shall we proceed to Stage 4 (Background Jobs and CancellationToken Management)?"**
 
 ---
 
-# Stage 4: Localization and Multi-language Support
+# Stage 4: Background Jobs and CancellationToken Management
+
+In this stage, you will explain how the project handles cancellation tokens for request cancellation and background job processing.
+
+## Topics to Cover:
+
+### CancellationToken in API Requests
+
+#### Automatic Request Cancellation
+- **How it works**: All API methods receive a `CancellationToken` parameter that automatically cancels operations when:
+  - The user navigates away from a page
+  - The browser/app is closed
+  - A new request supersedes a previous one (e.g., navigating to page 2 of a data grid while page 1 is still loading)
+  - For API methods that return `IQueryable`, cancellation happens **implicitly** - you don't need to manually pass the token to EF Core queries
+
+#### Client-Side Integration
+- **Implementation**: This works through a combination of:
+  - Server-side: API methods accept `CancellationToken cancellationToken` parameter
+- Client-side: HTTP client passes `CurrentCancellationToken` (inherited from `AppComponentBase`) when making API calls
+  - Show examples from the codebase where `CurrentCancellationToken` is used in client components
+
+#### User Abandonment Scenarios
+- **Logical Cancellation**: If a user clicks "Save" to update a Product and then immediately:
+  - Navigates away from the page
+  - Closes the browser/app
+  - The save operation is **automatically canceled**
+- **Why this is Ok?**: The user didn't wait for the result which can be an error (e.g., duplicate product name)
+- Since they didn't wait, canceling the operation is the logical behavior
+
+### Navigation Lock for Critical Operations
+- **Purpose**: For operations where you want to **prevent** automatic cancellation, use `NavigationLock`
+  - Prompts the user to wait before navigating away
+  - Useful for short critical operations
+
+### When to Use Background Jobs
+- **Problem**: What if the operation is time-consuming (e.g., sending SMS)?
+  - Users shouldn't have to wait and keep the page open
+- Navigation Lock is not appropriate for long-running tasks
+  
+- **Solution**: Use Background Jobs with `Hangfire`
+  - Operations are queued and processed asynchronously
+  - Server restarts or crashes don't lose the job
+  - Jobs are persisted in the database and automatically resume
+
+### Background Job Implementation with Hangfire
+
+#### Find and Explain PhoneServiceJobsRunner
+- **Search**: Locate `PhoneServiceJobsRunner.cs` in the `Boilerplate.Server.Api` project and its usages and explain it to the developer.
+
+#### Key Benefits of Hangfire Integration
+- **Persistence**: Jobs are stored in the database
+- **Reliability**: No jobs are lost even in failure scenarios
+- **Scalability**: Jobs can be processed on different servers
+
+---
+
+At the end of Stage 4, ask: **"Do you have any questions about Stage 4, or shall we proceed to Stage 5 (Localization and Multi-language Support)?"**
+
+---
+
+# Stage 5: Localization and Multi-language Support
 
 In this stage, you will explain the following topics:
 
@@ -220,11 +289,11 @@ In this stage, you will explain the following topics:
 
 ---
 
-At the end of Stage 4, ask: **"Do you have any questions about Stage 4, or shall we proceed to Stage 5?"**
+At the end of Stage 5, ask: **"Do you have any questions about Stage 5, or shall we proceed to Stage 6 (Exception Handling and Error Management)?"**
 
 ---
 
-# Stage 5: Exception Handling and Error Management
+# Stage 6: Exception Handling and Error Management
 
 In this stage, you will explain the following topics:
 
@@ -286,20 +355,13 @@ In this stage, you will explain the following topics:
 ### Exception handlers in project
 - Tell the developer about ServerExceptionHandler, SharedExceptionHandler, ClientExceptionHandler, MauiExceptionHandler, WindowsExceptionHandler, WebClientExceptionHandler and how they work in different platforms.
 
-### Best Practices Summary
-1. Use `KnownException`-derived exceptions when you want to show a specific message to users
-2. Use `WithData()` to add debugging context to exceptions
-3. Inherit from `AppComponentBase` or `AppPageBase` to get automatic exception handling
-4. Use `WrapHandled()` for event handlers in Razor files
-5. Don't be afraid to throw exceptions - the framework handles them gracefully
+---
+
+At the end of Stage 6, ask: **"Do you have any questions about Stage 6, or would you like to explore any specific topic in more depth? Or shall we proceed to Stage 7 (ASP.NET Core Identity and Authentication)?"**
 
 ---
 
-At the end of Stage 5, ask: **"Do you have any questions about Stage 5, or shall we proceed to Stage 6?"**
-
----
-
-# Stage 6: ASP.NET Core Identity and Authentication
+# Stage 7: ASP.NET Core Identity and Authentication
 
 In this stage, you will explain the comprehensive authentication and authorization system built into the project.
 
@@ -422,11 +484,11 @@ In this stage, you will explain the comprehensive authentication and authorizati
 
 ---
 
-At the end of Stage 6, ask: **"Do you have any questions about Stage 6, or would you like to explore any specific topic in more depth?"**
+At the end of Stage 7, ask: **"Do you have any questions about Stage 7, or would you like to explore any specific topic in more depth?"**
 
 ---
 
-# Stage 7: Blazor Pages, Components, Styling & Navigation
+# Stage 8: Blazor Pages, Components, Styling & Navigation
 
 In this stage, you will explain the Blazor UI architecture, component structure, styling system, and navigation in the project.
 
@@ -443,7 +505,8 @@ In this stage, you will explain the Blazor UI architecture, component structure,
    - Show how the `.razor.cs` inherits from `AppComponentBase` or `AppPageBase`
    - Demonstrate the `.razor.scss` scoped styles
    - How the page has been added to `NavBar.razor` and `MainLayout.items.razor.cs` for navigation.
-   - How `AboutPage.razor` has been added to `Boilerplate.Client.Maui`, `Boilerplate.Client.Windows` and `Boilerplate.Client.Web` projects for to have access to native platform features without using interface and dependency injection.
+   - How `AboutPage.razor` has been added to `Boilerplate.Client.Maui`, `Boilerplate.Client.Windows` and `Boilerplate.Client.Web` projects for to have access to native platform features without using interface and dependency injection,
+   while these project also have been configured for SCSS support in their csproj file, so `AboutPage.razor.scss` would also work.
 
 ### SCSS Styling Architecture
 
@@ -500,20 +563,13 @@ In this stage, you will explain the Blazor UI architecture, component structure,
   - Page-level metadata and configuration
 - **Show examples** from actual component/page code-behind files
 
-### Best Practices Summary
-1. **Separation of Concerns**: Keep controls and layout in `.razor` using `BitGrid` and `BitStack`, logic in `.razor.cs`, style details in `.razor.scss`
-2. **Use Theme Variables**: Always use `--bit-clr-*` variables for colors to support theming
-4. **Strongly-Typed Navigation**: Use `PageUrls` constants instead of hardcoded route strings
-5. **Inherit from Base Classes**: Use `AppComponentBase` or `AppPageBase` for components and pages
-6. **Leverage DeepWiki**: Ask questions about Bit.BlazorUI components naturally in Copilot Chat
+---
+
+At the end of Stage 8, ask: **"Do you have any questions about Stage 8, or shall we proceed to Stage 9 (Dependency Injection & Service Registration)?"**
 
 ---
 
-At the end of Stage 7, ask: **"Do you have any questions about Stage 7, or shall we proceed to Stage 8?"**
-
----
-
-## Stage 8: Dependency Injection & Service Registration
+## Stage 9: Dependency Injection & Service Registration
 
 ### Instructions
 1. Search for `*ServiceCollectionExtensions.cs`, `*.Services.cs` and `WebApplicationBuilderExtensions` files
@@ -530,11 +586,11 @@ Tell the developer about it and how it works.
 
 ---
 
-At the end of Stage 8, ask: **"Do you have any questions about Stage 8 or the dependency injection system? Would you like to see examples of adding a new service?"**
+At the end of Stage 9, ask: **"Do you have any questions about Stage 9 or the dependency injection system? Would you like to see examples of adding a new service, or shall we proceed to Stage 10 (Configuration - appsettings.json)?"**
 
 ---
 
-## Stage 9: Configuration (appsettings.json)
+## Stage 10: Configuration (appsettings.json)
 
 ### Instructions
 1. Explain that each project has its own `appsettings.json` and `appsettings.{environment}.json` files
@@ -548,25 +604,25 @@ For example, explain: If you add a setting in `src/Shared/appsettings.json`, it 
 
 ---
 
-At the end of Stage 9, ask: **"Do you have any questions about the configuration system?"**
+At the end of Stage 10, ask: **"Do you have any questions about the configuration system, or shall we proceed to Stage 11 (TypeScript, Build Process & JavaScript Interop)?"**
 
 ---
 
-## Stage 10: TypeScript, Build Process & JavaScript Interop
+## Stage 11: TypeScript, Build Process & JavaScript Interop
 
 ### Instructions
 1. Show `tsconfig.json` and `package.json` from `src/Client/Boilerplate.Client.Core/`
 2. Explain MSBuild targets in `Boilerplate.Client.Core.csproj`: `BeforeBuildTasks` → `InstallNodejsDependencies` → `BuildJavaScript`
 3. Show `Scripts/App.ts` and `Extensions/IJSRuntimeExtensions.cs` - explain how C# calls JS via `jsRuntime.InvokeAsync<T>("App.methodName")` focusing on `getTimeZone` method.
-4. **Demo**: Show instructions on how to add `uuid` & `@types/uuid` packages - how to modify `package.json` using corresponding `npm install` command, import it in `App.ts`, add method, call from C# extension and demonstrate usage in component
+4. **Demo**: Show instructions on how to add `uuid` & `@types/uuid` packages - how to modify `package.json` using corresponding `npm install uuid` and `npm install @types/uuid` command, import it in `App.ts`, add method, call from C# extension and demonstrate usage in component
 
 ---
 
-At the end of Stage 10, ask: **"Do you have any questions about TypeScript, the build process, or JavaScript interop? Would you like to see another example of adding a different package?"**
+At the end of Stage 11, ask: **"Do you have any questions about TypeScript, the build process, or JavaScript interop? Would you like to see another example of adding a different package, or shall we proceed to Stage 12 (Blazor Modes, PreRendering & PWA)?"**
 
 ---
 
-# Stage 11: Blazor Modes, PreRendering & PWA
+# Stage 12: Blazor Modes, PreRendering & PWA
 
 In this stage, you will explain Blazor rendering modes, pre-rendering, and PWA features.
 
@@ -607,11 +663,11 @@ var products = await PrerenderStateService.GetValue(() => HttpClient.GetFromJson
 
 ---
 
-At the end of Stage 11, ask: **"Do you have any questions about Blazor Modes, Pre-Rendering, or PWA features?"**
+At the end of Stage 12, ask: **"Do you have any questions about Blazor Modes, Pre-Rendering, or PWA features, or shall we proceed to Stage 13 (Force Update System)?"**
 
 ---
 
-## Stage 12: Force Update System
+## Stage 13: Force Update System
 
 ### Instructions
 1. Search for `ForceUpdateMiddleware` and `IAppUpdateService` in the codebase
@@ -622,11 +678,11 @@ At the end of Stage 11, ask: **"Do you have any questions about Blazor Modes, Pr
 
 ---
 
-At the end of Stage 12, ask: **"Do you have any questions about the Force Update system?"**
+At the end of Stage 13, ask: **"Do you have any questions about the Force Update system, or shall we proceed to Stage 14 (Response Caching System)?"**
 
 ---
 
-## Stage 13: Response Caching System
+## Stage 14: Response Caching System
 
 In this stage, you will explain the comprehensive response caching system built into the project.
 
@@ -671,11 +727,11 @@ In this stage, you will explain the comprehensive response caching system built 
 
 ---
 
-At the end of Stage 13, ask: **"Do you have any questions about the Response Caching system?"**
+At the end of Stage 14, ask: **"Do you have any questions about the Response Caching system, or shall we proceed to Stage 15 (Logging, OpenTelemetry and Health Checks)?"**
 
 ---
 
-## Stage 14: Logging and OpenTelemetry
+## Stage 15: Logging, OpenTelemetry and Health Checks
 
 ### Instructions
 
@@ -705,13 +761,17 @@ At the end of Stage 13, ask: **"Do you have any questions about the Response Cac
    - Everything is already optimally configured
    - OpenTelemetry is vendor-agnostic - switch from Sentry to App Insights without code changes
 
+8. **Health Checks**:
+   - Explain this project has built-in health checks for whatever has been configured in `AddServerApiProjectServices` method.
+   But this is only enabled in Development environment by default, so in Production/Staging you need to explicitly enable it inside `MapAppHealthChecks` method.
+
 ---
 
-At the end of Stage 14, ask: **"Do you have any questions about the Logging and OpenTelemetry system?"**
+At the end of Stage 15, ask: **"Do you have any questions about the Logging and OpenTelemetry system, or shall we proceed to Stage 16 (CI/CD Pipeline and Environments)?"**
 
 ---
 
-## Stage 15: CI/CD Pipeline and Environments
+## Stage 16: CI/CD Pipeline and Environments
 
 ### Instructions
 1. **Search for workflow files**: Find and review `*.yml` files.
@@ -721,15 +781,19 @@ At the end of Stage 14, ask: **"Do you have any questions about the Logging and 
 
 3. **Explain the CI/CD setup**: Based on the workflow files, explain the build, test, and deployment pipelines to the developer.
 
-4. **Important Note**: Currently, the CI/CD workflows are configured for client platforms (Android, iOS, Windows, macOS) but are not yet Aspire-friendly for backend deployment. Backend CI/CD may need additional configuration and the current Azure usage is completely optional.
+4. **Important Note**: Currently, the CI/CD workflows are configured for client platforms (Android, iOS, Windows, macOS) but are not yet Aspire-friendly for backend deployment.
+Backend CI/CD may need additional configuration and the current Azure usage is completely optional.
+One best practice that has been applied in backend CD though is using 2 phase deployment, where first project gets built and uploaded to github/azure dev-ops artifacts,
+then in another job, the artifact gets downloaded and deployed to the target environment.
+The reason for this is you can use different runners for build and deployment, so the 2nd one can be a lightweight runner without any SDKs installed, so it will be much more secure as a agent that have direct access to your production environment.
 
 ---
 
-At the end of Stage 15, ask: **"Do you have any questions about CI/CD or environment configuration?"**
+At the end of Stage 16, ask: **"Do you have any questions about CI/CD or environment configuration, or shall we proceed to Stage 17 (Automated Testing - Unitigration Tests)?"**
 
 ---
 
-## Stage 16: Automated Testing (Unitigration Tests)
+## Stage 17: Automated Testing (Unitigration Tests)
 
 ### Instructions
 1. **Explain Unitigration Test concept**: Tests written as Integration Tests with full real server behavior (both UI tests and HTTP client based tests), but with the flexibility to fake specific parts of the server when needed - similar to Unit Tests - making test writing much simpler.
@@ -741,11 +805,11 @@ At the end of Stage 15, ask: **"Do you have any questions about CI/CD or environ
 
 ---
 
-At the end of Stage 16, ask: **"Do you have any questions about the testing approach or writing tests?"**
+At the end of Stage 17, ask: **"Do you have any questions about the testing approach or writing tests, or shall we proceed to Stage 18 (Other Available Prompt Templates)?"**
 
 ---
 
-## Stage 17: Other Available Prompt Templates
+## Stage 18: Other Available Prompt Templates
 
 ### Instructions
 1. **Search for prompt files**: Look for all `.prompt.md` files in `.github/prompts/` directory (excluding `getting-started.prompt.md`)
@@ -761,11 +825,11 @@ At the end of Stage 16, ask: **"Do you have any questions about the testing appr
 
 ---
 
-At the end of Stage 17, ask: **"Do you have any questions about these specialized prompts, or would you like to see examples of using any of them?\"**
+At the end of Stage 18, ask: **"Do you have any questions about these specialized prompts, or would you like to see examples of using any of them? Or shall we proceed to Stage 19 (Project miscellaneous files)?"**
 
 ---
 
-## Stage 18: Project miscellaneous files
+## Stage 19: Project miscellaneous files
 
 ### Instructions
 1. **Search for configuration files**: Look for the following files in the workspace root:
@@ -775,6 +839,7 @@ At the end of Stage 17, ask: **"Do you have any questions about these specialize
    - `settings.VisualStudio.json`
    - `mcp.json`
    - `Directory.Build.props`
+   - `Directory.Packages.props`
    - `.vsconfig`
 
 2. **Read and explain each file**: For each file found, provide:
@@ -785,11 +850,211 @@ At the end of Stage 17, ask: **"Do you have any questions about these specialize
 
 ---
 
-At the end of Stage 18, ask: **"Do you have any questions about these configuration files and development tools, or would you like to explore any of them in more detail?"**
+At the end of Stage 19, ask: **"Do you have any questions about these configuration files and development tools, or would you like to explore any of them in more detail? Or shall we proceed to Stage 20 (.NET Aspire)?"**
 
 ---
 
-## Stage 19: WebAuthn and Passwordless Authentication (Advanced)
+## Stage 20: .NET Aspire
+
+<!--#if (aspire == true)-->
+
+### Instructions
+
+1. **Explain .NET Aspire Benefits**:
+   - **.NET Aspire significantly improves both Development and Deployment**:
+     - **Development**: Provides an awesome dashboard for monitoring your app during development
+  - **Deployment**: Simplifies deployment not only to Azure Cloud, but also to Docker Compose and Kubernetes (k8s)
+
+2. **Aspire Learning Resources**:
+   - Developers can learn about Aspire capabilities at https://aspire.dev
+   - The official documentation covers all features comprehensively
+
+3. **Important Database Management Tip**:
+   - **The Challenge**: There's one important detail that might take time to discover:
+     - When the application is running, you can manage the database through Aspire's built-in web-based database management tool
+     - However, when the application stops, this tool stops working because the database itself stops
+     - This is fine for test projects, but for real projects where you continuously work with the database and may want to connect through other tools, this can be limiting
+   
+   - **The Solution**: To keep the database running persistently:
+     1. Open `Program.cs` in the `Boilerplate.Server.AppHost` project
+     2. In the database creation code, add the following configurations:
+     
+     ```csharp
+     .WithLifetime(ContainerLifetime.Persistent)
+     ```
+     
+     ```csharp
+     .WithEndpointProxySupport(proxyEnabled: false)
+     ```
+     
+     3. Specify a fixed port (ensure the port is available)
+   
+   - **Result**: With these changes, the database remains running even when the app stops, and you can connect to it with any database tool using the specified port
+   - **Credentials**: The credentials are stored in `appsettings.Development.json` in `Boilerplate.Server.AppHost` project.
+
+4. **Important Note about Docker Execution**:
+   - **For Performance**: Aspire does NOT run the `Server.Api` and `Server.Web` projects on Docker (they run natively for faster development)
+   - **Testing Linux Behavior on Windows**: If you want to test server behavior in Linux while **still using Aspire** on Windows, follow these instructions:
+     - Open the project in Visual Studio Code
+     - Use Visual Studio Code Dev Containers feature
+     - Run `chmod +x ./Clean.sh && ./Clean.sh` to clean previous windows build files.
+     - Then run the `Boilerplate.Server.AppHost` project
+     - This way you can test behavior on Linux while still benefiting from Aspire's features
+
+5. **Search and Demonstrate**:
+   - Find and show the `Boilerplate.Server.AppHost/Program.cs` file
+   - Show where database configuration is done
+ - Demonstrate the `WithLifetime` and `WithEndpointProxySupport` should be added right after `AddSqlServer`, `AddMySql` or `AddPostgres` methods.
+
+---
+
+<!--#else-->
+
+### About .NET Aspire
+
+**Important Note**: We strongly recommend adding .NET Aspire to your project, even if you only use it in the development environment.
+
+**Why Aspire?**:
+- Dramatically improves the development experience with an excellent dashboard
+- Simplifies deployment to Azure Cloud, Docker Compose, and Kubernetes
+- Provides built-in observability, service discovery, and configuration management
+
+**If you have concerns about Aspire**: There might be a misunderstanding. Please open an issue on our repository and share your concerns. We'd be happy to provide more detailed explanations and help you understand how Aspire can benefit your project.
+
+**Learn more**: Visit https://aspire.dev to explore all capabilities.
+
+---
+
+
+
+<!--#endif-->
+At the end of Stage 20 (with Aspire), ask: **"Do you have any questions about .NET Aspire, its dashboard, deployment capabilities, or database management? Or shall we proceed to Stage 21 (.NET MAUI / Blazor Hybrid)?"**
+
+---
+
+## Stage 21: .NET MAUI / Blazor Hybrid
+
+### Instructions
+
+1. **Explain the native platform projects**:
+   - **Overview**: The `Boilerplate.Client.Windows` and `Boilerplate.Client.Maui` projects provide native outputs for Android, iOS, macOS, and Windows with full access to operating system features
+   - **Key Benefits**:
+     - Better performance compared to the web version
+     - Access to more users through Google Play, Apple Store, and Microsoft Store
+     - Full native capabilities (Access to local devices through TCP etc)
+   - **Code Compatibility**: Code that works in the web version will most likely work in these projects too, but there are important platform-specific considerations to be aware of
+
+2. **Explain Deep Links (Android) and Universal Links (iOS)**:
+   - **Purpose**: When a user clicks on a web app link but has the Android or iOS app installed on their device, the app opens on that specific page instead of the browser
+   - **User Experience**: The assumption is that if someone has installed the app, they prefer using the app over the web version
+   - **Configuration Requirements**:
+     - **Android**: Every new page route must be added to `MainActivity.cs` in the Android project
+     - **iOS**: This is handled automatically by the `apple-app-site-association` file in the `wwwroot` of the `Boilerplate.Client.Web` project - no manual configuration needed per page
+   - **Important Setup**:
+     - You must update the `appId` in the `apple-app-site-association` file for iOS
+  - You must update the `assetlinks.json` file for Android
+     - The app must be published on Google Play and Apple Store for deep/universal links to work
+   - **Search and demonstrate**: Find `MainActivity.cs` in the MAUI project and show how deep links are configured
+
+3. **Explain ApplicationVersion in Boilerplate.Client.Maui**:
+   - **Purpose**: An integer version number (no decimals or dots) required by Google Play and Apple Store
+ - **Automatic Generation**: The project automatically generates `ApplicationVersion` from the `Version` property
+   - **Example**: If `Version` is `1.7.3`, then `ApplicationVersion` becomes `10703`
+   - **Search and demonstrate**: Find where `ApplicationVersion` is defined in the MAUI project file
+
+4. **Explain Boilerplate.Client.Windows advantages**:
+ - **Broader OS Support**: The Windows output works on Windows 7, 8, 10, and 11
+  - In contrast, `Boilerplate.Client.Maui`'s Windows output only works on Windows 10 and 11
+   - **Better Performance**: `Boilerplate.Client.Windows` is faster than the MAUI Windows version
+   - **Auto-Update**: Includes automatic update functionality
+
+5. **Explain app size best practices**:
+   - **Recommendation**: Compare your published app size with the published apps linked at https://bitplatform.dev/demos
+   - **Warning**: If your app size is significantly larger, something might be misconfigured
+   - This helps ensure optimal app performance and download experience for users
+
+6. **Explain WebView version importance**:
+   - **Key Concept**: In addition to the OS version (Windows, Android, iOS, macOS), the WebView version is also critical
+   - **Why**: The UI runs using HTML/CSS inside a WebView
+   - **Full Native Access**: Even though UI renders in WebView, C# .NET in MAUI/Blazor Hybrid has complete access to native OS features
+   - **Native Interop Options**:
+     - You can easily use Java/Swift/Objective-C/Kotlin code directly
+     - You can install packages from Maven (similar to NuGet) and use them directly in C# .NET
+   - **WebView Updates**: Users should keep their WebView updated for best compatibility and security
+
+---
+
+At the end of Stage 21, ask: **"Do you have any questions about .NET MAUI, native platform features, or cross-platform development? Or shall we proceed to Stage 22 (Messaging)?"**
+
+---
+
+## Stage 22: Messaging
+
+### Instructions
+
+1. **Explain In-App Messaging with PubSubService**:
+   - **Purpose**: A publish-subscribe messaging system for communication between components within the application
+   - **Real-world example**: When a user changes their profile picture in Settings/Profile page, the profile picture in the Header is automatically updated
+   - **Search and demonstrate**: Find usages of `PubSubService` in the codebase and explain how it works
+   - Show how to publish a message and how to subscribe to messages
+
+2. **Explain AppJsBridge for JavaScript-to-C# Communication**:
+   - **Purpose**: Enables sending messages from JavaScript/TypeScript code to C# .NET code
+   - **Search and demonstrate**: Find `AppJsBridge` implementation and show examples of how JavaScript code can communicate with C# code
+
+<!--#if (signalR == true)-->
+3. **Explain Server-to-Client Messaging with SignalR**:
+   - **Purpose**: Real-time communication from server to clients
+   - **Messaging Targets**: Explain that the server can send messages to:
+     - All connected clients
+     - `AuthenticatedClients` group (all authenticated users)
+     - All devices of a specific user (a user might have multiple sessions - web app open twice, mobile app, etc.)
+     - A specific device/connection
+- **Message Types**:
+     - **SignalREvents.SHOW_MESSAGE**: Displays a text message to the user
+     - **SharedPubSubMessages**: Application-specific messages, for example:
+       - `SharedPubSubMessages.SESSION_REVOKED`: Redirects the device to the Sign In page when a session is revoked
+   - **Search and demonstrate**: Find SignalR hub implementations and show examples of server-to-client messaging
+<!--#endif-->
+
+<!--#if (notification == true)-->
+4. **Explain Push Notifications**:
+   - **Purpose**: Send notifications to users even when the app is not running
+   - **Key Feature - Deep Linking**: You can specify what happens when a user clicks on a notification
+   - **Example**: Using `PushNotificationService.RequestPush` with the `PageUrl` parameter:
+     - When the user clicks on the push notification, a specific page opens
+     - This is extremely useful for marketing campaigns and announcing new features
+   - **Search and demonstrate**: 
+     - Find `PushNotificationService` implementation
+     - Show examples of sending push notifications with deep links
+     - Explain how to handle notification clicks on the client side
+<!--#endif-->
+
+---
+
+At the end of Stage 22, ask: **"Do you have any questions or shall we proceed to Stage 23 (Diagnostic Modal)?"**
+
+---
+
+## Stage 23: Diagnostic Modal
+
+### Instructions
+
+1. **Read diagnostic modal files**: Search for and read `AppDiagnosticModal*.cs` files and `DiagnosticsController.cs` in the codebase
+
+2. **Explain high-level capabilities**: Based on your understanding of these files, explain the key features and capabilities that the Diagnostic Modal provides for developers. Explain only HIGH-LEVEL, not detailed code.
+
+3. **Important**: Note that `App.openDevTools()` opens an **in-app** browser DevTools that works even on mobile devices.
+
+4. **Hands-On Recommendation**: STRONGLY recommend visiting https://bitplatform.dev/demos, opening any published app, and testing the Diagnostic Modal (7 clicks on header or Ctrl + Shift + X) to see all features in action.
+
+---
+
+At the end of Stage 23, ask: **"Do you have any questions about the Diagnostic Modal system? Or shall we proceed to Stage 24 (WebAuthn and Passwordless Authentication)?"**
+
+---
+
+## Stage 24: WebAuthn and Passwordless Authentication (Advanced)
 
 ### Instructions
 1. **Explain WebAuthn Overview**: Sign-in with fingerprint, Face ID, and PIN that is more secure than native biometric authentication. The bit implementation works across all platforms, although Face ID is not yet supported on Android.
@@ -800,9 +1065,61 @@ At the end of Stage 18, ask: **"Do you have any questions about these configurat
 
 ---
 
-At the end of Stage 19, ask: **"Do you have any questions about WebAuthn implementation?"**
+At the end of Stage 24, ask: **"Do you have any questions about WebAuthn implementation?"**
 
 ---
+
+<!--#if (database == "PostgreSQL" || database == "SqlServer")-->
+
+## Stage 25: RAG / Semantic Search with Vector Embeddings (Advanced)
+
+In this stage, you will explain the advanced semantic search capabilities using vector embeddings for database queries.
+
+### Instructions
+
+1. **Explain the Different Search Approaches**:
+   - **Simple String Matching**: Basic `Contains()` method for searching text
+   - **Full-Text Search**: Database-native full-text search capabilities (e.g., PostgreSQL's full-text search)
+   - **Vector-Based Semantic Search**: Using text-embedding models to enable meaning-based searches
+   - **Hybrid Approach**: Combining full-text search with vector-based search for optimal results
+
+2. **Explain Vector Embeddings**:
+   - **What are Embeddings**: Vectors are numerical representations of text that capture semantic meaning
+   - **Semantic Search Capability**: With vectors, you can perform searches that understand meaning, not just keywords
+   - **Cross-Language Search**: A user can search in one language and find results in another language because embeddings capture semantic meaning
+   - **Example**: Searching for "laptop computer" might also find results containing "notebook PC" or even results in other languages with similar meaning
+
+3. **Explain Embedding Models**:
+   - **Default: LocalTextEmbeddingGenerationService**: 
+     - A local model included in the project by default
+     - Good for testing and development only
+     - **Not recommended for production** due to limited accuracy
+   - **Recommended Production Models**:
+     - **OpenAI text-embedding-3-small**: High-quality embeddings from OpenAI
+     - **Azure OpenAI Embeddings**: Enterprise-grade embedding service
+     - **Hugging Face Models**: Open-source embedding models
+   - **Configuration**: These models are configured in `appsettings.json` under the `AI` section in `Boilerplate.Server.Api` project
+
+4. **Enable Embeddings in the Project**:
+   - **Step 1**: Open `AppDbContext.cs` in `Boilerplate.Server.Api/Data` folder
+   - **Step 2**: Find the `IsEmbeddingEnabled` static property and change it from `false` to `true`:
+     ```csharp
+     public static readonly bool IsEmbeddingEnabled = true;
+
+<!--#if (module != "Admin" && module != "Sales")-->
+5. **Find and Show Implementation**:
+   - Search for and explain `ProductEmbeddingService.cs` in the `Boilerplate.Server.Api/Services` folder
+   - Show the `SearchProducts` method that performs vector-based similarity search
+   - Show the `Embed` method that generates embeddings for products
+   - Explain how weighted embeddings work (combining product name, description, category with different importance weights)
+<!--#endif-->
+---
+
+At the end of Stage 25, ask: **"Do you have any questions about vector embeddings, semantic search, or RAG (Retrieval-Augmented Generation) capabilities?"**
+
+---
+
+<!--#endif-->
 
 ## Final Message
 
