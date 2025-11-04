@@ -1,8 +1,6 @@
 ﻿using Plugin.Maui.AppRating;
 using Microsoft.Extensions.Logging;
 
-[assembly: XamlCompilation(XamlCompilationOptions.Compile)]
-
 namespace Boilerplate.Client.Maui;
 
 public partial class App

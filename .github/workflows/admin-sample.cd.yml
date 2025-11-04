@@ -304,7 +304,7 @@ jobs:
           dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
   
     - name: Publish aab
-      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -c Release -p:EnableLLVM=true -p:AndroidEnableProfiledAot=false -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -f net10.0-android
+      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -c Release -p:EnableLLVM=true -p:AndroidEnableProfiledAot=false -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -p:UseMonoRuntime=false -f net10.0-android
   
     - name: Upload artifact
       uses: actions/upload-artifact@v5
