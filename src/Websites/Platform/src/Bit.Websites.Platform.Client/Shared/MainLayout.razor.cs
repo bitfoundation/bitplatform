@@ -35,7 +35,41 @@ public partial class MainLayout : IDisposable
         new BitNavItem { Text = "Project structure", Url = "/templates/project-structure", AdditionalUrls = [ "/boilerplate/project-structure" ] },
         new BitNavItem { Text = "Create project", Url = "/templates/create-project", AdditionalUrls = [ "/boilerplate/create-project" ] },
         new BitNavItem { Text = "Run project", Url = "/templates/run-project", AdditionalUrls = [ "/boilerplate/run-project" ] },
-        new BitNavItem { Text = "Interactive Wiki", Url = "/templates/wiki", AdditionalUrls = ["/boilerplate/wiki"] },
+        new BitNavItem 
+        { 
+            Text = "Interactive Wiki", 
+            Url = "/templates/wiki", 
+            AdditionalUrls = ["/boilerplate/wiki"],
+            IsExpanded = true,
+            ChildItems =
+            [
+                new BitNavItem { Text = "Entity Framework Core", Url = "/templates/wiki#ef-core", AdditionalUrls = ["/boilerplate/wiki#ef-core"] },
+                new BitNavItem { Text = "DTOs & Mapperly", Url = "/templates/wiki#dtos-mappers", AdditionalUrls = ["/boilerplate/wiki#dtos-mappers"] },
+                new BitNavItem { Text = "API & OData", Url = "/templates/wiki#api-odata", AdditionalUrls = ["/boilerplate/wiki#api-odata"] },
+                new BitNavItem { Text = "Background Jobs", Url = "/templates/wiki#background-jobs", AdditionalUrls = ["/boilerplate/wiki#background-jobs"] },
+                new BitNavItem { Text = "Localization", Url = "/templates/wiki#localization", AdditionalUrls = ["/boilerplate/wiki#localization"] },
+                new BitNavItem { Text = "Exception Handling", Url = "/templates/wiki#exception-handling", AdditionalUrls = ["/boilerplate/wiki#exception-handling"] },
+                new BitNavItem { Text = "Identity & Auth", Url = "/templates/wiki#identity-auth", AdditionalUrls = ["/boilerplate/wiki#identity-auth"] },
+                new BitNavItem { Text = "Components, Styling", Url = "/templates/wiki#blazor-pages", AdditionalUrls = ["/boilerplate/wiki#blazor-pages"] },
+                new BitNavItem { Text = "Dependency Injection", Url = "/templates/wiki#dependency-injection", AdditionalUrls = ["/boilerplate/wiki#dependency-injection"] },
+                new BitNavItem { Text = "Configuration", Url = "/templates/wiki#configuration", AdditionalUrls = ["/boilerplate/wiki#configuration"] },
+                new BitNavItem { Text = "TypeScript", Url = "/templates/wiki#typescript", AdditionalUrls = ["/boilerplate/wiki#typescript"] },
+                new BitNavItem { Text = "Blazor Modes & PWA", Url = "/templates/wiki#blazor-modes", AdditionalUrls = ["/boilerplate/wiki#blazor-modes"] },
+                new BitNavItem { Text = "Force Update", Url = "/templates/wiki#force-update", AdditionalUrls = ["/boilerplate/wiki#force-update"] },
+                new BitNavItem { Text = "Response Caching", Url = "/templates/wiki#response-caching", AdditionalUrls = ["/boilerplate/wiki#response-caching"] },
+                new BitNavItem { Text = "Logging & OpenTelemetry", Url = "/templates/wiki#logging", AdditionalUrls = ["/boilerplate/wiki#logging"] },
+                new BitNavItem { Text = "CI/CD Pipeline", Url = "/templates/wiki#cicd", AdditionalUrls = ["/boilerplate/wiki#cicd"] },
+                new BitNavItem { Text = "Automated Testing", Url = "/templates/wiki#testing", AdditionalUrls = ["/boilerplate/wiki#testing"] },
+                new BitNavItem { Text = "Prompt Templates", Url = "/templates/wiki#prompts", AdditionalUrls = ["/boilerplate/wiki#prompts"] },
+                new BitNavItem { Text = "Misc Files", Url = "/templates/wiki#misc-files", AdditionalUrls = ["/boilerplate/wiki#misc-files"] },
+                new BitNavItem { Text = ".NET Aspire", Url = "/templates/wiki#aspire", AdditionalUrls = ["/boilerplate/wiki#aspire"] },
+                new BitNavItem { Text = "MAUI / Blazor Hybrid", Url = "/templates/wiki#maui-hybrid", AdditionalUrls = ["/boilerplate/wiki#maui-hybrid"] },
+                new BitNavItem { Text = "Messaging", Url = "/templates/wiki#messaging", AdditionalUrls = ["/boilerplate/wiki#messaging"] },
+                new BitNavItem { Text = "Diagnostic Modal", Url = "/templates/wiki#diagnostic", AdditionalUrls = ["/boilerplate/wiki#diagnostic"] },
+                new BitNavItem { Text = "WebAuthn and Passwordless Auth", Url = "/templates/wiki#webauthn", AdditionalUrls = ["/boilerplate/wiki#webauthn"] },
+                new BitNavItem { Text = "RAG / Vector Embeddings", Url = "/templates/wiki#vector-embeddings", AdditionalUrls = ["/boilerplate/wiki#vector-embeddings"] },
+            ]
+        },
     ];
 
     private readonly List<BitNavItem> bswupNavItems =
