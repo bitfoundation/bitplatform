@@ -1,6 +1,4 @@
-﻿[assembly: XamlCompilation(XamlCompilationOptions.Compile)]
-
-namespace Bit.BlazorUI.Demo.Client.Maui;
+﻿namespace Bit.BlazorUI.Demo.Client.Maui;
 
 public partial class App
 {
