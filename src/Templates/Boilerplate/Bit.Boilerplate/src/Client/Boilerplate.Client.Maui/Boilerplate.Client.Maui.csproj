@@ -9,8 +9,9 @@
         <OutputType>Exe</OutputType>
         <UseMaui>true</UseMaui>
         <SingleProject>true</SingleProject>
+        <MauiXamlInflator>SourceGen</MauiXamlInflator>
         <EnableDefaultCssItems>false</EnableDefaultCssItems>
-
+        
         <!-- Display name -->
         <ApplicationTitle>Boilerplate</ApplicationTitle>
 
@@ -58,7 +59,7 @@
         </ApplicationVersion>
         <ApplicationVersion>$(ApplicationVersion.Trim())</ApplicationVersion>
     </PropertyGroup>
-
+    
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Environment)' != 'Development'">
         <AndroidLinkTool>r8</AndroidLinkTool>
         <AndroidUseAapt2>True</AndroidUseAapt2>
