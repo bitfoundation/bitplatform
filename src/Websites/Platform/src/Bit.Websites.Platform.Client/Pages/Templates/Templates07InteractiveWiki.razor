@@ -12,164 +12,158 @@
 	<section class="section-card">
 		<BitText Typography="BitTypography.H5" Gutter>GitHub Copilot Chat Interactive Learning</BitText>
 		<div class="section-card-txt">
-			After creating your project from bit Boilerplate, we highly recommend using the built-in <span class="bold-txt">Run getting started</span> to interactively learn about your project architecture directly in your IDE.
+			After creating your project from bit Boilerplate, we highly recommend using the built-in getting started to interactively learn about your project architecture directly in your IDE.
 			<br /><br />
-			This interactive guide is available in <span class="bold-txt">GitHub Copilot Chat</span> within <span class="bold-txt">Visual Studio</span> or <span class="bold-txt">Visual Studio Code</span>. Simply type <code>Run getting started </code> in the chat and choose the getting started prompt to begin your onboarding journey.
+			This interactive guide is available in <span class="bold-txt"><u>GitHub Copilot Chat</u></span> within <span class="bold-txt">Visual Studio</span> or <span class="bold-txt">Visual Studio Code</span>. Simply type <span class="bold-txt"><u>Run getting started</u></span> in the GitHub Copilot Chat while <span class="bold-txt"><u>Claude Sonnet 4.5</u></span> is selected to begin your onboarding journey.
 			<br /><br />
-			The guide walks you through the project in multiple stages, using <span class="bold-txt">real examples from your actual codebase</span>:
-			This is the <span class="bold-txt">recommended next step</span> for developers after creating their project, providing a hands-on, context-aware learning experience tailored to your specific codebase.
+			The guide walks you through the project in multiple stages, using <span class="bold-txt">real examples from your own project</span>:
 		</div>
-	</section>
 
-	<section class="section-card">
-		<BitText Typography="BitTypography.H5" Gutter>What You'll Learn - 25 Comprehensive Stages</BitText>
-		<div class="section-card-txt">
-
-			<br />
-
-			The interactive guide covers your entire project architecture across 25 detailed stages. Each stage provides real examples from your actual codebase with interactive Q&amp;A:
-
-			<div id="ef-core" style="margin-top: 1rem;">
-				<strong>Stage 1: Entity Framework Core</strong>
-				<p>Learn about DbContext, entity models, entity type configurations, and migrations (optional). Understand nullable reference types in EF Core relationships and client-side offline database support.</p>
+		<div class="video-container">
+			<div class="video-wrapper">
+				<video controls
+					   title="Interactive docs"
+					   src="https://videos.bitplatform.dev/InteractiveDoc.mp4" />
 			</div>
-
-			<div id="dtos-mappers" style="margin-top: 1rem;">
-				<strong>Stage 2: DTOs, Mappers, and Mapperly</strong>
-				<p>Explore Data Transfer Objects, AppJsonContext, and how Mapperly simplifies object mapping. Learn the difference between Project() and Map() methods, and how Patch() updates client-side objects.</p>
-			</div>
-
-			<div id="api-odata" style="margin-top: 1rem;">
-				<strong>Stage 3: API Controllers and OData</strong>
-				<p>Understand controller architecture, [AutoInject] attribute, and OData query support ($filter, $top, $skip, $orderby). Learn about PagedResult for total counts, data security, and optimized performance patterns.</p>
-			</div>
-
-			<div id="background-jobs" style="margin-top: 1rem;">
-				<strong>Stage 4: Background Jobs and CancellationToken Management</strong>
-				<p>Discover automatic request cancellation, CancellationToken usage, NavigationLock for critical operations, and Hangfire for reliable background job processing with persistence.</p>
-			</div>
-
-			<div id="localization" style="margin-top: 1rem;">
-				<strong>Stage 5: Localization and Multi-language Support</strong>
-				<p>Master resource files (resx), `DtoResourceType` attribute, `AppDataAnnotationsValidator`, IStringLocalizer usage, and the `bit-resx` tool for managing translations.</p>
-			</div>
-
-			<div id="exception-handling" style="margin-top: 1rem;">
-				<strong>Stage 6: Exception Handling and Error Management</strong>
-				<p>Learn about Known vs Unknown exceptions, safe exception throwing, `WithData()` and `WithExtensionData()` methods, automatic exception handling in Blazor, and `WrapHandled()` for event handlers.</p>
-			</div>
-
-			<div id="identity-auth" style="margin-top: 1rem;">
-				<strong>Stage 7: ASP.NET Core Identity / Authentication & Authentication</strong>
-				<p>Comprehensive coverage of JWT tokens (access/refresh), session management, SSO integration (Google, GitHub, Azure AD, etc.), role-based and policy-based authorization, and identity configuration.</p>
-			</div>
-
-			<div id="blazor-pages" style="margin-top: 1rem;">
-				<strong>Stage 8: Blazor Pages, Components, Styling &amp; Navigation</strong>
-				<p>Understand the three-file structure (.razor, .razor.cs, .razor.scss), isolated component styles, global styles, ::deep selector, Bit.BlazorUI components, and navigation with `PageUrls`.</p>
-			</div>
-
-			<div id="dependency-injection" style="margin-top: 1rem;">
-				<strong>Stage 9: Dependency Injection &amp; Service Registration</strong>
-				<p>Explore service registration patterns across different projects, `AddSessioned` method for session-scoped services, and appropriate service lifetimes (Singleton, Scoped, Transient, `Sessioned`).</p>
-			</div>
-
-			<div id="configuration" style="margin-top: 1rem;">
-				<strong>Stage 10: Configuration (appsettings.json)</strong>
-				<p>Learn about configuration hierarchy across projects, appsettings.{environment}.json files, configuration priority, and how to use *__Comment for JSON comments.</p>
-			</div>
-
-			<div id="typescript" style="margin-top: 1rem;">
-				<strong>Stage 11: TypeScript, Build Process &amp; JavaScript Interop</strong>
-				<p>Understand TypeScript integration, MSBuild targets for JavaScript compilation, `IJSRuntimeExtensions` for C#-to-JS calls, and how to add npm packages with type definitions.</p>
-			</div>
-
-			<div id="blazor-modes" style="margin-top: 1rem;">
-				<strong>Stage 12: Blazor Modes, PreRendering &amp; PWA</strong>
-				<p>Explore Blazor Server, WebAssembly, and Auto modes, pre-rendering configuration for SEO and performance, PWA capabilities, service workers, and `IPrerenderStateService`.</p>
-			</div>
-
-			<div id="force-update" style="margin-top: 1rem;">
-				<strong>Stage 13: Force Update System</strong>
-				<p>Learn how `ForceUpdateMiddleware` validates app versions on every request, supports platform-specific update behaviors (auto-update for web/Windows, store redirect for mobile), and ensures all users run supported versions.</p>
-			</div>
-
-			<div id="response-caching" style="margin-top: 1rem;">
-				<strong>Stage 14: Response Caching System</strong>
-				<p>Master multi-layer caching: client-side memory cache, browser HTTP cache, CDN edge cache, and ASP.NET Core Output Cache. Learn about `AppResponseCache` attribute, cache purging with `ResponseCacheService`, and optimizing performance.</p>
-			</div>
-
-			<div id="logging" style="margin-top: 1rem;">
-				<strong>Stage 15: Logging, OpenTelemetry and Health Checks</strong>
-				<p>Understand ILogger for logging, `AppActivitySource` for tracking operations, in-app Diagnostic Modal, integration with Sentry and Azure App Insights, Aspire Dashboard, and built-in health checks.</p>
-			</div>
-
-			<div id="cicd" style="margin-top: 1rem;">
-				<strong>Stage 16: CI/CD Pipeline and Environments</strong>
-				<p>Explore workflow files, environment configuration (Development, Staging, Production), build and deployment pipelines for client platforms, and best practices for secure backend deployment.</p>
-			</div>
-
-			<div id="testing" style="margin-top: 1rem;">
-				<strong>Stage 17: Automated Testing (Unitigration Tests)</strong>
-				<p>Learn about the Unitigration Test approach that combines the benefits of Unit Tests and Integration Tests, UI tests with real server behavior, and flexible test architecture.</p>
-			</div>
-
-			<div id="prompts" style="margin-top: 1rem;">
-				<strong>Stage 18: Other Available Prompt Templates</strong>
-				<p>Discover additional specialized prompt templates available in the .github/prompts/ directory for specific development tasks and scenarios.</p>
-			</div>
-
-			<div id="misc-files" style="margin-top: 1rem;">
-				<strong>Stage 19: Project Miscellaneous Files</strong>
-				<p>Review important configuration files: Clean scripts, global.json, vs-spell.dic, settings.VisualStudio.json, mcp.json, Directory.Build.props, Directory.Packages.props, and .vsconfig.</p>
-			</div>
-
-			<div id="aspire" style="margin-top: 1rem;">
-				<strong>Stage 20: .NET Aspire</strong>
-				<p>Understand .NET Aspire benefits for development (dashboard monitoring) and deployment (Azure, Docker Compose, Kubernetes). Learn database persistence configuration and Linux testing with Dev Containers.</p>
-			</div>
-
-			<div id="maui-hybrid" style="margin-top: 1rem;">
-				<strong>Stage 21: .NET MAUI / Blazor Hybrid</strong>
-				<p>Explore native platform capabilities on Android, iOS, macOS, and Windows. Learn about Deep Links/Universal Links, `ApplicationVersion` for app stores, Windows project advantages, and WebView considerations.</p>
-			</div>
-
-			<div id="messaging" style="margin-top: 1rem;">
-				<strong>Stage 22: Messaging</strong>
-				<p>Master in-app messaging with `PubSubService`, JavaScript-to-C# communication with `AppJsBridge`, real-time server-to-client messaging with SignalR, and push notifications with deep linking.</p>
-			</div>
-
-			<div id="diagnostic" style="margin-top: 1rem;">
-				<strong>Stage 23: Diagnostic Modal</strong>
-				<p>Explore the powerful in-app diagnostic tools, including browser DevTools that work on mobile devices and real-time log viewing capabilities.</p>
-			</div>
-
-			<div id="webauthn" style="margin-top: 1rem;">
-				<strong>Stage 24: WebAuthn and Passwordless Authentication (Advanced)</strong>
-				<p>Learn about biometric authentication (fingerprint, Face ID, PIN) that's more secure than native implementations, cross-platform support.</p>
-			</div>
-
-			<div id="vector-embeddings" style="margin-top: 1rem;">
-				<strong>Stage 25: RAG / Semantic Search with Vector Embeddings (Advanced)</strong>
-				<p>Understand vector embeddings for semantic search, cross-language search capabilities, embedding models (OpenAI, Azure, Hugging Face), and how to implement RAG (Retrieval-Augmented Generation) patterns.</p>
-			</div>
-
-			<br />
-			<br />
-
-			<strong style="font-size: 1.1rem;">Ready to Start Your Interactive Learning Journey?</strong>
-			<p style="margin-top: 0.5rem;">
-				Open your project created from bit Boilerplate in <span class="bold-txt">Visual Studio</span> or <span class="bold-txt">Visual Studio Code</span>,
-				then open <span class="bold-txt">GitHub Copilot Chat</span> and type:
-			</p>
-			<code style="display: block; margin: 1rem 0; padding: 0.75rem; background-color: var(--bit-clr-bg-pri); border-radius: 4px;">
-				Run getting started
-			</code>
-			<p>
-				You can specify which stage you want to start with (e.g., "Stage 5") and your preferred language
-				(e.g., English, Persian, Français or any other language).
-			</p>
 		</div>
+
+		<BitText Typography="BitTypography.H5" Gutter>Interactive Learning's Comprehensive Stages:</BitText>
+		<br />
+
+		The interactive guide covers your entire project architecture across 25 detailed stages. Each stage provides real examples from your own project with interactive Q&amp;A:
+
+		<div id="ef-core" style="margin-top: 1rem;">
+			<strong>Stage 1: Entity Framework Core</strong>
+			<p>Learn about DbContext, entity models, entity type configurations, and migrations. Understand nullable reference types in EF Core relationships and client-side offline database support.</p>
+		</div>
+
+		<div id="dtos-mappers" style="margin-top: 1rem;">
+			<strong>Stage 2: DTOs, Mappers, and Mapperly</strong>
+			<p>Explore Data Transfer Objects, `AppJsonContext`, and how Mapperly simplifies object mapping. Learn the difference between Project() and Map() methods, and how Patch() updates client-side objects.</p>
+		</div>
+
+		<div id="api-odata" style="margin-top: 1rem;">
+			<strong>Stage 3: API Controllers and OData</strong>
+			<p>Understand controller architecture, [AutoInject] attribute, and OData query support ($filter, $top, $skip, $orderby). Learn about PagedResult for total counts, data security, and optimized performance patterns.</p>
+		</div>
+
+		<div id="background-jobs" style="margin-top: 1rem;">
+			<strong>Stage 4: Background Jobs and CancellationToken Management</strong>
+			<p>Discover automatic request cancellation, CancellationToken usage, NavigationLock for critical operations, and Hangfire for reliable background job processing with persistence.</p>
+		</div>
+
+		<div id="localization" style="margin-top: 1rem;">
+			<strong>Stage 5: Localization and Multi-language Support</strong>
+			<p>Master resource files (resx), `DtoResourceType` attribute, `AppDataAnnotationsValidator`, IStringLocalizer usage, and the `bit-resx` tool for managing translations.</p>
+		</div>
+
+		<div id="exception-handling" style="margin-top: 1rem;">
+			<strong>Stage 6: Exception Handling and Error Management</strong>
+			<p>Learn about Known vs Unknown exceptions, safe exception throwing, `WithData()` and `WithExtensionData()` methods, automatic exception handling in Blazor, and `WrapHandled()` for event handlers.</p>
+		</div>
+
+		<div id="identity-auth" style="margin-top: 1rem;">
+			<strong>Stage 7: ASP.NET Core Identity / Authentication & Authorization</strong>
+			<p>Comprehensive coverage of JWT tokens (access/refresh), session management, SSO integration (Google, GitHub, Azure AD, etc.), role-based and policy-based authorization, and identity configuration.</p>
+		</div>
+
+		<div id="blazor-pages" style="margin-top: 1rem;">
+			<strong>Stage 8: Blazor Pages, Components, Styling &amp; Navigation</strong>
+			<p>Understand the three-file structure (.razor, .razor.cs, .razor.scss), isolated component styles, global styles, ::deep selector, Bit.BlazorUI components, and navigation with `PageUrls`.</p>
+		</div>
+
+		<div id="dependency-injection" style="margin-top: 1rem;">
+			<strong>Stage 9: Dependency Injection &amp; Service Registration</strong>
+			<p>Explore service registration patterns across different projects, `AddSessioned` method for session-scoped services, and appropriate service lifetimes (Singleton, Scoped, Transient, `Sessioned`).</p>
+		</div>
+
+		<div id="configuration" style="margin-top: 1rem;">
+			<strong>Stage 10: Configuration (appsettings.json)</strong>
+			<p>Learn about configuration hierarchy across projects, appsettings.{environment}.json files, configuration priority, and how to use *__Comment for JSON comments.</p>
+		</div>
+
+		<div id="typescript" style="margin-top: 1rem;">
+			<strong>Stage 11: TypeScript, Build Process &amp; JavaScript Interop</strong>
+			<p>Understand TypeScript integration, MSBuild targets for JavaScript compilation, `IJSRuntimeExtensions` for C#-to-JS calls, and how to add npm packages with type definitions.</p>
+		</div>
+
+		<div id="blazor-modes" style="margin-top: 1rem;">
+			<strong>Stage 12: Blazor Modes, PreRendering &amp; PWA</strong>
+			<p>Explore Blazor Server, WebAssembly, and Auto modes, pre-rendering configuration for SEO and performance, PWA capabilities, service workers, and `IPrerenderStateService`.</p>
+		</div>
+
+		<div id="force-update" style="margin-top: 1rem;">
+			<strong>Stage 13: Force Update System</strong>
+			<p>Learn how `ForceUpdateMiddleware` validates app versions on every request, supports platform-specific update behaviors (auto-update for web/Windows, store redirect for mobile), and ensures all users run supported versions.</p>
+		</div>
+
+		<div id="response-caching" style="margin-top: 1rem;">
+			<strong>Stage 14: Response Caching System</strong>
+			<p>Master multi-layer caching: client-side memory cache, browser HTTP cache, CDN edge cache, and ASP.NET Core Output Cache. Learn about `AppResponseCache` attribute, cache purging with `ResponseCacheService`, and optimizing performance.</p>
+		</div>
+
+		<div id="logging" style="margin-top: 1rem;">
+			<strong>Stage 15: Logging, OpenTelemetry and Health Checks</strong>
+			<p>Understand ILogger for logging, `AppActivitySource` for tracking operations, in-app Diagnostic Modal, integration with Sentry and Azure App Insights, Aspire Dashboard, and built-in health checks.</p>
+		</div>
+
+		<div id="cicd" style="margin-top: 1rem;">
+			<strong>Stage 16: CI/CD Pipeline and Environments</strong>
+			<p>Explore workflow files, environment configuration (Development, Staging, Production), build and deployment pipelines for client platforms, and best practices for secure backend deployment.</p>
+		</div>
+
+		<div id="testing" style="margin-top: 1rem;">
+			<strong>Stage 17: Automated Testing (Unitigration Tests)</strong>
+			<p>Learn about the Unitigration Test approach that combines the benefits of Unit Tests and Integration Tests, UI tests with real server behavior, and flexible test architecture.</p>
+		</div>
+
+		<div id="prompts" style="margin-top: 1rem;">
+			<strong>Stage 18: Other Available Prompt Templates</strong>
+			<p>Discover additional specialized prompt templates available in the .github/prompts/ directory for specific development tasks and scenarios.</p>
+		</div>
+
+		<div id="misc-files" style="margin-top: 1rem;">
+			<strong>Stage 19: Project Miscellaneous Files</strong>
+			<p>Review important configuration files: Clean scripts, global.json, vs-spell.dic, settings.VisualStudio.json, mcp.json, Directory.Build.props, Directory.Packages.props, and .vsconfig.</p>
+		</div>
+
+		<div id="aspire" style="margin-top: 1rem;">
+			<strong>Stage 20: .NET Aspire</strong>
+			<p>Understand .NET Aspire benefits for development (dashboard monitoring) and deployment (Azure, Docker Compose, Kubernetes). Learn database persistence configuration and Linux testing with Dev Containers.</p>
+		</div>
+
+		<div id="maui-hybrid" style="margin-top: 1rem;">
+			<strong>Stage 21: .NET MAUI / Blazor Hybrid</strong>
+			<p>Explore native platform capabilities on Android, iOS, macOS, and Windows. Learn about Deep Links/Universal Links, `ApplicationVersion` for app stores, Windows project advantages, and WebView considerations.</p>
+		</div>
+
+		<div id="messaging" style="margin-top: 1rem;">
+			<strong>Stage 22: Messaging</strong>
+			<p>Master in-app messaging with `PubSubService`, JavaScript-to-C# communication with `AppJsBridge`, real-time server-to-client messaging with SignalR, and push notifications with deep linking.</p>
+		</div>
+
+		<div id="diagnostic" style="margin-top: 1rem;">
+			<strong>Stage 23: Diagnostic Modal</strong>
+			<p>Explore the powerful in-app diagnostic tools, including browser DevTools that work on mobile devices and real-time log viewing capabilities.</p>
+		</div>
+
+		<div id="webauthn" style="margin-top: 1rem;">
+			<strong>Stage 24: WebAuthn and Passwordless Authentication (Advanced)</strong>
+			<p>Learn about biometric authentication (fingerprint, Face ID, PIN) that's more secure than native implementations, cross-platform support.</p>
+		</div>
+
+		<div id="vector-embeddings" style="margin-top: 1rem;">
+			<strong>Stage 25: RAG / Semantic Search with Vector Embeddings (Advanced)</strong>
+			<p>Understand vector embeddings for semantic search, cross-language search capabilities, embedding models (OpenAI, Azure, Hugging Face), and how to implement RAG (Retrieval-Augmented Generation) patterns.</p>
+		</div>
+
+		<br />
+
+		<strong style="font-size: 1.1rem;">Ready to Start Your Interactive Learning Journey?</strong>
+		<p>
+			You can specify which stage you want to start with (e.g., "Stage 5") and your preferred language
+			(e.g., English, Persian, Français or any other language).
+		</p>
 	</section>
 
 	<section class="section-card" id="ai-powered-wiki">
