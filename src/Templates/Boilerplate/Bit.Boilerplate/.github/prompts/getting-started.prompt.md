@@ -10,6 +10,8 @@ Welcome! This interactive guide will walk you through the key architectural comp
 
 **Important**: All stages will be explained with **real examples from the actual project codebase**. You will use concrete files and code from this workspace to demonstrate each concept.
 
+This ensures clickable, navigable references for developers.
+
 ## Prerequisites
 
 Before starting, inform the developer that they must complete the installation of prerequisites and know how to run the project on different platforms:
@@ -38,17 +40,17 @@ List the available stages:
 13. **Stage 13**: Force Update System
 14. **Stage 14**: Response Caching System
 15. **Stage 15**: Logging, OpenTelemetry and Health Checks
-16. **Stage 16**: CI/CD Pipeline and Environments
+16. **Stage 16**: CI-CD Pipeline and Environments
 17. **Stage 17**: Automated Testing (Unitigration Tests)
 18. **Stage 18**: Other Available Prompt Templates
 19. **Stage 19**: Project miscellaneous files
 20. **Stage 20**: .NET Aspire
-21. **Stage 21**: .NET MAUI / Blazor Hybrid
+21. **Stage 21**: .NET MAUI - Blazor Hybrid
 22. **Stage 22**: Messaging
 23. **Stage 23**: Diagnostic Modal
 24. **Stage 24**: WebAuthn and Passwordless Authentication (Advanced)
 <!--#if (database == "PostgreSQL" || database == "SqlServer")-->
-25. **Stage 25**: RAG / Semantic Search with Vector Embeddings (Advanced)
+25. **Stage 25**: RAG - Semantic Search with Vector Embeddings (Advanced)
 <!--#endif-->
 
 **Default: Stage 1**
@@ -93,18 +95,20 @@ In this stage, you will explain the following topics:
   - **When to Use Migrations**: For production environments or when you need to track schema changes over time, you should use migrations.
   - **How to Switch to Migrations**:
     1. Change `Database.EnsureCreatedAsync()` to `Database.MigrateAsync()` in the following files:
-       - `src/Server/Boilerplate.Server.Api/Program.cs`
-       - `src/Server/Boilerplate.Server.Web/Program.cs`
-       - `src/Tests/TestsInitializer.cs`
+       - [/src/Server/Boilerplate.Server.Api/Program.cs](/src/Server/Boilerplate.Server.Api/Program.cs)
+       - [/src/Server/Boilerplate.Server.Web/Program.cs](/src/Server/Boilerplate.Server.Web/Program.cs)
+       - [/src/Tests/TestsInitializer.cs](/src/Tests/TestsInitializer.cs)
     2. If the project has already been run and the database exists, **delete the existing database** before running with migrations (since `EnsureCreated` and `Migrate` cannot be mixed)
-    3. Create your first migration using: `dotnet ef migrations add InitialCreate --verbose` (from the `Server.Api` project directory)
+    3. Create your first migration using: `dotnet ef migrations add Initial --output-dir Data/Migrations --verbose` (from the `Server.Api` project directory)
     4. The `MigrateAsync()` method call will apply the migration and create the database
   - **Adding New Migrations**: After making changes to entities, create a new migration with: `dotnet ef migrations add <MigrationName> --verbose`
 
 <!--#if (offlineDb == true)-->
-## Client-Side Offline Database (Details in src/Client/Boilerplate.Client.Core/Data/Readme.md)
+## Client-Side Offline Database)
 
 This project also includes a **client-side offline database** that allows the application to work without an internet connection.
+
+Details in [/src/Client/Boilerplate.Client.Core/Data/README.md](/src/Client/Boilerplate.Client.Core/Data/README.md)
 
 ### Key Characteristics:
 - **Per-Client Database**: Each client (web browser, mobile app, desktop app) has its own local database
@@ -132,10 +136,12 @@ At the end of Stage 1, ask: **"Do you have any questions about Stage 1, or shall
 
 In this stage, you will explain the following topics:
 
-## Topics to Cover (Details in src/Boilerplate.Server.Api/Mappers/Readme.md):
-- **DTOs (Data Transfer Objects)**: Show DTO examples from the project (e.g., `CategoryDto`, `UserDto` etc)
+## Topics to Cover:
+
+- **Details**: More info at [/src/Server/Boilerplate.Server.Api/Mappers/Readme.md](/src/Server/Boilerplate.Server.Api/Mappers/Readme.md):
+- **DTOs (Data Transfer Objects)**: Show 1 DTO example from the project (e.g., `CategoryDto`, `UserDto` etc)
 - **AppJsonContext**: What it is and its purpose
-- **Mapper Files**: How they're written in the `Server.Api` project using Mapperly (e.g., `CategoriesMapper`, `IdentityMapper` etc)
+- **Mapper Files**: Explain 1 mapper file written in `Server.Api` project using Mapperly (e.g., `CategoriesMapper`, `IdentityMapper` etc)
 - **Project vs Map**: Explain the difference between `Project()` and `Map()` for reading data and why project is more efficient for read scenarios.
 - **Manual Projection Alternative**: Explain that using Mapperly's `Project()` is **not mandatory**. Developers can perform projection manually using LINQ's `Select()` method. 
   Both approaches produce the same SQL query, but Mapperly's `Project()` reduces repetitive code and is automatically updated when entity properties added/removed.
@@ -193,7 +199,7 @@ In this stage, you will explain the following topics:
 - **Real Usage**: Show actual controller methods from the project that demonstrate these patterns
   - Explain that all controllers inherit from `AppControllerBase` which provides common functionality like access to `DbContext`, `Mapper`, `IStringLocalizer`, and other shared services
   - Show examples of how controllers use these inherited services without needing to inject them manually
-- **Proxy Interface**: Explain how interfaces are defined in `Shared/Controllers` and implemented in `Server.Api/Controllers` using provided information in src/Shared/Controllers/Readme.md
+- **Proxy Interface**: Explain how interfaces are defined in `Shared/Controllers` and implemented in `Server.Api/Controllers` using provided information in [/src/Shared/Controllers/Readme.md](/src/Shared/Controllers/Readme.md)
 
 ## Architectural Philosophy
 
@@ -431,7 +437,7 @@ In this stage, you will explain the comprehensive authentication and authorizati
 ### Identity Configuration
 
 #### IdentitySettings in appsettings.json
-- **Location**: `src/Server/Boilerplate.Server.Api/appsettings.json`
+- **Location**: [/src/Server/Boilerplate.Server.Api/appsettings.json](/src/Server/Boilerplate.Server.Api/appsettings.json)
 - **Configuration Options**: Explain key identity settings that can be customized:
   - Token expiration times (access token, refresh token)
   - Password requirements (length, complexity)
@@ -512,10 +518,10 @@ In this stage, you will explain the Blazor UI architecture, component structure,
   - Show examples from actual component `.razor.scss` files
 
 #### Global Styles
-- **App.scss**: The main global stylesheet located in `src/Client/Boilerplate.Client.Core/Styles/App.scss`
+- **app.scss**: The main global stylesheet located in [/src/Client/Boilerplate.Client.Core/Styles/app.scss](/src/Client/Boilerplate.Client.Core/Styles/app.scss)
   - Contains global styles, resets, and shared CSS
   - Imports other global SCSS files
-  - Show the structure of `App.scss` and what it includes
+  - Show the structure of `app.scss` and what it includes
 
 #### Theme Color Variables
 - **_bit-css-variables.scss**: Tell the developer about it and show examples from the project where these variables are used in SCSS files
@@ -542,7 +548,7 @@ In this stage, you will explain the Blazor UI architecture, component structure,
   - "How can I implement a Grid System and layout using BitGrid and BitStack components, especially if I'm familiar with the Bootstrap grid system?"
 
 ### Navigation with PageUrls
-- **PageUrls Class**: Located in `src/Shared/PageUrls.cs` and related partial files
+- **PageUrls Class**: Located in [/src/Shared/PageUrls.cs](/src/Shared/PageUrls.cs) and related partial files
   - Contains **strongly-typed constants** for all page routes in the application
   // In a Razor file
   <BitLink Href="@PageUrls.Dashboard">Go to Dashboard</BitLink>
@@ -594,7 +600,7 @@ At the end of Stage 9, ask: **"Do you have any questions about Stage 9 or the de
 ```
 Priority (Low → High):
 ```
-For example, explain: If you add a setting in `src/Shared/appsettings.json`, it applies to all platforms unless explicitly overridden in platform-specific appsettings.json files
+For example, explain: If you add a setting in [/src/Shared/appsettings.json](/src/Shared/appsettings.json), it applies to all platforms unless explicitly overridden in platform-specific appsettings.json files
 4. Tell how `*__Comment` works in appsettings.json files, because json doesn't support comments natively.
 
 ---
@@ -684,10 +690,10 @@ In this stage, you will explain the comprehensive response caching system built 
 ### Instructions
 
 1. **Find and show the key caching components**:
-   - `src/Shared/Attributes/AppResponseCacheAttribute.cs`
-   - `src/Server/Boilerplate.Server.Shared/Services/AppResponseCachePolicy.cs`
-   - `src/Server/Boilerplate.Server.Api/Services/ResponseCacheService.cs`
-   - `src/Client/Boilerplate.Client.Core/Services/HttpMessageHandlers/CacheDelegatingHandler.cs`
+   - [/src/Shared/Attributes/AppResponseCacheAttribute.cs](/src/Shared/Attributes/AppResponseCacheAttribute.cs)
+   - [/src/Server/Boilerplate.Server.Shared/Services/AppResponseCachePolicy.cs](/src/Server/Boilerplate.Server.Shared/Services/AppResponseCachePolicy.cs)
+   - [/src/Server/Boilerplate.Server.Api/Services/ResponseCacheService.cs](/src/Server/Boilerplate.Server.Api/Services/ResponseCacheService.cs)
+   - [/src/Client/Boilerplate.Client.Core/Services/HttpMessageHandlers/CacheDelegatingHandler.cs](/src/Client/Boilerplate.Client.Core/Services/HttpMessageHandlers/CacheDelegatingHandler.cs)
 
 2. **Explain the AppResponseCache attribute and AppResponseCachePolicy**:
    - The `AppResponseCache` attribute can be applied to:
@@ -737,10 +743,10 @@ At the end of Stage 14, ask: **"Do you have any questions about the Response Cac
 1. **Explain ILogger for errors, warnings, and general information**:
 
 2. **Explain Activity and AppActivitySource for tracking operations (count/duration)**:
-   - Show `src/Shared/Services/AppActivitySource.cs` file
+   - Show [/src/Shared/Services/AppActivitySource.cs](/src/Shared/Services/AppActivitySource.cs) file
    - Find and demonstrate example using `AppActivitySource`
 
-3. **Logging configuration in `src/Shared/appsettings.json`**:
+3. **Logging configuration in [/src/Shared/appsettings.json](/src/Shared/appsettings.json)**:
    - Show the `Logging` section with different providers
 
 4. **In-app Diagnostic Logger - extremely useful troubleshooting**:
@@ -769,11 +775,11 @@ At the end of Stage 14, ask: **"Do you have any questions about the Response Cac
 
 ---
 
-At the end of Stage 15, ask: **"Do you have any questions about the Logging and OpenTelemetry system, or shall we proceed to Stage 16 (CI/CD Pipeline and Environments)?"**
+At the end of Stage 15, ask: **"Do you have any questions about the Logging and OpenTelemetry system, or shall we proceed to Stage 16 (CI-CD Pipeline and Environments)?"**
 
 ---
 
-## Stage 16: CI/CD Pipeline and Environments
+## Stage 16: CI-CD Pipeline and Environments
 
 ### Instructions
 1. **Search for workflow files**: Find and review `*.yml` files.
@@ -930,11 +936,11 @@ At the end of Stage 19, ask: **"Do you have any questions about these configurat
 
 
 <!--#endif-->
-At the end of Stage 20 (with Aspire), ask: **"Do you have any questions about .NET Aspire, its dashboard, deployment capabilities, or database management? Or shall we proceed to Stage 21 (.NET MAUI / Blazor Hybrid)?"**
+At the end of Stage 20 (with Aspire), ask: **"Do you have any questions about .NET Aspire, its dashboard, deployment capabilities, or database management? Or shall we proceed to Stage 21 (.NET MAUI - Blazor Hybrid)?"**
 
 ---
 
-## Stage 21: .NET MAUI / Blazor Hybrid
+## Stage 21: .NET MAUI - Blazor Hybrid
 
 ### Instructions
 
@@ -1074,7 +1080,7 @@ At the end of Stage 24, ask: **"Do you have any questions about WebAuthn impleme
 
 <!--#if (database == "PostgreSQL" || database == "SqlServer")-->
 
-## Stage 25: RAG / Semantic Search with Vector Embeddings (Advanced)
+## Stage 25: RAG - Semantic Search with Vector Embeddings (Advanced)
 
 In this stage, you will explain the advanced semantic search capabilities using vector embeddings for database queries.
 
