@@ -83,7 +83,7 @@ In this stage, you will explain the following topics:
 
 ## Topics to Cover:
 - **AppDbContext**: Where it's located in the project (show the actual file path)
-- **Entity Models**: Where entities are placed (e.g., `Category`, `User` etc)
+- **Entity Models**: Where entities are placed (explain only one entity among `Category` or `User`)
   - **Nullable Reference Types**: Explain that due to C# nullable reference types being enabled:
     - String properties are defined as `string?` (nullable), not `string`, even when marked with `[Required]` attribute. This is because EF Core will set them to `null` initially before validation occurs.
     - In associations/relationships:
@@ -94,13 +94,13 @@ In this stage, you will explain the following topics:
   - By default, the project uses `Database.EnsureCreatedAsync()` which automatically creates the database schema based on your entities without requiring migrations. This is simpler for getting started.
   - **When to Use Migrations**: For production environments or when you need to track schema changes over time, you should use migrations.
   - **How to Switch to Migrations**:
-    1. Change `Database.EnsureCreatedAsync()` to `Database.MigrateAsync()` in the following files:
+    1. Replace `Database.EnsureCreatedAsync()` with `Database.MigrateAsync()` in the following 3 files:
        - [/src/Server/Boilerplate.Server.Api/Program.cs](/src/Server/Boilerplate.Server.Api/Program.cs)
        - [/src/Server/Boilerplate.Server.Web/Program.cs](/src/Server/Boilerplate.Server.Web/Program.cs)
        - [/src/Tests/TestsInitializer.cs](/src/Tests/TestsInitializer.cs)
     2. If the project has already been run and the database exists, **delete the existing database** before running with migrations (since `EnsureCreated` and `Migrate` cannot be mixed)
-    3. Create your first migration using: `dotnet ef migrations add Initial --output-dir Data/Migrations --verbose` (from the `Server.Api` project directory)
-    4. The `MigrateAsync()` method call will apply the migration and create the database
+    3. Create your first migration for server side `AppDbContext` by running `dotnet ef migrations add Initial --output-dir Data/Migrations --verbose` within the `Boilerplate.Server.Api` directory
+    4. There's no need to run `Update-Database` or `dotnet ef database update`, the `MigrateAsync()` method call will apply the migration and create the database
   - **Adding New Migrations**: After making changes to entities, create a new migration with: `dotnet ef migrations add <MigrationName> --verbose`
 
 <!--#if (offlineDb == true)-->
@@ -141,11 +141,11 @@ In this stage, you will explain the following topics:
 - **Details**: More info at [/src/Server/Boilerplate.Server.Api/Mappers/Readme.md](/src/Server/Boilerplate.Server.Api/Mappers/Readme.md):
 - **DTOs (Data Transfer Objects)**: Show 1 DTO example from the project (e.g., `CategoryDto`, `UserDto` etc)
 - **AppJsonContext**: What it is and its purpose
-- **Mapper Files**: Explain 1 mapper file written in `Server.Api` project using Mapperly (e.g., `CategoriesMapper`, `IdentityMapper` etc)
+- **Mapper Files**: Explain 1 mapper file written in `Boilerplate.Server.Api` project using Mapperly (e.g., `CategoriesMapper`, `IdentityMapper` etc)
 - **Project vs Map**: Explain the difference between `Project()` and `Map()` for reading data and why project is more efficient for read scenarios.
 - **Manual Projection Alternative**: Explain that using Mapperly's `Project()` is **not mandatory**. Developers can perform projection manually using LINQ's `Select()` method. 
   Both approaches produce the same SQL query, but Mapperly's `Project()` reduces repetitive code and is automatically updated when entity properties added/removed.
-- Mapperly usage in Client.Core: Try finding `.Patch` usages in `Boilerplate.Client.Core` project and explain the way mapperly is used for patching dto objects returned from server to update existing dto objects in client memory without replacing the whole object reference.
+- Mapperly usage in Boilerplate.Client.Core: Try finding `.Patch` usages in `Boilerplate.Client.Core` project and explain the way mapperly is used for patching dto objects returned from server to update existing dto objects in client memory without replacing the whole object reference.
 
 If the developer has questions about Mapperly, you can use the `DeepWiki_ask_question` tool to query the `riok/mapperly` repository for additional information.
 
@@ -199,7 +199,7 @@ In this stage, you will explain the following topics:
 - **Real Usage**: Show actual controller methods from the project that demonstrate these patterns
   - Explain that all controllers inherit from `AppControllerBase` which provides common functionality like access to `DbContext`, `Mapper`, `IStringLocalizer`, and other shared services
   - Show examples of how controllers use these inherited services without needing to inject them manually
-- **Proxy Interface**: Explain how interfaces are defined in `Shared/Controllers` and implemented in `Server.Api/Controllers` using provided information in [/src/Shared/Controllers/Readme.md](/src/Shared/Controllers/Readme.md)
+- **Proxy Interface**: Explain how interfaces are defined in `Shared/Controllers` and implemented in `Boilerplate.Server.Api/Controllers` using provided information in [/src/Shared/Controllers/Readme.md](/src/Shared/Controllers/Readme.md)
 
 ## Architectural Philosophy
 
@@ -283,8 +283,8 @@ In this stage, you will explain the following topics:
 
 ## Topics to Cover:
 - **Resx Files**: Explain the resource files structure:
-  - **Shared Project**: `AppStrings.resx` and `IdentityStrings.resx` for UI strings
-  - **Server.Api Project**: `EmailStrings.resx` for email templates
+  - **Boilerplate.Shared Project**: `AppStrings.resx` and `IdentityStrings.resx` for UI strings
+  - **Boilerplate.Server.Api Project**: `EmailStrings.resx` for email templates
   - Show examples of the default language files (`.resx`) and translated files (e.g., `.fa.resx`, `.sv.resx`)
 - **DtoResourceType**: Explain how DTOs use the `[DtoResourceType(typeof(AppStrings))]` attribute to connect validation messages and display names to resource files
   - Show examples from actual DTOs in the project
@@ -595,7 +595,7 @@ At the end of Stage 9, ask: **"Do you have any questions about Stage 9 or the de
 
 ### Instructions
 1. Explain that each project has its own `appsettings.json` and `appsettings.{environment}.json` files
-2. Understand the configuration priority/hierarchy from `IConfigurationBuilderExtensions.cs` in `Client.Core`.
+2. Understand the configuration priority/hierarchy from `IConfigurationBuilderExtensions.cs` in `Boilerplate.Client.Core`.
 3. Create a simple matrix showing configuration priority:
 ```
 Priority (Low → High):
@@ -631,14 +631,14 @@ In this stage, you will explain Blazor rendering modes, pre-rendering, and PWA f
 
 ### App.razor and index.html Files
 1. **Find and show these files**:
-   - `Server.Web/Components/App.razor`: For Blazor Server, Auto, and WebAssembly with pre-rendering
-   - `Client.Web/wwwroot/index.html`: For standalone Blazor WebAssembly
-   - `Client.Maui/wwwroot/index.html`: For Blazor Hybrid (also used by Client.Windows)
+   - `Boilerplate.Server.Web/Components/App.razor`: For Blazor Server, Auto, and WebAssembly with pre-rendering
+   - `Boilerplate.Client.Web/wwwroot/index.html`: For standalone Blazor WebAssembly
+   - `Boilerplate.Client.Maui/wwwroot/index.html`: For Blazor Hybrid (also used by Client.Windows)
 
 2. **Important**: Changes to `App.razor` usually need similar changes in both `index.html` files
 
 ### Blazor Mode & PreRendering Configuration
-- **Location**: `Server.Api/appsettings.json` under `WebAppRender` section
+- **Location**: `Boilerplate.Server.Api/appsettings.json` under `WebAppRender` section
 - **Settings**:
   - `BlazorMode`: "BlazorServer" | "BlazorWebAssembly" | "BlazorAuto"
   Basicly we'd recommend using `BlazorServer` for development and `BlazorWebAssembly` for production deployment.
@@ -673,7 +673,7 @@ At the end of Stage 12, ask: **"Do you have any questions about Blazor Modes, Pr
 ### Instructions
 1. Search for `ForceUpdateMiddleware` and `IAppUpdateService` in the codebase
 2. Explain how client sends `X-App-Version` header with HttpClient/SignalR requests
-3. Show how server validates version via middleware against `SupportedAppVersions` in `Server.Api/appsettings.json`
+3. Show how server validates version via middleware against `SupportedAppVersions` in `Boilerplate.Server.Api/appsettings.json`
 4. Explain platform-specific update behavior: Web/Windows auto-updates, Android/iOS/macOS opens store
 5. Key difference: Version checked on **every request**, not just at startup - forces even active users to update
 
@@ -901,7 +901,7 @@ At the end of Stage 19, ask: **"Do you have any questions about these configurat
    - **Credentials**: The credentials are stored in `appsettings.Development.json` in `Boilerplate.Server.AppHost` project.
 
 4. **Important Note about Docker Execution**:
-   - **For Performance**: Aspire does NOT run the `Server.Api` and `Server.Web` projects on Docker (they run natively for faster development)
+   - **For Performance**: Aspire does NOT run the `Boilerplate.Server.Api` and `Boilerplate.Server.Web` projects on Docker (they run natively for faster development)
    - **Testing Linux Behavior on Windows**: If you want to test server behavior in Linux while **still using Aspire** on Windows, follow these instructions:
      - Open the project in Visual Studio Code
      - Use Visual Studio Code Dev Containers feature

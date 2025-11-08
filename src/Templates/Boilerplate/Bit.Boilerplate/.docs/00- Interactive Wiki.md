@@ -6,8 +6,7 @@ If you have access to **Claude Sonnet 4.5** (or newer), you can read all the doc
 
 **Additional Benefits of This Approach:**
 - ✅ **Always Up-to-Date**: The documentation is generated from the **latest source code**, ensuring you always learn from the current project structure
-- ✅ **Adapts to Your Changes**: If you modify the code structure based on your needs, this approach still works for new developers joining your team
-- ✅ **Customizable**: The AI can explain concepts based on your actual codebase, not generic examples
+- ✅ **Adapts to your changes**: If you modify the code structure based on your needs, this approach still works for new developers joining your team
 
 - How Does It Work?
 - Watch this **[short video tutorial](https://bitplatform.dev/templates/wiki)** to see how it works:
