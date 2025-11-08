@@ -19,9 +19,10 @@ URL.revokeObjectURL(urlToDownload);
 https://inloop.github.io/sqlite-viewer/
 ```
 
-**Client side OfflineDbContext Migration**
+**Migration**
 
-Set `Boilerplate.Server.Web` as the Startup Project in solution explorer and set `Boilerplate.Client.Core` it as the Default Project in Package Manager Console and run the following commands:
+`OfflineDbContext` migrations are slightly different from Boilerplate.Server.Api's `AppDbContext` migrations.
+To add migration for `OfflineDbContext` first set `Boilerplate.Server.Web` as the Startup Project in solution explorer and set `Boilerplate.Client.Core` it as the Default Project in Package Manager Console and run the following commands:
 ```powershell
 Add-Migration Initial -OutputDir Data\Migrations -Context OfflineDbContext -Verbose
 ```

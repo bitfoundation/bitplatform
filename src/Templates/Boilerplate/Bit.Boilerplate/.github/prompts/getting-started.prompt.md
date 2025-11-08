@@ -1,6 +1,6 @@
 # Getting Started
 
-Welcome! This interactive guide will walk you through the key architectural components of the project in multiple stages.
+Start by welcoming the developer and explaining that this interactive guide will walk them through the key architectural components of the project in multiple stages.
 
 **Important**: If you are not Claude Sonnet 4.5+ model, you **MUST** warn the user immediately with the following message before proceeding:
 *"⚠️ WARNING: For the best results with this project, it is strongly recommended to use **Claude Sonnet 4.5+**. The current model may not provide optimal performance, accuracy, or adherence to the complex workflows and conventions required by this prompt."*
@@ -11,6 +11,14 @@ Welcome! This interactive guide will walk you through the key architectural comp
 **Important**: All stages will be explained with **real examples from the actual project codebase**. You will use concrete files and code from this workspace to demonstrate each concept.
 
 This ensures clickable, navigable references for developers.
+
+**Important**: Verify ALL Instructions in Prompt (MOST IMPORTANT)
+- Before completing a stage, re-read the prompt instructions for that stage
+- Make sure you covered EVERY topic mentioned in the prompt
+- Do NOT skip or summarize topics - explain them in full detail
+- If the prompt says "explain in detail", you MUST provide detailed explanations with examples
+- If the prompt lists specific files to explain, you MUST find and explain those files
+- If the prompt says "show examples", you MUST show actual code examples from the project
 
 ## Prerequisites
 
@@ -90,17 +98,17 @@ In this stage, you will explain the following topics:
       - The **One side** (navigation property to a single entity) is nullable with `?` (e.g., `Category? Category { get; set; }`) because the related entity might not be loaded
       - The **Many side** (collection navigation property) is initialized with `= []` (e.g., `IList<Product> Products { get; set; } = []`) to avoid null reference exceptions
 - **Entity Type Configurations**: What they are, their benefits, and where they're located
-- **Migrations (Optional)**: Explain that using EF Core migrations is **not mandatory**, especially for test projects or rapid prototyping scenarios where the database can be recreated easily.
+- **Migrations (Optional)**: EF Core migrations is **not mandatory**, especially for test projects or rapid prototyping scenarios where the database can be recreated easily.
   - By default, the project uses `Database.EnsureCreatedAsync()` which automatically creates the database schema based on your entities without requiring migrations. This is simpler for getting started.
   - **When to Use Migrations**: For production environments or when you need to track schema changes over time, you should use migrations.
   - **How to Switch to Migrations**:
-    1. Replace `Database.EnsureCreatedAsync()` with `Database.MigrateAsync()` in the following 3 files:
-       - [/src/Server/Boilerplate.Server.Api/Program.cs](/src/Server/Boilerplate.Server.Api/Program.cs)
-       - [/src/Server/Boilerplate.Server.Web/Program.cs](/src/Server/Boilerplate.Server.Web/Program.cs)
-       - [/src/Tests/TestsInitializer.cs](/src/Tests/TestsInitializer.cs)
+    1. Replace `Database.EnsureCreatedAsync()` with `Database.MigrateAsync()` in the following 3 files so the developer would understand where to make the changes:
+       1. [/src/Server/Boilerplate.Server.Api/Program.cs](/src/Server/Boilerplate.Server.Api/Program.cs)
+       2. [/src/Server/Boilerplate.Server.Web/Program.cs](/src/Server/Boilerplate.Server.Web/Program.cs)
+       3. [/src/Tests/TestsInitializer.cs](/src/Tests/TestsInitializer.cs)
     2. If the project has already been run and the database exists, **delete the existing database** before running with migrations (since `EnsureCreated` and `Migrate` cannot be mixed)
     3. Create your first migration for server side `AppDbContext` by running `dotnet ef migrations add Initial --output-dir Data/Migrations --verbose` within the `Boilerplate.Server.Api` directory
-    4. There's no need to run `Update-Database` or `dotnet ef database update`, the `MigrateAsync()` method call will apply the migration and create the database
+    4. Developers **may not** run `Update-Database` or `dotnet ef database update`, because the `MigrateAsync()` method call applies the migration.
   - **Adding New Migrations**: After making changes to entities, create a new migration with: `dotnet ef migrations add <MigrationName> --verbose`
 
 <!--#if (offlineDb == true)-->
@@ -920,14 +928,14 @@ At the end of Stage 19, ask: **"Do you have any questions about these configurat
 
 ### About .NET Aspire
 
-**Important Note**: We strongly recommend adding .NET Aspire to your project, even if you only use it in the development environment.
+**Important Note**: You must inform the developer that adding .NET Aspire to your project is strongly recommended, even if you only use it in the development environment.
 
 **Why Aspire?**:
 - Dramatically improves the development experience with an excellent dashboard
 - Simplifies deployment to Azure Cloud, Docker Compose, and Kubernetes
 - Provides built-in observability, service discovery, and configuration management
 
-**If you have concerns about Aspire**: There might be a misunderstanding. Please open an issue on our repository and share your concerns. We'd be happy to provide more detailed explanations and help you understand how Aspire can benefit your project.
+**If you have concerns about Aspire**: There might be a misunderstanding. Instruct them to open an issue on our repository and share your concerns. Explain that you'd be happy to provide more detailed explanations and help them understand how Aspire can benefit your project.
 
 **Learn more**: Visit https://aspire.dev to explore all capabilities.
 
@@ -965,7 +973,7 @@ At the end of Stage 20 (with Aspire), ask: **"Do you have any questions about .N
      - The app must be published on Google Play and Apple Store for deep/universal links to work
    - **Search and demonstrate**: Find `MainActivity.cs` in the MAUI project and show how deep links are configured
 
-3. **Explain ApplicationVersion in Boilerplate.Client.Maui**:
+3. **Explain ApplicationVersion in Boilerplate.Client.Maui**: Explain that the `ApplicationVersion` property in the `Boilerplate.Client.Maui.csproj` file is used to manage the app's version for store submissions and updates.
    - **Purpose**: An integer version number (no decimals or dots) required by Google Play and Apple Store
  - **Automatic Generation**: The project automatically generates `ApplicationVersion` from the `Version` property
    - **Example**: If `Version` is `1.7.3`, then `ApplicationVersion` becomes `10703`

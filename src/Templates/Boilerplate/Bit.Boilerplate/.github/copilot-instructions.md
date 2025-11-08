@@ -105,7 +105,7 @@ After applying changes, you **MUST** verify the integrity of the application.
 -   **Build the project**: Run `dotnet build` in Boilerplate.Server.Web project root directory.
 -   **Run the project**: Run `dotnet run` in Boilerplate.Server.Web project root directory.
 -   **Run tests**: Run `dotnet test` in Boilerplate.Tests project root directory.
--   **Add new migrations**: Run `dotnet ef migrations add <MigrationName> --verbose` in Boilerplate.Server.Api project root directory.
+-   **Add new migrations**: Run `dotnet ef migrations add <MigrationName> --output-dir Data/Migrations --verbose` in Boilerplate.Server.Api project root directory.
 -   **Generate Resx C# code**: Run `dotnet build -t:PrepareResources` in Boilerplate.Shared project root directory (It's automatically done during build).
 
 ## 8. Coding Conventions & Best Practices
