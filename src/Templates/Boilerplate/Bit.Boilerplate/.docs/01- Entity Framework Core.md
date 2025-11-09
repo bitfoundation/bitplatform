@@ -289,24 +289,6 @@ public partial class CategoryConfiguration : IEntityTypeConfiguration<Category>
                 Name = "Nissan", 
                 Color = "#FF6384", 
                 ConcurrencyStamp = defaultConcurrencyStamp 
-            },
-            new Category { 
-                Id = Guid.Parse("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"), 
-                Name = "Benz", 
-                Color = "#4BC0C0", 
-                ConcurrencyStamp = defaultConcurrencyStamp 
-            },
-            new Category { 
-                Id = Guid.Parse("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"), 
-                Name = "BMW", 
-                Color = "#FF9124", 
-                ConcurrencyStamp = defaultConcurrencyStamp 
-            },
-            new Category { 
-                Id = Guid.Parse("747f6d66-7524-40ca-8494-f65e85b5ee5d"), 
-                Name = "Tesla", 
-                Color = "#2B88D8", 
-                ConcurrencyStamp = defaultConcurrencyStamp 
             }
         );
     }
@@ -434,6 +416,7 @@ dotnet ef migrations add <MigrationName> --output-dir Data/Migrations --verbose
 **Important:** Always use descriptive migration names that explain what changed (e.g., `AddEmailToUser`, `CreateProductsTable`, `AddPriceToProduct`).
 
 ---
+<!--#if (offlineDb == true)-->
 ## 5. Client-Side Offline Database
 
 ### What Makes It Different?
@@ -537,7 +520,7 @@ For comprehensive information about the client-side offline database, including:
 **See:** [`/src/Client/Boilerplate.Client.Core/Data/README.md`](/src/Client/Boilerplate.Client.Core/Data/README.md)
 
 ---
-
+<!--#endif-->
 ## Summary
 
 In this stage, you learned about:
@@ -546,6 +529,8 @@ In this stage, you learned about:
 ✅ **Entity Models**: Defined in `/src/Server/Boilerplate.Server.Api/Models/` with required properties like `Id` and `ConcurrencyStamp`  
 ✅ **Entity Type Configurations**: Best practice for separating mapping logic, located in `/src/Server/Boilerplate.Server.Api/Data/Configurations/`  
 ✅ **Migrations (Optional)**: For server-side, `EnsureCreatedAsync()` is used by default; migrations are recommended for production  
+<!--#if (offlineDb == true)-->
 ✅ **Client-Side Offline Database**: Uses `OfflineDbContext` with **mandatory migrations** and automatic application on startup
+<!--#endif-->
 
 ---
