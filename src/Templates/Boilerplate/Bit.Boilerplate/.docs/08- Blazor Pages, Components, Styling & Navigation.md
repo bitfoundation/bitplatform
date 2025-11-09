@@ -1,251 +1,276 @@
 # Stage 8: Blazor Pages, Components, Styling & Navigation
 
-Welcome to Stage 8! In this stage, you'll learn about the Blazor UI architecture, component structure, styling system, and navigation in the Boilerplate project. We'll explore real examples from the actual codebase to see how everything works together.
+Welcome to Stage 8 of the getting started guide! In this stage, we'll explore how the Blazor UI architecture works in this project, including component structure, styling with SCSS, theme variables, and navigation.
 
 ---
 
 ## 1. Component Structure: The Three-File Pattern
 
-In this project, each Blazor component or page follows a **three-file structure** that separates concerns for better organization and maintainability:
+In this project, Blazor pages and components follow a **three-file structure** that separates concerns for better maintainability:
 
-### Example: ProductPage
+### Example: ProductsPage
 
-Let's examine the `ProductPage` component located at:
-- 📄 **Razor file**: `/src/Client/Boilerplate.Client.Core/Components/Pages/ProductPage.razor`
-- 📄 **Code-behind file**: `/src/Client/Boilerplate.Client.Core/Components/Pages/ProductPage.razor.cs`
-- 📄 **SCSS file**: `/src/Client/Boilerplate.Client.Core/Components/Pages/ProductPage.razor.scss`
+Let's examine the `ProductsPage` as a real example from the project:
 
-### 1.1 The `.razor` File (UI Markup)
+#### File 1: `ProductsPage.razor` (Markup)
+**Location**: [`/src/Client/Boilerplate.Client.Core/Components/Pages/Products/ProductsPage.razor`](/src/Client/Boilerplate.Client.Core/Components/Pages/Products/ProductsPage.razor)
 
-The `.razor` file contains the component's HTML markup and Blazor component tags:
+This file contains the **UI markup** using Razor syntax and Bit.BlazorUI components:
 
 ```xml
-@attribute [Route(PageUrls.Product + "/{Id:int}")]
-@attribute [Route("{culture?}" + PageUrls.Product + "/{Id:int}")]
-@attribute [AppResponseCache(SharedMaxAge = 3600 * 24, MaxAge = 60 * 5)]
+@attribute [Route(PageUrls.Products)]
+@attribute [Route("{culture?}" + PageUrls.Products)]
+@attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+@attribute [Authorize(Policy = AppFeatures.AdminPanel.ManageProductCatalog)]
 @inherits AppPageBase
 
-<AppPageData ShowGoBackButton="true" Title="@product?.Name" />
+<AppPageData Title="@Localizer[nameof(AppStrings.Products)]"
+             PageTitle="@Localizer[nameof(AppStrings.ProductsPageTitle)]" />
 
 <section>
-    <BitStack Gap="2rem" Class="root-stack">
-        @if (isLoadingProduct)
-        {
-            <BitCard FullWidth Background="BitColorKind.Tertiary" Style="padding:3rem 1rem;">
-                <BitStack Horizontal HorizontalAlign="BitAlignment.Center" Gap="2rem">
-                    <BitShimmer Height="256px" Width="50%" Background="BitColor.PrimaryBackground" />
-                    <BitStack AutoHeight Grows>
-                        <BitShimmer Height="6rem" Width="100%" />
-                        <!-- Loading skeleton UI -->
-                    </BitStack>
-                </BitStack>
-            </BitCard>
-        }
-        else
-        {
-            <BitCard FullWidth Style="padding:3rem 1rem;">
-                <BitStack Horizontal HorizontalAlign="BitAlignment.Center" Gap="2rem" Class="product-stack">
-                    <ProductImage Src="@GetProductImageUrl(product)" Alt="@product.PrimaryImageAltText" Width="50%" />
-                    <BitStack AutoWidth Grows>
-                        <BitText Typography="BitTypography.H2">@product.Name</BitText>
-                        <BitText Color="BitColor.Info">@product.CategoryName</BitText>
-                        <BitText Typography="BitTypography.H4">@product.FormattedPrice</BitText>
-                        <BitButton AutoLoading OnClick="WrapHandled(Buy)">
-                            @Localizer[nameof(AppStrings.Buy)]
-                        </BitButton>
-                    </BitStack>
-                </BitStack>
-            </BitCard>
-        }
+    <BitStack>
+        <BitStack FitHeight 
+                  Gap="0.5rem"
+                  Horizontal="isSmallScreen is false">
+            <BitStack Horizontal FitHeight>
+                <BitButton ReversedIcon
+                           IconName="@BitIconName.Add" 
+                           OnClick="WrapHandled(CreateProduct)">
+                    @Localizer[nameof(AppStrings.AddProduct)]
+                </BitButton>
+                @if (isLoading)
+                {
+                    <BitSlickBarsLoading CustomSize="32" />
+                }
+            </BitStack>
+            <BitSpacer />
+            <BitSearchBox Underlined
+                          ShowSearchButton
+                          OnSearch="HandleOnSearch"
+                          Color="BitColor.Secondary"
+                          Style="@($"width:{(isSmallScreen ? 100 : 50)}%")"
+                          Placeholder="@Localizer[nameof(AppStrings.SearchProductsPlaceholder)]" />
+        </BitStack>
+        <!-- BitDataGrid for displaying products with pagination -->
     </BitStack>
 </section>
 ```
 
 **Key Points:**
-- Uses `@attribute` directives for routing and caching configuration
-- Inherits from `AppPageBase` for enhanced lifecycle methods
-- Uses Bit.BlazorUI components like `BitStack`, `BitCard`, `BitButton`, `BitText`, `BitShimmer`
-- Event handlers wrapped with `WrapHandled()` for automatic exception handling
-- No `@code` block - all logic is in the code-behind file
+- Uses `@attribute` for routing and authorization
+- Inherits from `AppPageBase` (more on this later)
+- Uses `Bit.BlazorUI` components like `BitButton`, `BitStack`, `BitDataGrid`
+- References code-behind variables like `isSmallScreen`, `isLoading`
+- Uses `WrapHandled()` for event handlers (automatic exception handling)
 
-### 1.2 The `.razor.cs` File (Code-Behind Logic)
+#### File 2: `ProductsPage.razor.cs` (Code-Behind)
+**Location**: [`/src/Client/Boilerplate.Client.Core/Components/Pages/Products/ProductsPage.razor.cs`](/src/Client/Boilerplate.Client.Core/Components/Pages/Products/ProductsPage.razor.cs)
 
-The `.razor.cs` file contains the component's logic, data, and methods:
+This file contains the **component logic** - all C# code for the component:
 
 ```csharp
 using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Shared.Controllers.Products;
 
-namespace Boilerplate.Client.Core.Components.Pages;
+namespace Boilerplate.Client.Core.Components.Pages.Products;
 
-public partial class ProductPage
+public partial class ProductsPage
 {
-    [Parameter] public int Id { get; set; }
+    private bool isLoading;
+    private bool isSmallScreen;
+    private string? searchQuery;
+    private bool isDeleteDialogOpen;
+    private ProductDto? deletingProduct;
+    private string productNameFilter = string.Empty;
+    private string categoryNameFilter = string.Empty;
 
-    [AutoInject] private SignInModalService signInModalService = default!;
-    [AutoInject] private IProductViewController productViewController = default!;
+    private BitDataGrid<ProductDto>? dataGrid;
+    private BitDataGridItemsProvider<ProductDto> productsProvider = default!;
+    private BitDataGridPaginationState pagination = new() { ItemsPerPage = 10 };
 
-    private ProductDto? product;
-    private List<ProductDto>? similarProducts;
-    private List<ProductDto>? siblingProducts;
-    private bool isLoadingProduct = true;
-    private bool isLoadingSimilarProducts = true;
-    private bool isLoadingSiblingProducts = true;
+    [AutoInject] IProductController productController = default!;
+
+    private string ProductNameFilter
+    {
+        get => productNameFilter;
+        set
+        {
+            productNameFilter = value;
+            _ = RefreshData();
+        }
+    }
 
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();
-        await Task.WhenAll(LoadProduct(), LoadSimilarProducts(), LoadSiblingProducts());
+        PrepareGridDataProvider();
     }
 
-    private async Task LoadProduct()
+    private void PrepareGridDataProvider()
     {
+        productsProvider = async req =>
+        {
+            isLoading = true;
+            StateHasChanged();
+
+            try
+            {
+                var query = new ODataQuery
+                {
+                    Top = req.Count ?? 10,
+                    Skip = req.StartIndex,
+                    OrderBy = string.Join(", ", req.GetSortByProperties()
+                        .Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}"))
+                };
+
+                if (string.IsNullOrEmpty(ProductNameFilter) is false)
+                {
+                    query.Filter = $"contains(tolower({nameof(ProductDto.Name)}),'{ProductNameFilter.ToLower()}')";
+                }
+
+                var queriedRequest = productController.WithQuery(query.ToString());
+                var data = await (string.IsNullOrWhiteSpace(searchQuery)
+                            ? queriedRequest.GetProducts(req.CancellationToken)
+                            : queriedRequest.SearchProducts(searchQuery, req.CancellationToken));
+
+                return BitDataGridItemsProviderResult.From(data!.Items!, (int)data!.TotalCount);
+            }
+            catch (Exception exp)
+            {
+                ExceptionHandler.Handle(exp);
+                return BitDataGridItemsProviderResult.From(new List<ProductDto> { }, 0);
+            }
+            finally
+            {
+                isLoading = false;
+                StateHasChanged();
+            }
+        };
+    }
+
+    private async Task CreateProduct()
+    {
+        NavigationManager.NavigateTo(PageUrls.AddOrEditProduct);
+    }
+
+    private async Task DeleteProduct()
+    {
+        if (deletingProduct is null) return;
+
         try
         {
-            product = await productViewController.Get(Id, CurrentCancellationToken);
+            await productController.Delete(deletingProduct.Id, 
+                deletingProduct.ConcurrencyStamp.ToStampString(), 
+                CurrentCancellationToken);
+
+            await RefreshData();
         }
         finally
         {
-            isLoadingProduct = false;
-            StateHasChanged();
+            deletingProduct = null;
         }
     }
-
-    private async Task Buy()
-    {
-        if ((await AuthenticationStateTask).User.IsAuthenticated() is false && 
-            await signInModalService.SignIn() is false)
-        {
-            SnackBarService.Error(Localizer[nameof(AppStrings.YouNeedToSignIn)]);
-            return;
-        }
-
-        SnackBarService.Success(Localizer[nameof(AppStrings.PurchaseSuccessful)]);
-    }
-
-    private string? GetProductImageUrl(ProductDto? product) => 
-        product?.GetPrimaryMediumImageUrl(AbsoluteServerAddress);
 }
 ```
 
 **Key Points:**
-- Uses `[AutoInject]` attribute for dependency injection (instead of constructor injection)
-- Inherits dependencies from `AppPageBase` (like `Localizer`, `SnackBarService`, `CurrentCancellationToken`)
-- Uses enhanced lifecycle method `OnInitAsync()` instead of `OnInitializedAsync()`
-- All service calls pass `CurrentCancellationToken` for automatic request cancellation
-- Private fields for component state management
+- Declared as `partial class` to connect with the `.razor` file
+- Uses `[AutoInject]` for dependency injection (simplified DI pattern)
+- Overrides `OnInitAsync()` instead of `OnInitializedAsync()` (safer lifecycle method from base class)
+- Has access to inherited services like `ExceptionHandler`, `NavigationManager`, `CurrentCancellationToken` from `AppPageBase`
 
-### 1.3 The `.razor.scss` File (Component Styles)
+#### File 3: `ProductsPage.razor.scss` (Scoped Styles)
+**Location**: [`/src/Client/Boilerplate.Client.Core/Components/Pages/Products/ProductsPage.razor.scss`](/src/Client/Boilerplate.Client.Core/Components/Pages/Products/ProductsPage.razor.scss)
 
-The `.razor.scss` file contains isolated, scoped styles for the component:
+This file contains **component-specific styles** that are automatically scoped to this component:
 
 ```scss
-@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
 
 section {
     width: 100%;
-    display: flex;
-    justify-content: center;
+}
+
+.grid-container {
+    overflow: auto;
+    height: calc(#{$bit-env-height-available} - 12.1rem);
+
+    @include lt-md {
+        height: calc(#{$bit-env-height-available} - 17rem);
+    }
+
+    @include lt-sm {
+        height: calc(#{$bit-env-height-available} - 16rem);
+    }
 }
 
 ::deep {
-    .root-stack {
-        max-width: 60rem;
-    }
+    .products-grid {
+        width: 100%;
+        height: 100%;
+        border-spacing: 0;
+        background-color: $bit-color-background-secondary;
 
-    .product-stack {
-        display: flex !important;
+        .name-col {
+            padding-inline-start: 16px;
+        }
 
-        @include lt-sm {
-            flex-direction: column !important;
+        .category-col {
+            width: 135px;
+        }
+
+        .price-col {
+            width: 135px;
+        }
+
+        thead {
+            height: 44px;
+            background-color: $bit-color-background-tertiary;
+        }
+
+        td {
+            height: 44px;
+            white-space: nowrap;
+            border-bottom: 1px solid $bit-color-border-tertiary;
         }
     }
 }
 ```
 
 **Key Points:**
-- Imports shared SCSS utilities (media queries, variables)
-- Uses `::deep` selector to style child Bit.BlazorUI components
-- Responsive design with media query mixins (`@include lt-sm`)
-- Scoped to this component only (won't affect other components)
+- Imports shared SCSS files for media queries and theme variables
+- Styles are automatically scoped to this component
+- Uses `::deep` selector to style child components (explained in detail below)
+- Uses theme color variables like `$bit-color-background-secondary` for dark/light mode support
 
 ---
 
 ## 2. SCSS Styling Architecture
 
-The project uses a sophisticated SCSS architecture for styling. Let's explore each layer:
+### 2.1 Isolated Component Styles
 
-### 2.1 Isolated Component Styles (`.razor.scss`)
+Each component's `.razor.scss` file creates **isolated styles** that only apply to that specific component. This prevents style conflicts and makes components more maintainable.
 
-Each component has its own `.razor.scss` file that creates **CSS isolation**:
+**How it works:**
+- During build, SCSS files are compiled to CSS
+- Blazor applies unique identifiers to ensure styles are scoped
+- Styles won't accidentally affect other components
 
-```scss
-// ProductPage.razor.scss
-section {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-}
-```
+### 2.2 Global Styles: `app.scss`
 
-These styles are **scoped** to the component and won't leak to other components. Blazor automatically generates unique identifiers to ensure isolation.
+**Location**: [`/src/Client/Boilerplate.Client.Core/Styles/app.scss`](/src/Client/Boilerplate.Client.Core/Styles/app.scss)
 
-### 2.2 The `::deep` Selector for Styling Child Components
-
-When you need to style **child components** (especially Bit.BlazorUI components) from a parent component's stylesheet, use the `::deep` selector:
-
-```scss
-::deep {
-    .root-stack {
-        max-width: 60rem;
-    }
-
-    .product-stack {
-        display: flex !important;
-        
-        @include lt-sm {
-            flex-direction: column !important;
-        }
-    }
-}
-```
-
-**Why `::deep` is needed:**
-- Bit.BlazorUI components have their own internal structure and CSS classes
-- Without `::deep`, your styles won't penetrate the component boundary
-- With `::deep`, you can customize the appearance of child components while maintaining encapsulation
-
-**Real-world examples from the project:**
-
-```scss
-// From CategoriesPage.razor.scss
-::deep {
-    .categories-datagrid {
-        height: calc(100vh - 20rem);
-    }
-}
-
-// From SignInModal.razor.scss
-::deep {
-    .sign-in-modal {
-        .bit-modal-content {
-            width: 90vw;
-            max-width: 28rem;
-        }
-    }
-}
-```
-
-### 2.3 Global Styles (`app.scss`)
-
-The main global stylesheet is located at `/src/Client/Boilerplate.Client.Core/Styles/app.scss`:
+This is the **main global stylesheet** that applies to the entire application:
 
 ```scss
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_bit-css-variables.scss';
 
 :root[bit-theme="dark"] {
-    // Dark theme customizations
+    //--bit-clr-bg-pri: #010409;
+    // In case you need to change the background color, make sure to also update 
+    // ThemeColors.cs's PrimaryDarkBgColor accordingly.
 }
 
 * {
@@ -272,237 +297,252 @@ html, body, #app-container {
 h1, h2, h3, h4, h5 {
     margin: 0;
 }
+
+.max-width {
+    width: min(25rem, 100%);
+}
+
+.modal {
+    top: $bit-env-inset-top;
+    left: $bit-env-inset-left;
+    right: $bit-env-inset-right;
+    bottom: $bit-env-inset-bottom;
+    width: $bit-env-width-available;
+    height: $bit-env-height-available;
+}
 ```
 
-**Purpose:**
-- Defines global resets and base styles
-- Imports shared utilities and theme variables
-- Applies to the entire application
-- Sets up responsive behavior with media queries
+**Use cases for global styles:**
+- CSS resets and normalization
+- Global typography settings
+- Utility classes used across the app
+- Base HTML element styling
 
-### 2.4 Theme Color Variables (`_bit-css-variables.scss`)
+### 2.3 Theme Color Variables: `_bit-css-variables.scss`
 
-The project uses theme color variables located at `/src/Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss`.
+**Location**: [`/src/Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss`](/src/Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss)
 
-**🚨 CRITICAL: Always Use Theme Variables, Never Hardcode Colors**
+This file provides **SCSS variables** that map to CSS custom properties from Bit.BlazorUI's theme system. These variables automatically support both dark and light modes.
 
-This file exposes all Bit.BlazorUI theme colors as SCSS variables that **automatically support dark/light mode switching**:
+**Example variables:**
 
 ```scss
-// Primary colors
+/*-------- Colors --------*/
+// Primary
 $bit-color-primary: var(--bit-clr-pri);
 $bit-color-primary-hover: var(--bit-clr-pri-hover);
 $bit-color-primary-active: var(--bit-clr-pri-active);
 
-// Secondary colors
-$bit-color-secondary: var(--bit-clr-sec);
-$bit-color-secondary-hover: var(--bit-clr-sec-hover);
-
-// Background colors
+// Background
 $bit-color-background-primary: var(--bit-clr-bg-pri);
 $bit-color-background-secondary: var(--bit-clr-bg-sec);
 $bit-color-background-tertiary: var(--bit-clr-bg-ter);
 
-// Foreground colors
+// Foreground (text colors)
 $bit-color-foreground-primary: var(--bit-clr-fg-pri);
 $bit-color-foreground-secondary: var(--bit-clr-fg-sec);
+$bit-color-foreground-tertiary: var(--bit-clr-fg-ter);
 
-// Border colors
+// Borders
 $bit-color-border-primary: var(--bit-clr-brd-pri);
 $bit-color-border-secondary: var(--bit-clr-brd-sec);
+$bit-color-border-tertiary: var(--bit-clr-brd-ter);
 
-// Semantic colors
-$bit-color-info: var(--bit-clr-inf);
+// Semantic Colors
 $bit-color-success: var(--bit-clr-suc);
 $bit-color-warning: var(--bit-clr-wrn);
 $bit-color-error: var(--bit-clr-err);
+$bit-color-info: var(--bit-clr-inf);
 
-// Neutrals (grays)
-$bit-color-neutrals-white: var(--bit-clr-ntr-white);
-$bit-color-neutrals-black: var(--bit-clr-ntr-black);
-$bit-color-neutrals-gray10: var(--bit-clr-ntr-gray10);
-$bit-color-neutrals-gray20: var(--bit-clr-ntr-gray20);
-// ... up to gray220
+// Environment Variables
+$bit-env-height-available: var(--bit-env-height-avl);
+$bit-env-width-available: var(--bit-env-width-avl);
 ```
 
-**Example Usage in SCSS:**
+**⚠️ CRITICAL: Always Use Theme Variables**
+
+You **MUST** use these theme variables in your C#, Razor, and SCSS files instead of hardcoded colors. This ensures:
+- ✅ Automatic dark/light mode support
+- ✅ Consistent design throughout the app
+- ✅ Easy theme customization
+
+**Example from `CategoriesPage.razor.scss`:**
 
 ```scss
-@import '../../Styles/abstracts/_bit-css-variables.scss';
+::deep {
+    .categories-grid {
+        background-color: $bit-color-background-secondary;  // ✅ Correct - adapts to theme
 
-.my-component {
-    background-color: $bit-color-background-primary;
-    color: $bit-color-foreground-primary;
-    border: 1px solid $bit-color-border-primary;
+        thead {
+            background-color: $bit-color-background-tertiary;  // ✅ Correct
+        }
 
-    &:hover {
-        background-color: $bit-color-background-primary-hover;
+        td {
+            border-bottom: 1px solid $bit-color-border-tertiary;  // ✅ Correct
+        }
     }
 }
 ```
 
-**Example Usage in C# (Razor):**
+**❌ What NOT to do:**
 
-```xml
-<BitCard Background="BitColorKind.Primary">
-    <BitText Color="BitColor.PrimaryForeground">Hello World</BitText>
-</BitCard>
+```scss
+.my-component {
+    background-color: #ffffff;  // ❌ Wrong - hardcoded, breaks dark mode
+    color: black;               // ❌ Wrong - won't adapt to theme
+}
 ```
 
-**Why This Matters:**
-- ✅ **Dark/Light Mode Support**: Variables automatically change when theme switches
-- ✅ **Consistency**: All colors follow the design system
-- ✅ **Maintainability**: Change theme colors in one place, affects entire app
-- ❌ **Never do this**: `background-color: #ffffff;` or `color: rgb(255, 255, 255);`
-- ✅ **Always do this**: Use theme variables or Bit.BlazorUI component color properties
+### 2.4 The `::deep` Selector
+
+The `::deep` selector (also known as deep selector or `>>>`) allows you to **style child components** from a parent component's scoped stylesheet.
+
+**Why is it needed?**
+
+By default, component styles are scoped and don't affect child components. When you use Bit.BlazorUI components (like `BitDataGrid`, `BitButton`, etc.), you need `::deep` to style their internal elements.
+
+**Example from `ProductsPage.razor.scss`:**
+
+```scss
+// Without ::deep, this would only style elements directly in ProductsPage
+::deep {
+    .products-grid {
+        // These styles now reach into BitDataGrid's internal structure
+        width: 100%;
+        height: 100%;
+        background-color: $bit-color-background-secondary;
+
+        .name-col {
+            padding-inline-start: 16px;
+        }
+
+        thead {
+            height: 44px;
+            background-color: $bit-color-background-tertiary;
+        }
+
+        td {
+            height: 44px;
+            white-space: nowrap;
+            border-bottom: 1px solid $bit-color-border-tertiary;
+        }
+    }
+
+    .bitdatagrid-paginator {
+        padding: 8px;
+        font-size: 14px;
+        background-color: $bit-color-background-secondary;
+
+        button {
+            cursor: pointer;
+            font-size: 12px;
+        }
+    }
+}
+```
+
+**Use cases:**
+- Styling Bit.BlazorUI components (which are child components)
+- Customizing component library defaults
+- Applying styles that need to penetrate component boundaries
+
+### Alternative: Component-Specific Styling Properties
+
+**Important Note:** Each Bit.BlazorUI component has its own **CSS variables** and **styling parameters** (`Styles` and `Classes` properties) that allow you to style nested child elements **without needing `::deep`** in most cases.
+
+**Example using `Styles` parameter:**
+```xml
+<BitDropdown Styles="@(new() { Container="height:32px;background-color:var(--bit-clr-bg-sec)" })" />
+```
+
+This approach is preferred when available, as it's more explicit and type-safe.
 
 ---
 
-## 3. Bit.BlazorUI Component Library
+## 3. Bit.BlazorUI Components & Documentation
 
-### 3.1 What is Bit.BlazorUI?
+### Using Bit.BlazorUI Components
 
-**Bit.BlazorUI** is the primary UI component library used throughout this project. It provides:
+This project uses **`Bit.BlazorUI`** as the primary UI component library. You **MUST** use these components instead of generic HTML elements to ensure UI consistency and leverage built-in features.
 
-- 🎨 **70+ Production-Ready Components**: Buttons, text fields, data grids, modals, dropdowns, date pickers, charts, and more
-- 🌙 **Built-in Dark/Light Mode**: Automatic theme switching with no extra configuration
-- ♿ **Accessibility**: ARIA-compliant, keyboard navigation, screen reader support
-- 📱 **Responsive Design**: Works seamlessly across desktop, tablet, and mobile
-- 🎯 **Type-Safe**: Full IntelliSense support with comprehensive documentation
-- 🚀 **High Performance**: Optimized for Blazor Server, WASM, and Hybrid scenarios
+**Examples from the project:**
 
-### 3.2 Comprehensive Documentation
+```xml
+<!-- ✅ Use Bit.BlazorUI components -->
+<BitButton IconName="@BitIconName.Add" 
+           OnClick="WrapHandled(CreateProduct)">
+    @Localizer[nameof(AppStrings.AddProduct)]
+</BitButton>
 
-Bit.BlazorUI has **extensive documentation** available at:
+<BitSearchBox Underlined
+              ShowSearchButton
+              OnSearch="HandleOnSearch"
+              Color="BitColor.Secondary"
+              Placeholder="@Localizer[nameof(AppStrings.SearchProductsPlaceholder)]" />
 
-🔗 **https://blazorui.bitplatform.dev**
+<BitDataGrid TGridItem="ProductDto"
+             Pagination="pagination"
+             ItemsProvider="productsProvider">
+    <!-- ... -->
+</BitDataGrid>
+
+<BitStack Horizontal Gap="0.5rem">
+    <BitButton />
+    <BitButton />
+</BitStack>
+
+<!-- ❌ Avoid generic HTML when Bit component exists -->
+<button onclick="...">Add Product</button>  <!-- Don't do this -->
+<input type="text" />  <!-- Use BitTextField instead -->
+<div style="display: flex;">  <!-- Use BitStack instead -->
+```
+
+### Comprehensive Documentation
+
+**`Bit.BlazorUI` has extensive documentation at:**
+📚 **https://blazorui.bitplatform.dev**
 
 The documentation includes:
-- **Live interactive demos** for every component
-- **Code examples** (copy-paste ready)
-- **API reference** with all parameters and events
-- **Customization guides** and best practices
-- **Accessibility information**
+- Complete API reference for every component
+- Interactive examples and demos
+- Property descriptions
+- Usage patterns
+- Styling guides
 
-### 3.3 Common Components Used in This Project
+### Automatic DeepWiki Integration
 
-Here are examples of frequently used Bit.BlazorUI components:
+**You don't need to manually search the documentation!** 
 
-#### BitButton
-```xml
-<BitButton OnClick="WrapHandled(HandleClick)">
-    Click Me
-</BitButton>
+When you ask questions in **GitHub Copilot Chat** or give commands related to UI components, the system **automatically queries the DeepWiki knowledge base** for `bitfoundation/bitplatform` to find relevant information.
 
-<BitButton Variant="BitVariant.Outline" Color="BitColor.Primary">
-    Outline Button
-</BitButton>
+**Example interactions:**
 
-<BitButton IconName="BitIconName.Add" AutoLoading OnClick="WrapHandled(SaveAsync)">
-    Save
-</BitButton>
-```
+- **You ask:** "How do I add a filter to BitDataGrid?"
+  - **Copilot:** Automatically searches DeepWiki and provides the answer with code examples
 
-#### BitTextField
-```xml
-<BitTextField @bind-Value="model.Name" 
-              Label="Product Name"
-              Placeholder="Enter product name"
-              Required />
-```
+- **You ask:** "How to customize BitButton colors?"
+  - **Copilot:** Retrieves information about `BitColor` enum and styling options
 
-#### BitStack (Layout)
-```xml
-<BitStack Horizontal Gap="1rem" HorizontalAlign="BitAlignment.Center">
-    <BitButton>Button 1</BitButton>
-    <BitButton>Button 2</BitButton>
-    <BitButton>Button 3</BitButton>
-</BitStack>
+- **You command:** "Add a BitDatePicker with validation"
+  - **Copilot:** Finds the correct implementation pattern and creates the code
 
-<BitStack Vertical Gap="2rem">
-    <BitCard>Card 1</BitCard>
-    <BitCard>Card 2</BitCard>
-</BitStack>
-```
+**You can ask naturally:**
+- "How do I make a BitModal full screen?"
+- "Show me BitDataGrid pagination examples"
+- "How to add icons to BitNavMenu items?"
+- "What properties does BitChart have?"
 
-#### BitCard
-```xml
-<BitCard FullWidth Background="BitColorKind.Tertiary">
-    <BitText Typography="BitTypography.H4">Card Title</BitText>
-    <BitText>Card content goes here...</BitText>
-</BitCard>
-```
-
-#### BitDataGrid
-```xml
-<BitDataGrid Items="products" 
-             TGridItem="ProductDto"
-             Virtualize
-             Loading="isLoading"
-             Pagination="@dataGridPagination">
-    <BitDataGridPropertyColumn Property="p => p.Name" Title="Product Name" Sortable />
-    <BitDataGridPropertyColumn Property="p => p.Price" Title="Price" Sortable />
-    <BitDataGridTemplateColumn Title="Actions">
-        <BitButton Size="BitSize.Small" OnClick="() => EditProduct(context)">
-            Edit
-        </BitButton>
-    </BitDataGridTemplateColumn>
-</BitDataGrid>
-```
-
-#### BitText
-```xml
-<BitText Typography="BitTypography.H1">Heading 1</BitText>
-<BitText Typography="BitTypography.H2">Heading 2</BitText>
-<BitText Typography="BitTypography.Body1">Body text</BitText>
-<BitText Color="BitColor.Info">Info message</BitText>
-<BitText Color="BitColor.Error">Error message</BitText>
-```
-
-#### BitModal
-```xml
-<BitModal @bind-IsOpen="isModalOpen" Title="Add Product">
-    <BitStack Gap="1rem">
-        <BitTextField @bind-Value="newProduct.Name" Label="Name" />
-        <BitTextField @bind-Value="newProduct.Price" Label="Price" />
-        
-        <BitStack Horizontal Gap="1rem">
-            <BitButton OnClick="WrapHandled(SaveProduct)">Save</BitButton>
-            <BitButton Variant="BitVariant.Outline" OnClick="() => isModalOpen = false">
-                Cancel
-            </BitButton>
-        </BitStack>
-    </BitStack>
-</BitModal>
-```
-
-### 3.4 Automatic DeepWiki Integration
-
-When you ask questions about Bit.BlazorUI in **GitHub Copilot Chat**, the system automatically queries the DeepWiki knowledge base to provide accurate, up-to-date information.
-
-**You don't need to manually search the documentation** - just ask naturally:
-
-✅ **Example Questions:**
-- "How do I create a data grid with sorting and pagination?"
-- "Show me how to use BitDatePicker with validation"
-- "How can I customize the color of a BitButton?"
-- "What's the difference between BitStack and BitScrollablePane?"
-- "How do I make a BitModal full-screen on mobile?"
-
-The AI assistant will automatically:
-1. Query the Bit.BlazorUI documentation via DeepWiki
-2. Find relevant examples and API information
-3. Provide code samples tailored to this project's conventions
+The DeepWiki system handles the documentation lookup automatically!
 
 ---
 
-## 4. Navigation System with PageUrls
+## 4. Navigation with PageUrls
 
-The project uses a centralized navigation system through the `PageUrls` class.
+### PageUrls Class
 
-### 4.1 PageUrls Class Structure
+**Location**: [`/src/Shared/PageUrls.cs`](/src/Shared/PageUrls.cs)
 
-Located at `/src/Shared/PageUrls.cs` and related partial files:
+The project uses a **centralized `PageUrls` class** to define all route paths as constants. This prevents typos and makes route changes easier to manage.
 
 ```csharp
 namespace Boilerplate.Shared;
@@ -514,297 +554,225 @@ public static partial class PageUrls
     public const string Terms = "/terms";
     public const string Settings = "/settings";
     public const string About = "/about";
+    
     public const string Categories = "/categories";
     public const string Dashboard = "/dashboard";
     public const string Products = "/products";
     public const string AddOrEditProduct = "/add-edit-product";
     public const string Todo = "/todo";
-    public const string Product = "/product";
     public const string SystemPrompts = "/system-prompts";
     public const string Authorize = "/authorize";
     public const string Roles = "/user-groups";
     public const string Users = "/users";
+    public const string OfflineDatabaseDemo = "/offline-database-demo";
 }
 ```
 
-**Benefits:**
-- ✅ **Type-safe navigation**: No magic strings, IntelliSense support
-- ✅ **Refactoring-friendly**: Rename URLs in one place
-- ✅ **Compile-time errors**: Catch broken links before runtime
+**Additional partial files:**
+- `PageUrls.Identity.cs` - Identity-related routes (sign in, sign up, etc.)
+- `PageUrls.SettingsSections.cs` - Settings section routes
 
-### 4.2 Using PageUrls in Components
+### Using PageUrls
 
-**In Razor files (for routing):**
+**In Razor files (routing):**
+
 ```xml
 @attribute [Route(PageUrls.Products)]
 @attribute [Route("{culture?}" + PageUrls.Products)]
 ```
 
-**In C# code (for navigation):**
+**In C# code (navigation):**
+
 ```csharp
-NavigationManager.NavigateTo(PageUrls.Products);
-NavigationManager.NavigateTo($"{PageUrls.Product}/{productId}");
+private async Task CreateProduct()
+{
+    NavigationManager.NavigateTo(PageUrls.AddOrEditProduct);
+}
+
+// With parameters
+NavigationManager.NavigateTo($"{PageUrls.AddOrEditProduct}/{product.Id}");
 ```
 
-**In Razor markup (for links):**
+**In Razor markup (links):**
+
 ```xml
-<BitLink Href="@PageUrls.Products">View Products</BitLink>
+<BitButton Href="@($"{PageUrls.AddOrEditProduct}/{product.Id}")" />
 
 <BitNavLink Href="@PageUrls.Dashboard">
-    <BitIcon IconName="BitIconName.ViewDashboard" />
     Dashboard
 </BitNavLink>
 ```
 
-### 4.3 Multi-language Route Support
-
-The project supports culture-specific routing:
-
-```csharp
-@attribute [Route(PageUrls.Product + "/{Id:int}")]
-@attribute [Route("{culture?}" + PageUrls.Product + "/{Id:int}")]
-```
-
-This allows URLs like:
-- `/product/123` (default culture)
-- `/en/product/123` (English)
-- `/fr/product/123` (French)
-- `/fa/product/123` (Persian)
+**Benefits:**
+- ✅ No magic strings - compile-time safety
+- ✅ IntelliSense support
+- ✅ Easy to refactor routes
+- ✅ Centralized route management
 
 ---
 
 ## 5. Component Base Classes
 
-The project provides two base classes with built-in functionality:
+The project provides enhanced base classes that add powerful features to your components and pages.
 
 ### 5.1 AppComponentBase
 
-Located at `/src/Client/Boilerplate.Client.Core/Components/AppComponentBase.cs`
+**Location**: [`/src/Client/Boilerplate.Client.Core/Components/AppComponentBase.cs`](/src/Client/Boilerplate.Client.Core/Components/AppComponentBase.cs)
 
-**All components inherit from this base class**, which provides:
+This is the **base class for all components**. Most `.razor.cs` files inherit from this class.
 
-#### Automatic Dependency Injection
-No need to manually inject common services - they're already available:
-
-```csharp
-public partial class MyComponent : AppComponentBase
-{
-    protected override async Task OnInitAsync()
-    {
-        // These are automatically available from AppComponentBase:
-        var user = await AuthenticationStateTask;
-        var message = Localizer[nameof(AppStrings.Welcome)];
-        
-        NavigationManager.NavigateTo(PageUrls.Home);
-        SnackBarService.Success("Operation completed!");
-        
-        await StorageService.SetItem("key", "value");
-        var config = Configuration["AppSettings:ApiKey"];
-    }
-}
-```
-
-**Pre-injected Services:**
-- `NavigationManager` - For navigation
-- `Localizer` - For localization
-- `SnackBarService` - For showing notifications
-- `AuthenticationStateTask` - For auth state
-- `PubSubService` - For pub/sub messaging
-- `StorageService` - For local/session storage
-- `Configuration` - For app settings
-- `ExceptionHandler` - For error handling
-- `AuthManager` - For authentication operations
-- `JSRuntime` - For JavaScript interop
-- `CurrentCancellationToken` - For request cancellation
-
-#### Enhanced Lifecycle Methods
-
-Instead of standard Blazor lifecycle methods, use these **safer alternatives** that automatically handle exceptions:
+**Key features provided:**
 
 ```csharp
-// ✅ Use this instead of OnInitializedAsync()
-protected override async Task OnInitAsync()
+public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 {
-    // Exceptions are automatically caught and handled
-    await LoadDataAsync();
-}
+    // Automatic dependency injection via [AutoInject]
+    [AutoInject] protected IJSRuntime JSRuntime = default!;
+    [AutoInject] protected IStorageService StorageService = default!;
+    [AutoInject] protected JsonSerializerOptions JsonSerializerOptions = default!;
+    [AutoInject] protected IPrerenderStateService PrerenderStateService = default!;
+    [AutoInject] protected PubSubService PubSubService = default!;
+    [AutoInject] protected IConfiguration Configuration = default!;
+    [AutoInject] protected NavigationManager NavigationManager = default!;
+    [AutoInject] protected IAuthTokenProvider AuthTokenProvider = default!;
+    [AutoInject] protected IStringLocalizer<AppStrings> Localizer = default!;
+    [AutoInject] protected IExceptionHandler ExceptionHandler = default!;
+    [AutoInject] protected AuthManager AuthManager = default!;
+    [AutoInject] protected SnackBarService SnackBarService = default!;
+    [AutoInject] protected ITelemetryContext TelemetryContext = default!;
+    [AutoInject] protected IAuthorizationService AuthorizationService = default!;
+    [AutoInject] protected AbsoluteServerAddressProvider AbsoluteServerAddress = default!;
 
-// ✅ Use this instead of OnParametersSetAsync()
-protected override async Task OnParamsSetAsync()
-{
-    // Called when parameters change
-    await RefreshDataAsync();
-}
+    // Automatic cancellation token management
+    protected CancellationToken CurrentCancellationToken { get; }
 
-// ✅ Use this for first render only
-protected override async Task OnAfterFirstRenderAsync()
-{
-    // Called only once, after first render
-    await JSRuntime.InvokeVoidAsync("initializeComponent");
+    // Check if in pre-render mode
+    protected bool InPrerenderSession { get; }
+
+    // Enhanced lifecycle methods with automatic exception handling
+    protected virtual Task OnInitAsync() { }
+    protected virtual Task OnParamsSetAsync() { }
+    protected virtual Task OnAfterFirstRenderAsync() { }
 }
 ```
 
-**Why use enhanced lifecycle methods?**
-- ✅ Automatic exception handling (won't crash the app)
-- ✅ Exceptions displayed to users via SnackBar or modal
-- ✅ Logged for debugging
-- ✅ Prevents error boundary from being triggered
+**Key benefits:**
 
-#### WrapHandled for Event Handlers
+1. **Automatic Exception Handling**: Enhanced lifecycle methods catch and handle exceptions:
+   - `OnInitAsync()` instead of `OnInitializedAsync()`
+   - `OnParamsSetAsync()` instead of `OnParametersSetAsync()`
+   - `OnAfterFirstRenderAsync()` - only fires once, not on every render
 
-Use `WrapHandled` to wrap event handlers for automatic exception handling:
+2. **Pre-Injected Services**: All components automatically have access to commonly used services without needing to inject them manually:
+   ```csharp
+   // ✅ Available in any component inheriting from AppComponentBase
+   protected override async Task OnInitAsync()
+   {
+       var userName = await StorageService.GetItem("username");
+       var message = Localizer[nameof(AppStrings.Welcome)];
+       NavigationManager.NavigateTo(PageUrls.Dashboard);
+   }
+   ```
 
-```xml
-<!-- ✅ CORRECT: Wrapped event handlers -->
-<BitButton OnClick="WrapHandled(HandleClick)">Click Me</BitButton>
-<BitButton OnClick="WrapHandled(async () => await SaveAsync())">Save</BitButton>
-<BitTextField OnChange="WrapHandled((string value) => model.Name = value)" />
-
-<!-- ❌ INCORRECT: Unwrapped event handlers -->
-<BitButton OnClick="HandleClick">Click Me</BitButton>
-<BitButton OnClick="async () => await SaveAsync()">Save</BitButton>
-```
-
-**Real-world example from ProductPage:**
-```xml
-<BitButton AutoLoading OnClick="WrapHandled(Buy)">
-    @Localizer[nameof(AppStrings.Buy)]
-</BitButton>
-```
+3. **Automatic Cancellation Token**: Use `CurrentCancellationToken` for all async operations. It automatically cancels when the user navigates away.
 
 ### 5.2 AppPageBase
 
-Located at `/src/Client/Boilerplate.Client.Core/Components/Pages/AppPageBase.cs`
+**Location**: [`/src/Client/Boilerplate.Client.Core/Components/Pages/AppPageBase.cs`](/src/Client/Boilerplate.Client.Core/Components/Pages/AppPageBase.cs)
 
-**Pages inherit from AppPageBase**, which extends `AppComponentBase` with page-specific features:
+This is the **base class for pages** (extends `AppComponentBase` with page-specific features).
 
 ```csharp
 public abstract partial class AppPageBase : AppComponentBase
 {
     [Parameter] public string? culture { get; set; }
 
-    // Validates culture parameter and redirects to 404 if invalid
-    // Supports multi-language routing
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+            if (string.IsNullOrEmpty(culture) is false)
+            {
+                // Validates culture parameter and redirects to 404 if invalid
+                if (CultureInfoManager.InvariantGlobalization || 
+                    CultureInfoManager.SupportedCultures.Any(sc => 
+                        string.Equals(sc.Culture.Name, culture, StringComparison.InvariantCultureIgnoreCase)) is false)
+                {
+                    NavigationManager.NavigateTo($"{PageUrls.NotFound}?url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}", replace: true);
+                }
+            }
+        }
+    }
 }
 ```
 
-**When to use:**
-- ✅ Use `AppPageBase` for **pages** (routable components with `@page` directive)
-- ✅ Use `AppComponentBase` for **regular components** (non-routable)
+**Additional features:**
+- Culture/localization support with automatic validation
+- Page-level metadata configuration via `AppPageData` component
+- Everything from `AppComponentBase`
 
-**Example:**
-```csharp
-// Page component
-public partial class ProductsPage : AppPageBase
-{
-    // ...
-}
+**Example usage in a page:**
 
-// Regular component
-public partial class ProductCard : AppComponentBase
-{
-    // ...
-}
-```
-
----
-
-## 6. Best Practices Summary
-
-### ✅ DO:
-1. **Use the three-file structure**: Separate `.razor`, `.razor.cs`, and `.razor.scss` files
-2. **Use Bit.BlazorUI components**: Prefer `BitButton` over `<button>`, `BitText` over `<span>`, etc.
-3. **Use theme color variables**: Always use `$bit-color-*` variables in SCSS and `BitColor` enum in C#/Razor
-4. **Use `::deep` selector**: When styling child Bit.BlazorUI components
-5. **Use `WrapHandled()`**: Wrap all event handlers for automatic exception handling
-6. **Use enhanced lifecycle methods**: `OnInitAsync()`, `OnParamsSetAsync()`, `OnAfterFirstRenderAsync()`
-7. **Use `PageUrls` constants**: For type-safe navigation and routing
-8. **Inherit from base classes**: `AppPageBase` for pages, `AppComponentBase` for components
-9. **Use `[AutoInject]`**: For dependency injection in components
-10. **Pass `CurrentCancellationToken`**: To all async service calls
-
-### ❌ DON'T:
-1. **Don't hardcode colors**: Never use `#ffffff`, `rgb(255,0,0)`, etc.
-2. **Don't use `@code` blocks**: Put logic in `.razor.cs` code-behind files
-3. **Don't use standard lifecycle methods**: Use enhanced versions instead
-4. **Don't use unwrapped event handlers**: Always use `WrapHandled()`
-5. **Don't use magic string URLs**: Use `PageUrls` constants
-6. **Don't forget `::deep`**: When styling Bit.BlazorUI components
-
----
-
-## 7. Quick Reference
-
-### Component Lifecycle
-```csharp
-protected override async Task OnInitAsync()
-{
-    // Runs once when component initializes
-}
-
-protected override async Task OnParamsSetAsync()
-{
-    // Runs when parameters change
-}
-
-protected override async Task OnAfterFirstRenderAsync()
-{
-    // Runs once after first render (client-side only)
-}
-```
-
-### Event Handler Patterns
 ```xml
-<!-- Sync method -->
-<BitButton OnClick="WrapHandled(HandleClick)">Click</BitButton>
+@attribute [Route(PageUrls.Products)]
+@inherits AppPageBase
 
-<!-- Async method -->
-<BitButton OnClick="WrapHandled(HandleClickAsync)">Click</BitButton>
+<AppPageData Title="@Localizer[nameof(AppStrings.Products)]"
+             PageTitle="@Localizer[nameof(AppStrings.ProductsPageTitle)]" />
 
-<!-- Inline sync -->
-<BitButton OnClick="WrapHandled(() => counter++)">Increment</BitButton>
-
-<!-- Inline async -->
-<BitButton OnClick="WrapHandled(async () => await SaveAsync())">Save</BitButton>
-
-<!-- With parameter -->
-<BitTextField OnChange="WrapHandled((string value) => model.Name = value)" />
+<!-- Page content -->
 ```
 
-### Navigation Patterns
 ```csharp
-// Simple navigation
-NavigationManager.NavigateTo(PageUrls.Products);
+public partial class ProductsPage
+{
+    // All services from AppComponentBase are available
+    [AutoInject] IProductController productController = default!;
 
-// Navigation with parameter
-NavigationManager.NavigateTo($"{PageUrls.Product}/{productId}");
-
-// Navigation with query string
-NavigationManager.NavigateTo($"{PageUrls.Products}?category=cars");
-
-// Force reload
-NavigationManager.NavigateTo(PageUrls.Home, forceLoad: true);
-```
-
-### Styling Patterns
-```scss
-@import '../../Styles/abstracts/_bit-css-variables.scss';
-@import '../../Styles/abstracts/_media-queries.scss';
-
-.my-component {
-    background-color: $bit-color-background-primary;
-    color: $bit-color-foreground-primary;
-    
-    @include lt-md {
-        flex-direction: column;
+    protected override async Task OnInitAsync()
+    {
+        // Enhanced lifecycle with automatic exception handling
+        await base.OnInitAsync();
+        PrepareGridDataProvider();
     }
-}
 
-::deep {
-    .bit-button {
-        border-radius: 8px;
+    private async Task DeleteProduct()
+    {
+        // CurrentCancellationToken automatically cancels if user navigates away
+        await productController.Delete(deletingProduct.Id, 
+            deletingProduct.ConcurrencyStamp.ToStampString(), 
+            CurrentCancellationToken);
     }
 }
 ```
+
+---
+
+## Summary
+
+In this stage, you learned about:
+
+✅ **Three-File Component Structure**: `.razor` (markup), `.razor.cs` (logic), `.razor.scss` (styles)
+
+✅ **SCSS Styling Architecture**:
+   - Isolated component styles (`.razor.scss`)
+   - Global styles (`app.scss`)
+   - Theme color variables (`_bit-css-variables.scss`)
+   - Using `::deep` selector to style child components
+
+✅ **Always Use Theme Variables**: `$bit-color-background-primary`, `$bit-color-foreground-primary`, etc. for dark/light mode support
+
+✅ **Bit.BlazorUI Components**: Use these instead of generic HTML elements
+   - Documentation: https://blazorui.bitplatform.dev
+   - Automatic DeepWiki integration - just ask questions naturally!
+
+✅ **Navigation with PageUrls**: Centralized route constants for compile-time safety
+
+✅ **Component Base Classes**:
+   - `AppComponentBase`: Enhanced lifecycle methods with automatic exception handling and pre-injected services
+   - `AppPageBase`: Page-specific features + everything from `AppComponentBase`
+   - Use `OnInitAsync()`, `OnParamsSetAsync()`, `OnAfterFirstRenderAsync()` instead of standard Blazor lifecycle methods
 
 ---

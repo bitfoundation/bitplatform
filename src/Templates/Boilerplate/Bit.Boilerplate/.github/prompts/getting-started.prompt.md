@@ -513,8 +513,8 @@ In this stage, you will explain the Blazor UI architecture, component structure,
    - Point out how the `.razor` file defines the UI structure
    - Show how the `.razor.cs` inherits from `AppComponentBase` or `AppPageBase`
    - Demonstrate the `.razor.scss` scoped styles
-   - How the page has been added to `NavBar.razor` and `MainLayout.items.razor.cs` for navigation.
-   - How `AboutPage.razor` has been added to `Boilerplate.Client.Maui`, `Boilerplate.Client.Windows` and `Boilerplate.Client.Web` projects for to have access to native platform features without using interface and dependency injection,
+   - **Important** How the page has been added to `NavBar.razor` and `MainLayout.items.razor.cs` for navigation.
+   - **Important** How `AboutPage.razor` has been added to `Boilerplate.Client.Maui`, `Boilerplate.Client.Windows` and `Boilerplate.Client.Web` projects for to have access to native platform features without using interface and dependency injection,
    while these project also have been configured for SCSS support in their csproj file, so `AboutPage.razor.scss` would also work.
 
 ### SCSS Styling Architecture
@@ -538,7 +538,7 @@ In this stage, you will explain the Blazor UI architecture, component structure,
 - **Purpose**: The `::deep` selector allows you to style **child components** from a parent component's scoped stylesheet
   - Similar to React's `:global` or Vue's `:deep`
   - Find and show a **real example** from the project where `::deep` is used to style a Bit.BlazorUI component
-  - Mention that each bit BlazorUI component has its own css variables for styling in addition to the `Styles` and `Classes` parameters which allows styling nested child elements directly without needing `::deep` in most cases.
+  - **Important** Mention that each bit BlazorUI component has its own css variables for styling in addition to the `Styles` and `Classes` parameters which allows styling nested child elements directly without needing `::deep` in most cases.
   Find and show one real example of using `Styles` and `Classes` parameters from the project applied on any <Bit*> component.
 
 ### Bit.BlazorUI Documentation & DeepWiki
@@ -558,19 +558,9 @@ In this stage, you will explain the Blazor UI architecture, component structure,
 ### Navigation with PageUrls
 - **PageUrls Class**: Located in [/src/Shared/PageUrls.cs](/src/Shared/PageUrls.cs) and related partial files
   - Contains **strongly-typed constants** for all page routes in the application
-  // In a Razor file
+  ```razor
   <BitLink Href="@PageUrls.Dashboard">Go to Dashboard</BitLink>
   ```
-
-### Component Base Classes
-- **AppComponentBase**: Base class for components (inherited by most `.razor.cs` files)
-  - Provides access to common services (NavigationManager, IStringLocalizer, etc.)
-  - Enhanced lifecycle methods (`OnInitAsync`, `OnParamsSetAsync`, etc.)
-  - Automatic exception handling
-- **AppPageBase**: Base class for pages (extends AppComponentBase with page-specific features)
-  - Additional page lifecycle hooks
-  - Page-level metadata and configuration
-- **Show examples** from actual component/page code-behind files
 
 ---
 
@@ -638,7 +628,7 @@ In this stage, you will explain Blazor rendering modes, pre-rendering, and PWA f
 ## Topics to Cover:
 
 ### App.razor and index.html Files
-1. **Find and show these files**:
+1. **Find and show these 3 files**:
    - `Boilerplate.Server.Web/Components/App.razor`: For Blazor Server, Auto, and WebAssembly with pre-rendering
    - `Boilerplate.Client.Web/wwwroot/index.html`: For standalone Blazor WebAssembly
    - `Boilerplate.Client.Maui/wwwroot/index.html`: For Blazor Hybrid (also used by Client.Windows)
@@ -649,10 +639,10 @@ In this stage, you will explain Blazor rendering modes, pre-rendering, and PWA f
 - **Location**: `Boilerplate.Server.Api/appsettings.json` under `WebAppRender` section
 - **Settings**:
   - `BlazorMode`: "BlazorServer" | "BlazorWebAssembly" | "BlazorAuto"
-  Basicly we'd recommend using `BlazorServer` for development and `BlazorWebAssembly` for production deployment.
-  More information about these can be found at https://www.reddit.com/r/Blazor/comments/1kq5eyu/this_is_not_yet_just_another_incorrect_comparison/
+  **Important**: Don't compare Blazor modes at all, simply mention `BlazorServer` is recommended for development and `BlazorWebAssembly` for production.
+  Then mention this url https://www.reddit.com/r/Blazor/comments/1kq5eyu/this_is_not_yet_just_another_incorrect_comparison/ as a good resource to compare Blazor modes.
   - `PrerenderEnabled`: `true` for faster perceived load and SEO, `false` for loading screen
-- **If you enable PreRendering**, update `Client.Web/wwwroot/service-worker.published.js` accordingly
+- **If you enable PreRendering**, update `Boilerplate.Client.Web/wwwroot/service-worker.published.js` accordingly
 
 ### PWA & Service Workers
 - **All modes are PWAs**: Server, WebAssembly, Auto, and Hybrid all support offline mode, installation, and push notifications
@@ -665,7 +655,7 @@ In this stage, you will explain Blazor rendering modes, pre-rendering, and PWA f
 - **When needed**: Only if you use direct `HttpClient` calls (not `IAppController`)
 - **IAppController interfaces**: Pre-render state is handled automatically
 - **Purpose**: Prevents duplicate API calls during pre-rendering by persisting server-fetched data
-- **Example**:
+- **Example**: Demonstrate the following example:
 ```csharp
 var products = await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync<ProductDto[]>("api/products/"));
 ```
@@ -715,7 +705,7 @@ In this stage, you will explain the comprehensive response caching system built 
 
 3. **Explain ResponseCacheService for cache purging**:
    - **Purpose**: Used to purge/invalidate cached responses when data changes
-   - **Real-world example**:
+   - **Real-world example**: Explain the product page caching scenario:
      - A product page like https://sales.bitplatform.dev/product/10036 is cached on Cloudflare
      - When the product is updated in the admin panel at https://adminpanel.bitplatform.dev/add-edit-product/e7f8a9b0-c1d2-e3f4-5678-9012a3b4c5d6
      - The server sends a request to Cloudflare to purge/remove that page from the Edge Cache on Cloudflare servers
@@ -727,7 +717,7 @@ In this stage, you will explain the comprehensive response caching system built 
    - **Important note**: This only applies to responses where `UserAgnostic` is not false
    - Responses for authenticated/logged-in users are **not cached** on CDN or output cache (for security/privacy reasons)
 
-**Explain the multi-layer caching architecture**:
+**Explain the multi-layer caching architecture and compare the different layers**:
    - User's request will first handled using **Client-side memory cache** in `CacheDelegatingHandler`
    - If found is memory, the result is returned `sync` rahter than `async` which prevents loadings, spinners and shimmer (skeleton ui) from being rendered.
    - That's the reason if you navigate between products in https://sales.bitplatform.dev, the time that you naviagate back to a product you've already visited, it loads instantly without any loading indication.
@@ -814,6 +804,7 @@ At the end of Stage 16, ask: **"Do you have any questions about CI/CD or environ
 ### Instructions
 1. **Explain Unitigration Test concept**: Tests written as Integration Tests with full real server behavior (both UI tests and HTTP client based tests), but with the flexibility to fake specific parts of the server when needed - similar to Unit Tests - making test writing much simpler.
 - Note: Developers are welcome to write pure Unit Tests or pure Integration Tests if they prefer, but Unitigration Tests are recommended for most scenarios.
+- Unitigration Tests = **Ease** of writting unit tests + **Real** server behavior of integration tests.
 
 2. **Read test files**: Read all files in the `src/Tests` project.
 
@@ -1011,7 +1002,7 @@ At the end of Stage 21, ask: **"Do you have any questions about .NET MAUI, nativ
 
 1. **Explain In-App Messaging with PubSubService**:
    - **Purpose**: A publish-subscribe messaging system for communication between components within the application
-   - **Real-world example**: When a user changes their profile picture in Settings/Profile page, the profile picture in the Header is automatically updated
+   - **Real-world example**: Explain to the developer that when a user changes their profile picture in Settings/Profile page, the profile picture in the Header is automatically updated
    - **Search and demonstrate**: Find usages of `PubSubService` in the codebase and explain how it works
    - Show how to publish a message and how to subscribe to messages
 

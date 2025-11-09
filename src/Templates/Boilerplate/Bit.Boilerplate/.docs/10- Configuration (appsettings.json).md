@@ -1,493 +1,491 @@
 # Stage 10: Configuration (appsettings.json)
 
-## Overview
+Welcome to Stage 10! In this stage, you'll learn how the project manages configuration across different platforms and environments using `appsettings.json` files.
 
-The Boilerplate project uses a sophisticated multi-layered configuration system built on top of ASP.NET Core's configuration framework. Each project in the solution has its own `appsettings.json` files, and the configuration system intelligently merges them based on a well-defined priority hierarchy.
+## Configuration Architecture Overview
+
+The project uses a hierarchical configuration system where settings cascade from shared configuration files to platform-specific ones. This allows you to define common settings once and override them as needed for specific platforms or environments.
+
+## Configuration File Locations
+
+Each project in the solution has its own set of `appsettings.json` files:
+
+### Shared Configuration
+- [`src/Shared/appsettings.json`](/src/Shared/appsettings.json) - Base configuration shared across all platforms
+- [`src/Shared/appsettings.Development.json`](/src/Shared/appsettings.Development.json) - Development environment overrides
+- [`src/Shared/appsettings.Production.json`](/src/Shared/appsettings.Production.json) - Production environment overrides
+
+### Client Core Configuration
+- [`src/Client/Boilerplate.Client.Core/appsettings.json`](/src/Client/Boilerplate.Client.Core/appsettings.json) - Client-side shared configuration
+- [`src/Client/Boilerplate.Client.Core/appsettings.Development.json`](/src/Client/Boilerplate.Client.Core/appsettings.Development.json) - Development overrides
+- [`src/Client/Boilerplate.Client.Core/appsettings.Production.json`](/src/Client/Boilerplate.Client.Core/appsettings.Production.json) - Production overrides
+
+### Platform-Specific Configuration
+- **Blazor WebAssembly**: [`src/Client/Boilerplate.Client.Web/appsettings.json`](/src/Client/Boilerplate.Client.Web/appsettings.json)
+- **.NET MAUI**: [`src/Client/Boilerplate.Client.Maui/appsettings.json`](/src/Client/Boilerplate.Client.Maui/appsettings.json)
+- **Windows**: [`src/Client/Boilerplate.Client.Windows/appsettings.json`](/src/Client/Boilerplate.Client.Windows/appsettings.json)
+
+### Server Configuration
+- **API Server**: [`src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json)
+- **Web Server**: Server.Web uses standard ASP.NET Core configuration hierarchy
+- **AppHost**: [`src/Server/Boilerplate.Server.AppHost/appsettings.json`](/src/Server/Boilerplate.Server.AppHost/appsettings.json)
 
 ## Configuration Priority Hierarchy
 
-The configuration system loads settings in a specific order, where **later configurations override earlier ones**. This hierarchy is defined in [`IConfigurationBuilderExtensions.cs`](/src/Client/Boilerplate.Client.Core/Extensions/IConfigurationBuilderExtensions.cs).
+The configuration system loads settings in a specific order, with **later sources overriding earlier ones**. This is defined in [`IConfigurationBuilderExtensions.cs`](/src/Client/Boilerplate.Client.Core/Extensions/IConfigurationBuilderExtensions.cs):
 
-### Priority Order (Low → High)
+### Configuration Priority (Lowest to Highest)
 
 ```
-1. Shared/appsettings.json                          (Lowest Priority - Base settings)
-2. Shared/appsettings.{environment}.json            (If present)
-3. Client/Core/appsettings.json
-4. Client/Core/appsettings.{environment}.json       (If present)
-
-Then, depending on the platform:
-
-For Server.Web (Blazor Server & Pre-rendering) and Server.Api:
-5. Server/appsettings.json
-6. Server/appsettings.{environment}.json            (If present)
-7. ASP.NET Core default sources (env vars, CLI args, etc.)
-
-For Blazor WebAssembly:
-5. Client.Web/appsettings.json
-6. Client.Web/appsettings.{environment}.json        (If present)
-7. Client.Web/wwwroot/appsettings.json              (If present)
-8. Client.Web/wwwroot/appsettings.{environment}.json (If present)
-
-For MAUI:
-5. Client.Maui/appsettings.json
-6. Client.Maui/appsettings.{environment}.json       (If present)
-
-For Windows:
-5. Client.Windows/appsettings.json
-6. Client.Windows/appsettings.{environment}.json    (Highest Priority)
+Priority Order (Each level can override previous levels):
+┌─────────────────────────────────────────────────────────────┐
+│ 1. Shared/appsettings.json                                  │ ← Lowest Priority
+├─────────────────────────────────────────────────────────────┤
+│ 2. Shared/appsettings.{environment}.json                    │
+├─────────────────────────────────────────────────────────────┤
+│ 3. Client/Core/appsettings.json                             │
+├─────────────────────────────────────────────────────────────┤
+│ 4. Client/Core/appsettings.{environment}.json               │
+├─────────────────────────────────────────────────────────────┤
+│ 5. Platform-Specific Configuration:                         │
+│    ┌─────────────────────────────────────────────────────┐  │
+│    │ Server (Blazor Server/SSR + API):                   │  │
+│    │   • Server/appsettings.json                         │  │
+│    │   • Server/appsettings.{environment}.json           │  │
+│    │   • ASP.NET Core default configuration sources      │  │
+│    │     (environment variables, command line, etc.)     │  │
+│    └─────────────────────────────────────────────────────┘  │
+│    ┌─────────────────────────────────────────────────────┐  │
+│    │ Blazor WebAssembly:                                 │  │
+│    │   • Client.Web/appsettings.json                     │  │
+│    │   • Client.Web/appsettings.{environment}.json       │  │
+│    │   • Client.Web/wwwroot/appsettings.json             │  │
+│    │   • Client.Web/wwwroot/{environment}.json           │  │
+│    └─────────────────────────────────────────────────────┘  │
+│    ┌─────────────────────────────────────────────────────┐  │
+│    │ .NET MAUI:                                          │  │
+│    │   • Client.Maui/appsettings.json                    │  │
+│    │   • Client.Maui/appsettings.{environment}.json      │  │
+│    └─────────────────────────────────────────────────────┘  │
+│    ┌─────────────────────────────────────────────────────┐  │
+│    │ Windows:                                            │  │
+│    │   • Client.Windows/appsettings.json                 │  │
+│    │   • Client.Windows/appsettings.{environment}.json   │  │
+│    └─────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘ ← Highest Priority
 ```
 
-### How Override Works
+### How Priority Works - Practical Example
 
-If you add a setting in [`Shared/appsettings.json`](/src/Shared/appsettings.json), it applies to **all platforms** (server, web, mobile, desktop) unless explicitly overridden in a platform-specific `appsettings.json` file.
+Let's say you have a `ServerAddress` setting:
 
-**Example:**
+1. **Shared/appsettings.json** defines:
+   ```json
+   {
+     "ServerAddress": "https://api.production.com/"
+   }
+   ```
+
+2. **Shared/appsettings.Development.json** overrides it for all platforms in Development:
+   ```json
+   {
+     "ServerAddress": "http://localhost:5000/"
+   }
+   ```
+
+3. **Client.Maui/appsettings.Development.json** can override it specifically for MAUI in Development:
+   ```json
+   {
+     "ServerAddress": "http://10.0.2.2:5000/"
+   }
+   ```
+
+**Result**: 
+- In **Production** on all platforms: Uses `https://api.production.com/`
+- In **Development** on Web/Windows: Uses `http://localhost:5000/`
+- In **Development** on MAUI: Uses `http://10.0.2.2:5000/` (Android emulator localhost)
+
+## Real Configuration Examples from the Project
+
+### Example 1: Shared Configuration for Logging
+
+In [`src/Shared/appsettings.json`](/src/Shared/appsettings.json), you can see logging configuration that applies to all platforms:
+
 ```json
-// Shared/appsettings.json
 {
-  "Logging": {
-    "LogLevel": {
-      "Default": "Warning"
-    }
-  }
-}
-
-// Client.Maui/appsettings.json
-{
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information"  // Overrides "Warning" for MAUI only
-    }
-  }
-}
-```
-
-In this example, MAUI apps will log at `Information` level, while all other platforms use `Warning`.
-
-## Configuration Files by Project
-
-### 1. Shared Project ([`/src/Shared/appsettings.json`](/src/Shared/appsettings.json))
-
-This is the **base configuration** used by all projects (client and server). It contains:
-
-- **Logging Configuration**: Default log levels for various loggers (Console, OpenTelemetry, Sentry, Application Insights, etc.)
-- **Diagnostic Logger**: In-app logging configuration for troubleshooting
-
-**Key Sections:**
-```json
-{
-  "Logging": {
-    "LogLevel": {
-      "Default": "Warning",
-      "Microsoft.Hosting.Lifetime": "Information",
-      "Microsoft.EntityFrameworkCore.Database.Command": "Information"
+    "ApplicationInsights": {
+        "ConnectionString": null
     },
-    "DiagnosticLogger": {
-      "LogLevel": {
-        "Default": "Information"
-      }
+    "Logging": {
+        "LogLevel": {
+            "Default": "Warning",
+            "Microsoft.Hosting.Lifetime": "Information",
+            "Microsoft.EntityFrameworkCore.Database.Command": "Information",
+            "Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware": "None"
+        },
+        "ApplicationInsights": {
+            "LogLevel": {
+                "Default": "Warning",
+                "Microsoft.Hosting.Lifetime": "Information"
+            }
+        },
+        "Sentry": {
+            "Dsn": "",
+            "SendDefaultPii": true,
+            "EnableScopeSync": true,
+            "LogLevel": {
+                "Default": "Warning",
+                "Microsoft.Hosting.Lifetime": "Information"
+            }
+        },
+        "DiagnosticLogger": {
+            "LogLevel": {
+                "Default": "Information",
+                "Microsoft.AspNetCore*": "Warning",
+                "Microsoft.Hosting.Lifetime": "Information"
+            }
+        }
     }
-  }
 }
 ```
 
-### 2. Client.Core Project ([`/src/Client/Boilerplate.Client.Core/appsettings.json`](/src/Client/Boilerplate.Client.Core/appsettings.json))
+This configuration is automatically inherited by all platforms (Web, MAUI, Windows, Server).
 
-Contains settings shared across **all client platforms** (Web, MAUI, Windows):
+### Example 2: Client Core Configuration
 
-- **ServerAddress**: The API server URL
-- **Google reCAPTCHA Site Key**: For client-side CAPTCHA validation
-- **Ad Unit Configuration**: For advertising integrations
+In [`src/Client/Boilerplate.Client.Core/appsettings.json`](/src/Client/Boilerplate.Client.Core/appsettings.json), client-specific settings are defined:
 
-**Example:**
 ```json
 {
-  "ServerAddress": "http://localhost:5030/",
-  "ServerAddress_Comment": "If you're running Boilerplate.Server.Web project, then you can also use relative urls such as / for Blazor Server and WebAssembly",
-  "GoogleRecaptchaSiteKey": "6LdMKr4pAAAAAKMyuEPn3IHNf04EtULXA8uTIVRw"
+    "ServerAddress": "http://localhost:5000/",
+    "ServerAddress_Comment": "If you're running Boilerplate.Server.Web project, then you can also use relative urls such as / for Blazor Server and WebAssembly",
+    "GoogleRecaptchaSiteKey": "6LdMKr4pAAAAAKMyuEPn3IHNf04EtULXA8uTIVRw",
+    "AdUnitPath": "/22639388115/rewarded_web_example",
+    "AdUnitPath__Comment": "The advertisement's unit path of the google ads from the Google Ad Manager panel."
 }
 ```
 
-### 3. Server.Api Project ([`/src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json))
+These settings apply to all client platforms (Web, MAUI, Windows) but can be overridden in platform-specific files.
 
-The **most comprehensive** configuration file containing:
+### Example 3: Platform-Specific Configuration (MAUI)
 
-- **Connection Strings**: Database, blob storage, SMTP, S3
-- **AI Configuration**: OpenAI, Azure OpenAI, HuggingFace settings
-- **Identity Settings**: JWT tokens, password requirements, token lifetimes
-- **Authentication Providers**: Google, GitHub, Twitter, Apple, Facebook, Azure AD
-- **Push Notifications**: VAPID keys, APNS, Firebase configuration
-- **Hangfire**: Background job settings
-- **Response Caching**: CDN and output caching settings
-- **Cloudflare Integration**: API tokens and zone IDs
-- **Supported App Versions**: Minimum versions for force update system
-- **Trusted Origins**: CORS and security settings
+In [`src/Client/Boilerplate.Client.Maui/appsettings.json`](/src/Client/Boilerplate.Client.Maui/appsettings.json):
 
-**Key Sections:**
-
-#### Connection Strings
 ```json
 {
-  "ConnectionStrings": {
-    "mssqldb": "Data Source=(localdb)\\mssqllocaldb; Initial Catalog=BoilerplateDb;...",
-    "smtp": "Endpoint=smtp://smtp.ethereal.email:587;UserName=...;Password=...",
-    "s3": "Endpoint=http://localhost:9000;AccessKey=minioadmin;SecretKey=minioadmin;"
-  }
+    "WebAppUrl": null,
+    "WebAppUrl_Comment": "When the maui app sends a request to the API server, and the API server and web app are hosted on different URLs, the origin of the generated links (e.g., email confirmation links) will depend on `WebAppUrl` value."
 }
 ```
 
-#### Identity Configuration
-```json
-{
-  "Identity": {
-    "JwtIssuerSigningKeySecret": "VeryLongJWTIssuerSiginingKeySecret...",
-    "Issuer": "Boilerplate",
-    "Audience": "Boilerplate",
-    "BearerTokenExpiration": "0.00:05:00",
-    "RefreshTokenExpiration": "14.00:00:00",
-    "Password": {
-      "RequireDigit": "false",
-      "RequiredLength": "6"
-    }
-  }
-}
-```
+This setting only exists in the MAUI project because it's specific to mobile app scenarios.
 
-#### AI Configuration
+### Example 4: Server API Configuration
+
+In [`src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json), you'll find comprehensive server settings:
+
 ```json
 {
-  "AI": {
-    "ChatOptions": {
-      "Temperature": 0
+    "ConnectionStrings": {
+        "mssqldb": "Data Source=(localdb)\\mssqllocaldb; Initial Catalog=BoilerplateDb;...",
+        "s3": "Endpoint=http://localhost:9000;AccessKey=minioadmin;SecretKey=minioadmin;",
+        "smtp": "Endpoint=smtp://smtp.ethereal.email:587;UserName=..."
     },
-    "OpenAI": {
-      "ChatModel": "gpt-4.1-mini",
-      "ChatApiKey": null,
-      "ChatEndpoint": "https://models.inference.ai.azure.com"
-    }
-  }
+    "AI": {
+        "ChatOptions": {
+            "Temperature": 0
+        },
+        "OpenAI": {
+            "ChatModel": "gpt-4.1-mini",
+            "ChatApiKey": null,
+            "ChatEndpoint": "https://models.inference.ai.azure.com"
+        }
+    },
+    "Identity": {
+        "JwtIssuerSigningKeySecret": "VeryLongJWTIssuerSiginingKeySecret...",
+        "Issuer": "Boilerplate",
+        "Audience": "Boilerplate",
+        "BearerTokenExpiration": "0.00:05:00",
+        "RefreshTokenExpiration": "14.00:00:00"
+    },
+    "Email": {
+        "DefaultFromEmail": "DoNotReply@bitplatform.dev"
+    },
+    "GoogleRecaptchaSecretKey": "6LdMKr4pAAAAANvngWNam_nlHzEDJ2t6SfV6L_DS"
 }
 ```
 
-### 4. Server.Web Project ([`/src/Server/Boilerplate.Server.Web/appsettings.json`](/src/Server/Boilerplate.Server.Web/appsettings.json))
+## The `__Comment` Pattern
 
-Contains Blazor-specific settings:
+Since JSON doesn't support comments natively, the project uses a special pattern: properties ending with `__Comment` or `_Comment`.
 
-- **WebAppRender**: Blazor mode (Server, WebAssembly, Auto) and pre-rendering configuration
-- **TrustedOrigins**: CORS configuration
-- **Response Caching**: Output and CDN edge caching settings
+### How It Works
 
-**Example:**
-```json
-{
-  "WebAppRender": {
-    "BlazorMode": "BlazorServer",
-    "BlazorMode_Comment": "BlazorServer, BlazorWebAssembly and BlazorAuto.",
-    "PrerenderEnabled": false
-  }
-}
-```
-
-### 5. Client.Web Project ([`/src/Client/Boilerplate.Client.Web/appsettings.json`](/src/Client/Boilerplate.Client.Web/appsettings.json))
-
-WebAssembly-specific settings:
-
-- **VAPID Public Key**: For web push notifications (private key is server-side only)
-
-### 6. Client.Maui Project ([`/src/Client/Boilerplate.Client.Maui/appsettings.json`](/src/Client/Boilerplate.Client.Maui/appsettings.json))
-
-MAUI-specific settings:
-
-- **WebAppUrl**: Used when the mobile app needs to generate web links (e.g., email confirmation)
+When you want to add explanatory comments to configuration files, append `__Comment` or `_Comment` to the setting name:
 
 ```json
 {
-  "WebAppUrl": null,
-  "WebAppUrl_Comment": "When the maui app sends a request to the API server, and the API server and web app are hosted on different URLs, the origin of the generated links (e.g., email confirmation links) will depend on `WebAppUrl` value."
-}
-```
-
-## Environment-Specific Configuration
-
-Each `appsettings.json` can have environment-specific overrides:
-
-- `appsettings.Development.json` - Development environment
-- `appsettings.Production.json` - Production environment
-- `appsettings.Staging.json` - Staging environment (if needed)
-
-The environment is determined by the `ASPNETCORE_ENVIRONMENT` (server) or `APP_ENVIRONMENT` (client) variables.
-
-**Example:**
-```json
-// appsettings.Development.json
-{
-  "Logging": {
-    "LogLevel": {
-      "Default": "Debug"  // More verbose in Development
-    }
-  }
-}
-```
-
-## Configuration Matrix
-
-Here's a visual representation of which configuration files affect each platform:
-
-| Configuration File | Server.Api | Server.Web | Client.Web (WASM) | Client.Maui | Client.Windows |
-|-------------------|------------|------------|-------------------|-------------|----------------|
-| `Shared/appsettings.json` | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `Shared/appsettings.{env}.json` | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `Client.Core/appsettings.json` | ❌ | ✅ | ✅ | ✅ | ✅ |
-| `Client.Core/appsettings.{env}.json` | ❌ | ✅ | ✅ | ✅ | ✅ |
-| `Server.Api/appsettings.json` | ✅ | ❌ | ❌ | ❌ | ❌ |
-| `Server.Web/appsettings.json` | ❌ | ✅ | ❌ | ❌ | ❌ |
-| `Client.Web/appsettings.json` | ❌ | ❌ | ✅ | ❌ | ❌ |
-| `Client.Maui/appsettings.json` | ❌ | ❌ | ❌ | ✅ | ❌ |
-| `Client.Windows/appsettings.json` | ❌ | ❌ | ❌ | ❌ | ✅ |
-
-## JSON Comments with `__Comment` Convention
-
-Since JSON doesn't natively support comments, this project uses a special convention:
-
-**Any key ending with `__Comment` is treated as a comment and ignored by the configuration system.**
-
-**Example:**
-```json
-{
-  "ServerAddress": "http://localhost:5030/",
-  "ServerAddress_Comment": "This is a comment explaining the ServerAddress setting",
-  "Identity": {
+    "ServerAddress": "http://localhost:5000/",
+    "ServerAddress_Comment": "If you're running Boilerplate.Server.Web project, then you can also use relative urls such as / for Blazor Server and WebAssembly",
+    
     "BearerTokenExpiration": "0.00:05:00",
-    "BearerTokenExpiration_Comment": "Format: D.HH:mm:ss"
-  }
+    "BearerTokenExpiration_Comment": "Format: D.HH:mm:ss",
+    
+    "MaxPrivilegedSessionsCount": 3,
+    "MaxPrivilegedSessionsCount_Comment": "Is the maximum number of concurrent privileged sessions a user can have.",
+    
+    "ConnectionStrings": {
+        "Aspire__Comment": "Running Boilerplate.Server.AppHost `overrides` the following connection strings at runtime.",
+        "mssqldb": "Data Source=(localdb)\\mssqllocaldb; Initial Catalog=BoilerplateDb;...",
+        "smtp": "Endpoint=smtp://smtp.ethereal.email:587;...",
+        "smtp_Comment": "You can also use https://ethereal.email/create for testing purposes."
+    }
 }
 ```
 
-This allows you to:
-- Document complex settings directly in the configuration file
-- Provide usage examples and format specifications
-- Explain the purpose of nullable or optional settings
+### Real Examples from the Project
 
-## Reading Configuration in Code
+Here are actual `__Comment` usages found in the codebase:
 
-### Server-Side (API/Web)
+**From `src/Server/Boilerplate.Server.Api/appsettings.json`:**
+```json
+{
+    "ConnectionStrings": {
+        "Aspire__Comment": "Running Boilerplate.Server.AppHost `overrides` the following connection strings at runtime."
+    },
+    "Email__Comment": "You can also use https://ethereal.email/create for testing purposes.",
+    "Identity": {
+        "BearerTokenExpiration_Comment": "BearerTokenExpiration used as JWT's expiration claim. Format: D.HH:mm:ss"
+    },
+    "UserInformationCache": {
+        "UseIsolatedStorage__Comment": "Useful for testing or in production when managing multiple codebases with a single database."
+    },
+    "ForceUpdate": {
+        "SupportedAppVersions__Comment": "Enabling `AutoReload` ensure the latest app version is always applied in Web & Windows apps."
+    }
+}
+```
 
-Use ASP.NET Core's built-in dependency injection:
+**From `src/Server/Boilerplate.Server.AppHost/appsettings.Development.json`:**
+```json
+{
+    "Parameters": {
+        "sqlserver__Comment": "The username is `sa` by default",
+        "s3__Comment": "The username is `minioadmin` by default"
+    }
+}
+```
+
+**From `src/Client/Boilerplate.Client.Core/appsettings.json`:**
+```json
+{
+    "AdUnitPath__Comment": "The advertisement's unit path of the google ads from the Google Ad Manager panel."
+}
+```
+
+**Why This Pattern?**
+- JSON doesn't allow traditional `//` or `/* */` comments
+- Comment properties are ignored by the configuration system (they're never bound to settings classes)
+- Provides in-file documentation for developers
+- Works with JSON schema validation and tooling
+- Easy to understand the purpose and format of configuration values
+
+## Practical Configuration Scenarios
+
+### Scenario 1: Adding a New Shared Setting
+
+If you want to add a setting that applies to all platforms:
+
+1. Add it to [`src/Shared/appsettings.json`](/src/Shared/appsettings.json):
+   ```json
+   {
+     "MyNewFeature": {
+       "EnabledByDefault": true,
+       "EnabledByDefault_Comment": "Controls whether the new feature is enabled for all platforms"
+     }
+   }
+   ```
+
+2. This setting will automatically be available in:
+   - All client platforms (Web, MAUI, Windows)
+   - Server projects (API, Web)
+
+3. Override it for specific environments or platforms if needed
+
+### Scenario 2: Platform-Specific Override
+
+If you need different values for different platforms:
+
+1. Define the base value in [`src/Shared/appsettings.json`](/src/Shared/appsettings.json)
+2. Override in platform-specific files:
+   - For MAUI: [`src/Client/Boilerplate.Client.Maui/appsettings.json`](/src/Client/Boilerplate.Client.Maui/appsettings.json)
+   - For Web: [`src/Client/Boilerplate.Client.Web/appsettings.json`](/src/Client/Boilerplate.Client.Web/appsettings.json)
+   - For Windows: [`src/Client/Boilerplate.Client.Windows/appsettings.json`](/src/Client/Boilerplate.Client.Windows/appsettings.json)
+
+### Scenario 3: Environment-Specific Settings
+
+For different values in Development vs Production:
+
+1. Define production values in `appsettings.json`
+2. Override in `appsettings.Development.json` for local development
+3. Use `appsettings.Production.json` if production needs explicit overrides
+
+Example from [`src/Shared/appsettings.Development.json`](/src/Shared/appsettings.Development.json):
+```json
+{
+    "Logging": {
+        "LogLevel": {
+            "Default": "Trace"
+        }
+    }
+}
+```
+
+This increases logging verbosity in Development without affecting Production.
+
+## Configuration Implementation Details
+
+The configuration loading logic is implemented in [`IConfigurationBuilderExtensions.cs`](/src/Client/Boilerplate.Client.Core/Extensions/IConfigurationBuilderExtensions.cs):
+
+```csharp
+public static partial class IConfigurationBuilderExtensions
+{
+    /// <summary>
+    /// Configuration priority (Lowest to highest) =>
+    /// Shared/appsettings.json
+    /// Shared/appsettings.{environment}.json (If present)
+    /// Client/Core/appsettings.json
+    /// Client/Core/appsettings.{environment}.json (If present)
+    /// ...
+    /// </summary>
+    public static IConfigurationBuilder AddClientConfigurations(
+        this IConfigurationBuilder builder, 
+        string clientEntryAssemblyName)
+    {
+        // Load Shared configuration
+        var sharedAssembly = Assembly.Load("Boilerplate.Shared");
+        configBuilder.AddJsonStream(sharedAssembly.GetManifestResourceStream(
+            "Boilerplate.Shared.appsettings.json")!);
+        
+        // Load environment-specific Shared configuration
+        var envSharedAppSettings = sharedAssembly.GetManifestResourceStream(
+            $"Boilerplate.Shared.appsettings.{AppEnvironment.Current}.json");
+        if (envSharedAppSettings != null)
+        {
+            configBuilder.AddJsonStream(envSharedAppSettings);
+        }
+        
+        // Load Client.Core configuration
+        var clientCoreAssembly = AppDomain.CurrentDomain.GetAssemblies()
+            .Single(asm => asm.GetName()?.Name is "Boilerplate.Client.Core");
+        configBuilder.AddJsonStream(clientCoreAssembly.GetManifestResourceStream(
+            "Boilerplate.Client.Core.appsettings.json")!);
+        
+        // ... Platform-specific configuration loading continues ...
+    }
+}
+```
+
+## Accessing Configuration in Code
+
+### In Controllers and Services
+
+Configuration is automatically injected via `IConfiguration`:
 
 ```csharp
 public class MyController : AppControllerBase
 {
     [AutoInject] private IConfiguration configuration = default!;
-
-    public IActionResult GetSetting()
-    {
-        var serverAddress = configuration["ServerAddress"];
-        var jwtSecret = configuration["Identity:JwtIssuerSigningKeySecret"];
-        return Ok(serverAddress);
-    }
-}
-```
-
-Or use strongly-typed options pattern:
-
-```csharp
-public class IdentitySettings
-{
-    public string Issuer { get; set; }
-    public string Audience { get; set; }
-}
-
-// In Startup/Program.cs
-services.Configure<IdentitySettings>(configuration.GetSection("Identity"));
-
-// In your class
-public class MyService
-{
-    [AutoInject] private IOptions<IdentitySettings> identitySettings = default!;
     
-    public void UseSettings()
+    public IActionResult GetSettings()
     {
-        var issuer = identitySettings.Value.Issuer;
+        var serverAddress = configuration["ServerAddress"];
+        var timeout = configuration.GetValue<int>("ApiTimeout");
+        
+        return Ok(new { serverAddress, timeout });
     }
 }
 ```
 
-### Client-Side (Blazor)
+### Using Strongly-Typed Settings Classes
+
+The project uses settings classes (e.g., `ServerApiSettings`, `ClientCoreSettings`) that are automatically bound to configuration sections:
 
 ```csharp
-public partial class MyComponent : AppComponentBase
+public partial class ServerApiSettings : ServerSharedSettings
 {
-    [AutoInject] private IConfiguration configuration = default!;
+    public IdentitySettings Identity { get; set; } = default!;
+    public EmailSettings Email { get; set; } = default!;
+    public SmsSettings Sms { get; set; } = default!;
+    // ... more settings ...
+}
+```
 
-    protected override async Task OnInitAsync()
+These are registered in service configuration:
+
+```csharp
+services.AddOptions<ServerApiSettings>()
+    .Bind(configuration)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+```
+
+Then injected where needed:
+
+```csharp
+public class EmailService
+{
+    [AutoInject] private IOptionsSnapshot<ServerApiSettings> settings = default!;
+    
+    public async Task SendEmailAsync()
     {
-        var serverAddress = configuration["ServerAddress"];
-        var recaptchaKey = configuration["GoogleRecaptchaSiteKey"];
+        var fromEmail = settings.Value.Email.DefaultFromEmail;
+        // Use configuration...
     }
 }
 ```
 
 ## Best Practices
 
-### 1. Use the Right Configuration File
+### ✅ DO:
+- **Put shared settings in `Shared/appsettings.json`** - Anything common to all platforms belongs here
+- **Use environment-specific files** - Keep development settings separate from production
+- **Add comments with `_Comment` suffix** - Document what settings do and their expected format
+- **Use strongly-typed settings classes** - Create classes that bind to configuration sections
+- **Test configuration priority** - Verify settings override correctly in different environments
 
-- **Shared settings** (used by all platforms) → `Shared/appsettings.json`
-- **Client-only settings** (all client platforms) → `Client.Core/appsettings.json`
-- **Server-only settings** → `Server.Api/appsettings.json` or `Server.Web/appsettings.json`
-- **Platform-specific overrides** → Platform-specific `appsettings.json`
+### ❌ DON'T:
+- **Don't duplicate settings** - If a setting applies to all platforms, don't repeat it in each platform's file
+- **Don't hardcode sensitive data** - Use user secrets, environment variables, or Azure Key Vault for production secrets
+- **Don't forget to add new files to projects** - Ensure new `appsettings.{environment}.json` files have `Copy to Output Directory` set correctly
+- **Don't store secrets in source control** - Never commit API keys, passwords, or connection strings to Git
 
-### 2. Secrets Management
+## Configuration and Environments
 
-**⚠️ NEVER commit sensitive data to source control!**
+The project supports three environments:
+- **Development** - Local development (uses `appsettings.Development.json`)
+- **Staging** - Pre-production testing environment
+- **Production** - Live production environment (uses `appsettings.Production.json`)
 
-For sensitive configuration (API keys, passwords, connection strings):
+Environment is determined by `AppEnvironment.Current` which is set during build time based on the `APP_ENVIRONMENT` MSBuild property.
 
-- **Development**: Use User Secrets or environment variables
-  ```bash
-  dotnet user-secrets set "Identity:JwtIssuerSigningKeySecret" "YourSecretKey"
-  ```
-  
-- **Production**: Use environment variables, Azure Key Vault, AWS Secrets Manager, or similar services
-
-### 3. Environment Variables Override Configuration
-
-ASP.NET Core configuration allows environment variables to override `appsettings.json` values using double underscores
-
-### 4. Document Your Settings
-
-Always add `__Comment` keys to explain:
-- The purpose of the setting
-- Valid values or formats
-- Where to obtain values (e.g., API keys)
-
-```json
-{
-  "GoogleRecaptchaSecretKey": "6LdMKr4pAAAAANvngWNam...",
-  "GoogleRecaptchaSecretKey_Comment": "Create one at https://console.cloud.google.com/security/recaptcha/create for Web Application Type"
-}
-```
-
-### 5. Use JSON Schema
-
-All `appsettings.json` files include a schema reference for IntelliSense:
-
-```json
-{
-  "$schema": "https://json.schemastore.org/appsettings.json"
-}
-```
-
-This provides autocomplete and validation in VS Code and Visual Studio.
-
-## Common Configuration Scenarios
-
-### Scenario 1: Changing the API Server Address
-
-To change the API address for all client platforms:
-
-**[`/src/Client/Boilerplate.Client.Core/appsettings.json`](/src/Client/Boilerplate.Client.Core/appsettings.json)**
-```json
-{
-  "ServerAddress": "https://api.yourcompany.com/"
-}
-```
-
-### Scenario 2: Different Log Levels per Environment
-
-**[`/src/Shared/appsettings.json`](/src/Shared/appsettings.json)** (Base)
-```json
-{
-  "Logging": {
-    "LogLevel": {
-      "Default": "Warning"
-    }
-  }
-}
-```
-
-**[`/src/Shared/appsettings.Development.json`](/src/Shared/appsettings.Development.json)** (Override)
-```json
-{
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information"
-    }
-  }
-}
-```
-
-### Scenario 3: Platform-Specific Settings
-
-Different server addresses for MAUI vs Web:
-
-**[`/src/Client/Boilerplate.Client.Core/appsettings.json`](/src/Client/Boilerplate.Client.Core/appsettings.json)** (Default)
-```json
-{
-  "ServerAddress": "https://api.yourcompany.com/"
-}
-```
-
-**[`/src/Client/Boilerplate.Client.Maui/appsettings.json`](/src/Client/Boilerplate.Client.Maui/appsettings.json)** (MAUI Override)
-```json
-{
-  "ServerAddress": "https://mobile-api.yourcompany.com/"
-}
-```
-
-### Scenario 4: .NET Aspire Override
-
-When running with .NET Aspire (via `Boilerplate.Server.AppHost`), Aspire automatically overrides certain connection strings at runtime. The `appsettings.json` files contain the default values used when NOT running through Aspire.
-
-From [`/src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json):
-```json
-{
-  "ConnectionStrings": {
-    "Aspire__Comment": "Running Boilerplate.Server.AppHost `overrides` the following connection strings at runtime.",
-    "mssqldb": "Data Source=(localdb)\\mssqllocaldb; ..."
-  }
-}
-```
-
-## Troubleshooting
-
-### Configuration Not Taking Effect
-
-1. **Check the priority order** - A higher-priority file might be overriding your setting
-2. **Verify the environment** - Ensure `ASPNETCORE_ENVIRONMENT` or `APP_ENVIRONMENT` is set correctly
-3. **Check for typos** - Configuration keys are case-sensitive
-4. **Restart the application** - Configuration is loaded at startup
-
-### Finding Which File Contains a Setting
-
-Use your IDE's "Find in Files" feature to search across all `appsettings*.json` files:
-
-**VS Code:**
-- Press `Ctrl+Shift+F` (Windows/Linux) or `Cmd+Shift+F` (Mac)
-- Search for the setting name
-- Filter by `appsettings*.json`
-
-### Debugging Configuration Values
-
-Add this code to see the final resolved configuration:
-
-```csharp
-var allSettings = configuration.AsEnumerable();
-foreach (var setting in allSettings)
-{
-    logger.LogInformation($"{setting.Key} = {setting.Value}");
-}
-```
+See [`Directory.Build.props`](/src/Directory.Build.props) for environment configuration and [`AppEnvironment.cs`](/src/Shared/Enums/AppEnvironment.cs) for the environment enum.
 
 ## Summary
 
-The Boilerplate project's configuration system provides:
+The configuration system provides:
+- ✅ **Hierarchical configuration** with clear priority rules
+- ✅ **Shared base settings** that apply to all platforms
+- ✅ **Platform-specific overrides** for unique requirements
+- ✅ **Environment-specific configuration** for Development/Staging/Production
+- ✅ **In-file documentation** using the `_Comment` pattern
+- ✅ **Type-safe configuration** through strongly-typed settings classes
+- ✅ **Flexible deployment** supporting various hosting scenarios
 
-✅ **Hierarchical Configuration** - Base settings with platform-specific overrides  
-✅ **Environment-Aware** - Different settings for Development, Staging, Production  
-✅ **Centralized & DRY** - Shared settings avoid duplication  
-✅ **Flexible** - Easy to override at any level  
-✅ **Documented** - Built-in comment convention  
-✅ **Secure** - Support for secrets management  
+This architecture ensures that:
+1. You can define a setting **once** and use it everywhere
+2. You can **override** settings for specific platforms or environments when needed
+3. Configuration is **well-documented** and easy to understand
+4. Changes are **scoped** appropriately (shared vs. platform-specific)
 
-Understanding this configuration hierarchy is crucial for effectively customizing and deploying your Boilerplate application across different platforms and environments.
+---

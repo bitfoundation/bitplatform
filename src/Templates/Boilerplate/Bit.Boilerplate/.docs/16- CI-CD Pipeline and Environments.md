@@ -1,516 +1,510 @@
 # Stage 16: CI/CD Pipeline and Environments
 
-Welcome to Stage 16! In this stage, you'll learn how the project handles Continuous Integration/Continuous Deployment (CI/CD) and environment management across different platforms.
+Welcome to Stage 16! In this stage, you'll learn about the comprehensive CI/CD pipeline setup and environment configuration system that powers this project. This system provides environment-aware builds and deployments across all platforms.
 
 ---
 
-## Overview
-
-This project includes a comprehensive CI/CD setup that supports:
-- **Continuous Integration (CI)**: Automated build and test on every pull request
-- **Continuous Deployment (CD)**: Automated deployment to Test and Production environments
-- **Multi-Platform Support**: Build pipelines for Web, Windows, Android, iOS, and macOS
-- **Environment Configuration**: Consistent environment management across all platforms
-
----
-
-## 1. Environment Management
+## 📋 Environment Configuration System
 
 ### Understanding AppEnvironment
 
-The project uses a custom `AppEnvironment` class to provide consistent environment management across all platforms (server, web, and native apps).
+The project uses a unified environment configuration system that works consistently across all platforms - from ASP.NET Core backend to native mobile apps.
 
 **Location**: [`/src/Shared/Services/AppEnvironment.cs`](/src/Shared/Services/AppEnvironment.cs)
 
-#### Why AppEnvironment?
+**Key Features**:
+- **Cross-Platform Consistency**: Unlike ASP.NET Core which uses environment variables, Android, iOS, Windows, and macOS don't support the same concept. `AppEnvironment` provides a unified abstraction.
+- **Build-Time Configuration**: Environment is determined at build/publish time using MSBuild properties.
+- **Compile-Time Constants**: Uses C# preprocessor directives for zero runtime overhead.
 
-Unlike ASP.NET Core which uses environment variables, Android, iOS, Windows, and macOS don't support the same concept. `AppEnvironment` provides a unified approach that works everywhere.
-
-#### Supported Environments
-
-The project supports four environments:
-1. **Development** - For local development
-2. **Test** - For testing/staging environment
-3. **Staging** - For pre-production validation (optional)
-4. **Production** - For live production environment
-
-#### How It Works
-
+**Available Environments**:
 ```csharp
-public static partial class AppEnvironment
-{
-    public static string Current { get; private set; } =
-#if Development            // dotnet publish -c Debug
-        Development;
-#elif Test                 // dotnet publish -c Release -p:Environment=Test
-        Test;
-#elif Staging              // dotnet publish -c Release -p:Environment=Staging
-        Staging;
-#else                      // dotnet publish -c Release
-        Production;
-#endif
-
-    public static bool IsDevelopment() => Is(Development);
-    public static bool IsTest() => Is(Test);
-    public static bool IsStaging() => Is(Staging);
-    public static bool IsProduction() => Is(Production);
-}
+- Development  // dotnet publish -c Debug
+- Test         // dotnet publish -c Release -p:Environment=Test
+- Staging      // dotnet publish -c Release -p:Environment=Staging
+- Production   // dotnet publish -c Release (default)
 ```
 
-#### Environment Configuration in MSBuild
+**Usage Examples**:
+```csharp
+// Check current environment
+if (AppEnvironment.IsDevelopment())
+{
+    // Development-specific code
+}
 
-The environment is configured in [`/src/Directory.Build.props`](/src/Directory.Build.props):
+// Get environment name
+string env = AppEnvironment.Current; // "Development", "Production", etc.
+
+// Set environment (done automatically at startup)
+AppEnvironment.Set(builder.Environment.EnvironmentName);
+```
+
+### MSBuild Environment Configuration
+
+**Location**: [`/src/Directory.Build.props`](/src/Directory.Build.props)
+
+The build system automatically configures the environment based on build configuration:
 
 ```xml
-<!-- See Boilerplate.Shared.AppEnvironment for more info. -->
+<!-- Default environment mapping -->
 <Environment Condition="'$(Environment)' == '' AND '$(Configuration)' == 'Release'">Production</Environment>
-<Environment Condition="'$(Environment)' == '' AND  $(Configuration.Contains('Debug'))">Development</Environment>
+<Environment Condition="'$(Environment)' == '' AND $(Configuration.Contains('Debug'))">Development</Environment>
+
+<!-- Environment becomes a compile-time constant -->
+<DefineConstants>$(DefineConstants);$(Environment);$(Configuration)</DefineConstants>
 ```
 
-**Key Point**: The environment is determined at **build time** using MSBuild properties, making it available in both:
-- **C# code**: Via `AppEnvironment.Current` or `#if Development` directives
-- **MSBuild**: Via `$(Environment)` property
+**Key Benefits**:
+1. **Available in Both C# and MSBuild**: Environment information is accessible in:
+   - C# code (via `AppEnvironment.Current`)
+   - MSBuild scripts (via `$(Environment)` property)
+   - Razor components (via `@AppEnvironment.Current`)
 
-#### Using AppEnvironment in Code
-
-Throughout the codebase, you'll see environment checks like:
-
+2. **Environment-Specific Code**: Write conditional code that compiles differently per environment:
 ```csharp
-// Example from AuthManager.cs
-Secure = AppEnvironment.IsDevelopment() is false
-
-// Example from ClientExceptionHandlerBase.cs
-var isDevEnv = AppEnvironment.IsDevelopment();
-
-// Example from RetryDelegatingHandler.cs
-if (request.HasNoRetryPolicyAttribute() || AppEnvironment.IsDevelopment())
-    return await base.SendAsync(request, cancellationToken);
-```
-
-#### Building for Different Environments
-
-```powershell
-# Development (default for Debug configuration)
-dotnet build -c Debug
-
-# Production (default for Release configuration)
-dotnet publish -c Release
-
-# Test environment
-dotnet publish -c Release -p:Environment=Test
-
-# Staging environment
-dotnet publish -c Release -p:Environment=Staging
-```
-
----
-
-## 2. Continuous Integration (CI)
-
-### GitHub Actions CI Workflow
-
-**Location**: [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
-
-This workflow runs on:
-- Every **pull request**
-- **Manual trigger** (workflow_dispatch)
-
-#### What It Does
-
-1. **Checkout Code**: Gets the latest source code
-2. **Setup .NET**: Installs .NET SDK using `global.json`
-3. **Setup Node.js**: Installs Node.js 23 for JavaScript/TypeScript builds
-4. **Workload Restore**: Installs required .NET workloads
-5. **Build**: Builds the entire solution (`Boilerplate.slnx`)
-6. **Install Playwright**: Installs browser automation tools for testing
-7. **Test**: Runs all unit and integration tests
-8. **Upload Test Results**: If tests fail, uploads test artifacts for debugging
-
-```yaml
-name: Boilerplate CI
-
-on:
-  workflow_dispatch:
-  pull_request:
-
-jobs:
-  build_blazor_server:
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout source code
-      - name: Setup .NET
-      - name: Setup Node.js
-      - name: Workload restore
-      - name: Build
-      - name: Install Playwright
-      - name: Test
-      - name: Upload Tests Artifact (on failure)
-```
-
-### Azure DevOps CI Pipeline
-
-**Location**: [`.azure-devops/workflows/ci.yml`](.azure-devops/workflows/ci.yml)
-
-Similar to GitHub Actions but configured for Azure DevOps:
-- Triggers on: **develop** branch
-- Uses Azure DevOps tasks instead of GitHub Actions
-- Same build and test steps
-
----
-
-## 3. Continuous Deployment (CD)
-
-The project includes separate CD workflows for different environments.
-
-### GitHub Actions CD Workflows
-
-#### Production Deployment
-
-**Location**: [`.github/workflows/cd-production.yml`](.github/workflows/cd-production.yml)
-
-```yaml
-name: Boilerplate Production CD
-
-on:
-  workflow_dispatch:
-  push:
-    branches: [ "main" ]
-
-jobs:
-  build_and_deploy_prod:
-    uses: ./.github/workflows/cd-template.yml
-    with:
-      ENV_NAME: Production
-    secrets: inherit
-```
-
-- **Triggers**: Push to `main` branch or manual trigger
-- **Uses**: Reusable workflow template with `Production` environment
-
-#### Test Deployment
-
-**Location**: [`.github/workflows/cd-test.yml`](.github/workflows/cd-test.yml)
-
-```yaml
-name: Boilerplate Test CD
-
-on:
-  workflow_dispatch:
-  push:
-    branches: [ "test" ]
-
-jobs:
-  build_and_deploy_test:
-    uses: ./.github/workflows/cd-template.yml
-    with:
-      ENV_NAME: Test
-    secrets: inherit
-```
-
-- **Triggers**: Push to `test` branch or manual trigger
-- **Uses**: Reusable workflow template with `Test` environment
-
-### CD Template Workflow
-
-**Location**: [`.github/workflows/cd-template.yml`](.github/workflows/cd-template.yml)
-
-This is a **reusable workflow** that handles the actual build and deployment. It's called by both production and test workflows.
-
-#### Jobs Overview
-
-The template includes multiple jobs for different platforms:
-
-1. **build_api_blazor** - Build backend API + Blazor Web
-2. **deploy_api_blazor** - Deploy to Azure Web App
-3. **build_blazor_hybrid_windows** - Build Windows application
-4. **build_blazor_hybrid_android** - Build Android application
-5. **build_blazor_hybrid_iOS** - Build iOS and macOS applications
-
----
-
-## 4. Platform-Specific Build Details
-
-### Backend (API + Blazor Web)
-
-#### Build Phase
-
-```yaml
-- name: Update core appsettings.json
-  uses: devops-actions/variable-substitution@v1.2 
-  with:
-    files: 'src/**/appsettings*json'
-  env:
-    WebAppRender.BlazorMode: 'BlazorWebAssembly'
-    ServerAddress: ${{ vars.SERVER_ADDRESS }}
-
-- name: Publish
-  run: dotnet publish src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj 
-       -c Release --self-contained -r linux-x64 
-       -p:Version="${{ vars.APP_VERSION }}" 
-       -p:Environment=${{ inputs.ENV_NAME }}
-
-- name: Upload server artifact
-  uses: actions/upload-artifact@v5
-```
-
-**Key Points**:
-- Updates `appsettings.json` with environment-specific values
-- Publishes as **self-contained** for Linux
-- Passes environment name via `-p:Environment=` parameter
-- Uploads artifact for deployment phase
-
-#### Deploy Phase
-
-```yaml
-- name: Retrieve server bundle
-  uses: actions/download-artifact@v5
-
-- name: Deploy to Azure Web App
-  uses: azure/webapps-deploy@v3
-  with:
-    app-name: ${{ vars.APP_SERVICE_NAME }}
-    publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
-```
-
-**Two-Phase Deployment Benefits**:
-1. **Separation of Concerns**: Build and deploy are separate jobs
-2. **Security**: Deployment runner doesn't need SDKs installed
-3. **Flexibility**: Can use different runners (e.g., lightweight runner for deployment)
-4. **Reusability**: Build artifact can be deployed to multiple environments
-
-### Windows Application
-
-```yaml
-- name: Publish
-  run: |
-    cd src\Client\Boilerplate.Client.Windows\
-    dotnet publish -c Release -o .\publish-result -r win-x86 
-                   -p:Version="${{ vars.APP_VERSION }}" --self-contained 
-                   -p:Environment=${{ inputs.ENV_NAME }}
-    dotnet tool restore
-    dotnet vpk pack -u ${{ vars.APP_ID }} -v "${{ vars.APP_VERSION }}" 
-                    -p .\publish-result -e Boilerplate.Client.Windows.exe 
-                    -r win-x86 --framework webview2
-```
-
-**Key Features**:
-- Uses **Velopack** (`vpk`) for installation and auto-updates
-- Creates installer package with WebView2 runtime
-- Self-contained deployment
-
-### Android Application
-
-```yaml
-- name: Extract Android signing key
-  uses: timheuer/base64-to-file@v1.2
-  with:
-    fileDir: './src/Client/Boilerplate.Client.Maui/'
-    fileName: 'Boilerplate.keystore'
-    encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
-
-- name: Publish aab
-  run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj 
-       -c Release -p:ApplicationId=${{ vars.APP_ID }} 
-       -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true 
-       -p:AndroidSigningKeyStore="Boilerplate.keystore" 
-       -p:Version="${{ vars.APP_VERSION }}" 
-       -p:Environment=${{ inputs.ENV_NAME }} 
-       -f net10.0-android
-```
-
-**Key Features**:
-- Publishes as **AAB** (Android App Bundle) for Google Play
-- Uses code signing with keystore
-- Environment passed to build
-
-### iOS/macOS Application
-
-```yaml
-- name: Import Code-Signing Certificates
-  uses: apple-actions/import-codesign-certs@v5
-  with:
-    p12-file-base64: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
-    p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
-
-- name: Download Apple Provisioning Profiles
-  uses: Apple-Actions/download-provisioning-profiles@v4
-
-- name: Build ipa
-  run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj 
-       -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true 
-       -p:CodesignKey="iPhone Distribution" 
-       -p:Version="${{ vars.APP_VERSION }}" 
-       -p:Environment=${{ inputs.ENV_NAME }} 
-       -f net10.0-ios
-```
-
-**Key Features**:
-- Imports Apple code signing certificates
-- Downloads provisioning profiles
-- Creates IPA for App Store distribution
-
----
-
-## 5. Configuration Variables and Secrets
-
-### GitHub Actions Variables (per environment)
-
-Variables are configured in GitHub repository settings under **Environments**:
-
-- `APP_VERSION` - Application version (e.g., "1.0.0")
-- `APP_ID` - Application identifier (e.g., "com.company.app")
-- `APP_TITLE` - Application display name
-- `SERVER_ADDRESS` - Backend API URL
-- `APP_SERVICE_NAME` - Azure App Service name
-- `WINDOWS_UPDATE_FILES_URL` - URL for Windows update files
-- `IOS_CODE_SIGN_PROVISION` - iOS provisioning profile name
-
-### GitHub Actions Secrets
-
-Secrets are stored securely and used during build/deployment:
-
-- `AZURE_PUBLISH_PROFILE` - Azure Web App publish profile
-- `ANDROID_RELEASE_KEYSTORE_FILE_BASE64` - Android signing keystore (base64)
-- `ANDROID_RELEASE_KEYSTORE_PASSWORD` - Keystore password
-- `ANDROID_RELEASE_SIGNING_PASSWORD` - Key password
-- `APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64` - Apple certificate (base64)
-- `APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD` - Certificate password
-- `APPSTORE_API_KEY_ISSUER_ID` - App Store Connect API issuer
-- `APPSTORE_API_KEY_ID` - App Store Connect API key ID
-- `APPSTORE_API_KEY_PRIVATE_KEY` - App Store Connect API private key
-
----
-
-## 6. Azure DevOps CD Pipeline
-
-**Location**: [`.azure-devops/workflows/cd.yml`](.azure-devops/workflows/cd.yml)
-
-Similar structure to GitHub Actions but using Azure DevOps tasks:
-
-```yaml
-variables:
-  APP_SERVICE_NAME: 'app-service-bp-test'
-  AZURE_SUBSCRIPTION: 'bp-test-service-connection'
-  ServerAddress: 'https://use-your-api-server-url-here.com/'
-  WebAppRender.BlazorMode: 'BlazorWebAssembly'
-
-jobs:
-  - job: build_api_blazor
-  - job: deploy_api_blazor
-  - job: build_blazor_hybrid_windows
-  - job: build_blazor_hybrid_android
-```
-
----
-
-## 7. appsettings.json Transformation
-
-During deployment, the workflows use variable substitution to update `appsettings.json` files with environment-specific values:
-
-```yaml
-- name: Update core appsettings.json
-  uses: devops-actions/variable-substitution@v1.2 
-  with:
-    files: 'src/**/appsettings*json'
-  env:
-    ServerAddress: ${{ vars.SERVER_ADDRESS }}
-    WebAppRender.BlazorMode: 'BlazorWebAssembly'
-    WindowsUpdate.FilesUrl: ${{ vars.WINDOWS_UPDATE_FILES_URL }}
-```
-
-This replaces values in all `appsettings*.json` files based on JSON path.
-
----
-
-## 8. Localization Support
-
-The workflows include automatic translation using the **bit-resx** tool:
-
-```yaml
-- name: Use Bit.ResxTranslator
-  run: |
-    dotnet tool install --global Bit.ResxTranslator
-    bit-resx-translate
-```
-
-This ensures all resource files are properly translated before building.
-
----
-
-## 9. Important Notes & Best Practices
-
-### ⚠️ Backend CI/CD Not Yet Aspire-Friendly
-
-**Important**: The current CI/CD workflows are primarily configured for **client platforms** (Android, iOS, Windows, macOS). The backend deployment to Azure is included but may need additional configuration for .NET Aspire projects.
-
-- Backend CD uses Azure App Service deployment
-- Azure usage is **completely optional**
-- You can deploy to any hosting provider (AWS, GCP, on-premises, etc.)
-
-### ✅ Two-Phase Deployment Pattern
-
-The backend follows a best practice of **two-phase deployment**:
-
-1. **Build Phase** (Job 1):
-   - Runs on a runner with .NET SDK, Node.js, etc.
-   - Builds and publishes the application
-   - Uploads artifacts to GitHub/Azure DevOps
-
-2. **Deploy Phase** (Job 2):
-   - Runs on a separate (potentially lightweight) runner
-   - Downloads pre-built artifacts
-   - Deploys to target environment
-
-**Why This Is Better**:
-- **Security**: Deployment runner has minimal software installed and direct access to production
-- **Performance**: Deployment runner doesn't need SDKs (faster, lighter)
-- **Flexibility**: Can deploy the same artifact to multiple environments
-- **Reliability**: Build failures don't affect deployment infrastructure
-
-### 🔄 Environment-Aware Compilation
-
-The environment is baked into the compiled application:
-
-```csharp
-// This is determined at BUILD TIME, not runtime
 #if Development
-    // Development code
-#elif Production
-    // Production code
+    // This code only exists in Development builds
+    services.AddDeveloperTools();
 #endif
 ```
 
-This means:
-- ✅ You can have different code paths per environment
-- ✅ Dead code is eliminated (better performance)
-- ✅ Environment detection is instant (no runtime checks)
-- ⚠️ You must rebuild for different environments (can't change by config file alone)
+3. **Platform Detection**: Similar constants for platform-specific code:
+```csharp
+#if Android
+    // Android-specific code
+#elif iOS
+    // iOS-specific code
+#elif Windows
+    // Windows-specific code
+#endif
+```
 
 ---
 
-## 10. Example: Setting Up a New Environment
+## 🔄 CI/CD Workflow Overview
 
-To add a new environment (e.g., "Staging"):
+The project includes a complete CI/CD pipeline setup using GitHub Actions with four workflow files:
 
-### Step 1: Update AppEnvironment.cs
+### 1. Continuous Integration (CI)
 
-Already supports Staging:
-```csharp
-#elif Staging              // dotnet publish -c Release -p:Environment=Staging
-    Staging;
+**File**: [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
+
+**Triggers**:
+- Pull requests
+- Manual workflow dispatch
+
+**What it does**:
+```yaml
+✓ Checks out code
+✓ Sets up .NET SDK and Node.js
+✓ Restores workloads
+✓ Builds entire solution (Boilerplate.slnx)
+✓ Installs Playwright for UI testing
+✓ Runs all tests (unit + integration + UI tests)
+✓ Uploads test results if tests fail
 ```
 
-### Step 2: Create GitHub Workflow
+**Key Features**:
+- Runs on Ubuntu 24.04
+- Uses .NET SDK version from `global.json`
+- Uses Node.js 23
+- Automated test execution with artifact upload on failure
 
-Create `.github/workflows/cd-staging.yml`:
+### 2. Production Deployment
+
+**File**: [`.github/workflows/cd-production.yml`](.github/workflows/cd-production.yml)
+
+**Triggers**:
+- Push to `main` branch
+- Manual workflow dispatch
+
+**What it does**:
+```yaml
+✓ Triggers the reusable CD template
+✓ Sets ENV_NAME to "Production"
+✓ Deploys to production environment
+```
+
+### 3. Test Environment Deployment
+
+**File**: [`.github/workflows/cd-test.yml`](.github/workflows/cd-test.yml)
+
+**Triggers**:
+- Push to `test` branch
+- Manual workflow dispatch
+
+**What it does**:
+```yaml
+✓ Triggers the reusable CD template
+✓ Sets ENV_NAME to "Test"
+✓ Deploys to test environment
+```
+
+### 4. Reusable Deployment Template
+
+**File**: [`.github/workflows/cd-template.yml`](.github/workflows/cd-template.yml)
+
+This is the core deployment workflow that handles all platforms. It's a **reusable workflow** called by the production and test workflows.
+
+---
+
+## 🏗️ Build and Deployment Pipeline
+
+### Job 1: Build API + Blazor Web
+
+**Platform**: Ubuntu 24.04
+
+**Steps**:
+
+1. **Setup Environment**
+   ```yaml
+   - Checkout code
+   - Setup .NET SDK
+   - Setup Node.js 23
+   ```
+
+2. **Localization**
+   ```yaml
+   - Install Bit.ResxTranslator tool
+   - Translate resource files automatically
+   ```
+
+3. **Configuration Substitution**
+   ```yaml
+   - Update appsettings.json files with environment variables
+   - Configure server address, VAPID keys, Blazor mode
+   ```
+
+4. **Build Process**
+   ```yaml
+   - Install WASM tools
+   - Generate CSS/JS files (BeforeBuildTasks)
+   - Publish with: -c Release --self-contained -r linux-x64
+   - Environment: -p:Environment=${{ inputs.ENV_NAME }}
+   ```
+
+5. **Artifact Upload**
+   ```yaml
+   - Upload server bundle with hidden files
+   - Includes .well-known folder for WebAuthn/ACME
+   ```
+
+**Key Configuration**:
+```yaml
+- BlazorMode: Set to 'BlazorWebAssembly'
+- ServerAddress: Environment-specific URL
+- Version: From GitHub variables
+- Self-contained: Yes (includes .NET runtime)
+- Runtime: linux-x64
+```
+
+### Job 2: Deploy API + Blazor Web
+
+**Depends On**: Build API + Blazor Web
+
+**Steps**:
+
+1. **Download Artifact**
+   ```yaml
+   - Retrieve server bundle from previous job
+   ```
+
+2. **Azure Deployment**
+   ```yaml
+   - Deploy to Azure Web App
+   - Uses publish profile from secrets
+   - Deploys to production slot
+   ```
+
+3. **CDN Cache Purge**
+   ```yaml
+   - Purge Cloudflare cache
+   - Ensures users get latest version immediately
+   ```
+
+**Important Note**: This demonstrates Azure deployment, but it's **completely optional**. You can deploy to:
+- AWS
+- Google Cloud
+- Your own servers
+- Docker containers
+- Any hosting provider
+
+### Job 3: Build Windows Desktop App
+
+**Platform**: Windows 2025
+
+**Steps**:
+
+1. **Setup & Configuration**
+   ```yaml
+   - Setup .NET and Node.js
+   - Translate resources
+   - Update appsettings.json with WindowsUpdate.FilesUrl
+   ```
+
+2. **Build & Package**
+   ```yaml
+   - Generate CSS/JS files
+   - Publish: -r win-x86 --self-contained
+   - Create installer with Velopack (dotnet vpk pack)
+   - Include app icon and WebView2 framework
+   ```
+
+3. **Upload Artifact**
+   ```yaml
+   - Upload Windows installer to artifacts
+   ```
+
+**Velopack Features**:
+- Creates auto-updating Windows installer
+- Packages WebView2 runtime
+- Supports delta updates
+- Version management
+
+### Job 4: Build Android App
+
+**Platform**: Ubuntu 24.04
+
+**Steps**:
+
+1. **Setup Signing**
+   ```yaml
+   - Extract Android signing key from base64 secret
+   - Configure keystore for release signing
+   ```
+
+2. **Build AAB (Android App Bundle)**
+   ```yaml
+   - Install maui-android workload
+   - Install Android SDK platform tools
+   - Generate CSS/JS files
+   - Publish with signing configuration
+   ```
+
+**Signing Configuration**:
+```yaml
+- AndroidPackageFormat: aab
+- AndroidKeyStore: true
+- AndroidSigningKeyAlias: Boilerplate
+- Passwords from GitHub secrets
+```
+
+3. **Upload Artifact**
+   ```yaml
+   - Upload signed .aab file
+   - Ready for Google Play Store
+   ```
+
+### Job 5: Build iOS and macOS Apps
+
+**Platform**: macOS 15
+
+**Steps**:
+
+1. **Setup Apple Environment**
+   ```yaml
+   - Setup .NET SDK
+   - Setup Xcode 26.0
+   - Setup Node.js 23
+   ```
+
+2. **Code Signing**
+   ```yaml
+   - Import code-signing certificates (P12)
+   - Download provisioning profiles from App Store Connect
+   - Configure with Apple API credentials
+   ```
+
+3. **Build IPA**
+   ```yaml
+   - Install maui workload
+   - Generate CSS/JS files
+   - Publish for iOS (ios-arm64)
+   - Archive and sign with distribution certificate
+   ```
+
+4. **Upload Artifact**
+   ```yaml
+   - Upload signed .ipa file
+   - Ready for App Store submission
+   ```
+
+**Apple Requirements**:
+- Distribution certificate
+- Provisioning profile
+- App Store Connect API credentials
+- Bundle ID configuration
+
+---
+
+## 🎯 Two-Phase Deployment Architecture
+
+The workflow follows a **best practice two-phase deployment** pattern:
+
+### Phase 1: Build
+- Runs on feature-rich build agents
+- Has full SDK installations (.NET, Node.js, Android SDK, Xcode)
+- Performs compilation, bundling, packaging
+- Uploads artifacts to GitHub/Azure DevOps
+
+### Phase 2: Deploy
+- Runs on lightweight deployment agents
+- No SDKs required - only deployment tools
+- **More Secure**: Limited access, fewer attack vectors
+- Downloads pre-built artifacts and deploys
+
+**Why This Matters**:
+```
+Build Agent (Heavy)           Deploy Agent (Light & Secure)
+├─ .NET SDK                   ├─ No SDKs needed
+├─ Node.js                    ├─ Only deployment tools
+├─ Android SDK                ├─ Direct production access
+├─ Xcode                      └─ Minimal attack surface
+└─ Build tools
+```
+
+The deployment agent has **direct access to production**, so keeping it minimal and SDK-free reduces security risks.
+
+---
+
+## 🔐 Required Secrets and Variables
+
+### GitHub Secrets (per environment)
+
+**Backend Deployment**:
+- `AZURE_PUBLISH_PROFILE`: Azure Web App publish profile
+- `CLOUDFLARE_ZONE`: Cloudflare zone ID (optional)
+- `CLOUDFLARE_TOKEN`: Cloudflare API token (optional)
+
+**Android Signing**:
+- `ANDROID_RELEASE_KEYSTORE_FILE_BASE64`: Base64-encoded keystore
+- `ANDROID_RELEASE_KEYSTORE_PASSWORD`: Keystore password
+- `ANDROID_RELEASE_SIGNING_PASSWORD`: Key password
+
+**iOS Signing**:
+- `APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64`: P12 certificate
+- `APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD`: Certificate password
+- `APPSTORE_API_KEY_ISSUER_ID`: App Store Connect API issuer ID
+- `APPSTORE_API_KEY_ID`: App Store Connect API key ID
+- `APPSTORE_API_KEY_PRIVATE_KEY`: App Store Connect private key
+
+**App Configuration**:
+- `PUBLIC_VAPIDKEY`: Web push VAPID public key
+
+### GitHub Variables (per environment)
+
+- `APP_VERSION`: Application version (e.g., "1.0.0")
+- `APP_ID`: Bundle/package identifier (e.g., "com.company.app")
+- `APP_TITLE`: Application display name
+- `SERVER_ADDRESS`: API server URL
+- `WINDOWS_UPDATE_FILES_URL`: Windows auto-update endpoint
+- `APP_SERVICE_NAME`: Azure App Service name
+- `IOS_CODE_SIGN_PROVISION`: iOS provisioning profile name
+
+---
+
+## 📝 Environment-Specific Configuration
+
+### Build-Time Configuration Substitution
+
+During CI/CD, the workflow modifies appsettings.json files:
+
+```yaml
+- name: Update core appsettings.json
+  uses: devops-actions/variable-substitution@v1.2 
+  with:
+    files: 'src/**/appsettings*json'
+  env:
+    ServerAddress: ${{ vars.SERVER_ADDRESS }}
+    WebAppRender.BlazorMode: 'BlazorWebAssembly'
+    AdsPushVapid.PublicKey: ${{ secrets.PUBLIC_VAPIDKEY }}
+```
+
+This replaces values in the JSON files before building, allowing environment-specific configuration.
+
+---
+
+## 🚀 Platform Support Matrix
+
+| Platform | Build Runner | Artifact Type | Distribution |
+|----------|--------------|---------------|--------------|
+| **API + Blazor** | Ubuntu 24.04 | Self-contained Linux binary | Azure Web App, Docker, Any Linux host |
+| **Windows** | Windows 2025 | Velopack installer (.exe) | Direct download, auto-update |
+| **Android** | Ubuntu 24.04 | Android App Bundle (.aab) | Google Play Store |
+| **iOS** | macOS 15 | iOS App Package (.ipa) | Apple App Store |
+| **macOS** | macOS 15 (same as iOS) | macOS App Package | Apple App Store |
+
+---
+
+## ⚠️ Important Notes
+
+### Backend CI/CD Limitations
+
+**Current State**:
+- ✅ Client platforms (Android, iOS, Windows, macOS) have full CI/CD
+- ⚠️ Backend deployment is **not yet Aspire-friendly**
+- ⚠️ Azure deployment is **completely optional**
+
+**What This Means**:
+- The backend CI/CD workflows demonstrate deployment to Azure Web Apps
+- If you're using .NET Aspire for local development, you'll need to adapt the deployment
+- You can deploy to any hosting provider (AWS, GCP, your own servers, Docker, Kubernetes)
+- The current setup is a **starting point**, not a requirement
+
+**Best Practice Applied**:
+Even though Aspire integration is pending, the workflow demonstrates the **two-phase deployment** best practice:
+1. Build job: Compile and package (uses feature-rich runner)
+2. Deploy job: Download artifact and deploy (uses lightweight, secure runner)
+
+This separation means the agent with production access doesn't need SDKs installed, reducing security risks.
+
+### Customizing for Your Needs
+
+**You can**:
+- Use different hosting providers
+- Add staging environments
+- Integrate with your preferred CI/CD platform (Azure DevOps, GitLab CI, Jenkins)
+- Modify build configurations
+- Add additional build steps
+
+**The workflows are templates** - adapt them to your infrastructure and requirements.
+
+---
+
+## 🎓 Key Takeaways
+
+1. **Unified Environment System**: `AppEnvironment` provides consistent environment detection across all platforms - server, web, mobile, and desktop.
+
+2. **Build-Time Configuration**: Environment is set at build time using `-p:Environment=Production`, creating optimized, environment-specific builds.
+
+3. **Cross-Platform CI/CD**: Single workflow template handles server backend, Blazor WebAssembly, Android, iOS, and Windows builds.
+
+4. **Security Best Practices**: Two-phase deployment keeps production-access agents lightweight and secure.
+
+5. **Flexible Configuration**: Multi-layered appsettings.json system with environment-specific overrides.
+
+6. **Complete Automation**: From code commit to app store submission, the entire pipeline is automated.
+
+7. **Environment Awareness Everywhere**: You can write environment-specific code in C#, use environment variables in MSBuild, and access environment info in Razor components.
+
+---
+
+## 🔗 Real-World Usage
+
+### Example: Adding a New Environment
+
+To add a "Staging" environment:
+
+1. **Update AppEnvironment.cs** (already supported)
+2. **Create appsettings.Staging.json** files where needed
+3. **Add GitHub environment** called "Staging" with variables/secrets
+4. **Create workflow file**:
 ```yaml
 name: Boilerplate Staging CD
-
 on:
-  workflow_dispatch:
   push:
     branches: [ "staging" ]
-
 jobs:
   build_and_deploy_staging:
     uses: ./.github/workflows/cd-template.yml
@@ -519,100 +513,47 @@ jobs:
     secrets: inherit
 ```
 
-### Step 3: Configure Environment in GitHub
-
-1. Go to repository **Settings** → **Environments**
-2. Create new environment: "Staging"
-3. Add variables: `SERVER_ADDRESS`, `APP_VERSION`, etc.
-4. Add secrets if needed
-
-### Step 4: Build for Staging
-
-```powershell
+5. **Build for staging**:
+```bash
 dotnet publish -c Release -p:Environment=Staging
 ```
 
----
+### Example: Checking Environment in Code
 
-## 11. Hands-On Exploration
+```csharp
+// In a controller
+public IActionResult GetConfig()
+{
+    if (AppEnvironment.IsProduction())
+    {
+        return Ok(new { Mode = "Production", DetailedErrors = false });
+    }
+    else
+    {
+        return Ok(new { Mode = AppEnvironment.Current, DetailedErrors = true });
+    }
+}
+```
 
-To better understand the CI/CD setup:
+```xml
+<!-- In a Razor component -->
+@if (AppEnvironment.IsDevelopment())
+{
+    <BitMessageBar MessageBarType="BitMessageBarType.Warning">
+        Running in Development mode
+    </BitMessageBar>
+}
+```
 
-1. **Review the workflow files**:
-   - [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
-   - [`.github/workflows/cd-production.yml`](.github/workflows/cd-production.yml)
-   - [`.github/workflows/cd-template.yml`](.github/workflows/cd-template.yml)
-
-2. **Check GitHub Actions**:
-   - Go to your repository's **Actions** tab
-   - See workflow runs, logs, and artifacts
-
-3. **Examine environment configuration**:
-   - [`/src/Directory.Build.props`](/src/Directory.Build.props) - MSBuild properties
-   - [`/src/Shared/Services/AppEnvironment.cs`](/src/Shared/Services/AppEnvironment.cs) - Environment detection
-
-4. **Try building for different environments**:
-   ```powershell
-   # Development
-   dotnet build -c Debug
-   
-   # Production
-   dotnet publish -c Release
-   
-   # Test
-   dotnet publish -c Release -p:Environment=Test
-   ```
-
-5. **Check environment at runtime**:
-   - Run the app in different configurations
-   - Check the About page to see the current environment
-   - Look for environment-specific behavior (e.g., detailed errors in Development)
-
----
-
-## 12. Common CI/CD Scenarios
-
-### Scenario 1: Hotfix to Production
-
-1. Create hotfix branch from `main`
-2. Make changes and test locally
-3. Create PR to `main`
-4. CI runs automatically on PR
-5. Merge PR to `main`
-6. CD automatically deploys to Production
-
-### Scenario 2: Feature Testing
-
-1. Create feature branch
-2. Make changes
-3. Create PR to `test` branch
-4. CI validates build and tests
-5. Merge to `test` branch
-6. CD automatically deploys to Test environment
-7. After testing, create PR from `test` to `main`
-
-### Scenario 3: Manual Deployment
-
-1. Go to GitHub Actions
-2. Select the desired CD workflow
-3. Click "Run workflow"
-4. Select branch
-5. Click "Run workflow" button
-
----
-
-## Summary
-
-In this stage, you learned:
-
-✅ **Environment Management**: How `AppEnvironment` provides consistent environment detection across all platforms  
-✅ **CI Pipeline**: Automated build and test on every pull request  
-✅ **CD Pipelines**: Separate workflows for Test and Production environments  
-✅ **Multi-Platform Builds**: Build automation for Web, Windows, Android, and iOS  
-✅ **Two-Phase Deployment**: Secure and efficient build-then-deploy pattern  
-✅ **Configuration Management**: Using variables and secrets for environment-specific settings  
-✅ **Build-Time Environment**: How environment is compiled into the application  
-
-The CI/CD setup provides a solid foundation that you can customize based on your team's needs and infrastructure.
+```csharp
+// Platform-specific code
+#if Android
+    var dataPath = FileSystem.AppDataDirectory;
+#elif iOS
+    var dataPath = NSFileManager.DefaultManager.GetUrls(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomain.User)[0].Path;
+#elif Windows
+    var dataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+#endif
+```
 
 ---

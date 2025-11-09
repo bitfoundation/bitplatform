@@ -1,100 +1,80 @@
 # Stage 5: Localization and Multi-language Support
 
-Welcome to Stage 5! In this stage, you'll learn about the comprehensive localization and multi-language support system built into the project. This system enables your application to provide a seamless experience for users across different languages and cultures.
-
 ## Overview
 
-The project uses **.NET's built-in localization system** based on `.resx` (resource) files, combined with powerful validation and UI integration. This approach provides:
-
-- ✅ **Type-safe localization** with compile-time checking
-- ✅ **Automatic validation message translation** for DTOs
-- ✅ **Centralized resource management** for all languages
-- ✅ **AI-powered translation** with the `bit-resx` tool
-- ✅ **Support for multiple languages** with easy extensibility
+The Boilerplate project includes a comprehensive localization and multi-language support system that enables your application to serve users in multiple languages. The system is built on .NET's standard `.resx` resource file infrastructure and integrates seamlessly with Blazor components, validation attributes, and server-side code.
 
 ---
 
-## 1. Resx Files Structure
+## 1. Resource Files (`.resx`) Structure
+
+Resource files are the foundation of the localization system. They store translatable strings as key-value pairs.
 
 ### Location
 
-All resource files are located in:
-[`/src/Shared/Resources/`](/src/Shared/Resources/)
+All resource files are located in the `src/Shared/Resources/` folder:
 
-### File Organization
+- **`AppStrings.resx`**: The default language resource file (English by default)
+- **`AppStrings.fa.resx`**: Persian/Farsi translations
+- **`AppStrings.sv.resx`**: Swedish translations
+- **`IdentityStrings.resx`**: Default identity-related strings
+- **`IdentityStrings.fa.resx`**: Persian identity strings
+- **`IdentityStrings.sv.resx`**: Swedish identity strings
 
-The project includes multiple resource files for different purposes:
+### File Structure
 
-**Application Strings:**
-- [`AppStrings.resx`](/src/Shared/Resources/AppStrings.resx) - Default language (English)
-- [`AppStrings.fa.resx`](/src/Shared/Resources/AppStrings.fa.resx) - Persian/Farsi translation
-- [`AppStrings.sv.resx`](/src/Shared/Resources/AppStrings.sv.resx) - Swedish translation
-
-**Identity-Specific Strings:**
-- [`IdentityStrings.resx`](/src/Shared/Resources/IdentityStrings.resx) - Default language
-- [`IdentityStrings.fa.resx`](/src/Shared/Resources/IdentityStrings.fa.resx) - Persian translation
-- [`IdentityStrings.sv.resx`](/src/Shared/Resources/IdentityStrings.sv.resx) - Swedish translation
-
-### Resx File Structure Example
-
-Here's a snippet from [`AppStrings.resx`](/src/Shared/Resources/AppStrings.resx):
+Each `.resx` file is an XML document containing name-value pairs:
 
 ```xml
-<!-- .NET Validation messages -->
-<data name="RequiredAttribute_ValidationError" xml:space="preserve">
-    <value>The {0} field is required.</value>
-</data>
-
-<data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
-    <value>MaxLengthAttribute must have a Length value that is greater than zero.</value>
-</data>
-
-<data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
-    <value>The {0} field is not a valid e-mail address.</value>
-</data>
-
-<!-- Application-specific strings -->
 <data name="Name" xml:space="preserve">
-    <value>Name</value>
+  <value>Name</value>
 </data>
-
-<data name="Color" xml:space="preserve">
-    <value>Color</value>
+<data name="Email" xml:space="preserve">
+  <value>Email</value>
 </data>
-```
-
-And the corresponding Persian translation in [`AppStrings.fa.resx`](/src/Shared/Resources/AppStrings.fa.resx):
-
-```xml
 <data name="RequiredAttribute_ValidationError" xml:space="preserve">
-    <value>مقدار {0} الزامی است.</value>
-</data>
-
-<data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
-    <value>مقدار {0} یک آدرس ایمیل معتبر نیست.</value>
+  <value>The {0} field is required.</value>
 </data>
 ```
 
-### Key Characteristics
+### Naming Convention
 
-1. **Default Language File**: `AppStrings.resx` contains the default English strings
-2. **Translated Files**: Use culture codes (e.g., `.fa.resx`, `.sv.resx`) for specific languages
-3. **Placeholder Support**: `{0}`, `{1}`, etc., for dynamic values in validation messages
-4. **Shared Across Platforms**: Used by both server and all client platforms (Web, MAUI, Windows)
+- **Default language**: `[FileName].resx` (e.g., `AppStrings.resx`)
+- **Translated files**: `[FileName].[culture].resx` (e.g., `AppStrings.fa.resx`, `AppStrings.sv.resx`)
+
+The culture code follows the ISO 639-1 standard (e.g., `fa` for Persian, `sv` for Swedish, `fr` for French).
+
+### Example: Comparing Default and Translated Files
+
+**AppStrings.resx (English - Default):**
+```xml
+<data name="Email" xml:space="preserve">
+  <value>Email</value>
+</data>
+<data name="Password" xml:space="preserve">
+  <value>Password</value>
+</data>
+```
+
+**AppStrings.fa.resx (Persian):**
+```xml
+<data name="Email" xml:space="preserve">
+  <value>ایمیل</value>
+</data>
+<data name="Password" xml:space="preserve">
+  <value>رمز عبور</value>
+</data>
+```
 
 ---
 
-## 2. DtoResourceType Attribute
+## 2. DTOs and the `[DtoResourceType]` Attribute
 
-### What is DtoResourceType?
+DTOs (Data Transfer Objects) use the `[DtoResourceType]` attribute to connect validation messages and display names to resource files. This ensures that validation errors and form labels are automatically localized.
 
-The `[DtoResourceType]` attribute connects DTOs to resource files, enabling automatic translation of:
-- Validation error messages
-- Display names for properties
+### Example: CategoryDto
 
-### Real Example: CategoryDto
-
-Here's an actual DTO from the project - [`CategoryDto.cs`](/src/Shared/Dtos/Categories/CategoryDto.cs):
+Here's the `CategoryDto` from `src/Shared/Dtos/Categories/CategoryDto.cs`:
 
 ```csharp
 namespace Boilerplate.Shared.Dtos.Categories;
@@ -118,37 +98,36 @@ public partial class CategoryDto
 }
 ```
 
-### How It Works
+### Key Points:
 
-1. **`[DtoResourceType(typeof(AppStrings))]`**: Links the DTO to the `AppStrings` resource file
-2. **`ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError)`**: References the resource key by name (compile-time safe!)
-3. **`Display(Name = nameof(AppStrings.Name))`**: Uses the localized display name
+1. **`[DtoResourceType(typeof(AppStrings))]`**: Tells the localization system which resource file to use
+2. **`ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError)`**: References the error message key from the resource file
+3. **`Display(Name = nameof(AppStrings.Name))`**: References the display name key for UI labels
 
-### Benefits
+### Why Use `nameof()`?
 
-✅ **Type Safety**: Using `nameof()` ensures compile-time checking - typos are caught immediately  
-✅ **Automatic Translation**: Error messages automatically use the user's selected language  
-✅ **Centralized Management**: All strings are managed in one place  
-✅ **Consistency**: Same validation messages across the entire application
+Using `nameof()` provides compile-time safety. If you rename or remove a resource key, you'll get a compilation error rather than a runtime error.
 
 ---
 
 ## 3. AppDataAnnotationsValidator
 
-### What is AppDataAnnotationsValidator?
+To make `DtoResourceType` work in Blazor EditForms, you **must** use the custom `AppDataAnnotationsValidator` component instead of the standard `DataAnnotationsValidator`.
 
-`AppDataAnnotationsValidator` is a **custom validator component** that must be used in Blazor `EditForm` components to make the `DtoResourceType` system work properly.
+### Why is it Needed?
 
-### Why It's Needed
+The `AppDataAnnotationsValidator` integrates with the `DtoResourceType` attribute to:
+- Resolve localized error messages from resource files
+- Support dynamic language switching
+- Provide compile-time safety with `nameof()`
 
-The standard `DataAnnotationsValidator` doesn't support the `[DtoResourceType]` attribute. `AppDataAnnotationsValidator` extends it to:
-- Read the `[DtoResourceType]` attribute from DTOs
-- Load the correct resource file
-- Apply localized validation messages
+### Location
 
-### Real Example: AddOrEditCategoryModal
+`src/Client/Boilerplate.Client.Core/Components/AppDataAnnotationsValidator.cs`
 
-Here's how it's used in [`AddOrEditCategoryModal.razor`](/src/Client/Boilerplate.Client.Core/Components/Pages/Categories/AddOrEditCategoryModal.razor):
+### Usage Example
+
+Here's an excerpt from `AddOrEditCategoryModal.razor`:
 
 ```xml
 <EditForm @ref="editForm" Model="category" OnValidSubmit="WrapHandled(Save)" novalidate>
@@ -159,106 +138,35 @@ Here's how it's used in [`AddOrEditCategoryModal.razor`](/src/Client/Boilerplate
                       Label="@Localizer[nameof(AppStrings.Name)]"
                       Placeholder="@Localizer[nameof(AppStrings.EnterCategoryName)]" />
         <ValidationMessage For="() => category.Name" />
-        
-        <!-- More form fields... -->
     </BitStack>
 </EditForm>
 ```
 
-### Usage Pattern
+### Key Points:
 
-```xml
-<EditForm Model="yourDto" OnValidSubmit="HandleSubmit">
-    <!-- Use AppDataAnnotationsValidator instead of DataAnnotationsValidator -->
-    <AppDataAnnotationsValidator />
-    
-    <!-- Your form fields -->
-    <ValidationMessage For="() => yourDto.PropertyName" />
-</EditForm>
-```
-
-### Where You'll Find It
-
-Search the project for `AppDataAnnotationsValidator` usage:
-- [`ProfileSection.razor`](/src/Client/Boilerplate.Client.Core/Components/Pages/Settings/ProfileSection.razor)
-- [`SignInPanel.razor`](/src/Client/Boilerplate.Client.Core/Components/Pages/Identity/SignIn/SignInPanel.razor)
-- [`AddOrEditProductPage.razor`](/src/Client/Boilerplate.Client.Core/Components/Pages/Products/AddOrEditProductPage.razor)
-- And many more!
+- Replace `<DataAnnotationsValidator />` with `<AppDataAnnotationsValidator />`
+- Validation messages will automatically be localized based on the user's selected language
+- Works seamlessly with all standard validation attributes (`Required`, `MaxLength`, `EmailAddress`, etc.)
 
 ---
 
-## 4. IStringLocalizer Usage
+## 4. Using `IStringLocalizer<T>` in Code
 
-### What is IStringLocalizer?
+The `IStringLocalizer<T>` interface is used to access localized strings programmatically in C# code.
 
-`IStringLocalizer<T>` is .NET's standard interface for accessing localized strings in code. It allows you to:
-- Get translated strings at runtime
-- Support dynamic content localization
-- Use the same resource files across server and client
+### In Components (Razor Pages)
 
-### Automatic Injection in Base Classes
+All components that inherit from `AppComponentBase` automatically have access to the `Localizer` property:
 
-The project's base classes automatically inject `IStringLocalizer<AppStrings>`, so you don't need to inject it manually!
-
-**In Components** (inheriting from `AppComponentBase`):
+**Location**: `src/Client/Boilerplate.Client.Core/Components/AppComponentBase.cs`
 
 ```csharp
-// From AppComponentBase.cs
 [AutoInject] protected IStringLocalizer<AppStrings> Localizer = default!;
 ```
 
-**In API Controllers** (inheriting from `AppControllerBase`):
+**Usage in Razor files**:
 
-```csharp
-// From AppControllerBase.cs
-[AutoInject] protected IStringLocalizer<AppStrings> Localizer = default!;
-```
-
-This means in your components and controllers, you can directly use `Localizer` without declaring it!
-
----
-
-### Usage in Razor Components
-
-Here's a real example from [`MainLayout.razor.items.cs`](/src/Client/Boilerplate.Client.Core/Components/Layout/MainLayout.razor.items.cs):
-
-```csharp
-public partial class MainLayout
-{
-    private List<BitNavItem> navPanelItems = [];
-
-    [AutoInject] protected IStringLocalizer<AppStrings> localizer = default!;
-
-    private async Task SetNavPanelItems(ClaimsPrincipal authUser)
-    {
-        navPanelItems =
-        [
-            new()
-            {
-                Text = localizer[nameof(AppStrings.Home)],
-                IconName = BitIconName.Home,
-                Url = PageUrls.Home,
-            },
-            new()
-            {
-                Text = localizer[nameof(AppStrings.AdminPanel)],
-                IconName = BitIconName.Admin,
-                ChildItems = []
-            },
-            new()
-            {
-                Text = localizer[nameof(AppStrings.Categories)],
-                IconName = BitIconName.BuildQueue,
-                Url = PageUrls.Categories,
-            }
-        ];
-    }
-}
-```
-
-### Usage in Razor Markup
-
-From [`AddOrEditCategoryModal.razor`](/src/Client/Boilerplate.Client.Core/Components/Pages/Categories/AddOrEditCategoryModal.razor):
+From `AddOrEditCategoryModal.razor`:
 
 ```xml
 <BitText Typography="BitTypography.H5">
@@ -271,68 +179,78 @@ From [`AddOrEditCategoryModal.razor`](/src/Client/Boilerplate.Client.Core/Compon
         @Localizer[nameof(AppStrings.EditCategory)]
     }
 </BitText>
-
-<BitTextField @bind-Value="category.Name"
-              Label="@Localizer[nameof(AppStrings.Name)]"
-              Placeholder="@Localizer[nameof(AppStrings.EnterCategoryName)]" />
-
-<BitButton OnClick="Save">
-    @Localizer[nameof(AppStrings.Save)]
-</BitButton>
 ```
 
-### Usage Pattern
+### In Controllers (Server-Side)
+
+All API controllers that inherit from `AppControllerBase` have access to the `Localizer` property:
+
+**Location**: `src/Server/Boilerplate.Server.Api/Controllers/AppControllerBase.cs`
 
 ```csharp
-// Access a localized string
-string localizedText = Localizer[nameof(AppStrings.YourResourceKey)];
+public partial class AppControllerBase : ControllerBase
+{
+    [AutoInject] protected AppDbContext DbContext = default!;
 
-// In Razor markup
-@Localizer[nameof(AppStrings.YourResourceKey)]
+    [AutoInject] protected IStringLocalizer<AppStrings> Localizer = default!;
+}
 ```
 
-### Common Use Cases
+**Usage in Controllers**:
 
-1. **UI Labels and Text**:
-   ```csharp
-   Text = localizer[nameof(AppStrings.Home)]
-   ```
+```csharp
+throw new ResourceValidationException(Localizer[nameof(AppStrings.DuplicateCategoryName), category.Name!]);
+```
 
-2. **Button Labels**:
-   ```xml
-   <BitButton>@Localizer[nameof(AppStrings.Save)]</BitButton>
-   ```
+### In Services
 
-3. **Page Titles**:
-   ```xml
-   <BitText>@Localizer[nameof(AppStrings.Dashboard)]</BitText>
-   ```
+For services that don't inherit from a base class, inject `IStringLocalizer<T>` directly:
 
-4. **Error Messages in Code**:
-   ```csharp
-   throw new BadRequestException(Localizer[nameof(AppStrings.InvalidRequest)]);
-   ```
+**Example from `EmailServiceJobsRunner.cs`**:
+
+```csharp
+[AutoInject] IStringLocalizer<AppStrings> localizer = default!;
+
+[AutoInject] private IStringLocalizer<EmailStrings> emailLocalizer = default!;
+```
+
+### Localization with Parameters
+
+Resource strings can include placeholders like `{0}`, `{1}`, etc.:
+
+**Resource file**:
+```xml
+<data name="AreYouSureWannaDelete" xml:space="preserve">
+  <value>Are you sure you want to delete {0}?</value>
+</data>
+```
+
+**Usage**:
+```csharp
+var message = Localizer[nameof(AppStrings.AreYouSureWannaDelete), categoryName];
+// Result: "Are you sure you want to delete Electronics?"
+```
 
 ---
 
-## 5. bit-resx Tool: AI-Powered Translation
+## 5. The `bit-resx` Tool - Automated Translation
 
-### What is bit-resx?
+The `bit-resx` tool (also known as `Bit.ResxTranslator`) is a .NET global tool that automates the translation of `.resx` files using Large Language Models (LLMs) like OpenAI or Azure OpenAI.
 
-`Bit.ResxTranslator` is a .NET global tool that **automatically translates** `.resx` resource files into multiple languages using Large Language Models (LLMs) like OpenAI or Azure OpenAI.
+### What Does It Do?
 
-### Key Features
-
-✅ **Identifies Missing Translations**: Compares default language files with target language files  
-✅ **AI-Powered Translation**: Uses GPT models to generate accurate, context-aware translations  
-✅ **Preserves Placeholders**: Keeps `{0}`, `{1}` placeholders in correct positions  
-✅ **Creates New Language Files**: Automatically creates missing `.resx` files for new languages  
-✅ **CI/CD Integration**: Can be run as part of your build pipeline
+- Compares the default language `.resx` file with translated versions
+- Identifies missing translations in target language files
+- Uses AI (OpenAI/Azure OpenAI) to automatically translate missing entries
+- Preserves existing translations and placeholder formats (like `{0}`)
+- Updates `.resx` files with new translations while maintaining XML structure
 
 ### Installation
 
+Install as a global .NET tool:
+
 ```bash
-dotnet tool install --global Bit.ResxTranslator
+dotnet tool install --global Bit.ResxTranslator --prerelease
 ```
 
 ### Configuration
@@ -342,250 +260,213 @@ Create a `Bit.ResxTranslator.json` file in your project root:
 ```json
 {
   "DefaultLanguage": "en",
-  "SupportedLanguages": [ "nl", "fa", "sv", "hi", "zh", "es", "fr", "ar", "de" ],
-  "ResxPaths": [ "src/**/*.resx" ],
+  "SupportedLanguages": ["fa", "sv", "fr", "de"],
+  "ResxPaths": [
+    "src/Shared/Resources/*.resx",
+    "src/Server/Boilerplate.Server.Api/Resources/*.resx"
+  ],
   "OpenAI": {
-    "Model": "gpt-4.1-mini",
-    "Endpoint": "https://models.inference.ai.azure.com",
-    "ApiKey": null
-  },
-  "AzureOpenAI": {
-    "Model": "gpt-4.1-mini",
-    "Endpoint": "https://yourResourceName.openai.azure.com/openai/deployments/yourDeployment",
-    "ApiKey": null
+    "Model": "gpt-4",
+    "ApiKey": "your-api-key-here"
   }
 }
 ```
 
-**Configuration Options:**
-- `DefaultLanguage`: Your primary language (e.g., "en", "en-US")
-- `SupportedLanguages`: Array of .NET culture codes for target languages
-- `ResxPaths`: Glob patterns to find `.resx` files
-- `OpenAI` / `AzureOpenAI`: LLM provider configuration
-
-### Usage
-
-Run the translation tool:
-
-```bash
-bit-resx-translate
-```
-
-### How It Works
-
-1. **Scan**: Finds all `.resx` files matching your `ResxPaths` pattern
-2. **Compare**: Identifies keys present in default language but missing in target languages
-3. **Translate**: Uses AI to translate missing strings while preserving placeholders
-4. **Update**: Writes translations back to target language `.resx` files
-5. **Create**: Creates new language files if they don't exist
-
-### CI/CD Integration
-
-The tool is integrated into the project's GitHub Actions workflows:
-
-```yaml
-- name: Use Bit.ResxTranslator
-  run: |
-    dotnet tool install --global Bit.ResxTranslator
-    bit-resx-translate
-```
-
-This ensures automatic translation during build and deployment, so published applications always have up-to-date multi-language support!
-
-### Real-World Example
-
-When you add a new string to `AppStrings.resx`:
-
-```xml
-<data name="WelcomeMessage" xml:space="preserve">
-    <value>Welcome to our application!</value>
-</data>
-```
-
-Running `bit-resx-translate` automatically adds translations to other language files:
-
-**`AppStrings.fa.resx` (Persian):**
-```xml
-<data name="WelcomeMessage" xml:space="preserve">
-    <value>به برنامه ما خوش آمدید!</value>
-</data>
-```
-
-**`AppStrings.sv.resx` (Swedish):**
-```xml
-<data name="WelcomeMessage" xml:space="preserve">
-    <value>Välkommen till vår applikation!</value>
-</data>
-```
-
----
-
-## 6. Adding a New Language
-
-Want to add support for a new language? Here's how:
-
-### Step 1: Update Configuration
-
-Add the language code to `Bit.ResxTranslator.json`:
+**Security Note**: Use environment variables for API keys instead of hardcoding them:
 
 ```json
 {
-  "SupportedLanguages": [ "nl", "fa", "sv", "hi", "zh", "es", "fr", "ar", "de", "ja" ]
-  //                                                                           ^^^^ Add Japanese
+  "OpenAI": {
+    "ApiKey": "${OPENAI_API_KEY}"
+  }
 }
 ```
 
-### Step 2: Run Translation Tool
+### Usage
+
+Run the translation command:
 
 ```bash
 bit-resx-translate
 ```
 
-This creates new `.resx` files:
-- `AppStrings.ja.resx`
-- `IdentityStrings.ja.resx`
+The tool will:
+1. Find all `.resx` files based on the configured paths
+2. Identify missing translations for each supported language
+3. Translate missing entries using the configured LLM
+4. Update the `.resx` files with new translations
 
-### Step 3: Verify and Refine
+### How It Works
 
-Review the generated translations and make manual corrections if needed. The AI does a great job, but human review ensures quality!
+1. **File Discovery**: Finds all primary `.resx` files matching the configured glob patterns
+2. **Comparison**: For each supported language, compares the default `.resx` with the translated version
+3. **Translation**: Sends missing keys and values to the LLM with instructions to:
+   - Translate the text
+   - Preserve placeholders (e.g., `{0}`, `{1}`)
+   - Maintain the same tone and context
+4. **Update**: Inserts translated values back into the target `.resx` files
+
+### CI/CD Integration
+
+The `bit-resx` tool can be integrated into CI/CD pipelines to ensure translations are always up-to-date. The bitplatform repository uses it in GitHub Actions workflows to automate translations during builds.
+
+---
+
+## 6. Language Selection and Switching
+
+### Client-Side Language Selection
+
+Users can select their preferred language from the Settings page. The selected language is stored locally and applied across all components.
+
+### How It Works
+
+1. **Culture Selection**: User selects a language from a dropdown
+2. **Storage**: The selected culture is saved to local storage
+3. **Application**: The application reloads with the new culture
+4. **Persistence**: The selected language persists across sessions
+
+### Supported Languages
+
+By default, the Boilerplate supports:
+- **English** (`en`) - Default
+- **Persian/Farsi** (`fa`)
+- **Swedish** (`sv`)
+
+You can add more languages by:
+1. Creating new `.resx` files with the appropriate culture code
+2. Adding the culture to the supported languages configuration
+3. Translating the resource strings (manually or using `bit-resx`)
 
 ---
 
 ## 7. Best Practices
 
-### ✅ DO
+### 1. Always Use Resource Keys
 
-1. **Always use `nameof()`** for resource keys to ensure type safety
-   ```csharp
-   [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
-   ```
+Never hardcode user-facing text:
 
-2. **Use `AppDataAnnotationsValidator`** in all `EditForm` components
-   ```xml
-   <EditForm Model="dto">
-       <AppDataAnnotationsValidator />
-   </EditForm>
-   ```
-
-3. **Leverage base class injection** - `Localizer` is already available in components and controllers
-
-4. **Run `bit-resx-translate`** after adding new strings to keep translations up-to-date
-
-5. **Review AI translations** before committing to ensure accuracy
-
-### ❌ DON'T
-
-1. **Don't hardcode strings** in UI or validation messages
-   ```csharp
-   // ❌ Bad
-   [Required(ErrorMessage = "This field is required")]
-   
-   // ✅ Good
-   [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
-   ```
-
-2. **Don't use magic strings** for resource keys
-   ```csharp
-   // ❌ Bad
-   Localizer["Name"]
-   
-   // ✅ Good
-   Localizer[nameof(AppStrings.Name)]
-   ```
-
-3. **Don't forget to use `AppDataAnnotationsValidator`**
-   ```xml
-   <!-- ❌ Bad - won't work with DtoResourceType -->
-   <DataAnnotationsValidator />
-   
-   <!-- ✅ Good -->
-   <AppDataAnnotationsValidator />
-   ```
-
----
-
-## 8. Localization Flow Summary
-
-Here's how it all fits together:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│ 1. Add string to AppStrings.resx (English)                 │
-│    <data name="Name"><value>Name</value></data>             │
-└─────────────────────────────────────────────────────────────┘
-                          ↓
-┌─────────────────────────────────────────────────────────────┐
-│ 2. Run bit-resx-translate                                   │
-│    → AI generates translations for all languages            │
-│    → Creates/updates AppStrings.fa.resx, AppStrings.sv.resx│
-└─────────────────────────────────────────────────────────────┘
-                          ↓
-┌─────────────────────────────────────────────────────────────┐
-│ 3. Use in DTO with DtoResourceType                         │
-│    [Display(Name = nameof(AppStrings.Name))]                │
-└─────────────────────────────────────────────────────────────┘
-                          ↓
-┌─────────────────────────────────────────────────────────────┐
-│ 4. Use in Razor with Localizer                             │
-│    @Localizer[nameof(AppStrings.Name)]                      │
-└─────────────────────────────────────────────────────────────┘
-                          ↓
-┌─────────────────────────────────────────────────────────────┐
-│ 5. User sees content in their language!                     │
-│    English: "Name"  |  Persian: "نام"  |  Swedish: "Namn"  │
-└─────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 9. Advanced: Multiple Resource Files
-
-The project uses separate resource files for different purposes:
-
-### AppStrings
-General application strings used across the app
-- Location: [`/src/Shared/Resources/AppStrings.resx`](/src/Shared/Resources/AppStrings.resx)
-- Usage: `IStringLocalizer<AppStrings>`
-
-### IdentityStrings
-Identity-specific strings (authentication, authorization)
-- Location: [`/src/Shared/Resources/IdentityStrings.resx`](/src/Shared/Resources/IdentityStrings.resx)
-- Usage: `IStringLocalizer<IdentityStrings>`
-
-### Example: Using IdentityStrings
-
+❌ **Bad**:
 ```csharp
-[AutoInject] IStringLocalizer<IdentityStrings> identityLocalizer = default!;
-
-var message = identityLocalizer[nameof(IdentityStrings.PasswordTooShort)];
+<h1>Welcome to the application</h1>
 ```
+
+✅ **Good**:
+```csharp
+<h1>@Localizer[nameof(AppStrings.WelcomeMessage)]</h1>
+```
+
+### 2. Use `nameof()` for Compile-Time Safety
+
+Always use `nameof()` when referencing resource keys:
+
+❌ **Bad**:
+```csharp
+Localizer["Name"] // Runtime error if key doesn't exist
+```
+
+✅ **Good**:
+```csharp
+Localizer[nameof(AppStrings.Name)] // Compile-time error if key doesn't exist
+```
+
+### 3. Use AppDataAnnotationsValidator in Forms
+
+Always use `AppDataAnnotationsValidator` instead of `DataAnnotationsValidator` in Blazor EditForms:
+
+❌ **Bad**:
+```xml
+<EditForm Model="model">
+    <DataAnnotationsValidator />
+    ...
+</EditForm>
+```
+
+✅ **Good**:
+```xml
+<EditForm Model="model">
+    <AppDataAnnotationsValidator />
+    ...
+</EditForm>
+```
+
+### 4. Organize Resource Files by Domain
+
+- **AppStrings.resx**: General application strings
+- **IdentityStrings.resx**: Authentication and authorization strings
+- **EmailStrings.resx**: Email template strings
+
+This separation makes it easier to manage and maintain translations.
+
+### 5. Include Context in Resource Key Names
+
+Use descriptive key names that include context:
+
+✅ **Good**:
+- `SignInPageTitle`
+- `ProfileUpdatedSuccessfullyMessage`
+- `DeleteAccountPrompt`
+
+❌ **Bad**:
+- `Title`
+- `Success`
+- `Prompt`
+
+### 6. Test with Different Languages
+
+Always test your application with different languages to ensure:
+- Text doesn't overflow UI components
+- RTL (Right-to-Left) languages display correctly
+- Placeholders are properly replaced
+- Validation messages are clear
 
 ---
 
-## 10. Platform Support
+## 8. Adding a New Language
 
-The localization system works seamlessly across **all platforms**:
+To add support for a new language (e.g., French):
 
-✅ **Blazor Server** (Server.Web)  
-✅ **Blazor WebAssembly** (Client.Web)  
-✅ **.NET MAUI** (Client.Maui) - Android, iOS, macOS  
-✅ **Windows Forms** (Client.Windows)  
-✅ **API Controllers** (Server.Api)
+### Step 1: Create Resource Files
 
-The same resource files and localization code work everywhere!
+Create new `.resx` files for each resource type:
+- `AppStrings.fr.resx`
+- `IdentityStrings.fr.resx`
+- `EmailStrings.fr.resx`
+
+### Step 2: Add Translations
+
+Either:
+- Manually translate all keys from the default `.resx` file
+- Or use the `bit-resx` tool to automate translation
+
+### Step 3: Update Configuration
+
+Add the new culture to your `Bit.ResxTranslator.json`:
+
+```json
+{
+  "SupportedLanguages": ["fa", "sv", "fr"]
+}
+```
+
+### Step 4: Update UI
+
+Add the new language option to the language selection dropdown in your Settings page.
+
+### Step 5: Test
+
+Test the application with the new language to ensure all strings are properly translated and displayed.
 
 ---
 
 ## Summary
 
-You've learned about the project's comprehensive localization system:
+The Boilerplate's localization system provides:
 
-✅ **Resx Files**: Centralized resource management with default and translated files  
-✅ **DtoResourceType**: Automatic validation message translation for DTOs  
-✅ **AppDataAnnotationsValidator**: Required component for localized validation  
-✅ **IStringLocalizer**: Runtime string localization in code and markup  
-✅ **bit-resx Tool**: AI-powered automatic translation with CI/CD integration  
+✅ **Centralized Translation Management**: All strings in `.resx` files  
+✅ **Type-Safe Access**: Using `nameof()` for compile-time safety  
+✅ **Automatic Validation Localization**: Through `DtoResourceType` and `AppDataAnnotationsValidator`  
+✅ **AI-Powered Translation**: Using the `bit-resx` tool  
+✅ **Seamless Integration**: Works across Blazor components, controllers, and services  
+✅ **Runtime Language Switching**: Users can change language without recompiling  
 
-This system enables you to build truly international applications with minimal effort. Add new languages in minutes, and leverage AI to handle the translation work!
-
----
+This comprehensive localization system ensures your application can serve a global audience with minimal effort.

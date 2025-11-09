@@ -1,913 +1,792 @@
 # Stage 6: Exception Handling and Error Management
 
-Welcome to Stage 6 of the Boilerplate project getting started guide. In this stage, you'll learn about the comprehensive exception handling system built into the project, which ensures robust error management across all layers of your application.
+Welcome to Stage 6! In this stage, you will learn about the comprehensive exception handling and error management system built into the Boilerplate project.
 
 ---
 
-## 📋 Table of Contents
+## Overview
 
-1. [Known vs Unknown Exceptions](#1-known-vs-unknown-exceptions)
-2. [Safe Exception Throwing](#2-safe-exception-throwing)
-3. [Exception Data with WithData()](#3-exception-data-with-withdata)
-4. [Sending Additional Data to Client with WithExtensionData()](#4-sending-additional-data-to-client-with-withextensiondata)
-5. [Automatic Exception Handling in Blazor](#5-automatic-exception-handling-in-blazor)
-6. [Error Display UI](#6-error-display-ui)
-7. [Exception Handlers in the Project](#7-exception-handlers-in-the-project)
-8. [Practical Examples from the Codebase](#8-practical-examples-from-the-codebase)
+The project implements a robust exception handling architecture that:
+- **Does NOT crash the application** when exceptions occur
+- **Automatically handles exceptions** in Blazor components and pages
+- **Displays user-friendly error messages** to end users
+- **Logs detailed diagnostic information** for developers
+- **Differentiates between known and unknown exceptions**
+- **Provides multi-platform exception handlers** for Server, Web, MAUI, and Windows
 
 ---
 
-## 1. Known vs Unknown Exceptions
+## Known vs Unknown Exceptions
 
 The project distinguishes between two types of exceptions:
 
 ### Known Exceptions
 
-**Location**: [`src/Shared/Exceptions/`](../src/Shared/Exceptions/)
+**Known Exceptions** are exceptions that inherit from the `KnownException` base class, located in [`src/Shared/Exceptions/KnownException.cs`](/src/Shared/Exceptions/KnownException.cs).
 
-Known exceptions inherit from the [`KnownException`](../src/Shared/Exceptions/KnownException.cs) base class. These are business logic exceptions with **user-friendly messages** that are **always displayed to end users** in all environments (Development, Staging, Production).
+These are **expected, business-logic exceptions** that represent predictable error scenarios.
 
-**Key Characteristics**:
-- Their messages are often localized using resource files
-- They represent expected error conditions (e.g., resource not found, validation errors)
-- Logged at `LogLevel.Error`
-- Safe to show to users in production
+**Characteristics:**
+- Their messages are **displayed directly to users** (user-friendly)
+- They are **localized** using `IStringLocalizer<AppStrings>`
+- They are logged as **warnings/errors** (not critical)
+- They do NOT indicate bugs in the code
 
-**Examples from the project**:
+**Examples of Known Exceptions in the project:**
 
-| Exception Class | File | Purpose |
-|----------------|------|---------|
-| `ResourceNotFoundException` | [`ResourceNotFoundException.cs`](../src/Shared/Exceptions/ResourceNotFoundException.cs) | Thrown when a requested resource doesn't exist (HTTP 404) |
-| `BadRequestException` | [`BadRequestException.cs`](../src/Shared/Exceptions/BadRequestException.cs) | Thrown for invalid requests (HTTP 400) |
-| `UnauthorizedException` | [`UnauthorizedException.cs`](../src/Shared/Exceptions/UnauthorizedException.cs) | Thrown when authentication is required (HTTP 401) |
-| `ForbiddenException` | [`ForbiddenException.cs`](../src/Shared/Exceptions/ForbiddenException.cs) | Thrown when user lacks permissions (HTTP 403) |
-| `DomainLogicException` | [`DomainLogicException.cs`](../src/Shared/Exceptions/DomainLogicException.cs) | Thrown for business rule violations |
+1. **`DomainLogicException`** ([`src/Shared/Exceptions/DomainLogicException.cs`](/src/Shared/Exceptions/DomainLogicException.cs))
+   - Used for business rule violations
+   - Example: "Cannot delete a category that has products"
 
-**Code Example from [`KnownException.cs`](../src/Shared/Exceptions/KnownException.cs)**:
+2. **`ResourceNotFoundException`** ([`src/Shared/Exceptions/ResourceNotFoundException.cs`](/src/Shared/Exceptions/ResourceNotFoundException.cs))
+   - Thrown when a requested resource doesn't exist
+   - HTTP Status Code: 404 (Not Found)
 
-```csharp
-public abstract partial class KnownException : Exception
-{
-    public KnownException(string message) : base(message)
-    {
-        Key = message;
-    }
+3. **`BadRequestException`** ([`src/Shared/Exceptions/BadRequestException.cs`](/src/Shared/Exceptions/BadRequestException.cs))
+   - Used for invalid client requests
+   - HTTP Status Code: 400 (Bad Request)
 
-    public KnownException(LocalizedString message) : base(message.Value)
-    {
-        Key = message.Name;
-    }
+4. **`UnauthorizedException`** ([`src/Shared/Exceptions/UnauthorizedException.cs`](/src/Shared/Exceptions/UnauthorizedException.cs))
+   - Thrown when authentication is required
+   - HTTP Status Code: 401 (Unauthorized)
 
-    public string? Key { get; set; }
-}
-```
+5. **`ServerConnectionException`** ([`src/Shared/Exceptions/ServerConnectionException.cs`](/src/Shared/Exceptions/ServerConnectionException.cs))
+   - Indicates connectivity issues between client and server
+
+**All Known Exceptions inherit from `RestException`** ([`src/Shared/Exceptions/RestException.cs`](/src/Shared/Exceptions/RestException.cs)), which inherits from `KnownException` and provides HTTP status code mapping for REST APIs.
+
+---
 
 ### Unknown Exceptions
 
-**Characteristics**:
-- All other exceptions (e.g., `NullReferenceException`, `InvalidOperationException`, etc.)
-- **Development environment**: The actual exception message and stack trace are shown to help developers debug
-- **Production/Staging environments**: A generic "Unknown error" message is displayed to users for security reasons (to avoid exposing sensitive system information)
-- Logged at `LogLevel.Critical`
-- Still **logged with full details** for developers to investigate
+**Unknown Exceptions** are all other exceptions (e.g., `NullReferenceException`, `InvalidOperationException`, `ArgumentException`, etc.).
 
-**Security Benefit**: This prevents sensitive information (like database connection strings, file paths, or internal system details) from being exposed to end users in production.
+**Characteristics:**
+- They represent **bugs or unexpected errors** in the code
+- Their detailed messages are **NOT shown to end users** (for security)
+- In **Production**, users see a generic message: *"An unknown error occurred"*
+- In **Development**, users see the **full exception details** (stack trace, etc.)
+- They are logged as **critical errors**
+
+**Example:**
+```csharp
+// This throws a NullReferenceException (Unknown Exception)
+string? name = null;
+int length = name.Length; // Bug in the code!
+```
+
+In Production, the user would see:
+> "An unknown error occurred"
+
+In Development, the user would see:
+> "System.NullReferenceException: Object reference not set to an instance of an object. at MyComponent.OnInitAsync()..."
 
 ---
 
-## 2. Safe Exception Throwing
+## Safe Exception Throwing
 
-### 🎯 Important: Throwing Exceptions Does NOT Crash the Application
+### Important: Throwing Exceptions Does NOT Crash the Application
 
-In this project, you can confidently throw exceptions **without worrying about application crashes**. All exceptions are automatically caught and handled by the framework.
+In this project, **throwing exceptions is safe** and does **NOT crash the application**. The exception handling system automatically catches and handles exceptions at multiple levels.
 
-**Why This Matters**:
-- Developers can use exceptions for flow control without fear
-- No need for excessive try-catch blocks in most cases
-- The application remains stable even when unexpected errors occur
-- Users always see appropriate error messages instead of crash screens
+**Example:**
+```csharp
+protected override async Task OnInitAsync()
+{
+    var user = await UserController.GetUserById(userId, CurrentCancellationToken);
+    
+    if (user == null)
+    {
+        // This does NOT crash the app!
+        throw new ResourceNotFoundException("User not found");
+    }
+    
+    // Continue processing...
+}
+```
 
-**Example from [`AttachmentController.cs`](../src/Server/Boilerplate.Server.Api/Controllers/AttachmentController.cs)**:
+The exception is automatically:
+1. **Caught** by `AppComponentBase`'s enhanced lifecycle methods
+2. **Logged** with full context and telemetry
+3. **Displayed** to the user via a message box or snack bar
+4. The component **remains functional** (no crash)
+
+---
+
+## Exception Data with WithData()
+
+The `WithData()` extension method allows developers to attach **additional contextual information** to exceptions for better logging and debugging.
+
+**Location:** [`src/Shared/Extensions/ExceptionExtensions.cs`](/src/Shared/Extensions/ExceptionExtensions.cs)
+
+### Syntax
 
 ```csharp
-[HttpGet("{attachmentId:guid}")]
-public async Task<Stream> Get(Guid attachmentId, CancellationToken cancellationToken)
+// Single key-value pair
+exception.WithData("key", value)
+
+// Multiple key-value pairs
+exception.WithData(new Dictionary<string, object?>
 {
-    var attachment = await DbContext.Attachments.FirstOrDefaultAsync(a => a.Id == attachmentId, cancellationToken);
-    
-    if (attachment is null)
-        throw new ResourceNotFoundException(); // Application continues working!
-    
-    var filePath = Path.Combine(uploadsDir, $"{attachment.FileName}{attachment.FileExtension}");
-    
-    if (System.IO.File.Exists(filePath) is false)
-        throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ImageCouldNotBeFound)]);
-    
-    return new FileStream(filePath, FileMode.Open, FileAccess.Read);
+    { "UserId", userId },
+    { "ProductId", productId },
+    { "Timestamp", DateTimeOffset.UtcNow }
+})
+```
+
+### Real Example from the Project
+
+From [`src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.EmailConfirmation.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.EmailConfirmation.cs):
+
+```csharp
+var user = await UserManager.FindByEmailAsync(request.Email, cancellationToken)
+    ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound)])
+        .WithData("Email", request.Email);
+
+if (user.EmailConfirmed)
+{
+    throw new BadRequestException(Localizer[nameof(AppStrings.EmailAlreadyConfirmed)])
+        .WithData("UserId", user.Id);
 }
+```
+
+### Benefits
+
+1. **Enhanced Logging:** The data is automatically included in log entries
+2. **Telemetry:** Works seamlessly with Application Insights, Sentry, etc.
+3. **Debugging:** Helps diagnose issues in production without exposing sensitive data to users
+4. **Traceability:** Connect exceptions to specific entities (User, Product, Order, etc.)
+
+**Note:** Data added with `WithData()` is **NOT sent to the client** - it's for server-side logging only. Use `WithExtensionData()` (see below) to send data to the client.
+
+---
+
+## Sending Additional Data to the Client using WithExtensionData()
+
+The `WithExtensionData()` extension method allows you to send **additional contextual data to the client** along with the error response. This is useful when the client needs specific information to handle the error appropriately.
+
+**Location:** [`src/Server/Boilerplate.Server.Api/Extensions/KnownExceptionExtensions.cs`](/src/Server/Boilerplate.Server.Api/Extensions/KnownExceptionExtensions.cs)
+
+### Important: Only Works with Known Exceptions
+
+**CRITICAL:** `WithExtensionData()` **ONLY** works with exceptions that inherit from `KnownException`. It will NOT work with unknown exceptions (for security reasons).
+
+### RFC 7807 Compliance
+
+The project sends **RFC 7807-compliant** error responses to clients. This is a standardized format for HTTP API error responses:
+
+```json
+{
+  "type": "Boilerplate.Shared.Exceptions.TooManyRequestsException",
+  "title": "Please wait 1 minute before requesting another reset password token",
+  "status": 429,
+  "instance": "POST /api/identity/SendResetPasswordToken",
+  "extensions": {
+    "key": "WaitForResetPasswordTokenRequestResendDelay",
+    "traceId": "00-abc123...",
+    "TryAgainIn": "00:01:00"
+  }
+}
+```
+
+### Syntax
+
+```csharp
+// Single key-value pair
+exception.WithExtensionData("key", value)
+
+// Multiple key-value pairs
+exception.WithExtensionData(new Dictionary<string, object?>
+{
+    { "TryAgainIn", TimeSpan.FromMinutes(1) },
+    { "RetryAfter", DateTimeOffset.UtcNow.AddMinutes(1) }
+})
+```
+
+### Real Example from the Project
+
+From [`src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.cs):
+
+```csharp
+if (signInResult.IsLockedOut)
+{
+    var tryAgainIn = (user.LockoutEnd! - DateTimeOffset.UtcNow).Value;
+    
+    throw new BadRequestException(
+        Localizer[nameof(AppStrings.UserLockedOut), 
+        tryAgainIn.Humanize(culture: CultureInfo.CurrentUICulture)])
+        .WithData("UserId", user.Id)  // For server logging only
+        .WithExtensionData("TryAgainIn", tryAgainIn);  // Sent to client
+}
+```
+
+In this example:
+- `WithData("UserId", user.Id)`: Logged on the server, **NOT sent to client**
+- `WithExtensionData("TryAgainIn", tryAgainIn)`: **Sent to client** in the error response
+
+### Reading Extension Data on the Client
+
+The client can read the extension data using `TryGetExtensionDataValue<T>()`:
+
+From [`src/Client/Boilerplate.Client.Core/Components/Pages/Identity/SignIn/SignInPanel.razor.cs`](/src/Client/Boilerplate.Client.Core/Components/Pages/Identity/SignIn/SignInPanel.razor.cs):
+
+```csharp
+catch (KnownException e)
+{
+    // Read the TryAgainIn value sent from the server
+    if (e.TryGetExtensionDataValue<TimeSpan>("TryAgainIn", out var tryAgainIn))
+    {
+        // Disable the sign-in button until the lockout period expires
+        // Show countdown timer, etc.
+    }
+}
+```
+
+### Use Cases
+
+**Common scenarios where you'd use `WithExtensionData()`:**
+
+1. **Rate Limiting:** Tell the client how long to wait before retrying
+   ```csharp
+   throw new TooManyRequestsException("Too many requests")
+       .WithExtensionData("RetryAfter", TimeSpan.FromMinutes(5));
+   ```
+
+2. **Account Lockouts:** Provide lockout duration
+   ```csharp
+   throw new BadRequestException("Account locked")
+       .WithExtensionData("TryAgainIn", lockoutDuration);
+   ```
+
+3. **Validation Errors:** Provide field-specific error details
+   ```csharp
+   throw new ResourceValidationException(...)
+       .WithExtensionData("FieldErrors", fieldErrorsList);
+   ```
+
+4. **Business Logic Errors:** Provide actionable information
+   ```csharp
+   throw new ConflictException("Product out of stock")
+       .WithExtensionData("AvailableQuantity", 0)
+       .WithExtensionData("NextRestockDate", restockDate);
+   ```
+
+### Security Note
+
+Be careful **NOT to expose sensitive information** when using `WithExtensionData()`. This data is sent to the client and can be inspected by the user.
+
+**DON'T:**
+```csharp
+// ❌ Bad: Exposes sensitive information
+throw new UnauthorizedException("Invalid password")
+    .WithExtensionData("ActualPassword", storedPassword);
+```
+
+**DO:**
+```csharp
+// ✅ Good: Provides helpful context without exposing secrets
+throw new UnauthorizedException("Invalid credentials")
+    .WithExtensionData("AttemptsRemaining", remainingAttempts);
 ```
 
 ---
 
-## 3. Exception Data with WithData()
+## Automatic Exception Handling in Blazor
 
-### Adding Context to Exceptions for Better Logging
-
-The [`WithData()`](../src/Shared/Extensions/ExceptionExtensions.cs) extension method allows you to attach additional diagnostic data to exceptions. This data is **logged but NOT shown to end users**.
-
-**Purpose**:
-- Add contextual information for debugging
-- Track additional variables that might help diagnose issues
-- Enhance logging without exposing sensitive data to users
-
-**Location**: [`src/Shared/Extensions/ExceptionExtensions.cs`](../src/Shared/Extensions/ExceptionExtensions.cs)
-
-```csharp
-public static class ExceptionExtensions
-{
-    /// <summary>
-    /// Any custom properties specified here will be recorded along with general telemetry data, 
-    /// including the client's IP address.
-    /// </summary>
-    public static TException WithData<TException>(this TException exception, string key, object? value)
-        where TException : Exception
-    {
-        exception.Data[key] = value;
-        return exception;
-    }
-}
-```
-
-**Example Usage**:
-
-```csharp
-// Example 1: Adding single data value
-if (product == null)
-{
-    throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductNotFound)])
-        .WithData("ProductId", productId)
-        .WithData("UserId", User.GetUserId());
-}
-
-// Example 2: Adding multiple data values
-throw new InvalidOperationException("Payment processing failed")
-    .WithData("OrderId", order.Id)
-    .WithData("Amount", order.TotalAmount)
-    .WithData("PaymentProvider", paymentProvider);
-```
-
-**What Gets Logged**:
-All the `WithData()` values are automatically included in the log entry along with:
-- Exception type and message
-- Stack trace
-- Client IP address (server-side)
-- Request ID
-- User ID (if authenticated)
-- Timestamp
-
----
-
-## 4. Sending Additional Data to Client with WithExtensionData()
-
-### RFC 7807 Problem Details
-
-The project sends **RFC 7807-compliant** error responses to clients. This is a standardized format for HTTP API error responses.
-
-**Location**: [`src/Server/Boilerplate.Server.Api/Extensions/KnownExceptionExtensions.cs`](../src/Server/Boilerplate.Server.Api/Extensions/KnownExceptionExtensions.cs)
-
-### Server-Side: Adding Extension Data
-
-```csharp
-public static class KnownExceptionExtensions
-{
-    /// <summary>
-    /// Custom properties specified here will be included in the client's response via AppProblemDetails.Extensions  
-    /// and logged alongside general telemetry data, including the client's IP address etc.
-    /// </summary>
-    public static TException WithExtensionData<TException>(this TException exception, string key, object? value)
-        where TException : KnownException
-    {
-        exception.Data["__AppProblemDetailsExtensionsData"] ??= new Dictionary<string, object?>();
-        
-        var appProblemExtensionsData = (Dictionary<string, object?>)exception.Data["__AppProblemDetailsExtensionsData"]!;
-        appProblemExtensionsData[key] = value;
-        
-        return exception;
-    }
-}
-```
-
-**Example: Sending Data to Client**:
-
-```csharp
-// Server-side controller
-if (subscription.IsExpired)
-{
-    throw new BadRequestException("Your subscription has expired")
-        .WithExtensionData("ExpirationDate", subscription.ExpiresAt)
-        .WithExtensionData("RenewalUrl", "/subscription/renew");
-}
-```
-
-### Client-Side: Reading Extension Data
-
-**Location**: [`KnownException.cs`](../src/Shared/Exceptions/KnownException.cs) (shared between server and client)
-
-```csharp
-public abstract partial class KnownException : Exception
-{
-    /// <summary>
-    /// Read KnownExceptionExtensions.WithExtensionData comments.
-    /// </summary>
-    public bool TryGetExtensionDataValue<T>(string key, out T value)
-    {
-        value = default!;
-
-        if (Data[key] is object valueObj)
-        {
-            if (valueObj is T)
-            {
-                value = (T)valueObj;
-            }
-            else if (valueObj is JsonElement jsonElement)
-            {
-                value = jsonElement.Deserialize(AppJsonContext.Default.Options.GetTypeInfo<T>())!;
-            }
-            return true;
-        }
-
-        return false;
-    }
-}
-```
-
-**Example: Client-Side Usage**:
-
-```csharp
-try
-{
-    await ProductController.UpdateProduct(productDto);
-}
-catch (BadRequestException ex)
-{
-    if (ex.TryGetExtensionDataValue<DateTime>("ExpirationDate", out var expirationDate))
-    {
-        SnackBarService.Error($"Subscription expired on {expirationDate:d}");
-    }
-    
-    if (ex.TryGetExtensionDataValue<string>("RenewalUrl", out var renewalUrl))
-    {
-        NavigationManager.NavigateTo(renewalUrl);
-    }
-}
-```
-
-**Key Difference**:
-- `WithData()`: For internal logging only (NOT sent to client)
-- `WithExtensionData()`: Sent to client AND logged
-
----
-
-## 5. Automatic Exception Handling in Blazor
-
-### Enhanced Component Lifecycle Methods
-
-The project provides safer alternatives to Blazor's standard lifecycle methods that automatically handle exceptions.
-
-**Location**: [`src/Client/Boilerplate.Client.Core/Components/AppComponentBase.cs`](../src/Client/Boilerplate.Client.Core/Components/AppComponentBase.cs)
+The project provides **automatic exception handling** in Blazor components and pages through enhanced lifecycle methods.
 
 ### Enhanced Lifecycle Methods
 
-| Standard Blazor Method | Enhanced Method in AppComponentBase | Execution |
-|------------------------|-------------------------------------|-----------|
-| `OnInitializedAsync()` | `OnInitAsync()` | Once when component initializes |
-| `OnParametersSetAsync()` | `OnParamsSetAsync()` | When parameters are set/updated |
-| `OnAfterRenderAsync()` (first render) | `OnAfterFirstRenderAsync()` | Only on first render |
+When your components inherit from `AppComponentBase` or your pages inherit from `AppPageBase`, you have access to enhanced lifecycle methods that automatically catch exceptions:
 
-**How It Works** (from [`AppComponentBase.cs`](../src/Client/Boilerplate.Client.Core/Components/AppComponentBase.cs)):
+**Location:** [`src/Client/Boilerplate.Client.Core/Components/AppComponentBase.cs`](/src/Client/Boilerplate.Client.Core/Components/AppComponentBase.cs)
 
+#### Available Enhanced Methods
+
+1. **`OnInitAsync()`** - Replacement for `OnInitializedAsync()`
+2. **`OnParamsSetAsync()`** - Replacement for `OnParametersSetAsync()`
+3. **`OnAfterFirstRenderAsync()`** - Enhanced version of `OnAfterRenderAsync(firstRender: true)`
+
+**Example:**
 ```csharp
-protected sealed override async Task OnInitializedAsync()
+public partial class MyComponent : AppComponentBase
 {
-    try
-    {
-        await base.OnInitializedAsync();
-        await OnInitAsync(); // Your code here
-    }
-    catch (Exception exp)
-    {
-        HandleException(exp); // Automatically handled
-    }
-}
-
-/// <summary>
-/// A safer alternative to OnInitializedAsync that catches and handles all exceptions internally
-/// </summary>
-protected virtual Task OnInitAsync()
-{
-    return Task.CompletedTask;
-}
-```
-
-**Example Usage in Your Components**:
-
-```csharp
-public partial class ProductListPage : AppPageBase
-{
-    [AutoInject] private IProductController productController = default!;
-    
-    private List<ProductDto> products = [];
-
     protected override async Task OnInitAsync()
     {
-        // Any exception here is automatically caught and handled
-        products = await productController.GetProducts(CurrentCancellationToken);
+        // Any exception thrown here is automatically caught and handled!
+        var data = await ApiClient.GetData(CurrentCancellationToken);
+        
+        if (data == null)
+        {
+            throw new DomainLogicException("No data available");
+            // This will NOT crash the app - it will show an error message to the user
+        }
+    }
+    
+    protected override async Task OnParamsSetAsync()
+    {
+        // Automatically catches exceptions
+        await LoadUserProfile();
+    }
+    
+    protected override async Task OnAfterFirstRenderAsync()
+    {
+        // Automatically catches exceptions
+        await JSRuntime.InvokeVoidAsync("initializeChart");
     }
 }
 ```
 
-### WrapHandled() for Event Handlers
+**What happens when an exception occurs?**
+1. Exception is **caught automatically**
+2. Exception is **logged** with full context (component name, file path, line number, etc.)
+3. Exception is **handled** by the appropriate exception handler
+4. User sees a **friendly error message** (message box or snack bar)
+5. Component **remains functional** (no crash)
 
-While unhandled exceptions in event handlers are also caught automatically, using `WrapHandled()` provides **more consistent error handling** and better control over error display.
+---
 
-**From [`AppComponentBase.cs`](../src/Client/Boilerplate.Client.Core/Components/AppComponentBase.cs)**:
+### Event Handlers in Razor: WrapHandled()
 
-```csharp
-/// <summary>
-/// Executes passed action that catches and handles all exceptions internally
-/// </summary>
-public virtual Action WrapHandled(Action action, ...)
-{
-    return () =>
-    {
-        try
-        {
-            action();
-        }
-        catch (Exception exp)
-        {
-            HandleException(exp, null, lineNumber, memberName, filePath);
-        }
-    };
-}
+For event handlers in `.razor` files (button clicks, form submissions, etc.), you must use the `WrapHandled()` method to enable automatic exception handling.
 
-public virtual Func<Task> WrapHandled(Func<Task> func, ...)
-{
-    return async () =>
-    {
-        try
-        {
-            await func();
-        }
-        catch (Exception exp)
-        {
-            HandleException(exp, null, lineNumber, memberName, filePath);
-        }
-    };
-}
+**Syntax:**
+```xml
+<!-- Simple method call -->
+<BitButton OnClick="WrapHandled(MyMethod)">Click Me</BitButton>
+
+<!-- Lambda expression -->
+<BitButton OnClick="WrapHandled(async () => await SaveData())">Save</BitButton>
+
+<!-- With parameters -->
+<BitButton OnClick="WrapHandled((MouseEventArgs e) => HandleClick(e))">Click</BitButton>
 ```
 
-**Razor File Examples**:
+**Real Examples from the Project:**
+
+From [`src/Client/Boilerplate.Client.Core/Components/Pages/Identity/SignIn/SignInPanel.razor`](/src/Client/Boilerplate.Client.Core/Components/Pages/Identity/SignIn/SignInPanel.razor):
 
 ```xml
-<!-- ✅ RECOMMENDED: Using WrapHandled -->
-<BitButton OnClick="WrapHandled(DeleteItem)">Delete</BitButton>
-<BitButton OnClick="WrapHandled(async () => await SaveChanges())">Save</BitButton>
+<EditForm Model="model" OnSubmit="WrapHandled(DoSignIn)" novalidate>
+    <!-- Form fields -->
+    
+    <BitButton ButtonType="BitButtonType.Submit">
+        @Localizer[nameof(AppStrings.SignIn)]
+    </BitButton>
+</EditForm>
 
-<!-- ⚠️ Also works but less consistent -->
-<BitButton OnClick="DeleteItem">Delete</BitButton>
+<BitButton OnClick="WrapHandled(() => SendOtp(resend: true))">
+    @Localizer[nameof(AppStrings.Resend)]
+</BitButton>
 ```
 
-**Code-Behind Example**:
+From [`src/Client/Boilerplate.Client.Core/Components/Pages/Identity/ResetPasswordPage.razor`](/src/Client/Boilerplate.Client.Core/Components/Pages/Identity/ResetPasswordPage.razor):
 
-```csharp
-public partial class ProductEditPage : AppPageBase
-{
-    private async Task SaveProduct()
+```xml
+<EditForm Model="model" OnValidSubmit="WrapHandled(Submit)" novalidate>
+    <!-- Password reset form -->
+</EditForm>
+
+<BitOtpInput OnFill="WrapHandled(HandleContinue)" />
+
+<BitButton OnClick="WrapHandled(Resend)">
+    @Localizer[nameof(AppStrings.Resend)]
+</BitButton>
+```
+
+**Why is WrapHandled() necessary?**
+
+Without `WrapHandled()`, unhandled exceptions in event handlers would:
+1. Trigger the **Error Boundary** (whole UI section crashes)
+2. **NOT be logged** properly with component context
+3. Provide a **poor user experience**
+
+With `WrapHandled()`:
+1. Exception is **caught and logged** with full context
+2. User sees a **friendly error message**
+3. Component **remains functional**
+4. No Error Boundary triggered
+
+---
+
+### Comparison: With vs Without WrapHandled()
+
+**❌ Without WrapHandled() (Bad):**
+```xml
+<BitButton OnClick="SaveData">Save</BitButton>
+
+@code {
+    private async Task SaveData()
     {
-        // Any exception here is automatically handled by WrapHandled
-        await productController.UpdateProduct(product, CurrentCancellationToken);
-        SnackBarService.Success("Product saved successfully!");
-        NavigationManager.NavigateTo(PageUrls.Products);
+        // If this throws an exception, the Error Boundary is triggered!
+        await ApiClient.SaveProduct(product, CurrentCancellationToken);
+    }
+}
+```
+
+**✅ With WrapHandled() (Good):**
+```xml
+<BitButton OnClick="WrapHandled(SaveData)">Save</BitButton>
+
+@code {
+    private async Task SaveData()
+    {
+        // If this throws an exception, it's handled gracefully!
+        await ApiClient.SaveProduct(product, CurrentCancellationToken);
     }
 }
 ```
 
 ---
 
-## 6. Error Display UI
+## Error Display UI
 
-When exceptions occur, they are displayed to users through a sophisticated UI system:
+When exceptions occur, the project displays user-friendly error messages through two mechanisms:
 
-### Exception Display Types
+### 1. Interrupting Errors (Message Box)
 
-**From [`IExceptionHandler.cs`](../src/Client/Boilerplate.Client.Core/Services/Contracts/IExceptionHandler.cs)**:
+For **critical errors** that require user acknowledgment, a **message box** is displayed.
 
-```csharp
-public enum ExceptionDisplayKind
-{
-    /// <summary>
-    /// No error message is shown to the user.
-    /// </summary>
-    None,
-    
-    /// <summary>
-    /// Requires the user to acknowledge the error (e.g., by tapping "OK").
-    /// </summary>
-    Interrupting,
-    
-    /// <summary>
-    /// Shows an auto-dismissed message (e.g., a snack bar)
-    /// </summary>
-    NonInterrupting,
-    
-    /// <summary>
-    /// Automatically selects the exception display type based on the exception type.
-    /// </summary>
-    Default
-}
+**When used:**
+- Unknown exceptions (bugs)
+- Critical business logic errors
+- Server connection failures that require immediate attention
+
+**Example:**
+```
+┌─────────────────────────────────────┐
+│ Error                               │
+├─────────────────────────────────────┤
+│ Failed to save the product.         │
+│ Please try again.                   │
+│                                     │
+│              [OK]                   │
+└─────────────────────────────────────┘
 ```
 
-### How Display Type is Determined
-
-**From [`ClientExceptionHandlerBase.cs`](../src/Client/Boilerplate.Client.Core/Services/ClientExceptionHandlerBase.cs)**:
-
-```csharp
-private ExceptionDisplayKind GetDisplayKind(Exception exception)
-{
-    if (exception is ServerConnectionException)
-        return ExceptionDisplayKind.NonInterrupting; // Snack bar
-    
-    if (exception is UnauthorizedException)
-        return ExceptionDisplayKind.NonInterrupting; // Snack bar
-    
-    return ExceptionDisplayKind.Interrupting; // Modal dialog
-}
-```
-
-### UI Components
-
-1. **Interrupting (Modal Dialog)**:
-   - Uses `BitMessageBoxService`
-   - Requires user to click "OK"
-   - Used for critical errors that need acknowledgment
-
-2. **NonInterrupting (Snack Bar)**:
-   - Uses `SnackBarService`
-   - Auto-dismisses after a few seconds
-   - Used for less critical errors (connection issues, authorization)
-
-3. **Error Boundary**:
-   - Catches unhandled exceptions in component trees
-   - Provides fallback UI
-   - Located in [`MainLayout.razor`](../src/Client/Boilerplate.Client.Core/Components/Layout/MainLayout.razor)
+**Handled by:** `BitMessageBoxService` in [`ClientExceptionHandlerBase`](/src/Client/Boilerplate.Client.Core/Services/ClientExceptionHandlerBase.cs)
 
 ---
 
-## 7. Exception Handlers in the Project
+### 2. Non-Interrupting Errors (Snack Bar)
 
-The project has multiple exception handlers for different platforms and contexts:
+For **less critical errors** that don't require immediate action, a **snack bar** (toast notification) is displayed.
 
-### Exception Handler Hierarchy
+**When used:**
+- Temporary network issues
+- `UnauthorizedException` (user will be redirected to sign-in)
+- `ServerConnectionException` (offline mode)
 
+**Example:**
 ```
-SharedExceptionHandler (Base class in Shared project)
-    ├── ServerExceptionHandler (Server.Api)
-    │   └── Implements IProblemDetailsWriter
-    │   └── Generates RFC 7807 responses
-    │
-    └── ClientExceptionHandlerBase (Client.Core)
-        ├── WebServerExceptionHandler (Server.Web for Blazor Server & SSR)
-        ├── WebClientExceptionHandler (Client.Web for WebAssembly)
-        ├── MauiExceptionHandler (Client.Maui)
-        └── WindowsExceptionHandler (Client.Windows)
+┌─────────────────────────────────────────┐
+│ ⚠️ You are currently offline            │
+└─────────────────────────────────────────┘
 ```
 
-### 1. SharedExceptionHandler
+**Handled by:** `SnackBarService` in [`ClientExceptionHandlerBase`](/src/Client/Boilerplate.Client.Core/Services/ClientExceptionHandlerBase.cs)
 
-**Location**: [`src/Shared/Services/SharedExceptionHandler.cs`](../src/Shared/Services/SharedExceptionHandler.cs)
+---
 
-**Purpose**: Base class providing common exception handling logic
+### 3. Error Boundary (Last Resort)
 
-**Key Methods**:
-- `GetExceptionMessageToShow()`: Determines what message to show users
-- `GetExceptionMessageToLog()`: Determines what to log
-- `UnWrapException()`: Unwraps aggregate/inner exceptions
-- `IgnoreException()`: Decides which exceptions to ignore (e.g., `TaskCanceledException`)
+If an exception is **NOT caught** by the enhanced lifecycle methods or `WrapHandled()`, the **Error Boundary** is triggered.
 
-### 2. ServerExceptionHandler
+**Location:** [`src/Client/Boilerplate.Client.Core/Components/AppErrorBoundary.razor`](/src/Client/Boilerplate.Client.Core/Components/AppErrorBoundary.razor)
 
-**Location**: [`src/Server/Boilerplate.Server.Api/Services/ServerExceptionHandler.cs`](../src/Server/Boilerplate.Server.Api/Services/ServerExceptionHandler.cs)
+The Error Boundary displays:
+- **Title:** "Something Went Wrong"
+- **Exception details** (if in Development mode)
+- **Actions:** Home, Refresh, Recover, Diagnostic
 
-**Purpose**: Handles API exceptions and generates RFC 7807 problem details
+**Example:**
+```
+┌─────────────────────────────────────────┐
+│ Something Went Wrong                    │
+├─────────────────────────────────────────┤
+│ An unexpected error occurred.           │
+│                                         │
+│ [Home] [Refresh] [Recover] [🔧]        │
+└─────────────────────────────────────────┘
+```
 
-**Key Features**:
-- Implements `IProblemDetailsWriter` for ASP.NET Core
-- Logs exceptions with full context (IP, user ID, request ID)
-- Generates `AppProblemDetails` responses
-- Distinguishes between KnownException (LogLevel.Error) and others (LogLevel.Critical)
+**When to use:**
+- You should **avoid** triggering the Error Boundary
+- Use `WrapHandled()` for event handlers
+- Use enhanced lifecycle methods (`OnInitAsync()`, etc.)
 
-**Code Example**:
+---
 
-```csharp
-public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDetailsWriter
+## Exception Handlers in the Project
+
+The project includes multiple exception handlers for different platforms, all inheriting from `SharedExceptionHandler`.
+
+### 1. ServerExceptionHandler
+
+**Location:** [`src/Server/Boilerplate.Server.Api/Services/ServerExceptionHandler.cs`](/src/Server/Boilerplate.Server.Api/Services/ServerExceptionHandler.cs)
+
+**Purpose:** Handles exceptions on the **server-side** (API controllers).
+
+**Key Responsibilities:**
+- Converts exceptions to **RFC 7807-compliant** `ProblemDetails` responses
+- Attaches `Request-Id` header for log correlation
+- Maps exceptions to **HTTP status codes** (404, 400, 500, etc.)
+- Logs exceptions with full telemetry (Activity ID, User ID, Client IP, etc.)
+- Differentiates between **Development** and **Production** environments
+
+**Example of generated error response:**
+```json
 {
-    private void Handle(Exception exception,
-        Dictionary<string, object?>? parameters,
-        HttpContext? httpContext,
-        out int statusCode,
-        out AppProblemDetails? problemDetails)
-    {
-        var knownException = exception as KnownException;
-        statusCode = (int)(exception is RestException restExp ? restExp.StatusCode : HttpStatusCode.InternalServerError);
-        
-        // The details of all exceptions are returned only in dev mode
-        // In production, only KnownException details are returned
-        var message = GetExceptionMessageToShow(exception);
-        
-        if (IgnoreException(exception) is false)
-        {
-            using var scope = logger.BeginScope(data);
-            
-            if (exception is KnownException)
-            {
-                logger.LogError(exception, exceptionMessageToLog);
-            }
-            else
-            {
-                logger.LogCritical(exception, exceptionMessageToLog);
-            }
-        }
-        
-        problemDetails = new AppProblemDetails
-        {
-            Title = message,
-            Status = statusCode,
-            Type = knownException?.GetType().FullName ?? typeof(UnknownException).FullName,
-            Instance = instance,
-            Extensions = new Dictionary<string, object?>() // Extension data goes here
-        };
-    }
+  "type": "Boilerplate.Shared.Exceptions.ResourceNotFoundException",
+  "title": "User not found",
+  "status": 404,
+  "instance": "GET /api/user/123",
+  "extensions": {
+    "key": "UserNotFound",
+    "traceId": "00-abc123...",
+    "Email": "user@example.com"
+  }
 }
 ```
+
+---
+
+### 2. SharedExceptionHandler
+
+**Location:** [`src/Shared/Services/SharedExceptionHandler.cs`](/src/Shared/Services/SharedExceptionHandler.cs)
+
+**Purpose:** Provides **shared exception handling logic** used by both server and client.
+
+**Key Responsibilities:**
+- `GetExceptionMessageToShow()`: Determines what message to display to users
+  - Known exceptions: Show the actual message
+  - Unknown exceptions (Production): Show generic "Unknown error"
+  - Unknown exceptions (Development): Show full stack trace
+- `GetExceptionMessageToLog()`: Formats exception for logging (includes inner exceptions)
+- `UnWrapException()`: Unwraps `AggregateException` and `TargetInvocationException`
+- `IgnoreException()`: Determines if an exception should be logged
+- `GetExceptionData()`: Extracts all data attached to the exception
+
+---
 
 ### 3. ClientExceptionHandlerBase
 
-**Location**: [`src/Client/Boilerplate.Client.Core/Services/ClientExceptionHandlerBase.cs`](../src/Client/Boilerplate.Client.Core/Services/ClientExceptionHandlerBase.cs)
+**Location:** [`src/Client/Boilerplate.Client.Core/Services/ClientExceptionHandlerBase.cs`](/src/Client/Boilerplate.Client.Core/Services/ClientExceptionHandlerBase.cs)
 
-**Purpose**: Base handler for all client-side platforms
+**Purpose:** Base class for **client-side exception handlers**.
 
-**Key Features**:
-- Determines display kind (Interrupting vs NonInterrupting)
-- Shows errors via SnackBarService or MessageBoxService
-- Includes telemetry context (platform, version, user ID, etc.)
-- Generates unique exception IDs
+**Key Responsibilities:**
+- Logs exceptions with telemetry context (file path, line number, member name, etc.)
+- Determines how to display errors:
+  - `ExceptionDisplayKind.Interrupting`: Message box
+  - `ExceptionDisplayKind.NonInterrupting`: Snack bar
+  - `ExceptionDisplayKind.None`: No UI (logs only, debugger break in Development)
+- Automatically ignores `TaskCanceledException`, `OperationCanceledException`, `TimeoutException`
 
-**Code Example**:
+---
 
+### 4. WebClientExceptionHandler
+
+**Location:** [`src/Client/Boilerplate.Client.Web/Services/WebClientExceptionHandler.cs`](/src/Client/Boilerplate.Client.Web/Services/WebClientExceptionHandler.cs)
+
+**Purpose:** Exception handler for **Blazor WebAssembly** (browser).
+
+**Platform-Specific Behavior:**
+- Inherits all behavior from `ClientExceptionHandlerBase`
+- Can be extended to add **browser-specific** error tracking (e.g., Google Analytics, Sentry)
+
+---
+
+### 5. MauiExceptionHandler
+
+**Location:** [`src/Client/Boilerplate.Client.Maui/Services/MauiExceptionHandler.cs`](/src/Client/Boilerplate.Client.Maui/Services/MauiExceptionHandler.cs)
+
+**Purpose:** Exception handler for **.NET MAUI** (Android, iOS, macOS).
+
+**Platform-Specific Behavior:**
+- Can integrate with **Firebase Crashlytics** for Android/iOS crash reporting
+- Can integrate with **platform-specific error tracking** services
+- Example:
+  ```csharp
+  protected override void Handle(Exception exception, ExceptionDisplayKind displayKind, Dictionary<string, object> parameters)
+  {
+      // Log to Firebase Crashlytics
+      FirebaseCrashlytics.Instance.RecordException(exception);
+      
+      base.Handle(exception, displayKind, parameters);
+  }
+  ```
+
+---
+
+### 6. WindowsExceptionHandler
+
+**Location:** [`src/Client/Boilerplate.Client.Windows/Services/WindowsExceptionHandler.cs`](/src/Client/Boilerplate.Client.Windows/Services/WindowsExceptionHandler.cs)
+
+**Purpose:** Exception handler for **Windows Forms Blazor Hybrid** app.
+
+**Platform-Specific Behavior:**
+- Can integrate with **Windows-specific error reporting** (e.g., Windows Error Reporting API)
+- Can send telemetry to **Azure App Insights** or other services
+
+---
+
+### Handler Hierarchy
+
+```
+SharedExceptionHandler (Shared)
+├── ServerExceptionHandler (Server)
+└── ClientExceptionHandlerBase (Client.Core)
+    ├── WebClientExceptionHandler (Client.Web)
+    ├── MauiExceptionHandler (Client.Maui)
+    └── WindowsExceptionHandler (Client.Windows)
+```
+
+**Why this architecture?**
+- **Shared logic** is in `SharedExceptionHandler` (DRY principle)
+- **Server-specific** logic (HTTP responses, status codes) is in `ServerExceptionHandler`
+- **Client-specific** logic (message boxes, snack bars) is in `ClientExceptionHandlerBase`
+- **Platform-specific** customization (Firebase, Windows Error Reporting) is in platform handlers
+
+---
+
+## Best Practices
+
+### 1. Use Known Exceptions for Business Logic
+
+✅ **Good:**
 ```csharp
-public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandler, IExceptionHandler
+if (product.Stock < orderQuantity)
 {
-    protected virtual void Handle(Exception exception,
-        ExceptionDisplayKind displayKind,
-        Dictionary<string, object> parameters)
-    {
-        using (var scope = Logger.BeginScope(parameters))
-        {
-            if (exception is KnownException)
-            {
-                Logger.LogError(exception, exceptionMessageToLog);
-            }
-            else
-            {
-                Logger.LogCritical(exception, exceptionMessageToLog);
-            }
-        }
-
-        if (displayKind is ExceptionDisplayKind.NonInterrupting)
-        {
-            SnackBarService.Error("Boilerplate", exceptionMessageToShow);
-        }
-        else if (displayKind is ExceptionDisplayKind.Interrupting)
-        {
-            _ = MessageBoxService.Show(Localizer[nameof(AppStrings.Error)], exceptionMessageToShow);
-        }
-    }
+    throw new DomainLogicException(Localizer[nameof(AppStrings.InsufficientStock)])
+        .WithData("ProductId", product.Id)
+        .WithData("Available", product.Stock)
+        .WithData("Requested", orderQuantity);
 }
 ```
 
-### 4. WebServerExceptionHandler
-
-**Location**: [`src/Server/Boilerplate.Server.Web/Services/WebServerExceptionHandler.cs`](../src/Server/Boilerplate.Server.Web/Services/WebServerExceptionHandler.cs)
-
-**Purpose**: Handles exceptions in **Blazor Server** and during **pre-rendering**
-
-**Key Features**:
-- Inherits from `ClientExceptionHandlerBase` (because Blazor Server runs on server but displays UI like client)
-- Sets HTTP response status codes when possible
-- Prevents caching of error responses
-
+❌ **Bad:**
 ```csharp
-public partial class WebServerExceptionHandler : ClientExceptionHandlerBase
+if (product.Stock < orderQuantity)
 {
-    [AutoInject] IHttpContextAccessor httpContextAccessor = default!;
-
-    protected override void Handle(Exception exception, ExceptionDisplayKind displayKind, Dictionary<string, object> parameters)
-    {
-        exception = UnWrapException(exception);
-
-        if (IgnoreException(exception))
-            return;
-
-        if (httpContextAccessor.HttpContext is not null && httpContextAccessor.HttpContext.Response.HasStarted is false)
-        {
-            // Set status code for non-streaming pre-rendering to prevent error caching
-            var statusCode = (int)(exception is RestException restExp ? restExp.StatusCode : HttpStatusCode.InternalServerError);
-            httpContextAccessor.HttpContext.Response.StatusCode = statusCode;
-        }
-
-        base.Handle(exception, displayKind, parameters);
-    }
+    throw new InvalidOperationException("Not enough stock");
+    // This is an "Unknown Exception" - not user-friendly!
 }
-```
-
-### 5. WebClientExceptionHandler
-
-**Location**: [`src/Client/Boilerplate.Client.Web/Services/WebClientExceptionHandler.cs`](../src/Client/Boilerplate.Client.Web/Services/WebClientExceptionHandler.cs)
-
-**Purpose**: Handles exceptions in **Blazor WebAssembly**
-
-```csharp
-public partial class WebClientExceptionHandler : ClientExceptionHandlerBase
-{
-    protected override void Handle(Exception exception, ExceptionDisplayKind displayKind, Dictionary<string, object> parameters)
-    {
-        exception = UnWrapException(exception);
-
-        if (IgnoreException(exception))
-            return;
-
-        base.Handle(exception, displayKind, parameters);
-    }
-}
-```
-
-### 6. MauiExceptionHandler
-
-**Location**: [`src/Client/Boilerplate.Client.Maui/Services/MauiExceptionHandler.cs`](../src/Client/Boilerplate.Client.Maui/Services/MauiExceptionHandler.cs)
-
-**Purpose**: Handles exceptions in **.NET MAUI** (Android, iOS, macOS, Windows via MAUI)
-
-**Features**:
-- Platform-specific error handling
-- Integration point for Firebase Crashylicst or other mobile analytics
-
-```csharp
-public partial class MauiExceptionHandler : ClientExceptionHandlerBase
-{
-    protected override void Handle(Exception exception, ExceptionDisplayKind displayKind, Dictionary<string, object> parameters)
-    {
-        exception = UnWrapException(exception);
-
-        if (IgnoreException(exception))
-            return;
-
-        // Optional: Integrate Firebase Crashlytics here. This keeps the package installation limited to .NET MAUI projects,
-        // ensuring it's not downloaded for unsupported platforms like Windows or Web where it provides no functionality.
-
-        base.Handle(exception, displayKind, parameters);
-    }
-}
-```
-
-### 7. WindowsExceptionHandler
-
-**Location**: [`src/Client/Boilerplate.Client.Windows/Services/WindowsExceptionHandler.cs`](../src/Client/Boilerplate.Client.Windows/Services/WindowsExceptionHandler.cs)
-
-**Purpose**: Handles exceptions in **Windows Forms Blazor Hybrid**
-
-```csharp
-public partial class WindowsExceptionHandler : ClientExceptionHandlerBase
-{
-    protected override void Handle(Exception exception, ExceptionDisplayKind displayKind, Dictionary<string, object> parameters)
-    {
-        exception = UnWrapException(exception);
-
-        if (IgnoreException(exception))
-            return;
-
-        base.Handle(exception, displayKind, parameters);
-    }
-}
-```
-
-### Exception Handler Flow
-
-```
-Exception Occurs
-     ↓
-Where does it occur?
-     ↓
-     ├─→ API Controller → ServerExceptionHandler
-     │                       ↓
-     │                    Generate RFC 7807 Response
-     │                       ↓
-     │                    Log to Server Logs
-     │
-     ├─→ Blazor Server/SSR → WebServerExceptionHandler
-     │                          ↓
-     │                       Display UI Error
-     │                          ↓
-     │                       Log to Client Logs
-     │
-     ├─→ Blazor WASM → WebClientExceptionHandler
-     │                    ↓
-     │                 Display UI Error
-     │                    ↓
-     │                 Log to Client Logs
-     │
-     ├─→ MAUI App → MauiExceptionHandler
-     │                 ↓
-     │              Display UI Error
-     │                 ↓
-     │              Log to Client Logs
-     │
-     └─→ Windows App → WindowsExceptionHandler
-                          ↓
-                       Display UI Error
-                          ↓
-                       Log to Client Logs
-                          
-All Logs → Sentry/App Insights/OpenTelemetry
 ```
 
 ---
 
-## 8. Practical Examples from the Codebase
+### 2. Always Use WrapHandled() in Event Handlers
 
-### Example 1: Simple Resource Not Found
-
-**From [`AttachmentController.cs`](../src/Server/Boilerplate.Server.Api/Controllers/AttachmentController.cs)**:
-
-```csharp
-[HttpGet("{attachmentId:guid}")]
-public async Task<Stream> Get(Guid attachmentId, CancellationToken cancellationToken)
-{
-    var attachment = await DbContext.Attachments
-        .FirstOrDefaultAsync(a => a.Id == attachmentId, cancellationToken);
-    
-    if (attachment is null)
-        throw new ResourceNotFoundException();
-    
-    var filePath = Path.Combine(uploadsDir, $"{attachment.FileName}{attachment.FileExtension}");
-    
-    if (System.IO.File.Exists(filePath) is false)
-        throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ImageCouldNotBeFound)]);
-    
-    return new FileStream(filePath, FileMode.Open, FileAccess.Read);
-}
+✅ **Good:**
+```xml
+<BitButton OnClick="WrapHandled(SaveProduct)">Save</BitButton>
 ```
 
-### Example 2: Exception with Extension Data
-
-**Hypothetical example** (you can add this pattern to your controllers):
-
-```csharp
-[HttpDelete("{productId:guid}")]
-public async Task DeleteProduct(Guid productId, CancellationToken cancellationToken)
-{
-    var product = await DbContext.Products.FindAsync([productId], cancellationToken);
-    
-    if (product is null)
-        throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductNotFound)])
-            .WithData("ProductId", productId)
-            .WithExtensionData("SuggestedAction", "browse_catalog");
-    
-    // Check if product is referenced by orders
-    var hasOrders = await DbContext.Orders.AnyAsync(o => o.ProductId == productId, cancellationToken);
-    
-    if (hasOrders)
-    {
-        throw new BadRequestException("Cannot delete product with existing orders")
-            .WithData("ProductId", productId)
-            .WithData("ProductName", product.Name)
-            .WithExtensionData("OrderCount", await DbContext.Orders.CountAsync(o => o.ProductId == productId))
-            .WithExtensionData("SuggestedAction", "archive_instead");
-    }
-    
-    DbContext.Products.Remove(product);
-    await DbContext.SaveChangesAsync(cancellationToken);
-}
+❌ **Bad:**
+```xml
+<BitButton OnClick="SaveProduct">Save</BitButton>
 ```
 
-**Client-side handling**:
+---
 
+### 3. Add Context with WithData()
+
+✅ **Good:**
 ```csharp
-try
-{
-    await productController.DeleteProduct(productId);
-    SnackBarService.Success("Product deleted successfully");
-}
-catch (BadRequestException ex) when (ex.Message.Contains("existing orders"))
-{
-    if (ex.TryGetExtensionDataValue<int>("OrderCount", out var orderCount))
-    {
-        await MessageBoxService.Show(
-            "Cannot Delete", 
-            $"This product has {orderCount} existing orders. Consider archiving instead.");
-    }
-    
-    if (ex.TryGetExtensionDataValue<string>("SuggestedAction", out var action) && action == "archive_instead")
-    {
-        // Show archive option
-    }
-}
+throw new ResourceNotFoundException("Category not found")
+    .WithData("CategoryId", categoryId)
+    .WithData("UserId", currentUserId)
+    .WithData("Timestamp", DateTimeOffset.UtcNow);
 ```
 
-### Example 3: Component Exception Handling
-
-**Page Component with Automatic Exception Handling**:
-
+❌ **Bad:**
 ```csharp
-public partial class ProductListPage : AppPageBase
-{
-    [AutoInject] private IProductController productController = default!;
-    
-    private List<ProductDto> products = [];
-    private bool isLoading;
+throw new ResourceNotFoundException("Category not found");
+// No context - hard to debug in production!
+```
 
-    // Exceptions in OnInitAsync are automatically handled
+---
+
+### 4. Use Enhanced Lifecycle Methods
+
+✅ **Good:**
+```csharp
+public partial class MyPage : AppPageBase
+{
     protected override async Task OnInitAsync()
     {
-        isLoading = true;
-        
-        // If this throws, user sees error message automatically
-        products = await productController.GetProducts(CurrentCancellationToken);
-        
-        isLoading = false;
+        // Automatically handles exceptions!
+        await LoadData();
     }
+}
+```
 
-    // Event handler with WrapHandled
-    private async Task DeleteProduct(Guid productId)
+❌ **Bad:**
+```csharp
+public partial class MyPage : AppPageBase
+{
+    protected override async Task OnInitializedAsync()
     {
-        var confirmed = await MessageBoxService.Show("Confirm", "Delete this product?", BitMessageBoxType.YesNo);
-        
-        if (confirmed == BitMessageBoxResult.Yes)
+        try
         {
-            // Any exception here is handled by WrapHandled
-            await productController.DeleteProduct(productId, CurrentCancellationToken);
-            products = products.Where(p => p.Id != productId).ToList();
-            SnackBarService.Success("Product deleted");
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            // Manual exception handling - unnecessary!
+            ExceptionHandler.Handle(ex);
         }
     }
 }
 ```
 
-**Razor file**:
+---
 
-```xml
-@if (isLoading)
-{
-    <LoadingComponent />
-}
-else
-{
-    <BitDataGrid Items="products">
-        <BitDataGridPropertyColumn Property="@(p => p.Name)" />
-        <BitDataGridPropertyColumn Property="@(p => p.Price)" />
-        <BitDataGridTemplateColumn>
-            <Template Context="product">
-                <BitButton OnClick="WrapHandled(async () => await DeleteProduct(product.Id))">
-                    Delete
-                </BitButton>
-            </Template>
-        </BitDataGridTemplateColumn>
-    </BitDataGrid>
-}
+### 5. Localize Exception Messages
+
+✅ **Good:**
+```csharp
+throw new DomainLogicException(Localizer[nameof(AppStrings.ProductNameAlreadyExists)])
+    .WithData("ProductName", product.Name);
+```
+
+❌ **Bad:**
+```csharp
+throw new DomainLogicException("Product name already exists");
+// Not localized - only works in English!
 ```
 
 ---
 
-## 🎯 Key Takeaways
+### 6. Don't Expose Sensitive Data with WithExtensionData()
 
-1. **Safe to Throw**: Throwing exceptions won't crash your app
-2. **Two Types**: KnownException (user-friendly) vs Unknown (developer-focused)
-3. **Context Matters**: Use `WithData()` for logs, `WithExtensionData()` for client responses
-4. **Automatic Handling**: Use `OnInitAsync()`, `OnParamsSetAsync()`, `OnAfterFirstRenderAsync()`
-5. **Wrap Handlers**: Use `WrapHandled()` for event handlers
-6. **Platform-Specific**: Different handlers for API, Web, MAUI, Windows
-7. **User Experience**: Interrupting (modal) vs NonInterrupting (snack bar) errors
-8. **RFC 7807**: Standard error responses for APIs
+✅ **Good:**
+```csharp
+throw new UnauthorizedException("Invalid credentials")
+    .WithExtensionData("AttemptsRemaining", attemptsRemaining);
+```
+
+❌ **Bad:**
+```csharp
+throw new UnauthorizedException("Invalid password")
+    .WithExtensionData("ActualPassword", user.PasswordHash); // Security risk!
+```
 
 ---
 
-## 📚 Related Files to Explore
+## Summary
 
-- [`src/Shared/Exceptions/`](../src/Shared/Exceptions/) - All exception classes
-- [`src/Shared/Extensions/ExceptionExtensions.cs`](../src/Shared/Extensions/ExceptionExtensions.cs) - WithData extension
-- [`src/Server/Boilerplate.Server.Api/Extensions/KnownExceptionExtensions.cs`](../src/Server/Boilerplate.Server.Api/Extensions/KnownExceptionExtensions.cs) - WithExtensionData
-- [`src/Client/Boilerplate.Client.Core/Components/AppComponentBase.cs`](../src/Client/Boilerplate.Client.Core/Components/AppComponentBase.cs) - Lifecycle methods
-- [`src/Server/Boilerplate.Server.Api/Services/ServerExceptionHandler.cs`](../src/Server/Boilerplate.Server.Api/Services/ServerExceptionHandler.cs) - API handler
-- [`src/Client/Boilerplate.Client.Core/Services/ClientExceptionHandlerBase.cs`](../src/Client/Boilerplate.Client.Core/Services/ClientExceptionHandlerBase.cs) - Client base handler
+The Boilerplate project provides a comprehensive exception handling system that:
+
+✅ **Automatically handles exceptions** in components and pages  
+✅ **Does NOT crash the application** when exceptions occur  
+✅ **Displays user-friendly error messages** to end users  
+✅ **Logs detailed diagnostic information** for developers  
+✅ **Differentiates between known and unknown exceptions**  
+✅ **Supports multi-platform** (Server, Web, MAUI, Windows)  
+✅ **Integrates with telemetry** (Application Insights, Sentry, etc.)  
+✅ **Follows RFC 7807** for API error responses  
+✅ **Supports localization** for error messages  
 
 ---

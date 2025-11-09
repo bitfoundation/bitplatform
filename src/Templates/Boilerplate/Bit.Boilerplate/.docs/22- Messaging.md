@@ -1,1001 +1,119 @@
 # Stage 22: Messaging
 
-Welcome to Stage 22! In this stage, you will learn about the comprehensive messaging architecture built into the project, which supports both **real-time bi-directional communication via SignalR** and **push notifications across all platforms** (web, mobile, and desktop).
+Welcome to Stage 22! In this stage, you will learn about the comprehensive **messaging and real-time communication system** built into the Boilerplate project. This system combines **SignalR**, **Push Notifications**, and a **Pub/Sub pattern** to provide seamless communication between server and clients.
 
-## Overview
+---
 
-The project provides a complete messaging infrastructure that includes:
+## 📋 Topics Covered
 
-1. **SignalR Real-Time Communication**: Bi-directional communication between server and clients for instant updates
-2. **Push Notifications**: Cross-platform push notification support for background messaging
-3. **Local Notifications**: In-app notifications displayed within the application
-4. **Pub/Sub Messaging**: Internal client-side event bus for component communication
+1. **SignalR Real-Time Communication**
+   - SignalR Hub Architecture
+   - Connection Management & Authentication
+   - Server-to-Client Messaging
+   - Client-to-Server Invocations
+
+2. **Pub/Sub Messaging Pattern**
+   - PubSubService Architecture
+   - Client-Side vs Server-Side Messages
+   - WeakReference-Based Subscriptions
+   - Cross-Component Communication
+
+3. **Push Notifications**
+   - Platform-Specific Push Notification Services
+   - Web Push (VAPID)
+   - Native Push (Android, iOS, Windows, macOS)
+   - Subscription Management
+
+4. **Browser Notification API**
+   - Bit.Butil.Notification Integration
+   - Permission Management
+   - Local Notifications
 
 ---
 
 ## 1. SignalR Real-Time Communication
 
-SignalR enables real-time, bi-directional communication between the server and connected clients.
+### What is SignalR?
 
-### Server-Side: AppHub
+**SignalR** is ASP.NET Core's real-time communication library that enables bi-directional communication between server and clients. The Boilerplate project uses SignalR to:
 
-**Location**: [`/src/Server/Boilerplate.Server.Api/SignalR/AppHub.cs`](/src/Server/Boilerplate.Server.Api/SignalR/AppHub.cs)
+- Send messages from server to specific clients, groups, or all clients
+- Invoke client-side methods from the server
+- Manage authentication state changes
+- Coordinate user sessions across multiple devices/tabs
 
-The `AppHub` class is the central hub for SignalR communication:
+### AppHub - The SignalR Hub
 
-```csharp
-[AllowAnonymous]
-public partial class AppHub : Hub
-{
-    public override async Task OnConnectedAsync()
-    {
-        if (Context.GetHttpContext()?.ContainsExpiredAccessToken() is true)
-            throw new HubException(nameof(AppStrings.UnauthorizedException));
+The main SignalR hub is located at:
 
-        await ChangeAuthenticationStateImplementation(Context.User);
-        await base.OnConnectedAsync();
-    }
+**Location**: [`src/Server/Boilerplate.Server.Api/SignalR/AppHub.cs`](/src/Server/Boilerplate.Server.Api/SignalR/AppHub.cs)
 
-    public Task ChangeAuthenticationState(string? accessToken)
-    {
-        // Updates authentication state when user signs in/out
-        // Called by AppClientCoordinator.cs
-    }
-}
-```
+#### Hub Capabilities
 
-#### SignalR Messaging Capabilities
+The `AppHub` provides enhanced messaging capabilities beyond basic SignalR:
 
-The hub supports several advanced scenarios:
+1. **`Clients.All()`**: Broadcasts to all SignalR connections (authenticated or not)
+2. **`Clients.User(userId)`**: Sends messages to all tabs/apps for a specific user
+3. **`Clients.Group("AuthenticatedClients")`**: Sends messages to all signed-in browser tabs and apps
+4. **`Clients.Client(connectionId)`**: Targets a specific connection (e.g., a specific browser tab or app instance)
 
-1. **`Clients.All()`**: Broadcast to all connected clients (authenticated or not)
-2. **`Clients.User(userId)`**: Send to all tabs/apps of a specific user
-3. **`Clients.Group("AuthenticatedClients")`**: Send to all authenticated sessions
-4. **`Clients.Client(signalRConnectionId)`**: Target specific session by connection ID
+#### Authentication State Management
 
-#### Real-World Example: Session Revocation
+Each user session tracks its **SignalR connection ID** in the database. This enables powerful scenarios like:
 
-**Location**: [`/src/Server/Boilerplate.Server.Api/Controllers/Identity/UserController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/UserController.cs)
-
-When an admin revokes a user session:
+**Example**: When an admin revokes a user session, the server can send a SignalR message directly to that specific browser tab or app:
 
 ```csharp
-[HttpDelete]
-public async Task RevokeSession(Guid userSessionId, CancellationToken cancellationToken)
-{
-    var userSession = await dbContext.UserSessions
-        .FirstOrDefaultAsync(us => us.Id == userSessionId, cancellationToken);
-
-    if (userSession is null)
-        throw new ResourceNotFoundException();
-
-    if (string.IsNullOrEmpty(userSession.SignalRConnectionId) is false)
-    {
-        await appHubContext.Clients
-            .Client(userSession.SignalRConnectionId)
-            .SendAsync(SignalREvents.PUBLISH_MESSAGE, 
-                       SharedPubSubMessages.SESSION_REVOKED, 
-                       null, 
-                       cancellationToken);
-    }
-
-    dbContext.Remove(userSession);
-    await dbContext.SaveChangesAsync(cancellationToken);
-}
+// From UserController.cs - RevokeSession method
+await appHubContext.Clients.Client(userSession.SignalRConnectionId)
+    .SendAsync(SignalREvents.SHOW_MESSAGE, message, null, cancellationToken);
 ```
 
-This sends a SignalR message to the specific browser tab or app, which then:
-- Clears access/refresh tokens from storage
+This ensures the corresponding browser tab or app immediately:
+- Clears its access/refresh tokens from storage
 - Navigates to the sign-in page automatically
 
-### Client-Side: HubConnection & AppClientCoordinator
+#### Key Methods in AppHub
 
-**Location**: [`/src/Client/Boilerplate.Client.Core/Components/AppClientCoordinator.cs`](/src/Client/Boilerplate.Client.Core/Components/AppClientCoordinator.cs)
-
-The `AppClientCoordinator` manages the SignalR connection lifecycle:
+**OnConnectedAsync()**: Called when a client connects
 
 ```csharp
-public partial class AppClientCoordinator : AppComponentBase
+public override async Task OnConnectedAsync()
 {
-    [AutoInject] private HubConnection hubConnection = default!;
+    if (Context.GetHttpContext()?.ContainsExpiredAccessToken() is true)
+        throw new HubException(nameof(AppStrings.UnauthorizedException))
+            .WithData("ConnectionId", Context.ConnectionId);
 
-    private async Task EnsureSignalRStarted()
+    await ChangeAuthenticationStateImplementation(Context.User);
+    await base.OnConnectedAsync();
+}
+```
+
+**ChangeAuthenticationState()**: Updates authentication state while SignalR is connected
+
+```csharp
+public Task ChangeAuthenticationState(string? accessToken)
+{
+    ClaimsPrincipal? user = null;
+
+    if (string.IsNullOrEmpty(accessToken) is false)
     {
-        if (hubConnection.State is not HubConnectionState.Connected or HubConnectionState.Connecting)
-        {
-            await hubConnection.StartAsync(CurrentCancellationToken);
-            await HubConnectionConnected(null);
-        }
-        else
-        {
-            await hubConnection.InvokeAsync("ChangeAuthenticationState", 
-                await AuthTokenProvider.GetAccessToken(), 
-                CurrentCancellationToken);
-        }
-    }
-}
-```
-
-#### SignalR Event Subscriptions
-
-The client subscribes to three main SignalR events:
-
-**1. SHOW_MESSAGE**: Display notifications to users
-
-```csharp
-hubConnection.On<string, Dictionary<string, string?>?, bool>(
-    SignalREvents.SHOW_MESSAGE, 
-    async (message, data) =>
-    {
-        if (await notification.IsNotificationAvailable())
-        {
-            // Show local notification (not push notification)
-            await notification.Show("Boilerplate SignalR", new()
-            {
-                Icon = "/images/icons/bit-icon-512.png",
-                Body = message,
-                Data = data
-            });
-        }
-        else
-        {
-            SnackBarService.Show("Boilerplate", message);
-        }
-        return true; // Indicates message was shown successfully
-    });
-```
-
-**2. PUBLISH_MESSAGE**: Broadcast messages internally via PubSub
-
-```csharp
-hubConnection.On<string, object?>(
-    SignalREvents.PUBLISH_MESSAGE, 
-    async (message, payload) =>
-    {
-        PubSubService.Publish(message, payload);
-    });
-```
-
-**3. EXCEPTION_THROWN**: Handle server-side exceptions
-
-```csharp
-hubConnection.On<AppProblemDetails>(
-    SignalREvents.EXCEPTION_THROWN, 
-    async (appProblemDetails) =>
-    {
-        ExceptionHandler.Handle(appProblemDetails, 
-            displayKind: ExceptionDisplayKind.NonInterrupting);
-    });
-```
-
-### SignalR Message Keys
-
-**Location**: [`/src/Shared/Services/SharedPubSubMessages.cs`](/src/Shared/Services/SharedPubSubMessages.cs)
-
-The project defines message keys shared between server and client:
-
-```csharp
-// Events sent from server to client
-public static partial class SignalREvents
-{
-    public const string PUBLISH_MESSAGE = nameof(PUBLISH_MESSAGE);
-    public const string SHOW_MESSAGE = nameof(SHOW_MESSAGE);
-    public const string EXCEPTION_THROWN = nameof(EXCEPTION_THROWN);
-}
-
-// Methods called on the hub
-public static partial class SignalRMethods
-{
-    public const string UPLOAD_DIAGNOSTIC_LOGGER_STORE = 
-        nameof(UPLOAD_DIAGNOSTIC_LOGGER_STORE);
-}
-
-// Pub/Sub message keys
-public partial class SharedPubSubMessages
-{
-    public const string SESSION_REVOKED = nameof(SESSION_REVOKED);
-    public const string PROFILE_UPDATED = nameof(PROFILE_UPDATED);
-    public const string DASHBOARD_DATA_CHANGED = nameof(DASHBOARD_DATA_CHANGED);
-}
-```
-
-### SignalR Configuration
-
-**Server Configuration**: [`/src/Server/Boilerplate.Server.Api/Program.Services.cs`](/src/Server/Boilerplate.Server.Api/Program.Services.cs)
-
-```csharp
-var signalRBuilder = services.AddSignalR(options =>
-{
-    options.EnableDetailedErrors = serverApiSettings.IsTestOrDev();
-});
-
-// Optional: Azure SignalR Service for scaling across multiple servers
-if (string.IsNullOrEmpty(serverApiSettings.Azure.SignalRConnectionString) is false)
-{
-    signalRBuilder.AddAzureSignalR(serverApiSettings.Azure.SignalRConnectionString);
-}
-```
-
-**Endpoint Mapping**: [`/src/Server/Boilerplate.Server.Web/Program.Middlewares.cs`](/src/Server/Boilerplate.Server.Web/Program.Middlewares.cs)
-
-```csharp
-app.MapHub<Api.SignalR.AppHub>("/app-hub", options => 
-{
-    options.AllowStatefulReconnects = true; // ASP.NET Core 8+ feature
-});
-```
-
-**Client Configuration**: Handled automatically by dependency injection, with the connection string configured in `appsettings.json`.
-
----
-
-## 2. Push Notifications
-
-Push notifications enable the server to send messages to users even when they're not actively using the application.
-
-### Architecture Overview
-
-The push notification system consists of:
-
-1. **Client Services**: Platform-specific implementations for subscribing to push notifications
-2. **Server Service**: `PushNotificationService` manages subscriptions and sends notifications
-3. **Background Jobs**: `PushNotificationJobRunner` handles actual notification delivery
-4. **DTO & Models**: Subscription data structures
-
-### Push Notification DTO
-
-**Location**: [`/src/Shared/Dtos/PushNotification/PushNotificationSubscriptionDto.cs`](/src/Shared/Dtos/PushNotification/PushNotificationSubscriptionDto.cs)
-
-```csharp
-[DtoResourceType(typeof(AppStrings))]
-public partial class PushNotificationSubscriptionDto
-{
-    [Required]
-    public string? DeviceId { get; set; }
-
-    [Required]
-    [AllowedValues("apns", "fcmV1", "browser")]
-    public string? Platform { get; set; }
-
-    public string? PushChannel { get; set; }
-    public string? P256dh { get; set; }
-    public string? Auth { get; set; }
-    public string? Endpoint { get; set; }
-}
-```
-
-**Supported Platforms**:
-- **`browser`**: Web Push API (Chrome, Edge, Firefox, Safari)
-- **`fcmV1`**: Firebase Cloud Messaging (Android)
-- **`apns`**: Apple Push Notification service (iOS, macOS)
-
-### Client-Side: IPushNotificationService
-
-**Base Interface**: [`/src/Client/Boilerplate.Client.Core/Services/Contracts/IPushNotificationService.cs`](/src/Client/Boilerplate.Client.Core/Services/Contracts/IPushNotificationService.cs)
-
-```csharp
-public interface IPushNotificationService
-{
-    string Token { get; set; }
-    
-    /// <summary>
-    /// Supported by the OS/Platform and allowed by the user.
-    /// </summary>
-    Task<bool> IsAvailable(CancellationToken cancellationToken);
-    
-    Task RequestPermission(CancellationToken cancellationToken);
-    Task<PushNotificationSubscriptionDto?> GetSubscription(CancellationToken cancellationToken);
-    Task Subscribe(CancellationToken cancellationToken);
-}
-```
-
-**Base Implementation**: [`/src/Client/Boilerplate.Client.Core/Services/PushNotificationServiceBase.cs`](/src/Client/Boilerplate.Client.Core/Services/PushNotificationServiceBase.cs)
-
-```csharp
-public abstract partial class PushNotificationServiceBase : IPushNotificationService
-{
-    [AutoInject] protected ILogger<PushNotificationServiceBase> Logger = default!;
-    [AutoInject] protected IPushNotificationController pushNotificationController = default!;
-
-    public async Task Subscribe(CancellationToken cancellationToken)
-    {
-        if (await IsAvailable(cancellationToken) is false)
-        {
-            Logger.LogWarning("Notifications are not supported/allowed.");
-            return;
-        }
-
-        var subscription = await GetSubscription(cancellationToken);
-        if (subscription is null) return;
-
-        await pushNotificationController.Subscribe(subscription, cancellationToken);
-    }
-}
-```
-
-### Platform-Specific Implementations
-
-#### 1. Web (Browser) Push Notifications
-
-**Location**: [`/src/Client/Boilerplate.Client.Web/Services/WebPushNotificationService.cs`](/src/Client/Boilerplate.Client.Web/Services/WebPushNotificationService.cs)
-
-```csharp
-public partial class WebPushNotificationService : PushNotificationServiceBase
-{
-    [AutoInject] private Notification notification = default!;
-    [AutoInject] private readonly IJSRuntime jSRuntime = default!;
-    [AutoInject] private readonly ClientWebSettings clientWebSettings = default!;
-
-    public override async Task<PushNotificationSubscriptionDto?> GetSubscription(
-        CancellationToken cancellationToken)
-    {
-        return await jSRuntime.GetPushNotificationSubscription(
-            clientWebSettings.AdsPushVapid!.PublicKey);
+        var bearerTokenProtector = bearerTokenOptions.Get(IdentityConstants.BearerScheme).BearerTokenProtector;
+        var accessTokenTicket = bearerTokenProtector.Unprotect(accessToken);
+        user = accessTokenTicket!.Principal;
     }
 
-    public override async Task<bool> IsAvailable(CancellationToken cancellationToken) 
-        => string.IsNullOrEmpty(clientWebSettings.AdsPushVapid?.PublicKey) is false 
-            && await notification.IsNotificationAvailable();
-
-    public override async Task RequestPermission(CancellationToken cancellationToken)
-    {
-        if (await notification.IsSupported() is false) return;
-        await notification.RequestPermission();
-    }
+    return ChangeAuthenticationStateImplementation(user);
 }
 ```
 
-**JavaScript Integration**: [`/src/Client/Boilerplate.Client.Core/Scripts/App.ts`](/src/Client/Boilerplate.Client.Core/Scripts/App.ts)
+This method is called from `AppClientCoordinator.cs` when the user signs in or out while the SignalR connection is active.
 
-```typescript
-public static async getPushNotificationSubscription(vapidPublicKey: string) {
-    const registration = await navigator.serviceWorker.ready;
-    if (!registration) return null;
-
-    const pushManager = registration.pushManager;
-    if (!pushManager) return null;
-
-    let subscription = await pushManager.getSubscription();
-
-    if (!subscription) {
-        subscription = await pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: vapidPublicKey
-        });
-    }
-
-    const pushChannel = subscription.toJSON();
-    const p256dh = pushChannel.keys!['p256dh'];
-    const auth = pushChannel.keys!['auth'];
-
-    return {
-        deviceId: `${p256dh}-${auth}`,
-        platform: 'browser',
-        p256dh: p256dh,
-        auth: auth,
-        endpoint: pushChannel.endpoint
-    };
-}
-```
-
-**Service Worker**: [`/src/Client/Boilerplate.Client.Web/wwwroot/service-worker.published.js`](/src/Client/Boilerplate.Client.Web/wwwroot/service-worker.published.js)
-
-```javascript
-self.addEventListener('push', function (event) {
-    const eventData = event.data.json();
-    
-    self.registration.showNotification(eventData.title, {
-        data: eventData.data,
-        body: eventData.message,
-        icon: '/images/icons/bit-icon-512.png'
-    });
-});
-
-self.addEventListener('notificationclick', function (event) {
-    event.notification.close();
-    const pageUrl = event.notification.data.pageUrl;
-    
-    if (pageUrl != null) {
-        event.waitUntil(
-            clients.matchAll({ type: 'window', includeUncontrolled: true })
-                .then((clientList) => {
-                    for (const client of clientList) {
-                        if (!client.focus || !client.postMessage) continue;
-                        // Navigate to the page
-                        client.postMessage({ 
-                            key: 'PUBLISH_MESSAGE', 
-                            message: 'NAVIGATE_TO', 
-                            payload: pageUrl 
-                        });
-                        return client.focus();
-                    }
-                    return clients.openWindow(pageUrl);
-                })
-        );
-    }
-});
-```
-
-#### 2. Android Push Notifications (Firebase Cloud Messaging)
-
-**Location**: [`/src/Client/Boilerplate.Client.Maui/Platforms/Android/Services/AndroidPushNotificationService.cs`](/src/Client/Boilerplate.Client.Maui/Platforms/Android/Services/AndroidPushNotificationService.cs)
-
-```csharp
-public partial class AndroidPushNotificationService : PushNotificationServiceBase
-{
-    public override async Task<bool> IsAvailable(CancellationToken cancellationToken)
-    {
-        return await MainThread.InvokeOnMainThreadAsync(async () =>
-        {
-            return LocalNotificationCenter.Current.IsSupported
-                && await LocalNotificationCenter.Current.AreNotificationsEnabled();
-        });
-    }
-
-    public override async Task RequestPermission(CancellationToken cancellationToken)
-    {
-        await MainThread.InvokeOnMainThreadAsync(async () =>
-        {
-            if (LocalNotificationCenter.Current.IsSupported is false) return;
-            await LocalNotificationCenter.Current.RequestNotificationPermission();
-            Configure();
-        });
-    }
-
-    public string GetDeviceId() 
-        => Secure.GetString(Platform.AppContext.ContentResolver, Secure.AndroidId)!;
-
-    public override async Task<PushNotificationSubscriptionDto?> GetSubscription(
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            using CancellationTokenSource cts = new(TimeSpan.FromSeconds(15));
-            using var linkedCts = CancellationTokenSource
-                .CreateLinkedTokenSource(cancellationToken, cts.Token);
-
-            // Wait for Firebase token
-            while (string.IsNullOrEmpty(Token))
-            {
-                await Task.Delay(TimeSpan.FromSeconds(1), linkedCts.Token);
-            }
-        }
-        catch (Exception exp)
-        {
-            Logger.LogError(exp, "Unable to resolve token for FCMv1.");
-            return null;
-        }
-
-        return new PushNotificationSubscriptionDto
-        {
-            DeviceId = GetDeviceId(),
-            Platform = "fcmV1",
-            PushChannel = Token
-        };
-    }
-}
-```
-
-**Firebase Messaging Service**: [`/src/Client/Boilerplate.Client.Maui/Platforms/Android/Services/PushNotificationFirebaseMessagingService.cs`](/src/Client/Boilerplate.Client.Maui/Platforms/Android/Services/PushNotificationFirebaseMessagingService.cs)
-
-```csharp
-[Service(Exported = false)]
-[IntentFilter(["com.google.firebase.MESSAGING_EVENT"])]
-public partial class PushNotificationFirebaseMessagingService : FirebaseMessagingService
-{
-    public override async void OnNewToken(string token)
-    {
-        PushNotificationService.Token = token;
-        await PushNotificationService.Subscribe(default);
-    }
-
-    public override async void OnMessageReceived(RemoteMessage message)
-    {
-        var notification = message.GetNotification();
-        var title = notification!.Title;
-        var body = notification.Body;
-
-        if (string.IsNullOrEmpty(title) is false)
-        {
-            await LocalNotificationCenter.Current.Show(new()
-            {
-                Title = title!,
-                Description = body!,
-                ReturningData = JsonSerializer.Serialize(
-                    message.Data ?? new Dictionary<string, string> { })
-            });
-        }
-    }
-}
-```
-
-#### 3. iOS/macOS Push Notifications (APNS)
-
-**Location**: [`/src/Client/Boilerplate.Client.Maui/Platforms/iOS/Services/iOSPushNotificationService.cs`](/src/Client/Boilerplate.Client.Maui/Platforms/iOS/Services/iOSPushNotificationService.cs)
-
-```csharp
-public partial class iOSPushNotificationService : PushNotificationServiceBase
-{
-    public override async Task<bool> IsAvailable(CancellationToken cancellationToken)
-    {
-        return await MainThread.InvokeOnMainThreadAsync(async () =>
-        {
-            return LocalNotificationCenter.Current.IsSupported
-                && await LocalNotificationCenter.Current.AreNotificationsEnabled();
-        });
-    }
-
-    public string GetDeviceId() 
-        => UIDevice.CurrentDevice.IdentifierForVendor!.ToString();
-
-    public override async Task<PushNotificationSubscriptionDto?> GetSubscription(
-        CancellationToken cancellationToken)
-    {
-        // Similar to Android, waits for APNS token
-        // Returns subscription with platform = "apns"
-    }
-
-    public static async Task Configure()
-    {
-        await MainThread.InvokeOnMainThreadAsync(() =>
-        {
-            UIApplication.SharedApplication.RegisterForRemoteNotifications();
-            UNUserNotificationCenter.Current.Delegate = 
-                new AppUNUserNotificationCenterDelegate();
-        });
-    }
-}
-```
-
-#### 4. Windows Push Notifications
-
-**Location**: [`/src/Client/Boilerplate.Client.Windows/Services/WindowsPushNotificationService.cs`](/src/Client/Boilerplate.Client.Windows/Services/WindowsPushNotificationService.cs)
-
-```csharp
-public partial class WindowsPushNotificationService : PushNotificationServiceBase
-{
-    public override Task<PushNotificationSubscriptionDto?> GetSubscription(
-        CancellationToken cancellationToken) 
-        => Task.FromResult<PushNotificationSubscriptionDto?>(null);
-}
-```
-
-**Note**: Windows push notifications are not yet fully implemented but can be added using Windows Notification Service (WNS).
-
-### Server-Side: Push Notification Management
-
-#### PushNotificationService
-
-**Location**: [`/src/Server/Boilerplate.Server.Api/Services/PushNotificationService.cs`](/src/Server/Boilerplate.Server.Api/Services/PushNotificationService.cs)
-
-```csharp
-public partial class PushNotificationService
-{
-    [AutoInject] private AppDbContext dbContext = default!;
-    [AutoInject] private ServerApiSettings serverApiSettings = default!;
-    [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
-    [AutoInject] private IBackgroundJobClient backgroundJobClient = default!;
-
-    public async Task Subscribe([Required] PushNotificationSubscriptionDto dto, 
-        CancellationToken cancellationToken)
-    {
-        // Tags can be used to send push notifications to specific groups
-        List<string> tags = [
-            CultureInfo.CurrentUICulture.Name // Send to users with specific culture
-        ];
-
-        var userSessionId = httpContextAccessor.HttpContext!.User.IsAuthenticated() 
-            ? httpContextAccessor.HttpContext.User.GetSessionId() 
-            : (Guid?)null;
-
-        // Find or create subscription
-        var subscription = await dbContext.PushNotificationSubscriptions
-            .WhereIf(userSessionId is null, s => s.DeviceId == dto.DeviceId)
-            .WhereIf(userSessionId is not null, 
-                s => s.UserSessionId == userSessionId || s.DeviceId == dto.DeviceId)
-            .FirstOrDefaultAsync(cancellationToken) ??
-            (await dbContext.PushNotificationSubscriptions.AddAsync(new()
-            {
-                DeviceId = dto.DeviceId,
-                Platform = dto.Platform
-            }, cancellationToken)).Entity;
-
-        dto.Patch(subscription);
-
-        subscription.Tags = [.. tags];
-        subscription.UserSessionId = userSessionId;
-        subscription.RenewedOn = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        subscription.ExpirationTime = DateTimeOffset.UtcNow.AddMonths(1)
-            .ToUnixTimeSeconds();
-
-        if (subscription.Platform is "browser")
-        {
-            subscription.PushChannel = VapidSubscription
-                .FromParameters(subscription.Endpoint, 
-                               subscription.P256dh, 
-                               subscription.Auth)
-                .ToAdsPushToken();
-        }
-
-        await dbContext.SaveChangesAsync(cancellationToken);
-    }
-
-    public async Task RequestPush(
-        string? title = null, 
-        string? message = null,
-        string? action = null,
-        string? pageUrl = null,
-        bool userRelatedPush = false,
-        Expression<Func<PushNotificationSubscription, bool>>? customSubscriptionFilter = null,
-        CancellationToken cancellationToken = default)
-    {
-        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-
-        var query = dbContext.PushNotificationSubscriptions
-            .Where(sub => sub.ExpirationTime > now)
-            .Where(sub => sub.UserSessionId == null || 
-                         sub.UserSession!.NotificationStatus == UserSessionNotificationStatus.Allowed)
-            .WhereIf(customSubscriptionFilter is not null, customSubscriptionFilter!)
-            .WhereIf(userRelatedPush is true, 
-                sub => (now - sub.RenewedOn) < serverApiSettings.Identity
-                    .RefreshTokenExpiration.TotalSeconds);
-
-        if (customSubscriptionFilter is null)
-        {
-            query = query.OrderBy(_ => EF.Functions.Random()).Take(100);
-        }
-
-        var pushNotificationSubscriptionIds = await query
-            .Select(pns => pns.Id)
-            .ToArrayAsync(cancellationToken);
-
-        // Enqueue background job to send notifications
-        backgroundJobClient.Enqueue<PushNotificationJobRunner>(runner => 
-            runner.RequestPush(pushNotificationSubscriptionIds, 
-                              title, message, action, pageUrl, 
-                              userRelatedPush, default));
-    }
-}
-```
-
-#### Key Concepts
-
-**1. User-Related Push**:
-```csharp
-// userRelatedPush: If the BearerTokenExpiration is 14 days, it's not practical 
-// to send push notifications with sensitive information, like an OTP code to a 
-// device where the user hasn't used the app for over 14 days.
-// This is because, even if the user opens the app, they will be automatically 
-// signed out as their session has expired.
-```
-
-**2. Custom Subscription Filter**:
-```csharp
-// Example: Send to specific user
-await pushNotificationService.RequestPush(
-    message: message, 
-    userRelatedPush: true, 
-    customSubscriptionFilter: us => us.UserSession!.UserId == user.Id 
-        && us.UserSessionId != currentUserSessionId, 
-    cancellationToken: cancellationToken);
-```
-
-#### PushNotificationJobRunner
-
-**Location**: [`/src/Server/Boilerplate.Server.Api/Services/Jobs/PushNotificationJobRunner.cs`](/src/Server/Boilerplate.Server.Api/Services/Jobs/PushNotificationJobRunner.cs)
-
-```csharp
-public partial class PushNotificationJobRunner
-{
-    [AutoInject] private AppDbContext dbContext = default!;
-    [AutoInject] private IAdsPushSender adsPushSender = default!;
-    [AutoInject] private ServerExceptionHandler serverExceptionHandler = default!;
-
-    public async Task RequestPush(
-        int[] pushNotificationSubscriptionIds,
-        string? title = null,
-        string? message = null,
-        string? action = null,
-        string? pageUrl = null,
-        bool userRelatedPush = false,
-        CancellationToken cancellationToken = default)
-    {
-        var subscriptions = await dbContext.PushNotificationSubscriptions
-            .Where(pns => pushNotificationSubscriptionIds.Contains(pns.Id))
-            .ToArrayAsync(cancellationToken);
-
-        var payload = new AdsPushBasicSendPayload()
-        {
-            Title = AdsPushText.CreateUsingString(title ?? "Boilerplate push"),
-            Detail = AdsPushText.CreateUsingString(message ?? string.Empty)
-        };
-
-        if (string.IsNullOrEmpty(action) is false)
-        {
-            payload.Parameters.Add("action", action);
-        }
-        if (string.IsNullOrEmpty(pageUrl) is false)
-        {
-            payload.Parameters.Add("pageUrl", pageUrl);
-        }
-
-        ConcurrentBag<Exception> exceptions = [];
-
-        await Parallel.ForEachAsync(subscriptions, parallelOptions: new()
-        {
-            MaxDegreeOfParallelism = 10,
-            CancellationToken = default
-        }, async (subscription, _) =>
-        {
-            try
-            {
-                var target = subscription.Platform is "browser" 
-                    ? AdsPushTarget.BrowserAndPwa
-                    : subscription.Platform is "fcmV1" 
-                        ? AdsPushTarget.Android
-                        : subscription.Platform is "apns" 
-                            ? AdsPushTarget.Ios
-                            : throw new NotImplementedException();
-
-                await adsPushSender.BasicSendAsync(
-                    target, 
-                    subscription.PushChannel, 
-                    payload, 
-                    default);
-            }
-            catch (Exception exp)
-            {
-                exceptions.Add(exp);
-            }
-        });
-
-        if (exceptions.IsEmpty is false)
-        {
-            serverExceptionHandler.Handle(
-                new AggregateException("Failed to send push notifications", exceptions)
-                    .WithData(new() { { "UserRelatedPush", userRelatedPush } }));
-        }
-    }
-}
-```
-
-**Why Use Background Jobs?**
-- Push notifications are sent in parallel to multiple devices
-- Failures on individual devices don't block the entire operation
-- The job continues even if the original HTTP request is canceled or times out
-- Hangfire ensures the job is retried if it fails
-
----
-
-## 3. Local Notifications
-
-Local notifications are displayed **within the application** when it's running, separate from push notifications.
-
-### Plugin.LocalNotification
-
-The project uses the **`Plugin.LocalNotification`** NuGet package for local notification support on mobile platforms:
-
-```csharp
-// Check if local notifications are available
-if (LocalNotificationCenter.Current.IsSupported 
-    && await LocalNotificationCenter.Current.AreNotificationsEnabled())
-{
-    // Show local notification
-    await LocalNotificationCenter.Current.Show(new()
-    {
-        Title = "Local Notification",
-        Description = "This is shown within the app",
-        ReturningData = JsonSerializer.Serialize(additionalData)
-    });
-}
-```
-
-### Bit.Butil Notification (Web)
-
-For web applications, the project uses **`Bit.Butil`**'s Notification API:
-
-```csharp
-[AutoInject] private Notification notification = default!;
-
-// Check availability
-if (await notification.IsNotificationAvailable())
-{
-    // Show browser notification
-    await notification.Show("Title", new()
-    {
-        Icon = "/images/icons/bit-icon-512.png",
-        Body = "Notification message",
-        Data = additionalData
-    });
-}
-```
-
----
-
-## 4. Pub/Sub Messaging (Internal Client Communication)
-
-The project includes an internal pub/sub messaging system for communication **between components on the client side**.
-
-### IPubSubService
-
-**Usage Example**:
-
-```csharp
-// Subscribe to a message
-unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.PROFILE_UPDATED, 
-    async (payload) =>
-    {
-        // Handle profile update
-        await RefreshUserProfile();
-    });
-
-// Publish a message
-PubSubService.Publish(ClientPubSubMessages.PROFILE_UPDATED, userDto);
-
-// Unsubscribe when done
-unsubscribe?.Invoke();
-```
-
-### Client-Only Pub/Sub Messages
-
-**Location**: Search for `ClientPubSubMessages` in the codebase
-
-```csharp
-public partial class ClientPubSubMessages
-{
-    public const string NAVIGATE_TO = nameof(NAVIGATE_TO);
-    public const string IS_ONLINE_CHANGED = nameof(IS_ONLINE_CHANGED);
-    public const string FORCE_UPDATE = nameof(FORCE_UPDATE);
-}
-```
-
----
-
-## 5. Real-World Example: Multi-Channel Messaging
-
-Let's examine how the project uses **both SignalR and Push Notifications** together.
-
-**Scenario**: Admin sends an elevated access token to a user
-
-**Location**: [`/src/Server/Boilerplate.Server.Api/Controllers/Identity/UserController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/UserController.cs)
-
-```csharp
-[HttpPost]
-public async Task SendElevatedAccessToken(CancellationToken cancellationToken)
-{
-    var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
-    if (user is null) throw new ResourceNotFoundException();
-
-    // Generate elevated access token
-    var message = Localizer[nameof(AppStrings.ElevatedAccessTokenSent)];
-
-    List<Task> sendMessagesTasks = [];
-
-    // 1. Send via SignalR to all active sessions except current
-    var userSessionIdsExceptCurrentUserSessionId = await dbContext.UserSessions
-        .Where(us => us.UserId == user.Id && us.Id != currentUserSessionId)
-        .Where(us => us.SignalRConnectionId != null)
-        .Select(us => us.SignalRConnectionId!)
-        .ToArrayAsync(cancellationToken);
-        
-    sendMessagesTasks.Add(
-        appHubContext.Clients
-            .Clients(userSessionIdsExceptCurrentUserSessionId)
-            .SendAsync(SignalREvents.SHOW_MESSAGE, message, null, cancellationToken));
-
-    // 2. Send push notification to user's other devices
-    sendMessagesTasks.Add(
-        pushNotificationService.RequestPush(
-            message: message, 
-            userRelatedPush: true, 
-            customSubscriptionFilter: us => us.UserSession!.UserId == user.Id 
-                && us.UserSessionId != currentUserSessionId, 
-            cancellationToken: cancellationToken));
-
-    await Task.WhenAll(sendMessagesTasks);
-}
-```
-
-This ensures the user receives the message through:
-- **SignalR**: If they have the app open in another tab/device
-- **Push Notification**: If they're not actively using the app
-
----
-
-## 6. Configuration
-
-### Push Notification Configuration
-
-**Server-Side Configuration**: [`/src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json)
-
-```json
-{
-  "AdsPush": {
-    "Vapid": {
-      "PublicKey": "YOUR_VAPID_PUBLIC_KEY",
-      "PrivateKey": "YOUR_VAPID_PRIVATE_KEY",
-      "Subject": "mailto:support@bitplatform.dev"
-    },
-    "FcmV1": {
-      "GoogleApplicationCredentials": "path/to/firebase-service-account.json"
-    },
-    "Apns": {
-      "BundleId": "com.bitplatform.Boilerplate",
-      "P8PrivateKey": "path/to/apns-key.p8",
-      "P8PrivateKeyId": "YOUR_KEY_ID",
-      "TeamId": "YOUR_TEAM_ID"
-    }
-  }
-}
-```
-
-**Client-Side Configuration**: [`/src/Client/Boilerplate.Client.Web/appsettings.json`](/src/Client/Boilerplate.Client.Web/appsettings.json)
-
-```json
-{
-  "AdsPushVapid": {
-    "PublicKey": "YOUR_VAPID_PUBLIC_KEY"
-  }
-}
-```
-
-### SignalR Configuration
-
-**Server-Side** (optional Azure SignalR Service): [`/src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json)
-
-```json
-{
-  "Azure": {
-    "SignalRConnectionString": "Endpoint=https://...;AccessKey=...;"
-  }
-}
-```
-
----
-
-## 7. Key Takeaways
-
-### When to Use Each Messaging Type
-
-| Messaging Type | Use Case | Example |
-|----------------|----------|---------|
-| **SignalR** | Real-time bi-directional communication for active sessions | Live chat, real-time dashboards, instant notifications |
-| **Push Notifications** | Background messaging when app is closed or inactive | OTP codes, breaking news alerts, reminders |
-| **Local Notifications** | In-app alerts when app is running | Download complete, task finished |
-| **Pub/Sub** | Internal client-side component communication | Update UI after data change, coordinate between components |
-
-### Best Practices
-
-1. **Combine SignalR + Push Notifications**: Send via SignalR for active users and push notifications for inactive users
-2. **Use Background Jobs for Push**: Never send push notifications directly in API calls
-3. **Respect User Preferences**: Check `NotificationStatus` before sending user-related pushes
-4. **Handle Token Expiration**: Don't send sensitive data to devices with expired sessions
-5. **Graceful Degradation**: Check if notification APIs are available before using them
-6. **Error Handling**: Push notification failures shouldn't crash your application
-
-### Debugging Tips
-
-1. **Check SignalR Connection State**: Use the diagnostic modal to view SignalR connection status
-2. **View Push Subscriptions**: Query `PushNotificationSubscriptions` table to see registered devices
-3. **Monitor Hangfire Dashboard**: Check background job execution for push notification delivery
-4. **Test with Actual Devices**: Push notifications may not work in emulators/simulators
-5. **Check Service Worker Registration**: For web push, ensure service worker is registered
-
----
-
-## 8. Advanced Topics
-
-### Diagnostic Logger Upload via SignalR
-
-**Location**: [`/src/Server/Boilerplate.Server.Api/SignalR/AppHub.cs`](/src/Server/Boilerplate.Server.Api/SignalR/AppHub.cs)
-
-Support staff can retrieve diagnostic logs from user sessions:
+**GetUserSessionLogs()**: Retrieves diagnostic logs from a specific user session
 
 ```csharp
 [Authorize(Policy = AppFeatures.System.ManageLogs)]
-public async Task<DiagnosticLogDto[]> GetUserSessionLogs(
-    Guid userSessionId, 
-    [FromServices] AppDbContext dbContext)
+public async Task<DiagnosticLogDto[]> GetUserSessionLogs(Guid userSessionId, [FromServices] AppDbContext dbContext)
 {
     var userSessionSignalRConnectionId = await dbContext.UserSessions
         .Where(us => us.Id == userSessionId)
@@ -1006,58 +124,983 @@ public async Task<DiagnosticLogDto[]> GetUserSessionLogs(
         return [];
 
     return await Clients.Client(userSessionSignalRConnectionId)
-        .InvokeAsync<DiagnosticLogDto[]>(
-            SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE, 
-            Context.ConnectionAborted);
+        .InvokeAsync<DiagnosticLogDto[]>(SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE, Context.ConnectionAborted);
 }
 ```
 
-This allows support staff to view real-time logs from user devices for troubleshooting.
+This allows admins/support staff to retrieve diagnostic logs from active user sessions in real-time for troubleshooting.
 
-### AI Chatbot Streaming via SignalR
+### SignalR Hub Configuration
 
-**Location**: [`/src/Server/Boilerplate.Server.Api/SignalR/AppHub.Chatbot.cs`](/src/Server/Boilerplate.Server.Api/SignalR/AppHub.Chatbot.cs)
-
-The project uses SignalR for streaming AI chatbot responses:
+The SignalR hub is configured in [`src/Server/Boilerplate.Server.Api/Program.Middlewares.cs`](/src/Server/Boilerplate.Server.Api/Program.Middlewares.cs):
 
 ```csharp
-public async IAsyncEnumerable<string> Chatbot(
-    string prompt, 
-    [EnumeratorCancellation] CancellationToken cancellationToken)
-{
-    await foreach (var response in chatService.GetStreamingResponse(prompt, cancellationToken))
+app.MapHub<SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
+```
+
+**Key Features**:
+- **AllowStatefulReconnects**: Enables stateful reconnection for better resilience
+- **Azure SignalR Support**: The project is configured to support Azure SignalR Service for scalability
+
+### Client-Side SignalR Connection
+
+The SignalR connection is configured on the client side in:
+
+**Location**: [`src/Client/Boilerplate.Client.Core/Extensions/IClientCoreServiceCollectionExtensions.cs`](/src/Client/Boilerplate.Client.Core/Extensions/IClientCoreServiceCollectionExtensions.cs)
+
+```csharp
+var hubConnection = new HubConnectionBuilder()
+    .WithStatefulReconnect()
+    .AddJsonProtocol(options =>
     {
-        yield return response;
+        foreach (var chain in sp.GetRequiredService<JsonSerializerOptions>().TypeInfoResolverChain)
+        {
+            options.PayloadSerializerOptions.TypeInfoResolverChain.Add(chain);
+        }
+    })
+    .WithAutomaticReconnect(sp.GetRequiredService<IRetryPolicy>())
+    .WithUrl(new Uri(absoluteServerAddressProvider.GetAddress(), "app-hub"), options =>
+    {
+        options.SkipNegotiation = false; // Required for Azure SignalR
+        options.Transports = HttpTransportType.WebSockets;
+        // Avoid enabling long polling or Server-Sent Events. Focus on resolving issues with WebSockets.
+        // WebSockets should be enabled on services like IIS or Cloudflare CDN
+        options.HttpMessageHandlerFactory = httpClientHandler => sp.GetRequiredService<HttpMessageHandlersChainFactory>().Invoke(httpClientHandler);
+        options.AccessTokenProvider = async () =>
+        {
+            try
+            {
+                return await authManager.GetFreshAccessToken(requestedBy: nameof(HubConnection));
+            }
+            catch (ServerConnectionException) { } 
+            return null;
+        };
+    })
+    .Build();
+```
+
+**Key Features**:
+- **WebSockets Only**: Uses WebSockets transport for better performance
+- **Automatic Reconnection**: Reconnects automatically with retry policy
+- **JWT Authentication**: Provides access token for authenticated connections
+- **Azure SignalR Compatible**: Works with Azure SignalR Service
+
+---
+
+## 2. Pub/Sub Messaging Pattern
+
+### What is PubSubService?
+
+The **PubSubService** implements a publish/subscribe pattern that enables **decoupled communication** between different parts of the application. It can be used:
+
+- Within Blazor components and pages
+- Outside Blazor components (e.g., MAUI XAML pages)
+- From JavaScript code using `window.postMessage`
+- From server-side using SignalR
+
+**Location**: [`src/Client/Boilerplate.Client.Core/Services/PubSubService.cs`](/src/Client/Boilerplate.Client.Core/Services/PubSubService.cs)
+
+### Architecture
+
+The PubSubService uses **WeakReference-based subscriptions** to prevent memory leaks:
+
+```csharp
+private readonly ConcurrentDictionary<string, List<WeakHandler>> handlers = [];
+```
+
+**WeakReference Benefit**: When a component is disposed, its subscription is automatically garbage collected without requiring explicit unsubscription (although explicit unsubscription is still recommended for deterministic cleanup).
+
+### Publishing Messages
+
+```csharp
+public void Publish(string message, object? payload = null, bool persistent = false)
+{
+    if (handlers.TryGetValue(message, out var weakHandlers))
+    {
+        foreach (var weakHandler in weakHandlers.ToArray())
+        {
+            weakHandler.Invoke(payload)?.ContinueWith(HandleException, TaskContinuationOptions.OnlyOnFaulted);
+        }
+    }
+    else if (persistent)
+    {
+        persistentMessages.Add((message, payload));
     }
 }
 ```
 
-**Client-Side**:
+**Persistent Messages**: If `persistent = true`, the message is stored and delivered to handlers that subscribe **after** the message was published. This is useful for scenarios where a component needs data that was published before it was created.
+
+### Subscribing to Messages
 
 ```csharp
-await foreach (var response in hubConnection.StreamAsync<string>(
-    "Chatbot", prompt, CurrentCancellationToken))
+public Action Subscribe(string message, Func<object?, Task> handler)
 {
-    messageText += response;
-    StateHasChanged();
+    var weakHandler = new WeakHandler(handler);
+    var weakHandlers = handlers.GetOrAdd(message, _ => []);
+    weakHandlers.Add(weakHandler);
+
+    // Deliver persistent messages immediately
+    foreach (var (notHandledMessage, payload) in persistentMessages)
+    {
+        if (notHandledMessage == message)
+        {
+            weakHandler.Invoke(payload)?.ContinueWith(HandleException, TaskContinuationOptions.OnlyOnFaulted);
+            persistentMessages.TryTake(out _);
+        }
+    }
+
+    return () =>
+    {
+        var removedHandlersCount = weakHandlers.RemoveAll(wh => wh.Matches(handler));
+    };
 }
+```
+
+**Returns**: An `Action` to unsubscribe from the message.
+
+### Message Types
+
+#### SharedPubSubMessages
+
+**Location**: [`src/Shared/Services/SharedPubSubMessages.cs`](/src/Shared/Services/SharedPubSubMessages.cs)
+
+These messages are used for **server-to-client communication** through SignalR:
+
+```csharp
+public partial class SharedPubSubMessages
+{
+    public const string DASHBOARD_DATA_CHANGED = nameof(DASHBOARD_DATA_CHANGED);
+    public const string SESSION_REVOKED = nameof(SESSION_REVOKED);
+    public const string PROFILE_UPDATED = nameof(PROFILE_UPDATED);
+}
+
+public static partial class SignalREvents
+{
+    public const string PUBLISH_MESSAGE = nameof(PUBLISH_MESSAGE);
+    public const string SHOW_MESSAGE = nameof(SHOW_MESSAGE);
+    public const string EXCEPTION_THROWN = nameof(EXCEPTION_THROWN);
+}
+
+public static partial class SignalRMethods
+{
+    public const string UPLOAD_DIAGNOSTIC_LOGGER_STORE = nameof(UPLOAD_DIAGNOSTIC_LOGGER_STORE);
+}
+```
+
+**SignalREvents** are messages sent **from server to client**.
+
+**SignalRMethods** are methods the server can **invoke on the client** (and wait for a response).
+
+#### ClientPubSubMessages
+
+**Location**: [`src/Client/Boilerplate.Client.Core/Services/ClientPubSubMessages.cs`](/src/Client/Boilerplate.Client.Core/Services/ClientPubSubMessages.cs)
+
+These messages are for **client-only** pub/sub communication:
+
+```csharp
+public partial class ClientPubSubMessages : SharedPubSubMessages
+{
+    public const string SHOW_SNACK = nameof(SHOW_SNACK);
+    public const string SHOW_MODAL = nameof(SHOW_MODAL);
+    public const string CLOSE_MODAL = nameof(CLOSE_MODAL);
+    public const string THEME_CHANGED = nameof(THEME_CHANGED);
+    public const string OPEN_NAV_PANEL = nameof(OPEN_NAV_PANEL);
+    public const string CLOSE_NAV_PANEL = nameof(CLOSE_NAV_PANEL);
+    public const string CULTURE_CHANGED = nameof(CULTURE_CHANGED);
+    public const string IS_ONLINE_CHANGED = nameof(IS_ONLINE_CHANGED);
+    public const string PAGE_DATA_CHANGED = nameof(PAGE_DATA_CHANGED);
+    public const string ROUTE_DATA_UPDATED = nameof(ROUTE_DATA_UPDATED);
+    public const string NAVIGATE_TO = nameof(NAVIGATE_TO);
+    public const string SHOW_DIAGNOSTIC_MODAL = nameof(SHOW_DIAGNOSTIC_MODAL);
+    public const string AD_HAVE_TROUBLE = nameof(AD_HAVE_TROUBLE);
+    public const string SOCIAL_SIGN_IN = nameof(SOCIAL_SIGN_IN);
+    public const string FORCE_UPDATE = nameof(FORCE_UPDATE);
+}
+```
+
+**Note**: `ClientPubSubMessages` inherits from `SharedPubSubMessages`, so it includes both client-only and server-to-client messages.
+
+### Example: Server Publishing to Clients via SignalR
+
+**Server-Side** (from `ProductController.cs`):
+
+```csharp
+private async Task PublishDashboardDataChanged(CancellationToken cancellationToken)
+{
+    // Publish to all authenticated clients
+    await appHubContext.Clients.Group("AuthenticatedClients")
+        .SendAsync(SignalREvents.PUBLISH_MESSAGE, 
+                   SharedPubSubMessages.DASHBOARD_DATA_CHANGED, 
+                   null, 
+                   cancellationToken);
+}
+```
+
+**Client-Side** (from `AppClientCoordinator.cs`):
+
+```csharp
+hubConnection.On<string, object?>(SignalREvents.PUBLISH_MESSAGE, async (message, payload) =>
+{
+    logger.LogInformation("SignalR Message {Message} received from server to publish.", message);
+    PubSubService.Publish(message, payload);
+});
+```
+
+When the server sends `PUBLISH_MESSAGE` through SignalR, the client automatically publishes it through `PubSubService`, notifying all subscribed components.
+
+### Example: Client-Side Pub/Sub
+
+**Publishing** (from `ProfileSection.razor.cs`):
+
+```csharp
+PubSubService.Publish(ClientPubSubMessages.PROFILE_UPDATED, CurrentUser);
+```
+
+**Subscribing** (from `MainLayout.razor.cs`):
+
+```csharp
+unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.PROFILE_UPDATED, async payload =>
+{
+    CurrentUser = payload is JsonElement jsonElement && jsonElement.ValueKind is not JsonValueKind.Undefined
+        ? jsonDocument.Deserialize(jsonSerializerOptions.GetTypeInfo<UserDto>())! 
+        : (UserDto)payload!;
+    await InvokeAsync(StateHasChanged);
+}));
+```
+
+This pattern allows components to communicate without direct references to each other, maintaining **loose coupling**.
+
+---
+
+## 3. AppClientCoordinator - Orchestrating Everything
+
+The **AppClientCoordinator** component is responsible for coordinating all messaging services when the application starts.
+
+**Location**: [`src/Client/Boilerplate.Client.Core/Components/AppClientCoordinator.cs`](/src/Client/Boilerplate.Client.Core/Components/AppClientCoordinator.cs)
+
+### Key Responsibilities
+
+1. **Initialize SignalR Connection**
+2. **Subscribe to SignalR Events**
+3. **Manage Authentication State Propagation**
+4. **Handle Push Notification Subscriptions**
+5. **Coordinate Telemetry Services**
+
+### SignalR Event Subscriptions
+
+#### SHOW_MESSAGE Event
+
+```csharp
+hubConnection.On<string, Dictionary<string, string?>?, bool>(SignalREvents.SHOW_MESSAGE, async (message, data) =>
+{
+    logger.LogInformation("SignalR Message {Message} received from server to show.", message);
+    
+    if (await notification.IsNotificationAvailable())
+    {
+        // Show local notification using Notification API
+        await notification.Show("Boilerplate SignalR", new()
+        {
+            Icon = "/images/icons/bit-icon-512.png",
+            Body = message,
+            Data = data
+        });
+    }
+    else
+    {
+        if (data is not null) return false; // Snack bar doesn't support payload data
+        SnackBarService.Show("Boilerplate", message);
+    }
+
+    return true; // Message shown successfully
+});
+```
+
+This event handler:
+- Receives a message from the server
+- Shows it as a **native browser notification** if available
+- Falls back to **BitSnackBar** if notifications aren't available
+- Returns `true` if the message was shown successfully
+
+**Server-Side Usage** (from `UserController.cs`):
+
+```csharp
+if (userSession.SignalRConnectionId != null)
+{
+    await appHubContext.Clients.Client(userSession.SignalRConnectionId)
+        .SendAsync(SignalREvents.SHOW_MESSAGE, 
+                   (string)Localizer[nameof(AppStrings.TestNotificationMessage2)], 
+                   null, 
+                   cancellationToken);
+}
+```
+
+#### PUBLISH_MESSAGE Event
+
+```csharp
+hubConnection.On<string, object?>(SignalREvents.PUBLISH_MESSAGE, async (message, payload) =>
+{
+    logger.LogInformation("SignalR Message {Message} received from server to publish.", message);
+    PubSubService.Publish(message, payload);
+});
+```
+
+This bridges **SignalR** and **PubSubService**, allowing server-side code to publish messages that client-side components can subscribe to.
+
+#### EXCEPTION_THROWN Event
+
+```csharp
+hubConnection.On<AppProblemDetails>(SignalREvents.EXCEPTION_THROWN, async (appProblemDetails) =>
+{
+    ExceptionHandler.Handle(appProblemDetails, displayKind: ExceptionDisplayKind.NonInterrupting);
+});
+```
+
+This allows the server to push exceptions to the client for display (e.g., showing an error that occurred in a background job).
+
+#### UPLOAD_DIAGNOSTIC_LOGGER_STORE Method
+
+```csharp
+hubConnection.On(SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE, async () =>
+{
+    return DiagnosticLogger.Store.ToArray();
+});
+```
+
+This allows the server to **invoke a method on the client** and receive the client's diagnostic logs in response.
+
+### Authentication State Propagation
+
+The `PropagateAuthState` method is called when:
+1. The application first starts
+2. The user signs in or out
+
+```csharp
+public async Task PropagateAuthState(bool firstRun, Task<AuthenticationState> task)
+{
+    var user = (await task).User;
+    var isAuthenticated = user.IsAuthenticated();
+    var userId = isAuthenticated ? user.GetUserId() : (Guid?)null;
+    
+    if (lastPropagatedUserId == userId)
+        return;
+        
+    TelemetryContext.UserId = userId;
+    TelemetryContext.UserSessionId = isAuthenticated ? user.GetSessionId() : null;
+
+    // Update App Insights
+    if (isAuthenticated)
+    {
+        _ = appInsights.SetAuthenticatedUserContext(user.GetUserId().ToString());
+    }
+    else
+    {
+        _ = appInsights.ClearAuthenticatedUserContext();
+    }
+
+    // Start SignalR connection
+    await EnsureSignalRStarted();
+
+    // Subscribe to push notifications
+    await pushNotificationService.Subscribe(CurrentCancellationToken);
+
+    // Update user session info
+    if (isAuthenticated)
+    {
+        await UpdateUserSession();
+    }
+
+    lastPropagatedUserId = userId;
+}
+```
+
+This method ensures all services are updated when authentication state changes.
+
+---
+
+## 4. Push Notifications
+
+### Push Notification Architecture
+
+The Boilerplate project supports **push notifications** across all platforms:
+
+- **Web (Browser)**: Web Push API with VAPID
+- **Android**: Firebase Cloud Messaging (FCM)
+- **iOS**: Apple Push Notification Service (APNS)
+- **Windows**: Windows Notification Service (WNS)
+- **macOS**: Apple Push Notification Service (APNS)
+
+### Push Notification Subscription
+
+**Client-Side Interface**: [`src/Client/Boilerplate.Client.Core/Services/Contracts/IPushNotificationService.cs`](/src/Client/Boilerplate.Client.Core/Services/Contracts/IPushNotificationService.cs)
+
+**Base Implementation**: [`src/Client/Boilerplate.Client.Core/Services/PushNotificationServiceBase.cs`](/src/Client/Boilerplate.Client.Core/Services/PushNotificationServiceBase.cs)
+
+```csharp
+public async Task Subscribe(CancellationToken cancellationToken)
+{
+    if (await IsAvailable(cancellationToken) is false)
+    {
+        Logger.LogWarning("Notifications are not supported/allowed on this platform/device.");
+        return;
+    }
+
+    var subscription = await GetSubscription(cancellationToken);
+
+    if (subscription is null)
+        return;
+
+    await pushNotificationController.Subscribe(subscription, cancellationToken);
+}
+```
+
+Each platform has its own implementation:
+- `WebPushNotificationService.cs`
+- `AndroidPushNotificationService.cs`
+- `iOSPushNotificationService.cs`
+- `WindowsPushNotificationService.cs`
+- `MacCatalystPushNotificationService.cs`
+
+### Server-Side Push Notification Service
+
+**Location**: [`src/Server/Boilerplate.Server.Api/Services/PushNotificationService.cs`](/src/Server/Boilerplate.Server.Api/Services/PushNotificationService.cs)
+
+#### Subscribe Method
+
+```csharp
+public async Task Subscribe([Required] PushNotificationSubscriptionDto dto, CancellationToken cancellationToken)
+{
+    List<string> tags = [CultureInfo.CurrentUICulture.Name];
+
+    var userSessionId = httpContextAccessor.HttpContext!.User.IsAuthenticated() 
+        ? httpContextAccessor.HttpContext.User.GetSessionId() 
+        : (Guid?)null;
+
+    var subscription = await dbContext.PushNotificationSubscriptions
+        .WhereIf(userSessionId is null, s => s.DeviceId == dto.DeviceId)
+        .WhereIf(userSessionId is not null, s => s.UserSessionId == userSessionId || s.DeviceId == dto.DeviceId)
+        .FirstOrDefaultAsync(cancellationToken) ??
+        (await dbContext.PushNotificationSubscriptions.AddAsync(new()
+        {
+            DeviceId = dto.DeviceId,
+            Platform = dto.Platform
+        }, cancellationToken)).Entity;
+
+    dto.Patch(subscription);
+
+    subscription.Tags = [.. tags];
+    subscription.UserSessionId = userSessionId;
+    subscription.RenewedOn = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+    subscription.ExpirationTime = DateTimeOffset.UtcNow.AddMonths(1).ToUnixTimeSeconds();
+
+    if (subscription.Platform is "browser")
+    {
+        subscription.PushChannel = VapidSubscription.FromParameters(subscription.Endpoint, subscription.P256dh, subscription.Auth).ToAdsPushToken();
+    }
+
+    await dbContext.SaveChangesAsync(cancellationToken);
+}
+```
+
+**Key Features**:
+- Associates push subscriptions with user sessions
+- Supports both authenticated and anonymous subscriptions
+- Uses **tags** for targeted notifications (e.g., by culture)
+- Automatically renews and expires subscriptions
+
+#### RequestPush Method
+
+```csharp
+public async Task RequestPush(
+    string? title = null, 
+    string? message = null,
+    string? action = null,
+    string? pageUrl = null,
+    bool userRelatedPush = false,
+    Expression<Func<PushNotificationSubscription, bool>>? customSubscriptionFilter = null,
+    CancellationToken cancellationToken = default)
+{
+    var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+    var query = dbContext.PushNotificationSubscriptions
+        .Where(sub => sub.ExpirationTime > now)
+        .Where(sub => sub.UserSessionId == null || sub.UserSession!.NotificationStatus == UserSessionNotificationStatus.Allowed)
+        .WhereIf(customSubscriptionFilter is not null, customSubscriptionFilter!)
+        .WhereIf(userRelatedPush is true, sub => (now - sub.RenewedOn) < serverApiSettings.Identity.RefreshTokenExpiration.TotalSeconds);
+
+    if (customSubscriptionFilter is null)
+    {
+        query = query.OrderBy(_ => EF.Functions.Random()).Take(100);
+    }
+
+    var pushNotificationSubscriptionIds = await query.Select(pns => pns.Id).ToArrayAsync(cancellationToken);
+
+    backgroundJobClient.Enqueue<PushNotificationJobRunner>(runner => runner.RequestPush(pushNotificationSubscriptionIds, title, message, action, pageUrl, userRelatedPush, default));
+}
+```
+
+**Key Features**:
+- Filters expired subscriptions
+- Respects user notification preferences
+- Supports custom filtering for targeted notifications
+- Uses **Hangfire** background jobs for reliable delivery
+- Prevents sending sensitive notifications to inactive devices
+
+**Example Usage** (from `UserController.cs`):
+
+```csharp
+await pushNotificationService.RequestPush(
+    message: Localizer[nameof(AppStrings.TestNotificationMessage1)], 
+    userRelatedPush: true, 
+    customSubscriptionFilter: us => us.UserSessionId == userSessionId, 
+    cancellationToken: cancellationToken);
+```
+
+This sends a push notification to a specific user session.
+
+### Push Notification vs SignalR vs Local Notification
+
+The project uses **three types of notifications**:
+
+1. **SignalR Messages**: Real-time messages to **connected** clients
+   - Instant delivery
+   - Only works if the app is open and connected
+   - Example: `SHOW_MESSAGE` event
+
+2. **Push Notifications**: Messages to devices even when the app is closed
+   - Delivered via platform-specific services (FCM, APNS, WNS)
+   - Works even if the app is not running
+   - Example: `RequestPush` method
+
+3. **Local Notifications**: Browser Notification API
+   - Displayed locally by the browser
+   - Doesn't require server or push service
+   - Example: `notification.Show()` in `AppClientCoordinator.cs`
+
+**Best Practice**: The application uses a **smart fallback strategy**:
+
+```csharp
+if (await notification.IsNotificationAvailable())
+{
+    // Show local notification
+    await notification.Show("Boilerplate SignalR", new()
+    {
+        Icon = "/images/icons/bit-icon-512.png",
+        Body = message,
+        Data = data
+    });
+}
+else
+{
+    // Fallback to snack bar
+    SnackBarService.Show("Boilerplate", message);
+}
+```
+
+---
+
+## 5. Bit.Butil.Notification - Browser Notification API
+
+The project uses **Bit.Butil.Notification** to access the browser's native Notification API.
+
+**Extension Helper**: [`src/Client/Boilerplate.Client.Core/Extensions/NotificationExtensions.cs`](/src/Client/Boilerplate.Client.Core/Extensions/NotificationExtensions.cs)
+
+```csharp
+public static async Task<bool> IsNotificationAvailable(this Notification notification)
+{
+    var isPresent = await notification.IsSupported();
+    if (isPresent)
+    {
+        if (await notification.GetPermission() is NotificationPermission.Granted)
+            return true;
+    }
+    return false;
+}
+```
+
+### Available Methods
+
+- **`IsSupported()`**: Checks if the browser supports notifications
+- **`GetPermission()`**: Gets current permission status (`Granted`, `Denied`, `Default`)
+- **`RequestPermission()`**: Requests notification permission from the user
+- **`Show(string title, NotificationOptions options)`**: Displays a native notification
+
+### Usage Example
+
+```csharp
+[AutoInject] private Notification notification = default!;
+
+private async Task ShowNotification()
+{
+    // Request permission first
+    var permission = await notification.RequestPermission();
+    
+    if (permission is NotificationPermission.Granted)
+    {
+        // Show the notification
+        await notification.Show("My App", new NotificationOptions
+        {
+            Body = "This is a notification message",
+            Icon = "/images/icon.png",
+            Data = new Dictionary<string, string> { { "pageUrl", "/dashboard" } }
+        });
+    }
+}
+```
+
+**Important Notes**:
+- Native notifications work even when the tab is not active
+- They appear as system notifications (not inside the browser window)
+- Users must grant permission before notifications can be shown
+- The `Data` property can contain custom data for handling clicks
+
+---
+
+## 6. Session Revocation Example
+
+Let's walk through a complete example of how session revocation works using all three messaging systems together.
+
+### Scenario: Admin Revokes a User Session
+
+**Step 1**: Admin calls the revoke session API
+
+**Server-Side** (from `UserController.cs`):
+
+```csharp
+[HttpDelete("{userSessionId}")]
+public async Task RevokeSession(Guid userSessionId, CancellationToken cancellationToken)
+{
+    var currentUserSessionId = User.GetSessionId();
+    var userId = User.GetUserId();
+    
+    var userSession = await DbContext.UserSessions
+        .FirstOrDefaultAsync(us => us.Id == userSessionId && us.UserId == userId, cancellationToken) 
+        ?? throw new ResourceNotFoundException();
+
+    DbContext.Remove(userSession);
+    await DbContext.SaveChangesAsync(cancellationToken);
+
+    List<Task> sendMessagesTasks = [];
+
+    // Send SignalR message if connected
+    if (string.IsNullOrEmpty(userSession.SignalRConnectionId) is false)
+    {
+        var message = Localizer[nameof(AppStrings.YouHaveBeenSignedOut)];
+        
+        sendMessagesTasks.Add(appHubContext.Clients.Client(userSession.SignalRConnectionId)
+            .SendAsync(SignalREvents.SHOW_MESSAGE, message, null, cancellationToken));
+    }
+
+    // Send push notification if not connected
+    if (userSession.Id != currentUserSessionId)
+    {
+        var message = Localizer[nameof(AppStrings.YourSessionHasExpired)];
+        
+        sendMessagesTasks.Add(pushNotificationService.RequestPush(
+            message: message, 
+            userRelatedPush: true, 
+            customSubscriptionFilter: us => us.UserSession!.UserId == userId && us.UserSessionId != currentUserSessionId, 
+            cancellationToken: cancellationToken));
+    }
+
+    await Task.WhenAll(sendMessagesTasks);
+}
+```
+
+**Step 2**: Client receives the SignalR message
+
+**Client-Side** (from `AppClientCoordinator.cs`):
+
+```csharp
+hubConnection.On<string, Dictionary<string, string?>?, bool>(SignalREvents.SHOW_MESSAGE, async (message, data) =>
+{
+    if (await notification.IsNotificationAvailable())
+    {
+        await notification.Show("Boilerplate SignalR", new()
+        {
+            Icon = "/images/icons/bit-icon-512.png",
+            Body = message,
+            Data = data
+        });
+    }
+    else
+    {
+        SnackBarService.Show("Boilerplate", message);
+    }
+    return true;
+});
+```
+
+**Step 3**: Client subscribes to SESSION_REVOKED
+
+**Client-Side** (from `AuthManager.cs`):
+
+```csharp
+unsubscribe = pubSubService.Subscribe(SharedPubSubMessages.SESSION_REVOKED, _ => SignOut(default));
+```
+
+This ensures the user is automatically signed out and redirected to the sign-in page.
+
+---
+
+## 7. Dashboard Data Changed Example
+
+Another common scenario is notifying all authenticated clients when data changes.
+
+### Scenario: Product is Created/Updated/Deleted
+
+**Server-Side** (from `ProductController.cs`):
+
+```csharp
+private async Task PublishDashboardDataChanged(CancellationToken cancellationToken)
+{
+    // Notify all authenticated clients
+    await appHubContext.Clients.Group("AuthenticatedClients")
+        .SendAsync(SignalREvents.PUBLISH_MESSAGE, 
+                   SharedPubSubMessages.DASHBOARD_DATA_CHANGED, 
+                   null, 
+                   cancellationToken);
+}
+```
+
+This is called after creating, updating, or deleting a product.
+
+**Client-Side** (any component can subscribe):
+
+```csharp
+unsubscribe = PubSubService.Subscribe(SharedPubSubMessages.DASHBOARD_DATA_CHANGED, async (_) =>
+{
+    // Refresh dashboard data
+    await LoadDashboardData();
+    await InvokeAsync(StateHasChanged);
+});
+```
+
+Components subscribe to `DASHBOARD_DATA_CHANGED` and automatically refresh when notified.
+
+---
+
+## 8. Best Practices
+
+### ✅ DO
+
+1. **Use SignalR for Real-Time Updates**
+   - When clients are connected and need instant updates
+   - For collaborative features where multiple users see changes immediately
+
+2. **Use Push Notifications for Important Alerts**
+   - When the app might not be open
+   - For time-sensitive information (OTP codes, urgent alerts)
+
+3. **Use PubSubService for Loose Coupling**
+   - To decouple components from each other
+   - For cross-component communication
+
+4. **Respect User Notification Preferences**
+   - Always check `UserSession.NotificationStatus`
+   - Provide UI for users to manage notification preferences
+
+5. **Handle Connection State Changes**
+   - Subscribe to `IS_ONLINE_CHANGED` to detect connectivity issues
+   - Implement retry logic for failed operations
+
+6. **Use Persistent Messages When Appropriate**
+   - For critical messages that must be delivered even if the subscriber isn't ready yet
+
+### ❌ DON'T
+
+1. **Don't Send Sensitive Data in Push Notifications**
+   - Push notifications can be intercepted
+   - Use generic messages and let the app fetch details
+
+2. **Don't Spam Users with Notifications**
+   - Respect rate limits
+   - Filter subscriptions appropriately
+
+3. **Don't Block UI on Notification Operations**
+   - Use background jobs for sending notifications
+   - Make subscription operations async
+
+4. **Don't Forget to Clean Up Subscriptions**
+   - Always unsubscribe in `Dispose` methods
+   - Use the returned `Action` from `Subscribe()`
+
+5. **Don't Send User-Related Push to Inactive Devices**
+   - Check `RenewedOn` timestamp
+   - Use `userRelatedPush: true` parameter
+
+---
+
+## 9. Diagnostic Features
+
+### Retrieving User Session Logs
+
+Admins and support staff can retrieve diagnostic logs from active user sessions:
+
+**Server-Side** (from `AppHub.cs`):
+
+```csharp
+[Authorize(Policy = AppFeatures.System.ManageLogs)]
+public async Task<DiagnosticLogDto[]> GetUserSessionLogs(Guid userSessionId, [FromServices] AppDbContext dbContext)
+{
+    var userSessionSignalRConnectionId = await dbContext.UserSessions
+        .Where(us => us.Id == userSessionId)
+        .Select(us => us.SignalRConnectionId)
+        .FirstOrDefaultAsync(Context.ConnectionAborted);
+
+    if (string.IsNullOrEmpty(userSessionSignalRConnectionId))
+        return [];
+
+    return await Clients.Client(userSessionSignalRConnectionId)
+        .InvokeAsync<DiagnosticLogDto[]>(SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE, Context.ConnectionAborted);
+}
+```
+
+**Client-Side** (from `UsersPage.razor.cs`):
+
+```csharp
+var logs = await hubConnection.InvokeAsync<DiagnosticLogDto[]>("GetUserSessionLogs", userSessionId);
+```
+
+This enables **live troubleshooting** by viewing logs from a user's active session.
+
+### Testing Notifications
+
+**From `UserController.cs` - ToggleNotification method**:
+
+```csharp
+if (userSession.NotificationStatus is UserSessionNotificationStatus.Allowed)
+{
+    // Send test push notification
+    await pushNotificationService.RequestPush(
+        message: Localizer[nameof(AppStrings.TestNotificationMessage1)], 
+        userRelatedPush: true, 
+        customSubscriptionFilter: us => us.UserSessionId == userSessionId, 
+        cancellationToken: cancellationToken);
+    
+    // Send test SignalR message
+    if (userSession.SignalRConnectionId != null)
+    {
+        await appHubContext.Clients.Client(userSession.SignalRConnectionId)
+            .SendAsync(SignalREvents.SHOW_MESSAGE, 
+                       (string)Localizer[nameof(AppStrings.TestNotificationMessage2)], 
+                       null, 
+                       cancellationToken);
+    }
+}
+```
+
+This allows users to test both push notifications and SignalR messages.
+
+---
+
+## 10. Configuration
+
+### SignalR Configuration
+
+**Server-Side** (`appsettings.json`):
+
+```json
+{
+  "Azure": {
+    "SignalR": {
+      "ConnectionString": "..."
+    }
+  }
+}
+```
+
+If Azure SignalR connection string is provided, the application uses Azure SignalR Service for scalability.
+
+### Push Notification Configuration
+
+**VAPID Keys** (for web push):
+
+```json
+{
+  "PushNotificationService": {
+    "VapidPublicKey": "...",
+    "VapidPrivateKey": "..."
+  }
+}
+```
+
+**Platform-Specific Configuration**:
+- **Android**: Firebase Cloud Messaging (FCM) credentials
+- **iOS**: Apple Push Notification Service (APNS) certificates
+- **Windows**: Windows Notification Service (WNS) credentials
+
+---
+
+## 11. Common Patterns
+
+### Pattern 1: Notify All Users of Data Change
+
+```csharp
+// Server
+await appHubContext.Clients.Group("AuthenticatedClients")
+    .SendAsync(SignalREvents.PUBLISH_MESSAGE, "DATA_CHANGED", null, cancellationToken);
+
+// Client
+PubSubService.Subscribe("DATA_CHANGED", async (_) => await RefreshData());
+```
+
+### Pattern 2: Notify Specific User
+
+```csharp
+// Server
+var userSessions = await DbContext.UserSessions
+    .Where(us => us.UserId == targetUserId)
+    .ToListAsync(cancellationToken);
+
+foreach (var session in userSessions.Where(s => s.SignalRConnectionId != null))
+{
+    await appHubContext.Clients.Client(session.SignalRConnectionId!)
+        .SendAsync(SignalREvents.SHOW_MESSAGE, "Your message", null, cancellationToken);
+}
+```
+
+### Pattern 3: Notify by Culture
+
+```csharp
+// Server
+await pushNotificationService.RequestPush(
+    message: "Localized message",
+    customSubscriptionFilter: sub => sub.Tags.Contains("en-US"),
+    cancellationToken: cancellationToken);
+```
+
+### Pattern 4: Cross-Platform Communication
+
+```csharp
+// MAUI XAML Page
+pubSubService.Publish(ClientPubSubMessages.NAVIGATE_TO, "/dashboard");
+
+// Blazor Component
+PubSubService.Subscribe(ClientPubSubMessages.NAVIGATE_TO, async (uri) =>
+{
+    NavigationManager.NavigateTo(uri?.ToString()!);
+});
 ```
 
 ---
 
 ## Summary
 
-The project provides a **complete, production-ready messaging infrastructure** that includes:
+The Boilerplate project's messaging system combines three powerful technologies:
 
-✅ **SignalR** for real-time bi-directional communication  
-✅ **Cross-platform push notifications** (Web, Android, iOS, macOS, Windows)  
-✅ **Local notifications** for in-app alerts  
-✅ **Pub/Sub messaging** for internal client communication  
-✅ **Background job processing** for reliable message delivery  
-✅ **Multi-channel messaging** (SignalR + Push) for maximum reach  
-✅ **Diagnostic tools** for troubleshooting  
-✅ **AI chatbot streaming** capabilities  
+1. **SignalR**: Real-time bi-directional communication for connected clients
+2. **Push Notifications**: Platform-specific notifications for offline scenarios
+3. **PubSubService**: Decoupled messaging for loose coupling and cross-component communication
 
-All of this works seamlessly across **Blazor Server**, **Blazor WebAssembly**, **.NET MAUI**, and **Blazor Hybrid** applications.
+Together, they provide:
+- ✅ Real-time updates
+- ✅ Offline notification delivery
+- ✅ Cross-component communication
+- ✅ Authentication state propagation
+- ✅ Diagnostic capabilities
+- ✅ Flexible targeting (all users, specific users, groups, cultures)
+
+This architecture ensures your application can communicate effectively across all platforms and scenarios.
 
 ---

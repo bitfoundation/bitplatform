@@ -1,304 +1,271 @@
 # Stage 23: Diagnostic Modal
 
-## Overview
-
-The **Diagnostic Modal** is a powerful built-in debugging and troubleshooting tool that provides developers and support staff with comprehensive diagnostic capabilities directly within the application. This modal is accessible across all platforms (Web, Android, iOS, Windows, macOS) and works in all environments (Development, Staging, Production).
-
-**Location:** [`/src/Client/Boilerplate.Client.Core/Components/Layout/Diagnostic/AppDiagnosticModal.razor`](/src/Client/Boilerplate.Client.Core/Components/Layout/Diagnostic/AppDiagnosticModal.razor)
-
-## How to Access
-
-The Diagnostic Modal can be opened in three ways:
-
-1. **Click 7 times** on the spacer in the header (the empty space between the logo and menu items)
-2. **Keyboard shortcut**: `Ctrl + Shift + X`
-3. **JavaScript console**: Call `App.showDiagnostic()` in the browser's developer tools
-
-## Key Features & Capabilities
-
-### 1. Telemetry Context Viewer
-
-**Purpose:** Displays comprehensive device and application information in a collapsible section.
-
-**What it shows:**
-- Device information (OS, browser, platform)
-- Application version and environment
-- User information (if authenticated)
-- Session details
-- Culture and language settings
-- And much more contextual data
-
-**Actions:**
-- **Copy button**: Copies all telemetry data to clipboard for easy sharing with support teams
-
-### 2. Real-Time Log Viewer
-
-**Purpose:** Displays all application logs in real-time, both from the client-side and (in Development environment) server-side.
-
-**Features:**
-- **Live log streaming**: Shows logs as they occur
-- **Color-coded log levels**: Visual distinction between Information (blue), Warning (yellow), Error/Critical (red)
-- **Timestamps**: Each log entry shows the exact time it was created
-- **Category display**: Shows which component or service generated the log
-- **Virtualization**: Efficiently handles thousands of log entries without performance degradation
-
-**Environment Behavior:**
-- **Development**: Shows both client AND server logs for complete visibility
-- **Production/Staging**: Shows only client-side logs for security reasons (prevents exposing sensitive server internals)
-
-### 3. Advanced Log Filtering & Search
-
-**Powerful filtering capabilities to find specific logs quickly:**
-
-#### Search Features:
-- **Text search**: Search through log messages, categories, and state data
-- **RegEx support**: Enable Regular Expression mode for advanced pattern matching
-- **Immediate/debounced**: Real-time search with 500ms debounce for performance
-
-#### Filtering Options:
-- **Log Level filter**: Multi-select dropdown to show/hide Trace, Debug, Information, Warning, Error, Critical
-  - Default in **Development**: Shows Information, Warning, Error, Critical
-  - Default in **Production/Staging**: Shows only Warning, Error, Critical (reduces noise)
-- **Category filter**: Multi-select dropdown with search to filter by component/service name
-  - Automatically populated from all unique categories in current logs
-- **Sort**: Toggle between ascending/descending chronological order
-
-### 4. Detailed Log Inspection
-
-**Purpose:** View complete details of any log entry.
-
-**How to use:** Click the "Details" button (📊 icon) on any log entry
-
-**What it shows:**
-- Full log message
-- Category/source
-- Complete exception details with stack traces (if applicable)
-- State data (key-value pairs with contextual information)
-- Timestamp
-
-**Actions:**
-- **Copy button**: Copy the full log details to clipboard
-- **Navigation arrows**: Navigate to previous/next log entry without closing the modal
-
-### 5. Throw Test Exception
-
-**Purpose:** Test the application's exception handling system.
-
-**How it works:**
-- Click the **Error icon** button
-- Alternates between throwing:
-  - **Known Exception** (`DomainLogicException`): User-friendly error that's shown to users
-  - **Unknown Exception** (`InvalidOperationException`): System error that shows different messages in Dev vs Production
-
-**Use case:** Verify that exception handling, logging, and error display UI work correctly
-
-### 6. Call Diagnostics API
-
-**Purpose:** Performs comprehensive server-side diagnostics and tests real-time communication channels.
-
-**What it does:**
-- Sends diagnostic request to server with current connection details
-- Tests SignalR connection (if enabled)
-- Tests Push Notification subscription (if enabled)
-- Retrieves server environment information
-- Shows client IP address and request headers
-- Displays culture and timezone information
-
-**Use case:** Verify that client-server communication works correctly and check server environment configuration
-
-### 7. Open In-App Dev Tools
-
-**Purpose:** Opens browser-like developer tools **inside the application**.
-
-**Key Feature:** Works even on **mobile devices** (Android/iOS) where traditional browser dev tools are not available!
-
-**How to use:** Click the **Developer Tools icon** button
-
-**What you can do:**
-- Inspect HTML/CSS elements
-- View console logs
-- Debug JavaScript
-- Monitor network requests
-- All the capabilities of browser DevTools, but embedded in the app
-
-**Use case:** Debug UI issues on mobile devices or in production builds where external dev tools aren't accessible
-
-### 8. Clear Cache
-
-**Purpose:** Completely reset the application state for troubleshooting.
-
-**What it clears:**
-- All stored data (localStorage, IndexedDB, etc.)
-- Authentication tokens and session data
-- WebAuthn credentials
-- All cookies
-- Service Worker cache (on Web)
-- Forces a complete app refresh
-
-**Use case:** Fix issues caused by corrupted cache or stale data. Essential when testing authentication flows or after significant app updates.
-
-### 9. Call Garbage Collector (Non-Browser Only)
-
-**Purpose:** Manually trigger .NET garbage collection and view memory usage.
-
-**Platforms:** Available only on **Blazor Hybrid** platforms (Windows, MAUI - Android/iOS/macOS)
-
-**What it does:**
-- Shows current memory usage before GC
-- Forces full garbage collection (Generation 2)
-- Waits for pending finalizers
-- Shows memory usage after GC
-- Displays the amount of memory freed
-
-**Use case:** Diagnose memory leaks or verify that objects are being properly disposed
-
-### 10. Update App
-
-**Purpose:** Manually trigger the force update mechanism.
-
-**What it does:**
-- **Web/Windows**: Immediately updates the app to the latest version and reloads
-- **Android/iOS/macOS**: Opens the app store page for the user to update
-
-**Use case:** Test the force update system or manually update to the latest version without waiting for automatic checks
-
-### 11. Reload Logs
-
-**Purpose:** Refresh the log list from the in-memory store.
-
-**Use case:** If logs appear to be missing or out-of-date (though logs update automatically in most cases)
-
-### 12. Clear Logs
-
-**Purpose:** Remove all logs from the in-memory diagnostic log store.
-
-**Use case:** Start with a clean slate when testing specific scenarios or reduce memory usage
-
-### 13. Go to Top
-
-**Purpose:** Quickly scroll back to the top of the log list.
-
-**Position:** Floating button in the bottom-right corner of the modal
-
-**Use case:** When viewing thousands of logs and need to return to the beginning
-
-## Technical Architecture
-
-### Client-Side Components
-
-**Main Files:**
-- `AppDiagnosticModal.razor`: The UI markup
-- `AppDiagnosticModal.razor.cs`: Core diagnostic functionality and log viewing
-- `AppDiagnosticModal.razor.Utils.cs`: Utility functions (cache clearing, GC, dev tools, etc.)
-
-**Key Services Used:**
-- `DiagnosticLogger`: In-memory log storage
-- `ITelemetryContext`: Device and app context information
-- `IDiagnosticsController`: HTTP client proxy for server diagnostics API
-- `IPushNotificationService`: Push notification subscription details
-- `HubConnection`: SignalR connection details
-- `Clipboard`: For copying diagnostic data
-- `IStorageService`: For cache clearing
-
-### Server-Side Components
-
-**File:** [`/src/Server/Boilerplate.Server.Api/Controllers/Diagnostics/DiagnosticsController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Diagnostics/DiagnosticsController.cs)
-
-**Endpoint:** `GET /api/Diagnostics/PerformDiagnostics`
-
-**What it provides:**
-- Client IP address
-- Request trace identifier
-- Authentication status
-- User session information
-- Push notification subscription status
-- SignalR connection verification
-- All HTTP request headers
-- Server environment name
-- Base URLs
-
-**Security:** Uses `[AllowAnonymous]` so it works even for unauthenticated users (important for troubleshooting sign-in issues)
+The **Diagnostic Modal** is an incredibly powerful built-in troubleshooting tool that provides developers and support teams with comprehensive runtime information about the application. This feature is available in **all environments** (Development, Staging, and Production) and on **all platforms** (Web, Android, iOS, Windows, macOS).
+
+## What is the Diagnostic Modal?
+
+Located at [`src/Client/Boilerplate.Client.Core/Components/Layout/Diagnostic/AppDiagnosticModal.razor`](/src/Client/Boilerplate.Client.Core/Components/Layout/Diagnostic/AppDiagnosticModal.razor), the Diagnostic Modal is a special UI component that displays detailed diagnostic information about the running application in real-time. It serves as an **in-app troubleshooting console** that works even on mobile devices where traditional developer tools are unavailable.
+
+---
+
+## How to Access the Diagnostic Modal
+
+There are **three ways** to open the Diagnostic Modal:
+
+### 1. Click 7 Times on the Header Spacer
+The easiest method for end-users or support staff:
+- Click **7 times** on the spacer area in the application header
+- Implementation: [`DiagnosticSpacer.razor.cs`](/src/Client/Boilerplate.Client.Core/Components/Layout/Header/DiagnosticSpacer.razor.cs)
+
+### 2. Keyboard Shortcut: Ctrl+Shift+X
+For developers who prefer keyboard shortcuts:
+- Press **`Ctrl+Shift+X`** from anywhere in the application
+- Implementation: Registered in [`MainLayout.razor.cs`](/src/Client/Boilerplate.Client.Core/Components/Layout/MainLayout.razor.cs) using Butil Keyboard API
+
+### 3. JavaScript Console Command
+For developers using browser dev tools:
+```javascript
+App.showDiagnostic()
+```
+- Type this command in the browser's JavaScript console
+- Works even in production builds
+
+---
+
+## Key Features
+
+### 1. **Telemetry Context Viewer**
+
+Displays comprehensive application context information:
+- **User Information**: User ID, email, roles, session details
+- **Device Information**: Platform, OS version, browser/app version
+- **Application State**: Environment (Dev/Staging/Production), culture/locale settings
+- **Network Information**: Server address, connection status, IP address
+- **Session Details**: Authentication status, session ID, last activity
+
+**Actions Available:**
+- **Copy to Clipboard**: Copy all telemetry context as formatted text for easy sharing with support teams
+
+---
+
+### 2. **In-App Log Viewer**
+
+A powerful log viewing and filtering system that displays logs captured by the `DiagnosticLogger`:
+
+#### Filtering & Search Capabilities
+- **Text Search**: Search logs by message content, category, or state values
+- **Regular Expression Support**: Enable regex mode for advanced pattern matching
+- **Filter by Log Level**: Filter by Trace, Debug, Information, Warning, Error, Critical
+- **Filter by Category**: Multi-select dropdown showing all log categories (e.g., `Microsoft.EntityFrameworkCore`, `Boilerplate.Client.Core.Services`)
+- **Sort Order**: Toggle between ascending/descending chronological order
+
+#### Log Details View
+- **Copy Individual Logs**: Copy any log entry to clipboard
+- **Detailed View**: Click "Details" to see full log information:
+  - Category
+  - Message
+  - Exception details (if any)
+  - State key-value pairs
+- **Navigate Between Logs**: Use Previous/Next buttons to browse through filtered logs
+- **Timestamp Display**: Each log shows time in HH:mm:ss format
+- **Color-Coded Severity**: Visual distinction between log levels using BitColor theming
+
+---
+
+### 3. **Utility Buttons & Actions**
+
+The modal provides several powerful diagnostic and maintenance actions:
+
+#### 🔄 **Reload Logs**
+- Refreshes the log viewer with the latest in-memory logs
+- Useful when logs are added while the modal is open
+
+#### 🗑️ **Clear Logs**
+- Clears all logs from in-memory storage
+- Useful for starting fresh diagnostic sessions
+
+#### ⚠️ **Throw Test Exception**
+- Generates a test exception to verify error handling
+- Alternates between `InvalidOperationException` (unknown exception) and `DomainLogicException` (known exception)
+- Both include test data to demonstrate exception data capture
+- **Use Case**: Testing error boundaries, exception handlers, and logging infrastructure
+
+#### 🔬 **Call Diagnostics API**
+- Sends a request to [`DiagnosticsController.PerformDiagnostics`](/src/Server/Boilerplate.Server.Api/Controllers/Diagnostics/DiagnosticsController.cs)
+- Returns comprehensive server-side diagnostics including:
+  - Client IP address
+  - HTTP trace identifier
+  - Authentication status
+  - All HTTP request headers
+  - Server environment name
+  - Base URLs
+  - Runtime information (AOT detection, GC configuration, etc.)
+- **Also Tests**:
+  - Push notification functionality (if subscribed)
+  - SignalR connection (if connected)
+- Displays results in a BitMessageBox
+
+#### 🛠️ **Open Dev Tools** (Mobile & Desktop Apps)
+- Opens an **in-app browser DevTools** interface
+- **Critical Feature**: Works on **mobile devices** (Android/iOS) where traditional DevTools are unavailable
+- Provides console, network inspector, and other debugging tools
+- Implementation: Uses `App.openDevTools()` JavaScript interop
+
+#### ♻️ **Call GC** (Non-Browser Platforms Only)
+- Forces garbage collection on .NET MAUI and Windows platforms
+- Shows memory usage **before** and **after** GC using SnackBar notifications
+- Performs aggressive GC with compaction:
+  ```csharp
+  GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+  GC.WaitForPendingFinalizers();
+  ```
+- **Use Case**: Testing memory management and investigating memory leaks
+
+#### 🧹 **Clear Cache**
+- Comprehensive cache clearing operation:
+  - Deletes all WebAuthn credentials
+  - Signs out the current user
+  - Clears all local/session storage
+  - Removes all cookies
+  - **Web**: Uninstalls service worker and clears cache storages using `BitBswup.forceRefresh()`
+  - **Hybrid Apps**: Forces a full application reload
+- **Use Case**: Reset app state for troubleshooting or testing fresh installations
+
+#### 🔄 **Update App**
+- Forces immediate app update check and installation
+- Uses `IAppUpdateService.ForceUpdate()`
+- Bypasses normal update schedules
+- **Use Case**: Testing force update system or applying urgent fixes
+
+---
 
 ## Real-World Use Cases
 
+### 1. **Remote Support Scenarios**
+When a user reports an issue:
+1. Ask them to click 7 times on the header
+2. Have them copy the **Telemetry Context** and send it to you
+3. Review their logs to see what errors occurred
+4. Test their push notifications and SignalR connectivity via **Call Diagnostics API**
+
+### 2. **Mobile App Debugging**
+On iOS or Android where DevTools aren't available:
+1. Open Diagnostic Modal (7 clicks)
+2. Click **Open Dev Tools** to access in-app browser DevTools
+3. View console logs, network requests, and inspect DOM elements
+4. Test exception handling with **Throw Test Exception**
+
+### 3. **Performance Investigation**
+To investigate memory issues:
+1. Open Diagnostic Modal
+2. Note current memory usage from Telemetry Context
+3. Use **Call GC** button to force garbage collection
+4. Compare memory before/after to identify potential leaks
+
+### 4. **Authentication Troubleshooting**
+When users report login issues:
+1. View authentication status in Telemetry Context
+2. Check session information
+3. Review authentication-related logs
+4. Use **Call Diagnostics API** to verify server-side authentication state
+
+### 5. **Testing in Production**
+Even in production environments:
+- Support staff can access diagnostic information without special builds
+- No need to deploy debug versions
+- Users can provide detailed diagnostic info without technical knowledge
+
+---
+
+## Technical Implementation Details
+
+### Architecture
+
+The Diagnostic Modal uses a **Pub/Sub pattern** for activation:
+- **Message**: `ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL`
+- **Publisher**: `DiagnosticSpacer`, `MainLayout`, or JavaScript interop
+- **Subscriber**: `AppDiagnosticModal` component
+
+### Dependency Injection
+
+The modal uses `[AutoInject]` to inject required services:
+```csharp
+[AutoInject] private Clipboard clipboard = default!;
+[AutoInject] private HubConnection hubConnection = default!;
+[AutoInject] private ITelemetryContext telemetryContext = default!;
+[AutoInject] private BitMessageBoxService messageBoxService = default!;
+[AutoInject] private IDiagnosticsController diagnosticsController = default!;
+[AutoInject] private IPushNotificationService pushNotificationService = default!;
+```
+
+### Related Files
+
+| File | Purpose |
+|------|---------|
+| [`AppDiagnosticModal.razor`](/src/Client/Boilerplate.Client.Core/Components/Layout/Diagnostic/AppDiagnosticModal.razor) | Main UI component |
+| [`AppDiagnosticModal.razor.cs`](/src/Client/Boilerplate.Client.Core/Components/Layout/Diagnostic/AppDiagnosticModal.razor.cs) | Component logic, log filtering |
+| [`AppDiagnosticModal.razor.Utils.cs`](/src/Client/Boilerplate.Client.Core/Components/Layout/Diagnostic/AppDiagnosticModal.razor.Utils.cs) | Utility methods (GC, cache clear, etc.) |
+| [`DiagnosticLogModal.razor`](/src/Client/Boilerplate.Client.Core/Components/Layout/Diagnostic/DiagnosticLogModal.razor) | Detailed log view modal |
+| [`DiagnosticSpacer.razor.cs`](/src/Client/Boilerplate.Client.Core/Components/Layout/Header/DiagnosticSpacer.razor.cs) | 7-click activation handler |
+| [`DiagnosticsController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Diagnostics/DiagnosticsController.cs) | Server-side diagnostics API |
+| [`DiagnosticLogger.cs`](/src/Client/Boilerplate.Client.Core/Services/DiagnosticLog/DiagnosticLogger.cs) | In-memory log storage |
+
+---
+
+## Best Practices
+
 ### For Developers
 
-1. **Debugging in Development**:
-   - View real-time logs from both client and server
-   - Test exception handling
-   - Verify server configuration
-   - Monitor memory usage
-
-2. **Testing in Production-like Environments**:
-   - Use in-app dev tools on mobile devices
-   - Verify push notifications and SignalR work correctly
-   - Check that logs are properly filtered (no sensitive server logs)
-
-3. **Performance Troubleshooting**:
-   - Monitor memory consumption
-   - Force garbage collection to identify leaks
-   - View log categories to identify bottlenecks
+1. **Use in Development**: Keep the modal open while developing to monitor logs in real-time
+2. **Test Exception Handling**: Use "Throw Test Exception" to verify your error boundaries work correctly
+3. **Monitor Memory**: Use "Call GC" and telemetry context to track memory usage during testing
+4. **Verify Updates**: Use "Update App" to test your force update system
 
 ### For Support Teams
 
-1. **Remote Troubleshooting**:
-   - Ask users to open the diagnostic modal (7 clicks on header)
-   - Have them copy and send telemetry context
-   - View logs to identify issues without needing server access
+1. **First Step in Troubleshooting**: Always ask users to open the Diagnostic Modal (7 clicks)
+2. **Gather Context Early**: Request telemetry context copy before attempting fixes
+3. **Check Logs**: Look for error-level logs to identify the root cause
+4. **Test Connectivity**: Use "Call Diagnostics API" to verify push notifications and SignalR
 
-2. **Real-Time Support** (with SignalR enabled):
-   - Support staff can automatically receive diagnostic logs via SignalR
-   - Call `UPLOAD_DIAGNOSTIC_LOGGER_STORE` method to stream logs to support dashboard
-   - No need to ask users to manually copy/paste logs
+### For End Users
 
-3. **Quick Fixes**:
-   - Clear cache to resolve common issues
-   - Force app update to ensure user is on latest version
-   - Test push notifications to verify subscription
+1. **Easy Access**: Just click 7 times on the header - no technical knowledge required
+2. **Copy and Share**: Use the copy buttons to send information to support
+3. **Safe to Use**: All actions are safe and won't harm the application
+4. **Production Ready**: Available in production without special setup
 
-## Important Security Notes
+---
 
-⚠️ **Production Environment Considerations:**
+## Hands-On Exploration
 
-1. **Server Logs Not Exposed**: In Production/Staging, only client-side logs are shown in the diagnostic modal. Server logs are never exposed to prevent leaking sensitive information.
+**🎯 Strongly Recommended**: To fully appreciate the power of the Diagnostic Modal:
 
-2. **Known vs Unknown Exceptions**: 
-   - **Known Exceptions**: Display user-friendly messages in all environments
-   - **Unknown Exceptions**: Show detailed error messages only in Development; show generic "Unknown error" in Production
+1. Visit **https://bitplatform.dev/demos**
+2. Open any published demo app (Admin Panel, Sales Dashboard, etc.)
+3. Click **7 times** on the header OR press **Ctrl+Shift+X**
+4. Explore all features:
+   - View telemetry context
+   - Filter and search logs
+   - Test diagnostic API
+   - Try utility buttons
+   - View detailed log information
 
-3. **Diagnostic API**: While marked `[AllowAnonymous]`, the diagnostic endpoint only returns non-sensitive information (headers, IP, environment name). Sensitive data remains protected.
+This hands-on experience will demonstrate how valuable this tool is for real-world troubleshooting scenarios.
 
-4. **Support Access**: Support staff with remote access to user devices can view diagnostic information, but this requires appropriate access controls at the organizational level.
+---
 
-## Hands-On Recommendation
+## Key Takeaways
 
-🎯 **Highly Recommended:** Visit https://bitplatform.dev/demos, open any published app, and test the Diagnostic Modal yourself:
+✅ **Available Everywhere**: Works in all environments and on all platforms (including mobile)  
+✅ **No Special Builds Needed**: Available in production without debug builds  
+✅ **User-Friendly Access**: 7 clicks makes it accessible to non-technical users  
+✅ **Comprehensive Information**: Telemetry, logs, and runtime diagnostics in one place  
+✅ **Powerful Utilities**: Test exceptions, clear cache, force GC, update app, and more  
+✅ **Mobile DevTools**: In-app browser DevTools work even on iOS/Android  
+✅ **Remote Support**: Users can easily share diagnostic information with support teams  
+✅ **Real-Time Monitoring**: View logs and application state as they happen  
 
-1. Click 7 times on the header spacer (or press `Ctrl + Shift + X`)
-2. Explore the telemetry context
-3. View and filter the logs
-4. Click the "Details" button on various log entries
-5. Try the "Throw test error" button
-6. Call the Diagnostics API
-7. If on a mobile device, try opening the in-app dev tools
-8. Test clearing the cache
-9. Experiment with all the filtering options
-
-**This hands-on experience will give you a much better understanding of the diagnostic capabilities than just reading the documentation!**
-
-## Summary
-
-The Diagnostic Modal is an **essential troubleshooting tool** that provides:
-
-- ✅ Real-time log viewing with powerful filtering
-- ✅ Comprehensive device and app telemetry
-- ✅ Server diagnostics and connection testing
-- ✅ In-app dev tools that work on mobile devices
-- ✅ Memory monitoring and garbage collection
-- ✅ Cache clearing and app update capabilities
-- ✅ Support for remote troubleshooting scenarios
-- ✅ Secure by design (no sensitive data exposure in production)
-
-This tool significantly reduces the time needed to diagnose issues, especially in production environments where traditional debugging tools are not available.
+The Diagnostic Modal is one of the most valuable troubleshooting tools in the boilerplate, significantly reducing the time needed to diagnose and resolve issues in both development and production environments.
 
 ---

@@ -1,104 +1,116 @@
 # Stage 1: Entity Framework Core
 
-Welcome to Stage 1 of the getting started guide! In this stage, you'll learn about Entity Framework Core architecture in this project, including DbContext, entity models, entity type configurations, and migrations.
+Welcome to the interactive Getting Started guide! This document will walk you through the Entity Framework Core architecture in this Boilerplate project.
 
 ---
 
-## 📂 AppDbContext - The Heart of Data Access
+## Overview
 
-The `AppDbContext` is the central data access component in this project. It's your gateway to the database and manages all entity sets.
+Entity Framework Core (EF Core) is the primary data access technology used in this project. It provides an object-relational mapping (ORM) layer that allows you to work with databases using .NET objects, eliminating much of the data access code you'd normally need to write.
+
+In this stage, you'll learn about:
+- **AppDbContext**: The central database context for server-side data access
+- **Entity Models**: How domain entities are defined
+- **Entity Type Configurations**: Best practices for configuring entity mappings
+- **Migrations**: How to manage database schema changes (optional for server-side)
+<!--#if (offlineDb == true)-->
+- **Client-Side Offline Database**: How the client-side database works differently
+<!--#endif-->
+
+---
+
+## 1. AppDbContext - The Heart of Data Access
 
 ### Location
-[`/src/Server/Boilerplate.Server.Api/Data/AppDbContext.cs`](../src/Server/Boilerplate.Server.Api/Data/AppDbContext.cs)
+The main database context is located at:
+[`/src/Server/Boilerplate.Server.Api/Data/AppDbContext.cs`](/src/Server/Boilerplate.Server.Api/Data/AppDbContext.cs)
 
 ### What is AppDbContext?
 
-`AppDbContext` inherits from `IdentityDbContext<User, Role, Guid, ...>`, which means it:
-- Provides built-in ASP.NET Core Identity tables (Users, Roles, UserRoles, etc.)
-- Manages all your custom entities
-- Handles database connections and transactions
-- Implements `IDataProtectionKeyContext` for ASP.NET Core Data Protection
+`AppDbContext` is the central class that coordinates Entity Framework functionality for your data model. It inherits from `IdentityDbContext`, which provides built-in support for ASP.NET Core Identity (users, roles, authentication).
 
 ### Key Features
 
-#### DbSets - Your Entity Tables
-Each `DbSet<T>` property represents a table in the database:
+Here's the `AppDbContext` structure from the actual project:
 
 ```csharp
-public DbSet<UserSession> UserSessions { get; set; } = default!;
-public DbSet<TodoItem> TodoItems { get; set; } = default!;
-public DbSet<Category> Categories { get; set; } = default!;
-public DbSet<Product> Products { get; set; } = default!;
-public DbSet<PushNotificationSubscription> PushNotificationSubscriptions { get; set; } = default!;
-public DbSet<WebAuthnCredential> WebAuthnCredential { get; set; } = default!;
-public DbSet<SystemPrompt> SystemPrompts { get; set; } = default!;
-public DbSet<Attachment> Attachments { get; set; } = default!;
-public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = default!;
-```
-
-#### OnModelCreating - Configuration Hub
-This method is where all entity configurations are applied:
-
-```csharp
-protected override void OnModelCreating(ModelBuilder modelBuilder)
+public partial class AppDbContext(DbContextOptions<AppDbContext> options)
+    : IdentityDbContext<User, Role, Guid, UserClaim, UserRole, UserLogin, RoleClaim, UserToken>(options), 
+      IDataProtectionKeyContext
 {
-    base.OnModelCreating(modelBuilder);
-
-    // Apply all IEntityTypeConfiguration implementations automatically
-    modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
-
-    // Configure Identity table names
-    ConfigureIdentityTableNames(modelBuilder);
-
-    // Configure ConcurrencyStamp for optimistic concurrency control
-    ConfigureConcurrencyStamp(modelBuilder);
-}
-```
-
-#### Concurrency Control
-The project implements **optimistic concurrency control** using `ConcurrencyStamp`:
-
-```csharp
-public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
-{
-    try
+    // DbSets represent tables in the database
+    public DbSet<UserSession> UserSessions { get; set; } = default!;
+    public DbSet<TodoItem> TodoItems { get; set; } = default!;
+    public DbSet<Category> Categories { get; set; } = default!;
+    public DbSet<Product> Products { get; set; } = default!;
+    public DbSet<PushNotificationSubscription> PushNotificationSubscriptions { get; set; } = default!;
+    public DbSet<WebAuthnCredential> WebAuthnCredential { get; set; } = default!;
+    public DbSet<SystemPrompt> SystemPrompts { get; set; } = default!;
+    public DbSet<Attachment> Attachments { get; set; } = default!;
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = default!;
+    
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        SetConcurrencyStamp();
-        return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-    }
-    catch (DbUpdateConcurrencyException exception)
-    {
-        throw new ConflictException(nameof(AppStrings.UpdateConcurrencyException), exception);
+        base.OnModelCreating(modelBuilder);
+        
+        // Apply all entity configurations from the assembly
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        
+        // Configure Identity table names
+        ConfigureIdentityTableNames(modelBuilder);
+        
+        // Configure concurrency stamps for optimistic concurrency control
+        ConfigureConcurrencyStamp(modelBuilder);
     }
 }
 ```
 
-**What this means:**
-- When two users try to update the same record simultaneously, the second update will fail with a `ConflictException`
-- This prevents data loss and ensures data integrity
-- Users see a user-friendly error message asking them to refresh and try again
+### What Does Each DbSet Represent?
+
+Each `DbSet<T>` property represents a **table** in your database:
+- `Categories` → `Categories` table
+- `Products` → `Products` table
+- `TodoItems` → `TodoItems` table
+- And so on...
+
+You query and save data through these properties:
+```csharp
+// Example: Get all categories
+var categories = await dbContext.Categories.ToListAsync();
+
+// Example: Add a new category
+var newCategory = new Category { Name = "Honda", Color = "#FF5733" };
+dbContext.Categories.Add(newCategory);
+await dbContext.SaveChangesAsync();
+```
 
 ---
 
-## 🏗️ Entity Models - Your Data Structure
-
-Entity models define the structure of your data. They are POCOs (Plain Old CLR Objects) that map to database tables.
+## 2. Entity Models - Defining Your Domain
 
 ### Location
-[`/src/Server/Boilerplate.Server.Api/Models/`](../src/Server/Boilerplate.Server.Api/Models/)
+Entity models are organized by domain in:
+[`/src/Server/Boilerplate.Server.Api/Models/`](/src/Server/Boilerplate.Server.Api/Models/)
 
-The Models folder is organized by feature:
-- **Categories/** - Category entities
-- **Products/** - Product entities
-- **Identity/** - User, Role, and identity-related entities
-- **Todo/** - TodoItem entities
-- **PushNotification/** - Push notification subscription entities
-- **Attachments/** - File attachment entities
-- **Chatbot/** - AI chatbot entities
+The folder structure is:
+```
+Models/
+├── Categories/
+│   └── Category.cs
+├── Products/
+│   └── Product.cs
+├── Todo/
+│   └── TodoItem.cs
+├── Identity/
+│   └── User.cs, Role.cs, etc.
+└── ... other domains
+```
 
-### Example 1: Category Entity
+### Example: Category Entity
 
-**File:** [`/src/Server/Boilerplate.Server.Api/Models/Categories/Category.cs`](../src/Server/Boilerplate.Server.Api/Models/Categories/Category.cs)
+Let's examine the `Category` entity from the project:
+
+**File:** [`/src/Server/Boilerplate.Server.Api/Models/Categories/Category.cs`](/src/Server/Boilerplate.Server.Api/Models/Categories/Category.cs)
 
 ```csharp
 using Boilerplate.Server.Api.Models.Products;
@@ -120,40 +132,74 @@ public partial class Category
 }
 ```
 
-**Key characteristics:**
-- ✅ `Id` property of type `Guid` (primary key)
-- ✅ `ConcurrencyStamp` property for optimistic concurrency control
-- ✅ Data annotations (`[Required]`, `[MaxLength]`) for validation
-- ✅ Navigation property (`Products`) for relationships
-- ✅ Nullable reference types enabled (`string?`)
+### Understanding the Entity Structure
+
+#### 1. **Primary Key**
+```csharp
+public Guid Id { get; set; }
+```
+- Every entity **must** have an `Id` property
+- Using `Guid` provides globally unique identifiers
+- EF Core automatically recognizes this as the primary key
+
+#### 2. **Data Annotations**
+```csharp
+[Required, MaxLength(64)]
+public string? Name { get; set; }
+```
+- `[Required]`: This field cannot be null in the database
+- `[MaxLength(64)]`: Limits the string length to 64 characters
+- These annotations affect both database schema and validation
+
+#### 3. **ConcurrencyStamp**
+```csharp
+public byte[] ConcurrencyStamp { get; set; } = [];
+```
+- **Critical for optimistic concurrency control**
+- Configured as a **row version** in SQL Server
+- Automatically prevents lost updates when multiple users edit the same record
+- You **must** include this in all entities that will be updated
+
+#### 4. **Navigation Properties**
+```csharp
+public IList<Product> Products { get; set; } = [];
+```
+- Represents the **relationship** between `Category` and `Product`
+- One category can have many products (one-to-many relationship)
+- EF Core uses this to generate foreign key relationships in the database
 
 ---
 
-## ⚙️ Entity Type Configurations - Fluent API
+## 3. Entity Type Configurations - The Professional Approach
 
-Entity Type Configurations use **Fluent API** to configure your entities in a clean, organized way separate from the entity classes.
+### Why Use Entity Type Configurations?
+
+Instead of cluttering your entity classes with `Fluent API` configuration code or excessive data annotations, the project uses **separate configuration classes**. This provides:
+
+✅ **Separation of Concerns**: Entity classes remain clean and focused on domain logic  
+✅ **Better Organization**: All database mapping logic is in one place  
+✅ **Easier Testing**: Entities are POCOs (Plain Old CLR Objects) without database concerns  
+✅ **Improved Readability**: Configuration is easier to find and maintain
 
 ### Location
-[`/src/Server/Boilerplate.Server.Api/Data/Configurations/`](../src/Server/Boilerplate.Server.Api/Data/Configurations/)
+Entity configurations are located at:
+[`/src/Server/Boilerplate.Server.Api/Data/Configurations/`](/src/Server/Boilerplate.Server.Api/Data/Configurations/)
 
-The Configurations folder mirrors the Models folder structure:
-- **Category/** - Category configurations
-- **Product/** - Product configurations
-- **Identity/** - Identity-related configurations
-- **Todo/** - Todo configurations
-- etc.
+The folder structure mirrors the Models folder:
+```
+Configurations/
+├── Category/
+│   └── CategoryConfiguration.cs
+├── Product/
+│   └── ProductConfiguration.cs
+├── Identity/
+│   └── UserConfiguration.cs, RoleConfiguration.cs
+└── ... other configurations
+```
 
-### Benefits of Entity Type Configurations
+### Example: CategoryConfiguration
 
-✅ **Separation of Concerns** - Keep entity classes clean, put complex configuration in separate files  
-✅ **Fluent API Power** - Access advanced configurations not available via data annotations  
-✅ **Better Organization** - Each entity has its own configuration file  
-✅ **Automatic Discovery** - All configurations are automatically applied via `ApplyConfigurationsFromAssembly()`  
-✅ **Seed Data** - Perfect place to add initial data using `HasData()`
-
-### Example 1: CategoryConfiguration
-
-**File:** [`/src/Server/Boilerplate.Server.Api/Data/Configurations/Category/CategoryConfiguration.cs`](../src/Server/Boilerplate.Server.Api/Data/Configurations/Identity/CategoryConfiguration.cs)
+**File:** [`/src/Server/Boilerplate.Server.Api/Data/Configurations/Category/CategoryConfiguration.cs`](/src/Server/Boilerplate.Server.Api/Data/Configurations/Category/CategoryConfiguration.cs)
 
 ```csharp
 using Boilerplate.Server.Api.Models.Categories;
@@ -164,295 +210,274 @@ public partial class CategoryConfiguration : IEntityTypeConfiguration<Category>
 {
     public void Configure(EntityTypeBuilder<Category> builder)
     {
-        // Create a unique index on Name
+        // Configure unique index on Name
         builder.HasIndex(p => p.Name).IsUnique();
 
         // Seed initial data
         var defaultConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
         builder.HasData(
-            new Category { Id = Guid.Parse("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"), Name = "Ford", Color = "#FFCD56", ConcurrencyStamp = defaultConcurrencyStamp },
-            new Category { Id = Guid.Parse("582b8c19-0709-4dae-b7a6-fa0e704dad3c"), Name = "Nissan", Color = "#FF6384", ConcurrencyStamp = defaultConcurrencyStamp },
-            new Category { Id = Guid.Parse("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"), Name = "Benz", Color = "#4BC0C0", ConcurrencyStamp = defaultConcurrencyStamp },
-            new Category { Id = Guid.Parse("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"), Name = "BMW", Color = "#FF9124", ConcurrencyStamp = defaultConcurrencyStamp },
-            new Category { Id = Guid.Parse("747f6d66-7524-40ca-8494-f65e85b5ee5d"), Name = "Tesla", Color = "#2B88D8", ConcurrencyStamp = defaultConcurrencyStamp });
+            new Category { 
+                Id = Guid.Parse("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"), 
+                Name = "Ford", 
+                Color = "#FFCD56", 
+                ConcurrencyStamp = defaultConcurrencyStamp 
+            },
+            new Category { 
+                Id = Guid.Parse("582b8c19-0709-4dae-b7a6-fa0e704dad3c"), 
+                Name = "Nissan", 
+                Color = "#FF6384", 
+                ConcurrencyStamp = defaultConcurrencyStamp 
+            },
+            new Category { 
+                Id = Guid.Parse("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"), 
+                Name = "Benz", 
+                Color = "#4BC0C0", 
+                ConcurrencyStamp = defaultConcurrencyStamp 
+            },
+            new Category { 
+                Id = Guid.Parse("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"), 
+                Name = "BMW", 
+                Color = "#FF9124", 
+                ConcurrencyStamp = defaultConcurrencyStamp 
+            },
+            new Category { 
+                Id = Guid.Parse("747f6d66-7524-40ca-8494-f65e85b5ee5d"), 
+                Name = "Tesla", 
+                Color = "#2B88D8", 
+                ConcurrencyStamp = defaultConcurrencyStamp 
+            }
+        );
     }
 }
 ```
 
-**What this configuration does:**
-- Creates a **unique index** on the `Name` column (prevents duplicate category names)
-- Seeds **5 initial categories** into the database (Ford, Nissan, Benz, BMW, Tesla)
+### Understanding the Configuration
 
-### Example 2: UserConfiguration
-
-**File:** [`/src/Server/Boilerplate.Server.Api/Data/Configurations/Identity/UserConfiguration.cs`](../src/Server/Boilerplate.Server.Api/Data/Configurations/Identity/UserConfiguration.cs)
-
+#### 1. **Unique Indexes**
 ```csharp
-public partial class UserConfiguration : IEntityTypeConfiguration<User>
-{
-    public void Configure(EntityTypeBuilder<User> builder)
-    {
-        // Configure relationships
-        builder.HasMany(user => user.Roles)
-            .WithOne(ur => ur.User)
-            .HasForeignKey(ur => ur.UserId);
+builder.HasIndex(p => p.Name).IsUnique();
+```
+- Creates a unique index on the `Name` column
+- Ensures no two categories can have the same name
+- Database will enforce this constraint at the SQL level
 
-        builder.HasMany(user => user.Claims)
-            .WithOne(ur => ur.User)
-            .HasForeignKey(ur => ur.UserId);
+#### 2. **Seed Data with HasData()**
+```csharp
+builder.HasData(
+    new Category { Id = Guid.Parse("..."), Name = "Ford", ... }
+);
+```
+- Pre-populates the database with initial data
+- Useful for development, testing, and demo scenarios
+- Data is inserted when the database is created
 
-        builder.HasMany(user => user.Tokens)
-            .WithOne(ut => ut.User)
-            .HasForeignKey(ut => ut.UserId);
+### How Configurations Are Applied
 
-        builder.HasMany(user => user.Logins)
-            .WithOne(ul => ul.User)
-            .HasForeignKey(ul => ul.UserId);
-
-        // Seed test user
-        const string userName = "test";
-        const string email = "test@bitplatform.dev";
-
-        builder.HasData([new User
-        {
-            Id = Guid.Parse("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"),
-            EmailConfirmed = true,
-            LockoutEnabled = true,
-            Gender = Gender.Other,
-            BirthDate = new DateTimeOffset(new DateOnly(2023, 1, 1), default, default),
-            FullName = "Boilerplate test account",
-            UserName = userName,
-            NormalizedUserName = userName.ToUpperInvariant(),
-            Email = email,
-            NormalizedEmail = email.ToUpperInvariant(),
-            EmailTokenRequestedOn = new DateTimeOffset(new DateOnly(2023, 1, 1), default, default),
-            PhoneNumber = "+31684207362",
-            PhoneNumberConfirmed = true,
-            SecurityStamp = "959ff4a9-4b07-4cc1-8141-c5fc033daf83",
-            ConcurrencyStamp = "315e1a26-5b3a-4544-8e91-2760cd28e231",
-            PasswordHash = "AQAAAAIAAYagAAAAEP0v3wxkdWtMkHA3Pp5/JfS+42/Qto9G05p2mta6dncSK37hPxEHa3PGE4aqN30Aag==", // 123456
-        }]);
-
-        // Create unique indexes with filters (for nullable columns)
-        builder
-            .HasIndex(b => b.Email)
-            .HasFilter($"[{nameof(User.Email)}] IS NOT NULL")
-            .IsUnique();
-
-        builder
-            .HasIndex(b => b.PhoneNumber)
-            .HasFilter($"[{nameof(User.PhoneNumber)}] IS NOT NULL")
-            .IsUnique();
-    }
-}
+In `AppDbContext.OnModelCreating()`:
+```csharp
+modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 ```
 
-**What this configuration does:**
-- Configures **one-to-many relationships** between User and related entities
-- Seeds a **test user** (username: `test`, password: `123456`)
-- Creates **unique filtered indexes** on Email and PhoneNumber (only where they're not null)
+This single line:
+- **Scans** the entire assembly for classes implementing `IEntityTypeConfiguration<T>`
+- **Automatically applies** all configurations
+- You don't need to manually register each configuration class
 
 ---
 
-## 🔄 Migrations - Managing Database Schema Changes (Optional)
+## 4. Migrations (Optional for Server-Side)
 
-Migrations are EF Core's way of evolving your database schema over time as your entity models change.
+### Important Note About Migrations
 
-### Location
-[`/src/Server/Boilerplate.Server.Api/Data/Migrations/`](../src/Server/Boilerplate.Server.Api/Data/Migrations/)
+**EF Core migrations are NOT mandatory** in this project, especially for:
+- Test projects
+- Rapid prototyping scenarios
+- Development environments where the database can be easily recreated
 
-### ⚠️ Important: Migrations are Recommended
+### Default Approach: EnsureCreatedAsync()
 
-Using EF Core migrations is **not mandatory** for:
-- ✅ Test projects or rapid prototyping
-- ✅ Development environments where you can easily recreate the database
-- ✅ Scenarios where you use `EnsureCreatedAsync()`
+By default, the project uses `Database.EnsureCreatedAsync()` which **automatically creates** the database schema based on your entities without requiring migrations:
 
-**Current approach in the project:**
-
-The project currently uses `EnsureCreatedAsync()` in [`Program.cs`](../src/Server/Boilerplate.Server.Api/Program.cs):
-
+**File:** [`/src/Server/Boilerplate.Server.Api/Program.cs`](/src/Server/Boilerplate.Server.Api/Program.cs)
 ```csharp
-await dbContext.Database.EnsureCreatedAsync(); // It's recommended to start using ef-core migrations.
+if (builder.Environment.IsDevelopment())
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await dbContext.Database.EnsureCreatedAsync(); // Automatically creates schema
+}
 ```
 
-**What `EnsureCreatedAsync()` does:**
-- Creates the database if it doesn't exist
-- Creates all tables based on your entity models
-- **Does NOT** create migrations or track schema changes
-- **Simple and fast** for development
+### When to Use Migrations?
 
-**When to switch to migrations:**
-- ✅ Production environments
-- ✅ When you need to preserve existing data during schema changes
-- ✅ When you want version-controlled database schema history
-- ✅ When you need to roll back schema changes
+You should **switch to migrations** when:
+- Deploying to **production environments**
+- You need to **preserve existing data** during schema changes
+- You want **version control** for your database schema
+- You're working in a **team environment** where schema changes need to be tracked
 
-### Creating Migrations (When Needed)
+### How to Switch to Migrations
 
-If you decide to use migrations, here's how to create them:
+If you decide to use migrations, follow these steps:
 
-#### Option 1: Using Package Manager Console (Visual Studio)
+#### Step 1: Replace EnsureCreatedAsync() with MigrateAsync()
 
-1. Set **`Boilerplate.Server.Api`** as the default project and startup project in Package Manager Console
-3. Run:
+Replace `EnsureCreatedAsync()` with `MigrateAsync()` in these 3 files:
+1. [`/src/Server/Boilerplate.Server.Api/Program.cs`](/src/Server/Boilerplate.Server.Api/Program.cs)
+2. [`/src/Server/Boilerplate.Server.Web/Program.cs`](/src/Server/Boilerplate.Server.Web/Program.cs)
+3. [`/src/Tests/TestsInitializer.cs`](/src/Tests/TestsInitializer.cs)
 
-```powershell
-Add-Migration Initial -Verbose -OutputDir Data\Migrations
+**Before:**
+```csharp
+await dbContext.Database.EnsureCreatedAsync();
 ```
 
-#### Option 2: Using .NET CLI
+**After:**
+```csharp
+await dbContext.Database.MigrateAsync();
+```
+
+#### Step 2: Create Your First Migration
 
 Open a terminal in the `Boilerplate.Server.Api` project directory and run:
 
 ```bash
-dotnet ef migrations add Initial --verbose --output-dir Data/Migrations
+dotnet ef migrations add InitialMigration --output-dir Data/Migrations --verbose
 ```
+
+This creates migration files in the `/Data/Migrations/` folder.
+
+#### Step 3: Apply the Migration
+
+The migration will be **automatically applied** when the application starts (thanks to `MigrateAsync()`).
+
+### Adding Future Migrations
+
+When you modify entities or configurations, create a new migration:
+
+```bash
+dotnet ef migrations add AddNewPropertyToCategory --output-dir Data/Migrations --verbose
+```
+
+**Important:** Always use descriptive migration names that explain what changed (e.g., `AddEmailToUser`, `CreateProductsTable`).
 
 ---
 <!--#if (offlineDb == true)-->
-## 📱 Client-Side Offline Database
+## 5. Client-Side Offline Database
 
-This project also includes a **client-side offline database** that allows the application to work without an internet connection!
+### What Makes It Different?
 
-### What is the Offline Database?
-
-The offline database is a **SQLite database** that runs entirely on the client device (browser, mobile app, desktop app) using:
-- **Bit.Besql** - SQLite for Blazor WebAssembly (runs in the browser!)
-- **Microsoft.EntityFrameworkCore.Sqlite** - SQLite for .NET MAUI and Windows apps
-
-### Location
-[`/src/Client/Boilerplate.Client.Core/Data/`](../src/Client/Boilerplate.Client.Core/Data/)
-
-**Key files:**
-- **`OfflineDbContext.cs`** - The client-side DbContext
-- **`README.md`** - Comprehensive guide for working with the offline database
-- **`Migrations/`** - Client-side migrations (auto-applied on app startup)
+This project includes a **client-side offline database** that allows the application to work **without an internet connection**. This is fundamentally different from the server-side database.
 
 ### Key Characteristics
 
-✅ **Per-Client Database** - Each client (web browser, mobile app, desktop app) has its own local database  
-✅ **Automatic Synchronization** - Data can sync with the server when online  
-✅ **Offline-First** - App works fully offline, syncs when connection is available  
-✅ **Migration-Only Approach** - Client-side databases **ONLY** use migrations (NOT `EnsureCreatedAsync()`)
+#### Per-Client Database
+- Each client (web browser, mobile app, desktop app) has its **own local database**
+- Stored locally on the user's device
+- Independent of the server database
 
-**Why migrations-only for client databases?**
-- You cannot manually manage thousands of client databases
-- Migrations ensure all clients have the correct schema
-- `EnsureCreatedAsync()` doesn't work well for schema updates on existing databases
+#### Manual Management Not Feasible
+- There will be **as many databases as there are clients** (potentially millions)
+- You cannot manually manage each client's database
+- **Migrations are the only viable approach**
 
-### Example: OfflineDbContext
+#### Migration-Only Approach
+For client-side databases:
+- ❌ **DO NOT use** `EnsureCreatedAsync()`
+- ✅ **ALWAYS use** `MigrateAsync()` and EF Core migrations
+- Migrations ensure controlled, versioned schema updates across all client devices
 
-**File:** [`/src/Client/Boilerplate.Client.Core/Data/OfflineDbContext.cs`](../src/Client/Boilerplate.Client.Core/Data/OfflineDbContext.cs)
+### Location and Technology
+
+**DbContext Location:** [`/src/Client/Boilerplate.Client.Core/Data/OfflineDbContext.cs`](/src/Client/Boilerplate.Client.Core/Data/OfflineDbContext.cs)
+
+**Technology:** [bit Besql](https://bitplatform.dev/besql) - EF Core SQLite for Blazor
 
 ```csharp
-using Boilerplate.Shared.Dtos.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-
-namespace Boilerplate.Client.Core.Data;
-
 public partial class OfflineDbContext(DbContextOptions<OfflineDbContext> options) : DbContext(options)
 {
     public virtual DbSet<UserDto> Users { get; set; }
-
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Seed test user for offline mode
+        // Seed initial offline user data
         modelBuilder.Entity<UserDto>()
             .HasData([new()
             {
                 Id = Guid.Parse("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"),
                 Email = "test@bitplatform.dev",
                 UserName = "test",
-                PhoneNumber = "+31684207362",
-                BirthDate = new DateTimeOffset(2023, 1, 1, 0, 0, 0, TimeSpan.Zero),
-                Gender = Gender.Other,
-                Password = "123456",
                 FullName = "Boilerplate test account"
             }]);
-
+        
         base.OnModelCreating(modelBuilder);
-    }
-
-    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
-    {
-        // SQLite does not support expressions of type 'DateTimeOffset' in ORDER BY clauses
-        configurationBuilder.Properties<DateTimeOffset>().HaveConversion<DateTimeOffsetToBinaryConverter>();
-        configurationBuilder.Properties<DateTimeOffset?>().HaveConversion<DateTimeOffsetToBinaryConverter>();
-
-        base.ConfigureConventions(configurationBuilder);
     }
 }
 ```
 
-**Key differences from server-side DbContext:**
-- Uses **DTOs** (not entities) - stores data in the same format as API responses
-- Includes **seed data** for offline testing
-- Configured for **SQLite limitations** (DateTimeOffset conversion)
+### How Migrations Are Applied
+
+Migrations are **automatically applied** when the application starts on the client:
+
+**File:** [`/src/Client/Boilerplate.Client.Core/Extensions/IClientCoreServiceCollectionExtensions.cs`](/src/Client/Boilerplate.Client.Core/Extensions/IClientCoreServiceCollectionExtensions.cs)
+```csharp
+dbContextInitializer: async (sp, dbContext) => 
+    await Task.Run(async () => await dbContext.Database.MigrateAsync())
+```
+
+This ensures:
+- First-time users get the initial schema
+- Existing users get schema updates automatically
+- No data loss during updates
 
 ### Creating Client-Side Migrations
 
-**Important:** You must follow these steps carefully when creating client-side migrations.
+To add a migration for `OfflineDbContext`, follow these steps:
 
 #### Option 1: Using Package Manager Console (Visual Studio)
 
-1. Set **`Boilerplate.Server.Web`** as the startup project in Solution Explorer
-2. Set **`Boilerplate.Client.Core`** as the default project in Package Manager Console
+1. Set `Boilerplate.Server.Web` as the **Startup Project**
+2. Set `Boilerplate.Client.Core` as the **Default Project** in Package Manager Console
 3. Run:
-
 ```powershell
-Add-Migration Initial -OutputDir Data\Migrations -Context OfflineDbContext -Verbose
+Add-Migration YourMigrationName -OutputDir Data\Migrations -Context OfflineDbContext -Verbose
 ```
 
-#### Option 2: Using .NET CLI
+#### Option 2: Using dotnet CLI
 
-Open a terminal in the `Server.Web` project directory and run:
-
+Open a terminal in the `Boilerplate.Server.Web` project directory and run:
 ```bash
-dotnet ef migrations add Initial --context OfflineDbContext --output-dir Data/Migrations --project ../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
+dotnet ef migrations add YourMigrationName --context OfflineDbContext --output-dir Data/Migrations --project ../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
 ```
 
-**⚠️ Important Notes:**
-- **DO NOT** run `Update-Database` for client-side migrations
-- Migrations are automatically applied when the app starts on each client device
-- The database is created in the browser's cache storage (for WebAssembly) or in the app's local data folder (for MAUI/Windows)
+**Important Notes:**
+- Ensure the solution builds successfully before running migration commands
+- Do **NOT** run `Update-Database` for client-side migrations
+- The migration is automatically applied via `MigrateAsync()` when the app starts on each device
 
-### More Information
+### Additional Resources
 
-For comprehensive details about the offline database, including:
-- Performance optimization with compiled models
+For comprehensive information about the client-side offline database, including:
 - Advanced configuration
-- Troubleshooting
+- Performance optimization with compiled models
+- Debugging SQLite databases in the browser
+- Downloading the database file for inspection
 
-Read: [`/src/Client/Boilerplate.Client.Core/Data/README.md`](../src/Client/Boilerplate.Client.Core/Data/README.md)
+**See:** [`/src/Client/Boilerplate.Client.Core/Data/README.md`](/src/Client/Boilerplate.Client.Core/Data/README.md)
 
 ---
 <!--#endif-->
 
-## 🎯 Summary
+## Summary
 
-In Stage 1, you learned:
+In this stage, you learned about:
 
-✅ **AppDbContext** - The central data access component located in `/src/Server/Boilerplate.Server.Api/Data/AppDbContext.cs`  
-✅ **Entity Models** - POCOs that define your data structure, located in `/src/Server/Boilerplate.Server.Api/Models/`  
-✅ **Entity Type Configurations** - Fluent API configurations for clean separation of concerns, located in `/src/Server/Boilerplate.Server.Api/Data/Configurations/`  
-✅ **Concurrency Control** - Automatic optimistic concurrency with `ConcurrencyStamp`  
-✅ **Migrations (Optional)** - Can use `EnsureCreatedAsync()` for rapid development, switch to migrations for production  
+✅ **AppDbContext**: The central database context located at `/src/Server/Boilerplate.Server.Api/Data/AppDbContext.cs`  
+✅ **Entity Models**: Defined in `/src/Server/Boilerplate.Server.Api/Models/` with required properties like `Id` and `ConcurrencyStamp`  
+✅ **Entity Type Configurations**: Best practice for separating mapping logic, located in `/src/Server/Boilerplate.Server.Api/Data/Configurations/`  
+✅ **Migrations (Optional)**: For server-side, `EnsureCreatedAsync()` is used by default; migrations are recommended for production  
 <!--#if (offlineDb == true)-->
-✅ **Client-Side Offline Database** - SQLite database on each client device with automatic migrations and offline-first capabilities
-<!--#endif-->
-
----
-
-## 📚 Key Concepts to Remember
-
-1. **Entity Models** → Define data structure (properties, relationships)
-2. **Entity Type Configurations** → Configure entities with Fluent API (indexes, seed data, relationships)
-3. **AppDbContext** → Manages database connections and applies configurations
-4. **Migrations** → Optional for development, recommended for production
-<!--#if (offlineDb == true)-->
-5. **Offline Database** → Client-side SQLite for offline-first applications
+✅ **Client-Side Offline Database**: Uses `OfflineDbContext` with **mandatory migrations** and automatic application on startup
 <!--#endif-->
 
 ---

@@ -1,181 +1,116 @@
 # Stage 18: Other Available Prompt Templates
 
-This project includes several specialized prompt templates designed to help you with specific development tasks. These prompts are located in the `.github/prompts/` directory and can be activated by referencing them in your GitHub Copilot Chat.
+This project includes several specialized prompt templates designed to help you with specific development tasks. Each prompt is carefully crafted to follow the project's conventions and best practices.
 
-## Available Prompt Templates
+## Available Prompts
 
 ### 1. Scaffold Prompt (`scaffold.prompt.md`)
 
-**Purpose**: Automates the creation of a complete CRUD (Create, Read, Update, Delete) implementation for a new entity.
+**File Location**: `.github/prompts/scaffold.prompt.md`
 
-**What it does**:
-- Creates an Entity Type Configuration for Entity Framework Core
-- Generates a DTO (Data Transfer Object) with proper validation attributes
-- Creates a Mapperly-based Mapper for high-performance object mapping
-- Implements an API Controller with full CRUD operations
-- Generates an IAppController interface for strongly-typed HTTP client calls
-- Adds resource strings to `AppStrings.resx` for localization
-- Creates a Blazor Data Grid page for viewing and managing records
-- Creates an Add/Edit page for creating and modifying records
-- Updates `PageUrls.cs`, `NavBar`, and `NavPanel` for navigation
-- Registers the DTO in `AppJsonContext`
-- Creates an EF Core migration
+**What it does**: Generates a complete CRUD (Create, Read, Update, Delete) implementation for a new entity in your project, including all necessary layers from database to UI.
 
-**When to use it**:
-- When you need to add a new entity to your application (e.g., Product, Order, Invoice, etc.)
-- When you want to quickly scaffold a complete feature with all layers (database, API, UI)
-- When you want to ensure consistency across your codebase by following established patterns
+**When to use it**: When you need to add a new data entity to your application with full CRUD functionality.
 
-**How to use it**:
-Simply reference the prompt in GitHub Copilot Chat and describe your entity:
-```
-Run .github/prompts/scaffold.prompt.md for a "Product" entity with properties: Name (string), Description (string), Price (decimal), CategoryId (Guid), IsActive (bool)
-```
+**Key capabilities**:
+- Creates Entity Type Configuration for EF Core
+- Generates DTO (Data Transfer Object) with validation attributes
+- Creates Mapper using Mapperly for high-performance object mapping
+- Generates API Controller with OData support
+- Creates IAppController Interface for strongly-typed HTTP client
+- Adds Resource Strings to AppStrings.resx for localization
+- Creates Data Grid Page for listing records
+- Creates Add/Edit Page for creating and updating records
+- Integrates with navigation (PageUrls.cs, NavBar, NavPanel)
+- Updates AppJsonContext for JSON serialization
+- Generates EF Core migration
 
-**Key benefits**:
-- Saves hours of repetitive coding
-- Ensures all architectural layers are properly connected
-- Follows best practices and project conventions automatically
-- Reduces human error by generating consistent code
+**Example usage**: "Run scaffold.prompt.md to create a Product entity with Name, Description, Price, and CategoryId properties"
 
 ---
 
 ### 2. Resx Prompt (`resx.prompt.md`)
 
-**Purpose**: Helps you move hardcoded strings to resource files for proper localization support.
+**File Location**: `.github/prompts/resx.prompt.md`
 
-**What it does**:
-- Identifies hardcoded user-facing strings in your code
-- Adds new resource entries to `src/Shared/Resources/AppStrings.resx`
-- Generates strongly-typed resource classes by running `dotnet build -t:PrepareResources`
-- Updates your code to use `IStringLocalizer<AppStrings>` with the `nameof(AppStrings.ResourceKey)` pattern
+**What it does**: Automatically identifies hardcoded strings in your code and moves them to resource files (.resx) for proper localization support.
 
-**When to use it**:
-- When you have hardcoded strings in your Razor components or C# code
-- When preparing your application for multi-language support
-- When you want to ensure all user-facing text can be translated
-- During code review when you notice strings that should be localized
+**When to use it**: When you have hardcoded user-facing text in your Blazor components, pages, or controllers that should be localized to support multiple languages.
 
-**How to use it**:
-Select the code with hardcoded strings and reference the prompt:
-```
-Run .github/prompts/resx.prompt.md on the selected code
-```
+**Key capabilities**:
+- Identifies hardcoded user-facing strings in selected code
+- Adds new entries to `AppStrings.resx` with appropriate resource keys
+- Generates strongly-typed resource classes
+- Updates code to use `IStringLocalizer<AppStrings>` pattern
+- Uses `nameof(AppStrings.ResourceKey)` for type-safe resource access
+- Preserves string formatting with placeholders (e.g., `{0}`, `{1}`)
+- Follows naming conventions with descriptive resource keys
 
-**What it WON'T move**:
+**What it won't move**:
 - CSS class names or IDs
 - Configuration keys
 - API endpoints or URLs
-- Technical constants (file extensions, mime types, etc.)
-- Log messages (developer-facing content)
+- Technical constants (file extensions, mime types)
+- Log messages
 
-**Key benefits**:
-- Makes your application ready for internationalization
-- Centralizes all user-facing text in one place
-- Enables easy translation to multiple languages
-- Follows best practices for .NET localization
+**Example usage**: "Run resx.prompt.md on the Dashboard.razor file to move all hardcoded strings to resource files"
 
 ---
 
 ### 3. Bitify Prompt (`bitify.prompt.md`)
 
-**Purpose**: Modernizes your Blazor pages by replacing standard HTML elements and custom CSS with Bit.BlazorUI components and theme-aware styling.
+**File Location**: `.github/prompts/bitify.prompt.md`
 
-**What it does**:
-- Analyzes your existing `.razor`, `.razor.cs`, and `.razor.scss` files
-- Creates a comprehensive modernization inventory of HTML elements that can be replaced
+**What it does**: Modernizes your Blazor pages by replacing standard HTML elements and custom CSS with Bit.BlazorUI components and theme-aware styling.
+
+**When to use it**: When you have pages using generic HTML elements (like `<button>`, `<input>`, `<div>`) and want to upgrade them to use the Bit.BlazorUI component library for consistency, better UX, and theme support.
+
+**Key capabilities**:
+- Analyzes current HTML markup and identifies replaceable elements
+- Creates a modernization inventory of all HTML elements that can be replaced
 - Uses DeepWiki to research appropriate Bit.BlazorUI components
-- Replaces generic HTML elements with feature-rich Bit.BlazorUI components:
-  - `<input>` → `BitTextField`, `BitCheckbox`, etc.
-  - `<button>` → `BitButton`, `BitActionButton`
+- Replaces HTML elements with proper Bit.BlazorUI components:
+  - `<button>` → `BitButton`
+  - `<input type="text">` → `BitTextField`
   - `<select>` → `BitDropdown`
   - `<table>` → `BitDataGrid`
-  - Layout divs → `BitStack`, `BitGrid`
-- Converts hardcoded colors to `$bit-color-*` theme variables
-- Updates custom CSS to use `::deep` selectors for component styling
-- Modernizes the code-behind to work with component properties and events
+  - Generic divs → `BitStack`, `BitCard`
+- Converts custom CSS to theme-aware styling using `$bit-color-*` variables
+- Uses `::deep` selectors for proper component styling
+- Updates event handlers to use `WrapHandled` pattern
+- Ensures light/dark theme compatibility
 
-**When to use it**:
-- When you have pages using plain HTML that should use Bit.BlazorUI components
-- When upgrading legacy code to modern component-based architecture
-- When you want to ensure theme compatibility (light/dark mode support)
-- When reducing custom CSS in favor of built-in component features
-- When you need consistent UI/UX across your application
+**Workflow steps**:
+1. Analyzes `.razor`, `.razor.cs`, and `.razor.scss` files
+2. Creates inventory of replaceable elements
+3. Researches specific Bit.BlazorUI components via DeepWiki
+4. Implements replacements with proper properties and events
+5. Converts styling to theme-aware approach
+6. Verifies the build succeeds
 
-**How to use it**:
-Open the page you want to modernize and reference the prompt:
-```
-Run .github/prompts/bitify.prompt.md on the current page
-```
-
-**Replacement Examples**:
-- Form inputs → `BitTextField`, `BitDropdown`, `BitCheckbox`, `BitChoiceGroup`
-- Buttons → `BitButton`, `BitActionButton`, `BitIconButton`
-- Layout structures → `BitStack`, `BitGrid`
-- Navigation → `BitNavBar`, `BitBreadcrumb`, `BitNav`
-- Data tables → `BitDataGrid`, `BitBasicList`
-- Cards/Containers → `BitCard`, `BitPanel`
-
-**Key benefits**:
-- Provides a consistent, professional UI out of the box
-- Ensures dark/light theme compatibility automatically
-- Reduces custom CSS maintenance burden
-- Leverages built-in accessibility features
-- Improves responsive design with minimal effort
-- Gets automatic updates when Bit.BlazorUI improves
-
-**Important**: This prompt requires the `DeepWiki_ask_question` tool to research Bit.BlazorUI components effectively.
+**Example usage**: "Run bitify.prompt.md on the UserProfile.razor page to replace all HTML elements with Bit.BlazorUI components"
 
 ---
 
 ## How to Use These Prompts
 
-All of these specialized prompts can be activated in GitHub Copilot Chat by referencing their file path:
+To use any of these prompts, simply reference them in your conversation with GitHub Copilot:
 
-```
-Run .github/prompts/<prompt-name>.prompt.md [with additional context]
-```
+**Examples**:
+- "Run scaffold.prompt.md to create an Order entity with OrderDate, TotalAmount, CustomerId, and Status"
+- "Run resx.prompt.md on all files in Components/Pages/Dashboard/"
+- "Run bitify.prompt.md on the Settings page"
 
-### Tips for Best Results:
-
-1. **Be Specific**: Provide clear details about what you want to accomplish
-2. **Provide Context**: If working with existing code, make sure the relevant files are open or selected
-3. **Review the Output**: Always review the generated code to ensure it meets your specific requirements
-4. **Iterate if Needed**: You can refine the results by asking follow-up questions
-5. **Build and Test**: Always build the project and test the functionality after using these prompts
-
-### Example Usage Scenarios:
-
-**Scenario 1 - New Feature**:
-```
-Run .github/prompts/scaffold.prompt.md for an "Invoice" entity with properties: InvoiceNumber (string), CustomerName (string), TotalAmount (decimal), InvoiceDate (DateTime), IsPaid (bool)
-```
-
-**Scenario 2 - Localization**:
-```
-Select your component with hardcoded strings, then:
-Run .github/prompts/resx.prompt.md on the selected code
-```
-
-**Scenario 3 - UI Modernization**:
-```
-Open the page you want to modernize, then:
-Run .github/prompts/bitify.prompt.md on HomePage.razor and its related files
-```
+Each prompt will guide you through its specific workflow, following the project's conventions and best practices automatically.
 
 ---
 
-## Creating Your Own Prompts
+## Important Notes
 
-You can also create custom prompt templates for your team's specific needs:
+⚠️ **DeepWiki Tool Requirement**: The `bitify.prompt.md` and general development workflows require access to the `DeepWiki_ask_question` tool for researching Bit.BlazorUI components and bitplatform features. If this tool is not available, some prompts may not function optimally.
 
-1. Create a new `.prompt.md` file in `.github/prompts/`
-2. Follow the structure of existing prompts
-3. Document the purpose, usage, and expected outcomes
-4. Share with your team and reference it in GitHub Copilot Chat
+💡 **Prompt Customization**: These prompts are designed to be comprehensive starting points. You can always provide additional context or specific requirements when using them to customize the output to your needs.
+
+🔧 **Build Verification**: All prompts emphasize building the project after changes to ensure compilation success and catch any issues early.
 
 ---
-
-**Next Steps**: Try using one of these prompts on your current work! They're designed to save you time and ensure consistency across your codebase.
-
-**Do you have any questions about these specialized prompts, or would you like to see examples of using any of them? Or shall we proceed to Stage 19 (Project miscellaneous files)?**

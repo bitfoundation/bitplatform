@@ -1,19 +1,20 @@
 # Stage 4: Background Jobs and CancellationToken Management
 
-Welcome to Stage 4! In this stage, you'll learn how the project handles **request cancellation** and **background job processing** to ensure efficient resource management and reliable execution of long-running tasks.
+Welcome to **Stage 4** of the Boilerplate project tutorial! In this stage, we'll explore how the project handles **cancellation tokens** for request cancellation and **background job processing** with Hangfire.
 
 ---
 
 ## Table of Contents
 
 1. [CancellationToken in API Requests](#cancellationtoken-in-api-requests)
-2. [Client-Side Integration](#client-side-integration)
-3. [User Abandonment Scenarios](#user-abandonment-scenarios)
-4. [Navigation Lock for Critical Operations](#navigation-lock-for-critical-operations)
-5. [When to Use Background Jobs](#when-to-use-background-jobs)
-6. [Background Job Implementation with Hangfire](#background-job-implementation-with-hangfire)
-7. [Real-World Example: PhoneServiceJobsRunner](#real-world-example-phoneservicejobsrunner)
-8. [Key Benefits](#key-benefits)
+   - [Automatic Request Cancellation](#automatic-request-cancellation)
+   - [Client-Side Integration](#client-side-integration)
+   - [User Abandonment Scenarios](#user-abandonment-scenarios)
+2. [Navigation Lock for Critical Operations](#navigation-lock-for-critical-operations)
+3. [When to Use Background Jobs](#when-to-use-background-jobs)
+4. [Background Job Implementation with Hangfire](#background-job-implementation-with-hangfire)
+   - [PhoneServiceJobsRunner Example](#phoneservicejobsrunner-example)
+   - [Key Benefits of Hangfire Integration](#key-benefits-of-hangfire-integration)
 
 ---
 
@@ -21,61 +22,78 @@ Welcome to Stage 4! In this stage, you'll learn how the project handles **reques
 
 ### Automatic Request Cancellation
 
-All API methods in this project receive a `CancellationToken` parameter that **automatically cancels** operations when:
+All API methods in this project receive a `CancellationToken` parameter that **automatically cancels operations** when:
 
-- **The user navigates away** from the current page
-- **The browser/app is closed** by the user
-- **The component is disposed** (unmounted from the UI)
-- **A new request is initiated** that supersedes the previous one
-- **The server detects** that the client has disconnected
+- The **user navigates away** from the current page
+- The **browser tab is closed**
+- The **HTTP request is aborted** by the client
+- The **component is disposed** in Blazor
 
-This automatic cancellation **prevents wasted server resources** on operations whose results will never be consumed.
+This ensures that server resources are not wasted processing requests that the user no longer needs.
+
+#### Server-Side Example
+
+Let's look at a real controller from the project - [`TodoItemController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Todo/TodoItemController.cs):
+
+```csharp
+[HttpPost]
+public async Task<TodoItemDto> Create(TodoItemDto dto, CancellationToken cancellationToken)
+{
+    var entityToAdd = dto.Map();
+
+    entityToAdd.UserId = User.GetUserId();
+
+    entityToAdd.Date = DateTimeOffset.UtcNow;
+
+    await DbContext.TodoItems.AddAsync(entityToAdd, cancellationToken);
+
+    await DbContext.SaveChangesAsync(cancellationToken);
+
+    return entityToAdd.Map();
+}
+
+[HttpPut]
+public async Task<TodoItemDto> Update(TodoItemDto dto, CancellationToken cancellationToken)
+{
+    var entityToUpdate = await DbContext.TodoItems.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken)
+        ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
+
+    dto.Patch(entityToUpdate);
+
+    await DbContext.SaveChangesAsync(cancellationToken);
+
+    return entityToUpdate.Map();
+}
+
+[HttpDelete("{id}")]
+public async Task Delete(Guid id, CancellationToken cancellationToken)
+{
+    DbContext.TodoItems.Remove(new() { Id = id });
+
+    var affectedRows = await DbContext.SaveChangesAsync(cancellationToken);
+
+    if (affectedRows < 1)
+        throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
+}
+```
+
+Notice how every async operation (`AddAsync`, `SaveChangesAsync`, `FirstOrDefaultAsync`) receives the `cancellationToken` parameter. This allows Entity Framework Core to cancel database operations if the user abandons the request.
 
 ---
 
-## Client-Side Integration
+### Client-Side Integration
 
-### How CurrentCancellationToken Works
+#### Implementation
 
-The cancellation system works through a combination of:
+The cancellation token system works through a combination of server-side and client-side components:
 
-**Server-side**: API methods accept `CancellationToken cancellationToken` parameter:
+**Server-side**: API methods accept `CancellationToken cancellationToken` parameter (as shown above).
 
-```csharp
-// File: src/Server/Boilerplate.Server.Api/Controllers/Products/ProductController.cs
-[HttpGet("{id}")]
-public async Task<ProductDto> Get(int id, CancellationToken cancellationToken)
-{
-    var product = await DbContext.Products
-        .Where(p => p.Id == id)
-        .Project()
-        .FirstOrDefaultAsync(cancellationToken) 
-        ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductNotFound)]);
+**Client-side**: Components inherit from `AppComponentBase`, which provides a `CurrentCancellationToken` property. When making API calls, this token is automatically passed.
 
-    return product;
-}
-```
+#### CurrentCancellationToken Property
 
-**Client-side**: Components inherit `CurrentCancellationToken` from `AppComponentBase` and pass it when making API calls:
-
-```csharp
-// File: src/Client/Boilerplate.Client.Core/Components/Pages/Products/AddOrEditProductPage.razor.cs
-protected override async Task OnParamsSetAsync()
-{
-    await base.OnParamsSetAsync();
-
-    if (Id != null)
-    {
-        // CurrentCancellationToken is automatically managed by AppComponentBase
-        // It will be cancelled if the user navigates away or the component is disposed
-        product = await productController.Get(Id.Value, CurrentCancellationToken);
-    }
-}
-```
-
-### How AppComponentBase Manages Cancellation
-
-The `AppComponentBase` class (located in [`src/Client/Boilerplate.Client.Core/Components/AppComponentBase.cs`](../src/Client/Boilerplate.Client.Core/Components/AppComponentBase.cs)) provides the `CurrentCancellationToken` property:
+Let's examine how `CurrentCancellationToken` is implemented in [`AppComponentBase.cs`](/src/Client/Boilerplate.Client.Core/Components/AppComponentBase.cs):
 
 ```csharp
 private CancellationTokenSource? cts = new();
@@ -90,233 +108,198 @@ protected CancellationToken CurrentCancellationToken
         return cts.Token;
     }
 }
+```
 
-public async ValueTask DisposeAsync()
+When the component is disposed (user navigates away, closes tab, etc.), the `CancellationTokenSource` is disposed, which automatically cancels all ongoing operations.
+
+#### Client-Side Usage Example
+
+Here's a real example from [`TodoPage.razor.cs`](/src/Client/Boilerplate.Client.Core/Components/Pages/TodoPage.razor.cs):
+
+```csharp
+private async Task LoadTodoItems()
 {
-    if (cts != null)
-    {
-        using var currentCts = cts;
-        cts = null;
-        await currentCts.CancelAsync(); // ✅ Automatically cancels all ongoing operations
-    }
-    // ... other disposal logic
+    allTodoItems = await todoItemController.Get(CurrentCancellationToken);
+}
+
+private async Task AddTodoItem()
+{
+    var addedTodoItem = await todoItemController.Create(new() { Title = newTodoTitle }, CurrentCancellationToken);
+    // ... rest of the code
+}
+
+private async Task DeleteTodoItem()
+{
+    await todoItemController.Delete(deletingTodoItem.Id, CurrentCancellationToken);
+    // ... rest of the code
+}
+
+private async Task SaveTodoItem(TodoItemDto todoItem)
+{
+    (await todoItemController.Update(todoItem, CurrentCancellationToken)).Patch(todoItem);
+    // ... rest of the code
 }
 ```
 
-**Key Points:**
-- Each component has its own `CancellationTokenSource`
-- When the component is disposed (user navigates away), all pending operations are automatically cancelled
-- This prevents memory leaks and wasted server resources
+And in the Razor file ([`TodoPage.razor`](/src/Client/Boilerplate.Client.Core/Components/Pages/TodoPage.razor)), event handlers use `WrapHandled` for proper exception handling:
+
+```xml
+<BitTextField @ref="newTodoInput"
+              Style="flex-grow:1"
+              @bind-Value="newTodoTitle"
+              Immediate DebounceTime="300"
+              Placeholder="@Localizer[nameof(AppStrings.TodoAddPlaceholder)]"
+              OnEnter="WrapHandled(async (KeyboardEventArgs args) => await AddTodoItem())" />
+
+<BitButton AutoLoading
+           OnClick="WrapHandled(AddTodoItem)"
+           Title="@Localizer[nameof(AppStrings.Add)]"
+           IsEnabled="(string.IsNullOrWhiteSpace(newTodoTitle) is false)">
+    @Localizer[nameof(AppStrings.Add)]
+</BitButton>
+```
 
 ---
 
-## User Abandonment Scenarios
+### User Abandonment Scenarios
 
-### Logical Cancellation in Action
+#### Logical Cancellation
 
-Consider this scenario: A user clicks "Save" to update a Product and then **immediately**:
+If a user clicks "Save" to update a Todo item and then **immediately**:
 
-- **Navigates to another page**
-- **Closes the browser/app**
-- **Clicks elsewhere in the UI**
+- Navigates to another page
+- Closes the browser tab
+- Hits the browser's back button
 
-In this case, the save operation is **automatically canceled**.
+The save operation is **automatically canceled**.
 
-### Why This Behavior Makes Sense
+#### Why This is OK
 
-**The user didn't wait for the result**, which could be:
-- ✅ A successful save
-- ❌ An error (e.g., duplicate product name, validation failure)
+The user didn't wait for the result, which could be:
+- An error (e.g., validation failure, network error)
+- A success confirmation
 
-Since they didn't wait, **canceling the operation is the logical behavior**:
-- The user clearly didn't care about the result
-- Server resources are freed immediately
-- Database locks are released faster
-- No unnecessary processing occurs
+Since they didn't wait, canceling the operation is the **logical behavior**. The user has already indicated (by navigating away) that they're no longer interested in the result.
 
 ---
 
 ## Navigation Lock for Critical Operations
 
-### What is NavigationLock?
+### Purpose
 
-For operations where you want to **prevent** automatic cancellation, use Blazor's `NavigationLock` component:
+For operations where you want to **prevent** automatic cancellation, use `NavigationLock`.
 
-- **Prompts the user** to confirm before navigating away
-- **Useful for short critical operations** where accidental navigation would be problematic
-- **Example use case**: Saving important form data
+This is useful when:
+- You're performing a critical operation that **must complete**
+- You want to **warn the user** before they navigate away
+- You need to **confirm** if the user really wants to leave
 
-### Real Example from the Project
+### Real-World Example
 
-**File**: [`src/Client/Boilerplate.Client.Core/Components/Pages/Categories/AddOrEditCategoryModal.razor`](../src/Client/Boilerplate.Client.Core/Components/Pages/Categories/AddOrEditCategoryModal.razor)
+Let's look at [`AddOrEditCategoryModal.razor`](/src/Client/Boilerplate.Client.Core/Components/Pages/Categories/AddOrEditCategoryModal.razor):
 
 ```xml
-@if (isOpen)
-{
-    <NavigationLock OnBeforeInternalNavigation="OnNavigation" />
-}
-
-<BitModal @bind-IsOpen="isOpen"
-          AutoToggleScroll="false" 
-          Blocking="isChanged"
-          Draggable DragElementSelector=".header-stack">
-    <EditForm Model="category" OnValidSubmit="WrapHandled(Save)" novalidate>
-        <!-- Form fields here -->
-    </EditForm>
-</BitModal>
+<NavigationLock OnBeforeInternalNavigation="OnNavigation" />
 ```
 
-**Code-behind**: [`src/Client/Boilerplate.Client.Core/Components/Pages/Categories/AddOrEditCategoryModal.razor.cs`](../src/Client/Boilerplate.Client.Core/Components/Pages/Categories/AddOrEditCategoryModal.razor.cs)
+And the corresponding code-behind ([`AddOrEditCategoryModal.razor.cs`](/src/Client/Boilerplate.Client.Core/Components/Pages/Categories/AddOrEditCategoryModal.razor.cs)):
 
 ```csharp
 private bool isChanged => editForm?.EditContext?.IsModified() is true;
 
-private async Task OnNavigation(LocationChangingContext context)
+private void OnNavigation(LocationChangingContext args)
 {
-    if (isChanged)
-    {
-        await ConfirmMessageBox.Show(
-            message: Localizer[nameof(AppStrings.AreYouSureYouWantToLeaveThisPage)],
-            title: Localizer[nameof(AppStrings.UnsavedChanges)]);
-    }
+    args.PreventNavigation();
+    if (isChanged) return;
+    isOpen = false;
 }
 ```
 
 **How it works:**
-1. `NavigationLock` detects when the user tries to navigate away
-2. If the form has unsaved changes (`isChanged == true`), it prompts the user
-3. The user can choose to stay or leave
-4. This prevents accidental data loss
+1. The `NavigationLock` component intercepts navigation attempts
+2. If the form has unsaved changes (`isChanged` is true), navigation is **prevented**
+3. The modal stays open, protecting the user from losing their work
+4. If there are no changes, the modal is closed and navigation proceeds
+
+This pattern is commonly used for:
+- Edit forms with unsaved changes
+- Multi-step wizards
+- Critical data entry screens
 
 ---
 
 ## When to Use Background Jobs
 
-### The Problem with Long-Running Operations
+### The Problem
 
-What if the operation is **time-consuming**? Examples:
-- **Sending SMS messages** (network latency, external API calls)
-- **Processing large files** (image resizing, PDF generation)
-- **Generating reports** (complex database queries, aggregations)
-- **Sending bulk emails** (hundreds or thousands of recipients)
+What if the operation is **time-consuming**? For example:
 
-**Problems with synchronous execution:**
-- ❌ Users shouldn't have to **wait and keep the page open**
-- ❌ If the user closes the browser, **the operation is lost**
-- ❌ Server resources are tied up during the entire operation
-- ❌ Browser/app may time out waiting for the response
+- Sending an SMS with a verification code
+- Generating a large report
+- Processing uploaded files
+- Sending bulk emails
 
-**NavigationLock is NOT appropriate** for long-running tasks because:
-- Users don't want to wait 30+ seconds
-- They might accidentally close the browser
-- Network interruptions would fail the entire operation
+**Users shouldn't have to:**
+- Wait for the operation to complete
+- Keep the page open
+- Stay online until the task finishes
+
+`NavigationLock` is **not appropriate** for long-running tasks because it forces users to wait.
 
 ### The Solution: Background Jobs with Hangfire
 
-Use **Hangfire** to queue long-running operations:
-
-✅ **Operations are queued** and processed asynchronously  
-✅ **Server restarts or crashes** don't lose the job  
-✅ **Jobs are persisted** in the database and automatically resume  
-✅ **Automatic retries** with configurable policies  
-✅ **Users get immediate feedback** and can continue using the app  
-✅ **Scalable**: Jobs can be processed by multiple servers  
+Instead of making the user wait, we **enqueue the task** and let it run in the background. The user can:
+- Navigate away immediately
+- Close their browser
+- Come back later to check the result
 
 ---
 
 ## Background Job Implementation with Hangfire
 
-### Hangfire Setup in the Project
+### PhoneServiceJobsRunner Example
 
-**Registration**: [`src/Server/Boilerplate.Server.Api/Program.Services.cs`](../src/Server/Boilerplate.Server.Api/Program.Services.cs)
+Let's examine how SMS sending is implemented as a background job.
 
-```csharp
-// Register background job services
-services.AddScoped<PhoneServiceJobsRunner>();
-services.AddScoped<EmailServiceJobsRunner>();
+#### Step 1: The Service Enqueues the Job
 
-// Configure Hangfire
-builder.Services.AddHangfire(configuration =>
-{
-    configuration.UseEFCoreStorage(
-        () => builder.Services.BuildServiceProvider().GetRequiredService<AppDbContext>(),
-        new() { SchemaName = "jobs" }
-    );
-});
-
-builder.Services.AddHangfireServer(options =>
-{
-    options.WorkerCount = Environment.ProcessorCount * 2;
-    options.ServerName = $"{Environment.MachineName}:{Environment.ProcessId}";
-});
-```
-
-### Hangfire Dashboard
-
-Hangfire provides a **built-in dashboard** to monitor jobs:
-
-- **URL**: `/hangfire` (requires authentication)
-- **View pending, processing, succeeded, and failed jobs**
-- **Retry failed jobs manually**
-- **Monitor job execution times and performance**
-
----
-
-## Real-World Example: PhoneServiceJobsRunner
-
-Let's explore a complete example of how background jobs are used in the project.
-
-### Step 1: The Service Layer (PhoneService)
-
-**File**: [`src/Server/Boilerplate.Server.Api/Services/PhoneService.cs`](../src/Server/Boilerplate.Server.Api/Services/PhoneService.cs)
+In [`PhoneService.cs`](/src/Server/Boilerplate.Server.Api/Services/PhoneService.cs):
 
 ```csharp
-public partial class PhoneService
-{
-    [AutoInject] private readonly IBackgroundJobClient backgroundJobClient = default!;
+[AutoInject] private readonly IBackgroundJobClient backgroundJobClient = default!;
 
-    public virtual async Task SendSms(string messageText, string phoneNumber)
+public virtual async Task SendSms(string messageText, string phoneNumber)
+{
+    if (hostEnvironment.IsDevelopment())
     {
-        if (hostEnvironment.IsDevelopment())
-        {
-            LogSendSms(phoneLogger, messageText, phoneNumber);
-        }
-
-        if (appSettings.Sms?.Configured is false) return;
-
-        var from = appSettings.Sms!.FromPhoneNumber!;
-
-        // ✅ Instead of sending SMS immediately, QUEUE it as a background job
-        backgroundJobClient.Enqueue<PhoneServiceJobsRunner>(x => 
-            x.SendSms(phoneNumber, from, messageText, default));
+        LogSendSms(phoneLogger, messageText, phoneNumber);
     }
+
+    if (appSettings.Sms?.Configured is false) return;
+
+    var from = appSettings.Sms!.FromPhoneNumber!;
+
+    // Enqueue the job - this returns immediately
+    backgroundJobClient.Enqueue<PhoneServiceJobsRunner>(x => x.SendSms(phoneNumber, from, messageText, default));
 }
 ```
 
-**Key Points:**
-- The `SendSms` method **returns immediately** after queueing the job
-- The actual SMS sending happens **asynchronously** in the background
-- The user doesn't have to wait for the external SMS API to respond
-- In development mode, it logs instead of actually sending
+**Key points:**
+- `backgroundJobClient.Enqueue<T>()` schedules the job to run in the background
+- The method returns **immediately** - the user doesn't wait
+- The `default` parameter is a placeholder for the `CancellationToken` (Hangfire will provide it)
 
-### Step 2: The Background Job Runner
+#### Step 2: The Job Runner Executes the Task
 
-**File**: [`src/Server/Boilerplate.Server.Api/Services/Jobs/PhoneServiceJobsRunner.cs`](../src/Server/Boilerplate.Server.Api/Services/Jobs/PhoneServiceJobsRunner.cs)
+In [`PhoneServiceJobsRunner.cs`](/src/Server/Boilerplate.Server.Api/Services/Jobs/PhoneServiceJobsRunner.cs):
 
 ```csharp
 public partial class PhoneServiceJobsRunner
 {
     [AutoInject] private ServerExceptionHandler serverExceptionHandler = default!;
 
-    [AutomaticRetry(
-        Attempts = 3, 
-        DelaysInSeconds = [30] /* Retry 3 times with 30 seconds between attempts */
-    )]
-    public async Task SendSms(
-        string phoneNumber, 
-        string from, 
-        string messageText, 
-        CancellationToken cancellationToken)
+    [AutomaticRetry(Attempts = 3, DelaysInSeconds = [30])]
+    public async Task SendSms(string phoneNumber, string from, string messageText, CancellationToken cancellationToken)
     {
         try
         {
@@ -326,7 +309,6 @@ public partial class PhoneServiceJobsRunner
                 Body = messageText
             };
 
-            // Call external Twilio SMS API
             var smsMessage = MessageResource.Create(messageOptions);
 
             if (smsMessage.ErrorCode is not null)
@@ -338,89 +320,60 @@ public partial class PhoneServiceJobsRunner
             serverExceptionHandler.Handle(exp, new() { { "PhoneNumber", phoneNumber } });
             
             if (exp is not KnownException && cancellationToken.IsCancellationRequested is false)
-                throw; // ✅ Re-throw to trigger Hangfire's automatic retry
+                throw; // To retry the job
         }
     }
 }
 ```
 
-**Key Features:**
+**Key features:**
 
-1. **`[AutomaticRetry]` Attribute**:
-   - Hangfire will **automatically retry** failed jobs
+1. **AutomaticRetry**: If the job fails, Hangfire automatically retries it
    - `Attempts = 3`: Try up to 3 times
    - `DelaysInSeconds = [30]`: Wait 30 seconds between retries
-   - **Why limited retries?** SMS tokens typically expire after 2 minutes, so excessive retries are pointless
+   - This is perfect for SMS tokens that expire after 2 minutes
 
 2. **Exception Handling**:
    - Logs the error with context (`PhoneNumber`)
-   - Re-throws **unknown exceptions** to trigger retry
-   - Swallows **known exceptions** to prevent unnecessary retries
+   - For unknown exceptions, re-throws to trigger retry
+   - For known exceptions (business logic errors), doesn't retry
 
-3. **Cancellation Support**:
-   - Accepts `CancellationToken` for graceful shutdown
-   - If the job is cancelled (e.g., server shutdown), it won't retry
+3. **CancellationToken**: Even background jobs support cancellation (e.g., if the server is shutting down)
 
-### Step 3: Usage in Controllers
+#### Step 3: Service Registration
 
-**File**: [`src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.PhoneConfirmation.cs`](../src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.PhoneConfirmation.cs)
+In [`Program.Services.cs`](/src/Server/Boilerplate.Server.Api/Program.Services.cs):
 
 ```csharp
-private async Task SendConfirmPhoneToken(User user, CancellationToken cancellationToken)
-{
-    var phoneNumber = user.PhoneNumber!;
-    var token = await userManager.GenerateUserTokenAsync(
-        user, 
-        TokenOptions.DefaultPhoneProvider, 
-        FormattableString.Invariant($"VerifyPhoneNumber:{phoneNumber},{user.PhoneNumberTokenRequestedOn?.ToUniversalTime()}")
-    );
-
-    var message = Localizer[nameof(AppStrings.ConfirmPhoneTokenShortText), token];
-    var smsMessage = $"{message}{Environment.NewLine}@{HttpContext.Request.GetWebAppUrl().Host} #{token}"; // Web OTP format
-
-    // ✅ Queues the SMS as a background job and returns immediately
-    await phoneService.SendSms(smsMessage, phoneNumber);
-}
+services.AddScoped<PhoneServiceJobsRunner>();
 ```
 
-**Benefits:**
-- The API endpoint returns **immediately** after queuing the job
-- User doesn't wait for the external SMS API
-- If Twilio is slow or fails, the job will retry automatically
-- Server restarts won't lose queued SMS messages
+The job runner is registered as a scoped service so it has access to all the same dependencies as regular controllers (DbContext, IStringLocalizer, etc.).
 
 ---
 
-## Key Benefits
+### Key Benefits of Hangfire Integration
 
-### 1. **Persistence**
-Jobs are stored in the database (schema: `jobs`). Even if the server crashes or restarts, jobs will resume automatically.
+1. **Persistence**: Jobs are stored in the database
+   - If the server crashes, jobs are not lost
+   - When the server restarts, pending jobs are resumed
 
-**Database Tables (Created by Hangfire)**:
-- `HangfireJob`: Job metadata
-- `HangfireState`: Job state history (Enqueued → Processing → Succeeded/Failed)
-- `HangfireJobParameter`: Job parameters
-- `HangfireQueuedJob`: Jobs waiting to be processed
+2. **Reliability**: Built-in retry mechanism
+   - Transient failures (network issues, temporary service outages) are handled automatically
+   - You can configure retry policies per job
 
-### 2. **Reliability**
-- Automatic retries with configurable delays
-- Failed jobs can be retried manually via the dashboard
-- No jobs are lost even in failure scenarios
+3. **Scalability**: Jobs can be processed on different servers
+   - Add more servers to process jobs faster
+   - Background processing doesn't block web requests
 
-### 3. **Scalability**
-- Jobs can be processed on **different servers**
-- Worker count is configurable: `WorkerCount = Environment.ProcessorCount * 2`
-- Supports distributed processing for high-load scenarios
+4. **Monitoring**: Hangfire Dashboard
+   - View all jobs (pending, processing, succeeded, failed)
+   - Manually retry failed jobs
+   - See job execution history and statistics
 
-### 4. **Observability**
-- Built-in dashboard at `/hangfire`
-- View job execution times, success/failure rates
-- Monitor queue lengths and worker utilization
-
-### 5. **User Experience**
-- Users get **instant feedback** instead of waiting
-- No timeouts or connection issues
-- App remains responsive during long operations
+5. **Automatic Cleanup**: Old job records are automatically deleted
+   - Keeps your database size manageable
+   - Configurable retention policies
 
 ---
 
@@ -428,18 +381,22 @@ Jobs are stored in the database (schema: `jobs`). Even if the server crashes or 
 
 In this stage, you learned:
 
-✅ **CancellationToken**: How API requests are automatically cancelled when users navigate away  
-✅ **CurrentCancellationToken**: How `AppComponentBase` manages cancellation for components  
-✅ **User Abandonment**: Why automatic cancellation makes sense for abandoned operations  
-✅ **NavigationLock**: How to prevent navigation for critical short operations  
-✅ **Background Jobs**: When and why to use Hangfire for long-running tasks  
-✅ **PhoneServiceJobsRunner**: A real-world example with automatic retries and error handling  
-✅ **Benefits**: Persistence, reliability, scalability, and better user experience  
+✅ **CancellationToken** automatically cancels operations when users navigate away or close their browser  
+✅ `CurrentCancellationToken` in `AppComponentBase` provides automatic token management for Blazor components  
+✅ `NavigationLock` prevents navigation when you have critical operations or unsaved changes  
+✅ **Background Jobs** with Hangfire allow long-running tasks without making users wait  
+✅ `PhoneServiceJobsRunner` demonstrates a real-world background job implementation with retry logic  
+✅ Hangfire provides **persistence, reliability, and scalability** for background tasks
 
 ---
 
-## Additional Resources
+## Best Practices
 
-- **Hangfire Documentation**: [https://docs.hangfire.io](https://docs.hangfire.io)
-- **CancellationToken Best Practices**: [Microsoft Docs](https://learn.microsoft.com/en-us/dotnet/standard/threading/cancellation-in-managed-threads)
-- **Blazor NavigationLock**: [Microsoft Docs](https://learn.microsoft.com/en-us/aspnet/core/blazor/fundamentals/routing#navigationlock-component)
+1. **Always pass CancellationToken**: Include `CancellationToken cancellationToken` in all async API methods
+2. **Use CurrentCancellationToken**: In Blazor components, always use `CurrentCancellationToken` when calling APIs
+3. **Use NavigationLock wisely**: Only prevent navigation when absolutely necessary (unsaved changes, critical operations)
+4. **Background jobs for long tasks**: If it takes more than a few seconds, consider using a background job
+5. **Configure retry policies**: Use `[AutomaticRetry]` with appropriate attempt counts and delays for your use case
+6. **Handle exceptions properly**: In background jobs, distinguish between transient errors (should retry) and business logic errors (shouldn't retry)
+
+---

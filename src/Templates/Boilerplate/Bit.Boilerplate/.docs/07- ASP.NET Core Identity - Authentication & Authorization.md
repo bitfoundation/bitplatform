@@ -1,231 +1,96 @@
 # Stage 7: ASP.NET Core Identity and Authentication
 
-Welcome to Stage 7! In this stage, you'll learn about the comprehensive authentication and authorization system built into this project. This includes JWT token-based authentication, session management, Single Sign-On (SSO), role-based and permission-based authorization, and various security features.
+In this stage, we will explore the comprehensive authentication and authorization system built into the Boilerplate project.
 
----
+## Authentication Architecture
 
-## 1. Authentication Architecture
+### JWT Token-Based Authentication
 
-### 1.1 JWT Token-Based Authentication
+The project uses **JWT (JSON Web Tokens)** for authentication:
 
-The project uses **JSON Web Tokens (JWT)** for authentication, providing a stateless, secure, and scalable authentication mechanism.
+- **Access Tokens**: Short-lived tokens (5 minutes by default) included in every API request via the `Authorization: Bearer <token>` header
+- **Refresh Tokens**: Long-lived tokens (14 days by default) stored securely on the client to obtain new access tokens
+- **Token Generation**: Uses ASP.NET Core Identity's built-in bearer token authentication with HS512 algorithm
+- **Security**: Tokens are signed using a secret key configured in [`appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json)
 
-#### How It Works:
-- When a user signs in successfully, the server generates two tokens:
-  - **Access Token (Bearer Token)**: Short-lived JWT token (default: 5 minutes) used to authenticate API requests
-  - **Refresh Token**: Long-lived token (default: 14 days) used to obtain new access tokens without re-authentication
-- These tokens are sent to the client and included in subsequent requests via the `Authorization` header
-- The server validates the JWT signature and claims on each request to authenticate the user
+### Session Management
 
-#### Key Files:
-- **Token Generation**: [`/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.cs)
-- **Token Validation**: Handled by ASP.NET Core Identity's Bearer Token authentication scheme
+**Server-Side Session Storage**: User sessions are persisted in the database through the [`UserSession`](/src/Server/Boilerplate.Server.Api/Models/Identity/UserSession.cs) entity:
 
-#### Configuration in appsettings.json:
-Located at [`/src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json):
+- Each active device/browser has its own `UserSession` record
+- Sessions track IP address, device info, platform type, app version, and culture
+- Sessions include SignalR connection IDs for real-time communication
+- Users can view and manage all their active sessions from the Settings page
 
-```json
-"Identity": {
-    "JwtIssuerSigningKeySecret": "VeryLongJWTIssuerSiginingKeySecretThatIsMoreThan64BytesToEnsureCompatibilityWithHS512Algorithm",
-    "Issuer": "Boilerplate",
-    "Audience": "Boilerplate",
-    "BearerTokenExpiration": "0.00:05:00",
-    "RefreshTokenExpiration": "14.00:00:00"
-}
-```
+The session ID is embedded in both access and refresh tokens as a claim (`AppClaimTypes.SESSION_ID`). When a user revokes a session, its associated refresh token becomes invalid, forcing re-authentication on that device.
 
-**⚠️ Security Note**: In production, change the `JwtIssuerSigningKeySecret` to a strong, randomly generated secret and store it securely (e.g., using environment variables or Azure Key Vault).
+### Single Sign-On (SSO) Support
 
----
+**External Identity Providers**: The project supports integration with external authentication providers.
 
-### 1.2 Session Management
+**Duende Identity Server Demo**: By default, the project is configured to connect to a demo Duende Identity Server 8 instance:
+- This demonstrates how to integrate external OpenID Connect providers
+- Configuration is in [`IdentityController.SocialSignIn.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.SocialSignIn.cs)
 
-The project implements **server-side session tracking** that persists user sessions in the database, providing enhanced security and session management capabilities.
+**Supported Providers**: You can easily configure SSO with:
+- **Google** - OAuth 2.0 authentication
+- **GitHub** - OAuth authentication for developers
+- **Microsoft/Azure AD** - Enterprise identity integration
+- **Twitter** - Social authentication
+- **Apple** - Sign in with Apple
+- **Facebook** - Social media authentication
+- **Duende Identity Server** - OpenID Connect provider
+- And many other OAuth/OpenID Connect providers
 
-#### UserSession Model:
-Located at [`/src/Server/Boilerplate.Server.Api/Models/Identity/UserSession.cs`](/src/Server/Boilerplate.Server.Api/Models/Identity/UserSession.cs):
+**Configuration**: External provider settings are configured in [`appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json) under the `Authentication` section.
 
-```csharp
-public partial class UserSession
-{
-    public Guid Id { get; set; }
-    public string? IP { get; set; }
-    public string? Address { get; set; }
-    public bool Privileged { get; set; }
-    public long StartedOn { get; set; }
-    public long? RenewedOn { get; set; }
-    public Guid UserId { get; set; }
-    public User? User { get; set; }
-    public string? DeviceInfo { get; set; }
-    public AppPlatformType? PlatformType { get; set; }
-    public string? CultureName { get; set; }
-    public string? AppVersion { get; set; }
-    // ... additional properties
-}
-```
+## Authorization and Access Control
 
-#### How Session Management Works:
-1. **Session Creation**: When a user signs in, a new `UserSession` record is created in the database with a unique session ID
-2. **Session ID in Tokens**: The session ID is embedded as a claim in both access and refresh tokens
-3. **Session Tracking**: Every API request includes the session ID, allowing the server to track active sessions
-4. **Session Revocation**: Sessions can be revoked by deleting them from the database (e.g., "Sign out from all devices")
-5. **Session Monitoring**: Users can view and manage their active sessions from the settings page
+### Role-Based and Permission-Based Authorization
 
-#### Benefits:
-- **Instant Token Revocation**: Unlike pure JWT authentication, sessions can be invalidated server-side immediately
-- **Security Monitoring**: Track login locations, devices, and suspicious activities
-- **Concurrent Session Limits**: Enforce maximum active session counts per user
-- **Device Management**: Users can see and revoke sessions from specific devices
+**Users and Roles**: The project includes complete user and role management:
+- ASP.NET Core Identity's built-in `User` and `Role` entities
+- Users can be assigned to multiple roles
+- Managed through the Users and Roles pages in the Admin Panel
 
-#### Session Creation Code Example:
-From [`IdentityController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.cs):
+**Permissions**: Fine-grained permission system using **claims**:
+- **User Claims**: Permissions assigned directly to individual users
+- **Role Claims**: Permissions assigned to roles (inherited by all users in that role)
+- Claims are added to the JWT token payload for efficient authorization checks
+
+### Policy-Based Authorization
+
+**Custom Policies**: The project defines authorization policies in the [`ISharedServiceCollectionExtensions.cs`](/src/Shared/Extensions/ISharedServiceCollectionExtensions.cs) file's `AddAuthorizationCore` method:
 
 ```csharp
-private async Task<UserSession> CreateUserSession(Guid userId, CancellationToken cancellationToken)
+services.AddAuthorizationCore(options =>
 {
-    var userSession = new UserSession
+    options.AddPolicy(AuthPolicies.TFA_ENABLED, x => x.RequireClaim("amr", "mfa"));
+    options.AddPolicy(AuthPolicies.PRIVILEGED_ACCESS, x => x.RequireClaim(AppClaimTypes.PRIVILEGED_SESSION, "true"));
+    options.AddPolicy(AuthPolicies.ELEVATED_ACCESS, x => x.RequireClaim(AppClaimTypes.ELEVATED_SESSION, "true"));
+
+    foreach (var feat in AppFeatures.GetAll())
     {
-        Id = Guid.NewGuid(),
-        UserId = userId,
-        StartedOn = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-        IP = HttpContext.Connection.RemoteIpAddress?.ToString(),
-        Address = $"{Request.Headers["cf-ipcountry"]}, {Request.Headers["cf-ipcity"]}"
-    };
-
-    await UpdateUserSessionPrivilegeStatus(userSession, cancellationToken);
-
-    return userSession;
-}
-```
-
----
-
-## 2. Single Sign-On (SSO) Support
-
-The project supports integration with **external identity providers** (OAuth/OpenID Connect), allowing users to sign in using their existing accounts from popular platforms.
-
-### 2.1 Demo Configuration: Duende Identity Server
-
-By default, the project is configured to connect to a **Duende Identity Server 8 demo instance** for testing SSO functionality without requiring any setup:
-
-```csharp
-// From Program.Services.cs
-authenticationBuilder.AddOpenIdConnect("IdentityServerDemo", options =>
-{
-    options.Authority = "https://demo.duendesoftware.com";
-    options.ClientId = "interactive.confidential";
-    options.ClientSecret = "secret";
-    options.ResponseType = "code";
-    // ... additional configuration
+        options.AddPolicy(feat.Value, policy => policy.AddRequirements(new AppFeatureRequirement(FeatureName: $"{feat.Group.Name}.{feat.Name}", FeatureValue: feat.Value)));
+    }
 });
 ```
 
-You can test this immediately by running the project and clicking the "Identity Server Demo" button on the sign-in page.
+**Built-in Authorization Policies** defined in [`AuthPolicies.cs`](/src/Shared/Services/AuthPolicies.cs):
 
-### 2.2 Supported External Providers
+1. **`TFA_ENABLED`**: Requires the user to have two-factor authentication enabled
+2. **`PRIVILEGED_ACCESS`**: Limits concurrent sessions per user (default: 3 sessions)
+   - Prevents resource abuse by limiting active sessions
+   - Applied to high-value pages like Dashboard, Products, Categories
+   - Users can manage sessions from the Settings page
+3. **`ELEVATED_ACCESS`**: Requires recent re-authentication for sensitive operations
+   - Used for dangerous actions like account deletion
+   - Activated by entering a 6-digit code or during initial sign-in with 2FA enabled
+   - Time-limited elevation (expires after a short period)
 
-The project includes built-in support for the following external authentication providers:
+**Feature-Based Policies** defined in [`AppFeatures.cs`](/src/Shared/Services/AppFeatures.cs):
 
-#### **Google**
-- Configuration location: [`appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json) → `Authentication:Google`
-- Setup guide: https://learn.microsoft.com/en-us/aspnet/core/security/authentication/social/google-logins
-
-```json
-"Authentication": {
-    "Google": {
-        "ClientId": "your-client-id",
-        "ClientSecret": "your-client-secret"
-    }
-}
-```
-
-#### **GitHub**
-- Configuration location: [`appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json) → `Authentication:GitHub`
-- Setup guide: https://github.com/aspnet-contrib/AspNet.Security.OAuth.Providers/blob/dev/docs/github.md
-
-#### **Twitter (X)**
-- Configuration location: [`appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json) → `Authentication:Twitter`
-- Setup guide: https://learn.microsoft.com/en-us/aspnet/core/security/authentication/social/twitter-logins
-
-#### **Apple**
-- Configuration location: [`appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json) → `Authentication:Apple`
-- Setup guide: https://github.com/aspnet-contrib/AspNet.Security.OAuth.Providers/blob/dev/docs/sign-in-with-apple.md
-
-#### **Facebook**
-- Configuration location: [`appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json) → `Authentication:Facebook`
-- Setup guide: https://learn.microsoft.com/en-us/aspnet/core/security/authentication/social/facebook-logins
-
-#### **Azure AD / Azure AD B2C / Microsoft Entra**
-- Configuration location: [`appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json) → `Authentication:AzureAD`
-
-### 2.3 How External Authentication Works:
-1. User clicks on an external provider button (e.g., "Sign in with Google")
-2. User is redirected to the provider's login page
-3. After successful authentication, the provider redirects back to the app with an authorization code
-4. The server exchanges the code for user information
-5. A local user account is created or linked (if it doesn't exist)
-6. The user is signed in with a JWT token
-
----
-
-## 3. Authorization and Access Control
-
-### 3.1 Users and Roles
-
-The project uses **ASP.NET Core Identity** for user and role management with a many-to-many relationship.
-
-#### User Model:
-Located at [`/src/Server/Boilerplate.Server.Api/Models/Identity/User.cs`](/src/Server/Boilerplate.Server.Api/Models/Identity/User.cs):
-
-```csharp
-public partial class User : IdentityUser<Guid>
-{
-    [PersonalData]
-    public string? FullName { get; set; }
-    
-    public string? DisplayName => FullName ?? DisplayUserName;
-    
-    [PersonalData]
-    public Gender? Gender { get; set; }
-    
-    [PersonalData]
-    public DateTimeOffset? BirthDate { get; set; }
-    
-    public List<UserSession> Sessions { get; set; } = [];
-    public List<UserRole> Roles { get; set; } = [];
-    public List<UserClaim> Claims { get; set; } = [];
-    // ... additional properties
-}
-```
-
-#### Role Model:
-Located at [`/src/Server/Boilerplate.Server.Api/Models/Identity/Role.cs`](/src/Server/Boilerplate.Server.Api/Models/Identity/Role.cs):
-
-```csharp
-public partial class Role : IdentityRole<Guid>
-{
-    public List<UserRole> Users { get; set; } = [];
-    public List<RoleClaim> Claims { get; set; } = [];
-}
-```
-
-#### Role-Based Authorization Example:
-```csharp
-[Authorize(Roles = "Admin")]
-public async Task<IActionResult> DeleteUser(Guid id)
-{
-    // Only users with the "Admin" role can access this
-}
-```
-
----
-
-### 3.2 Permission-Based Authorization with Features
-
-The project implements a **fine-grained permission system** using the `AppFeatures` class and claims-based authorization.
-
-#### AppFeatures Definition:
-Located at [`/src/Shared/Services/AppFeatures.cs`](/src/Shared/Services/AppFeatures.cs):
+The project automatically creates policies for all features defined in `AppFeatures`:
 
 ```csharp
 public class AppFeatures
@@ -256,132 +121,59 @@ public class AppFeatures
 }
 ```
 
-#### How It Works:
-- Each feature is represented by a unique string value (e.g., `"1.0"`, `"1.1"`)
-- Features are stored as claims on the user's principal with the claim type `AppClaimTypes.FEATURES`
-- When a feature is required, the authorization system checks if the user has the corresponding claim value
-- Roles can have features assigned to them via `RoleClaim` records
+**Policy Examples from Project**:
 
-#### Feature-Based Authorization Example:
-```csharp
-[Authorize(Policy = AppFeatures.Management.ManageUsers)]
-public async Task<IActionResult> GetUsers()
-{
-    // Only users with the "ManageUsers" feature can access this
-}
-```
-
----
-
-### 3.3 Policy-Based Authorization
-
-The project defines custom authorization policies using ASP.NET Core's policy-based authorization system.
-
-#### Authorization Policies Definition:
-Located at [`/src/Shared/Services/AuthPolicies.cs`](/src/Shared/Services/AuthPolicies.cs):
+Pages using multiple authorization policies:
 
 ```csharp
-public class AuthPolicies
-{
-    /// <summary>
-    /// Having this policy means the user has enabled 2 factor authentication.
-    /// </summary>
-    public const string TFA_ENABLED = nameof(TFA_ENABLED);
-
-    /// <summary>
-    /// By default, each user is limited to 3 active sessions.
-    /// This policy can be disabled or configured to adjust the session limit dynamically, 
-    /// such as by reading from application settings, the user's subscription plan, or other criteria.
-    /// Currently, this policy applies only to the Todo and AdminPanel specific pages like dashboard page. 
-    /// However, it can be extended to cover additional pages as needed. 
-    /// 
-    /// Important: Do not apply this policy to the settings page, 
-    /// as users need access to manage and revoke their sessions there.
-    /// </summary>
-    public const string PRIVILEGED_ACCESS = nameof(PRIVILEGED_ACCESS);
-
-    /// <summary>
-    /// Enables the user to execute potentially harmful operations, like account removal. 
-    /// This limited-time policy is activated upon successful verification via a secure 6-digit code or
-    /// during the initial minutes of a sign-in session of users with 2fa enabled.
-    /// </summary>
-    public const string ELEVATED_ACCESS = nameof(ELEVATED_ACCESS);
-}
-```
-
-#### Policy Configuration:
-Located at [`/src/Shared/Extensions/ISharedServiceCollectionExtensions.cs`](/src/Shared/Extensions/ISharedServiceCollectionExtensions.cs):
-
-```csharp
-services.AddAuthorizationCore(options =>
-{
-    options.AddPolicy(AuthPolicies.TFA_ENABLED, x => x.RequireClaim("amr", "mfa"));
-    options.AddPolicy(AuthPolicies.PRIVILEGED_ACCESS, x => x.RequireClaim(AppClaimTypes.PRIVILEGED_SESSION, "true"));
-    options.AddPolicy(AuthPolicies.ELEVATED_ACCESS, x => x.RequireClaim(AppClaimTypes.ELEVATED_SESSION, "true"));
-
-    foreach (var feat in AppFeatures.GetAll())
-    {
-        options.AddPolicy(feat.Value, policy => policy.AddRequirements(new AppFeatureRequirement(FeatureName: $"{feat.Group.Name}.{feat.Name}", FeatureValue: feat.Value)));
-    }
-});
-```
-
-#### Policy Usage Examples:
-
-**1. PRIVILEGED_ACCESS Policy:**
-Used to limit concurrent sessions and protect resource-intensive pages:
-
-```csharp
-// In a Blazor page
+// TodoPage.razor
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+@attribute [Authorize(Policy = AppFeatures.Todo.ManageTodo)]
 
-// In an API controller
-[Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
-public async Task<IQueryable<ProductDto>> GetProducts()
-{
-    return DbContext.Products.Project();
-}
+// UsersPage.razor
+@attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+@attribute [Authorize(Policy = AppFeatures.Management.ManageUsers)]
+
+// DashboardPage.razor
+@attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+@attribute [Authorize(Policy = AppFeatures.AdminPanel.Dashboard)]
 ```
 
-Examples from the project:
-- [`/src/Client/Boilerplate.Client.Core/Components/Pages/Dashboard/DashboardPage.razor`](/src/Client/Boilerplate.Client.Core/Components/Pages/Dashboard/DashboardPage.razor)
-- [`/src/Server/Boilerplate.Server.Api/Controllers/Dashboard/DashboardController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Dashboard/DashboardController.cs)
+All policies must be satisfied for the user to access the page.
 
-**2. ELEVATED_ACCESS Policy:**
-Used for sensitive operations like account deletion:
+### Custom Claim Types
+
+**System Claim Types** defined in [`AppClaimTypes.cs`](/src/Shared/Services/AppClaimTypes.cs):
+
+These claims are automatically added by the system and should not be manually added to the database:
 
 ```csharp
-[Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
-public async Task DeleteAccount(CancellationToken cancellationToken)
+public class AppClaimTypes
 {
-    // User must have recently verified with 2FA code to access this
+    public const string SESSION_ID = "s-id";
+    public const string PRIVILEGED_SESSION = "p-s";
+    public const string MAX_PRIVILEGED_SESSIONS = "mx-p-s";
+    public const string ELEVATED_SESSION = "e-s";
+    public const string FEATURES = "feat";
 }
 ```
 
-**3. TFA_ENABLED Policy:**
-Used to require two-factor authentication for specific features:
+- **`SESSION_ID`**: Unique identifier for the current user session
+- **`PRIVILEGED_SESSION`**: Indicates if this session counts toward the privileged session limit
+- **`MAX_PRIVILEGED_SESSIONS`**: Maximum allowed privileged sessions for this user
+- **`ELEVATED_SESSION`**: Indicates the user has recently authenticated for sensitive operations
+- **`FEATURES`**: Contains the list of features/permissions granted to the user
 
-```csharp
-[Authorize(Policy = AuthPolicies.TFA_ENABLED)]
-public async Task AccessSensitiveData()
-{
-    // Only users with 2FA enabled can access this
-}
-```
+## Identity Configuration
 
----
+### IdentitySettings in appsettings.json
 
-## 4. Identity Configuration
+**Location**: [`/src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json)
 
-### 4.1 IdentitySettings in appsettings.json
-
-Located at [`/src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json):
+**Configuration Options**: Key identity settings that can be customized:
 
 ```json
 "Identity": {
-    "JwtIssuerSigningKeySecret": "VeryLongJWTIssuerSiginingKeySecretThatIsMoreThan64BytesToEnsureCompatibilityWithHS512Algorithm",
-    "Issuer": "Boilerplate",
-    "Audience": "Boilerplate",
     "BearerTokenExpiration": "0.00:05:00",
     "RefreshTokenExpiration": "14.00:00:00",
     "EmailTokenLifetime": "0.00:02:00",
@@ -403,47 +195,28 @@ Located at [`/src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/B
 }
 ```
 
-#### Key Configuration Options:
+- **Token Expiration**: Controls how long various tokens remain valid
+- **Password Requirements**: Configures password complexity rules
+- **Account Confirmation**: Determines if email/phone confirmation is required
 
-**Token Lifetimes:**
-- `BearerTokenExpiration`: How long the JWT access token is valid (format: `D.HH:mm:ss`)
-- `RefreshTokenExpiration`: How long the refresh token is valid
-- `EmailTokenLifetime`: Lifetime for email confirmation tokens
-- `PhoneNumberTokenLifetime`: Lifetime for phone number confirmation tokens
-- `ResetPasswordTokenLifetime`: Lifetime for password reset tokens
-- `TwoFactorTokenLifetime`: Lifetime for 2FA verification codes
-- `OtpTokenLifetime`: Lifetime for one-time password (OTP) codes
+## Security Best Practices
 
-**Password Requirements:**
-Configure password complexity requirements (all set to lenient defaults for easier development):
-- `RequireDigit`: Require at least one digit (0-9)
-- `RequiredLength`: Minimum password length
-- `RequireNonAlphanumeric`: Require at least one special character
-- `RequireUppercase`: Require at least one uppercase letter
-- `RequireLowercase`: Require at least one lowercase letter
+**Built-in Security**: The identity system follows security best practices:
 
-**Sign-In Options:**
-- `RequireConfirmedAccount`: Whether users must confirm their email/phone before signing in
+- **Password Hashing**: Uses PBKDF2 with HMAC-SHA512, 100,000 iterations
+- **Concurrency Stamps**: Prevents concurrent modification conflicts
+- **Security Stamps**: Invalidates all tokens when changed (e.g., after 2FA configuration)
+- **Account Lockout**: Protects against brute-force attacks with exponential backoff
+- **One-Time Tokens**: All tokens can only be used once and expire after use
+- **Token Expiration**: Short-lived tokens minimize the window for token theft
 
-**Session Management:**
-- `MaxPrivilegedSessionsCount`: Maximum number of concurrent privileged sessions per user (default: 3)
-  - Set to `-1` for unlimited sessions
-  - Can be overridden per-user via claims for subscription-based features
+## One-Time Token System
 
-**⚠️ Production Recommendations:**
-- Strengthen password requirements for production
-- Use environment variables for sensitive values like `JwtIssuerSigningKeySecret`
-- Adjust token lifetimes based on your security requirements
+The project implements a secure one-time token system with automatic expiration and invalidation.
 
----
+### How It Works
 
-## 5. One-Time Tokens
-
-The project implements **one-time token** functionality to prevent token reuse and enhance security.
-
-### How One-Time Tokens Work:
-
-1. **Token Request Timestamp**: When a token is requested (e.g., email confirmation, password reset), the request timestamp is stored on the user entity:
+**Token Request Tracking**: Each token type has a corresponding `RequestedOn` timestamp in the [`User`](/src/Server/Boilerplate.Server.Api/Models/Identity/User.cs) entity:
 
 ```csharp
 public partial class User : IdentityUser<Guid>
@@ -454,183 +227,198 @@ public partial class User : IdentityUser<Guid>
     public DateTimeOffset? TwoFactorTokenRequestedOn { get; set; }
     public DateTimeOffset? OtpRequestedOn { get; set; }
     public DateTimeOffset? ElevatedAccessTokenRequestedOn { get; set; }
-    // ...
 }
 ```
 
-2. **Token Generation**: The token is generated using the timestamp as part of the token purpose:
+**Token Generation**: When a token is generated, the `RequestedOn` timestamp is set to the current time and embedded in the token purpose string:
 
 ```csharp
+// From IdentityController.EmailConfirmation.cs
+user.EmailTokenRequestedOn = DateTimeOffset.Now;
+await userManager.UpdateAsync(user);
+
 var token = await userManager.GenerateUserTokenAsync(
     user, 
     TokenOptions.DefaultPhoneProvider, 
-    FormattableString.Invariant($"Otp_Email,{user.OtpRequestedOn?.ToUniversalTime()}")
+    FormattableString.Invariant($"VerifyEmail:{email},{user.EmailTokenRequestedOn?.ToUniversalTime()}")
 );
 ```
 
-3. **Token Validation**: When the token is verified, the timestamp must match:
-   - If a new token is requested, the timestamp changes
-   - Previous tokens become invalid because their embedded timestamp no longer matches
+**Token Validation**: When validating a token, the system checks:
 
-4. **Token Invalidation After Use**: After successful verification, the timestamp is cleared:
+1. **Expiration**: Has the token lifetime elapsed since `RequestedOn`?
+2. **One-Time Use**: Does the token match the latest `RequestedOn` timestamp?
+3. **Invalidation**: Is the `RequestedOn` timestamp set to `null` (invalidated)?
 
 ```csharp
-if (result.Succeeded is true && user.OtpRequestedOn != null)
+// From IdentityController.EmailConfirmation.cs
+var expired = (DateTimeOffset.Now - user.EmailTokenRequestedOn) > AppSettings.Identity.EmailTokenLifetime;
+
+if (expired)
+    throw new BadRequestException(nameof(AppStrings.ExpiredToken));
+
+var tokenIsValid = await userManager.VerifyUserTokenAsync(
+    user, 
+    TokenOptions.DefaultPhoneProvider, 
+    FormattableString.Invariant($"VerifyEmail:{request.Email},{user.EmailTokenRequestedOn?.ToUniversalTime()}"), 
+    request.Token!
+);
+
+if (tokenIsValid)
 {
-    user.OtpRequestedOn = null; // invalidates the OTP
+    user.EmailTokenRequestedOn = null; // Invalidates the token
     await userManager.UpdateAsync(user);
 }
 ```
 
-### Benefits:
-- **Only Latest Token is Valid**: If a user requests multiple tokens, only the most recent one works
-- **Single Use**: Once a token is used successfully, it cannot be reused
-- **Automatic Expiration**: Tokens have built-in lifetime limits
-- **Security Against Token Leakage**: Even if an old token is intercepted, it won't work
+**Key Benefits**:
+- Only the **most recently requested token** is valid
+- Tokens are **automatically invalidated** after successful use
+- Tokens **expire** after their configured lifetime
+- If a user requests a new token, **all previous tokens become invalid**
 
-### Example from IdentityController:
-Check out the `SendOtp` and `TwoFactorSignIn` methods in [`IdentityController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.cs) to see this pattern in action.
+**Example Scenario**:
+1. User requests a password reset at 10:00 AM → Token A is generated with `ResetPasswordTokenRequestedOn = 10:00`
+2. User requests another password reset at 10:05 AM → Token B is generated with `ResetPasswordTokenRequestedOn = 10:05`
+3. Token A is now invalid because it was generated at 10:00, but the current `ResetPasswordTokenRequestedOn` is 10:05
+4. User uses Token B successfully → `ResetPasswordTokenRequestedOn` is set to `null`, invalidating Token B
+5. Token B can never be used again
 
----
+## Code Examples
 
-## 6. Video Tutorial (Highly Recommended)
+### Controller Method with Authorization
 
-To fully understand the identity features and see them in action, watch this **15-minute video tutorial**:
+From [`IdentityController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.cs):
 
-**🎥 Video**: https://bitplatform.dev/templates/authentication
+```csharp
+[HttpPost]
+public async Task SignUp(SignUpRequestDto request, CancellationToken cancellationToken)
+{
+    // Validate Google reCAPTCHA
+    if (await googleRecaptchaService.Verify(request.GoogleRecaptchaResponse, cancellationToken) is false)
+        throw new BadRequestException(Localizer[nameof(AppStrings.InvalidGoogleRecaptchaResponse)]);
+
+    // Check for existing user
+    var existingUser = await userManager.FindUserAsync(new() { Email = request.Email, PhoneNumber = request.PhoneNumber });
+    if (existingUser is not null)
+    {
+        if (await userConfirmation.IsConfirmedAsync(userManager, existingUser) is false)
+        {
+            await SendConfirmationToken(existingUser, request.ReturnUrl, cancellationToken);
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]).WithData("UserId", existingUser.Id);
+        }
+        else
+        {
+            throw new BadRequestException(Localizer[nameof(AppStrings.DuplicateEmailOrPhoneNumber)]).WithData("UserId", existingUser.Id);
+        }
+    }
+
+    // Create new user
+    var userToAdd = new User { LockoutEnabled = true };
+    await userStore.SetUserNameAsync(userToAdd, request.UserName!, cancellationToken);
+    
+    if (string.IsNullOrEmpty(request.Email) is false)
+    {
+        await userEmailStore.SetEmailAsync(userToAdd, request.Email!, cancellationToken);
+    }
+    
+    await userManager.CreateUserWithDemoRole(userToAdd, request.Password!);
+    await SendConfirmationToken(userToAdd, request.ReturnUrl, cancellationToken);
+}
+```
+
+### Session Creation
+
+From [`IdentityController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.cs):
+
+```csharp
+private async Task<UserSession> CreateUserSession(Guid userId, CancellationToken cancellationToken)
+{
+    var userSession = new UserSession
+    {
+        Id = Guid.NewGuid(),
+        UserId = userId,
+        StartedOn = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+        IP = HttpContext.Connection.RemoteIpAddress?.ToString(),
+        Address = $"{Request.Headers["cf-ipcountry"]}, {Request.Headers["cf-ipcity"]}"
+    };
+
+    await UpdateUserSessionPrivilegeStatus(userSession, cancellationToken);
+
+    return userSession;
+}
+```
+
+### Privileged Session Logic
+
+From [`IdentityController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.cs):
+
+```csharp
+private async Task UpdateUserSessionPrivilegeStatus(UserSession userSession, CancellationToken cancellationToken)
+{
+    var userId = userSession.UserId;
+
+    var maxPrivilegedSessionsClaimValues = await userClaimsService.GetClaimValues<int?>(userId, AppClaimTypes.MAX_PRIVILEGED_SESSIONS, cancellationToken);
+
+    var hasUnlimitedPrivilegedSessions = maxPrivilegedSessionsClaimValues.Any(v => v == -1); // -1 means no limit
+
+    var maxPrivilegedSessionsCount = hasUnlimitedPrivilegedSessions ? -1 : maxPrivilegedSessionsClaimValues.Max() ?? AppSettings.Identity.MaxPrivilegedSessionsCount;
+
+    var isPrivileged = hasUnlimitedPrivilegedSessions ||
+        userSession.Privileged is true ||
+        await DbContext.UserSessions.CountAsync(us => us.UserId == userSession.UserId && us.Privileged == true, cancellationToken) < maxPrivilegedSessionsCount;
+
+    userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, isPrivileged ? "true" : "false"));
+    userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.MAX_PRIVILEGED_SESSIONS, maxPrivilegedSessionsCount.ToString(CultureInfo.InvariantCulture)));
+
+    userSession.Privileged = isPrivileged;
+}
+```
+
+## Hands-On Exploration
+
+**Run the Project**: Explore the identity features by running the project and testing:
+
+1. **Sign Up**: Create a new account with email/phone confirmation
+2. **Sign In**: Test password-based and OTP authentication
+3. **Two-Factor Authentication**: Enable 2FA in Settings and test the two-step sign-in
+4. **Session Management**: View active sessions in Settings and revoke specific sessions
+5. **Password Reset**: Test the forgot password flow
+6. **External Providers**: Try social sign-in with the configured providers
+7. **Permissions**: Test access to pages with different user roles and permissions
+
+## Video Tutorial
+
+**Highly Recommended**: To fully understand the identity features and see them in action, watch this **15-minute video tutorial**:
+
+[**Watch: Comprehensive Identity System Walkthrough**](https://youtu.be/0ySKLPJm-fw)
 
 This video demonstrates:
-- Sign-up and email/phone confirmation flow
-- Sign-in with password and OTP (magic link)
-- Two-factor authentication (2FA) setup and usage
-- Social sign-in with external providers
-- Session management and device tracking
+- User registration and email/phone confirmation
+- Password and OTP-based authentication
+- Two-factor authentication setup and usage
+- Session management and revocation
 - Password reset flow
-- Elevated access for sensitive operations
+- Role and permission management
+- External provider integration
 
----
+## Summary
 
-## 7. Hands-On Exploration
+The Boilerplate project provides a **production-ready authentication and authorization system** with:
 
-The best way to learn is by exploring the running application:
-
-**🚀 Run the Project**:
-1. Navigate to `src/Server/Boilerplate.Server.Web/`
-2. Run: `dotnet run`
-3. Open your browser to the displayed URL (usually `http://localhost:5000`)
-
-**🔍 Explore These Features**:
-1. **Sign-Up Page**: Create a new account and confirm your email
-2. **Sign-In Page**: Try signing in with password and OTP
-3. **Settings → Security**: 
-   - Enable two-factor authentication
-   - View and manage active sessions
-   - Generate recovery codes
-4. **Settings → Account**:
-   - Try changing your password (requires elevated access)
-   - Test account deletion (requires elevated access + 2FA)
-5. **External Sign-In**: Try the "Identity Server Demo" button to test SSO
-
----
-
-## 8. Security Best Practices
-
-The identity system follows security best practices:
-
-### 8.1 Built-in Security Features:
-- ✅ **JWT Token Signature Verification**: All tokens are cryptographically signed
-- ✅ **Password Hashing**: Passwords are hashed using ASP.NET Core Identity's default hasher (PBKDF2)
-- ✅ **Account Lockout**: Protect against brute-force attacks with automatic account lockout
-- ✅ **Two-Factor Authentication**: Support for TOTP authenticator apps and SMS/email codes
-- ✅ **Session Management**: Track and revoke sessions across devices
-- ✅ **One-Time Tokens**: Email and phone confirmation tokens can only be used once
-- ✅ **HTTPS Enforcement**: Secure communication for all authentication flows
-- ✅ **Anti-CSRF Protection**: Built into ASP.NET Core for form posts
-- ✅ **Secure Cookie Options**: HttpOnly, Secure, and SameSite cookies
-
-### 8.2 Elevated Access for Sensitive Operations:
-Critical operations (like account deletion) require **elevated access**:
-1. User must verify their identity with a 2FA code
-2. System grants temporary `ELEVATED_ACCESS` claim
-3. Elevated access expires after a short period
-4. This prevents unauthorized actions even if someone gains access to an authenticated session
-
-### 8.3 Privileged Session Limits:
-The `PRIVILEGED_ACCESS` policy prevents resource abuse:
-- Limits concurrent sessions per user (default: 3)
-- Protects expensive operations (like dashboard queries)
-- Can be customized per-user via claims (useful for subscription tiers)
-
----
-
-## 9. Code Examples
-
-### 9.1 Controller Method with Authorization:
-From [`/src/Server/Boilerplate.Server.Api/Controllers/Dashboard/DashboardController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Dashboard/DashboardController.cs):
-
-```csharp
-[ApiController]
-[Route("api/[controller]/[action]")]
-[Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
-public partial class DashboardController : AppControllerBase
-{
-    [EnableQuery]
-    [HttpGet]
-    public IQueryable<ProductSaleStatisticsDto> GetProductsSalesStatistics()
-    {
-        return DbContext.Products.Project();
-    }
-}
-```
-
-### 9.2 Blazor Page with Authorization:
-From [`/src/Client/Boilerplate.Client.Core/Components/Pages/Dashboard/DashboardPage.razor`](/src/Client/Boilerplate.Client.Core/Components/Pages/Dashboard/DashboardPage.razor):
-
-```xml
-@page "/dashboard"
-@attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
-@inherits AppPageBase
-
-<PageTitle>@Localizer[nameof(AppStrings.Dashboard)]</PageTitle>
-
-<!-- Page content -->
-```
-
-### 9.3 Checking Authorization Programmatically:
-```csharp
-// In a component or service
-var user = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-var isAuthorized = await AuthorizationService.AuthorizeAsync(
-    user.User, 
-    AuthPolicies.PRIVILEGED_ACCESS
-);
-
-if (isAuthorized.Succeeded)
-{
-    // User has privileged access
-}
-```
-
----
-
-## 10. Summary
-
-The project provides a **production-ready authentication and authorization system** with:
-
-✅ **JWT token-based authentication** with access and refresh tokens  
-✅ **Server-side session management** for instant revocation and tracking  
-✅ **Single Sign-On (SSO)** support for Google, GitHub, Twitter, Apple, Facebook, Azure AD, and custom providers  
-✅ **Role-based authorization** for coarse-grained access control  
-✅ **Permission-based authorization** with `AppFeatures` for fine-grained control  
-✅ **Policy-based authorization** for advanced scenarios (2FA, elevated access, session limits)  
-✅ **Two-factor authentication (2FA)** with TOTP, SMS, and email  
-✅ **One-time tokens** for email/phone confirmation and password reset  
+✅ **JWT-based authentication** with access and refresh tokens  
+✅ **Server-side session management** with device tracking  
+✅ **Single Sign-On (SSO)** support for multiple providers  
+✅ **Role-based and permission-based authorization**  
+✅ **Policy-based authorization** with custom policies  
+✅ **Feature flags** for fine-grained access control  
+✅ **Two-factor authentication** with multiple methods  
+✅ **Account lockout** protection against brute-force attacks  
+✅ **One-time tokens** with automatic expiration and invalidation  
+✅ **Privileged session limiting** to prevent resource abuse  
 ✅ **Elevated access** for sensitive operations  
-✅ **Privileged session limits** to prevent resource abuse  
-✅ **Account lockout** to prevent brute-force attacks  
-✅ **Security best practices** built-in  
+✅ **Comprehensive security** following industry best practices  
 
-This system is highly customizable and can be extended to meet your specific requirements.
+This system is designed to handle enterprise-level authentication and authorization requirements while remaining flexible and extensible for custom business logic.
 
 ---
-

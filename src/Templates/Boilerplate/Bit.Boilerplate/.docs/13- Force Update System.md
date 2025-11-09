@@ -1,32 +1,39 @@
 # Stage 13: Force Update System
 
-Welcome to Stage 13! In this stage, you will learn about the **Force Update System** - a critical feature that ensures users are always running a compatible version of your application.
-
-## What is the Force Update System?
-
-The Force Update System is a mechanism that:
-- **Validates client app versions** on every API request
-- **Forces users to update** if they're running an outdated version
-- **Prevents incompatible clients** from accessing the backend
-- **Works across all platforms**: Web, Windows, Android, iOS, and macOS
-
-### Why is this important?
-
-Unlike traditional desktop applications where version checks happen only at startup, this system validates the version on **every single request**. This means:
-- Even users who are **actively using** the application will be forced to update
-- No grace period or "update later" option for critical updates
-- Ensures backend API changes don't break outdated clients
-- Maintains security by enforcing minimum supported versions
+Welcome to **Stage 13** of the Boilerplate project getting started guide! In this stage, we'll explore the **Force Update System** - a critical feature that ensures all users are running compatible versions of your application.
 
 ---
 
-## How It Works: The Complete Flow
+## Overview
 
-### 1. Client Sends Version Header
+The Force Update System is designed to maintain version compatibility between the client applications and the backend server. When you deploy a breaking change to your API, you need a way to ensure that older client versions stop working and prompt users to update.
 
-Every HTTP request from the client includes version information in the headers.
+**Key Concept**: Unlike typical version checks that happen only at app startup, this system validates the client version **on every single request**. This means even users who are actively using the app will be forced to update if they fall below the minimum supported version.
 
-**Location**: [`/src/Client/Boilerplate.Client.Core/Services/HttpMessageHandlers/RequestHeadersDelegatingHandler.cs`](/src/Client/Boilerplate.Client.Core/Services/HttpMessageHandlers/RequestHeadersDelegatingHandler.cs)
+---
+
+## How It Works: Architecture Overview
+
+The Force Update System consists of four main components:
+
+1. **Client-Side Version Header**: Every HTTP request includes version information
+2. **Server-Side Middleware**: Validates the version and throws an exception if unsupported
+3. **Exception Handling**: Catches the exception and publishes a force update message
+4. **Platform-Specific Update Logic**: Each platform handles the update differently
+
+Let's explore each component in detail.
+
+---
+
+## 1. Client-Side: Sending Version Headers
+
+Every HTTP request from the client automatically includes two critical headers:
+- `X-App-Version`: The current application version (e.g., "1.2.0")
+- `X-App-Platform`: The platform type (Android, iOS, Windows, Web, macOS)
+
+This happens in the **`RequestHeadersDelegatingHandler`** class:
+
+**File**: [`src/Client/Boilerplate.Client.Core/Services/HttpMessageHandlers/RequestHeadersDelegatingHandler.cs`](/src/Client/Boilerplate.Client.Core/Services/HttpMessageHandlers/RequestHeadersDelegatingHandler.cs)
 
 ```csharp
 protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -44,18 +51,37 @@ protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage 
 }
 ```
 
-**Key Points**:
-- The `X-App-Version` header contains the current app version (e.g., "1.0.0")
-- The `X-App-Platform` header identifies the platform (Web, Windows, Android, iOS, macOS)
-- These headers are **automatically added** to all internal API requests
+**Important Notes**:
+- These headers are **only added for internal API calls** (calls to your own backend)
+- External API calls don't include these headers to avoid CORS issues
+- This applies to **both HTTP requests and SignalR connections** (SignalR uses `HttpMessageHandlerFactory`)
+
+### SignalR Integration
+
+SignalR connections also benefit from this system because they use the same `HttpMessageHandlerFactory`:
+
+**File**: [`src/Client/Boilerplate.Client.Core/Extensions/IClientCoreServiceCollectionExtensions.cs`](/src/Client/Boilerplate.Client.Core/Extensions/IClientCoreServiceCollectionExtensions.cs)
+
+```csharp
+var hubConnection = new HubConnectionBuilder()
+    .WithUrl(new Uri(absoluteServerAddressProvider.GetAddress(), "app-hub"), options =>
+    {
+        options.HttpMessageHandlerFactory = httpClientHandler => 
+            sp.GetRequiredService<HttpMessageHandlersChainFactory>().Invoke(httpClientHandler);
+        // ... other code ...
+    })
+    .Build();
+```
+
+This ensures that even SignalR connections are version-validated.
 
 ---
 
-### 2. Server Validates Version via Middleware
+## 2. Server-Side: Version Validation Middleware
 
-The server checks the incoming version against configured minimum supported versions.
+On the server, the **`ForceUpdateMiddleware`** intercepts every request and validates the client version.
 
-**Location**: [`/src/Server/Boilerplate.Server.Api/RequestPipeline/ForceUpdateMiddleware.cs`](/src/Server/Boilerplate.Server.Api/RequestPipeline/ForceUpdateMiddleware.cs)
+**File**: [`src/Server/Boilerplate.Server.Api/RequestPipeline/ForceUpdateMiddleware.cs`](/src/Server/Boilerplate.Server.Api/RequestPipeline/ForceUpdateMiddleware.cs)
 
 ```csharp
 public class ForceUpdateMiddleware(RequestDelegate next, ServerApiSettings settings)
@@ -80,34 +106,40 @@ public class ForceUpdateMiddleware(RequestDelegate next, ServerApiSettings setti
 }
 ```
 
-**How It Works**:
-1. Extracts `X-App-Version` and `X-App-Platform` from request headers
-2. Retrieves the minimum supported version for that platform from settings
-3. Compares the client's version with the minimum required version
-4. If the client version is too old, throws `ClientNotSupportedException`
+### How It Works:
 
----
+1. Extracts the `X-App-Version` and `X-App-Platform` headers
+2. Gets the minimum supported version for that platform from configuration
+3. Compares the client's version with the minimum supported version
+4. If the client version is **less than** the minimum, throws a `ClientNotSupportedException`
+5. Otherwise, allows the request to proceed
 
-### 3. Minimum Supported Versions Configuration
+### Configuration
 
-The minimum supported versions are configured in the server's `appsettings.json`.
+The minimum supported versions are configured in **appsettings.json**:
 
-**Location**: [`/src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json)
+**File**: [`src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json)
 
 ```json
-{
-  "SupportedAppVersions": {
+"SupportedAppVersions": {
     "MinimumSupportedAndroidAppVersion": "1.0.0",
     "MinimumSupportedIosAppVersion": "1.0.0",
     "MinimumSupportedMacOSAppVersion": "1.0.0",
     "MinimumSupportedWindowsAppVersion": "1.0.0",
-    "MinimumSupportedWebAppVersion": "1.0.0",
-    "SupportedAppVersions__Comment": "Enabling `AutoReload` (Disabled by default) ensure the latest app version is always applied in Web & Windows apps. Refer to `Client.Web/Components/AppBswupProgressBar.razor`, `Client.Web/wwwroot/index.html` and `Client.Windows/appsettings.json` for details."
-  }
+    "MinimumSupportedWebAppVersion": "1.0.0"
 }
 ```
 
-**Settings Class**: [`/src/Server/Boilerplate.Server.Api/ServerApiSettings.cs`](/src/Server/Boilerplate.Server.Api/ServerApiSettings.cs)
+**When to Update These Values**:
+- When you deploy a breaking API change
+- When you need to force users to update for security reasons
+- When you want to discontinue support for old versions
+
+### Settings Class
+
+The configuration is strongly-typed in the **`ServerApiSettings`** class:
+
+**File**: [`src/Server/Boilerplate.Server.Api/ServerApiSettings.cs`](/src/Server/Boilerplate.Server.Api/ServerApiSettings.cs)
 
 ```csharp
 public class SupportedAppVersionsOptions
@@ -127,24 +159,38 @@ public class SupportedAppVersionsOptions
             AppPlatformType.MacOS => MinimumSupportedMacOSAppVersion,
             AppPlatformType.Windows => MinimumSupportedWindowsAppVersion,
             AppPlatformType.Web => MinimumSupportedWebAppVersion,
-            _ => throw new ArgumentOutOfRangeException(nameof(platformType), platformType, null)
+            _ => throw new ArgumentOutOfRangeException(nameof(platformType))
         };
     }
 }
 ```
 
-**Example Scenario**:
-If you set `"MinimumSupportedWebAppVersion": "2.0.0"`, any Web client running version 1.x.x will be blocked and forced to update.
-
 ---
 
-### 4. Client Handles the Update Notification
+## 3. Exception Handling: Triggering the Update Flow
 
-When the server throws `ClientNotSupportedException`, the client catches it and triggers the force update flow.
+When `ClientNotSupportedException` is thrown, it follows a special handling path.
 
-#### Exception Handler
+### The Exception Class
 
-**Location**: [`/src/Client/Boilerplate.Client.Core/Services/HttpMessageHandlers/ExceptionDelegatingHandler.cs`](/src/Client/Boilerplate.Client.Core/Services/HttpMessageHandlers/ExceptionDelegatingHandler.cs)
+**File**: [`src/Shared/Exceptions/ClientNotSupportedException.cs`](/src/Shared/Exceptions/ClientNotSupportedException.cs)
+
+```csharp
+public partial class ClientNotSupportedException : BadRequestException
+{
+    public ClientNotSupportedException()
+        : this(nameof(AppStrings.ForceUpdateTitle))
+    {
+    }
+    // ... other constructors ...
+}
+```
+
+### Client-Side Exception Handling
+
+When the client receives this exception, it's caught in the **`ExceptionDelegatingHandler`**:
+
+**File**: [`src/Client/Boilerplate.Client.Core/Services/HttpMessageHandlers/ExceptionDelegatingHandler.cs`](/src/Client/Boilerplate.Client.Core/Services/HttpMessageHandlers/ExceptionDelegatingHandler.cs)
 
 ```csharp
 catch (ClientNotSupportedException)
@@ -154,82 +200,44 @@ catch (ClientNotSupportedException)
 }
 ```
 
-The exception handler publishes a `FORCE_UPDATE` message to the pub-sub service with `persistent: true`, ensuring the message is delivered even if no subscribers are currently listening.
+**Key Point**: The exception is **published as a persistent message** using the PubSub system. This ensures that the force update UI is shown to the user.
 
-#### Force Update Snack Bar
+### Exception Logging
 
-**Location**: [`/src/Client/Boilerplate.Client.Core/Components/Layout/ForceUpdateSnackBar.razor.cs`](/src/Client/Boilerplate.Client.Core/Components/Layout/ForceUpdateSnackBar.razor.cs)
+The `ClientNotSupportedException` is explicitly ignored from logging to prevent noise:
+
+**File**: [`src/Shared/Services/SharedExceptionHandler.cs`](/src/Shared/Services/SharedExceptionHandler.cs)
 
 ```csharp
-public partial class ForceUpdateSnackBar
+public virtual bool IgnoreException(Exception exception)
 {
-    [AutoInject] private IAppUpdateService appUpdateService = default!;
+    if (exception is ClientNotSupportedException)
+        return true; // See ExceptionDelegatingHandler
 
-    private bool isShown;
-    private Action? unsubscribe;
-    private BitSnackBar bitSnackBar = default!;
-
-    protected override async Task OnInitAsync()
-    {
-        await base.OnInitAsync();
-
-        if (InPrerenderSession) return;
-
-        unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.FORCE_UPDATE, async (_) =>
-        {
-            if (isShown) return;
-
-            isShown = true;
-            await bitSnackBar.Error(string.Empty);
-        });
-    }
-
-    private async Task Update()
-    {
-        await appUpdateService.ForceUpdate();
-    }
+    // ... other code ...
 }
 ```
 
-**UI Component**: [`/src/Client/Boilerplate.Client.Core/Components/Layout/ForceUpdateSnackBar.razor`](/src/Client/Boilerplate.Client.Core/Components/Layout/ForceUpdateSnackBar.razor)
-
-```xml
-@inherits AppComponentBase
-
-<BitSnackBar @ref="bitSnackBar" AutoDismiss="false" Persistent>
-    <TitleTemplate>
-        <BitStack FitHeight>
-            <BitText Typography="BitTypography.H5">
-                @Localizer[nameof(AppStrings.ForceUpdateTitle)]
-            </BitText>
-        </BitStack>
-    </TitleTemplate>
-    <BodyTemplate>
-        <BitStack>
-            <BitText Typography="BitTypography.Body1">
-                @Localizer[nameof(AppStrings.ForceUpdateBody)]
-            </BitText>
-            <BitButton Color="BitColor.Tertiary"
-                       OnClick="WrapHandled(Update)"
-                       IconName="@BitIconName.Download">
-                @Localizer[nameof(AppStrings.Update)]
-            </BitButton>
-        </BitStack>
-    </BodyTemplate>
-</BitSnackBar>
-```
-
-When the user clicks the "Update" button, the platform-specific update service is triggered.
-
 ---
 
-### 5. Platform-Specific Update Behavior
+## 4. Platform-Specific Update Logic
 
-Different platforms handle updates differently based on their capabilities and app distribution models.
+Each platform implements the **`IAppUpdateService`** interface to handle updates differently.
 
-#### Web App Update (Progressive Web App)
+### Interface Definition
 
-**Location**: [`/src/Client/Boilerplate.Client.Web/Services/WebAppUpdateService.cs`](/src/Client/Boilerplate.Client.Web/Services/WebAppUpdateService.cs)
+**File**: [`src/Client/Boilerplate.Client.Core/Services/Contracts/IAppUpdateService.cs`](/src/Client/Boilerplate.Client.Core/Services/Contracts/IAppUpdateService.cs)
+
+```csharp
+public interface IAppUpdateService
+{
+    Task ForceUpdate();
+}
+```
+
+### Web Platform: Auto-Update via Service Worker
+
+**File**: [`src/Client/Boilerplate.Client.Web/Services/WebAppUpdateService.cs`](/src/Client/Boilerplate.Client.Web/Services/WebAppUpdateService.cs)
 
 ```csharp
 public partial class WebAppUpdateService : IAppUpdateService
@@ -244,16 +252,15 @@ public partial class WebAppUpdateService : IAppUpdateService
 }
 ```
 
-**Behavior**: 
-- Triggers the PWA service worker update mechanism
-- Automatically reloads the page with the new version
-- No user download required - updates happen instantly
+**How it works**:
+- Calls a JavaScript function that triggers the service worker to update
+- The `autoReload = true` parameter forces the page to reload after the update is downloaded
+- The new version is fetched from the server and cached by the service worker
+- The page automatically reloads with the new version
 
----
+### Windows Platform: Auto-Update via Velopack
 
-#### Windows App Update (Velopack)
-
-**Location**: [`/src/Client/Boilerplate.Client.Windows/Services/WindowsAppUpdateService.cs`](/src/Client/Boilerplate.Client.Windows/Services/WindowsAppUpdateService.cs)
+**File**: [`src/Client/Boilerplate.Client.Windows/Services/WindowsAppUpdateService.cs`](/src/Client/Boilerplate.Client.Windows/Services/WindowsAppUpdateService.cs)
 
 ```csharp
 public partial class WindowsAppUpdateService : IAppUpdateService
@@ -288,16 +295,14 @@ public partial class WindowsAppUpdateService : IAppUpdateService
 }
 ```
 
-**Behavior**:
-- Uses Velopack to download and install updates
-- Automatically restarts the application after update
-- Updates are downloaded from a configured URL
+**How it works**:
+- Uses **Velopack** to check for updates from a configured URL
+- Downloads the new version in the background
+- Automatically restarts the application with the new version
 
----
+### Android, iOS, macOS: Open App Store
 
-#### Mobile App Update (Android/iOS/macOS)
-
-**Location**: [`/src/Client/Boilerplate.Client.Maui/Services/MauiAppUpdateService.cs`](/src/Client/Boilerplate.Client.Maui/Services/MauiAppUpdateService.cs)
+**File**: [`src/Client/Boilerplate.Client.Maui/Services/MauiAppUpdateService.cs`](/src/Client/Boilerplate.Client.Maui/Services/MauiAppUpdateService.cs)
 
 ```csharp
 public partial class MauiAppUpdateService : IAppUpdateService
@@ -309,210 +314,217 @@ public partial class MauiAppUpdateService : IAppUpdateService
 }
 ```
 
-**Behavior**:
-- Opens the app's page in the platform's app store:
-  - **Android**: Google Play Store
-  - **iOS**: Apple App Store
-  - **macOS**: Mac App Store
-- User must manually download and install the update from the store
+**How it works**:
+- Opens the corresponding app store (Google Play Store, Apple App Store, or Mac App Store)
+- Navigates directly to your app's page
+- The user must manually download and install the update
 
 ---
 
-## SignalR Support
+## 5. User Interface: Force Update Snackbar
 
-The Force Update system also works with SignalR connections!
+When the force update message is published, a snackbar is shown to the user.
 
-**Location**: [`/src/Client/Boilerplate.Client.Core/Components/AppClientCoordinator.cs`](/src/Client/Boilerplate.Client.Core/Components/AppClientCoordinator.cs)
+### Snackbar Component
+
+**File**: [`src/Client/Boilerplate.Client.Core/Components/Layout/ForceUpdateSnackBar.razor`](/src/Client/Boilerplate.Client.Core/Components/Layout/ForceUpdateSnackBar.razor)
+
+```cshtml
+<BitSnackBar @ref="bitSnackBar" AutoDismiss="false" Persistent>
+    <TitleTemplate>
+        <BitStack FitHeight>
+            <BitText Typography="BitTypography.H5">
+                @Localizer[nameof(AppStrings.ForceUpdateTitle)]
+            </BitText>
+        </BitStack>
+    </TitleTemplate>
+    <BodyTemplate>
+        <BitStack>
+            <BitText Typography="BitTypography.Body1">
+                @Localizer[nameof(AppStrings.ForceUpdateBody)]
+            </BitText>
+            <BitButton Color="BitColor.Tertiary"
+                       OnClick="WrapHandled(Update)"
+                       IconName="@BitIconName.Download">
+                @Localizer[nameof(AppStrings.Update)]
+            </BitButton>
+        </BitStack>
+    </BodyTemplate>
+</BitSnackBar>
+```
+
+### Snackbar Code-Behind
+
+**File**: [`src/Client/Boilerplate.Client.Core/Components/Layout/ForceUpdateSnackBar.razor.cs`](/src/Client/Boilerplate.Client.Core/Components/Layout/ForceUpdateSnackBar.razor.cs)
 
 ```csharp
-if (exception is HubException)
+public partial class ForceUpdateSnackBar
 {
-    if (exception.Message.EndsWith(nameof(AppStrings.UnauthorizedException)))
+    [AutoInject] private IAppUpdateService appUpdateService = default!;
+
+    private bool isShown;
+    private Action? unsubscribe;
+    private BitSnackBar bitSnackBar = default!;
+
+    protected override async Task OnInitAsync()
     {
-        await AuthManager.RefreshToken(requestedBy: nameof(HubException));
+        await base.OnInitAsync();
+
+        if (InPrerenderSession) return;
+
+        unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.FORCE_UPDATE, async (_) =>
+        {
+            if (isShown) return;
+
+            isShown = true;
+            await bitSnackBar.Error(string.Empty);
+        });
     }
-    else if (exception.Message.EndsWith(nameof(AppStrings.ForceUpdateTitle)))
+
+    private async Task Update()
     {
-        PubSubService.Publish(ClientPubSubMessages.FORCE_UPDATE);
+        await appUpdateService.ForceUpdate();
+    }
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        unsubscribe?.Invoke();
+        await base.DisposeAsync(disposing);
     }
 }
 ```
 
-When a SignalR hub method is called from an outdated client, the server throws `ClientNotSupportedException`, which gets translated into a `HubException` on the client side. The client detects this and triggers the force update flow.
+**Key Features**:
+- Subscribes to the `FORCE_UPDATE` pub-sub message
+- Shows the snackbar when the message is received
+- Prevents multiple snackbars from showing (`isShown` flag)
+- The snackbar is persistent and cannot be dismissed by the user
+- Clicking the "Update" button calls the platform-specific update logic
 
 ---
 
-## Key Differences from Traditional Update Systems
+## The Critical Difference: Always-On Validation
 
-### ⚠️ CRITICAL: Version Check on EVERY Request
+**🚨 Most Important Concept**: This system validates the client version **on every single request**, not just at app startup.
 
-Most applications check the version only at startup. This system is different:
+### Why This Matters
 
-| Traditional Systems | This Force Update System |
-|---------------------|--------------------------|
-| Check version at app launch | Check version on **every API request** |
-| User can continue using outdated version | User is **immediately blocked** |
+Imagine this scenario:
 
-**Example Scenario**:
-1. User is actively using version 1.0.0
-2. Admin updates `MinimumSupportedWebAppVersion` to 1.1.0 on the server
-3. User clicks "Save" on a form
-4. Request is sent to server with version 1.0.0
-5. Server rejects the request with `ClientNotSupportedException`
-6. User sees the Force Update snackbar **immediately**
-7. User **cannot continue** until they update
+1. A user opens your app at 9:00 AM with version 1.0.0
+2. At 10:00 AM, you deploy a breaking change and set `MinimumSupportedWebAppVersion` to 1.1.0
+3. The user is still actively using the app at 10:05 AM
 
-This ensures that breaking API changes or critical security updates are enforced instantly across all active users.
+**What happens?**
+- The very next API request the user makes will fail with `ClientNotSupportedException`
+- The force update snackbar will appear immediately
+- The user **must** update to continue using the app
+
+**Traditional approach** (validation only at startup):
+- The user could continue using version 1.0.0 for hours or days
+- They would only see the update prompt when they restart the app
+- This could lead to data corruption or errors if the API has changed
+
+### Use Cases
+
+This always-on validation is perfect for:
+
+1. **Breaking API Changes**: When you change DTOs, endpoints, or data structures
+2. **Security Vulnerabilities**: Force users to update immediately for critical patches
+3. **Database Migrations**: Ensure clients are compatible with new schema changes
+4. **Feature Deprecation**: Remove support for old features gracefully
 
 ---
 
-## The IAppUpdateService Interface
+## Platform Comparison: Update Behavior
 
-All platform-specific update services implement this simple interface:
+Here's a summary of how each platform handles force updates:
 
-**Location**: [`/src/Client/Boilerplate.Client.Core/Services/Contracts/IAppUpdateService.cs`](/src/Client/Boilerplate.Client.Core/Services/Contracts/IAppUpdateService.cs)
+| Platform | Update Method | User Experience | Restart Required |
+|----------|--------------|-----------------|------------------|
+| **Web** | Service Worker auto-update | Automatic page reload | Yes (automatic) |
+| **Windows** | Velopack download & install | Automatic app restart | Yes (automatic) |
+| **Android** | Opens Google Play Store | Manual install | Yes (manual) |
+| **iOS** | Opens Apple App Store | Manual install | Yes (manual) |
+| **macOS** | Opens Mac App Store | Manual install | Yes (manual) |
 
-```csharp
-public interface IAppUpdateService
-{
-    Task ForceUpdate();
+**Key Takeaway**: Web and Windows platforms provide the **best user experience** because updates are fully automatic. Mobile platforms require manual user action due to app store policies.
+
+---
+
+## Configuration Best Practices
+
+### When to Increment Minimum Versions
+
+✅ **DO increment when**:
+- You change API response/request DTOs in a breaking way
+- You remove or rename endpoints
+- You change authentication/authorization logic
+- You fix critical security vulnerabilities
+- You migrate the database schema in an incompatible way
+
+❌ **DON'T increment when**:
+- You add new optional fields to DTOs
+- You add new endpoints (without removing old ones)
+- You fix bugs that don't affect the API contract
+- You change UI-only code
+
+### Version Number Strategy
+
+Use semantic versioning: `MAJOR.MINOR.PATCH`
+
+- **MAJOR**: Breaking changes (force update required)
+- **MINOR**: New features (backward compatible)
+- **PATCH**: Bug fixes (backward compatible)
+
+Example:
+```json
+"SupportedAppVersions": {
+    "MinimumSupportedWebAppVersion": "2.0.0",  // Major version change
+    "MinimumSupportedAndroidAppVersion": "1.5.0", // Android can lag behind
+    "MinimumSupportedIosAppVersion": "1.5.0"     // iOS can lag behind
 }
 ```
 
-This abstraction allows the force update logic to work seamlessly across all platforms without knowing the platform-specific implementation details.
-
 ---
 
-## How to Use This System in Production
+## Advanced Scenarios
 
-### 1. Deploy a New Version
+### Gradual Rollout
 
-When you release a breaking change or critical security update:
-
-1. **Build and deploy** the new client versions (Web, Windows, Android, iOS, macOS)
-2. **Update the server** with the new backend code
-3. **Update `appsettings.json`** to set the new minimum version:
+You can set different minimum versions for different platforms to enable gradual rollouts:
 
 ```json
-{
-  "SupportedAppVersions": {
-    "MinimumSupportedAndroidAppVersion": "2.0.0",
-    "MinimumSupportedIosAppVersion": "2.0.0",
-    "MinimumSupportedMacOSAppVersion": "2.0.0",
-    "MinimumSupportedWindowsAppVersion": "2.0.0",
-    "MinimumSupportedWebAppVersion": "2.0.0"
-  }
+"SupportedAppVersions": {
+    "MinimumSupportedWebAppVersion": "2.0.0",      // Already rolled out
+    "MinimumSupportedAndroidAppVersion": "1.5.0",  // Still on old version
+    "MinimumSupportedIosAppVersion": "1.5.0"       // Still on old version
 }
 ```
 
-### 2. Gradual Rollout (Optional)
-
-You can enforce updates on specific platforms while allowing others to continue:
-
-```json
-{
-  "SupportedAppVersions": {
-    "MinimumSupportedAndroidAppVersion": "2.0.0",  // ← Force Android to update
-    "MinimumSupportedIosAppVersion": "2.0.0",      // ← Force iOS to update
-    "MinimumSupportedMacOSAppVersion": "1.9.0",    // ← macOS can still use 1.9.x
-    "MinimumSupportedWindowsAppVersion": "1.9.0",  // ← Windows can still use 1.9.x
-    "MinimumSupportedWebAppVersion": "2.0.0"       // ← Force Web to update
-  }
-}
-```
-
-### 3. Monitor User Sessions
-
-You can track which versions users are running by examining the user sessions table (if session tracking is enabled). This helps you decide when to enforce version updates.
-
----
-
-## Best Practices
-
-### ✅ DO
-
-- **Update the minimum version** only after you've deployed the new client versions to app stores/update servers
-- **Test the update flow** in staging before updating production settings
-- **Use semantic versioning** (e.g., 1.0.0, 1.1.0, 2.0.0) for clarity
-- **Communicate updates** to users through release notes or notifications
-- **Monitor metrics** to ensure users are successfully updating
-
-### ❌ DON'T
-
-- **Don't set** a minimum version higher than what's available in app stores
-- **Don't update** minimum versions too frequently - reserve this for breaking changes or critical security updates
-- **Don't forget** to publish mobile app updates to stores before updating the minimum version
-- **Don't use** non-standard version formats (stick to `major.minor.patch`)
-
----
-
-## Troubleshooting
-
-### Issue: Users stuck in update loop
-
-**Symptom**: Users keep seeing the force update message even after updating.
-
-**Common Causes**:
-1. The new version wasn't properly deployed
-2. Users are behind a caching proxy
-3. Service worker isn't updating (Web apps)
-
-**Solution**:
-- For Web: Clear service worker cache
-- For Windows: Verify the update files are accessible at the configured URL
-- For Mobile: Confirm the new version is live in the app store
-
-### Issue: Some platforms can't update
-
-**Symptom**: Android users can't update but iOS users can.
-
-**Common Causes**:
-1. Platform-specific build failed
-2. App store review pending
-
-**Solution**:
-- Temporarily lower the minimum version for that platform
-- Fix the build/review issue
-- Re-raise the minimum version once the update is available
+This allows you to:
+1. Deploy breaking changes to the web app first
+2. Test with web users before forcing mobile users to update
+3. Give mobile users more time to update (app store approval delays)
 
 ---
 
 ## Summary
 
-The Force Update System is a powerful mechanism that:
+The Force Update System is a comprehensive solution for maintaining version compatibility:
 
-✅ **Validates client versions** on every request (not just at startup)  
-✅ **Enforces immediate updates** when minimum version requirements change  
-✅ **Works across all platforms** with platform-specific update strategies  
-✅ **Integrates with both HTTP and SignalR** communication  
-✅ **Prevents API incompatibilities** by blocking outdated clients  
+✅ **Strengths**:
+- Validates version on **every request** (not just at startup)
+- Platform-specific update logic (auto-update for Web/Windows, app store for mobile)
+- User-friendly UI with persistent snackbar
+- Configuration-driven (no code changes needed)
+- Integrated with exception handling system
 
-This system gives you complete control over client version enforcement, ensuring that critical updates and breaking changes are adopted immediately by all users.
+⚠️ **Considerations**:
+- Can be disruptive to active users
+- Mobile platforms require manual user action
+- Requires careful planning when deploying breaking changes
 
----
-
-## Related Files Reference
-
-Here's a quick reference to all the key files in the Force Update System:
-
-### Server-Side
-- [`/src/Server/Boilerplate.Server.Api/RequestPipeline/ForceUpdateMiddleware.cs`](/src/Server/Boilerplate.Server.Api/RequestPipeline/ForceUpdateMiddleware.cs) - Main middleware
-- [`/src/Server/Boilerplate.Server.Api/ServerApiSettings.cs`](/src/Server/Boilerplate.Server.Api/ServerApiSettings.cs) - Settings classes
-- [`/src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json) - Version configuration
-
-### Client-Side - Core
-- [`/src/Client/Boilerplate.Client.Core/Services/Contracts/IAppUpdateService.cs`](/src/Client/Boilerplate.Client.Core/Services/Contracts/IAppUpdateService.cs) - Interface
-- [`/src/Client/Boilerplate.Client.Core/Services/HttpMessageHandlers/RequestHeadersDelegatingHandler.cs`](/src/Client/Boilerplate.Client.Core/Services/HttpMessageHandlers/RequestHeadersDelegatingHandler.cs) - Version header injection
-- [`/src/Client/Boilerplate.Client.Core/Services/HttpMessageHandlers/ExceptionDelegatingHandler.cs`](/src/Client/Boilerplate.Client.Core/Services/HttpMessageHandlers/ExceptionDelegatingHandler.cs) - Exception handling
-- [`/src/Client/Boilerplate.Client.Core/Components/Layout/ForceUpdateSnackBar.razor`](/src/Client/Boilerplate.Client.Core/Components/Layout/ForceUpdateSnackBar.razor) - UI component
-- [`/src/Client/Boilerplate.Client.Core/Components/AppClientCoordinator.cs`](/src/Client/Boilerplate.Client.Core/Components/AppClientCoordinator.cs) - SignalR support
-
-### Client-Side - Platform Implementations
-- [`/src/Client/Boilerplate.Client.Web/Services/WebAppUpdateService.cs`](/src/Client/Boilerplate.Client.Web/Services/WebAppUpdateService.cs) - Web/PWA
-- [`/src/Client/Boilerplate.Client.Windows/Services/WindowsAppUpdateService.cs`](/src/Client/Boilerplate.Client.Windows/Services/WindowsAppUpdateService.cs) - Windows
-- [`/src/Client/Boilerplate.Client.Maui/Services/MauiAppUpdateService.cs`](/src/Client/Boilerplate.Client.Maui/Services/MauiAppUpdateService.cs) - Android/iOS/macOS
-
-### Shared
-- [`/src/Shared/Exceptions/ClientNotSupportedException.cs`](/src/Shared/Exceptions/ClientNotSupportedException.cs) - Exception class
+**Best Practice**: Use this system for critical updates (breaking changes, security), but prefer backward-compatible API evolution when possible.
 
 ---

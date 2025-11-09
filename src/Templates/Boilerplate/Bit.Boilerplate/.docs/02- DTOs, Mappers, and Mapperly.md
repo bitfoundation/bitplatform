@@ -1,40 +1,27 @@
 # Stage 2: DTOs, Mappers, and Mapperly
 
-Welcome to Stage 2! In this stage, we'll explore how the project uses **Data Transfer Objects (DTOs)**, **Mapperly** for high-performance object mapping, and the role of **AppJsonContext** for optimized JSON serialization.
+Welcome to **Stage 2** of the Boilerplate project tutorial! In this stage, you'll learn about:
+
+- **DTOs (Data Transfer Objects)**: How data is transferred between client and server
+- **AppJsonContext**: Efficient JSON serialization configuration
+- **Mappers with Mapperly**: High-performance object mapping for reading and writing data
+- **Project vs Map**: Understanding when to use each method
+- **Patch Methods**: Efficient client-side state management
 
 ---
 
-## Table of Contents
+## 1. What are DTOs?
 
-1. [What are DTOs?](#what-are-dtos)
-2. [Example DTO: CategoryDto](#example-dto-categorydto)
-3. [AppJsonContext: Optimized JSON Serialization](#appjsoncontext-optimized-json-serialization)
-4. [What is Mapperly?](#what-is-mapperly)
-5. [Mapper Example: CategoriesMapper](#mapper-example-categoriesmapper)
-6. [Project() vs Map(): Reading Data Efficiently](#project-vs-map-reading-data-efficiently)
-7. [Manual Projection Alternative](#manual-projection-alternative)
-8. [Mapperly Usage in Client.Core: Patching DTOs](#mapperly-usage-in-clientcore-patching-dtos)
-9. [Summary](#summary)
+**DTOs (Data Transfer Objects)** are simple classes that represent the data structure sent between the client and server. They serve multiple purposes:
 
----
+- **Decoupling**: Separate your database entities from your API contracts
+- **Security**: Control exactly what data is exposed to clients
+- **Validation**: Add validation attributes to ensure data integrity
+- **Documentation**: Self-documenting API contracts
 
-## What are DTOs?
+### Example: CategoryDto
 
-**Data Transfer Objects (DTOs)** are simple objects used to transfer data between different layers of the application, particularly between the server and client. They serve several important purposes:
-
-- **Data Shaping**: DTOs control exactly what data is sent over the network
-- **Security**: Hide sensitive entity properties that shouldn't be exposed to clients
-- **Validation**: Apply validation rules using data annotations
-- **API Contracts**: Define clear contracts between frontend and backend
-- **Performance**: Reduce payload size by only including necessary properties
-
-In this project, all DTOs are located in the **`Shared/Dtos`** folder and are accessible to both server and client projects.
-
----
-
-## Example DTO: CategoryDto
-
-Let's examine a real DTO from the project: [`CategoryDto`](/src/Shared/Dtos/Categories/CategoryDto.cs)
+Let's look at a real DTO from the project: [`CategoryDto`](/src/Shared/Dtos/Categories/CategoryDto.cs)
 
 ```csharp
 namespace Boilerplate.Shared.Dtos.Categories;
@@ -58,82 +45,114 @@ public partial class CategoryDto
 }
 ```
 
-### Key Features of this DTO:
+### Key Features of DTOs in This Project
 
-1. **`[DtoResourceType(typeof(AppStrings))]`**: Connects validation messages and display names to localized resource files (we'll cover this in Stage 5)
+1. **`[DtoResourceType(typeof(AppStrings))]`**: Connects the DTO to localization resources for multi-language validation messages and display names
 
 2. **Validation Attributes**: 
-   - `[Required]`: Ensures the Name field is not empty
-   - `[MaxLength(64)]`: Limits the Name to 64 characters
-   - `[Display]`: Provides human-readable labels for UI controls
+   - `[Required]`: Ensures the field is not empty
+   - `[MaxLength]`: Limits the length of string properties
+   - `[EmailAddress]`, `[Phone]`: Validates format of specific data types
 
-3. **Calculated Properties**:
-   - `ProductsCount`: This property doesn't exist in the database entity but is calculated during projection
+3. **Calculated Properties**: `ProductsCount` is a computed property that shows the count of products in a category (not stored in the database)
 
-4. **Concurrency Control**:
-   - `ConcurrencyStamp`: Used for optimistic concurrency control to prevent data conflicts
+4. **ConcurrencyStamp**: Used for optimistic concurrency control to prevent conflicting updates
+
+### Example: UserDto
+
+Another example is [`UserDto`](/src/Shared/Dtos/Identity/UserDto.cs):
+
+```csharp
+[DtoResourceType(typeof(AppStrings))]
+public partial class UserDto : IValidatableObject
+{
+    public Guid Id { get; set; }
+
+    [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
+    [Display(Name = nameof(AppStrings.UserName))]
+    public string? UserName { get; set; }
+
+    [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_ValidationError))]
+    [Display(Name = nameof(AppStrings.Email))]
+    public string? Email { get; set; }
+
+    [Phone(ErrorMessage = nameof(AppStrings.PhoneAttribute_ValidationError))]
+    [Display(Name = nameof(AppStrings.PhoneNumber))]
+    public string? PhoneNumber { get; set; }
+
+    // ... more properties
+
+    // Calculated properties for display
+    public string? DisplayName => FullName ?? DisplayUserName;
+    public string? DisplayUserName => Email ?? PhoneNumber ?? UserName;
+
+    // Custom validation logic
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (string.IsNullOrEmpty(Email) && string.IsNullOrEmpty(PhoneNumber))
+            yield return new ValidationResult(
+                errorMessage: nameof(AppStrings.EitherProvideEmailOrPhoneNumber),
+                memberNames: [nameof(Email), nameof(PhoneNumber)]
+            );
+    }
+}
+```
+
+**Note**: `UserDto` implements `IValidatableObject` for complex validation rules that can't be expressed with simple attributes.
 
 ---
 
-## AppJsonContext: Optimized JSON Serialization
+## 2. AppJsonContext - Efficient JSON Serialization
 
-**AppJsonContext** is a source-generated JSON serializer context that provides optimal performance for JSON serialization/deserialization in this project.
+**Location**: [`src/Shared/Dtos/AppJsonContext.cs`](/src/Shared/Dtos/AppJsonContext.cs)
 
-### What is AppJsonContext?
-
-Located at [`Shared/Dtos/AppJsonContext.cs`](/src/Shared/Dtos/AppJsonContext.cs), it uses .NET's **System.Text.Json Source Generator** to generate serialization code at compile time instead of using reflection at runtime.
+The project uses **System.Text.Json Source Generator** for high-performance JSON serialization. Every DTO used in API communication must be registered in `AppJsonContext`.
 
 ```csharp
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 [JsonSerializable(typeof(Dictionary<string, JsonElement>))]
-[JsonSerializable(typeof(Dictionary<string, string?>))]
 [JsonSerializable(typeof(CategoryDto))]
 [JsonSerializable(typeof(List<CategoryDto>))]
 [JsonSerializable(typeof(PagedResult<CategoryDto>))]
+[JsonSerializable(typeof(ProductDto))]
+[JsonSerializable(typeof(List<ProductDto>))]
 // ... more types
 public partial class AppJsonContext : JsonSerializerContext
 {
 }
 ```
 
-### Benefits:
+### Why AppJsonContext?
 
-- ⚡ **Performance**: Faster serialization (no reflection overhead)
-- 📦 **Trimming-Friendly**: Works perfectly with .NET's assembly trimming for smaller app sizes
-- 🚀 **AOT Compatible**: Essential for Native AOT compilation scenarios
-- 🔒 **Type Safety**: Compile-time checking of serializable types
+1. **Performance**: Source generation eliminates reflection at runtime
+2. **AOT Compatibility**: Required for ahead-of-time compilation scenarios
+3. **Trim-Safe**: Works with IL trimming for smaller app sizes
+4. **Type Safety**: Compile-time errors if serialization isn't supported
 
-### Important Rule:
+### When to Update AppJsonContext
 
-**Every DTO that will be sent over HTTP must be registered in AppJsonContext** using `[JsonSerializable(typeof(YourDto))]`.
-
-If you forget to register a DTO, you'll get a helpful exception at runtime pointing you to add it to AppJsonContext.
-
----
-
-## What is Mapperly?
-
-**Mapperly** is a .NET source generator that creates high-performance object-to-object mapping code at compile time. Unlike reflection-based mappers (like AutoMapper), Mapperly generates explicit C# code during build, resulting in:
-
-- ⚡ Zero runtime overhead
-- 🔍 Compile-time validation of mappings
-- 📖 Readable, debuggable generated code
-- 🚀 Native AOT and trimming friendly
-
-### How Mapperly Works:
-
-1. You define a `static partial class` with the `[Mapper]` attribute
-2. You declare `partial` methods that define the mapping signatures
-3. At build time, Mapperly generates the implementation for these methods
-4. The generated code performs efficient property-to-property copying
-
-For more details, visit the [Mapperly documentation](https://mapperly.riok.app/docs/intro/).
+**You must add a `[JsonSerializable]` attribute whenever you:**
+- Create a new DTO
+- Return a `List<T>` or `PagedResult<T>` of a DTO from an API
+- Use a DTO in SignalR communication
 
 ---
 
-## Mapper Example: CategoriesMapper
+## 3. Mappers with Mapperly
 
-Let's look at the actual mapper for categories: [`CategoriesMapper.cs`](/src/Server/Boilerplate.Server.Api/Mappers/CategoriesMapper.cs)
+**Mapperly** is a high-performance object mapping library that generates mapping code at compile time (no reflection!).
+
+**More info**: [Server/Mappers/README.md](/src/Server/Boilerplate.Server.Api/Mappers/Readme.md)
+
+### The Three Core Methods
+
+1. **`Project()`**: Converts `IQueryable<Entity>` → `IQueryable<DTO>` (for reading data)
+2. **`Map()`**: Converts `Entity` ↔ `DTO` (for individual objects)
+3. **`Patch()`**: Updates an existing object with values from another object (for updates)
+
+### Example: CategoriesMapper
+
+**Location**: [`src/Server/Boilerplate.Server.Api/Mappers/CategoriesMapper.cs`](/src/Server/Boilerplate.Server.Api/Mappers/CategoriesMapper.cs)
 
 ```csharp
 using Riok.Mapperly.Abstractions;
@@ -142,239 +161,255 @@ using Boilerplate.Server.Api.Models.Categories;
 
 namespace Boilerplate.Server.Api.Mappers;
 
-/// <summary>
-/// More info at Server/Mappers/README.md
-/// </summary>
 [Mapper]
 public static partial class CategoriesMapper
 {
+    // Convert IQueryable<Category> to IQueryable<CategoryDto>
     public static partial IQueryable<CategoryDto> Project(this IQueryable<Category> query);
 
+    // Convert Category entity to CategoryDto
     [MapProperty(nameof(@Category.Products.Count), nameof(@CategoryDto.ProductsCount))]
     public static partial CategoryDto Map(this Category source);
     
+    // Convert CategoryDto to Category entity
     public static partial Category Map(this CategoryDto source);
+    
+    // Update Category entity with values from CategoryDto
     public static partial void Patch(this CategoryDto source, Category destination);
 }
 ```
 
-### Breaking Down the Mapper:
+### The Category Entity
 
-1. **`[Mapper]` Attribute**: Tells Mapperly to generate code for this class
+For reference, here's the entity model: [`Category.cs`](/src/Server/Boilerplate.Server.Api/Models/Categories/Category.cs)
 
-2. **`static partial class`**: The class must be static and partial so Mapperly can generate the implementation
+```csharp
+public partial class Category
+{
+    public Guid Id { get; set; }
 
-3. **Extension Methods**: Methods like `Project(this IQueryable<Category>)` become extension methods that can be called fluently
+    [Required, MaxLength(64)]
+    public string? Name { get; set; }
 
-4. **Three Types of Mapping Methods**:
+    public string? Color { get; set; }
 
-   - **`Project()`**: For efficient database queries (explained next)
-   - **`Map()`**: For converting individual objects
-   - **`Patch()`**: For updating existing objects with new values
+    public byte[] ConcurrencyStamp { get; set; } = [];
 
-5. **`[MapProperty]` Attribute**: Explicitly maps `Category.Products.Count` to `CategoryDto.ProductsCount`
-   - Note: In this case, it's actually unnecessary because Mapperly would figure it out automatically by convention
-   - It's included here to demonstrate how to handle complex property mappings
+    public IList<Product> Products { get; set; } = [];
+}
+```
+
+### Understanding [MapProperty]
+
+In the mapper above, notice:
+
+```csharp
+[MapProperty(nameof(@Category.Products.Count), nameof(@CategoryDto.ProductsCount))]
+```
+
+**What it does**: Maps `Category.Products.Count` → `CategoryDto.ProductsCount`
+
+**Important Note**: In this specific case, `[MapProperty]` is actually **not necessary** because Mapperly would automatically map `Products.Count` to `ProductsCount` by convention. It's included here to demonstrate how to explicitly map properties when needed.
 
 ---
 
-## Project() vs Map(): Reading Data Efficiently
+## 4. Project() vs Map() - When to Use Each
 
-This is one of the most important concepts when working with Entity Framework Core and DTOs.
+### Project() - For Efficient Querying
 
-### The Problem:
+**Use `Project()` when:**
+- Reading data from the database
+- You have an `IQueryable<Entity>` and want `IQueryable<DTO>`
+- You want efficient SQL generation
 
-When you need to return a list of DTOs to the client, you have two options:
+**Example from [`CategoryController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Categories/CategoryController.cs):**
 
-**❌ Inefficient Approach (using Map):**
 ```csharp
-var categories = await dbContext.Categories
-    .ToListAsync(); // Loads ALL entity properties into memory first
-    
-var dtos = categories.Select(c => c.Map()).ToList(); // Then maps to DTOs
+[HttpGet, EnableQuery]
+public IQueryable<CategoryDto> Get()
+{
+    return DbContext.Categories
+        .Project(); // Extension method from CategoriesMapper
+}
 ```
 
-**✅ Efficient Approach (using Project):**
-```csharp
-var dtos = await dbContext.Categories
-    .Project() // Translates to SQL SELECT with only needed columns
-    .ToListAsync(); // Executes optimized query
-```
+**What happens behind the scenes:**
 
-### Key Differences:
+1. EF Core translates the query to SQL
+2. Only the columns needed for `CategoryDto` are selected
+3. The database returns DTOs directly (no entities created in memory)
+4. Extremely efficient for large datasets
 
-| Aspect | `Map()` | `Project()` |
-|--------|---------|-------------|
-| **Execution Location** | In-memory (C# code) | Database-side (SQL query) |
-| **Data Retrieved** | ALL entity columns | ONLY DTO columns |
-| **Performance** | Slower for large datasets | Optimized for large datasets |
-| **Use Case** | Single object mapping | Query projections |
-| **Return Type** | `EntityType → DtoType` | `IQueryable<Entity> → IQueryable<Dto>` |
-
-### How Project() Works:
-
-When you call `.Project()` on an `IQueryable<Category>`, Mapperly generates an **Expression Tree** that Entity Framework Core can translate directly into SQL:
-
-```csharp
-// Your code:
-var query = dbContext.Categories.Project();
-
-// Generated SQL (simplified):
+**Generated SQL Example:**
+```sql
 SELECT 
     c.Id, 
     c.Name, 
-    c.Color,
-    c.ConcurrencyStamp,
-    (SELECT COUNT(*) FROM Products p WHERE p.CategoryId = c.Id) as ProductsCount
+    c.Color, 
+    (SELECT COUNT(*) FROM Products WHERE CategoryId = c.Id) AS ProductsCount,
+    c.ConcurrencyStamp
 FROM Categories c
 ```
 
-Notice how:
-- Only the columns needed by `CategoryDto` are selected
-- The calculated property `ProductsCount` is computed in SQL
-- No unnecessary data is transferred from the database
+### Map() - For Individual Objects
 
-### Real-World Impact:
+**Use `Map()` when:**
+- Converting a single entity to DTO
+- Creating or updating records
+- You already have the entity object in memory
 
-Imagine a `Category` entity with 20 properties, but `CategoryDto` only needs 5. Using `Project()`:
+**Example from the same controller:**
 
-- Reduces network traffic between database and server by ~75%
-- Reduces memory usage on the server
-- Scales efficiently even with millions of records
-- Supports paging, filtering, and sorting at the database level (via OData)
+```csharp
+[HttpPost]
+public async Task<CategoryDto> Create(CategoryDto dto, CancellationToken cancellationToken)
+{
+    var entityToAdd = dto.Map(); // Convert DTO to Entity
+
+    await DbContext.Categories.AddAsync(entityToAdd, cancellationToken);
+    await DbContext.SaveChangesAsync(cancellationToken);
+
+    return entityToAdd.Map(); // Convert Entity back to DTO
+}
+```
+
+### Manual Projection Alternative
+
+**Important**: Using Mapperly's `Project()` is **not mandatory**. You can perform projection manually using LINQ's `Select()`:
+
+```csharp
+// Using Mapperly's Project()
+return DbContext.Categories.Project();
+
+// Manual alternative (produces the same SQL)
+return DbContext.Categories.Select(c => new CategoryDto
+{
+    Id = c.Id,
+    Name = c.Name,
+    Color = c.Color,
+    ProductsCount = c.Products.Count,
+    ConcurrencyStamp = c.ConcurrencyStamp
+});
+```
+
+**Both approaches produce identical SQL queries**. However, Mapperly's `Project()` offers these benefits:
+
+1. **Less Repetitive Code**: Write mapping logic once in the mapper
+2. **Automatic Updates**: When you add/remove entity properties, the mapper updates automatically
+3. **Consistency**: Ensures the same mapping logic across your entire application
+4. **Refactoring Safety**: Renaming properties updates all mappings
 
 ---
 
-## Manual Projection Alternative
+## 5. Patch() Methods - Efficient Client-Side Updates
 
-**Important Note**: Using Mapperly's `Project()` is **not mandatory**. You can perform projection manually using LINQ's `Select()` method:
+### Server-Side Patch Usage
+
+In the Update controller method, `Patch()` is used to update an entity with values from a DTO:
 
 ```csharp
-// Manual projection using LINQ Select
-var categories = await dbContext.Categories
-    .Select(c => new CategoryDto
-    {
-        Id = c.Id,
-        Name = c.Name,
-        Color = c.Color,
-        ProductsCount = c.Products.Count,
-        ConcurrencyStamp = c.ConcurrencyStamp
-    })
-    .ToListAsync();
+[HttpPut]
+public async Task<CategoryDto> Update(CategoryDto dto, CancellationToken cancellationToken)
+{
+    var entityToUpdate = await DbContext.Categories.FindAsync([dto.Id], cancellationToken)
+        ?? throw new ResourceNotFoundException();
+
+    dto.Patch(entityToUpdate); // Update entity with DTO values
+
+    await DbContext.SaveChangesAsync(cancellationToken);
+
+    return entityToUpdate.Map();
+}
 ```
 
-### Mapperly Project() vs Manual Select():
+**Why use Patch() instead of Map()?**
 
-**Both approaches produce identical SQL queries** and have the same performance. The choice depends on your preferences:
+- **Preserves unchanged properties**: Only updates the properties sent by the client
+- **Respects Entity State**: Maintains EF Core change tracking
+- **Security**: Prevents overposting attacks
 
-**Manual `Select()` Advantages:**
-- ✅ Explicit and clear - you see exactly what's being mapped
-- ✅ No source generator dependency
-- ✅ More flexibility for complex transformations
+### Client-Side Patch Usage
 
-**Mapperly `Project()` Advantages:**
-- ✅ Reduces repetitive boilerplate code
-- ✅ Automatically updated when entity properties change
-- ✅ Compile-time validation of property compatibility
-- ✅ Consistent mapping logic between `Project()` and `Map()`
-- ✅ Less prone to human error (forgetting to map a property)
+**Location**: [`src/Shared/Mapper.cs`](/src/Shared/Mapper.cs)
 
-### Recommendation:
-
-For projects with many DTOs and frequent schema changes, Mapperly's `Project()` reduces maintenance effort. For simple scenarios or teams unfamiliar with Mapperly, manual `Select()` is perfectly fine.
-
----
-
-## Mapperly Usage in Client.Core: Patching DTOs
-
-In the client application, Mapperly is used in a different but equally important way: **patching DTO objects** to update existing in-memory objects without replacing their references.
-
-### The Problem:
-
-When you update an entity on the server and get the updated DTO back, you need to update the UI. You have two options:
-
-**❌ Replacing the object (breaks two-way binding):**
-```csharp
-// This creates a new object reference
-userDto = await userController.Update(userDto);
-// Any UI controls bound to the old userDto reference won't update!
-```
-
-**✅ Patching the existing object (preserves two-way binding):**
-```csharp
-var updatedUser = await userController.Update(userDto);
-updatedUser.Patch(userDto); // Copies properties to existing object
-// UI controls remain bound and automatically update!
-```
-
-### The Patch Mapper:
-
-Located at [`Shared/Mapper.cs`](/src/Shared/Mapper.cs):
+On the client side, the project defines additional `Patch()` methods for updating UI-bound DTOs:
 
 ```csharp
-/// <summary>
-/// Patching methods help you patch the DTO you have received from the server 
-/// (for example, after calling an Update api) onto the DTO you have bound to the UI. 
-/// This way, the UI gets updated with the latest stored changes,
-/// and there's no need to re-fetch that specific data from the server.
-/// </summary>
 [Mapper(UseDeepCloning = true)]
 public static partial class Mapper
 {
-    public static partial void Patch(this CategoryDto source, CategoryDto destination);
+    public static partial void Patch(this TodoItemDto source, TodoItemDto destination);
     public static partial void Patch(this ProductDto source, ProductDto destination);
+    public static partial void Patch(this CategoryDto source, CategoryDto destination);
     public static partial void Patch(this UserDto source, UserDto destination);
-    // ... more DTOs
+    public static partial void Patch(this EditUserRequestDto source, UserDto destination);
+    public static partial void Patch(this UserDto source, EditUserRequestDto destination);
+    // ... more patch methods
 }
 ```
 
-### Real-World Example: ProfileSection
+### Real-World Example: AddOrEditCategoryModal
 
-From [`ProfileSection.razor.cs`](/src/Client/Boilerplate.Client.Core/Components/Pages/Settings/ProfileSection.razor.cs):
+**Location**: [`AddOrEditCategoryModal.razor.cs`](/src/Client/Boilerplate.Client.Core/Components/Pages/Categories/AddOrEditCategoryModal.razor.cs)
 
 ```csharp
-private async Task SaveProfile()
+public async Task ShowModal(CategoryDto categoryToShow)
 {
-    if (isSaving || CurrentUser is null) return;
-
-    isSaving = true;
-
-    try
+    await InvokeAsync(async () =>
     {
-        // First, update the CurrentUser with form values
-        editUserDto.Patch(CurrentUser);
-
-        // Call the API and get the server's response
-        var updatedUser = await userController.Update(editUserDto, CurrentCancellationToken);
-        
-        // Patch the server response back onto CurrentUser
-        // This ensures CurrentUser has any server-calculated values (like ConcurrencyStamp)
-        updatedUser.Patch(CurrentUser);
-
-        PublishUserDataUpdated();
-
-        SnackBarService.Success(Localizer[nameof(AppStrings.ProfileUpdatedSuccessfullyMessage)]);
-    }
-    catch (KnownException e)
-    {
-        SnackBarService.Error(e.Message);
-    }
-    finally
-    {
-        isSaving = false;
-    }
+        isOpen = true;
+        categoryToShow.Patch(category); // Update local category with data from parameter
+        StateHasChanged();
+    });
 }
 ```
 
-### Why This Matters:
+**Why this pattern?**
 
-1. **Blazor Two-Way Binding**: When you use `@bind` in Blazor, it binds to the object reference. Patching updates the object in-place, so the UI automatically reflects changes.
+When the modal opens with a category to edit, instead of replacing the entire `category` object (which would break UI bindings), we **patch** the values into the existing object. This ensures:
 
-2. **Server-Calculated Values**: The server might update properties like `ConcurrencyStamp` or calculated fields. Patching ensures the client has the latest values.
+1. **UI Bindings Remain Intact**: Form inputs stay connected to the same object reference
+2. **Change Tracking Works**: `EditContext.IsModified()` correctly detects changes
+3. **No Re-rendering Issues**: Blazor's change detection works smoothly
 
-3. **Avoids Re-fetching**: You don't need to call the API again just to get the updated object.
+### Another Example: ProfileSection
 
-4. **Deep Cloning**: The `[Mapper(UseDeepCloning = true)]` attribute ensures nested objects are also properly copied, not just referenced.
+**Location**: [`ProfileSection.razor.cs`](/src/Client/Boilerplate.Client.Core/Components/Pages/Settings/ProfileSection.razor.cs)
+
+```csharp
+protected override async Task OnParamsSetAsync()
+{
+    // Prepare edit DTO from current user
+    CurrentUser?.Patch(editUserDto);
+}
+
+private async Task DoSave()
+{
+    // Save changes back to current user object
+    editUserDto.Patch(CurrentUser);
+    
+    // Update on server
+    (await userController.Update(editUserDto, CurrentCancellationToken)).Patch(CurrentUser);
+    
+    // Now CurrentUser has the latest server-side values without re-fetching
+}
+```
+
+**The flow:**
+
+1. **Initialize**: Copy `CurrentUser` data into `editUserDto` for editing
+2. **Edit**: User modifies the form (bound to `editUserDto`)
+3. **Save**: 
+   - Patch changes back to `CurrentUser` (local state update)
+   - Send `editUserDto` to server
+   - Patch server response back to `CurrentUser` (includes server-calculated fields, updated `ConcurrencyStamp`, etc.)
+
+### Benefits of Client-Side Patch()
+
+1. **No Unnecessary API Calls**: Don't need to re-fetch data after updates
+2. **Immediate UI Updates**: The UI reflects changes instantly
+3. **Consistent State**: The same DTO object maintains its identity throughout its lifecycle
+4. **Performance**: Reduces network traffic and server load
 
 ---
 
@@ -382,25 +417,12 @@ private async Task SaveProfile()
 
 In this stage, you learned:
 
-✅ **DTOs** are data contracts that transfer data between client and server  
-✅ **AppJsonContext** provides optimized, source-generated JSON serialization  
-✅ **Mapperly** is a compile-time source generator for efficient object mapping  
-✅ **`Project()`** translates to SQL for efficient database queries (recommended for reading data)  
-✅ **`Map()`** converts individual objects in memory (used for create/update operations)  
-✅ **`Patch()`** updates existing objects without breaking references (essential for Blazor binding)  
-✅ **Manual `Select()`** is a valid alternative to `Project()` - both produce identical SQL  
-
-### Key Takeaways:
-
-- Always use `Project()` (or manual `Select()`) when querying `IQueryable` for best performance
-- Use `Map()` when converting single DTOs to entities for create/update operations
-- Use `Patch()` on the client to update bound objects without breaking two-way binding
-- Register all DTOs in `AppJsonContext` for optimal JSON serialization
-
-### Additional Resources:
-
-- **Mapperly Documentation**: https://mapperly.riok.app/docs/intro/
-- **Mapper README**: [/src/Server/Boilerplate.Server.Api/Mappers/Readme.md](/src/Server/Boilerplate.Server.Api/Mappers/Readme.md)
-- **System.Text.Json Source Generation**: https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-source-generator/
+✅ **DTOs** are the data contracts between client and server with validation and localization support  
+✅ **AppJsonContext** registers DTOs for efficient JSON serialization  
+✅ **Mappers** use Mapperly for high-performance, compile-time code generation  
+✅ **Project()** efficiently converts database queries to DTOs  
+✅ **Map()** converts individual objects between entities and DTOs  
+✅ **Patch()** updates existing objects without replacing them (used both server-side and client-side)  
+✅ Manual projection with `Select()` is an alternative to `Project()` that produces the same SQL
 
 ---

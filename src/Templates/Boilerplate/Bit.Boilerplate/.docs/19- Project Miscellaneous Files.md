@@ -1,194 +1,79 @@
 # Stage 19: Project Miscellaneous Files
 
-This document covers various miscellaneous configuration files and utilities in the project that are essential for development workflow, build process, code quality, and project management. Understanding these files will help you customize the project to your needs and maintain consistency across your team.
+Welcome to **Stage 19** of the getting started guide! In this stage, we'll explore the various configuration and miscellaneous files at the root of the project. Understanding these files is essential for maintaining code quality, managing dependencies, and configuring your development environment.
 
 ---
 
-## 1. Solution Files
+## Overview
 
-### `Boilerplate.sln`
-The main Visual Studio solution file that includes all projects in the solution.
+At the root of the Boilerplate project, you'll find several important files that control various aspects of the development workflow:
 
-**When to use:**
-- Opening the complete solution in Visual Studio
-- Building the entire application with all projects
+- **Configuration Files**: `.editorconfig`, `global.json`, `dotnet.config`
+- **Solution Files**: `Boilerplate.sln`, `Boilerplate.slnx`, `Boilerplate.Web.slnf`
+- **Build Files**: `Directory.Build.props`, `Directory.Packages.props`
+- **Cleanup Scripts**: `Clean.bat`, `Clean.sh`
+- **Localization Config**: `Bit.ResxTranslator.json`
+- **IDE Settings**: `.vsconfig`, `settings.VisualStudio.json`, `.vscode/` folder
+- **Source Control**: `.gitignore`
+- **Documentation**: `README.md`
+- **Spell Checking**: `vs-spell.dic`
+- **CI/CD**: `.github/workflows/` folder
+- **Dev Containers**: `.devcontainer/` folder
 
-**Includes:**
-- All client projects (Core, Web, MAUI, Windows)
-- All server projects (Api, Web, Shared, AppHost)
-- Shared libraries and test projects
-
----
-
-### `Boilerplate.slnx`
-A newer solution format introduced in Visual Studio 2022. This format is:
-- More human-readable and Git-friendly
-- Simpler and easier to merge
-- Optimized for modern Visual Studio features
-
-**Key features:**
-- Cleaner XML structure
-- Better merge conflict resolution
-- Faster solution load times
+Let's explore each category in detail with examples from your actual project.
 
 ---
 
-### `Boilerplate.Web.slnf`
-A **solution filter** that includes only web-related projects for faster builds and improved focus.
+## 1. Configuration Files
 
-**Included projects:**
-- `Boilerplate.Client.Core`
-- `Boilerplate.Client.Web`
-- `Boilerplate.Server.Api`
-- `Boilerplate.Server.Web`
-- `Boilerplate.Server.Shared`
-- `Boilerplate.Shared`
-- `Boilerplate.Tests`
+### 1.1 `.editorconfig`
 
-**Benefits:**
-- Faster build and load times
-- Reduced memory usage in IDE
-- Better focus on web development
-- Ideal for web-only development scenarios
+**Location**: [`/.editorconfig`](c:/Workspace/Boilerplate/.editorconfig)
 
-**How to use in VS Code:**
-```json
-// .vscode/settings.json
-"dotnet.defaultSolution": "Boilerplate.Web.slnf"
+**Purpose**: The `.editorconfig` file ensures **consistent coding style** across different editors and IDEs. This is crucial for team collaboration and maintaining code quality.
+
+**Key Features**:
+
+- **Indentation**: Uses 4 spaces for all files
+- **C# Conventions**: Enforces modern C# coding standards
+  - `var` preferences
+  - Expression-bodied members
+  - Pattern matching
+  - Null-checking preferences
+  - File-scoped namespaces (enforced as warning)
+- **Formatting Rules**: 
+  - New line preferences (braces, else, catch, finally)
+  - Indentation for switch cases
+  - Space preferences around operators
+- **Naming Conventions**: PascalCase for constant fields
+- **Custom Analyzers**: `dotnet_diagnostic.NonAsyncEFCoreMethodsUsageAnalyzer.severity = error`
+
+**Example from the file**:
+
+```properties
+[*.cs]
+# File-scoped namespaces are enforced
+csharp_style_namespace_declarations = file_scoped:warning
+
+# var preferences
+csharp_style_var_for_built_in_types = true:silent
+csharp_style_var_when_type_is_apparent = true:silent
+
+# New line before open braces
+csharp_new_line_before_open_brace = all
 ```
+
+**Why it matters**: When you write code, your IDE will automatically apply these rules, ensuring consistency without manual effort. This prevents "code style wars" in pull requests.
 
 ---
 
-## 2. Build Configuration Files
+### 1.2 `global.json`
 
-### `Directory.Build.props`
-Located in `src/Directory.Build.props`, this file contains shared MSBuild properties for all projects in the solution.
+**Location**: [`/global.json`](c:/Workspace/Boilerplate/global.json)
 
-**Key configurations:**
+**Purpose**: Specifies the **.NET SDK version** required for the project.
 
-#### General Settings:
-```xml
-<Nullable>enable</Nullable>
-<ImplicitUsings>enable</ImplicitUsings>
-<LangVersion>14.0</LangVersion>
-<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-```
-
-#### Environment Configuration:
-- Automatically sets `Environment` based on `Configuration`
-- `Debug` → `Development`
-- `Release` → `Production`
-- Can be overridden with `-p:Environment=Staging`
-
-#### Conditional Compilation Symbols:
-- Platform symbols: `Android`, `iOS`, `Windows`, `Mac`
-- Environment symbols: `Development`, `Production`
-- Configuration symbols: `Debug`, `Release`, `DebugBlazorServer`
-- Feature symbols: `InvariantGlobalization`
-
-#### Global Usings:
-Automatically includes common namespaces in all C# files:
-- `System.Net.Http`
-- `System.Text.Json`
-- `Microsoft.Extensions.DependencyInjection`
-- `Boilerplate.Shared.Dtos`
-- `Boilerplate.Shared.Resources`
-- And more...
-
-#### Build Optimizations:
-- Hot Reload configuration
-- Compression settings
-- Documentation generation
-- Warning and error handling
-
-**Custom Build Tasks:**
-
-1. **DeleteResidualRazorCssFiles**: Cleans up orphaned `.razor.css` files before build to prevent build errors.
-
-**How to override:**
-```bash
-# Override environment
-dotnet build -p:Environment=Staging
-
-# Enable invariant globalization (smaller app size, no localization)
-dotnet build -p:InvariantGlobalization=true
-
-# Custom version
-dotnet build -p:Version=2.0.0
-```
-
----
-
-### `Directory.Packages.props`
-Located in `src/Directory.Packages.props`, this file centralizes NuGet package version management for the entire solution.
-
-**Key benefits:**
-- Single source of truth for package versions
-- Prevents version conflicts between projects
-- Easier dependency updates
-- Better dependency management
-
-**Package categories:**
-
-#### Bit Platform Packages:
-```xml
-<PackageVersion Include="Bit.BlazorUI" Version="10.0.0-pre-08" />
-<PackageVersion Include="Bit.Butil" Version="10.0.0-pre-08" />
-<PackageVersion Include="Bit.Bswup" Version="10.0.0-pre-08" />
-<PackageVersion Include="Bit.Besql" Version="10.0.0-pre-08" />
-```
-
-#### Database Providers (Conditional):
-```xml
-<!-- SQL Server -->
-<PackageVersion Condition=" '$(database)' == 'SqlServer' " 
-    Include="Microsoft.EntityFrameworkCore.SqlServer" 
-    Version="10.0.0-rc.2.25502.107" />
-
-<!-- PostgreSQL -->
-<PackageVersion Condition=" '$(database)' == 'PostgreSQL' " 
-    Include="Npgsql.EntityFrameworkCore.PostgreSQL" 
-    Version="10.0.0-rc.2" />
-
-<!-- MySQL -->
-<PackageVersion Condition=" '$(database)' == 'MySql' " 
-    Include="Pomelo.EntityFrameworkCore.MySql" 
-    Version="9.0.0" />
-```
-
-#### Core Framework:
-- ASP.NET Core
-- Blazor WebAssembly
-- Entity Framework Core
-- .NET MAUI
-
-#### Third-Party Integrations:
-- Hangfire (Background jobs)
-- Sentry (Error tracking)
-- Application Insights (Monitoring)
-- SignalR (Real-time communication)
-
-#### Utilities:
-- Mapperly (Object mapping)
-- Humanizer (String humanization)
-- QRCoder (QR code generation)
-- FluentEmail (Email sending)
-
-**How to add a new package:**
-1. Add version to `Directory.Packages.props`:
-```xml
-<PackageVersion Include="MyPackage" Version="1.0.0" />
-```
-
-2. Reference in project file (no version needed):
-```xml
-<PackageReference Include="MyPackage" />
-```
-
----
-
-### `global.json`
-Specifies the .NET SDK version to use for the project.
+**Content**:
 
 ```json
 {
@@ -199,153 +84,362 @@ Specifies the .NET SDK version to use for the project.
 }
 ```
 
-**Purpose:**
-- Ensures all developers use the same SDK version
-- Prevents build inconsistencies
-- Controls SDK feature availability
+**Key Properties**:
 
-**Roll-forward policy:**
-- `latestFeature`: Uses the latest installed SDK with matching major.minor version
-- Other options: `patch`, `minor`, `major`, `latestMinor`, `latestMajor`, `disable`
+- **`version`**: The specific .NET SDK version (currently .NET 10 RC)
+- **`rollForward`**: Set to `"latestFeature"` - allows using newer feature releases automatically
+
+**Why it matters**: This ensures all team members and CI/CD pipelines use the same SDK version, preventing "works on my machine" issues.
 
 ---
 
-## 3. Code Quality and Style
+### 1.3 `dotnet.config`
 
-### `.editorconfig`
-Defines coding standards and style rules for the entire codebase.
+**Location**: [`/dotnet.config`](c:/Workspace/Boilerplate/dotnet.config)
 
-**Key configurations:**
+**Purpose**: Configures the .NET test runner.
 
-#### Universal Settings:
-```properties
-[*]
-indent_style = space
-indent_size = 4
+**Content**:
+
+```plaintext
+[dotnet.test.runner]
+name = "Microsoft.Testing.Platform"
 ```
 
-#### C# Code Style:
-```properties
-[*.cs]
-csharp_style_namespace_declarations = file_scoped:warning
-csharp_style_var_for_built_in_types = true:silent
-csharp_prefer_braces = true:silent
-```
-
-#### .NET Conventions:
-```properties
-dotnet_sort_system_directives_first = true
-dotnet_style_qualification_for_field = false:silent
-dotnet_style_require_accessibility_modifiers = for_non_interface_members:silent
-```
-
-#### Formatting Rules:
-```properties
-csharp_new_line_before_open_brace = all
-csharp_space_after_keywords_in_control_flow_statements = true
-```
-
-#### Custom Diagnostics:
-```properties
-dotnet_diagnostic.NonAsyncEFCoreMethodsUsageAnalyzer.severity = error
-```
-
-**Benefits:**
-- Consistent code style across the team
-- Automatic formatting in IDE
-- Reduced code review discussions about style
-- Better Git diffs (consistent formatting)
-
-**Severity levels:**
-- `error`: Build fails
-- `warning`: Build succeeds with warnings
-- `suggestion`: IDE shows hints
-- `silent`: Fixes available but not shown
+**Why it matters**: This tells the `dotnet test` command to use the **Microsoft.Testing.Platform** (MSTest v4) for running tests, which provides better performance and features compared to older test frameworks.
 
 ---
 
-### `vs-spell.dic`
-Custom dictionary for Visual Studio's spell checker.
+## 2. Solution Files
 
-**Contains:**
-- Technical terms and acronyms
-- Framework and library names
-- Project-specific terminology
-- Common programming abbreviations
+### 2.1 `Boilerplate.sln`
 
-**Examples:**
-```
-webp, resx, nameof, Mapperly, Blazor
-Postgre, sqlite, postgres, mssql
-appsettings, webassembly, odata
-```
+**Location**: [`/Boilerplate.sln`](c:/Workspace/Boilerplate/Boilerplate.sln)
 
-**How to add words:**
-1. Right-click on a "misspelled" word in Visual Studio
-2. Select "Add to Dictionary"
-3. Word is automatically added to `vs-spell.dic`
+**Purpose**: The **full solution file** for Visual Studio that includes ALL projects in the workspace.
+
+**Contains**:
+- Server projects (`Boilerplate.Server.Web`, `Boilerplate.Server.Api`, `Boilerplate.Server.Shared`, `Boilerplate.Server.AppHost`)
+- Client projects (`Boilerplate.Client.Core`, `Boilerplate.Client.Web`, `Boilerplate.Client.Maui`, `Boilerplate.Client.Windows`)
+- Shared project (`Boilerplate.Shared`)
+- Tests project (`Boilerplate.Tests`)
+- Solution folders organizing configuration files
+
+**When to use**: Open this when you need to work across all platforms and projects simultaneously.
 
 ---
 
-## 4. Version Control
+### 2.2 `Boilerplate.Web.slnf`
 
-### `.gitignore`
-Specifies intentionally untracked files that Git should ignore.
+**Location**: [`/Boilerplate.Web.slnf`](c:/Workspace/Boilerplate/Boilerplate.Web.slnf)
 
-**Key patterns:**
+**Purpose**: A **solution filter** that includes only the projects needed for **web development**.
 
-#### Build Outputs:
-```
-bin/
-obj/
-[Dd]ebug/
-[Rr]elease/
-```
+**Why it exists**: Loading all projects (including MAUI, Windows) can be slow and resource-intensive. This filter speeds up your development experience when you're only working on web features.
 
-#### IDE Files:
-```
-.vs/
-*.suo
-*.user
-.idea/
-```
+**Projects included**:
+- `Boilerplate.Server.Web`
+- `Boilerplate.Server.Api`
+- `Boilerplate.Server.Shared`
+- `Boilerplate.Server.AppHost`
+- `Boilerplate.Client.Core`
+- `Boilerplate.Client.Web`
+- `Boilerplate.Shared`
+- `Boilerplate.Tests`
 
-#### Generated Files:
-```
-*.map
-*Resource.designer.cs
-/**/*.css
-```
-
-#### Project-Specific:
-```
-/src/Client/Boilerplate.Client.Core/Scripts/*.js
-/src/Client/Boilerplate.Client.Core/wwwroot/scripts/app*.js
-.env
-```
-
-#### Dependencies:
-```
-node_modules/
-**/packages/*
-```
-
-**Important notes:**
-- CSS files are ignored (generated from SCSS)
-- JavaScript files in certain directories are ignored (generated from TypeScript)
-- `.env` files are ignored (contain sensitive data)
-- Resource designer files are ignored (auto-generated)
+**When to use**: This is the **default solution** in VS Code (see `.vscode/settings.json`). Use it for faster builds when you're not working on mobile/desktop features.
 
 ---
 
-## 5. IDE Configuration
+### 2.3 `Boilerplate.slnx`
 
-### Visual Studio Code Configuration
+**Location**: [`/Boilerplate.slnx`](c:/Workspace/Boilerplate/Boilerplate.slnx)
 
-Located in `.vscode/` directory:
+**Purpose**: The new **XML-based solution format** introduced in Visual Studio 2025. It's more human-readable and git-friendly than the traditional `.sln` format.
 
-#### `settings.json`
-```jsonc
+**Benefit**: Easier to merge in source control, more maintainable, and supports modern Visual Studio features.
+
+---
+
+## 3. Build Configuration Files
+
+### 3.1 `Directory.Build.props`
+
+**Location**: [`/src/Directory.Build.props`](c:/Workspace/Boilerplate/src/Directory.Build.props)
+
+**Purpose**: A **shared MSBuild properties file** that automatically applies to ALL projects in the `src/` directory and its subdirectories. This prevents repetitive configuration in individual `.csproj` files.
+
+**Key Configurations**:
+
+#### Common Properties
+```xml
+<Nullable>enable</Nullable>
+<ImplicitUsings>enable</ImplicitUsings>
+<GenerateDocumentationFile>true</GenerateDocumentationFile>
+<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+```
+
+#### Versioning
+```xml
+<Version>1.0.0</Version>
+<ApplicationDisplayVersion>$(Version)</ApplicationDisplayVersion>
+```
+
+**Important**: Change the version here to update it across all projects.
+
+#### Environment Configuration
+```xml
+<Environment Condition="'$(Environment)' == '' AND '$(Configuration)' == 'Release'">Production</Environment>
+<Environment Condition="'$(Environment)' == '' AND $(Configuration.Contains('Debug'))">Development</Environment>
+```
+
+This creates compile-time constants like `DEBUG`, `Development`, `Production` that you can use in C#:
+
+```csharp
+#if DEBUG
+    // Debug-only code
+#endif
+
+#if Production
+    // Production-only code
+#endif
+```
+
+#### Platform Detection
+```xml
+<DefineConstants Condition="$(TargetFramework.Contains('-android'))">$(DefineConstants);Android</DefineConstants>
+<DefineConstants Condition="$(TargetFramework.Contains('-ios'))">$(DefineConstants);iOS</DefineConstants>
+<DefineConstants Condition="$(TargetFramework.Contains('-windows'))">$(DefineConstants);Windows</DefineConstants>
+```
+
+This allows platform-specific code:
+
+```csharp
+#if Android
+    // Android-specific code
+#endif
+```
+
+#### Global Using Directives
+```xml
+<Using Include="System.Net.Http" />
+<Using Include="System.Text.Json" />
+<Using Include="Boilerplate.Shared.Dtos" />
+<Using Include="Boilerplate.Shared.Exceptions" />
+<!-- ... and many more -->
+```
+
+These namespaces are **automatically imported** in every C# file, eliminating the need for repetitive `using` statements.
+
+---
+
+### 3.2 `Directory.Packages.props`
+
+**Location**: [`/src/Directory.Packages.props`](c:/Workspace/Boilerplate/src/Directory.Packages.props)
+
+**Purpose**: Enables **Central Package Management (CPM)** for NuGet packages. All package versions are defined in one place.
+
+**How it works**:
+
+Instead of this in each `.csproj`:
+```xml
+<PackageReference Include="Bit.BlazorUI" Version="10.0.0-pre-08" />
+```
+
+You write this in `.csproj`:
+```xml
+<PackageReference Include="Bit.BlazorUI" />
+```
+
+And the version is defined centrally in `Directory.Packages.props`:
+```xml
+<PackageVersion Include="Bit.BlazorUI" Version="10.0.0-pre-08" />
+```
+
+**Benefits**:
+- **Single source of truth** for package versions
+- **Easier updates**: Update version once, affects all projects
+- **Prevents version conflicts** between projects
+
+**Example packages included**:
+
+```xml
+<PackageVersion Include="Bit.BlazorUI" Version="10.0.0-pre-08" />
+<PackageVersion Include="Bit.Butil" Version="10.0.0-pre-08" />
+<PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0-rc.2.25502.107" />
+<PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0-rc.2.25502.107" />
+<PackageVersion Include="Hangfire.AspNetCore" Version="1.8.21" />
+<PackageVersion Include="Riok.Mapperly" Version="4.3.0" />
+<!-- ... and many more -->
+```
+
+**To update a package**: Simply change the version in this file and rebuild.
+
+---
+
+## 4. Cleanup Scripts
+
+### 4.1 `Clean.bat` (Windows)
+
+**Location**: [`/Clean.bat`](c:/Workspace/Boilerplate/Clean.bat)
+
+**Purpose**: A PowerShell-based cleanup script for **Windows** that removes build artifacts and temporary files.
+
+**What it does**:
+1. Deletes untracked CSS, JS, and map files (generated files not in Git)
+2. Runs `dotnet clean` on all `.csproj` files
+3. Removes common build folders: `bin`, `obj`, `node_modules`, `.vs`, etc.
+4. Deletes empty directories
+
+**When to use**: 
+- When your project won't build due to corrupted cache
+- Before switching branches with major structural changes
+- When you want to ensure a completely clean build
+
+**⚠️ Important**: Close all IDEs (Visual Studio, VS Code) before running this script to prevent file locks.
+
+---
+
+### 4.2 `Clean.sh` (macOS/Linux)
+
+**Location**: [`/Clean.sh`](c:/Workspace/Boilerplate/Clean.sh)
+
+**Purpose**: The **macOS/Linux equivalent** of `Clean.bat`.
+
+**Usage**:
+```bash
+chmod +x Clean.sh  # Make it executable (first time only)
+./Clean.sh         # Run the script
+```
+
+---
+
+## 5. Localization Configuration
+
+### 5.1 `Bit.ResxTranslator.json`
+
+**Location**: [`/Bit.ResxTranslator.json`](c:/Workspace/Boilerplate/Bit.ResxTranslator.json)
+
+**Purpose**: Configuration for the **bit-resx** CLI tool that uses AI to automatically translate `.resx` resource files.
+
+**Configuration**:
+
+```json
+{
+    "DefaultLanguage": "en",
+    "SupportedLanguages": [ "nl", "fa", "sv", "hi", "zh", "es", "fr", "ar", "de" ],
+    "ResxPaths": [ "/src/**/*.resx" ],
+    "OpenAI": {
+        "Model": "gpt-4.1-mini",
+        "Endpoint": "https://models.inference.ai.azure.com",
+        "ApiKey": null
+    }
+}
+```
+
+**How it works**:
+
+1. You write strings in English in `AppStrings.resx`
+2. Run the `bit-resx` tool
+3. It automatically creates translated versions:
+   - `AppStrings.nl.resx` (Dutch)
+   - `AppStrings.fa.resx` (Persian)
+   - `AppStrings.sv.resx` (Swedish)
+   - `AppStrings.hi.resx` (Hindi)
+   - `AppStrings.zh.resx` (Chinese)
+   - And more...
+
+**Supported Languages**: Currently configured for 9 languages (Dutch, Persian, Swedish, Hindi, Chinese, Spanish, French, Arabic, German)
+
+**AI Provider**: Uses OpenAI's GPT-4.1-mini model (or Azure OpenAI)
+
+**Learn more**: See [bit-resx documentation](https://github.com/bitfoundation/bitplatform/tree/develop/src/ResxTranslator)
+
+**To add a new language**:
+1. Add its ISO code to `SupportedLanguages` (e.g., `"it"` for Italian)
+2. Update `CultureInfoManager.SupportedCultures` in the `Shared` project
+3. Update `.Client.Maui/Platforms/Android/MainActivity.cs` if needed
+4. Run `bit-resx` to generate the translation
+
+---
+
+## 6. IDE Configuration Files
+
+### 6.1 `.vsconfig`
+
+**Location**: [`/.vsconfig`](c:/Workspace/Boilerplate/.vsconfig)
+
+**Purpose**: Specifies the **required Visual Studio workloads and extensions** for this project.
+
+**Content**:
+
+```json
+{
+    "version": "1.0",
+    "components": [
+        "Microsoft.VisualStudio.Workload.NetWeb",
+        "Microsoft.VisualStudio.Workload.NetCrossPlat",
+        "Component.Android.SDK.MAUI"
+    ],
+    "extensions": [
+        "https://marketplace.visualstudio.com/items?itemName=TomEnglert.ResXManager"
+    ]
+}
+```
+
+**How it helps**: When someone clones the repository and opens it in Visual Studio, they'll be prompted to install the required workloads and extensions automatically.
+
+**Required Workloads**:
+- **NetWeb**: ASP.NET and web development
+- **NetCrossPlat**: .NET MAUI development for cross-platform apps
+- **Android SDK**: Android development support
+
+**Required Extensions**:
+- **ResX Manager**: A Visual Studio extension for managing resource files (`.resx`) with a user-friendly interface
+
+---
+
+### 6.2 `settings.VisualStudio.json`
+
+**Location**: [`/settings.VisualStudio.json`](c:/Workspace/Boilerplate/settings.VisualStudio.json)
+
+**Purpose**: **Project-specific settings** for Visual Studio (not VS Code).
+
+**Key Settings**:
+
+```json
+{
+    "languages.defaults.tabs.tabSize": 4,
+    "languages.defaults.general.lineNumbers": true,
+    "environment.documents.saveWithSpecificEncoding": true,
+    "environment.documents.saveEncoding": "utf-8-nobom;65001",
+    "debugging.hotReload.enableHotReload": true,
+    "debugging.hotReload.applyOnFileSave": true,
+    "debugging.general.disableJITOptimization": true,
+    "debugging.hotReload.enableForNoDebugLaunch": true,
+    "projectsAndSolutions.aspNetCore.general.hotReloadCssChanges": true,
+    "copilot.general.completions.enableNextEditSuggestions": true,
+    "copilot.general.editor.enableAdaptivePaste": true
+}
+```
+
+**Notable Features**:
+- **Hot Reload**: Enabled for faster development (apply changes without restarting)
+- **Hot Reload CSS**: CSS changes apply immediately
+- **UTF-8 Encoding**: All files saved with UTF-8 without BOM
+- **GitHub Copilot**: Enhanced features enabled (Next Edit Suggestions, Adaptive Paste)
+
+---
+
+### 6.3 `.vscode/` Folder
+
+**Location**: [`/.vscode/`](c:/Workspace/Boilerplate/.vscode/)
+
+**Purpose**: Contains **VS Code workspace settings** and configurations.
+
+#### 6.3.1 `.vscode/settings.json`
+
+```json
 {
     "liveSassCompile.settings.watchOnLaunch": true,
     "dotnet.defaultSolution": "Boilerplate.Web.slnf",
@@ -363,21 +457,25 @@ Located in `.vscode/` directory:
 }
 ```
 
-**Key features:**
-- **Live SASS Compilation**: Automatically compiles SCSS to CSS on save
-- **File Nesting**: Groups related files (`.razor`, `.razor.cs`, `.razor.scss`) together
-- **Default Solution**: Uses solution filter for faster loads
-- **Copilot Integration**: Enhanced GitHub Copilot features
-- **Markdown Preview**: Opens `.md` files in preview mode by default
+**Key Features**:
 
-#### `extensions.json`
-Recommended VS Code extensions:
-```jsonc
+- **Live SASS Compilation**: Automatically compiles SCSS files on launch
+- **Default Solution**: Uses `Boilerplate.Web.slnf` for faster load times
+- **File Nesting**: Groups related files together in the explorer
+  - `Component.razor`, `Component.razor.cs`, `Component.razor.scss` nest under `Component.razor`
+  - `AppStrings.resx`, `AppStrings.fa.resx`, `AppStrings.nl.resx` nest under `AppStrings.resx`
+- **GitHub Copilot**: Auto-approve tool usage, code search enabled
+
+#### 6.3.2 `.vscode/extensions.json`
+
+**Recommended Extensions**:
+
+```json
 {
     "recommendations": [
         "GitHub.copilot",
-        "GitHub.copilot-chat",
         "glenn2223.live-sass",
+        "GitHub.copilot-chat",
         "ms-dotnettools.csharp",
         "ms-dotnettools.csdevkit",
         "ms-dotnettools.dotnet-maui",
@@ -389,556 +487,242 @@ Recommended VS Code extensions:
 }
 ```
 
-**When you open the project:**
-VS Code will prompt you to install these recommended extensions automatically.
+When you open the project in VS Code, you'll be prompted to install these extensions.
 
-#### `tasks.json`
-Defines build and run tasks for the project (covered in Stage 16: CI/CD Pipeline).
+#### 6.3.3 `.vscode/tasks.json`
 
-#### `launch.json`
-Debug configurations for various scenarios (covered in Stage 16: CI/CD Pipeline).
+**Pre-configured Tasks**:
 
-#### `mcp.json`
-Model Context Protocol configuration for GitHub Copilot integrations.
+- **`before-build`**: Runs TypeScript compilation and SCSS processing (runs automatically on folder open)
+- **`build`**: Builds the `Boilerplate.Server.Web` project
+- **`generate-resx-files`**: Generates C# code from `.resx` files
+- **`run`**: Starts the application
+- **`run-tests`**: Runs all tests
 
----
+**How to use**: Press `Ctrl+Shift+P` → `Tasks: Run Task` → Select a task
 
-### Visual Studio Configuration
+#### 6.3.4 `.vscode/launch.json`
 
-#### `settings.VisualStudio.json`
-Visual Studio specific settings:
-```json
-{
-    "languages.defaults.tabs.tabSize": 4,
-    "languages.defaults.general.lineNumbers": true,
-    "environment.documents.saveWithSpecificEncoding": true,
-    "environment.documents.saveEncoding": "utf-8-nobom;65001",
-    "debugging.hotReload.enableHotReload": true,
-    "debugging.hotReload.applyOnFileSave": true,
-    "copilot.general.completions.enableNextEditSuggestions": true,
-    "copilot.general.editor.enableAdaptivePaste": true
-}
-```
-
-**Features:**
-- Hot Reload enabled and applied on save
-- UTF-8 encoding without BOM
-- Enhanced Copilot features
-- JIT optimization disabled for debugging
-
----
-
-## 6. Localization Configuration
-
-### `Bit.ResxTranslator.json`
-Configuration for automated resource file translation using AI.
+**Debug Configurations**:
 
 ```json
 {
-    "DefaultLanguage": "en",
-    "SupportedLanguages": [ "nl", "fa", "sv", "hi", "zh", "es", "fr", "ar", "de" ],
-    "ResxPaths": [ "/src/**/*.resx" ],
-    "ChatOptions": {
-        "Temperature": "0"
-    },
-    "OpenAI": {
-        "Model": "gpt-4.1-mini",
-        "Endpoint": "https://models.inference.ai.azure.com",
-        "ApiKey": null
-    }
+    "configurations": [
+        {
+            "name": "C#: Boilerplate.Server.Web Debug",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}/src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj"
+        },
+        {
+            "name": "C#: Boilerplate.Server.Api Debug",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}/src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj"
+        },
+        {
+            "name": ".NET MAUI",
+            "type": "maui",
+            "request": "launch",
+            "preLaunchTask": "maui: Build"
+        }
+    ]
 }
 ```
 
-**Purpose:**
-- Automates translation of `.resx` resource files
-- Supports multiple AI providers (OpenAI, Azure OpenAI)
-- Maintains consistency across translations
-
-**Supported Languages:**
-- `nl`: Dutch (Nederlands)
-- `fa`: Persian (Farsi)
-- `sv`: Swedish (Svenska)
-- `hi`: Hindi
-- `zh`: Chinese
-- `es`: Spanish (Español)
-- `fr`: French (Français)
-- `ar`: Arabic
-- `de`: German (Deutsch)
-
-**How to add a new language:**
-1. Add language code to `SupportedLanguages` array
-2. Update `MainActivity.cs` (MAUI) `DataPathPrefixes`
-3. Update `CultureInfoManager.cs` `SupportedCultures`
-4. Run translation tool
-
-**To run the translator:**
-```bash
-dotnet run --project path/to/Bit.ResxTranslator.csproj
-```
-
-**Important:**
-- Set `ApiKey` in environment variable or user secrets
-- `Temperature: 0` ensures consistent translations
-- Never commit API keys to source control
+**How to use**: Press `F5` or go to Run and Debug panel → Select a configuration → Start debugging
 
 ---
 
-### `dotnet.config`
-Configures .NET testing platform:
-```plaintext
-[dotnet.test.runner]
-name = "Microsoft.Testing.Platform"
-```
+## 7. Source Control
 
-**Purpose:**
-- Specifies the test runner for the project
-- Uses the modern `Microsoft.Testing.Platform` (MSTest v4+)
-- Provides better performance and features than legacy runners
+### 7.1 `.gitignore`
 
----
+**Location**: [`/.gitignore`](c:/Workspace/Boilerplate/.gitignore)
 
-## 7. Cleanup Utilities
+**Purpose**: Specifies which files and folders Git should **ignore** (not track in version control).
 
-### `Clean.bat` (Windows)
-PowerShell-based cleanup script for Windows.
+**What's ignored**:
 
-**What it does:**
-1. Deletes untracked generated files (CSS, JS, map files)
-2. Runs `dotnet clean` on all `.csproj` files
-3. Removes build artifacts (`bin`, `obj`, `node_modules`, `.vs`, etc.)
-4. Deletes empty directories
+- **Build artifacts**: `bin/`, `obj/`, `*.cache`
+- **IDE files**: `.vs/`, `.idea/`
+- **Dependencies**: `node_modules/`, `packages/`
+- **Generated files**: `*.css` (from SCSS), `*.js` (from TypeScript), `*.map`
+- **User-specific files**: `*.user`, `*.suo`
+- **Database files**: `*.mdf`, `*.ldf`
+- **Environment files**: `.env`
+- **Custom Boilerplate patterns**:
+  - `*Resource.designer.cs` (auto-generated from `.resx`)
+  - `/src/Client/Boilerplate.Client.Core/Scripts/*.js` (generated from TypeScript)
+  - `/src/Client/Boilerplate.Client.Maui/Platforms/Android/google-services.json` (sensitive Firebase config)
 
-**Usage:**
-```bash
-Clean.bat
-```
-
-**⚠️ Important:**
-- Close Visual Studio before running
-- Closes IDEs prevent file deletion conflicts
-- Cannot be undone (no recycle bin)
+**Why it matters**: Keeps your repository clean and prevents accidentally committing sensitive data or large binary files.
 
 ---
 
-### `Clean.sh` (macOS/Linux)
-Bash-based cleanup script for Unix-like systems.
+## 8. Documentation
 
-**What it does:**
-1. Runs `dotnet clean` on all `.csproj` files
-2. Removes specified directories (`bin`, `obj`, `node_modules`, `.vs`, etc.)
-3. Deletes specified file types (`.csproj.user`, `Resources.designer.cs`, CSS, JS, map files)
-4. Removes empty directories
+### 8.1 `README.md`
 
-**Usage:**
-```bash
-chmod +x Clean.sh  # Make executable (first time only)
-./Clean.sh
-```
+**Location**: [`/README.md`](c:/Workspace/Boilerplate/README.md)
 
-**⚠️ Important:**
-- Close VS for Mac or other IDEs before running
-- More aggressive than Windows version (deletes all CSS/JS files, not just untracked)
+**Purpose**: The project's **welcome file** displayed on GitHub/Azure DevOps.
 
----
-
-## 8. Documentation Files
-
-### `README.md`
-The project's main documentation entry point.
-
-**Contains:**
+**Contains**:
 - Welcome message
-- Template generation command with all options used
-- Link to comprehensive documentation
-- Contact information
+- Template creation command (showing exactly how this project was generated)
+- Link to comprehensive documentation at [bitplatform.dev/templates](https://bitplatform.dev/templates/overview)
+- Information about the template version used
 
-**Template generation command example:**
+**Example**:
+
+````markdown
+This project gets generated by bit-bp template v-10.0.0-pre-08 using the following command
 ```bash
-dotnet new bit-bp \
-    --name Boilerplate \
-    --database SqlServer \
-    --filesStorage S3 \
-    --pipeline GitHub \
-    --module Admin \
-    --aspire true \
-    --signalR true \
-    --sample true
+dotnet new bit-bp
+    --name Boilerplate
+    --database SqlServer
+    --filesStorage S3
+    --module Admin
+    --captcha reCaptcha
+    --sample
+    --sentry
+    --appInsights
+    --signalR
+    --offlineDb
+    --ads
 ```
+````
 
-**Documentation link:**
-[bitplatform.dev/templates](https://bitplatform.dev/templates/overview)
+This is useful for remembering how the project was initially configured.
 
 ---
 
-### `.docs/` Directory
-Contains comprehensive stage-by-stage documentation (like this document).
+## 9. Spell Checking
 
-**Structure:**
-- `00- Interactive Wiki.md`: Introduction and overview
-- `01- Entity Framework Core.md`: Database and EF Core
-- `02- DTOs, Mappers, and Mapperly.md`: Data transfer patterns
-- ... (continues through all stages)
-- `25- RAG - Semantic Search with Vector Embeddings (Advanced).md`
+### 9.1 `vs-spell.dic`
 
-**Purpose:**
-- Provides detailed explanations of every aspect of the project
-- Serves as both learning material and reference
-- Helps onboard new team members
-- Documents architectural decisions
+**Location**: [`/vs-spell.dic`](c:/Workspace/Boilerplate/vs-spell.dic)
+
+**Purpose**: A **custom dictionary** for spell checkers (Visual Studio, VS Code extensions) containing technical terms and project-specific words.
+
+**Examples of words included**:
+
+```plaintext
+webp
+resx
+nameof
+Mapperly
+Blazor
+Json
+editorconfig
+Hangfire
+rendermode
+sqlite
+Besql
+appsettings
+Butil
+webauthn
+scss
+webassembly
+odata
+totp
+aspnetcore
+sqlserver
+postgres
+slnx
+slnf
+```
+
+**Why it matters**: Prevents false-positive spell check warnings for technical terms like `webauthn`, `odata`, `Blazor`, etc.
+
+**Referenced in**: `.editorconfig` with `spelling_exclusion_path = vs-spell.dic`
 
 ---
 
-## 9. GitHub Configuration
+## 10. CI/CD Pipeline
 
-### `.github/copilot-instructions.md`
-Instructions for GitHub Copilot to follow when working with this project.
+### 10.1 `.github/workflows/`
 
-**Contains:**
-- Core principles for AI assistance
-- Technology stack overview
-- Project structure explanation
-- Mandatory workflows
-- Coding conventions and best practices
-- Specific instructions for common tasks
+**Location**: [`/.github/workflows/`](c:/Workspace/Boilerplate/.github/workflows/)
 
-**Purpose:**
-- Ensures consistent AI-generated code
-- Teaches Copilot project-specific patterns
-- Reduces need for manual corrections
-- Improves development velocity
+**Purpose**: Contains **GitHub Actions workflows** for Continuous Integration and Continuous Deployment.
 
----
+**Workflow Files**:
 
-### `.github/prompts/`
-Contains specialized prompt templates for GitHub Copilot.
+1. **`ci.yml`**: Continuous Integration
+   - Runs on every push/pull request
+   - Builds all projects
+   - Runs tests
+   - Ensures code quality
 
-**Available prompts:**
+2. **`cd-test.yml`**: Deploy to Test environment
+   - Triggered manually or on merge to `develop` branch
+   - Deploys to test/staging servers
 
-1. **`scaffold.prompt.md`**: Generates complete CRUD implementation for a new entity
-2. **`resx.prompt.md`**: Moves hardcoded strings to resource files
-3. **`bitify.prompt.md`**: Modernizes pages using Bit.BlazorUI components
-4. **`getting-started.prompt.md`**: Getting started guide
+3. **`cd-production.yml`**: Deploy to Production
+   - Triggered manually or on merge to `main` branch
+   - Deploys to production servers
 
-**Usage:**
-```
-Run .github/prompts/scaffold.prompt.md for "Product" entity
-```
+4. **`cd-template.yml`**: Template for creating custom CD workflows
+   - Copy and customize for your specific deployment needs
 
-See Stage 18 (Other Available Prompt Templates) for detailed documentation.
+**Note**: The current workflows are configured for client platforms (Android, iOS, Windows, macOS) but are not yet fully Aspire-friendly for backend deployment. Backend CI/CD may need additional configuration.
 
----
+**Best Practice**: The workflows use a **2-phase deployment**:
+1. **Build Phase**: Build the project and upload artifacts to GitHub/Azure DevOps
+2. **Deployment Phase**: Download artifacts and deploy to target environment
 
-### `.github/workflows/`
-GitHub Actions CI/CD workflow definitions.
-
-**Workflows:**
-
-#### `ci.yml`
-Continuous Integration workflow:
-- Runs on every push and pull request
-- Builds all projects
-- Runs unit and integration tests
-- Validates code quality
-
-#### `cd-test.yml`
-Continuous Deployment to Test environment:
-- Deploys to test/staging environment
-- Runs after successful CI
-- May require manual approval
-
-#### `cd-production.yml`
-Continuous Deployment to Production:
-- Deploys to production environment
-- Requires manual approval
-- Includes rollback procedures
-
-#### `cd-template.yml`
-Template for creating new deployment workflows.
-
-See Stage 16 (CI/CD Pipeline and Environments) for detailed documentation.
+**Why 2 phases?**: 
+- Use different runners for build and deployment
+- Deployment runner can be lightweight (no SDKs needed)
+- More secure - deployment agent doesn't need full build tools
 
 ---
 
-## 10. Best Practices and Tips
+## 11. Dev Containers
 
-### Build Optimization
+### 11.1 `.devcontainer/`
 
-1. **Use Solution Filters**: When working on specific parts of the application:
-   ```bash
-   dotnet build Boilerplate.Web.slnf
-   ```
+**Location**: [`/.devcontainer/`](c:/Workspace/Boilerplate/.devcontainer/)
 
-2. **Skip Heavy Projects**: Exclude MAUI project if not needed:
-   ```bash
-   dotnet build /p:SkipMauiBuild=true
-   ```
+**Purpose**: Configuration for **VS Code Dev Containers** and **GitHub Codespaces**.
 
-3. **Parallel Builds**: Enable parallel project builds:
-   ```bash
-   dotnet build -m
-   ```
+**What it does**: Allows you to develop inside a Docker container with all dependencies pre-installed, ensuring **consistent development environments** across all team members.
 
-### Code Quality
+**Benefits**:
+- No need to install .NET SDK, Node.js, or other tools locally
+- Works identically on Windows, macOS, and Linux
+- One-click setup in GitHub Codespaces
+- Isolated from your host system
 
-1. **Run EditorConfig**: Ensure `.editorconfig` is respected:
-   - Visual Studio: Tools → Options → Text Editor → C# → Code Style
-   - VS Code: Install "EditorConfig for VS Code" extension
-
-2. **Enable Code Analysis**: Add to project files:
-   ```xml
-   <EnableNETAnalyzers>true</EnableNETAnalyzers>
-   <AnalysisLevel>latest</AnalysisLevel>
-   ```
-
-3. **Use Custom Spell Dictionary**: Add project-specific terms to `vs-spell.dic`
-
-### Version Control
-
-1. **Before Committing**:
-   - Review `.gitignore` is working correctly
-   - Ensure no sensitive data (API keys, passwords) in commits
-   - Check that generated files aren't tracked
-
-2. **Clean Working Directory**:
-   ```bash
-   git clean -fdx  # Remove all untracked files (careful!)
-   ./Clean.bat     # Or use project clean script
-   ```
-
-### Dependency Management
-
-1. **Update All Packages**:
-   ```bash
-   # Update to latest versions
-   dotnet outdated
-   
-   # Update specific package version in Directory.Packages.props
-   # Then restore
-   dotnet restore
-   ```
-
-2. **Check for Vulnerabilities**:
-   ```bash
-   dotnet list package --vulnerable
-   ```
-
-3. **Audit Dependencies**:
-   ```bash
-   dotnet list package --outdated
-   ```
-
-### Localization
-
-1. **Add New Language**:
-   - Update `Bit.ResxTranslator.json`
-   - Update `CultureInfoManager.cs`
-   - For MAUI: Update `MainActivity.cs`
-   - Run translator tool
-
-2. **Translation Workflow**:
-   - Add English strings to `AppStrings.resx`
-   - Run `Bit.ResxTranslator` tool
-   - Review auto-translated strings
-   - Adjust as needed
-
-### IDE Configuration
-
-1. **VS Code Setup**:
-   - Install recommended extensions when prompted
-   - Enable SCSS live compilation
-   - Use workspace settings for consistency
-
-2. **Visual Studio Setup**:
-   - Import `settings.VisualStudio.json`
-   - Enable Hot Reload features
-   - Configure code style to match `.editorconfig`
-
----
-
-## 11. Troubleshooting Common Issues
-
-### Build Issues
-
-**Problem:** CSS files causing merge conflicts
-```
-Solution: CSS files are generated from SCSS. Delete CSS files and regenerate:
-1. Run Clean.bat/Clean.sh
-2. Rebuild solution
-```
-
-**Problem:** "Project not found" errors with solution filter
-```
-Solution: Switch to full solution temporarily:
-dotnet build Boilerplate.sln
-```
-
-**Problem:** MSBuild errors about missing SDKs
-```
-Solution: Ensure global.json SDK version is installed:
-dotnet --list-sdks
-# Install required SDK if missing
-```
-
-### IDE Issues
-
-**Problem:** IntelliSense not working in VS Code
-```
-Solution:
-1. Reload window: Ctrl+Shift+P → "Reload Window"
-2. Clear OmniSharp cache: Delete .vscode/obj folder
-3. Restart OmniSharp: Ctrl+Shift+P → "OmniSharp: Restart OmniSharp"
-```
-
-**Problem:** SCSS not compiling automatically
-```
-Solution:
-1. Check extension is installed: "Live Sass Compiler"
-2. Check .vscode/settings.json:
-   "liveSassCompile.settings.watchOnLaunch": true
-3. Restart VS Code
-```
-
-**Problem:** File nesting not working in VS Code
-```
-Solution: Check .vscode/settings.json:
-"explorer.fileNesting.enabled": true
-```
-
-### Git Issues
-
-**Problem:** Accidentally committed generated files
-```
-Solution:
-git rm --cached path/to/file.css
-git commit -m "Remove generated file from tracking"
-```
-
-**Problem:** Large `.vs` folder committed
-```
-Solution:
-1. Add to .gitignore: .vs/
-2. Remove from git:
-   git rm -r --cached .vs
-   git commit -m "Remove .vs folder"
-```
-
-### Localization Issues
-
-**Problem:** ResxTranslator not working
-```
-Solution:
-1. Check API key is set (environment variable or user secrets)
-2. Verify internet connection
-3. Check OpenAI/Azure endpoint is accessible
-4. Review Bit.ResxTranslator.json configuration
-```
-
-**Problem:** Missing translations for new language
-```
-Solution:
-1. Ensure language code in Bit.ResxTranslator.json
-2. Run translator tool
-3. Check output for errors
-4. Manually create .resx file if needed: AppStrings.{lang}.resx
-```
-
----
-
-## 12. Customization Guide
-
-### Adding Custom Build Properties
-
-Edit `Directory.Build.props`:
-```xml
-<PropertyGroup>
-    <!-- Your custom property -->
-    <MyCustomProperty>CustomValue</MyCustomProperty>
-</PropertyGroup>
-```
-
-Usage:
-```bash
-dotnet build -p:MyCustomProperty=AnotherValue
-```
-
----
-
-### Adding Custom Global Usings
-
-Edit `Directory.Build.props`:
-```xml
-<ItemGroup>
-    <Using Include="My.Custom.Namespace" />
-</ItemGroup>
-```
-
----
-
-### Customizing Code Style
-
-Edit `.editorconfig`:
-```properties
-[*.cs]
-# Your custom rule
-my_custom_rule = true:error
-```
-
----
-
-### Adding New Package
-
-1. Add version to `Directory.Packages.props`:
-```xml
-<PackageVersion Include="NewPackage" Version="1.0.0" />
-```
-
-2. Reference in project (no version):
-```xml
-<PackageReference Include="NewPackage" />
-```
-
----
-
-### Creating Custom Cleanup Script
-
-Create `CustomClean.bat`:
-```bat
-@echo off
-echo Cleaning custom files...
-del /s /q *.customext
-rmdir /s /q CustomFolder
-echo Done!
-```
+**How to use**:
+1. Install Docker Desktop and the "Dev Containers" extension in VS Code
+2. Open the project in VS Code
+3. Click "Reopen in Container" when prompted
+4. Wait for the container to build
+5. Start developing!
 
 ---
 
 ## Summary
 
-These miscellaneous files form the foundation of your project's development experience:
+This stage covered all the miscellaneous configuration files in the project:
 
-- **Solution files** organize your projects
-- **Build configuration files** control compilation behavior
-- **Code quality files** ensure consistency
-- **Version control files** manage what's tracked
-- **IDE configuration files** optimize developer experience
-- **Cleanup utilities** maintain a clean workspace
-- **Documentation files** provide guidance
-- **GitHub configuration** enables automation and AI assistance
-
-Understanding and properly configuring these files will:
-- Improve build performance
-- Ensure code consistency
-- Enhance collaboration
-- Streamline workflows
-- Reduce onboarding time
-- Prevent common issues
-
-**Next Steps:**
-- Review and customize these files for your team's needs
-- Ensure all team members use the same configurations
-- Keep documentation up to date as project evolves
-- Regularly update dependencies in `Directory.Packages.props`
+1. **`.editorconfig`**: Enforces consistent coding style
+2. **`global.json`**: Locks .NET SDK version
+3. **`dotnet.config`**: Configures test runner
+4. **Solution files** (`.sln`, `.slnx`, `.slnf`): Different ways to open the project
+5. **`Directory.Build.props`**: Shared MSBuild properties (versioning, environments, global usings)
+6. **`Directory.Packages.props`**: Central package version management
+7. **`Clean.bat` / `Clean.sh`**: Cleanup scripts for build artifacts
+8. **`Bit.ResxTranslator.json`**: AI-powered localization configuration
+9. **`.vsconfig` / `settings.VisualStudio.json`**: Visual Studio configuration
+10. **`.vscode/`**: VS Code workspace settings, tasks, and launch configurations
+11. **`.gitignore`**: Prevents tracking unnecessary files
+12. **`README.md`**: Project documentation
+13. **`vs-spell.dic`**: Custom spell checker dictionary
+14. **`.github/workflows/`**: CI/CD pipeline definitions
+15. **`.devcontainer/`**: Docker-based development environment
 
 ---
-
-**Ready to move forward? Let's proceed to Stage 20 (.NET Aspire) to learn about the modern application orchestration and service discovery features available in this template!**

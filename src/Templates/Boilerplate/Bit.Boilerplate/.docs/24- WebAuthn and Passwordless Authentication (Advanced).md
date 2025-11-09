@@ -1,218 +1,338 @@
 # Stage 24: WebAuthn and Passwordless Authentication (Advanced)
 
-Welcome to Stage 24! In this stage, you'll learn about the WebAuthn and passwordless authentication implementation in the project. This advanced feature enables users to sign in using biometric authentication (fingerprint, Face ID) and platform authenticators, providing a more secure and convenient authentication method than traditional passwords.
+Welcome to Stage 24! In this advanced stage, you'll learn about the **WebAuthn (Web Authentication)** and **passwordless authentication** system built into the project. This feature allows users to sign in using biometric authentication (fingerprint, Face ID, Windows Hello) instead of traditional passwords.
 
 ---
 
 ## What is WebAuthn?
 
-**WebAuthn (Web Authentication)** is a web standard published by the W3C that enables passwordless authentication using public key cryptography. It allows users to authenticate using:
+**WebAuthn** is a web standard published by the W3C and FIDO Alliance that enables passwordless authentication using:
+- **Biometric authentication**: Fingerprint, Face ID, Touch ID
+- **Hardware security keys**: YubiKey, USB authenticators
+- **Platform authenticators**: Windows Hello, Android biometrics, iOS Face ID/Touch ID
 
-- **Biometric authentication**: Fingerprint readers, Face ID, Windows Hello
-- **Hardware security keys**: YubiKey, Titan Security Key
-- **Platform authenticators**: Built-in device security features
-
-### Security Benefits
-
-WebAuthn provides several security advantages over traditional password-based authentication:
-
-1. **Phishing Resistant**: Credentials are bound to the origin, making phishing attacks ineffective
-2. **No Shared Secrets**: Public key cryptography means the server never stores sensitive private keys
-3. **Strong Authentication**: Combines something you have (device) with something you are (biometric)
-4. **Replay Attack Protection**: Each authentication generates a unique signature
-
-### How It Works (High-Level)
-
-1. **Registration (Credential Creation)**:
-   - Server generates a challenge
-   - Client creates a key pair using the device's authenticator
-   - Public key is sent to the server and stored
-   - Private key stays securely on the device
-
-2. **Authentication (Credential Assertion)**:
-   - Server generates a challenge
-   - Client signs the challenge with the private key
-   - Server verifies the signature using the stored public key
-   - User is authenticated without ever transmitting a password
+### Benefits of WebAuthn:
+- **Enhanced Security**: No passwords to steal or phish
+- **Better UX**: Faster login with biometrics
+- **Privacy**: Biometric data never leaves the device
+- **Phishing-Resistant**: Credentials are bound to specific domains
 
 ---
 
-## Project Architecture Overview
+## Architecture Overview
 
-The project implements WebAuthn across all platforms: Web (Blazor WebAssembly/Server), Windows, and MAUI (iOS, Android, macOS). The implementation is more secure than native biometric authentication because:
+The WebAuthn implementation in this project consists of three main layers:
 
-- **Standards-Based**: Uses W3C WebAuthn standard with FIDO2 protocol
-- **Server-Side Verification**: All authentication is verified on the server
-- **Cross-Platform**: Works consistently across all platforms
-- **Cryptographic Security**: Uses public key cryptography instead of simple biometric checks
+### 1. **Server-Side (Backend)**
+- **Entity Model**: `WebAuthnCredential` stores credential data
+- **Controllers**: Handle credential registration and verification
+- **FIDO2 Library**: Uses `Fido2NetLib` for cryptographic operations
 
-**Important Note**: While the implementation works across all platforms, **Face ID is not yet supported on Android** due to platform limitations.
+### 2. **Client-Side (Frontend)**
+- **Platform-Specific Services**: Web, MAUI, Windows implementations
+- **Storage Service**: Tracks configured users locally
+- **UI Components**: Enable/disable passwordless, sign-in with biometrics
+
+### 3. **Bridge Layer (Hybrid Apps)**
+- **LocalHttpServer**: Provides proper origin for WebView-based platforms
+- **WebInteropApp**: Lightweight HTML page for WebAuthn operations
 
 ---
 
-## Core Components
+## Server-Side Implementation
 
-### 1. Server-Side Components
+### Entity Model: WebAuthnCredential
 
-#### WebAuthnCredential Entity
+The `WebAuthnCredential` entity stores all data required for FIDO2 authentication:
 
-**Location**: [`/src/Server/Boilerplate.Server.Api/Models/Identity/WebAuthnCredential.cs`](c:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Server\Boilerplate.Server.Api\Models\Identity\WebAuthnCredential.cs)
-
-This entity stores the WebAuthn credentials for each user:
+**Location**: [`/src/Server/Boilerplate.Server.Api/Models/Identity/WebAuthnCredential.cs`](/src/Server/Boilerplate.Server.Api/Models/Identity/WebAuthnCredential.cs)
 
 ```csharp
 public class WebAuthnCredential
 {
-    public required byte[] Id { get; set; }              // Credential ID
-    public Guid UserId { get; set; }                     // User reference
-    public byte[]? PublicKey { get; set; }               // Public key for verification
-    public uint SignCount { get; set; }                  // Counter to detect cloned credentials
-    public AuthenticatorTransport[]? Transports { get; set; }  // How credential was used
-    public bool IsBackupEligible { get; set; }          // Can be backed up
-    public bool IsBackedUp { get; set; }                // Is backed up
-    public DateTimeOffset RegDate { get; set; }         // Registration date
-    public Guid AaGuid { get; set; }                    // Authenticator GUID
-    // ... more properties for attestation data
+    public required byte[] Id { get; set; }
+    public Guid UserId { get; set; }
+    
+    [ForeignKey(nameof(UserId))]
+    public User? User { get; set; }
+    
+    public byte[]? PublicKey { get; set; }
+    public uint SignCount { get; set; }
+    public AuthenticatorTransport[]? Transports { get; set; }
+    public bool IsBackupEligible { get; set; }
+    public bool IsBackedUp { get; set; }
+    public byte[]? AttestationObject { get; set; }
+    public byte[]? AttestationClientDataJson { get; set; }
+    public byte[]? UserHandle { get; set; }
+    public string? AttestationFormat { get; set; }
+    public DateTimeOffset RegDate { get; set; }
+    public Guid AaGuid { get; set; }
 }
 ```
 
-#### IdentityController.WebAuthn.cs
+**Key Properties**:
+- `Id`: The credential identifier (byte array)
+- `PublicKey`: Public key for signature verification
+- `SignCount`: Counter to detect cloned authenticators
+- `Transports`: How the authenticator communicates (platform, USB, etc.)
+- `UserHandle`: Maps credentials back to users
 
-**Location**: [`/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.WebAuthn.cs`](c:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Server\Boilerplate.Server.Api\Controllers\Identity\IdentityController.WebAuthn.cs)
-
-Handles WebAuthn authentication (sign-in) flow:
+**Relationship**: Each user can have multiple WebAuthn credentials:
 
 ```csharp
-[HttpPost]
-public async Task<AssertionOptions> GetWebAuthnAssertionOptions(
-    WebAuthnAssertionOptionsRequestDto request, 
-    CancellationToken cancellationToken)
+public partial class User : IdentityUser<Guid>
 {
-    // 1. Retrieve existing credentials for the user(s)
-    var existingCredentials = await DbContext.WebAuthnCredential
-        .Where(c => request.UserIds.Contains(c.UserId))
-        .ToArrayAsync(cancellationToken);
-    
-    // 2. Generate assertion options with challenge
-    var options = fido2.GetAssertionOptions(new GetAssertionOptionsParams
-    {
-        AllowedCredentials = existingKeys,
-        UserVerification = UserVerificationRequirement.Required,
-    });
-    
-    // 3. Cache the challenge for later verification
-    await cache.SetAsync(key, options.ToJson(), 
-        new() { SlidingExpiration = TimeSpan.FromMinutes(3) }, 
-        cancellationToken);
-    
-    return options;
-}
-
-[HttpPost]
-public async Task VerifyWebAuthAndSignIn(
-    VerifyWebAuthnAndSignInRequestDto<AuthenticatorAssertionRawResponse> request, 
-    CancellationToken cancellationToken)
-{
-    // 1. Verify the assertion using Fido2NetLib
-    var (verifyResult, credential) = await Verify(request.ClientResponse, cancellationToken);
-    
-    // 2. Find the user
-    var user = await userManager.FindByIdAsync(credential.UserId.ToString());
-    
-    // 3. Update sign count (prevents credential cloning attacks)
-    credential.SignCount = verifyResult.SignCount;
-    await DbContext.SaveChangesAsync(cancellationToken);
-    
-    // 4. Sign the user in
-    await SignIn(new() { Otp = otp, TwoFactorCode = request.TfaCode }, user, cancellationToken);
+    public List<WebAuthnCredential> WebAuthnCredentials { get; set; } = [];
 }
 ```
 
-**Key Points**:
-- Uses **Fido2NetLib** for WebAuthn protocol implementation
-- Caches challenges in **IDistributedCache** with 3-minute expiration
-- Supports **Two-Factor Authentication (2FA)** in addition to WebAuthn
-- Updates **SignCount** to detect cloned credentials
+### FIDO2 Configuration
 
-#### UserController.WebAuthn.cs
+The server uses **Fido2NetLib** to handle WebAuthn operations:
 
-**Location**: [`/src/Server/Boilerplate.Server.Api/Controllers/Identity/UserController.WebAuthn.cs`](c:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Server\Boilerplate.Server.Api\Controllers\Identity\UserController.WebAuthn.cs)
+**Location**: [`/src/Server/Boilerplate.Server.Api/Program.Services.cs`](/src/Server/Boilerplate.Server.Api/Program.Services.cs)
 
-Handles WebAuthn credential management (registration/deletion):
+```csharp
+services.AddFido2(options => { });
+
+services.AddScoped(sp =>
+{
+    var webAppUrl = sp.GetRequiredService<IHttpContextAccessor>()
+        .HttpContext!.Request.GetWebAppUrl();
+
+    var options = new Fido2Configuration
+    {
+        ServerDomain = webAppUrl.Host,
+        TimestampDriftTolerance = 1000,
+        ServerName = "Boilerplate WebAuthn",
+        Origins = new HashSet<string>([webAppUrl.AbsoluteUri]),
+        ServerIcon = new Uri(webAppUrl, "images/icons/bit-logo.png").ToString()
+    };
+
+    return options;
+});
+```
+
+**Configuration Options**:
+- `ServerDomain`: The domain hosting your application
+- `Origins`: Allowed origins for WebAuthn operations
+- `ServerName`: Display name shown during registration
+- `TimestampDriftTolerance`: Tolerance for timestamp verification (milliseconds)
+
+### Controller Endpoints
+
+#### UserController - Credential Registration
+
+**Location**: [`/src/Server/Boilerplate.Server.Api/Controllers/Identity/UserController.WebAuthn.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/UserController.WebAuthn.cs)
+
+**1. Get Credential Options** (Step 1 of Registration)
 
 ```csharp
 [HttpGet]
-public async Task<CredentialCreateOptions> GetWebAuthnCredentialOptions(
-    CancellationToken cancellationToken)
+public async Task<CredentialCreateOptions> GetWebAuthnCredentialOptions(CancellationToken cancellationToken)
 {
     var userId = User.GetUserId();
     var user = await userManager.FindByIdAsync(userId.ToString());
     
-    // Configure authenticator requirements
+    var fidoUser = new Fido2User
+    {
+        Id = Encoding.UTF8.GetBytes(userId.ToString()),
+        Name = user.DisplayUserName,
+        DisplayName = user.DisplayName,
+    };
+
     var authenticatorSelection = new AuthenticatorSelection
     {
         RequireResidentKey = false,
         ResidentKey = ResidentKeyRequirement.Discouraged,
         UserVerification = UserVerificationRequirement.Required,
-        AuthenticatorAttachment = AuthenticatorAttachment.Platform  // Use device's built-in authenticator
+        AuthenticatorAttachment = AuthenticatorAttachment.Platform
     };
-    
-    // Generate credential creation options
+
     var options = fido2.RequestNewCredential(new RequestNewCredentialParams
     {
         User = fidoUser,
-        ExcludeCredentials = [],  // Allow multiple credentials
+        ExcludeCredentials = [],
         AuthenticatorSelection = authenticatorSelection,
         AttestationPreference = AttestationConveyancePreference.None,
     });
-    
-    // Cache options for verification
-    await cache.SetAsync(key, options.ToJson(), 
-        new() { SlidingExpiration = TimeSpan.FromMinutes(3) }, 
-        cancellationToken);
-    
+
+    // Cache options for verification in next step
+    var key = GetWebAuthnCacheKey(userId);
+    await cache.SetAsync(key, Encoding.UTF8.GetBytes(options.ToJson()), 
+        new() { SlidingExpiration = TimeSpan.FromMinutes(3) }, cancellationToken);
+
     return options;
 }
+```
 
+**2. Create Credential** (Step 2 of Registration)
+
+```csharp
 [HttpPut]
-public async Task CreateWebAuthnCredential(
-    AuthenticatorAttestationRawResponse attestationResponse, 
+public async Task CreateWebAuthnCredential(AuthenticatorAttestationRawResponse attestationResponse, 
     CancellationToken cancellationToken)
 {
-    // 1. Retrieve cached options
-    var options = CredentialCreateOptions.FromJson(cachedJson);
+    var userId = User.GetUserId();
     
-    // 2. Verify the attestation
-    var credential = await fido2.MakeNewCredentialAsync(
-        new MakeNewCredentialParams
-        {
-            AttestationResponse = attestationResponse,
-            OriginalOptions = options,
-            IsCredentialIdUniqueToUserCallback = IsCredentialIdUniqueToUser
-        }, 
-        cancellationToken);
-    
-    // 3. Store the credential
+    // Retrieve cached options from step 1
+    var key = GetWebAuthnCacheKey(userId);
+    var cachedBytes = await cache.GetAsync(key, cancellationToken);
+    var options = CredentialCreateOptions.FromJson(Encoding.UTF8.GetString(cachedBytes));
+
+    // Verify the attestation response
+    var credential = await fido2.MakeNewCredentialAsync(new MakeNewCredentialParams
+    {
+        AttestationResponse = attestationResponse,
+        OriginalOptions = options,
+        IsCredentialIdUniqueToUserCallback = IsCredentialIdUniqueToUser
+    }, cancellationToken);
+
+    // Store the credential
     var newCredential = new WebAuthnCredential
     {
         UserId = userId,
         Id = credential.Id,
         PublicKey = credential.PublicKey,
+        UserHandle = credential.User.Id,
         SignCount = credential.SignCount,
         RegDate = DateTimeOffset.UtcNow,
+        AaGuid = credential.AaGuid,
+        Transports = credential.Transports,
         // ... other properties
     };
-    
+
     await DbContext.WebAuthnCredential.AddAsync(newCredential, cancellationToken);
     await DbContext.SaveChangesAsync(cancellationToken);
 }
 ```
 
-### 2. Client-Side Components
+**3. Delete Credential**
 
-#### IWebAuthnService Interface
+```csharp
+[HttpDelete]
+public async Task DeleteWebAuthnCredential(AuthenticatorAssertionRawResponse assertionResponse, 
+    CancellationToken cancellationToken)
+{
+    var userId = User.GetUserId();
+    
+    var affectedRows = await DbContext.WebAuthnCredential
+        .Where(c => c.Id == assertionResponse.RawId)
+        .ExecuteDeleteAsync(cancellationToken);
 
-**Location**: [`/src/Client/Boilerplate.Client.Core/Services/Contracts/IWebAuthnService.cs`](c:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Core\Services\Contracts\IWebAuthnService.cs)
+    if (affectedRows == 0)
+        throw new ResourceNotFoundException();
+}
+```
+
+#### IdentityController - Authentication
+
+**Location**: [`/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.WebAuthn.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.WebAuthn.cs)
+
+**1. Get Assertion Options** (Start Authentication)
+
+```csharp
+[HttpPost]
+public async Task<AssertionOptions> GetWebAuthnAssertionOptions(
+    WebAuthnAssertionOptionsRequestDto request, CancellationToken cancellationToken)
+{
+    var existingKeys = new List<PublicKeyCredentialDescriptor>();
+
+    if (request.UserIds is not null)
+    {
+        var existingCredentials = await DbContext.WebAuthnCredential
+            .Where(c => request.UserIds.Contains(c.UserId))
+            .OrderByDescending(c => c.RegDate)
+            .Select(c => new { c.Id, c.Transports })
+            .ToArrayAsync(cancellationToken);
+            
+        existingKeys.AddRange(existingCredentials.Select(c => 
+            new PublicKeyCredentialDescriptor(PublicKeyCredentialType.PublicKey, c.Id, c.Transports)));
+    }
+
+    var options = fido2.GetAssertionOptions(new GetAssertionOptionsParams
+    {
+        AllowedCredentials = existingKeys,
+        UserVerification = UserVerificationRequirement.Required,
+    });
+
+    // Cache challenge for verification
+    var key = new string([.. options.Challenge.Select(b => (char)b)]);
+    await cache.SetAsync(key, Encoding.UTF8.GetBytes(options.ToJson()), 
+        new() { SlidingExpiration = TimeSpan.FromMinutes(3) }, cancellationToken);
+
+    return options;
+}
+```
+
+**2. Verify and Sign In** (Complete Authentication)
+
+```csharp
+[HttpPost, Produces<SignInResponseDto>()]
+public async Task VerifyWebAuthAndSignIn(
+    VerifyWebAuthnAndSignInRequestDto<AuthenticatorAssertionRawResponse> request, 
+    CancellationToken cancellationToken)
+{
+    var (verifyResult, credential) = await Verify(request.ClientResponse, cancellationToken);
+
+    var user = await userManager.FindByIdAsync(credential.UserId.ToString());
+
+    // Generate OTP for automatic sign-in
+    var (otp, _) = await GenerateAutomaticSignInLink(user, null, "WebAuthn");
+
+    // Handle 2FA if enabled
+    if (user.TwoFactorEnabled is false || request.TfaCode is not null)
+    {
+        credential.SignCount = verifyResult.SignCount;
+        DbContext.WebAuthnCredential.Update(credential);
+        await DbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    await SignIn(new() { Otp = otp, TwoFactorCode = request.TfaCode }, user, cancellationToken);
+}
+```
+
+**Verify Method** (Shared Logic)
+
+```csharp
+private async Task<(VerifyAssertionResult, WebAuthnCredential)> Verify(
+    AuthenticatorAssertionRawResponse clientResponse, CancellationToken cancellationToken)
+{
+    // Parse client response
+    var response = JsonSerializer.Deserialize(
+        clientResponse.Response.ClientDataJson, 
+        jsonSerializerOptions.GetTypeInfo<AuthenticatorResponse>());
+
+    // Retrieve cached options
+    var key = new string([.. response.Challenge.Select(b => (char)b)]);
+    var cachedBytes = await cache.GetAsync(key, cancellationToken);
+    var options = AssertionOptions.FromJson(Encoding.UTF8.GetString(cachedBytes));
+
+    // Get stored credential
+    var credential = await DbContext.WebAuthnCredential
+        .FirstOrDefaultAsync(c => c.Id == clientResponse.RawId, cancellationToken);
+
+    // Verify signature
+    var verifyResult = await fido2.MakeAssertionAsync(new MakeAssertionParams
+    {
+        AssertionResponse = clientResponse,
+        OriginalOptions = options,
+        StoredPublicKey = credential.PublicKey!,
+        StoredSignatureCounter = credential.SignCount,
+        IsUserHandleOwnerOfCredentialIdCallback = IsUserHandleOwnerOfCredentialId
+    }, cancellationToken);
+
+    return (verifyResult, credential);
+}
+```
+
+---
+
+## Client-Side Implementation
+
+### IWebAuthnService Interface
+
+**Location**: [`/src/Client/Boilerplate.Client.Core/Services/Contracts/IWebAuthnService.cs`](/src/Client/Boilerplate.Client.Core/Services/Contracts/IWebAuthnService.cs)
 
 ```csharp
 public interface IWebAuthnService
@@ -227,11 +347,11 @@ public interface IWebAuthnService
 }
 ```
 
-#### WebAuthnServiceBase
+### WebAuthnServiceBase
 
-**Location**: [`/src/Client/Boilerplate.Client.Core/Services/WebAuthnServiceBase.cs`](c:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Core\Services\WebAuthnServiceBase.cs)
+**Location**: [`/src/Client/Boilerplate.Client.Core/Services/WebAuthnServiceBase.cs`](/src/Client/Boilerplate.Client.Core/Services/WebAuthnServiceBase.cs)
 
-Base class that handles local storage of configured user IDs:
+The base service handles **client-side storage** of which users have configured WebAuthn:
 
 ```csharp
 public abstract partial class WebAuthnServiceBase : IWebAuthnService
@@ -239,43 +359,51 @@ public abstract partial class WebAuthnServiceBase : IWebAuthnService
     private const string STORE_KEY = "bit-webauthn";
 
     [AutoInject] protected IStorageService storageService = default!;
+    [AutoInject] protected JsonSerializerOptions jsonSerializerOptions = default!;
 
-    // Abstract methods implemented by platform-specific services
+    // Abstract methods - platform-specific
     public abstract ValueTask<bool> IsWebAuthnAvailable();
     public abstract ValueTask<JsonElement> CreateWebAuthnCredential(JsonElement options);
     public abstract ValueTask<JsonElement> GetWebAuthnCredential(JsonElement options);
 
-    // Shared implementation for tracking configured users
+    // Concrete methods - shared logic
     public virtual async ValueTask<Guid[]> GetWebAuthnConfiguredUserIds()
     {
         var userIdsAsString = await storageService.GetItem(STORE_KEY);
         if (string.IsNullOrEmpty(userIdsAsString))
             return [];
-        return JsonSerializer.Deserialize<Guid[]>(userIdsAsString)!;
+        return JsonSerializer.Deserialize(userIdsAsString, 
+            jsonSerializerOptions.GetTypeInfo<Guid[]>())!;
+    }
+
+    public async ValueTask<bool> IsWebAuthnConfigured(Guid? userId = null)
+    {
+        var userIds = await GetWebAuthnConfiguredUserIds();
+        return userId is not null ? userIds.Contains(userId.Value) : userIds.Any();
     }
 
     public async ValueTask SetWebAuthnConfiguredUserId(Guid userId)
     {
-        var userIds = (await GetWebAuthnConfiguredUserIds()).ToList();
-        if (!userIds.Contains(userId))
-        {
-            userIds.Add(userId);
-            await storageService.SetItem(STORE_KEY, 
-                JsonSerializer.Serialize(userIds.ToArray()));
-        }
+        var userIds = await GetWebAuthnConfiguredUserIds();
+        await storageService.SetItem(STORE_KEY, 
+            JsonSerializer.Serialize([.. userIds.Union([userId])], 
+            jsonSerializerOptions.GetTypeInfo<Guid[]>()));
     }
 }
 ```
 
-**Purpose**: This base class provides a consistent way to track which users have configured WebAuthn on the device, stored in local storage.
+**Why Store User IDs Locally?**
+- The client needs to know which users can use passwordless sign-in
+- This avoids a server round-trip just to check if WebAuthn is available
+- The UI can show/hide the "Sign in with biometrics" button accordingly
 
----
+### Platform-Specific Implementations
 
-## Platform-Specific Implementations
+#### Web Implementation
 
-### 1. Web Implementation (Blazor WebAssembly/Server)
+**Location**: [`/src/Client/Boilerplate.Client.Web/Services/WebAuthnService.cs`](/src/Client/Boilerplate.Client.Web/Services/WebAuthnService.cs)
 
-**Location**: [`/src/Client/Boilerplate.Client.Web/Services/WebAuthnService.cs`](c:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Web\Services\WebAuthnService.cs)
+For **Blazor WebAssembly** and **Blazor Server**, the implementation uses **Bit.Butil.WebAuthn** to directly call the browser's WebAuthn API:
 
 ```csharp
 public partial class WebAuthnService : WebAuthnServiceBase
@@ -299,125 +427,72 @@ public partial class WebAuthnService : WebAuthnServiceBase
 }
 ```
 
+**Bit.Butil.WebAuthn**: This is a C# wrapper around the browser's `navigator.credentials` API, eliminating the need for custom JavaScript interop.
+
+#### MAUI Implementation
+
+**Location**: [`/src/Client/Boilerplate.Client.Maui/Services/MauiWebAuthnService.cs`](/src/Client/Boilerplate.Client.Maui/Services/MauiWebAuthnService.cs)
+
+For **Blazor Hybrid (MAUI)**, WebView has IP-based origins (`http://0.0.0.1`) which don't work with WebAuthn. The solution uses a **local HTTP server** and **in-app browser**:
+
+```csharp
+public partial class MauiWebAuthnService : WebAuthnServiceBase
+{
+    [AutoInject] private ILocalHttpServer localHttpServer = default!;
+    [AutoInject] private IExternalNavigationService externalNavigationService = default!;
+
+    public TaskCompletionSource<JsonElement>? CreateWebAuthnCredentialTcs;
+    
+    public override async ValueTask<JsonElement> CreateWebAuthnCredential(JsonElement options)
+    {
+        CreateWebAuthnCredentialOptions = options;
+        CreateWebAuthnCredentialTcs = new();
+
+        ((MauiLocalHttpServer)localHttpServer).WebAuthnService = this;
+
+        // Open in-app browser pointing to local HTTP server
+        await externalNavigationService.NavigateToAsync(
+            $"http://localhost:{localHttpServer.Port}/{PageUrls.WebInteropApp}?actionName=CreateWebAuthnCredential");
+
+        return await CreateWebAuthnCredentialTcs.Task;
+    }
+
+    public override async ValueTask<bool> IsWebAuthnAvailable()
+    {
+        var osVersion = Environment.OSVersion.Version;
+
+        return OperatingSystem.IsWindowsVersionAtLeast(10, 0, 18362)
+            || true; // Check SupportedOSPlatformVersion in Directory.Build.props
+    }
+}
+```
+
 **How It Works**:
-- Uses **Bit.Butil.WebAuthn** - a wrapper around the browser's native WebAuthn API
-- Bit.Butil uses JavaScript interop to call `navigator.credentials.create()` and `navigator.credentials.get()`
-- Works directly in the browser without any special workarounds
-- Fully supports all WebAuthn features available in the browser
+1. The method creates a `TaskCompletionSource` to await the result
+2. It navigates to `WebInteropApp` via an in-app browser with `localhost` origin
+3. `WebInteropApp` performs the WebAuthn operation in JavaScript
+4. The result is passed back to complete the `TaskCompletionSource`
 
-### 2. Blazor Hybrid Implementation (MAUI & Windows)
+#### WebInteropApp for Hybrid
 
-**The Challenge**: Blazor Hybrid apps run in a WebView with an IP-based origin like `http://0.0.0.1`. WebAuthn requires a proper origin (like `https://example.com` or `http://localhost`) for security reasons.
+**Location**: [`/src/Client/Boilerplate.Client.Web/wwwroot/web-interop-app.html`](/src/Client/Boilerplate.Client.Web/wwwroot/web-interop-app.html)
 
-**The Solution**: Use a combination of:
-1. **Local HTTP Server** - Serves content on `http://localhost:{port}`
-2. **Web Interop App** - A lightweight HTML page that can access WebAuthn APIs
-3. **External Navigation Service** - Opens the Web Interop App in an in-app browser
-4. **Communication Bridge** - Passes data between the main app and the interop page
+This is a **lightweight HTML page** (no Blazor runtime) that:
+- Loads `bit-butil.js` for WebAuthn JavaScript functions
+- Loads `app.js` for custom interop logic
+- Runs `WebInteropApp.run()` to execute the WebAuthn operation
+- Returns the result to the calling MAUI app
 
-#### Step-by-Step Flow
-
-Let's trace through the flow for enabling passwordless authentication in a MAUI app:
-
-**Step 1: User Requests to Enable Passwordless**
-
-In [`PasswordlessTab.razor.cs`](c:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Core\Components\Pages\Settings\Account\PasswordlessTab.razor.cs):
-
-```csharp
-private async Task EnablePasswordless()
-{
-    // 1. Get credential creation options from server
-    var options = await userController
-        .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
-        .GetWebAuthnCredentialOptions(CurrentCancellationToken);
-
-    // 2. Create credential using platform-specific service
-    JsonElement attestationResponse = await webAuthnService.CreateWebAuthnCredential(options);
-
-    // 3. Send credential to server for storage
-    await userController.CreateWebAuthnCredential(attestationResponse, CurrentCancellationToken);
-
-    // 4. Mark user as configured locally
-    await webAuthnService.SetWebAuthnConfiguredUserId(User.Id);
-}
-```
-
-**Step 2: MAUI WebAuthn Service**
-
-**Location**: [`/src/Client/Boilerplate.Client.Maui/Services/MauiWebAuthnService.cs`](c:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Maui\Services\MauiWebAuthnService.cs)
-
-```csharp
-public override async ValueTask<JsonElement> CreateWebAuthnCredential(JsonElement options)
-{
-    // 1. Store the options so the local HTTP server can serve them
-    CreateWebAuthnCredentialOptions = options;
-
-    // 2. Create a TaskCompletionSource to wait for the result
-    CreateWebAuthnCredentialTcs = new();
-
-    // 3. Set the service reference on the local HTTP server
-    ((MauiLocalHttpServer)localHttpServer).WebAuthnService = this;
-
-    // 4. Open the Web Interop App in an in-app browser
-    await externalNavigationService.NavigateToAsync(
-        $"http://localhost:{localHttpServer.Port}/{PageUrls.WebInteropApp}?actionName=CreateWebAuthnCredential");
-
-    // 5. Wait for the result (will be set by the HTTP server callback)
-    return await CreateWebAuthnCredentialTcs.Task;
-}
-```
-
-**Step 3: Local HTTP Server**
-
-**Location**: [`/src/Client/Boilerplate.Client.Maui/Services/MauiLocalHttpServer.cs`](c:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Maui\Services\MauiLocalHttpServer.cs)
-
-The local HTTP server hosts endpoints that the Web Interop App will call:
-
-```csharp
-public int EnsureStarted()
-{
-    // Start HTTP server on an available port
-    port = GetAvailableTcpPort();
-    
-    localHttpServer = new WebServer(o => o.WithUrlPrefix($"http://localhost:{port}"))
-        // Serve the options to the Web Interop App
-        .WithModule(new ActionModule("/api/GetCreateWebAuthnCredentialOptions", HttpVerbs.Get, async ctx =>
-        {
-            await ctx.SendStringAsync(
-                JsonSerializer.Serialize(WebAuthnService!.CreateWebAuthnCredentialOptions!));
-        }))
-        // Receive the credential back from the Web Interop App
-        .WithModule(new ActionModule("/api/CreateWebAuthnCredential", HttpVerbs.Post, async ctx =>
-        {
-            var result = JsonSerializer.Deserialize<JsonElement>(
-                await ctx.GetRequestBodyAsStringAsync());
-            WebAuthnService!.CreateWebAuthnCredentialTcs!.SetResult(result);
-            // Close the in-app browser and return to the main app
-            await GoBackToApp();
-        }));
-    
-    localHttpServer.Start();
-    return port;
-}
-```
-
-**Step 4: Web Interop App**
-
-**Location**: [`/src/Client/Boilerplate.Client.Web/wwwroot/web-interop-app.html`](c:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Web\wwwroot\web-interop-app.html)
-
-This is a lightweight HTML page that loads only the necessary JavaScript (app.js) without Blazor:
-
-```xml
-<!DOCTYPE html>
+```html
 <html>
 <head>
     <title>Boilerplate</title>
-    <base href="/" />
+    <style>/* Loading spinner styles */</style>
 </head>
 <body>
     <div class="title">Please wait</div>
-    <!-- Loading animation -->
-    
+    <div class="loader"><!-- Animated loader --></div>
+
     <script src="_content/Bit.Butil/bit-butil.js"></script>
     <script src="_content/Boilerplate.Client.Core/scripts/app.js"></script>
     <script type="text/javascript">
@@ -427,129 +502,112 @@ This is a lightweight HTML page that loads only the necessary JavaScript (app.js
 </html>
 ```
 
-**Step 5: JavaScript Interop (app.js)**
-
-The `app.js` file contains the `WebInteropApp.run()` function that:
-
-1. Reads the `actionName` from the query string (e.g., `CreateWebAuthnCredential`)
-2. Fetches the options from the local HTTP server (`/api/GetCreateWebAuthnCredentialOptions`)
-3. Calls the browser's WebAuthn API (`navigator.credentials.create()`)
-4. Posts the result back to the local HTTP server (`/api/CreateWebAuthnCredential`)
-5. The local HTTP server completes the TaskCompletionSource, unblocking the original call
-6. The in-app browser closes and returns to the main app
-
-#### Architecture Diagram
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│ MAUI App (WebView - http://0.0.0.1)                           │
-│                                                                 │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │ PasswordlessTab Component                                │  │
-│  │  - User clicks "Enable Passwordless"                     │  │
-│  └─────────────┬────────────────────────────────────────────┘  │
-│                │                                                │
-│                v                                                │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │ MauiWebAuthnService                                      │  │
-│  │  - Stores options                                        │  │
-│  │  - Creates TaskCompletionSource                          │  │
-│  │  - Opens in-app browser → http://localhost:12345/web... │  │
-│  └─────────────┬────────────────────────────────────────────┘  │
-│                │                                                │
-└────────────────┼────────────────────────────────────────────────┘
-                 │
-                 v
-┌─────────────────────────────────────────────────────────────────┐
-│ In-App Browser (http://localhost:12345)                       │
-│                                                                 │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │ web-interop-app.html                                     │  │
-│  │  - Loads app.js                                          │  │
-│  │  - Runs WebInteropApp.run()                              │  │
-│  └─────────────┬────────────────────────────────────────────┘  │
-│                │                                                │
-│                v                                                │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │ JavaScript (app.js)                                      │  │
-│  │  1. GET /api/GetCreateWebAuthnCredentialOptions         │  │
-│  │  2. navigator.credentials.create(options)                │  │
-│  │  3. POST /api/CreateWebAuthnCredential (result)          │  │
-│  └─────────────┬────────────────────────────────────────────┘  │
-│                │                                                │
-└────────────────┼────────────────────────────────────────────────┘
-                 │
-                 v
-┌─────────────────────────────────────────────────────────────────┐
-│ Local HTTP Server (http://localhost:12345)                    │
-│                                                                 │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │ MauiLocalHttpServer                                      │  │
-│  │  - Serves options via GET endpoint                       │  │
-│  │  - Receives result via POST endpoint                     │  │
-│  │  - Completes TaskCompletionSource                        │  │
-│  │  - Closes in-app browser                                 │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-#### Why This Architecture?
-
-This complex architecture is necessary because:
-
-1. **WebView Limitation**: WebViews in MAUI/Windows use IP-based origins (`http://0.0.0.1`) which WebAuthn APIs reject for security
-2. **Security Requirement**: WebAuthn requires proper origins (`http://localhost` or HTTPS domains)
-3. **User Experience**: Must maintain app state and avoid restarting the entire app
-4. **Platform Consistency**: The same approach works for both credential creation and authentication
+**Why This Approach?**
+- **WebView Limitation**: WebView has `http://0.0.0.1` origin which WebAuthn rejects
+- **Local HTTP Server**: Provides proper `http://localhost:{port}` origin
+- **In-App Browser**: Opens the URL in a native browser component (not WebView)
+- **Result**: WebAuthn works with platform authenticators (Face ID, Fingerprint)
 
 ---
 
-## Key Interfaces
+## UI Components
 
-### ILocalHttpServer
+### Enabling Passwordless (Settings Page)
 
-**Location**: [`/src/Client/Boilerplate.Client.Core/Services/Contracts/ILocalHttpServer.cs`](c:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Core\Services\Contracts\ILocalHttpServer.cs)
+**Location**: [`/src/Client/Boilerplate.Client.Core/Components/Pages/Settings/Account/PasswordlessTab.razor.cs`](/src/Client/Boilerplate.Client.Core/Components/Pages/Settings/Account/PasswordlessTab.razor.cs)
 
 ```csharp
-public interface ILocalHttpServer : IAsyncDisposable
+public partial class PasswordlessTab
 {
-    int EnsureStarted();    // Start the server and return the port
-    int Port { get; }        // Get the current port
-    string? Origin { get; }  // Get the origin (e.g., "http://localhost:12345")
+    private bool isConfigured;
+
+    [AutoInject] IUserController userController = default!;
+    [AutoInject] IWebAuthnService webAuthnService = default!;
+    [AutoInject] ILocalHttpServer localHttpServer = default!;
+
+    [Parameter] public UserDto? User { get; set; }
+
+    protected override async Task OnParamsSetAsync()
+    {
+        await base.OnParamsSetAsync();
+        if (User?.UserName is null) return;
+        
+        // Check if user has already configured WebAuthn
+        isConfigured = await webAuthnService.IsWebAuthnConfigured(User.Id);
+    }
+
+    private async Task EnablePasswordless()
+    {
+        if (User?.UserName is null) return;
+
+        // Step 1: Get options from server
+        var options = await userController
+            .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
+            .GetWebAuthnCredentialOptions(CurrentCancellationToken);
+
+        JsonElement attestationResponse;
+        try
+        {
+            // Step 2: Call browser/platform WebAuthn API
+            attestationResponse = await webAuthnService.CreateWebAuthnCredential(options);
+        }
+        catch (JSException ex)
+        {
+            // User cancelled or timeout
+            ExceptionHandler.Handle(ex, AppEnvironment.IsDevelopment() ? 
+                ExceptionDisplayKind.NonInterrupting : ExceptionDisplayKind.None);
+            return;
+        }
+
+        // Step 3: Send attestation to server
+        await userController
+            .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
+            .CreateWebAuthnCredential(attestationResponse, CurrentCancellationToken);
+
+        // Step 4: Store user ID locally
+        await webAuthnService.SetWebAuthnConfiguredUserId(User.Id);
+
+        isConfigured = true;
+        SnackBarService.Success(Localizer[nameof(AppStrings.EnablePasswordlessSucsessMessage)]);
+    }
 }
 ```
 
-**Implementations**:
-- **NoopLocalHttpServer** (Web): Does nothing, not needed for web browsers
-- **MauiLocalHttpServer** (MAUI): EmbedIO-based HTTP server
-- **WindowsLocalHttpServer** (Windows): EmbedIO-based HTTP server
+**UI (Razor)**:
 
-### IExternalNavigationService
+**Location**: [`/src/Client/Boilerplate.Client.Core/Components/Pages/Settings/Account/PasswordlessTab.razor`](/src/Client/Boilerplate.Client.Core/Components/Pages/Settings/Account/PasswordlessTab.razor)
 
-**Location**: [`/src/Client/Boilerplate.Client.Core/Services/Contracts/IExternalNavigationService.cs`](c:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Core\Services\Contracts\IExternalNavigationService.cs)
+```xml
+@inherits AppComponentBase
 
-```csharp
-public interface IExternalNavigationService
-{
-    Task NavigateToAsync(string url);
-}
+<section>
+    <BitStack FillContent HorizontalAlign="BitAlignment.Center" Class="max-width">
+        <BitText Typography="BitTypography.H6" Align="BitTextAlign.Center">
+            @Localizer[nameof(AppStrings.PasswordlessTitle)]
+        </BitText>
+
+        <br />
+
+        @if (isConfigured)
+        {
+            <BitButton AutoLoading OnClick="WrapHandled(DisablePasswordless)" 
+                       Variant="BitVariant.Outline" Color="BitColor.Warning">
+                @Localizer[nameof(AppStrings.DisablePasswordless)]
+            </BitButton>
+        }
+        else
+        {
+            <BitButton AutoLoading OnClick="WrapHandled(EnablePasswordless)">
+                @Localizer[nameof(AppStrings.EnablePasswordless)]
+            </BitButton>
+        }
+    </BitStack>
+</section>
 ```
 
-**Purpose**: Opens URLs in an in-app browser (MAUI/Windows) or new window/popup (Web).
+### Passwordless Sign-In
 
-**Implementations**:
-- **DefaultExternalNavigationService** (Web): Opens in popup or new tab
-- **MauiExternalNavigationService** (MAUI): Uses `WebAuthenticator` to open in-app browser
-- **WindowsExternalNavigationService** (Windows): Creates a Form with WebView
-
----
-
-## Complete Usage Examples
-
-### 1. Sign In with Passwordless
-
-**Location**: [`/src/Client/Boilerplate.Client.Core/Components/Pages/Identity/SignIn/SignInPanel.razor.cs`](c:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Core\Components\Pages\Identity\SignIn\SignInPanel.razor.cs)
+**Location**: [`/src/Client/Boilerplate.Client.Core/Components/Pages/Identity/SignIn/SignInPanel.razor.cs`](/src/Client/Boilerplate.Client.Core/Components/Pages/Identity/SignIn/SignInPanel.razor.cs) (lines 250-310)
 
 ```csharp
 private async Task PasswordlessSignIn()
@@ -558,37 +616,39 @@ private async Task PasswordlessSignIn()
 
     try
     {
-        // 1. Get list of users who have configured WebAuthn on this device
+        // Step 1: Get configured user IDs from local storage
         var userIds = await webAuthnService.GetWebAuthnConfiguredUserIds();
 
-        // 2. For Blazor Hybrid, start the local HTTP server
         if (AppPlatform.IsBlazorHybrid)
         {
             localHttpServer.EnsureStarted();
         }
 
-        // 3. Get assertion options from the server
+        // Step 2: Request assertion options from server
         var options = await identityController
             .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
             .GetWebAuthnAssertionOptions(new() { UserIds = userIds }, CurrentCancellationToken);
 
-        // 4. Get the credential (will trigger biometric prompt)
         try
         {
+            // Step 3: Get credential from authenticator
             webAuthnAssertion = await webAuthnService.GetWebAuthnCredential(options);
         }
         catch (Exception ex)
         {
-            // User cancelled or timed out - handle gracefully
-            ExceptionHandler.Handle(ex, ExceptionDisplayKind.None);
+            // User cancelled or timeout
+            ExceptionHandler.Handle(ex, AppEnvironment.IsDevelopment() ? 
+                ExceptionDisplayKind.NonInterrupting : ExceptionDisplayKind.None);
+            webAuthnAssertion = null;
             return;
         }
 
-        // 5. Sign in
-        await DoSignIn();  // This will call VerifyWebAuthAndSignIn on the server
+        // Step 4: Sign in with the assertion
+        await DoSignIn();
     }
     catch (KnownException e)
     {
+        webAuthnAssertion = null;
         SnackBarService.Error(e.Message);
     }
     finally
@@ -598,175 +658,409 @@ private async Task PasswordlessSignIn()
 }
 ```
 
-### 2. Enable Passwordless for a User
+---
 
-**Location**: [`/src/Client/Boilerplate.Client.Core/Components/Pages/Settings/Account/PasswordlessTab.razor.cs`](c:\Workspace\bitplatform\src\Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Core\Components\Pages\Settings\Account\PasswordlessTab.razor.cs)
+## Complete Authentication Flow
 
-```csharp
-private async Task EnablePasswordless()
-{
-    if (User?.UserName is null) return;
+Let's walk through the complete passwordless sign-in flow:
 
-    // 1. Get credential creation options from server
-    var options = await userController
-        .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
-        .GetWebAuthnCredentialOptions(CurrentCancellationToken);
+### Registration Flow (First-Time Setup)
 
-    // 2. Create credential (will trigger biometric enrollment)
-    JsonElement attestationResponse;
-    try
-    {
-        attestationResponse = await webAuthnService.CreateWebAuthnCredential(options);
-    }
-    catch (JSException ex)
-    {
-        // User cancelled or error occurred
-        ExceptionHandler.Handle(ex, AppEnvironment.IsDevelopment() 
-            ? ExceptionDisplayKind.NonInterrupting 
-            : ExceptionDisplayKind.None);
-        return;
-    }
+1. **User navigates to Settings → Account → Passwordless**
+2. **Client checks** if WebAuthn is available: `webAuthnService.IsWebAuthnAvailable()`
+3. **User clicks** "Enable passwordless sign-in"
+4. **Client requests options** from server: `GetWebAuthnCredentialOptions()`
+5. **Server generates** `CredentialCreateOptions` with:
+   - Challenge (random bytes)
+   - User information
+   - RP (Relying Party) information
+   - Caches the options for 3 minutes
+6. **Client calls** `CreateWebAuthnCredential(options)`:
+   - On Web: Directly calls `navigator.credentials.create()`
+   - On MAUI/Windows: Opens in-app browser to WebInteropApp
+7. **Browser/Platform prompts** user for biometric (Face ID, fingerprint, etc.)
+8. **Authenticator creates** a new key pair and returns attestation
+9. **Client sends attestation** to server: `CreateWebAuthnCredential(attestationResponse)`
+10. **Server verifies attestation** using FIDO2 library
+11. **Server stores credential** in `WebAuthnCredential` table
+12. **Client stores user ID** locally in storage
+13. **UI updates** to show "Disable passwordless sign-in" button
 
-    // 3. Send credential to server
-    await userController
-        .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
-        .CreateWebAuthnCredential(attestationResponse, CurrentCancellationToken);
+### Authentication Flow (Sign In)
 
-    // 4. Mark as configured locally
-    await webAuthnService.SetWebAuthnConfiguredUserId(User.Id);
-
-    isConfigured = true;
-
-    SnackBarService.Success(Localizer[nameof(AppStrings.EnablePasswordlessSucsessMessage)]);
-}
-```
-
-### 3. Disable Passwordless for a User
-
-```csharp
-private async Task DisablePasswordless()
-{
-    if (User?.UserName is null) return;
-
-    // 1. Get assertion options (to verify it's really the user)
-    var options = await identityController
-        .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
-        .GetWebAuthnAssertionOptions(new() { UserIds = [User.Id] }, CurrentCancellationToken);
-
-    // 2. Verify with biometric
-    JsonElement assertion;
-    try
-    {
-        assertion = await webAuthnService.GetWebAuthnCredential(options);
-    }
-    catch (Exception ex)
-    {
-        ExceptionHandler.Handle(ex, ExceptionDisplayKind.None);
-        return;
-    }
-
-    // 3. Verify the assertion on the server
-    await identityController
-        .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
-        .VerifyWebAuthAssertion(assertion, CurrentCancellationToken);
-
-    // 4. Delete the credential
-    await userController
-        .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
-        .DeleteWebAuthnCredential(assertion, CurrentCancellationToken);
-
-    // 5. Remove from local storage
-    await webAuthnService.RemoveWebAuthnConfiguredUserId(User.Id);
-
-    isConfigured = false;
-
-    SnackBarService.Success(Localizer[nameof(AppStrings.DisablePasswordlessSucsessMessage)]);
-}
-```
+1. **User navigates to Sign-In page**
+2. **Client checks** local storage for configured user IDs
+3. **UI shows** "Sign in with biometrics" button if any users are configured
+4. **User clicks** the biometrics button
+5. **Client requests assertion options** from server: `GetWebAuthnAssertionOptions(userIds)`
+6. **Server generates** `AssertionOptions` with:
+   - Challenge
+   - List of allowed credentials for those user IDs
+   - Caches the options for 3 minutes
+7. **Client calls** `GetWebAuthnCredential(options)`:
+   - On Web: Directly calls `navigator.credentials.get()`
+   - On MAUI/Windows: Opens in-app browser to WebInteropApp
+8. **Browser/Platform prompts** user for biometric
+9. **Authenticator signs the challenge** with private key
+10. **Client sends assertion** to server: `VerifyWebAuthAndSignIn(assertion)`
+11. **Server verifies signature** using stored public key
+12. **Server checks** sign count (to detect cloned authenticators)
+13. **Server generates OTP** and calls regular sign-in flow
+14. **User is signed in** successfully!
 
 ---
 
-## Two-Factor Authentication (2FA) Integration
+## Security Features
 
-WebAuthn can be used in combination with Two-Factor Authentication. The server-side flow supports this:
+### Anti-Cloning Detection
+
+The `SignCount` property prevents cloned authenticators:
 
 ```csharp
-[HttpPost]
-public async Task VerifyWebAuthAndSendTwoFactorToken(
-    AuthenticatorAssertionRawResponse clientResponse, 
-    CancellationToken cancellationToken)
+var verifyResult = await fido2.MakeAssertionAsync(new MakeAssertionParams
 {
-    // Verify the WebAuthn assertion
-    var (verifyResult, credential) = await Verify(clientResponse, cancellationToken);
+    StoredSignatureCounter = credential.SignCount,
+    // ...
+});
 
+// Update sign count after successful authentication
+credential.SignCount = verifyResult.SignCount;
+DbContext.WebAuthnCredential.Update(credential);
+```
+
+If an authenticator is cloned, the sign counter will be out of sync, indicating a security issue.
+
+### Challenge Caching
+
+Challenges are cached temporarily to prevent replay attacks:
+
+```csharp
+await cache.SetAsync(key, Encoding.UTF8.GetBytes(options.ToJson()), 
+    new() { SlidingExpiration = TimeSpan.FromMinutes(3) }, cancellationToken);
+```
+
+After 3 minutes, the cached challenge expires and cannot be used.
+
+### Origin Validation
+
+The FIDO2 library automatically validates that the origin matches the configured origins:
+
+```csharp
+var options = new Fido2Configuration
+{
+    Origins = new HashSet<string>([webAppUrl.AbsoluteUri]),
+};
+```
+
+This prevents phishing attacks where a malicious site tries to use credentials registered for your domain.
+
+### Two-Factor Authentication Support
+
+WebAuthn can work alongside 2FA:
+
+```csharp
+public async Task VerifyWebAuthAndSignIn(VerifyWebAuthnAndSignInRequestDto request, ...)
+{
+    var (verifyResult, credential) = await Verify(request.ClientResponse, cancellationToken);
     var user = await userManager.FindByIdAsync(credential.UserId.ToString());
-
-    // Generate OTP for the user
-    var (otp, _) = await GenerateAutomaticSignInLink(user, null, "WebAuthn");
-
-    // Send 2FA token via email/SMS
-    await SendTwoFactorToken(new() { Otp = otp }, user, cancellationToken);
+    
+    // If 2FA is enabled AND no 2FA code provided
+    if (user.TwoFactorEnabled is false || request.TfaCode is not null)
+    {
+        // Complete sign-in
+    }
+    else
+    {
+        // Prompt for 2FA code
+        await SendTwoFactorToken(new() { Otp = otp }, user, cancellationToken);
+    }
 }
 ```
 
-When signing in with WebAuthn, if the user has 2FA enabled, they'll need to provide the 2FA code after the biometric verification.
+---
+
+## Platform Support Matrix
+
+| Platform | Implementation | Availability Check | Notes |
+|----------|---------------|-------------------|-------|
+| **Blazor WebAssembly** | `Bit.Butil.WebAuthn` → Browser API | `await webAuthn.IsAvailable()` | Direct browser access |
+| **Blazor Server** | `Bit.Butil.WebAuthn` → Browser API | `await webAuthn.IsAvailable()` | Direct browser access |
+| **MAUI Android** | LocalHttpServer + In-App Browser | OS version check | Uses Android biometrics |
+| **MAUI iOS** | LocalHttpServer + In-App Browser | OS version check | Uses Face ID / Touch ID |
+| **MAUI Windows** | LocalHttpServer + In-App Browser | Windows 10 v1903+ (build 18362) | Uses Windows Hello |
+| **Windows Forms Hybrid** | Similar to MAUI | Windows 10 v1903+ (build 18362) | Uses Windows Hello |
+
+**Browser Support** (for Web platforms):
+- ✅ Chrome/Edge 67+
+- ✅ Firefox 60+
+- ✅ Safari 13+
+- ✅ Opera 54+
 
 ---
 
-## Testing WebAuthn
+## Configuration and Customization
 
-### Web Browser
-1. Navigate to the sign-in page
-2. If you have WebAuthn configured, you'll see a "Sign in with Fingerprint/Face ID" button
-3. Click it to sign in without a password
+### Server-Side Customization
 
-### MAUI/Windows App
-1. Run the app
-2. Go to Settings → Account → Passwordless
-3. Click "Enable" - an in-app browser will open
-4. Complete the biometric enrollment
-5. Return to the app - passwordless is now enabled
-6. Sign out and try signing in with biometric authentication
+You can customize FIDO2 configuration in [`Program.Services.cs`](/src/Server/Boilerplate.Server.Api/Program.Services.cs):
+
+```csharp
+services.AddScoped(sp =>
+{
+    var webAppUrl = sp.GetRequiredService<IHttpContextAccessor>()
+        .HttpContext!.Request.GetWebAppUrl();
+
+    var options = new Fido2Configuration
+    {
+        ServerDomain = webAppUrl.Host,
+        ServerName = "Your App Name", // Change this
+        ServerIcon = "https://yourapp.com/icon.png", // Change this
+        TimestampDriftTolerance = 1000,
+        Origins = new HashSet<string>([webAppUrl.AbsoluteUri]),
+    };
+
+    return options;
+});
+```
+
+### Authenticator Selection
+
+You can customize which authenticators are allowed:
+
+```csharp
+var authenticatorSelection = new AuthenticatorSelection
+{
+    // Only allow platform authenticators (Face ID, Windows Hello)
+    AuthenticatorAttachment = AuthenticatorAttachment.Platform, 
+    
+    // Or allow any authenticator (including USB keys)
+    // AuthenticatorAttachment = AuthenticatorAttachment.CrossPlatform,
+    
+    // Require user verification (biometric/PIN)
+    UserVerification = UserVerificationRequirement.Required,
+    
+    // Don't require discoverable credentials (resident keys)
+    ResidentKey = ResidentKeyRequirement.Discouraged,
+};
+```
+
+**Authenticator Types**:
+- **Platform**: Built-in (Face ID, fingerprint sensor, Windows Hello)
+- **CrossPlatform**: External (YubiKey, USB security keys)
+
+### Client-Side Storage Key
+
+If you want to change where user IDs are stored locally:
+
+```csharp
+public abstract partial class WebAuthnServiceBase : IWebAuthnService
+{
+    private const string STORE_KEY = "bit-webauthn"; // Change this if needed
+}
+```
 
 ---
 
-## Additional Resources
+## Testing and Debugging
 
-### Server-Side Library
+### Testing WebAuthn Locally
 
-The project uses **Fido2NetLib** for server-side WebAuthn/FIDO2 implementation:
-- GitHub: https://github.com/passwordless-lib/fido2-net-lib
-- Handles all the complex cryptographic operations
-- Validates attestations and assertions
-- Manages credential storage and verification
+1. **Blazor WebAssembly/Server**: Must use HTTPS or `localhost` (HTTP is allowed for localhost only)
+2. **Blazor Hybrid**: Uses local HTTP server on `localhost` which is allowed
 
-### Client-Side Library
+### Common Issues
 
-For web browsers, the project uses **Bit.Butil.WebAuthn**:
-- Part of the Bit.Butil library
-- Provides C# wrapper around browser's WebAuthn API
-- Documentation: https://blazorui.bitplatform.dev/butil/webauthn
+**Issue**: WebAuthn not available in browser
+- **Cause**: Not using HTTPS (except localhost)
+- **Solution**: Configure HTTPS in development or use `dotnet dev-certs https --trust`
 
-### Specifications
+**Issue**: "NotAllowedError" in browser
+- **Cause**: User cancelled, timed out, or browser doesn't support WebAuthn
+- **Solution**: Handle the exception gracefully (see `PasswordlessTab.razor.cs`)
 
-- **WebAuthn Specification**: https://www.w3.org/TR/webauthn-2/
-- **FIDO2 Overview**: https://fidoalliance.org/fido2/
+**Issue**: Origin mismatch error
+- **Cause**: FIDO2 configuration origins don't match the actual origin
+- **Solution**: Check `Origins` in `Fido2Configuration` matches your URL
+
+**Issue**: WebAuthn not working in MAUI
+- **Cause**: WebView IP-based origin `http://0.0.0.1`
+- **Solution**: Already handled by LocalHttpServer + WebInteropApp approach
+
+### Debugging Tips
+
+1. **Check if WebAuthn is available**:
+```csharp
+var isAvailable = await webAuthnService.IsWebAuthnAvailable();
+```
+
+2. **Check configured users**:
+```csharp
+var userIds = await webAuthnService.GetWebAuthnConfiguredUserIds();
+```
+
+3. **Enable detailed logging**:
+```json
+"Logging": {
+  "LogLevel": {
+    "Fido2NetLib": "Debug"
+  }
+}
+```
+
+4. **Inspect stored credentials in database**:
+```sql
+SELECT Id, UserId, SignCount, RegDate FROM WebAuthnCredential;
+```
+
+---
+
+## Best Practices
+
+### 1. Always Handle Exceptions Gracefully
+
+```csharp
+try
+{
+    attestationResponse = await webAuthnService.CreateWebAuthnCredential(options);
+}
+catch (JSException ex)
+{
+    // User cancelled or timeout - don't show error
+    ExceptionHandler.Handle(ex, ExceptionDisplayKind.None);
+    return;
+}
+```
+
+### 2. Use HTTPS in Production
+
+WebAuthn requires HTTPS except for `localhost`. Always use HTTPS in production.
+
+### 3. Implement Fallback Authentication
+
+Never make WebAuthn the *only* authentication method. Always provide:
+- Password-based sign-in
+- Email OTP sign-in
+- SMS OTP sign-in (if phone number is available)
+
+### 4. Update Sign Counter After Successful Authentication
+
+```csharp
+if (user.TwoFactorEnabled is false || request.TfaCode is not null)
+{
+    credential.SignCount = verifyResult.SignCount;
+    DbContext.WebAuthnCredential.Update(credential);
+    await DbContext.SaveChangesAsync(cancellationToken);
+}
+```
+
+### 5. Support Multiple Credentials Per User
+
+The data model supports multiple credentials per user:
+
+```csharp
+public List<WebAuthnCredential> WebAuthnCredentials { get; set; } = [];
+```
+
+This allows users to register:
+- Fingerprint on their laptop
+- Face ID on their phone
+- YubiKey as a backup
+
+### 6. Clean Up Credentials on User Deletion
+
+The EF Core configuration handles this automatically:
+
+```csharp
+builder.HasOne(t => t.User)
+    .WithMany(u => u.WebAuthnCredentials)
+    .HasForeignKey(t => t.UserId)
+    .OnDelete(DeleteBehavior.Cascade);
+```
+
+### 7. Cache Options Temporarily
+
+Options should expire quickly to prevent replay attacks:
+
+```csharp
+new() { SlidingExpiration = TimeSpan.FromMinutes(3) }
+```
+
+---
+
+## Advanced Scenarios
+
+### Supporting Hardware Security Keys (YubiKey)
+
+Change the `AuthenticatorAttachment` to allow cross-platform authenticators:
+
+```csharp
+var authenticatorSelection = new AuthenticatorSelection
+{
+    AuthenticatorAttachment = null, // Allow any authenticator
+    UserVerification = UserVerificationRequirement.Preferred,
+};
+```
+
+### User Verification Levels
+
+```csharp
+// Required: User MUST provide biometric/PIN
+UserVerification = UserVerificationRequirement.Required
+
+// Preferred: Ask for biometric/PIN if available
+UserVerification = UserVerificationRequirement.Preferred
+
+// Discouraged: Don't ask for biometric/PIN
+UserVerification = UserVerificationRequirement.Discouraged
+```
+
+### Resident Keys (Discoverable Credentials)
+
+Resident keys allow passwordless login without entering a username:
+
+```csharp
+var authenticatorSelection = new AuthenticatorSelection
+{
+    ResidentKey = ResidentKeyRequirement.Required,
+    RequireResidentKey = true,
+};
+```
+
+**Note**: Not all authenticators support resident keys.
+
+---
+
+## Resources and Further Learning
+
+### Official Documentation
+- **W3C WebAuthn Spec**: https://www.w3.org/TR/webauthn-2/
+- **FIDO Alliance**: https://fidoalliance.org/
+- **MDN WebAuthn Guide**: https://developer.mozilla.org/en-US/docs/Web/API/Web_Authentication_API
+
+### Libraries Used
+- **Fido2NetLib**: https://github.com/passwordless-lib/fido2-net-lib
+- **Bit.Butil**: Part of bitplatform (query DeepWiki for details)
+
+### Testing Tools
+- **WebAuthn.io**: https://webauthn.io/ (Test WebAuthn in your browser)
+- **Chrome DevTools**: Supports virtual authenticators for testing
 
 ---
 
 ## Summary
 
-In this stage, you learned:
+In this stage, you learned about:
 
-1. ✅ **What WebAuthn is** and why it's more secure than traditional authentication
-2. ✅ **How the project implements WebAuthn** across all platforms (Web, Windows, MAUI)
-3. ✅ **The architecture for Blazor Hybrid** using Local HTTP Server and Web Interop App
-4. ✅ **Key components** on both server and client side
-5. ✅ **Complete flows** for registration, authentication, and credential management
-6. ✅ **Security considerations** including origin validation, challenge caching, and sign count tracking
-7. ✅ **Integration with 2FA** for additional security
-8. ✅ **Testing and troubleshooting** common issues
+✅ **WebAuthn Architecture**: Understanding the three-layer system (server, client, bridge)  
+✅ **Server Implementation**: Entity models, FIDO2 configuration, controller endpoints  
+✅ **Client Implementation**: Platform-specific services (Web, MAUI, Windows)  
+✅ **Complete Flows**: Registration and authentication workflows step-by-step  
+✅ **Security Features**: Anti-cloning, challenge caching, origin validation  
+✅ **Platform Support**: How different platforms handle WebAuthn  
+✅ **UI Components**: Enabling/disabling passwordless, sign-in with biometrics  
+✅ **Best Practices**: Error handling, HTTPS, fallback authentication  
+✅ **Advanced Scenarios**: Hardware keys, user verification levels, resident keys  
 
-WebAuthn is an advanced feature that provides a superior user experience while maintaining the highest security standards. The implementation in this project is production-ready and demonstrates best practices for cross-platform passwordless authentication.
+**Key Takeaway**: WebAuthn provides a secure, user-friendly alternative to passwords by leveraging biometric authentication. The implementation in this project handles all the complexity of FIDO2/WebAuthn across multiple platforms (Web, MAUI, Windows), making it easy to add passwordless authentication to your application.
 
 ---
