@@ -1,0 +1,903 @@
+# Stage 7: ASP.NET Core Identity - Authentication & Authorization
+
+Welcome to **Stage 7** of the Boilerplate project tutorial! In this stage, you will explore the comprehensive **authentication and authorization system** built into the project. This production-ready identity system includes JWT-based authentication, role and permission management, session handling, two-factor authentication, and much more.
+
+---
+
+## Table of Contents
+
+1. [Authentication Architecture](#authentication-architecture)
+   - [JWT Token-Based Authentication](#jwt-token-based-authentication)
+   - [Session Management](#session-management)
+   - [Single Sign-On (SSO) Support](#single-sign-on-sso-support)
+2. [Authorization and Access Control](#authorization-and-access-control)
+   - [Role-Based and Permission-Based Authorization](#role-based-and-permission-based-authorization)
+   - [Policy-Based Authorization](#policy-based-authorization)
+   - [Custom Claim Types](#custom-claim-types)
+3. [Identity Configuration](#identity-configuration)
+4. [Security Best Practices](#security-best-practices)
+5. [One-Time Token System](#one-time-token-system)
+6. [Code Examples from the Project](#code-examples-from-the-project)
+7. [Hands-On Exploration](#hands-on-exploration)
+8. [Video Tutorial](#video-tutorial)
+9. [Summary](#summary)
+
+---
+
+## Authentication Architecture
+
+### JWT Token-Based Authentication
+
+The project uses **JWT (JSON Web Tokens)** for stateless authentication. Here's how it works:
+
+#### Key Characteristics
+
+- **Access Tokens**: Short-lived tokens (default: **5 minutes**) included in every API request via the `Authorization: Bearer <token>` header
+- **Refresh Tokens**: Long-lived tokens (default: **14 days**) stored securely on the client to obtain new access tokens without requiring the user to sign in again
+- **Token Generation**: Uses ASP.NET Core Identity's built-in bearer token authentication with the **HS512 algorithm**
+- **Security**: Tokens are signed using a secret key configured in [`appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json)
+
+#### Why Two Tokens?
+
+- **Access tokens** are short-lived to minimize the risk if compromised
+- **Refresh tokens** allow seamless user experience without frequent re-authentication
+- When an access token expires, the client uses the refresh token to obtain a new access token
+
+#### Token Configuration
+
+You can configure token expiration in [`appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json):
+
+```json
+"Identity": {
+    "BearerTokenExpiration": "0.00:05:00",  // Format: D.HH:mm:ss (5 minutes)
+    "RefreshTokenExpiration": "14.00:00:00", // 14 days
+    "JwtIssuerSigningKeySecret": "VeryLongJWTIssuerSiginingKeySecretThatIsMoreThan64BytesToEnsureCompatibilityWithHS512Algorithm"
+}
+```
+
+---
+
+### Session Management
+
+Unlike traditional session cookies, this project implements **server-side session tracking** in the database while still using JWT tokens.
+
+#### The UserSession Entity
+
+User sessions are persisted in the database through the [`UserSession`](/src/Server/Boilerplate.Server.Api/Models/Identity/UserSession.cs) entity:
+
+```csharp
+public partial class UserSession
+{
+    public Guid Id { get; set; }
+    public string? IP { get; set; }
+    public string? Address { get; set; }
+    public bool Privileged { get; set; }
+    public long StartedOn { get; set; }       // Unix timestamp
+    public long? RenewedOn { get; set; }      // Unix timestamp
+    public Guid UserId { get; set; }
+    public string? SignalRConnectionId { get; set; }
+    public string? DeviceInfo { get; set; }
+    public AppPlatformType? PlatformType { get; set; }
+    public string? CultureName { get; set; }
+    public string? AppVersion { get; set; }
+    // ... additional properties
+}
+```
+
+#### Key Features
+
+- **One Session Per Device**: Each active device/browser has its own `UserSession` record
+- **Detailed Tracking**: Sessions track IP address, device info, platform type, app version, and culture
+- **Real-Time Communication**: Sessions include SignalR connection IDs for push notifications
+- **User Control**: Users can view and manage all their active sessions from the Settings page
+
+#### Session ID in Tokens
+
+The session ID is embedded in both access and refresh tokens as a claim (`AppClaimTypes.SESSION_ID`). This enables:
+
+- **Session Revocation**: When a user revokes a session, its associated refresh token becomes invalid
+- **Forced Re-authentication**: Deleted sessions require users to sign in again on that device
+- **Session-Specific Policies**: Different authorization policies can be applied per session
+
+#### Session Creation Example
+
+From [`IdentityController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.cs):
+
+```csharp
+private async Task<UserSession> CreateUserSession(Guid userId, CancellationToken cancellationToken)
+{
+    var userSession = new UserSession
+    {
+        Id = Guid.NewGuid(),
+        UserId = userId,
+        StartedOn = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+        IP = HttpContext.Connection.RemoteIpAddress?.ToString(),
+        // Relying on Cloudflare CDN to retrieve location
+        Address = $"{Request.Headers["cf-ipcountry"]}, {Request.Headers["cf-ipcity"]}"
+    };
+
+    await UpdateUserSessionPrivilegeStatus(userSession, cancellationToken);
+    return userSession;
+}
+```
+
+---
+
+### Single Sign-On (SSO) Support
+
+The project supports **external authentication providers** for Single Sign-On (SSO).
+
+#### Supported Providers
+
+You can easily configure SSO with:
+
+- **Google** - OAuth 2.0 authentication
+- **GitHub** - OAuth authentication for developers
+- **Microsoft/Azure AD** - Enterprise identity integration (Azure AD B2C/Entra)
+- **Twitter** - Social authentication
+- **Apple** - Sign in with Apple
+- **Facebook** - Social media authentication
+- **Duende Identity Server** - OpenID Connect provider (demo included)
+- And many other OAuth/OpenID Connect providers
+
+#### Demo Provider
+
+By default, the project is configured to connect to a **demo Duende Identity Server 8 instance** to demonstrate how external OpenID Connect providers work. The implementation is in [`IdentityController.SocialSignIn.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.SocialSignIn.cs).
+
+#### Configuration
+
+External provider settings are configured in [`appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json) under the `Authentication` section:
+
+```json
+"Authentication": {
+    "Google": {
+        "ClientId": null,
+        "ClientSecret": null
+    },
+    "GitHub": {
+        "ClientId": null,
+        "ClientSecret": null
+    },
+    "AzureAD": {
+        "Instance": "https://login.microsoftonline.com/",
+        "TenantId": null,
+        "ClientId": null,
+        "ClientSecret": null,
+        "CallbackPath": "/signin-oidc"
+    }
+    // ... other providers
+}
+```
+
+#### Social Sign-In Flow
+
+From [`IdentityController.SocialSignIn.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.SocialSignIn.cs):
+
+```csharp
+[HttpGet]
+public async Task<ActionResult> SocialSignIn(string provider, string? returnUrl = null, 
+    int? localHttpPort = null, [FromQuery] string? origin = null)
+{
+    var redirectUrl = Url.Action(nameof(SocialSignInCallback), "Identity", 
+        new { returnUrl, localHttpPort, origin });
+    var properties = signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+    return new ChallengeResult(provider, properties);
+}
+```
+
+When a social sign-in is successful, the system:
+1. Retrieves user information from the external provider
+2. Either finds an existing user or creates a new one
+3. Automatically confirms email/phone if the provider has verified them
+4. Generates a magic link for automatic sign-in (supports 2FA if enabled)
+
+---
+
+## Authorization and Access Control
+
+### Role-Based and Permission-Based Authorization
+
+The project implements a **hybrid authorization model** combining roles and permissions (claims).
+
+#### Users and Roles
+
+- Based on **ASP.NET Core Identity's** built-in `User` and `Role` entities
+- Users can be assigned to **multiple roles**
+- Roles are managed through the **Roles page** in the Admin Panel
+- Users are managed through the **Users page** in the Admin Panel
+
+#### Permissions (Claims)
+
+Fine-grained permission system using **claims**:
+
+- **User Claims**: Permissions assigned directly to individual users
+- **Role Claims**: Permissions assigned to roles (inherited by all users in that role)
+- Claims are added to the **JWT token payload** for efficient authorization checks (no database lookup needed)
+
+#### The User Entity
+
+From [`User.cs`](/src/Server/Boilerplate.Server.Api/Models/Identity/User.cs):
+
+```csharp
+public partial class User : IdentityUser<Guid>
+{
+    [PersonalData]
+    public string? FullName { get; set; }
+    
+    [PersonalData]
+    public Gender? Gender { get; set; }
+    
+    [PersonalData]
+    public DateTimeOffset? BirthDate { get; set; }
+    
+    // Token request timestamps for one-time token system
+    public DateTimeOffset? EmailTokenRequestedOn { get; set; }
+    public DateTimeOffset? PhoneNumberTokenRequestedOn { get; set; }
+    public DateTimeOffset? ResetPasswordTokenRequestedOn { get; set; }
+    public DateTimeOffset? TwoFactorTokenRequestedOn { get; set; }
+    public DateTimeOffset? OtpRequestedOn { get; set; }
+    public DateTimeOffset? ElevatedAccessTokenRequestedOn { get; set; }
+    
+    // Navigation properties
+    public List<UserSession> Sessions { get; set; } = [];
+    public List<UserRole> Roles { get; set; } = [];
+    public List<UserClaim> Claims { get; set; } = [];
+    public List<UserLogin> Logins { get; set; } = [];
+    // ... additional properties
+}
+```
+
+---
+
+### Policy-Based Authorization
+
+The project defines **authorization policies** that can be used throughout the application.
+
+#### Policy Configuration
+
+Policies are defined in [`ISharedServiceCollectionExtensions.cs`](/src/Shared/Extensions/ISharedServiceCollectionExtensions.cs):
+
+```csharp
+public static void ConfigureAuthorizationCore(this IServiceCollection services)
+{
+    services.AddAuthorizationCore(options =>
+    {
+        // Built-in policies
+        options.AddPolicy(AuthPolicies.TFA_ENABLED, 
+            x => x.RequireClaim("amr", "mfa"));
+        options.AddPolicy(AuthPolicies.PRIVILEGED_ACCESS, 
+            x => x.RequireClaim(AppClaimTypes.PRIVILEGED_SESSION, "true"));
+        options.AddPolicy(AuthPolicies.ELEVATED_ACCESS, 
+            x => x.RequireClaim(AppClaimTypes.ELEVATED_SESSION, "true"));
+
+        // Feature-based policies (automatically generated)
+        foreach (var feat in AppFeatures.GetAll())
+        {
+            options.AddPolicy(feat.Value, policy => 
+                policy.AddRequirements(new AppFeatureRequirement(
+                    FeatureName: $"{feat.Group.Name}.{feat.Name}", 
+                    FeatureValue: feat.Value)));
+        }
+    });
+}
+```
+
+#### Built-in Authorization Policies
+
+Defined in [`AuthPolicies.cs`](/src/Shared/Services/AuthPolicies.cs):
+
+**1. TFA_ENABLED**
+```csharp
+public const string TFA_ENABLED = nameof(TFA_ENABLED);
+```
+- Requires the user to have **two-factor authentication enabled**
+- Useful for pages that require enhanced security
+
+**2. PRIVILEGED_ACCESS**
+```csharp
+/// <summary>
+/// By default, each user is limited to 3 active sessions.
+/// This policy can be disabled or configured to adjust the session limit dynamically.
+/// Currently, this policy applies only to high-value pages like Dashboard, Products, Categories.
+/// Important: Do not apply this policy to the settings page, as users need access to manage their sessions.
+/// </summary>
+public const string PRIVILEGED_ACCESS = nameof(PRIVILEGED_ACCESS);
+```
+- **Limits concurrent sessions** per user (default: **3 sessions**)
+- Prevents resource abuse by limiting active sessions
+- Applied to high-value pages like Dashboard, Products, Categories
+- Users can manage sessions from the Settings page
+
+**3. ELEVATED_ACCESS**
+```csharp
+/// <summary>
+/// Enables the user to execute potentially harmful operations, like account removal.
+/// This limited-time policy is activated upon successful verification via a secure 6-digit code
+/// or during the initial minutes of a sign-in session of users with 2FA enabled.
+/// </summary>
+public const string ELEVATED_ACCESS = nameof(ELEVATED_ACCESS);
+```
+- Requires **recent re-authentication** for sensitive operations
+- Used for dangerous actions like **account deletion**
+- Activated by entering a 6-digit code or during initial sign-in with 2FA enabled
+- **Time-limited** elevation (expires after a short period)
+
+#### Privileged Session Logic
+
+From [`IdentityController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.cs):
+
+```csharp
+private async Task UpdateUserSessionPrivilegeStatus(UserSession userSession, 
+    CancellationToken cancellationToken)
+{
+    var userId = userSession.UserId;
+
+    // Check if user has custom max session limit claim
+    var maxPrivilegedSessionsClaimValues = await userClaimsService
+        .GetClaimValues<int?>(userId, AppClaimTypes.MAX_PRIVILEGED_SESSIONS, cancellationToken);
+
+    // -1 means unlimited sessions
+    var hasUnlimitedPrivilegedSessions = maxPrivilegedSessionsClaimValues.Any(v => v == -1);
+
+    var maxPrivilegedSessionsCount = hasUnlimitedPrivilegedSessions 
+        ? -1 
+        : maxPrivilegedSessionsClaimValues.Max() ?? AppSettings.Identity.MaxPrivilegedSessionsCount;
+
+    // Determine if this session is privileged
+    var isPrivileged = hasUnlimitedPrivilegedSessions ||
+        userSession.Privileged is true || // Once privileged, stays privileged
+        await DbContext.UserSessions.CountAsync(
+            us => us.UserId == userSession.UserId && us.Privileged == true, 
+            cancellationToken) < maxPrivilegedSessionsCount;
+
+    // Add claims to the token
+    userClaimsPrincipalFactory.SessionClaims.Add(
+        new(AppClaimTypes.PRIVILEGED_SESSION, isPrivileged ? "true" : "false"));
+    userClaimsPrincipalFactory.SessionClaims.Add(
+        new(AppClaimTypes.MAX_PRIVILEGED_SESSIONS, 
+            maxPrivilegedSessionsCount.ToString(CultureInfo.InvariantCulture)));
+
+    userSession.Privileged = isPrivileged;
+}
+```
+
+#### Feature-Based Policies
+
+Defined in [`AppFeatures.cs`](/src/Shared/Services/AppFeatures.cs):
+
+```csharp
+public class AppFeatures
+{
+    public class Management
+    {
+        public const string ManageAiPrompt = "1.0";
+        public const string ManageRoles = "1.1";
+        public const string ManageUsers = "1.2";
+    }
+
+    public class System
+    {
+        public const string ManageLogs = "2.0";
+        public const string ManageJobs = "2.1";
+    }
+
+    public class AdminPanel
+    {
+        public const string Dashboard = "3.0";
+        public const string ManageProductCatalog = "3.1";
+    }
+
+    public class Todo
+    {
+        public const string ManageTodo = "4.0";
+    }
+}
+```
+
+The project **automatically creates policies** for all features defined in `AppFeatures`. Each feature value (e.g., `"1.0"`) becomes a policy name.
+
+#### Policy Usage Examples
+
+From actual pages in the project:
+
+**TodoPage.razor**:
+```csharp
+@attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+@attribute [Authorize(Policy = AppFeatures.Todo.ManageTodo)]
+```
+
+**UsersPage.razor**:
+```csharp
+@attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+@attribute [Authorize(Policy = AppFeatures.Management.ManageUsers)]
+```
+
+**DashboardPage.razor**:
+```csharp
+@attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+@attribute [Authorize(Policy = AppFeatures.AdminPanel.Dashboard)]
+```
+
+**Important**: When multiple `[Authorize]` attributes are used, **ALL policies must be satisfied** for the user to access the page.
+
+---
+
+### Custom Claim Types
+
+#### System Claim Types
+
+Defined in [`AppClaimTypes.cs`](/src/Shared/Services/AppClaimTypes.cs):
+
+```csharp
+/// <summary>
+/// These claims may not be added to RoleClaims/UserClaims tables.
+/// The system itself will assign these claims to the user based on AuthPolicies.
+/// </summary>
+public class AppClaimTypes
+{
+    public const string SESSION_ID = "s-id";
+    public const string PRIVILEGED_SESSION = "p-s";
+    public const string MAX_PRIVILEGED_SESSIONS = "mx-p-s";
+    public const string ELEVATED_SESSION = "e-s";
+    public const string FEATURES = "feat";
+}
+```
+
+**Important**: These claims are **automatically added by the system** and should **not** be manually added to the database:
+
+- **`SESSION_ID`**: Unique identifier for the current user session
+- **`PRIVILEGED_SESSION`**: Indicates if this session counts toward the privileged session limit
+- **`MAX_PRIVILEGED_SESSIONS`**: Maximum allowed privileged sessions for this user
+- **`ELEVATED_SESSION`**: Indicates the user has recently authenticated for sensitive operations
+- **`FEATURES`**: Contains the list of features/permissions granted to the user
+
+---
+
+## Identity Configuration
+
+### IdentitySettings in appsettings.json
+
+**Location**: [`/src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json)
+
+**Configuration Options**:
+
+```json
+"Identity": {
+    "JwtIssuerSigningKeySecret": "VeryLongJWTIssuerSiginingKeySecretThatIsMoreThan64BytesToEnsureCompatibilityWithHS512Algorithm",
+    "Issuer": "Boilerplate",
+    "Audience": "Boilerplate",
+    "BearerTokenExpiration": "0.00:05:00",
+    "RefreshTokenExpiration": "14.00:00:00",
+    "EmailTokenLifetime": "0.00:02:00",
+    "PhoneNumberTokenLifetime": "0.00:02:00",
+    "ResetPasswordTokenLifetime": "0.00:02:00",
+    "TwoFactorTokenLifetime": "0.00:02:00",
+    "OtpTokenLifetime": "0.00:02:00",
+    "MaxPrivilegedSessionsCount": 3,
+    "Password": {
+        "RequireDigit": "false",
+        "RequiredLength": "6",
+        "RequireNonAlphanumeric": "false",
+        "RequireUppercase": "false",
+        "RequireLowercase": "false"
+    },
+    "SignIn": {
+        "RequireConfirmedAccount": true
+    }
+}
+```
+
+#### Key Settings Explained
+
+- **BearerTokenExpiration**: How long access tokens remain valid (default: 5 minutes)
+- **RefreshTokenExpiration**: How long refresh tokens remain valid (default: 14 days)
+- **EmailTokenLifetime**: Email confirmation token lifetime (default: 2 minutes)
+- **TwoFactorTokenLifetime**: 2FA code validity period (default: 2 minutes)
+- **MaxPrivilegedSessionsCount**: Default limit for privileged sessions per user
+- **Password Requirements**: Configures password complexity rules
+- **RequireConfirmedAccount**: Whether email/phone confirmation is required for sign-in
+
+---
+
+## Security Best Practices
+
+The identity system follows **industry-standard security best practices**:
+
+### 1. Password Hashing
+- Uses **PBKDF2 with HMAC-SHA512**
+- **100,000 iterations** for strong protection against brute-force attacks
+
+### 2. Concurrency Stamps
+- **Prevents concurrent modification conflicts**
+- Each entity has a `ConcurrencyStamp` that changes on every update
+
+### 3. Security Stamps
+- **Invalidates all tokens** when changed
+- Updated automatically after 2FA configuration, password changes, etc.
+
+### 4. Account Lockout
+- **Protects against brute-force attacks**
+- Exponential backoff with increasing lockout duration
+
+### 5. One-Time Tokens
+- **All tokens can only be used once**
+- Tokens expire after their configured lifetime
+- See detailed explanation in the next section
+
+### 6. Token Expiration
+- **Short-lived access tokens** (5 minutes) minimize the window for token theft
+- Refresh tokens allow seamless user experience without compromising security
+
+### 7. Google reCAPTCHA
+- **Protects sign-up endpoints** from bot attacks
+- Configurable in appsettings.json
+
+---
+
+## One-Time Token System
+
+The project implements a **secure one-time token system** with automatic expiration and invalidation.
+
+### How It Works
+
+#### Token Request Tracking
+
+Each token type has a corresponding `RequestedOn` timestamp in the [`User`](/src/Server/Boilerplate.Server.Api/Models/Identity/User.cs) entity:
+
+```csharp
+public partial class User : IdentityUser<Guid>
+{
+    /// <summary>
+    /// The date and time of the last token request. 
+    /// Ensures only the latest generated token is valid and can only be used once.
+    /// </summary>
+    public DateTimeOffset? EmailTokenRequestedOn { get; set; }
+    public DateTimeOffset? PhoneNumberTokenRequestedOn { get; set; }
+    public DateTimeOffset? ResetPasswordTokenRequestedOn { get; set; }
+    public DateTimeOffset? TwoFactorTokenRequestedOn { get; set; }
+    public DateTimeOffset? OtpRequestedOn { get; set; }
+    public DateTimeOffset? ElevatedAccessTokenRequestedOn { get; set; }
+}
+```
+
+#### Token Generation
+
+When a token is generated, the `RequestedOn` timestamp is set to the **current time** and **embedded in the token purpose string**.
+
+From [`IdentityController.EmailConfirmation.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.EmailConfirmation.cs):
+
+```csharp
+private async Task SendConfirmEmailToken(User user, string? returnUrl, 
+    CancellationToken cancellationToken)
+{
+    // Set the request timestamp
+    user.EmailTokenRequestedOn = DateTimeOffset.Now;
+    var result = await userManager.UpdateAsync(user);
+
+    if (result.Succeeded is false)
+        throw new ResourceValidationException(result.Errors
+            .Select(e => new LocalizedString(e.Code, e.Description)).ToArray())
+            .WithData("UserId", user.Id);
+
+    var email = user.Email!;
+    
+    // Generate token with embedded timestamp
+    var token = await userManager.GenerateUserTokenAsync(
+        user, 
+        TokenOptions.DefaultPhoneProvider, 
+        FormattableString.Invariant($"VerifyEmail:{email},{user.EmailTokenRequestedOn?.ToUniversalTime()}")
+    );
+    
+    var link = new Uri(HttpContext.Request.GetWebAppUrl(), 
+        $"{PageUrls.Confirm}?email={Uri.EscapeDataString(email)}&emailToken={Uri.EscapeDataString(token)}&culture={CultureInfo.CurrentUICulture.Name}");
+
+    await emailService.SendEmailToken(user, email, token, link, cancellationToken);
+}
+```
+
+#### Token Validation
+
+When validating a token, the system checks:
+
+1. **Expiration**: Has the token lifetime elapsed since `RequestedOn`?
+2. **One-Time Use**: Does the token match the **latest** `RequestedOn` timestamp?
+3. **Invalidation**: Is the `RequestedOn` timestamp set to `null` (invalidated)?
+
+From [`IdentityController.EmailConfirmation.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.EmailConfirmation.cs):
+
+```csharp
+[HttpPost, Produces<TokenResponseDto>()]
+public async Task ConfirmEmail(ConfirmEmailRequestDto request, CancellationToken cancellationToken)
+{
+    var user = await userManager.FindByEmailAsync(request.Email!)
+        ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound)])
+            .WithData("Email", request.Email);
+
+    // Check if token has expired
+    var expired = (DateTimeOffset.Now - user.EmailTokenRequestedOn) 
+        > AppSettings.Identity.EmailTokenLifetime;
+
+    if (expired)
+        throw new BadRequestException(nameof(AppStrings.ExpiredToken))
+            .WithData("UserId", user.Id);
+
+    // Verify the token with embedded timestamp
+    var tokenIsValid = await userManager.VerifyUserTokenAsync(
+        user, 
+        TokenOptions.DefaultPhoneProvider, 
+        FormattableString.Invariant($"VerifyEmail:{request.Email},{user.EmailTokenRequestedOn?.ToUniversalTime()}"), 
+        request.Token!
+    );
+
+    if (tokenIsValid is false)
+    {
+        await userManager.AccessFailedAsync(user);
+        throw new BadRequestException(nameof(AppStrings.InvalidToken))
+            .WithData("UserId", user.Id);
+    }
+
+    // Confirm the email
+    await userEmailStore.SetEmailConfirmedAsync(user, true, cancellationToken);
+    await userManager.UpdateAsync(user);
+
+    // Invalidate the token by setting RequestedOn to null
+    user.EmailTokenRequestedOn = null;
+    var updateResult = await userManager.UpdateAsync(user);
+    if (updateResult.Succeeded is false)
+        throw new ResourceValidationException(updateResult.Errors
+            .Select(e => new LocalizedString(e.Code, e.Description)).ToArray())
+            .WithData("UserId", user.Id);
+
+    // Auto sign-in after confirmation
+    var token = await userManager.GenerateUserTokenAsync(user, 
+        TokenOptions.DefaultPhoneProvider, 
+        FormattableString.Invariant($"Otp_Email,{user.OtpRequestedOn?.ToUniversalTime()}"));
+
+    await SignIn(new() { Email = request.Email, Otp = token }, cancellationToken);
+}
+```
+
+### Key Benefits
+
+✅ Only the **most recently requested token** is valid  
+✅ Tokens are **automatically invalidated** after successful use  
+✅ Tokens **expire** after their configured lifetime  
+✅ If a user requests a new token, **all previous tokens become invalid**  
+
+### Example Scenario
+
+Let's walk through a password reset scenario:
+
+1. **10:00 AM**: User requests a password reset
+   - Token A is generated
+   - `ResetPasswordTokenRequestedOn = 10:00`
+
+2. **10:05 AM**: User requests another password reset (maybe they didn't receive the email)
+   - Token B is generated
+   - `ResetPasswordTokenRequestedOn = 10:05`
+
+3. **Token A is now invalid**
+   - Token A was generated at 10:00
+   - But the current `ResetPasswordTokenRequestedOn` is 10:05
+   - Token A will fail validation
+
+4. **User uses Token B successfully**
+   - Token B is validated
+   - Password is reset
+   - `ResetPasswordTokenRequestedOn` is set to `null`
+
+5. **Token B can never be used again**
+   - Even if someone intercepts Token B, it's already invalidated
+
+---
+
+## Code Examples from the Project
+
+### Sign Up with Validation
+
+From [`IdentityController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.cs):
+
+```csharp
+[HttpPost]
+public async Task SignUp(SignUpRequestDto request, CancellationToken cancellationToken)
+{
+    request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
+    
+    // Validate Google reCAPTCHA
+    if (await googleRecaptchaService.Verify(request.GoogleRecaptchaResponse, cancellationToken) is false)
+        throw new BadRequestException(Localizer[nameof(AppStrings.InvalidGoogleRecaptchaResponse)]);
+
+    // Check for existing user
+    var existingUser = await userManager.FindUserAsync(
+        new() { Email = request.Email, PhoneNumber = request.PhoneNumber });
+        
+    if (existingUser is not null)
+    {
+        if (await userConfirmation.IsConfirmedAsync(userManager, existingUser) is false)
+        {
+            await SendConfirmationToken(existingUser, request.ReturnUrl, cancellationToken);
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)])
+                .WithData("UserId", existingUser.Id);
+        }
+        else
+        {
+            throw new BadRequestException(Localizer[nameof(AppStrings.DuplicateEmailOrPhoneNumber)])
+                .WithData("UserId", existingUser.Id);
+        }
+    }
+
+    // Create new user
+    var userToAdd = new User { LockoutEnabled = true };
+    await userStore.SetUserNameAsync(userToAdd, request.UserName!, cancellationToken);
+    
+    if (string.IsNullOrEmpty(request.Email) is false)
+    {
+        await userEmailStore.SetEmailAsync(userToAdd, request.Email!, cancellationToken);
+    }
+    
+    if (string.IsNullOrEmpty(request.PhoneNumber) is false)
+    {
+        await userPhoneNumberStore.SetPhoneNumberAsync(userToAdd, request.PhoneNumber!, cancellationToken);
+    }
+
+    await userManager.CreateUserWithDemoRole(userToAdd, request.Password!);
+    await SendConfirmationToken(userToAdd, request.ReturnUrl, cancellationToken);
+}
+```
+
+### Password Reset Flow
+
+From [`IdentityController.ResetPassword.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.ResetPassword.cs):
+
+```csharp
+[HttpPost]
+public async Task ResetPassword(ResetPasswordRequestDto request, CancellationToken cancellationToken)
+{
+    request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
+    var user = await userManager.FindUserAsync(request) 
+        ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)])
+            .WithData("Identifier", request);
+
+    // Check if token has expired
+    var expired = (DateTimeOffset.Now - user.ResetPasswordTokenRequestedOn) 
+        > AppSettings.Identity.ResetPasswordTokenLifetime;
+
+    if (expired)
+        throw new BadRequestException(nameof(AppStrings.ExpiredToken))
+            .WithData("UserId", user.Id);
+
+    // Check if user is locked out
+    if (await userManager.IsLockedOutAsync(user))
+    {
+        var tryAgainIn = (user.LockoutEnd! - DateTimeOffset.UtcNow).Value;
+        throw new BadRequestException(
+            Localizer[nameof(AppStrings.UserLockedOut), 
+            tryAgainIn.Humanize(culture: CultureInfo.CurrentUICulture)])
+            .WithData("UserId", user.Id)
+            .WithExtensionData("TryAgainIn", tryAgainIn);
+    }
+
+    // Verify the token
+    bool tokenIsValid = await userManager.VerifyUserTokenAsync(
+        user!, 
+        TokenOptions.DefaultPhoneProvider, 
+        FormattableString.Invariant($"ResetPassword,{user.ResetPasswordTokenRequestedOn?.ToUniversalTime()}"), 
+        request.Token!);
+
+    if (tokenIsValid is false)
+    {
+        await userManager.AccessFailedAsync(user);
+        throw new BadRequestException(nameof(AppStrings.InvalidToken))
+            .WithData("UserId", user.Id);
+    }
+
+    // Reset the password
+    var result = await userManager.ResetPasswordAsync(
+        user!, 
+        await userManager.GeneratePasswordResetTokenAsync(user!), 
+        request.Password!);
+
+    if (result.Succeeded is false)
+        throw new ResourceValidationException(result.Errors
+            .Select(e => new LocalizedString(e.Code, e.Description)).ToArray())
+            .WithData("UserId", user.Id);
+
+    // Reset access failed count and invalidate the token
+    await ((IUserLockoutStore<User>)userStore).ResetAccessFailedCountAsync(user, cancellationToken);
+    user.ResetPasswordTokenRequestedOn = null; // Invalidates the token
+    var updateResult = await userManager.UpdateAsync(user);
+    if (updateResult.Succeeded is false)
+        throw new ResourceValidationException(updateResult.Errors
+            .Select(e => new LocalizedString(e.Code, e.Description)).ToArray())
+            .WithData("UserId", user.Id);
+}
+```
+
+---
+
+## Hands-On Exploration
+
+**Run the Project**: To fully understand the identity features, run the project and test the following:
+
+### 1. Sign Up
+- Create a new account with email or phone number
+- Test the email/phone confirmation flow
+- Try signing up with an existing email/phone (should fail)
+
+### 2. Sign In
+- Test **password-based authentication**
+- Test **OTP authentication** (magic link)
+- Test **account lockout** after multiple failed attempts
+
+### 3. Two-Factor Authentication (2FA)
+- Enable 2FA in Settings using an authenticator app
+- Test the **two-step sign-in** process
+- Try entering incorrect 2FA codes
+- Test **recovery codes**
+
+### 4. Session Management
+- Sign in from multiple devices/browsers
+- View all active sessions in the **Settings page**
+- **Revoke specific sessions** and observe forced re-authentication
+
+### 5. Password Reset
+- Test the **forgot password** flow
+- Request a reset token via email/phone
+- Try using an expired token
+- Try using an already-used token
+
+### 6. External Providers
+- Try **social sign-in** with the configured demo provider
+- Observe how email confirmation works with external providers
+
+### 7. Permissions and Policies
+- Create a user with different roles
+- Test access to pages with **PRIVILEGED_ACCESS** policy
+- Test feature-based policies (e.g., `ManageUsers`, `Dashboard`)
+
+### 8. Privileged Session Limiting
+- Sign in from more than 3 devices
+- Observe which sessions become "privileged"
+- Test accessing pages with `PRIVILEGED_ACCESS` policy from non-privileged sessions
+
+---
+
+## Video Tutorial
+
+**Highly Recommended**: To see all these features in action and understand the complete identity system, watch this **15-minute video tutorial**:
+
+### 📺 [Watch: Comprehensive Identity System Walkthrough](https://youtu.be/0ySKLPJm-fw)
+
+**This video demonstrates**:
+- User registration and email/phone confirmation
+- Password and OTP-based authentication
+- Two-factor authentication setup and usage
+- Session management and revocation
+- Password reset flow
+- Role and permission management
+- External provider integration
+- Privileged session limiting
+- Elevated access for sensitive operations
+
+---
+
+## Summary
+
+The Boilerplate project provides a **production-ready authentication and authorization system** with:
+
+✅ **JWT-based authentication** with access and refresh tokens  
+✅ **Server-side session management** with device tracking  
+✅ **Single Sign-On (SSO)** support for multiple providers  
+✅ **Role-based and permission-based authorization**  
+✅ **Policy-based authorization** with custom policies  
+✅ **Feature flags** for fine-grained access control  
+✅ **Two-factor authentication** with multiple methods  
+✅ **Account lockout** protection against brute-force attacks  
+✅ **One-time tokens** with automatic expiration and invalidation  
+✅ **Privileged session limiting** to prevent resource abuse  
+✅ **Elevated access** for sensitive operations  
+✅ **Comprehensive security** following industry best practices  
+
+This system is designed to handle enterprise-level authentication and authorization requirements while remaining **flexible and extensible** for custom business logic.
+
+---

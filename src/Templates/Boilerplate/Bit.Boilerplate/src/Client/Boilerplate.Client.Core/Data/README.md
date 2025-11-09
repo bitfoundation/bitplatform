@@ -21,11 +21,12 @@ https://inloop.github.io/sqlite-viewer/
 
 **Migration**
 
-Set `Server.Web` as the Startup Project in solution explorer and set `Client.Core` it as the Default Project in Package Manager Console and run the following commands:
+`OfflineDbContext` migrations are slightly different from Boilerplate.Server.Api's `AppDbContext` migrations.
+To add migration for `OfflineDbContext` first set `Boilerplate.Server.Web` as the Startup Project in solution explorer and set `Boilerplate.Client.Core` it as the Default Project in Package Manager Console and run the following commands:
 ```powershell
 Add-Migration Initial -OutputDir Data\Migrations -Context OfflineDbContext -Verbose
 ```
-Or open a terminal in your Server.Web project directory and run followings:
+Or open a terminal in your Boilerplate.Server.Web project directory and run followings:
 ```bash
 dotnet ef migrations add Initial --context OfflineDbContext --output-dir Data/Migrations --project ../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
 ```
@@ -40,7 +41,7 @@ To enhance the performance of your models, consider compiling them using EF Core
 
 To implement this optimization, follow these steps in the Package Manager Console:
 
-1. Make sure `Server.Web` is set as the default startup project, and `Client.Core` is the default project in the Package Manager Console.
+1. Make sure `Server.Web` is set as the default startup project, and `Boilerplate.Client.Core` is the default project in the Package Manager Console.
 
 2. Run the following command:
 

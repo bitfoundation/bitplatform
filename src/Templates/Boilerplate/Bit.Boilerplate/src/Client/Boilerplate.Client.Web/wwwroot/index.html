@@ -210,6 +210,8 @@
     <script src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_framework/blazor.webassembly.js"></script>
     <script src="_content/Bit.Bswup/bit-bswup.progress.js"></script>
     <script>
+        // Boilerplate.Client.Core/Scripts/bswup.ts would apply latest version when user is not activly using the app,
+        // so the `autoReload` can be set to false to avoid reload during active use.
         const autoReload = false, showLogs = false, showAssets = false, appContainer = '#app-container', hideApp = false, autoHide = true, handler = null;
         BitBswupProgress.start(autoReload, showLogs, showAssets, appContainer, hideApp, autoHide, handler);
     </script>

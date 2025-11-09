@@ -528,7 +528,8 @@
                 {
                     "condition": "(database != PostgreSQL && database != SqlServer)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Api/Services/ProductEmbeddingService.cs"
+                        "src/Server/Boilerplate.Server.Api/Services/ProductEmbeddingService.cs",
+                        ".docs/25- RAG - Semantic Search with Vector Embeddings (Advanced).md"
                     ]
                 },
                 {
