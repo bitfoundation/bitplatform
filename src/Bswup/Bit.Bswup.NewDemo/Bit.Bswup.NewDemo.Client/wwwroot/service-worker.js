@@ -1,4 +1,4 @@
-// bit version: 10.0.0-pre-08
+// bit version: 10.0.0-pre-09
 
 // In development, always fetch from the network and do not enable offline support.
 // This is because caching would make development more difficult (changes would not
