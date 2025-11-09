@@ -22,9 +22,7 @@ This project uses **TypeScript** for type-safe JavaScript development, along wit
         "strict": true,
         "target": "ES2019",
         "module": "es2015",
-        "noImplicitAny": true,
-        "lib": [ "DOM", "ESNext" ],
-        "moduleResolution": "node"
+        // ...
     }
 }
 ```

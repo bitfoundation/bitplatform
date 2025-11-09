@@ -19,40 +19,28 @@ This file contains the **UI markup** using Razor syntax and Bit.BlazorUI compone
 
 ```xml
 @attribute [Route(PageUrls.Products)]
-@attribute [Route("{culture?}" + PageUrls.Products)]
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
-@attribute [Authorize(Policy = AppFeatures.AdminPanel.ManageProductCatalog)]
 @inherits AppPageBase
 
-<AppPageData Title="@Localizer[nameof(AppStrings.Products)]"
-             PageTitle="@Localizer[nameof(AppStrings.ProductsPageTitle)]" />
+<AppPageData Title="@Localizer[nameof(AppStrings.Products)]" />
 
 <section>
     <BitStack>
-        <BitStack FitHeight 
-                  Gap="0.5rem"
-                  Horizontal="isSmallScreen is false">
-            <BitStack Horizontal FitHeight>
-                <BitButton ReversedIcon
-                           IconName="@BitIconName.Add" 
-                           OnClick="WrapHandled(CreateProduct)">
-                    @Localizer[nameof(AppStrings.AddProduct)]
-                </BitButton>
-                @if (isLoading)
-                {
-                    <BitSlickBarsLoading CustomSize="32" />
-                }
-            </BitStack>
-            <BitSpacer />
-            <BitSearchBox Underlined
-                          ShowSearchButton
-                          OnSearch="HandleOnSearch"
-                          Color="BitColor.Secondary"
-                          Style="@($"width:{(isSmallScreen ? 100 : 50)}%")"
-                          Placeholder="@Localizer[nameof(AppStrings.SearchProductsPlaceholder)]" />
+        <BitStack FitHeight>
+            <BitButton IconName="@BitIconName.Add" 
+                       OnClick="WrapHandled(CreateProduct)">
+                @Localizer[nameof(AppStrings.AddProduct)]
+            </BitButton>
+            @if (isLoading)
+            {
+                <BitSlickBarsLoading />
+            }
         </BitStack>
-        <!-- BitDataGrid for displaying products with pagination -->
+        <BitSpacer />
+        <BitSearchBox OnSearch="HandleOnSearch"
+                      Placeholder="@Localizer[nameof(AppStrings.SearchProductsPlaceholder)]" />
     </BitStack>
+    <!-- BitDataGrid for displaying products -->
 </section>
 ```
 
@@ -77,28 +65,13 @@ namespace Boilerplate.Client.Core.Components.Pages.Products;
 public partial class ProductsPage
 {
     private bool isLoading;
-    private bool isSmallScreen;
     private string? searchQuery;
-    private bool isDeleteDialogOpen;
     private ProductDto? deletingProduct;
-    private string productNameFilter = string.Empty;
-    private string categoryNameFilter = string.Empty;
 
     private BitDataGrid<ProductDto>? dataGrid;
     private BitDataGridItemsProvider<ProductDto> productsProvider = default!;
-    private BitDataGridPaginationState pagination = new() { ItemsPerPage = 10 };
 
     [AutoInject] IProductController productController = default!;
-
-    private string ProductNameFilter
-    {
-        get => productNameFilter;
-        set
-        {
-            productNameFilter = value;
-            _ = RefreshData();
-        }
-    }
 
     protected override async Task OnInitAsync()
     {
@@ -115,30 +88,12 @@ public partial class ProductsPage
 
             try
             {
-                var query = new ODataQuery
-                {
-                    Top = req.Count ?? 10,
-                    Skip = req.StartIndex,
-                    OrderBy = string.Join(", ", req.GetSortByProperties()
-                        .Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}"))
-                };
+                var query = new ODataQuery { /* OData options */ };
 
-                if (string.IsNullOrEmpty(ProductNameFilter) is false)
-                {
-                    query.Filter = $"contains(tolower({nameof(ProductDto.Name)}),'{ProductNameFilter.ToLower()}')";
-                }
-
-                var queriedRequest = productController.WithQuery(query.ToString());
-                var data = await (string.IsNullOrWhiteSpace(searchQuery)
-                            ? queriedRequest.GetProducts(req.CancellationToken)
-                            : queriedRequest.SearchProducts(searchQuery, req.CancellationToken));
+                var data = await productController.WithQuery(query.ToString())
+                                                  .GetProducts(req.CancellationToken);
 
                 return BitDataGridItemsProviderResult.From(data!.Items!, (int)data!.TotalCount);
-            }
-            catch (Exception exp)
-            {
-                ExceptionHandler.Handle(exp);
-                return BitDataGridItemsProviderResult.From(new List<ProductDto> { }, 0);
             }
             finally
             {
@@ -157,18 +112,11 @@ public partial class ProductsPage
     {
         if (deletingProduct is null) return;
 
-        try
-        {
-            await productController.Delete(deletingProduct.Id, 
-                deletingProduct.ConcurrencyStamp.ToStampString(), 
-                CurrentCancellationToken);
+        await productController.Delete(deletingProduct.Id, 
+            deletingProduct.ConcurrencyStamp.ToStampString(), 
+            CurrentCancellationToken);
 
-            await RefreshData();
-        }
-        finally
-        {
-            deletingProduct = null;
-        }
+        await RefreshData();
     }
 }
 ```
@@ -188,50 +136,25 @@ This file contains **component-specific styles** that are automatically scoped t
 @import '../../../Styles/abstracts/_media-queries.scss';
 @import '../../../Styles/abstracts/_bit-css-variables.scss';
 
-section {
-    width: 100%;
-}
-
 .grid-container {
     overflow: auto;
     height: calc(#{$bit-env-height-available} - 12.1rem);
-
-    @include lt-md {
-        height: calc(#{$bit-env-height-available} - 17rem);
-    }
-
-    @include lt-sm {
-        height: calc(#{$bit-env-height-available} - 16rem);
-    }
 }
 
 ::deep {
     .products-grid {
         width: 100%;
-        height: 100%;
-        border-spacing: 0;
         background-color: $bit-color-background-secondary;
 
         .name-col {
             padding-inline-start: 16px;
         }
 
-        .category-col {
-            width: 135px;
-        }
-
-        .price-col {
-            width: 135px;
-        }
-
         thead {
-            height: 44px;
             background-color: $bit-color-background-tertiary;
         }
 
         td {
-            height: 44px;
-            white-space: nowrap;
             border-bottom: 1px solid $bit-color-border-tertiary;
         }
     }
@@ -252,7 +175,7 @@ For a page to be accessible in the application, it needs to be added to the navi
 **Location**: [`/src/Client/Boilerplate.Client.Core/Components/Layout/NavBar.razor`](/src/Client/Boilerplate.Client.Core/Components/Layout/NavBar.razor)
 
 ```xml
-<BitNavBar TItem="BitNavBarOption" Style="width:100%">
+<BitNavBar TItem="BitNavBarOption">
     <BitNavBarOption Text="@Localizer[nameof(AppStrings.Home)]" 
                      IconName="@BitIconName.Home" 
                      Url="@PageUrls.Home" />
@@ -328,7 +251,7 @@ All platform projects (Maui, Windows, Web) are configured to support SCSS compil
 </Target>
 
 <Target Name="BuildCssFiles">
-    <Exec Command="../Boilerplate.Client.Core/node_modules/.bin/sass Components:Components --style compressed --silence-deprecation=import --update --color" />
+    <Exec Command="../Boilerplate.Client.Core/node_modules/.bin/sass Components:Components" />
 </Target>
 ```
 
@@ -357,18 +280,9 @@ This is the **main global stylesheet** that applies to the entire application:
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_bit-css-variables.scss';
 
-:root[bit-theme="dark"] {
-    //--bit-clr-bg-pri: #010409;
-    // In case you need to change the background color, make sure to also update 
-    // ThemeColors.cs's PrimaryDarkBgColor accordingly.
-}
-
 * {
     box-sizing: border-box;
     font-family: "Segoe UI";
-    -webkit-text-size-adjust: none;
-    -webkit-font-smoothing: antialiased;
-    -webkit-tap-highlight-color: transparent;
 }
 
 html, body, #app-container {
@@ -377,28 +291,10 @@ html, body, #app-container {
     width: 100%;
     height: 100%;
     overflow: auto;
-    scroll-behavior: smooth;
-
-    @include lt-md {
-        overflow: hidden;
-    }
 }
 
 h1, h2, h3, h4, h5 {
     margin: 0;
-}
-
-.max-width {
-    width: min(25rem, 100%);
-}
-
-.modal {
-    top: $bit-env-inset-top;
-    left: $bit-env-inset-left;
-    right: $bit-env-inset-right;
-    bottom: $bit-env-inset-bottom;
-    width: $bit-env-width-available;
-    height: $bit-env-height-available;
 }
 ```
 
@@ -579,32 +475,17 @@ This project uses **`Bit.BlazorUI`** as the primary UI component library. You **
 
 ```xml
 <!-- ✅ Use Bit.BlazorUI components -->
-<BitButton IconName="@BitIconName.Add" 
-           OnClick="WrapHandled(CreateProduct)">
+<BitButton OnClick="WrapHandled(CreateProduct)">
     @Localizer[nameof(AppStrings.AddProduct)]
 </BitButton>
 
-<BitSearchBox Underlined
-              ShowSearchButton
-              OnSearch="HandleOnSearch"
-              Color="BitColor.Secondary"
-              Placeholder="@Localizer[nameof(AppStrings.SearchProductsPlaceholder)]" />
+<BitSearchBox OnSearch="HandleOnSearch" />
 
-<BitDataGrid TGridItem="ProductDto"
-             Pagination="pagination"
-             ItemsProvider="productsProvider">
-    <!-- ... -->
-</BitDataGrid>
-
-<BitStack Horizontal Gap="0.5rem">
-    <BitButton />
-    <BitButton />
-</BitStack>
+<BitDataGrid TGridItem="ProductDto" ItemsProvider="productsProvider" />
 
 <!-- ❌ Avoid generic HTML when Bit component exists -->
-<button onclick="...">Add Product</button>  <!-- Don't do this -->
-<input type="text" />  <!-- Use BitTextField instead -->
-<div style="display: flex;">  <!-- Use BitStack instead -->
+<button>Add Product</button>
+<input type="text" />
 ```
 
 ### Comprehensive Documentation
@@ -737,30 +618,15 @@ This is the **base class for all components**. Most `.razor.cs` files inherit fr
 ```csharp
 public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 {
-    // Automatic dependency injection via [AutoInject]
     [AutoInject] protected IJSRuntime JSRuntime = default!;
-    [AutoInject] protected IStorageService StorageService = default!;
-    [AutoInject] protected JsonSerializerOptions JsonSerializerOptions = default!;
-    [AutoInject] protected IPrerenderStateService PrerenderStateService = default!;
-    [AutoInject] protected PubSubService PubSubService = default!;
-    [AutoInject] protected IConfiguration Configuration = default!;
     [AutoInject] protected NavigationManager NavigationManager = default!;
-    [AutoInject] protected IAuthTokenProvider AuthTokenProvider = default!;
     [AutoInject] protected IStringLocalizer<AppStrings> Localizer = default!;
     [AutoInject] protected IExceptionHandler ExceptionHandler = default!;
-    [AutoInject] protected AuthManager AuthManager = default!;
-    [AutoInject] protected SnackBarService SnackBarService = default!;
-    [AutoInject] protected ITelemetryContext TelemetryContext = default!;
-    [AutoInject] protected IAuthorizationService AuthorizationService = default!;
-    [AutoInject] protected AbsoluteServerAddressProvider AbsoluteServerAddress = default!;
 
-    // Automatic cancellation token management
     protected CancellationToken CurrentCancellationToken { get; }
 
-    // Check if in pre-render mode
     protected bool InPrerenderSession { get; }
 
-    // Enhanced lifecycle methods with automatic exception handling
     protected virtual Task OnInitAsync() { }
     protected virtual Task OnParamsSetAsync() { }
     protected virtual Task OnAfterFirstRenderAsync() { }
@@ -806,13 +672,7 @@ public abstract partial class AppPageBase : AppComponentBase
         {
             if (string.IsNullOrEmpty(culture) is false)
             {
-                // Validates culture parameter and redirects to 404 if invalid
-                if (CultureInfoManager.InvariantGlobalization || 
-                    CultureInfoManager.SupportedCultures.Any(sc => 
-                        string.Equals(sc.Culture.Name, culture, StringComparison.InvariantCultureIgnoreCase)) is false)
-                {
-                    NavigationManager.NavigateTo($"{PageUrls.NotFound}?url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}", replace: true);
-                }
+                // Validates culture parameter
             }
         }
     }
@@ -839,19 +699,16 @@ public abstract partial class AppPageBase : AppComponentBase
 ```csharp
 public partial class ProductsPage
 {
-    // All services from AppComponentBase are available
     [AutoInject] IProductController productController = default!;
 
     protected override async Task OnInitAsync()
     {
-        // Enhanced lifecycle with automatic exception handling
         await base.OnInitAsync();
         PrepareGridDataProvider();
     }
 
     private async Task DeleteProduct()
     {
-        // CurrentCancellationToken automatically cancels if user navigates away
         await productController.Delete(deletingProduct.Id, 
             deletingProduct.ConcurrencyStamp.ToStampString(), 
             CurrentCancellationToken);

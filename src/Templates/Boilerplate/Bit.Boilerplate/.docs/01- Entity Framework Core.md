@@ -36,32 +36,19 @@ Here's the `AppDbContext` structure from the actual project:
 
 ```csharp
 public partial class AppDbContext(DbContextOptions<AppDbContext> options)
-    : IdentityDbContext<User, Role, Guid, UserClaim, UserRole, UserLogin, RoleClaim, UserToken>(options), 
-      IDataProtectionKeyContext
+    : IdentityDbContext<User, Role, Guid, UserClaim, UserRole, UserLogin, RoleClaim, UserToken>(options)
 {
     // DbSets represent tables in the database
-    public DbSet<UserSession> UserSessions { get; set; } = default!;
-    public DbSet<TodoItem> TodoItems { get; set; } = default!;
-    public DbSet<Category> Categories { get; set; } = default!;
-    public DbSet<Product> Products { get; set; } = default!;
-    public DbSet<PushNotificationSubscription> PushNotificationSubscriptions { get; set; } = default!;
-    public DbSet<WebAuthnCredential> WebAuthnCredential { get; set; } = default!;
-    public DbSet<SystemPrompt> SystemPrompts { get; set; } = default!;
-    public DbSet<Attachment> Attachments { get; set; } = default!;
-    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = default!;
-    
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    public virtual DbSet<Category> Categories { get; set; } = default!;
+    public virtual DbSet<Product> Products { get; set; } = default!;
+    public virtual DbSet<TodoItem> TodoItems { get; set; } = default!;
+    // ... and other DbSets
+
+    protected override void OnModelCreating(ModelBuilder builder)
     {
-        base.OnModelCreating(modelBuilder);
-        
-        // Apply all entity configurations from the assembly
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
-        
-        // Configure Identity table names
-        ConfigureIdentityTableNames(modelBuilder);
-        
-        // Configure concurrency stamps for optimistic concurrency control
-        ConfigureConcurrencyStamp(modelBuilder);
+        base.OnModelCreating(builder);
+
+        builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
 }
 ```

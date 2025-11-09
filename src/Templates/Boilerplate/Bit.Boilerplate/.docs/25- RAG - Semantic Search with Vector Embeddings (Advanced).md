@@ -237,50 +237,24 @@ The `Embed()` method creates embeddings from product data:
 ```csharp
 public async Task Embed(Product product, CancellationToken cancellationToken)
 {
-    List<(string text, float weight)> inputs = [];
-    
     // Combine multiple fields with different weights
-    inputs.Add(($"Id: {product.ShortId}", 0.9f));
-    inputs.Add(($"Name: {product.Name}", 0.9f));
+    List<(string text, float weight)> inputs =
+    [
+        ($"Id: {product.ShortId}", 0.9f),
+        ($"Name: {product.Name}", 0.9f),
+        (product.Category!.Name!, 0.9f)
+    ];
     
     if (string.IsNullOrEmpty(product.DescriptionText) is false)
     {
         inputs.Add((product.DescriptionText, 0.7f));
     }
     
-    if (string.IsNullOrEmpty(product.PrimaryImageAltText) is false)
-    {
-        inputs.Add((product.PrimaryImageAltText, 0.5f));
-    }
+    // ...
     
-    inputs.Add((product.Category!.Name!, 0.9f));
+    // Generate embeddings for all inputs, combine with weights, and normalize
     
-    // Generate embeddings for all inputs
-    var texts = inputs.Select(i => i.text).ToArray();
-    var embeddingsResponse = await embeddingGenerator.GenerateAsync(texts, cancellationToken);
-    
-    // Combine with weights
-    var vectors = embeddingsResponse.Select(e => e.Vector.ToArray()).ToArray();
-    var weights = inputs.Select(t => t.weight).ToArray();
-    
-    var embedding = new float[vectors[0].Length];
-    for (int i = 0; i < embedding.Length; i++)
-    {
-        for (int j = 0; j < vectors.Length; j++)
-        {
-            embedding[i] += weights[j] * vectors[j][i];
-        }
-    }
-    
-    // L2 normalize for cosine distance stability
-    float norm = (float)Math.Sqrt(embedding.Sum(v => v * v));
-    if (norm > 0)
-    {
-        for (int i = 0; i < embedding.Length; i++)
-        {
-            embedding[i] /= norm;
-        }
-    }
+    // ...
     
     product.Embedding = new(embedding);
 }
@@ -325,42 +299,7 @@ public async Task<IQueryable<Product>> SearchProducts(string searchQuery, Cancel
 
 **File**: [`src/Server/Boilerplate.Server.Api/Controllers/Products/ProductController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Products/ProductController.cs)
 
-#### **Embedding on Create**
-
-```csharp
-[HttpPost]
-public async Task<ProductDto> Create(ProductDto dto, CancellationToken cancellationToken)
-{
-    var entityToAdd = dto.Map();
-    
-    // ... validation and other logic ...
-    
-    await productEmbeddingService.Embed(entityToAdd, cancellationToken);
-    
-    await dbContext.Products.AddAsync(entityToAdd, cancellationToken);
-    await dbContext.SaveChangesAsync(cancellationToken);
-    
-    return entityToAdd.Map();
-}
-```
-
-#### **Embedding on Update**
-
-```csharp
-[HttpPut]
-public async Task<ProductDto> Update(ProductDto dto, CancellationToken cancellationToken)
-{
-    var entityToUpdate = await dbContext.Products.FindAsync([dto.Id], cancellationToken);
-    
-    // ... validation and patching ...
-    
-    await productEmbeddingService.Embed(entityToUpdate, cancellationToken);
-    
-    await dbContext.SaveChangesAsync(cancellationToken);
-    
-    return entityToUpdate.Map();
-}
-```
+The controller calls the `productEmbeddingService.Embed()` method when creating or updating a product.
 
 #### **Semantic Search**
 
@@ -403,20 +342,7 @@ public async Task<IQueryable<ProductDto>> Search(string? searchQuery, ODataQuery
 - Database vector operations require modern database versions
 
 **Best Practice - Hybrid Approach**:
-```csharp
-// Try full-text search first (fast)
-var results = await dbContext.Products
-    .Where(p => EF.Functions.FreeText(p.Name, searchQuery))
-    .Take(10)
-    .ToListAsync();
-
-// If not enough results, use semantic search (more comprehensive)
-if (results.Count < 5)
-{
-    var semanticResults = await productEmbeddingService.SearchProducts(searchQuery, cancellationToken);
-    results.AddRange(await semanticResults.Take(10 - results.Count).ToListAsync());
-}
-```
+A hybrid approach can offer a balance between speed and accuracy. You can first perform a quick full-text search and, if the results are insufficient, fall back to a more comprehensive semantic search.
 
 ### 6.3 When to Use Semantic Search
 

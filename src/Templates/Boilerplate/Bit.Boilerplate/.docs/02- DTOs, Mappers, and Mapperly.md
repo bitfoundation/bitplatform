@@ -33,11 +33,10 @@ public partial class CategoryDto
 
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Name))]
-    [MaxLength(64, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_InvalidMaxLength))]
     public string? Name { get; set; }
 
     [Display(Name = nameof(AppStrings.Color))]
-    public string? Color { get; set; } = "#FFFFFF";
+    public string? Color { get; set; }
 
     public int ProductsCount { get; set; }
 
@@ -68,7 +67,6 @@ public partial class UserDto : IValidatableObject
 {
     public Guid Id { get; set; }
 
-    [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.UserName))]
     public string? UserName { get; set; }
 
@@ -76,17 +74,6 @@ public partial class UserDto : IValidatableObject
     [Display(Name = nameof(AppStrings.Email))]
     public string? Email { get; set; }
 
-    [Phone(ErrorMessage = nameof(AppStrings.PhoneAttribute_ValidationError))]
-    [Display(Name = nameof(AppStrings.PhoneNumber))]
-    public string? PhoneNumber { get; set; }
-
-    // ... more properties
-
-    // Calculated properties for display
-    public string? DisplayName => FullName ?? DisplayUserName;
-    public string? DisplayUserName => Email ?? PhoneNumber ?? UserName;
-
-    // Custom validation logic
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (string.IsNullOrEmpty(Email) && string.IsNullOrEmpty(PhoneNumber))
@@ -110,10 +97,8 @@ The project uses **System.Text.Json Source Generator** for high-performance JSON
 
 ```csharp
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
-[JsonSerializable(typeof(Dictionary<string, JsonElement>))]
 [JsonSerializable(typeof(CategoryDto))]
 [JsonSerializable(typeof(List<CategoryDto>))]
-[JsonSerializable(typeof(PagedResult<CategoryDto>))]
 [JsonSerializable(typeof(ProductDto))]
 [JsonSerializable(typeof(List<ProductDto>))]
 // ... more types
@@ -155,26 +140,16 @@ public partial class AppJsonContext : JsonSerializerContext
 **Location**: [`src/Server/Boilerplate.Server.Api/Mappers/CategoriesMapper.cs`](/src/Server/Boilerplate.Server.Api/Mappers/CategoriesMapper.cs)
 
 ```csharp
-using Riok.Mapperly.Abstractions;
-using Boilerplate.Shared.Dtos.Categories;
-using Boilerplate.Server.Api.Models.Categories;
-
-namespace Boilerplate.Server.Api.Mappers;
-
 [Mapper]
 public static partial class CategoriesMapper
 {
-    // Convert IQueryable<Category> to IQueryable<CategoryDto>
     public static partial IQueryable<CategoryDto> Project(this IQueryable<Category> query);
 
-    // Convert Category entity to CategoryDto
     [MapProperty(nameof(@Category.Products.Count), nameof(@CategoryDto.ProductsCount))]
     public static partial CategoryDto Map(this Category source);
     
-    // Convert CategoryDto to Category entity
     public static partial Category Map(this CategoryDto source);
     
-    // Update Category entity with values from CategoryDto
     public static partial void Patch(this CategoryDto source, Category destination);
 }
 ```
@@ -188,7 +163,6 @@ public partial class Category
 {
     public Guid Id { get; set; }
 
-    [Required, MaxLength(64)]
     public string? Name { get; set; }
 
     public string? Color { get; set; }
@@ -341,9 +315,6 @@ public static partial class Mapper
     public static partial void Patch(this TodoItemDto source, TodoItemDto destination);
     public static partial void Patch(this ProductDto source, ProductDto destination);
     public static partial void Patch(this CategoryDto source, CategoryDto destination);
-    public static partial void Patch(this UserDto source, UserDto destination);
-    public static partial void Patch(this EditUserRequestDto source, UserDto destination);
-    public static partial void Patch(this UserDto source, EditUserRequestDto destination);
     // ... more patch methods
 }
 ```
@@ -355,12 +326,9 @@ public static partial class Mapper
 ```csharp
 public async Task ShowModal(CategoryDto categoryToShow)
 {
-    await InvokeAsync(async () =>
-    {
-        isOpen = true;
-        categoryToShow.Patch(category); // Update local category with data from parameter
-        StateHasChanged();
-    });
+    isOpen = true;
+    categoryToShow.Patch(category); // Update local category with data
+    StateHasChanged();
 }
 ```
 
@@ -381,19 +349,14 @@ protected override void OnParametersSet()
 {
     base.OnParametersSet();
     
-    // Prepare edit DTO from current user
     CurrentUser?.Patch(editUserDto);
 }
 
 private async Task SaveProfile()
 {
-    // Save changes back to current user object
     editUserDto.Patch(CurrentUser);
     
-    // Update on server
     (await userController.Update(editUserDto, CurrentCancellationToken)).Patch(CurrentUser);
-    
-    // Now CurrentUser has the latest server-side values without re-fetching
 }
 ```
 

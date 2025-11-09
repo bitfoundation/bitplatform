@@ -1,21 +1,22 @@
 # Stage 24: WebAuthn and Passwordless Authentication (Advanced)
 
-Welcome to Stage 24! In this advanced stage, you'll learn about the **WebAuthn (Web Authentication)** and **passwordless authentication** system built into the project. This feature allows users to sign in using biometric authentication (fingerprint, Face ID, Windows Hello) instead of traditional passwords.
+Welcome to Stage 24! In this advanced stage, you'll learn about the **WebAuthn (Web Authentication)** and **passwordless authentication** system built into the project. This feature allows users to sign in using biometric authentication (fingerprint, Face ID, Windows Hello, PIN) instead of traditional passwords.
 
 ---
 
 ## What is WebAuthn?
 
 **WebAuthn** is a web standard published by the W3C and FIDO Alliance that enables passwordless authentication using:
-- **Biometric authentication**: Fingerprint, Face ID, Touch ID
+- **Biometric authentication**: Fingerprint, Face ID, Touch ID, Windows Hello
 - **Hardware security keys**: YubiKey, USB authenticators
-- **Platform authenticators**: Windows Hello, Android biometrics, iOS Face ID/Touch ID
+- **Platform authenticators**: Built-in device authenticators (Windows Hello, Android biometrics, iOS Face ID/Touch ID)
 
-### Benefits of WebAuthn:
-- **Enhanced Security**: No passwords to steal or phish
-- **Better UX**: Faster login with biometrics
-- **Privacy**: Biometric data never leaves the device
-- **Phishing-Resistant**: Credentials are bound to specific domains
+### Key Features of This Implementation:
+- **More Secure Than Native Biometric**: The bit WebAuthn implementation provides stronger security guarantees than platform-native biometric authentication alone
+- **Cross-Platform Support**: Works across all platforms - Web, MAUI (Android, iOS, Windows, macOS), and Windows Hybrid
+- **Face ID Support**: Currently works on iOS; Android Face ID support is not yet available
+- **Phishing-Resistant**: Credentials are cryptographically bound to specific domains
+- **Privacy-First**: Biometric data never leaves the device
 
 ---
 
@@ -24,18 +25,31 @@ Welcome to Stage 24! In this advanced stage, you'll learn about the **WebAuthn (
 The WebAuthn implementation in this project consists of three main layers:
 
 ### 1. **Server-Side (Backend)**
-- **Entity Model**: `WebAuthnCredential` stores credential data
-- **Controllers**: Handle credential registration and verification
-- **FIDO2 Library**: Uses `Fido2NetLib` for cryptographic operations
+- **Entity Model**: `WebAuthnCredential` stores credential data in the database
+- **Controllers**: Handle credential registration (`UserController.WebAuthn.cs`) and authentication verification (`IdentityController.WebAuthn.cs`)
+- **FIDO2 Library**: Uses `Fido2NetLib` for cryptographic operations and WebAuthn protocol compliance
 
 ### 2. **Client-Side (Frontend)**
-- **Platform-Specific Services**: Web, MAUI, Windows implementations
-- **Storage Service**: Tracks configured users locally
-- **UI Components**: Enable/disable passwordless, sign-in with biometrics
+- **IWebAuthnService Interface**: Defines the contract for WebAuthn operations
+- **Platform-Specific Services**: Separate implementations for Web, MAUI, and Windows platforms
+- **Storage Service**: Tracks which users have configured passwordless authentication locally
+- **UI Components**: Enable/disable passwordless in Settings, sign-in with biometrics button
 
-### 3. **Bridge Layer (Hybrid Apps)**
-- **LocalHttpServer**: Provides proper origin for WebView-based platforms
-- **WebInteropApp**: Lightweight HTML page for WebAuthn operations
+### 3. **Bridge Layer (Blazor Hybrid Apps)**
+This is the most innovative part of the architecture, solving a critical WebView limitation:
+
+**The Problem**: 
+- Blazor Hybrid apps (MAUI, Windows) run in a WebView with IP-based origins like `http://0.0.0.1`
+- WebAuthn specification **requires** proper domain origins for security
+- WebView IP-based origins are rejected by WebAuthn
+
+**The Solution**:
+- **LocalHttpServer**: Starts a local HTTP server on `localhost` with a proper domain origin
+- **WebInteropApp**: A lightweight HTML page (no Blazor runtime) that performs WebAuthn operations
+- **IExternalNavigationService**: Opens the WebInteropApp URL in an in-app browser (not WebView)
+- **Result**: WebAuthn works perfectly with platform authenticators (Face ID, Fingerprint, Windows Hello)
+
+This architectural workaround is transparent to developers and provides seamless WebAuthn support across all platforms.
 
 ---
 
@@ -477,11 +491,13 @@ public partial class MauiWebAuthnService : WebAuthnServiceBase
 
 **Location**: [`/src/Client/Boilerplate.Client.Web/wwwroot/web-interop-app.html`](/src/Client/Boilerplate.Client.Web/wwwroot/web-interop-app.html)
 
-This is a **lightweight HTML page** (no Blazor runtime) that:
+This is a **lightweight HTML page** (no Blazor runtime) that is the key to making WebAuthn work in Blazor Hybrid apps:
+
+**What it does**:
 - Loads `bit-butil.js` for WebAuthn JavaScript functions
 - Loads `app.js` for custom interop logic
 - Runs `WebInteropApp.run()` to execute the WebAuthn operation
-- Returns the result to the calling MAUI app
+- Returns the result to the calling MAUI/Windows app
 
 ```html
 <html>
@@ -502,15 +518,104 @@ This is a **lightweight HTML page** (no Blazor runtime) that:
 </html>
 ```
 
-**Why This Approach?**
-- **WebView Limitation**: WebView has `http://0.0.0.1` origin which WebAuthn rejects
-- **Local HTTP Server**: Provides proper `http://localhost:{port}` origin
-- **In-App Browser**: Opens the URL in a native browser component (not WebView)
-- **Result**: WebAuthn works with platform authenticators (Face ID, Fingerprint)
+**Why This Approach Works**:
+1. **WebView Limitation**: WebView has `http://0.0.0.1` origin which WebAuthn rejects for security reasons
+2. **Local HTTP Server**: Provides proper `http://localhost:{port}` origin that WebAuthn accepts
+3. **In-App Browser**: Opens the URL in a native browser component (not WebView) which has proper security context
+4. **Result**: WebAuthn works seamlessly with platform authenticators (Face ID, Fingerprint, Windows Hello)
+
+**The Complete Flow in Blazor Hybrid**:
+1. User clicks "Enable passwordless" or "Sign in with biometrics"
+2. MAUI/Windows app calls `webAuthnService.CreateWebAuthnCredential()` or `GetWebAuthnCredential()`
+3. The service creates a `TaskCompletionSource` and stores the WebAuthn options
+4. `IExternalNavigationService` opens `web-interop-app.html` in an in-app browser via LocalHttpServer
+5. The HTML page loads, runs JavaScript to call WebAuthn API with proper `localhost` origin
+6. Platform prompts user for biometric (Face ID, fingerprint, Windows Hello)
+7. WebAuthn operation completes, JavaScript passes result back to the app
+8. The `TaskCompletionSource` completes with the result
+9. App continues with normal registration/authentication flow
+
+This elegant solution allows the same WebAuthn code to work across Web (direct browser API) and Hybrid (via LocalHttpServer + WebInteropApp) platforms.
 
 ---
 
-## UI Components
+## Key Components Explained
+
+Let's dive deeper into the main components that make this WebAuthn implementation work:
+
+### IWebAuthnService Interface
+
+**Location**: [`/src/Client/Boilerplate.Client.Core/Services/Contracts/IWebAuthnService.cs`](/src/Client/Boilerplate.Client.Core/Services/Contracts/IWebAuthnService.cs)
+
+This interface defines the contract for WebAuthn operations across all platforms:
+
+```csharp
+public interface IWebAuthnService
+{
+    // Core WebAuthn operations
+    ValueTask<bool> IsWebAuthnAvailable();
+    ValueTask<JsonElement> CreateWebAuthnCredential(JsonElement options);
+    ValueTask<JsonElement> GetWebAuthnCredential(JsonElement options);
+    
+    // Local storage management for configured users
+    ValueTask<bool> IsWebAuthnConfigured(Guid? userId = null);
+    ValueTask<Guid[]> GetWebAuthnConfiguredUserIds();
+    ValueTask SetWebAuthnConfiguredUserId(Guid userId);
+    ValueTask RemoveWebAuthnConfiguredUserId(Guid? userId = null);
+}
+```
+
+**Why Local Storage of User IDs?**
+- The client needs to know which users can use passwordless sign-in without making a server round-trip
+- This allows the UI to show/hide the "Sign in with biometrics" button appropriately
+- Improves performance and user experience by avoiding unnecessary API calls
+
+### ILocalHttpServer
+
+This service is crucial for making WebAuthn work in Blazor Hybrid apps. It starts a local HTTP server that:
+- Listens on `http://localhost:{random-port}`
+- Serves the application's wwwroot files with proper domain origin
+- Provides the required security context for WebAuthn operations
+- Automatically manages the lifecycle (starts/stops with the app)
+
+**Key Methods**:
+- `Start()`: Starts the local HTTP server on an available port
+- `GetBaseUrl()`: Returns the localhost URL (e.g., `http://localhost:5432`)
+- `Stop()`: Stops the server when the app closes
+
+### IExternalNavigationService
+
+This service opens URLs in an **in-app browser** (not WebView):
+- **MAUI**: Uses `WebAuthenticator.AuthenticateAsync()` or platform-specific in-app browsers
+- **Windows**: Uses platform-specific in-app browser implementations
+- **Purpose**: Provides proper browser security context required by WebAuthn
+- **User Experience**: Shows a native browser overlay that automatically closes after the operation
+
+### WebAuthn Flow in Blazor Hybrid (Detailed)
+
+Here's what happens when a user enables passwordless authentication in a MAUI app:
+
+1. **User Action**: User navigates to Settings → Account → Passwordless and clicks "Enable"
+2. **Server Request**: App calls `userController.GetWebAuthnCredentialOptions()` to get registration options
+3. **Local Storage**: MAUI service stores the options and creates a `TaskCompletionSource`
+4. **Local Server Start**: If not already running, `ILocalHttpServer` starts on a random port
+5. **URL Construction**: Constructs URL: `http://localhost:{port}/web-interop-app.html?action=create&options={json}`
+6. **In-App Browser**: `IExternalNavigationService` opens the URL in an in-app browser
+7. **WebInteropApp Loads**: The lightweight HTML page loads in the in-app browser
+8. **JavaScript Execution**: `WebInteropApp.run()` executes, calls `navigator.credentials.create()` with proper origin
+9. **Platform Prompt**: iOS shows Face ID prompt, Android shows fingerprint, Windows shows Hello
+10. **User Authentication**: User provides biometric authentication
+11. **Credential Creation**: Platform creates new key pair, returns attestation
+12. **Result Passing**: JavaScript passes the result back to the MAUI app (via custom URL scheme or other mechanism)
+13. **TaskCompletionSource**: The waiting `TaskCompletionSource` receives the result
+14. **Server Verification**: App sends attestation to `userController.CreateWebAuthnCredential()`
+15. **Database Storage**: Server verifies and stores the credential in `WebAuthnCredential` table
+16. **Local Storage Update**: App stores the user ID locally via `SetWebAuthnConfiguredUserId()`
+17. **UI Update**: Settings page shows "Disable passwordless" button
+
+This entire flow is transparent to the end user and happens in seconds.
+
+---
 
 ### Enabling Passwordless (Settings Page)
 
@@ -785,16 +890,22 @@ public async Task VerifyWebAuthAndSignIn(VerifyWebAuthnAndSignInRequestDto reque
 |----------|---------------|-------------------|-------|
 | **Blazor WebAssembly** | `Bit.Butil.WebAuthn` → Browser API | `await webAuthn.IsAvailable()` | Direct browser access |
 | **Blazor Server** | `Bit.Butil.WebAuthn` → Browser API | `await webAuthn.IsAvailable()` | Direct browser access |
-| **MAUI Android** | LocalHttpServer + In-App Browser | OS version check | Uses Android biometrics |
+| **MAUI Android** | LocalHttpServer + In-App Browser | OS version check | Uses Android biometrics (Face ID not yet supported) |
 | **MAUI iOS** | LocalHttpServer + In-App Browser | OS version check | Uses Face ID / Touch ID |
 | **MAUI Windows** | LocalHttpServer + In-App Browser | Windows 10 v1903+ (build 18362) | Uses Windows Hello |
-| **Windows Forms Hybrid** | Similar to MAUI | Windows 10 v1903+ (build 18362) | Uses Windows Hello |
+| **MAUI macOS** | LocalHttpServer + In-App Browser | macOS version check | Uses Touch ID |
+| **Windows Forms Hybrid** | LocalHttpServer + In-App Browser | Windows 10 v1903+ (build 18362) | Uses Windows Hello |
 
 **Browser Support** (for Web platforms):
 - ✅ Chrome/Edge 67+
 - ✅ Firefox 60+
 - ✅ Safari 13+
 - ✅ Opera 54+
+
+**Important Notes**:
+- **Android Face ID**: Not yet supported in the current implementation
+- **iOS Face ID**: Fully supported and working
+- **Cross-Platform Consistency**: The same code works across all platforms thanks to the LocalHttpServer architecture for Hybrid apps
 
 ---
 
@@ -1049,18 +1160,38 @@ var authenticatorSelection = new AuthenticatorSelection
 
 ## Summary
 
-In this stage, you learned about:
+In this stage, you learned about the advanced WebAuthn and passwordless authentication system:
 
-✅ **WebAuthn Architecture**: Understanding the three-layer system (server, client, bridge)  
-✅ **Server Implementation**: Entity models, FIDO2 configuration, controller endpoints  
-✅ **Client Implementation**: Platform-specific services (Web, MAUI, Windows)  
-✅ **Complete Flows**: Registration and authentication workflows step-by-step  
-✅ **Security Features**: Anti-cloning, challenge caching, origin validation  
-✅ **Platform Support**: How different platforms handle WebAuthn  
-✅ **UI Components**: Enabling/disabling passwordless, sign-in with biometrics  
-✅ **Best Practices**: Error handling, HTTPS, fallback authentication  
-✅ **Advanced Scenarios**: Hardware keys, user verification levels, resident keys  
+✅ **Enhanced Security**: Sign-in with fingerprint, Face ID, and PIN that is **more secure than native biometric authentication** alone  
+✅ **Cross-Platform Support**: Works across Web, MAUI (iOS, Android, Windows, macOS), and Windows Hybrid platforms  
+✅ **Face ID Support**: Currently works on iOS; Android Face ID support is not yet available  
 
-**Key Takeaway**: WebAuthn provides a secure, user-friendly alternative to passwords by leveraging biometric authentication. The implementation in this project handles all the complexity of FIDO2/WebAuthn across multiple platforms (Web, MAUI, Windows), making it easy to add passwordless authentication to your application.
+✅ **Three-Layer Architecture**:
+   - **Server**: Entity models, FIDO2 library, credential management
+   - **Client**: Platform-specific services, local storage of configured users
+   - **Bridge**: LocalHttpServer + WebInteropApp for Blazor Hybrid apps
+
+✅ **WebView Workaround**: The innovative solution to the WebView origin limitation:
+   - **Problem**: WebView has IP-based origin (`http://0.0.0.1`) which WebAuthn rejects
+   - **Solution**: LocalHttpServer provides proper `localhost` origin, IExternalNavigationService opens in-app browser, WebInteropApp executes WebAuthn in proper security context
+   - **Result**: Seamless WebAuthn support in Blazor Hybrid apps
+
+✅ **Key Components**:
+   - `IWebAuthnService`: Unified interface across all platforms
+   - `ILocalHttpServer`: Provides proper origin for Hybrid apps
+   - `IExternalNavigationService`: Opens in-app browser for WebAuthn operations
+   - `WebInteropApp`: Lightweight HTML page that executes WebAuthn JavaScript
+
+✅ **Security Features**:
+   - Anti-cloning detection with sign counters
+   - Challenge caching to prevent replay attacks
+   - Origin validation for phishing resistance
+   - Support for two-factor authentication
+
+✅ **Complete Flows**: Step-by-step registration and authentication workflows explained in detail
+
+**Key Takeaway**: The bit WebAuthn implementation solves the critical challenge of making WebAuthn work in Blazor Hybrid apps (where WebView origins are incompatible) through an elegant architecture using LocalHttpServer and in-app browsers. This provides a more secure authentication method than native biometrics alone, working seamlessly across all platforms from a single codebase.
+
+**Next Steps**: Explore the code in the project, try enabling passwordless authentication in the demo apps at https://bitplatform.dev/demos, and experiment with different platforms to see how the same code provides consistent WebAuthn functionality everywhere.
 
 ---
