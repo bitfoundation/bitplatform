@@ -106,7 +106,7 @@ The project supports multiple Blazor hosting models, all configured in a single 
 
 #### Example from App.razor
 
-```cshtml
+```xml
 @{
     var noPrerender = HttpContext.Request.Query["no-prerender"].Count > 0;
     var renderMode = noPrerender ? noPrerenderBlazorWebAssembly : serverWebSettings.WebAppRender.RenderMode;

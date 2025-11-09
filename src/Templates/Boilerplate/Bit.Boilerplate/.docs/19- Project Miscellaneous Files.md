@@ -28,7 +28,7 @@ Let's explore each category in detail with examples from your actual project.
 
 ### 1.1 `.editorconfig`
 
-**Location**: [`/.editorconfig`](c:/Workspace/Boilerplate/.editorconfig)
+**Location**: [`/.editorconfig`](/.editorconfig)
 
 **Purpose**: The `.editorconfig` file ensures **consistent coding style** across different editors and IDEs. This is crucial for team collaboration and maintaining code quality.
 
@@ -69,7 +69,7 @@ csharp_new_line_before_open_brace = all
 
 ### 1.2 `global.json`
 
-**Location**: [`/global.json`](c:/Workspace/Boilerplate/global.json)
+**Location**: [`/global.json`](/global.json)
 
 **Purpose**: Specifies the **.NET SDK version** required for the project.
 
@@ -95,7 +95,7 @@ csharp_new_line_before_open_brace = all
 
 ### 1.3 `dotnet.config`
 
-**Location**: [`/dotnet.config`](c:/Workspace/Boilerplate/dotnet.config)
+**Location**: [`/dotnet.config`](/dotnet.config)
 
 **Purpose**: Configures the .NET test runner.
 
@@ -114,7 +114,7 @@ name = "Microsoft.Testing.Platform"
 
 ### 2.1 `Boilerplate.sln`
 
-**Location**: [`/Boilerplate.sln`](c:/Workspace/Boilerplate/Boilerplate.sln)
+**Location**: [`/Boilerplate.sln`](/Boilerplate.sln)
 
 **Purpose**: The **full solution file** for Visual Studio that includes ALL projects in the workspace.
 
@@ -131,7 +131,7 @@ name = "Microsoft.Testing.Platform"
 
 ### 2.2 `Boilerplate.Web.slnf`
 
-**Location**: [`/Boilerplate.Web.slnf`](c:/Workspace/Boilerplate/Boilerplate.Web.slnf)
+**Location**: [`/Boilerplate.Web.slnf`](/Boilerplate.Web.slnf)
 
 **Purpose**: A **solution filter** that includes only the projects needed for **web development**.
 
@@ -153,7 +153,7 @@ name = "Microsoft.Testing.Platform"
 
 ### 2.3 `Boilerplate.slnx`
 
-**Location**: [`/Boilerplate.slnx`](c:/Workspace/Boilerplate/Boilerplate.slnx)
+**Location**: [`/Boilerplate.slnx`](/Boilerplate.slnx)
 
 **Purpose**: The new **XML-based solution format** introduced in Visual Studio 2025. It's more human-readable and git-friendly than the traditional `.sln` format.
 
@@ -165,7 +165,7 @@ name = "Microsoft.Testing.Platform"
 
 ### 3.1 `Directory.Build.props`
 
-**Location**: [`/src/Directory.Build.props`](c:/Workspace/Boilerplate/src/Directory.Build.props)
+**Location**: [`/src/Directory.Build.props`](/src/Directory.Build.props)
 
 **Purpose**: A **shared MSBuild properties file** that automatically applies to ALL projects in the `src/` directory and its subdirectories. This prevents repetitive configuration in individual `.csproj` files.
 
@@ -235,7 +235,7 @@ These namespaces are **automatically imported** in every C# file, eliminating th
 
 ### 3.2 `Directory.Packages.props`
 
-**Location**: [`/src/Directory.Packages.props`](c:/Workspace/Boilerplate/src/Directory.Packages.props)
+**Location**: [`/src/Directory.Packages.props`](/src/Directory.Packages.props)
 
 **Purpose**: Enables **Central Package Management (CPM)** for NuGet packages. All package versions are defined in one place.
 
@@ -281,7 +281,7 @@ And the version is defined centrally in `Directory.Packages.props`:
 
 ### 4.1 `Clean.bat` (Windows)
 
-**Location**: [`/Clean.bat`](c:/Workspace/Boilerplate/Clean.bat)
+**Location**: [`/Clean.bat`](/Clean.bat)
 
 **Purpose**: A PowerShell-based cleanup script for **Windows** that removes build artifacts and temporary files.
 
@@ -302,7 +302,7 @@ And the version is defined centrally in `Directory.Packages.props`:
 
 ### 4.2 `Clean.sh` (macOS/Linux)
 
-**Location**: [`/Clean.sh`](c:/Workspace/Boilerplate/Clean.sh)
+**Location**: [`/Clean.sh`](/Clean.sh)
 
 **Purpose**: The **macOS/Linux equivalent** of `Clean.bat`.
 
@@ -318,7 +318,7 @@ chmod +x Clean.sh  # Make it executable (first time only)
 
 ### 5.1 `Bit.ResxTranslator.json`
 
-**Location**: [`/Bit.ResxTranslator.json`](c:/Workspace/Boilerplate/Bit.ResxTranslator.json)
+**Location**: [`/Bit.ResxTranslator.json`](/Bit.ResxTranslator.json)
 
 **Purpose**: Configuration for the **bit-resx** CLI tool that uses AI to automatically translate `.resx` resource files.
 
@@ -367,7 +367,7 @@ chmod +x Clean.sh  # Make it executable (first time only)
 
 ### 6.1 `.vsconfig`
 
-**Location**: [`/.vsconfig`](c:/Workspace/Boilerplate/.vsconfig)
+**Location**: [`/.vsconfig`](/.vsconfig)
 
 **Purpose**: Specifies the **required Visual Studio workloads and extensions** for this project.
 
@@ -401,7 +401,7 @@ chmod +x Clean.sh  # Make it executable (first time only)
 
 ### 6.2 `settings.VisualStudio.json`
 
-**Location**: [`/settings.VisualStudio.json`](c:/Workspace/Boilerplate/settings.VisualStudio.json)
+**Location**: [`/settings.VisualStudio.json`](/settings.VisualStudio.json)
 
 **Purpose**: **Project-specific settings** for Visual Studio (not VS Code).
 
@@ -433,7 +433,7 @@ chmod +x Clean.sh  # Make it executable (first time only)
 
 ### 6.3 `.vscode/` Folder
 
-**Location**: [`/.vscode/`](c:/Workspace/Boilerplate/.vscode/)
+**Location**: [`/.vscode/`](/.vscode/)
 
 **Purpose**: Contains **VS Code workspace settings** and configurations.
 
@@ -538,7 +538,7 @@ When you open the project in VS Code, you'll be prompted to install these extens
 
 ### 7.1 `.gitignore`
 
-**Location**: [`/.gitignore`](c:/Workspace/Boilerplate/.gitignore)
+**Location**: [`/.gitignore`](/.gitignore)
 
 **Purpose**: Specifies which files and folders Git should **ignore** (not track in version control).
 
@@ -564,7 +564,7 @@ When you open the project in VS Code, you'll be prompted to install these extens
 
 ### 8.1 `README.md`
 
-**Location**: [`/README.md`](c:/Workspace/Boilerplate/README.md)
+**Location**: [`/README.md`](/README.md)
 
 **Purpose**: The project's **welcome file** displayed on GitHub/Azure DevOps.
 
@@ -602,7 +602,7 @@ This is useful for remembering how the project was initially configured.
 
 ### 9.1 `vs-spell.dic`
 
-**Location**: [`/vs-spell.dic`](c:/Workspace/Boilerplate/vs-spell.dic)
+**Location**: [`/vs-spell.dic`](/vs-spell.dic)
 
 **Purpose**: A **custom dictionary** for spell checkers (Visual Studio, VS Code extensions) containing technical terms and project-specific words.
 
@@ -644,7 +644,7 @@ slnf
 
 ### 10.1 `.github/workflows/`
 
-**Location**: [`/.github/workflows/`](c:/Workspace/Boilerplate/.github/workflows/)
+**Location**: [`/.github/workflows/`](/.github/workflows/)
 
 **Purpose**: Contains **GitHub Actions workflows** for Continuous Integration and Continuous Deployment.
 
@@ -684,7 +684,7 @@ slnf
 
 ### 11.1 `.devcontainer/`
 
-**Location**: [`/.devcontainer/`](c:/Workspace/Boilerplate/.devcontainer/)
+**Location**: [`/.devcontainer/`](/.devcontainer/)
 
 **Purpose**: Configuration for **VS Code Dev Containers** and **GitHub Codespaces**.
 

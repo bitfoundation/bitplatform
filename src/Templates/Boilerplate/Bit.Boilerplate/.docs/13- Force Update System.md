@@ -329,7 +329,7 @@ When the force update message is published, a snackbar is shown to the user.
 
 **File**: [`src/Client/Boilerplate.Client.Core/Components/Layout/ForceUpdateSnackBar.razor`](/src/Client/Boilerplate.Client.Core/Components/Layout/ForceUpdateSnackBar.razor)
 
-```cshtml
+```xml
 <BitSnackBar @ref="bitSnackBar" AutoDismiss="false" Persistent>
     <TitleTemplate>
         <BitStack FitHeight>
