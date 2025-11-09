@@ -81,6 +81,22 @@ In Production, the user would see:
 In Development, the user would see:
 > "System.NullReferenceException: Object reference not set to an instance of an object. at MyComponent.OnInitAsync()..."
 
+**This behavior is controlled by the `SharedExceptionHandler`:**
+
+```csharp
+// From src/Shared/Services/SharedExceptionHandler.cs
+protected string GetExceptionMessageToShow(Exception exception)
+{
+    if (exception is KnownException)
+        return exception.Message; // Show actual message for Known Exceptions
+
+    if (AppEnvironment.IsDevelopment())
+        return exception.ToString(); // Show full details in Development
+
+    return Localizer[nameof(AppStrings.UnknownException)]; // Generic message in Production
+}
+```
+
 ---
 
 ## Safe Exception Throwing
@@ -220,7 +236,7 @@ if (signInResult.IsLockedOut)
 }
 ```
 
-In this example:
+In these examples:
 - `WithData("UserId", user.Id)`: Logged on the server, **NOT sent to client**
 - `WithExtensionData("TryAgainIn", tryAgainIn)`: **Sent to client** in the error response
 
@@ -368,19 +384,23 @@ From [`src/Client/Boilerplate.Client.Core/Components/Pages/Identity/SignIn/SignI
 
 ```xml
 <EditForm Model="model" OnSubmit="WrapHandled(DoSignIn)" novalidate>
+    <AppDataAnnotationsValidator @ref="validatorRef" />
+    
     <!-- Form fields -->
     
-    <BitButton ButtonType="BitButtonType.Submit">
+    <BitButton ButtonType="BitButtonType.Submit" AutoLoading IsEnabled="isWaiting is false">
         @Localizer[nameof(AppStrings.SignIn)]
     </BitButton>
 </EditForm>
 
-<BitButton OnClick="WrapHandled(() => SendOtp(resend: true))">
-    @Localizer[nameof(AppStrings.Resend)]
+<BitButton OnClick="WrapHandled(PasswordlessSignIn)" 
+           IconName="@BitIconName.Fingerprint"
+           IsEnabled="isWaiting is false">
+    Passwordless Sign-In
 </BitButton>
 ```
 
-From [`src/Client/Boilerplate.Client.Core/Components/Pages/Identity/ResetPasswordPage.razor`](/src/Client/Boilerplate.Client.Core/Components/Pages/Identity/ResetPasswordPage.razor):
+**Implementation of WrapHandled() in AppComponentBase:**
 
 ```xml
 <EditForm Model="model" OnValidSubmit="WrapHandled(Submit)" novalidate>
@@ -402,7 +422,7 @@ Without `WrapHandled()`, unhandled exceptions in event handlers would:
 3. Provide a **poor user experience**
 
 With `WrapHandled()`:
-1. Exception is **caught and logged** with full context
+1. Exception is **caught and logged** with full context (file path, line number, member name)
 2. User sees a **friendly error message**
 3. Component **remains functional**
 4. No Error Boundary triggered
@@ -647,6 +667,13 @@ SharedExceptionHandler (Shared)
 - **Server-specific** logic (HTTP responses, status codes) is in `ServerExceptionHandler`
 - **Client-specific** logic (message boxes, snack bars) is in `ClientExceptionHandlerBase`
 - **Platform-specific** customization (Firebase, Windows Error Reporting) is in platform handlers
+
+**Key Benefits:**
+1. **Code Reuse:** Common logic is shared across all platforms
+2. **Separation of Concerns:** Each handler focuses on its platform's needs
+3. **Extensibility:** Easy to add platform-specific error tracking
+4. **Consistency:** Same error handling patterns across all platforms
+5. **Maintainability:** Changes to shared logic automatically apply everywhere
 
 ---
 

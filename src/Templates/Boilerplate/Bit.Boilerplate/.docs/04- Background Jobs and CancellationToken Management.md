@@ -24,10 +24,12 @@ Welcome to **Stage 4** of the Boilerplate project tutorial! In this stage, we'll
 
 All API methods in this project receive a `CancellationToken` parameter that **automatically cancels operations** when:
 
-- The **user navigates away** from the current page
-- The **browser tab is closed**
-- The **HTTP request is aborted** by the client
+- The **user navigates away** from a page
+- The **browser/app is closed**
+- A **new request supersedes a previous one** (e.g., navigating to page 2 of a data grid while page 1 is still loading)
 - The **component is disposed** in Blazor
+
+**Important Note**: For API methods that return `IQueryable`, cancellation happens **implicitly** - you don't need to manually pass the token to EF Core queries because OData and Entity Framework Core handle it automatically.
 
 This ensures that server resources are not wasted processing requests that the user no longer needs.
 
@@ -168,15 +170,15 @@ And in the Razor file ([`TodoPage.razor`](/src/Client/Boilerplate.Client.Core/Co
 If a user clicks "Save" to update a Todo item and then **immediately**:
 
 - Navigates to another page
-- Closes the browser tab
-- Hits the browser's back button
+- Closes the browser/app
+- Performs any action that triggers navigation
 
 The save operation is **automatically canceled**.
 
 #### Why This is OK
 
 The user didn't wait for the result, which could be:
-- An error (e.g., validation failure, network error)
+- An error (e.g., validation failure, network error, duplicate product name)
 - A success confirmation
 
 Since they didn't wait, canceling the operation is the **logical behavior**. The user has already indicated (by navigating away) that they're no longer interested in the result.
@@ -193,6 +195,9 @@ This is useful when:
 - You're performing a critical operation that **must complete**
 - You want to **warn the user** before they navigate away
 - You need to **confirm** if the user really wants to leave
+- You have unsaved changes that would be lost
+
+**Important**: Use this only for **short critical operations**. For long-running tasks, use background jobs instead.
 
 ### Real-World Example
 
@@ -252,6 +257,11 @@ Instead of making the user wait, we **enqueue the task** and let it run in the b
 - Navigate away immediately
 - Close their browser
 - Come back later to check the result
+
+**Key Benefits:**
+- Operations are queued and processed asynchronously
+- Server restarts or crashes don't lose the job
+- Jobs are persisted in the database and automatically resume
 
 ---
 
@@ -382,8 +392,9 @@ The job runner is registered as a scoped service so it has access to all the sam
 In this stage, you learned:
 
 ✅ **CancellationToken** automatically cancels operations when users navigate away or close their browser  
+✅ For API methods returning `IQueryable`, cancellation happens **implicitly** through OData and EF Core  
 ✅ `CurrentCancellationToken` in `AppComponentBase` provides automatic token management for Blazor components  
-✅ `NavigationLock` prevents navigation when you have critical operations or unsaved changes  
+✅ `NavigationLock` prevents navigation when you have critical operations or unsaved changes (for **short operations only**)  
 ✅ **Background Jobs** with Hangfire allow long-running tasks without making users wait  
 ✅ `PhoneServiceJobsRunner` demonstrates a real-world background job implementation with retry logic  
 ✅ Hangfire provides **persistence, reliability, and scalability** for background tasks
@@ -394,7 +405,7 @@ In this stage, you learned:
 
 1. **Always pass CancellationToken**: Include `CancellationToken cancellationToken` in all async API methods
 2. **Use CurrentCancellationToken**: In Blazor components, always use `CurrentCancellationToken` when calling APIs
-3. **Use NavigationLock wisely**: Only prevent navigation when absolutely necessary (unsaved changes, critical operations)
+3. **Use NavigationLock wisely**: Only prevent navigation when absolutely necessary (unsaved changes, **short** critical operations)
 4. **Background jobs for long tasks**: If it takes more than a few seconds, consider using a background job
 5. **Configure retry policies**: Use `[AutomaticRetry]` with appropriate attempt counts and delays for your use case
 6. **Handle exceptions properly**: In background jobs, distinguish between transient errors (should retry) and business logic errors (shouldn't retry)

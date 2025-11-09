@@ -335,13 +335,15 @@ Example from [`src/Shared/appsettings.Development.json`](/src/Shared/appsettings
 {
     "Logging": {
         "LogLevel": {
-            "Default": "Trace"
+            "Default": "Information",
+            "Microsoft.AspNetCore*": "Warning",
+            "System.Net.Http.HttpClient.*.LogicalHandler": "Warning"
         }
     }
 }
 ```
 
-This increases logging verbosity in Development without affecting Production.
+This increases logging verbosity in Development (from "Warning" to "Information") without affecting Production.
 
 ## Configuration Implementation Details
 
@@ -469,7 +471,7 @@ The project supports three environments:
 
 Environment is determined by `AppEnvironment.Current` which is set during build time based on the `APP_ENVIRONMENT` MSBuild property.
 
-See [`Directory.Build.props`](/src/Directory.Build.props) for environment configuration and [`AppEnvironment.cs`](/src/Shared/Enums/AppEnvironment.cs) for the environment enum.
+See [`Directory.Build.props`](/src/Directory.Build.props) for environment configuration and [`AppEnvironment.cs`](/src/Shared/Services/AppEnvironment.cs) for the environment service.
 
 ## Summary
 

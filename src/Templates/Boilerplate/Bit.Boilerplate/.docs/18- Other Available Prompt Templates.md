@@ -70,11 +70,15 @@ This project includes several specialized prompt templates designed to help you 
 - Creates a modernization inventory of all HTML elements that can be replaced
 - Uses DeepWiki to research appropriate Bit.BlazorUI components
 - Replaces HTML elements with proper Bit.BlazorUI components:
-  - `<button>` → `BitButton`
+  - `<button>` → `BitButton`, `BitActionButton`
   - `<input type="text">` → `BitTextField`
   - `<select>` → `BitDropdown`
+  - `<input type="checkbox">` → `BitCheckbox`
+  - `<input type="radio">` → `BitChoiceGroup`
   - `<table>` → `BitDataGrid`
   - Generic divs → `BitStack`, `BitCard`
+  - Navigation → `BitNavBar`, `BitBreadcrumb`, `BitNav`
+  - Lists → `BitBasicList`
 - Converts custom CSS to theme-aware styling using `$bit-color-*` variables
 - Uses `::deep` selectors for proper component styling
 - Updates event handlers to use `WrapHandled` pattern
@@ -82,11 +86,12 @@ This project includes several specialized prompt templates designed to help you 
 
 **Workflow steps**:
 1. Analyzes `.razor`, `.razor.cs`, and `.razor.scss` files
-2. Creates inventory of replaceable elements
+2. Creates inventory of replaceable elements (form, layout, navigation, data display)
 3. Researches specific Bit.BlazorUI components via DeepWiki
 4. Implements replacements with proper properties and events
-5. Converts styling to theme-aware approach
-6. Verifies the build succeeds
+5. Converts styling to theme-aware approach using `$bit-color-*` variables and `::deep` selectors
+6. Updates code-behind for component-specific logic
+7. Verifies the build succeeds
 
 **Example usage**: "Run bitify.prompt.md on the UserProfile.razor page to replace all HTML elements with Bit.BlazorUI components"
 

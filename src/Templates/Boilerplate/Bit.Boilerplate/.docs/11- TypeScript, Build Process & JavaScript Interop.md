@@ -225,12 +225,15 @@ export class App {
         };
     }
 
+    /* Checks for and applies updates if available.
+       Called by WebAppUpdateService.cs when the user clicks the app version 
+       or when ForceUpdateSnackbar.razor appears after a forced update. */
     public static async tryUpdatePwa(autoReload: boolean) {
-        const bswup = (window as any).BitBswup;
+        const bswup = (window as any).BitBswup; // https://bitplatform.dev/bswup
         if (!bswup) return;
 
         if (autoReload) {
-            if (await bswup.skipWaiting()) return;
+            if (await bswup.skipWaiting()) return; // Use new service worker if available and reload
         }
 
         const bswupProgress = (window as any).BitBswupProgress;
@@ -381,7 +384,7 @@ After running the commands, your `package.json` should look like this:
 
 ### Step 3: Add TypeScript Method in App.ts
 
-Add this new method to the `App` class in [`Scripts/App.ts`](/src/Client/Boilerplate.Client.Core/Scripts/App.ts):
+Add this import at the top and new method to the `App` class in [`Scripts/App.ts`](/src/Client/Boilerplate.Client.Core/Scripts/App.ts):
 
 ```typescript
 import { v4 as uuidv4 } from 'uuid';
@@ -550,7 +553,11 @@ The build process is optimized for speed:
        return "Hello from TypeScript!";
    }
    ```
-3. Import in `Scripts/App.ts` if needed
+3. Import in `Scripts/index.ts` and expose on window if needed:
+   ```typescript
+   import { myHelper } from './MyHelpers';
+   (window as any).myHelper = myHelper;
+   ```
 4. Build the project - TypeScript compiler and esbuild will handle it automatically
 
 ### Adding a New npm Package
@@ -579,5 +586,6 @@ In Stage 11, you learned:
 ✅ **Extension Methods**: How to create strongly-typed wrappers for JavaScript functions  
 ✅ **Adding Packages**: Complete workflow for adding new npm packages (demo with `uuid`)  
 ✅ **Build Process Flow**: Understanding the automated build pipeline  
+✅ **Entry Point**: How `Scripts/index.ts` serves as the entry point for bundling  
 
 ---

@@ -244,6 +244,96 @@ section {
 - Uses `::deep` selector to style child components (explained in detail below)
 - Uses theme color variables like `$bit-color-background-secondary` for dark/light mode support
 
+### Navigation Integration
+
+For a page to be accessible in the application, it needs to be added to the navigation system:
+
+#### Adding to NavBar
+**Location**: [`/src/Client/Boilerplate.Client.Core/Components/Layout/NavBar.razor`](/src/Client/Boilerplate.Client.Core/Components/Layout/NavBar.razor)
+
+```xml
+<BitNavBar TItem="BitNavBarOption" Style="width:100%">
+    <BitNavBarOption Text="@Localizer[nameof(AppStrings.Home)]" 
+                     IconName="@BitIconName.Home" 
+                     Url="@PageUrls.Home" />
+    
+    <BitNavBarOption Text="@Localizer[nameof(AppStrings.Terms)]" 
+                     IconName="@BitIconName.EntityExtraction" 
+                     Url="@PageUrls.Terms" />
+</BitNavBar>
+```
+
+#### Adding to Navigation Panel
+**Location**: [`/src/Client/Boilerplate.Client.Core/Components/Layout/MainLayout.razor.items.cs`](/src/Client/Boilerplate.Client.Core/Components/Layout/MainLayout.razor.items.cs)
+
+```csharp
+navPanelItems.Add(new()
+{
+    Text = localizer[nameof(AppStrings.About)],
+    IconName = BitIconName.Info,
+    Url = PageUrls.About,
+});
+```
+
+This ensures the page appears in both the mobile navbar and desktop navigation panel.
+
+### Cross-Platform Pages: Platform-Specific Components
+
+Some pages need access to native platform features (e.g., device info, native APIs). Instead of placing them in `Boilerplate.Client.Core` and using dependency injection or pub-sub patterns, you can create **platform-specific pages** directly in platform projects.
+
+#### Example: AboutPage
+
+The `AboutPage` demonstrates this pattern by existing in multiple platform projects:
+- [`/src/Client/Boilerplate.Client.Maui/Components/Pages/AboutPage.razor`](/src/Client/Boilerplate.Client.Maui/Components/Pages/AboutPage.razor)
+- [`/src/Client/Boilerplate.Client.Windows/Components/Pages/AboutPage.razor`](/src/Client/Boilerplate.Client.Windows/Components/Pages/AboutPage.razor)
+- [`/src/Client/Boilerplate.Client.Web/Components/Pages/AboutPage.razor`](/src/Client/Boilerplate.Client.Web/Components/Pages/AboutPage.razor)
+
+**Benefits of this approach:**
+- ✅ Direct access to native platform features without DI or interfaces
+- ✅ Platform-specific implementations without conditional compilation
+- ✅ Cleaner code - no abstraction layers needed
+
+**Example from `AboutPage.razor` in Maui project:**
+
+```xml
+@attribute [Route(PageUrls.About)]
+@inherits AppPageBase
+
+<section>
+    <BitStack AutoWidth>
+        <BitText>App Name: <b>@appName</b></BitText>
+        <BitText>App Version: <b>@appVersion</b></BitText>
+        <BitText>OS: <b>@platform</b></BitText>
+        <BitText>OEM: <b>@oem</b></BitText>
+    </BitStack>
+</section>
+```
+
+The code-behind can directly access MAUI APIs without needing an interface:
+```csharp
+// Direct access to MAUI features
+var appName = AppInfo.Current.Name;
+var platform = DeviceInfo.Current.Platform;
+```
+
+#### SCSS Support in Platform Projects
+
+All platform projects (Maui, Windows, Web) are configured to support SCSS compilation. Check the `.csproj` files:
+
+**In `Boilerplate.Client.Maui.csproj`, `Boilerplate.Client.Windows.csproj`, and `Boilerplate.Client.Web.csproj`:**
+
+```xml
+<Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
+    <CallTarget Targets="BuildCssFiles" />
+</Target>
+
+<Target Name="BuildCssFiles">
+    <Exec Command="../Boilerplate.Client.Core/node_modules/.bin/sass Components:Components --style compressed --silence-deprecation=import --update --color" />
+</Target>
+```
+
+This means you can create `AboutPage.razor.scss` in any of these projects, and it will be automatically compiled and scoped to that component.
+
 ---
 
 ## 2. SCSS Styling Architecture
@@ -450,10 +540,30 @@ By default, component styles are scoped and don't affect child components. When 
 
 **Important Note:** Each Bit.BlazorUI component has its own **CSS variables** and **styling parameters** (`Styles` and `Classes` properties) that allow you to style nested child elements **without needing `::deep`** in most cases.
 
-**Example using `Styles` parameter:**
+**Example using `Styles` parameter from `SignOutConfirmDialog.razor`:**
 ```xml
-<BitDropdown Styles="@(new() { Container="height:32px;background-color:var(--bit-clr-bg-sec)" })" />
+<BitDialog @bind-IsOpen="isSignOutDialogOpen"
+           Styles="@(new() { OkButton = "width:100%", CancelButton = "width:100%" })" />
 ```
+
+**Example using `Classes` parameter from `AppMenu.razor`:**
+```xml
+<BitCallout @bind-IsOpen="isMenuOpen"
+            Classes="@(new() { Callout = "app-menu-callout" })">
+    <!-- Content -->
+</BitCallout>
+```
+
+**Why this approach is preferred:**
+- ✅ More explicit and type-safe
+- ✅ IntelliSense support for nested element names
+- ✅ No need for `::deep` selector
+- ✅ Component library defines the styling contract
+
+**When to use `::deep` vs `Styles`/`Classes`:**
+- Use `Styles`/`Classes` parameters when the component provides them (preferred)
+- Use `::deep` when you need to style elements that don't have dedicated parameters
+- Use component-specific CSS variables for theme customization
 
 This approach is preferred when available, as it's more explicit and type-safe.
 
@@ -531,6 +641,7 @@ When you ask questions in **GitHub Copilot Chat** or give commands related to UI
 - "Show me BitDataGrid pagination examples"
 - "How to add icons to BitNavMenu items?"
 - "What properties does BitChart have?"
+- "How can I implement a Grid System and layout using BitGrid and BitStack components, especially if I'm familiar with the Bootstrap grid system?"
 
 The DeepWiki system handles the documentation lookup automatically!
 
@@ -756,17 +867,23 @@ In this stage, you learned about:
 
 ✅ **Three-File Component Structure**: `.razor` (markup), `.razor.cs` (logic), `.razor.scss` (styles)
 
+✅ **Navigation Integration**: How to add pages to `NavBar.razor` and `MainLayout.razor.items.cs` for proper navigation
+
+✅ **Cross-Platform Pages**: Creating platform-specific pages in `Boilerplate.Client.Maui`, `Boilerplate.Client.Windows`, and `Boilerplate.Client.Web` for direct access to native features
+
 ✅ **SCSS Styling Architecture**:
    - Isolated component styles (`.razor.scss`)
    - Global styles (`app.scss`)
    - Theme color variables (`_bit-css-variables.scss`)
    - Using `::deep` selector to style child components
+   - SCSS support configured in all platform projects
 
 ✅ **Always Use Theme Variables**: `$bit-color-background-primary`, `$bit-color-foreground-primary`, etc. for dark/light mode support
 
 ✅ **Bit.BlazorUI Components**: Use these instead of generic HTML elements
    - Documentation: https://blazorui.bitplatform.dev
    - Automatic DeepWiki integration - just ask questions naturally!
+   - Prefer `Styles` and `Classes` parameters over `::deep` when available
 
 ✅ **Navigation with PageUrls**: Centralized route constants for compile-time safety
 

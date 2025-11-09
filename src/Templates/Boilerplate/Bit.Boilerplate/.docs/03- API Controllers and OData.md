@@ -2,6 +2,8 @@
 
 Welcome to Stage 3! In this stage, you'll learn how the project implements API controllers, uses OData for powerful query capabilities, and follows best practices for building efficient, secure, and scalable APIs.
 
+This stage provides a comprehensive exploration of the backend API architecture, demonstrating real examples from the actual project codebase with clickable, navigable file references.
+
 ---
 
 ## Table of Contents

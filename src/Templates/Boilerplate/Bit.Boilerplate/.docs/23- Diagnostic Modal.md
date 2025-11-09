@@ -6,6 +6,22 @@ The **Diagnostic Modal** is an incredibly powerful built-in troubleshooting tool
 
 Located at [`src/Client/Boilerplate.Client.Core/Components/Layout/Diagnostic/AppDiagnosticModal.razor`](/src/Client/Boilerplate.Client.Core/Components/Layout/Diagnostic/AppDiagnosticModal.razor), the Diagnostic Modal is a special UI component that displays detailed diagnostic information about the running application in real-time. It serves as an **in-app troubleshooting console** that works even on mobile devices where traditional developer tools are unavailable.
 
+## 🎯 Hands-On Exploration (STRONGLY RECOMMENDED)
+
+**Before diving into the documentation**, we **highly recommend** experiencing the Diagnostic Modal firsthand:
+
+1. Visit **https://bitplatform.dev/demos**
+2. Open any published demo app (Admin Panel, Sales Dashboard, etc.)
+3. Click **7 times** on the header OR press **Ctrl+Shift+X**
+4. Explore all features:
+   - View telemetry context
+   - Filter and search logs
+   - Test diagnostic API
+   - Try utility buttons
+   - View detailed log information
+
+This hands-on experience will give you a much better understanding of the tool's capabilities and value than reading documentation alone.
+
 ---
 
 ## How to Access the Diagnostic Modal
@@ -34,9 +50,11 @@ App.showDiagnostic()
 
 ## Key Features
 
+The Diagnostic Modal provides three main areas of functionality:
+
 ### 1. **Telemetry Context Viewer**
 
-Displays comprehensive application context information:
+Displays comprehensive application context information including:
 - **User Information**: User ID, email, roles, session details
 - **Device Information**: Platform, OS version, browser/app version
 - **Application State**: Environment (Dev/Staging/Production), culture/locale settings
@@ -234,24 +252,6 @@ The modal uses `[AutoInject]` to inject required services:
 2. **Copy and Share**: Use the copy buttons to send information to support
 3. **Safe to Use**: All actions are safe and won't harm the application
 4. **Production Ready**: Available in production without special setup
-
----
-
-## Hands-On Exploration
-
-**🎯 Strongly Recommended**: To fully appreciate the power of the Diagnostic Modal:
-
-1. Visit **https://bitplatform.dev/demos**
-2. Open any published demo app (Admin Panel, Sales Dashboard, etc.)
-3. Click **7 times** on the header OR press **Ctrl+Shift+X**
-4. Explore all features:
-   - View telemetry context
-   - Filter and search logs
-   - Test diagnostic API
-   - Try utility buttons
-   - View detailed log information
-
-This hands-on experience will demonstrate how valuable this tool is for real-world troubleshooting scenarios.
 
 ---
 

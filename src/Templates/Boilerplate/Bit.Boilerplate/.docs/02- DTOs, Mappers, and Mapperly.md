@@ -301,7 +301,7 @@ return DbContext.Categories.Select(c => new CategoryDto
 
 ---
 
-## 5. Patch() Methods - Efficient Client-Side Updates
+## 5. Patch() Methods - Efficient Updates
 
 ### Server-Side Patch Usage
 
@@ -377,13 +377,15 @@ When the modal opens with a category to edit, instead of replacing the entire `c
 **Location**: [`ProfileSection.razor.cs`](/src/Client/Boilerplate.Client.Core/Components/Pages/Settings/ProfileSection.razor.cs)
 
 ```csharp
-protected override async Task OnParamsSetAsync()
+protected override void OnParametersSet()
 {
+    base.OnParametersSet();
+    
     // Prepare edit DTO from current user
     CurrentUser?.Patch(editUserDto);
 }
 
-private async Task DoSave()
+private async Task SaveProfile()
 {
     // Save changes back to current user object
     editUserDto.Patch(CurrentUser);

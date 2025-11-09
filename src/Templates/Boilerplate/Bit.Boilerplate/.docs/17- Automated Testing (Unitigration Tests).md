@@ -1,16 +1,20 @@
 # Stage 17: Automated Testing (Unitigration Tests)
 
-Welcome to **Stage 17**! In this stage, you'll learn about the comprehensive testing infrastructure built into this project. The project uses a hybrid approach called "**Unitigration Tests**" - tests that combine the ease of writting unit tests with the reliability of integration tests.
+Welcome to **Stage 17**! In this stage, you'll learn about the comprehensive testing infrastructure built into this project. The project uses a hybrid approach called "**Unitigration Tests**" - tests that combine the **ease of writing unit tests** with the **real server behavior of integration tests**.
 
 ## What Are Unitigration Tests?
 
-**Unitigration Tests** are a pragmatic testing approach that:
+**Unitigration Tests** = **Ease** of writing unit tests + **Real** server behavior of integration tests
+
+This is a pragmatic testing approach where tests are written as Integration Tests with full real server behavior (both UI tests and HTTP client-based tests), but with the flexibility to fake specific parts of the server when needed - similar to Unit Tests - making test writing much simpler.
+
+**Key Characteristics:**
 - Run against the **real application** with actual dependencies (database, services, middleware)
 - Allow **selective mocking** of specific services when needed
 - Provide **high confidence** like integration tests (real HTTP calls, real database)
 - Support both **API testing** (backend logic) and **UI testing** (end-to-end with Playwright)
 
-This approach is superior to traditional unit tests that mock everything, because it catches real integration issues while remaining maintainable.
+**Important Note:** Developers are welcome to write pure Unit Tests or pure Integration Tests if they prefer, but Unitigration Tests are recommended for most scenarios because this approach is superior to traditional unit tests that mock everything - it catches real integration issues while remaining maintainable and easy to write.
 
 ---
 
@@ -488,7 +492,11 @@ Console.WriteLine($"Signing in with {email}");
 public async Task UnauthorizedUser_Should_GetUnauthorizedException()
 {
     await using var server = new AppTestServer();
-    await server.Build().Start(TestContext.CancellationToken);
+    await server.Build(services =>
+    {
+        services.Replace(ServiceDescriptor.Scoped<IStorageService, TestStorageService>());
+        services.Replace(ServiceDescriptor.Transient<IAuthTokenProvider, TestAuthTokenProvider>());
+    }).Start(TestContext.CancellationToken);
 
     await using var scope = server.WebApp.Services.CreateAsyncScope();
     var userController = scope.ServiceProvider.GetRequiredService<IUserController>();

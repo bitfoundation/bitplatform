@@ -287,6 +287,10 @@ Located at [`src/Client/Boilerplate.Client.Core/Components/Layout/Diagnostic/App
 - **Clear logs** from memory
 - **Call diagnostics API** for advanced troubleshooting
 
+**Environment-Specific Behavior:**
+- The diagnostic modal shows **client-side logs** from the in-memory `DiagnosticLogger.Store`
+- This is useful for support staff who have remote access to a user's machine/device to troubleshoot issues
+
 ### Remote Troubleshooting
 
 For **live support scenarios**, support staff can request diagnostic logs from a user's active session:
@@ -470,6 +474,8 @@ From [`src/Server/Boilerplate.Server.Shared/Extensions/WebApplicationExtensions.
 ```csharp
 public static WebApplication MapAppHealthChecks(this WebApplication app)
 {
+    // Adding health checks endpoints to applications in non-development environments has security implications.
+    // See https://aka.ms/dotnet/aspire/healthchecks for details before enabling these endpoints in non-development environments.
     if (app.Environment.IsDevelopment())
     {
         var healthChecks = app.MapGroup("");
@@ -544,9 +550,13 @@ public partial class AppStorageHealthCheck : IHealthCheck
 }
 ```
 
-### Security Note
+### Built-in Health Checks
 
-⚠️ **Health check endpoints are only enabled in Development environment** by default. Before enabling in production, review the security implications at: https://aka.ms/dotnet/aspire/healthchecks
+The project automatically configures health checks for all infrastructure components registered in the `AddServerApiProjectServices` method, including:
+- Database connectivity
+- Disk storage availability (minimum 5GB free)
+- Blob storage (S3, Azure Blob, or local file system)
+- Any other registered services with health checks
 
 ---
 

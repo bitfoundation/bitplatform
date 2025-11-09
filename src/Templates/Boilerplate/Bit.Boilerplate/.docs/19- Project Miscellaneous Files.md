@@ -13,7 +13,7 @@ At the root of the Boilerplate project, you'll find several important files that
 - **Build Files**: `Directory.Build.props`, `Directory.Packages.props`
 - **Cleanup Scripts**: `Clean.bat`, `Clean.sh`
 - **Localization Config**: `Bit.ResxTranslator.json`
-- **IDE Settings**: `.vsconfig`, `settings.VisualStudio.json`, `.vscode/` folder
+- **IDE Settings**: `.vsconfig`, `settings.VisualStudio.json`, `.vscode/` folder (including `mcp.json` for GitHub Copilot)
 - **Source Control**: `.gitignore`
 - **Documentation**: `README.md`
 - **Spell Checking**: `vs-spell.dic`
@@ -437,7 +437,51 @@ chmod +x Clean.sh  # Make it executable (first time only)
 
 **Purpose**: Contains **VS Code workspace settings** and configurations.
 
-#### 6.3.1 `.vscode/settings.json`
+#### 6.3.1 `.vscode/mcp.json`
+
+**Location**: [`/.vscode/mcp.json`](/.vscode/mcp.json)
+
+**Purpose**: Configuration for **Model Context Protocol (MCP) servers** that extend GitHub Copilot's capabilities with specialized knowledge and tools.
+
+**Content**:
+
+```json
+{
+    "servers": {
+        "DeepWiki": {
+            "type": "sse",
+            "url": "https://mcp.deepwiki.com/mcp"
+        }
+    }
+}
+```
+
+**What is MCP?**:
+- **Model Context Protocol**: A standardized way to connect AI assistants (like GitHub Copilot) to external data sources and tools
+- **Server-Sent Events (SSE)**: The communication protocol used to stream data from the MCP server
+
+**DeepWiki Server**:
+- **Purpose**: Provides GitHub Copilot with deep knowledge about specific repositories
+- **In this project**: Configured to access the `bitfoundation/bitplatform` and `riok/mapperly` repositories
+- **How it helps**: When you ask Copilot questions about Bit.BlazorUI components, Mapperly, or other bitplatform features, it can query the DeepWiki server for accurate, up-to-date documentation
+
+**Example Usage**:
+- Ask: *"How do I use BitDataGrid with server-side paging?"*
+- Copilot uses the DeepWiki MCP server to fetch relevant information from the bitplatform repository
+- You get accurate answers based on the actual source code and documentation
+
+**Adding More MCP Servers**:
+You can add additional MCP servers to extend Copilot's capabilities further. For example:
+- Database documentation servers
+- Internal company knowledge bases
+- API documentation servers
+
+**Learn More**: Visit [modelcontextprotocol.io](https://modelcontextprotocol.io) for more information about MCP.
+
+---
+
+
+#### 6.3.2 `.vscode/settings.json`
 
 ```json
 {
@@ -466,7 +510,7 @@ chmod +x Clean.sh  # Make it executable (first time only)
   - `AppStrings.resx`, `AppStrings.fa.resx`, `AppStrings.nl.resx` nest under `AppStrings.resx`
 - **GitHub Copilot**: Auto-approve tool usage, code search enabled
 
-#### 6.3.2 `.vscode/extensions.json`
+#### 6.3.3 `.vscode/extensions.json`
 
 **Recommended Extensions**:
 
@@ -489,7 +533,7 @@ chmod +x Clean.sh  # Make it executable (first time only)
 
 When you open the project in VS Code, you'll be prompted to install these extensions.
 
-#### 6.3.3 `.vscode/tasks.json`
+#### 6.3.4 `.vscode/tasks.json`
 
 **Pre-configured Tasks**:
 
@@ -501,7 +545,7 @@ When you open the project in VS Code, you'll be prompted to install these extens
 
 **How to use**: Press `Ctrl+Shift+P` → `Tasks: Run Task` → Select a task
 
-#### 6.3.4 `.vscode/launch.json`
+#### 6.3.5 `.vscode/launch.json`
 
 **Debug Configurations**:
 
@@ -718,7 +762,8 @@ This stage covered all the miscellaneous configuration files in the project:
 7. **`Clean.bat` / `Clean.sh`**: Cleanup scripts for build artifacts
 8. **`Bit.ResxTranslator.json`**: AI-powered localization configuration
 9. **`.vsconfig` / `settings.VisualStudio.json`**: Visual Studio configuration
-10. **`.vscode/`**: VS Code workspace settings, tasks, and launch configurations
+10. **`.vscode/`**: VS Code workspace settings, tasks, launch configurations, and MCP configuration
+    - **`mcp.json`**: Model Context Protocol configuration for extending GitHub Copilot with DeepWiki knowledge
 11. **`.gitignore`**: Prevents tracking unnecessary files
 12. **`README.md`**: Project documentation
 13. **`vs-spell.dic`**: Custom spell checker dictionary

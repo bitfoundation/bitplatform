@@ -11,6 +11,7 @@ Entity Framework Core (EF Core) is the primary data access technology used in th
 In this stage, you'll learn about:
 - **AppDbContext**: The central database context for server-side data access
 - **Entity Models**: How domain entities are defined
+- **Nullable Reference Types**: Understanding nullability in entity properties
 - **Entity Type Configurations**: Best practices for configuring entity mappings
 - **Migrations**: How to manage database schema changes (optional for server-side)
 <!--#if (offlineDb == true)-->
@@ -167,6 +168,80 @@ public IList<Product> Products { get; set; } = [];
 - Represents the **relationship** between `Category` and `Product`
 - One category can have many products (one-to-many relationship)
 - EF Core uses this to generate foreign key relationships in the database
+
+---
+
+### Understanding Nullable Reference Types
+
+This project uses C# nullable reference types to improve code safety. Understanding nullability patterns in entity properties is crucial:
+
+#### String Properties with [Required]
+
+```csharp
+[Required, MaxLength(64)]
+public string? Name { get; set; }
+```
+
+**Why is it `string?` (nullable) despite the `[Required]` attribute?**
+
+- EF Core sets properties to `null` **before validation occurs**
+- The `[Required]` attribute is a **validation rule**, not a nullability constraint
+- During entity instantiation, the property starts as `null`
+- Only after validation does EF Core enforce the requirement
+- Using `string?` prevents compiler warnings while maintaining validation
+
+#### Navigation Property Patterns
+
+The project follows specific nullability patterns for relationships:
+
+##### The "One" Side (Single Entity Reference)
+
+```csharp
+[ForeignKey(nameof(CategoryId))]
+public Category? Category { get; set; }
+
+public Guid CategoryId { get; set; }
+```
+
+**Pattern: Nullable with `?`**
+
+- **Why nullable?** The related entity might not be loaded from the database
+- EF Core uses "lazy loading" or "explicit loading" - related entities aren't automatically fetched
+- Example: When you query `Products`, the `Category` property is `null` unless you explicitly include it:
+  ```csharp
+  // Category will be null
+  var product = await dbContext.Products.FirstAsync();
+  
+  // Category will be loaded
+  var product = await dbContext.Products.Include(p => p.Category).FirstAsync();
+  ```
+
+##### The "Many" Side (Collection Navigation Property)
+
+```csharp
+public IList<Product> Products { get; set; } = [];
+```
+
+**Pattern: Non-nullable and initialized with `= []`**
+
+- **Why non-nullable?** Collections should never be `null` to prevent `NullReferenceException`
+- **Why `= []`?** Ensures the collection is always initialized, even if no products exist
+- You can safely call `.Add()`, `.Count`, etc., without null checks
+- Example:
+  ```csharp
+  var category = new Category();
+  category.Products.Add(new Product()); // ✅ Safe - no null check needed
+  ```
+
+#### Nullable Reference Types Summary Table
+
+| Property Type | Nullable? | Example | Reason |
+|--------------|-----------|---------|--------|
+| **String with [Required]** | ✅ Yes (`string?`) | `public string? Name { get; set; }` | EF Core sets to `null` initially before validation |
+| **"One" Side Navigation** | ✅ Yes (`Category?`) | `public Category? Category { get; set; }` | Related entity might not be loaded from database |
+| **"Many" Side Collection** | ❌ No (initialized with `= []`) | `public IList<Product> Products { get; set; } = []` | Prevents null reference exceptions; safe to iterate |
+| **Value Type (non-nullable)** | ❌ No | `public Guid Id { get; set; }` | Value types have default values (e.g., `Guid.Empty`) |
+| **Value Type (nullable)** | ✅ Yes (`DateTimeOffset?`) | `public DateTimeOffset? BirthDate { get; set; }` | Explicitly allows null for optional values |
 
 ---
 
@@ -337,7 +412,15 @@ await dbContext.Database.EnsureCreatedAsync();
 await dbContext.Database.MigrateAsync();
 ```
 
-#### Step 2: Create Your First Migration
+#### Step 2: Delete Existing Database (If Applicable)
+
+**Important:** If you've already run the project with `EnsureCreatedAsync()`, you **must delete the existing database** before switching to migrations. 
+
+- `EnsureCreatedAsync()` and `MigrateAsync()` cannot be mixed
+- The migration system needs to start with a clean slate
+- Your database will be recreated with the initial migration
+
+#### Step 3: Create Your First Migration
 
 Open a terminal in the `Boilerplate.Server.Api` project directory and run:
 
@@ -347,22 +430,23 @@ dotnet ef migrations add InitialMigration --output-dir Data/Migrations --verbose
 
 This creates migration files in the `/Data/Migrations/` folder.
 
-#### Step 3: Apply the Migration
+#### Step 4: Apply the Migration
 
 The migration will be **automatically applied** when the application starts (thanks to `MigrateAsync()`).
+
+**Note:** You do **NOT** need to run `dotnet ef database update` or `Update-Database` manually. The `MigrateAsync()` call in the application startup code handles this automatically.
 
 ### Adding Future Migrations
 
 When you modify entities or configurations, create a new migration:
 
 ```bash
-dotnet ef migrations add AddNewPropertyToCategory --output-dir Data/Migrations --verbose
+dotnet ef migrations add <MigrationName> --output-dir Data/Migrations --verbose
 ```
 
-**Important:** Always use descriptive migration names that explain what changed (e.g., `AddEmailToUser`, `CreateProductsTable`).
+**Important:** Always use descriptive migration names that explain what changed (e.g., `AddEmailToUser`, `CreateProductsTable`, `AddPriceToProduct`).
 
 ---
-<!--#if (offlineDb == true)-->
 ## 5. Client-Side Offline Database
 
 ### What Makes It Different?
@@ -466,7 +550,6 @@ For comprehensive information about the client-side offline database, including:
 **See:** [`/src/Client/Boilerplate.Client.Core/Data/README.md`](/src/Client/Boilerplate.Client.Core/Data/README.md)
 
 ---
-<!--#endif-->
 
 ## Summary
 
@@ -476,8 +559,6 @@ In this stage, you learned about:
 ✅ **Entity Models**: Defined in `/src/Server/Boilerplate.Server.Api/Models/` with required properties like `Id` and `ConcurrencyStamp`  
 ✅ **Entity Type Configurations**: Best practice for separating mapping logic, located in `/src/Server/Boilerplate.Server.Api/Data/Configurations/`  
 ✅ **Migrations (Optional)**: For server-side, `EnsureCreatedAsync()` is used by default; migrations are recommended for production  
-<!--#if (offlineDb == true)-->
 ✅ **Client-Side Offline Database**: Uses `OfflineDbContext` with **mandatory migrations** and automatic application on startup
-<!--#endif-->
 
 ---
