@@ -6,7 +6,7 @@ Welcome to **Stage 17**! In this stage, you'll learn about the comprehensive tes
 
 **Unitigration Tests** = **Ease** of writing unit tests + **Real** server behavior of integration tests
 
-This is a pragmatic testing approach where tests are written as Integration Tests with full real server behavior (both UI tests and HTTP client-based tests), but with the flexibility to fake specific parts of the server when needed - similar to Unit Tests - making test writing much simpler.
+This is a pragmatic testing approach where tests are written as Integration Tests with full real server behavior (both UI tests and HTTP client-based tests), but with the flexibility to fake specific parts of the server **when needed** - similar to Unit Tests - making test writing much simpler.
 
 **Key Characteristics:**
 - Run against the **real application** with actual dependencies (database, services, middleware)
@@ -234,7 +234,7 @@ public partial class IdentityPagesTests : PageTest
 **Key Concepts:**
 
 ### PageTest Base Class
-- Inherit from `PageTest` (Microsoft.Playwright.MSTest)
+- Inherit from `PageTest` (Microsoft.Playwright.MSTest.v4)
 - Automatically provides `Page` and `Context` properties
 - Handles browser lifecycle (start/stop)
 
@@ -276,7 +276,6 @@ The [`.runsettings`](/src/Tests/.runsettings) file configures test execution:
     <Playwright>
         <LaunchOptions>
             <!--<Headless>true</Headless>-->
-            <!--<SlowMo>1000</SlowMo>-->
         </LaunchOptions>
     </Playwright>
 
@@ -350,201 +349,6 @@ pwsh src/Tests/bin/Debug/net10.0/playwright.ps1 install --force
 
 ---
 
-## Test-Specific Services
-
-### TestStorageService
-
-Located at [`Services/TestStorageService.cs`](/src/Tests/Services/TestStorageService.cs):
-
-```csharp
-public partial class TestStorageService : IStorageService
-{
-    private readonly Dictionary<string, string?> tempStorage = [];
-
-    public async ValueTask<string?> GetItem(string key)
-    {
-        tempStorage.TryGetValue(key, out string? value);
-        return value;
-    }
-
-    public async ValueTask SetItem(string key, string? value, bool persistent = true)
-    {
-        if (tempStorage.TryAdd(key, value) is false)
-        {
-            tempStorage[key] = value;
-        }
-    }
-}
-```
-
-**Purpose:** In API tests, there's no browser storage, so this in-memory implementation stores tokens, preferences, etc.
-
-### TestAuthTokenProvider
-
-Located at [`Services/TestAuthTokenProvider.cs`](/src/Tests/Services/TestAuthTokenProvider.cs):
-
-```csharp
-public partial class TestAuthTokenProvider : IAuthTokenProvider
-{
-    [AutoInject] private IStorageService storageService = default!;
-
-    public async Task<string?> GetAccessToken()
-    {
-        return await storageService.GetItem("access_token");
-    }
-}
-```
-
-**Purpose:** Reads authentication tokens from `TestStorageService` instead of browser storage.
-
----
-
-## Best Practices for Writing Tests
-
-### 1. Test Isolation
-- Each test should be **independent** and not rely on other tests
-- Use `await using var server = new AppTestServer()` to get a fresh server per test
-- Clean up resources with `IAsyncDisposable` pattern
-
-### 2. Arrange-Act-Assert Pattern
-```csharp
-[TestMethod]
-public async Task MyTest()
-{
-    // Arrange: Setup test server and dependencies
-    await using var server = new AppTestServer();
-    await server.Build().Start(TestContext.CancellationToken);
-
-    // Act: Perform the operation being tested
-    var result = await SomeOperation();
-
-    // Assert: Verify the outcome
-    Assert.AreEqual(expectedValue, result);
-}
-```
-
-### 3. Use Resource Strings
-```csharp
-// Good: Uses actual app strings
-await Page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);
-
-// Bad: Hardcoded strings
-await Page.GetByPlaceholder("Email").FillAsync(email);
-```
-
-### 4. Selective Mocking
-- Only mock services that **must** be faked (e.g., external APIs, browser storage)
-- Keep as much **real** infrastructure as possible (database, services, middleware)
-- This catches real integration issues that pure unit tests miss
-
-### 5. Meaningful Test Names
-```csharp
-// Good: Clearly describes what's being tested
-[TestMethod]
-public async Task SignIn_WithValidCredentials_Should_AuthenticateUser()
-
-// Bad: Vague or generic names
-[TestMethod]
-public async Task Test1()
-```
-
-### 6. Handle Async Properly
-```csharp
-// Always await async operations
-await authManager.SignIn(credentials, CancellationToken);
-
-// Always pass CancellationToken from TestContext
-TestContext.CancellationToken
-```
-
----
-
-## Debugging Tests
-
-### Visual Studio Debugging:
-1. Set a breakpoint in your test method
-2. Right-click the test in Test Explorer
-3. Select **Debug** → Debugger attaches to the running test
-
-### Playwright Debugging:
-1. Uncomment `<PWDEBUG>1</PWDEBUG>` in `.runsettings`
-2. Run the test → Playwright Inspector opens
-3. Step through UI interactions, inspect selectors, view screenshots
-
-### Video Debugging:
-1. Failed UI tests automatically save videos in `TestResults/Videos/`
-2. Each test gets its own folder with a video file
-3. Watch the video to see exactly what happened
-
-### Console Output:
-```csharp
-// Add logging to understand test flow
-Console.WriteLine($"Signing in with {email}");
-```
-
----
-
-## Common Testing Scenarios
-
-### Testing Authorization
-```csharp
-[TestMethod]
-public async Task UnauthorizedUser_Should_GetUnauthorizedException()
-{
-    await using var server = new AppTestServer();
-    await server.Build(services =>
-    {
-        services.Replace(ServiceDescriptor.Scoped<IStorageService, TestStorageService>());
-        services.Replace(ServiceDescriptor.Transient<IAuthTokenProvider, TestAuthTokenProvider>());
-    }).Start(TestContext.CancellationToken);
-
-    await using var scope = server.WebApp.Services.CreateAsyncScope();
-    var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
-
-    // Should throw because user is not authenticated
-    await Assert.ThrowsExactlyAsync<UnauthorizedException>(
-        () => userController.GetCurrentUser(TestContext.CancellationToken)
-    );
-}
-```
-
-### Testing Validation
-```csharp
-[TestMethod]
-public async Task CreateUser_WithInvalidEmail_Should_FailValidation()
-{
-    await using var server = new AppTestServer();
-    await server.Build().Start(TestContext.CancellationToken);
-
-    await using var scope = server.WebApp.Services.CreateAsyncScope();
-    var controller = scope.ServiceProvider.GetRequiredService<IUserController>();
-
-    var exception = await Assert.ThrowsExactlyAsync<ResourceValidationException>(
-        () => controller.Create(new UserDto { Email = "invalid-email" }, CancellationToken)
-    );
-
-    Assert.IsTrue(exception.Message.Contains("Email"));
-}
-```
-
-### Testing UI Navigation
-```csharp
-[TestMethod]
-public async Task ClickingLogo_Should_NavigateToHome()
-{
-    await using var server = new AppTestServer();
-    await server.Build().Start(TestContext.CancellationToken);
-
-    await Page.GotoAsync(new Uri(server.WebAppServerAddress, PageUrls.About).ToString());
-    
-    await Page.GetByRole(AriaRole.Link, new() { Name = "Logo" }).ClickAsync();
-    
-    await Expect(Page).ToHaveURLAsync(server.WebAppServerAddress.ToString());
-}
-```
-
----
-
 ## Continuous Integration (CI)
 
 The project includes GitHub Actions workflows that run tests automatically:
@@ -567,73 +371,5 @@ The project includes GitHub Actions workflows that run tests automatically:
     name: test-videos
     path: src/Tests/TestResults/Videos/
 ```
-
----
-
-## Advanced Topics
-
-### Custom Test Server Configuration
-```csharp
-await server.Build(
-    configureTestServices: services =>
-    {
-        // Replace services
-        services.Replace(ServiceDescriptor.Singleton<IEmailService, FakeEmailService>());
-    },
-    configureTestConfigurations: config =>
-    {
-        // Override configuration
-        config["IdentitySettings:PasswordRequiredLength"] = "4";
-    }
-).Start(TestContext.CancellationToken);
-```
-
----
-
-## Why Unitigration Tests Are Superior
-
-### Traditional Unit Tests (Pure Mocking):
-❌ Mock DbContext → Tests don't catch EF Core query issues  
-❌ Mock HttpClient → Tests don't catch serialization issues  
-❌ Mock everything → Tests become fragile and test implementation details  
-❌ False confidence → Tests pass but production breaks  
-
-### Traditional Integration Tests (E2E):
-❌ Slow → Require external infrastructure (database servers, Docker)  
-❌ Flaky → Network issues, timing problems  
-❌ Complex setup → Hard to maintain  
-❌ Hard to debug → Multiple moving parts  
-
-### Unitigration Tests (This Project):
-✅ **Reliable** → Real code paths, no network  
-✅ **Easy to debug** → Single process, standard debugging  
-✅ **High confidence** → Real middleware, authentication, validation  
-✅ **Flexible** → Selectively mock only what's necessary  
-✅ **Production-like** → Same code paths as production  
-
----
-
-## Summary
-
-You've learned about the comprehensive testing infrastructure in this project:
-
-1. **Unitigration Tests**: Hybrid approach combining speed and reliability
-2. **AppTestServer**: In-process web server for fast, isolated tests
-3. **API Testing**: Test backend logic with real dependencies
-4. **UI Testing**: End-to-end tests with Playwright
-5. **Test Configuration**: `.runsettings` for customization
-6. **Best Practices**: Isolation, meaningful names, selective mocking
-7. **Debugging Tools**: Video recording, Playwright Inspector, standard debugging
-
-The testing approach in this project gives you **confidence** that your code works correctly while keeping tests **fast** and **maintainable**.
-
----
-
-## Additional Resources
-
-- **Playwright Documentation**: https://playwright.dev/dotnet/
-- **MSTest Documentation**: https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-mstest-intro
-- **Aspire Testing**: https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/testing
-- **FakeItEasy Documentation**: https://fakeiteasy.github.io/
 
 ---

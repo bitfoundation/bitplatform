@@ -825,6 +825,22 @@ One best practice that has been applied in backend CD though is using 2 phase de
 then in another job, the artifact gets downloaded and deployed to the target environment.
 The reason for this is you can use different runners for build and deployment, so the 2nd one can be a lightweight runner without any SDKs installed, so it will be much more secure as a agent that have direct access to your production environment.
 
+### Required explainations regarding to Expected app size
+
+Depending on `dotnet new bit-bp` and `dotnet publish` commands parameters, the app size is expected to be something between the following range:
+
+- **Web** => 3.5MB to 7MB
+Enabling/Disabling LLVM during `dotnet publish` command and `--offlineDb` parameter during `dotnet new bit-bp` command have huge impacts.
+---------------------------
+- **Android** => 18MB to 35MB
+Enabling/Disabling LLVM during `dotnet publish` command has the most impact. `dotnet new` parameters or x86/x64 don't have much affect on this. 
+---------------------------
+- **Windows** => 30MB to 55MB
+Enabling/Disabling AOT during `dotnet publish` command has the most impact. `dotnet new` parameters or x86/x64 don't have much affect on this.
+---------------------------
+- **iOS/macOS** => 120MB to 130MB
+---------------------------
+
 ---
 
 At the end of Stage 16, ask: **"Do you have any questions about CI/CD or environment configuration, or shall we proceed to Stage 17 (Automated Testing - Unitigration Tests)?"**

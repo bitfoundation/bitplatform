@@ -58,34 +58,6 @@ using var scope = logger.BeginScope(data);
 logger.LogError(exception, "Order processing failed");
 ```
 
-### Real Example from the Project
-
-Here's how exceptions are logged in [`ServerExceptionHandler.cs`](/src/Server/Boilerplate.Server.Api/Services/ServerExceptionHandler.cs):
-
-```csharp
-var data = new Dictionary<string, object?>()
-{
-    { "ActivityId", Activity.Current?.Id },
-    { "ParentActivityId", Activity.Current?.ParentId },
-    { "ServerAppSessionId", appSessionId },
-    { "ServerAppVersion", typeof(ServerExceptionHandler).Assembly.GetName().Version },
-    { "Culture", CultureInfo.CurrentUICulture.Name },
-    { "Environment", env.EnvironmentName },
-    { "ServerDateTime", DateTimeOffset.UtcNow.ToString("u") },
-};
-
-using var scope = logger.BeginScope(data);
-
-if (exception is KnownException)
-{
-    logger.LogError(exception, exceptionMessageToLog);
-}
-else
-{
-    logger.LogCritical(exception, exceptionMessageToLog);
-}
-```
-
 ---
 
 ## 2. Activity and AppActivitySource for Tracking Operations
@@ -129,6 +101,33 @@ catch (Exception ex)
     throw;
 }
 ```
+
+### Using Meters for Count Metrics
+For tracking **count metrics** (e.g., number of ongoing operations), use **OpenTelemetry's Meter**:
+
+```csharp
+// Define a counter at class level
+private static readonly UpDownCounter<long> ongoingConversationsCount = 
+    AppActivitySource.CurrentMeter.CreateUpDownCounter<long>(
+        "appHub.ongoing_conversations_count", 
+        "Number of ongoing conversations in the chatbot hub.");
+
+// Increment when operation starts
+ongoingConversationsCount.Add(1);
+
+try
+{
+    // Your long-running operation here
+    await ProcessConversation();
+}
+finally
+{
+    // Decrement when operation completes
+    ongoingConversationsCount.Add(-1);
+}
+```
+
+This pattern is used in `AppHub.Chatbot.cs` to track the number of active chatbot conversations in real-time, which can be monitored in the Aspire Dashboard, Azure Application Insights, or other observability tools.
 
 ### Benefits
 
@@ -186,38 +185,6 @@ The logging configuration is centralized in [`src/Shared/appsettings.json`](/src
 - **DiagnosticLogger**: `Information` level for in-app diagnostics
 - **Console**: Logs to device log/logcat on mobile platforms
 
-### Configuring Loggers in Code
-
-Located in [`src/Client/Boilerplate.Client.Core/Extensions/ILoggingBuilderExtensions.cs`](/src/Client/Boilerplate.Client.Core/Extensions/ILoggingBuilderExtensions.cs):
-
-```csharp
-public static ILoggingBuilder ConfigureLoggers(this ILoggingBuilder loggingBuilder, IConfiguration configuration)
-{
-    loggingBuilder.AddConfiguration(configuration.GetSection("Logging"));
-
-    if (AppEnvironment.IsDevelopment())
-    {
-        loggingBuilder.AddDebug();
-    }
-
-    if (!AppPlatform.IsBrowser) // Browser has its own WebAssemblyConsoleLoggerProvider.
-    {
-        loggingBuilder.AddConsole(options => configuration.GetRequiredSection("Logging:Console").Bind(options));
-    }
-
-    loggingBuilder.AddDiagnosticLogger();
-
-    loggingBuilder.AddSentry(options =>
-    {
-        options.Debug = AppEnvironment.IsDevelopment();
-        options.Environment = AppEnvironment.Current;
-        configuration.GetRequiredSection("Logging:Sentry").Bind(options);
-    });
-
-    return loggingBuilder;
-}
-```
-
 ---
 
 ## 4. In-App Diagnostic Logger
@@ -234,58 +201,15 @@ The Diagnostic Logger is a custom `ILogger` implementation that:
 
 ### Implementation
 
-Located at [`src/Client/Boilerplate.Client.Core/Services/DiagnosticLog/DiagnosticLogger.cs`](/src/Client/Boilerplate.Client.Core/Services/DiagnosticLog/DiagnosticLogger.cs):
-
-```csharp
-public partial class DiagnosticLogger : ILogger, IDisposable
-{
-    public static ConcurrentQueue<DiagnosticLogDto> Store { get; } = [];
-
-    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
-    {
-        if (IsEnabled(logLevel) is false) return;
-
-        var message = formatter(state, exception);
-
-        if (Store.Count >= 1_000)
-        {
-            Store.TryDequeue(out var _); // Remove oldest log to prevent memory overflow
-        }
-
-        Store.Enqueue(new()
-        {
-            CreatedOn = DateTimeOffset.Now,
-            Level = logLevel,
-            Message = message,
-            Category = Category,
-            ExceptionString = exception?.ToString(),
-            State = currentState?.ToDictionary(i => i.Key, i => i.Value?.ToString())
-        });
-    }
-}
-```
-
 ### Accessing the Diagnostic Modal
 
 There are **three ways** to open the Diagnostic Modal:
 
-1. **Click 7 times** on the spacer in the header
+1. **Click 7 times** on the spacer in the running app's header
 2. **Press** `Ctrl+Shift+X` (keyboard shortcut)
 3. **Run JavaScript** in browser dev tools: `App.showDiagnostic()`
 
 ### Diagnostic Modal UI
-
-Located at [`src/Client/Boilerplate.Client.Core/Components/Layout/Diagnostic/AppDiagnosticModal.razor`](/src/Client/Boilerplate.Client.Core/Components/Layout/Diagnostic/AppDiagnosticModal.razor).
-
-**Features:**
-- **Search logs** with text or regular expressions
-- **Filter by log level** (Information, Warning, Error, Critical)
-- **Filter by category** (e.g., `Microsoft.EntityFrameworkCore`, `Boilerplate.Client.Core.Services`)
-- **Sort** logs ascending or descending
-- **Copy** individual logs to clipboard
-- **View telemetry context** (user info, device info, app version, etc.)
-- **Clear logs** from memory
-- **Call diagnostics API** for advanced troubleshooting
 
 **Environment-Specific Behavior:**
 - The diagnostic modal shows **client-side logs** from the in-memory `DiagnosticLogger.Store`
@@ -295,7 +219,7 @@ Located at [`src/Client/Boilerplate.Client.Core/Components/Layout/Diagnostic/App
 
 For **live support scenarios**, support staff can request diagnostic logs from a user's active session:
 
-1. Support staff opens the user's profile in the admin panel
+1. Support staff opens the users page and find the user
 2. Clicks "View Diagnostic Logs" button
 3. The server sends a SignalR message to the user's device
 4. The device uploads its in-memory logs to the server
@@ -412,10 +336,8 @@ The Aspire Dashboard is a web-based UI that displays:
 When running the project with .NET Aspire (via `Boilerplate.Server.AppHost`), the dashboard is automatically available at:
 
 ```
-http://localhost:15888
+https://localhost:2030
 ```
-
-Or check the console output for the exact URL.
 
 ### Key Features
 
@@ -423,39 +345,8 @@ Or check the console output for the exact URL.
 - **Advanced Filtering**: Filter logs by level, category, service, time range
 - **Trace Visualization**: See how requests flow through your system
 - **Performance Analysis**: Identify slow operations and bottlenecks
-- **No Cost**: Free and included with .NET
 
 ---
-
-## 7. Critical Warning About Sensitive Data
-
-⚠️ **EXTREMELY IMPORTANT SECURITY WARNING** ⚠️
-
-**DO NOT log sensitive information** such as:
-- Passwords (plain text or hashed)
-- Credit card numbers
-- Social security numbers
-- API keys or secrets
-- Personal health information
-- Any other personally identifiable information (PII)
-
-### Why This Matters
-
-Logs are often:
-- Stored for extended periods
-- Accessible by multiple team members
-- Sent to third-party services (Sentry, Application Insights)
-- Subject to data privacy regulations (GDPR, HIPAA, etc.)
-
-### Best Practices
-
-```csharp
-// ❌ NEVER do this
-logger.LogInformation("User logged in with password: {Password}", password);
-
-// ✅ DO this instead
-logger.LogInformation("User {UserId} logged in successfully", userId);
-```
 
 ## 8. Health Checks
 
@@ -556,23 +447,5 @@ The project automatically configures health checks for all infrastructure compon
 - Database connectivity
 - Disk storage availability (minimum 5GB free)
 - Blob storage (S3, Azure Blob, or local file system)
-- Any other registered services with health checks
-
----
-
-## Summary
-
-In this stage, you learned about:
-
-1. **`ILogger<T>`** for structured logging with scopes
-2. **`AppActivitySource`** for tracking operation count and duration using OpenTelemetry
-3. **Logging configuration** in `appsettings.json` with multiple providers
-4. **Diagnostic Logger** - an in-memory logger for real-time troubleshooting with UI access
-5. **Easy integration** with Sentry and Azure Application Insights
-6. **Aspire Dashboard** for unified observability
-7. **Security best practices** - never log sensitive data
-8. **Health checks** for monitoring application health
-
-These tools provide comprehensive observability into your application's behavior, making it easier to debug issues, monitor performance, and ensure reliability in production.
 
 ---
