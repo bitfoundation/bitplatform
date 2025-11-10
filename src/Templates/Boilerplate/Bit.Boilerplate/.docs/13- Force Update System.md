@@ -16,7 +16,7 @@ The Force Update System is designed to maintain version compatibility between th
 
 The Force Update System consists of four main components:
 
-1. **Client-Side Version Header**: Every HTTP request includes version information
+1. **Client-Side Version Header**: Every HTTP request includes client-app version information
 2. **Server-Side Middleware**: Validates the version and throws an exception if unsupported
 3. **Exception Handling**: Catches the exception and publishes a force update message
 4. **Platform-Specific Update Logic**: Each platform handles the update differently
@@ -54,7 +54,7 @@ protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage 
 **Important Notes**:
 - These headers are **only added for internal API calls** (calls to your own backend)
 - External API calls don't include these headers to avoid CORS issues
-- This applies to **both HTTP requests and SignalR connections** (SignalR uses `HttpMessageHandlerFactory`)
+- This applies to **both HTTP requests and SignalR connections** (SignalR uses `HttpMessageHandlerFactory` for negotiation)
 
 ### SignalR Integration
 
@@ -425,31 +425,6 @@ Imagine this scenario:
 - They would only see the update prompt when they restart the app
 - This could lead to data corruption or errors if the API has changed
 
-### Use Cases
-
-This always-on validation is perfect for:
-
-1. **Breaking API Changes**: When you change DTOs, endpoints, or data structures
-2. **Security Vulnerabilities**: Force users to update immediately for critical patches
-3. **Database Migrations**: Ensure clients are compatible with new schema changes
-4. **Feature Deprecation**: Remove support for old features gracefully
-
----
-
-## Platform Comparison: Update Behavior
-
-Here's a summary of how each platform handles force updates:
-
-| Platform | Update Method | User Experience | Restart Required |
-|----------|--------------|-----------------|------------------|
-| **Web** | Service Worker auto-update | Automatic page reload | Yes (automatic) |
-| **Windows** | Velopack download & install | Automatic app restart | Yes (automatic) |
-| **Android** | Opens Google Play Store | Manual install | Yes (manual) |
-| **iOS** | Opens Apple App Store | Manual install | Yes (manual) |
-| **macOS** | Opens Mac App Store | Manual install | Yes (manual) |
-
-**Key Takeaway**: Web and Windows platforms provide the **best user experience** because updates are fully automatic. Mobile platforms require manual user action due to app store policies.
-
 ---
 
 ## Configuration Best Practices
@@ -506,25 +481,5 @@ This allows you to:
 1. Deploy breaking changes to the web app first
 2. Test with web users before forcing mobile users to update
 3. Give mobile users more time to update (app store approval delays)
-
----
-
-## Summary
-
-The Force Update System is a comprehensive solution for maintaining version compatibility:
-
-✅ **Strengths**:
-- Validates version on **every request** (not just at startup)
-- Platform-specific update logic (auto-update for Web/Windows, app store for mobile)
-- User-friendly UI with persistent snackbar
-- Configuration-driven (no code changes needed)
-- Integrated with exception handling system
-
-⚠️ **Considerations**:
-- Can be disruptive to active users
-- Mobile platforms require manual user action
-- Requires careful planning when deploying breaking changes
-
-**Best Practice**: Use this system for critical updates (breaking changes, security), but prefer backward-compatible API evolution when possible.
 
 ---

@@ -35,7 +35,7 @@
     <File Path=".github/prompts/scaffold.prompt.md" />
   </Folder>
   <Folder Name="/.SolutionItems/.docs/">
-    <File Path=".docs/00- Interactive Wiki.md" />
+    <File Path=".docs/00- Wiki.md" />
     <File Path=".docs/01- Entity Framework Core.md" />
     <File Path=".docs/02- DTOs, Mappers, and Mapperly.md" />
     <File Path=".docs/03- API Controllers and OData.md" />

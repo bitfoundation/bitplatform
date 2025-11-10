@@ -142,7 +142,7 @@ The `WithData()` extension method allows developers to attach **additional conte
 exception.WithData("key", value)
 
 // Multiple key-value pairs
-exception.WithData(new Dictionary<string, object?>
+exception.WithData(new()
 {
     { "UserId", userId },
     { "ProductId", productId },
@@ -173,7 +173,7 @@ if (user.EmailConfirmed)
 3. **Debugging:** Helps diagnose issues in production without exposing sensitive data to users
 4. **Traceability:** Connect exceptions to specific entities (User, Product, Order, etc.)
 
-**Note:** Data added with `WithData()` is **NOT sent to the client** - it's for server-side logging only. Use `WithExtensionData()` (see below) to send data to the client.
+**Note:** Data added with `WithData()` on the server is **NOT sent to the client** - it's for logging only. Use `WithExtensionData()` (see below) to send data to the client.
 
 ---
 
@@ -185,7 +185,7 @@ The `WithExtensionData()` extension method allows you to send **additional conte
 
 ### Important: Only Works with Known Exceptions
 
-**CRITICAL:** `WithExtensionData()` **ONLY** works with exceptions that inherit from `KnownException`. It will NOT work with unknown exceptions (for security reasons).
+**CRITICAL:** `WithExtensionData()` **ONLY** works with exceptions that inherit from `KnownException`.
 
 ### RFC 7807 Compliance
 
@@ -274,36 +274,12 @@ catch (KnownException e)
        .WithExtensionData("TryAgainIn", lockoutDuration);
    ```
 
-3. **Validation Errors:** Provide field-specific error details
-   ```csharp
-   throw new ResourceValidationException(...)
-       .WithExtensionData("FieldErrors", fieldErrorsList);
-   ```
-
-4. **Business Logic Errors:** Provide actionable information
+3. **Business Logic Errors:** Provide actionable information
    ```csharp
    throw new ConflictException("Product out of stock")
        .WithExtensionData("AvailableQuantity", 0)
        .WithExtensionData("NextRestockDate", restockDate);
    ```
-
-### Security Note
-
-Be careful **NOT to expose sensitive information** when using `WithExtensionData()`. This data is sent to the client and can be inspected by the user.
-
-**DON'T:**
-```csharp
-// ❌ Bad: Exposes sensitive information
-throw new UnauthorizedException("Invalid password")
-    .WithExtensionData("ActualPassword", storedPassword);
-```
-
-**DO:**
-```csharp
-// ✅ Good: Provides helpful context without exposing secrets
-throw new UnauthorizedException("Invalid credentials")
-    .WithExtensionData("AttemptsRemaining", remainingAttempts);
-```
 
 ---
 
@@ -418,44 +394,13 @@ From [`src/Client/Boilerplate.Client.Core/Components/Pages/Identity/SignIn/SignI
 
 Without `WrapHandled()`, unhandled exceptions in event handlers would:
 1. Trigger the **Error Boundary** (whole UI section crashes)
-2. **NOT be logged** properly with component context
-3. Provide a **poor user experience**
+2. Provide a **poor user experience**
 
 With `WrapHandled()`:
 1. Exception is **caught and logged** with full context (file path, line number, member name)
 2. User sees a **friendly error message**
 3. Component **remains functional**
 4. No Error Boundary triggered
-
----
-
-### Comparison: With vs Without WrapHandled()
-
-**❌ Without WrapHandled() (Bad):**
-```xml
-<BitButton OnClick="SaveData">Save</BitButton>
-
-@code {
-    private async Task SaveData()
-    {
-        // If this throws an exception, the Error Boundary is triggered!
-        await ApiClient.SaveProduct(product, CurrentCancellationToken);
-    }
-}
-```
-
-**✅ With WrapHandled() (Good):**
-```xml
-<BitButton OnClick="WrapHandled(SaveData)">Save</BitButton>
-
-@code {
-    private async Task SaveData()
-    {
-        // If this throws an exception, it's handled gracefully!
-        await ApiClient.SaveProduct(product, CurrentCancellationToken);
-    }
-}
-```
 
 ---
 
@@ -470,7 +415,6 @@ For **critical errors** that require user acknowledgment, a **message box** is d
 **When used:**
 - Unknown exceptions (bugs)
 - Critical business logic errors
-- Server connection failures that require immediate attention
 
 **Example:**
 ```
@@ -491,11 +435,6 @@ For **critical errors** that require user acknowledgment, a **message box** is d
 ### 2. Non-Interrupting Errors (Snack Bar)
 
 For **less critical errors** that don't require immediate action, a **snack bar** (toast notification) is displayed.
-
-**When used:**
-- Temporary network issues
-- `UnauthorizedException` (user will be redirected to sign-in)
-- `ServerConnectionException` (offline mode)
 
 **Example:**
 ```
@@ -613,7 +552,7 @@ The project includes multiple exception handlers for different platforms, all in
 
 **Platform-Specific Behavior:**
 - Inherits all behavior from `ClientExceptionHandlerBase`
-- Can be extended to add **browser-specific** error tracking (e.g., Google Analytics, Sentry)
+- Can be extended to add **browser-specific** error tracking (e.g., Google Analytics)
 
 ---
 
@@ -647,173 +586,5 @@ The project includes multiple exception handlers for different platforms, all in
 
 **Platform-Specific Behavior:**
 - Can integrate with **Windows-specific error reporting** (e.g., Windows Error Reporting API)
-- Can send telemetry to **Azure App Insights** or other services
-
----
-
-### Handler Hierarchy
-
-```
-SharedExceptionHandler (Shared)
-├── ServerExceptionHandler (Server)
-└── ClientExceptionHandlerBase (Client.Core)
-    ├── WebClientExceptionHandler (Client.Web)
-    ├── MauiExceptionHandler (Client.Maui)
-    └── WindowsExceptionHandler (Client.Windows)
-```
-
-**Why this architecture?**
-- **Shared logic** is in `SharedExceptionHandler` (DRY principle)
-- **Server-specific** logic (HTTP responses, status codes) is in `ServerExceptionHandler`
-- **Client-specific** logic (message boxes, snack bars) is in `ClientExceptionHandlerBase`
-- **Platform-specific** customization (Firebase, Windows Error Reporting) is in platform handlers
-
-**Key Benefits:**
-1. **Code Reuse:** Common logic is shared across all platforms
-2. **Separation of Concerns:** Each handler focuses on its platform's needs
-3. **Extensibility:** Easy to add platform-specific error tracking
-4. **Consistency:** Same error handling patterns across all platforms
-5. **Maintainability:** Changes to shared logic automatically apply everywhere
-
----
-
-## Best Practices
-
-### 1. Use Known Exceptions for Business Logic
-
-✅ **Good:**
-```csharp
-if (product.Stock < orderQuantity)
-{
-    throw new DomainLogicException(Localizer[nameof(AppStrings.InsufficientStock)])
-        .WithData("ProductId", product.Id)
-        .WithData("Available", product.Stock)
-        .WithData("Requested", orderQuantity);
-}
-```
-
-❌ **Bad:**
-```csharp
-if (product.Stock < orderQuantity)
-{
-    throw new InvalidOperationException("Not enough stock");
-    // This is an "Unknown Exception" - not user-friendly!
-}
-```
-
----
-
-### 2. Always Use WrapHandled() in Event Handlers
-
-✅ **Good:**
-```xml
-<BitButton OnClick="WrapHandled(SaveProduct)">Save</BitButton>
-```
-
-❌ **Bad:**
-```xml
-<BitButton OnClick="SaveProduct">Save</BitButton>
-```
-
----
-
-### 3. Add Context with WithData()
-
-✅ **Good:**
-```csharp
-throw new ResourceNotFoundException("Category not found")
-    .WithData("CategoryId", categoryId)
-    .WithData("UserId", currentUserId)
-    .WithData("Timestamp", DateTimeOffset.UtcNow);
-```
-
-❌ **Bad:**
-```csharp
-throw new ResourceNotFoundException("Category not found");
-// No context - hard to debug in production!
-```
-
----
-
-### 4. Use Enhanced Lifecycle Methods
-
-✅ **Good:**
-```csharp
-public partial class MyPage : AppPageBase
-{
-    protected override async Task OnInitAsync()
-    {
-        // Automatically handles exceptions!
-        await LoadData();
-    }
-}
-```
-
-❌ **Bad:**
-```csharp
-public partial class MyPage : AppPageBase
-{
-    protected override async Task OnInitializedAsync()
-    {
-        try
-        {
-            await LoadData();
-        }
-        catch (Exception ex)
-        {
-            // Manual exception handling - unnecessary!
-            ExceptionHandler.Handle(ex);
-        }
-    }
-}
-```
-
----
-
-### 5. Localize Exception Messages
-
-✅ **Good:**
-```csharp
-throw new DomainLogicException(Localizer[nameof(AppStrings.ProductNameAlreadyExists)])
-    .WithData("ProductName", product.Name);
-```
-
-❌ **Bad:**
-```csharp
-throw new DomainLogicException("Product name already exists");
-// Not localized - only works in English!
-```
-
----
-
-### 6. Don't Expose Sensitive Data with WithExtensionData()
-
-✅ **Good:**
-```csharp
-throw new UnauthorizedException("Invalid credentials")
-    .WithExtensionData("AttemptsRemaining", attemptsRemaining);
-```
-
-❌ **Bad:**
-```csharp
-throw new UnauthorizedException("Invalid password")
-    .WithExtensionData("ActualPassword", user.PasswordHash); // Security risk!
-```
-
----
-
-## Summary
-
-The Boilerplate project provides a comprehensive exception handling system that:
-
-✅ **Automatically handles exceptions** in components and pages  
-✅ **Does NOT crash the application** when exceptions occur  
-✅ **Displays user-friendly error messages** to end users  
-✅ **Logs detailed diagnostic information** for developers  
-✅ **Differentiates between known and unknown exceptions**  
-✅ **Supports multi-platform** (Server, Web, MAUI, Windows)  
-✅ **Integrates with telemetry** (Application Insights, Sentry, etc.)  
-✅ **Follows RFC 7807** for API error responses  
-✅ **Supports localization** for error messages  
 
 ---

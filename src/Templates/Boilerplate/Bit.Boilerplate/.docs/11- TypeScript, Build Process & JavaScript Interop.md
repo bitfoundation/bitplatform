@@ -58,7 +58,7 @@ This project uses **TypeScript** for type-safe JavaScript development, along wit
 ### What Each Package Does
 
 - **`typescript`**: The TypeScript compiler (`tsc`) that transforms `.ts` files to `.js`
-- **`esbuild`**: Ultra-fast JavaScript bundler that combines all JavaScript modules into a single `app.js` file
+- **`esbuild`**: Ultra-fast JavaScript bundler that combines all JavaScript modules into a single minified `app.js` file
 - **`sass`**: SCSS/Sass compiler that transforms `.scss` files to `.css`
 
 ---
@@ -143,7 +143,7 @@ The `.csproj` file defines custom MSBuild targets that run automatically during 
 - Compiles `Styles/app.scss` to `wwwroot/styles/app.css`
 - Processes component-specific `.razor.scss` files in the `Components` folder
 - Uses `--style compressed` for minified CSS output
-- Uses `--update` flag to only recompile changed files
+- Uses `--update` flag to only overwrite changed files
 
 ---
 
@@ -157,89 +157,8 @@ This is the main TypeScript file that exposes JavaScript functions to C# code:
 
 ```typescript
 export class App {
-    // For additional details, see the JsBridge.cs file.
-    private static jsBridgeObj: DotNetObject;
-
-    public static registerJsBridge(dotnetObj: DotNetObject) {
-        App.jsBridgeObj = dotnetObj;
-    }
-
-    public static showDiagnostic() {
-        return App.jsBridgeObj?.invokeMethodAsync('ShowDiagnostic');
-    }
-
-    public static publishMessage(message: string, payload: any) {
-        return App.jsBridgeObj?.invokeMethodAsync('PublishMessage', message, payload);
-    }
-
     public static getTimeZone(): string {
         return Intl.DateTimeFormat().resolvedOptions().timeZone;
-    }
-
-    public static openDevTools() {
-        const allScripts = Array.from(document.scripts).map(s => s.src);
-        const scriptAppended = allScripts.find(as => as.includes('npm/eruda'));
-
-        if (scriptAppended) {
-            (window as any).eruda.show();
-            return;
-        }
-
-        const script = document.createElement('script');
-        script.src = "https://cdn.jsdelivr.net/npm/eruda";
-        document.body.append(script);
-        script.onload = function () {
-            (window as any).eruda.init();
-            (window as any).eruda.show();
-        }
-    }
-
-    public static async getPushNotificationSubscription(vapidPublicKey: string) {
-        const registration = await navigator.serviceWorker.ready;
-        if (!registration) return null;
-
-        const pushManager = registration.pushManager;
-        if (!pushManager) return null;
-
-        let subscription = await pushManager.getSubscription();
-
-        if (!subscription) {
-            subscription = await pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: vapidPublicKey
-            });
-        }
-
-        const pushChannel = subscription.toJSON();
-        const p256dh = pushChannel.keys!['p256dh'];
-        const auth = pushChannel.keys!['auth'];
-
-        return {
-            deviceId: `${p256dh}-${auth}`,
-            platform: 'browser',
-            p256dh: p256dh,
-            auth: auth,
-            endpoint: pushChannel.endpoint
-        };
-    }
-
-    /* Checks for and applies updates if available.
-       Called by WebAppUpdateService.cs when the user clicks the app version 
-       or when ForceUpdateSnackbar.razor appears after a forced update. */
-    public static async tryUpdatePwa(autoReload: boolean) {
-        const bswup = (window as any).BitBswup; // https://bitplatform.dev/bswup
-        if (!bswup) return;
-
-        if (autoReload) {
-            if (await bswup.skipWaiting()) return; // Use new service worker if available and reload
-        }
-
-        const bswupProgress = (window as any).BitBswupProgress;
-        if (!bswupProgress) return;
-
-        bswupProgress.config({ autoReload });
-
-        bswup.checkForUpdate();
     }
 }
 ```
@@ -261,40 +180,6 @@ public static partial class IJSRuntimeExtensions
     public static ValueTask<string> GetTimeZone(this IJSRuntime jsRuntime)
     {
         return jsRuntime.InvokeAsync<string>("App.getTimeZone");
-    }
-
-    public static ValueTask<string> GoogleRecaptchaGetResponse(this IJSRuntime jsRuntime)
-    {
-        return jsRuntime.InvokeAsync<string>("grecaptcha.getResponse");
-    }
-
-    public static ValueTask<string> GoogleRecaptchaReset(this IJSRuntime jsRuntime)
-    {
-        return jsRuntime.InvokeAsync<string>("grecaptcha.reset");
-    }
-
-    public static async ValueTask<PushNotificationSubscriptionDto> GetPushNotificationSubscription(this IJSRuntime jsRuntime, string vapidPublicKey)
-    {
-        return await jsRuntime.InvokeAsync<PushNotificationSubscriptionDto>("App.getPushNotificationSubscription", vapidPublicKey);
-    }
-
-    /// <summary>
-    /// The return value would be false during pre-rendering
-    /// </summary>
-    public static bool IsInitialized(this IJSRuntime jsRuntime)
-    {
-        if (jsRuntime is null)
-            return false;
-
-        var type = jsRuntime.GetType();
-
-        return type.Name switch
-        {
-            "UnsupportedJavaScriptRuntime" => false, // pre-rendering
-            "RemoteJSRuntime" /* blazor server */ => (bool)type.GetProperty("IsInitialized")!.GetValue(jsRuntime)!,
-            "WebViewJSRuntime" /* blazor hybrid */ => type.GetField("_ipcSender", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(jsRuntime) is not null,
-            _ => true // blazor wasm
-        };
     }
 }
 ```
@@ -450,96 +335,6 @@ The build process will:
 
 ---
 
-## 6. Key Concepts & Best Practices
-
-### Why Use TypeScript?
-
-- **Type Safety**: Catches errors at compile-time instead of runtime
-- **IntelliSense**: Better IDE support with autocomplete and type checking
-- **Modern JavaScript Features**: Use latest JavaScript features with confidence
-- **Maintainability**: Easier to refactor and understand code
-
-### Why Use esbuild?
-
-- **Speed**: Extremely fast bundling (10-100x faster than webpack)
-- **Tree Shaking**: Removes unused code from bundles
-- **Single File Output**: Simplifies deployment and reduces HTTP requests
-- **Minification**: Reduces file size for production builds
-
-### Extension Methods Pattern
-
-Creating extension methods on `IJSRuntime` provides several benefits:
-
-1. **Type Safety**: Return types are strongly typed in C#
-2. **Reusability**: Methods can be called from any component
-3. **Discoverability**: IntelliSense shows available JavaScript functions
-4. **Error Handling**: Can add try-catch and validation logic in one place
-5. **Documentation**: XML comments provide inline documentation
-
-### Pre-rendering Considerations
-
-When pre-rendering is enabled, JavaScript is not available on the server. The `IsInitialized()` method helps detect this:
-
-```csharp
-protected override async Task OnAfterRenderAsync(bool firstRender)
-{
-    if (firstRender && JSRuntime.IsInitialized())
-    {
-        var timezone = await JSRuntime.GetTimeZone();
-        StateHasChanged();
-    }
-}
-```
-
----
-
-## 7. Build Process Summary
-
-### Visual Flow
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    dotnet build starts                      │
-└────────────────────────┬────────────────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────────────┐
-│          Step 1: InstallNodejsDependencies                  │
-│          Runs: npm install                                   │
-│          Creates: node_modules folder                        │
-└────────────────────────┬────────────────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────────────┐
-│          Step 2: BuildJavaScript                            │
-│          Runs: tsc (TypeScript → JavaScript)                │
-│          Runs: esbuild (Bundle + Minify)                    │
-│          Output: wwwroot/scripts/app.js                     │
-└────────────────────────┬────────────────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────────────┐
-│          Step 3: BuildCssFiles                              │
-│          Runs: sass (SCSS → CSS)                            │
-│          Output: wwwroot/styles/app.css                     │
-└────────────────────────┬────────────────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────────────┐
-│               Build Complete! 🎉                            │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Incremental Builds
-
-The build process is optimized for speed:
-
-- **TypeScript**: Only recompiles when `.ts`, `tsconfig.json`, or `package.json` changes
-- **npm install**: Only runs when `package.json` changes
-- **SCSS**: Only recompiles changed `.scss` files (via `--update` flag)
-
----
-
 ## 8. Common Scenarios
 
 ### Adding a New TypeScript File
@@ -557,33 +352,5 @@ The build process is optimized for speed:
    (window as any).myHelper = myHelper;
    ```
 4. Build the project - TypeScript compiler and esbuild will handle it automatically
-
-### Adding a New npm Package
-
-1. Run `npm install <package-name>` in `Boilerplate.Client.Core` directory
-2. If TypeScript types are available, install them: `npm install --save-dev @types/<package-name>`
-3. Import and use in your TypeScript files
-4. Build the project - esbuild will include the package in the bundle
-
-### Debugging TypeScript
-
-- TypeScript is compiled to JavaScript, so you debug the generated `.js` files
-- For better debugging, you can generate source maps by adding `"sourceMap": true` to `tsconfig.json`
-- Use browser developer tools to debug the bundled `app.js` file
-
----
-
-## Summary
-
-In Stage 11, you learned:
-
-✅ **TypeScript Configuration**: How `tsconfig.json` configures the TypeScript compiler  
-✅ **Package Management**: How `package.json` manages npm dependencies  
-✅ **MSBuild Integration**: How the build process automatically compiles TypeScript and SCSS  
-✅ **JavaScript Interop**: How to call JavaScript functions from C# using `IJSRuntime`  
-✅ **Extension Methods**: How to create strongly-typed wrappers for JavaScript functions  
-✅ **Adding Packages**: Complete workflow for adding new npm packages (demo with `uuid`)  
-✅ **Build Process Flow**: Understanding the automated build pipeline  
-✅ **Entry Point**: How `Scripts/index.ts` serves as the entry point for bundling  
 
 ---

@@ -4,26 +4,6 @@ Welcome to **Stage 19** of the getting started guide! In this stage, we'll explo
 
 ---
 
-## Overview
-
-At the root of the Boilerplate project, you'll find several important files that control various aspects of the development workflow:
-
-- **Configuration Files**: `.editorconfig`, `global.json`, `dotnet.config`
-- **Solution Files**: `Boilerplate.sln`, `Boilerplate.slnx`, `Boilerplate.Web.slnf`
-- **Build Files**: `Directory.Build.props`, `Directory.Packages.props`
-- **Cleanup Scripts**: `Clean.bat`, `Clean.sh`
-- **Localization Config**: `Bit.ResxTranslator.json`
-- **IDE Settings**: `.vsconfig`, `settings.VisualStudio.json`, `.vscode/` folder (including `mcp.json` for GitHub Copilot)
-- **Source Control**: `.gitignore`
-- **Documentation**: `README.md`
-- **Spell Checking**: `vs-spell.dic`
-- **CI/CD**: `.github/workflows/` folder
-- **Dev Containers**: `.devcontainer/` folder
-
-Let's explore each category in detail with examples from your actual project.
-
----
-
 ## 1. Configuration Files
 
 ### 1.1 `.editorconfig`
@@ -46,7 +26,6 @@ Let's explore each category in detail with examples from your actual project.
   - Indentation for switch cases
   - Space preferences around operators
 - **Naming Conventions**: PascalCase for constant fields
-- **Custom Analyzers**: `dotnet_diagnostic.NonAsyncEFCoreMethodsUsageAnalyzer.severity = error`
 
 **Example from the file**:
 
@@ -746,28 +725,5 @@ slnf
 3. Click "Reopen in Container" when prompted
 4. Wait for the container to build
 5. Start developing!
-
----
-
-## Summary
-
-This stage covered all the miscellaneous configuration files in the project:
-
-1. **`.editorconfig`**: Enforces consistent coding style
-2. **`global.json`**: Locks .NET SDK version
-3. **`dotnet.config`**: Configures test runner
-4. **Solution files** (`.sln`, `.slnx`, `.slnf`): Different ways to open the project
-5. **`Directory.Build.props`**: Shared MSBuild properties (versioning, environments, global usings)
-6. **`Directory.Packages.props`**: Central package version management
-7. **`Clean.bat` / `Clean.sh`**: Cleanup scripts for build artifacts
-8. **`Bit.ResxTranslator.json`**: AI-powered localization configuration
-9. **`.vsconfig` / `settings.VisualStudio.json`**: Visual Studio configuration
-10. **`.vscode/`**: VS Code workspace settings, tasks, launch configurations, and MCP configuration
-    - **`mcp.json`**: Model Context Protocol configuration for extending GitHub Copilot with DeepWiki knowledge
-11. **`.gitignore`**: Prevents tracking unnecessary files
-12. **`README.md`**: Project documentation
-13. **`vs-spell.dic`**: Custom spell checker dictionary
-14. **`.github/workflows/`**: CI/CD pipeline definitions
-15. **`.devcontainer/`**: Docker-based development environment
 
 ---

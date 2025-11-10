@@ -41,27 +41,15 @@ public partial class AppControllerBase : ControllerBase
 }
 ```
 
-### Key Controllers in the Project
-
-The project includes several feature-based controllers:
-
-- **CategoryController** - Manages product categories
-- **ProductController** - Manages products with advanced features like embedding search
-- **UserController** - User profile management
-- **IdentityController** - Authentication and authorization
-- **TodoItemController** - Todo item management
-- **DashboardController** - Dashboard statistics
-- And more...
-
 ---
 
 ## Dependency Injection with [AutoInject]
 
 One of the most powerful features in this project is the `[AutoInject]` attribute, which simplifies dependency injection.
 
-### Traditional Constructor Injection vs [AutoInject]
+### Traditional Constructor vs Primary Constructor vs [AutoInject]
 
-**Without [AutoInject]** (Traditional Way):
+**Traditional Constructor**:
 
 ```csharp
 public class ProductController : AppControllerBase
@@ -75,7 +63,7 @@ public class ProductController : AppControllerBase
         AppDbContext dbContext,
         IStringLocalizer<AppStrings> localizer,
         ServerApiSettings settings,
-        HtmlSanitizer htmlSanitizer)
+        HtmlSanitizer htmlSanitizer): base(dbContext, localizer, settings)
     {
         this.dbContext = dbContext;
         this.localizer = localizer;
@@ -85,14 +73,24 @@ public class ProductController : AppControllerBase
 }
 ```
 
-**With [AutoInject]** (This Project's Way):
+**Primary Constructor**:
+
+```csharp
+public class ProductController(
+        AppDbContext dbContext,
+        IStringLocalizer<AppStrings> localizer,
+        ServerApiSettings settings,
+        HtmlSanitizer htmlSanitizer) : AppControllerBase(dbContext, localizer, settings)
+{
+}
+```
+
+**AutoInject**:
 
 ```csharp
 public partial class ProductController : AppControllerBase
 {
     [AutoInject] private HtmlSanitizer htmlSanitizer = default!;
-    [AutoInject] private IHubContext<AppHub> appHubContext = default!;
-    [AutoInject] private ProductEmbeddingService productEmbeddingService = default!;
 }
 ```
 
@@ -101,7 +99,6 @@ public partial class ProductController : AppControllerBase
 1. **No Repetitive Constructor Code**: You don't need to write lengthy constructors.
 2. **Automatic Inheritance**: Dependencies already injected in base classes (like `DbContext`, `Localizer`, `AppSettings` in `AppControllerBase`) are automatically available in derived classes without redeclaring them.
 3. **Cleaner Code**: Less boilerplate, more focus on business logic.
-4. **Type Safety**: Still maintains compile-time type checking.
 
 ### Example from CategoryController
 
@@ -133,11 +130,11 @@ The recommended pattern for reading data in this project is to **return `IQuerya
 
 When you return `IQueryable<T>` combined with the `[EnableQuery]` attribute, you enable:
 
-- **Client-side filtering** with `$filter`
-- **Client-side sorting** with `$orderby`
-- **Client-side pagination** with `$top` and `$skip`
-- **Selecting specific fields** with `$select`
-- **Expanding related entities** with `$expand`
+- **Filtering** with `$filter`
+- **Sorting** with `$orderby`
+- **Pagination** with `$top` and `$skip`
+- **Selecting specific properties/columns** with `$select`
+- **Expanding (Including) related entities** with `$expand`
 
 This means the client can query the API flexibly without requiring new endpoints for every filter/sort combination.
 
@@ -221,7 +218,7 @@ GET /api/Product/Get?$filter=Price gt 50&$orderby=Name&$top=20&$skip=0
 ```
 Returns the first 20 products with price greater than 50, sorted by name.
 
-### Client-Side OData Query Building
+### OData Query Building
 
 The project includes an `ODataQuery` helper class for building queries programmatically.
 
@@ -352,17 +349,6 @@ public async Task<PagedResult<CategoryDto>> GetCategories(
 3. Apply pagination
 4. Return data + count in `PagedResult`
 
-### Client-Side Interface
-
-**File**: [`src/Shared/Controllers/Categories/ICategoryController.cs`](/src/Shared/Controllers/Categories/ICategoryController.cs)
-
-```csharp
-[HttpGet]
-Task<PagedResult<CategoryDto>> GetCategories(CancellationToken cancellationToken) => default!;
-```
-
-Notice the `=> default!` syntax - this indicates the server accepts `ODataQueryOptions`, but the client doesn't need to worry about that parameter.
-
 ---
 
 ## Data Security and Permissions
@@ -478,7 +464,6 @@ OFFSET 10 ROWS
 #### 3. No Over-Fetching
 - Only DTO properties are fetched, not the entire entity
 - Related entities are joined efficiently
-- Database does the heavy lifting
 
 ### Example: Efficient Product Query
 
@@ -806,7 +791,7 @@ The proxy generator follows these conventions:
 
 ### Handling Server-Only Parameters
 
-Some server methods have parameters that don't exist on the client (like `ODataQueryOptions`, `IFormFile`).
+Some server methods have parameters that don't exist on the client (like `ODataQueryOptions`).
 
 **Solution**: Use `=> default!` in the interface:
 
@@ -911,31 +896,5 @@ While the architecture is simple, the backend still includes many advanced featu
 ### Bottom Line
 
 Feel free to restructure the backend however you see fit. The template provides a solid foundation and advanced features, but you're in control of the architecture.
-
----
-
-## Summary
-
-Congratulations! You've completed Stage 3. Here's what you learned:
-
-✅ **Controller Architecture**: How controllers inherit from `AppControllerBase` and gain access to common dependencies
-
-✅ **[AutoInject] Pattern**: How to simplify dependency injection and avoid repetitive constructor code
-
-✅ **IQueryable and OData**: How to expose flexible, queryable APIs that clients can filter, sort, and paginate
-
-✅ **OData Query Options**: How to use `$top`, `$skip`, `$filter`, `$orderby`, `$select`, `$expand`, and `$search`
-
-✅ **PagedResult**: How to return both data and total count for pagination UI
-
-✅ **Security**: How authorization prevents unauthorized data access, even with OData queries
-
-✅ **Performance**: How the stack optimizes database queries and minimizes memory usage
-
-✅ **Real Examples**: Examined `CategoryController` and `ProductController` implementations
-
-✅ **Proxy Interface Pattern**: How to create type-safe, strongly-typed API clients
-
-✅ **Architectural Philosophy**: Understanding the intentionally simple backend architecture
 
 ---

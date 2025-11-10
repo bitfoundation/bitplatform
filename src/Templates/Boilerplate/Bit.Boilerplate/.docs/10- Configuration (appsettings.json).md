@@ -243,29 +243,6 @@ When you want to add explanatory comments to configuration files, append `__Comm
 }
 ```
 
-### Real Examples from the Project
-
-Here are actual `__Comment` usages found in the codebase:
-
-**From `src/Server/Boilerplate.Server.Api/appsettings.json`:**
-```json
-{
-    "ConnectionStrings": {
-        "Aspire__Comment": "Running Boilerplate.Server.AppHost `overrides` the following connection strings at runtime."
-    },
-    "Email__Comment": "You can also use https://ethereal.email/create for testing purposes.",
-    "Identity": {
-        "BearerTokenExpiration_Comment": "BearerTokenExpiration used as JWT's expiration claim. Format: D.HH:mm:ss"
-    },
-    "UserInformationCache": {
-        "UseIsolatedStorage__Comment": "Useful for testing or in production when managing multiple codebases with a single database."
-    },
-    "ForceUpdate": {
-        "SupportedAppVersions__Comment": "Enabling `AutoReload` ensure the latest app version is always applied in Web & Windows apps."
-    }
-}
-```
-
 **From `src/Server/Boilerplate.Server.AppHost/appsettings.Development.json`:**
 ```json
 {
@@ -345,49 +322,6 @@ Example from [`src/Shared/appsettings.Development.json`](/src/Shared/appsettings
 
 This increases logging verbosity in Development (from "Warning" to "Information") without affecting Production.
 
-## Configuration Implementation Details
-
-The configuration loading logic is implemented in [`IConfigurationBuilderExtensions.cs`](/src/Client/Boilerplate.Client.Core/Extensions/IConfigurationBuilderExtensions.cs):
-
-```csharp
-public static partial class IConfigurationBuilderExtensions
-{
-    /// <summary>
-    /// Configuration priority (Lowest to highest) =>
-    /// Shared/appsettings.json
-    /// Shared/appsettings.{environment}.json (If present)
-    /// Client/Core/appsettings.json
-    /// Client/Core/appsettings.{environment}.json (If present)
-    /// ...
-    /// </summary>
-    public static IConfigurationBuilder AddClientConfigurations(
-        this IConfigurationBuilder builder, 
-        string clientEntryAssemblyName)
-    {
-        // Load Shared configuration
-        var sharedAssembly = Assembly.Load("Boilerplate.Shared");
-        configBuilder.AddJsonStream(sharedAssembly.GetManifestResourceStream(
-            "Boilerplate.Shared.appsettings.json")!);
-        
-        // Load environment-specific Shared configuration
-        var envSharedAppSettings = sharedAssembly.GetManifestResourceStream(
-            $"Boilerplate.Shared.appsettings.{AppEnvironment.Current}.json");
-        if (envSharedAppSettings != null)
-        {
-            configBuilder.AddJsonStream(envSharedAppSettings);
-        }
-        
-        // Load Client.Core configuration
-        var clientCoreAssembly = AppDomain.CurrentDomain.GetAssemblies()
-            .Single(asm => asm.GetName()?.Name is "Boilerplate.Client.Core");
-        configBuilder.AddJsonStream(clientCoreAssembly.GetManifestResourceStream(
-            "Boilerplate.Client.Core.appsettings.json")!);
-        
-        // ... Platform-specific configuration loading continues ...
-    }
-}
-```
-
 ## Accessing Configuration in Code
 
 ### In Controllers and Services
@@ -447,47 +381,15 @@ public class EmailService
 }
 ```
 
-## Best Practices
-
-### ✅ DO:
-- **Put shared settings in `Shared/appsettings.json`** - Anything common to all platforms belongs here
-- **Use environment-specific files** - Keep development settings separate from production
-- **Add comments with `_Comment` suffix** - Document what settings do and their expected format
-- **Use strongly-typed settings classes** - Create classes that bind to configuration sections
-- **Test configuration priority** - Verify settings override correctly in different environments
-
-### ❌ DON'T:
-- **Don't duplicate settings** - If a setting applies to all platforms, don't repeat it in each platform's file
-- **Don't hardcode sensitive data** - Use user secrets, environment variables, or Azure Key Vault for production secrets
-- **Don't forget to add new files to projects** - Ensure new `appsettings.{environment}.json` files have `Copy to Output Directory` set correctly
-- **Don't store secrets in source control** - Never commit API keys, passwords, or connection strings to Git
-
 ## Configuration and Environments
 
-The project supports three environments:
+The project supports three environments by default:
 - **Development** - Local development (uses `appsettings.Development.json`)
 - **Staging** - Pre-production testing environment
 - **Production** - Live production environment (uses `appsettings.Production.json`)
 
-Environment is determined by `AppEnvironment.Current` which is set during build time based on the `APP_ENVIRONMENT` MSBuild property.
+Environment is determined by `AppEnvironment.Current` which is set during build time based on the `-p:Environment` msbuild switch.
 
 See [`Directory.Build.props`](/src/Directory.Build.props) for environment configuration and [`AppEnvironment.cs`](/src/Shared/Services/AppEnvironment.cs) for the environment service.
-
-## Summary
-
-The configuration system provides:
-- ✅ **Hierarchical configuration** with clear priority rules
-- ✅ **Shared base settings** that apply to all platforms
-- ✅ **Platform-specific overrides** for unique requirements
-- ✅ **Environment-specific configuration** for Development/Staging/Production
-- ✅ **In-file documentation** using the `_Comment` pattern
-- ✅ **Type-safe configuration** through strongly-typed settings classes
-- ✅ **Flexible deployment** supporting various hosting scenarios
-
-This architecture ensures that:
-1. You can define a setting **once** and use it everywhere
-2. You can **override** settings for specific platforms or environments when needed
-3. Configuration is **well-documented** and easy to understand
-4. Changes are **scoped** appropriately (shared vs. platform-specific)
 
 ---

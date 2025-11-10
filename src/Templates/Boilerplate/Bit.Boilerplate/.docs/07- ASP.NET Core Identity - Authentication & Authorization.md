@@ -37,12 +37,6 @@ The project uses **JWT (JSON Web Tokens)** for stateless authentication. Here's 
 - **Token Generation**: Uses ASP.NET Core Identity's built-in bearer token authentication with the **HS512 algorithm**
 - **Security**: Tokens are signed using a secret key configured in [`appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json)
 
-#### Why Two Tokens?
-
-- **Access tokens** are short-lived to minimize the risk if compromised
-- **Refresh tokens** allow seamless user experience without frequent re-authentication
-- When an access token expires, the client uses the refresh token to obtain a new access token
-
 #### Token Configuration
 
 You can configure token expiration in [`appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json):
@@ -97,7 +91,6 @@ The session ID is embedded in both access and refresh tokens as a claim (`AppCla
 
 - **Session Revocation**: When a user revokes a session, its associated refresh token becomes invalid
 - **Forced Re-authentication**: Deleted sessions require users to sign in again on that device
-- **Session-Specific Policies**: Different authorization policies can be applied per session
 
 #### Session Creation Example
 
@@ -137,7 +130,7 @@ You can easily configure SSO with:
 - **Twitter** - Social authentication
 - **Apple** - Sign in with Apple
 - **Facebook** - Social media authentication
-- **Duende Identity Server** - OpenID Connect provider (demo included)
+- **Duende Identity Server / KeyCloak** - OpenID Connect provider (demo included)
 - And many other OAuth/OpenID Connect providers
 
 #### Demo Provider
@@ -188,7 +181,7 @@ public async Task<ActionResult> SocialSignIn(string provider, string? returnUrl 
 When a social sign-in is successful, the system:
 1. Retrieves user information from the external provider
 2. Either finds an existing user or creates a new one
-3. Automatically confirms email/phone if the provider has verified them
+3. Automatically confirms email/phone if the provider provides them
 4. Generates a magic link for automatic sign-in (supports 2FA if enabled)
 
 ---
@@ -214,39 +207,6 @@ Fine-grained permission system using **claims**:
 - **Role Claims**: Permissions assigned to roles (inherited by all users in that role)
 - Claims are added to the **JWT token payload** for efficient authorization checks (no database lookup needed)
 
-#### The User Entity
-
-From [`User.cs`](/src/Server/Boilerplate.Server.Api/Models/Identity/User.cs):
-
-```csharp
-public partial class User : IdentityUser<Guid>
-{
-    [PersonalData]
-    public string? FullName { get; set; }
-    
-    [PersonalData]
-    public Gender? Gender { get; set; }
-    
-    [PersonalData]
-    public DateTimeOffset? BirthDate { get; set; }
-    
-    // Token request timestamps for one-time token system
-    public DateTimeOffset? EmailTokenRequestedOn { get; set; }
-    public DateTimeOffset? PhoneNumberTokenRequestedOn { get; set; }
-    public DateTimeOffset? ResetPasswordTokenRequestedOn { get; set; }
-    public DateTimeOffset? TwoFactorTokenRequestedOn { get; set; }
-    public DateTimeOffset? OtpRequestedOn { get; set; }
-    public DateTimeOffset? ElevatedAccessTokenRequestedOn { get; set; }
-    
-    // Navigation properties
-    public List<UserSession> Sessions { get; set; } = [];
-    public List<UserRole> Roles { get; set; } = [];
-    public List<UserClaim> Claims { get; set; } = [];
-    public List<UserLogin> Logins { get; set; } = [];
-    // ... additional properties
-}
-```
-
 ---
 
 ### Policy-Based Authorization
@@ -270,7 +230,7 @@ public static void ConfigureAuthorizationCore(this IServiceCollection services)
         options.AddPolicy(AuthPolicies.ELEVATED_ACCESS, 
             x => x.RequireClaim(AppClaimTypes.ELEVATED_SESSION, "true"));
 
-        // Feature-based policies (automatically generated)
+        // Feature-based policies (automatically generated based on `AppFeatures`)
         foreach (var feat in AppFeatures.GetAll())
         {
             options.AddPolicy(feat.Value, policy => 
@@ -396,6 +356,8 @@ public class AppFeatures
 
 The project **automatically creates policies** for all features defined in `AppFeatures`. Each feature value (e.g., `"1.0"`) becomes a policy name.
 
+The reason behind small feature values is that they're stored in jwt token, so in order to keep jwt token payload small, such short, unique values have been assigned.
+
 #### Policy Usage Examples
 
 From actual pages in the project:
@@ -445,11 +407,11 @@ public class AppClaimTypes
 
 **Important**: These claims are **automatically added by the system** and should **not** be manually added to the database:
 
-- **`SESSION_ID`**: Unique identifier for the current user session
-- **`PRIVILEGED_SESSION`**: Indicates if this session counts toward the privileged session limit
-- **`MAX_PRIVILEGED_SESSIONS`**: Maximum allowed privileged sessions for this user
-- **`ELEVATED_SESSION`**: Indicates the user has recently authenticated for sensitive operations
-- **`FEATURES`**: Contains the list of features/permissions granted to the user
+- **`SESSION_ID`**: Unique identifier for the current user session => Guid value stored in UserSessions table
+- **`MAX_PRIVILEGED_SESSIONS`**: Maximum allowed privileged sessions for this user => -1 (Unlimited) or a positive number
+- **`PRIVILEGED_SESSION`**: Indicates if this session counts toward the privileged session limit => A positive number
+- **`ELEVATED_SESSION`**: Indicates the user has recently authenticated for sensitive operations => true or false
+- **`FEATURES`**: Contains the list of features/permissions values granted to the user => Array of AppFeature's values, for example ["1.1", "2.1"]
 
 ---
 
@@ -663,6 +625,7 @@ public async Task ConfirmEmail(ConfirmEmailRequestDto request, CancellationToken
 ✅ Tokens are **automatically invalidated** after successful use  
 ✅ Tokens **expire** after their configured lifetime  
 ✅ If a user requests a new token, **all previous tokens become invalid**  
+✅ User can't ask for a token frequently
 
 ### Example Scenario
 
@@ -878,26 +841,5 @@ public async Task ResetPassword(ResetPasswordRequestDto request, CancellationTok
 - External provider integration
 - Privileged session limiting
 - Elevated access for sensitive operations
-
----
-
-## Summary
-
-The Boilerplate project provides a **production-ready authentication and authorization system** with:
-
-✅ **JWT-based authentication** with access and refresh tokens  
-✅ **Server-side session management** with device tracking  
-✅ **Single Sign-On (SSO)** support for multiple providers  
-✅ **Role-based and permission-based authorization**  
-✅ **Policy-based authorization** with custom policies  
-✅ **Feature flags** for fine-grained access control  
-✅ **Two-factor authentication** with multiple methods  
-✅ **Account lockout** protection against brute-force attacks  
-✅ **One-time tokens** with automatic expiration and invalidation  
-✅ **Privileged session limiting** to prevent resource abuse  
-✅ **Elevated access** for sensitive operations  
-✅ **Comprehensive security** following industry best practices  
-
-This system is designed to handle enterprise-level authentication and authorization requirements while remaining **flexible and extensible** for custom business logic.
 
 ---
