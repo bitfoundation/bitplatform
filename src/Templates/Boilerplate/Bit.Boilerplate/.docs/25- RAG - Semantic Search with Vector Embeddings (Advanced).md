@@ -145,17 +145,6 @@ For production environments, you should use more accurate models:
 }
 ```
 
-- **Pros**: Open-source models, flexible, cost-effective
-- **Cons**: May require more configuration, varying quality
-
-### 3.3 Ollama (Self-Hosted Option)
-
-You can also use **Ollama** to run embedding models locally on your own infrastructure:
-
-- **Benefits**: Complete control, no external API calls, privacy
-- **Models**: Many open-source embedding models available
-- **Setup**: Install Ollama and configure the endpoint in `appsettings.json`
-
 ---
 
 ## 4. Enable Embeddings in the Project
@@ -200,7 +189,7 @@ If you're using an older version of SQL Server:
 The `Product` model includes an `Embedding` property:
 
 ```csharp
-public Microsoft.Data.SqlTypes.SqlVector<float>? Embedding { get; set; }
+public SqlVector<float>? Embedding { get; set; }
 ```
 
 This property stores the 384-dimensional vector representation of the product's data.
@@ -360,54 +349,6 @@ A hybrid approach can offer a balance between speed and accuracy. You can first 
 - FAQ and chatbot systems
 
 ---
-
-## 7. Real-World Example Scenario
-
-**Scenario**: An e-commerce platform with products described in multiple languages.
-
-**User Action**: A French-speaking user searches for "ordinateur portable gaming"
-
-**What Happens**:
-1. The search query is converted to a 384-dimensional vector
-2. The system calculates cosine distance between the query vector and all product embeddings
-3. Results include:
-   - English products: "Gaming Laptop", "Portable Gaming PC"
-   - French products: "PC portable pour jeux"
-   - German products: "Gaming Notebook"
-   - Spanish products: "Laptop para juegos"
-
-**Traditional Keyword Search** would only find exact matches for "ordinateur portable gaming", missing all the semantically similar products in other languages.
-
----
-
-## Summary
-
-In this stage, you learned about:
-
-✅ **Different search approaches**: Simple string matching, full-text search, vector-based semantic search, and hybrid approaches
-
-✅ **Vector embeddings**: Numerical representations of text that capture semantic meaning
-
-✅ **Semantic search capabilities**: Understanding meaning, finding synonyms, and cross-language searches
-
-✅ **Embedding models**: LocalTextEmbeddingGenerationService (development), OpenAI, Azure OpenAI, and Hugging Face (production)
-
-✅ **Enabling embeddings**: Changing `IsEmbeddingEnabled` to `true` in `AppDbContext.cs`
-
-✅ **ProductEmbeddingService**: How embeddings are generated with weighted combinations and how semantic search works
-
-✅ **Database requirements**: SQL Server 2025+ for native vector support
-
-✅ **Usage in ProductController**: Embedding generation on create/update and semantic search implementation
-
-✅ **Best practices**: When to use semantic search and hybrid approaches for optimal performance
-
----
-
-**Additional Resources**:
-- Microsoft.Extensions.AI documentation: https://learn.microsoft.com/en-us/dotnet/ai/
-- OpenAI Embeddings Guide: https://platform.openai.com/docs/guides/embeddings
-- Hugging Face Embeddings: https://huggingface.co/models?pipeline_tag=feature-extraction
 
 Happy coding! 🚀
 
