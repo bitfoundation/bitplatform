@@ -6,7 +6,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 // Check out appsettings.Development.json for credentials/passwords settings.
 
 //#if (database == "SqlServer")
-var sqlDatabase = builder.AddSqlServer("sqlserver", port: 1759)
+var sqlDatabase = builder.AddSqlServer("sqlserver")
         .WithDbGate(config => config.WithDataVolume())
         .WithDataVolume()
         .WithImage("mssql/server", "2025-latest")
