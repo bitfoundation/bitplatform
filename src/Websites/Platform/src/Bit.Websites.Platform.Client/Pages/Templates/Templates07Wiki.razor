@@ -3,36 +3,28 @@
 @inherits AppComponentBase
 
 <PageOutlet Url="templates/wiki"
-			Title="Interactive Wiki - Templates"
-			Description="Learn about how to learn more about bit Boilerplate using our AI powered interactive Wiki" />
+			Title="Wiki - Templates"
+			Description="Learn about how to learn more about bit Boilerplate using our Wiki" />
 
 <div class="page-container">
-	<BitText Typography="BitTypography.H3" Gutter>Interactive Wiki</BitText>
+	<BitText Typography="BitTypography.H3" Gutter>Wiki</BitText>
 
 	<section class="section-card">
-		<BitText Typography="BitTypography.H5" Gutter>GitHub Copilot Chat Interactive Learning</BitText>
+
+		<BitText Typography="BitTypography.H5" Gutter>bit Boilerplate built-in wiki</BitText>
+
 		<div class="section-card-txt">
-			After creating your project from bit Boilerplate, we highly recommend using the built-in getting started to interactively learn about your project architecture directly in your IDE.
-			<br /><br />
-			This interactive guide is available in <span class="bold-txt"><u>GitHub Copilot Chat</u></span> within <span class="bold-txt">Visual Studio</span> or <span class="bold-txt">Visual Studio Code</span>. Simply type <span class="bold-txt"><u>Run getting started</u></span> in the GitHub Copilot Chat while <span class="bold-txt"><u>Claude Sonnet 4.5</u></span> is selected to begin your onboarding journey.
-			<br /><br />
-			<strong>Important Note:</strong> If you don't have access to Claude Sonnet 4.5, the complete English documentation files for all stages are saved in the <span class="bold-txt">.docs</span> folder in your project.
-			<br /><br />
-			The guide walks you through the project in multiple stages, using <span class="bold-txt">real examples from your own project</span>:
+			Each project created from bit Boilerplate includes comprehensive documentation in markdown format.
+			These files are located in the <u><i><b>.docs</b></i></u> folder of your project and cover all aspects of the boilerplate architecture, features, and best practices.
+			<br />
+			<br />
+			You can read these markdown files directly in your IDE (Visual Studio Code is recommended) or browse them on GitHub after pushing your project to a repository.
 		</div>
 
-		<div class="video-container">
-			<div class="video-wrapper">
-				<video controls
-					   title="Interactive docs"
-					   src="https://videos.bitplatform.dev/InteractiveDoc.mp4" />
-			</div>
-		</div>
-
-		<BitText Typography="BitTypography.H5" Gutter>Interactive Learning's Comprehensive Stages:</BitText>
+		<BitText Typography="BitTypography.H5" Gutter>Wiki's Comprehensive Stages:</BitText>
 		<br />
 
-		The interactive guide covers your entire project architecture across 25 detailed stages. Each stage provides real examples from your own project with interactive Q&amp;A:
+		The Wiki guide covers your entire project architecture across 25 detailed stages. Each stage provides real examples from your own project:
 
 		<div id="ef-core" style="margin-top: 1rem;">
 			<strong>Stage 1: Entity Framework Core</strong>
@@ -160,12 +152,6 @@
 		</div>
 
 		<br />
-
-		<strong style="font-size: 1.1rem;">Ready to Start Your Interactive Learning Journey?</strong>
-		<p>
-			You can specify which stage you want to start with (e.g., "Stage 5") and your preferred language
-			(e.g., English, Persian, Français or any other language).
-		</p>
 	</section>
 
 	<section class="section-card" id="ai-powered-wiki">

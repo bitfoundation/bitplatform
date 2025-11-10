@@ -83,7 +83,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Tests", "src\Te
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".docs", ".docs", "{8A72BF22-F6D3-C5D9-4099-AB471879EBC8}"
 	ProjectSection(SolutionItems) = preProject
-		.docs\00- Interactive Wiki.md = .docs\00- Interactive Wiki.md
+		.docs\00- Wiki.md = .docs\00- Wiki.md
 		.docs\01- Entity Framework Core.md = .docs\01- Entity Framework Core.md
 		.docs\02- DTOs, Mappers, and Mapperly.md = .docs\02- DTOs, Mappers, and Mapperly.md
 		.docs\03- API Controllers and OData.md = .docs\03- API Controllers and OData.md

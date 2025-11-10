@@ -46,19 +46,3 @@
 ::deep a {
     color: $bit-color-primary;
 }
-
-.video-container {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-
-    .video-wrapper {
-        width: 100%;
-        max-width: 800px;
-        position: relative;
-    }
-
-    video {
-        width: 100%;
-    }
-}

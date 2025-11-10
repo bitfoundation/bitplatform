@@ -37,7 +37,7 @@ public partial class MainLayout : IDisposable
         new BitNavItem { Text = "Run project", Url = "/templates/run-project", AdditionalUrls = [ "/boilerplate/run-project" ] },
         new BitNavItem 
         { 
-            Text = "Interactive Wiki", 
+            Text = "Wiki", 
             Url = "/templates/wiki", 
             AdditionalUrls = ["/boilerplate/wiki"],
             IsExpanded = true,

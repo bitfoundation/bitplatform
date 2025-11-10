@@ -1113,6 +1113,9 @@ At the end of Stage 23, ask: **"Do you have any questions about the Diagnostic M
 ## Stage 24: WebAuthn and Passwordless Authentication (Advanced)
 
 ### Instructions
+
+**Important**: A code-flow based, **high-level explanation** is required for this stage.
+
 1. **Explain WebAuthn Overview**: Sign-in with fingerprint, Face ID, and PIN that is more secure than native biometric authentication. The bit implementation works across all platforms, although Face ID is not yet supported on Android.
 
 2. **Search and explain the architecture**: Search for webAuthn, web-interop-app.html, ILocalHttpServer, and IExternalNavigationService. Based on your understanding of these components, explain how this feature works.
