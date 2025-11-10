@@ -271,6 +271,7 @@ In this stage, you will explain how the project handles cancellation tokens for 
 - **Purpose**: For operations where you want to **prevent** automatic cancellation, use `NavigationLock`
   - Prompts the user to wait before navigating away
   - Useful for short critical operations
+  - Explain a scenario's code where `NavigationLock` is used while `isSaving` is true to prevent navigation during save operation (Such a sample doesn't exist in the project currently, so you must create a hypothetical example)
 
 ### When to Use Background Jobs
 - **Problem**: What if the operation is time-consuming (e.g., sending SMS)?
@@ -286,6 +287,8 @@ In this stage, you will explain how the project handles cancellation tokens for 
 
 #### Find and Explain PhoneServiceJobsRunner
 - **Search**: Locate `PhoneServiceJobsRunner.cs` in the `Boilerplate.Server.Api` project and its usages and explain it to the developer.
+
+**Important**: Mention that inside background job, there is **NO** `IHttpContextAccessor` or `User` object available. So if user context is needed, it must be passed as parameters to the job method.
 
 #### Key Benefits of Hangfire Integration
 - **Persistence**: Jobs are stored in the database
@@ -311,11 +314,21 @@ In this stage, you will explain the following topics:
   - Show examples from actual DTOs in the project
 - **AppDataAnnotationsValidator**: Explain that this custom validator must be used in Blazor EdtitForms to make `DtoResourceType` work
   - Show examples from the project where `AppDataAnnotationsValidator` is used in forms
+  - Explain while Blazor's EditForm shows validation erros based on DataAnnotations attributes, sometimes you need to support a scenario where you want to show server side validation errors (Such as Duplicate product name) next to the corresponding field. In such scenarios, `AppDataAnnotationsValidator` helps to show these server side validation errors using `DisplayErrors` method.
 - **IStringLocalizer Usage**: Demonstrate how to use `IStringLocalizer<T>` in:
   - Controllers (inherited from `AppControllerBase`)
   - Components and Pages (inherited from `AppComponentBase` or `AppPageBase`)
   - Show concrete code examples from the project
 - **bit-resx Tool**: Use the `DeepWiki_ask_question` tool to query the `bitfoundation/bitplatform` about `bit-resx` tool OR fetch https://github.com/bitfoundation/bitplatform/tree/develop/src/ResxTranslator and explain it to the developer.
+Explain to the developer the philosophy behind the `bit-resx` translator in CI/CD pipelines:
+
+- Emphasize that the main purpose of `bit-resx` is not just automatic translation, but to optimize localization workflow in CI/CD.
+- Instruct that developers do **not** need to manually translate or commit every key for every language. Instead, they should:
+  - Only add or manually translate the keys and languages that matter most to their project.
+  - For less important languages, leave files empty or only include keys they want to review or override.
+  - During the CD pipeline, `bit-resx` will automatically fill in any missing translations for all supported languages before deployment.
+- Use the Swedish language file in this project as an example: it is much smaller than the English file and only contains keys that have been manually reviewed. If some automatic translations are not satisfactory, developers can add or override those specific keys, and on the next CD run, only the missing keys will be auto-translated, preserving manual translations.
+- This approach keeps the source code clean and focused, while ensuring all languages are fully translated at deployment time.
 
 ---
 
@@ -428,6 +441,7 @@ In this stage, you will explain the comprehensive authentication and authorizati
   - **X (Twitter)**
   - **GitHub**
   - **Azure Entra ID (formerly Azure AD)**
+  - **KeyCloak**
   - And many other OAuth/OpenID Connect providers
 - **Configuration**: Show where external provider settings are configured in the project
 
@@ -552,7 +566,6 @@ In this stage, you will explain the Blazor UI architecture, component structure,
   - Similar to React's `:global` or Vue's `:deep`
   - Find and show a **real example** from the project where `::deep` is used to style a Bit.BlazorUI component
   - **Important** Mention that each bit BlazorUI component has its own css variables for styling in addition to the `Styles` and `Classes` parameters which allows styling nested child elements directly without needing `::deep` in most cases.
-  Find and show one real example of using `Styles` and `Classes` parameters from the project applied on any <Bit*> component.
 
 ### Bit.BlazorUI Documentation & DeepWiki
 - **Comprehensive Documentation**: Explain that `Bit.BlazorUI` has extensive documentation at **blazorui.bitplatform.dev**
@@ -567,6 +580,7 @@ In this stage, you will explain the Blazor UI architecture, component structure,
   - Developers don't need to manually search the docs - just ask naturally
 - **Example Questions**:
   - "How can I implement a Grid System and layout using BitGrid and BitStack components, especially if I'm familiar with the Bootstrap grid system?"
+  - Find and show one real example of using `Styles` and `Classes` parameters from the project applied on any <Bit*> component.
 
 ### Navigation with PageUrls
 - **PageUrls Class**: Located in [/src/Shared/PageUrls.cs](/src/Shared/PageUrls.cs) and related partial files
@@ -658,7 +672,7 @@ In this stage, you will explain Blazor rendering modes, pre-rendering, and PWA f
 - **If you enable PreRendering**, update `Boilerplate.Client.Web/wwwroot/service-worker.published.js` accordingly
 
 ### PWA & Service Workers
-- **All modes are PWAs**: Server, WebAssembly, Auto, and Hybrid all support offline mode, installation, and push notifications
+- **All Blazor Web modes**: Server, WebAssembly, WebAssembly Standalone and Auto support installation, and push notifications
 - **Service worker files**:
   - `service-worker.js`: Development
   - `service-worker.published.js`: Production/Staging

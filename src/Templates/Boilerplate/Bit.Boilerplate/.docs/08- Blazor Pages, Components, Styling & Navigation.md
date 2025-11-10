@@ -49,7 +49,7 @@ This file contains the **UI markup** using Razor syntax and Bit.BlazorUI compone
 - Inherits from `AppPageBase` (more on this later)
 - Uses `Bit.BlazorUI` components like `BitButton`, `BitStack`, `BitDataGrid`
 - References code-behind variables like `isSmallScreen`, `isLoading`
-- Uses `WrapHandled()` for event handlers (automatic exception handling)
+- Uses `WrapHandled()` for event handlers (exception handling)
 
 #### File 2: `ProductsPage.razor.cs` (Code-Behind)
 **Location**: [`/src/Client/Boilerplate.Client.Core/Components/Pages/Products/ProductsPage.razor.cs`](/src/Client/Boilerplate.Client.Core/Components/Pages/Products/ProductsPage.razor.cs)
@@ -198,7 +198,7 @@ navPanelItems.Add(new()
 });
 ```
 
-This ensures the page appears in both the mobile navbar and desktop navigation panel.
+This ensures the page appears in both the navigation panel and nav bar (mobile).
 
 ### Cross-Platform Pages: Platform-Specific Components
 
@@ -427,41 +427,8 @@ By default, component styles are scoped and don't affect child components. When 
 }
 ```
 
-**Use cases:**
-- Styling Bit.BlazorUI components (which are child components)
-- Customizing component library defaults
-- Applying styles that need to penetrate component boundaries
-
-### Alternative: Component-Specific Styling Properties
-
-**Important Note:** Each Bit.BlazorUI component has its own **CSS variables** and **styling parameters** (`Styles` and `Classes` properties) that allow you to style nested child elements **without needing `::deep`** in most cases.
-
-**Example using `Styles` parameter from `SignOutConfirmDialog.razor`:**
-```xml
-<BitDialog @bind-IsOpen="isSignOutDialogOpen"
-           Styles="@(new() { OkButton = "width:100%", CancelButton = "width:100%" })" />
-```
-
-**Example using `Classes` parameter from `AppMenu.razor`:**
-```xml
-<BitCallout @bind-IsOpen="isMenuOpen"
-            Classes="@(new() { Callout = "app-menu-callout" })">
-    <!-- Content -->
-</BitCallout>
-```
-
-**Why this approach is preferred:**
-- ✅ More explicit and type-safe
-- ✅ IntelliSense support for nested element names
-- ✅ No need for `::deep` selector
-- ✅ Component library defines the styling contract
-
-**When to use `::deep` vs `Styles`/`Classes`:**
-- Use `Styles`/`Classes` parameters when the component provides them (preferred)
-- Use `::deep` when you need to style elements that don't have dedicated parameters
-- Use component-specific CSS variables for theme customization
-
-This approach is preferred when available, as it's more explicit and type-safe.
+**Use case:**
+- Styling Bit.BlazorUI and other 3rd party UI library components (which are child components)
 
 ---
 
@@ -469,7 +436,7 @@ This approach is preferred when available, as it's more explicit and type-safe.
 
 ### Using Bit.BlazorUI Components
 
-This project uses **`Bit.BlazorUI`** as the primary UI component library. You **MUST** use these components instead of generic HTML elements to ensure UI consistency and leverage built-in features.
+This project uses **`Bit.BlazorUI`** as the primary UI component library. You MUST use these components instead of generic HTML elements to ensure UI consistency and leverage built-in features.
 
 **Examples from the project:**
 
@@ -487,6 +454,30 @@ This project uses **`Bit.BlazorUI`** as the primary UI component library. You **
 <button>Add Product</button>
 <input type="text" />
 ```
+
+### Component-Specific Styling Properties
+
+**Important Note:** Each Bit.BlazorUI component has its own **CSS variables** and **styling parameters** (`Styles` and `Classes` properties) that allow you to style nested child elements.
+
+**Example using `Styles` parameter from `SignOutConfirmDialog.razor`:**
+```xml
+<BitDialog @bind-IsOpen="isSignOutDialogOpen"
+           Styles="@(new() { OkButton = "width:100%", CancelButton = "width:100%" })" />
+```
+
+**Example using `Classes` parameter from `AppMenu.razor`:**
+```xml
+<BitCallout @bind-IsOpen="isMenuOpen"
+            Classes="@(new() { Callout = "app-menu-callout" })">
+    <!-- Content -->
+</BitCallout>
+```
+
+**Why this approach?**
+- ✅ More explicit and type-safe
+- ✅ IntelliSense support for nested element names
+- ✅ No need for `::deep` selector using `Styles` parameter
+- ✅ Style values can be bound to C# variables
 
 ### Comprehensive Documentation
 
@@ -599,7 +590,7 @@ NavigationManager.NavigateTo($"{PageUrls.AddOrEditProduct}/{product.Id}");
 - ✅ No magic strings - compile-time safety
 - ✅ IntelliSense support
 - ✅ Easy to refactor routes
-- ✅ Centralized route management
+- ✅ Centralized routes
 
 ---
 
@@ -715,38 +706,5 @@ public partial class ProductsPage
     }
 }
 ```
-
----
-
-## Summary
-
-In this stage, you learned about:
-
-✅ **Three-File Component Structure**: `.razor` (markup), `.razor.cs` (logic), `.razor.scss` (styles)
-
-✅ **Navigation Integration**: How to add pages to `NavBar.razor` and `MainLayout.razor.items.cs` for proper navigation
-
-✅ **Cross-Platform Pages**: Creating platform-specific pages in `Boilerplate.Client.Maui`, `Boilerplate.Client.Windows`, and `Boilerplate.Client.Web` for direct access to native features
-
-✅ **SCSS Styling Architecture**:
-   - Isolated component styles (`.razor.scss`)
-   - Global styles (`app.scss`)
-   - Theme color variables (`_bit-css-variables.scss`)
-   - Using `::deep` selector to style child components
-   - SCSS support configured in all platform projects
-
-✅ **Always Use Theme Variables**: `$bit-color-background-primary`, `$bit-color-foreground-primary`, etc. for dark/light mode support
-
-✅ **Bit.BlazorUI Components**: Use these instead of generic HTML elements
-   - Documentation: https://blazorui.bitplatform.dev
-   - Automatic DeepWiki integration - just ask questions naturally!
-   - Prefer `Styles` and `Classes` parameters over `::deep` when available
-
-✅ **Navigation with PageUrls**: Centralized route constants for compile-time safety
-
-✅ **Component Base Classes**:
-   - `AppComponentBase`: Enhanced lifecycle methods with automatic exception handling and pre-injected services
-   - `AppPageBase`: Page-specific features + everything from `AppComponentBase`
-   - Use `OnInitAsync()`, `OnParamsSetAsync()`, `OnAfterFirstRenderAsync()` instead of standard Blazor lifecycle methods
 
 ---

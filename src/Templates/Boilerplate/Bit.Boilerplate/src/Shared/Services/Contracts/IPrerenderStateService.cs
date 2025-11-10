@@ -4,7 +4,7 @@ namespace Boilerplate.Shared.Services.Contracts;
 
 /// <summary>
 /// The Client.Core codebase is designed to support various Blazor hosting models, including Hybrid and WebAssembly, 
-/// which may or may not enable pre-rendering. To ensure consistent behavior across all scenarios, 
+/// which may or may not enable pre-rendering. To ensure expected behavior across all scenarios, 
 /// the `IPrerenderStateService` interface is introduced. This service provides the `GetValue` method for data retrieval, 
 /// such as during the `OnInitAsync` method in components like SettingsPage.
 ///

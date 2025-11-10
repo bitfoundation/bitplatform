@@ -104,10 +104,7 @@ protected CancellationToken CurrentCancellationToken
 {
     get
     {
-        if (cts == null)
-            throw new OperationCanceledException(); // Component already disposed.
-        cts.Token.ThrowIfCancellationRequested();
-        return cts.Token;
+        // ...
     }
 }
 ```
@@ -141,24 +138,6 @@ private async Task SaveTodoItem(TodoItemDto todoItem)
     (await todoItemController.Update(todoItem, CurrentCancellationToken)).Patch(todoItem);
     // ... rest of the code
 }
-```
-
-And in the Razor file ([`TodoPage.razor`](/src/Client/Boilerplate.Client.Core/Components/Pages/TodoPage.razor)), event handlers use `WrapHandled` for proper exception handling:
-
-```xml
-<BitTextField @ref="newTodoInput"
-              Style="flex-grow:1"
-              @bind-Value="newTodoTitle"
-              Immediate DebounceTime="300"
-              Placeholder="@Localizer[nameof(AppStrings.TodoAddPlaceholder)]"
-              OnEnter="WrapHandled(async (KeyboardEventArgs args) => await AddTodoItem())" />
-
-<BitButton AutoLoading
-           OnClick="WrapHandled(AddTodoItem)"
-           Title="@Localizer[nameof(AppStrings.Add)]"
-           IsEnabled="(string.IsNullOrWhiteSpace(newTodoTitle) is false)">
-    @Localizer[nameof(AppStrings.Add)]
-</BitButton>
 ```
 
 ---
@@ -199,37 +178,93 @@ This is useful when:
 
 **Important**: Use this only for **short critical operations**. For long-running tasks, use background jobs instead.
 
-### Real-World Example
+### Preventing Navigation During Save
 
-Let's look at [`AddOrEditCategoryModal.razor`](/src/Client/Boilerplate.Client.Core/Components/Pages/Categories/AddOrEditCategoryModal.razor):
+Let's look at a example of how `NavigationLock` can be used to prevent navigation while a save operation is in progress.
+
+#### Razor Component (`.razor` file)
 
 ```xml
-<NavigationLock OnBeforeInternalNavigation="OnNavigation" />
+@inherits AppPageBase
+
+<NavigationLock OnBeforeInternalNavigation="HandleNavigation" />
+
+<EditForm Model="product" OnValidSubmit="WrapHandled(SaveProduct)">
+    <BitTextField @bind-Value="product.Name" Label="Product Name" />
+    <BitTextField @bind-Value="product.Price" Label="Price" />
+    
+    <BitButton IsLoading="isSaving" ButtonType="BitButtonType.Submit">
+        @Localizer[nameof(AppStrings.Save)]
+    </BitButton>
+</EditForm>
 ```
 
-And the corresponding code-behind ([`AddOrEditCategoryModal.razor.cs`](/src/Client/Boilerplate.Client.Core/Components/Pages/Categories/AddOrEditCategoryModal.razor.cs)):
+#### Code-Behind (`.razor.cs` file)
 
 ```csharp
-private bool isChanged => editForm?.EditContext?.IsModified() is true;
-
-private void OnNavigation(LocationChangingContext args)
+public partial class EditProductPage
 {
-    args.PreventNavigation();
-    if (isChanged) return;
-    isOpen = false;
+    [AutoInject] IProductController productController = default!;
+    
+    private bool isSaving = false;
+    private ProductDto product = new();
+
+    private async Task SaveProduct()
+    {
+        if (isSaving) return; // Prevent multiple submissions
+
+        isSaving = true; // Set flag BEFORE starting the operation
+
+        try
+        {
+            // This operation must complete - don't allow navigation
+            await productController.Update(product, CurrentCancellationToken);
+            
+            SnackBarService.Success("Product saved successfully!");
+        }
+        finally
+        {
+            isSaving = false; // Always reset the flag
+        }
+    }
+
+    private void HandleNavigation(LocationChangingContext context)
+    {
+        // If save operation is in progress, prevent navigation
+        if (isSaving)
+        {
+            context.PreventNavigation();
+        }
+    }
 }
 ```
 
 **How it works:**
-1. The `NavigationLock` component intercepts navigation attempts
-2. If the form has unsaved changes (`isChanged` is true), navigation is **prevented**
-3. The modal stays open, protecting the user from losing their work
-4. If there are no changes, the modal is closed and navigation proceeds
 
-This pattern is commonly used for:
+1. **NavigationLock Component**: `<NavigationLock OnBeforeInternalNavigation="HandleNavigation" />` is rendered when the modal/page is open
+2. **isSaving Flag**: Set to `true` when the save operation starts
+3. **HandleNavigation Method**: Called by `NavigationLock` before any navigation occurs
+   - If `isSaving` is `true`, it calls `context.PreventNavigation()` to block navigation
+   - This ensures the save operation completes before the user can leave
+4. **User Experience**: The user sees a loading indicator on the button (`IsLoading="isSaving"`) and cannot navigate away until the operation completes
+
+**When Navigation is Blocked:**
+- User clicks browser back button → **Blocked**
+- User clicks a menu item → **Blocked**
+- User refreshes the page → **Browser's native "Leave site?" dialog appears**
+
+**When Navigation is Allowed:**
+- After `isSaving` is set back to `false` in the `finally` block
+- The operation completes (success or failure) and the flag is reset
+
+### Usage Patterns
+
+This pattern can be used for:
 - Edit forms with unsaved changes
 - Multi-step wizards
 - Critical data entry screens
+- Payment processing forms
+- Any operation that must not be interrupted
 
 ---
 
@@ -240,7 +275,7 @@ This pattern is commonly used for:
 What if the operation is **time-consuming**? For example:
 
 - Sending an SMS with a verification code
-- Generating a large report
+- Generating a large pdf report
 - Processing uploaded files
 - Sending bulk emails
 
@@ -350,6 +385,8 @@ public partial class PhoneServiceJobsRunner
 
 3. **CancellationToken**: Even background jobs support cancellation (e.g., if the server is shutting down)
 
+**Important**: Inside background job, there is **NO** `IHttpContextAccessor` or `User` object available. So if user context is needed, it must be passed as parameters to the job method.
+
 #### Step 3: Service Registration
 
 In [`Program.Services.cs`](/src/Server/Boilerplate.Server.Api/Program.Services.cs):
@@ -384,30 +421,5 @@ The job runner is registered as a scoped service so it has access to all the sam
 5. **Automatic Cleanup**: Old job records are automatically deleted
    - Keeps your database size manageable
    - Configurable retention policies
-
----
-
-## Summary
-
-In this stage, you learned:
-
-✅ **CancellationToken** automatically cancels operations when users navigate away or close their browser  
-✅ For API methods returning `IQueryable`, cancellation happens **implicitly** through OData and EF Core  
-✅ `CurrentCancellationToken` in `AppComponentBase` provides automatic token management for Blazor components  
-✅ `NavigationLock` prevents navigation when you have critical operations or unsaved changes (for **short operations only**)  
-✅ **Background Jobs** with Hangfire allow long-running tasks without making users wait  
-✅ `PhoneServiceJobsRunner` demonstrates a real-world background job implementation with retry logic  
-✅ Hangfire provides **persistence, reliability, and scalability** for background tasks
-
----
-
-## Best Practices
-
-1. **Always pass CancellationToken**: Include `CancellationToken cancellationToken` in all async API methods
-2. **Use CurrentCancellationToken**: In Blazor components, always use `CurrentCancellationToken` when calling APIs
-3. **Use NavigationLock wisely**: Only prevent navigation when absolutely necessary (unsaved changes, **short** critical operations)
-4. **Background jobs for long tasks**: If it takes more than a few seconds, consider using a background job
-5. **Configure retry policies**: Use `[AutomaticRetry]` with appropriate attempt counts and delays for your use case
-6. **Handle exceptions properly**: In background jobs, distinguish between transient errors (should retry) and business logic errors (shouldn't retry)
 
 ---

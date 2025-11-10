@@ -46,7 +46,7 @@ public partial class CategoryDto
 
 ### Key Features of DTOs in This Project
 
-1. **`[DtoResourceType(typeof(AppStrings))]`**: Connects the DTO to localization resources for multi-language validation messages and display names
+1. **`[DtoResourceType(typeof(AppStrings))]`**: Connects the DTO to localization resources for multi-language validation messages and display names. This would be discussed in details in upcoming stages.
 
 2. **Validation Attributes**: 
    - `[Required]`: Ensures the field is not empty
@@ -93,7 +93,7 @@ public partial class UserDto : IValidatableObject
 
 **Location**: [`src/Shared/Dtos/AppJsonContext.cs`](/src/Shared/Dtos/AppJsonContext.cs)
 
-The project uses **System.Text.Json Source Generator** for high-performance JSON serialization. Every DTO used in API communication must be registered in `AppJsonContext`.
+The project uses **System.Text.Json Source Generator** for high-performance JSON serialization. Every DTO used in API/SignalR communication must be registered in `AppJsonContext`.
 
 ```csharp
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
@@ -111,8 +111,7 @@ public partial class AppJsonContext : JsonSerializerContext
 
 1. **Performance**: Source generation eliminates reflection at runtime
 2. **AOT Compatibility**: Required for ahead-of-time compilation scenarios
-3. **Trim-Safe**: Works with IL trimming for smaller app sizes
-4. **Type Safety**: Compile-time errors if serialization isn't supported
+3. **Type Safety**: Compile-time errors if serialization isn't supported
 
 ### When to Update AppJsonContext
 
@@ -345,13 +344,6 @@ When the modal opens with a category to edit, instead of replacing the entire `c
 **Location**: [`ProfileSection.razor.cs`](/src/Client/Boilerplate.Client.Core/Components/Pages/Settings/ProfileSection.razor.cs)
 
 ```csharp
-protected override void OnParametersSet()
-{
-    base.OnParametersSet();
-    
-    CurrentUser?.Patch(editUserDto);
-}
-
 private async Task SaveProfile()
 {
     editUserDto.Patch(CurrentUser);
@@ -359,35 +351,5 @@ private async Task SaveProfile()
     (await userController.Update(editUserDto, CurrentCancellationToken)).Patch(CurrentUser);
 }
 ```
-
-**The flow:**
-
-1. **Initialize**: Copy `CurrentUser` data into `editUserDto` for editing
-2. **Edit**: User modifies the form (bound to `editUserDto`)
-3. **Save**: 
-   - Patch changes back to `CurrentUser` (local state update)
-   - Send `editUserDto` to server
-   - Patch server response back to `CurrentUser` (includes server-calculated fields, updated `ConcurrencyStamp`, etc.)
-
-### Benefits of Client-Side Patch()
-
-1. **No Unnecessary API Calls**: Don't need to re-fetch data after updates
-2. **Immediate UI Updates**: The UI reflects changes instantly
-3. **Consistent State**: The same DTO object maintains its identity throughout its lifecycle
-4. **Performance**: Reduces network traffic and server load
-
----
-
-## Summary
-
-In this stage, you learned:
-
-✅ **DTOs** are the data contracts between client and server with validation and localization support  
-✅ **AppJsonContext** registers DTOs for efficient JSON serialization  
-✅ **Mappers** use Mapperly for high-performance, compile-time code generation  
-✅ **Project()** efficiently converts database queries to DTOs  
-✅ **Map()** converts individual objects between entities and DTOs  
-✅ **Patch()** updates existing objects without replacing them (used both server-side and client-side)  
-✅ Manual projection with `Select()` is an alternative to `Project()` that produces the same SQL
 
 ---

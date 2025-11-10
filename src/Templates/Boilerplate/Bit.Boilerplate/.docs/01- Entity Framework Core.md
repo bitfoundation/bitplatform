@@ -13,7 +13,7 @@ In this stage, you'll learn about:
 - **Entity Models**: How domain entities are defined
 - **Nullable Reference Types**: Understanding nullability in entity properties
 - **Entity Type Configurations**: Best practices for configuring entity mappings
-- **Migrations**: How to manage database schema changes (optional for server-side)
+- **Migrations**: How to manage database schema changes
 <!--#if (offlineDb == true)-->
 - **Client-Side Offline Database**: How the client-side database works differently
 <!--#endif-->
@@ -52,26 +52,6 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     }
 }
 ```
-
-### What Does Each DbSet Represent?
-
-Each `DbSet<T>` property represents a **table** in your database:
-- `Categories` → `Categories` table
-- `Products` → `Products` table
-- `TodoItems` → `TodoItems` table
-- And so on...
-
-You query and save data through these properties:
-```csharp
-// Example: Get all categories
-var categories = await dbContext.Categories.ToListAsync();
-
-// Example: Add a new category
-var newCategory = new Category { Name = "Honda", Color = "#FF5733" };
-dbContext.Categories.Add(newCategory);
-await dbContext.SaveChangesAsync();
-```
-
 ---
 
 ## 2. Entity Models - Defining Your Domain
@@ -120,26 +100,7 @@ public partial class Category
 }
 ```
 
-### Understanding the Entity Structure
-
-#### 1. **Primary Key**
-```csharp
-public Guid Id { get; set; }
-```
-- Every entity **must** have an `Id` property
-- Using `Guid` provides globally unique identifiers
-- EF Core automatically recognizes this as the primary key
-
-#### 2. **Data Annotations**
-```csharp
-[Required, MaxLength(64)]
-public string? Name { get; set; }
-```
-- `[Required]`: This field cannot be null in the database
-- `[MaxLength(64)]`: Limits the string length to 64 characters
-- These annotations affect both database schema and validation
-
-#### 3. **ConcurrencyStamp**
+### **ConcurrencyStamp**
 ```csharp
 public byte[] ConcurrencyStamp { get; set; } = [];
 ```
@@ -147,14 +108,6 @@ public byte[] ConcurrencyStamp { get; set; } = [];
 - Configured as a **row version** in SQL Server
 - Automatically prevents lost updates when multiple users edit the same record
 - You **must** include this in all entities that will be updated
-
-#### 4. **Navigation Properties**
-```csharp
-public IList<Product> Products { get; set; } = [];
-```
-- Represents the **relationship** between `Category` and `Product`
-- One category can have many products (one-to-many relationship)
-- EF Core uses this to generate foreign key relationships in the database
 
 ---
 
@@ -234,15 +187,6 @@ public IList<Product> Products { get; set; } = [];
 
 ## 3. Entity Type Configurations - The Professional Approach
 
-### Why Use Entity Type Configurations?
-
-Instead of cluttering your entity classes with `Fluent API` configuration code or excessive data annotations, the project uses **separate configuration classes**. This provides:
-
-✅ **Separation of Concerns**: Entity classes remain clean and focused on domain logic  
-✅ **Better Organization**: All database mapping logic is in one place  
-✅ **Easier Testing**: Entities are POCOs (Plain Old CLR Objects) without database concerns  
-✅ **Improved Readability**: Configuration is easier to find and maintain
-
 ### Location
 Entity configurations are located at:
 [`/src/Server/Boilerplate.Server.Api/Data/Configurations/`](/src/Server/Boilerplate.Server.Api/Data/Configurations/)
@@ -311,9 +255,7 @@ builder.HasData(
     new Category { Id = Guid.Parse("..."), Name = "Ford", ... }
 );
 ```
-- Pre-populates the database with initial data
-- Useful for development, testing, and demo scenarios
-- Data is inserted when the database is created
+Pre-populates the database with initial data, data is inserted when the database is created
 
 ### How Configurations Are Applied
 
@@ -386,7 +328,6 @@ await dbContext.Database.MigrateAsync();
 **Important:** If you've already run the project with `EnsureCreatedAsync()`, you **must delete the existing database** before switching to migrations. 
 
 - `EnsureCreatedAsync()` and `MigrateAsync()` cannot be mixed
-- The migration system needs to start with a clean slate
 - Your database will be recreated with the initial migration
 
 #### Step 3: Create Your First Migration
@@ -394,7 +335,7 @@ await dbContext.Database.MigrateAsync();
 Open a terminal in the `Boilerplate.Server.Api` project directory and run:
 
 ```bash
-dotnet ef migrations add InitialMigration --output-dir Data/Migrations --verbose
+dotnet ef migrations add Initial --output-dir Data/Migrations --verbose
 ```
 
 This creates migration files in the `/Data/Migrations/` folder.
@@ -412,8 +353,6 @@ When you modify entities or configurations, create a new migration:
 ```bash
 dotnet ef migrations add <MigrationName> --output-dir Data/Migrations --verbose
 ```
-
-**Important:** Always use descriptive migration names that explain what changed (e.g., `AddEmailToUser`, `CreateProductsTable`, `AddPriceToProduct`).
 
 ---
 <!--#if (offlineDb == true)-->
@@ -507,7 +446,7 @@ dotnet ef migrations add YourMigrationName --context OfflineDbContext --output-d
 **Important Notes:**
 - Ensure the solution builds successfully before running migration commands
 - Do **NOT** run `Update-Database` for client-side migrations
-- The migration is automatically applied via `MigrateAsync()` when the app starts on each device
+- The migration is automatically applied via `MigrateAsync()` when the app starts using OfflineDbContext
 
 ### Additional Resources
 
@@ -518,19 +457,5 @@ For comprehensive information about the client-side offline database, including:
 - Downloading the database file for inspection
 
 **See:** [`/src/Client/Boilerplate.Client.Core/Data/README.md`](/src/Client/Boilerplate.Client.Core/Data/README.md)
-
----
-<!--#endif-->
-## Summary
-
-In this stage, you learned about:
-
-✅ **AppDbContext**: The central database context located at `/src/Server/Boilerplate.Server.Api/Data/AppDbContext.cs`  
-✅ **Entity Models**: Defined in `/src/Server/Boilerplate.Server.Api/Models/` with required properties like `Id` and `ConcurrencyStamp`  
-✅ **Entity Type Configurations**: Best practice for separating mapping logic, located in `/src/Server/Boilerplate.Server.Api/Data/Configurations/`  
-✅ **Migrations (Optional)**: For server-side, `EnsureCreatedAsync()` is used by default; migrations are recommended for production  
-<!--#if (offlineDb == true)-->
-✅ **Client-Side Offline Database**: Uses `OfflineDbContext` with **mandatory migrations** and automatic application on startup
-<!--#endif-->
 
 ---
