@@ -428,7 +428,7 @@ By default, component styles are scoped and don't affect child components. When 
 ```
 
 **Use case:**
-- Styling Bit.BlazorUI and other 3rd party UI library components (which are child components)
+- Styling Bit.BlazorUI and other 3rd-party UI library components (which are child components)
 
 ---
 

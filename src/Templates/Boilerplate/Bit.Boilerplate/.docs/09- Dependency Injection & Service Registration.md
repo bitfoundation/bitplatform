@@ -162,7 +162,7 @@ internal static IServiceCollection AddSessioned<TService, TImplementation>(this 
 }
 ```
 
-These services need to be per-session because they maintain client specific state:
+These services need to be per-session because they maintain client-specific state:
 - **`PubSubService`**: Client app specific pub/sub messages
 - **`AuthManager`**: Client app's user's authentication state and tokens
 

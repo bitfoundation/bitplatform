@@ -356,7 +356,7 @@ public class AppFeatures
 
 The project **automatically creates policies** for all features defined in `AppFeatures`. Each feature value (e.g., `"1.0"`) becomes a policy name.
 
-The reason behind small feature values is that they're stored in jwt token, so in order to keep jwt token payload small, such a short-unique values has been assigned.
+The reason behind small feature values is that they're stored in jwt token, so in order to keep jwt token payload small, such short, unique values have been assigned.
 
 #### Policy Usage Examples
 
