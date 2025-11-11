@@ -57,7 +57,7 @@ csharp_new_line_before_open_brace = all
 ```json
 {
     "sdk": {
-        "version": "10.0.100-rc.2.25502.107",
+        "version": "10.0.100",
         "rollForward": "latestFeature"
     }
 }
