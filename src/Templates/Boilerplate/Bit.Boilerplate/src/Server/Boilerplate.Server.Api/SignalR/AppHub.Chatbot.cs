@@ -20,7 +20,9 @@ public partial class AppHub
     public async IAsyncEnumerable<string> Chatbot(
         StartChatbotRequest request,
         IAsyncEnumerable<string> incomingMessages,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
+        [EnumeratorCancellation] CancellationToken cancellationToken,
+        [FromServices] AppDbContext dbContext,
+        [FromServices] IChatClient chatClient)
     {
         // Incoming user messages are received via `incomingMessages`.
         // We utilize `Channel` to read incoming messages and send responses using `ChatClient`.
@@ -37,10 +39,6 @@ public partial class AppHub
                 culture = CultureInfo.GetCultureInfo(request.CultureId);
             }
 
-            await using var scope = serviceProvider.CreateAsyncScope();
-
-            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
             supportSystemPrompt = (await dbContext
                     .SystemPrompts.FirstOrDefaultAsync(p => p.PromptKind == PromptKind.Support, cancellationToken))?.Markdown ?? throw new ResourceNotFoundException();
 
@@ -55,7 +53,6 @@ public partial class AppHub
         }
 
         Channel<string> channel = Channel.CreateUnbounded<string>(new() { SingleReader = true, SingleWriter = true });
-        var chatClient = serviceProvider.CreateAsyncScope().ServiceProvider.GetRequiredService<IChatClient>();
 
         async Task ReadIncomingMessages()
         {
@@ -105,6 +102,7 @@ public partial class AppHub
 
                                 }, name: "SaveUserEmailAndConversationHistory", description: "Saves the user's email address and the conversation history for future reference. Use this tool when the user provides their email address during the conversation. Parameters: emailAddress (string), conversationHistory (string)"),
                                 //#if (module == "Sales")
+                                //#if (database == "PostgreSQL" || database == "SqlServer")
                                 AIFunctionFactory.Create(async ([Required, Description("Concise summary of these user requirements")] string userNeeds,
                                     [Description("Car manufacturer's name (Optional)")] string? manufacturer,
                                     [Description("Car price below this value (Optional)")] decimal? maxPrice,
@@ -118,7 +116,7 @@ public partial class AppHub
                                     var searchQuery = string.IsNullOrWhiteSpace(manufacturer)
                                         ? userNeeds
                                         : $"**{manufacturer}** {userNeeds}";
-                                    var recommendedProducts = await (await productEmbeddingService.GetProductsBySearchQuery(searchQuery, messageSpecificCancellationToken))
+                                    var recommendedProducts = await (await productEmbeddingService.SearchProducts(searchQuery, messageSpecificCancellationToken))
                                         .WhereIf(maxPrice.HasValue, p => p.Price <= maxPrice!.Value)
                                         .WhereIf(minPrice.HasValue, p => p.Price >= minPrice!.Value)
                                         .Take(10)
@@ -136,6 +134,7 @@ public partial class AppHub
 
                                     return recommendedProducts;
                                 }, name: "GetProductRecommendations", description: "This tool searches for and recommends products based on a detailed description of the user's needs and preferences and returns recommended products.")
+                                //#endif
                                 //#endif
                                 ]
                     };

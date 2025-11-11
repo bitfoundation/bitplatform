@@ -1,16 +1,17 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
-        <TargetFrameworks>net9.0-android;net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
-        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net9.0-windows10.0.19041.0</TargetFrameworks>
-        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('linux'))">net9.0-android</TargetFrameworks>
+        <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('linux'))">net10.0-android</TargetFrameworks>
         <!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
-        <!-- <TargetFrameworks>$(TargetFrameworks);net9.0-tizen</TargetFrameworks> -->
+        <!-- <TargetFrameworks>$(TargetFrameworks);net10.0-tizen</TargetFrameworks> -->
         <OutputType>Exe</OutputType>
         <UseMaui>true</UseMaui>
         <SingleProject>true</SingleProject>
+        <MauiXamlInflator>SourceGen</MauiXamlInflator>
         <EnableDefaultCssItems>false</EnableDefaultCssItems>
-
+        
         <!-- Display name -->
         <ApplicationTitle>Boilerplate</ApplicationTitle>
 
@@ -58,31 +59,30 @@
         </ApplicationVersion>
         <ApplicationVersion>$(ApplicationVersion.Trim())</ApplicationVersion>
     </PropertyGroup>
-
+    
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Environment)' != 'Development'">
-        <EnableLLVM>true</EnableLLVM>
-        <RuntimeIdentifiers Condition="'$(AndroidPackageFormat)' == 'apk'">android-arm64</RuntimeIdentifiers>
+        <AndroidLinkTool>r8</AndroidLinkTool>
+        <AndroidUseAapt2>True</AndroidUseAapt2>
+        <RunAOTCompilation>True</RunAOTCompilation>
+        <AndroidStripILAfterAOT>true</AndroidStripILAfterAOT>
+        <AndroidEnableProfiledAot>true</AndroidEnableProfiledAot>
         <MauiUseDefaultAotProfile Condition="Exists('custom.aprof')">false</MauiUseDefaultAotProfile>
-        <!--/+:msbuild-conditional:noEmit -->
-        <AndroidStripILAfterAOT Condition=" '$(offlineDb)' == 'false'">true</AndroidStripILAfterAOT>
-        <RunAOTCompilation Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">false</RunAOTCompilation>
-        <!--/-:msbuild-conditional:noEmit -->
+        <RuntimeIdentifiers Condition="'$(AndroidPackageFormat)' == 'apk'">android-arm64</RuntimeIdentifiers>
+
+        <EnableLLVM>false</EnableLLVM>
+        <!-- https://github.com/dotnet/runtime/issues/95406#issuecomment-1983736335 -->
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Environment)' == 'Development'">
-        <CodesignEntitlements>Platforms/iOS/Entitlements.Development.plist</CodesignEntitlements>
         <EnableSGenConc>True</EnableSGenConc>
+        <CodesignEntitlements>Platforms/iOS/Entitlements.Development.plist</CodesignEntitlements>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Environment)' != 'Development'">
-        <CodesignEntitlements>Platforms/iOS/Entitlements.Production.plist</CodesignEntitlements>
         <EnableSGenConc>True</EnableSGenConc>
-        <!--/+:msbuild-conditional:noEmit -->
         <!-- https://learn.microsoft.com/en-us/dotnet/maui/macios/interpreter -->
-        <MtouchInterpreter Condition=" '$(offlineDb)' == 'false'">-all</MtouchInterpreter>
-        <UseInterpreter Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">True</UseInterpreter>
-        <PublishAot Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">false</PublishAot>
-        <!--/-:msbuild-conditional:noEmit -->
+        <MtouchInterpreter>-all</MtouchInterpreter>
+        <CodesignEntitlements>Platforms/iOS/Entitlements.Production.plist</CodesignEntitlements>
     </PropertyGroup>
 
     <!-- Build Properties must be defined within these property groups to ensure successful publishing
@@ -94,11 +94,8 @@
     <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Environment)' != 'Development'">
         <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Production.plist</CodesignEntitlements>
         <UseHardenedRuntime>true</UseHardenedRuntime>
-        <!--/+:msbuild-conditional:noEmit -->
-        <MtouchInterpreter Condition=" '$(offlineDb)' == 'false'">-all</MtouchInterpreter>
-        <UseInterpreter Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">True</UseInterpreter>
-        <PublishAot Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">false</PublishAot>
-        <!--/-:msbuild-conditional:noEmit -->
+        <!-- https://learn.microsoft.com/en-us/dotnet/maui/macios/interpreter -->
+        <MtouchInterpreter>-all</MtouchInterpreter>
     </PropertyGroup>
 
     <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
@@ -107,13 +104,11 @@
         <AndroidAotProfile Condition="Exists('custom.aprof')" Include="custom.aprof" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" />
-        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.SavedState" />
-        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.SavedState.SavedState.Ktx" />
         <!--/-:msbuild-conditional:noEmit -->
         <!-- Run the following commands to create custom.aprof file which improves the Android app performance -->
         <!-- dotnet add package Mono.AotProfiler.Android -->
-        <!-- dotnet build -t:BuildAndStartAotProfiling -f net9.0-android -p:UseInterpreter=false -->
-        <!-- dotnet build -t:FinishAotProfiling -f net9.0-android -->
+        <!-- dotnet build -t:BuildAndStartAotProfiling -f net10.0-android -p:UseInterpreter=false -->
+        <!-- dotnet build -t:FinishAotProfiling -f net10.0-android -->
         <!-- dotnet remove package Mono.AotProfiler.Android -->
     </ItemGroup>
 
@@ -123,6 +118,10 @@
 
     <ItemGroup>
 
+        <Content Include="..\Boilerplate.Client.Web\wwwroot\web-interop-app.html" Link="wwwroot\web-interop-app.html">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        
         <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
         <Using Include="Boilerplate.Client.Core.Components.Layout" />
         <Using Include="Boilerplate.Client.Core.Components.Pages" />
@@ -164,7 +163,6 @@
     <ItemGroup>
         <PackageReference Include="EmbedIO" />
         <PackageReference Include="Bit.BlazorES2019" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
         <PackageReference Include="Microsoft.Maui.Controls" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventLog" />

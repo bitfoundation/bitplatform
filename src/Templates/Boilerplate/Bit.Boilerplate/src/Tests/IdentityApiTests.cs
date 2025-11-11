@@ -18,7 +18,7 @@ public partial class IdentityApiTests
             // Services registered in this test project will be used instead of the application's services, allowing you to fake certain behaviors during testing.
             services.Replace(ServiceDescriptor.Scoped<IStorageService, TestStorageService>());
             services.Replace(ServiceDescriptor.Transient<IAuthTokenProvider, TestAuthTokenProvider>());
-        }).Start();
+        }).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
@@ -28,11 +28,11 @@ public partial class IdentityApiTests
         {
             Email = TestData.DefaultTestEmail,
             Password = TestData.DefaultTestPassword
-        }, TestContext.CancellationTokenSource.Token);
+        }, TestContext.CancellationToken);
 
         var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
 
-        var user = await userController.GetCurrentUser(TestContext.CancellationTokenSource.Token);
+        var user = await userController.GetCurrentUser(TestContext.CancellationToken);
 
         Assert.AreEqual(Guid.Parse("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"), user.Id);
     }
@@ -46,13 +46,13 @@ public partial class IdentityApiTests
         {
             services.Replace(ServiceDescriptor.Scoped<IStorageService, TestStorageService>());
             services.Replace(ServiceDescriptor.Transient<IAuthTokenProvider, TestAuthTokenProvider>());
-        }).Start();
+        }).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
 
-        await Assert.ThrowsExactlyAsync<UnauthorizedException>(() => userController.GetCurrentUser(TestContext.CancellationTokenSource.Token));
+        await Assert.ThrowsExactlyAsync<UnauthorizedException>(() => userController.GetCurrentUser(TestContext.CancellationToken));
     }
 
     public TestContext TestContext { get; set; } = default!;

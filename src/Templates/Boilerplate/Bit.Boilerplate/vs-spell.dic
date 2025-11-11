@@ -77,7 +77,7 @@ serverapi
 clientwebwasm
 clientwindows
 mssql
-sqldb
+mssqldb
 postgresserver
 pgadmin
 Otlp

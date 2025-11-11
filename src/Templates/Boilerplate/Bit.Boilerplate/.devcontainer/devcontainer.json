@@ -1,6 +1,6 @@
 {
     "name": "Boilerplate",
-    "image": "mcr.microsoft.com/dotnet/sdk:9.0",
+    "image": "mcr.microsoft.com/dotnet/nightly/sdk:10.0.100",
     "hostRequirements": {
         "cpus": 8
     },
@@ -20,7 +20,7 @@
                 "ms-dotnettools.csharp",
                 "ms-dotnettools.csdevkit",
                 "ms-azuretools.vscode-docker",
-                "DominicVonk.vscode-resx-editor",
+                "microsoft-aspire.aspire-vscode",
                 "ms-vscode-remote.remote-containers",
                 "ms-dotnettools.blazorwasm-companion",
                 "ms-dotnettools.vscode-dotnet-runtime"
@@ -39,7 +39,7 @@
         "ghcr.io/devcontainers/features/python": {},
         "ghcr.io/devcontainers/features/powershell:1": {},
         "ghcr.io/devcontainers/features/docker-in-docker:2": {},
-        "ghcr.io/devcontainers/features/node:1": { "version": "23" },
+        "ghcr.io/devcontainers/features/node:1": { "version": "24" },
         "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
             "version": "latest",
             "helm": "latest",

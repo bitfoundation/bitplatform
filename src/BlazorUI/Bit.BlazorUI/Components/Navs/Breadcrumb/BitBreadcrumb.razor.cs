@@ -607,20 +607,23 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     {
         if (IsEnabled is false || IsDisposed) return;
 
-        await _js.BitCalloutToggleCallout(_dotnetObj,
-                                _overflowAnchorId,
-                                null,
-                                _calloutId,
-                                null,
-                                _isCalloutOpen,
-                                BitResponsiveMode.None,
-                                BitDropDirection.TopAndBottom,
-                                Dir is BitDir.Rtl,
-                                _scrollContainerId,
-                                0,
-                                "",
-                                "",
-                                false);
+        await _js.BitCalloutToggleCallout(
+            dotnetObj: _dotnetObj,
+            componentId: _overflowAnchorId,
+            component: null,
+            calloutId: _calloutId,
+            callout: null,
+            isCalloutOpen: _isCalloutOpen,
+            responsiveMode: BitResponsiveMode.None,
+            dropDirection: BitDropDirection.TopAndBottom,
+            isRtl: Dir is BitDir.Rtl,
+            scrollContainerId: _scrollContainerId,
+            scrollOffset: 0,
+            headerId: "",
+            footerId: "",
+            setCalloutWidth: false,
+            fixedCalloutWidth: false,
+            maxWindowWidth: 0);
     }
 
     private string GetItemKey(TItem item, string defaultKey)

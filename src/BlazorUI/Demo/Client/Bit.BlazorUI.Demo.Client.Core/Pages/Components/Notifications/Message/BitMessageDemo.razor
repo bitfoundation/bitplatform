@@ -151,6 +151,19 @@
         {
             <BitButton OnClick="() => isDismissed = false">Dismissed, click to reset</BitButton>
         }
+
+        <br/><br/>
+        
+        @if (isAutoDismissed is false)
+        {
+            <BitMessage AutoDismissTime="TimeSpan.FromSeconds(5)" OnDismiss="() => isAutoDismissed = true">
+                Auto-Dismiss option enabled by adding the <strong>AutoDismissTime</strong> parameter alongside OnDismiss.
+            </BitMessage>
+        }
+        else
+        {
+            <BitButton OnClick="() => isAutoDismissed = false">Auto-Dismissed, click to reset</BitButton>
+        }
     </DemoExample>
 
     <DemoExample Title="Actions" RazorCode="@example9RazorCode" Id="example9">

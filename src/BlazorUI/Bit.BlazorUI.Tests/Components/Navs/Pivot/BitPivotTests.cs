@@ -71,8 +71,8 @@ public class BitPivotTests : BunitTestContext
     [DataTestMethod,
          DataRow(BitPivotPosition.Top),
          DataRow(BitPivotPosition.Bottom),
-         DataRow(BitPivotPosition.Left),
-         DataRow(BitPivotPosition.Right)
+         DataRow(BitPivotPosition.Start),
+         DataRow(BitPivotPosition.End)
     ]
     public void BitPivotShouldRespectPosition(BitPivotPosition position)
     {
@@ -85,8 +85,8 @@ public class BitPivotTests : BunitTestContext
         {
             BitPivotPosition.Top => "bit-pvt-top",
             BitPivotPosition.Bottom => "bit-pvt-btm",
-            BitPivotPosition.Left => "bit-pvt-lft",
-            BitPivotPosition.Right => "bit-pvt-rgt",
+            BitPivotPosition.Start => "bit-pvt-sta",
+            BitPivotPosition.End => "bit-pvt-end",
             _ => string.Empty
         };
 

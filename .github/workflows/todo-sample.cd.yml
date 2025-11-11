@@ -6,6 +6,10 @@ env:
   SERVER_ADDRESS: 'https://todo.bitplatform.dev'
   AzureOpenAI__ApiKey: ${{ secrets.AzureOpenAI__ApiKey }}
   AzureOpenAI__Endpoint: ${{ secrets.AzureOpenAI__Endpoint }}
+  AZUREOPENAI__MODEL: ${{ secrets.AZUREOPENAI__MODEL }}
+  OpenAI__ApiKey: ${{ secrets.OpenAI__ApiKey }}
+  OpenAI__Endpoint: ${{ secrets.OpenAI__Endpoint }}
+  OPENAI__MODEL: ${{ secrets.OPENAI__MODEL }}
 
 on:
   workflow_dispatch:
@@ -19,7 +23,7 @@ jobs:
 
   build_api_blazor:
     name: build api + blazor web
-    runs-on: ubuntu-24.04
+    runs-on: windows-2025
 
     steps:
     
@@ -31,9 +35,9 @@ jobs:
       with:
         global-json-file: src/global.json
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
-        node-version: 23
+        node-version: 24
 
     - name: Create project from Boilerplate
       run: |
@@ -73,13 +77,13 @@ jobs:
           dotnet build TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
 
     - name: Publish
-      run: dotnet publish TodoSample/src/Server/TodoSample.Server.Web/TodoSample.Server.Web.csproj -c Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APP_VERSION}}"
+      run: dotnet publish TodoSample/src/Server/TodoSample.Server.Web/TodoSample.Server.Web.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}"
 
     - name: Upload server artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: server-bundle
-        path: ${{env.DOTNET_ROOT}}/server
+        path: server
         include-hidden-files: true # Required for wwwroot/.well-known folder
 
   deploy_api_blazor:
@@ -93,7 +97,7 @@ jobs:
     steps:
 
       - name: Retrieve server bundle
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: server-bundle
 
@@ -144,28 +148,23 @@ jobs:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
-        node-version: 23
+        node-version: 24
         
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools
 
-    - name: Enable WebInteropApp route
-      run: |
-          # Uncomment the Route attribute for WebInteropApp component as noted in the WebInteropApp.razor's comments
-          sed -i 's/@\* @attribute \[Route("web-interop-app")\] \*@/@attribute [Route("web-interop-app")]/' TodoSample/src/Client/TodoSample.Client.Core/Components/WebInteropApp.razor
-      
     - name: Generate CSS/JS files
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
       
     - name: Publish
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/client -p:Version="${{ vars.APP_VERSION}}" -p:RunAOTCompilation=true -p:InvariantGlobalization=true
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:RunAOTCompilation=true -p:InvariantGlobalization=true
 
     - name: Upload to asw
       run: |
           npm install -g @azure/static-web-apps-cli
-          swa deploy --deployment-token ${{ secrets.TODO_AOT_ASW_TOKEN }} --env production --app-location ${{env.DOTNET_ROOT}}/client/wwwroot
+          swa deploy --deployment-token ${{ secrets.TODO_AOT_ASW_TOKEN }} --env production --app-location client/wwwroot
 
   deploy_blazor_wasm_standalone_offlineDb:
     name: build blazor wasm standalone (Offline database)
@@ -196,18 +195,13 @@ jobs:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
-        node-version: 23
+        node-version: 24
         
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools
 
-    - name: Enable WebInteropApp route
-      run: |
-          # Uncomment the Route attribute for WebInteropApp component as noted in the WebInteropApp.razor's comments
-          sed -i 's/@\* @attribute \[Route("web-interop-app")\] \*@/@attribute [Route("web-interop-app")]/' TodoSample/src/Client/TodoSample.Client.Core/Components/WebInteropApp.razor
-      
     - name: Configure bswup # Always AlwaysPrerender is the last item, so overriding it has the desired effect
       run: |
           sed -i "s/\/\/ self.mode = 'AlwaysPrerender'/self.mode = 'FullOffline'/g" TodoSample/src/Client/TodoSample.Client.Web/wwwroot/service-worker.published.js
@@ -216,12 +210,12 @@ jobs:
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true --no-restore -c Release
       
     - name: Publish
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/client -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true
 
     - name: Upload to asw
       run: |
           npm install -g @azure/static-web-apps-cli
-          swa deploy --deployment-token ${{ secrets.TODO_OFFLINE_ASW_TOKEN }} --env production --app-location ${{env.DOTNET_ROOT}}/client/wwwroot
+          swa deploy --deployment-token ${{ secrets.TODO_OFFLINE_ASW_TOKEN }} --env production --app-location client/wwwroot
 
   deploy_blazor_wasm_standalone_small:
     name: build blazor wasm standalone (small)
@@ -252,32 +246,27 @@ jobs:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
-        node-version: 23
+        node-version: 24
         
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools
 
-    - name: Enable WebInteropApp route
-      run: |
-          # Uncomment the Route attribute for WebInteropApp component as noted in the WebInteropApp.razor's comments
-          sed -i 's/@\* @attribute \[Route("web-interop-app")\] \*@/@attribute [Route("web-interop-app")]/' TodoSample/src/Client/TodoSample.Client.Core/Components/WebInteropApp.razor
-      
     - name: Generate CSS/JS files
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
       
     - name: Publish
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/client -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true
 
     - name: Upload to asw
       run: |
           npm install -g @azure/static-web-apps-cli
-          swa deploy --deployment-token ${{ secrets.TODO_SMALL_ASW_TOKEN }} --env production --app-location ${{env.DOTNET_ROOT}}/client/wwwroot
+          swa deploy --deployment-token ${{ secrets.TODO_SMALL_ASW_TOKEN }} --env production --app-location client/wwwroot
 
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
-    runs-on: windows-2022
+    runs-on: windows-2025
   
     steps:
      
@@ -289,9 +278,9 @@ jobs:
       with:
         global-json-file: src/global.json
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
-        node-version: 23
+        node-version: 24
 
     - name: Create project from Boilerplate
       run: |
@@ -328,7 +317,7 @@ jobs:
           dotnet vpk pack -u TodoSample.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e TodoSample.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle TodoSample
   
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: win-exe-bundle
         path: TodoSample\src\Client\TodoSample.Client.Windows\Releases
@@ -347,9 +336,9 @@ jobs:
       with:
         global-json-file: src/global.json
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
-        node-version: 23
+        node-version: 24
 
     - name: Create project from Boilerplate
       run: |
@@ -420,17 +409,17 @@ jobs:
           dotnet build TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
   
     - name: Publish aab
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoSample.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="TodoSample" -p:ApplicationId="com.bitplatform.Todo.Template" -f net9.0-android
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoSample.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="TodoSample" -p:ApplicationId="com.bitplatform.Todo.Template" -f net10.0-android
   
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: android-bundle
-        path: TodoSample/src/Client/TodoSample.Client.Maui/bin/Release/net9.0-android/*-Signed.*
+        path: TodoSample/src/Client/TodoSample.Client.Maui/bin/Release/net10.0-android/*-Signed.*
         
   build_blazor_hybrid_ios:
     name: build blazor hybrid (iOS-macOS)
-    runs-on: macOS-15
+    runs-on: macOS-26
   
     steps:
      
@@ -442,13 +431,13 @@ jobs:
       with:
         global-json-file: src/global.json
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
-        node-version: 23
+        node-version: 24
 
     - uses: maxim-lobanov/setup-xcode@v1.6.0
       with:
-        xcode-version: '16.4'
+        xcode-version: '26.1'
 
     - name: Create project from Boilerplate
       run: |
@@ -516,10 +505,10 @@ jobs:
           dotnet build TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
   
     - name: Build ipa
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="TodoTemplate" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="Todo" -p:ApplicationId="com.bitplatform.Todo.Template" -f net9.0-ios
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="TodoTemplate" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="Todo" -p:ApplicationId="com.bitplatform.Todo.Template" -f net10.0-ios
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: ios-bundle
-        path: TodoSample/src/Client/TodoSample.Client.Maui/bin/release/net9.0-ios/ios-arm64/publish/*.ipa
+        path: TodoSample/src/Client/TodoSample.Client.Maui/bin/release/net10.0-ios/ios-arm64/publish/*.ipa

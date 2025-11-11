@@ -31,7 +31,7 @@
     }
 
     .custom-container,
-    .custom-container:after {
+    .custom-container::after {
         border-radius: 1rem;
     }
 

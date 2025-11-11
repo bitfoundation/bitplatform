@@ -61,7 +61,7 @@
                     break;
                 case "SqlServer":
                     <div>
-                        You can use Sql Server LocalDb 2022 for development purposes.
+                        You can use Sql Server LocalDb 2025 for development purposes.
                         <br />
                         It gets installed within Visual Studio by default, but you can either download it from <a href="https://download.microsoft.com/download/3/8/d/38de7036-2433-4207-8eae-06e247e17b25/SqlLocalDB.msi" target="_blank">here</a> or install it using PowerShell:
                         <CodeBox>$ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest -Uri https://download.microsoft.com/download/3/8/d/38de7036-2433-4207-8eae-06e247e17b25/SqlLocalDB.msi -OutFile SqlLocalDB.msi; msiexec /i SqlLocalDB.msi /quiet</CodeBox>
@@ -97,32 +97,34 @@
                 @GetFileStorageCommand()
             </CodeBox>
 
-            @if (fileStorage.Value == "Local")
-            {
-                <div>
-                    The API project includes an Attachment Controller responsible for handling user images,
-                    including resizing and saving them in the WebP format using <a href="https://github.com/robinrodricks/FluentStorage" target="_blank">FluentStorage</a>
-                    <br />
-                    <br />
-                    Local option stores files on local hard drive.
-                </div>
-            }
-            @if (fileStorage.Value == "AzureBlobStorage")
-            {
-                <div>
-                    Download and install Azure blob storage emulator <a href="https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=npm%2Cblob-storage#install-azurite">here</a>.
-                </div>
-            }
-            @if (fileStorage.Value == "Other")
-            {
-                <div>
-                    Install and configure any of the <a href="https://www.nuget.org/profiles/hgupta" target="_blank">FluentStorage packages</a>.
-                    <br />
-                    <br />
-                    One noteable implementation is <a href="https://nuget.org/packages/FluentStorage.AWS" target="_blank">FluentStorage.AWS</a>, which supports Amazon S3.
-                    This allows you to use any file storage solution compatible with S3, such as DigitalOcean Spaces or MinIO.
-                </div>
-            }
+			@switch (fileStorage.Value)
+			{
+				case "Local":
+					<div>
+						The API project includes an Attachment Controller responsible for handling user images,
+						including resizing and saving them in the WebP format using <a href="https://github.com/robinrodricks/FluentStorage" target="_blank">FluentStorage</a>
+						<br />
+						<br />
+						Local option stores files on local hard drive.
+					</div>
+					break;
+				case "AzureBlobStorage":
+					<div>
+						Download and install Azure blob storage emulator <a href="https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=npm%2Cblob-storage#install-azurite">here</a>.
+					</div>
+					break;
+				case "S3":
+					<div>
+						Install and configure <a href="https://www.nuget.org/packages/FluentStorage.AWS" target="_blank">FluentStorage.AWS</a>, which supports Amazon S3.
+						This allows you to use any file storage solution compatible with S3, such as AWS, DigitalOcean Spaces, MinIO, Hetzner, Contabo etc.
+					</div>
+					break;
+				case "Other":
+					<div>
+						Install and configure any of the <a href="https://www.nuget.org/profiles/hgupta" target="_blank">FluentStorage packages</a>.
+					</div>
+					break;
+			}
         </BitGridItem>
 
         <BitGridItem Class="grid-item md">
@@ -171,8 +173,18 @@
             </CodeBox>
             <br />
             <BitText Typography="BitTypography.Body2">
-                Aspire helps you build, test, and deploy distributed applications with ease. Learn more at <a href="https://learn.microsoft.com/en-us/dotnet/aspire/" target="_blank">ASP.NET Core Aspire</a>.
-            </BitText>
+     Aspire helps you build, test, and deploy distributed applications with ease. Learn more at <a href="https://learn.microsoft.com/en-us/dotnet/aspire/" target="_blank">ASP.NET Core Aspire</a>.
+				<div class="video-container">
+						<iframe width="800" height="450"
+								allowfullscreen frameborder="0"
+								title="Aspire"
+								src="https://www.youtube.com/embed/-vd7quVCP1k?si=mf4GZrdqRYK6zZ25"
+								referrerpolicy="strict-origin-when-cross-origin"
+								allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
+				</div>
+				<CodeBox>dotnet tool install -g Aspire.Cli</CodeBox>
+				Aspire requires Docker Desktop to be installed and running. Download and install Docker Desktop from <a href="https://www.docker.com/products/docker-desktop/" target="_blank">here</a>.
+  </BitText>
         </BitGridItem>
 
         <BitGridItem Class="grid-item md" ColumnSpan="2">

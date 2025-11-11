@@ -1,12 +1,6 @@
 //+:cnd:noEmit
 
-interface DotNetObject {
-    invokeMethod<T>(methodIdentifier: string, ...args: any[]): T;
-    invokeMethodAsync<T>(methodIdentifier: string, ...args: any[]): Promise<T>;
-    dispose(): void;
-}
-
-class App {
+export class App {
     // For additional details, see the JsBridge.cs file.
     private static jsBridgeObj: DotNetObject;
 
@@ -95,4 +89,3 @@ class App {
     }
 }
 
-(window as any).App = App;

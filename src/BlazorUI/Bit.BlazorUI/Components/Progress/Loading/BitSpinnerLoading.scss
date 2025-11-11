@@ -13,7 +13,7 @@
     transform-origin: var(--bit-ldn-spn-40) var(--bit-ldn-spn-40);
 }
 
-.bit-ldn-spn-chl:after {
+.bit-ldn-spn-chl::after {
     content: " ";
     display: block;
     position: absolute;

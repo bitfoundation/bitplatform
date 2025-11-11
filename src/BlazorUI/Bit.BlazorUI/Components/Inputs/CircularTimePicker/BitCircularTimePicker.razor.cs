@@ -536,20 +536,23 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         if (Standalone) return;
         if (IsEnabled is false || IsDisposed) return;
 
-        await _js.BitCalloutToggleCallout(_dotnetObj,
-                                _circularTimePickerId,
-                                null,
-                                _calloutId,
-                                null,
-                                IsOpen,
-                                Responsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
-                                BitDropDirection.TopAndBottom,
-                                Dir is BitDir.Rtl,
-                                "",
-                                0,
-                                "",
-                                "",
-                                false);
+        await _js.BitCalloutToggleCallout(
+            dotnetObj: _dotnetObj,
+            componentId: _circularTimePickerId,
+            component: null,
+            calloutId: _calloutId,
+            callout: null,
+            isCalloutOpen: IsOpen,
+            responsiveMode: Responsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
+            dropDirection: BitDropDirection.TopAndBottom,
+            isRtl: Dir is BitDir.Rtl,
+            scrollContainerId: "",
+            scrollOffset: 0,
+            headerId: "",
+            footerId: "",
+            setCalloutWidth: false,
+            fixedCalloutWidth: false,
+            maxWindowWidth: 0);
     }
 
     private async Task UpdateTime(MouseEventArgs e)

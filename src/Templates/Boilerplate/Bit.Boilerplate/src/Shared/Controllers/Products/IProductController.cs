@@ -14,7 +14,7 @@ public interface IProductController : IAppController
     Task<PagedResult<ProductDto>> GetProducts(CancellationToken cancellationToken) => default!;
 
     [HttpGet("{searchQuery}")]
-    Task<PagedResult<ProductDto>> GetProductsBySearchQuery(string searchQuery, CancellationToken cancellationToken) => default!;
+    Task<PagedResult<ProductDto>> SearchProducts(string searchQuery, CancellationToken cancellationToken) => default!;
 
     [HttpGet("{id}")]
     Task<ProductDto> Get(Guid id, CancellationToken cancellationToken);

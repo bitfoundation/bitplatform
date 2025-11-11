@@ -19,7 +19,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
         //#if (database == "PostgreSQL" || database == "SqlServer")
         if (AppDbContext.IsEmbeddingEnabled)
         {
-            builder.Property(p => p.Embedding).HasColumnType("vector(1536)"); // 1536 for text-embedding-3-small
+            builder.Property(p => p.Embedding).HasColumnType("vector(384)"); // Dimensions depend on the model used, here assuming 384 because of LocalTextEmbeddingGenerationService.
         }
         else
         {

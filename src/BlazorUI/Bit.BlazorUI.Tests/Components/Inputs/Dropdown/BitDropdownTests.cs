@@ -64,7 +64,7 @@ public class BitDropdownTests : BunitTestContext
         //}
         //else
         //{
-        //    Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-drp-rlc"));
+        //    Assert.Throws<ElementNotFoundException>(() => component.Find(".bit-drp-rlc"));
         //}
     }
 
@@ -84,7 +84,7 @@ public class BitDropdownTests : BunitTestContext
 
         if (string.IsNullOrEmpty(labelFragment))
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-drp-rlc > label"));
+            Assert.Throws<ElementNotFoundException>(() => component.Find(".bit-drp-rlc > label"));
         }
         else
         {
@@ -112,7 +112,7 @@ public class BitDropdownTests : BunitTestContext
 
         if (string.IsNullOrEmpty(labelFragment))
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-drp-rlc > label"));
+            Assert.Throws<ElementNotFoundException>(() => component.Find(".bit-drp-rlc > label"));
         }
         else
         {
@@ -166,7 +166,7 @@ public class BitDropdownTests : BunitTestContext
         }
         else
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-drp-iwr"));
+            Assert.Throws<ElementNotFoundException>(() => component.Find(".bit-drp-iwr"));
         }
     }
 
@@ -389,7 +389,7 @@ public class BitDropdownTests : BunitTestContext
         }
         else
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find("label"));
+            Assert.Throws<ElementNotFoundException>(() => component.Find("label"));
         }
     }
 
@@ -938,6 +938,10 @@ public class BitDropdownTests : BunitTestContext
             //When virtualize is true, number of rendered items is greater than number of items show in the list + 2 * overScanCount.
             var expectedRenderedItemCount = Math.Ceiling((decimal)(viewportHeight / component.Instance.ItemSize)) + (2 * component.Instance.OverscanCount);
             expectedRenderedItemCount = Math.Min(expectedRenderedItemCount, 100);
+
+#if NET10_0
+            expectedRenderedItemCount += (overscanCount ?? 3) * 2; // https://github.com/dotnet/aspnetcore/pull/63765
+#endif
 
             //When actualRenderedItemCount is smaller than expectedRenderedItemCount, so show all items in viewport then actualRenderedItemCount equals total items count
             if (actualRenderedItemCount < expectedRenderedItemCount)

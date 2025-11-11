@@ -104,7 +104,7 @@ public class BitProgressTests : BunitTestContext
         var piBar = component.Find(".bit-prb-bar");
         if (string.IsNullOrEmpty(label))
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-prb-lbl"));
+            Assert.Throws<ElementNotFoundException>(() => component.Find(".bit-prb-lbl"));
             Assert.IsNull(piBar.GetAttribute("aria-labelledby"));
         }
         else
@@ -129,7 +129,7 @@ public class BitProgressTests : BunitTestContext
         var piBar = component.Find(".bit-prb-bar");
         if (string.IsNullOrEmpty(description))
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-prb-des"));
+            Assert.Throws<ElementNotFoundException>(() => component.Find(".bit-prb-des"));
             Assert.IsNull(piBar.GetAttribute("aria-describedby"));
         }
         else
@@ -180,7 +180,7 @@ public class BitProgressTests : BunitTestContext
         }
         else
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-prb-pct"));
+            Assert.Throws<ElementNotFoundException>(() => component.Find(".bit-prb-pct"));
         }
     }
 

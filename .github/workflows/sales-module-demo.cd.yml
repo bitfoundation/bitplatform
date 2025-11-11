@@ -6,6 +6,10 @@ env:
   SERVER_ADDRESS: 'https://sales.bitplatform.dev'
   AzureOpenAI__ApiKey: ${{ secrets.AzureOpenAI__ApiKey }}
   AzureOpenAI__Endpoint: ${{ secrets.AzureOpenAI__Endpoint }}
+  AZUREOPENAI__MODEL: ${{ secrets.AZUREOPENAI__MODEL }}
+  OpenAI__ApiKey: ${{ secrets.OpenAI__ApiKey }}
+  OpenAI__Endpoint: ${{ secrets.OpenAI__Endpoint }}
+  OPENAI__MODEL: ${{ secrets.OPENAI__MODEL }}
 
 on:
   workflow_dispatch:
@@ -19,7 +23,7 @@ jobs:
 
   build_api_blazor:
     name: build api + blazor web
-    runs-on: ubuntu-24.04
+    runs-on: windows-2025
 
     steps:
     
@@ -31,9 +35,9 @@ jobs:
       with:
         global-json-file: src/global.json
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
-        node-version: 23
+        node-version: 24
 
     - name: Create project from Boilerplate
       run: |
@@ -71,13 +75,13 @@ jobs:
           dotnet build SalesModule/src/Client/SalesModule.Client.Web/SalesModule.Client.Web.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true --no-restore -c Release
 
     - name: Publish
-      run: dotnet publish SalesModule/src/Server/SalesModule.Server.Web/SalesModule.Server.Web.csproj -c Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APP_VERSION}}"  -p:InvariantGlobalization=true
+      run: dotnet publish SalesModule/src/Server/SalesModule.Server.Web/SalesModule.Server.Web.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}"  -p:InvariantGlobalization=true
 
     - name: Upload server artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: server-bundle
-        path: ${{env.DOTNET_ROOT}}/server
+        path: server
         include-hidden-files: true # Required for wwwroot/.well-known folder
 
   deploy_api_blazor:
@@ -91,7 +95,7 @@ jobs:
     steps:
 
       - name: Retrieve server bundle
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: server-bundle
 
@@ -115,7 +119,7 @@ jobs:
 
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
-    runs-on: windows-2022
+    runs-on: windows-2025
   
     steps:
      
@@ -127,9 +131,9 @@ jobs:
       with:
         global-json-file: src\global.json
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
-        node-version: 23
+        node-version: 24
 
     - name: Create project from Boilerplate
       run: |
@@ -166,7 +170,7 @@ jobs:
           dotnet vpk pack -u SalesModule.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e SalesModule.Client.Windows.exe -r win-x64 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'SalesModule'
   
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: win-exe-bundle
         path: SalesModule\src\Client\SalesModule.Client.Windows\Releases

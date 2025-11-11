@@ -2,6 +2,7 @@
 using System.IO.Compression;
 using System.Net;
 //#if (appInsights == true)
+using Azure.Monitor.OpenTelemetry.Profiler;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 //#endif
 using Boilerplate.Server.Shared;
@@ -131,14 +132,21 @@ public static class WebApplicationBuilderExtensions
                     .AddProcessor<AppOpenTelemetryProcessor>()
                                 .AddAspNetCoreInstrumentation(options =>
                                 {
-                                    // Filter out Blazor static file requests
+                                    // Filter out Blazor static files and health checks requests.
+                                    string[] toBeIgnoredSegments = ["/health",
+                                        "/alive",
+                                        "/_content",
+                                        "/_framework"];
+
                                     options.Filter = context =>
                                     {
-                                        if (context.Request.Path.HasValue is false)
-                                            return true;
-                                        var path = context.Request.Path.Value;
-                                        return path.StartsWith("/_framework", StringComparison.OrdinalIgnoreCase) is false &&
-                                               path.StartsWith("/_content", StringComparison.OrdinalIgnoreCase) is false;
+                                        foreach (var segment in toBeIgnoredSegments)
+                                        {
+                                            if (context.Request.Path.StartsWithSegments(segment, StringComparison.OrdinalIgnoreCase))
+                                                return false;
+                                        }
+
+                                        return true;
                                     };
                                 })
                     .AddHttpClientInstrumentation()
@@ -182,7 +190,7 @@ public static class WebApplicationBuilderExtensions
             builder.Services.AddOpenTelemetry().UseAzureMonitor(options =>
             {
                 builder.Configuration.Bind("ApplicationInsights", options);
-            });
+            }).AddAzureMonitorProfiler();
         }
         //#endif
 

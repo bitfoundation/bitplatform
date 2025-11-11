@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <UserSecretsId>AC87AA5B-4B37-4E52-8468-2D5DF24AF256</UserSecretsId>
         <CoreCompileDependsOn>PrepareResources;$(CompileDependsOn)</CoreCompileDependsOn>
+        <StaticWebAssetProjectMode Condition=" '$(api)' == 'Integrated' OR '$(api)' == ''">Default</StaticWebAssetProjectMode>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Environment)' != 'Development' And '$(SelfContained)' == 'true'">
@@ -27,7 +28,6 @@
         <PackageReference Include="HtmlSanitizer" />
         <PackageReference Include="libphonenumber-csharp" />
         <PackageReference Include="Humanizer" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
         <PackageReference Include="NWebsec.AspNetCore.Middleware" />
         <PackageReference Include="QRCoder" />
@@ -41,7 +41,6 @@
         <PackageReference Include="Microsoft.AspNetCore.OData" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" />
-        <PackageReference Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="EFCore.SqlServer.VectorSearch" />
         <PackageReference Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
         <PackageReference Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
@@ -51,7 +50,8 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" PrivateAssets="all" />
         <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
         <PackageReference Include="AspNetCore.HealthChecks.Hangfire" />
-        <PackageReference Include="Swashbuckle.AspNetCore" />
+        <PackageReference Include="Scalar.AspNetCore" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
         <PackageReference Include="Microsoft.Identity.Web" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" />
@@ -64,8 +64,10 @@
         <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI" />
         <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI.AzureAIInference" />
         <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI.OpenAI" />
+        <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.SemanticKernel.Core" />
+        <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="SmartComponents.LocalEmbeddings.SemanticKernel" />
+        <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.SemanticKernel.Connectors.HuggingFace" />
         <PackageReference Condition=" ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Pgvector.EntityFrameworkCore" />
-
         <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
         <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />
         <Using Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
@@ -74,7 +76,7 @@
         <Using Include="Boilerplate.Shared.Attributes" />
         <Using Include="Boilerplate.Server.Api.Data" />
         <Using Include="Boilerplate.Server.Api.Mappers" />
-        <Using Include="Boilerplate.Server.Api.Filters" />
+        <Using Include="Boilerplate.Server.Api.RequestPipeline" />
         <Using Include="Microsoft.AspNetCore.Identity" />
         <Using Include="Microsoft.EntityFrameworkCore" />
         <Using Include="Microsoft.AspNetCore.OData.Query" />

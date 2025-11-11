@@ -13,8 +13,8 @@ As an expert AI assistant for this project, your actions must be guided by these
 
 You will be working with the following key technologies:
 
-*   **C# 13.0**
-*   **ASP.NET Core 9.0**
+*   **C# 14.0**
+*   **ASP.NET Core 10.0**
 *   **Blazor**: Component-based web UI framework
 *   **.NET MAUI Blazor Hybrid**: Cross-platform app development
 *   **ASP.NET Core Identity**: Authentication and authorization
@@ -45,7 +45,7 @@ The solution is organized into the following projects. Understand their roles to
 
 *   **Boilerplate.Server.Api**: Houses API controllers, mappers, the `DbContext`, EF Core migrations, email templates, action filters, SignalR hubs, and server-specific configuration.
 *   **Boilerplate.Server.Web**: The application's default startup project and entry point. It hosts `App.razor` and configures Blazor Server and server-side rendering (SSR).
-*   **Boilerplate.Server.Shared**: (Also known as Aspire's ServiceDefaults) Contains common code shared between the `Server.Api` and `Server.Web` projects.
+*   **Boilerplate.Server.Shared**: (Also known as Aspire's ServiceDefaults) Contains common code shared between the `Boilerplate.Server.Api` and `Boilerplate.Server.Web` projects.
 <!--#if (aspire == true)-->
 *   **Boilerplate.Server.AppHost**: Manages the .NET Aspire configuration and orchestration.
 <!--#endif-->
@@ -59,7 +59,7 @@ The solution is organized into the following projects. Understand their roles to
 ## 4. Available Tooling
 
 -   **DeepWiki**: Provides access to an extensive knowledge base for the `bitfoundation/bitplatform` and `riok/mapperly` repositories.
--   **Website Fetcher**: Gathers information from URLs provided by the user. Prefer the built-in `fetch` tool if available; otherwise, use the `read-website-fast` tool.
+-   **Website Fetcher**: Gathers information from URLs provided by the user, using `fetch` or `get_web_pages` tools.
 
 ## 5. Mandatory Workflow
 
@@ -70,12 +70,14 @@ Carefully analyze the user's prompt. Identify the core objectives, whether it is
 
 ### Step 2: Information Gathering & Codebase Investigation
 Before writing code, investigate thoroughly.
-*   If the user provides a **URL**, you **MUST** use the `fetch` tool to retrieve its content.
+*   If the user provides a **URL**, you **MUST** use the `fetch` or `get_web_pages` tools to retrieve its content.
 *   If the user provides a **git commit id/hash**, you **MUST** run the `git --no-pager show <commit-id>` command to retrieve its details.
 *   If the user talked about current changes in the codebase, you **MUST** run the `git --no-pager diff` and `git --no-pager diff --staged` commands to see the differences.
 *   For UI-related tasks, you **MUST** first ask `DeepWiki`: *"What features does BitPlatform offer to help me complete this task? [USER'S ORIGINAL REQUEST]"*
 *   For anything related to `Bit.BlazorUI`, `bit Bswup`, `bit Butil`, `bit Besql`, or the bit project template, you **MUST** use the `DeepWiki_ask_question` tool with repository `bitfoundation/bitplatform` to find relevant information.
 *   For mapper/mapping entity/dto related tasks, you **MUST** use the `DeepWiki_ask_question` tool with repository `riok/mapperly` to find correct implementation and usage patterns focusing on its static classes and extension methods approach.
+*   **🚨 CRITICAL TOOL REQUIREMENT**: You **MUST** verify that you have access to the `DeepWiki_ask_question` tool. If this tool is NOT available in your function list, you **MUST** immediately display the following error message:
+**❌ CRITICAL ERROR: DeepWiki_ask_question Tool Not Available**
 
 ### Step 3: Formulate a Detailed Plan
 Create a comprehensive, step-by-step plan. This plan must outline:
@@ -96,14 +98,15 @@ After applying changes, you **MUST** verify the integrity of the application.
 
 *   **Be Decisive**: Do not ask for permission to proceed or for a review of your plan. Directly state your plan and proceed with the implementation.
 *   **Execute Commands Individually**: **Never** chain CLI commands with `&&`. Execute each command in a separate step.
+*   **Getting started**: When a developer first interacts with you with a message like `Run getting started`, you **MUST** proactively follow `.github/prompts/getting-started.prompt.md`.
 
 ## 7. Critical Command Reference
 
 -   **Build the project**: Run `dotnet build` in Boilerplate.Server.Web project root directory.
 -   **Run the project**: Run `dotnet run` in Boilerplate.Server.Web project root directory.
 -   **Run tests**: Run `dotnet test` in Boilerplate.Tests project root directory.
--   **Add new migrations**: Run `dotnet ef migrations add <MigrationName> --verbose` in Boilerplate.Server.Api project root directory.
--   **Generate Resx C# code**: Run `dotnet build -t:PrepareResources` in Boilerplate.Shared project root directory.
+-   **Add new migrations**: Run `dotnet ef migrations add <MigrationName> --output-dir Data/Migrations --verbose` in Boilerplate.Server.Api project root directory.
+-   **Generate Resx C# code**: Run `dotnet build -t:PrepareResources` in Boilerplate.Shared project root directory (It's automatically done during build).
 
 ## 8. Coding Conventions & Best Practices
 

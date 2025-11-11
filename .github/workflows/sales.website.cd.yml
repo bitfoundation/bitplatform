@@ -15,7 +15,7 @@ jobs:
 
   build_api_blazor:
     name: build api + blazor web
-    runs-on: ubuntu-24.04
+    runs-on: windows-2025
 
     steps:
     
@@ -34,10 +34,10 @@ jobs:
       run: dotnet build src/Websites/Sales/src/Bit.Websites.Sales.Client/Bit.Websites.Sales.Client.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="${{ vars.APP_VERSION}}"
 
     - name: Publish
-      run: dotnet publish src/Websites/Sales/src/Bit.Websites.Sales.Server/Bit.Websites.Sales.Server.csproj -c Release -r linux-x64 -o server -p:Version="${{ vars.APP_VERSION}}"
+      run: dotnet publish src/Websites/Sales/src/Bit.Websites.Sales.Server/Bit.Websites.Sales.Server.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}"
 
     - name: Upload server artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: server-bundle
         path: server
@@ -54,7 +54,7 @@ jobs:
     steps:
 
       - name: Retrieve server bundle
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: server-bundle
 

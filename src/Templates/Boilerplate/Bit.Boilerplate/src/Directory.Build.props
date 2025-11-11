@@ -5,9 +5,8 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-        <NoWarn>$(NoWarn);CS1998;CS1591</NoWarn>
-        <WarningsAsErrors>$(WarningsAsErrors);CS0114;CS8785;RZ10012</WarningsAsErrors>
-        <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+        <NoWarn>$(NoWarn);CS1998;CS1591;ASPIREPROXYENDPOINTS001</NoWarn>
+        <WarningsAsErrors>$(WarningsAsErrors);CS0114;CS8785;RZ10012;ASP0018</WarningsAsErrors>
 
         <Version>1.0.0</Version>
         <ApplicationDisplayVersion>$(Version)</ApplicationDisplayVersion>
@@ -33,14 +32,16 @@
         <DefineConstants Condition=" '$(InvariantGlobalization)' == 'true' ">$(DefineConstants);InvariantGlobalization</DefineConstants>
         <DefineConstants>$(DefineConstants);$(Environment);$(Configuration)</DefineConstants>
         <DefineConstants Condition="$(Configuration.Contains('Debug'))">$(DefineConstants);DEBUG</DefineConstants>
-
+        
         <HotReloadAutoRestart>true</HotReloadAutoRestart>
         <CompressionEnabled Condition="'$(Environment)' == 'Development'">false</CompressionEnabled>
+
+        <EnableConfigurationBindingGenerator>false</EnableConfigurationBindingGenerator>
     </PropertyGroup>
     <!--/+:msbuild-conditional:noEmit -->
 
     <PropertyGroup>
-        <LangVersion>13.0</LangVersion>
+        <LangVersion>14.0</LangVersion>
         <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-ios'))">15.0</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-mac'))">15.0</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-android'))">26.0</SupportedOSPlatformVersion>
@@ -48,12 +49,6 @@
         <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows10'))">10.0.17763.0</TargetPlatformMinVersion>
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
     </PropertyGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Bit.CodeAnalyzers" PrivateAssets="all" />
-        <PackageReference Include="Bit.SourceGenerators" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
-    </ItemGroup>
 
     <ItemGroup>
         <Using Include="System.Net.Http" />
@@ -76,6 +71,9 @@
         <Using Include="Boilerplate.Shared.Services" />
         <Using Include="Boilerplate.Shared.Services.Contracts" />
         <Using Include="System.Diagnostics" />
+
+        <PackageReference Include="Bit.CodeAnalyzers" />
+        <PackageReference Include="Bit.SourceGenerators" />
 
         <Watch Remove="*.scss" />
     </ItemGroup>

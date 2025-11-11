@@ -123,8 +123,8 @@ public partial class BitPivot : BitComponentBase
         {
             BitPivotPosition.Top => "bit-pvt-top",
             BitPivotPosition.Bottom => "bit-pvt-btm",
-            BitPivotPosition.Left => "bit-pvt-lft",
-            BitPivotPosition.Right => "bit-pvt-rgt",
+            BitPivotPosition.Start => "bit-pvt-sta",
+            BitPivotPosition.End => "bit-pvt-end",
             _ => "bit-pvt-top"
         });
     }

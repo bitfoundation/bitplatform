@@ -14,7 +14,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private bool _isResponsiveMode;
     private bool _inputSearchHasFocus;
     private List<TItem> _selectedItems = [];
-    private List<TItem> _lastShowItems = [];
+    private List<TItem> _lastShownItems = [];
     private Virtualize<TItem>? _virtualizeElement;
     private string _scrollContainerId = string.Empty;
     private string _dropdownTextContainerId = string.Empty;
@@ -850,7 +850,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender is false) return;
-        
+
         _dotnetObj = DotNetObjectReference.Create(this);
 
         if (Responsive is false) return;
@@ -953,7 +953,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private void UpdateSelectedItemsFromValues()
     {
-        var items = ItemsProvider is not null ? _lastShowItems : Items;
+        var items = ItemsProvider is null ? Items : _lastShownItems;
         if (items is null) return;
 
         if (ItemsProvider is null)
@@ -973,6 +973,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                     if (ItemsProvider is not null && _selectedItems.Exists(si => EqualityComparer<TValue>.Default.Equals(GetValue(si), GetValue(item)))) continue;
 
                     _selectedItems.Add(item);
+                }
+
+                if (ItemsProvider is not null)
+                {
+                    _selectedItems.RemoveAll(si => Values.Contains(GetValue(si)) is false);
                 }
             }
             else
@@ -1089,15 +1094,15 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private ICollection<TItem> GetSearchedItems()
     {
-        if (Items is null) return [];
+        var items = ItemsProvider is null ? Items : _lastShownItems;
+        if (items is null) return [];
 
         return _searchText.HasNoValue()
-                ? Items
+                ? items
                 : SearchFunction is not null
-                    ? SearchFunction.Invoke(Items, _searchText!)
-                    : Items.Where(i => GetItemType(i) == BitDropdownItemType.Normal
-                                       && (GetText(i)?.Contains(_searchText!, StringComparison.OrdinalIgnoreCase) ?? false))
-                           .ToArray();
+                    ? SearchFunction.Invoke(items, _searchText!)
+                    : [.. items.Where(i => GetItemType(i) == BitDropdownItemType.Normal &&
+                                           GetText(i)?.Contains(_searchText!, StringComparison.OrdinalIgnoreCase) is true)];
     }
 
     private string GetSearchBoxClasses()
@@ -1172,20 +1177,23 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         if (IsEnabled is false || IsDisposed) return;
 
-        _isResponsiveMode = await _js.BitCalloutToggleCallout(_dotnetObj,
-                                                    _dropdownId,
-                                                    null,
-                                                    _calloutId,
-                                                    null,
-                                                    IsOpen,
-                                                    Responsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
-                                                    DropDirection,
-                                                    Dir is BitDir.Rtl,
-                                                    _scrollContainerId,
-                                                    ShowSearchBox && Combo is false ? 32 : 0,
-                                                    CalloutHeaderTemplate is not null ? _headerId : "",
-                                                    CalloutFooterTemplate is not null ? _footerId : "",
-                                                    PreserveCalloutWidth is false);
+        _isResponsiveMode = await _js.BitCalloutToggleCallout(
+            dotnetObj: _dotnetObj,
+            componentId: _dropdownId,
+            component: null,
+            calloutId: _calloutId,
+            callout: null,
+            isCalloutOpen: IsOpen,
+            responsiveMode: Responsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
+            dropDirection: DropDirection,
+            isRtl: Dir is BitDir.Rtl,
+            scrollContainerId: _scrollContainerId,
+            scrollOffset: ShowSearchBox && Combo is false ? 32 : 0,
+            headerId: CalloutHeaderTemplate is not null ? _headerId : "",
+            footerId: CalloutFooterTemplate is not null ? _footerId : "",
+            setCalloutWidth: PreserveCalloutWidth is false,
+            fixedCalloutWidth: false,
+            maxWindowWidth: 0);
     }
 
     private async ValueTask<ItemsProviderResult<TItem>> InternalItemsProvider(ItemsProviderRequest request)
@@ -1205,7 +1213,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         if (request.CancellationToken.IsCancellationRequested) return default;
 
-        _lastShowItems = [.. providerResult.Items];
+        _lastShownItems = [.. providerResult.Items];
 
         UpdateSelectedItemsFromValues();
         await InvokeAsync(StateHasChanged);
@@ -1328,7 +1336,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             if (hasItem) return;
         }
 
-        var searchItems = ItemsProvider is not null ? _lastShowItems : Items;
+        var searchItems = ItemsProvider is not null ? _lastShownItems : Items;
         if (searchItems is not null && searchItems.Count > 0)
         {
             var item = FindItemFunction is not null ?
@@ -1439,9 +1447,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private void SetIsSelectedForSelectedItems()
     {
-        if (Items is null) return;
+        var items = ItemsProvider is null ? Items : _lastShownItems;
+        if (items is null) return;
 
-        foreach (var it in Items)
+        foreach (var it in items)
         {
             SetIsSelected(it, false);
         }

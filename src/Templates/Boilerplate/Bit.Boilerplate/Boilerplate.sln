@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31611.283
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11201.2
 MinimumVisualStudioVersion = 10.0.40219.1
 #if (aspire == true)
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Boilerplate.Server.AppHost", "src\Server\Boilerplate.Server.AppHost\Boilerplate.Server.AppHost.csproj", "{C1CACA9D-8E95-5A02-3E37-37CE607581A3}"
@@ -54,6 +54,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prompts", "prompts", "{4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C0D}"
 	ProjectSection(SolutionItems) = preProject
 		.github\prompts\resx.prompt.md = .github\prompts\resx.prompt.md
+		.github\prompts\bitify.prompt.md = .github\prompts\bitify.prompt.md
+		.github\prompts\getting-started.prompt.md = .github\prompts\getting-started.prompt.md
 		.github\prompts\scaffold.prompt.md = .github\prompts\scaffold.prompt.md
 	EndProjectSection
 EndProject
@@ -78,6 +80,36 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{B38FF18E-11BC-4AF6-8FA3-648B3952DCAF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Tests", "src\Tests\Boilerplate.Tests.csproj", "{47F82CD8-D6DA-4F03-9DD6-F67AF3621C93}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".docs", ".docs", "{8A72BF22-F6D3-C5D9-4099-AB471879EBC8}"
+	ProjectSection(SolutionItems) = preProject
+		.docs\00- Wiki.md = .docs\00- Wiki.md
+		.docs\01- Entity Framework Core.md = .docs\01- Entity Framework Core.md
+		.docs\02- DTOs, Mappers, and Mapperly.md = .docs\02- DTOs, Mappers, and Mapperly.md
+		.docs\03- API Controllers and OData.md = .docs\03- API Controllers and OData.md
+		.docs\04- Background Jobs and CancellationToken Management.md = .docs\04- Background Jobs and CancellationToken Management.md
+		.docs\05- Localization and Multi-language Support.md = .docs\05- Localization and Multi-language Support.md
+		.docs\06- Exception Handling and Error Management.md = .docs\06- Exception Handling and Error Management.md
+		.docs\07- ASP.NET Core Identity - Authentication & Authorization.md = .docs\07- ASP.NET Core Identity - Authentication & Authorization.md
+		.docs\08- Blazor Pages, Components, Styling & Navigation.md = .docs\08- Blazor Pages, Components, Styling & Navigation.md
+		.docs\09- Dependency Injection & Service Registration.md = .docs\09- Dependency Injection & Service Registration.md
+		.docs\10- Configuration (appsettings.json).md = .docs\10- Configuration (appsettings.json).md
+		.docs\11- TypeScript, Build Process & JavaScript Interop.md = .docs\11- TypeScript, Build Process & JavaScript Interop.md
+		.docs\12- Blazor Modes, PreRendering & PWA.md = .docs\12- Blazor Modes, PreRendering & PWA.md
+		.docs\13- Force Update System.md = .docs\13- Force Update System.md
+		.docs\14- Response Caching System.md = .docs\14- Response Caching System.md
+		.docs\15- Logging, OpenTelemetry and Health Checks.md = .docs\15- Logging, OpenTelemetry and Health Checks.md
+		.docs\16- CI-CD Pipeline and Environments.md = .docs\16- CI-CD Pipeline and Environments.md
+		.docs\17- Automated Testing (Unitigration Tests).md = .docs\17- Automated Testing (Unitigration Tests).md
+		.docs\18- Other Available Prompt Templates.md = .docs\18- Other Available Prompt Templates.md
+		.docs\19- Project Miscellaneous Files.md = .docs\19- Project Miscellaneous Files.md
+		.docs\20- .NET Aspire.md = .docs\20- .NET Aspire.md
+		.docs\21- .NET MAUI - Blazor Hybrid.md = .docs\21- .NET MAUI - Blazor Hybrid.md
+		.docs\22- Messaging.md = .docs\22- Messaging.md
+		.docs\23- Diagnostic Modal.md = .docs\23- Diagnostic Modal.md
+		.docs\24- WebAuthn and Passwordless Authentication (Advanced).md = .docs\24- WebAuthn and Passwordless Authentication (Advanced).md
+		.docs\25- RAG - Semantic Search with Vector Embeddings (Advanced).md = .docs\25- RAG - Semantic Search with Vector Embeddings (Advanced).md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -154,5 +186,6 @@ Global
 #if (aspire == true)
 		{C1CACA9D-8E95-5A02-3E37-37CE607581A3} = {723683EA-193C-45FD-A64D-7830A2867E4F}
 #endif
+		{8A72BF22-F6D3-C5D9-4099-AB471879EBC8} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
 	EndGlobalSection
 EndGlobal

@@ -13,7 +13,7 @@ public partial class IdentityPagesTests : PageTest
         await server.Build(services =>
         {
             // Services registered in this test project will be used instead of the application's services, allowing you to fake certain behaviors during testing.
-        }).Start();
+        }).Start(TestContext.CancellationToken);
 
         await Page.GotoAsync(new Uri(server.WebAppServerAddress, PageUrls.Settings).ToString());
 
@@ -24,7 +24,7 @@ public partial class IdentityPagesTests : PageTest
     public async Task SignIn_Should_WorkAsExpected()
     {
         await using var server = new AppTestServer();
-        await server.Build().Start();
+        await server.Build().Start(TestContext.CancellationToken);
 
         await Page.GotoAsync(new Uri(server.WebAppServerAddress, PageUrls.SignIn).ToString());
 

@@ -7,7 +7,7 @@
         "ms-dotnettools.csdevkit",
         "ms-dotnettools.dotnet-maui",
         "ms-azuretools.vscode-docker",
-        "DominicVonk.vscode-resx-editor",
+        "microsoft-aspire.aspire-vscode",
         "ms-vscode-remote.remote-containers",
         "ms-dotnettools.blazorwasm-companion",
         "ms-dotnettools.vscode-dotnet-runtime"

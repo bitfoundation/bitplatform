@@ -1924,21 +1924,23 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         if (Standalone) return false;
         if (IsEnabled is false || IsDisposed) return false;
 
-        return await _js.BitCalloutToggleCallout(_dotnetObj,
-                                       _dateRangePickerId,
-                                       null,
-                                       _calloutId,
-                                       null,
-                                       IsOpen,
-                                       Responsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
-                                       BitDropDirection.TopAndBottom,
-                                       Dir is BitDir.Rtl,
-                                       "",
-                                       0,
-                                       "",
-                                       "",
-                                       false,
-                                       MAX_WIDTH);
+        return await _js.BitCalloutToggleCallout(
+            dotnetObj: _dotnetObj,
+            componentId: _dateRangePickerId,
+            component: null,
+            calloutId: _calloutId,
+            callout: null,
+            isCalloutOpen: IsOpen,
+            responsiveMode: Responsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
+            dropDirection: BitDropDirection.TopAndBottom,
+            isRtl: Dir is BitDir.Rtl,
+            scrollContainerId: "",
+            scrollOffset: 0,
+            headerId: "",
+            footerId: "",
+            setCalloutWidth: false,
+            fixedCalloutWidth: false,
+            maxWindowWidth: MAX_WIDTH);
     }
 
     private string GetCalloutCssClasses()

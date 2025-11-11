@@ -106,7 +106,7 @@ public class BitNavTests : BunitTestContext
         }
         else
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-nav-gcb"));
+            Assert.Throws<ElementNotFoundException>(() => component.Find(".bit-nav-gcb"));
         }
     }
 
@@ -180,7 +180,7 @@ public class BitNavTests : BunitTestContext
         }
         else
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => componenet.Find("a"));
+            Assert.Throws<ElementNotFoundException>(() => componenet.Find("a"));
         }
     }
 

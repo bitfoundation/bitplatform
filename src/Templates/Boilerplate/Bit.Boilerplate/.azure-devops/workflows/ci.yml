@@ -19,7 +19,7 @@ jobs:
 
   - task: NodeTool@1
     inputs:
-      versionSpec: '23.x'
+      versionSpec: '24.x'
     displayName: 'Install Node.js'
 
   - task: Bash@3
@@ -38,14 +38,14 @@ jobs:
     displayName: 'Install Playwright'
     inputs:
       targetType: 'inline'
-      script: 'pwsh src/Tests/bin/Debug/net9.0/playwright.ps1 install --with-deps'
+      script: 'pwsh src/Tests/bin/Debug/net10.0/playwright.ps1 install --with-deps'
 
   - task: Bash@3
     name: test
     displayName: 'Test'
     inputs:
       targetType: 'inline'
-      script: 'dotnet test src/Tests/Boilerplate.Tests.csproj --logger AzurePipelines'
+      script: 'cd src/Tests && dotnet test'
 
   - task: PublishPipelineArtifact@1
     displayName: 'Upload Tests Artifact'

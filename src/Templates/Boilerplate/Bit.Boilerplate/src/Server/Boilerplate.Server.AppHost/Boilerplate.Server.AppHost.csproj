@@ -1,18 +1,20 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-    <Sdk Name="Aspire.AppHost.Sdk" Version="9.4.2" />
+<Project Sdk="Aspire.AppHost.Sdk/13.0.0">
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <IsAspireHost>true</IsAspireHost>
+        <EntryPointAccessibility>public</EntryPointAccessibility>
         <UserSecretsId>AC87AA5B-4B37-4E52-8468-2D5DF24AF256</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
         <Content Include=".config\dotnet-tools.json" />
         <PackageReference Include="Aspire.Hosting.AppHost" />
+        <PackageReference Include="Aspire.Hosting.DevTunnels" />
         <PackageReference Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Aspire.Hosting.MySql" />
+        <PackageReference Include="CommunityToolkit.Aspire.Hosting.MailPit" />
+        <PackageReference Condition=" '$(database)' == 'Sqlite' OR '$(database)' == '' " Include="CommunityToolkit.Aspire.Hosting.Sqlite" />
         <PackageReference Condition=" '$(database)' == 'SqlServer' OR '$(database)' == ''" Include="Aspire.Hosting.SqlServer" />
         <PackageReference Condition=" '$(database)' == 'SqlServer' OR '$(database)' == ''" Include="CommunityToolkit.Aspire.Hosting.SqlServer.Extensions" />
         <PackageReference Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Aspire.Hosting.PostgreSQL" />

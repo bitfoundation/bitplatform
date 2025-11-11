@@ -11,8 +11,10 @@ public class AppFeatures
     {
         /// <summary>
         /// Change AI Chatbot's system prompt.
+        /// It can be anything (1.0.0, m-1.0, m-ai etc), but it has to be unique.
+        /// The reason behind small feature values is that they're stored in jwt token, so in order to keep jwt token payload small, such a short-unique values has been assigned.
         /// </summary>
-        public const string ManageAiPrompt = "1.0"; // It can be anything (1.0.0, m-1.0, m-ai etc), but it has to be unique.
+        public const string ManageAiPrompt = "1.0";
 
         public const string ManageRoles = "1.1";
 

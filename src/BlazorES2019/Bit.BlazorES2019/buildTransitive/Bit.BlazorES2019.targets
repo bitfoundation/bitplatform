@@ -1,6 +1,13 @@
 <Project>
     <ItemGroup>
-        <Content Update="$(NuGetPackageRoot)\bit.blazores2019\9.12.0\contentFiles\any\net9.0\wwwroot\_framework\*.js">
+        <Content Remove="$(NuGetPackageRoot)/bit.blazores2019/10.0.0/contentFiles/any/net9.0/wwwroot/_framework/*.js" Condition="$(TargetFramework.Contains('net9.0'))" />
+        <Content Include="$(NuGetPackageRoot)/bit.blazores2019/10.0.0/contentFiles/any/net9.0/wwwroot/_framework/*.js" Condition="$(TargetFramework.Contains('net9.0'))">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+            <Link>wwwroot\_framework\%(Filename)%(Extension)</Link>
+        </Content>
+        <Content Remove="$(NuGetPackageRoot)/bit.blazores2019/10.0.0/contentFiles/any/net10.0/wwwroot/_framework/*.js" Condition="$(TargetFramework.Contains('net10.0'))" />
+        <Content Include="$(NuGetPackageRoot)/bit.blazores2019/10.0.0/contentFiles/any/net10.0/wwwroot/_framework/*.js" Condition="$(TargetFramework.Contains('net10.0'))">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
             <Link>wwwroot\_framework\%(Filename)%(Extension)</Link>

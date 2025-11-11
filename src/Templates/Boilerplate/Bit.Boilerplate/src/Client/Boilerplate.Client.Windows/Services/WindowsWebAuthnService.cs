@@ -16,7 +16,7 @@ public partial class WindowsWebAuthnService : WebAuthnServiceBase
 
         ((WindowsLocalHttpServer)localHttpServer).WebAuthnService = this;
 
-        await externalNavigationService.NavigateToAsync($"http://localhost:{localHttpServer.Port}/web-interop-app?actionName=GetWebAuthnCredential");
+        await externalNavigationService.NavigateToAsync($"http://localhost:{localHttpServer.Port}/{PageUrls.WebInteropApp}?actionName=GetWebAuthnCredential");
 
         return await GetWebAuthnCredentialTcs.Task;
     }
@@ -32,7 +32,7 @@ public partial class WindowsWebAuthnService : WebAuthnServiceBase
 
         ((WindowsLocalHttpServer)localHttpServer).WebAuthnService = this;
 
-        await externalNavigationService.NavigateToAsync($"http://localhost:{localHttpServer.Port}/web-interop-app?actionName=CreateWebAuthnCredential");
+        await externalNavigationService.NavigateToAsync($"http://localhost:{localHttpServer.Port}/{PageUrls.WebInteropApp}?actionName=CreateWebAuthnCredential");
 
         return await CreateWebAuthnCredentialTcs.Task;
     }

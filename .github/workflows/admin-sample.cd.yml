@@ -3,10 +3,15 @@ name: Admin Sample CD
 # Project templates come equipped with CI/CD for both Azure DevOps and GitHub, providing you with a hassle-free way to get started with your new project. It is important to note that you should not depend on the contents of this file. More info at https://bitplatform.dev/templates/dev-ops
 
 env:
-  SERVER_ADDRESS: 'https://adminpanel.bitplatform.dev'
+  SERVER_WEB_ADDRESS: 'https://adminpanel.bitplatform.dev'
+  SERVER_API_ADDRESS: 'https://adminpanel-api.bitplatform.dev'
   APP_SERVICE_NAME: 'bit-adminpanel'
   AzureOpenAI__ApiKey: ${{ secrets.AzureOpenAI__ApiKey }}
   AzureOpenAI__Endpoint: ${{ secrets.AzureOpenAI__Endpoint }}
+  AZUREOPENAI__MODEL: ${{ secrets.AZUREOPENAI__MODEL }}
+  OpenAI__ApiKey: ${{ secrets.OpenAI__ApiKey }}
+  OpenAI__Endpoint: ${{ secrets.OpenAI__Endpoint }}
+  OPENAI__MODEL: ${{ secrets.OPENAI__MODEL }}
 
 on:
   workflow_dispatch:
@@ -20,7 +25,7 @@ jobs:
 
   build_api_blazor:
     name: build api + blazor web
-    runs-on: ubuntu-24.04
+    runs-on: windows-2025
 
     steps:
     
@@ -37,7 +42,7 @@ jobs:
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --appInsights --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads
+       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads --api Standalone
        
     - name: Use Bit.ResxTranslator
       run: |
@@ -50,15 +55,15 @@ jobs:
       with:
         files: 'AdminPanel/**/appsettings*json'
       env:
-        ServerAddress: ${{ env.SERVER_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_API_ADDRESS }}
         WebAppRender.BlazorMode: 'BlazorWebAssembly'
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         AdsPushVapid.PublicKey: ${{ secrets.ADMINPANEL_PUBLIC_VAPIDKEY }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
-        node-version: 23
+        node-version: 24
         
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools
@@ -72,14 +77,24 @@ jobs:
           dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
           dotnet build AdminPanel/src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
       
-    - name: Publish
-      run: dotnet publish AdminPanel/src/Server/AdminPanel.Server.Web/AdminPanel.Server.Web.csproj -c Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APP_VERSION}}"
+    - name: Publish Server Web
+      run: dotnet publish AdminPanel/src/Server/AdminPanel.Server.Web/AdminPanel.Server.Web.csproj -c Release -o server-web -p:Version="${{ vars.APP_VERSION}}"
 
-    - name: Upload server artifact
-      uses: actions/upload-artifact@v4
+    - name: Publish Server API
+      run: dotnet publish AdminPanel/src/Server/AdminPanel.Server.Api/AdminPanel.Server.Api.csproj -c Release -o server-api -p:Version="${{ vars.APP_VERSION}}"
+
+    - name: Upload server web artifact
+      uses: actions/upload-artifact@v5
       with:
-        name: server-bundle
-        path: ${{env.DOTNET_ROOT}}/server
+        name: server-web-bundle
+        path: server-web
+        include-hidden-files: true # Required for wwwroot/.well-known folder
+
+    - name: Upload server api artifact
+      uses: actions/upload-artifact@v5
+      with:
+        name: server-api-bundle
+        path: server-api
         include-hidden-files: true # Required for wwwroot/.well-known folder
 
   deploy_blazor_wasm_standalone:
@@ -101,40 +116,35 @@ jobs:
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --appInsights --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads
+       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'AdminPanel/**/appsettings*json'
       env:
-        ServerAddress: ${{ env.SERVER_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_API_ADDRESS }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         AdsPushVapid.PublicKey: ${{ secrets.ADMINPANEL_PUBLIC_VAPIDKEY }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
-        node-version: 23
+        node-version: 24
         
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools
 
-    - name: Enable WebInteropApp route
-      run: |
-          # Uncomment the Route attribute for WebInteropApp component as noted in the WebInteropApp.razor's comments
-          sed -i 's/@\* @attribute \[Route("web-interop-app")\] \*@/@attribute [Route("web-interop-app")]/' AdminPanel/src/Client/AdminPanel.Client.Core/Components/WebInteropApp.razor
-      
     - name: Generate CSS/JS files
       run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
       
     - name: Publish
-      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/client -p:Version="${{ vars.APP_VERSION}}"
+      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}"
 
     - name: Upload to asw
       run: |
           npm install -g @azure/static-web-apps-cli
-          swa deploy --deployment-token ${{ secrets.ADMINPANEL_ASW_TOKEN }} --env production --app-location ${{env.DOTNET_ROOT}}/client/wwwroot
+          swa deploy --deployment-token ${{ secrets.ADMINPANEL_ASW_TOKEN }} --env production --app-location client/wwwroot
 
   deploy_api_blazor:
     name: deploy api + blazor
@@ -147,9 +157,9 @@ jobs:
     steps:
 
       - name: Retrieve server bundle
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
-          name: server-bundle
+          name: server-web-bundle
 
       - name: Retrieve AppleAuthKey.p8
         run: echo "${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY_ADMIN }}" > AppleAuthKey.p8
@@ -171,7 +181,7 @@ jobs:
 
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
-    runs-on: windows-2022
+    runs-on: windows-2025
   
     steps:
      
@@ -183,16 +193,16 @@ jobs:
       with:
         global-json-file: src\global.json
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
-        node-version: 23
+        node-version: 24
 
     - name: Create project from Boilerplate
       run: |
         cd src\Templates\Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ..\..\..\ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --captcha reCaptcha --signalR --ads
+        cd ..\..\..\ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --captcha reCaptcha --signalR --ads
   
     - name: Use Bit.ResxTranslator
       run: |
@@ -205,8 +215,8 @@ jobs:
       with:
         files: 'AdminPanel\**\appsettings*json'
       env:
-        WebAppUrl: ${{ env.SERVER_ADDRESS }}
-        ServerAddress: ${{ env.SERVER_ADDRESS }}
+        WebAppUrl: ${{ env.SERVER_WEB_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_API_ADDRESS }}
         Logging.Sentry.Dsn: ${{ secrets.ADMINPANEL_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         WindowsUpdate.FilesUrl: https://windows-adminpanel.bitplatform.dev
@@ -222,7 +232,7 @@ jobs:
           dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows.exe -r win-x64 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel'
   
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: win-exe-bundle
         path: AdminPanel\src\Client\AdminPanel.Client.Windows\Releases
@@ -246,11 +256,11 @@ jobs:
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads
+       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
-        node-version: 23
+        node-version: 24
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1.2
@@ -277,8 +287,8 @@ jobs:
       with:
         files: 'AdminPanel/**/appsettings*json'
       env:
-        WebAppUrl: ${{ env.SERVER_ADDRESS }}  
-        ServerAddress: ${{ env.SERVER_ADDRESS }}
+        WebAppUrl: ${{ env.SERVER_WEB_ADDRESS }}  
+        ServerAddress: ${{ env.SERVER_API_ADDRESS }}
         Logging.Sentry.Dsn: ${{ secrets.ADMINPANEL_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
 
@@ -294,17 +304,17 @@ jobs:
           dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
   
     - name: Publish aab
-      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -f net9.0-android
+      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -c Release -p:EnableLLVM=true -p:AndroidEnableProfiledAot=false -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -f net10.0-android
   
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: android-bundle
-        path: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/Release/net9.0-android/*-Signed.*
+        path: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/Release/net10.0-android/*-Signed.*
   
   build_blazor_hybrid_ios:
     name: build blazor hybrid (iOS-macOS)
-    runs-on: macOS-15
+    runs-on: macOS-26
   
     steps:
      
@@ -318,18 +328,18 @@ jobs:
 
     - uses: maxim-lobanov/setup-xcode@v1.6.0
       with:
-        xcode-version: '16.4'
+        xcode-version: '26.1'
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
-        node-version: 23
+        node-version: 24
 
     - name: Create project from Boilerplate
       run: |
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads
+        cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads
   
     - name: Use Bit.ResxTranslator
       run: |
@@ -342,8 +352,8 @@ jobs:
       with:
         files: 'AdminPanel/**/appsettings*json'
       env:
-        WebAppUrl: ${{ env.SERVER_ADDRESS }}
-        ServerAddress: ${{ env.SERVER_ADDRESS }}
+        WebAppUrl: ${{ env.SERVER_WEB_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_API_ADDRESS }}
         Logging.Sentry.Dsn: ${{ secrets.ADMINPANEL_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
 
@@ -370,10 +380,10 @@ jobs:
           dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
   
     - name: Build ipa
-      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="AdminPanel" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -f net9.0-ios
+      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="AdminPanel" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -f net10.0-ios
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: ios-bundle
-        path: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/release/net9.0-ios/ios-arm64/publish/*.ipa
+        path: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/release/net10.0-ios/ios-arm64/publish/*.ipa

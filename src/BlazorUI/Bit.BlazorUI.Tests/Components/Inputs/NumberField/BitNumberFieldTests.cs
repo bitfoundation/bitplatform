@@ -46,7 +46,7 @@ public class BitNumberFieldTests : BunitTestContext
 
         if (string.IsNullOrEmpty(label))
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find("label"));
+            Assert.Throws<ElementNotFoundException>(() => component.Find("label"));
         }
         else
         {

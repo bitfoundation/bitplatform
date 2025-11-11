@@ -59,6 +59,13 @@ public partial class BitCalloutDemo
         },
         new()
         {
+            Name = "FixedCalloutWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Forces the callout to preserve its component's original width."
+        },
+        new()
+        {
             Name = "FooterId",
             Type = "string?",
             DefaultValue = "null",
@@ -97,7 +104,7 @@ public partial class BitCalloutDemo
             Name = "SetCalloutWidth",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Force the callout to set its content container width while openning it based on the available space and actual content."
+            Description = "Forces the callout to set its content container width while opening based on the available space and actual content."
         },
         new()
         {

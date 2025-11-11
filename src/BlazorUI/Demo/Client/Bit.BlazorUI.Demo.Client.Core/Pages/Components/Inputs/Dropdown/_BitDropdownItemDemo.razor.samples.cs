@@ -818,7 +818,7 @@ private List<BitDropdownItem<string>> comboBoxItems = new()
         box-shadow: darkgray 0 0 0.5rem;
     }
 
-    .custom-container, .custom-container:after {
+    .custom-container, .custom-container::after {
         border-radius: 1rem;
     }
 

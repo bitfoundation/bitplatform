@@ -1,4 +1,4 @@
-namespace Boilerplate.Shared.Dtos.PushNotification;
+﻿namespace Boilerplate.Shared.Dtos.PushNotification;
 
 [DtoResourceType(typeof(AppStrings))]
 public partial class PushNotificationSubscriptionDto
@@ -8,7 +8,7 @@ public partial class PushNotificationSubscriptionDto
 
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [AllowedValues("apns", "fcmV1", "browser")]
-    /// <example>fcmV1</example>
+    /// <example>"fcmV1"</example>
     public string? Platform { get; set; }
 
     public string? PushChannel { get; set; }

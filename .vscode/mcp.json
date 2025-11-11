@@ -11,16 +11,6 @@
         "github": {
             "type": "http",
             "url": "https://api.githubcopilot.com/mcp/"
-        },
-        "read-website-fast": {
-            "type": "stdio",
-            "command": "docker",
-            "args": [
-                "run",
-                "-i",
-                "--rm",
-                "mcp/fetch"
-            ]
         }
     }
 }

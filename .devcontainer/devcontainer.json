@@ -12,9 +12,9 @@
       "helm": "latest",
       "minikube": "latest"
     },
-    "ghcr.io/devcontainers/features/node:1": { "version": "23" }
+    "ghcr.io/devcontainers/features/node:1": { "version": "24" }
   },
-  "image": "mcr.microsoft.com/devcontainers/dotnet:dev-9.0-bookworm",
+  "image": "mcr.microsoft.com/dotnet/nightly/sdk:10.0.100",
   "postStartCommand": "dotnet workload install wasm-tools && dotnet dev-certs https --trust",
   "waitFor": "onCreateCommand",
   "customizations": {
@@ -31,7 +31,6 @@
         "ms-dotnettools.csharp",
         "ms-dotnettools.csdevkit",
         "ms-azuretools.vscode-docker",
-        "DominicVonk.vscode-resx-editor",
         "ms-vscode-remote.remote-containers",
         "ms-dotnettools.blazorwasm-companion",
         "ms-dotnettools.vscode-dotnet-runtime"

@@ -578,20 +578,23 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     {
         if (IsEnabled is false || IsDisposed) return;
 
-        await _js.BitCalloutToggleCallout(_dotnetObj,
-                                _Id,
-                                null,
-                                _calloutId,
-                                null,
-                                IsOpen,
-                                BitResponsiveMode.None,
-                                BitDropDirection.TopAndBottom,
-                                Dir is BitDir.Rtl,
-                                "",
-                                0,
-                                "",
-                                "",
-                                true);
+        await _js.BitCalloutToggleCallout(
+            dotnetObj: _dotnetObj,
+            componentId: _Id,
+            component: null,
+            calloutId: _calloutId,
+            callout: null,
+            isCalloutOpen: IsOpen,
+            responsiveMode: BitResponsiveMode.None,
+            dropDirection: BitDropDirection.TopAndBottom,
+            isRtl: Dir is BitDir.Rtl,
+            scrollContainerId: "",
+            scrollOffset: 0,
+            headerId: "",
+            footerId: "",
+            setCalloutWidth: true,
+            fixedCalloutWidth: false,
+            maxWindowWidth: 0);
     }
 
     private void OnSetIsOpen()

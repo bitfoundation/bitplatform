@@ -8,10 +8,9 @@ using Microsoft.AspNetCore.Components.Web;
 
 namespace Boilerplate.Client.Maui.Services;
 
-// Checkout WebInteropApp.razor's comments.
+// Checkout Client.web/wwwroot/web-interop-app.html's comments.
 public partial class MauiLocalHttpServer : ILocalHttpServer
 {
-    [AutoInject] private HtmlRenderer htmlRenderer;
     [AutoInject] private PubSubService pubSubService;
     [AutoInject] private IExceptionHandler exceptionHandler;
 
@@ -142,13 +141,6 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
                 }
 
                 await GoBackToApp();
-            }))
-            .WithModule(new ActionModule("/web-interop-app", HttpVerbs.Get, async ctx =>
-            {
-                var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
-                    (await htmlRenderer.RenderComponentAsync<WebInteropApp>()).ToHtmlString());
-
-                await ctx.SendStringAsync(html, "text/html", Encoding.UTF8);
             }))
             .OnAny(async ctx =>
             {

@@ -51,6 +51,11 @@ public partial class BitCallout : BitComponentBase
     [Parameter] public BitDropDirection? Direction { get; set; }
 
     /// <summary>
+    /// Forces the callout to preserve its component's original width.
+    /// </summary>
+    [Parameter] public bool FixedCalloutWidth { get; set; }
+
+    /// <summary>
     /// The id of the footer element that renders at the end of the scrolling container of the callout contnet.
     /// </summary>
     [Parameter] public string? FooterId { get; set; }
@@ -79,7 +84,7 @@ public partial class BitCallout : BitComponentBase
     [Parameter] public EventCallback<bool> OnToggle { get; set; }
 
     /// <summary>
-    /// Force the callout to set its content container width while openning it based on the available space and actual content.
+    /// Forces the callout to set its content container width while opening based on the available space and actual content.
     /// </summary>
     [Parameter] public bool SetCalloutWidth { get; set; }
 
@@ -200,6 +205,7 @@ public partial class BitCallout : BitComponentBase
             headerId: HeaderId ?? "",
             footerId: FooterId ?? "",
             setCalloutWidth: SetCalloutWidth,
+            fixedCalloutWidth: FixedCalloutWidth,
             maxWindowWidth: MaxWindowWidth ?? 0);
 
         await OnToggle.InvokeAsync(IsOpen);

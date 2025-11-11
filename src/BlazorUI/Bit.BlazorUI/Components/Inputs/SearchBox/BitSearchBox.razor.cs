@@ -58,6 +58,11 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     public bool DisableAnimation { get; set; }
 
     /// <summary>
+    /// Forces the suggest callout width to be always fixed at the component's width.
+    /// </summary>
+    [Parameter] public bool FixedCalloutWidth { get; set; }
+
+    /// <summary>
     /// Whether or not to make the icon be always visible (it hides by default when the search box is focused).
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -520,20 +525,23 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     {
         if (IsEnabled is false || IsDisposed) return;
 
-        await _js.BitCalloutToggleCallout(_dotnetObj,
-                                          _Id,
-                                          null,
-                                          _calloutId,
-                                          null,
-                                          _isOpen,
-                                          BitResponsiveMode.None,
-                                          BitDropDirection.TopAndBottom,
-                                          Dir is BitDir.Rtl,
-                                          _scrollContainerId,
-                                          0,
-                                          string.Empty,
-                                          string.Empty,
-                                          true);
+        await _js.BitCalloutToggleCallout(
+            dotnetObj: _dotnetObj,
+            componentId: _Id,
+            component: null,
+            calloutId: _calloutId,
+            callout: null,
+            isCalloutOpen: _isOpen,
+            responsiveMode: BitResponsiveMode.None,
+            dropDirection: BitDropDirection.TopAndBottom,
+            isRtl: Dir is BitDir.Rtl,
+            scrollContainerId: _scrollContainerId,
+            scrollOffset: 0,
+            headerId: string.Empty,
+            footerId: string.Empty,
+            setCalloutWidth: false,
+            fixedCalloutWidth: FixedCalloutWidth,
+            maxWindowWidth: 0);
     }
 
     private async Task ChangeSelectedItem(bool isArrowUp)

@@ -1,6 +1,6 @@
 # bit BlazorES2019
 
-While .NET 9 can run on the followings:
+While .NET can run on the followings:
 
 **Browsers**:
 - Safari 15+
@@ -14,7 +14,7 @@ While .NET 9 can run on the followings:
 - macOS (Monterey) 12+
 - Android 8+ & [WebView](https://play.google.com/store/apps/details?id=com.google.android.webview) 84+
 
-The TypeScript project responsible for generating `blazor.web.js`, `blazor.webassembly.js`, `blazor.webview.js`, and `blazor.server.js` targets `ES2022`, leading to the following updates in the compatibility table.
+The TypeScript project responsible for generating `blazor.web.js`, `blazor.webassembly.js`, `blazor.webview.js`, and `blazor.server.js` targets `ES2022+`, leading to the following updates in the compatibility table.
 
 **Browsers**:
 - Safari 16.4+

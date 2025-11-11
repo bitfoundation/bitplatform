@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <IsAspireSharedProject Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' ">true</IsAspireSharedProject>
     </PropertyGroup>
 
@@ -19,6 +19,7 @@
         <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
         <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
         <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
+        <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Azure.Monitor.OpenTelemetry.Profiler" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Azure.Monitor.OpenTelemetry.AspNetCore" />
         <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" />
         <PackageReference Include="OpenTelemetry.Instrumentation.Hangfire" />

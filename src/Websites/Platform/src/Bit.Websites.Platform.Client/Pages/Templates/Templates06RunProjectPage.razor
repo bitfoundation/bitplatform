@@ -7,21 +7,22 @@
             Description="Run project of the project templates of the bit platform" />
 
 <div class="page-container">
-    <BitText Typography="BitTypography.H3" Gutter>Project Run Guidelines</BitText>
+    <BitText Typography="BitTypography.H3" Gutter>Project Run</BitText>
     <br />
     <br />
     <section class="section-card">
         <div class="section-card-txt">
-            The process for running the project varies based on the Api parameter set during project initiation:
+			The process for running the project varies based on the <b>Api</b> parameter set during project initiation:
             <br />
             <ul>
                 <li>
-                    <b>--api Integrated:</b> Simply run the Server.Web project (Running Server.Api is optional but not required).
+                    <b>--api Integrated (default):</b> Simply run the Server.Web project (Running Server.Api is optional but not required).
                 </li>
                 <li>
                     <b>--api Standalone:</b> Run both the Server.Api and Server.Web projects.
                 </li>
             </ul>
+			<b>Note:</b> You have to make sure that the connection strings section of the Server.Api is properly configured based on the database of your choice installation. However, if you've created the project with Aspire (which is enabled by default) and you've installed Docker Desktop, you can simply run the AppHost project. This will run all dependencies as Docker containers and provide you with an awesome handy dashboard as well.
         </div>
     </section>
     <br />
@@ -63,13 +64,6 @@
     "BlazorMode": "BlazorServer",
     "BlazorMode_Comment": "BlazorServer, BlazorWebAssembly and BlazorAuto."
 }</CodeBox>
-            <BitText Typography="BitTypography.H5" Gutter>Debugging in Blazor WebAssembly</BitText>
-            To debug the project in Blazor WebAssembly mode, change the Current value to BlazorWebAssembly for development. To fully
-            utilize debugging features, set the Launch profile to Server.Web-BlazorWebAssembly.
-            <br />
-            <div class="image-container">
-                <img class="image" src="images/templates/launch-options.webp" />
-            </div>
             <br />
             <BitText Typography="BitTypography.H5" Gutter>Running in Blazor WebAssembly Standalone Mode</BitText>
             To run the project in Blazor WebAssembly Standalone mode, run Client.Web in addition to server project.
@@ -221,4 +215,4 @@
     <br />
     <br />
 </div>
-<NavigationButtons Prev="Create project" PrevUrl="/templates/create-project" Next="Add new feature" NextUrl="/templates/add-new-feature" />
+<NavigationButtons Prev="Create project" PrevUrl="/templates/create-project" Next="Wiki" NextUrl="/templates/wiki" />

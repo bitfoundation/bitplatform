@@ -28,8 +28,6 @@ public partial class AppHub : Hub
 
     public override async Task OnConnectedAsync()
     {
-        CheckClientAppVersion();
-
         if (Context.GetHttpContext()?.ContainsExpiredAccessToken() is true)
             throw new HubException(nameof(AppStrings.UnauthorizedException)).WithData("ConnectionId", Context.ConnectionId);
 
@@ -48,6 +46,7 @@ public partial class AppHub : Hub
     /// <summary>
     /// While SignalR client is connected, the user might sign-in or sign-out.
     /// In this case, we need to update the authentication state of the SignalR connection.
+    /// This method is called by AppClientCoordinator.cs
     /// </summary>
     public Task ChangeAuthenticationState(string? accessToken)
     {
@@ -67,11 +66,8 @@ public partial class AppHub : Hub
     /// <inheritdoc cref="SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE"/>
     /// </summary>
     [Authorize(Policy = AppFeatures.System.ManageLogs)]
-    public async Task<DiagnosticLogDto[]> GetUserSessionLogs(Guid userSessionId)
+    public async Task<DiagnosticLogDto[]> GetUserSessionLogs(Guid userSessionId, [FromServices] AppDbContext dbContext)
     {
-        await using var scope = serviceProvider.CreateAsyncScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
         var userSessionSignalRConnectionId = await dbContext.UserSessions
             .Where(us => us.Id == userSessionId)
             .Select(us => us.SignalRConnectionId)
@@ -97,20 +93,6 @@ public partial class AppHub : Hub
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, "AuthenticatedClients");
             await dbContext.UserSessions.Where(us => us.SignalRConnectionId == Context.ConnectionId).ExecuteUpdateAsync(us => us.SetProperty(x => x.SignalRConnectionId, (string?)null));
-        }
-    }
-
-    private void CheckClientAppVersion()
-    {
-        if (Context.GetHttpContext()?.Request?.Headers?.TryGetValue("X-App-Version", out var appVersionHeaderValue) is true && appVersionHeaderValue.Any())
-        {
-            var appVersion = appVersionHeaderValue.Single()!;
-            var appPlatformType = Enum.Parse<AppPlatformType>(Context.GetHttpContext()!.Request.Headers["X-App-Platform"].Single()!);
-            var minimumSupportedVersion = settings.SupportedAppVersions!.GetMinimumSupportedAppVersion(appPlatformType);
-            if (minimumSupportedVersion != null && Version.Parse(appVersion) < minimumSupportedVersion)
-                throw new HubException(nameof(AppStrings.ForceUpdateTitle))
-                    .WithData("ClientAppVersion", appVersion)
-                    .WithData("ConnectionId", Context.ConnectionId);
         }
     }
 }

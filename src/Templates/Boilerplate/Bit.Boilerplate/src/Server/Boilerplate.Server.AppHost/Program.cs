@@ -1,60 +1,48 @@
 ﻿//+:cnd:noEmit
-using Projects;
-using Aspire.Hosting;
-using Aspire.Hosting.ApplicationModel;
 using Microsoft.Extensions.Hosting;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-// Check out appsettings.json for credential settings.
+// Check out appsettings.Development.json for credentials/passwords settings.
 
 //#if (database == "SqlServer")
-var sqlServerPassword = builder.AddParameter("SqlServerPassword", secret: true);
-var sqlDatabase = builder.AddSqlServer("sqlserver", password: sqlServerPassword, port: 1433)
-        .WithDbGate(config => config.WithLifetime(ContainerLifetime.Persistent).WithDataVolume())
-        .WithLifetime(ContainerLifetime.Persistent)
+var sqlDatabase = builder.AddSqlServer("sqlserver")
+        .WithDbGate(config => config.WithDataVolume())
         .WithDataVolume()
         .WithImage("mssql/server", "2025-latest")
-        .AddDatabase("sqldb"); // Sql server 2025 supports embedded vector search.
+        .AddDatabase("mssqldb"); // Sql server 2025 supports embedded vector search.
 
 //#elif (database == "PostgreSql")
-var postgresPassword = builder.AddParameter("PostgresPassword", secret: true);
-var postgresDatabase = builder.AddPostgres("postgresserver", password: postgresPassword, port: 5432)
-        .WithPgAdmin(config => config.WithLifetime(ContainerLifetime.Persistent).WithVolume("/var/lib/pgadmin/Boilerplate/data"))
-        .WithLifetime(ContainerLifetime.Persistent)
+var postgresDatabase = builder.AddPostgres("postgresserver")
+        .WithPgAdmin(config => config.WithVolume("/var/lib/pgadmin/Boilerplate/data"))
         .WithDataVolume()
-        .WithImage("pgvector/pgvector", "pg17") // pgvector supports embedded vector search.
+        .WithImage("pgvector/pgvector", "pg18") // pgvector supports embedded vector search.
         .AddDatabase("postgresdb");
 
 //#elif (database == "MySql")
-var mySqlPassword = builder.AddParameter("MySqlPassword", secret: true);
-var mySqlDatabase = builder.AddMySql("mysqlserver", password: mySqlPassword, port: 3306)
-        .WithPhpMyAdmin(config => config.WithLifetime(ContainerLifetime.Persistent).WithVolume("/var/lib/phpMyAdmin/Boilerplate/data"))
-        .WithLifetime(ContainerLifetime.Persistent)
+var mySqlDatabase = builder.AddMySql("mysqlserver")
+        .WithPhpMyAdmin(config => config.WithVolume("/var/lib/phpMyAdmin/Boilerplate/data"))
         .WithDataVolume()
         .AddDatabase("mysqldb");
-
+//#elif (database == "Sqlite")
+var sqlite = builder.AddSqlite("sqlite", databaseFileName: "BoilerplateDb.db")
+    .WithSqliteWeb(config => config.WithVolume("/var/lib/sqliteweb/Boilerplate/data"));
 //#endif
 //#if (filesStorage == "AzureBlobStorage")
 var azureBlobStorage = builder.AddAzureStorage("storage")
         .RunAsEmulator(azurite =>
         {
             azurite
-                .WithLifetime(ContainerLifetime.Persistent)
-                .WithBlobPort(10000)
-                .WithQueuePort(10001)
-                .WithTablePort(10002)
                 .WithDataVolume();
         })
-        .AddBlobs("blobs");
+        .AddBlobs("azureblobstorage");
 
 //#elif (filesStorage == "S3")
-var minioUsername = builder.AddParameter("MinIOUser");
-var minioPassword = builder.AddParameter("MinIOPassword", secret: true);
-var s3Storage = builder.AddMinioContainer("minio", rootUser: minioUsername, rootPassword: minioPassword);
+var s3Storage = builder.AddMinioContainer("s3")
+    .WithDataVolume();
 //#endif
 
-var serverWebProject = builder.AddProject<Boilerplate_Server_Web>("serverweb") // Replace . with _ if needed to ensure the project builds successfully.
+var serverWebProject = builder.AddProject("serverweb", "../Boilerplate.Server.Web/Boilerplate.Server.Web.csproj")
     .WithExternalHttpEndpoints();
 
 // Adding health checks endpoints to applications in non-development environments has security implications.
@@ -65,7 +53,7 @@ if (builder.Environment.IsDevelopment())
 }
 
 //#if (api == "Standalone")
-var serverApiProject = builder.AddProject<Boilerplate_Server_Api>("serverapi") // Replace . with _ if needed to ensure the project builds successfully.
+var serverApiProject = builder.AddProject("serverapi", "../Boilerplate.Server.Api/Boilerplate.Server.Api.csproj")
     .WithExternalHttpEndpoints();
 
 // Adding health checks endpoints to applications in non-development environments has security implications.
@@ -75,48 +63,68 @@ if (builder.Environment.IsDevelopment())
     serverApiProject.WithHttpHealthCheck("/alive");
 }
 
-serverWebProject.WithReference(serverApiProject).WaitFor(serverApiProject);
+serverWebProject.WithReference(serverApiProject);
 //#if (database == "SqlServer")
-serverApiProject.WithReference(sqlDatabase, "SqlServerConnectionString").WaitFor(sqlDatabase);
+serverApiProject.WithReference(sqlDatabase).WaitFor(sqlDatabase);
 //#elif (database == "PostgreSql")
-serverApiProject.WithReference(postgresDatabase, "PostgreSQLConnectionString").WaitFor(postgresDatabase);
+serverApiProject.WithReference(postgresDatabase).WaitFor(postgresDatabase);
 //#elif (database == "MySql")
-serverApiProject.WithReference(mySqlDatabase, "MySqlConnectionString").WaitFor(mySqlDatabase);
+serverApiProject.WithReference(mySqlDatabase).WaitFor(mySqlDatabase);
+//#elif (database == "Sqlite")
+serverApiProject.WithReference(sqlite).WaitFor(sqlite);
 //#endif
 //#if (filesStorage == "AzureBlobStorage")
-serverApiProject.WithReference(azureBlobStorage, "AzureBlobStorageConnectionString").WaitFor(azureBlobStorage);
+serverApiProject.WithReference(azureBlobStorage);
 //#elif (filesStorage == "S3")
-serverApiProject.WithReference(s3Storage, "S3ConnectionString").WaitFor(s3Storage);
+serverApiProject.WithReference(s3Storage);
 //#endif
-
 //#else
 
 //#if (database == "SqlServer")
-serverWebProject.WithReference(sqlDatabase, "SqlServerConnectionString").WaitFor(sqlDatabase);
+serverWebProject.WithReference(sqlDatabase).WaitFor(sqlDatabase);
 //#elif (database == "PostgreSql")
-serverWebProject.WithReference(postgresDatabase, "PostgreSQLConnectionString").WaitFor(postgresDatabase);
+serverWebProject.WithReference(postgresDatabase).WaitFor(postgresDatabase);
 //#elif (database == "MySql")
-serverWebProject.WithReference(mySqlDatabase, "MySqlConnectionString").WaitFor(mySqlDatabase);
+serverWebProject.WithReference(mySqlDatabase).WaitFor(mySqlDatabase);
+//#elif (database == "Sqlite")
+serverWebProject.WithReference(sqlite).WaitFor(sqlite);
 //#endif
 //#if (filesStorage == "AzureBlobStorage")
-serverWebProject.WithReference(azureBlobStorage, "AzureBlobStorageConnectionString").WaitFor(azureBlobStorage);
+serverWebProject.WithReference(azureBlobStorage);
 //#elif (filesStorage == "S3")
-serverWebProject.WithReference(s3Storage, "S3ConnectionString").WaitFor(s3Storage);
+serverWebProject.WithReference(s3Storage);
 //#endif
-
 //#endif
-
-// Blazor WebAssembly Standalone project.
-builder.AddProject<Boilerplate_Client_Web>("clientwebwasm"); // Replace . with _ if needed to ensure the project builds successfully.
 
 if (builder.ExecutionContext.IsRunMode) // The following project is only added for testing purposes.
 {
-    // Blazor Hybrid Windows project.
-    builder.AddProject<Boilerplate_Client_Windows>("clientwindows") // Replace . with _ if needed to ensure the project builds successfully.
+    // Blazor WebAssembly Standalone project.
+    builder.AddProject("clientwebwasm", "../../Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj")
         .WithExplicitStart();
-}
 
-builder.AddAspireDashboard();
+    var mailpit = builder.AddMailPit("smtp") // For testing purposes only, in production, you would use a real SMTP server.
+        .WithDataVolume("mailpit");
+
+    //#if (api == "Standalone")
+    serverApiProject.WithReference(mailpit);
+    //#else
+    serverWebProject.WithReference(mailpit);
+    //#endif
+
+    // Blazor Hybrid Windows project.
+    builder.AddProject("clientwindows", "../../Client/Boilerplate.Client.Windows/Boilerplate.Client.Windows.csproj")
+        .WithExplicitStart();
+
+    //#if (api == "Standalone")
+    builder.AddDevTunnel("api-dev-tunnel")
+        .WithAnonymousAccess()
+        .WithReference(serverApiProject.WithHttpEndpoint(name: "devTunnel").GetEndpoint("devTunnel"));
+    //#endif
+
+    var tunnel = builder.AddDevTunnel("web-dev-tunnel")
+        .WithAnonymousAccess()
+        .WithReference(serverWebProject.WithHttpEndpoint(name: "devTunnel").GetEndpoint("devTunnel"));
+}
 
 await builder
     .Build()

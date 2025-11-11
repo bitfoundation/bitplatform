@@ -20,10 +20,16 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v5
 
-    - name: Setup .NET
+    - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
       with:
         global-json-file: src/global.json
+
+    - name: Setup .NET 9
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: |
+          9.0.x
 
     - name: Setup .NET 8
       uses: actions/setup-dotnet@v5
@@ -31,22 +37,22 @@ jobs:
         dotnet-version: |
           8.0.x
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
-        node-version: 23
+        node-version: 24
       
     - name: Install wasm and maui
-      run:  cd src && dotnet workload install maui-android wasm-tools wasm-tools-net8
+      run:  cd src && dotnet workload install maui-android wasm-tools wasm-tools-net9 wasm-tools-net8
 
     - name: Run InstallNodejsDependencies
       continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
-      run: dotnet build src/Bit-CI-release.slnx -t:InstallNodejsDependencies -m:1 -f net9.0
+      run: dotnet build src/Bit-CI-release.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
 
     - name: MSBuild prerelease
       run: dotnet build src/Bit-CI-release.slnx
 
     - name: Test
-      run: dotnet test --no-build --verbosity normal src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj
+      run: cd src/BlazorUI/Bit.BlazorUI.Tests && dotnet test --no-build --verbosity normal
 
   build:
     if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
@@ -58,10 +64,16 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v5
 
-    - name: Setup .NET
+    - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
       with:
         global-json-file: src/global.json
+
+    - name: Setup .NET 9
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: |
+          9.0.x
 
     - name: Setup .NET 8
       uses: actions/setup-dotnet@v5
@@ -69,22 +81,22 @@ jobs:
         dotnet-version: |
           8.0.x
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
-        node-version: 23
+        node-version: 24
 
     - name: Install wasm and maui
-      run:  cd src && dotnet workload install maui-android wasm-tools wasm-tools-net8
+      run:  cd src && dotnet workload install maui-android wasm-tools wasm-tools-net9 wasm-tools-net8
 
     - name: Install Android Sdk platform tools
       run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
 
     - name: Run InstallNodejsDependencies
       continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
-      run: dotnet build src/Bit-CI.slnx -t:InstallNodejsDependencies -m:1 -f net9.0
+      run: dotnet build src/Bit-CI.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
 
     - name: Build
       run: dotnet build src/Bit-CI.slnx -p:WarningLevel=0 -p:RunCodeAnalysis=false
       
     - name: Test
-      run: dotnet test --no-build --verbosity normal src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj
+      run: cd src/BlazorUI/Bit.BlazorUI.Tests/ && dotnet test --no-build

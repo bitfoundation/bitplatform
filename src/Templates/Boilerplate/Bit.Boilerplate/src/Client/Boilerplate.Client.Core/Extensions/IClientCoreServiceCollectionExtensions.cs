@@ -167,11 +167,6 @@ public static partial class IClientCoreServiceCollectionExtensions
                 .WithAutomaticReconnect(sp.GetRequiredService<IRetryPolicy>())
                 .WithUrl(new Uri(absoluteServerAddressProvider.GetAddress(), "app-hub"), options =>
                 {
-                    var telemetryContext = sp.GetRequiredService<ITelemetryContext>();
-
-                    options.Headers.Add("X-App-Version", telemetryContext.AppVersion!);
-                    options.Headers.Add("X-App-Platform", AppPlatform.Type.ToString());
-
                     options.SkipNegotiation = false; // Required for Azure SignalR.
                     options.Transports = HttpTransportType.WebSockets;
                     // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.
@@ -195,6 +190,14 @@ public static partial class IClientCoreServiceCollectionExtensions
         return services;
     }
 
+    /// <summary>
+    /// Blazor Server creates one scope for each connected user's client app.
+    /// Blazor WebAssembly has only one scope for the client app.
+    /// MAUI + Blazor Hybrid would create two scopes for the client app: one for the native part and one for the Blazor's WebView.
+    /// So, in Blazor Hybrid, we register sessioned services as singletons to share them between the two scopes.
+    /// And in Blazor Server we **MUST** register sessioned services as scoped to avoid sharing them between different users.
+    /// And in Blazor WebAssembly it doesn't matter if we register sessioned services as scoped or singleton because there's only one scope per client app.
+    /// </summary>
     internal static IServiceCollection AddSessioned<TService, TImplementation>(this IServiceCollection services)
         where TImplementation : class, TService
         where TService : class
@@ -209,6 +212,9 @@ public static partial class IClientCoreServiceCollectionExtensions
         }
     }
 
+    /// <summary>
+    /// <inheritdoc cref="AddSessioned{TService, TImplementation}(IServiceCollection)"/>
+    /// </summary>
     internal static IServiceCollection AddSessioned<TService>(this IServiceCollection services, Func<IServiceProvider, TService> implementationFactory)
         where TService : class
     {
@@ -224,6 +230,9 @@ public static partial class IClientCoreServiceCollectionExtensions
         return services;
     }
 
+    /// <summary>
+    /// <inheritdoc cref="AddSessioned{TService, TImplementation}(IServiceCollection)"/>
+    /// </summary>
     internal static void AddSessioned<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TService>(this IServiceCollection services)
         where TService : class
     {

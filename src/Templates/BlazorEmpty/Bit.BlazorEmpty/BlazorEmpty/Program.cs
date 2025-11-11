@@ -49,9 +49,7 @@ if (builder.Environment.IsDevelopment() is false)
 app.UseStaticFiles();
 app.UseAntiforgery();
 
-//#if (Framework == 'net9.0')
 app.MapStaticAssets();
-//#endif
 #if (UseServer && UseWebAssembly)
 app.MapRazorComponents<App>()
    .AddInteractiveServerRenderMode()
