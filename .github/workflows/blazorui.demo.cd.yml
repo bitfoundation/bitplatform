@@ -37,7 +37,7 @@ jobs:
 
     - uses: actions/setup-node@v6
       with:
-        node-version: 23
+        node-version: 24
         
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools
@@ -69,7 +69,7 @@ jobs:
     steps:
 
       - name: Retrieve server bundle
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: server-bundle
 
@@ -104,7 +104,7 @@ jobs:
 
     - uses: actions/setup-node@v6
       with:
-        node-version: 23
+        node-version: 24
   
     - name: Update appsettings.json api server address
       uses: devops-actions/variable-substitution@v1.2 
@@ -146,7 +146,7 @@ jobs:
 
     - uses: actions/setup-node@v6
       with:
-        node-version: 23
+        node-version: 24
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1.2
@@ -196,11 +196,11 @@ jobs:
 
     - uses: maxim-lobanov/setup-xcode@v1.6.0
       with:
-        xcode-version: '26.0'
+        xcode-version: '26.1'
 
     - uses: actions/setup-node@v6
       with:
-        node-version: 23
+        node-version: 24
   
     - name: Update appsettings.json api server address
       uses: devops-actions/variable-substitution@v1.2 

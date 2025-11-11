@@ -56,6 +56,6 @@ you **MUST** use the `microsoft.docs.mcp` server to search Microsoft's latest of
 
 **End of RULE 2**
 
-**RULE 3:** You **MUST** use the read-website-fast's `fetch` mcp tools, to gather information from URLs provided by the user.
+**RULE 3:** You **MUST** gather information from URLs provided by the user, using `fetch` or `get_web_pages` tools.
 
 **End of RULE 3**

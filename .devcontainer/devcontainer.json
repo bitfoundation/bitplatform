@@ -12,7 +12,7 @@
       "helm": "latest",
       "minikube": "latest"
     },
-    "ghcr.io/devcontainers/features/node:1": { "version": "23" }
+    "ghcr.io/devcontainers/features/node:1": { "version": "24" }
   },
   "image": "mcr.microsoft.com/dotnet/nightly/sdk:10.0.100-rc.2",
   "postStartCommand": "dotnet workload install wasm-tools && dotnet dev-certs https --trust",

@@ -36,7 +36,7 @@ jobs:
 
     - uses: actions/setup-node@v6
       with:
-        node-version: 23
+        node-version: 24
 
     - name: Uninstall Bit.Boilerplate if running on ACT
       if: ${{ env.ACT }}

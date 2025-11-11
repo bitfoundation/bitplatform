@@ -139,7 +139,7 @@ The project includes a complete CI/CD pipeline setup using GitHub Actions with *
 **What It Does**:
 ```
 ✓ Checks out code
-✓ Sets up .NET SDK (from global.json) and Node.js 23
+✓ Sets up .NET SDK (from global.json) and Node.js 24
 ✓ Restores workloads (dotnet workload restore)
 ✓ Builds entire solution (Boilerplate.slnx)
 ✓ Installs Playwright browsers with dependencies
@@ -150,7 +150,7 @@ The project includes a complete CI/CD pipeline setup using GitHub Actions with *
 **Key Configuration**:
 - **Runner**: Ubuntu 24.04
 - **SDK Version**: Automatically detected from `global.json`
-- **Node Version**: 23
+- **Node Version**: 24
 - **Test Artifacts**: Retained for 14 days on failure
 
 **Important**: The CI workflow ensures that all code changes are validated before merging. It's the gatekeeper for code quality.
@@ -231,7 +231,7 @@ This is the **core deployment workflow** that handles building and deploying all
    ```yaml
    - Checkout source code
    - Setup .NET SDK (from global.json)
-   - Setup Node.js 23
+   - Setup Node.js 24
    ```
 
 2. **Localization with Bit.ResxTranslator**
@@ -418,7 +418,7 @@ This is the **core deployment workflow** that handles building and deploying all
    ```yaml
    - Setup .NET SDK
    - Setup Xcode 26.0 (latest)
-   - Setup Node.js 23
+   - Setup Node.js 24
    - Translate resources (bit-resx-translate)
    - Update appsettings.json with ServerAddress
    ```
@@ -540,7 +540,7 @@ deploy_api_blazor:
   needs: build_api_blazor  # Depends on Phase 1
   runs-on: ubuntu-24.04
   steps:
-    - uses: actions/download-artifact@v5  # Get pre-built artifact
+    - uses: actions/download-artifact@v6  # Get pre-built artifact
     - uses: azure/webapps-deploy@v3      # Deploy to production
 ```
 
@@ -578,7 +578,7 @@ Secrets:
 ```
 Variables:
   SERVER_ADDRESS = https://test-api.myapp.com
-  APP_VERSION = 1.0.0-test
+  APP_VERSION = 1.0.0
   APP_TITLE = My App (Test)
 
 Secrets:

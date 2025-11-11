@@ -30,7 +30,7 @@ jobs:
     
     - uses: actions/setup-node@v6
       with:
-        node-version: 23
+        node-version: 24
 
     - name: Delete AssemblyOriginatorKeyFile.snk
       run: |
