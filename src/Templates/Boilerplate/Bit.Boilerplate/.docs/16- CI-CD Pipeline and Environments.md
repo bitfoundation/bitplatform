@@ -410,7 +410,7 @@ This is the **core deployment workflow** that handles building and deploying all
 
 ### Job 5: Build iOS and macOS Apps
 
-**Platform**: macOS 15  
+**Platform**: macOS 26  
 
 **Step-by-Step Process**:
 
