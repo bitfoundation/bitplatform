@@ -15,7 +15,7 @@ public partial class AppHub
     [AutoInject] private IConfiguration configuration = default!;
 
     // For open telemetry metrics.
-    private static readonly UpDownCounter<long> ongoingConversationsCount = AppActivitySource.CurrentMeter.CreateUpDownCounter<long>("appHub.ongoing_conversations_count", "Number of ongoing conversations in the chatbot hub.");
+    private static readonly UpDownCounter<long> ongoingConversationsCount = Meter.Current.CreateUpDownCounter<long>("appHub.ongoing_conversations_count", "Number of ongoing conversations in the chatbot hub.");
 
     public async IAsyncEnumerable<string> Chatbot(
         StartChatbotRequest request,
