@@ -46,3 +46,17 @@
 ::deep a {
     color: $bit-color-primary;
 }
+
+.docs-image-scroll {
+    overflow-x: auto;
+    white-space: nowrap;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.docs-image {
+    display: inline-block;
+    max-width: none;
+    height: auto;
+    box-shadow: $bit-box-shadow-callout;
+}
