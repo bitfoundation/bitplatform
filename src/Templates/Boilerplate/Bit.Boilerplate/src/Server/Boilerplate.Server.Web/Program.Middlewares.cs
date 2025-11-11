@@ -117,7 +117,7 @@ public static partial class Program
 
         app.UseSwaggerUI(options =>
         {
-            options.InjectJavascript($"/_content/Boilerplate.Server.Api/scripts/swagger-utils.js?v={Environment.TickCount64}");
+            options.InjectJavascript($"/scripts/swagger-utils.js?v={Environment.TickCount64}");
         });
 
         app.UseHangfireDashboard(options: new()

@@ -10,8 +10,8 @@ using SmartComponents.LocalEmbeddings.SemanticKernel;
 //#if (database == "Sqlite")
 using Microsoft.Data.Sqlite;
 //#endif
+using Microsoft.OpenApi;
 using Microsoft.Identity.Web;
-using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Net.Http.Headers;
 using Microsoft.IdentityModel.Tokens;
@@ -637,30 +637,17 @@ public static partial class Program
 
             options.OperationFilter<ODataOperationFilter>();
 
-            options.AddSecurityDefinition("bearerAuth", new()
+            options.AddSecurityDefinition("bearerAuth", new OpenApiSecurityScheme()
             {
-                Name = "Authorization",
-                Description = "Enter the Bearer Authorization string as following: `Bearer Generated-Bearer-Token`",
-                In = ParameterLocation.Header,
-                Type = SecuritySchemeType.ApiKey,
-                Scheme = "Bearer"
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                Description = "JWT Authorization header using the Bearer scheme."
             });
 
-            options.AddSecurityRequirement(new()
+            options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
             {
-                {
-                    new()
-                    {
-                        Name = "Bearer",
-                        In = ParameterLocation.Header,
-                        Reference = new OpenApiReference
-                        {
-                            Id = "Bearer",
-                            Type = ReferenceType.SecurityScheme
-                        }
-                    },
-                    []
-                }
+                [new OpenApiSecuritySchemeReference("bearer", document)] = []
             });
         });
     }
