@@ -57,7 +57,7 @@ csharp_new_line_before_open_brace = all
 ```json
 {
     "sdk": {
-        "version": "10.0.100-rc.2.25502.107",
+        "version": "10.0.100",
         "rollForward": "latestFeature"
     }
 }
@@ -245,8 +245,8 @@ And the version is defined centrally in `Directory.Packages.props`:
 ```xml
 <PackageVersion Include="Bit.BlazorUI" Version="10.0.0-pre-09" />
 <PackageVersion Include="Bit.Butil" Version="10.0.0-pre-09" />
-<PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0-rc.2.25502.107" />
-<PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0-rc.2.25502.107" />
+<PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0" />
+<PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />
 <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.21" />
 <PackageVersion Include="Riok.Mapperly" Version="4.3.0" />
 <!-- ... and many more -->
@@ -354,7 +354,6 @@ chmod +x Clean.sh  # Make it executable (first time only)
 
 ```json
 {
-    "version": "1.0",
     "components": [
         "Microsoft.VisualStudio.Workload.NetWeb",
         "Microsoft.VisualStudio.Workload.NetCrossPlat",

@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components.WebAssembly.Services;
-using Microsoft.OpenApi.Models;
 using Bit.Websites.Sales.Server;
 using Bit.Websites.Sales.Client.Services.HttpMessageHandlers;
 

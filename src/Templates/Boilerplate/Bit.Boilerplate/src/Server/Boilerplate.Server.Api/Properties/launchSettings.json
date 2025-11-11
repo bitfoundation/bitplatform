@@ -3,7 +3,7 @@
         "Boilerplate.Server.Api": {
             "commandName": "Project",
             "launchBrowser": true,
-            "launchUrl": "swagger",
+            "launchUrl": "scalar",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             },
@@ -13,7 +13,7 @@
         "WSL": {
             "commandName": "WSL2",
             "launchBrowser": true,
-            "launchUrl": "swagger",
+            "launchUrl": "scalar",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
                 "ASPNETCORE_URLS": "http://*:5031"
@@ -22,7 +22,7 @@
         "Docker": {
             "commandName": "SdkContainer",
             "launchBrowser": true,
-            "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/swagger",
+            "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/scalar",
             "DockerfileRunArguments": "-v C:\\DockerVolumes\\AC87AA5B-4B37-4E52-8468-2D5DF24AF256:/container_volume",
             "environmentVariables": {
                 "ASPNETCORE_HTTP_PORTS": "5031",
@@ -35,7 +35,7 @@
         "IIS Express": {
             "commandName": "IISExpress",
             "launchBrowser": true,
-            "launchUrl": "swagger",
+            "launchUrl": "scalar",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             }

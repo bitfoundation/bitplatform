@@ -1,0 +1,2 @@
+# Ensure shell scripts remain executable on Linux by enforcing LF line endings
+*.sh text eol=lf

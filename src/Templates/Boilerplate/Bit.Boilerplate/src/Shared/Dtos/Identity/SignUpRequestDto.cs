@@ -4,12 +4,12 @@ namespace Boilerplate.Shared.Dtos.Identity;
 [DtoResourceType(typeof(AppStrings))]
 public partial class SignUpRequestDto : IdentityRequestDto
 {
-    /// <example>test2</example>
+    /// <example>"test2"</example>
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.UserName))]
     public override string? UserName { get; set; }
 
-    /// <example>123456</example>
+    /// <example>"123456"</example>
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [MinLength(6, ErrorMessage = nameof(AppStrings.MinLengthAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Password))]

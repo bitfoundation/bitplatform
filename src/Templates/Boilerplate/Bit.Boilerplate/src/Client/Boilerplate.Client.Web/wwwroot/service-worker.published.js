@@ -90,6 +90,7 @@ self.serverHandledUrls = [
     /\/health/,
     /\/alive/,
     /\/swagger/,
+    /\/scalar/,
     /\/signin-/,
     /\/.well-known/,
     /\/sitemap.xml/,

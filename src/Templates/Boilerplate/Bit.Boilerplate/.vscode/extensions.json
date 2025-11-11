@@ -7,6 +7,7 @@
         "ms-dotnettools.csdevkit",
         "ms-dotnettools.dotnet-maui",
         "ms-azuretools.vscode-docker",
+        "microsoft-aspire.aspire-vscode",
         "ms-vscode-remote.remote-containers",
         "ms-dotnettools.blazorwasm-companion",
         "ms-dotnettools.vscode-dotnet-runtime"

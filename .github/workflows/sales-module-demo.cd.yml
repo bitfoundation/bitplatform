@@ -37,7 +37,7 @@ jobs:
 
     - uses: actions/setup-node@v6
       with:
-        node-version: 23
+        node-version: 24
 
     - name: Create project from Boilerplate
       run: |
@@ -95,7 +95,7 @@ jobs:
     steps:
 
       - name: Retrieve server bundle
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: server-bundle
 
@@ -133,7 +133,7 @@ jobs:
 
     - uses: actions/setup-node@v6
       with:
-        node-version: 23
+        node-version: 24
 
     - name: Create project from Boilerplate
       run: |

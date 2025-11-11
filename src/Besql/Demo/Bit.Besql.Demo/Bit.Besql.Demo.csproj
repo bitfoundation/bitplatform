@@ -8,7 +8,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Bit.Besql.Demo.Client\Bit.Besql.Demo.Client.csproj" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.0-rc.2.25502.107" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -17,15 +17,15 @@
 			 and open Nuget Package Manager Console, and select `Bit.Besql.Demo.Client` project as default project
 			 Then run either Add-Migration MigrationName -OutputDir Data\Migrations or
 			 Optimize-DbContext -OutputDir Data\CompiledModel commands. -->
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0-rc.2.25502.107">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tasks" Version="10.0.0-rc.2.25502.107">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tasks" Version="10.0.0">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.0-rc.2.25502.107">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.0">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

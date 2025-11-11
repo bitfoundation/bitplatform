@@ -10,6 +10,7 @@ using Boilerplate.Shared;
 using Boilerplate.Shared.Attributes;
 //#if (api == "Integrated")
 using Hangfire;
+using Scalar.AspNetCore;
 using Boilerplate.Server.Api;
 using Boilerplate.Server.Api.RequestPipeline;
 using Boilerplate.Server.Api.Services;
@@ -113,12 +114,9 @@ public static partial class Program
         app.MapAppHealthChecks();
 
         //#if (api == "Integrated")
-        app.UseSwagger();
-
-        app.UseSwaggerUI(options =>
-        {
-            options.InjectJavascript($"/_content/Boilerplate.Server.Api/scripts/swagger-utils.js?v={Environment.TickCount64}");
-        });
+        app.MapOpenApi();
+        app.MapScalarApiReference();
+        app.MapGet("/swagger", () => Results.Redirect("/scalar")).ExcludeFromDescription();
 
         app.UseHangfireDashboard(options: new()
         {
@@ -143,7 +141,7 @@ public static partial class Program
             // - Switch to Blazor WebAssembly in production. Hint: To leverage Blazor server's enhanced development experience in local dev environment, you can disable Azure SignalR by setting "Azure:SignalR:ConnectionString" to null in appsettings.json or appsettings.Development.json.
             // OR
             // - Use Standalone API mode:
-            //    Publish and run the Server.Api project independently to serve restful APIs and SignalR services like AppHub (Just like https://adminpanel-api.bitplatform.dev/swagger deployment)
+            //    Publish and run the Server.Api project independently to serve restful APIs and SignalR services like AppHub (Just like https://adminpanel-api.bitplatform.dev/scalar deployment)
             //    and use the Server.Web project solely as a Blazor Server or pre-rendering service provider.
             throw new InvalidOperationException("Azure SignalR is not supported with Blazor Server and Auto");
         }

@@ -11,10 +11,10 @@
             "applicationUrl": "http://*:5030"
         },
         //#if (api == "Integrated")
-        "Boilerplate.Server.Web-Swagger": {
+        "Boilerplate.Server.Web-Scalar": {
             "commandName": "Project",
             "launchBrowser": true,
-            "launchUrl": "swagger",
+            "launchUrl": "scalar",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             },
