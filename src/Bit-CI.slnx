@@ -135,9 +135,7 @@
   <Folder Name="/Templates/Boilerplate/Shared/">
     <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Shared/Boilerplate.Shared.csproj" />
   </Folder>
-  <Folder Name="/Templates/Boilerplate/Tests/">
-    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Tests/Boilerplate.Tests.csproj" />
-  </Folder>
+  <Folder Name="/Templates/Boilerplate/Tests/" />
   <Folder Name="/Websites/" />
   <Folder Name="/Websites/Careers/">
     <File Path="Websites/Careers/.gitignore" />
