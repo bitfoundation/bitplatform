@@ -131,12 +131,13 @@
     <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Server/Boilerplate.Server.AppHost/Boilerplate.Server.AppHost.csproj" />
     <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Server/Boilerplate.Server.Shared/Boilerplate.Server.Shared.csproj" />
     <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj" />
-    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Tests/Boilerplate.Tests.csproj" />
   </Folder>
   <Folder Name="/Templates/Boilerplate/Shared/">
     <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Shared/Boilerplate.Shared.csproj" />
   </Folder>
-  <Folder Name="/Templates/Boilerplate/Tests/" />
+  <Folder Name="/Templates/Boilerplate/Tests/">
+    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Tests/Boilerplate.Tests.csproj" />
+  </Folder>
   <Folder Name="/Websites/" />
   <Folder Name="/Websites/Careers/">
     <File Path="Websites/Careers/.gitignore" />
