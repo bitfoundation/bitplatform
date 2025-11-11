@@ -5,7 +5,7 @@ namespace Boilerplate.Shared.Dtos.Identity;
 [DtoResourceType(typeof(AppStrings))]
 public partial class SignInRequestDto : IdentityRequestDto
 {
-    /// <example>123456</example>
+    /// <example>"123456"</example>
     [Display(Name = nameof(AppStrings.Password))]
     public string? Password { get; set; }
 

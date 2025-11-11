@@ -4,16 +4,16 @@ namespace Boilerplate.Shared.Dtos.Identity;
 [DtoResourceType(typeof(AppStrings))]
 public partial class IdentityRequestDto : IValidatableObject
 {
-    /// <example>test</example>
+    /// <example>"test"</example>
     [Display(Name = nameof(AppStrings.UserName))]
     public virtual string? UserName { get; set; }
 
-    /// <example>test@bitplatform.dev</example>
+    /// <example>"test@bitplatform.dev"</example>
     [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Email))]
     public virtual string? Email { get; set; }
 
-    /// <example>+31684207362</example>
+    /// <example>"+31684207362"</example>
     [Phone(ErrorMessage = nameof(AppStrings.PhoneAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.PhoneNumber))]
     public virtual string? PhoneNumber { get; set; }

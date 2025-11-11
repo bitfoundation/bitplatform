@@ -2,7 +2,7 @@
 
 public partial class UpdateUserSessionRequestDto
 {
-    /// <example>Samsung Android 14</example>
+    /// <example>"Samsung Android 14"</example>
     public string? DeviceInfo { get; set; }
 
     public AppPlatformType PlatformType { get; set; }

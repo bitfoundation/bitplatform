@@ -40,7 +40,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
     /// <summary>
     /// By leveraging summary tags in your controller's actions and DTO properties you can make your codes much easier to maintain.
-    /// These comments will also be used in swagger docs and ui.
+    /// These comments will also be used in swagger/scalar docs and ui.
     /// </summary>
     [HttpPost]
     public async Task SignUp(SignUpRequestDto request, CancellationToken cancellationToken)

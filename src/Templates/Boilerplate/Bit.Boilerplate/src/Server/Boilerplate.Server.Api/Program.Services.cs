@@ -296,7 +296,37 @@ public static partial class Program
 
         services.AddEndpointsApiExplorer();
 
-        AddSwaggerGen(builder);
+        services.AddOpenApi(options =>
+        {
+            options.AddOperationTransformer(async (operation, context, cancellationToken) =>
+            {
+                var isAuthorizedAction = context.Description.ActionDescriptor.EndpointMetadata.Any(em => em is AuthorizeAttribute);
+                var isODataEnabledAction = context.Description.ActionDescriptor.FilterDescriptors.Any(f => f.Filter is EnableQueryAttribute);
+
+                operation.Parameters = [new OpenApiParameter()
+                {
+                    In = ParameterLocation.Header,
+                    Name = HeaderNames.Authorization,
+                    Example = "Bearer XXX.YYY...",
+                    Description = "Get your JWT token by signin-in through Identity/SignIn endpoint",
+                    Required = isAuthorizedAction
+                }];
+
+                if (isODataEnabledAction)
+                {
+                    operation.Parameters.AddRange([
+
+                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$filter", Description = "Filters the results, based on a Boolean condition. (ex. Age gt 25)" },
+                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$select", Description = "Returns only the selected properties. (ex. FirstName, LastName)" },
+                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$expand", Description = "Include only the selected objects. (ex. Orders, Locations)" },
+                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$search", Description = "Finds resources that match a search criteria. (ex. \"search term\")" },
+                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$top", Description = "Returns only the first n items from a collection. (ex. 10)" },
+                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$skip", Description = "Skips the first n items from a collection. (ex. 10)" },
+                        new OpenApiParameter() { In = ParameterLocation.Query, Name = "$orderby", Description = "Orders the results of a query by one or more properties. (ex. Name desc)" }
+                    ]);
+                }
+            });
+        });
 
         services.AddDataProtection()
            .PersistKeysToDbContext<AppDbContext>(); // It's advised to secure database-stored keys with a certificate by invoking ProtectKeysWithCertificate.
@@ -624,33 +654,6 @@ public static partial class Program
                 }
             });
         }
-    }
-
-    private static void AddSwaggerGen(WebApplicationBuilder builder)
-    {
-        var services = builder.Services;
-
-        services.AddSwaggerGen(options =>
-        {
-            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "Boilerplate.Server.Api.xml"), includeControllerXmlComments: true);
-            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "Boilerplate.Shared.xml"));
-
-            options.OperationFilter<ODataOperationFilter>();
-
-            options.AddSecurityDefinition("bearerAuth", new OpenApiSecurityScheme()
-            {
-                Name = "Authorization",
-                Description = "Enter the Bearer Authorization string as following: `Bearer Generated-Bearer-Token`",
-                In = ParameterLocation.Header,
-                Type = SecuritySchemeType.ApiKey,
-                Scheme = "Bearer"
-            });
-
-            options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
-            {
-                [new OpenApiSecuritySchemeReference("Bearer", document)] = []
-            });
-        });
     }
 
     private static string GetConnectionStringValue(string connectionString, string key, string? defaultValue = null)
