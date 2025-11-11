@@ -419,7 +419,7 @@ jobs:
         
   build_blazor_hybrid_ios:
     name: build blazor hybrid (iOS-macOS)
-    runs-on: macOS-15
+    runs-on: macOS-26
   
     steps:
      

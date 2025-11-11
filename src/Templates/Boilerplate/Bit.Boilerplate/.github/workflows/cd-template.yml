@@ -204,7 +204,7 @@ jobs:
 
   build_blazor_hybrid_iOS:
     name: build blazor hybrid (iOS-macOS)
-    runs-on: macOS-15
+    runs-on: macOS-26
     environment: ${{ inputs.ENV_NAME }}
 
     steps:
