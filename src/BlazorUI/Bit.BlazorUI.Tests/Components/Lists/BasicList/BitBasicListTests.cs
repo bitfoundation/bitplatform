@@ -49,6 +49,10 @@ public class BitBasicListTests : BunitTestContext
             var expectedRenderedItemCount = Math.Ceiling((decimal)(viewportHeight / component.Instance.ItemSize)) + (2 * component.Instance.OverscanCount);
             expectedRenderedItemCount = Math.Min(expectedRenderedItemCount, 100);
 
+#if NET10_0
+            expectedRenderedItemCount += (overscanCount ?? 3) * 2; // https://github.com/dotnet/aspnetcore/pull/63765
+#endif
+
             var actualRenderedItemCount = bitList.GetElementsByClassName("list-item").Length;
 
             //When actualRenderedItemCount is smaller than expectedRenderedItemCount, so show all items in viewport then actualRenderedItemCount equals total items count
