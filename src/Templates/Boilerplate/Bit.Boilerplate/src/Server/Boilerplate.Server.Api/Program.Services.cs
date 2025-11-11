@@ -639,15 +639,16 @@ public static partial class Program
 
             options.AddSecurityDefinition("bearerAuth", new OpenApiSecurityScheme()
             {
-                Type = SecuritySchemeType.Http,
-                Scheme = "bearer",
-                BearerFormat = "JWT",
-                Description = "JWT Authorization header using the Bearer scheme."
+                Name = "Authorization",
+                Description = "Enter the Bearer Authorization string as following: `Bearer Generated-Bearer-Token`",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.ApiKey,
+                Scheme = "Bearer"
             });
 
             options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
             {
-                [new OpenApiSecuritySchemeReference("bearer", document)] = []
+                [new OpenApiSecuritySchemeReference("Bearer", document)] = []
             });
         });
     }
