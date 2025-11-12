@@ -22,6 +22,7 @@
         <PackageVersion Include="EmbedIO" Version="3.5.2" />
         <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.0" />
         <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
+        <PackageVersion Include="Microsoft.Extensions.Caching.Hybrid" Version="10.0.0" />
         <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.0" />
         <PackageVersion Include="AspNetCore.HealthChecks.Hangfire" Version="9.0.0" />
         <PackageVersion Include="AspNetCore.HealthChecks.System" Version="9.0.0" />

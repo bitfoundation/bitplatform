@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Threading.Channels;
 using Boilerplate.Shared.Dtos.Chatbot;
 using Boilerplate.Server.Api.Services;
+using Microsoft.Extensions.Caching.Hybrid;
 
 namespace Boilerplate.Server.Api.SignalR;
 
@@ -15,11 +16,12 @@ namespace Boilerplate.Server.Api.SignalR;
 /// based on your needs. For example you can customize CrystaCode.AI as a agent that would allow users to talk with their own voice and CrystaCode.AI would call MCP tool developed in <see cref="AppMcpService"/>
 /// to get answers it need about the app.
 /// </summary>
-public partial class AppChatbot
+public partial class AppChatbot : IAsyncDisposable
 {
     private IChatClient? chatClient = default!;
 
     [AutoInject] private AppDbContext dbContext = default!;
+    [AutoInject] private HybridCache cache = default!;
     [AutoInject] private IConfiguration configuration = default!;
     [AutoInject] private ILogger<AppChatbot> logger = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
@@ -49,9 +51,21 @@ public partial class AppChatbot
             culture = CultureInfo.GetCultureInfo(cultureId.Value);
         }
 
-        supportSystemPrompt = (await dbContext
-                .SystemPrompts.FirstOrDefaultAsync(p => p.PromptKind == PromptKind.Support, cancellationToken))?.Markdown
-            ?? throw new ResourceNotFoundException();
+        supportSystemPrompt = await cache.GetOrCreateAsync(
+            $"SystemPrompt_{PromptKind.Support}",
+            async cancel =>
+            {
+                var prompt = await dbContext.SystemPrompts
+                    .FirstOrDefaultAsync(p => p.PromptKind == PromptKind.Support, cancel);
+                return prompt?.Markdown ?? throw new ResourceNotFoundException();
+            },
+            new()
+            {
+                Expiration = TimeSpan.FromHours(1),
+                LocalCacheExpiration = TimeSpan.FromHours(1)
+            },
+            tags: ["SystemPrompts", $"SystemPrompt_{PromptKind.Support}"],
+            cancellationToken: cancellationToken);
 
         supportSystemPrompt = supportSystemPrompt
             .Replace("{{UserCulture}}", culture?.NativeName ?? "English")
@@ -177,9 +191,9 @@ public partial class AppChatbot
 
                 return recommendedProducts;
             }, name: "GetProductRecommendations", description: "This tool searches for and recommends products based on a detailed description of the user's needs and preferences and returns recommended products.")
+            //#endif
+            //#endif
         };
-        //#endif
-        //#endif
 
         var chatOptions = new ChatOptions { Tools = [.. tools] };
         configuration.GetRequiredSection("AI:ChatOptions").Bind(chatOptions);
@@ -213,5 +227,10 @@ Avoid suggesting questions that the assistant would not be able to answer."),],
             chatOptions, cancellationToken: cancellationToken);
 
         return followUpItems.Result ?? new AiChatFollowUpList();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        Stop();
     }
 }

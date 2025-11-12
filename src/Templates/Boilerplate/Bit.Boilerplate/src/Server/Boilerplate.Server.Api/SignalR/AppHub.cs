@@ -22,7 +22,6 @@ namespace Boilerplate.Server.Api.SignalR;
 [AllowAnonymous]
 public partial class AppHub : Hub
 {
-    [AutoInject] private ServerApiSettings settings = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
     [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
 

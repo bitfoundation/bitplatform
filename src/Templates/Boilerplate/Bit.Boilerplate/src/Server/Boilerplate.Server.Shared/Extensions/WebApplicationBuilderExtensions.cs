@@ -44,7 +44,9 @@ public static class WebApplicationBuilderExtensions
                 var builder = policy.AddPolicy<AppResponseCachePolicy>();
             }, excludeDefaultPolicy: true);
         });
-        services.AddDistributedMemoryCache();
+
+        services.AddDistributedMemoryCache(); // For ASP.NET Core Output Caching
+        services.AddHybridCache(); // For actual backend project usages
 
         services.AddHttpContextAccessor();
 

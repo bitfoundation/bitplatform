@@ -1,6 +1,7 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Shared.Dtos.Chatbot;
 using Boilerplate.Shared.Controllers.Chatbot;
+using Microsoft.Extensions.Caching.Hybrid;
 
 namespace Boilerplate.Server.Api.Controllers.Chatbot;
 
@@ -8,6 +9,8 @@ namespace Boilerplate.Server.Api.Controllers.Chatbot;
     Authorize(Policy = AppFeatures.Management.ManageAiPrompt)]
 public partial class ChatbotController : AppControllerBase, IChatbotController
 {
+    [AutoInject] private HybridCache cache = default!;
+
     [HttpGet]
     [EnableQuery]
     public IQueryable<SystemPromptDto> GetSystemPrompts()
@@ -25,6 +28,9 @@ public partial class ChatbotController : AppControllerBase, IChatbotController
         dto.Patch(entityToUpdate);
 
         await DbContext.SaveChangesAsync(cancellationToken);
+
+        // Invalidate cache for the updated system prompt
+        await cache.RemoveByTagAsync($"SystemPrompt_{dto.PromptKind}", cancellationToken);
 
         return entityToUpdate.Map();
     }
