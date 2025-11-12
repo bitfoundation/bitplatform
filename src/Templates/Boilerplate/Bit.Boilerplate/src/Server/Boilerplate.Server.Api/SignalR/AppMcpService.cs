@@ -28,7 +28,7 @@ The assistant is context-aware and can access real-time application data to prov
         CancellationToken cancellationToken = default)
     {
         await using var scope = serviceProvider.CreateAsyncScope();
-        var chatbotService = scope.ServiceProvider.GetRequiredService<ChatbotService>();
+        var chatbotService = scope.ServiceProvider.GetRequiredService<AppChatbot>();
         var httpContextAccessor = scope.ServiceProvider.GetRequiredService<IHttpContextAccessor>();
 
         // Start the chatbot session

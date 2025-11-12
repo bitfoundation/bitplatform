@@ -13,13 +13,13 @@ public partial class AppHub
     private static readonly UpDownCounter<long> ongoingConversationsCount = Meter.Current.CreateUpDownCounter<long>("appHub.ongoing_conversations_count", "Number of ongoing conversations in the chatbot hub.");
 
     /// <summary>
-    /// Checkout <see cref="ChatbotService"/> for more details.
+    /// Checkout <see cref="AppChatbot"/> for more details.
     /// </summary>
     public async IAsyncEnumerable<string> Chatbot(
         StartChatbotRequest request,
         IAsyncEnumerable<string> incomingMessages,
         [EnumeratorCancellation] CancellationToken cancellationToken,
-        [FromServices] ChatbotService chatbotService)
+        [FromServices] AppChatbot chatbotService)
     {
         try
         {

@@ -14,12 +14,13 @@ namespace Boilerplate.Server.Api.SignalR;
 /// It's also exposed as MCP tool over MinimalApi so you can add chatbot capabilities to any MCP-enabled client such as https://CrystaCode.ai and instruct each client differently,
 /// based on your needs. For example you can customize CrystaCode.AI as a agent that would allow users to talk with their own voice to get data it needs about your app from the MCP tool.
 /// </summary>
-public partial class ChatbotService
+public partial class AppChatbot
 {
+    private IChatClient? chatClient = default!;
+
     [AutoInject] private AppDbContext dbContext = default!;
-    [AutoInject] private IChatClient chatClient = default!;
     [AutoInject] private IConfiguration configuration = default!;
-    [AutoInject] private ILogger<ChatbotService> logger = default!;
+    [AutoInject] private ILogger<AppChatbot> logger = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
 
     private string? supportSystemPrompt;
@@ -75,9 +76,9 @@ public partial class ChatbotService
         CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(supportSystemPrompt))
-        {
             throw new InvalidOperationException("Chat session must be started before processing messages. Call Start method first.");
-        }
+
+        chatClient ??= serviceProvider.GetRequiredService<IChatClient>();
 
         StringBuilder assistantResponse = new();
         try

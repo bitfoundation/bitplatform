@@ -73,7 +73,7 @@ public static partial class Program
         services.AddMcpServer()
             .WithHttpTransport()
             .WithTools<AppMcpService>();
-        services.AddScoped<SignalR.ChatbotService>();
+        services.AddScoped<SignalR.AppChatbot>();
         //#endif
         //#if (module == "Sales" || module == "Admin")
         //#if (database == "PostgreSQL" || database == "SqlServer")
