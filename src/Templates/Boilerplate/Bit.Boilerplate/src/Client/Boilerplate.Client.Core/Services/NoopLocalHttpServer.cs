@@ -1,5 +1,6 @@
-namespace Boilerplate.Client.Core.Services;
+﻿namespace Boilerplate.Client.Core.Services;
 
+// Checkout Client.web/wwwroot/web-interop-app.html's comments.
 public partial class NoOpLocalHttpServer : ILocalHttpServer
 {
     public int EnsureStarted() => -1;

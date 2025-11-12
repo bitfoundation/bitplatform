@@ -546,7 +546,27 @@ private async Task ShowNotification()
 
 ---
 
-## 7. Dashboard Data Changed Example
+## 7. Testing Push Notifications - Understanding the Four Scenarios
+
+When testing push notifications, it's critical to understand that there are **four distinct scenarios** based on the app state when the notification is sent and when the user taps on it. The Boilerplate project handles all four scenarios across all platforms.
+
+✅ **Scenario 1**: Close the app completely → Send push notification → Tap the notification → Verify the app opens to the correct page
+
+✅ **Scenario 2**: Close the app → Send push notification → Open the app manually (without tapping notification) → Now tap the notification → Verify navigation works
+
+✅ **Scenario 3**: Keep the app open → Send push notification → Close the app → Tap the notification → Verify the app opens to the correct page
+
+✅ **Scenario 4**: Keep the app open → Send push notification → Tap the notification immediately → Verify navigation works without restarting the app
+
+### Key Takeaways
+
+- The codebase includes specialized handling for all four push notification scenarios
+- Different entry points are used depending on the app state (e.g., `OnCreate` vs `OnNewIntent` on Android)
+- Service workers on the web platform handle scenario detection automatically using `clients.matchAll()`
+
+---
+
+## 8. Dashboard Data Changed Example
 
 Another common scenario is notifying all authenticated clients when data changes.
 

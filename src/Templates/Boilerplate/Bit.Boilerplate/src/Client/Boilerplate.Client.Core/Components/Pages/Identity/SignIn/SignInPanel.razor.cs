@@ -211,7 +211,7 @@ public partial class SignInPanel
         try
         {
             pubSubUnsubscribe?.Invoke();
-            pubSubUnsubscribe = PubSubService.Subscribe(ClientPubSubMessages.SOCIAL_SIGN_IN, async (uriString) =>
+            pubSubUnsubscribe = PubSubService.Subscribe(ClientPubSubMessages.SOCIAL_SIGN_IN_CALLBACK, async (uriString) =>
             {
                 // Check out SignInModalService for more details
                 var uri = uriString!.ToString();

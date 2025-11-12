@@ -70,7 +70,7 @@
         <LoadingComponent @rendermode="null" />
     }
 
-    @if (HttpContext.Request.DisableStreamPrerendering())
+    @if (HttpContext.Request.IsStreamPrerenderingSuppressed())
     {
         // For StreamRenderingDisabledContainer, read comments in App.razor.cs
         <StreamRenderingDisabledContainer>

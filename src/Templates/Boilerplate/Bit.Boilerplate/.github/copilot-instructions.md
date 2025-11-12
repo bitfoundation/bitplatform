@@ -128,7 +128,7 @@ After applying changes, you **MUST** verify the integrity of the application.
 Example 1: `OnClick="WrapHandled(MyMethod)"` instead of `OnClick="MyMethod"`.
 Example 2: `OnClick="WrapHandled(async () => await MyMethod())"` instead of `OnClick="async () => await MyMethod()"`.
 16. **Use OData Query Options**: Leverage `[EnableQuery]` and `ODataQueryOptions` for efficient data filtering and pagination.
-17. **Follow Mapperly Conventions**: Use partial static classes and extensions methods with Mapperly for high-performance object mapping.
+17. **Follow Mapperly Conventions**: Use **partial static classes and extensions methods** with Mapperly for high-performance object mapping.
 18. **Handle Concurrency**: Always use `ConcurrencyStamp` for optimistic concurrency control in update and delete operations.
 
 ## Instructions for adding new model/entity to ef-core DbContext / Database

@@ -2,6 +2,9 @@
 
 namespace Boilerplate.Shared.Services;
 
+/// <summary>
+/// <inheritdoc cref="AppFeatures"/>
+/// </summary>
 public record AppFeatureRequirement(
     string FeatureName,
     string FeatureValue
