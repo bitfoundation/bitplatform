@@ -2,7 +2,7 @@
 
 public static partial class HttpRequestExtensions
 {
-    public static bool DisableStreamPrerendering(this HttpRequest request)
+    public static bool IsStreamPrerenderingSuppressed(this HttpRequest request)
     {
         if (request.HttpContext.Items.TryGetValue("AppResponseCachePolicy__DisableStreamPrerendering", out var val) && val is true)
             return true;  // The response from streaming pre-rendering is not suitable for caching in ASP.NET Core's output caching mechanism or on CDN edge servers.

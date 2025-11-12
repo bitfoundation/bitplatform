@@ -546,7 +546,20 @@ private async Task ShowNotification()
 
 ---
 
-## 7. Dashboard Data Changed Example
+## 7. Testing Push Notifications - Understanding the Four Scenarios
+
+When testing push notifications, you must consider **four distinct scenarios** based on the app state when the notification is sent and when the user taps on it:
+
+1. **Scenario 1**: The app was **closed** when the notification was sent, and the app was **still closed** when the user tapped on the notification.
+2. **Scenario 2**: The app was **closed** when the notification was sent, but the app was **already open** when the user tapped on the notification.
+3. **Scenario 3**: The app was **open** when the notification was sent, but the app was **closed** when the user tapped on the notification.
+4. **Scenario 4**: The app was **open** when the notification was sent, and the app was **still open** when the user tapped on the notification.
+
+The codebase includes specialized handling across all platforms to manage these scenarios correctly. The implementation uses different entry points and data extraction methods depending on whether the app is starting up, already running, or being brought back from the background.
+
+---
+
+## 8. Dashboard Data Changed Example
 
 Another common scenario is notifying all authenticated clients when data changes.
 

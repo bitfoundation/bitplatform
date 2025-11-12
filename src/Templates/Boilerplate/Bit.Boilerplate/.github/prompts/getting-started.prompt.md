@@ -1083,6 +1083,12 @@ At the end of Stage 21, ask: **"Do you have any questions about .NET MAUI, nativ
      - Find `PushNotificationService` implementation
      - Show examples of sending push notifications with deep links
      - Explain how to handle notification clicks on the client side
+   - **Explain** that in order to test push notifications, the following scenarios must be considered:
+     1. The time that push notification was sent, the app was closed already, and when the user tapped on the notification to open the app, the app was still closed.
+     2. The time that push notification was sent, the app was closed already, but when the user tapped on the notification, the app was already open.
+     3. The time that push notification was sent, the app was open, but the time that user tapped on the notification, the app was closed.
+     4. The time that push notification was sent, the app was open, and the time that user tapped on the notification, the app was still open.
+     Explain that if some similar codes exists in the codebase, they are used to handle these 4 different scenarios across platforms.
 <!--#endif-->
 
 ---

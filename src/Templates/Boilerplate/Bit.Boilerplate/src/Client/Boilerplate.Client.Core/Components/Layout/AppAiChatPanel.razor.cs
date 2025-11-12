@@ -158,6 +158,8 @@ public partial class AppAiChatPanel
     {
         channel = Channel.CreateUnbounded<string>(new() { SingleReader = true, SingleWriter = true });
 
+        // The following code streams user's input messages to the server and processes the streamed responses.
+        // It keeps the chat ongoing until CurrentCancellationToken is cancelled.
         await foreach (var response in hubConnection.StreamAsync<string>("Chatbot",
                                                                          new StartChatbotRequest()
                                                                          {
