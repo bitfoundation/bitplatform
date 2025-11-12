@@ -146,6 +146,7 @@ public static partial class Program
             throw new InvalidOperationException("Azure SignalR is not supported with Blazor Server and Auto");
         }
         app.MapHub<Api.SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
+        app.MapAppMcp(); // Map MCP endpoints for chatbot tool
         //#endif
 
         app.MapControllers()
