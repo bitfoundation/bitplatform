@@ -30,7 +30,7 @@ public partial class App
 /// <summary>
 /// Streaming pre-rendering improves user experience (UX) and overall application performance. 
 /// However, it prevents search engines from indexing pre-rendered dynamic content and is incompatible with response caching.  
-/// To mitigate this, conditional logic in App.razor utilizes <see cref="HttpRequestExtensions.DisableStreamPrerendering"/>  
+/// To mitigate this, conditional logic in App.razor utilizes <see cref="HttpRequestExtensions.IsStreamPrerenderingSuppressed"/>  
 /// to disable streaming in those scenarios.
 /// </summary>
 [StreamRendering(enabled: true)]

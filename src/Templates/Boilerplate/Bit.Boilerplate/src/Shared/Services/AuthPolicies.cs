@@ -13,7 +13,7 @@ public class AuthPolicies
     /// However, it can be extended to cover additional pages as needed. 
     /// 
     /// By default, each user is limited to 3 active sessions.
-    /// The user's max privileged sessions' value is stored in in <see cref="AppClaimTypes.MAX_PRIVILEGED_SESSIONS"/> claim."/>
+    /// The user's max privileged sessions' value is stored in <see cref="AppClaimTypes.MAX_PRIVILEGED_SESSIONS"/> claim.
     /// 
     /// Important: Do not apply this policy to the settings page, as users need access to manage and revoke their sessions there.
     /// </summary>
