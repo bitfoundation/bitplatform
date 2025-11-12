@@ -9,11 +9,20 @@ namespace Boilerplate.Shared.Services;
 public partial class SharedPubSubMessages
 {
     //#if (module == "Admin")
+    /// <summary>
+    /// When dashboard data has changed and clients need to refresh their data.
+    /// </summary>
     public const string DASHBOARD_DATA_CHANGED = nameof(DASHBOARD_DATA_CHANGED);
     //#endif
 
+    /// <summary>
+    /// When a user session is revoked by an admin/support staff or herself from another device.
+    /// </summary>
     public const string SESSION_REVOKED = nameof(SESSION_REVOKED);
 
+    /// <summary>
+    /// When a user's profile is updated on another device.
+    /// </summary>
     public const string PROFILE_UPDATED = nameof(PROFILE_UPDATED);
 }
 
