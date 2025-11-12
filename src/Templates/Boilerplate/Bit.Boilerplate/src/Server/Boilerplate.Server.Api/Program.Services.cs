@@ -69,7 +69,10 @@ public static partial class Program
         services.AddScoped<PhoneService>();
         services.AddScoped<PhoneServiceJobsRunner>();
         //#if (signalR == true)
-        services.AddAppMcp(); // Add MCP server with chatbot tools
+        // Add MCP server with chatbot tools
+        services.AddMcpServer()
+            .WithHttpTransport()
+            .WithTools<AppMcpService>();
         services.AddScoped<SignalR.ChatbotService>();
         //#endif
         //#if (module == "Sales" || module == "Admin")

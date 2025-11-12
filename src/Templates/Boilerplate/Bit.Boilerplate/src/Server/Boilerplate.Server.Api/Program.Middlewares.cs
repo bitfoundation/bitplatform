@@ -74,7 +74,7 @@ public static partial class Program
 
         //#if (signalR == true)
         app.MapHub<SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
-        app.MapAppMcp(); // Map MCP endpoints for chatbot tool
+        app.MapMcp("/mcp")/*.RequireAuthorization()*/; // Map MCP endpoints for chatbot tool
         //#endif
 
         app.MapControllers()
