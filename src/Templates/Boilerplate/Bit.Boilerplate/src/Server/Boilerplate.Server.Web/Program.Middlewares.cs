@@ -114,8 +114,8 @@ public static partial class Program
         app.MapAppHealthChecks();
 
         //#if (api == "Integrated")
-        app.MapOpenApi();
-        app.MapScalarApiReference();
+        app.MapOpenApi().CacheOutput("AppResponseCachePolicy");
+        app.MapScalarApiReference().CacheOutput("AppResponseCachePolicy");
         app.MapGet("/swagger", () => Results.Redirect("/scalar")).ExcludeFromDescription();
 
         app.UseHangfireDashboard(options: new()
@@ -128,7 +128,7 @@ public static partial class Program
         {
             RouteParameter = routeParameter,
             QueryStringParameter = queryStringParameter
-        }).WithTags("Test").CacheOutput("AppResponseCachePolicy");
+        }).WithTags("Test").CacheOutput("AppResponseCachePolicy").ExcludeFromDescription();
 
         //#if (signalR == true)
         if (string.IsNullOrEmpty(configuration["Azure:SignalR:ConnectionString"]) is false
