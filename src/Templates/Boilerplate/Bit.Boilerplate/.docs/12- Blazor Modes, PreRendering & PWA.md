@@ -350,16 +350,7 @@ self.serverHandledUrls = [
     /\/odata\//,
     /\/core\//,
     /\/hangfire/,
-    /\/healthchecks-ui/,
-    /\/healthz/,
-    /\/health/,
-    /\/alive/,
-    /\/swagger/,
-    /\/signin-/,
-    /\/.well-known/,
-    /\/sitemap.xml/,
-    /\/sitemap_index.xml/,
-    /\/web-interop-app.html/
+    ...
 ];
 ```
 

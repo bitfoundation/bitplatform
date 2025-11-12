@@ -97,7 +97,7 @@ Each layer adds services specific to its scope, ensuring proper service availabi
 ### Registration Flow Example (Server API):
 
 1. **`Program.cs`** calls `AddServerApiProjectServices()`
-2. **`AddServerApiProjectServices()`** internally calls helper methods like `AddIdentity()`, `AddSwaggerGen()`
+2. **`AddServerApiProjectServices()`** internally calls helper methods like `AddIdentity()`
 3. Each helper method registers related services (e.g., Identity services, JWT authentication, external auth providers)
 
 ## Service Availability Matrix
