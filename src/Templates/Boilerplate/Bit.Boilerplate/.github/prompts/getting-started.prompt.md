@@ -772,9 +772,8 @@ At the end of Stage 14, ask: **"Do you have any questions about the Response Cac
 
 1. **Explain ILogger for errors, warnings, and general information**:
 
-2. **Explain Activity and AppActivitySource for tracking operations (count/duration)**:
-   - Read [/src/Shared/Services/AppActivitySource.cs](/src/Shared/Services/AppActivitySource.cs) file
-   - Find and demonstrate example using `AppActivitySource`
+2. **Explain ActivitySource and Meter for tracking operations (count/duration)**:
+   - Find and demonstrate `Meter.Current` and `ActivitySource.Current` usages in the project.
 
 3. **Logging configuration in [/src/Shared/appsettings.json](/src/Shared/appsettings.json)**:
    - Show the `Logging` section with different providers
@@ -795,7 +794,7 @@ At the end of Stage 14, ask: **"Do you have any questions about the Response Cac
 6. **Aspire Dashboard displays all logs and metrics**:
 
 7. **⚠️ CRITICAL WARNING**:
-   - If you're adding Serilog, using App Insights direct methods, or anything other than `ILogger` and `AppActivitySource`, you probably don't understand OpenTelemetry or Microsoft.Extensions.Logging
+   - If you're adding Serilog, using App Insights direct methods, or anything other than `ILogger`, `ActivitySource` and `Meter`, you probably don't understand OpenTelemetry or Microsoft.Extensions.Logging
    - Everything is already optimally configured
    - OpenTelemetry is vendor-agnostic - switch from Sentry to App Insights without code changes
 

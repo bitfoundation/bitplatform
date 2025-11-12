@@ -62,7 +62,7 @@ logger.LogError(exception, "Order processing failed");
 
 ## 2. Activity and Meter for Tracking Operations
 
-For tracking **operation count and duration**, the project uses **OpenTelemetry's Activity** and a custom **`AppActivitySource`**.
+For tracking **operation count and duration**, the project uses **OpenTelemetry's ActivitySource**.
 
 ### ActivitySource
 
@@ -290,14 +290,14 @@ The project tracks:
 - ASP.NET Core instrumentation (HTTP request metrics)
 - HTTP client instrumentation
 - Runtime instrumentation (GC, thread pool, etc.)
-- Custom metrics via `AppActivitySource.CurrentMeter`
+- Custom metrics via `Meter.Current`
 
 **Tracing:**
 - ASP.NET Core requests (excluding static files and health checks)
 - HTTP client calls
 - Entity Framework Core queries (excluding Hangfire queries)
 - Hangfire background jobs
-- Custom activities via `AppActivitySource.CurrentActivity`
+- Custom activities via `ActivitySource.Current`
 
 ---
 
