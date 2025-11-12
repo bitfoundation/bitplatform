@@ -16,7 +16,7 @@ namespace Boilerplate.Server.Api.SignalR;
 /// based on your needs. For example you can customize CrystaCode.AI as a agent that would allow users to talk with their own voice and CrystaCode.AI would call MCP tool developed in <see cref="AppMcpService"/>
 /// to get answers it need about the app.
 /// </summary>
-public partial class AppChatbot : IAsyncDisposable
+public partial class AppChatbot
 {
     private IChatClient? chatClient = default!;
 
@@ -86,6 +86,7 @@ public partial class AppChatbot : IAsyncDisposable
     /// Process an incoming message and stream the AI response
     /// </summary>
     public async Task ProcessMessageAsync(
+        bool generateFollowUpSuggestions,
         string incomingMessage,
         Uri? serverApiAddress,
         CancellationToken cancellationToken)
@@ -118,14 +119,17 @@ public partial class AppChatbot : IAsyncDisposable
 
             await responseChannel.Writer.WriteAsync(SharedChatProcessMessages.MESSAGE_RPOCESS_SUCESS, cancellationToken);
 
-            // Generate follow-up suggestions
-            var followUpSuggestions = await GenerateFollowUpSuggestionsAsync(
-                incomingMessage,
-                assistantResponse.ToString(),
-                chatOptions,
-                cancellationToken);
+            if (generateFollowUpSuggestions)
+            {
+                // Generate follow-up suggestions
+                var followUpSuggestions = await GenerateFollowUpSuggestionsAsync(
+                    incomingMessage,
+                    assistantResponse.ToString(),
+                    chatOptions,
+                    cancellationToken);
 
-            await responseChannel.Writer.WriteAsync(JsonSerializer.Serialize(followUpSuggestions), cancellationToken);
+                await responseChannel.Writer.WriteAsync(JsonSerializer.Serialize(followUpSuggestions), cancellationToken);
+            }
         }
         catch (Exception exp)
         {
@@ -227,10 +231,5 @@ Avoid suggesting questions that the assistant would not be able to answer."),],
             chatOptions, cancellationToken: cancellationToken);
 
         return followUpItems.Result ?? new AiChatFollowUpList();
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        Stop();
     }
 }

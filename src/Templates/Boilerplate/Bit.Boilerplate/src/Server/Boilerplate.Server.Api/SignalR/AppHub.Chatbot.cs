@@ -49,6 +49,7 @@ public partial class AppHub
 
                     messageSpecificCancellationTokenSrc = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                     _ = chatbotService.ProcessMessageAsync(
+                        generateFollowUpSuggestions: true,
                         incomingMessage,
                         request.ServerApiAddress,
                         messageSpecificCancellationTokenSrc.Token);
