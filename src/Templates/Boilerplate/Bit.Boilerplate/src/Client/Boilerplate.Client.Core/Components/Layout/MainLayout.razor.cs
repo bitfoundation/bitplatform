@@ -22,13 +22,13 @@ public partial class MainLayout : IAsyncDisposable
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
     [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
-    [AutoInject] private IPrerenderStateService prerenderStateService = default!;
 
 
     /// <summary>
     /// <inheritdoc cref="Parameters.IsOnline"/>
     /// </summary>
-    private bool? isOnline;
+    [PersistentState] public bool? IsOnline { get; set; }
+
     private BitDir? currentDir;
     private bool? isIdentityPage;
     private UserDto? currentUser;
@@ -45,13 +45,14 @@ public partial class MainLayout : IAsyncDisposable
         try
         {
             var inPrerenderSession = RendererInfo.IsInteractive is false;
+
             // During pre-rendering, if any API calls are made, the `isOnline` value will be set 
             // using PubSub's `ClientPubSubMessages.IS_ONLINE_CHANGED`, depending on the success 
             // or failure of the API call. However, if a pre-rendered page has no HTTP API call 
             // dependencies, its value remains null. 
             // Even though Server.Web and Server.Api may be deployed on different servers, 
             // we can still assume that if the client is displaying a pre-rendered result, it is online.
-            isOnline = await prerenderStateService.GetValue<bool?>(nameof(isOnline), async () => isOnline ?? inPrerenderSession is true ? true : null);
+            IsOnline ??= IsOnline ?? inPrerenderSession is true ? true : null;
 
             authManager.AuthenticationStateChanged += AuthManager_AuthenticationStateChanged;
 
@@ -77,7 +78,7 @@ public partial class MainLayout : IAsyncDisposable
 
             unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.IS_ONLINE_CHANGED, async payload =>
             {
-                telemetryContext.IsOnline = isOnline = (bool?)payload;
+                telemetryContext.IsOnline = IsOnline = (bool?)payload;
                 await InvokeAsync(StateHasChanged);
             }));
 

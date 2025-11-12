@@ -17,11 +17,6 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     [AutoInject] protected JsonSerializerOptions JsonSerializerOptions = default!;
 
     /// <summary>
-    /// <inheritdoc cref="IPrerenderStateService"/>
-    /// </summary>
-    [AutoInject] protected IPrerenderStateService PrerenderStateService = default!;
-
-    /// <summary>
     /// <inheritdoc cref="Services.PubSubService"/>
     /// </summary>
     [AutoInject] protected PubSubService PubSubService = default!;
@@ -271,8 +266,6 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
             cts = null;
             await currentCts.CancelAsync();
         }
-
-        await PrerenderStateService.DisposeAsync();
 
         await DisposeAsync(true);
 

@@ -43,6 +43,8 @@ Task<TokenResponseDto> Refresh(RefreshRequestDto body);
 While following the Convention over Configuration principle, methods like `GetCurrentUser` in `IUserController` send requests to `api/User/GetCurrentUser`,
 you are not bound by this convention. Use any `RoutePrefix` you prefer, as long as your API is accepting/returning json you're all set!
 
+**Important**: IAppControllers support pre-render state internally, so you don't need to handle it manually using `PersistentComponentState` or `[PersistentState]`.
+
 **Advanced sample**:
 Explore `IMinimalApiController` for example of ASP.NET Core Minimal API that has the following characteristics:
 
