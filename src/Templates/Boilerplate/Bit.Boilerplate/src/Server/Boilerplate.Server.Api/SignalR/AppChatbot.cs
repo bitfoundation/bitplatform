@@ -12,7 +12,8 @@ namespace Boilerplate.Server.Api.SignalR;
 /// and handling AI interactions including getting user feedbacks, describing app's features and pages etc.
 /// This service is exposed over SignalR's AppHub.Chat.cs, so it can accept stream of user messages and return stream of AI responses using AiChatPanel.razor
 /// It's also exposed as MCP tool over MinimalApi so you can add chatbot capabilities to any MCP-enabled client such as https://CrystaCode.ai and instruct each client differently,
-/// based on your needs. For example you can customize CrystaCode.AI as a agent that would allow users to talk with their own voice to get data it needs about your app from the MCP tool.
+/// based on your needs. For example you can customize CrystaCode.AI as a agent that would allow users to talk with their own voice and CrystaCode.AI would call MCP tool developed in <see cref="AppMcpService"/>
+/// to get answers it need about the app.
 /// </summary>
 public partial class AppChatbot
 {
