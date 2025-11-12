@@ -903,11 +903,12 @@ public class BitDropdownTests : BunitTestContext
         //https://bunit.dev/docs/test-doubles/emulating-ijsruntime.html#-jsinterop-emulation
         const double viewportHeight = 1_000_000_000;
         var items = GetRangeDropdownItems(500);
+        var maxItemCount = 100;
 
-        // To ensure a consistent display structure in the Virtualize component across .NET 9 and .NET 8,
+        // To ensure a consistent display structure in the Virtualize component across .NET 8, .NET 9, and .NET 10,
         // we've set the default value of MaxItemCount to 100. This means that even if a higher value is specified,
         // only a maximum of 100 items will be rendered by default.
-        AppContext.SetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount", 100);
+        AppContext.SetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount", maxItemCount);
 
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
@@ -935,13 +936,15 @@ public class BitDropdownTests : BunitTestContext
 
         if (virtualize)
         {
-            //When virtualize is true, number of rendered items is greater than number of items show in the list + 2 * overScanCount.
-            var expectedRenderedItemCount = Math.Ceiling((decimal)(viewportHeight / component.Instance.ItemSize)) + (2 * component.Instance.OverscanCount);
-            expectedRenderedItemCount = Math.Min(expectedRenderedItemCount, 100);
+            //When virtualize is true, number of rendered items is greater than number of items shown in the list by "2 * OverScanCount".
+            var overscanItemsCount = 2 * component.Instance.OverscanCount;
 
 #if NET10_0
-            expectedRenderedItemCount += (overscanCount ?? 3) * 2; // https://github.com/dotnet/aspnetcore/pull/63765
+            maxItemCount += overscanItemsCount;
 #endif
+
+            var expectedRenderedItemCount = Math.Ceiling((decimal)(viewportHeight / component.Instance.ItemSize)) + overscanItemsCount;
+            expectedRenderedItemCount = Math.Min(expectedRenderedItemCount, maxItemCount);
 
             //When actualRenderedItemCount is smaller than expectedRenderedItemCount, so show all items in viewport then actualRenderedItemCount equals total items count
             if (actualRenderedItemCount < expectedRenderedItemCount)
@@ -957,6 +960,8 @@ public class BitDropdownTests : BunitTestContext
         {
             Assert.AreEqual(items.Count, actualRenderedItemCount);
         }
+
+        AppContext.SetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount", null);
     }
 
     [DataTestMethod,
