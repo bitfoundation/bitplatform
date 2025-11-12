@@ -108,18 +108,6 @@ These messages are for **client-only** pub/sub communication:
 ```csharp
 public partial class ClientPubSubMessages : SharedPubSubMessages
 {
-    public const string SHOW_SNACK = nameof(SHOW_SNACK);
-    public const string SHOW_MODAL = nameof(SHOW_MODAL);
-    public const string CLOSE_MODAL = nameof(CLOSE_MODAL);
-    public const string THEME_CHANGED = nameof(THEME_CHANGED);
-    public const string OPEN_NAV_PANEL = nameof(OPEN_NAV_PANEL);
-    public const string CLOSE_NAV_PANEL = nameof(CLOSE_NAV_PANEL);
-    public const string CULTURE_CHANGED = nameof(CULTURE_CHANGED);
-    public const string IS_ONLINE_CHANGED = nameof(IS_ONLINE_CHANGED);
-    public const string PAGE_DATA_CHANGED = nameof(PAGE_DATA_CHANGED);
-    public const string ROUTE_DATA_UPDATED = nameof(ROUTE_DATA_UPDATED);
-    public const string NAVIGATE_TO = nameof(NAVIGATE_TO);
-    public const string SHOW_DIAGNOSTIC_MODAL = nameof(SHOW_DIAGNOSTIC_MODAL);
     public const string PROFILE_UPDATED = nameof(PROFILE_UPDATED);
     // ... and more
 }
@@ -135,8 +123,7 @@ These messages are used for **server-to-client communication** through SignalR:
 public partial class SharedPubSubMessages
 {
     public const string DASHBOARD_DATA_CHANGED = nameof(DASHBOARD_DATA_CHANGED);
-    public const string SESSION_REVOKED = nameof(SESSION_REVOKED);
-    public const string PROFILE_UPDATED = nameof(PROFILE_UPDATED);
+    // ... and more
 }
 ```
 
@@ -163,7 +150,7 @@ public partial class SharedPubSubMessages
 // Publish a message to PubSubService
 App.publishMessage('CUSTOM_EVENT', { data: 'some data' });
 
-// Show diagnostic modal
+// Show diagnostic modal by publishing `SHOW_DIAGNOSTIC_MODAL` message to C# PubSubService
 App.showDiagnostic();
 ```
 
