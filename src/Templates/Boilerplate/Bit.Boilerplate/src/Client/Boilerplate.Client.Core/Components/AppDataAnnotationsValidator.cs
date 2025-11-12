@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using Boilerplate.Shared.Attributes;
@@ -61,10 +61,8 @@ public partial class AppDataAnnotationsValidator : AppComponentBase
             var stringLocalizer = stringLocalizerFactory.Create(resourceType);
             var validationAttributes = propertyInfo.GetCustomAttributes<ValidationAttribute>();
             var displayAttribute = propertyInfo.GetCustomAttribute<DisplayAttribute>();
-            if (displayAttribute is not null)
-            {
-                displayAttribute.ResourceType ??= resourceType;
-            }
+
+            displayAttribute?.ResourceType ??= resourceType;
 
             foreach (var attribute in validationAttributes)
             {
@@ -82,10 +80,7 @@ public partial class AppDataAnnotationsValidator : AppComponentBase
                     if (attribute is CompareAttribute compareAttribute)
                     {
                         var otherPropertyInfoDisplayAttribute = (parent.GetProperty(compareAttribute.OtherProperty) ?? throw new InvalidOperationException($"Invalid OtherProperty {compareAttribute.OtherProperty}")).GetCustomAttribute<DisplayAttribute>();
-                        if (otherPropertyInfoDisplayAttribute is not null)
-                        {
-                            otherPropertyInfoDisplayAttribute.ResourceType ??= resourceType;
-                        }
+                        otherPropertyInfoDisplayAttribute?.ResourceType ??= resourceType;
                         SetOtherPropertyDisplayName(compareAttribute, stringLocalizer.GetString(otherPropertyInfoDisplayAttribute?.Name ?? compareAttribute.OtherProperty).ToString());
                     }
                 }
@@ -139,10 +134,9 @@ public partial class AppDataAnnotationsValidator : AppComponentBase
                 var propertyValue = propertyInfo.GetValue(objectInstance);
                 var validationAttributes = propertyInfo.GetCustomAttributes<ValidationAttribute>();
                 var displayAttribute = propertyInfo.GetCustomAttribute<DisplayAttribute>();
-                if (displayAttribute is not null)
-                {
-                    displayAttribute.ResourceType ??= resourceType;
-                }
+
+                displayAttribute?.ResourceType ??= resourceType;
+
                 foreach (var attribute in validationAttributes)
                 {
                     if (string.IsNullOrEmpty(attribute.ErrorMessage) is false)
@@ -158,10 +152,7 @@ public partial class AppDataAnnotationsValidator : AppComponentBase
                         if (attribute is CompareAttribute compareAttribute)
                         {
                             var otherPropertyInfoDisplayAttribute = (properties.FirstOrDefault(p => p.Name == compareAttribute.OtherProperty) ?? throw new InvalidOperationException($"Invalid OtherProperty {compareAttribute.OtherProperty}")).GetCustomAttribute<DisplayAttribute>();
-                            if (otherPropertyInfoDisplayAttribute is not null)
-                            {
-                                otherPropertyInfoDisplayAttribute.ResourceType ??= resourceType;
-                            }
+                            otherPropertyInfoDisplayAttribute?.ResourceType ??= resourceType;
                             SetOtherPropertyDisplayName(compareAttribute, stringLocalizer.GetString(otherPropertyInfoDisplayAttribute?.Name ?? compareAttribute.OtherProperty).ToString());
                         }
                     }
@@ -240,11 +231,8 @@ public partial class AppDataAnnotationsValidator : AppComponentBase
 
         if (disposed || disposing is false) return;
 
-        if (EditContext is not null)
-        {
-            EditContext.OnFieldChanged -= OnFieldChanged;
-            EditContext.OnValidationRequested -= OnValidationRequested;
-        }
+        EditContext?.OnFieldChanged -= OnFieldChanged;
+        EditContext?.OnValidationRequested -= OnValidationRequested;
 
         disposed = true;
     }
