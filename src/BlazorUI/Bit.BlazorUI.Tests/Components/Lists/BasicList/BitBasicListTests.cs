@@ -23,13 +23,14 @@ public class BitBasicListTests : BunitTestContext
     {
         //https://bunit.dev/docs/test-doubles/emulating-ijsruntime.html#-jsinterop-emulation
         const double viewportHeight = 1_000_000_000;
+        var maxItemCount = 100;
 
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
         // To ensure a consistent display structure in the Virtualize component across .NET 9 and .NET 8,
         // we've set the default value of MaxItemCount to 100. This means that even if a higher value is specified,
         // only a maximum of 100 items will be rendered by default.
-        AppContext.SetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount", 100);
+        AppContext.SetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount", maxItemCount);
 
         var component = RenderComponent<BitBasicListTest>(parameters =>
         {
@@ -46,12 +47,14 @@ public class BitBasicListTests : BunitTestContext
         if (virtualize)
         {
             //When virtualize is true, number of rendered items is greater than number of items show in the list + 2 * overScanCount.
-            var expectedRenderedItemCount = Math.Ceiling((decimal)(viewportHeight / component.Instance.ItemSize)) + (2 * component.Instance.OverscanCount);
-            expectedRenderedItemCount = Math.Min(expectedRenderedItemCount, 100);
+            var overscanItemsCount = 2 * component.Instance.OverscanCount;
 
 #if NET10_0
-            expectedRenderedItemCount += (overscanCount ?? 3) * 2; // https://github.com/dotnet/aspnetcore/pull/63765
+            maxItemCount += overscanItemsCount;
 #endif
+
+            var expectedRenderedItemCount = Math.Ceiling((decimal)(viewportHeight / component.Instance.ItemSize)) + overscanItemsCount;
+            expectedRenderedItemCount = Math.Min(expectedRenderedItemCount, maxItemCount);
 
             var actualRenderedItemCount = bitList.GetElementsByClassName("list-item").Length;
 
@@ -70,6 +73,8 @@ public class BitBasicListTests : BunitTestContext
             var actualRenderedItemCount = bitList.GetElementsByClassName("list-item").Length;
             Assert.AreEqual(component?.Instance?.Items?.Count, actualRenderedItemCount);
         }
+
+        AppContext.SetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount", null);
     }
 
     [DataTestMethod,
