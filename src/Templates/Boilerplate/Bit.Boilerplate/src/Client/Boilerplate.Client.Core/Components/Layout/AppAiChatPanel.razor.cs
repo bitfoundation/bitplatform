@@ -179,7 +179,7 @@ public partial class AppAiChatPanel
             }
             else
             {
-                if (response is SharedChatProcessMessages.MESSAGE_RPOCESS_SUCESS)
+                if (response is SharedChatProcessMessages.MESSAGE_RPOCESS_SUCCESS)
                 {
                     responseCounter++;
                     isLoading = false;

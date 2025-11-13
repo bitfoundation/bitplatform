@@ -117,7 +117,7 @@ public partial class AppChatbot
                 await responseChannel.Writer.WriteAsync(result, cancellationToken);
             }
 
-            await responseChannel.Writer.WriteAsync(SharedChatProcessMessages.MESSAGE_RPOCESS_SUCESS, cancellationToken);
+            await responseChannel.Writer.WriteAsync(SharedChatProcessMessages.MESSAGE_RPOCESS_SUCCESS, cancellationToken);
 
             if (generateFollowUpSuggestions)
             {

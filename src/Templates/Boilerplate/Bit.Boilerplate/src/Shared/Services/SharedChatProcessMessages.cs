@@ -6,5 +6,5 @@
 public static class SharedChatProcessMessages
 {
     public const string MESSAGE_RPOCESS_ERROR = nameof(MESSAGE_RPOCESS_ERROR);
-    public const string MESSAGE_RPOCESS_SUCESS = nameof(MESSAGE_RPOCESS_SUCESS);
+    public const string MESSAGE_RPOCESS_SUCCESS = nameof(MESSAGE_RPOCESS_SUCCESS);
 }

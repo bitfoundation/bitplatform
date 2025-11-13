@@ -16,7 +16,7 @@ public partial class SharedPubSubMessages
     //#endif
 
     /// <summary>
-    /// When a user session is revoked by an admin/support staff or herself from another device.
+    /// When a user session is revoked by an admin/support staff or by the user from another device.
     /// </summary>
     public const string SESSION_REVOKED = nameof(SESSION_REVOKED);
 

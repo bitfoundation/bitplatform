@@ -19,7 +19,7 @@ public partial class AppMcpService
     [McpServerTool(Name = "bit_mcp")]
     public async Task<string> StartChat(
         [Required, Description("The user's message to send to the chatbot")] string message,
-        [Description("Optional: Previous conversation history")] List<AiChatMessage>? convesationHistory = null,
+        [Description("Optional: Previous conversation history")] List<AiChatMessage>? conversationHistory = null,
         [Description("Optional: User's culture LCID (e.g., 1033 for en-US)")] int? cultureLcid = null,
         [Description("Optional: Device information string (e.g., Google Chrome on Windows)")] string? deviceInfo = null,
         McpServer server = default!,
@@ -30,7 +30,7 @@ public partial class AppMcpService
     {
         // Start the chatbot session
         await chatBot.Start(
-            convesationHistory ?? [],
+            conversationHistory ?? [],
             cultureLcid,
             deviceInfo,
             cancellationToken);
@@ -54,7 +54,7 @@ public partial class AppMcpService
         // Read all responses from the channel
         await foreach (var chunk in chatBot.GetStreamingChannel().ReadAllAsync(cancellationToken))
         {
-            if (chunk == SharedChatProcessMessages.MESSAGE_RPOCESS_SUCESS)
+            if (chunk == SharedChatProcessMessages.MESSAGE_RPOCESS_SUCCESS)
             {
                 // Message processed successfully
                 break;
