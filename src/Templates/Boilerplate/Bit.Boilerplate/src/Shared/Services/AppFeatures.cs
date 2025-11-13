@@ -24,7 +24,7 @@ public class AppFeatures
     public class System
     {
         /// <summary>
-        /// <inheritdoc cref="SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE" />
+        /// <inheritdoc cref="SharedPubSubMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE" />
         /// </summary>
         public const string ManageLogs = "2.0";
 

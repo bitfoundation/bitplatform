@@ -23,6 +23,8 @@ public partial class AppClientCoordinator : AppComponentBase
     //#if (signalR == true)
     [AutoInject] private Notification notification = default!;
     [AutoInject] private HubConnection hubConnection = default!;
+    [AutoInject] private ThemeService themeService = default!;
+    [AutoInject] private CultureService cultureService = default!;
     //#endif
     //#if (appInsights == true)
     [AutoInject] private IApplicationInsights appInsights = default!;
@@ -91,7 +93,7 @@ public partial class AppClientCoordinator : AppComponentBase
             NavigationManager.LocationChanged += NavigationManager_LocationChanged;
             AuthManager.AuthenticationStateChanged += AuthenticationStateChanged;
             //#if (signalR == true)
-            SubscribeToSignalREventsMessages();
+            SubscribeToSignalRSharedPubSubMessages();
             //#endif
             await PropagateAuthState(firstRun: true, AuthenticationStateTask);
         }
@@ -175,10 +177,10 @@ public partial class AppClientCoordinator : AppComponentBase
     }
 
     //#if (signalR == true)
-    private void SubscribeToSignalREventsMessages()
+    private void SubscribeToSignalRSharedPubSubMessages()
     {
-        hubConnection.Remove(SignalREvents.SHOW_MESSAGE);
-        signalROnDisposables.Add(hubConnection.On<string, Dictionary<string, string?>?, bool>(SignalREvents.SHOW_MESSAGE, async (message, data) =>
+        hubConnection.Remove(SharedPubSubMessages.SHOW_MESSAGE);
+        signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.SHOW_MESSAGE, async (string message, Dictionary<string, string?>? data) =>
         {
             logger.LogInformation("SignalR Message {Message} received from server to show.", message);
             if (await notification.IsNotificationAvailable())
@@ -210,23 +212,68 @@ public partial class AppClientCoordinator : AppComponentBase
             // You can also leverage IPubSubService to notify other components in the application.
         }));
 
-        hubConnection.Remove(SignalREvents.PUBLISH_MESSAGE);
-        signalROnDisposables.Add(hubConnection.On<string, object?>(SignalREvents.PUBLISH_MESSAGE, async (message, payload) =>
+        hubConnection.Remove(SharedPubSubMessages.PUBLISH_MESSAGE);
+        signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.PUBLISH_MESSAGE, async (string message, object? payload) =>
         {
             logger.LogInformation("SignalR Message {Message} received from server to publish.", message);
             PubSubService.Publish(message, payload);
+            return true;
         }));
 
-        hubConnection.Remove(SignalREvents.EXCEPTION_THROWN);
-        signalROnDisposables.Add(hubConnection.On<AppProblemDetails>(SignalREvents.EXCEPTION_THROWN, async (appProblemDetails) =>
+        hubConnection.Remove(SharedPubSubMessages.EXCEPTION_THROWN);
+        signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.EXCEPTION_THROWN, async (AppProblemDetails appProblemDetails) =>
         {
             ExceptionHandler.Handle(appProblemDetails, displayKind: ExceptionDisplayKind.NonInterrupting);
+            return true;
         }));
 
-        hubConnection.Remove(SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE);
-        signalROnDisposables.Add(hubConnection.On(SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE, async () =>
+        hubConnection.Remove(SharedPubSubMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE);
+        signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE, async () =>
         {
             return DiagnosticLogger.Store.ToArray();
+        }));
+
+        hubConnection.Remove(SharedPubSubMessages.NAVIGATE_TO);
+        signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.NAVIGATE_TO, async (string url) =>
+        {
+            await InvokeAsync(async () =>
+            {
+                NavigationManager.NavigateTo(url);
+            });
+            return true;
+        }));
+
+        hubConnection.Remove(SharedPubSubMessages.CHANGE_CULTURE);
+        signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.CHANGE_CULTURE, async (int cultureLcid) =>
+        {
+            await InvokeAsync(async () =>
+            {
+                var culture = CultureInfo.GetCultureInfo(cultureLcid);
+                await cultureService.ChangeCulture(culture.Name);
+            });
+            return true;
+        }));
+
+        hubConnection.Remove(SharedPubSubMessages.CHANGE_THEME);
+        signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.CHANGE_THEME, async (string requestedTheme) =>
+        {
+            await InvokeAsync(async () =>
+            {
+                var currentTheme = (await themeService.GetCurrentTheme()).ToString();
+
+                if (string.Equals(currentTheme, requestedTheme) is false)
+                {
+                    await themeService.ToggleTheme();
+                }
+            });
+
+            return true;
+        }));
+
+        hubConnection.Remove(SharedPubSubMessages.UPLOAD_LAST_ERROR);
+        signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.UPLOAD_LAST_ERROR, async () =>
+        {
+            return DiagnosticLogger.Store.LastOrDefault(l => l.Level is LogLevel.Error or LogLevel.Critical);
         }));
 
         hubConnection.Closed += HubConnectionStateChange;

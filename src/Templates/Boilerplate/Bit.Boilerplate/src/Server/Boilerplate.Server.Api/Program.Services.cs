@@ -68,6 +68,13 @@ public static partial class Program
         services.AddScoped<EmailServiceJobsRunner>();
         services.AddScoped<PhoneService>();
         services.AddScoped<PhoneServiceJobsRunner>();
+        //#if (signalR == true)
+        // Add MCP server with chatbot tools
+        services.AddMcpServer()
+            .WithHttpTransport()
+            .WithTools<AppMcpService>();
+        services.AddScoped<SignalR.AppChatbot>();
+        //#endif
         //#if (module == "Sales" || module == "Admin")
         //#if (database == "PostgreSQL" || database == "SqlServer")
         services.AddScoped<ProductEmbeddingService>();

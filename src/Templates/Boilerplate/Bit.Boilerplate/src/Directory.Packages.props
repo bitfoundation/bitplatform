@@ -22,6 +22,7 @@
         <PackageVersion Include="EmbedIO" Version="3.5.2" />
         <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.0" />
         <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
+        <PackageVersion Include="Microsoft.Extensions.Caching.Hybrid" Version="10.0.0" />
         <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.0" />
         <PackageVersion Include="AspNetCore.HealthChecks.Hangfire" Version="9.0.0" />
         <PackageVersion Include="AspNetCore.HealthChecks.System" Version="9.0.0" />
@@ -53,6 +54,7 @@
         <PackageVersion Include="Microsoft.Extensions.Logging.EventLog" Version="10.0.0" />
         <PackageVersion Include="Microsoft.Extensions.Logging.EventSource" Version="10.0.0" />
         <!--/+:msbuild-conditional:noEmit -->
+        <PackageVersion Condition="'$(signalR)' == 'true' OR '$(signalR)' == ''" Include="ModelContextProtocol.AspNetCore" Version="0.4.0-preview.3" />
         <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.Testing" Version="13.0.0" />
         <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="CommunityToolkit.Aspire.Hosting.MailPit" Version="9.9.0" />
         <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.DevTunnels" Version="13.0.0-preview.1.25560.3" />

@@ -4,14 +4,14 @@ using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 using Fido2NetLib;
 using Fido2NetLib.Objects;
-using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Hybrid;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
 public partial class IdentityController
 {
     [AutoInject] private IFido2 fido2 = default!;
-    [AutoInject] private IDistributedCache cache = default!;
+    [AutoInject] private HybridCache cache = default!;
     [AutoInject] protected JsonSerializerOptions jsonSerializerOptions = default!;
 
 
@@ -43,7 +43,13 @@ public partial class IdentityController
         });
 
         var key = new string([.. options.Challenge.Select(b => (char)b)]);
-        await cache.SetAsync(key, Encoding.UTF8.GetBytes(options.ToJson()), new() { SlidingExpiration = TimeSpan.FromMinutes(3) }, cancellationToken);
+        await cache.SetAsync(key, options.ToJson(),
+            new()
+            {
+                Expiration = TimeSpan.FromMinutes(3),
+                LocalCacheExpiration = TimeSpan.FromMinutes(3)
+            },
+            cancellationToken: cancellationToken);
 
         return options;
     }
@@ -96,8 +102,9 @@ public partial class IdentityController
                         ?? throw new InvalidOperationException("Invalid client data.");
 
         var key = new string([.. response.Challenge.Select(b => (char)b)]);
-        var cachedBytes = await cache.GetAsync(key, cancellationToken)
-                             ?? throw new ResourceNotFoundException();
+        var cachedBytes = await cache.GetOrCreateAsync<byte[]>(key,
+            async _ => throw new ResourceNotFoundException(),
+            cancellationToken: cancellationToken);
 
         var jsonOptions = Encoding.UTF8.GetString(cachedBytes);
         var options = AssertionOptions.FromJson(jsonOptions);

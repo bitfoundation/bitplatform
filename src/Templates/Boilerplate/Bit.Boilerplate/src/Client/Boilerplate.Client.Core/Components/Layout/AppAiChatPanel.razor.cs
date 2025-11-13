@@ -164,6 +164,7 @@ public partial class AppAiChatPanel
                                                                          new StartChatbotRequest()
                                                                          {
                                                                              CultureId = CultureInfo.CurrentCulture.LCID,
+                                                                             TimeZoneId = TimeZoneInfo.Local.Id,
                                                                              DeviceInfo = TelemetryContext.Platform,
                                                                              ChatMessagesHistory = chatMessages,
                                                                              ServerApiAddress = AbsoluteServerAddress.GetAddress()
@@ -179,12 +180,12 @@ public partial class AppAiChatPanel
             }
             else
             {
-                if (response is SharedChatProcessMessages.MESSAGE_RPOCESS_SUCESS)
+                if (response is SharedPubSubMessages.MESSAGE_RPOCESS_SUCCESS)
                 {
                     responseCounter++;
                     isLoading = false;
                 }
-                else if (response is SharedChatProcessMessages.MESSAGE_RPOCESS_ERROR)
+                else if (response is SharedPubSubMessages.MESSAGE_RPOCESS_ERROR)
                 {
                     responseCounter++;
                     if (responseCounter == expectedResponsesCount)

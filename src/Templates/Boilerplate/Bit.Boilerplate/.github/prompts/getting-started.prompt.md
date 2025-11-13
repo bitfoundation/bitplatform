@@ -1066,9 +1066,9 @@ At the end of Stage 21, ask: **"Do you have any questions about .NET MAUI, nativ
      - All devices of a specific user (a user might have multiple sessions - web app open twice, mobile app, etc.)
      - A specific device/connection
 - **Message Types**:
-     - **SignalREvents.SHOW_MESSAGE**: Displays a text message to the user
      - **SharedPubSubMessages**: Application-specific messages, for example:
        - `SharedPubSubMessages.SESSION_REVOKED`: Redirects the device to the Sign In page when a session is revoked
+       - `SharedPubSubMessages.SHOW_MESSAGE`: Displays a text message to the user
    - **Search and demonstrate**: Find SignalR hub implementations and show examples of server-to-client messaging
 <!--#endif-->
 

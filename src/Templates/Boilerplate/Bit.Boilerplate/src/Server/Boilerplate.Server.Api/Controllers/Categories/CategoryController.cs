@@ -108,7 +108,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
     {
         // Check out AppHub's comments for more info.
         // In order to exclude current user session, gets its signalR connection id from database and use GroupExcept instead.
-        await appHubContext.Clients.Group("AuthenticatedClients").SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.DASHBOARD_DATA_CHANGED, null, cancellationToken);
+        await appHubContext.Clients.Group("AuthenticatedClients").SendAsync(SharedPubSubMessages.PUBLISH_MESSAGE, SharedPubSubMessages.DASHBOARD_DATA_CHANGED, null, cancellationToken);
     }
     //#endif
 
