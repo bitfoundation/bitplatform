@@ -187,7 +187,7 @@ public partial class UsersPage
 
     //#if (signalR == true)
     /// <summary>
-    /// <inheritdoc cref="SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE"/>
+    /// <inheritdoc cref="SharedPubSubMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE"/>
     /// </summary>
     private async Task ReadUserSessionLogs(Guid userSessionId)
     {

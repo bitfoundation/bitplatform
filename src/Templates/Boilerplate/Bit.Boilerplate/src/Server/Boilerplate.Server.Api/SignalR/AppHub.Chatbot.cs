@@ -27,6 +27,7 @@ public partial class AppHub
                 request.ChatMessagesHistory,
                 request.CultureId,
                 request.DeviceInfo,
+                Context.ConnectionId,
                 cancellationToken);
         }
         catch (Exception exp)
@@ -88,7 +89,7 @@ public partial class AppHub
             return;
         try
         {
-            await Clients.Caller.SendAsync(SignalREvents.EXCEPTION_THROWN, problemDetails, cancellationToken);
+            await Clients.Caller.SendAsync(SharedPubSubMessages.EXCEPTION_THROWN, problemDetails, cancellationToken);
         }
         catch { }
     }

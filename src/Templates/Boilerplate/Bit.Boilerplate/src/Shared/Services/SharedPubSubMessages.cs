@@ -24,10 +24,7 @@ public partial class SharedPubSubMessages
     /// When a user's profile is updated on another device.
     /// </summary>
     public const string PROFILE_UPDATED = nameof(PROFILE_UPDATED);
-}
 
-public static partial class SignalREvents
-{
     /// <summary>
     /// Sends a message to the clients that will published through PubSubService.
     /// </summary>
@@ -42,10 +39,7 @@ public static partial class SignalREvents
     /// When exception is thrown in server side.
     /// </summary>
     public const string EXCEPTION_THROWN = nameof(EXCEPTION_THROWN);
-}
 
-public static partial class SignalRMethods
-{
     /// <summary>
     /// Allows super admins and support staff to retrieve all diagnostic logs for active user sessions.
     /// In contrast to production loggers (e.g., Sentry, AppInsights), which use a Warning level by default (except for specific categories at Information level) to reduce costs,
@@ -54,4 +48,19 @@ public static partial class SignalRMethods
     /// Another benefit of having this feature is in dev environment when you wanna see your Android, iOS logs on your desktop wide screen.
     /// </summary>
     public const string UPLOAD_DIAGNOSTIC_LOGGER_STORE = nameof(UPLOAD_DIAGNOSTIC_LOGGER_STORE);
+
+    /// <summary>
+    /// Using this, server can navigate the client to a specific page.
+    /// </summary>
+    public const string NAVIGATE_TO = nameof(NAVIGATE_TO);
+
+    /// <summary>
+    /// This would let the client know that a chat bot encountered an error while processing the user's message.
+    /// </summary>
+    public const string MESSAGE_RPOCESS_ERROR = nameof(MESSAGE_RPOCESS_ERROR);
+
+    /// <summary>
+    /// This would let the client know that a chat bot successfully processed the user's message.
+    /// </summary>
+    public const string MESSAGE_RPOCESS_SUCCESS = nameof(MESSAGE_RPOCESS_SUCCESS);
 }

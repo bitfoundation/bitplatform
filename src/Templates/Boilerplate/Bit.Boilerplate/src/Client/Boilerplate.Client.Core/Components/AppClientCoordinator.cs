@@ -177,8 +177,8 @@ public partial class AppClientCoordinator : AppComponentBase
     //#if (signalR == true)
     private void SubscribeToSignalREventsMessages()
     {
-        hubConnection.Remove(SignalREvents.SHOW_MESSAGE);
-        signalROnDisposables.Add(hubConnection.On<string, Dictionary<string, string?>?, bool>(SignalREvents.SHOW_MESSAGE, async (message, data) =>
+        hubConnection.Remove(SharedPubSubMessages.SHOW_MESSAGE);
+        signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.SHOW_MESSAGE, async (string message, Dictionary<string, string?>? data) =>
         {
             logger.LogInformation("SignalR Message {Message} received from server to show.", message);
             if (await notification.IsNotificationAvailable())
@@ -210,23 +210,29 @@ public partial class AppClientCoordinator : AppComponentBase
             // You can also leverage IPubSubService to notify other components in the application.
         }));
 
-        hubConnection.Remove(SignalREvents.PUBLISH_MESSAGE);
-        signalROnDisposables.Add(hubConnection.On<string, object?>(SignalREvents.PUBLISH_MESSAGE, async (message, payload) =>
+        hubConnection.Remove(SharedPubSubMessages.PUBLISH_MESSAGE);
+        signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.PUBLISH_MESSAGE, async (string message, object? payload) =>
         {
             logger.LogInformation("SignalR Message {Message} received from server to publish.", message);
             PubSubService.Publish(message, payload);
         }));
 
-        hubConnection.Remove(SignalREvents.EXCEPTION_THROWN);
-        signalROnDisposables.Add(hubConnection.On<AppProblemDetails>(SignalREvents.EXCEPTION_THROWN, async (appProblemDetails) =>
+        hubConnection.Remove(SharedPubSubMessages.EXCEPTION_THROWN);
+        signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.EXCEPTION_THROWN, async (AppProblemDetails appProblemDetails) =>
         {
             ExceptionHandler.Handle(appProblemDetails, displayKind: ExceptionDisplayKind.NonInterrupting);
         }));
 
-        hubConnection.Remove(SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE);
-        signalROnDisposables.Add(hubConnection.On(SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE, async () =>
+        hubConnection.Remove(SharedPubSubMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE);
+        signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE, async () =>
         {
             return DiagnosticLogger.Store.ToArray();
+        }));
+
+        hubConnection.Remove(SharedPubSubMessages.NAVIGATE_TO);
+        signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.NAVIGATE_TO, async (string url) =>
+        {
+            NavigationManager.NavigateTo(url);
         }));
 
         hubConnection.Closed += HubConnectionStateChange;

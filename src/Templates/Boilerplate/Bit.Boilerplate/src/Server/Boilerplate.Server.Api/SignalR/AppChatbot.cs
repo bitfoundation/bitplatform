@@ -5,6 +5,7 @@ using System.Threading.Channels;
 using Boilerplate.Shared.Dtos.Chatbot;
 using Boilerplate.Server.Api.Services;
 using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Boilerplate.Server.Api.SignalR;
 
@@ -12,8 +13,8 @@ namespace Boilerplate.Server.Api.SignalR;
 /// Service responsible for managing chatbot conversations, maintaining chat history,
 /// and handling AI interactions including getting user feedbacks, describing app's features and pages etc.
 /// This service is exposed over SignalR's AppHub.Chat.cs, so it can accept stream of user messages and return stream of AI responses using AiChatPanel.razor
-/// It's also exposed as MCP tool over MinimalApi so you can add chatbot capabilities to any MCP-enabled client such as https://CrystaCode.ai and instruct each client differently,
-/// based on your needs. For example you can customize CrystaCode.AI as a agent that would allow users to talk with their own voice and CrystaCode.AI would call MCP tool developed in <see cref="AppMcpService"/>
+/// It's also exposed as MCP tool over MinimalApi so you can add chatbot capabilities to any MCP-enabled client such as https://CrystaLive.ai and instruct each client differently,
+/// based on your needs. For example you can customize CrystaLive.AI as a agent that would allow users to talk with their own voice and CrystaLive.AI would call MCP tool developed in <see cref="AppMcpService"/>
 /// to get answers it need about the app.
 /// </summary>
 public partial class AppChatbot
@@ -41,6 +42,7 @@ public partial class AppChatbot
         List<AiChatMessage> chatMessagesHistory,
         int? cultureId,
         string? deviceInfo,
+        string? signalRConnectionId,
         CancellationToken cancellationToken)
     {
         chatMessages = [.. chatMessagesHistory.Select(c => new ChatMessage(c.Role is AiChatMessageRole.Assistant ? ChatRole.Assistant : ChatRole.User, c.Content))];
@@ -69,7 +71,8 @@ public partial class AppChatbot
 
         supportSystemPrompt = supportSystemPrompt
             .Replace("{{UserCulture}}", culture?.NativeName ?? "English")
-            .Replace("{{DeviceInfo}}", deviceInfo ?? "Generic Device");
+            .Replace("{{DeviceInfo}}", deviceInfo ?? "Generic Device")
+            .Replace("{{SignalRConnectionId}}", signalRConnectionId ?? "");
     }
 
     /// <summary>
@@ -117,7 +120,7 @@ public partial class AppChatbot
                 await responseChannel.Writer.WriteAsync(result, cancellationToken);
             }
 
-            await responseChannel.Writer.WriteAsync(SharedChatProcessMessages.MESSAGE_RPOCESS_SUCCESS, cancellationToken);
+            await responseChannel.Writer.WriteAsync(SharedPubSubMessages.MESSAGE_RPOCESS_SUCCESS, cancellationToken);
 
             if (generateFollowUpSuggestions)
             {
@@ -134,7 +137,7 @@ public partial class AppChatbot
         catch (Exception exp)
         {
             logger.LogError(exp, "Error processing message in chatbot service");
-            await responseChannel.Writer.WriteAsync(SharedChatProcessMessages.MESSAGE_RPOCESS_ERROR, cancellationToken);
+            await responseChannel.Writer.WriteAsync(SharedPubSubMessages.MESSAGE_RPOCESS_ERROR, cancellationToken);
         }
         finally
         {
@@ -162,6 +165,26 @@ public partial class AppChatbot
                     .LogError("Chat reported issue: User email: {emailAddress}, Conversation history: {conversationHistory}", emailAddress, conversationHistory);
 
             }, name: "SaveUserEmailAndConversationHistory", description: "Saves the user's email address and the conversation history for future reference. Use this tool when the user provides their email address during the conversation. Parameters: emailAddress (string), conversationHistory (string)"),
+
+
+            AIFunctionFactory.Create(async ([Required, Description("page Url")] string pageUrl,
+                [Required, Description("SignalR connection id")] string signalRConnectionId) =>
+            {
+                if (cancellationToken.IsCancellationRequested)
+                    return;
+
+                if (string.IsNullOrEmpty(signalRConnectionId))
+                    return;
+
+                await using var scope = serviceProvider.CreateAsyncScope();
+
+                await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
+                    .Clients.Client(signalRConnectionId)
+                    .SendAsync(SharedPubSubMessages.NAVIGATE_TO, pageUrl, cancellationToken);
+
+            }, name: "NavigateToPage", description: "Navigates the user to a specific page within the application. Use this tool when the user requests to go to a particular section or feature of the app."),
+
+
             //#if (module == "Sales")
             //#if (database == "PostgreSQL" || database == "SqlServer")
             AIFunctionFactory.Create(async ([Required, Description("Concise summary of these user requirements")] string userNeeds,
