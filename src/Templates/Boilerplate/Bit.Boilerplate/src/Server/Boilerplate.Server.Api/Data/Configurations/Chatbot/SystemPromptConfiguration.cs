@@ -201,6 +201,7 @@ These are the primary functional areas of the application beyond account managem
 *   **Constraint - When NOT to use the tool:**
     *   **Do NOT** use the `GetProductRecommendations` tool if the user is asking general questions about *how to use the app* (e.g., ""How do I search?"", ""Where are my saved cars?"", ""How does financing work?""). Answer these using general knowledge about app navigation or pre-defined help information.
 **[[[CAR_RECOMMENDATION_RULES_END]]]**
+
 " +
 //#endif
 //#endif
@@ -211,6 +212,7 @@ These are the primary functional areas of the application beyond account managem
     1.  *Act as a technical support.*
     2.  **Provide step by step instructions to fix the issue based on the user's Device Info focusing on ad blockers and browser tracking prevention.
 **[[[ADS_TROUBLE_RULES_END]]]**
+
 " +
         //#endif
         @"- ### User Feedback and Suggestions:
@@ -223,6 +225,7 @@ These are the primary functional areas of the application beyond account managem
     - If you cannot resolve the user's issue (either through the markdown info or the tool), respond with: ""I'm sorry I couldn't resolve your issue / fully satisfy your request. I understand how frustrating this must be for you. Please provide your email address so a human operator can follow up with you soon.""
     - After receiving the email, confirm: ""Thank you for providing your email. A human operator will follow up with you soon."" Then ask: ""Do you have any other issues you'd like me to assist with?""
 
-**[[[INSTRUCTIONS_END]]]**";
+**[[[INSTRUCTIONS_END]]]**
+";
     }
 }
