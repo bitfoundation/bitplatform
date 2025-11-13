@@ -205,6 +205,70 @@ public partial class AppChatbot
             }, name: "NavigateToPage", description: "Navigates the user to a specific page within the application. Use this tool when the user requests to go to a particular section or feature of the app."),
 
 
+            AIFunctionFactory.Create(async ([Required, Description("Culture LCID (e.g., 1033 for en-US, 1065 for fa-IR)")] int cultureLcid,
+                [Required, Description("SignalR connection id")] string signalRConnectionId) =>
+            {
+                if (cancellationToken.IsCancellationRequested)
+                    return null;
+
+                if (string.IsNullOrEmpty(signalRConnectionId))
+                    return "There's no access to your app on your device";
+
+                await using var scope = serviceProvider.CreateAsyncScope();
+
+                try
+                {
+                    var culture = CultureInfo.GetCultureInfo(cultureLcid);
+
+                    if (CultureInfoManager.SupportedCultures.All(c => c.Culture.LCID != cultureLcid))
+                        return $"The requested culture is not supported. Available cultures: {string.Join(", ", CultureInfoManager.SupportedCultures.Select(c => c.Culture.NativeName))}";
+
+                    _ = await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
+                        .Clients.Client(signalRConnectionId)
+                        .InvokeAsync<bool>(SharedPubSubMessages.CHANGE_CULTURE, cultureLcid, cancellationToken);
+
+                    return "Culture/Language changed successfully";
+                }
+                catch(Exception exp)
+                {
+                    serviceProvider.GetRequiredService<ServerExceptionHandler>().Handle(exp);
+                    return "Failed to change culture/language";
+                }
+
+            }, name: "SetCulture", description: "Changes the user's culture/language setting. Use this tool when the user requests to change the app language. Common LCIDs: 1033=en-US, 1065=fa-IR, 1053=sv-SE, 2057=en-GB, 1043=nl-NL, 1081=hi-IN, 2052=zh-CN, 3082=es-ES, 1036=fr-FR, 1025=ar-SA, 1031=de-DE."),
+
+
+            AIFunctionFactory.Create(async ([Required, Description("Theme name: 'light' or 'dark'")] string theme,
+                [Required, Description("SignalR connection id")] string signalRConnectionId) =>
+            {
+                if (cancellationToken.IsCancellationRequested)
+                    return null;
+
+                if (string.IsNullOrEmpty(signalRConnectionId))
+                    return "There's no access to your app on your device";
+
+                if (theme != "light" && theme != "dark")
+                    return "Invalid theme. Use 'light' or 'dark'.";
+
+                await using var scope = serviceProvider.CreateAsyncScope();
+
+                try
+                {
+                    _ = await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
+                        .Clients.Client(signalRConnectionId)
+                        .InvokeAsync<bool>(SharedPubSubMessages.CHANGE_THEME, theme, cancellationToken);
+
+                    return $"Theme changed to {theme} successfully";
+                }
+                catch(Exception exp)
+                {
+                    serviceProvider.GetRequiredService<ServerExceptionHandler>().Handle(exp);
+                    return "Failed to change theme";
+                }
+
+            }, name: "SetTheme", description: "Changes the user's theme preference between light and dark mode. Use this tool when the user requests to change the app theme or appearance."),
+
+
             //#if (module == "Sales")
             //#if (database == "PostgreSQL" || database == "SqlServer")
             AIFunctionFactory.Create(async ([Required, Description("Concise summary of these user requirements")] string userNeeds,

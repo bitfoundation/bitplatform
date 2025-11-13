@@ -23,6 +23,8 @@ public partial class AppClientCoordinator : AppComponentBase
     //#if (signalR == true)
     [AutoInject] private Notification notification = default!;
     [AutoInject] private HubConnection hubConnection = default!;
+    [AutoInject] private ThemeService themeService = default!;
+    [AutoInject] private CultureService cultureService = default!;
     //#endif
     //#if (appInsights == true)
     [AutoInject] private IApplicationInsights appInsights = default!;
@@ -235,6 +237,27 @@ public partial class AppClientCoordinator : AppComponentBase
         signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.NAVIGATE_TO, async (string url) =>
         {
             NavigationManager.NavigateTo(url);
+            return true;
+        }));
+
+        hubConnection.Remove(SharedPubSubMessages.CHANGE_CULTURE);
+        signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.CHANGE_CULTURE, async (int cultureLcid) =>
+        {
+            var culture = CultureInfo.GetCultureInfo(cultureLcid);
+            await cultureService.ChangeCulture(culture.Name);
+            return true;
+        }));
+
+        hubConnection.Remove(SharedPubSubMessages.CHANGE_THEME);
+        signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.CHANGE_THEME, async (string requestedTheme) =>
+        {
+            var currentTheme = (await themeService.GetCurrentTheme()).ToString();
+
+            if (string.Equals(currentTheme, requestedTheme) is false)
+            {
+                await themeService.ToggleTheme();
+            }
+
             return true;
         }));
 

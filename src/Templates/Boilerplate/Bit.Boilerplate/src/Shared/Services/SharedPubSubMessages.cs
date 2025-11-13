@@ -55,6 +55,16 @@ public partial class SharedPubSubMessages
     public const string NAVIGATE_TO = nameof(NAVIGATE_TO);
 
     /// <summary>
+    /// Using this, server can change the client's culture/language.
+    /// </summary>
+    public const string CHANGE_CULTURE = nameof(CHANGE_CULTURE);
+
+    /// <summary>
+    /// Using this, server can change the client's theme (light/dark).
+    /// </summary>
+    public const string CHANGE_THEME = nameof(CHANGE_THEME);
+
+    /// <summary>
     /// This would let the client know that a chat bot encountered an error while processing the user's message.
     /// </summary>
     public const string MESSAGE_RPOCESS_ERROR = nameof(MESSAGE_RPOCESS_ERROR);
