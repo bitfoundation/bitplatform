@@ -91,7 +91,7 @@ public partial class AppClientCoordinator : AppComponentBase
             NavigationManager.LocationChanged += NavigationManager_LocationChanged;
             AuthManager.AuthenticationStateChanged += AuthenticationStateChanged;
             //#if (signalR == true)
-            SubscribeToSignalREventsMessages();
+            SubscribeToSignalRSharedPubSubMessages();
             //#endif
             await PropagateAuthState(firstRun: true, AuthenticationStateTask);
         }
@@ -175,7 +175,7 @@ public partial class AppClientCoordinator : AppComponentBase
     }
 
     //#if (signalR == true)
-    private void SubscribeToSignalREventsMessages()
+    private void SubscribeToSignalRSharedPubSubMessages()
     {
         hubConnection.Remove(SharedPubSubMessages.SHOW_MESSAGE);
         signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.SHOW_MESSAGE, async (string message, Dictionary<string, string?>? data) =>
@@ -215,12 +215,14 @@ public partial class AppClientCoordinator : AppComponentBase
         {
             logger.LogInformation("SignalR Message {Message} received from server to publish.", message);
             PubSubService.Publish(message, payload);
+            return true;
         }));
 
         hubConnection.Remove(SharedPubSubMessages.EXCEPTION_THROWN);
         signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.EXCEPTION_THROWN, async (AppProblemDetails appProblemDetails) =>
         {
             ExceptionHandler.Handle(appProblemDetails, displayKind: ExceptionDisplayKind.NonInterrupting);
+            return true;
         }));
 
         hubConnection.Remove(SharedPubSubMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE);
@@ -233,6 +235,7 @@ public partial class AppClientCoordinator : AppComponentBase
         signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.NAVIGATE_TO, async (string url) =>
         {
             NavigationManager.NavigateTo(url);
+            return true;
         }));
 
         hubConnection.Closed += HubConnectionStateChange;

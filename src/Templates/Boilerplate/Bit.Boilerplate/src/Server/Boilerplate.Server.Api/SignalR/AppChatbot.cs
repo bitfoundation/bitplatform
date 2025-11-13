@@ -154,15 +154,25 @@ public partial class AppChatbot
         {
             AIFunctionFactory.Create(async ([Required] string emailAddress, string conversationHistory) =>
             {
-                if (cancellationToken.IsCancellationRequested)
-                    return;
+                try
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                        return null;
 
-                await using var scope = serviceProvider.CreateAsyncScope();
+                    await using var scope = serviceProvider.CreateAsyncScope();
 
-                // Ideally, store these in a CRM or app database,
-                // but for now, we'll log them!
-                scope.ServiceProvider.GetRequiredService<ILogger<IChatClient>>()
-                    .LogError("Chat reported issue: User email: {emailAddress}, Conversation history: {conversationHistory}", emailAddress, conversationHistory);
+                    // Ideally, store these in a CRM or app database,
+                    // but for now, we'll log them!
+                    scope.ServiceProvider.GetRequiredService<ILogger<IChatClient>>()
+                        .LogError("Chat reported issue: User email: {emailAddress}, Conversation history: {conversationHistory}", emailAddress, conversationHistory);
+
+                    return "User email and conversation history saved successfully.";
+                }
+                catch (Exception exp)
+                {
+                    serviceProvider.GetRequiredService<ServerExceptionHandler>().Handle(exp);
+                    return "Failed to save user email and conversation history.";
+                }
 
             }, name: "SaveUserEmailAndConversationHistory", description: "Saves the user's email address and the conversation history for future reference. Use this tool when the user provides their email address during the conversation. Parameters: emailAddress (string), conversationHistory (string)"),
 
@@ -171,16 +181,26 @@ public partial class AppChatbot
                 [Required, Description("SignalR connection id")] string signalRConnectionId) =>
             {
                 if (cancellationToken.IsCancellationRequested)
-                    return;
+                    return null;
 
                 if (string.IsNullOrEmpty(signalRConnectionId))
-                    return;
+                    return "There's no access to your app on your device";
 
                 await using var scope = serviceProvider.CreateAsyncScope();
 
-                await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
-                    .Clients.Client(signalRConnectionId)
-                    .SendAsync(SharedPubSubMessages.NAVIGATE_TO, pageUrl, cancellationToken);
+                try
+                {
+                    _ = await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
+                        .Clients.Client(signalRConnectionId)
+                        .InvokeAsync<bool>(SharedPubSubMessages.NAVIGATE_TO, pageUrl, cancellationToken);
+
+                    return "Navigation completed";
+                }
+                catch(Exception exp)
+                {
+                    serviceProvider.GetRequiredService<ServerExceptionHandler>().Handle(exp);
+                    return "Navigation failed";
+                }
 
             }, name: "NavigateToPage", description: "Navigates the user to a specific page within the application. Use this tool when the user requests to go to a particular section or feature of the app."),
 

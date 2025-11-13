@@ -184,21 +184,6 @@ The `AppHub` provides enhanced messaging capabilities beyond basic SignalR. The 
 
 ### Message Types
 
-#### SignalREvents (Server-to-Client)
-
-**Location**: [`src/Shared/Services/SharedPubSubMessages.cs`](/src/Shared/Services/SharedPubSubMessages.cs)
-
-These are messages sent **from server to client**:
-
-```csharp
-public static partial class SignalREvents
-{
-    public const string PUBLISH_MESSAGE = nameof(PUBLISH_MESSAGE);
-    public const string SHOW_MESSAGE = nameof(SHOW_MESSAGE);
-    public const string EXCEPTION_THROWN = nameof(EXCEPTION_THROWN);
-}
-```
-
 **Key Message Types**:
 
 1. **`PUBLISH_MESSAGE`**: Bridges SignalR and PubSubService
@@ -234,13 +219,72 @@ Each user session tracks its **SignalR connection ID** in the database. This ena
 
 ```csharp
 // From UserController.cs - RevokeSession method
-await appHubContext.Clients.Client(userSession.SignalRConnectionId)
-    .SendAsync(SignalREvents.SHOW_MESSAGE, message, null, cancellationToken);
+_ = await appHubContext.Clients.Client(userSession.SignalRConnectionId)
+    .InvokeAsync<bool>(SharedPubSubMessages.SHOW_MESSAGE, message, null, cancellationToken);
 ```
 
 This ensures the corresponding browser tab or app immediately:
 - Clears its access/refresh tokens from storage
 - Navigates to the sign-in page automatically
+
+### SendAsync vs InvokeAsync
+
+Understanding when to use `SendAsync` vs `InvokeAsync` is crucial for reliable server-to-client communication:
+
+#### When to Use InvokeAsync
+
+Use `InvokeAsync` when:
+- The server is sending a message to a **specific SignalR connection ID**
+- It's **important to know** if the message arrived on the client side or not
+- You need to wait for a response from the client
+- You need confirmation that the operation completed successfully
+
+**Example**:
+
+```csharp
+// Server needs to know if the message was successfully shown to the user
+var messageShown = await appHubContext.Clients.Client(userSession.SignalRConnectionId)
+    .InvokeAsync<bool>(SharedPubSubMessages.SHOW_MESSAGE, message, null, cancellationToken);
+
+if (messageShown)
+{
+    // Message was successfully shown to the user
+}
+```
+
+#### When to Use SendAsync
+
+Use `SendAsync` when:
+- Broadcasting to multiple clients (e.g., `Clients.All()`, `Clients.Group()`)
+- You don't need confirmation of delivery
+- Fire-and-forget messaging is acceptable
+
+**Example**:
+
+```csharp
+// Notify all authenticated clients - no need to wait for confirmation
+await appHubContext.Clients.Group("AuthenticatedClients")
+    .SendAsync(SharedPubSubMessages.PUBLISH_MESSAGE, 
+               SharedPubSubMessages.DASHBOARD_DATA_CHANGED, 
+               null, 
+               cancellationToken);
+```
+
+#### Making InvokeAsync Work
+
+For `InvokeAsync` to work properly, the client-side `hubConnection.On` listeners (located in `AppClientCoordinator`) must return a value (typically `true`) to acknowledge receipt:
+
+```csharp
+// Client-side in AppClientCoordinator.cs
+hubConnection.On<string, Dictionary<string, string?>?, bool>(SharedPubSubMessages.SHOW_MESSAGE, async (message, data) =>
+{
+    logger.LogInformation("SignalR Message {Message} received from server to show.", message);
+    
+    // ... show message logic ...
+    
+    return true; // This return value enables InvokeAsync on the server
+});
+```
 
 ### SignalR Hub Configuration
 
@@ -284,7 +328,7 @@ The **AppClientCoordinator** component is responsible for coordinating all messa
 #### SHOW_MESSAGE Event
 
 ```csharp
-hubConnection.On<string, Dictionary<string, string?>?, bool>(SignalREvents.SHOW_MESSAGE, async (message, data) =>
+hubConnection.On<string, Dictionary<string, string?>?, bool>(SharedPubSubMessages.SHOW_MESSAGE, async (message, data) =>
 {
     logger.LogInformation("SignalR Message {Message} received from server to show.", message);
     
@@ -303,8 +347,8 @@ This event handler:
 ```csharp
 if (userSession.SignalRConnectionId != null)
 {
-    await appHubContext.Clients.Client(userSession.SignalRConnectionId)
-        .SendAsync(SignalREvents.SHOW_MESSAGE, 
+    _ = await appHubContext.Clients.Client(userSession.SignalRConnectionId)
+        .InvokeAsync<bool>(SharedPubSubMessages.SHOW_MESSAGE, 
                    (string)Localizer[nameof(AppStrings.TestNotificationMessage2)], 
                    null, 
                    cancellationToken);
@@ -314,10 +358,11 @@ if (userSession.SignalRConnectionId != null)
 #### PUBLISH_MESSAGE Event
 
 ```csharp
-hubConnection.On<string, object?>(SignalREvents.PUBLISH_MESSAGE, async (message, payload) =>
+hubConnection.On(SharedPubSubMessages.PUBLISH_MESSAGE, async (string message, object? payload) =>
 {
     logger.LogInformation("SignalR Message {Message} received from server to publish.", message);
     PubSubService.Publish(message, payload);
+    return true;
 });
 ```
 
@@ -326,9 +371,10 @@ This bridges **SignalR** and **PubSubService**, allowing server-side code to pub
 #### EXCEPTION_THROWN Event
 
 ```csharp
-hubConnection.On<AppProblemDetails>(SignalREvents.EXCEPTION_THROWN, async (appProblemDetails) =>
+hubConnection.On(SharedPubSubMessages.EXCEPTION_THROWN, async (AppProblemDetails appProblemDetails) =>
 {
     ExceptionHandler.Handle(appProblemDetails, displayKind: ExceptionDisplayKind.NonInterrupting);
+    return true;
 });
 ```
 
@@ -566,7 +612,7 @@ private async Task PublishDashboardDataChanged(CancellationToken cancellationTok
 {
     // Notify all authenticated clients
     await appHubContext.Clients.Group("AuthenticatedClients")
-        .SendAsync(SignalREvents.PUBLISH_MESSAGE, 
+        .SendAsync(SharedPubSubMessages.PUBLISH_MESSAGE, 
                    SharedPubSubMessages.DASHBOARD_DATA_CHANGED, 
                    null, 
                    cancellationToken);

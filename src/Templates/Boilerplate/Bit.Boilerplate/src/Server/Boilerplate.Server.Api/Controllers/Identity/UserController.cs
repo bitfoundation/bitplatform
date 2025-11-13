@@ -89,7 +89,8 @@ public partial class UserController : AppControllerBase, IUserController
         // Check out AppHub's comments for more info.
         if (userSession.SignalRConnectionId is not null)
         {
-            await appHubContext.Clients.Client(userSession.SignalRConnectionId).SendAsync(SharedPubSubMessages.PUBLISH_MESSAGE, SharedPubSubMessages.SESSION_REVOKED, null, cancellationToken);
+            await appHubContext.Clients.Client(userSession.SignalRConnectionId)
+                .SendAsync(SharedPubSubMessages.PUBLISH_MESSAGE, SharedPubSubMessages.SESSION_REVOKED, null, cancellationToken);
         }
         //#endif
     }
