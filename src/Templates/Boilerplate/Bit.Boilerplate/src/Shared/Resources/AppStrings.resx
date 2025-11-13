@@ -1140,7 +1140,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>Greetings! I'm here to make your app experience awesome! Got a question or need a hand?</value>
   </data>
     <data name="AiChatPanelPrompt1" xml:space="preserve">
-    <value>How can I reset my password?</value>
+    <value>Open reset password page and tell me how it works</value>
   </data>
     <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>How can I install the PWA version of the app?</value>
