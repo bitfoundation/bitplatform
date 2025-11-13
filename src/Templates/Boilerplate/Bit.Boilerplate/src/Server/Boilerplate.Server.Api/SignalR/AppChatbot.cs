@@ -3,6 +3,7 @@ using System.Text;
 using System.ComponentModel;
 using System.Threading.Channels;
 using Boilerplate.Shared.Dtos.Chatbot;
+using Boilerplate.Shared.Dtos.Diagnostic;
 using Boilerplate.Server.Api.Services;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.AspNetCore.SignalR;
@@ -39,18 +40,16 @@ public partial class AppChatbot
     /// Starts the chat session with history and system prompt
     /// </summary>
     public async Task Start(
-        List<AiChatMessage> chatMessagesHistory,
-        int? cultureId,
-        string? deviceInfo,
+        StartChatbotRequest request,
         string? signalRConnectionId,
         CancellationToken cancellationToken)
     {
-        chatMessages = [.. chatMessagesHistory.Select(c => new ChatMessage(c.Role is AiChatMessageRole.Assistant ? ChatRole.Assistant : ChatRole.User, c.Content))];
+        chatMessages = [.. request.ChatMessagesHistory.Select(c => new ChatMessage(c.Role is AiChatMessageRole.Assistant ? ChatRole.Assistant : ChatRole.User, c.Content))];
 
         CultureInfo? culture = null;
-        if (cultureId is not null && CultureInfoManager.InvariantGlobalization is false)
+        if (request.CultureId is not null && CultureInfoManager.InvariantGlobalization is false)
         {
-            culture = CultureInfo.GetCultureInfo(cultureId.Value);
+            culture = CultureInfo.GetCultureInfo(request.CultureId.Value);
         }
 
         supportSystemPrompt = await cache.GetOrCreateAsync(
@@ -71,8 +70,9 @@ public partial class AppChatbot
 
         supportSystemPrompt = supportSystemPrompt
             .Replace("{{UserCulture}}", culture?.NativeName ?? "English")
-            .Replace("{{DeviceInfo}}", deviceInfo ?? "Generic Device")
-            .Replace("{{SignalRConnectionId}}", signalRConnectionId ?? "");
+            .Replace("{{DeviceInfo}}", request.DeviceInfo ?? "Generic Device")
+            .Replace("{{SignalRConnectionId}}", signalRConnectionId ?? "")
+            .Replace("{{UserTimeZoneId}}", request.TimeZoneId ?? "Unknown");
     }
 
     /// <summary>
@@ -152,156 +152,15 @@ public partial class AppChatbot
     {
         var tools = new List<AIFunction>
         {
-            AIFunctionFactory.Create(async ([Required] string emailAddress, string conversationHistory) =>
-            {
-                try
-                {
-                    if (cancellationToken.IsCancellationRequested)
-                        return null;
-
-                    await using var scope = serviceProvider.CreateAsyncScope();
-
-                    // Ideally, store these in a CRM or app database,
-                    // but for now, we'll log them!
-                    scope.ServiceProvider.GetRequiredService<ILogger<IChatClient>>()
-                        .LogError("Chat reported issue: User email: {emailAddress}, Conversation history: {conversationHistory}", emailAddress, conversationHistory);
-
-                    return "User email and conversation history saved successfully.";
-                }
-                catch (Exception exp)
-                {
-                    serviceProvider.GetRequiredService<ServerExceptionHandler>().Handle(exp);
-                    return "Failed to save user email and conversation history.";
-                }
-
-            }, name: "SaveUserEmailAndConversationHistory", description: "Saves the user's email address and the conversation history for future reference. Use this tool when the user provides their email address during the conversation. Parameters: emailAddress (string), conversationHistory (string)"),
-
-
-            AIFunctionFactory.Create(async ([Required, Description("page Url")] string pageUrl,
-                [Required, Description("SignalR connection id")] string signalRConnectionId) =>
-            {
-                if (cancellationToken.IsCancellationRequested)
-                    return null;
-
-                if (string.IsNullOrEmpty(signalRConnectionId))
-                    return "There's no access to your app on your device";
-
-                await using var scope = serviceProvider.CreateAsyncScope();
-
-                try
-                {
-                    _ = await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
-                        .Clients.Client(signalRConnectionId)
-                        .InvokeAsync<bool>(SharedPubSubMessages.NAVIGATE_TO, pageUrl, cancellationToken);
-
-                    return "Navigation completed";
-                }
-                catch(Exception exp)
-                {
-                    serviceProvider.GetRequiredService<ServerExceptionHandler>().Handle(exp);
-                    return "Navigation failed";
-                }
-
-            }, name: "NavigateToPage", description: "Navigates the user to a specific page within the application. Use this tool when the user requests to go to a particular section or feature of the app."),
-
-
-            AIFunctionFactory.Create(async ([Required, Description("Culture LCID (e.g., 1033 for en-US, 1065 for fa-IR)")] int cultureLcid,
-                [Required, Description("SignalR connection id")] string signalRConnectionId) =>
-            {
-                if (cancellationToken.IsCancellationRequested)
-                    return null;
-
-                if (string.IsNullOrEmpty(signalRConnectionId))
-                    return "There's no access to your app on your device";
-
-                await using var scope = serviceProvider.CreateAsyncScope();
-
-                try
-                {
-                    var culture = CultureInfo.GetCultureInfo(cultureLcid);
-
-                    if (CultureInfoManager.SupportedCultures.All(c => c.Culture.LCID != cultureLcid))
-                        return $"The requested culture is not supported. Available cultures: {string.Join(", ", CultureInfoManager.SupportedCultures.Select(c => c.Culture.NativeName))}";
-
-                    _ = await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
-                        .Clients.Client(signalRConnectionId)
-                        .InvokeAsync<bool>(SharedPubSubMessages.CHANGE_CULTURE, cultureLcid, cancellationToken);
-
-                    return "Culture/Language changed successfully";
-                }
-                catch(Exception exp)
-                {
-                    serviceProvider.GetRequiredService<ServerExceptionHandler>().Handle(exp);
-                    return "Failed to change culture/language";
-                }
-
-            }, name: "SetCulture", description: "Changes the user's culture/language setting. Use this tool when the user requests to change the app language. Common LCIDs: 1033=en-US, 1065=fa-IR, 1053=sv-SE, 2057=en-GB, 1043=nl-NL, 1081=hi-IN, 2052=zh-CN, 3082=es-ES, 1036=fr-FR, 1025=ar-SA, 1031=de-DE."),
-
-
-            AIFunctionFactory.Create(async ([Required, Description("Theme name: 'light' or 'dark'")] string theme,
-                [Required, Description("SignalR connection id")] string signalRConnectionId) =>
-            {
-                if (cancellationToken.IsCancellationRequested)
-                    return null;
-
-                if (string.IsNullOrEmpty(signalRConnectionId))
-                    return "There's no access to your app on your device";
-
-                if (theme != "light" && theme != "dark")
-                    return "Invalid theme. Use 'light' or 'dark'.";
-
-                await using var scope = serviceProvider.CreateAsyncScope();
-
-                try
-                {
-                    _ = await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
-                        .Clients.Client(signalRConnectionId)
-                        .InvokeAsync<bool>(SharedPubSubMessages.CHANGE_THEME, theme, cancellationToken);
-
-                    return $"Theme changed to {theme} successfully";
-                }
-                catch(Exception exp)
-                {
-                    serviceProvider.GetRequiredService<ServerExceptionHandler>().Handle(exp);
-                    return "Failed to change theme";
-                }
-
-            }, name: "SetTheme", description: "Changes the user's theme preference between light and dark mode. Use this tool when the user requests to change the app theme or appearance."),
-
-
+            AIFunctionFactory.Create(GetCurrentDateTime),
+            AIFunctionFactory.Create(SaveUserEmailAndConversationHistory),
+            AIFunctionFactory.Create(NavigateToPage),
+            AIFunctionFactory.Create(SetCulture),
+            AIFunctionFactory.Create(SetTheme),
+            AIFunctionFactory.Create(CheckLastError),
             //#if (module == "Sales")
             //#if (database == "PostgreSQL" || database == "SqlServer")
-            AIFunctionFactory.Create(async ([Required, Description("Concise summary of these user requirements")] string userNeeds,
-                [Description("Car manufacturer's name (Optional)")] string? manufacturer,
-                [Description("Car price below this value (Optional)")] decimal? maxPrice,
-                [Description("Car price above this value (Optional)")] decimal? minPrice) =>
-            {
-                if (cancellationToken.IsCancellationRequested)
-                    return null;
-
-                await using var scope = serviceProvider.CreateAsyncScope();
-                var productEmbeddingService = scope.ServiceProvider.GetRequiredService<ProductEmbeddingService>();
-                var searchQuery = string.IsNullOrWhiteSpace(manufacturer)
-                    ? userNeeds
-                    : $"**{manufacturer}** {userNeeds}";
-                var recommendedProducts = await (await productEmbeddingService.SearchProducts(searchQuery, cancellationToken))
-                    .WhereIf(maxPrice.HasValue, p => p.Price <= maxPrice!.Value)
-                    .WhereIf(minPrice.HasValue, p => p.Price >= minPrice!.Value)
-                    .Take(10)
-                    .Project()
-                    .Select(p => new
-                    {
-                        p.Name,
-                        p.PageUrl,
-                        Manufacturer = p.CategoryName,
-                        Price = p.FormattedPrice,
-                        Description = p.DescriptionText,
-                        PreviewImageUrl = p.GetPrimaryMediumImageUrl(serverApiAddress!) ?? "_content/Boilerplate.Client.Core/images/car_placeholder.png"
-                    })
-                    .ToArrayAsync(cancellationToken);
-
-                return recommendedProducts;
-            }, name: "GetProductRecommendations", description: "This tool searches for and recommends products based on a detailed description of the user's needs and preferences and returns recommended products.")
+            AIFunctionFactory.Create(GetProductRecommendations)
             //#endif
             //#endif
         };
@@ -310,6 +169,221 @@ public partial class AppChatbot
         configuration.GetRequiredSection("AI:ChatOptions").Bind(chatOptions);
         return chatOptions;
     }
+
+    /// <summary>
+    /// Returns the current date and time based on the user's timezone.
+    /// </summary>
+    [Description("Returns the current date and time based on the user's timezone.")]
+    private string GetCurrentDateTime([Required, Description("User's timezone id")] string timeZoneId)
+    {
+        try
+        {
+            var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+
+            var userDateTime = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, timeZone);
+
+            return $"Current date/time in user's timezone ({timeZoneId}) is {userDateTime:o}";
+        }
+        catch
+        {
+            return $"Current date/time in utc is {DateTimeOffset.UtcNow:o}";
+        }
+    }
+
+    /// <summary>
+    /// Saves the user's email address and the conversation history for future reference.
+    /// </summary>
+    [Description("Saves the user's email address and the conversation history for future reference. Use this tool when the user provides their email address during the conversation.")]
+    private async Task<string?> SaveUserEmailAndConversationHistory(
+        [Required, Description("User's email address")] string emailAddress,
+        [Required, Description("Full conversation history")] string conversationHistory)
+    {
+        try
+        {
+            await using var scope = serviceProvider.CreateAsyncScope();
+
+            // Ideally, store these in a CRM or app database,
+            // but for now, we'll log them!
+            scope.ServiceProvider.GetRequiredService<ILogger<IChatClient>>()
+                .LogError("Chat reported issue: User email: {emailAddress}, Conversation history: {conversationHistory}", emailAddress, conversationHistory);
+
+            return "User email and conversation history saved successfully.";
+        }
+        catch (Exception exp)
+        {
+            serviceProvider.GetRequiredService<ServerExceptionHandler>().Handle(exp);
+            return "Failed to save user email and conversation history.";
+        }
+    }
+
+    /// <summary>
+    /// Navigates the user to a specific page within the application.
+    /// </summary>
+    [Description("Navigates the user to a specific page within the application. Use this tool when the user requests to go to a particular section or feature of the app.")]
+    private async Task<string?> NavigateToPage(
+        [Required, Description("Page URL to navigate to")] string pageUrl,
+        [Required, Description("SignalR connection id")] string signalRConnectionId)
+    {
+        if (string.IsNullOrEmpty(signalRConnectionId))
+            return "There's no access to your app on your device";
+
+        await using var scope = serviceProvider.CreateAsyncScope();
+
+        try
+        {
+            _ = await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
+                .Clients.Client(signalRConnectionId)
+                .InvokeAsync<bool>(SharedPubSubMessages.NAVIGATE_TO, pageUrl, CancellationToken.None);
+
+            return "Navigation completed";
+        }
+        catch (Exception exp)
+        {
+            serviceProvider.GetRequiredService<ServerExceptionHandler>().Handle(exp);
+            return "Navigation failed";
+        }
+    }
+
+    /// <summary>
+    /// Changes the user's culture/language setting.
+    /// </summary>
+    [Description("Changes the user's culture/language setting. Use this tool when the user requests to change the app language. Common LCIDs: 1033=en-US, 1065=fa-IR, 1053=sv-SE, 2057=en-GB, 1043=nl-NL, 1081=hi-IN, 2052=zh-CN, 3082=es-ES, 1036=fr-FR, 1025=ar-SA, 1031=de-DE.")]
+    private async Task<string?> SetCulture(
+        [Required, Description("Culture LCID (e.g., 1033 for en-US, 1065 for fa-IR)")] int cultureLcid,
+        [Required, Description("SignalR connection id")] string signalRConnectionId)
+    {
+        if (string.IsNullOrEmpty(signalRConnectionId))
+            return "There's no access to your app on your device";
+
+        await using var scope = serviceProvider.CreateAsyncScope();
+
+        try
+        {
+            var culture = CultureInfo.GetCultureInfo(cultureLcid);
+
+            if (CultureInfoManager.SupportedCultures.All(c => c.Culture.LCID != cultureLcid))
+                return $"The requested culture is not supported. Available cultures: {string.Join(", ", CultureInfoManager.SupportedCultures.Select(c => c.Culture.NativeName))}";
+
+            _ = await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
+                .Clients.Client(signalRConnectionId)
+                .InvokeAsync<bool>(SharedPubSubMessages.CHANGE_CULTURE, cultureLcid, CancellationToken.None);
+
+            return "Culture/Language changed successfully";
+        }
+        catch (Exception exp)
+        {
+            serviceProvider.GetRequiredService<ServerExceptionHandler>().Handle(exp);
+            return "Failed to change culture/language";
+        }
+    }
+
+    /// <summary>
+    /// Changes the user's theme preference between light and dark mode.
+    /// </summary>
+    [Description("Changes the user's theme preference between light and dark mode. Use this tool when the user requests to change the app theme or appearance.")]
+    private async Task<string?> SetTheme(
+        [Required, Description("Theme name: 'light' or 'dark'")] string theme,
+        [Required, Description("SignalR connection id")] string signalRConnectionId)
+    {
+        if (string.IsNullOrEmpty(signalRConnectionId))
+            return "There's no access to your app on your device";
+
+        if (theme != "light" && theme != "dark")
+            return "Invalid theme. Use 'light' or 'dark'.";
+
+        await using var scope = serviceProvider.CreateAsyncScope();
+
+        try
+        {
+            _ = await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
+                .Clients.Client(signalRConnectionId)
+                .InvokeAsync<bool>(SharedPubSubMessages.CHANGE_THEME, theme, CancellationToken.None);
+
+            return $"Theme changed to {theme} successfully";
+        }
+        catch (Exception exp)
+        {
+            serviceProvider.GetRequiredService<ServerExceptionHandler>().Handle(exp);
+            return "Failed to change theme";
+        }
+    }
+
+    /// <summary>
+    /// Retrieves the last error that occurred on the user's device from the diagnostic logs.
+    /// </summary>
+    [Description("Retrieves the last error that occurred on the user's device from the diagnostic logs. Use this tool when troubleshooting user-reported issues, investigating application crashes, or when the user mentions something isn't working.")]
+    private async Task<string?> CheckLastError(
+        [Required, Description("SignalR connection id")] string signalRConnectionId)
+    {
+        if (string.IsNullOrEmpty(signalRConnectionId))
+            return "There's no access to your app on your device";
+
+        await using var scope = serviceProvider.CreateAsyncScope();
+
+        try
+        {
+            var lastError = await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
+                .Clients.Client(signalRConnectionId)
+                .InvokeAsync<DiagnosticLogDto?>(SharedPubSubMessages.UPLOAD_LAST_ERROR, CancellationToken.None);
+
+            if (lastError is null)
+                return "No errors found in the diagnostic logs.";
+
+            return lastError.ToString();
+        }
+        catch (Exception exp)
+        {
+            serviceProvider.GetRequiredService<ServerExceptionHandler>().Handle(exp);
+            return "Failed to retrieve error information from the device.";
+        }
+    }
+
+    //#if (module == "Sales")
+    //#if (database == "PostgreSQL" || database == "SqlServer")
+    /// <summary>
+    /// Searches for and recommends products based on user's needs and preferences.
+    /// </summary>
+    [Description("This tool searches for and recommends products based on a detailed description of the user's needs and preferences and returns recommended products.")]
+    private async Task<object?> GetProductRecommendations(
+        [Required, Description("Concise summary of user requirements")] string userNeeds,
+        [Description("Car manufacturer's name (Optional)")] string? manufacturer,
+        [Description("Car price below this value (Optional)")] decimal? maxPrice,
+        [Description("Car price above this value (Optional)")] decimal? minPrice)
+    {
+        await using var scope = serviceProvider.CreateAsyncScope();
+        var productEmbeddingService = scope.ServiceProvider.GetRequiredService<ProductEmbeddingService>();
+        var searchQuery = string.IsNullOrWhiteSpace(manufacturer)
+            ? userNeeds
+            : $"**{manufacturer}** {userNeeds}";
+
+        // Get serverApiAddress from current context
+        var httpContextAccessor = scope.ServiceProvider.GetService<IHttpContextAccessor>();
+        var context = httpContextAccessor?.HttpContext;
+        var request = context?.Request;
+        Uri? serverApiAddress = request != null
+            ? new Uri($"{request.Scheme}://{request.Host}")
+            : null;
+
+        var recommendedProducts = await (await productEmbeddingService.SearchProducts(searchQuery, context?.RequestAborted ?? default))
+            .WhereIf(maxPrice.HasValue, p => p.Price <= maxPrice!.Value)
+            .WhereIf(minPrice.HasValue, p => p.Price >= minPrice!.Value)
+            .Take(10)
+            .Project()
+            .Select(p => new
+            {
+                p.Name,
+                p.PageUrl,
+                Manufacturer = p.CategoryName,
+                Price = p.FormattedPrice,
+                Description = p.DescriptionText,
+                PreviewImageUrl = p.GetPrimaryMediumImageUrl(serverApiAddress!) ?? "_content/Boilerplate.Client.Core/images/car_placeholder.png"
+            })
+            .ToArrayAsync(context?.RequestAborted ?? default);
+
+        return recommendedProducts;
+    }
+    //#endif
+    //#endif
 
     /// <summary>
     /// Generate follow-up suggestions based on the conversation
@@ -327,7 +401,7 @@ public partial class AppChatbot
         chatOptions.ResponseFormat = ChatResponseFormat.Json;
         chatOptions.AdditionalProperties = new() { ["response_format"] = new { type = "json_object" } };
 
-        var followUpItems = await chatClient.GetResponseAsync<AiChatFollowUpList>([
+        var followUpItems = await chatClient!.GetResponseAsync<AiChatFollowUpList>([
             new(ChatRole.System, supportSystemPrompt),
             new(ChatRole.User, incomingMessage),
             new(ChatRole.Assistant, assistantResponse),

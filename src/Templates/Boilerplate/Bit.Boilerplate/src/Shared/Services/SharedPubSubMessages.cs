@@ -50,6 +50,11 @@ public partial class SharedPubSubMessages
     public const string UPLOAD_DIAGNOSTIC_LOGGER_STORE = nameof(UPLOAD_DIAGNOSTIC_LOGGER_STORE);
 
     /// <summary>
+    /// Using this, server would be able to know the last error that happened at client side.
+    /// </summary>
+    public const string UPLOAD_LAST_ERROR = nameof(UPLOAD_LAST_ERROR);
+
+    /// <summary>
     /// Using this, server can navigate the client to a specific page.
     /// </summary>
     public const string NAVIGATE_TO = nameof(NAVIGATE_TO);

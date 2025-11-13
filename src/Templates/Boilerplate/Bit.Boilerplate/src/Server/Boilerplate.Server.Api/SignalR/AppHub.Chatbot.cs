@@ -23,10 +23,7 @@ public partial class AppHub
     {
         try
         {
-            await chatbotService.Start(
-                request.ChatMessagesHistory,
-                request.CultureId,
-                request.DeviceInfo,
+            await chatbotService.Start(request,
                 Context.ConnectionId,
                 cancellationToken);
         }

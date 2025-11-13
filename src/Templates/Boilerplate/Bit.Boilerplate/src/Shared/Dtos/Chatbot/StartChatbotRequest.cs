@@ -2,9 +2,11 @@
 
 public class StartChatbotRequest
 {
-    public int CultureId { get; set; }
+    public int? CultureId { get; set; }
 
     public string? DeviceInfo { get; set; }
+
+    public string? TimeZoneId { get; set; }
 
     /// <summary>
     /// On chat restart (e.g., SignalR reconnection or chat panel close), 

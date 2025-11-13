@@ -164,6 +164,7 @@ public partial class AppAiChatPanel
                                                                          new StartChatbotRequest()
                                                                          {
                                                                              CultureId = CultureInfo.CurrentCulture.LCID,
+                                                                             TimeZoneId = TimeZoneInfo.Local.Id,
                                                                              DeviceInfo = TelemetryContext.Platform,
                                                                              ChatMessagesHistory = chatMessages,
                                                                              ServerApiAddress = AbsoluteServerAddress.GetAddress()

@@ -236,29 +236,44 @@ public partial class AppClientCoordinator : AppComponentBase
         hubConnection.Remove(SharedPubSubMessages.NAVIGATE_TO);
         signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.NAVIGATE_TO, async (string url) =>
         {
-            NavigationManager.NavigateTo(url);
+            await InvokeAsync(async () =>
+            {
+                NavigationManager.NavigateTo(url);
+            });
             return true;
         }));
 
         hubConnection.Remove(SharedPubSubMessages.CHANGE_CULTURE);
         signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.CHANGE_CULTURE, async (int cultureLcid) =>
         {
-            var culture = CultureInfo.GetCultureInfo(cultureLcid);
-            await cultureService.ChangeCulture(culture.Name);
+            await InvokeAsync(async () =>
+            {
+                var culture = CultureInfo.GetCultureInfo(cultureLcid);
+                await cultureService.ChangeCulture(culture.Name);
+            });
             return true;
         }));
 
         hubConnection.Remove(SharedPubSubMessages.CHANGE_THEME);
         signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.CHANGE_THEME, async (string requestedTheme) =>
         {
-            var currentTheme = (await themeService.GetCurrentTheme()).ToString();
-
-            if (string.Equals(currentTheme, requestedTheme) is false)
+            await InvokeAsync(async () =>
             {
-                await themeService.ToggleTheme();
-            }
+                var currentTheme = (await themeService.GetCurrentTheme()).ToString();
+
+                if (string.Equals(currentTheme, requestedTheme) is false)
+                {
+                    await themeService.ToggleTheme();
+                }
+            });
 
             return true;
+        }));
+
+        hubConnection.Remove(SharedPubSubMessages.UPLOAD_LAST_ERROR);
+        signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.UPLOAD_LAST_ERROR, async () =>
+        {
+            return DiagnosticLogger.Store.LastOrDefault(l => l.Level is LogLevel.Error or LogLevel.Critical);
         }));
 
         hubConnection.Closed += HubConnectionStateChange;

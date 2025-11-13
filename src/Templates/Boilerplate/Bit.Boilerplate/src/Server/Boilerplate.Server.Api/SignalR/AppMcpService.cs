@@ -18,11 +18,7 @@ public partial class AppMcpService
     /// </summary>
     [McpServerTool(Name = "bit_mcp")]
     public async Task<string> StartChat(
-        [Required, Description("The user's new message to send to the chatbot")] string newMessage,
-        [Description("Optional: Previous summarized conversation history")] List<AiChatMessage>? conversationHistory = null,
-        [Description("Optional: User's culture LCID (e.g., 1033 for en-US)")] int? cultureLcid = null,
-        [Description("Optional: Device information string (e.g., Google Chrome on Windows)")] string? deviceInfo = null,
-        [Description("Optional: SignalR connection id")] string? signalRConnectionId = null, // If the mcp caller somehow knows the user's SignalR connection id, it can passes it to use features AppChatbot provides such as navigating the user to a specific page.
+        StartMcpChatRequest request,
         McpServer server = default!,
         RequestContext<CallToolRequestParams> context = default!,
         AppChatbot chatBot = default!,
@@ -31,24 +27,22 @@ public partial class AppMcpService
     {
         // Start the chatbot session
         await chatBot.Start(
-            conversationHistory ?? [],
-            cultureLcid,
-            deviceInfo,
-            signalRConnectionId,
+            new()
+            {
+                ChatMessagesHistory = request.ConversationHistory,
+                CultureId = request.CultureLcid,
+                DeviceInfo = request.DeviceInfo,
+                TimeZoneId = request.TimeZoneId,
+                ServerApiAddress = httpContextAccessor.HttpContext?.Request?.GetBaseUrl(),
+            },
+            request.SignalRConnectionId,
             cancellationToken);
-
-        Uri? serverApiAddress = null;
-        if (httpContextAccessor.HttpContext is not null)
-        {
-            var request = httpContextAccessor.HttpContext.Request;
-            serverApiAddress = new Uri($"{request.Scheme}://{request.Host}");
-        }
 
         // Process the message and collect the response
         var responseTask = chatBot.ProcessMessageAsync(
             generateFollowUpSuggestions: false,
-            newMessage,
-            serverApiAddress,
+            request.NewMessage,
+            httpContextAccessor.HttpContext?.Request?.GetBaseUrl(),
             cancellationToken);
 
         var response = new System.Text.StringBuilder();
@@ -76,4 +70,28 @@ public partial class AppMcpService
 
         return response.ToString();
     }
+}
+
+public class StartMcpChatRequest
+{
+    [Required, Description("The user's new message to send to the chatbot")]
+    public string NewMessage { get; set; } = string.Empty;
+
+    [Description("Optional: Previous conversation history")]
+    public List<AiChatMessage> ConversationHistory { get; set; } = [];
+
+    [Description("Optional: User's culture LCID (e.g., 1033 for en-US)")]
+    public int? CultureLcid { get; set; }
+
+    [Description("Optional: Device information string (e.g., Google Chrome on Windows)")]
+    public string? DeviceInfo { get; set; }
+
+    /// <summary>
+    /// If the mcp caller somehow knows the user's SignalR connection id, it can passes it to use features AppChatbot provides such as navigating the user to a specific page.
+    /// </summary>
+    [Description("Optional: SignalR connection id")]
+    public string? SignalRConnectionId { get; set; }
+
+    [Description("Optional: User's time zone")]
+    public string? TimeZoneId { get; set; }
 }
