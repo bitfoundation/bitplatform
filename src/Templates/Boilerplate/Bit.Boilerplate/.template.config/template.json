@@ -584,7 +584,8 @@
                 {
                     "condition": "(database != PostgreSQL)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Api/Data/Configurations/PostgresDateTimeOffsetConverter.cs"
+                        "src/Server/Boilerplate.Server.Api/Data/Configurations/PostgresDateTimeOffsetConverter.cs",
+                        "src/Server/Boilerplate.Server.AppHost/Extensions/IResourceBuilderExtensions.cs"
                     ]
                 },
                 {
