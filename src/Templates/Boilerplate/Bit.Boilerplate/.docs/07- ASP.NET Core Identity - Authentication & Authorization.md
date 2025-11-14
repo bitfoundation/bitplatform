@@ -854,7 +854,7 @@ public async Task ResetPassword(ResetPasswordRequestDto request, CancellationTok
 * [How does a `refresh token` function in a Boilerplate project template?](https://deepwiki.com/search/how-does-a-refresh-token-funct_6a75fa66-ab98-4367-bd1a-24b081fbf88c)
 * [What would happen when I use [AuthorizedApi]](https://deepwiki.com/search/what-would-happen-when-i-use-a_c525d59d-5c55-489b-8f95-69f6df7c743d)
 * [Give me high level overview of social sign-in flow](https://deepwiki.com/search/give-me-high-level-overview-of_059d227a-0ffe-4077-9e01-ba9f61456a3f)
-* [Give me high level overview of two factor auth setup and usage flows]()
+* [Give me high level overview of two factor auth setup and usage flows](https://deepwiki.com/search/give-me-high-level-overview-of_1883503f-2e34-41ca-821a-1246d332990f)
 
 Ask your own question [here](https://wiki.bitplatform.dev)
 
