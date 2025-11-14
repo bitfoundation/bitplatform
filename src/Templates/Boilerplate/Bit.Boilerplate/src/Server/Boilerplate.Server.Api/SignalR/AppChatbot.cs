@@ -39,8 +39,8 @@ public partial class AppChatbot
     /// <summary>
     /// Starts the chat session with history and system prompt
     /// </summary>
-    public async Task Start(
-        StartChatbotRequest request,
+    public async Task StartChat(
+        StartChatRequest request,
         string? signalRConnectionId,
         CancellationToken cancellationToken)
     {
@@ -88,7 +88,7 @@ public partial class AppChatbot
     /// <summary>
     /// Process an incoming message and stream the AI response
     /// </summary>
-    public async Task ProcessMessageAsync(
+    public async Task ProcessNewMessage(
         bool generateFollowUpSuggestions,
         string incomingMessage,
         Uri? serverApiAddress,
@@ -120,7 +120,7 @@ public partial class AppChatbot
                 await responseChannel.Writer.WriteAsync(result, cancellationToken);
             }
 
-            await responseChannel.Writer.WriteAsync(SharedPubSubMessages.MESSAGE_RPOCESS_SUCCESS, cancellationToken);
+            await responseChannel.Writer.WriteAsync(SharedAppMessages.MESSAGE_RPOCESS_SUCCESS, cancellationToken);
 
             if (generateFollowUpSuggestions)
             {
@@ -137,7 +137,7 @@ public partial class AppChatbot
         catch (Exception exp)
         {
             logger.LogError(exp, "Error processing message in chatbot service");
-            await responseChannel.Writer.WriteAsync(SharedPubSubMessages.MESSAGE_RPOCESS_ERROR, cancellationToken);
+            await responseChannel.Writer.WriteAsync(SharedAppMessages.MESSAGE_RPOCESS_ERROR, cancellationToken);
         }
         finally
         {
@@ -233,7 +233,7 @@ public partial class AppChatbot
         {
             _ = await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
                 .Clients.Client(signalRConnectionId)
-                .InvokeAsync<bool>(SharedPubSubMessages.NAVIGATE_TO, pageUrl, CancellationToken.None);
+                .InvokeAsync<bool>(SharedAppMessages.NAVIGATE_TO, pageUrl, CancellationToken.None);
 
             return "Navigation completed";
         }
@@ -266,7 +266,7 @@ public partial class AppChatbot
 
             _ = await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
                 .Clients.Client(signalRConnectionId)
-                .InvokeAsync<bool>(SharedPubSubMessages.CHANGE_CULTURE, cultureLcid, CancellationToken.None);
+                .InvokeAsync<bool>(SharedAppMessages.CHANGE_CULTURE, cultureLcid, CancellationToken.None);
 
             return "Culture/Language changed successfully";
         }
@@ -297,7 +297,7 @@ public partial class AppChatbot
         {
             _ = await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
                 .Clients.Client(signalRConnectionId)
-                .InvokeAsync<bool>(SharedPubSubMessages.CHANGE_THEME, theme, CancellationToken.None);
+                .InvokeAsync<bool>(SharedAppMessages.CHANGE_THEME, theme, CancellationToken.None);
 
             return $"Theme changed to {theme} successfully";
         }
@@ -324,7 +324,7 @@ public partial class AppChatbot
         {
             var lastError = await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
                 .Clients.Client(signalRConnectionId)
-                .InvokeAsync<DiagnosticLogDto?>(SharedPubSubMessages.UPLOAD_LAST_ERROR, CancellationToken.None);
+                .InvokeAsync<DiagnosticLogDto?>(SharedAppMessages.UPLOAD_LAST_ERROR, CancellationToken.None);
 
             if (lastError is null)
                 return "No errors found in the diagnostic logs.";

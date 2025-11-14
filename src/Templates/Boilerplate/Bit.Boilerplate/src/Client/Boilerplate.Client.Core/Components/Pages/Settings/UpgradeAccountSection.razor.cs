@@ -68,6 +68,6 @@ public partial class UpgradeAccountSection
     private async Task HandleAdTrouble()
     {
         logger.LogWarning("User having trouble with ads");
-        PubSubService.Publish(ClientPubSubMessages.AD_HAVE_TROUBLE);
+        PubSubService.Publish(ClientAppMessages.AD_HAVE_TROUBLE);
     }
 }

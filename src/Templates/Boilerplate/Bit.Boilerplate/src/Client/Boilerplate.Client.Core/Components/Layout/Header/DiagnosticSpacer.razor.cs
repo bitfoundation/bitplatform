@@ -8,7 +8,7 @@ public partial class DiagnosticSpacer
         if (++clickCount == 7)
         {
             clickCount = 0;
-            PubSubService.Publish(ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL);
+            PubSubService.Publish(ClientAppMessages.SHOW_DIAGNOSTIC_MODAL);
         }
     }
 }

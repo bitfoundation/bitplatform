@@ -90,7 +90,7 @@ public partial class SignUpPage
     {
         try
         {
-            pubSubUnsubscribe = PubSubService.Subscribe(ClientPubSubMessages.SOCIAL_SIGN_IN_CALLBACK, async (uriString) =>
+            pubSubUnsubscribe = PubSubService.Subscribe(ClientAppMessages.SOCIAL_SIGN_IN_CALLBACK, async (uriString) =>
             {
                 // Social sign-in creates a new user automatically, so we only need to navigate to the sign-in page to automatically sign-in the user by provided OTP.
                 NavigationManager.NavigateTo(uriString!.ToString()!, replace: true);

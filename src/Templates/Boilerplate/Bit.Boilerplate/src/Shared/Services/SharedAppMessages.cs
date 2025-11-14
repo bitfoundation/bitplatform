@@ -3,10 +3,10 @@ namespace Boilerplate.Shared.Services;
 
 /// <summary>
 /// This class is located in the Shared project to defines
-/// message keys used for pub/sub messaging between server and client through SignalR.
-/// For client-only pub/sub messages, refer to the ClientPubSubMessages class in the Client/Core project.
+/// shared message apps used for messaging between server and client through SignalR.
+/// For client-only pub/sub messages, refer to the ClientAppMessages class in the Client/Core project.
 /// </summary>
-public partial class SharedPubSubMessages
+public partial class SharedAppMessages
 {
     //#if (module == "Admin")
     /// <summary>

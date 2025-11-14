@@ -65,13 +65,13 @@ One of the most common use cases demonstrates the power of PubSubService:
 
 ```csharp
 // After successfully updating the profile
-PubSubService.Publish(ClientPubSubMessages.PROFILE_UPDATED, CurrentUser);
+PubSubService.Publish(ClientAppMessages.PROFILE_UPDATED, CurrentUser);
 ```
 
 2. **Subscribing to Updates** (from `MainLayout.razor.cs`):
 
 ```csharp
-unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.PROFILE_UPDATED, async payload =>
+unsubscribers.Add(pubSubService.Subscribe(ClientAppMessages.PROFILE_UPDATED, async payload =>
 {
     currentUser = payload is JsonElement jsonDocument
                     ? jsonDocument.Deserialize(jsonSerializerOptions.GetTypeInfo<UserDto>())! // PROFILE_UPDATED can be invoked from server through SignalR
@@ -99,35 +99,35 @@ PubSubService is versatile and can be used in multiple contexts:
 
 ### Message Types
 
-#### ClientPubSubMessages
+#### ClientAppMessages
 
-**Location**: [`src/Client/Boilerplate.Client.Core/Services/ClientPubSubMessages.cs`](/src/Client/Boilerplate.Client.Core/Services/ClientPubSubMessages.cs)
+**Location**: [`src/Client/Boilerplate.Client.Core/Services/ClientAppMessages.cs`](/src/Client/Boilerplate.Client.Core/Services/ClientAppMessages.cs)
 
 These messages are for **client-only** pub/sub communication:
 
 ```csharp
-public partial class ClientPubSubMessages : SharedPubSubMessages
+public partial class ClientAppMessages : SharedAppMessages
 {
     public const string PROFILE_UPDATED = nameof(PROFILE_UPDATED);
     // ... and more
 }
 ```
 
-#### SharedPubSubMessages
+#### SharedAppMessages
 
-**Location**: [`src/Shared/Services/SharedPubSubMessages.cs`](/src/Shared/Services/SharedPubSubMessages.cs)
+**Location**: [`src/Shared/Services/SharedAppMessages.cs`](/src/Shared/Services/SharedAppMessages.cs)
 
 These messages are used for **server-to-client communication** through SignalR:
 
 ```csharp
-public partial class SharedPubSubMessages
+public partial class SharedAppMessages
 {
     public const string DASHBOARD_DATA_CHANGED = nameof(DASHBOARD_DATA_CHANGED);
     // ... and more
 }
 ```
 
-**Note**: `ClientPubSubMessages` inherits from `SharedPubSubMessages`, so it includes both client-only and server-to-client messages.
+**Note**: `ClientAppMessages` inherits from `SharedAppMessages`, so it includes both client-only and server-to-client messages.
 
 ---
 
@@ -188,8 +188,8 @@ The `AppHub` provides enhanced messaging capabilities beyond basic SignalR. The 
 
 1. **`PUBLISH_MESSAGE`**: Bridges SignalR and PubSubService
    - Server sends this event to publish a message on the client's PubSubService
-   - Example: `SharedPubSubMessages.SESSION_REVOKED` - Redirects the device to the Sign In page when a session is revoked
-   - Example: `SharedPubSubMessages.DASHBOARD_DATA_CHANGED` - Notifies clients to refresh dashboard data
+   - Example: `SharedAppMessages.SESSION_REVOKED` - Redirects the device to the Sign In page when a session is revoked
+   - Example: `SharedAppMessages.DASHBOARD_DATA_CHANGED` - Notifies clients to refresh dashboard data
 
 2. **`SHOW_MESSAGE`**: Displays a text message to the user
    - Shows as a browser notification if available
@@ -220,7 +220,7 @@ Each user session tracks its **SignalR connection ID** in the database. This ena
 ```csharp
 // From UserController.cs - RevokeSession method
 _ = await appHubContext.Clients.Client(userSession.SignalRConnectionId)
-    .InvokeAsync<bool>(SharedPubSubMessages.SHOW_MESSAGE, message, null, cancellationToken);
+    .InvokeAsync<bool>(SharedAppMessages.SHOW_MESSAGE, message, null, cancellationToken);
 ```
 
 This ensures the corresponding browser tab or app immediately:
@@ -244,7 +244,7 @@ Use `InvokeAsync` when:
 ```csharp
 // Server needs to know if the message was successfully shown to the user
 var messageShown = await appHubContext.Clients.Client(userSession.SignalRConnectionId)
-    .InvokeAsync<bool>(SharedPubSubMessages.SHOW_MESSAGE, message, null, cancellationToken);
+    .InvokeAsync<bool>(SharedAppMessages.SHOW_MESSAGE, message, null, cancellationToken);
 
 if (messageShown)
 {
@@ -264,8 +264,8 @@ Use `SendAsync` when:
 ```csharp
 // Notify all authenticated clients - no need to wait for confirmation
 await appHubContext.Clients.Group("AuthenticatedClients")
-    .SendAsync(SharedPubSubMessages.PUBLISH_MESSAGE, 
-               SharedPubSubMessages.DASHBOARD_DATA_CHANGED, 
+    .SendAsync(SharedAppMessages.PUBLISH_MESSAGE, 
+               SharedAppMessages.DASHBOARD_DATA_CHANGED, 
                null, 
                cancellationToken);
 ```
@@ -276,7 +276,7 @@ For `InvokeAsync` to work properly, the client-side `hubConnection.On` listeners
 
 ```csharp
 // Client-side in AppClientCoordinator.cs
-hubConnection.On<string, Dictionary<string, string?>?, bool>(SharedPubSubMessages.SHOW_MESSAGE, async (message, data) =>
+hubConnection.On<string, Dictionary<string, string?>?, bool>(SharedAppMessages.SHOW_MESSAGE, async (message, data) =>
 {
     logger.LogInformation("SignalR Message {Message} received from server to show.", message);
     
@@ -328,7 +328,7 @@ The **AppClientCoordinator** component is responsible for coordinating all messa
 #### SHOW_MESSAGE Event
 
 ```csharp
-hubConnection.On<string, Dictionary<string, string?>?, bool>(SharedPubSubMessages.SHOW_MESSAGE, async (message, data) =>
+hubConnection.On<string, Dictionary<string, string?>?, bool>(SharedAppMessages.SHOW_MESSAGE, async (message, data) =>
 {
     logger.LogInformation("SignalR Message {Message} received from server to show.", message);
     
@@ -348,7 +348,7 @@ This event handler:
 if (userSession.SignalRConnectionId != null)
 {
     _ = await appHubContext.Clients.Client(userSession.SignalRConnectionId)
-        .InvokeAsync<bool>(SharedPubSubMessages.SHOW_MESSAGE, 
+        .InvokeAsync<bool>(SharedAppMessages.SHOW_MESSAGE, 
                    (string)Localizer[nameof(AppStrings.TestNotificationMessage2)], 
                    null, 
                    cancellationToken);
@@ -358,7 +358,7 @@ if (userSession.SignalRConnectionId != null)
 #### PUBLISH_MESSAGE Event
 
 ```csharp
-hubConnection.On(SharedPubSubMessages.PUBLISH_MESSAGE, async (string message, object? payload) =>
+hubConnection.On(SharedAppMessages.PUBLISH_MESSAGE, async (string message, object? payload) =>
 {
     logger.LogInformation("SignalR Message {Message} received from server to publish.", message);
     PubSubService.Publish(message, payload);
@@ -371,7 +371,7 @@ This bridges **SignalR** and **PubSubService**, allowing server-side code to pub
 #### EXCEPTION_THROWN Event
 
 ```csharp
-hubConnection.On(SharedPubSubMessages.EXCEPTION_THROWN, async (AppProblemDetails appProblemDetails) =>
+hubConnection.On(SharedAppMessages.EXCEPTION_THROWN, async (AppProblemDetails appProblemDetails) =>
 {
     ExceptionHandler.Handle(appProblemDetails, displayKind: ExceptionDisplayKind.NonInterrupting);
     return true;
@@ -612,8 +612,8 @@ private async Task PublishDashboardDataChanged(CancellationToken cancellationTok
 {
     // Notify all authenticated clients
     await appHubContext.Clients.Group("AuthenticatedClients")
-        .SendAsync(SharedPubSubMessages.PUBLISH_MESSAGE, 
-                   SharedPubSubMessages.DASHBOARD_DATA_CHANGED, 
+        .SendAsync(SharedAppMessages.PUBLISH_MESSAGE, 
+                   SharedAppMessages.DASHBOARD_DATA_CHANGED, 
                    null, 
                    cancellationToken);
 }
@@ -624,7 +624,7 @@ This is called after creating, updating, or deleting a product.
 **Client-Side** (any component can subscribe):
 
 ```csharp
-unsubscribe = PubSubService.Subscribe(SharedPubSubMessages.DASHBOARD_DATA_CHANGED, async (_) =>
+unsubscribe = PubSubService.Subscribe(SharedAppMessages.DASHBOARD_DATA_CHANGED, async (_) =>
 {
     // Refresh dashboard data
     await LoadDashboardData();

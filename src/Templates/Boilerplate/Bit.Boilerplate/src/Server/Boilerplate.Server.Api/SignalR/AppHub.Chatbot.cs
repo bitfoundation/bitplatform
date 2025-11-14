@@ -15,15 +15,15 @@ public partial class AppHub
     /// <summary>
     /// Checkout <see cref="AppChatbot"/> for more details.
     /// </summary>
-    public async IAsyncEnumerable<string> Chatbot(
-        StartChatbotRequest request,
+    public async IAsyncEnumerable<string> StartChat(
+        StartChatRequest request,
         IAsyncEnumerable<string> incomingMessages,
         [EnumeratorCancellation] CancellationToken cancellationToken,
         [FromServices] AppChatbot chatbotService)
     {
         try
         {
-            await chatbotService.Start(request,
+            await chatbotService.StartChat(request,
                 Context.ConnectionId,
                 cancellationToken);
         }
@@ -46,7 +46,7 @@ public partial class AppHub
                         await messageSpecificCancellationTokenSrc.CancelAsync();
 
                     messageSpecificCancellationTokenSrc = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                    _ = chatbotService.ProcessMessageAsync(
+                    _ = chatbotService.ProcessNewMessage(
                         generateFollowUpSuggestions: true,
                         incomingMessage,
                         request.ServerApiAddress,
@@ -86,7 +86,7 @@ public partial class AppHub
             return;
         try
         {
-            await Clients.Caller.SendAsync(SharedPubSubMessages.EXCEPTION_THROWN, problemDetails, cancellationToken);
+            await Clients.Caller.SendAsync(SharedAppMessages.EXCEPTION_THROWN, problemDetails, cancellationToken);
         }
         catch { }
     }

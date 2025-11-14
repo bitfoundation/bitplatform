@@ -1,4 +1,4 @@
-namespace Boilerplate.Client.Core.Services;
+﻿namespace Boilerplate.Client.Core.Services;
 
 public partial class SnackBarService
 {
@@ -7,7 +7,7 @@ public partial class SnackBarService
 
     public void Show(string title, string body = "", BitColor color = BitColor.Info)
     {
-        pubSubService.Publish(ClientPubSubMessages.SHOW_SNACK, (title, body, color), persistent: true);
+        pubSubService.Publish(ClientAppMessages.SHOW_SNACK, (title, body, color), persistent: true);
     }
 
     public void Error(string title, string body = "") => Show(title, body, BitColor.Error);

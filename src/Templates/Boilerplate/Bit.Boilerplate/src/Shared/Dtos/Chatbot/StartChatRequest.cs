@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Shared.Dtos.Chatbot;
 
-public class StartChatbotRequest
+public class StartChatRequest
 {
     public int? CultureId { get; set; }
 

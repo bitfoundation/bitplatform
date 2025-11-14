@@ -18,6 +18,6 @@ public partial class AppErrorBoundary
     {
         boundaryRef.Recover();
         await Task.Yield();
-        pubSubService.Publish(ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL);
+        pubSubService.Publish(ClientAppMessages.SHOW_DIAGNOSTIC_MODAL);
     }
 }

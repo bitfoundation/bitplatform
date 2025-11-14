@@ -1,4 +1,8 @@
-namespace Boilerplate.Shared.Exceptions;
+﻿namespace Boilerplate.Shared.Exceptions;
+
+/// <summary>
+/// This exception is thrown when there is a failure connecting client app to the backend api server.
+/// </summary>
 public partial class ServerConnectionException : KnownException
 {
     public ServerConnectionException()

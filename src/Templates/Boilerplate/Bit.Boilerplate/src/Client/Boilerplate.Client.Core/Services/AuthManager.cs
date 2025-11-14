@@ -27,7 +27,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         // Example for method call after object instantiation with dependency injection.
 
         //#if (signalR == true)
-        unsubscribe = pubSubService.Subscribe(SharedPubSubMessages.SESSION_REVOKED, _ => SignOut(default));
+        unsubscribe = pubSubService.Subscribe(SharedAppMessages.SESSION_REVOKED, _ => SignOut(default));
         //#endif
     }
 

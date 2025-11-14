@@ -27,7 +27,7 @@ public partial class App
         this.deviceCoordinator = deviceCoordinator;
         this.mainPage = new NavigationPage(mainPage);
 
-        pubSubHandlerReferenceToKeepAlive = pubSubService.Subscribe(ClientPubSubMessages.PROFILE_UPDATED, async _ =>
+        pubSubHandlerReferenceToKeepAlive = pubSubService.Subscribe(ClientAppMessages.PROFILE_UPDATED, async _ =>
         {
             // It's an opportune moment to request a store review. (:
             await Dispatcher.DispatchAsync(async () =>
