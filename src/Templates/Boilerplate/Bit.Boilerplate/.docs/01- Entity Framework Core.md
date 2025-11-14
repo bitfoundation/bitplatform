@@ -459,3 +459,10 @@ For comprehensive information about the client-side offline database, including:
 **See:** [`/src/Client/Boilerplate.Client.Core/Data/README.md`](/src/Client/Boilerplate.Client.Core/Data/README.md)
 
 ---
+
+### AI Wiki: Answered Questions
+* [Why do the delete actions in the built-in boilerplate controllers check the concurrency stamp? Describe the problem they aim to solve, and then outline the solution.](https://deepwiki.com/search/why-do-the-delete-actions-in-t_d89c90a5-8854-4b9c-a555-b160327ae9b7)
+
+Ask your own question [here](https://wiki.bitplatform.dev)
+
+---

@@ -423,3 +423,10 @@ The job runner is registered as a scoped service so it has access to all the sam
    - Configurable retention policies
 
 ---
+
+### AI Wiki: Answered Questions
+* [How does the Abort() method in AppComponentBase differ from component disposal, and when should developers explicitly call it versus relying on the DisposeAsync lifecycle?](https://deepwiki.com/search/how-does-the-abort-method-in-a_187b27a3-091b-4e36-9905-0bf5b128b4aa)
+
+Ask your own question [here](https://wiki.bitplatform.dev)
+
+---

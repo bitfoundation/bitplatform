@@ -22,6 +22,8 @@ Welcome to **Stage 7** of the Boilerplate project tutorial! In this stage, you w
 8. [Video Tutorial](#video-tutorial)
 9. [Summary](#summary)
 
+**Important**: All topics related to WebAuthn, passkeys, and passwordless authentication are explained in [Stage 24](/.docs/24-%20WebAuthn%20and%20Passwordless%20Authentication%20(Advanced).md).
+
 ---
 
 ## Authentication Architecture
@@ -845,5 +847,15 @@ public async Task ResetPassword(ResetPasswordRequestDto request, CancellationTok
 - External provider integration
 - Privileged session limiting
 - Elevated access for sensitive operations
+
+---
+
+### AI Wiki: Answered Questions
+* [How does a `refresh token` function in a Boilerplate project template?](https://deepwiki.com/search/how-does-a-refresh-token-funct_6a75fa66-ab98-4367-bd1a-24b081fbf88c)
+* [What would happen when I use [AuthorizedApi]](https://deepwiki.com/search/what-would-happen-when-i-use-a_c525d59d-5c55-489b-8f95-69f6df7c743d)
+* [Give me high level overview of social sign-in flow](https://deepwiki.com/search/give-me-high-level-overview-of_059d227a-0ffe-4077-9e01-ba9f61456a3f)
+* [Give me high level overview of two factor auth setup and usage flows]()
+
+Ask your own question [here](https://wiki.bitplatform.dev)
 
 ---
