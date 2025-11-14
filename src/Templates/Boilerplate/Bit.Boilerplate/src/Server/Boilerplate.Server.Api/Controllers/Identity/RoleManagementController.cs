@@ -227,7 +227,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
                                                                .Select(us => us.SignalRConnectionId!).ToArrayAsync(cancellationToken);
 
         await appHubContext.Clients.Clients(signalRConnectionIds)
-                                   .SendAsync(SharedPubSubMessages.SHOW_MESSAGE, dto.Message, dto.PageUrl is null ? null : new Dictionary<string, string?> { { "pageUrl", dto.PageUrl } }, cancellationToken);
+                                   .SendAsync(SharedAppMessages.SHOW_MESSAGE, dto.Message, dto.PageUrl is null ? null : new Dictionary<string, string?> { { "pageUrl", dto.PageUrl } }, cancellationToken);
         //#endif
 
         //#if (notification == true)

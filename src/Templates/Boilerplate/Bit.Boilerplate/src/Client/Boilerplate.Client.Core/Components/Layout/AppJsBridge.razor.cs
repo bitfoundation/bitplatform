@@ -24,7 +24,7 @@ public partial class AppJsBridge
     [JSInvokable(nameof(ShowDiagnostic))]
     public async Task ShowDiagnostic()
     {
-        PubSubService.Publish(ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL);
+        PubSubService.Publish(ClientAppMessages.SHOW_DIAGNOSTIC_MODAL);
     }
 
     [JSInvokable(nameof(PublishMessage))]

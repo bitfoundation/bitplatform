@@ -21,6 +21,6 @@ public partial class AppPageData
 
         _lastPublishedMessage = publishMessage;
 
-        pubSubService.Publish(ClientPubSubMessages.PAGE_DATA_CHANGED, (Title, SubTitle, ShowGoBackButton), persistent: true);
+        pubSubService.Publish(ClientAppMessages.PAGE_DATA_CHANGED, (Title, SubTitle, ShowGoBackButton), persistent: true);
     }
 }

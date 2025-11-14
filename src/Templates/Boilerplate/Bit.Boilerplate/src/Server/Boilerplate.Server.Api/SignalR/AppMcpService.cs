@@ -14,10 +14,12 @@ namespace Microsoft.AspNetCore.Builder;
 public partial class AppMcpService
 {
     /// <summary>
-    /// Sends a message to the chatbot and returns the response
+    /// Due the current stateless design of the AppMcpService, the following method accepts all necessary parameters to start a chat that would process
+    /// only one new message from the user. The method returns the chatbot's response as a string.
+    /// The new message can be anything from a question to a command supported by the AppChatbot service.
     /// </summary>
     [McpServerTool(Name = "bit_mcp")]
-    public async Task<string> StartChat(
+    public async Task<string> Mcp(
         StartMcpChatRequest request,
         McpServer server = default!,
         RequestContext<CallToolRequestParams> context = default!,
@@ -26,7 +28,7 @@ public partial class AppMcpService
         CancellationToken cancellationToken = default)
     {
         // Start the chatbot session
-        await chatBot.Start(
+        await chatBot.StartChat(
             new()
             {
                 ChatMessagesHistory = request.ConversationHistory,
@@ -39,7 +41,7 @@ public partial class AppMcpService
             cancellationToken);
 
         // Process the message and collect the response
-        var responseTask = chatBot.ProcessMessageAsync(
+        var responseTask = chatBot.ProcessNewMessage(
             generateFollowUpSuggestions: false,
             request.NewMessage,
             httpContextAccessor.HttpContext?.Request?.GetBaseUrl(),
@@ -50,12 +52,12 @@ public partial class AppMcpService
         // Read all responses from the channel
         await foreach (var chunk in chatBot.GetStreamingChannel().ReadAllAsync(cancellationToken))
         {
-            if (chunk == SharedPubSubMessages.MESSAGE_RPOCESS_SUCCESS)
+            if (chunk == SharedAppMessages.MESSAGE_RPOCESS_SUCCESS)
             {
                 // Message processed successfully
                 break;
             }
-            else if (chunk == SharedPubSubMessages.MESSAGE_RPOCESS_ERROR)
+            else if (chunk == SharedAppMessages.MESSAGE_RPOCESS_ERROR)
             {
                 return "Error processing message. Please try again.";
             }
@@ -74,7 +76,7 @@ public partial class AppMcpService
 
 public class StartMcpChatRequest
 {
-    [Required, Description("The user's new message to send to the chatbot")]
+    [Required, Description("The user's new message to send")]
     public string NewMessage { get; set; } = string.Empty;
 
     [Description("Optional: Previous conversation history")]

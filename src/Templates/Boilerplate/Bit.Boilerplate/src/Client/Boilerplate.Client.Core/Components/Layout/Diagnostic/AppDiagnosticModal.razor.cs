@@ -54,7 +54,7 @@ public partial class AppDiagnosticModal
     {
         await base.OnInitAsync();
 
-        unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL, async _ =>
+        unsubscribe = PubSubService.Subscribe(ClientAppMessages.SHOW_DIAGNOSTIC_MODAL, async _ =>
         {
             isOpen = true;
             ReloadLogs();

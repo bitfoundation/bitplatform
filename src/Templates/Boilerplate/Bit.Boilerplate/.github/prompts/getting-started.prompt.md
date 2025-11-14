@@ -1065,10 +1065,10 @@ At the end of Stage 21, ask: **"Do you have any questions about .NET MAUI, nativ
      - `AuthenticatedClients` group (all authenticated users)
      - All devices of a specific user (a user might have multiple sessions - web app open twice, mobile app, etc.)
      - A specific device/connection
-- **Message Types**:
-     - **SharedPubSubMessages**: Application-specific messages, for example:
-       - `SharedPubSubMessages.SESSION_REVOKED`: Redirects the device to the Sign In page when a session is revoked
-       - `SharedPubSubMessages.SHOW_MESSAGE`: Displays a text message to the user
+- **AppMessage Types**:
+     - **SharedAppMessages**: Application-specific messages, for example:
+       - `SharedAppMessages.SESSION_REVOKED`: Redirects the device to the Sign In page when a session is revoked
+       - `SharedAppMessages.SHOW_MESSAGE`: Displays a text message to the user
    - **Search and demonstrate**: Find SignalR hub implementations and show examples of server-to-client messaging
 <!--#endif-->
 

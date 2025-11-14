@@ -54,7 +54,7 @@ public partial class AppClientCoordinator : AppComponentBase
 
         if (InPrerenderSession is false)
         {
-            unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.NAVIGATE_TO, async (uri) =>
+            unsubscribe = PubSubService.Subscribe(ClientAppMessages.NAVIGATE_TO, async (uri) =>
             {
                 var uriValue = uri?.ToString()!;
                 var replace = uriValue.Contains("replace=true", StringComparison.InvariantCultureIgnoreCase);
@@ -93,7 +93,7 @@ public partial class AppClientCoordinator : AppComponentBase
             NavigationManager.LocationChanged += NavigationManager_LocationChanged;
             AuthManager.AuthenticationStateChanged += AuthenticationStateChanged;
             //#if (signalR == true)
-            SubscribeToSignalRSharedPubSubMessages();
+            SubscribeToSignalRSharedAppMessages();
             //#endif
             await PropagateAuthState(firstRun: true, AuthenticationStateTask);
         }
@@ -177,10 +177,10 @@ public partial class AppClientCoordinator : AppComponentBase
     }
 
     //#if (signalR == true)
-    private void SubscribeToSignalRSharedPubSubMessages()
+    private void SubscribeToSignalRSharedAppMessages()
     {
-        hubConnection.Remove(SharedPubSubMessages.SHOW_MESSAGE);
-        signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.SHOW_MESSAGE, async (string message, Dictionary<string, string?>? data) =>
+        hubConnection.Remove(SharedAppMessages.SHOW_MESSAGE);
+        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.SHOW_MESSAGE, async (string message, Dictionary<string, string?>? data) =>
         {
             logger.LogInformation("SignalR Message {Message} received from server to show.", message);
             if (await notification.IsNotificationAvailable())
@@ -212,29 +212,29 @@ public partial class AppClientCoordinator : AppComponentBase
             // You can also leverage IPubSubService to notify other components in the application.
         }));
 
-        hubConnection.Remove(SharedPubSubMessages.PUBLISH_MESSAGE);
-        signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.PUBLISH_MESSAGE, async (string message, object? payload) =>
+        hubConnection.Remove(SharedAppMessages.PUBLISH_MESSAGE);
+        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.PUBLISH_MESSAGE, async (string message, object? payload) =>
         {
             logger.LogInformation("SignalR Message {Message} received from server to publish.", message);
             PubSubService.Publish(message, payload);
             return true;
         }));
 
-        hubConnection.Remove(SharedPubSubMessages.EXCEPTION_THROWN);
-        signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.EXCEPTION_THROWN, async (AppProblemDetails appProblemDetails) =>
+        hubConnection.Remove(SharedAppMessages.EXCEPTION_THROWN);
+        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.EXCEPTION_THROWN, async (AppProblemDetails appProblemDetails) =>
         {
             ExceptionHandler.Handle(appProblemDetails, displayKind: ExceptionDisplayKind.NonInterrupting);
             return true;
         }));
 
-        hubConnection.Remove(SharedPubSubMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE);
-        signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE, async () =>
+        hubConnection.Remove(SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE);
+        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE, async () =>
         {
             return DiagnosticLogger.Store.ToArray();
         }));
 
-        hubConnection.Remove(SharedPubSubMessages.NAVIGATE_TO);
-        signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.NAVIGATE_TO, async (string url) =>
+        hubConnection.Remove(SharedAppMessages.NAVIGATE_TO);
+        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.NAVIGATE_TO, async (string url) =>
         {
             await InvokeAsync(async () =>
             {
@@ -243,8 +243,8 @@ public partial class AppClientCoordinator : AppComponentBase
             return true;
         }));
 
-        hubConnection.Remove(SharedPubSubMessages.CHANGE_CULTURE);
-        signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.CHANGE_CULTURE, async (int cultureLcid) =>
+        hubConnection.Remove(SharedAppMessages.CHANGE_CULTURE);
+        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.CHANGE_CULTURE, async (int cultureLcid) =>
         {
             await InvokeAsync(async () =>
             {
@@ -254,8 +254,8 @@ public partial class AppClientCoordinator : AppComponentBase
             return true;
         }));
 
-        hubConnection.Remove(SharedPubSubMessages.CHANGE_THEME);
-        signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.CHANGE_THEME, async (string requestedTheme) =>
+        hubConnection.Remove(SharedAppMessages.CHANGE_THEME);
+        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.CHANGE_THEME, async (string requestedTheme) =>
         {
             await InvokeAsync(async () =>
             {
@@ -270,8 +270,8 @@ public partial class AppClientCoordinator : AppComponentBase
             return true;
         }));
 
-        hubConnection.Remove(SharedPubSubMessages.UPLOAD_LAST_ERROR);
-        signalROnDisposables.Add(hubConnection.On(SharedPubSubMessages.UPLOAD_LAST_ERROR, async () =>
+        hubConnection.Remove(SharedAppMessages.UPLOAD_LAST_ERROR);
+        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.UPLOAD_LAST_ERROR, async () =>
         {
             return DiagnosticLogger.Store.LastOrDefault(l => l.Level is LogLevel.Error or LogLevel.Critical);
         }));
@@ -303,13 +303,13 @@ public partial class AppClientCoordinator : AppComponentBase
 
     private async Task HubConnectionConnected(string? _)
     {
-        PubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, true);
+        PubSubService.Publish(ClientAppMessages.IS_ONLINE_CHANGED, true);
         logger.LogInformation("SignalR connection established.");
     }
 
     private async Task HubConnectionStateChange(Exception? exception)
     {
-        PubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, exception is null && hubConnection!.State is HubConnectionState.Connected);
+        PubSubService.Publish(ClientAppMessages.IS_ONLINE_CHANGED, exception is null && hubConnection!.State is HubConnectionState.Connected);
 
         if (exception is null)
         {
@@ -327,7 +327,7 @@ public partial class AppClientCoordinator : AppComponentBase
                 }
                 else if (exception.Message.EndsWith(nameof(AppStrings.ForceUpdateTitle)))
                 {
-                    PubSubService.Publish(ClientPubSubMessages.FORCE_UPDATE);
+                    PubSubService.Publish(ClientAppMessages.FORCE_UPDATE);
                 }
             }
         }

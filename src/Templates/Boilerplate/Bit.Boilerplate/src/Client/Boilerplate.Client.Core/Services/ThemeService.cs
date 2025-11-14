@@ -1,4 +1,4 @@
-namespace Boilerplate.Client.Core.Services;
+﻿namespace Boilerplate.Client.Core.Services;
 
 public partial class ThemeService
 {
@@ -21,7 +21,7 @@ public partial class ThemeService
         await bitDeviceCoordinator.ApplyTheme(isDark);
 
         var theme = isDark ? AppThemeType.Dark : AppThemeType.Light;
-        pubSubService.Publish(ClientPubSubMessages.THEME_CHANGED, theme);
+        pubSubService.Publish(ClientAppMessages.THEME_CHANGED, theme);
 
         return theme;
     }

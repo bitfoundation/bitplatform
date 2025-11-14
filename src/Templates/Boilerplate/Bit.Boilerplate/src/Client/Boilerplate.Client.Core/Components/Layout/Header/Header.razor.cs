@@ -20,7 +20,7 @@ public partial class Header : AppComponentBase
     {
         await base.OnInitAsync();
 
-        unsubscribePageTitleChanged = PubSubService.Subscribe(ClientPubSubMessages.PAGE_DATA_CHANGED, async payload =>
+        unsubscribePageTitleChanged = PubSubService.Subscribe(ClientAppMessages.PAGE_DATA_CHANGED, async payload =>
         {
             (pageTitle, pageSubtitle, showGoBackButton) = ((string?, string?, bool))payload!;
 
@@ -33,7 +33,7 @@ public partial class Header : AppComponentBase
 
     private void OpenNavPanel()
     {
-        PubSubService.Publish(ClientPubSubMessages.OPEN_NAV_PANEL);
+        PubSubService.Publish(ClientAppMessages.OPEN_NAV_PANEL);
     }
 
     private async Task GoBack()

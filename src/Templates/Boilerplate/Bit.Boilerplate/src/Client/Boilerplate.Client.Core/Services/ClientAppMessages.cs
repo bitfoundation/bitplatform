@@ -3,9 +3,9 @@ using Boilerplate.Client.Core.Components;
 
 namespace Boilerplate.Client.Core.Services;
 
-public partial class ClientPubSubMessages
+public partial class ClientAppMessages
     //#if (signalR == true)
-    : SharedPubSubMessages
+    : SharedAppMessages
     //#endif
 {
     /// <summary>
