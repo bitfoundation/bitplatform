@@ -51,6 +51,6 @@ public class BitSpacerTests : BunitTestContext
     {
         var component = RenderComponent<BitSpacerHtmlAttributesTest>();
 
-        component.MarkupMatches(@"<BitSpacer data-val-test=""bit"" class=""bit-spc"" id:ignore style=""flex-grow:1""></BitSpacer>");
+        component.MarkupMatches(@"<div data-val-test=""bit"" style=""flex-grow:1"" class=""bit-spc"" id:ignore></div>");
     }
 }
