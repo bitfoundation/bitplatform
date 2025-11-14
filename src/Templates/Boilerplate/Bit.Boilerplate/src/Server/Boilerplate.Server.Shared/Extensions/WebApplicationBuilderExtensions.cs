@@ -84,7 +84,7 @@ public static class WebApplicationBuilderExtensions
         {
             http.ConfigureHttpClient(httpClient =>
             {
-                httpClient.DefaultRequestVersion = HttpVersion.Version20;
+                httpClient.DefaultRequestVersion = HttpVersion.Version30;
                 httpClient.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
             });
 
