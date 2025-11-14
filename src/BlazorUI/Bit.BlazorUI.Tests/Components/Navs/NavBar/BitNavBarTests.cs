@@ -28,7 +28,11 @@ public class BitNavBarTests : BunitTestContext
 
         var root = component.Find(".bit-nbr");
 
-        if (string.IsNullOrEmpty(expectedClass) is false)
+        if (string.IsNullOrEmpty(expectedClass))
+        {
+            Assert.IsFalse(root.ClassList.Contains(expectedClass));
+        }
+        else
         {
             Assert.IsTrue(root.ClassList.Contains(expectedClass));
         }
@@ -46,7 +50,11 @@ public class BitNavBarTests : BunitTestContext
 
         var root = component.Find(".bit-nbr");
 
-        if (string.IsNullOrEmpty(expectedClass) is false)
+        if (string.IsNullOrEmpty(expectedClass))
+        {
+            Assert.IsFalse(root.ClassList.Contains(expectedClass));
+        }
+        else
         {
             Assert.IsTrue(root.ClassList.Contains(expectedClass));
         }
@@ -64,7 +72,11 @@ public class BitNavBarTests : BunitTestContext
 
         var root = component.Find(".bit-nbr");
 
-        if (string.IsNullOrEmpty(expectedClass) is false)
+        if (string.IsNullOrEmpty(expectedClass))
+        {
+            Assert.IsFalse(root.ClassList.Contains(expectedClass));
+        }
+        else
         {
             Assert.IsTrue(root.ClassList.Contains(expectedClass));
         }
@@ -94,7 +106,11 @@ public class BitNavBarTests : BunitTestContext
     {
         var component = RenderComponent<BitNavBarHtmlAttributesTest>();
 
+        var root = component.Find(".bit-nbr");
+
         var content = component.Find(".bit-nbr-cnt");
+
+        Assert.AreEqual("bit", root.GetAttribute("data-val-test"));
 
         content.MarkupMatches(@"
 <div class=""bit-nbr-cnt "">
