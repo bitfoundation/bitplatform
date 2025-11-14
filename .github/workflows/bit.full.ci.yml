@@ -62,6 +62,7 @@ jobs:
         dotnet build
         pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
         dotnet test
+        cd ../../
         rm -r "TestPostgreSQL"
 
     - name: Upload Tests Artifact
@@ -85,6 +86,7 @@ jobs:
         dotnet build
         pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
         dotnet test
+        cd ../../
         rm -r "SimpleTest"
 
     - name: Upload Tests Artifact
