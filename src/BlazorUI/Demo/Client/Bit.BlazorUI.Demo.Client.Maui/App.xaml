@@ -4,13 +4,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:android="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;assembly=Microsoft.Maui.Controls"
     xmlns:app="clr-namespace:Bit.BlazorUI.Demo.Client.Maui"
-    xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
     android:Application.WindowSoftInputModeAdjust="Resize">
     <Application.Resources>
         <ResourceDictionary>
             <Style ApplyToDerivedTypes="True" TargetType="ContentPage">
                 <Setter Property="NavigationPage.HasNavigationBar" Value="False" />
-                <Setter Property="ios:Page.UseSafeArea" Value="False" />
+                <Setter Property="SafeAreaEdges" Value="Default" />
             </Style>
         </ResourceDictionary>
     </Application.Resources>
