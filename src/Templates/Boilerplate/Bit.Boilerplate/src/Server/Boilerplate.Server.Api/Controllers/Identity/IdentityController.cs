@@ -249,12 +249,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             if ((refreshTicket.Properties.ExpiresUtc ?? DateTimeOffset.MinValue) < DateTimeOffset.UtcNow)
                 throw new UnauthorizedException(); // refresh token is expired.
 
-            var user = userSession.User;
+            var user = userSession.User!;
 
             if (await signInManager.ValidateSecurityStampAsync(userSession.User, securityStamp) is false)
                 throw new UnauthorizedException(); // Security stamp has been updated (for example after 2fa configuration)
-
-            var userId = refreshTicket.Principal.GetUserId().ToString();
 
             if (string.IsNullOrEmpty(request.ElevatedAccessToken) is false)
             {
