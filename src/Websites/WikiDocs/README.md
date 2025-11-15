@@ -26,19 +26,19 @@ To further enrich the repository, we include valuable content that has not yet b
 
 The following questions give you an idea what kind of questions can be answered by the [wiki.bitplatform.dev](https://wiki.bitplatform.dev):
 
-[What is the optimal way to load page data using `StateHasChanged` in conjunction with a `Skeleton UI` or `Shimmer`?](https://wiki.bitplatform.dev/search/explain-how-skeletonui-shimmer_aefa5fb9-a326-4685-aa2d-28036661d5d5)
+[What is the optimal way to load page data using `StateHasChanged` in conjunction with a `Skeleton UI` or `Shimmer` ?](https://deepwiki.com/search/what-is-the-optimal-way-to-loa_e9b729ca-d36b-4c61-a855-7d21ceb783ae)
 
-[How can I `remove google reCAPTCHA` from a project I created from bit Boilerplate?](https://wiki.bitplatform.dev/search/how-can-i-remove-google-recapt_d3000cc1-b8da-4c18-9907-9030b81b0e01)
+[How can I `remove google reCAPTCHA` from a project I created from bit Boilerplate?](https://deepwiki.com/search/how-can-i-remove-google-recapt_d5b4a06d-ac3a-455b-8887-b07616022899)
 
-[What is the `difference between Patch and Map`, and what is their relationship with Entity Framework Core and Blazor change tracking?](https://wiki.bitplatform.dev/search/describe-whats-the-difference_1cd6804f-94ca-4e2c-abc4-376b6a96a69e)
+[What is the `difference between Patch and Map`, and what is their relationship with Entity Framework Core and Blazor change tracking?](https://deepwiki.com/search/what-is-the-difference-between_0c3a1010-fc4f-49f2-8196-d65578e88ecf)
 
-[How can I implement a `Grid System` and layout using `BitGrid` and `BitStack` components, especially if I'm familiar with the Bootstrap grid system?](https://wiki.bitplatform.dev/search/how-can-i-implement-a-grid-sys_41f89d5c-c284-442a-9d8f-0314d1a10b2e)
+[How can I implement a `Grid System` and layout using `BitGrid` and `BitStack` components, especially if I'm familiar with the Bootstrap grid system?](https://deepwiki.com/search/how-can-i-implement-a-grid-sys_25d76f3c-d0a6-4c75-8b9c-7f86ae317fb6)
 
-[How does a `refresh token` function in a Boilerplate project template?](https://wiki.bitplatform.dev/search/how-does-a-refresh-token-funct_5d74ff31-5571-4c92-bc66-d9b2a139dcab)
+[How does a `refresh token` function in a Boilerplate project template?](https://deepwiki.com/search/how-does-a-refresh-token-funct_6a75fa66-ab98-4367-bd1a-24b081fbf88c)
 
-[How does `passwordless authentication` work in Boilerplate, particularly in Blazor Hybrid versions of the app, given that this feature is browser-only?](https://wiki.bitplatform.dev/search/how-does-passwordless-authenti_3ca35e20-979a-4a1b-a49d-b1091e23720d)
+[How does `passwordless authentication` work in Boilerplate, particularly in Blazor Hybrid versions of the app, given that this feature is browser-only?](https://deepwiki.com/search/how-does-passwordless-authenti_2ea6cf51-dca8-46d1-aed5-ef7ef246d584)
 
-[How does using `embeddings` with the PostgreSQL `vector` extension enable product search functionality via LINQ and Entity Framework Core?](https://wiki.bitplatform.dev/search/describe-how-product-embedding_8f6373c9-aa52-4031-94c1-d644aa2f7a53)
+[How does using `embeddings` with the PostgreSQL `vector` extension enable product search functionality via LINQ and Entity Framework Core?](https://deepwiki.com/search/how-does-using-embeddings-with_7d1ec3a2-f3e6-488c-9edc-5328f7b3939b)
 
 ## copilot-instructions.md
 

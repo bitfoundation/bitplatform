@@ -210,18 +210,11 @@ For **live support scenarios**, support staff can request diagnostic logs from a
 This is implemented in [`src/Server/Boilerplate.Server.Api/SignalR/AppHub.cs`](/src/Server/Boilerplate.Server.Api/SignalR/AppHub.cs):
 
 ```csharp
-/// <inheritdoc cref="SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE"/>
-[Authorize(Policy: CustomPolicies.ViewUserSession)]
+/// <inheritdoc cref="SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE"/>
+[Authorize(Policy = AppFeatures.System.ManageLogs)]
 public async Task<DiagnosticLogDto[]> GetUserSessionLogs(Guid userSessionId, [FromServices] AppDbContext dbContext)
 {
-    var userId = await dbContext.UserSessions.Where(us => us.Id == userSessionId)
-                                             .Select(us => us.UserId)
-                                             .SingleOrDefaultAsync();
-
-    if (userId is null)
-        throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserSessionCouldNotBeFound)]);
-
-    return await hubConnection.InvokeAsync<DiagnosticLogDto[]>(nameof(UPLOAD_DIAGNOSTIC_LOGGER_STORE));
+    ...
 }
 ```
 

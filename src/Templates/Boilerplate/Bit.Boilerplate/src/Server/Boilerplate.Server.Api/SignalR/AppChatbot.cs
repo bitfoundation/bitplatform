@@ -7,6 +7,7 @@ using Boilerplate.Shared.Dtos.Diagnostic;
 using Boilerplate.Server.Api.Services;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.AspNetCore.SignalR;
+using ModelContextProtocol.Server;
 
 namespace Boilerplate.Server.Api.SignalR;
 
@@ -14,10 +15,9 @@ namespace Boilerplate.Server.Api.SignalR;
 /// Service responsible for managing chatbot conversations, maintaining chat history,
 /// and handling AI interactions including getting user feedbacks, describing app's features and pages etc.
 /// This service is exposed over SignalR's AppHub.Chat.cs, so it can accept stream of user messages and return stream of AI responses using AiChatPanel.razor
-/// It's also exposed as MCP tool over MinimalApi so you can add chatbot capabilities to any MCP-enabled client such as https://CrystaLive.ai and instruct each client differently,
-/// based on your needs. For example you can customize CrystaLive.AI as a agent that would allow users to talk with their own voice and CrystaLive.AI would call MCP tool developed in <see cref="AppMcpService"/>
-/// to get answers it need about the app.
+/// Every tool method is decorated with [McpServerTool] attribute, so it can be also be used by other external MCP-Client if needed.
 /// </summary>
+[McpServerToolType]
 public partial class AppChatbot
 {
     private IChatClient? chatClient = default!;
@@ -28,6 +28,7 @@ public partial class AppChatbot
     [AutoInject] private ILogger<AppChatbot> logger = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
 
+    private string? variables;
     private string? supportSystemPrompt;
     private List<ChatMessage> chatMessages = [];
 
@@ -68,11 +69,13 @@ public partial class AppChatbot
             tags: ["SystemPrompts", $"SystemPrompt_{PromptKind.Support}"],
             cancellationToken: cancellationToken);
 
-        supportSystemPrompt = supportSystemPrompt
-            .Replace("{{UserCulture}}", culture?.NativeName ?? "English")
-            .Replace("{{DeviceInfo}}", request.DeviceInfo ?? "Generic Device")
-            .Replace("{{SignalRConnectionId}}", signalRConnectionId ?? "")
-            .Replace("{{UserTimeZoneId}}", request.TimeZoneId ?? "Unknown");
+        variables = @$"
+### Variables:
+{{{{UserCulture}}}}: ""{culture?.NativeName ?? "English"}""
+{{{{DeviceInfo}}}}: ""{request.DeviceInfo ?? "Generic Device"}""
+{{{{SignalRConnectionId}}}}: ""{signalRConnectionId ?? "Unknown"}""
+{{{{UserTimeZoneId}}}}: ""{request.TimeZoneId ?? "Unknown"}""
+";
     }
 
     /// <summary>
@@ -107,6 +110,7 @@ public partial class AppChatbot
             var chatOptions = CreateChatOptions(serverApiAddress, cancellationToken);
 
             await foreach (var response in chatClient.GetStreamingResponseAsync([
+                new (ChatRole.System, variables),
                 new (ChatRole.System, supportSystemPrompt),
                     .. chatMessages,
                     new (ChatRole.User, incomingMessage)
@@ -174,6 +178,7 @@ public partial class AppChatbot
     /// Returns the current date and time based on the user's timezone.
     /// </summary>
     [Description("Returns the current date and time based on the user's timezone.")]
+    [McpServerTool(Name = nameof(GetCurrentDateTime))]
     private string GetCurrentDateTime([Required, Description("User's timezone id")] string timeZoneId)
     {
         try
@@ -194,6 +199,7 @@ public partial class AppChatbot
     /// Saves the user's email address and the conversation history for future reference.
     /// </summary>
     [Description("Saves the user's email address and the conversation history for future reference. Use this tool when the user provides their email address during the conversation.")]
+    [McpServerTool(Name = nameof(SaveUserEmailAndConversationHistory))]
     private async Task<string?> SaveUserEmailAndConversationHistory(
         [Required, Description("User's email address")] string emailAddress,
         [Required, Description("Full conversation history")] string conversationHistory)
@@ -220,6 +226,7 @@ public partial class AppChatbot
     /// Navigates the user to a specific page within the application.
     /// </summary>
     [Description("Navigates the user to a specific page within the application. Use this tool when the user requests to go to a particular section or feature of the app.")]
+    [McpServerTool(Name = nameof(NavigateToPage))]
     private async Task<string?> NavigateToPage(
         [Required, Description("Page URL to navigate to")] string pageUrl,
         [Required, Description("SignalR connection id")] string signalRConnectionId)
@@ -248,6 +255,7 @@ public partial class AppChatbot
     /// Changes the user's culture/language setting.
     /// </summary>
     [Description("Changes the user's culture/language setting. Use this tool when the user requests to change the app language. Common LCIDs: 1033=en-US, 1065=fa-IR, 1053=sv-SE, 2057=en-GB, 1043=nl-NL, 1081=hi-IN, 2052=zh-CN, 3082=es-ES, 1036=fr-FR, 1025=ar-SA, 1031=de-DE.")]
+    [McpServerTool(Name = nameof(SetCulture))]
     private async Task<string?> SetCulture(
         [Required, Description("Culture LCID (e.g., 1033 for en-US, 1065 for fa-IR)")] int cultureLcid,
         [Required, Description("SignalR connection id")] string signalRConnectionId)
@@ -281,6 +289,7 @@ public partial class AppChatbot
     /// Changes the user's theme preference between light and dark mode.
     /// </summary>
     [Description("Changes the user's theme preference between light and dark mode. Use this tool when the user requests to change the app theme or appearance.")]
+    [McpServerTool(Name = nameof(SetTheme))]
     private async Task<string?> SetTheme(
         [Required, Description("Theme name: 'light' or 'dark'")] string theme,
         [Required, Description("SignalR connection id")] string signalRConnectionId)
@@ -312,6 +321,7 @@ public partial class AppChatbot
     /// Retrieves the last error that occurred on the user's device from the diagnostic logs.
     /// </summary>
     [Description("Retrieves the last error that occurred on the user's device from the diagnostic logs. Use this tool when troubleshooting user-reported issues, investigating application crashes, or when the user mentions something isn't working.")]
+    [McpServerTool(Name = nameof(CheckLastError))]
     private async Task<string?> CheckLastError(
         [Required, Description("SignalR connection id")] string signalRConnectionId)
     {
@@ -344,6 +354,7 @@ public partial class AppChatbot
     /// Searches for and recommends products based on user's needs and preferences.
     /// </summary>
     [Description("This tool searches for and recommends products based on a detailed description of the user's needs and preferences and returns recommended products.")]
+    [McpServerTool(Name = nameof(GetProductRecommendations))]
     private async Task<object?> GetProductRecommendations(
         [Required, Description("Concise summary of user requirements")] string userNeeds,
         [Description("Car manufacturer's name (Optional)")] string? manufacturer,

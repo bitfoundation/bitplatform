@@ -477,3 +477,11 @@ Interpretation:
 - `public`: Can be cached in shared caches (CDN)
 
 ---
+
+### AI Wiki: Answered Questions
+* [How does the bit Boilerplate AttachmentController interact with response caching? Why do users always see the latest profile pictures, even though no PurgeCache has been called and these assets are stored in the browser cache, which cannot be automatically purged?](https://deepwiki.com/search/how-does-the-bit-boilerplate-a_4f042d5f-3ffb-4c14-b661-bb923825c21d)
+* [Why response caching doesn't work with stream pre-rendering in bit Boilerplate?](https://deepwiki.com/search/why-response-caching-doesnt-wo_2de1ba6c-1017-4c77-96f5-33c8ed001760)
+
+Ask your own question [here](https://wiki.bitplatform.dev)
+
+---

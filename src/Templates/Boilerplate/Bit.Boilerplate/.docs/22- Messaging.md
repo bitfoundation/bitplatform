@@ -200,16 +200,6 @@ The `AppHub` provides enhanced messaging capabilities beyond basic SignalR. The 
    - Allows server to notify clients of hangfire background job errors
    - Uses the same exception handling UI as client-side errors
 
-#### SignalRMethods (Server Invoking Client Methods)
-
-```csharp
-public static partial class SignalRMethods
-{
-    public const string UPLOAD_DIAGNOSTIC_LOGGER_STORE = nameof(UPLOAD_DIAGNOSTIC_LOGGER_STORE);
-}
-```
-
-These are methods the server can **invoke on the client** and wait for a response. This enables the server to request data from connected clients.
 
 #### Authentication State Management
 
@@ -383,7 +373,7 @@ This allows the server to push exceptions to the client for display (e.g., showi
 #### UPLOAD_DIAGNOSTIC_LOGGER_STORE Method
 
 ```csharp
-hubConnection.On(SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE, async () =>
+hubConnection.On(SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE, async () =>
 {
     return DiagnosticLogger.Store.ToArray();
 });
@@ -633,5 +623,13 @@ unsubscribe = PubSubService.Subscribe(SharedAppMessages.DASHBOARD_DATA_CHANGED, 
 ```
 
 Components subscribe to `DASHBOARD_DATA_CHANGED` and automatically refresh when notified.
+
+---
+
+### AI Wiki: Answered Questions
+* [Describe the workflow of bit Boilerplate's AI chat feature and provide a high-level overview.
+](https://deepwiki.com/search/describe-the-workflow-of-bit-b_822b9510-8e1d-456f-99bf-fb1778374a9a)
+
+Ask your own question [here](https://wiki.bitplatform.dev)
 
 ---

@@ -48,7 +48,6 @@ Service registration is organized through `*ServiceCollectionExtensions.cs` and 
    services.AddSessioned<PubSubService>();
    services.AddSessioned<PromptService>();
    services.AddSessioned<SnackBarService>();
-   services.AddSessioned<AuthManager>();
    ```
 
 3. **`Program.Services.cs`** files in each project
@@ -255,3 +254,12 @@ public partial class ProductPage : AppPageBase
     }
 }
 ```
+
+---
+
+### AI Wiki: Answered Questions
+* [How is the HttpClient created across different platforms and Blazor hosting modes?](https://deepwiki.com/search/how-is-the-httpclient-created_0f4353a6-bf0e-47cc-afbc-bf96aaf97469)
+
+Ask your own question [here](https://wiki.bitplatform.dev)
+
+---
