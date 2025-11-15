@@ -72,7 +72,7 @@ public static partial class Program
         // Add MCP server with chatbot tools
         services.AddMcpServer()
             .WithHttpTransport()
-            .WithTools<AppMcpService>();
+            .WithToolsFromAssembly();
         services.AddScoped<SignalR.AppChatbot>();
         //#endif
         //#if (module == "Sales" || module == "Admin")

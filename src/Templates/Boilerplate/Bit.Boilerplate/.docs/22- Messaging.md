@@ -629,7 +629,6 @@ Components subscribe to `DASHBOARD_DATA_CHANGED` and automatically refresh when 
 ### AI Wiki: Answered Questions
 * [Describe the workflow of bit Boilerplate's AI chat feature and provide a high-level overview.
 ](https://deepwiki.com/search/describe-the-workflow-of-bit-b_822b9510-8e1d-456f-99bf-fb1778374a9a)
-* [Explain how does AppMcpService works in bit Boilerplate?](https://deepwiki.com/search/explain-how-does-appmcpservice_2570a78d-0119-4a31-9125-413dcde4a5bb)
 
 Ask your own question [here](https://wiki.bitplatform.dev)
 
