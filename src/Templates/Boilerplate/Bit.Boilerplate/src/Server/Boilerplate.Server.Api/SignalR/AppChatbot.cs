@@ -28,6 +28,7 @@ public partial class AppChatbot
     [AutoInject] private ILogger<AppChatbot> logger = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
 
+    private string? variables;
     private string? supportSystemPrompt;
     private List<ChatMessage> chatMessages = [];
 
@@ -68,11 +69,13 @@ public partial class AppChatbot
             tags: ["SystemPrompts", $"SystemPrompt_{PromptKind.Support}"],
             cancellationToken: cancellationToken);
 
-        supportSystemPrompt = supportSystemPrompt
-            .Replace("{{UserCulture}}", culture?.NativeName ?? "English")
-            .Replace("{{DeviceInfo}}", request.DeviceInfo ?? "Generic Device")
-            .Replace("{{SignalRConnectionId}}", signalRConnectionId ?? "")
-            .Replace("{{UserTimeZoneId}}", request.TimeZoneId ?? "Unknown");
+        variables = @$"
+### Variables:
+{{{{UserCulture}}}}: ""{culture?.NativeName ?? "English"}""
+{{{{DeviceInfo}}}}: ""{request.DeviceInfo ?? "Generic Device"}""
+{{{{SignalRConnectionId}}}}: ""{signalRConnectionId ?? "Unknown"}""
+{{{{UserTimeZoneId}}}}: ""{request.TimeZoneId ?? "Unknown"}""
+";
     }
 
     /// <summary>
@@ -107,6 +110,7 @@ public partial class AppChatbot
             var chatOptions = CreateChatOptions(serverApiAddress, cancellationToken);
 
             await foreach (var response in chatClient.GetStreamingResponseAsync([
+                new (ChatRole.System, variables),
                 new (ChatRole.System, supportSystemPrompt),
                     .. chatMessages,
                     new (ChatRole.User, incomingMessage)
