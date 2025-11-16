@@ -131,7 +131,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
     {
         // Check out AppHub's comments for more info.
         await appHubContext.Clients.Client(connectionId)
-            .SendAsync(SharedAppMessages.PUBLISH_MESSAGE, SharedAppMessages.SESSION_REVOKED, null, cancellationToken);
+            .Publish(SharedAppMessages.SESSION_REVOKED, null, cancellationToken);
     }
     //#endif
 }

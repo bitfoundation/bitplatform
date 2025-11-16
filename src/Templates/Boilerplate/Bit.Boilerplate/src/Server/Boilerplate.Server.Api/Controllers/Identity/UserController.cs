@@ -90,7 +90,7 @@ public partial class UserController : AppControllerBase, IUserController
         if (userSession.SignalRConnectionId is not null)
         {
             await appHubContext.Clients.Client(userSession.SignalRConnectionId)
-                .SendAsync(SharedAppMessages.PUBLISH_MESSAGE, SharedAppMessages.SESSION_REVOKED, null, cancellationToken);
+                .Publish(SharedAppMessages.SESSION_REVOKED, null, cancellationToken);
         }
         //#endif
     }
@@ -131,7 +131,7 @@ public partial class UserController : AppControllerBase, IUserController
             .Where(us => us.UserId == user.Id && us.Id != currentUserSessionId && us.SignalRConnectionId != null)
             .Select(us => us.SignalRConnectionId!)
             .ToArrayAsync(cancellationToken);
-        await appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId).SendAsync(SharedAppMessages.PUBLISH_MESSAGE, SharedAppMessages.PROFILE_UPDATED, updatedUser, cancellationToken);
+        await appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId).Publish(SharedAppMessages.PROFILE_UPDATED, updatedUser, cancellationToken);
         //#endif
 
         return updatedUser;

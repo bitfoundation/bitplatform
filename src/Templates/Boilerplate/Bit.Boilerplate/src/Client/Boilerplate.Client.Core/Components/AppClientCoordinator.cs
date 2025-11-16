@@ -42,7 +42,7 @@ public partial class AppClientCoordinator : AppComponentBase
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
     //#endif
 
-    private Action? unsubscribe;
+    private List<Action> unsubscribes = [];
 
     protected override async Task OnInitAsync()
     {
@@ -55,13 +55,26 @@ public partial class AppClientCoordinator : AppComponentBase
 
         if (InPrerenderSession is false)
         {
-            unsubscribe = PubSubService.Subscribe(ClientAppMessages.NAVIGATE_TO, async (uri) =>
+            unsubscribes.Add(PubSubService.Subscribe(ClientAppMessages.NAVIGATE_TO, async (uri) =>
             {
                 var uriValue = uri?.ToString()!;
                 var replace = uriValue.Contains("replace=true", StringComparison.InvariantCultureIgnoreCase);
                 var forceLoad = uriValue.Contains("forceLoad=true", StringComparison.InvariantCultureIgnoreCase);
                 NavigationManager.NavigateTo(uriValue.Replace("replace=true", "", StringComparison.InvariantCultureIgnoreCase).Replace("forceLoad=true", "", StringComparison.InvariantCultureIgnoreCase).TrimEnd('&'), forceLoad, replace);
-            });
+            }));
+            //#if (signalR == true)
+            unsubscribes.Add(PubSubService.Subscribe(SharedAppMessages.EXCEPTION_THROWN, async (payload) =>
+            {
+                if (payload is null) return;
+
+                var appProblemDetails = payload is JsonElement jsonDocument
+                    ? jsonDocument.Deserialize(JsonSerializerOptions.GetTypeInfo<AppProblemDetails>())!
+                    : (AppProblemDetails)payload;
+
+                ExceptionHandler.Handle(appProblemDetails, displayKind: ExceptionDisplayKind.NonInterrupting);
+            }));
+            //#endif
+
             if (AppPlatform.IsBlazorHybrid is false)
             {
                 try
@@ -180,6 +193,18 @@ public partial class AppClientCoordinator : AppComponentBase
     //#if (signalR == true)
     private void SubscribeToSignalRSharedAppMessages()
     {
+        hubConnection.Remove(SharedAppMessages.PUBLISH_MESSAGE);
+        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.PUBLISH_MESSAGE, async (string message, object? payload) =>
+        {
+            logger.LogInformation("SignalR Message {Message} received from server to publish.", message);
+            PubSubService.Publish(message, payload);
+            return true;
+        }));
+        // Generally, you're expected to use ShardAppMessages.PUBLISH_MESSAGE at server side to publish messages to clients through SignalR using Server.Api/Extensions/IClientProxyExtensions.cs's Publish method.
+        // However, in some scenarios, you might want client to return a value to server, or simply return `true` confirming that the message is received and processed successfully,
+        // so the server can use `InvokeAsync<bool>` instead of `SendAsync` when sending the message.
+        // So in the following code block, we subscribe to **some** SharedAppMessages directly using HubConnection:
+
         hubConnection.Remove(SharedAppMessages.SHOW_MESSAGE);
         signalROnDisposables.Add(hubConnection.On(SharedAppMessages.SHOW_MESSAGE, async (string message, Dictionary<string, string?>? data) =>
         {
@@ -211,21 +236,6 @@ public partial class AppClientCoordinator : AppComponentBase
             });*/
 
             // You can also leverage IPubSubService to notify other components in the application.
-        }));
-
-        hubConnection.Remove(SharedAppMessages.PUBLISH_MESSAGE);
-        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.PUBLISH_MESSAGE, async (string message, object? payload) =>
-        {
-            logger.LogInformation("SignalR Message {Message} received from server to publish.", message);
-            PubSubService.Publish(message, payload);
-            return true;
-        }));
-
-        hubConnection.Remove(SharedAppMessages.EXCEPTION_THROWN);
-        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.EXCEPTION_THROWN, async (AppProblemDetails appProblemDetails) =>
-        {
-            ExceptionHandler.Handle(appProblemDetails, displayKind: ExceptionDisplayKind.NonInterrupting);
-            return true;
         }));
 
         hubConnection.Remove(SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE);
@@ -275,13 +285,6 @@ public partial class AppClientCoordinator : AppComponentBase
         signalROnDisposables.Add(hubConnection.On(SharedAppMessages.UPLOAD_LAST_ERROR, async () =>
         {
             return DiagnosticLogger.Store.LastOrDefault(l => l.Level is LogLevel.Error or LogLevel.Critical);
-        }));
-
-        hubConnection.Remove(SharedAppMessages.BACKGROUND_JOB_PROGRESS);
-        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.BACKGROUND_JOB_PROGRESS, async (BackgroundJobProgressDto progress) =>
-        {
-            System.Console.WriteLine($"Background Job '{Localizer[progress.JobTitle]}' Progress: {progress.SucceededItems}/{progress.TotalItems} completed.");
-            return true;
         }));
 
         hubConnection.Closed += HubConnectionStateChange;
@@ -367,7 +370,8 @@ public partial class AppClientCoordinator : AppComponentBase
     private List<IDisposable> signalROnDisposables = [];
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        unsubscribe?.Invoke();
+        unsubscribes.ForEach(unsubscribe => unsubscribe());
+        unsubscribes = [];
 
         NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
         AuthManager.AuthenticationStateChanged -= AuthenticationStateChanged;

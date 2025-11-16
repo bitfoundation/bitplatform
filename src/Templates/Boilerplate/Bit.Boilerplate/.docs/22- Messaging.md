@@ -14,6 +14,7 @@ Welcome to Stage 22! In this stage, you will learn about the comprehensive **mes
 2. **AppJsBridge - JavaScript-to-C# Communication**
    - Bridging JavaScript and C# Code
    - Publishing Messages from JavaScript
+   - Publishing Messages from Web Service Workers
    - window.postMessage Integration
 
 3. **SignalR Real-Time Communication**
@@ -217,7 +218,7 @@ This ensures the corresponding browser tab or app immediately:
 - Clears its access/refresh tokens from storage
 - Navigates to the sign-in page automatically
 
-### SendAsync vs InvokeAsync
+### SendAsync (Publish) vs InvokeAsync
 
 Understanding when to use `SendAsync` vs `InvokeAsync` is crucial for reliable server-to-client communication:
 
@@ -242,7 +243,7 @@ if (messageShown)
 }
 ```
 
-#### When to Use SendAsync
+#### When to Use SendAsync (Publish)
 
 Use `SendAsync` when:
 - Broadcasting to multiple clients (e.g., `Clients.All()`, `Clients.Group()`)
@@ -256,6 +257,12 @@ Use `SendAsync` when:
 await appHubContext.Clients.Group("AuthenticatedClients")
     .SendAsync(SharedAppMessages.PUBLISH_MESSAGE, 
                SharedAppMessages.DASHBOARD_DATA_CHANGED, 
+               null, 
+               cancellationToken);
+
+// OR: Simplified with `Publish` extension method:               
+await appHubContext.Clients.Group("AuthenticatedClients")
+    .Publish(SharedAppMessages.DASHBOARD_DATA_CHANGED, 
                null, 
                cancellationToken);
 ```
