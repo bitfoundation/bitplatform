@@ -278,12 +278,12 @@ public partial class AppClientCoordinator : AppComponentBase
         }));
 
         hubConnection.Remove(SharedAppMessages.BACKGROUND_JOB_PROGRESS);
-        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.BACKGROUND_JOB_PROGRESS, async (BackgroundJobProgressDto prgress) =>
+        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.BACKGROUND_JOB_PROGRESS, async (BackgroundJobProgressDto progress) =>
         {
             await InvokeAsync(async () =>
             {
                 System.Console.Out
-                    .WriteLine($"Background Job '{Localizer[prgress.JobTitle]}' Progress: {prgress.SucceededItems}/{prgress.TotalItems} completed.");
+                    .WriteLine($"Background Job '{Localizer[progress.JobTitle]}' Progress: {progress.SucceededItems}/{progress.TotalItems} completed.");
             });
             return true;
         }));
