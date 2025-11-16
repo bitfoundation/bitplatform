@@ -45,6 +45,24 @@ public partial class AppHub : Hub
         }), new() { }, loggerFactory, cancellationToken); // provides ask_question tool
         var deepwikiMcpTools = await deepwikiMcp.ListToolsAsync(cancellationToken: cancellationToken);
 
+        var githubToken = configuration["AppSettings:GitHubSettings:Token"];
+        IList<McpClientTool> githubMcpTools = [];
+        McpClient? githubMcp = null;
+        if (!string.IsNullOrEmpty(githubToken))
+        {
+            githubMcp = await McpClient.CreateAsync(new HttpClientTransport(new()
+            {
+                Name = "GitHub",
+                Endpoint = new("https://api.githubcopilot.com/mcp/"),
+                TransportMode = HttpTransportMode.StreamableHttp,
+                AdditionalHeaders = new Dictionary<string, string>
+                {
+                    ["Authorization"] = $"Bearer {githubToken}"
+                }
+            }, loggerFactory), new() { }, loggerFactory, cancellationToken); // provides GitHub tools including issue creation
+            githubMcpTools = await githubMcp.ListToolsAsync(cancellationToken: cancellationToken);
+        }
+
 
         async Task ReadIncomingMessages()
         {
@@ -68,6 +86,10 @@ public partial class AppHub : Hub
             {
                 messageSpecificCancellationTokenSrc?.Dispose();
                 channel.Writer.Complete();
+                if (githubMcp is not null)
+                {
+                    await githubMcp.DisposeAsync();
+                }
             }
 
             async Task HandleIncomingMessage(string incomingMessage, CancellationToken messageSpecificCancellationToken)
@@ -80,6 +102,7 @@ public partial class AppHub : Hub
                     ChatOptions chatOptions = new()
                     {
                         Tools = [..deepwikiMcpTools,
+                                ..githubMcpTools,
                                 AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
                                 {
                                     if (messageSpecificCancellationToken.IsCancellationRequested)
@@ -129,8 +152,14 @@ public partial class AppHub : Hub
 
                         ## 1. For Complaints or Issues:
                            - If a user complains about something, reports a problem, mentions bugs, issues, errors, or expresses dissatisfaction
-                           - Ask the user to provide their email address
-                           - Once you have their email, call the AskForSupport tool with their email and the conversation history
+                           - Offer to submit a GitHub issue on their behalf **without requiring them to sign in or have a GitHub account**
+                           - Explain that you can create the issue for them directly and they will be mentioned in it
+                           - If they agree, use the available GitHub MCP tools to create an issue in the bitfoundation/bitplatform repository with:
+                             - A clear title summarizing the issue
+                             - A detailed description including the conversation context
+                             - Appropriate labels if available (e.g., bug, enhancement)
+                           - After creating the issue, provide them with the issue URL so they can track it
+                           - Also ask if they want to provide their email address for follow-up via the AskForSupport tool
                            - Be empathetic and assure them that their issue will be addressed
 
                         ## 2. For Sales and Purchasing:
@@ -150,19 +179,22 @@ public partial class AppHub : Hub
                         - If a user seems frustrated or confused, use calming language and offer to clarify: "I'm sorry if this is confusing. I'm here to help—would you like me to explain it again?"
 
                         **UNRESOLVED ISSUES:**
-                        - If you cannot resolve the user's issue (either through the documentation or available tools), respond with: "I'm sorry I couldn't resolve your issue / fully satisfy your request. I understand how frustrating this must be for you. Please provide your email address so a human operator can follow up with you soon."
-                        - After receiving the email, confirm: "Thank you for providing your email. A human operator will follow up with you soon." Then ask: "Do you have any other issues you'd like me to assist with?"
+                        - If you cannot resolve the user's issue (either through the documentation or available tools), respond with: "I'm sorry I couldn't resolve your issue / fully satisfy your request. I understand how frustrating this must be for you. Would you like me to create a GitHub issue to track this, or would you prefer to provide your email address so a human operator can follow up with you soon?"
+                        - If they choose GitHub issue, create one using the GitHub MCP tools
+                        - If they choose email, use the AskForSupport tool after receiving their email
+                        - Then ask: "Do you have any other issues you'd like me to assist with?"
 
                         **Important Notes:**
                         - Always be polite, professional, and helpful
                         - If you're unsure about the user's intent, ask clarifying questions
+                        - When offering to create GitHub issues, explain that they don't need an account and will be mentioned in the issue
                         - When asking for email addresses, explain why you need it (for support follow-up or sales contact)
                         - Provide accurate information based on the official bitplatform documentation
                         - If you cannot find the answer in the documentation, be honest about limitations
                         - When referencing external resources, always use proper Markdown link formatting
                         - Structure your responses with clear headings and organized content
 
-                        **Remember:** Your goal is to provide excellent customer service while efficiently routing users to the appropriate support channels. All responses must be well-formatted using Markdown syntax for optimal readability.
+                        **Remember:** Your goal is to provide excellent customer service while efficiently routing users to the appropriate support channels. All responses must be well-formatted using Markdown syntax for optimal readability. When appropriate, leverage GitHub issue creation to track problems without requiring users to have GitHub accounts.
                         """;
 
                     await foreach (var response in chatClient.GetStreamingResponseAsync([
