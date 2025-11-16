@@ -285,9 +285,9 @@ public partial class AppClientCoordinator : AppComponentBase
     {
         try
         {
-            if (hubConnection.State is not HubConnectionState.Connected or HubConnectionState.Connecting)
+            if (hubConnection.State is not (HubConnectionState.Connected or HubConnectionState.Connecting))
             {
-                await hubConnection.StartAsync(CurrentCancellationToken);
+                await Task.Run(() => hubConnection.StartAsync(CurrentCancellationToken));
                 await HubConnectionConnected(null);
             }
             else

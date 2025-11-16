@@ -1,4 +1,4 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace Boilerplate.Client.Core.Services;
 
@@ -7,17 +7,21 @@ namespace Boilerplate.Client.Core.Services;
 /// </summary>
 public class NoOpPrerenderStateService : IPrerenderStateService
 {
-    public Task<T?> GetValue<T>(Func<Task<T?>> factory, 
-        [CallerLineNumber] int lineNumber = 0, 
-        [CallerMemberName] string memberName = "", 
-        [CallerFilePath] string filePath = "")
+    public async Task<T?> GetValue<T>(string key, Func<Task<T?>> factory)
     {
-        return factory();
+        if (AppPlatform.IsBlazorHybrid)
+        {
+            return await Task.Run(() => factory()); // This would improve responsiveness on Blazor Hybrid scenarios
+        }
+        return await factory();
     }
 
-    public Task<T?> GetValue<T>(string key, Func<Task<T?>> factory)
+    public Task<T?> GetValue<T>(Func<Task<T?>> factory,
+        [CallerLineNumber] int lineNumber = 0,
+        [CallerMemberName] string memberName = "",
+        [CallerFilePath] string filePath = "")
     {
-        return factory();
+        return GetValue("", factory);
     }
 
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
