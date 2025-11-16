@@ -80,7 +80,7 @@ public partial class SharedAppMessages
     public const string MESSAGE_RPOCESS_SUCCESS = nameof(MESSAGE_RPOCESS_SUCCESS);
 
     /// <summary>
-    /// The would let the client know about the progress of a hangfire background job.
+    /// This would let the client know about the progress of a hangfire background job.
     /// </summary>
     public const string BACKGROUND_JOB_PROGRESS = nameof(BACKGROUND_JOB_PROGRESS);
 }

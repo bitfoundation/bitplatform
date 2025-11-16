@@ -17,7 +17,7 @@ public partial class PushNotificationJobRunner
     [AutoInject] private IAdsPushSender adsPushSender = default!;
     [AutoInject] private ServerExceptionHandler serverExceptionHandler = default!;
     //#if (signalR == true)
-    [AutoInject] private IHubContext<AppHub> hubContext;
+    [AutoInject] private IHubContext<AppHub> hubContext = default!;
     //#endif
 
     public async Task RequestPush(int[] pushNotificationSubscriptionIds,
@@ -63,7 +63,7 @@ public partial class PushNotificationJobRunner
         await Parallel.ForEachAsync(subscriptions, parallelOptions: new()
         {
             MaxDegreeOfParallelism = 10,
-            CancellationToken = default
+            CancellationToken = cancellationToken
         }, async (subscription, cancellationToken) =>
         {
             try
