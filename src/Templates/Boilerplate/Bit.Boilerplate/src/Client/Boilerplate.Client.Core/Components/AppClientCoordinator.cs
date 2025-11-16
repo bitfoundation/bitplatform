@@ -203,7 +203,7 @@ public partial class AppClientCoordinator : AppComponentBase
         // Generally, you're expected to use ShardAppMessages.PUBLISH_MESSAGE at server side to publish messages to clients through SignalR using Server.Api/Extensions/IClientProxyExtensions.cs's Publish method.
         // However, in some scenarios, you might want client to return a value to server, or simply return `true` confirming that the message is received and processed successfully,
         // so the server can use `InvokeAsync<bool>` instead of `SendAsync` when sending the message.
-        // So in the following code block, we subscribe to **some** SharedAppMessages directly using HubConnection:
+        // That's why in the following code block, we subscribe to **some** SharedAppMessages directly using HubConnection:
 
         hubConnection.Remove(SharedAppMessages.SHOW_MESSAGE);
         signalROnDisposables.Add(hubConnection.On(SharedAppMessages.SHOW_MESSAGE, async (string message, Dictionary<string, string?>? data) =>
