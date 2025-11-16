@@ -231,10 +231,13 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         //#endif
 
         //#if (notification == true)
-        await pushNotificationService.RequestPush(message: dto.Message,
-                                                  pageUrl: dto.PageUrl,
-                                                  userRelatedPush: true,
-                                                  customSubscriptionFilter: s => s.UserSession!.User!.Roles.Any(r => r.RoleId == dto.RoleId),
+        await pushNotificationService.RequestPush(new()
+        {
+            Message = dto.Message,
+            PageUrl = dto.PageUrl,
+            UserRelatedPush = true,
+            RequesterUserSessionId = User.GetSessionId()
+        }, customSubscriptionFilter: s => s.UserSession!.User!.Roles.Any(r => r.RoleId == dto.RoleId),
                                                   cancellationToken: cancellationToken);
         //#endif
     }

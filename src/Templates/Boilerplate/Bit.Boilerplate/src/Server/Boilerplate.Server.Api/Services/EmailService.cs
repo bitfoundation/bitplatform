@@ -130,7 +130,7 @@ public partial class EmailService
 
     private async Task SendEmail(string body, string toEmailAddress, string toName, string subject)
     {
-        backgroundJobClient.Enqueue<EmailServiceJobsRunner>(jobRunner => jobRunner.SendEmailJob(toEmailAddress, toName, subject, body, default));
+        backgroundJobClient.Enqueue<EmailServiceJobsRunner>(jobRunner => jobRunner.SendEmailJob(toEmailAddress, toName, subject, body));
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "{type} e-mail with subject '{subject}' to {toEmailAddress}. {link}")]

@@ -1,5 +1,6 @@
 ﻿//+:cnd:noEmit
 using FluentEmail.Core;
+using Hangfire.Server;
 
 namespace Boilerplate.Server.Api.Services.Jobs;
 
@@ -12,7 +13,9 @@ public partial class EmailServiceJobsRunner
     [AutoInject] private IStringLocalizer<EmailStrings> emailLocalizer = default!;
 
     [AutomaticRetry(Attempts = 3, DelaysInSeconds = [30] /*We primarily send tokens via email, which expire after 2 minutes by default. It's not worth retrying more than 3 times, with a 30-second delay between attempts.*/)]
-    public async Task SendEmailJob(string toEmailAddress, string toName, string subject, string body, CancellationToken cancellationToken)
+    public async Task SendEmailJob(string toEmailAddress, string toName, string subject, string body,
+        PerformContext context = null!,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -31,7 +34,12 @@ public partial class EmailServiceJobsRunner
         }
         catch (Exception exp)
         {
-            serverExceptionHandler.Handle(exp, new() { { "Subject", subject }, { "ToEmailAddress", toEmailAddress } });
+            serverExceptionHandler.Handle(exp, new() 
+            {
+                { "Subject", subject }, 
+                { "ToEmailAddress", toEmailAddress },
+                { "JobId", context.BackgroundJob.Id }
+            });
             if (exp is not KnownException && cancellationToken.IsCancellationRequested is false)
                 throw; // To retry the job
         }

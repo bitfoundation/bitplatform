@@ -78,4 +78,9 @@ public partial class SharedAppMessages
     /// This would let the client know that a chat bot successfully processed the user's message.
     /// </summary>
     public const string MESSAGE_RPOCESS_SUCCESS = nameof(MESSAGE_RPOCESS_SUCCESS);
+
+    /// <summary>
+    /// The would let the client know about the progress of a hangfire background job.
+    /// </summary>
+    public const string BACKGROUND_JOB_PROGRESS = nameof(BACKGROUND_JOB_PROGRESS);
 }

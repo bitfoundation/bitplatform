@@ -2,6 +2,7 @@
 using System.Web;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
+using Boilerplate.Shared.Dtos.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 //#endif
 //#if (appInsights == true)
@@ -276,6 +277,17 @@ public partial class AppClientCoordinator : AppComponentBase
             return DiagnosticLogger.Store.LastOrDefault(l => l.Level is LogLevel.Error or LogLevel.Critical);
         }));
 
+        hubConnection.Remove(SharedAppMessages.BACKGROUND_JOB_PROGRESS);
+        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.BACKGROUND_JOB_PROGRESS, async (BackgroundJobProgressDto prgress) =>
+        {
+            await InvokeAsync(async () =>
+            {
+                System.Console.Out
+                    .WriteLine($"Background Job '{Localizer[prgress.JobTitle]}' Progress: {prgress.SucceededItems}/{prgress.TotalItems} completed.");
+            });
+            return true;
+        }));
+
         hubConnection.Closed += HubConnectionStateChange;
         hubConnection.Reconnected += HubConnectionConnected;
         hubConnection.Reconnecting += HubConnectionStateChange;
@@ -285,7 +297,7 @@ public partial class AppClientCoordinator : AppComponentBase
     {
         try
         {
-            if (hubConnection.State is not HubConnectionState.Connected or HubConnectionState.Connecting)
+            if (hubConnection.State is not (HubConnectionState.Connected or HubConnectionState.Connecting))
             {
                 await hubConnection.StartAsync(CurrentCancellationToken);
                 await HubConnectionConnected(null);

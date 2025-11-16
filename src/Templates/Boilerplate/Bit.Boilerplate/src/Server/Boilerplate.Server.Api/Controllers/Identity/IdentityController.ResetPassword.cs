@@ -66,7 +66,11 @@ public partial class IdentityController
         //#endif
 
         //#if (notification == true)
-        sendMessagesTasks.Add(pushNotificationService.RequestPush(message: message, userRelatedPush: true, customSubscriptionFilter: s => s.UserSession!.UserId == user.Id, cancellationToken: cancellationToken));
+        sendMessagesTasks.Add(pushNotificationService.RequestPush(new()
+        {
+            Message = message,
+            UserRelatedPush = true
+        }, customSubscriptionFilter: s => s.UserSession!.UserId == user.Id, cancellationToken: cancellationToken));
         //#endif
 
         await Task.WhenAll(sendMessagesTasks);

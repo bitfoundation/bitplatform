@@ -14,6 +14,7 @@ using Boilerplate.Shared.Dtos.PushNotification;
 //#endif
 //#if (signalR == true)
 using Boilerplate.Shared.Dtos.Chatbot;
+using Boilerplate.Shared.Dtos.SignalR;
 //#endif
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Dtos.Statistics;
@@ -64,6 +65,7 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(DiagnosticLogDto[]))]
 [JsonSerializable(typeof(StartChatRequest))]
 [JsonSerializable(typeof(List<SystemPromptDto>))]
+[JsonSerializable(typeof(BackgroundJobProgressDto))]
 //#endif
 public partial class AppJsonContext : JsonSerializerContext
 {

@@ -434,7 +434,11 @@ public partial class UserController : AppControllerBase, IUserController
             //#endif
 
             //#if (notification == true)
-            sendMessagesTasks.Add(pushNotificationService.RequestPush(message: message, userRelatedPush: true, customSubscriptionFilter: us => us.UserSession!.UserId == user.Id && us.UserSessionId != currentUserSessionId, cancellationToken: cancellationToken));
+            sendMessagesTasks.Add(pushNotificationService.RequestPush(new()
+            {
+                Message = message,
+                UserRelatedPush = true
+            }, customSubscriptionFilter: us => us.UserSession!.UserId == user.Id && us.UserSessionId != currentUserSessionId, cancellationToken: cancellationToken));
             //#endif
         }
 
@@ -458,7 +462,11 @@ public partial class UserController : AppControllerBase, IUserController
         if (userSession.NotificationStatus is UserSessionNotificationStatus.Allowed)
         {
             //#if (notification == true)
-            await pushNotificationService.RequestPush(message: Localizer[nameof(AppStrings.TestNotificationMessage1)], userRelatedPush: true, customSubscriptionFilter: us => us.UserSessionId == userSessionId, cancellationToken: cancellationToken);
+            await pushNotificationService.RequestPush(new()
+            {
+                Message = Localizer[nameof(AppStrings.TestNotificationMessage1)],
+                UserRelatedPush = true
+            }, customSubscriptionFilter: us => us.UserSessionId == userSessionId, cancellationToken: cancellationToken);
             //#endif
             //#if (signalR == true)
             if (userSession.SignalRConnectionId != null)

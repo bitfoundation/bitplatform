@@ -267,6 +267,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="SystemPromptsSubTitle" xml:space="preserve">
     <value>View the system prompts for chatbot here.</value>
   </data>
+    <data name="PushNotificationJob" xml:space="preserve">
+    <value>Push notification job</value>
+  </data>
     <!--#endif-->
     <!--#if (offlineDb == true) -->
     <data name="OfflineDatabaseDemoTitle" xml:space="preserve">
