@@ -325,14 +325,14 @@ public virtual async Task SendSms(string messageText, string phoneNumber)
     var from = appSettings.Sms!.FromPhoneNumber!;
 
     // Enqueue the job - this returns immediately
-    backgroundJobClient.Enqueue<PhoneServiceJobsRunner>(x => x.SendSms(phoneNumber, from, messageText, default));
+    backgroundJobClient.Enqueue<PhoneServiceJobsRunner>(x => x.SendSms(phoneNumber, from, messageText));
 }
 ```
 
 **Key points:**
 - `backgroundJobClient.Enqueue<T>()` schedules the job to run in the background
 - The method returns **immediately** - the user doesn't wait
-- The `default` parameter is a placeholder for the `CancellationToken` (Hangfire will provide it)
+- Hangfire will automatically provide the `PerformContext` and `CancellationToken` parameters to the job runner method
 
 #### Step 2: The Job Runner Executes the Task
 
@@ -344,7 +344,9 @@ public partial class PhoneServiceJobsRunner
     [AutoInject] private ServerExceptionHandler serverExceptionHandler = default!;
 
     [AutomaticRetry(Attempts = 3, DelaysInSeconds = [30])]
-    public async Task SendSms(string phoneNumber, string from, string messageText, CancellationToken cancellationToken)
+    public async Task SendSms(string phoneNumber, string from, string messageText,
+        PerformContext context = null!,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -357,20 +359,18 @@ public partial class PhoneServiceJobsRunner
             var smsMessage = MessageResource.Create(messageOptions);
 
             if (smsMessage.ErrorCode is not null)
-                throw new InvalidOperationException(smsMessage.ErrorMessage)
-                    .WithData(new() { { "Code", smsMessage.ErrorCode } });
+                throw new InvalidOperationException(smsMessage.ErrorMessage).WithData(new() { { "Code", smsMessage.ErrorCode } });
         }
         catch (Exception exp)
         {
-            serverExceptionHandler.Handle(exp, new() { { "PhoneNumber", phoneNumber } });
-            
+            serverExceptionHandler.Handle(exp, new()
+            {
+                { "PhoneNumber", phoneNumber },
+                { "JobId", context.BackgroundJob.Id }
+            });
             if (exp is not KnownException && cancellationToken.IsCancellationRequested is false)
                 throw; // To retry the job
         }
-    }
-}
-```
-
 **Key features:**
 
 1. **AutomaticRetry**: If the job fails, Hangfire automatically retries it
@@ -378,10 +378,19 @@ public partial class PhoneServiceJobsRunner
    - `DelaysInSeconds = [30]`: Wait 30 seconds between retries
    - This is perfect for SMS tokens that expire after 2 minutes
 
-2. **Exception Handling**:
-   - Logs the error with context (`PhoneNumber`)
+2. **Hangfire-Provided Parameters**: The method accepts two special parameters that Hangfire automatically provides:
+   - `PerformContext context`: Provides access to job metadata (like `JobId`, `BackgroundJob`, etc.)
+   - `CancellationToken cancellationToken`: Signals when the job should be cancelled (e.g., server shutdown)
+   - These parameters have default values (`null!` and `default`) so Hangfire can invoke the method
+
+3. **Exception Handling**:
+   - Logs the error with context (`PhoneNumber`, `JobId`)
    - For unknown exceptions, re-throws to trigger retry
    - For known exceptions (business logic errors), doesn't retry
+
+4. **CancellationToken**: Even background jobs support cancellation (e.g., if the server is shutting down)
+
+**Important**: Inside background job, there is **NO** `IHttpContextAccessor` or `User` object available. So if user context is needed, it must be passed as parameters to the job method.
 
 3. **CancellationToken**: Even background jobs support cancellation (e.g., if the server is shutting down)
 
