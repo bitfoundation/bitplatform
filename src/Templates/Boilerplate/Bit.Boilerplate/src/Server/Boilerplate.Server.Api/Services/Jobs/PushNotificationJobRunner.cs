@@ -94,7 +94,7 @@ public partial class PushNotificationJobRunner
                 {
                     if (signalRConnectionId != null)
                     {
-                        _ = hubContext.Clients.Client(signalRConnectionId).SendAsync(SharedAppMessages.BACKGROUND_JOB_PROGRESS, new BackgroundJobProgressDto()
+                        _ = hubContext.Clients.Client(signalRConnectionId).Publish(SharedAppMessages.BACKGROUND_JOB_PROGRESS, new BackgroundJobProgressDto()
                         {
                             JobId = context.BackgroundJob.Id,
                             JobTitle = nameof(AppStrings.PushNotificationJob),
