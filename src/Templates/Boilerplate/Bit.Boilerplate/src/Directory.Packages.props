@@ -23,7 +23,6 @@
         <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.0" />
         <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
         <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.0" />
-        <PackageVersion Include="ZiggyCreatures.FusionCache" Version="1.6.0" />
         <PackageVersion Include="AspNetCore.HealthChecks.Hangfire" Version="9.0.0" />
         <PackageVersion Include="AspNetCore.HealthChecks.System" Version="9.0.0" />
         <PackageVersion Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
@@ -132,5 +131,7 @@
         <PackageVersion Include="System.Text.Json" Version="10.0.0" />
         <PackageVersion Include="FakeItEasy" Version="8.3.0" />
         <PackageVersion Include="Microsoft.Playwright.MSTest.v4" Version="1.56.0" />
+        <PackageVersion Include="ZiggyCreatures.FusionCache.AspNetCore.OutputCaching" Version="2.4.0" />
+        <PackageVersion Include="ZiggyCreatures.FusionCache.OpenTelemetry" Version="2.4.0" />
     </ItemGroup>
 </Project>

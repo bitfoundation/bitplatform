@@ -44,8 +44,8 @@ public static class WebApplicationBuilderExtensions
             }, excludeDefaultPolicy: true);
         });
 
-        services.AddDistributedMemoryCache(); // For ASP.NET Core Output Caching
-        services.AddFusionCache(); // For actual backend project usages
+        services.AddFusionCache();
+        services.AddFusionOutputCache(); // For ASP.NET Core Output Caching with FusionCache
 
         services.AddHttpContextAccessor();
 
@@ -122,6 +122,7 @@ public static class WebApplicationBuilderExtensions
             .WithMetrics(metrics =>
             {
                 metrics.AddAspNetCoreInstrumentation()
+                    .AddFusionCacheInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation();
 
@@ -151,6 +152,7 @@ public static class WebApplicationBuilderExtensions
                                     };
                                 })
                     .AddHttpClientInstrumentation()
+                    .AddFusionCacheInstrumentation()
                     .AddEntityFrameworkCoreInstrumentation(options => options.Filter = (providerName, command) => command?.CommandText?.Contains("Hangfire") is false /* Ignore Hangfire */)
                     .AddHangfireInstrumentation();
 
