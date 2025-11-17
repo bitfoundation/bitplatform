@@ -68,7 +68,7 @@ public partial class AppClientCoordinator : AppComponentBase
                 if (payload is null) return;
 
                 var appProblemDetails = payload is JsonElement jsonDocument
-                    ? jsonDocument.Deserialize(JsonSerializerOptions.GetTypeInfo<AppProblemDetails>())!
+                    ? jsonDocument.Deserialize(JsonSerializerOptions.GetTypeInfo<AppProblemDetails>())! /* Message gets published from server through SignalR */
                     : (AppProblemDetails)payload;
 
                 ExceptionHandler.Handle(appProblemDetails, displayKind: ExceptionDisplayKind.NonInterrupting);
