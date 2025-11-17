@@ -6,7 +6,7 @@ namespace Boilerplate.Client.Core.Services;
 public partial class ClientAppMessages
     //#if (signalR == true)
     : SharedAppMessages
-    //#endif
+//#endif
 {
     /// <summary>
     /// A publisher that publishes this message wants a snack bar to be shown.
@@ -73,6 +73,11 @@ public partial class ClientAppMessages
     /// When the user profile is updated, this message is published.
     /// </summary>
     public const string PROFILE_UPDATED = nameof(PROFILE_UPDATED);
+
+    /// <summary>
+    /// This would let the client know about the progress of a job (Typically a long-running hangfire background job).
+    /// </summary>
+    public const string BACKGROUND_JOB_PROGRESS = nameof(BACKGROUND_JOB_PROGRESS);
     //#endif
 
     //#if(module == "Sales")

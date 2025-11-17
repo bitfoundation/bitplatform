@@ -20,7 +20,7 @@ public partial class JobProgress
 
         if (InPrerenderSession is false)
         {
-            disposable = PubSubService.Subscribe(SharedAppMessages.BACKGROUND_JOB_PROGRESS, async payload =>
+            disposable = PubSubService.Subscribe(ClientAppMessages.BACKGROUND_JOB_PROGRESS, async payload =>
             {
                 if (payload is null) return;
 
