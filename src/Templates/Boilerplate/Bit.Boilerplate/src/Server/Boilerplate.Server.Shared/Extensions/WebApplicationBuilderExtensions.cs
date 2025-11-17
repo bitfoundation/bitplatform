@@ -9,7 +9,6 @@ using Boilerplate.Server.Shared;
 using Boilerplate.Server.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.ResponseCompression;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
@@ -46,7 +45,7 @@ public static class WebApplicationBuilderExtensions
         });
 
         services.AddDistributedMemoryCache(); // For ASP.NET Core Output Caching
-        services.AddHybridCache(); // For actual backend project usages
+        services.AddFusionCache(); // For actual backend project usages
 
         services.AddHttpContextAccessor();
 

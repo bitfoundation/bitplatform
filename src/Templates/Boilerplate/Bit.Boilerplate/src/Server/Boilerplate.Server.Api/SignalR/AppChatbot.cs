@@ -5,7 +5,6 @@ using System.Threading.Channels;
 using Boilerplate.Shared.Dtos.Chatbot;
 using Boilerplate.Shared.Dtos.Diagnostic;
 using Boilerplate.Server.Api.Services;
-using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.AspNetCore.SignalR;
 using ModelContextProtocol.Server;
 
@@ -23,7 +22,7 @@ public partial class AppChatbot
     private IChatClient? chatClient = default!;
 
     [AutoInject] private AppDbContext dbContext = default!;
-    [AutoInject] private HybridCache cache = default!;
+    [AutoInject] private IFusionCache cache = default!;
     [AutoInject] private IConfiguration configuration = default!;
     [AutoInject] private ILogger<AppChatbot> logger = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
@@ -53,7 +52,7 @@ public partial class AppChatbot
             culture = CultureInfo.GetCultureInfo(request.CultureId.Value);
         }
 
-        supportSystemPrompt = await cache.GetOrCreateAsync(
+        supportSystemPrompt = await cache.GetOrSetAsync(
             $"SystemPrompt_{PromptKind.Support}",
             async cancel =>
             {
@@ -61,13 +60,11 @@ public partial class AppChatbot
                     .FirstOrDefaultAsync(p => p.PromptKind == PromptKind.Support, cancel);
                 return prompt?.Markdown ?? throw new ResourceNotFoundException();
             },
-            new()
+            new FusionCacheEntryOptions()
             {
-                Expiration = TimeSpan.FromHours(1),
-                LocalCacheExpiration = TimeSpan.FromHours(1)
+                Duration = TimeSpan.FromHours(1)
             },
-            tags: ["SystemPrompts", $"SystemPrompt_{PromptKind.Support}"],
-            cancellationToken: cancellationToken);
+            token: cancellationToken);
 
         variables = @$"
 ### Variables:
