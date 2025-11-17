@@ -236,7 +236,9 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
             Message = dto.Message,
             PageUrl = dto.PageUrl,
             UserRelatedPush = true,
+            //#if (signalR == true)
             RequesterUserSessionId = User.GetSessionId()
+            //#endif
         }, customSubscriptionFilter: s => s.UserSession!.User!.Roles.Any(r => r.RoleId == dto.RoleId),
                                                   cancellationToken: cancellationToken);
         //#endif
