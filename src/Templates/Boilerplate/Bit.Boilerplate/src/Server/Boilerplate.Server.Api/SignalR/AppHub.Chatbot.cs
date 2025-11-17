@@ -86,7 +86,7 @@ public partial class AppHub
             return;
         try
         {
-            await Clients.Caller.SendAsync(SharedAppMessages.EXCEPTION_THROWN, problemDetails, cancellationToken);
+            await Clients.Caller.Publish(SharedAppMessages.EXCEPTION_THROWN, problemDetails, cancellationToken);
         }
         catch { }
     }

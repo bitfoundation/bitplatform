@@ -267,6 +267,9 @@
     <data name="SystemPromptsSubTitle" xml:space="preserve">
     <value>این‌جا میتونید پرامپت‌های سیستمی مورد استفاده چت بات رو مشاهده کنید</value>
   </data>
+    <data name="PushNotificationJob" xml:space="preserve">
+    <value>عملیات ارسال پوش نوتیفیکیشن</value>
+  </data>
     <!--#endif-->
     <!--#if (offlineDb == true) -->
     <data name="OfflineDatabaseDemoTitle" xml:space="preserve">

@@ -90,7 +90,7 @@ public partial class UserController : AppControllerBase, IUserController
         if (userSession.SignalRConnectionId is not null)
         {
             await appHubContext.Clients.Client(userSession.SignalRConnectionId)
-                .SendAsync(SharedAppMessages.PUBLISH_MESSAGE, SharedAppMessages.SESSION_REVOKED, null, cancellationToken);
+                .Publish(SharedAppMessages.SESSION_REVOKED, null, cancellationToken);
         }
         //#endif
     }
@@ -131,7 +131,7 @@ public partial class UserController : AppControllerBase, IUserController
             .Where(us => us.UserId == user.Id && us.Id != currentUserSessionId && us.SignalRConnectionId != null)
             .Select(us => us.SignalRConnectionId!)
             .ToArrayAsync(cancellationToken);
-        await appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId).SendAsync(SharedAppMessages.PUBLISH_MESSAGE, SharedAppMessages.PROFILE_UPDATED, updatedUser, cancellationToken);
+        await appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId).Publish(SharedAppMessages.PROFILE_UPDATED, updatedUser, cancellationToken);
         //#endif
 
         return updatedUser;
@@ -434,7 +434,11 @@ public partial class UserController : AppControllerBase, IUserController
             //#endif
 
             //#if (notification == true)
-            sendMessagesTasks.Add(pushNotificationService.RequestPush(message: message, userRelatedPush: true, customSubscriptionFilter: us => us.UserSession!.UserId == user.Id && us.UserSessionId != currentUserSessionId, cancellationToken: cancellationToken));
+            sendMessagesTasks.Add(pushNotificationService.RequestPush(new()
+            {
+                Message = message,
+                UserRelatedPush = true
+            }, customSubscriptionFilter: us => us.UserSession!.UserId == user.Id && us.UserSessionId != currentUserSessionId, cancellationToken: cancellationToken));
             //#endif
         }
 
@@ -458,7 +462,11 @@ public partial class UserController : AppControllerBase, IUserController
         if (userSession.NotificationStatus is UserSessionNotificationStatus.Allowed)
         {
             //#if (notification == true)
-            await pushNotificationService.RequestPush(message: Localizer[nameof(AppStrings.TestNotificationMessage1)], userRelatedPush: true, customSubscriptionFilter: us => us.UserSessionId == userSessionId, cancellationToken: cancellationToken);
+            await pushNotificationService.RequestPush(new()
+            {
+                Message = Localizer[nameof(AppStrings.TestNotificationMessage1)],
+                UserRelatedPush = true
+            }, customSubscriptionFilter: us => us.UserSessionId == userSessionId, cancellationToken: cancellationToken);
             //#endif
             //#if (signalR == true)
             if (userSession.SignalRConnectionId != null)

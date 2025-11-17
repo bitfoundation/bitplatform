@@ -87,7 +87,7 @@ public partial class MainLayout : IAsyncDisposable
                 if (payload is null) return;
 
                 currentUser = payload is JsonElement jsonDocument
-                    ? jsonDocument.Deserialize(jsonSerializerOptions.GetTypeInfo<UserDto>())! // PROFILE_UPDATED can be invoked from server through SignalR
+                    ? jsonDocument.Deserialize(jsonSerializerOptions.GetTypeInfo<UserDto>())! /* Message gets published from server through SignalR */
                     : (UserDto)payload;
 
                 await InvokeAsync(StateHasChanged);

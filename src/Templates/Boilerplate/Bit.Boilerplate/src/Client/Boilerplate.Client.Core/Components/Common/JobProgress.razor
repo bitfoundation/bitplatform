@@ -1,0 +1,19 @@
+@inherits AppComponentBase
+
+@* This component gets shown by SharedAppMessages.BACKGROUND_JOB_PROGRESS to show background job progress *@
+
+@if (isVisible)
+{
+	<BitButton Float
+			   Draggable
+			   Title="@currentJobTitle"
+			   FloatOffset="2rem"
+			   Variant="BitVariant.Text"
+			   Color="BitColor.TertiaryBackground"
+			   FloatPosition="BitPosition.BottomLeft"
+			   OnClick="WrapHandled(Ignore)">
+		<BitProgress Circular
+					 Percent="@currentJobProgressPercentage"
+					 ShowPercentNumber />
+	</BitButton>
+}

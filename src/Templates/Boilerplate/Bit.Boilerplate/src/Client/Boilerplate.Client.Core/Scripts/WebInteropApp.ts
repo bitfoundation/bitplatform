@@ -64,7 +64,7 @@ export class WebInteropApp {
         if (!localHttpPort) {
             // Blazor WebAssembly, Auto or Server:
             if (window.opener) {
-                window.opener.postMessage({ key: 'PUBLISH_MESSAGE', message: 'SOCIAL_SIGN_IN', payload: urlToOpen });
+                window.opener.postMessage({ key: 'PUBLISH_MESSAGE', message: 'SOCIAL_SIGN_IN_CALLBACK', payload: urlToOpen });
             }
             else {
                 WebInteropApp.autoClose = false;

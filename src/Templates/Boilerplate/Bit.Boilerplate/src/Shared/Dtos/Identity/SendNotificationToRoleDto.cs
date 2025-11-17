@@ -6,5 +6,8 @@ public partial class SendNotificationToRoleDto
 
     public string? Message { get; set; }
 
+    /// <summary>
+    /// The page to be opened when the notification is clicked.
+    /// </summary>
     public string? PageUrl { get; set; }
 }

@@ -1047,15 +1047,17 @@ At the end of Stage 21, ask: **"Do you have any questions about .NET MAUI, nativ
 
 ### Instructions
 
-1. **Explain In-App Messaging with PubSubService**:
-   - **Purpose**: A publish-subscribe messaging system for communication between components within the application
-   - **Real-world example**: Explain to the developer that when a user changes their profile picture in Settings/Profile page, the profile picture in the Header is automatically updated
-   - **Search and demonstrate**: Find usages of `PubSubService` in the codebase and explain how it works
-   - Show how to publish a message and how to subscribe to messages
+1. **Explain Shared AppMessages**
+   - **Purpose**: A centralized messaging system for communication between server and C# Client throgugh SignalR,
+   between C# components at client side through PubSubService,
+   between JavaScript and C# code through AppJsBridge and `window.addEventListener('message',...)` inside `events.ts`
+   between Service Worker and C# code through `navigator.serviceWorker.addEventListener('message',...)` inside `events.ts`
 
-2. **Explain AppJsBridge for JavaScript-to-C# Communication**:
-   - **Purpose**: Enables sending messages from JavaScript/TypeScript code to C# .NET code
-   - **Search and demonstrate**: Find `AppJsBridge` implementation and show examples of how JavaScript code can communicate with C# code
+2. **Explain features**
+   - Developer can publish messages like User's profile has been updated to the rest of the user's devices through SignalR,
+   so all devices get updated profile information without manual refresh.
+   - The same published message would update profile information in app's header through PubSubService without relying on SignalR.
+   - The developer can publish a message to navigate to specific page when a user taps on a push notification `Boilerplate.Client.Web/wwwroot/service-worker.js`
 
 <!--#if (signalR == true)-->
 3. **Explain Server-to-Client Messaging with SignalR**:
@@ -1065,11 +1067,13 @@ At the end of Stage 21, ask: **"Do you have any questions about .NET MAUI, nativ
      - `AuthenticatedClients` group (all authenticated users)
      - All devices of a specific user (a user might have multiple sessions - web app open twice, mobile app, etc.)
      - A specific device/connection
-- **AppMessage Types**:
-     - **SharedAppMessages**: Application-specific messages, for example:
-       - `SharedAppMessages.SESSION_REVOKED`: Redirects the device to the Sign In page when a session is revoked
-       - `SharedAppMessages.SHOW_MESSAGE`: Displays a text message to the user
-   - **Search and demonstrate**: Find SignalR hub implementations and show examples of server-to-client messaging
+- **Explain SendAsync vs InvokeAsync**:
+     - `InvokeAsync`: Waits for a response from the client. The client might simply return a `true` value,
+     but this ensures the message was received and processed.
+     - `SendAsync`: Fire-and-forget, no response expected
+     - `Publish`: Would use `SendAsync` internally to publish `SharedAppMessages` to the client and has the same fire-and-forget behavior.
+     - In order to make `InvokeAsync` work, the HubConnection listerner must be registered in `src/Client/Boilerplate.Client.Core/Components/AppClientCoordinator.cs` `SubscribeToSignalRSharedAppMessages` method,
+     but the `SendAsync` and `Publish` methods would work without any additional code.
 <!--#endif-->
 
 <!--#if (notification == true)-->

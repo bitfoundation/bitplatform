@@ -4,9 +4,9 @@ import { App } from './App';
 
 (function () {
     window.addEventListener('load', handleLoad);
-    window.addEventListener('message', handleMessage);
     window.addEventListener('resize', setCssWindowSizes);
 
+    window.addEventListener('message', handleMessage);
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.addEventListener('message', handleMessage);
     }
