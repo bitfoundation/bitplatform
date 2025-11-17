@@ -37,7 +37,11 @@ public class BitTimePickerTests : BunitTestContext
     {
         var component = RenderComponent<BitTimePicker>(parameters =>
         {
-            parameters.Add(p => p.LabelTemplate, labelTemplate);
+            //parameters.Add(p => p.LabelTemplate, labelTemplate);
+            parameters.Add(p => p.LabelTemplate, builder =>
+            {
+                builder.AddMarkupContent(0, labelTemplate);
+            });
         });
 
         var labelChild = component.Find(".bit-tpc > label").ChildNodes;
@@ -97,8 +101,8 @@ public class BitTimePickerTests : BunitTestContext
         Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
     }
 
-    [TestMethod, 
-        DataRow("Select a time..."), 
+    [TestMethod,
+        DataRow("Select a time..."),
         DataRow(null)
     ]
     public void BitTimePickerShouldRespectPlaceholder(string placeholder)
