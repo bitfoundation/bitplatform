@@ -36,73 +36,53 @@ public partial class AppHub : Hub
 
         // Hint: There are much more effective ways to implement this in the bit Boilerplate project template's AutoRag feature.
         // It supports both SQL Server 2025 and PostgreSQL with pgvector extension.
+        var task1 = GetDeepWikiTools(cancellationToken);
 
-        await using var deepwikiMcp = await McpClient.CreateAsync(new HttpClientTransport(new()
+        var task2 = GetGitHubTools(cancellationToken);
+
+        await Task.WhenAll(task1, task2);
+
+        var (githubMcpClient, githubTools) = task1.Result;
+        var (deepwikiMcp, deepwikiMcpTools) = task2.Result;
+
+        await using (githubMcpClient)
+        await using (deepwikiMcp)
         {
-            Name = "DeepWiki",
-            Endpoint = new("https://mcp.deepwiki.com/mcp"),
-            TransportMode = HttpTransportMode.StreamableHttp
-        }), new() { }, loggerFactory, cancellationToken); // provides ask_question tool
-        var deepwikiMcpTools = await deepwikiMcp.ListToolsAsync(cancellationToken: cancellationToken);
-
-        var githubToken = configuration["AppSettings:GitHubSettings:Token"];
-        IList<McpClientTool> githubMcpTools = [];
-        McpClient? githubMcp = null;
-        if (!string.IsNullOrEmpty(githubToken))
-        {
-            githubMcp = await McpClient.CreateAsync(new HttpClientTransport(new()
+            async Task ReadIncomingMessages()
             {
-                Name = "GitHub",
-                Endpoint = new("https://api.githubcopilot.com/mcp/"),
-                TransportMode = HttpTransportMode.StreamableHttp,
-                AdditionalHeaders = new Dictionary<string, string>
-                {
-                    ["Authorization"] = $"Bearer {githubToken}"
-                }
-            }, loggerFactory), new() { }, loggerFactory, cancellationToken); // provides GitHub tools including issue creation
-            githubMcpTools = await githubMcp.ListToolsAsync(cancellationToken: cancellationToken);
-        }
+                List<ChatMessage> chatMessages = request.ChatMessagesHistory
+                    .Select(c => new ChatMessage(c.Role is AiChatMessageRole.Assistant ? ChatRole.Assistant : ChatRole.User, c.Content))
+                    .ToList();
 
-
-        async Task ReadIncomingMessages()
-        {
-            List<ChatMessage> chatMessages = request.ChatMessagesHistory
-                .Select(c => new ChatMessage(c.Role is AiChatMessageRole.Assistant ? ChatRole.Assistant : ChatRole.User, c.Content))
-                .ToList();
-
-            CancellationTokenSource? messageSpecificCancellationTokenSrc = null;
-            try
-            {
-                await foreach (var incomingMessage in incomingMessages)
-                {
-                    if (messageSpecificCancellationTokenSrc is not null)
-                        await messageSpecificCancellationTokenSrc.CancelAsync();
-
-                    messageSpecificCancellationTokenSrc = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                    _ = HandleIncomingMessage(incomingMessage, messageSpecificCancellationTokenSrc.Token);
-                }
-            }
-            finally
-            {
-                messageSpecificCancellationTokenSrc?.Dispose();
-                channel.Writer.Complete();
-                if (githubMcp is not null)
-                {
-                    await githubMcp.DisposeAsync();
-                }
-            }
-
-            async Task HandleIncomingMessage(string incomingMessage, CancellationToken messageSpecificCancellationToken)
-            {
-                StringBuilder assistantResponse = new();
+                CancellationTokenSource? messageSpecificCancellationTokenSrc = null;
                 try
                 {
-                    chatMessages.Add(new(ChatRole.User, incomingMessage));
-
-                    ChatOptions chatOptions = new()
+                    await foreach (var incomingMessage in incomingMessages)
                     {
-                        Tools = [..deepwikiMcpTools,
-                                ..githubMcpTools,
+                        if (messageSpecificCancellationTokenSrc is not null)
+                            await messageSpecificCancellationTokenSrc.CancelAsync();
+
+                        messageSpecificCancellationTokenSrc = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                        _ = HandleIncomingMessage(incomingMessage, messageSpecificCancellationTokenSrc.Token);
+                    }
+                }
+                finally
+                {
+                    messageSpecificCancellationTokenSrc?.Dispose();
+                    channel.Writer.Complete();
+                }
+
+                async Task HandleIncomingMessage(string incomingMessage, CancellationToken messageSpecificCancellationToken)
+                {
+                    StringBuilder assistantResponse = new();
+                    try
+                    {
+                        chatMessages.Add(new(ChatRole.User, incomingMessage));
+
+                        ChatOptions chatOptions = new()
+                        {
+                            Tools = [..deepwikiMcpTools,
+                                ..githubTools,
                                 AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
                                 {
                                     if (messageSpecificCancellationToken.IsCancellationRequested)
@@ -125,12 +105,12 @@ public partial class AppHub : Hub
                                         .SendBuyPackageMessage("Default", emailAddress, conversationHistory, messageSpecificCancellationToken);
 
                                 }, name: "AskForSales", description: "Saves the user's email address and the conversation history for future susales. Parameters: emailAddress (string), conversationHistory (string)")
-                        ]
-                    };
+                            ]
+                        };
 
-                    configuration.GetRequiredSection("AppSettings:ChatOptions").Bind(chatOptions);
+                        configuration.GetRequiredSection("AppSettings:ChatOptions").Bind(chatOptions);
 
-                    const string supportSystemPrompt = """
+                        const string supportSystemPrompt = """
                         You are a helpful AI assistant for the bitplatform community. Your primary role is to assist users with their questions and needs related to bitplatform.
 
                         **RELEVANCE:**
@@ -154,11 +134,17 @@ public partial class AppHub : Hub
                            - If a user complains about something, reports a problem, mentions bugs, issues, errors, or expresses dissatisfaction
                            - Offer to submit a GitHub issue on their behalf **without requiring them to sign in or have a GitHub account**
                            - Explain that you can create the issue for them directly and they will be mentioned in it
-                           - If they agree, use the available GitHub MCP tools to create an issue in the bitfoundation/bitplatform repository with:
-                             - A clear title summarizing the issue
-                             - A detailed description including the conversation context
-                             - Appropriate labels if available (e.g., bug, enhancement)
-                           - After creating the issue, provide them with the issue URL so they can track it
+                           - If they agree, use the `issue_write` tool to create an issue in the ysmoradi/v repository
+                           
+                           **CRITICAL GitHub Issue Creation Instructions:**
+                           - **ALWAYS** create the issue title (clear and concise) and summarized description
+                           - Translate the issue title and description to English before creating the issue
+                           - Write a comprehensive body/description that includes:
+                             * A summary of the problem
+                             * The complete conversation history between the user and assistant
+                             * Any relevant technical details, error messages, or context
+                             * Format the conversation history clearly with markdown headers and quotes
+                           - After creating the issue, provide the user with the issue URL so they can track it
                            - Also ask if they want to provide their email address for follow-up via the AskForSupport tool
                            - Be empathetic and assure them that their issue will be addressed
 
@@ -180,7 +166,7 @@ public partial class AppHub : Hub
 
                         **UNRESOLVED ISSUES:**
                         - If you cannot resolve the user's issue (either through the documentation or available tools), respond with: "I'm sorry I couldn't resolve your issue / fully satisfy your request. I understand how frustrating this must be for you. Would you like me to create a GitHub issue to track this, or would you prefer to provide your email address so a human operator can follow up with you soon?"
-                        - If they choose GitHub issue, create one using the GitHub MCP tools
+                        - If they choose GitHub issue, create one using the issue_write tool
                         - If they choose email, use the AskForSupport tool after receiving their email
                         - Then ask: "Do you have any other issues you'd like me to assist with?"
 
@@ -197,41 +183,76 @@ public partial class AppHub : Hub
                         **Remember:** Your goal is to provide excellent customer service while efficiently routing users to the appropriate support channels. All responses must be well-formatted using Markdown syntax for optimal readability. When appropriate, leverage GitHub issue creation to track problems without requiring users to have GitHub accounts.
                         """;
 
-                    await foreach (var response in chatClient.GetStreamingResponseAsync([
-                        new (ChatRole.System, supportSystemPrompt),
+                        await foreach (var response in chatClient.GetStreamingResponseAsync([
+                            new (ChatRole.System, supportSystemPrompt),
                             .. chatMessages,
                             new (ChatRole.User, incomingMessage)
-                        ], options: chatOptions, cancellationToken: messageSpecificCancellationToken))
-                    {
-                        if (messageSpecificCancellationToken.IsCancellationRequested)
-                            break;
+                            ], options: chatOptions, cancellationToken: messageSpecificCancellationToken))
+                        {
+                            if (messageSpecificCancellationToken.IsCancellationRequested)
+                                break;
 
-                        var result = response.Text;
-                        assistantResponse.Append(result);
-                        await channel.Writer.WriteAsync(result, messageSpecificCancellationToken);
+                            var result = response.Text;
+                            assistantResponse.Append(result);
+                            await channel.Writer.WriteAsync(result, messageSpecificCancellationToken);
+                        }
+
+                        await channel.Writer.WriteAsync(SharedChatProcessMessages.MESSAGE_RPOCESS_SUCESS, cancellationToken);
                     }
-
-                    await channel.Writer.WriteAsync(SharedChatProcessMessages.MESSAGE_RPOCESS_SUCESS, cancellationToken);
-                }
-                catch (Exception exp)
-                {
-                    _ = HandleException(exp);
-                    await channel.Writer.WriteAsync(SharedChatProcessMessages.MESSAGE_RPOCESS_ERROR, cancellationToken);
-                }
-                finally
-                {
-                    chatMessages.Add(new(ChatRole.Assistant, assistantResponse.ToString()));
+                    catch (Exception exp)
+                    {
+                        _ = HandleException(exp);
+                        await channel.Writer.WriteAsync(SharedChatProcessMessages.MESSAGE_RPOCESS_ERROR, cancellationToken);
+                    }
+                    finally
+                    {
+                        chatMessages.Add(new(ChatRole.Assistant, assistantResponse.ToString()));
+                    }
                 }
             }
+
+            _ = ReadIncomingMessages();
+
+            await foreach (var str in channel.Reader.ReadAllAsync(cancellationToken).WithCancellation(cancellationToken))
+            {
+                yield return str;
+            }
         }
+    }
 
-        _ = ReadIncomingMessages();
-
-
-        await foreach (var str in channel.Reader.ReadAllAsync(cancellationToken).WithCancellation(cancellationToken))
+    private async Task<(McpClient deepwikiMcp, IList<McpClientTool> deepwikiMcpTools)> GetDeepWikiTools(CancellationToken cancellationToken)
+    {
+        var deepwikiMcp = await McpClient.CreateAsync(new HttpClientTransport(new()
         {
-            yield return str;
+            Name = "DeepWiki",
+            Endpoint = new("https://mcp.deepwiki.com/mcp"),
+            TransportMode = HttpTransportMode.StreamableHttp
+        }), new() { }, loggerFactory, cancellationToken); // provides ask_question tool
+        var deepwikiMcpTools = await deepwikiMcp.ListToolsAsync(cancellationToken: cancellationToken);
+        return (deepwikiMcp, deepwikiMcpTools);
+    }
+
+    private async Task<(McpClient? githubMcp, IList<McpClientTool> githubMcpTools)> GetGitHubTools(CancellationToken cancellationToken)
+    {
+        var githubToken = configuration["AppSettings:GitHubSettings:Token"];
+        IList<McpClientTool> githubMcpTools = [];
+        McpClient? githubMcp = null;
+        if (!string.IsNullOrEmpty(githubToken))
+        {
+            githubMcp = await McpClient.CreateAsync(new HttpClientTransport(new()
+            {
+                Name = "GitHub",
+                Endpoint = new("https://api.githubcopilot.com/mcp/"),
+                TransportMode = HttpTransportMode.StreamableHttp,
+                AdditionalHeaders = new Dictionary<string, string>
+                {
+                    ["Authorization"] = $"Bearer {githubToken}"
+                }
+            }, loggerFactory), new() { }, loggerFactory, cancellationToken); // provides GitHub tools including issue creation
+            githubMcpTools = await githubMcp.ListToolsAsync(cancellationToken: cancellationToken);
         }
+
+        return (githubMcp, githubMcpTools);
     }
 
     private async Task HandleException(Exception exp)
@@ -241,8 +262,3 @@ public partial class AppHub : Hub
         serverExceptionHandler.Handle(exp);
     }
 }
-
-
-
-
-
