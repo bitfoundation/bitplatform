@@ -760,6 +760,11 @@ In this stage, you will explain the comprehensive response caching system built 
      - **CDN Edge Cache** (e.g., Cloudflare)
    - All of these caching layers are based on and controlled by the `AppResponseCache` attribute
 
+**Explain Fusion Caching library**:
+    - The project uses `FusionCache` library for server-side caching:
+      - It powers the ASP.NET Core Output Cache implementation
+      - It also provides data caching capabilities via `IFusionCache` interface, so data can be cached in addition to responses into its providers (memory, redis, etc)
+
 ---
 
 At the end of Stage 14, ask: **"Do you have any questions about the Response Caching system, or shall we proceed to Stage 15 (Logging, OpenTelemetry and Health Checks)?"**

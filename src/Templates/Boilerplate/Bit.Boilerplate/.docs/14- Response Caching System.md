@@ -456,6 +456,16 @@ This prevents accidentally serving User A's data to User B through shared caches
 
 ---
 
+## FusionCache Library
+
+The project uses the **FusionCache** library for server-side caching:
+
+- **Output Cache Backend**: Powers the ASP.NET Core Output Cache implementation (Layer 4)
+- **Data Caching**: Provides data caching via `IFusionCache` interface for caching arbitrary data (database query results, computed values, etc.) in addition to HTTP responses
+- **Flexible Storage**: Supports multiple backends (in-memory, Redis, etc) for both response and data caching
+
+---
+
 ### Monitor Cache Headers
 
 The system adds custom headers to help debug caching:
