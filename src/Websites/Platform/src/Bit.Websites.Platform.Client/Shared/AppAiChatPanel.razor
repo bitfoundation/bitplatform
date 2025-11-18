@@ -18,7 +18,8 @@
                  @bind-IsOpen="isOpen"
                  ModeFull="isSmallScreen is true"
                  Modeless="isSmallScreen is false"
-                 OnDismiss="WrapHandled(HandleOnDismissPanel)">
+                 OnDismiss="WrapHandled(HandleOnDismissPanel)"
+				 Classes="@(new() { Container = "panel-cnt" })">
         <Header>
             <BitStack Horizontal Alignment="BitAlignment.Center">
                 <BitText Typography="BitTypography.H5">AI chat panel</BitText>
@@ -38,7 +39,7 @@
             </BitStack>
         </Header>
         <Body>
-            <BitStack Class="body">
+            <BitStack Class="body" onpointerdown="event.stopPropagation()">
                 <BitScrollablePane FullSize
                                    AutoScroll
                                    Class="scr-container"
