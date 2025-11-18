@@ -31,9 +31,9 @@
 <br />
 
 @code {
-	private string? userAgentString;
+    private string? userAgentString;
 
-	private async Task Extract()
+    private async Task Extract()
     {
         var userAgentProps = await userAgent.Extract(userAgentString);
         await console.Log("UserAgent properties:", userAgentProps);
