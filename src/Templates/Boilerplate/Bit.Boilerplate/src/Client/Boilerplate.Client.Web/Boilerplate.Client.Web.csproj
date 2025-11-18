@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
@@ -76,5 +76,20 @@
         <EmccLinkOptimizationFlag>-O3</EmccLinkOptimizationFlag>
         <EmccCompileOptimizationFlag>-O3</EmccCompileOptimizationFlag>
     </PropertyGroup>
+
+    <!-- 
+        <PropertyGroup>
+        
+            Blazor WebAssembly diagnostics
+            https://learn.microsoft.com/en-us/aspnet/core/blazor/performance/webassembly-event-pipe-diagnostics
+        
+            <EnableDiagnostics>true</EnableDiagnostics>
+            <MetricsSupport>true</MetricsSupport>
+            <EventSourceSupport>true</EventSourceSupport>
+            <WasmDebugLevel>0</WasmDebugLevel>
+            <WasmPerformanceInstrumentation>all</WasmPerformanceInstrumentation>
+            
+        </PropertyGroup>
+    -->
 
 </Project>

@@ -7,7 +7,7 @@ Welcome to Stage 15! In this stage, you'll learn about the comprehensive logging
 ## Table of Contents
 
 1. [ILogger for Errors, Warnings, and Information](#ilogger-for-errors-warnings-and-information)
-2. [Activity and AppActivitySource for Tracking Operations](#activity-and-appactivitysource-for-tracking-operations)
+2. [Activity and Meter for Tracking Operations](#activity-and-meter-for-tracking-operations)
 3. [Logging Configuration](#logging-configuration)
 4. [In-App Diagnostic Logger](#in-app-diagnostic-logger)
 5. [Integration with Sentry and Azure Application Insights](#integration-with-sentry-and-azure-application-insights)
@@ -60,34 +60,16 @@ logger.LogError(exception, "Order processing failed");
 
 ---
 
-## 2. Activity and AppActivitySource for Tracking Operations
+## 2. Activity and Meter for Tracking Operations
 
-For tracking **operation count and duration**, the project uses **OpenTelemetry's Activity** and a custom **`AppActivitySource`**.
+For tracking **operation count and duration**, the project uses **OpenTelemetry's ActivitySource**.
 
-### AppActivitySource
-
-Located at [`src/Shared/Services/AppActivitySource.cs`](/src/Shared/Services/AppActivitySource.cs):
-
-```csharp
-using System.Diagnostics.Metrics;
-
-namespace Boilerplate.Shared.Services;
-
-/// <summary>
-/// Open telemetry activity source for the application.
-/// </summary>
-public class AppActivitySource
-{
-    public static readonly ActivitySource CurrentActivity = new("Boilerplate", typeof(AppActivitySource).Assembly.GetName().Version!.ToString());
-
-    public static readonly Meter CurrentMeter = new("Boilerplate", typeof(AppActivitySource).Assembly.GetName().Version!.ToString());
-}
-```
+### ActivitySource
 
 ### Using Activities to Track Operations
 
 ```csharp
-using var activity = AppActivitySource.CurrentActivity.StartActivity("ProcessOrder");
+using var activity = ActivitySource.Current.StartActivity("ProcessOrder");
 
 try
 {
@@ -108,7 +90,7 @@ For tracking **count metrics** (e.g., number of ongoing operations), use **OpenT
 ```csharp
 // Define a counter at class level
 private static readonly UpDownCounter<long> ongoingConversationsCount = 
-    AppActivitySource.CurrentMeter.CreateUpDownCounter<long>(
+    Meter.Current.CreateUpDownCounter<long>(
         "appHub.ongoing_conversations_count", 
         "Number of ongoing conversations in the chatbot hub.");
 
@@ -228,18 +210,11 @@ For **live support scenarios**, support staff can request diagnostic logs from a
 This is implemented in [`src/Server/Boilerplate.Server.Api/SignalR/AppHub.cs`](/src/Server/Boilerplate.Server.Api/SignalR/AppHub.cs):
 
 ```csharp
-/// <inheritdoc cref="SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE"/>
-[Authorize(Policy: CustomPolicies.ViewUserSession)]
+/// <inheritdoc cref="SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE"/>
+[Authorize(Policy = AppFeatures.System.ManageLogs)]
 public async Task<DiagnosticLogDto[]> GetUserSessionLogs(Guid userSessionId, [FromServices] AppDbContext dbContext)
 {
-    var userId = await dbContext.UserSessions.Where(us => us.Id == userSessionId)
-                                             .Select(us => us.UserId)
-                                             .SingleOrDefaultAsync();
-
-    if (userId is null)
-        throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserSessionCouldNotBeFound)]);
-
-    return await hubConnection.InvokeAsync<DiagnosticLogDto[]>(nameof(UPLOAD_DIAGNOSTIC_LOGGER_STORE));
+    ...
 }
 ```
 
@@ -308,14 +283,14 @@ The project tracks:
 - ASP.NET Core instrumentation (HTTP request metrics)
 - HTTP client instrumentation
 - Runtime instrumentation (GC, thread pool, etc.)
-- Custom metrics via `AppActivitySource.CurrentMeter`
+- Custom metrics via `Meter.Current`
 
 **Tracing:**
 - ASP.NET Core requests (excluding static files and health checks)
 - HTTP client calls
 - Entity Framework Core queries (excluding Hangfire queries)
 - Hangfire background jobs
-- Custom activities via `AppActivitySource.CurrentActivity`
+- Custom activities via `ActivitySource.Current`
 
 ---
 

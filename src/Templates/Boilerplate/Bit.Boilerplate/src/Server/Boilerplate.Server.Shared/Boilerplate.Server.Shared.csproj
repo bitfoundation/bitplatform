@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
@@ -29,6 +29,8 @@
         <PackageReference Include="OpenTelemetry.Resources.OperatingSystem" />
         <PackageReference Include="OpenTelemetry.Resources.Process" />
         <PackageReference Include="OpenTelemetry.Resources.ProcessRuntime" />
+        <PackageReference Include="ZiggyCreatures.FusionCache.AspNetCore.OutputCaching" />
+        <PackageReference Include="ZiggyCreatures.FusionCache.OpenTelemetry" />
     </ItemGroup>
 
     <ItemGroup>

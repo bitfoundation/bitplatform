@@ -9,7 +9,6 @@ using Boilerplate.Server.Shared;
 using Boilerplate.Server.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.ResponseCompression;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
@@ -44,7 +43,9 @@ public static class WebApplicationBuilderExtensions
                 var builder = policy.AddPolicy<AppResponseCachePolicy>();
             }, excludeDefaultPolicy: true);
         });
-        services.AddDistributedMemoryCache();
+
+        services.AddFusionCache();
+        services.AddFusionOutputCache(); // For ASP.NET Core Output Caching with FusionCache
 
         services.AddHttpContextAccessor();
 
@@ -82,7 +83,7 @@ public static class WebApplicationBuilderExtensions
         {
             http.ConfigureHttpClient(httpClient =>
             {
-                httpClient.DefaultRequestVersion = HttpVersion.Version20;
+                httpClient.DefaultRequestVersion = HttpVersion.Version30;
                 httpClient.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
             });
 
@@ -121,10 +122,11 @@ public static class WebApplicationBuilderExtensions
             .WithMetrics(metrics =>
             {
                 metrics.AddAspNetCoreInstrumentation()
+                    .AddFusionCacheInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation();
 
-                metrics.AddMeter(AppActivitySource.CurrentMeter.Name);
+                metrics.AddMeter(ActivitySource.Current.Name);
             })
             .WithTracing(tracing =>
             {
@@ -150,10 +152,11 @@ public static class WebApplicationBuilderExtensions
                                     };
                                 })
                     .AddHttpClientInstrumentation()
+                    .AddFusionCacheInstrumentation()
                     .AddEntityFrameworkCoreInstrumentation(options => options.Filter = (providerName, command) => command?.CommandText?.Contains("Hangfire") is false /* Ignore Hangfire */)
                     .AddHangfireInstrumentation();
 
-                tracing.AddSource(AppActivitySource.CurrentActivity.Name);
+                tracing.AddSource(ActivitySource.Current.Name);
             })
             .ConfigureResource(resource =>
             {

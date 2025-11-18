@@ -36,7 +36,7 @@ public partial class AppAiChatPanel
     protected override Task OnInitAsync()
     {
         //#if(module == "Sales")
-        unsubSearchProducts = PubSubService.Subscribe(ClientPubSubMessages.SEARCH_PRODUCTS, async (value) =>
+        unsubSearchProducts = PubSubService.Subscribe(ClientAppMessages.SEARCH_PRODUCTS, async (value) =>
         {
             if (isOpen) return;
 
@@ -58,7 +58,7 @@ public partial class AppAiChatPanel
         //#endif
 
         //#if(ads == true)
-        unsubAdHaveTrouble = PubSubService.Subscribe(ClientPubSubMessages.AD_HAVE_TROUBLE, async _ =>
+        unsubAdHaveTrouble = PubSubService.Subscribe(ClientAppMessages.AD_HAVE_TROUBLE, async _ =>
         {
             if (isOpen) return;
 
@@ -158,10 +158,13 @@ public partial class AppAiChatPanel
     {
         channel = Channel.CreateUnbounded<string>(new() { SingleReader = true, SingleWriter = true });
 
-        await foreach (var response in hubConnection.StreamAsync<string>("Chatbot",
-                                                                         new StartChatbotRequest()
+        // The following code streams user's input messages to the server and processes the streamed responses.
+        // It keeps the chat ongoing until CurrentCancellationToken is cancelled.
+        await foreach (var response in hubConnection.StreamAsync<string>("StartChat",
+                                                                         new StartChatRequest()
                                                                          {
                                                                              CultureId = CultureInfo.CurrentCulture.LCID,
+                                                                             TimeZoneId = TimeZoneInfo.Local.Id,
                                                                              DeviceInfo = TelemetryContext.Platform,
                                                                              ChatMessagesHistory = chatMessages,
                                                                              ServerApiAddress = AbsoluteServerAddress.GetAddress()
@@ -177,12 +180,12 @@ public partial class AppAiChatPanel
             }
             else
             {
-                if (response is SharedChatProcessMessages.MESSAGE_RPOCESS_SUCESS)
+                if (response is SharedAppMessages.MESSAGE_RPOCESS_SUCCESS)
                 {
                     responseCounter++;
                     isLoading = false;
                 }
-                else if (response is SharedChatProcessMessages.MESSAGE_RPOCESS_ERROR)
+                else if (response is SharedAppMessages.MESSAGE_RPOCESS_ERROR)
                 {
                     responseCounter++;
                     if (responseCounter == expectedResponsesCount)

@@ -1,362 +1,381 @@
 # Stage 22: Messaging
 
-Welcome to Stage 22! In this stage, you will learn about the comprehensive **messaging and real-time communication system** built into the Boilerplate project. This system provides multiple communication channels for different scenarios, from in-app component communication to real-time server updates and push notifications.
+Welcome to Stage 22! In this stage, you will learn about the comprehensive **messaging and real-time communication system** built into the Boilerplate project. This system provides a unified messaging architecture that enables communication across multiple channels and platforms.
 
 ---
 
-## 📋 Topics Covered
+## 1. AppMessages - The Centralized Messaging System
 
-1. **In-App Messaging with PubSubService**
-   - Publish-Subscribe Pattern
-   - Real-World Example: Profile Picture Updates
-   - Cross-Component Communication
+### Overview
 
-2. **AppJsBridge - JavaScript-to-C# Communication**
-   - Bridging JavaScript and C# Code
-   - Publishing Messages from JavaScript
-   - window.postMessage Integration
+At the heart of the Boilerplate messaging architecture is **AppMessages** - a centralized messaging system that provides a consistent way to communicate across different parts of your application, regardless of whether the communication happens:
 
-3. **SignalR Real-Time Communication**
-   - SignalR Hub Architecture
-   - Server-to-Client Messaging
-   - Targeting Specific Clients, Groups, or Users
-   - Client-to-Server Invocations
+- Between C# components on the client side
+- From server to client through SignalR
+- From JavaScript to C# code
+- From web service workers to the C# code
 
-4. **AppClientCoordinator - Orchestrating Everything**
-   - SignalR Event Subscriptions
-   - Authentication State Propagation
-   - Coordinating All Messaging Services
+**Location**: [`src/Shared/Services/SharedAppMessages.cs`](/src/Shared/Services/SharedAppMessages.cs)
 
-5. **Push Notifications**
-   - Platform-Specific Push Notification Services
-   - Deep Linking - Opening Specific Pages
-   - Web Push (VAPID)
-   - Native Push (Android, iOS, Windows, macOS)
-   - Subscription Management
+**Location**: [`src/Shared/Services/ClientAppMessages.cs`](/src/Client/Boilerplate.Client.Core/Services/ClientAppMessages.cs)
 
-6. **Browser Notification API**
-   - Bit.Butil.Notification Integration
-   - Permission Management
-   - Local Notifications
+### Message Structure
 
-7. **Practical Examples**
-   - Session Revocation Example
-   - Dashboard Data Changed Example
-
----
-
-## 1. In-App Messaging with PubSubService
-
-### What is PubSubService?
-
-The **PubSubService** implements a publish/subscribe pattern that enables **decoupled communication** between different parts of the application. It allows components to communicate without having direct references to each other, maintaining **loose coupling** and improving maintainability.
-
-**Location**: [`src/Client/Boilerplate.Client.Core/Services/PubSubService.cs`](/src/Client/Boilerplate.Client.Core/Services/PubSubService.cs)
-
-### Real-World Example: Profile Picture Updates
-
-One of the most common use cases demonstrates the power of PubSubService:
-
-**Scenario**: When a user changes their profile picture in the Settings/Profile page, the profile picture in the Header is automatically updated without any direct coupling between these components.
-
-**How it works**:
-
-1. **Publishing the Update** (from `ProfileSection.razor.cs`):
+**SharedAppMessages** (Server ↔ Client):
 
 ```csharp
-// After successfully updating the profile
-PubSubService.Publish(ClientPubSubMessages.PROFILE_UPDATED, CurrentUser);
-```
-
-2. **Subscribing to Updates** (from `MainLayout.razor.cs`):
-
-```csharp
-unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.PROFILE_UPDATED, async payload =>
+public partial class SharedAppMessages
 {
-    currentUser = payload is JsonElement jsonDocument
-                    ? jsonDocument.Deserialize(jsonSerializerOptions.GetTypeInfo<UserDto>())! // PROFILE_UPDATED can be invoked from server through SignalR
-                    : (UserDto)payload;
-    await InvokeAsync(StateHasChanged);
-}));
-```
-
-This pattern ensures that:
-- The Settings page doesn't need to know about the Header component
-- The Header component doesn't need to pull for updates
-- New components can easily subscribe to profile updates
-- The code remains maintainable and testable
-
-### Where PubSubService Can Be Used
-
-PubSubService is versatile and can be used in multiple contexts:
-
-- Within Blazor components and pages
-- Outside Blazor components (e.g., MAUI XAML pages)
-- From JavaScript code using `window.postMessage` (via AppJsBridge)
-- From server-side code using SignalR
-
-**Persistent Messages**: If `persistent = true`, the message is stored and delivered to handlers that subscribe **after** the message was published. This is useful for scenarios where a component needs data that was published before it was created.
-
-### Message Types
-
-#### ClientPubSubMessages
-
-**Location**: [`src/Client/Boilerplate.Client.Core/Services/ClientPubSubMessages.cs`](/src/Client/Boilerplate.Client.Core/Services/ClientPubSubMessages.cs)
-
-These messages are for **client-only** pub/sub communication:
-
-```csharp
-public partial class ClientPubSubMessages : SharedPubSubMessages
-{
-    public const string SHOW_SNACK = nameof(SHOW_SNACK);
-    public const string SHOW_MODAL = nameof(SHOW_MODAL);
-    public const string CLOSE_MODAL = nameof(CLOSE_MODAL);
-    public const string THEME_CHANGED = nameof(THEME_CHANGED);
-    public const string OPEN_NAV_PANEL = nameof(OPEN_NAV_PANEL);
-    public const string CLOSE_NAV_PANEL = nameof(CLOSE_NAV_PANEL);
-    public const string CULTURE_CHANGED = nameof(CULTURE_CHANGED);
-    public const string IS_ONLINE_CHANGED = nameof(IS_ONLINE_CHANGED);
-    public const string PAGE_DATA_CHANGED = nameof(PAGE_DATA_CHANGED);
-    public const string ROUTE_DATA_UPDATED = nameof(ROUTE_DATA_UPDATED);
-    public const string NAVIGATE_TO = nameof(NAVIGATE_TO);
-    public const string SHOW_DIAGNOSTIC_MODAL = nameof(SHOW_DIAGNOSTIC_MODAL);
+    // Data change notifications
+    public const string DASHBOARD_DATA_CHANGED = nameof(DASHBOARD_DATA_CHANGED);
+    
+    // Session management
+    public const string SESSION_REVOKED = nameof(SESSION_REVOKED);
+    
+    // Profile updates
     public const string PROFILE_UPDATED = nameof(PROFILE_UPDATED);
+    
+    // Navigation and UI changes
+    public const string NAVIGATE_TO = nameof(NAVIGATE_TO);
+    public const string CHANGE_CULTURE = nameof(CHANGE_CULTURE);
+    public const string CHANGE_THEME = nameof(CHANGE_THEME);
+    
     // ... and more
 }
 ```
 
-#### SharedPubSubMessages
+**ClientAppMessages** (Client-Only):
 
-**Location**: [`src/Shared/Services/SharedPubSubMessages.cs`](/src/Shared/Services/SharedPubSubMessages.cs)
-
-These messages are used for **server-to-client communication** through SignalR:
+**Location**: [`src/Client/Boilerplate.Client.Core/Services/ClientAppMessages.cs`](/src/Client/Boilerplate.Client.Core/Services/ClientAppMessages.cs)
 
 ```csharp
-public partial class SharedPubSubMessages
-{
-    public const string DASHBOARD_DATA_CHANGED = nameof(DASHBOARD_DATA_CHANGED);
-    public const string SESSION_REVOKED = nameof(SESSION_REVOKED);
-    public const string PROFILE_UPDATED = nameof(PROFILE_UPDATED);
+public partial class ClientAppMessages : SharedAppMessages
+{    
+    // Theme and culture
+    public const string THEME_CHANGED = nameof(THEME_CHANGED);
+    public const string CULTURE_CHANGED = nameof(CULTURE_CHANGED);
+    
+    // Diagnostics
+    public const string SHOW_DIAGNOSTIC_MODAL = nameof(SHOW_DIAGNOSTIC_MODAL);
+    
+    // ... and more
 }
 ```
 
-**Note**: `ClientPubSubMessages` inherits from `SharedPubSubMessages`, so it includes both client-only and server-to-client messages.
+**Note**: `ClientAppMessages` inherits from `SharedAppMessages`, so client-side code has access to both shared and client-only messages.
 
 ---
 
-## 2. AppJsBridge - JavaScript-to-C# Communication
+## 2. Communication Channels
 
-### What is AppJsBridge?
+The Boilerplate project provides multiple communication channels that all work with the same centralized message system. Let's explore each channel and understand when to use them.
 
-**AppJsBridge** is a component that enables bidirectional communication between JavaScript/TypeScript code and C# .NET code. This is particularly useful for:
+### Channel 1: PubSubService (Client-Side Component Communication)
 
-- Integrating third-party JavaScript libraries
-- Handling browser events that need C# processing
-- Enabling service workers to communicate with the Blazor app
-- Publishing messages from JavaScript to the PubSubService
+**PubSubService** is the foundation for client-side messaging. It implements a publish/subscribe pattern for decoupled communication between components.
+
+**Location**: [`src/Client/Boilerplate.Client.Core/Services/PubSubService.cs`](/src/Client/Boilerplate.Client.Core/Services/PubSubService.cs)
+
+**When to use**:
+- Communication between Blazor components
+- Communication with non-Blazor components (e.g., MAUI XAML pages)
+- Broadcasting UI state changes
+- Triggering actions across unrelated components
+
+**Publishing a message**:
+
+```csharp
+// From any component or service
+PubSubService.Publish(ClientAppMessages.THEME_CHANGED, newTheme);
+```
+
+**Subscribing to messages**:
+
+```csharp
+// In component code
+private Action? unsubscribe;
+
+protected override void OnInitialized()
+{
+    unsubscribe = PubSubService.Subscribe(ClientAppMessages.THEME_CHANGED, async payload =>
+    {
+        currentTheme = (string)payload;
+        await InvokeAsync(StateHasChanged);
+    });
+}
+
+protected override void Dispose(bool disposing)
+{
+    unsubscribe?.Invoke();
+    base.Dispose(disposing);
+}
+```
+
+**Persistent Messages**:
+
+If `persistent = true`, the message is stored and delivered to handlers that **subscribe after** the message was published:
+
+```csharp
+PubSubService.Publish(ClientAppMessages.PROFILE_UPDATED, user, persistent: true);
+```
+
+### Channel 2: SignalR (Server-to-Client Real-Time Communication)
+
+**SignalR** enables the server to send messages to clients in real-time. In the Boilerplate project, SignalR messages are automatically bridged to PubSubService, creating a seamless experience.
+
+**Server-Side Hub**: [`src/Server/Boilerplate.Server.Api/SignalR/AppHub.cs`](/src/Server/Boilerplate.Server.Api/SignalR/AppHub.cs)
+
+**When to use**:
+- Notifying clients of data changes
+- Broadcasting updates to all users or specific users
+- Pushing real-time notifications
+- Synchronizing state across multiple devices
+
+**Publishing from server to all authenticated clients**:
+
+```csharp
+// Notify all authenticated users that dashboard data changed
+await appHubContext.Clients.Group("AuthenticatedClients")
+    .Publish(SharedAppMessages.DASHBOARD_DATA_CHANGED, null, cancellationToken);
+```
+
+**Publishing from server to specific user's all devices**:
+
+```csharp
+// When user updates profile on one device, notify all their other devices
+await appHubContext.Clients.User(userId.ToString())
+    .Publish(SharedAppMessages.PROFILE_UPDATED, userDto, cancellationToken);
+```
+
+**Client-Side Reception**:
+
+On the client side, SignalR messages are automatically bridged to PubSubService (see `AppClientCoordinator.cs`). This means any component can subscribe to these messages using PubSubService:
+
+```csharp
+// Component subscribes to server-sent messages the same way as client-only messages
+unsubscribe = PubSubService.Subscribe(SharedAppMessages.DASHBOARD_DATA_CHANGED, async (_) =>
+{
+    await LoadDashboardData();
+    await InvokeAsync(StateHasChanged);
+});
+```
+
+### Channel 3: AppJsBridge (JavaScript-to-C# Communication)
+
+**AppJsBridge** enables JavaScript code to publish messages to the C# PubSubService.
 
 **Location**: [`src/Client/Boilerplate.Client.Core/Components/Layout/AppJsBridge.razor.cs`](/src/Client/Boilerplate.Client.Core/Components/Layout/AppJsBridge.razor.cs)
 
-#### AppJsBridge Usage Examples From JavaScript Code
+**When to use**:
+- Integrating third-party JavaScript libraries
+- Handling browser events that need C# processing
+- Calling C# code from JavaScript
+
+**Publishing from JavaScript**:
 
 ```javascript
-// Publish a message to PubSubService
+// From any JavaScript code
 App.publishMessage('CUSTOM_EVENT', { data: 'some data' });
 
 // Show diagnostic modal
-App.showDiagnostic();
+App.showDiagnostic(); // Publishes SHOW_DIAGNOSTIC_MODAL message
+```
+
+**How it works**:
+
+```csharp
+// AppJsBridge.razor.cs
+[JSInvokable(nameof(PublishMessage))]
+public async Task PublishMessage(string message, string? payload)
+{
+    // JavaScript messages are published to PubSubService
+    PubSubService.Publish(message, payload);
+}
+```
+
+### Channel 4: window.postMessage (Cross-Context JavaScript Communication)
+
+The `window.postMessage` API allows communication between different JavaScript contexts (e.g., iframes, service workers). The Boilerplate project bridges this to PubSubService.
+
+**Location**: [`src/Client/Boilerplate.Client.Core/Scripts/events.ts`](/src/Client/Boilerplate.Client.Core/Scripts/events.ts)
+
+**When to use**:
+- Communication from iframes
+- Integration with third-party scripts
+- Cross-origin messaging
+
+**Publishing via window.postMessage**:
+
+```javascript
+// From any JavaScript context (including iframes)
+window.postMessage({ 
+    key: 'PUBLISH_MESSAGE', 
+    message: 'CUSTOM_EVENT', 
+    payload: { data: 'value' } 
+}, '*');
+```
+
+**How it works**:
+
+```typescript
+// events.ts
+window.addEventListener('message', handleMessage);
+
+function handleMessage(e: MessageEvent) {
+    if (e.data?.key === 'PUBLISH_MESSAGE') {
+        // Bridge to C# PubSubService via AppJsBridge
+        App.publishMessage(e.data?.message, e.data?.payload);
+    }
+}
+```
+
+### Channel 5: Service Worker (Background Message Handling)
+
+Service workers can communicate with the Blazor application using the same messaging system. This is particularly useful for handling push notification clicks.
+
+**Location**: [`src/Client/Boilerplate.Client.Web/wwwroot/service-worker.js`](/src/Client/Boilerplate.Client.Web/wwwroot/service-worker.js)
+
+**When to use**:
+- Handling push notification clicks
+- Background synchronization
+- Cache management notifications
+
+**Publishing from service worker**:
+
+```javascript
+// service-worker.js
+self.addEventListener('notificationclick', (event) => {
+    const pageUrl = event.notification.data?.pageUrl;
+    // ...
+    // Send NAVIGATE_TO message to open specific page in app
+    client.postMessage({ 
+        key: 'PUBLISH_MESSAGE', 
+        message: 'NAVIGATE_TO', 
+        payload: pageUrl 
+    });
+    return client.focus();
+});
+```
+
+**How it works**:
+
+```typescript
+// events.ts - Listens for service worker messages
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', handleMessage);
+}
+
+function handleMessage(e: MessageEvent) {
+    if (e.data?.key === 'PUBLISH_MESSAGE') {
+        // Bridge to C# PubSubService
+        App.publishMessage(e.data?.message, e.data?.payload);
+    }
+}
 ```
 
 ---
 
-## 3. SignalR Real-Time Communication
+## 3. SignalR Details: SendAsync vs InvokeAsync
 
-### What is SignalR?
+Understanding when to use `SendAsync` (or its wrapper `Publish`) vs `InvokeAsync` is crucial for reliable server-to-client communication.
 
-**SignalR** is ASP.NET Core's real-time communication library that enables bi-directional communication between server and clients. The Boilerplate project uses SignalR to:
+### When to Use InvokeAsync
 
-- Send messages from server to specific clients, groups, or all clients
-- Invoke client-side methods from the server
+Use `InvokeAsync` when:
+- Sending a message to a **specific SignalR connection ID**
+- It's **important to know** if the message arrived on the client side
+- You need confirmation that the operation completed successfully
+- You're waiting for a response from the client
 
-### AppHub - The SignalR Hub
-
-The main SignalR hub is located at:
-
-**Location**: [`src/Server/Boilerplate.Server.Api/SignalR/AppHub.cs`](/src/Server/Boilerplate.Server.Api/SignalR/AppHub.cs)
-
-### Hub Capabilities and Messaging Targets
-
-The `AppHub` provides enhanced messaging capabilities beyond basic SignalR. The server can send messages to:
-
-1. **`Clients.All()`**: Broadcasts to all SignalR connections (authenticated or not)
-2. **`Clients.Group("AuthenticatedClients")`**: Sends messages to all signed-in browser tabs and apps
-3. **`Clients.User(userId)`**: Sends messages to **all devices of a specific user** (a user might have multiple sessions - web app open twice, mobile app, desktop app, etc.)
-4. **`Clients.Client(connectionId)`**: Targets a **specific connection** (e.g., a specific browser tab or app instance)
-
-**Understanding Multi-Device Targeting**: When you use `Clients.User(userId)`, SignalR sends the message to ALL devices and sessions where that user is signed in.
-
-### Message Types
-
-#### SignalREvents (Server-to-Client)
-
-**Location**: [`src/Shared/Services/SharedPubSubMessages.cs`](/src/Shared/Services/SharedPubSubMessages.cs)
-
-These are messages sent **from server to client**:
+**Example**:
 
 ```csharp
-public static partial class SignalREvents
+// Server needs to know if the message was successfully shown to the user
+var messageShown = await appHubContext.Clients.Client(userSession.SignalRConnectionId)
+    .InvokeAsync<bool>(SharedAppMessages.SHOW_MESSAGE, message, null, cancellationToken);
+
+if (messageShown)
 {
-    public const string PUBLISH_MESSAGE = nameof(PUBLISH_MESSAGE);
-    public const string SHOW_MESSAGE = nameof(SHOW_MESSAGE);
-    public const string EXCEPTION_THROWN = nameof(EXCEPTION_THROWN);
+    // Message was successfully shown to the user
 }
 ```
 
-**Key Message Types**:
-
-1. **`PUBLISH_MESSAGE`**: Bridges SignalR and PubSubService
-   - Server sends this event to publish a message on the client's PubSubService
-   - Example: `SharedPubSubMessages.SESSION_REVOKED` - Redirects the device to the Sign In page when a session is revoked
-   - Example: `SharedPubSubMessages.DASHBOARD_DATA_CHANGED` - Notifies clients to refresh dashboard data
-
-2. **`SHOW_MESSAGE`**: Displays a text message to the user
-   - Shows as a browser notification if available
-   - Falls back to snackbar if notifications aren't available
-   - Can include custom data for handling notification clicks
-
-3. **`EXCEPTION_THROWN`**: Pushes exceptions to the client for display
-   - Allows server to notify clients of hangfire background job errors
-   - Uses the same exception handling UI as client-side errors
-
-#### SignalRMethods (Server Invoking Client Methods)
+**Important**: For `InvokeAsync` to work, the client-side `hubConnection.On` listener must be registered in **`AppClientCoordinator.cs`** in the `SubscribeToSignalRSharedAppMessages` method, and it **must return a value** even a simple `true` const:
 
 ```csharp
-public static partial class SignalRMethods
+// Client-side in AppClientCoordinator.cs
+hubConnection.On<string, Dictionary<string, string?>?, bool>(SharedAppMessages.SHOW_MESSAGE, async (message, data) =>
 {
-    public const string UPLOAD_DIAGNOSTIC_LOGGER_STORE = nameof(UPLOAD_DIAGNOSTIC_LOGGER_STORE);
-}
+    logger.LogInformation("SignalR Message {Message} received from server to show.", message);
+    
+    await ShowNotificationOrSnack(message, data);
+    
+    return true;
+});
 ```
 
-These are methods the server can **invoke on the client** and wait for a response. This enables the server to request data from connected clients.
+### When to Use SendAsync (or Publish)
 
-#### Authentication State Management
+Use `SendAsync` or the `Publish` extension method when:
+- Broadcasting to multiple clients (e.g., `Clients.All()`, `Clients.Group()`, `Clients.User()`)
+- Fire-and-forget messaging is acceptable
+- You don't need confirmation of delivery
 
-Each user session tracks its **SignalR connection ID** in the database. This enables powerful scenarios like:
-
-**Example**: When an admin revokes a user session, the server can send a SignalR message directly to that specific browser tab or app:
+**Example**:
 
 ```csharp
-// From UserController.cs - RevokeSession method
-await appHubContext.Clients.Client(userSession.SignalRConnectionId)
-    .SendAsync(SignalREvents.SHOW_MESSAGE, message, null, cancellationToken);
+// Notify all authenticated clients - no need to wait for confirmation
+await appHubContext.Clients.Group("AuthenticatedClients").SendAsync(SharedAppMessages.PUBLISH_MESSAGE, SharedAppMessages.DASHBOARD_DATA_CHANGED, null, cancellationToken);
+
+// OR: Simplified with Publish extension method (internally uses SendAsync)
+await appHubContext.Clients.Group("AuthenticatedClients").Publish(SharedAppMessages.DASHBOARD_DATA_CHANGED, null, cancellationToken);
 ```
 
-This ensures the corresponding browser tab or app immediately:
-- Clears its access/refresh tokens from storage
-- Navigates to the sign-in page automatically
+**Note**: The `Publish` extension method uses `SendAsync` internally and has the same fire-and-forget behavior. Both `SendAsync` and `Publish` work **without requiring special registration** in `AppClientCoordinator.cs` - they automatically bridge to PubSubService through the `PUBLISH_MESSAGE` handler.
 
-### SignalR Hub Configuration
+### SignalR Messaging Targets
 
-The SignalR hub is configured in [`src/Server/Boilerplate.Server.Api/Program.Middlewares.cs`](/src/Server/Boilerplate.Server.Api/Program.Middlewares.cs):
+The server can send messages to different targets:
 
-```csharp
-app.MapHub<SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true ...);
-```
+1. **`Clients.All()`**: All SignalR connections (authenticated or not)
+2. **`Clients.Group("AuthenticatedClients")`**: All authenticated users (all their devices)
+3. **`Clients.User(userId)`**: All devices of a specific user (web, mobile, desktop)
+4. **`Clients.Client(connectionId)`**: A specific connection (one browser tab or app)
 
-### Client-Side SignalR Connection
-
-The SignalR connection is configured on the client side in:
-
-**Location**: [`src/Client/Boilerplate.Client.Core/Extensions/IClientCoreServiceCollectionExtensions.cs`](/src/Client/Boilerplate.Client.Core/Extensions/IClientCoreServiceCollectionExtensions.cs)
-
-```csharp
-var hubConnection = new HubConnectionBuilder()
-    .WithStatefulReconnect()
-    .WithAutomaticReconnect(...)
-    .WithUrl(...)
-    .Build();
-```
 ---
 
-## 4. AppClientCoordinator - Orchestrating Everything
+## 5. AppClientCoordinator - Orchestrating Everything
 
-The **AppClientCoordinator** component is responsible for coordinating all messaging services when the application starts.
+The **AppClientCoordinator** is responsible for initializing and coordinating all messaging services when the application starts.
 
 **Location**: [`src/Client/Boilerplate.Client.Core/Components/AppClientCoordinator.cs`](/src/Client/Boilerplate.Client.Core/Components/AppClientCoordinator.cs)
 
 ### Key Responsibilities
 
 1. **Initialize SignalR Connection**
-2. **Subscribe to SignalR Events**
+2. **Subscribe to SignalR Events** (via `SubscribeToSignalRSharedAppMessages` method)
 3. **Manage Authentication State Propagation**
 4. **Handle Push Notification Subscriptions**
 5. **Coordinate Telemetry Services**
 
 ### SignalR Event Subscriptions
 
-#### SHOW_MESSAGE Event
+The `SubscribeToSignalRSharedAppMessages` method registers handlers for SignalR messages:
+
+#### PUBLISH_MESSAGE Handler
+
+Bridges SignalR messages to PubSubService:
 
 ```csharp
-hubConnection.On<string, Dictionary<string, string?>?, bool>(SignalREvents.SHOW_MESSAGE, async (message, data) =>
-{
-    logger.LogInformation("SignalR Message {Message} received from server to show.", message);
-    
-    ...
-});
-```
-
-This event handler:
-- Receives a message from the server
-- Shows it as a **native browser notification** if available
-- Falls back to **BitSnackBar** if notifications aren't available
-- Returns `true` if the message was shown successfully
-
-**Server-Side Usage** (from `UserController.cs`):
-
-```csharp
-if (userSession.SignalRConnectionId != null)
-{
-    await appHubContext.Clients.Client(userSession.SignalRConnectionId)
-        .SendAsync(SignalREvents.SHOW_MESSAGE, 
-                   (string)Localizer[nameof(AppStrings.TestNotificationMessage2)], 
-                   null, 
-                   cancellationToken);
-}
-```
-
-#### PUBLISH_MESSAGE Event
-
-```csharp
-hubConnection.On<string, object?>(SignalREvents.PUBLISH_MESSAGE, async (message, payload) =>
+hubConnection.On(SharedAppMessages.PUBLISH_MESSAGE, async (string message, object? payload) =>
 {
     logger.LogInformation("SignalR Message {Message} received from server to publish.", message);
     PubSubService.Publish(message, payload);
+    return true;
 });
 ```
 
-This bridges **SignalR** and **PubSubService**, allowing server-side code to publish messages that client-side components can subscribe to.
-
-#### EXCEPTION_THROWN Event
-
-```csharp
-hubConnection.On<AppProblemDetails>(SignalREvents.EXCEPTION_THROWN, async (appProblemDetails) =>
-{
-    ExceptionHandler.Handle(appProblemDetails, displayKind: ExceptionDisplayKind.NonInterrupting);
-});
-```
-
-This allows the server to push exceptions to the client for display (e.g., showing an error that occurred in a hangfire background job).
-
-#### UPLOAD_DIAGNOSTIC_LOGGER_STORE Method
-
-```csharp
-hubConnection.On(SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE, async () =>
-{
-    return DiagnosticLogger.Store.ToArray();
-});
-```
-
-This allows the server to **invoke a method on the client** and receive the client's diagnostic logs in response.
+This is the foundation that allows server-side code to publish messages that client-side components can subscribe to.
 
 ### Authentication State Propagation
 
@@ -374,18 +393,15 @@ public async Task PropagateAuthState(bool firstRun, Task<AuthenticationState> ta
     if (lastPropagatedUserId == userId)
         return;
         
+    // Update telemetry context
     TelemetryContext.UserId = userId;
     TelemetryContext.UserSessionId = isAuthenticated ? user.GetSessionId() : null;
 
     // Update App Insights
     if (isAuthenticated)
-    {
         _ = appInsights.SetAuthenticatedUserContext(user.GetUserId().ToString());
-    }
     else
-    {
         _ = appInsights.ClearAuthenticatedUserContext();
-    }
 
     // Start SignalR connection
     await EnsureSignalRStarted();
@@ -395,19 +411,17 @@ public async Task PropagateAuthState(bool firstRun, Task<AuthenticationState> ta
 
     // Update user session info
     if (isAuthenticated)
-    {
         await UpdateUserSession();
-    }
 
     lastPropagatedUserId = userId;
 }
 ```
 
-This method ensures all services are updated when authentication state changes.
+This ensures all services are updated when authentication state changes.
 
 ---
 
-## 5. Push Notifications
+## 6. Push Notifications
 
 ### Push Notification Architecture
 
@@ -489,7 +503,7 @@ Each platform has its own implementation:
 
 ---
 
-## 6. Bit.Butil.Notification - Browser Notification API
+## 7. Bit.Butil.Notification - Browser Notification API
 
 The project uses **Bit.Butil.Notification** to access the browser's native Notification API.
 
@@ -546,39 +560,30 @@ private async Task ShowNotification()
 
 ---
 
-## 7. Dashboard Data Changed Example
+## 8. Testing Push Notifications - Understanding the Four Scenarios
 
-Another common scenario is notifying all authenticated clients when data changes.
+When testing push notifications, it's critical to understand that there are **four distinct scenarios** based on the app state when the notification is sent and when the user taps on it. The Boilerplate project handles all four scenarios across all platforms.
 
-### Scenario: Product is Created/Updated/Deleted
+✅ **Scenario 1**: Close the app completely → Send push notification → Tap the notification → Verify the app opens to the correct page
 
-**Server-Side** (from `ProductController.cs`):
+✅ **Scenario 2**: Close the app → Send push notification → Open the app manually (without tapping notification) → Now tap the notification → Verify navigation works
 
-```csharp
-private async Task PublishDashboardDataChanged(CancellationToken cancellationToken)
-{
-    // Notify all authenticated clients
-    await appHubContext.Clients.Group("AuthenticatedClients")
-        .SendAsync(SignalREvents.PUBLISH_MESSAGE, 
-                   SharedPubSubMessages.DASHBOARD_DATA_CHANGED, 
-                   null, 
-                   cancellationToken);
-}
-```
+✅ **Scenario 3**: Keep the app open → Send push notification → Close the app → Tap the notification → Verify the app opens to the correct page
 
-This is called after creating, updating, or deleting a product.
+✅ **Scenario 4**: Keep the app open → Send push notification → Tap the notification immediately → Verify navigation works without restarting the app
 
-**Client-Side** (any component can subscribe):
+### Key Takeaways
 
-```csharp
-unsubscribe = PubSubService.Subscribe(SharedPubSubMessages.DASHBOARD_DATA_CHANGED, async (_) =>
-{
-    // Refresh dashboard data
-    await LoadDashboardData();
-    await InvokeAsync(StateHasChanged);
-});
-```
+- The codebase includes specialized handling for all four push notification scenarios
+- Different entry points are used depending on the app state (e.g., `OnCreate` vs `OnNewIntent` on Android)
+- Service workers on the web platform handle scenario detection automatically using `clients.matchAll()`
 
-Components subscribe to `DASHBOARD_DATA_CHANGED` and automatically refresh when notified.
+---
+
+### AI Wiki: Answered Questions
+* [Describe the workflow of bit Boilerplate's AI chat feature and provide a high-level overview.
+](https://deepwiki.com/search/describe-the-workflow-of-bit-b_822b9510-8e1d-456f-99bf-fb1778374a9a)
+
+Ask your own question [here](https://wiki.bitplatform.dev)
 
 ---

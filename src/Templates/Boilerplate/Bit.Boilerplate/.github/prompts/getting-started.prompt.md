@@ -760,6 +760,11 @@ In this stage, you will explain the comprehensive response caching system built 
      - **CDN Edge Cache** (e.g., Cloudflare)
    - All of these caching layers are based on and controlled by the `AppResponseCache` attribute
 
+**Explain Fusion Caching library**:
+    - The project uses `FusionCache` library for server-side caching:
+      - It powers the ASP.NET Core Output Cache implementation
+      - It also provides data caching capabilities via `IFusionCache` interface, so data can be cached in addition to responses into its providers (memory, redis, etc)
+
 ---
 
 At the end of Stage 14, ask: **"Do you have any questions about the Response Caching system, or shall we proceed to Stage 15 (Logging, OpenTelemetry and Health Checks)?"**
@@ -772,9 +777,8 @@ At the end of Stage 14, ask: **"Do you have any questions about the Response Cac
 
 1. **Explain ILogger for errors, warnings, and general information**:
 
-2. **Explain Activity and AppActivitySource for tracking operations (count/duration)**:
-   - Read [/src/Shared/Services/AppActivitySource.cs](/src/Shared/Services/AppActivitySource.cs) file
-   - Find and demonstrate example using `AppActivitySource`
+2. **Explain ActivitySource and Meter for tracking operations (count/duration)**:
+   - Find and demonstrate `Meter.Current` and `ActivitySource.Current` usages in the project.
 
 3. **Logging configuration in [/src/Shared/appsettings.json](/src/Shared/appsettings.json)**:
    - Show the `Logging` section with different providers
@@ -795,7 +799,7 @@ At the end of Stage 14, ask: **"Do you have any questions about the Response Cac
 6. **Aspire Dashboard displays all logs and metrics**:
 
 7. **⚠️ CRITICAL WARNING**:
-   - If you're adding Serilog, using App Insights direct methods, or anything other than `ILogger` and `AppActivitySource`, you probably don't understand OpenTelemetry or Microsoft.Extensions.Logging
+   - If you're adding Serilog, using App Insights direct methods, or anything other than `ILogger`, `ActivitySource` and `Meter`, you probably don't understand OpenTelemetry or Microsoft.Extensions.Logging
    - Everything is already optimally configured
    - OpenTelemetry is vendor-agnostic - switch from Sentry to App Insights without code changes
 
@@ -1048,15 +1052,17 @@ At the end of Stage 21, ask: **"Do you have any questions about .NET MAUI, nativ
 
 ### Instructions
 
-1. **Explain In-App Messaging with PubSubService**:
-   - **Purpose**: A publish-subscribe messaging system for communication between components within the application
-   - **Real-world example**: Explain to the developer that when a user changes their profile picture in Settings/Profile page, the profile picture in the Header is automatically updated
-   - **Search and demonstrate**: Find usages of `PubSubService` in the codebase and explain how it works
-   - Show how to publish a message and how to subscribe to messages
+1. **Explain Shared AppMessages**
+   - **Purpose**: A centralized messaging system for communication between server and C# Client throgugh SignalR,
+   between C# components at client side through PubSubService,
+   between JavaScript and C# code through AppJsBridge and `window.addEventListener('message',...)` inside `events.ts`
+   between Service Worker and C# code through `navigator.serviceWorker.addEventListener('message',...)` inside `events.ts`
 
-2. **Explain AppJsBridge for JavaScript-to-C# Communication**:
-   - **Purpose**: Enables sending messages from JavaScript/TypeScript code to C# .NET code
-   - **Search and demonstrate**: Find `AppJsBridge` implementation and show examples of how JavaScript code can communicate with C# code
+2. **Explain features**
+   - Developer can publish messages like User's profile has been updated to the rest of the user's devices through SignalR,
+   so all devices get updated profile information without manual refresh.
+   - The same published message would update profile information in app's header through PubSubService without relying on SignalR.
+   - The developer can publish a message to navigate to specific page when a user taps on a push notification `Boilerplate.Client.Web/wwwroot/service-worker.js`
 
 <!--#if (signalR == true)-->
 3. **Explain Server-to-Client Messaging with SignalR**:
@@ -1066,11 +1072,13 @@ At the end of Stage 21, ask: **"Do you have any questions about .NET MAUI, nativ
      - `AuthenticatedClients` group (all authenticated users)
      - All devices of a specific user (a user might have multiple sessions - web app open twice, mobile app, etc.)
      - A specific device/connection
-- **Message Types**:
-     - **SignalREvents.SHOW_MESSAGE**: Displays a text message to the user
-     - **SharedPubSubMessages**: Application-specific messages, for example:
-       - `SharedPubSubMessages.SESSION_REVOKED`: Redirects the device to the Sign In page when a session is revoked
-   - **Search and demonstrate**: Find SignalR hub implementations and show examples of server-to-client messaging
+- **Explain SendAsync vs InvokeAsync**:
+     - `InvokeAsync`: Waits for a response from the client. The client might simply return a `true` value,
+     but this ensures the message was received and processed.
+     - `SendAsync`: Fire-and-forget, no response expected
+     - `Publish`: Would use `SendAsync` internally to publish `SharedAppMessages` to the client and has the same fire-and-forget behavior.
+     - In order to make `InvokeAsync` work, the HubConnection listerner must be registered in `src/Client/Boilerplate.Client.Core/Components/AppClientCoordinator.cs` `SubscribeToSignalRSharedAppMessages` method,
+     but the `SendAsync` and `Publish` methods would work without any additional code.
 <!--#endif-->
 
 <!--#if (notification == true)-->
@@ -1084,6 +1092,12 @@ At the end of Stage 21, ask: **"Do you have any questions about .NET MAUI, nativ
      - Find `PushNotificationService` implementation
      - Show examples of sending push notifications with deep links
      - Explain how to handle notification clicks on the client side
+   - **Explain** that in order to test push notifications, the following scenarios must be considered:
+     1. The time that push notification was sent, the app was closed already, and when the user tapped on the notification to open the app, the app was still closed.
+     2. The time that push notification was sent, the app was closed already, but when the user tapped on the notification, the app was already open.
+     3. The time that push notification was sent, the app was open, but the time that user tapped on the notification, the app was closed.
+     4. The time that push notification was sent, the app was open, and the time that user tapped on the notification, the app was still open.
+     Explain that if some similar codes exists in the codebase, they are used to handle these 4 different scenarios across platforms.
 <!--#endif-->
 
 ---

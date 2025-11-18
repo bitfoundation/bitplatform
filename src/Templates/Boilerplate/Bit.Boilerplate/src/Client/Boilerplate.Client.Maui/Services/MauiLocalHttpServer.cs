@@ -73,7 +73,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
                     await MainThread.InvokeOnMainThreadAsync(() =>
                     {
                         var urlToOpen = ctx.Request.QueryString["urlToOpen"];
-                        pubSubService.Publish(ClientPubSubMessages.SOCIAL_SIGN_IN, urlToOpen);
+                        pubSubService.Publish(ClientAppMessages.SOCIAL_SIGN_IN_CALLBACK, urlToOpen);
                     });
                 }
                 finally

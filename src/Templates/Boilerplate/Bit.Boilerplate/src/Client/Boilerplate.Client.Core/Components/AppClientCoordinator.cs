@@ -2,6 +2,7 @@
 using System.Web;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
+using Boilerplate.Shared.Dtos.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 //#endif
 //#if (appInsights == true)
@@ -23,6 +24,8 @@ public partial class AppClientCoordinator : AppComponentBase
     //#if (signalR == true)
     [AutoInject] private Notification notification = default!;
     [AutoInject] private HubConnection hubConnection = default!;
+    [AutoInject] private ThemeService themeService = default!;
+    [AutoInject] private CultureService cultureService = default!;
     //#endif
     //#if (appInsights == true)
     [AutoInject] private IApplicationInsights appInsights = default!;
@@ -39,7 +42,7 @@ public partial class AppClientCoordinator : AppComponentBase
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
     //#endif
 
-    private Action? unsubscribe;
+    private List<Action> unsubscribes = [];
 
     protected override async Task OnInitAsync()
     {
@@ -52,13 +55,26 @@ public partial class AppClientCoordinator : AppComponentBase
 
         if (InPrerenderSession is false)
         {
-            unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.NAVIGATE_TO, async (uri) =>
+            unsubscribes.Add(PubSubService.Subscribe(ClientAppMessages.NAVIGATE_TO, async (uri) =>
             {
                 var uriValue = uri?.ToString()!;
                 var replace = uriValue.Contains("replace=true", StringComparison.InvariantCultureIgnoreCase);
                 var forceLoad = uriValue.Contains("forceLoad=true", StringComparison.InvariantCultureIgnoreCase);
                 NavigationManager.NavigateTo(uriValue.Replace("replace=true", "", StringComparison.InvariantCultureIgnoreCase).Replace("forceLoad=true", "", StringComparison.InvariantCultureIgnoreCase).TrimEnd('&'), forceLoad, replace);
-            });
+            }));
+            //#if (signalR == true)
+            unsubscribes.Add(PubSubService.Subscribe(SharedAppMessages.EXCEPTION_THROWN, async (payload) =>
+            {
+                if (payload is null) return;
+
+                var appProblemDetails = payload is JsonElement jsonDocument
+                    ? jsonDocument.Deserialize(JsonSerializerOptions.GetTypeInfo<AppProblemDetails>())! /* Message gets published from server through SignalR */
+                    : (AppProblemDetails)payload;
+
+                ExceptionHandler.Handle(appProblemDetails, displayKind: ExceptionDisplayKind.NonInterrupting);
+            }));
+            //#endif
+
             if (AppPlatform.IsBlazorHybrid is false)
             {
                 try
@@ -91,7 +107,7 @@ public partial class AppClientCoordinator : AppComponentBase
             NavigationManager.LocationChanged += NavigationManager_LocationChanged;
             AuthManager.AuthenticationStateChanged += AuthenticationStateChanged;
             //#if (signalR == true)
-            SubscribeToSignalREventsMessages();
+            SubscribeToSignalRSharedAppMessages();
             //#endif
             await PropagateAuthState(firstRun: true, AuthenticationStateTask);
         }
@@ -175,10 +191,22 @@ public partial class AppClientCoordinator : AppComponentBase
     }
 
     //#if (signalR == true)
-    private void SubscribeToSignalREventsMessages()
+    private void SubscribeToSignalRSharedAppMessages()
     {
-        hubConnection.Remove(SignalREvents.SHOW_MESSAGE);
-        signalROnDisposables.Add(hubConnection.On<string, Dictionary<string, string?>?, bool>(SignalREvents.SHOW_MESSAGE, async (message, data) =>
+        hubConnection.Remove(SharedAppMessages.PUBLISH_MESSAGE);
+        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.PUBLISH_MESSAGE, async (string message, object? payload) =>
+        {
+            logger.LogInformation("SignalR Message {Message} received from server to publish.", message);
+            PubSubService.Publish(message, payload);
+            return true;
+        }));
+        // Generally, you're expected to use ShardAppMessages.PUBLISH_MESSAGE at server side to publish messages to clients through SignalR using Server.Api/Extensions/IClientProxyExtensions.cs's Publish method.
+        // However, in some scenarios, you might want client to return a value to server, or simply return `true` confirming that the message is received and processed successfully,
+        // so the server can use `InvokeAsync<bool>` instead of `SendAsync` when sending the message.
+        // That's why in the following code block, we subscribe to **some** SharedAppMessages directly using HubConnection:
+
+        hubConnection.Remove(SharedAppMessages.SHOW_MESSAGE);
+        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.SHOW_MESSAGE, async (string message, Dictionary<string, string?>? data) =>
         {
             logger.LogInformation("SignalR Message {Message} received from server to show.", message);
             if (await notification.IsNotificationAvailable())
@@ -210,23 +238,53 @@ public partial class AppClientCoordinator : AppComponentBase
             // You can also leverage IPubSubService to notify other components in the application.
         }));
 
-        hubConnection.Remove(SignalREvents.PUBLISH_MESSAGE);
-        signalROnDisposables.Add(hubConnection.On<string, object?>(SignalREvents.PUBLISH_MESSAGE, async (message, payload) =>
-        {
-            logger.LogInformation("SignalR Message {Message} received from server to publish.", message);
-            PubSubService.Publish(message, payload);
-        }));
-
-        hubConnection.Remove(SignalREvents.EXCEPTION_THROWN);
-        signalROnDisposables.Add(hubConnection.On<AppProblemDetails>(SignalREvents.EXCEPTION_THROWN, async (appProblemDetails) =>
-        {
-            ExceptionHandler.Handle(appProblemDetails, displayKind: ExceptionDisplayKind.NonInterrupting);
-        }));
-
-        hubConnection.Remove(SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE);
-        signalROnDisposables.Add(hubConnection.On(SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE, async () =>
+        hubConnection.Remove(SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE);
+        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE, async () =>
         {
             return DiagnosticLogger.Store.ToArray();
+        }));
+
+        hubConnection.Remove(SharedAppMessages.NAVIGATE_TO);
+        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.NAVIGATE_TO, async (string url) =>
+        {
+            await InvokeAsync(async () =>
+            {
+                NavigationManager.NavigateTo(url);
+            });
+            return true;
+        }));
+
+        hubConnection.Remove(SharedAppMessages.CHANGE_CULTURE);
+        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.CHANGE_CULTURE, async (int cultureLcid) =>
+        {
+            await InvokeAsync(async () =>
+            {
+                var culture = CultureInfo.GetCultureInfo(cultureLcid);
+                await cultureService.ChangeCulture(culture.Name);
+            });
+            return true;
+        }));
+
+        hubConnection.Remove(SharedAppMessages.CHANGE_THEME);
+        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.CHANGE_THEME, async (string requestedTheme) =>
+        {
+            await InvokeAsync(async () =>
+            {
+                var currentTheme = (await themeService.GetCurrentTheme()).ToString();
+
+                if (string.Equals(currentTheme, requestedTheme) is false)
+                {
+                    await themeService.ToggleTheme();
+                }
+            });
+
+            return true;
+        }));
+
+        hubConnection.Remove(SharedAppMessages.UPLOAD_LAST_ERROR);
+        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.UPLOAD_LAST_ERROR, async () =>
+        {
+            return DiagnosticLogger.Store.LastOrDefault(l => l.Level is LogLevel.Error or LogLevel.Critical);
         }));
 
         hubConnection.Closed += HubConnectionStateChange;
@@ -238,7 +296,7 @@ public partial class AppClientCoordinator : AppComponentBase
     {
         try
         {
-            if (hubConnection.State is not HubConnectionState.Connected or HubConnectionState.Connecting)
+            if (hubConnection.State is not (HubConnectionState.Connected or HubConnectionState.Connecting))
             {
                 await hubConnection.StartAsync(CurrentCancellationToken);
                 await HubConnectionConnected(null);
@@ -256,13 +314,13 @@ public partial class AppClientCoordinator : AppComponentBase
 
     private async Task HubConnectionConnected(string? _)
     {
-        PubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, true);
+        PubSubService.Publish(ClientAppMessages.IS_ONLINE_CHANGED, true);
         logger.LogInformation("SignalR connection established.");
     }
 
     private async Task HubConnectionStateChange(Exception? exception)
     {
-        PubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, exception is null && hubConnection!.State is HubConnectionState.Connected);
+        PubSubService.Publish(ClientAppMessages.IS_ONLINE_CHANGED, exception is null && hubConnection!.State is HubConnectionState.Connected);
 
         if (exception is null)
         {
@@ -280,7 +338,7 @@ public partial class AppClientCoordinator : AppComponentBase
                 }
                 else if (exception.Message.EndsWith(nameof(AppStrings.ForceUpdateTitle)))
                 {
-                    PubSubService.Publish(ClientPubSubMessages.FORCE_UPDATE);
+                    PubSubService.Publish(ClientAppMessages.FORCE_UPDATE);
                 }
             }
         }
@@ -312,7 +370,8 @@ public partial class AppClientCoordinator : AppComponentBase
     private List<IDisposable> signalROnDisposables = [];
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        unsubscribe?.Invoke();
+        unsubscribes.ForEach(unsubscribe => unsubscribe());
+        unsubscribes = [];
 
         NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
         AuthManager.AuthenticationStateChanged -= AuthenticationStateChanged;

@@ -14,5 +14,9 @@ public class AppOpenTelemetryProcessor : BaseProcessor<Activity>
         {
             activity.IsAllDataRequested = false; // Prevents Blazor's events from being exported.
         }
+        else if (activity.TagObjects.Any(t => t.Value?.ToString()?.Contains("/ALIVE") is true))
+        {
+            activity.IsAllDataRequested = false; // Prevents health check calls from being exported (Fusion ASP.NET Core Output Cache)
+        }
     }
 }

@@ -75,7 +75,7 @@ public partial class HomePage
     //#if(module == "Sales")
     private async Task HandleOnSearchBoxClick()
     {
-        PubSubService.Publish(ClientPubSubMessages.SEARCH_PRODUCTS);
+        PubSubService.Publish(ClientAppMessages.SEARCH_PRODUCTS);
     }
     //#endif
 }

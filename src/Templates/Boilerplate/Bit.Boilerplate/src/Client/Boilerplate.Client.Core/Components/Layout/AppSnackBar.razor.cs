@@ -9,7 +9,7 @@ public partial class AppSnackBar
     {
         await base.OnAfterFirstRenderAsync();
 
-        unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.SHOW_SNACK, async args =>
+        unsubscribe = PubSubService.Subscribe(ClientAppMessages.SHOW_SNACK, async args =>
         {
             var (title, body, color) = ((string, string, BitColor))args!;
 

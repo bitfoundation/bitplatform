@@ -5,7 +5,7 @@
     <CascadingValue Value="currentUser">
         <CascadingValue Value="currentTheme">
             <CascadingValue Value="currentRouteData">
-                <CascadingValue Name="@Parameters.IsOnline" Value="isOnline">
+                <CascadingValue Name="@Parameters.IsOnline" Value="IsOnline">
 
                     <AppShell NavPanelItems="navPanelItems" IsIdentityPage="isIdentityPage">
                         @Body
@@ -17,6 +17,7 @@
                     @*#endif*@
                     <AppSnackBar />
                     <AppDiagnosticModal />
+                    <JobProgress />
                     <BitModalContainer ModalParameters="ModalParameters" />
                     <AppJsBridge />
 

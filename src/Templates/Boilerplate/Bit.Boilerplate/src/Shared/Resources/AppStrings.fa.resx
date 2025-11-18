@@ -267,6 +267,9 @@
     <data name="SystemPromptsSubTitle" xml:space="preserve">
     <value>این‌جا میتونید پرامپت‌های سیستمی مورد استفاده چت بات رو مشاهده کنید</value>
   </data>
+    <data name="PushNotificationJob" xml:space="preserve">
+    <value>عملیات ارسال پوش نوتیفیکیشن</value>
+  </data>
     <!--#endif-->
     <!--#if (offlineDb == true) -->
     <data name="OfflineDatabaseDemoTitle" xml:space="preserve">
@@ -1134,7 +1137,7 @@
     <value>سلام! من اینجا هستم تا تجربه اپلیکیشن شما رو فوق‌العاده کنم! سؤالی دارید یا به کمک نیاز دارید؟</value>
   </data>
     <data name="AiChatPanelPrompt1" xml:space="preserve">
-    <value>چگونه میتوانم رمزعبور خود را ریست کنم؟</value>
+    <value>صفحه ریست کردن پسورد رو باز کن و بگو چطوری کار میکنه</value>
   </data>
     <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>چگونه میتوانم نسخه PWA برنامه رو نصب کنم؟</value>

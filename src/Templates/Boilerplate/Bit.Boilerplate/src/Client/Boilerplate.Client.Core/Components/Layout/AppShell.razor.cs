@@ -25,14 +25,14 @@ public partial class AppShell
 
         NavigationManager.LocationChanged += NavigationManager_LocationChanged;
 
-        unsubscribers.Add(PubSubService.Subscribe(ClientPubSubMessages.OPEN_NAV_PANEL, async _ =>
+        unsubscribers.Add(PubSubService.Subscribe(ClientAppMessages.OPEN_NAV_PANEL, async _ =>
         {
             isNavPanelOpen = true;
             isNavPanelToggled = false;
             StateHasChanged();
         }));
 
-        unsubscribers.Add(PubSubService.Subscribe(ClientPubSubMessages.CLOSE_NAV_PANEL, async _ =>
+        unsubscribers.Add(PubSubService.Subscribe(ClientAppMessages.CLOSE_NAV_PANEL, async _ =>
         {
             isNavPanelOpen = false;
             isNavPanelToggled = false;

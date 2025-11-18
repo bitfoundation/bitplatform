@@ -29,10 +29,7 @@ public partial class MauiDeviceCoordinator : IBitDeviceCoordinator
         });
 #elif MACCATALYST
         var window = UIKit.UIApplication.SharedApplication.Windows[0].WindowScene;
-        if (window != null)
-        {
-            window.Titlebar!.TitleVisibility = UIKit.UITitlebarTitleVisibility.Hidden;
-        }
+        window?.Titlebar?.TitleVisibility = UIKit.UITitlebarTitleVisibility.Hidden;
 #endif
     }
 }

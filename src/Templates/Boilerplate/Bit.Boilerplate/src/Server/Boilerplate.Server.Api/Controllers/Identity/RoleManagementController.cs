@@ -227,14 +227,19 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
                                                                .Select(us => us.SignalRConnectionId!).ToArrayAsync(cancellationToken);
 
         await appHubContext.Clients.Clients(signalRConnectionIds)
-                                   .SendAsync(SignalREvents.SHOW_MESSAGE, dto.Message, dto.PageUrl is null ? null : new Dictionary<string, string?> { { "pageUrl", dto.PageUrl } }, cancellationToken);
+                                   .SendAsync(SharedAppMessages.SHOW_MESSAGE, dto.Message, dto.PageUrl is null ? null : new Dictionary<string, string?> { { "pageUrl", dto.PageUrl } }, cancellationToken);
         //#endif
 
         //#if (notification == true)
-        await pushNotificationService.RequestPush(message: dto.Message,
-                                                  pageUrl: dto.PageUrl,
-                                                  userRelatedPush: true,
-                                                  customSubscriptionFilter: s => s.UserSession!.User!.Roles.Any(r => r.RoleId == dto.RoleId),
+        await pushNotificationService.RequestPush(new()
+        {
+            Message = dto.Message,
+            PageUrl = dto.PageUrl,
+            UserRelatedPush = true,
+            //#if (signalR == true)
+            RequesterUserSessionId = User.GetSessionId()
+            //#endif
+        }, customSubscriptionFilter: s => s.UserSession!.User!.Roles.Any(r => r.RoleId == dto.RoleId),
                                                   cancellationToken: cancellationToken);
         //#endif
     }

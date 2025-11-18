@@ -107,7 +107,7 @@ public partial class SignInPanel
         isWaiting = true;
         successfulSignIn = false;
 
-        await InvokeAsync(StateHasChanged); // Social sign-in callback will eventually call this method, so we need to update the UI immediately. See ClientPubSubMessages.SOCIAL_SIGN_IN references.
+        await InvokeAsync(StateHasChanged); // Social sign-in callback will eventually call this method, so we need to update the UI immediately. See ClientAppMessages.SOCIAL_SIGN_IN_CALLBACK references.
 
         try
         {
@@ -202,7 +202,7 @@ public partial class SignInPanel
         finally
         {
             isWaiting = false;
-            await InvokeAsync(StateHasChanged); // Social sign-in callback will eventually call this method, so we need to update the UI immediately. See ClientPubSubMessages.SOCIAL_SIGN_IN references.
+            await InvokeAsync(StateHasChanged); // Social sign-in callback will eventually call this method, so we need to update the UI immediately. See ClientAppMessages.SOCIAL_SIGN_IN_CALLBACK references.
         }
     }
 
@@ -211,7 +211,7 @@ public partial class SignInPanel
         try
         {
             pubSubUnsubscribe?.Invoke();
-            pubSubUnsubscribe = PubSubService.Subscribe(ClientPubSubMessages.SOCIAL_SIGN_IN, async (uriString) =>
+            pubSubUnsubscribe = PubSubService.Subscribe(ClientAppMessages.SOCIAL_SIGN_IN_CALLBACK, async (uriString) =>
             {
                 // Check out SignInModalService for more details
                 var uri = uriString!.ToString();

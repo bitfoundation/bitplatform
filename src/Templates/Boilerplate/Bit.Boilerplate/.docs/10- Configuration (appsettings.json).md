@@ -89,21 +89,21 @@ Let's say you have a `ServerAddress` setting:
 2. **Shared/appsettings.Development.json** overrides it for all platforms in Development:
    ```json
    {
-     "ServerAddress": "http://localhost:5000/"
+     "ServerAddress": "http://localhost:5030/"
    }
    ```
 
 3. **Client.Maui/appsettings.Development.json** can override it specifically for MAUI in Development:
    ```json
    {
-     "ServerAddress": "http://10.0.2.2:5000/"
+     "ServerAddress": "http://10.0.2.2:5030/"
    }
    ```
 
 **Result**: 
 - In **Production** on all platforms: Uses `https://api.production.com/`
-- In **Development** on Web/Windows: Uses `http://localhost:5000/`
-- In **Development** on MAUI: Uses `http://10.0.2.2:5000/` (Android emulator localhost)
+- In **Development** on Web/Windows: Uses `http://localhost:5030/`
+- In **Development** on MAUI: Uses `http://10.0.2.2:5030/` (Android emulator localhost)
 
 ## Real Configuration Examples from the Project
 
@@ -157,7 +157,7 @@ In [`src/Client/Boilerplate.Client.Core/appsettings.json`](/src/Client/Boilerpla
 
 ```json
 {
-    "ServerAddress": "http://localhost:5000/",
+    "ServerAddress": "http://localhost:5030/",
     "ServerAddress_Comment": "If you're running Boilerplate.Server.Web project, then you can also use relative urls such as / for Blazor Server and WebAssembly",
     "GoogleRecaptchaSiteKey": "6LdMKr4pAAAAAKMyuEPn3IHNf04EtULXA8uTIVRw",
     "AdUnitPath": "/22639388115/rewarded_web_example",

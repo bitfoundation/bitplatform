@@ -1,8 +1,11 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace Boilerplate.Shared.Services.Contracts;
 
 /// <summary>
+/// Hint: Generally, this service is intended for internal use within `IAppController`,
+/// and you can simply ignore understanding its details unless you are working on advanced scenarios involving pre-rendering.
+/// 
 /// The Client.Core codebase is designed to support various Blazor hosting models, including Hybrid and WebAssembly, 
 /// which may or may not enable pre-rendering. To ensure expected behavior across all scenarios, 
 /// the `IPrerenderStateService` interface is introduced. This service provides the `GetValue` method for data retrieval, 
@@ -26,5 +29,8 @@ public interface IPrerenderStateService : IAsyncDisposable
         [CallerMemberName] string memberName = "",
         [CallerFilePath] string filePath = "");
 
+    /// <summary>
+    /// <inheritdoc cref="IPrerenderStateService"/>
+    /// </summary>
     Task<T?> GetValue<T>(string key, Func<Task<T?>> factory);
 }

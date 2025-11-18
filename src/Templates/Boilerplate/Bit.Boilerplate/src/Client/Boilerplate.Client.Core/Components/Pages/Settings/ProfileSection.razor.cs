@@ -111,7 +111,7 @@ public partial class ProfileSection
 
     private void PublishUserDataUpdated()
     {
-        PubSubService.Publish(ClientPubSubMessages.PROFILE_UPDATED, CurrentUser);
+        PubSubService.Publish(ClientAppMessages.PROFILE_UPDATED, CurrentUser);
     }
 
     private async Task<string> GetUploadUrl()

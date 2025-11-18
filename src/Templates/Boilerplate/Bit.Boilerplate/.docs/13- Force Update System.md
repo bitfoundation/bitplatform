@@ -195,7 +195,7 @@ When the client receives this exception, it's caught in the **`ExceptionDelegati
 ```csharp
 catch (ClientNotSupportedException)
 {
-    pubSubService.Publish(ClientPubSubMessages.FORCE_UPDATE, persistent: true);
+    pubSubService.Publish(ClientAppMessages.FORCE_UPDATE, persistent: true);
     throw;
 }
 ```
@@ -372,7 +372,7 @@ public partial class ForceUpdateSnackBar
 
         if (InPrerenderSession) return;
 
-        unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.FORCE_UPDATE, async (_) =>
+        unsubscribe = PubSubService.Subscribe(ClientAppMessages.FORCE_UPDATE, async (_) =>
         {
             if (isShown) return;
 

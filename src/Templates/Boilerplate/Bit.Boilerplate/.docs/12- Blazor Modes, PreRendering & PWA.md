@@ -7,9 +7,6 @@ Welcome to Stage 12 of the Boilerplate project tutorial! In this stage, you'll l
 ## Table of Contents
 1. [App.razor and index.html Files](#apprazor-and-indexhtml-files)
 2. [Blazor Mode & PreRendering Configuration](#blazor-mode--prerendering-configuration)
-3. [PWA & Service Workers](#pwa--service-workers)
-4. [IPrerenderStateService](#iprerendererstateservice)
-5. [Summary](#summary)
 
 ---
 
@@ -350,16 +347,7 @@ self.serverHandledUrls = [
     /\/odata\//,
     /\/core\//,
     /\/hangfire/,
-    /\/healthchecks-ui/,
-    /\/healthz/,
-    /\/health/,
-    /\/alive/,
-    /\/swagger/,
-    /\/signin-/,
-    /\/.well-known/,
-    /\/sitemap.xml/,
-    /\/sitemap_index.xml/,
-    /\/web-interop-app.html/
+    ...
 ];
 ```
 
@@ -402,101 +390,5 @@ self.addEventListener('notificationclick', function (event) {
 2. Service worker receives push event (even if app closed)
 3. Shows notification with title, message, and icon
 4. When user clicks notification, app opens to specified `pageUrl` (If applicable)
-
----
-
-## IPrerenderStateService
-
-When you use direct `HttpClient` calls (instead of the recommended `IAppController` interfaces), you need to manage pre-render state manually to avoid duplicate API calls.
-
-### The Problem: Double API Calls During PreRendering
-
-When PreRendering is enabled, your component renders **twice**:
-
-1. **First render (Server)**: Runs on the server to generate HTML
-   - Executes `OnInitAsync`, `OnParametersSetAsync`, etc.
-   - Fetches data from API/database
-   - Generates HTML to send to client
-
-2. **Second render (Client)**: Runs in the browser after Blazor initializes
-   - Executes same lifecycle methods again
-   - Would fetch same data again (duplicate call!)
-   - Hydrates the pre-rendered HTML into interactive components
-
-Without `IPrerenderStateService`, any API calls in `OnInitAsync` would execute **twice**:
-
-```csharp
-// ❌ BAD: This calls the API twice during pre-rendering
-protected override async Task OnInitAsync()
-{
-    products = await HttpClient.GetFromJsonAsync<ProductDto[]>("api/products/");
-    // First call: Server-side during pre-rendering
-    // Second call: Client-side during hydration
-    // Result: Wasted bandwidth, slower load, unnecessary server load
-}
-```
-
-### The Solution: IPrerenderStateService
-
-**File**: [`/src/Shared/Services/Contracts/IPrerenderStateService.cs`](/src/Shared/Services/Contracts/IPrerenderStateService.cs)
-
-```csharp
-/// <summary>
-/// The Client.Core codebase is designed to support various Blazor hosting models, including Hybrid and WebAssembly, 
-/// which may or may not enable pre-rendering. To ensure expected behavior across all scenarios, 
-/// the `IPrerenderStateService` interface is introduced.
-/// </summary>
-public interface IPrerenderStateService : IAsyncDisposable
-{
-    /// <summary>
-    /// Gets a value, executing the factory function only once.
-    /// Uses caller info to generate a unique key automatically.
-    /// </summary>
-    Task<T?> GetValue<T>(Func<Task<T?>> factory,
-        [CallerLineNumber] int lineNumber = 0,
-        [CallerMemberName] string memberName = "",
-        [CallerFilePath] string filePath = "");
-}
-```
-
-### How It Works
-
-`IPrerenderStateService` ensures data is fetched **only once**:
-
-**Server render (first render):**
-1. Calls the factory function (executes API call)
-2. Stores result in `PersistentComponentState`
-3. Serializes state as base64 encoded JSON in the pre-rendered HTML
-
-**Client render (second render):**
-1. Checks if value exists in persisted state
-2. If yes: Returns cached value (NO API call)
-3. If no: Falls back to executing factory function
-
-```csharp
-// ✅ GOOD: This calls the API only once, even during pre-rendering
-protected override async Task OnInitAsync()
-{
-    products = await PrerenderStateService.GetValue(() => 
-        HttpClient.GetFromJsonAsync<ProductDto[]>("api/products/")
-    );
-    // First render (server): Executes factory, stores result
-    // Second render (client): Returns stored result, NO API call
-}
-```
-
-### Best Practice: Use IAppController Interfaces
-
-**⭐ STRONGLY RECOMMENDED**: Instead of using `HttpClient` directly, use the strongly-typed `IAppController` interfaces.
-
-```csharp
-// ✅ BEST: No need for IPrerenderStateService, everything handled automatically
-[AutoInject] private IProductController productController = default!;
-
-protected override async Task OnInitAsync()
-{
-    products = await productController.GetProducts(CurrentCancellationToken);
-}
-```
 
 ---

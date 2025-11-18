@@ -187,7 +187,7 @@ public partial class UsersPage
 
     //#if (signalR == true)
     /// <summary>
-    /// <inheritdoc cref="SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE"/>
+    /// <inheritdoc cref="SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE"/>
     /// </summary>
     private async Task ReadUserSessionLogs(Guid userSessionId)
     {
@@ -199,7 +199,7 @@ public partial class UsersPage
             DiagnosticLogger.Store.Enqueue(log);
         }
 
-        PubSubService.Publish(ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL);
+        PubSubService.Publish(ClientAppMessages.SHOW_DIAGNOSTIC_MODAL);
     }
     //#endif
 }

@@ -48,8 +48,8 @@ This project uses **TypeScript** for type-safe JavaScript development, along wit
 ```json
 {
     "devDependencies": {
-        "esbuild": "0.25.12",
-        "sass": "1.93.3",
+        "esbuild": "0.27.0",
+        "sass": "1.94.0",
         "typescript": "5.9.3"
     }
 }
@@ -257,8 +257,8 @@ After running the commands, your `package.json` should look like this:
         "uuid": "^11.0.3"
     },
     "devDependencies": {
-        "esbuild": "0.25.12",
-        "sass": "1.93.3",
+        "esbuild": "0.27.0",
+        "sass": "1.94.0",
         "typescript": "5.9.3",
         "@types/uuid": "^10.0.0"
     }

@@ -513,10 +513,10 @@
                         "src/Shared/Dtos/Chatbot/**",
                         "src/Shared/Enums/PromptKind.cs",
                         "src/Shared/Controllers/Chatbot/**",
-                        "src/Shared/Services/SharedPubSubMessages.cs",
-                        "src/Shared/Services/SharedChatProcessMessages.cs",
+                        "src/Shared/Services/SharedAppMessages.cs",
                         "src/Server/Boilerplate.Server.Api/SignalR/**",
                         "src/Server/Boilerplate.Server.Api/Models/Chatbot/**",
+                        "src/Server/Boilerplate.Server.Api/Extensions/IClientProxyExtensions.cs",
                         "src/Server/Boilerplate.Server.Api/Controllers/Chatbot/**",
                         "src/Server/Boilerplate.Server.Api/Mappers/ChatbotMapper.cs",
                         "src/Server/Boilerplate.Server.Api/Data/Configurations/Chatbot/**",
@@ -584,7 +584,8 @@
                 {
                     "condition": "(database != PostgreSQL)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Api/Data/Configurations/PostgresDateTimeOffsetConverter.cs"
+                        "src/Server/Boilerplate.Server.Api/Data/Configurations/PostgresDateTimeOffsetConverter.cs",
+                        "src/Server/Boilerplate.Server.AppHost/Extensions/IResourceBuilderExtensions.cs"
                     ]
                 },
                 {

@@ -1,4 +1,5 @@
-﻿using AdsPush.Vapid;
+﻿//+:cnd:noEmit
+using AdsPush.Vapid;
 using System.Linq.Expressions;
 using Boilerplate.Server.Api.Services.Jobs;
 using Boilerplate.Shared.Dtos.PushNotification;
@@ -45,11 +46,7 @@ public partial class PushNotificationService
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task RequestPush(string? title = null, 
-        string? message = null,
-        string? action = null,
-        string? pageUrl = null,
-        bool userRelatedPush = false,
+    public async Task RequestPush(PushNotificationRequest request,
         Expression<Func<PushNotificationSubscription, bool>>? customSubscriptionFilter = null,
         CancellationToken cancellationToken = default)
     {
@@ -63,7 +60,7 @@ public partial class PushNotificationService
             .Where(sub => sub.ExpirationTime > now)
             .Where(sub => sub.UserSessionId == null || sub.UserSession!.NotificationStatus == UserSessionNotificationStatus.Allowed)
             .WhereIf(customSubscriptionFilter is not null, customSubscriptionFilter!)
-            .WhereIf(userRelatedPush is true, sub => (now - sub.RenewedOn) < serverApiSettings.Identity.RefreshTokenExpiration.TotalSeconds);
+            .WhereIf(request.UserRelatedPush is true, sub => (now - sub.RenewedOn) < serverApiSettings.Identity.RefreshTokenExpiration.TotalSeconds);
 
         if (customSubscriptionFilter is null)
         {
@@ -72,6 +69,19 @@ public partial class PushNotificationService
 
         var pushNotificationSubscriptionIds = await query.Select(pns => pns.Id).ToArrayAsync(cancellationToken);
 
-        backgroundJobClient.Enqueue<PushNotificationJobRunner>(runner => runner.RequestPush(pushNotificationSubscriptionIds, title, message, action, pageUrl, userRelatedPush, default));
+        backgroundJobClient.Enqueue<PushNotificationJobRunner>(runner => runner.RequestPush(pushNotificationSubscriptionIds, request));
     }
+}
+
+public class PushNotificationRequest
+{
+    public string? Title { get; set; }
+    public string? Message { get; set; }
+    public string? Action { get; set; }
+    public string? PageUrl { get; set; }
+
+    public bool UserRelatedPush { get; set; }
+    //#if (signalR == true)
+    public Guid? RequesterUserSessionId { get; set; }
+    //#endif
 }

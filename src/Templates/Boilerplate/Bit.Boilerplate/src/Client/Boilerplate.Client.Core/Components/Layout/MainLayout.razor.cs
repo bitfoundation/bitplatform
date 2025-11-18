@@ -22,13 +22,13 @@ public partial class MainLayout : IAsyncDisposable
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
     [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
-    [AutoInject] private IPrerenderStateService prerenderStateService = default!;
 
 
     /// <summary>
     /// <inheritdoc cref="Parameters.IsOnline"/>
     /// </summary>
-    private bool? isOnline;
+    [PersistentState] public bool? IsOnline { get; set; }
+
     private BitDir? currentDir;
     private bool? isIdentityPage;
     private UserDto? currentUser;
@@ -45,48 +45,49 @@ public partial class MainLayout : IAsyncDisposable
         try
         {
             var inPrerenderSession = RendererInfo.IsInteractive is false;
+
             // During pre-rendering, if any API calls are made, the `isOnline` value will be set 
-            // using PubSub's `ClientPubSubMessages.IS_ONLINE_CHANGED`, depending on the success 
+            // using PubSub's `ClientAppMessages.IS_ONLINE_CHANGED`, depending on the success 
             // or failure of the API call. However, if a pre-rendered page has no HTTP API call 
             // dependencies, its value remains null. 
             // Even though Server.Web and Server.Api may be deployed on different servers, 
             // we can still assume that if the client is displaying a pre-rendered result, it is online.
-            isOnline = await prerenderStateService.GetValue<bool?>(nameof(isOnline), async () => isOnline ?? inPrerenderSession is true ? true : null);
+            IsOnline ??= IsOnline ?? inPrerenderSession is true ? true : null;
 
             authManager.AuthenticationStateChanged += AuthManager_AuthenticationStateChanged;
 
-            unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async _ =>
+            unsubscribers.Add(pubSubService.Subscribe(ClientAppMessages.CULTURE_CHANGED, async _ =>
             {
                 SetCurrentDir();
                 StateHasChanged();
             }));
 
-            unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.THEME_CHANGED, async payload =>
+            unsubscribers.Add(pubSubService.Subscribe(ClientAppMessages.THEME_CHANGED, async payload =>
             {
                 if (payload is null) return;
                 currentTheme = (AppThemeType)payload;
                 StateHasChanged();
             }));
 
-            unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.ROUTE_DATA_UPDATED, async payload =>
+            unsubscribers.Add(pubSubService.Subscribe(ClientAppMessages.ROUTE_DATA_UPDATED, async payload =>
             {
                 currentRouteData = (RouteData?)payload;
                 SetRouteData();
                 StateHasChanged();
             }));
 
-            unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.IS_ONLINE_CHANGED, async payload =>
+            unsubscribers.Add(pubSubService.Subscribe(ClientAppMessages.IS_ONLINE_CHANGED, async payload =>
             {
-                telemetryContext.IsOnline = isOnline = (bool?)payload;
+                telemetryContext.IsOnline = IsOnline = (bool?)payload;
                 await InvokeAsync(StateHasChanged);
             }));
 
-            unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.PROFILE_UPDATED, async payload =>
+            unsubscribers.Add(pubSubService.Subscribe(ClientAppMessages.PROFILE_UPDATED, async payload =>
             {
                 if (payload is null) return;
 
                 currentUser = payload is JsonElement jsonDocument
-                    ? jsonDocument.Deserialize(jsonSerializerOptions.GetTypeInfo<UserDto>())! // PROFILE_UPDATED can be invoked from server through SignalR
+                    ? jsonDocument.Deserialize(jsonSerializerOptions.GetTypeInfo<UserDto>())! /* Message gets published from server through SignalR */
                     : (UserDto)payload;
 
                 await InvokeAsync(StateHasChanged);
@@ -176,7 +177,7 @@ public partial class MainLayout : IAsyncDisposable
         if (type.Namespace?.Contains("Client.Core.Components.Pages.Identity") is true)
         {
             isIdentityPage = true;
-            pubSubService.Publish(ClientPubSubMessages.CLOSE_NAV_PANEL);
+            pubSubService.Publish(ClientAppMessages.CLOSE_NAV_PANEL);
             return;
         }
 
@@ -185,7 +186,7 @@ public partial class MainLayout : IAsyncDisposable
 
     private void OpenDiagnosticModal()
     {
-        pubSubService.Publish(ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL);
+        pubSubService.Publish(ClientAppMessages.SHOW_DIAGNOSTIC_MODAL);
     }
 
 

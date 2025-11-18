@@ -14,8 +14,8 @@
                FloatPosition="BitPosition.BottomRight"
                IconUrl="_content/Boilerplate.Client.Core/images/icons/ai-chat-icon-64.webp" />
 
-    <BitProPanel ShowCloseButton
-                 @bind-IsOpen="isOpen"
+    <BitProPanel @bind-IsOpen="isOpen"
+                 ShowCloseButton
                  ModeFull="isSmallScreen is true"
                  Modeless="isSmallScreen is false"
                  OnDismiss="WrapHandled(HandleOnDismissPanel)"
@@ -28,7 +28,8 @@
                     <BitRollingSquareLoading Size="BitSize.Small" />
                 }
                 <BitSpacer />
-                <BitButton IconOnly FixedColor
+                <BitButton IconOnly
+                           FixedColor
                            Variant="BitVariant.Text"
                            IconName="@BitIconName.Delete"
                            OnClick="WrapHandled(ClearChat)"
@@ -37,7 +38,7 @@
             </BitStack>
         </Header>
         <Body>
-            <BitStack Class="body">
+            <BitStack Class="body" onpointerdown="event.stopPropagation()">
                 <BitScrollablePane FullSize
                                    AutoScroll
                                    Class="scr-container"
@@ -63,20 +64,20 @@
                             }
                         }
 
-						<BitStack Alignment="BitAlignment.Center" FitHeight FillContent Class="default-prompt-container">
+                        <BitStack Alignment="BitAlignment.Center" FitHeight FillContent Class="default-prompt-container">
 
-							@foreach (var suggestion in followUpSuggestions)
-							{
-								<BitButton FixedColor
-										   Variant="BitVariant.Outline"
-										   Class="default-prompt-button"
-										   Color="BitColor.SecondaryBackground"
-										   OnClick="() => SendPromptMessage(suggestion)">
-									@suggestion
-								</BitButton>
-							}
+                            @foreach (var suggestion in followUpSuggestions)
+                            {
+                                <BitButton FixedColor
+                                           Variant="BitVariant.Outline"
+                                           Class="default-prompt-button"
+                                           Color="BitColor.SecondaryBackground"
+                                           OnClick="() => SendPromptMessage(suggestion)">
+                                    @suggestion
+                                </BitButton>
+                            }
 
-						</BitStack>
+                        </BitStack>
 
                         @if (isLoading && string.IsNullOrWhiteSpace(lastAssistantMessage?.Content))
                         {

@@ -36,7 +36,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     [AutoInject] private IConfiguration configuration = default!;
 
     // For open telemetry metrics
-    private static readonly Histogram<double> updateResizeDurationHistogram = AppActivitySource.CurrentMeter.CreateHistogram<double>("attachment.resize_duration", "ms", "Elapsed time to resize and persist an uploaded image");
+    private static readonly Histogram<double> updateResizeDurationHistogram = Meter.Current.CreateHistogram<double>("attachment.resize_duration", "ms", "Elapsed time to resize and persist an uploaded image");
 
     [HttpPost]
     [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
@@ -103,7 +103,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             .Where(us => us.UserId == user.Id && us.Id != currentUserSessionId && us.SignalRConnectionId != null)
             .Select(us => us.SignalRConnectionId!)
             .ToArrayAsync(cancellationToken);
-        await appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId).SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.PROFILE_UPDATED, user.Map(), cancellationToken);
+        await appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId).Publish(SharedAppMessages.PROFILE_UPDATED, user.Map(), cancellationToken);
     }
     //#endif
 

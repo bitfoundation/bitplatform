@@ -1,4 +1,4 @@
-
+﻿
 namespace Boilerplate.Client.Core.Components;
 
 public partial class AppRouteDataPublisher : AppComponentBase
@@ -9,6 +9,6 @@ public partial class AppRouteDataPublisher : AppComponentBase
     {
         await base.OnInitAsync();
 
-        PubSubService.Publish(ClientPubSubMessages.ROUTE_DATA_UPDATED, RouteData);
+        PubSubService.Publish(ClientAppMessages.ROUTE_DATA_UPDATED, RouteData);
     }
 }

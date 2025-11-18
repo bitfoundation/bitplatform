@@ -36,7 +36,7 @@ public partial class DefaultExternalNavigationService : IExternalNavigationServi
         else
         {
             pubSubUnsubscribe?.Invoke();
-            pubSubUnsubscribe = pubSubService.Subscribe(ClientPubSubMessages.SOCIAL_SIGN_IN, async _ =>
+            pubSubUnsubscribe = pubSubService.Subscribe(ClientAppMessages.SOCIAL_SIGN_IN_CALLBACK, async _ =>
             {
                 if (lastOpenedWindowId != null)
                 {

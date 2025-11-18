@@ -1,0 +1,86 @@
+﻿//+:cnd:noEmit
+namespace Boilerplate.Shared.Services;
+
+/// <summary>
+/// This class is located in the Shared project to defines
+/// shared message apps used for messaging between server and client through SignalR.
+/// For client-only pub/sub messages, refer to the ClientAppMessages class in the Client/Core project.
+/// </summary>
+public partial class SharedAppMessages
+{
+    //#if (module == "Admin")
+    /// <summary>
+    /// When dashboard data has changed and clients need to refresh their data.
+    /// </summary>
+    public const string DASHBOARD_DATA_CHANGED = nameof(DASHBOARD_DATA_CHANGED);
+    //#endif
+
+    /// <summary>
+    /// When a user session is revoked by an admin/support staff or by the user from another device.
+    /// </summary>
+    public const string SESSION_REVOKED = nameof(SESSION_REVOKED);
+
+    /// <summary>
+    /// When a user's profile is updated on another device.
+    /// </summary>
+    public const string PROFILE_UPDATED = nameof(PROFILE_UPDATED);
+
+    /// <summary>
+    /// Sends a message to the clients that will published through PubSubService.
+    /// </summary>
+    public const string PUBLISH_MESSAGE = nameof(PUBLISH_MESSAGE);
+
+    /// <summary>
+    /// Shows message at client side.
+    /// </summary>
+    public const string SHOW_MESSAGE = nameof(SHOW_MESSAGE);
+
+    /// <summary>
+    /// When exception is thrown in server side.
+    /// </summary>
+    public const string EXCEPTION_THROWN = nameof(EXCEPTION_THROWN);
+
+    /// <summary>
+    /// Allows super admins and support staff to retrieve all diagnostic logs for active user sessions.
+    /// In contrast to production loggers (e.g., Sentry, AppInsights), which use a Warning level by default (except for specific categories at Information level) to reduce costs,
+    /// the diagnostic logger defaults to Information level to capture all logs, stored solely in the client device's memory.
+    /// Uploading these logs for display in the support staff's diagnostic modal log viewer aids in pinpointing the root cause of user issues during live troubleshooting.
+    /// Another benefit of having this feature is in dev environment when you wanna see your Android, iOS logs on your desktop wide screen.
+    /// </summary>
+    public const string UPLOAD_DIAGNOSTIC_LOGGER_STORE = nameof(UPLOAD_DIAGNOSTIC_LOGGER_STORE);
+
+    /// <summary>
+    /// Using this, server would be able to know the last error that happened at client side.
+    /// </summary>
+    public const string UPLOAD_LAST_ERROR = nameof(UPLOAD_LAST_ERROR);
+
+    /// <summary>
+    /// Using this, server can navigate the client to a specific page.
+    /// </summary>
+    public const string NAVIGATE_TO = nameof(NAVIGATE_TO);
+
+    /// <summary>
+    /// Using this, server can change the client's culture/language.
+    /// </summary>
+    public const string CHANGE_CULTURE = nameof(CHANGE_CULTURE);
+
+    /// <summary>
+    /// Using this, server can change the client's theme (light/dark).
+    /// </summary>
+    public const string CHANGE_THEME = nameof(CHANGE_THEME);
+
+    /// <summary>
+    /// This would let the client know that a chat bot encountered an error while processing the user's message.
+    /// </summary>
+    public const string MESSAGE_RPOCESS_ERROR = nameof(MESSAGE_RPOCESS_ERROR);
+
+    /// <summary>
+    /// This would let the client know that a chat bot successfully processed the user's message.
+    /// </summary>
+    public const string MESSAGE_RPOCESS_SUCCESS = nameof(MESSAGE_RPOCESS_SUCCESS);
+
+    /// <summary>
+    /// This would let the client know about the progress of a job (Typically a long-running hangfire background job).
+    /// </summary>
+    public const string BACKGROUND_JOB_PROGRESS = nameof(BACKGROUND_JOB_PROGRESS);
+}

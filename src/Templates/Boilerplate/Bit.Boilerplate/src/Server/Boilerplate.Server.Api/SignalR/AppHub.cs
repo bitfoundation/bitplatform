@@ -22,7 +22,6 @@ namespace Boilerplate.Server.Api.SignalR;
 [AllowAnonymous]
 public partial class AppHub : Hub
 {
-    [AutoInject] private ServerApiSettings settings = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
     [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
 
@@ -63,7 +62,7 @@ public partial class AppHub : Hub
     }
 
     /// <summary>
-    /// <inheritdoc cref="SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE"/>
+    /// <inheritdoc cref="SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE"/>
     /// </summary>
     [Authorize(Policy = AppFeatures.System.ManageLogs)]
     public async Task<DiagnosticLogDto[]> GetUserSessionLogs(Guid userSessionId, [FromServices] AppDbContext dbContext)
@@ -76,7 +75,7 @@ public partial class AppHub : Hub
         if (string.IsNullOrEmpty(userSessionSignalRConnectionId))
             return [];
 
-        return await Clients.Client(userSessionSignalRConnectionId).InvokeAsync<DiagnosticLogDto[]>(SignalRMethods.UPLOAD_DIAGNOSTIC_LOGGER_STORE, Context.ConnectionAborted);
+        return await Clients.Client(userSessionSignalRConnectionId).InvokeAsync<DiagnosticLogDto[]>(SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE, Context.ConnectionAborted);
     }
 
     private async Task ChangeAuthenticationStateImplementation(ClaimsPrincipal? user)

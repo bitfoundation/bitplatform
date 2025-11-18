@@ -22,6 +22,8 @@ Welcome to **Stage 7** of the Boilerplate project tutorial! In this stage, you w
 8. [Video Tutorial](#video-tutorial)
 9. [Summary](#summary)
 
+**Important**: All topics related to WebAuthn, passkeys, and passwordless authentication are explained in [Stage 24](/.docs/24-%20WebAuthn%20and%20Passwordless%20Authentication%20(Advanced).md).
+
 ---
 
 ## Authentication Architecture
@@ -256,10 +258,14 @@ public const string TFA_ENABLED = nameof(TFA_ENABLED);
 **2. PRIVILEGED_ACCESS**
 ```csharp
 /// <summary>
+/// Having this policy/claim in access token means the user is allowed to view pages that require privileged access.
+/// Currently, this policy applies only to the Todo and AdminPanel specific pages like dashboard page. 
+/// However, it can be extended to cover additional pages as needed. 
+/// 
 /// By default, each user is limited to 3 active sessions.
-/// This policy can be disabled or configured to adjust the session limit dynamically.
-/// Currently, this policy applies only to high-value pages like Dashboard, Products, Categories.
-/// Important: Do not apply this policy to the settings page, as users need access to manage their sessions.
+/// The user's max privileged sessions' value is stored in <see cref="AppClaimTypes.MAX_PRIVILEGED_SESSIONS"/> claim.
+/// 
+/// Important: Do not apply this policy to the settings page, as users need access to manage and revoke their sessions there.
 /// </summary>
 public const string PRIVILEGED_ACCESS = nameof(PRIVILEGED_ACCESS);
 ```
@@ -841,5 +847,15 @@ public async Task ResetPassword(ResetPasswordRequestDto request, CancellationTok
 - External provider integration
 - Privileged session limiting
 - Elevated access for sensitive operations
+
+---
+
+### AI Wiki: Answered Questions
+* [How does a `refresh token` function in a Boilerplate project template?](https://deepwiki.com/search/how-does-a-refresh-token-funct_6a75fa66-ab98-4367-bd1a-24b081fbf88c)
+* [What would happen when I use [AuthorizedApi]](https://deepwiki.com/search/what-would-happen-when-i-use-a_c525d59d-5c55-489b-8f95-69f6df7c743d)
+* [Give me high level overview of social sign-in flow](https://deepwiki.com/search/give-me-high-level-overview-of_059d227a-0ffe-4077-9e01-ba9f61456a3f)
+* [Give me high level overview of two factor auth setup and usage flows](https://deepwiki.com/search/give-me-high-level-overview-of_1883503f-2e34-41ca-821a-1246d332990f)
+
+Ask your own question [here](https://wiki.bitplatform.dev)
 
 ---
